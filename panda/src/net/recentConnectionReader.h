@@ -23,8 +23,7 @@
 
 #include "connectionReader.h"
 #include "netDatagram.h"
-
-#include <prlock.h>
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RecentConnectionReader
@@ -53,7 +52,7 @@ protected:
 private:
   bool _available;
   Datagram _datagram;
-  PRLock *_mutex;
+  Mutex _mutex;
 };
 
 #endif

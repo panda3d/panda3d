@@ -60,11 +60,6 @@ typedef AtomicAdjustWin32Impl AtomicAdjust;
 #include "atomicAdjustPosixImpl.h"
 typedef AtomicAdjustPosixImpl AtomicAdjust;
 
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "atomicAdjustNsprImpl.h"
-typedef AtomicAdjustNsprImpl AtomicAdjust;
-
 #endif
 
 #endif

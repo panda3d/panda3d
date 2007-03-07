@@ -64,11 +64,6 @@
 // Posix threads are nice.
 #define THREAD_POSIX_IMPL 1
 
-#elif defined(HAVE_NSPR)
-
-// If NSPR is available, use that.
-#define THREAD_NSPR_IMPL 1
-
 #else
 
 // This is a configuration error.  For some reason, HAVE_THREADS is

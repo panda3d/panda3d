@@ -25,9 +25,7 @@
 #include "connection.h"
 #include "pointerTo.h"
 #include "pset.h"
-
-#include <prlock.h>
-#include <prerror.h>
+#include "pmutex.h"
 
 class NetAddress;
 class ConnectionReader;
@@ -69,7 +67,7 @@ PUBLISHED:
 protected:
   void new_connection(const PT(Connection) &connection);
   virtual void connection_reset(const PT(Connection) &connection, 
-                                PRErrorCode errcode);
+                                bool okflag);
 
   void add_reader(ConnectionReader *reader);
   void remove_reader(ConnectionReader *reader);
@@ -82,7 +80,7 @@ protected:
   Connections _connections;
   Readers _readers;
   Writers _writers;
-  PRLock *_set_mutex;
+  Mutex _set_mutex;
 
 private:
   friend class ConnectionReader;

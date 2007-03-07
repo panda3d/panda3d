@@ -14,6 +14,7 @@
 #include "pandabase.h"
 #include "numeric_types.h"
 #include "time_base.h"
+#include "socket_ip.h"
 
 class Socket_fdset
 {

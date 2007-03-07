@@ -398,22 +398,17 @@
 //#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE],$[not $[HAVE_THREADS]]]
 #define ALTERNATIVE_MALLOC
 
-// Is NSPR installed, and where?  This is the Netscape Portable
-// Runtime library, downloadable as part of the Mozilla package from
-// mozilla.org.  It provides portable threading and networking
-// services to Panda.  Panda should compile without it, although
-// without any threading or networking capabilities; eventually,
-// native support for these capabilities may be added for certain
-// platforms.  See also HAVE_IPC and HAVE_NET.
-#define NSPR_IPATH /usr/include/nspr
-#define NSPR_LPATH
-#define NSPR_LIBS nspr4
-#defer HAVE_NSPR $[isfile $[NSPR_IPATH]/prtypes.h]
-
-// Define this true to build a native network implementation,
-// which does not require NSPR.
+// Define this true to build the low-level native network
+// implementation.  Normally this should be set true.
 #define WANT_NATIVE_NET 1
-#define NATIVE_NET_LIBS $[if $[WINDOWS_PLATFORM],Ws2_32.lib]
+#define NATIVE_NET_IPATH
+#define NATIVE_NET_LPATH
+#define NATIVE_NET_LIBS $[if $[WINDOWS_PLATFORM],wsock32.lib]
+
+// Do you want to build the high-level network interface?  This layers
+// on top of the low-level native_net interface, specified above.
+// Normally, if you build NATIVE_NET, you will also build NET.
+#defer HAVE_NET $[WANT_NATIVE_NET]
 
 // Is a third-party STL library installed, and where?  This is only
 // necessary if the default include and link lines that come with the
@@ -683,9 +678,8 @@
 // You should only turn this on if you have some threading library
 // available (most people will have one).  Windows has one built-in.
 // Linux uses Posix threads, which most Linuxes provide.
-// Alternatively, the NSPR library also provides a threading interface
-// that Panda can use.
 #define HAVE_THREADS
+#define THREADS_LIBS $[if $[not $[WINDOWS_PLATFORM]],pthread]
 
 // Whether threading is defined or not, you might want to validate the
 // thread and synchronization operations.  With threading enabled,
@@ -702,17 +696,6 @@
 // a particular platform, and you are sure you won't have more threads
 // than CPU's.  Even then, OS-based locking is probably better.
 #define MUTEX_SPINLOCK
-
-// Do you want to build the network interface?  What additional libraries
-// are required?  Currently, this requires NSPR.
-#define NET_IPATH
-#define NET_LPATH
-#if $[WINDOWS_PLATFORM]
-  #define NET_LIBS wsock32.lib
-#else
-  #define NET_LIBS
-#endif
-#defer HAVE_NET $[HAVE_NSPR]
 
 // Do you want to build the PStats interface, for graphical run-time
 // performance statistics?  This requires NET to be available.  By

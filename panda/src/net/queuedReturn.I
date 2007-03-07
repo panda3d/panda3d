@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_net.h"
-
-#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedReturn::set_max_queue_size
@@ -35,9 +32,8 @@
 template<class Thing>
 void QueuedReturn<Thing>::
 set_max_queue_size(int max_size) {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   _max_queue_size = max_size;
-  PR_Unlock(_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,9 +56,8 @@ get_max_queue_size() const {
 template<class Thing>
 int QueuedReturn<Thing>::
 get_current_queue_size() const {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   int size = _things.size();
-  PR_Unlock(_mutex);
   return size;
 }
 
@@ -100,7 +95,6 @@ reset_overflow_flag() {
 template<class Thing>
 QueuedReturn<Thing>::
 QueuedReturn() {
-  _mutex = PR_NewLock();
   _available = false;
   _max_queue_size = get_net_max_response_queue();
   _overflow_flag = false;
@@ -114,7 +108,6 @@ QueuedReturn() {
 template<class Thing>
 QueuedReturn<Thing>::
 ~QueuedReturn() {
-  PR_DestroyLock(_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,18 +138,16 @@ thing_available() const {
 template<class Thing>
 bool QueuedReturn<Thing>::
 get_thing(Thing &result) {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   if (_things.empty()) {
     // Huh.  Nothing after all.
     _available = false;
-    PR_Unlock(_mutex);
     return false;
   }
 
   result = _things.front();
   _things.pop_front();
   _available = !_things.empty();
-  PR_Unlock(_mutex);
   return true;
 }
 
@@ -170,7 +161,7 @@ get_thing(Thing &result) {
 template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_thing(const Thing &thing) {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     _things.push_back(thing);
@@ -178,7 +169,6 @@ enqueue_thing(const Thing &thing) {
     _overflow_flag = true;
   }
   _available = true;
-  PR_Unlock(_mutex);
 
   return enqueue_ok;
 }
@@ -195,7 +185,7 @@ enqueue_thing(const Thing &thing) {
 template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_unique_thing(const Thing &thing) {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     if (find(_things.begin(), _things.end(), thing) == _things.end()) {
@@ -210,7 +200,6 @@ enqueue_unique_thing(const Thing &thing) {
     _overflow_flag = true;
   }
   _available = true;
-  PR_Unlock(_mutex);
 
   return enqueue_ok;
 }

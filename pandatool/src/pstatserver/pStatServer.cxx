@@ -18,7 +18,7 @@
 
 #include "pStatServer.h"
 #include "pStatReader.h"
-
+#include "thread.h"
 #include "config_pstats.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -146,10 +146,7 @@ void PStatServer::
 main_loop(bool *interrupt_flag) {
   while (interrupt_flag == (bool *)NULL || !*interrupt_flag) {
     poll();
-    // Not great.  This will totally blow in a threaded environment.
-    // We need a portable way to sleep or block.
-    PRIntervalTime sleep_timeout = PR_MillisecondsToInterval(100);
-    PR_Sleep(sleep_timeout);
+    Thread::sleep(0.1);
   }
 }
 
@@ -336,7 +333,7 @@ is_thread_safe() {
 //               parties and clean up gracefully.
 ////////////////////////////////////////////////////////////////////
 void PStatServer::
-connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
+connection_reset(const PT(Connection) &connection, bool okflag) {
   // Was this a client connection?  Tell the reader about it if it
   // was.
   close_connection(connection);

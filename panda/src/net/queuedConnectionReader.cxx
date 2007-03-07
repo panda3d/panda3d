@@ -19,6 +19,7 @@
 #include "queuedConnectionReader.h"
 #include "config_net.h"
 #include "trueClock.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionReader::Constructor
@@ -30,7 +31,6 @@ QueuedConnectionReader(ConnectionManager *manager, int num_threads) :
   ConnectionReader(manager, num_threads)
 {
 #ifdef SIMULATE_NETWORK_DELAY
-  _dd_mutex = PR_NewLock();
   _delay_active = false;
   _min_delay = 0.0;
   _delay_variance = 0.0;
@@ -47,10 +47,6 @@ QueuedConnectionReader::
   // We call shutdown() here to guarantee that all threads are gone
   // before the QueuedReturn destructs.
   shutdown();
-
-#ifdef SIMULATE_NETWORK_DELAY
-  PR_DestroyLock(_dd_mutex);
-#endif  // SIMULATE_NETWORK_DELAY
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,11 +145,10 @@ receive_datagram(const NetDatagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionReader::
 start_delay(double min_delay, double max_delay) {
-  PR_Lock(_dd_mutex);
+  MutexHolder holder(_dd_mutex);
   _min_delay = min_delay;
   _delay_variance = max(max_delay - min_delay, 0.0);
   _delay_active = true;
-  PR_Unlock(_dd_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,7 +160,7 @@ start_delay(double min_delay, double max_delay) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionReader::
 stop_delay() {
-  PR_Lock(_dd_mutex);
+  MutexHolder holder(_dd_mutex);
   _delay_active = false;
 
   // Copy the entire contents of the delay queue to the normal queue.
@@ -177,8 +172,6 @@ stop_delay() {
     }
     _delayed.pop_front();
   }
-    
-  PR_Unlock(_dd_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -191,7 +184,7 @@ stop_delay() {
 void QueuedConnectionReader::
 get_delayed() {
   if (_delay_active) {
-    PR_Lock(_dd_mutex);
+    MutexHolder holder(_dd_mutex);
     double now = TrueClock::get_global_ptr()->get_short_time();
     while (!_delayed.empty()) {
       const DelayedDatagram &dd = _delayed.front();
@@ -205,7 +198,6 @@ get_delayed() {
       }
       _delayed.pop_front();
     }
-    PR_Unlock(_dd_mutex);
   }
 }
 
@@ -223,7 +215,7 @@ delay_datagram(const NetDatagram &datagram) {
         << "QueuedConnectionReader queue full!\n";
     }
   } else {
-    PR_Lock(_dd_mutex);
+    MutexHolder holder(_dd_mutex);
     // Check the delay_active flag again, now that we have grabbed the
     // mutex.
     if (!_delay_active) {
@@ -244,7 +236,6 @@ delay_datagram(const NetDatagram &datagram) {
       dd._reveal_time = reveal_time;
       dd._datagram = datagram;
     }
-    PR_Unlock(_dd_mutex);
   }
 }
 

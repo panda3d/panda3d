@@ -9,5 +9,6 @@ struct EVP_PKEY;
 struct X509;
 struct X509_STORE;
 struct X509_NAME;
+struct SSL;
 
 #endif

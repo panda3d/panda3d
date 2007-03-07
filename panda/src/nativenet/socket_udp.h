@@ -1,18 +1,39 @@
-#ifndef __SOCKET_UDP_OUTGOING_H__
-#define __SOCKET_UDP_OUTGOING_H__
+// Filename: socket_udp.h
+// Created by:  drose (01Mar07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef __SOCKET_UDP_H__
+#define __SOCKET_UDP_H__
+
+#include "socket_udp_incoming.h"
 
 /////////////////////////////////////////////////////////////////////
-// Class : Socket_UDP_Outgoing
+// Class : Socket_UDP
 //
-// Description : Base functionality for a UDP Sending Socket
-//
-//
+// Description : Base functionality for a combination UDP Reader and
+//               Writer.  This duplicates code from
+//               Socket_UDP_Outgoing, to avoid the problems of
+//               multiple inheritance.
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_UDP_Outgoing : public Socket_IP
+class EXPCL_PANDA Socket_UDP : public Socket_UDP_Incoming
 {
 public:
 PUBLISHED:
-    inline Socket_UDP_Outgoing() { }
+    inline Socket_UDP() { }
 
     // use this interface for a tagreted UDP connection
     inline bool InitToAddress(const Socket_Address & address);
@@ -33,9 +54,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    Socket_IP::init_type();
-    register_type(_type_handle, "Socket_UDP_Outgoing",
-                  Socket_IP::get_class_type());
+    Socket_UDP_Incoming::init_type();
+    register_type(_type_handle, "Socket_UDP",
+                  Socket_UDP_Incoming::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -46,12 +67,12 @@ private:
   static TypeHandle _type_handle;
 };
 //////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing:SetToBroadCast
+// Function name : Socket_UDP:SetToBroadCast
 // Description     : Ask the OS to let us receive BROADCASt packets on  this port..
 // Return type  : bool
 // Argument         : void
 //////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::SetToBroadCast()
+inline bool Socket_UDP::SetToBroadCast()
 {
     int optval = 1;
     
@@ -60,13 +81,13 @@ inline bool Socket_UDP_Outgoing::SetToBroadCast()
     return true;
 }
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::InitToAddress
+// Function name : Socket_UDP::InitToAddress
 // Description     : Connects the Socket to a Specified address
 //
 // Return type  : inline bool
 // Argument         : NetAddress & address
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::InitToAddress(const Socket_Address & address)
+inline bool Socket_UDP::InitToAddress(const Socket_Address & address)
 {
     if (InitNoAddress() != true)
         return false;
@@ -77,13 +98,13 @@ inline bool Socket_UDP_Outgoing::InitToAddress(const Socket_Address & address)
     return true;
 }
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::InitNoAddress
+// Function name : Socket_UDP::InitNoAddress
 // Description     : This will set a udp up for targeted sends..
 //
 // Return type  : inline bool
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::InitNoAddress()
+inline bool Socket_UDP::InitNoAddress()
 {
     Close();
     _socket = DO_NEWUDP();
@@ -94,32 +115,32 @@ inline bool Socket_UDP_Outgoing::InitNoAddress()
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::Send
+// Function name : Socket_UDP::Send
 // Description     : Send data to connected address
 //
 // Return type  : inline bool
 // Argument         : char * data
 // Argument         : int len
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::Send(const char * data, int len)
+inline bool Socket_UDP::Send(const char * data, int len)
 {
   return (DO_SOCKET_WRITE(_socket, data, len) == len);
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::Send
+// Function name : Socket_UDP::Send
 // Description     : Send data to connected address
 //
 // Return type  : inline bool
 // Argument         : const string &data
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::Send(const string &data)
+inline bool Socket_UDP::Send(const string &data)
 {
   return Send(data.data(), data.size());
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::SendTo
+// Function name : Socket_UDP::SendTo
 // Description     : Send data to specified address
 //
 // Return type  : inline bool
@@ -127,22 +148,22 @@ inline bool Socket_UDP_Outgoing::Send(const string &data)
 // Argument         : int len
 // Argument         : NetAddress & address
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::SendTo(const char * data, int len, const Socket_Address & address)
+inline bool Socket_UDP::SendTo(const char * data, int len, const Socket_Address & address)
 {
     return (DO_SOCKET_WRITE_TO(_socket, data, len, &address.GetAddressInfo()) == len);
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function name : Socket_UDP_Outgoing::SendTo
+// Function name : Socket_UDP::SendTo
 // Description     : Send data to specified address
 //
 // Return type  : inline bool
 // Argument         : const string &data
 // Argument         : NetAddress & address
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Outgoing::SendTo(const string &data, const Socket_Address & address)
+inline bool Socket_UDP::SendTo(const string &data, const Socket_Address & address)
 {
   return SendTo(data.data(), data.size(), address);
 }
 
-#endif //__SOCKET_UDP_OUTGOING_H__
+#endif //__SOCKET_UDP_H__

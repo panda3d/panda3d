@@ -25,7 +25,7 @@
 #include "netAddress.h"
 #include "connection.h"
 #include "netDatagram.h"
-
+#include "thread.h"
 #include "datagram_ui.h"
 
 #include "pset.h"
@@ -119,7 +119,7 @@ main(int argc, char *argv[]) {
     }
 
     // Yield the timeslice before we poll again.
-    PR_Sleep(PR_MillisecondsToInterval(100));
+    Thread::sleep(0.1);
   }
 
   return (0);

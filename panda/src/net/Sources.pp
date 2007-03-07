@@ -1,13 +1,13 @@
 #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolconfig:m \
    dtoolutil:c dtoolbase:c prc:c dtool:m
-#define BUILD_DIRECTORY $[and $[HAVE_NET],$[HAVE_NSPR]]
-#define USE_PACKAGES net nspr
+#define BUILD_DIRECTORY $[and $[HAVE_NET],$[WANT_NATIVE_NET]]
+#define USE_PACKAGES net
 
 #begin lib_target
   #define TARGET net
   #define LOCAL_LIBS \
-    express pandabase
+    express pandabase nativenet pipeline
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
@@ -18,7 +18,7 @@
      datagramTCPHeader.I datagramTCPHeader.h  \
      datagramUDPHeader.I datagramUDPHeader.h  \
      netAddress.h netDatagram.I netDatagram.h  \
-     pprerror.h queuedConnectionListener.I  \
+     queuedConnectionListener.I  \
      queuedConnectionListener.h queuedConnectionManager.h  \
      queuedConnectionReader.h recentConnectionReader.h \
      queuedReturn.h queuedReturn.I
@@ -28,7 +28,7 @@
      connectionManager.cxx connectionReader.cxx  \
      connectionWriter.cxx datagramQueue.cxx datagramTCPHeader.cxx  \
      datagramUDPHeader.cxx netAddress.cxx netDatagram.cxx  \
-     pprerror.cxx queuedConnectionListener.cxx  \
+     queuedConnectionListener.cxx  \
      queuedConnectionManager.cxx queuedConnectionReader.cxx  \
      recentConnectionReader.cxx 
 
@@ -38,7 +38,7 @@
     datagramTCPHeader.I datagramTCPHeader.h \
     datagramUDPHeader.I datagramUDPHeader.h \
     netAddress.h netDatagram.I \
-    netDatagram.h pprerror.h queuedConnectionListener.I \
+    netDatagram.h queuedConnectionListener.I \
     queuedConnectionListener.h queuedConnectionManager.h \
     queuedConnectionReader.h queuedReturn.I queuedReturn.h \
     recentConnectionReader.h
@@ -59,7 +59,7 @@
 
 #begin test_bin_target
   #define TARGET test_spam_client
-  #define LOCAL_LIBS net
+  #define LOCAL_LIBS net putil
   #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
@@ -69,7 +69,7 @@
 
 #begin test_bin_target
   #define TARGET test_spam_server
-  #define LOCAL_LIBS net
+  #define LOCAL_LIBS net putil
   #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \

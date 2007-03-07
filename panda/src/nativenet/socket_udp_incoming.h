@@ -1,5 +1,9 @@
 #ifndef __SOCKET_UDP_INCOMING_H__
 #define __SOCKET_UDP_INCOMING_H__
+
+#include "pandabase.h"
+#include "socket_ip.h"
+
 /////////////////////////////////////////////////////////////////////
 // Class : Socket_UDP_Incoming
 //
@@ -7,17 +11,36 @@
 //
 //
 /////////////////////////////////////////////////////////////////////
-class Socket_UDP_Incoming : public Socket_IP
+class EXPCL_PANDA Socket_UDP_Incoming : public Socket_IP
 {
-public:
 PUBLISHED:
-    inline bool OpenForInput(Socket_Address & address);
-    inline bool OpenForInputMCast(Socket_Address & address );
+    inline Socket_UDP_Incoming() { }
+
+    inline bool OpenForInput(const Socket_Address & address);
+    inline bool OpenForInputMCast(const Socket_Address & address );
     inline bool GetPacket(char * data, int *max_len, Socket_Address & address);
     inline bool SendTo(const char * data, int len, const Socket_Address & address);
     inline bool InitNoAddress();
     inline bool SetToBroadCast();
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    Socket_IP::init_type();
+    register_type(_type_handle, "Socket_UDP_Incoming",
+                  Socket_IP::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
+
 //////////////////////////////////////////////////////////////
 // Function name : Socket_UDP_Incoming::tToBroadCast
 // Description     : Flips the OS bits that allow for brodcast
@@ -57,7 +80,7 @@ inline bool Socket_UDP_Incoming::InitNoAddress()
 // Return type  : bool
 // Argument         : NetAddress & address
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Incoming::OpenForInput(Socket_Address & address)
+inline bool Socket_UDP_Incoming::OpenForInput(const Socket_Address & address)
 {
     Close();
     _socket = DO_NEWUDP();
@@ -77,7 +100,7 @@ inline bool Socket_UDP_Incoming::OpenForInput(Socket_Address & address)
 // Return type  : bool
 // Argument         : NetAddress & address
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_UDP_Incoming::OpenForInputMCast(Socket_Address & address)
+inline bool Socket_UDP_Incoming::OpenForInputMCast(const Socket_Address & address)
 {
     Close();
     _socket = DO_NEWUDP();

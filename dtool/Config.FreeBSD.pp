@@ -162,9 +162,6 @@
 #define PYTHON_IPATH /usr/local/include/python2.4
 #define PYTHON_LPATH /usr/local/lib/python2.4
 
-#define NSPR_IPATH /usr/local/include/nspr
-#define NSPR_LPATH /usr/local/lib/nspr
-
 #define SSL_IPATH /usr/local/openssl
 //#define SSL_097 1
 
@@ -190,4 +187,3 @@
 //#defer alt_ipath $[alt_ipath] /usr/local/include
 //#defer alt_lpath $[alt_lpath] /usr/local/lib
 
-#defer NSPR_LIBS $[NSPR_LIBS] thr

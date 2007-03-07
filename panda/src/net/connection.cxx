@@ -21,11 +21,15 @@
 #include "netDatagram.h"
 #include "datagramTCPHeader.h"
 #include "datagramUDPHeader.h"
-#include "pprerror.h"
 #include "config_net.h"
 #include "config_express.h" // for collect_tcp
 #include "trueClock.h"
 #include "pnotify.h"
+#include "mutexHolder.h"
+#include "socket_ip.h"
+#include "socket_tcp.h"
+#include "socket_udp.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -37,11 +41,10 @@
 //               connection.
 ////////////////////////////////////////////////////////////////////
 Connection::
-Connection(ConnectionManager *manager, PRFileDesc *socket) :
+Connection(ConnectionManager *manager, Socket_IP *socket) :
   _manager(manager),
   _socket(socket)
 {
-  _write_mutex = PR_NewLock();
   _collect_tcp = collect_tcp;
   _collect_tcp_interval = collect_tcp_interval;
   _queued_data_start = 0.0;
@@ -58,16 +61,12 @@ Connection::
   net_cat.info()
     << "Deleting connection " << (void *)this << "\n";
 
-  if (_socket != (PRFileDesc *)NULL) {
+  if (_socket != (Socket_IP *)NULL) {
     flush();
 
-    PRStatus result = PR_Close(_socket);
-    if (result != PR_SUCCESS) {
-      pprerror("PR_Close");
-    }
+    _socket->Close();
+    delete _socket;
   }
-
-  PR_DestroyLock(_write_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,11 +77,7 @@ Connection::
 ////////////////////////////////////////////////////////////////////
 NetAddress Connection::
 get_address() const {
-  PRNetAddr addr;
-  if (PR_GetSockName(_socket, &addr) != PR_SUCCESS) {
-    pprerror("PR_GetSockName");
-  }
-
+  Socket_Address addr = _socket->GetPeerName();
   return NetAddress(addr);
 }
 
@@ -100,10 +95,10 @@ get_manager() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Connection::get_socket
 //       Access: Published
-//  Description: Returns the internal NSPR pointer that defines the
+//  Description: Returns the internal Socket_IP that defines the
 //               connection.
 ////////////////////////////////////////////////////////////////////
-PRFileDesc *Connection::
+Socket_IP *Connection::
 get_socket() const {
   return _socket;
 }
@@ -182,7 +177,7 @@ get_collect_tcp_interval() const {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 consider_flush() {
-  PR_Lock(_write_mutex);
+  MutexHolder holder(_write_mutex);
 
   if (!_collect_tcp) {
     return do_flush();
@@ -197,7 +192,6 @@ consider_flush() {
     }
   }
 
-  PR_Unlock(_write_mutex);
   return true;
 }
 
@@ -210,7 +204,7 @@ consider_flush() {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 flush() {
-  PR_Lock(_write_mutex);
+  MutexHolder holder(_write_mutex);
   return do_flush();
 }
 
@@ -221,10 +215,11 @@ flush() {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_nonblock(bool flag) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_Nonblocking;
-  data.value.non_blocking = flag;
-  PR_SetSocketOption(_socket, &data);
+  if (flag) {
+    _socket->SetNonBlocking();
+  } else {
+    _socket->SetBlocking();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,11 +236,14 @@ set_nonblock(bool flag) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_linger(bool flag, double time) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_Linger;
-  data.value.linger.polarity = flag;
-  data.value.linger.linger = PRIntervalTime(time * PR_INTERVAL_MIN);
-  PR_SetSocketOption(_socket, &data);
+  Socket_TCP *tcp;
+  DCAST_INTO_V(tcp, _socket);
+
+  if (flag) {
+    tcp->SetLinger((int)time);
+  } else {
+    tcp->DontLinger();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,10 +253,7 @@ set_linger(bool flag, double time) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_reuse_addr(bool flag) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_Reuseaddr;
-  data.value.reuse_addr = flag;
-  PR_SetSocketOption(_socket, &data);
+  _socket->SetReuseAddress(flag);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,10 +264,7 @@ set_reuse_addr(bool flag) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_keep_alive(bool flag) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_Keepalive;
-  data.value.keep_alive = flag;
-  PR_SetSocketOption(_socket, &data);
+  // TODO.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,10 +274,7 @@ set_keep_alive(bool flag) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_recv_buffer_size(int size) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_RecvBufferSize;
-  data.value.recv_buffer_size = size;
-  PR_SetSocketOption(_socket, &data);
+  _socket->SetRecvBufferSize(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,10 +284,10 @@ set_recv_buffer_size(int size) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_send_buffer_size(int size) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_SendBufferSize;
-  data.value.send_buffer_size = size;
-  PR_SetSocketOption(_socket, &data);
+  Socket_TCP *tcp;
+  DCAST_INTO_V(tcp, _socket);
+
+  tcp->SetSendBufferSize(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,10 +297,7 @@ set_send_buffer_size(int size) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_ip_time_to_live(int ttl) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_IpTimeToLive;
-  data.value.ip_ttl = ttl;
-  PR_SetSocketOption(_socket, &data);
+  // TODO.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,10 +307,7 @@ set_ip_time_to_live(int ttl) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_ip_type_of_service(int tos) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_IpTypeOfService;
-  data.value.tos = tos;
-  PR_SetSocketOption(_socket, &data);
+  // TODO.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,10 +318,10 @@ set_ip_type_of_service(int tos) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_no_delay(bool flag) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_NoDelay;
-  data.value.no_delay = flag;
-  PR_SetSocketOption(_socket, &data);
+  Socket_TCP *tcp;
+  DCAST_INTO_V(tcp, _socket);
+
+  tcp->SetNoDelay(flag);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -348,10 +331,7 @@ set_no_delay(bool flag) {
 ////////////////////////////////////////////////////////////////////
 void Connection::
 set_max_segment(int size) {
-  PRSocketOptionData data;
-  data.option = PR_SockOpt_MaxSegment;
-  data.value.max_segment = size;
-  PR_SetSocketOption(_socket, &data);
+  // TODO.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,37 +345,34 @@ set_max_segment(int size) {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 send_datagram(const NetDatagram &datagram, int tcp_header_size) {
-  nassertr(_socket != (PRFileDesc *)NULL, false);
+  nassertr(_socket != (Socket_IP *)NULL, false);
 
-  if (PR_GetDescType(_socket) == PR_DESC_SOCKET_UDP) {
+  if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
-    PR_Lock(_write_mutex);
+    Socket_UDP *udp;
+    DCAST_INTO_R(udp, _socket, false);
+
+    MutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
     string data;
     data += header.get_header();
     data += datagram.get_message();
-
-    PRInt32 bytes_to_send = data.length();
-    PRInt32 result;
-    result = PR_SendTo(_socket,
-                       data.data(), bytes_to_send,
-                       0,
-                       datagram.get_address().get_addr(),
-                       PR_INTERVAL_NO_TIMEOUT);
-    PRErrorCode errcode = PR_GetError();
-
+    
+    int bytes_to_send = data.length();
+    bool okflag = udp->SendTo(data, datagram.get_address().get_addr());
+    
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
     }
-
+    
     if (net_cat.is_spam()) {
       net_cat.spam()
         << "Sending UDP datagram with " 
-        << bytes_to_send << " bytes to " << (void *)this << "\n";
+        << bytes_to_send << " bytes to " << (void *)this 
+        << ", ok = " << okflag << "\n";
     }
-
-    PR_Unlock(_write_mutex);
-    return check_send_error(result, errcode, bytes_to_send);
+      
+    return check_send_error(okflag);
   }
 
   // We might queue up TCP packets for later sending.
@@ -409,7 +386,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
   DatagramTCPHeader header(datagram, tcp_header_size);
 
-  PR_Lock(_write_mutex);
+  MutexHolder holder(_write_mutex);
   _queued_data += header.get_header();
   _queued_data += datagram.get_message();
   _queued_count++;
@@ -423,7 +400,6 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
     return do_flush();
   }
 
-  PR_Unlock(_write_mutex);
   return true;
 }
 
@@ -436,36 +412,30 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 send_raw_datagram(const NetDatagram &datagram) {
-  nassertr(_socket != (PRFileDesc *)NULL, false);
+  nassertr(_socket != (Socket_IP *)NULL, false);
 
-  if (PR_GetDescType(_socket) == PR_DESC_SOCKET_UDP) {
+  if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
+    Socket_UDP *udp;
+    DCAST_INTO_R(udp, _socket, false);
 
     string data = datagram.get_message();
-    PRInt32 bytes_to_send = data.length();
 
+    MutexHolder holder(_write_mutex);
+    bool okflag = udp->SendTo(data, datagram.get_address().get_addr());
+    
     if (net_cat.is_spam()) {
       net_cat.spam()
         << "Sending UDP datagram with " 
-        << bytes_to_send << " bytes to " << (void *)this << "\n";
+        << data.size() << " bytes to " << (void *)this 
+        << ", ok = " << okflag << "\n";
     }
 
-    PR_Lock(_write_mutex);
-    PRInt32 result;
-    result = PR_SendTo(_socket,
-                       data.data(), bytes_to_send,
-                       0,
-                       datagram.get_address().get_addr(),
-                       PR_INTERVAL_NO_TIMEOUT);
-    PRErrorCode errcode = PR_GetError();
-
-    PR_Unlock(_write_mutex);
-    return check_send_error(result, errcode, bytes_to_send);
+    return check_send_error(okflag);
   }
 
   // We might queue up TCP packets for later sending.
-
-  PR_Lock(_write_mutex);
+  MutexHolder holder(_write_mutex);
   _queued_data += datagram.get_message();
   _queued_count++;
 
@@ -474,7 +444,6 @@ send_raw_datagram(const NetDatagram &datagram) {
     return do_flush();
   }
 
-  PR_Unlock(_write_mutex);
   return true;
 }
 
@@ -482,70 +451,48 @@ send_raw_datagram(const NetDatagram &datagram) {
 //     Function: Connection::do_flush
 //       Access: Private
 //  Description: The private implementation of flush(), this assumes
-//               the _write_mutex has already been locked on entry.
-//               It will be unlocked on return.
+//               the _write_mutex is already held.
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 do_flush() {
-  PRInt32 bytes_to_send = _queued_data.length();
-  if (bytes_to_send == 0) {
+  if (_queued_data.empty()) {
     _queued_count = 0;
     _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
-    PR_Unlock(_write_mutex);
     return true;
   }
 
   if (net_cat.is_spam()) {
     net_cat.spam()
       << "Sending " << _queued_count << " TCP datagram(s) with " 
-      << bytes_to_send << " total bytes to " << (void *)this << "\n";
+      << _queued_data.length() << " total bytes to " << (void *)this << "\n";
   }
 
-  PRInt32 result;
-  result = PR_Send(_socket,
-                   _queued_data.data(), bytes_to_send,
-                   0,
-                   PR_INTERVAL_NO_TIMEOUT);
-  PRErrorCode errcode = PR_GetError();
+  Socket_TCP *tcp;
+  DCAST_INTO_R(tcp, _socket, false);
+
+  bool okflag = (tcp->SendData(_queued_data) == _queued_data.size());
 
   _queued_data = string();
   _queued_count = 0;
   _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
 
-  PR_Unlock(_write_mutex);
-
-  return check_send_error(result, errcode, bytes_to_send);
+  return check_send_error(okflag);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Connection::check_send_error
 //       Access: Private
-//  Description: Checks the return value of a PR_Send() or PR_SendTo()
+//  Description: Checks the return value of a Send() or SendTo()
 //               call.
 ////////////////////////////////////////////////////////////////////
 bool Connection::
-check_send_error(PRInt32 result, PRErrorCode errcode, PRInt32 bytes_to_send) {
-  if (result < 0) {
-    if (errcode == PR_CONNECT_RESET_ERROR
-#ifdef PR_SOCKET_SHUTDOWN_ERROR
-        || errcode == PR_SOCKET_SHUTDOWN_ERROR
-        || errcode == PR_CONNECT_ABORTED_ERROR
-#endif
-        ) {
-      // The connection has been reset; tell our manager about it
-      // and ignore it.
-      if (_manager != (ConnectionManager *)NULL) {
-        _manager->connection_reset(this, errcode);
-      }
-
-    } else if (errcode != PR_PENDING_INTERRUPT_ERROR) {
-      pprerror("PR_SendTo");
+check_send_error(bool okflag) {
+  if (!okflag) {
+    // Assume any error means the connection has been reset; tell
+    // our manager about it and ignore it.
+    if (_manager != (ConnectionManager *)NULL) {
+      _manager->connection_reset(this, okflag);
     }
-
-    return false;
-
-  } else if (result != bytes_to_send) {
-    net_cat.error() << "Not enough bytes sent to socket.\n";
     return false;
   }
 

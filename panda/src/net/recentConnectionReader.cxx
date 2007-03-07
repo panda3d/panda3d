@@ -18,6 +18,7 @@
 
 #include "recentConnectionReader.h"
 #include "config_net.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RecentConnectionReader::Constructor
@@ -33,7 +34,6 @@ RecentConnectionReader(ConnectionManager *manager) :
   // this should be impossible, because we can't receive datagrams
   // before we call add_connection().
   _available = false;
-  _mutex = PR_NewLock();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,8 +46,6 @@ RecentConnectionReader::
   // We call shutdown() here to guarantee that all threads are gone
   // before the RecentConnectionReader destructs.
   shutdown();
-
-  PR_DestroyLock(_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,16 +74,14 @@ data_available() {
 ////////////////////////////////////////////////////////////////////
 bool RecentConnectionReader::
 get_data(NetDatagram &result) {
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   if (!_available) {
     // Huh.  Nothing after all.
-    PR_Unlock(_mutex);
     return false;
   }
 
   result = _datagram;
   _available = false;
-  PR_Unlock(_mutex);
   return true;
 }
 
@@ -125,8 +121,7 @@ receive_datagram(const NetDatagram &datagram) {
       << " bytes\n";
   }
 
-  PR_Lock(_mutex);
+  MutexHolder holder(_mutex);
   _datagram = datagram;
   _available = true;
-  PR_Unlock(_mutex);
 }

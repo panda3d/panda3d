@@ -18,6 +18,7 @@
 
 #include "datagramQueue.h"
 #include "config_net.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramQueue::Constructor
@@ -25,10 +26,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DatagramQueue::
-DatagramQueue() {
+DatagramQueue() : _cv(_cvlock) {
   _shutdown = false;
-  _cvlock = PR_NewLock();
-  _cv = PR_NewCondVar(_cvlock);
   _max_queue_size = get_net_max_write_queue();
 }
 
@@ -42,9 +41,6 @@ DatagramQueue::
   // It's an error to delete a DatagramQueue without first shutting it
   // down (and waiting for any associated threads to terminate).
   nassertv(_shutdown);
-
-  PR_DestroyCondVar(_cv);
-  PR_DestroyLock(_cvlock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,10 +57,10 @@ void DatagramQueue::
 shutdown() {
   // Notify all of our threads that we're shutting down.  This will
   // cause any thread blocking on extract() to return false.
-  PR_Lock(_cvlock);
+  MutexHolder holder(_cvlock);
+
   _shutdown = true;
-  PR_NotifyAllCondVar(_cv);
-  PR_Unlock(_cvlock);
+  _cv.signal_all();
 }
 
 
@@ -79,17 +75,14 @@ shutdown() {
 ////////////////////////////////////////////////////////////////////
 bool DatagramQueue::
 insert(const NetDatagram &data) {
-  PR_Lock(_cvlock);
+  MutexHolder holder(_cvlock);
+
   bool enqueue_ok = ((int)_queue.size() < _max_queue_size);
   if (enqueue_ok) {
-#ifdef __ICL
-    _queue.push_back(new NetDatagram(data));
-#else
     _queue.push_back(data);
-#endif
   }
-  PR_NotifyCondVar(_cv);
-  PR_Unlock(_cvlock);
+  _cv.signal();
+
   return enqueue_ok;
 }
 
@@ -118,27 +111,20 @@ extract(NetDatagram &result) {
   // connection pointer--we're about to go to sleep for a while.
   result.clear();
 
-  PR_Lock(_cvlock);
+  MutexHolder holder(_cvlock);
+
   while (_queue.empty() && !_shutdown) {
-    PR_WaitCondVar(_cv, PR_INTERVAL_NO_TIMEOUT);
+    _cv.wait();
   }
 
   if (_shutdown) {
-    PR_Unlock(_cvlock);
     return false;
   }
 
   nassertr(!_queue.empty(), false);
-#ifdef __ICL
-  NetDatagram *ptr = _queue.front();
-  result = *ptr;
-  delete ptr;
-#else
   result = _queue.front();
-#endif
   _queue.pop_front();
 
-  PR_Unlock(_cvlock);
   return true;
 }
 
@@ -156,9 +142,8 @@ extract(NetDatagram &result) {
 ////////////////////////////////////////////////////////////////////
 void DatagramQueue::
 set_max_queue_size(int max_size) {
-  PR_Lock(_cvlock);
+  MutexHolder holder(_cvlock);
   _max_queue_size = max_size;
-  PR_Unlock(_cvlock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,8 +164,7 @@ get_max_queue_size() const {
 ////////////////////////////////////////////////////////////////////
 int DatagramQueue::
 get_current_queue_size() const {
-  PR_Lock(_cvlock);
+  MutexHolder holder(_cvlock);
   int size = _queue.size();
-  PR_Unlock(_cvlock);
   return size;
 }

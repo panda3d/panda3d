@@ -20,13 +20,10 @@
 #define CONNECTIONWRITER_H
 
 #include "pandabase.h"
-
 #include "datagramQueue.h"
 #include "connection.h"
-
 #include "pointerTo.h"
-
-#include <prthread.h>
+#include "thread.h"
 #include "pvector.h"
 
 class ConnectionManager;
@@ -38,7 +35,7 @@ class NetAddress;
 //               various TCP or UDP sockets.
 //
 //               A ConnectionWriter may define an arbitrary number of
-//               threads (at least one) to write its datagrams to
+//               threads (0 or more) to write its datagrams to
 //               sockets.  The number of threads is specified at
 //               construction time and cannot be changed.
 ////////////////////////////////////////////////////////////////////
@@ -70,8 +67,7 @@ protected:
   void clear_manager();
 
 private:
-  static void thread_start(void *data);
-  void thread_run();
+  void thread_run(int thread_index);
   bool send_datagram(const NetDatagram &datagram);
 
 protected:
@@ -82,11 +78,22 @@ private:
   int _tcp_header_size;
   DatagramQueue _queue;
 
-  typedef pvector<PRThread *> Threads;
+  class WriterThread : public Thread {
+  public:
+    WriterThread(ConnectionWriter *writer, int thread_index);
+    virtual void thread_main();
+
+    ConnectionWriter *_writer;
+    int _thread_index;
+  };
+
+  typedef pvector< PT(WriterThread) > Threads;
   Threads _threads;
+
   bool _immediate;
 
-friend class ConnectionManager;
+  friend class ConnectionManager;
+  friend class WriterThread;
 };
 
 #endif

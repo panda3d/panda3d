@@ -1,5 +1,5 @@
-// Filename: atomicAdjustNsprImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: buffered_datagramconnection.cxx
+// Created by:  drose (05Mar07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
+#include "buffered_datagramconnection.h"
 
-#ifdef HAVE_NSPR
-
-#include "atomicAdjustNsprImpl.h"
-
-PRLock *AtomicAdjustNsprImpl::_mutex = PR_NewLock();
-
-#endif  // HAVE_NSPR
+TypeHandle Buffered_DatagramConnection::_type_handle;

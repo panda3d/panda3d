@@ -1,6 +1,11 @@
 #ifndef __SOCKET_IP_H__
 #define __SOCKET_IP_H__
 
+#include "pandabase.h"
+#include "socket_portable.h"
+#include "socket_address.h"
+#include "typedObject.h"
+
 // forward declarations for friends...
 class Socket_TCP;
 class Socket_UDP;
@@ -26,8 +31,7 @@ class Socket_UDP_Outgoing;
 // socket_fdset
 //
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_IP
-{
+class EXPCL_PANDA Socket_IP : public TypedObject {
 public:
 PUBLISHED:
 
@@ -39,7 +43,7 @@ PUBLISHED:
     inline static int GetLastError();
     inline int SetNonBlocking();
     inline int SetBlocking();
-    inline bool SetReuseAddress();
+    inline bool SetReuseAddress(bool flag = true);
     inline bool Active();
     inline int SetRecvBufferSize(int size);
     inline void SetSocket(SOCKET ins);
@@ -62,6 +66,23 @@ private:
     friend class Socket_UDP_Incoming;
     friend class Socket_UDP_Outgoing;
     friend class Socket_TCP_SSL;
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    register_type(_type_handle, "Socket_IP",
+                  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -204,9 +225,9 @@ inline int Socket_IP::SetBlocking()
 // Function name :  SetReuseAddress
 // Description     :  Informs a socket to reuse IP address as needed
 ////////////////////////////////////////////////////////////////////
-inline bool Socket_IP::SetReuseAddress()
+inline bool Socket_IP::SetReuseAddress(bool flag)
 {
-    int bOption = 1;
+    int bOption = flag;
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, (const char *)&bOption, sizeof(bOption)) != 0)
         return false;
     return true;

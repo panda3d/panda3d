@@ -1,5 +1,4 @@
 #include "mutexDummyImpl.cxx"
-#include "mutexNsprImpl.cxx"
 #include "mutexLinuxImpl.cxx"
 #include "mutexPosixImpl.cxx"
 #include "mutexWin32Impl.cxx"

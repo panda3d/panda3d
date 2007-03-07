@@ -70,7 +70,7 @@ public:
 
 protected:
   virtual void connection_reset(const PT(Connection) &connection, 
-                                PRErrorCode errcode);
+                                bool okflag);
 
 private:
   void user_guide_bars_changed();

@@ -1,6 +1,9 @@
 #ifndef __SOCKET_TCP_H__
 #define __SOCKET_TCP_H__ 
 
+#include "pandabase.h"
+#include "socket_ip.h"
+
 /////////////////////////////////////////////////////////////////////
 // Class : Socket_TCP
 //
@@ -15,7 +18,7 @@ public:
 PUBLISHED:
     inline Socket_TCP(SOCKET);
     inline Socket_TCP()    {   };    
-    inline int  SetNoDelay();
+    inline int  SetNoDelay(bool flag = true);
     inline int  SetLinger(int interval_seconds = 0);
     inline int  DontLinger();    
     inline int  SetSendBufferSize(int insize);
@@ -30,6 +33,23 @@ PUBLISHED:
 public:
     inline int  SendData(const char * data, int size);
     inline int  RecvData(char * data, int size);
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    Socket_IP::init_type();
+    register_type(_type_handle, "Socket_TCP",
+                  Socket_IP::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 //////////////////////////////////////////////////////////////
@@ -44,9 +64,9 @@ inline Socket_TCP::Socket_TCP(SOCKET sck) : ::Socket_IP(sck)
 // Function name : SetNoDelay
 // Description   : Disable Nagle algorithm. Don't delay send to coalesce packets
 ////////////////////////////////////////////////////////////////////
-inline int Socket_TCP::SetNoDelay()
+inline int Socket_TCP::SetNoDelay(bool flag)
 {
-    int nodel = 1;
+    int nodel = flag;
     int ret1;
     ret1 = setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, (char *) & nodel, sizeof(nodel));
     

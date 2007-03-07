@@ -11,11 +11,6 @@
 
 #print
 #print Configuring support for the following optional third-party packages:
-#if $[HAVE_NSPR]
-#print + NSPR
-#else
-#print - Did not find NSPR
-#endif
 #if $[HAVE_OPENSSL]
 #print + OpenSSL
 #else
@@ -180,9 +175,6 @@ $[cdefine MAYA_PRE_5_0]
 
 /* Define if we have SoftImage available. */
 $[cdefine HAVE_SOFTIMAGE]
-
-/* Define if we have NSPR installed.  */
-$[cdefine HAVE_NSPR]
 
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_OPENSSL]

@@ -27,8 +27,8 @@
 #include "netDatagram.h"
 
 #include "datagram_ui.h"
-
-#include <prinrval.h>
+#include "clockObject.h"
+#include "thread.h"
 
 #include "pset.h"
 #include <sys/time.h>
@@ -65,8 +65,10 @@ main(int argc, char *argv[]) {
 
   int num_sent = 0;
   int num_received = 0;
-  PRIntervalTime last_reported_time = PR_IntervalNow();
-  PRIntervalTime report_interval = PR_SecondsToInterval(5);
+
+  ClockObject *global_clock = ClockObject::get_global_clock();
+  double last_reported_time = global_clock->get_real_time();
+  static const double report_interval = 5.0;
 
   bool shutdown = false;
   while (!shutdown) {
@@ -107,15 +109,15 @@ main(int argc, char *argv[]) {
       }
     }
 
-    PRIntervalTime now = PR_IntervalNow();
-    if ((PRIntervalTime)(now - last_reported_time) > report_interval) {
+    double now = global_clock->get_real_time();
+    if ((now - last_reported_time) > report_interval) {
       nout << "Sent " << num_sent << ", received "
            << num_received << " datagrams.\n";
       last_reported_time = now;
     }
 
     // Yield the timeslice before we poll again.
-    //    PR_Sleep(PR_MillisecondsToInterval(1));
+    Thread::sleep(0.001);
   }
 
   return (0);

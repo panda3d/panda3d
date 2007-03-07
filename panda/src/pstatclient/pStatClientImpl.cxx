@@ -458,9 +458,14 @@ handle_server_control_message(const PStatServerControlMessage &message) {
 //               has been lost.
 ////////////////////////////////////////////////////////////////////
 void PStatClientImpl::
-connection_reset(const PT(Connection) &connection, PRErrorCode) {
+connection_reset(const PT(Connection) &connection, bool) {
   if (connection == _tcp_connection) {
     _client->client_disconnect();
+  } else if (connection == _udp_connection) {
+    pstats_cat.warning()
+      << "Trouble sending UDP; switching to TCP only.\n";
+    _tcp_count_factor = 0.0f;
+    _udp_count_factor = 1.0f;
   } else {
     pstats_cat.warning()
       << "Ignoring spurious connection_reset() message\n";

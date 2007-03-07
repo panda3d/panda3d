@@ -22,11 +22,9 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "netAddress.h"
+#include "pmutex.h"
 
-#include <prio.h>
-#include <prlock.h>
-#include <prerror.h>
-
+class Socket_IP;
 class ConnectionManager;
 class NetDatagram;
 
@@ -37,13 +35,13 @@ class NetDatagram;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Connection : public ReferenceCount {
 PUBLISHED:
-  Connection(ConnectionManager *manager, PRFileDesc *socket);
+  Connection(ConnectionManager *manager, Socket_IP *socket);
   ~Connection();
 
   NetAddress get_address() const;
   ConnectionManager *get_manager() const;
 
-  PRFileDesc *get_socket() const;
+  Socket_IP *get_socket() const;
 
   void set_collect_tcp(bool collect_tcp);
   bool get_collect_tcp() const;
@@ -69,11 +67,11 @@ private:
   bool send_datagram(const NetDatagram &datagram, int tcp_header_size);
   bool send_raw_datagram(const NetDatagram &datagram);
   bool do_flush();
-  bool check_send_error(PRInt32 result, PRErrorCode errcode, PRInt32 bytes_to_send);
+  bool check_send_error(bool okflag);
 
   ConnectionManager *_manager;
-  PRFileDesc *_socket;
-  PRLock *_write_mutex;
+  Socket_IP *_socket;
+  Mutex _write_mutex;
 
   bool _collect_tcp;
   double _collect_tcp_interval;

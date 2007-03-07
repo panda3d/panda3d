@@ -97,12 +97,12 @@
   #define python_framework $[PYTHON_FRAMEWORK]
 #endif
 
-#if $[HAVE_NSPR]
-  #define nspr_ipath $[wildcard $[NSPR_IPATH]]
-  #define nspr_lpath $[wildcard $[NSPR_LPATH]]
-  #define nspr_cflags $[NSPR_CFLAGS]
-  #define nspr_libs $[NSPR_LIBS]
-  #define nspr_framework $[NSPR_FRAMEWORK]
+#if $[HAVE_THREADS]
+  #define threads_ipath $[wildcard $[THREADS_IPATH]]
+  #define threads_lpath $[wildcard $[THREADS_LPATH]]
+  #define threads_cflags $[THREADS_CFLAGS]
+  #define threads_libs $[THREADS_LIBS]
+  #define threads_framework $[THREADS_FRAMEWORK]
 #endif
 
 #if $[HAVE_OPENSSL]
@@ -458,8 +458,8 @@
 // on the various external packages this particular target claims to
 // require.
 #defun get_cflags
-  // hack to add stl,nspr,python.  should be removed
-  #define alt_cflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_cflags] $[nspr_cflags] $[python_cflags]]
+  // hack to add stl,python.  should be removed
+  #define alt_cflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_cflags] $[python_cflags]]
 
   #foreach package $[use_packages]
     #set alt_cflags $[alt_cflags] $[$[package]_cflags]
@@ -472,8 +472,8 @@
 // on the various external packages this particular target claims to
 // require.
 #defun get_lflags
-  // hack to add stl,nspr,python.  should be removed
-  #define alt_lflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lflags] $[nspr_lflags] $[python_lflags]]
+  // hack to add stl,python.  should be removed
+  #define alt_lflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lflags] $[python_lflags]]
 
   #foreach package $[use_packages]
     #set alt_lflags $[alt_lflags] $[$[package]_lflags]
@@ -487,8 +487,8 @@
 // claims to require.  This returns a space-separated set of directory
 // names only; the -I switch is not included here.
 #defun get_ipath
-  // hack to add stl,nspr,python.  should be removed
-  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[nspr_ipath] $[python_ipath]]
+  // hack to add stl,python.  should be removed
+  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[python_ipath]]
 
   #foreach package $[use_packages]
     #set alt_ipath $[alt_ipath] $[$[package]_ipath]
@@ -502,7 +502,7 @@
 // target claims to require.  This returns a space-separated set of
 // directory names only; the -L switch is not included here.
 #defun get_lpath
-  #define alt_lpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lpath] $[nspr_lpath] $[python_lpath]]
+  #define alt_lpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lpath] $[python_lpath]]
 
   #if $[WINDOWS_PLATFORM]
     #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath]
@@ -520,7 +520,7 @@
 // target claims to require.  This returns a space-separated set of
 // directory names only; the -F switch is not included here.
 #defun get_fpath
-  #define alt_fpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_fpath] $[nspr_fpath] $[python_fpath]]
+  #define alt_fpath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_fpath] $[python_fpath]]
 
   #foreach package $[use_packages]
     #set alt_fpath $[alt_fpath] $[$[package]_fpath]
@@ -534,7 +534,7 @@
 // target claims to require.  This returns a space-separated set of
 // framework names only; the -framework switch is not included here.
 #defun get_frameworks
-  #define alt_frameworks $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_framework] $[nspr_framework] $[python_framework]]
+  #define alt_frameworks $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_framework] $[python_framework]]
 
   #if $[OSX_PLATFORM]
     #set alt_frameworks $[alt_frameworks] $[OSX_SYS_FRAMEWORKS]
@@ -553,7 +553,7 @@
 // space-separated set of library names only; the -l switch is not
 // included here.
 #defun get_libs
-  #define alt_libs $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_libs] $[nspr_libs] $[python_libs]]
+  #define alt_libs $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_libs] $[python_libs]]
 
   #define alt_libs $[alt_libs] $[EXTRA_LIBS]
 

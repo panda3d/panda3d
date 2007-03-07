@@ -24,15 +24,15 @@
 #include "connection.h"
 
 #include "pointerTo.h"
-
-#include <prio.h>
-#include <prthread.h>
-#include <prlock.h>
+#include "pmutex.h"
 #include "pvector.h"
 #include "pset.h"
+#include "socket_fdset.h"
 
 class NetDatagram;
 class ConnectionManager;
+class Socket_Address;
+class Socket_IP;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConnectionReader
@@ -72,9 +72,9 @@ PUBLISHED:
   ConnectionReader(ConnectionManager *manager, int num_threads);
   virtual ~ConnectionReader();
 
-  bool add_connection(const PT(Connection) &connection);
-  bool remove_connection(const PT(Connection) &connection);
-  bool is_connection_ok(const PT(Connection) &connection);
+  bool add_connection(Connection *connection);
+  bool remove_connection(Connection *connection);
+  bool is_connection_ok(Connection *connection);
 
   void poll();
 
@@ -95,7 +95,7 @@ protected:
   public:
     SocketInfo(const PT(Connection) &connection);
     bool is_udp() const;
-    PRFileDesc *get_socket() const;
+    Socket_IP *get_socket() const;
 
     PT(Connection) _connection;
     bool _busy;
@@ -113,13 +113,12 @@ protected:
   virtual void process_raw_incoming_tcp_data(SocketInfo *sinfo);
 
 private:
-  static void thread_start(void *data);
-  void thread_run();
+  void thread_run(int thread_index);
 
-  SocketInfo *get_next_available_socket(PRIntervalTime timeout,
-                                        PRInt32 current_thread_index);
+  SocketInfo *get_next_available_socket(bool allow_block, 
+                                        int current_thread_index);
 
-  void rebuild_poll_list();
+  void rebuild_select_list();
 
 protected:
   ConnectionManager *_manager;
@@ -129,27 +128,34 @@ private:
   int _tcp_header_size;
   bool _shutdown;
 
-  typedef pvector<PRThread *> Threads;
+  class ReaderThread : public Thread {
+  public:
+    ReaderThread(ConnectionReader *reader, int thread_index);
+    virtual void thread_main();
+
+    ConnectionReader *_reader;
+    int _thread_index;
+  };
+
+  typedef pvector< PT(ReaderThread) > Threads;
   Threads _threads;
-  PRLock *_startup_mutex;
   bool _polling;
 
-  // These structures are used to manage polling for noise on
+  // These structures are used to manage selecting for noise on
   // available sockets.
-  typedef pvector<PRPollDesc> Poll;
+  Socket_fdset _fdset;
   typedef pvector<SocketInfo *> Sockets;
-  Poll _poll;
-  Sockets _polled_sockets;
+  Sockets _selecting_sockets;
   int _next_index;
   int _num_results;
   // Threads go to sleep on this mutex waiting for their chance to
   // read a socket.
-  PRLock *_select_mutex;
+  Mutex _select_mutex;
 
   // This is atomically updated with the index (in _threads) of the
   // thread that is currently waiting on the PR_Poll() call.  It
   // contains -1 if no thread is so waiting.
-  PRInt32 _currently_polling_thread;
+  PN_int32 _currently_polling_thread;
 
   // These structures track the total set of sockets (connections) we
   // know about.
@@ -157,14 +163,12 @@ private:
   // This is the list of recently-removed sockets.  We can't actually
   // delete them until they're no longer _busy.
   Sockets _removed_sockets;
-  // Threads may set this true to force the polling thread to rebuild
-  // its Poll() list.
-  bool _reexamine_sockets;
   // Any operations on _sockets are protected by this mutex.
-  PRLock *_sockets_mutex;
+  Mutex _sockets_mutex;
 
 
-friend class ConnectionManager;
+  friend class ConnectionManager;
+  friend class ReaderThread;
 };
 
 #endif

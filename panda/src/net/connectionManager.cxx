@@ -21,10 +21,8 @@
 #include "connectionReader.h"
 #include "connectionWriter.h"
 #include "netAddress.h"
-#include "pprerror.h"
 #include "config_net.h"
-
-#include <prerror.h>
+#include "mutexHolder.h"
 
 #ifdef WIN32_VC
 #include <winsock.h>  // For gethostname()
@@ -37,7 +35,6 @@
 ////////////////////////////////////////////////////////////////////
 ConnectionManager::
 ConnectionManager() {
-  _set_mutex = PR_NewLock();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,8 +53,6 @@ ConnectionManager::
   for (wi = _writers.begin(); wi != _writers.end(); ++wi) {
     (*wi)->clear_manager();
   }
-
-  PR_DestroyLock(_set_mutex);
 }
 
 
@@ -65,41 +60,42 @@ ConnectionManager::
 //     Function: ConnectionManager::open_UDP_connection
 //       Access: Public
 //  Description: Opens a socket for sending and/or receiving UDP
-//               packets.  If the port number is negative, it will not
-//               be bound to a socket; this is generally a pointless
-//               thing to do.  If the port number is zero, a random
-//               socket will be chosen.  Otherwise, the specified
-//               port number is used.  Normally, you don't care what
-//               port a UDP connection is opened on, so you should use
-//               the default value of zero.
+//               packets.  If the port number is greater than zero,
+//               the UDP connection will be opened for listening on
+//               the indicated port; otherwise, it will be useful only
+//               for sending.
 //
 //               Use a ConnectionReader and ConnectionWriter to handle
 //               the actual communication.
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_UDP_connection(int port) {
-  NetAddress address;
-  address.set_any(port);
+  Socket_UDP *socket = new Socket_UDP;
 
-  PRFileDesc *socket = PR_NewUDPSocket();
-  if (socket == (PRFileDesc *)NULL) {
-    pprerror("PR_NewUDPSocket");
-    return PT(Connection)();
-  }
-
-  if (port >= 0) {
-    PRStatus result = PR_Bind(socket, address.get_addr());
-    if (result != PR_SUCCESS) {
-      pprerror("PR_Bind");
-      PR_Close(socket);
+  if (port > 0) {
+    NetAddress address;
+    address.set_any(port);
+    
+    if (!socket->OpenForInput(address.get_addr())) {
+      net_cat.error()
+        << "Unable to bind to port " << port << " for UDP.\n";
+      delete socket;
       return PT(Connection)();
     }
 
     net_cat.info()
       << "Creating UDP connection for port " << port << "\n";
+
   } else {
+    if (!socket->InitNoAddress()) {
+      net_cat.error()
+        << "Unable to initialize outgoing UDP.\n";
+      delete socket;
+      return PT(Connection)();
+    }
+
     net_cat.info()
-      << "Creating UDP connection\n";
+      << "Creating outgoing UDP connection\n";
   }
 
   PT(Connection) connection = new Connection(this, socket);
@@ -125,27 +121,12 @@ open_TCP_server_rendezvous(int port, int backlog) {
   NetAddress address;
   address.set_any(port);
 
-  PRFileDesc *socket = PR_NewTCPSocket();
-  if (socket == (PRFileDesc *)NULL) {
-    pprerror("PR_NewTCPSocket");
-    return PT(Connection)();
-  }
-
-  PRStatus result = PR_Bind(socket, address.get_addr());
-  if (result != PR_SUCCESS) {
-    pprerror("PR_Bind");
-    net_cat.info()
-      << "Unable to bind to port " << port << " for TCP.\n";
-    PR_Close(socket);
-    return PT(Connection)();
-  }
-
-  result = PR_Listen(socket, backlog);
-  if (result != PR_SUCCESS) {
-    pprerror("PR_Listen");
+  Socket_TCP_Listen *socket = new Socket_TCP_Listen;
+  bool okflag = socket->OpenForListen(address.get_addr(), backlog);
+  if (!okflag) {
     net_cat.info()
       << "Unable to listen to port " << port << " for TCP.\n";
-    PR_Close(socket);
+    delete socket;
     return PT(Connection)();
   }
 
@@ -167,22 +148,13 @@ open_TCP_server_rendezvous(int port, int backlog) {
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
-  PRFileDesc *socket = PR_NewTCPSocket();
-  if (socket == (PRFileDesc *)NULL) {
-    pprerror("PR_NewTCPSocket");
-    return PT(Connection)();
-  }
-
-  PRStatus result = PR_Connect(socket, address.get_addr(),
-                               PR_MillisecondsToInterval(timeout_ms));
-  if (result != PR_SUCCESS) {
-    if (PR_GetError() != PR_CONNECT_RESET_ERROR) {
-      pprerror("PR_Connect");
-    }
-    net_cat.info()
+  Socket_TCP *socket = new Socket_TCP;
+  bool okflag = socket->ActiveOpen(address.get_addr());
+  if (!okflag) {
+    net_cat.error()
       << "Unable to open TCP connection to server "
       << address.get_ip_string() << " on port " << address.get_port() << "\n";
-    PR_Close(socket);
+    delete socket;
     return PT(Connection)();
   }
 
@@ -199,7 +171,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 //     Function: ConnectionManager::open_TCP_client_connection
 //       Access: Public
 //  Description: This is a shorthand version of the function to
-//               directly establish communcations to a named host and
+//               directly establish communications to a named host and
 //               port.
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
@@ -238,41 +210,32 @@ close_connection(const PT(Connection) &connection) {
     connection->flush();
   }
 
-  PR_Lock(_set_mutex);
-  Connections::iterator ci = _connections.find(connection);
-  if (ci == _connections.end()) {
-    // Already closed, or not part of this ConnectionManager.
-    PR_Unlock(_set_mutex);
-    return false;
-  }
-  _connections.erase(ci);
-
-  Readers::iterator ri;
-  for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
-    (*ri)->remove_connection(connection);
-  }
-  PR_Unlock(_set_mutex);
-
-  PRFileDesc *socket = connection->get_socket();
-
-  if (PR_GetDescType(socket) == PR_DESC_SOCKET_TCP) {
-    // We can't *actually* close the connection right now, because
-    // there might be outstanding pointers to it.  But we can at least
-    // shut it down.  It will be eventually closed when all the
-    // pointers let go.
-
-    net_cat.info()
-      << "Shutting down connection " << (void *)connection
-      << " locally.\n";
-
-    PRStatus result = PR_Shutdown(socket, PR_SHUTDOWN_BOTH);
-    if (result != PR_SUCCESS) {
-      PRErrorCode errcode = PR_GetError();
-      if (errcode != PR_NOT_CONNECTED_ERROR) {
-        pprerror("PR_Shutdown");
-      }
+  {
+    MutexHolder holder(_set_mutex);
+    Connections::iterator ci = _connections.find(connection);
+    if (ci == _connections.end()) {
+      // Already closed, or not part of this ConnectionManager.
+      return false;
+    }
+    _connections.erase(ci);
+    
+    Readers::iterator ri;
+    for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
+      (*ri)->remove_connection(connection);
     }
   }
+
+  Socket_IP *socket = connection->get_socket();
+
+  // We can't *actually* close the connection right now, because
+  // there might be outstanding pointers to it.  But we can at least
+  // shut it down.  It will be eventually closed when all the
+  // pointers let go.
+  
+  net_cat.info()
+    << "Shutting down connection " << (void *)connection
+    << " locally.\n";
+  socket->Close();
 
   return true;
 }
@@ -305,9 +268,8 @@ get_host_name() {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 new_connection(const PT(Connection) &connection) {
-  PR_Lock(_set_mutex);
+  MutexHolder holder(_set_mutex);
   _connections.insert(connection);
-  PR_Unlock(_set_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,9 +282,9 @@ new_connection(const PT(Connection) &connection) {
 //               been reset.
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
-connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
+connection_reset(const PT(Connection) &connection, bool okflag) {
   if (net_cat.is_info()) {
-    if (errcode == 0) {
+    if (okflag) {
       net_cat.info()
         << "Connection " << (void *)connection
         << " was closed normally by the other end";
@@ -330,33 +292,8 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
     } else {
       net_cat.info()
         << "Lost connection " << (void *)connection
-        << " unexpectedly: ";
-
-      switch (errcode) {
-      case PR_CONNECT_RESET_ERROR:
-        net_cat.info(false)
-          << "connection reset";
-        break;
-        
-#ifdef PR_SOCKET_SHUTDOWN_ERROR
-      case PR_SOCKET_SHUTDOWN_ERROR:
-        net_cat.info(false)
-          << "socket shutdown";
-        break;
-        
-      case PR_CONNECT_ABORTED_ERROR:
-        net_cat.info(false)
-          << "connection aborted";
-        break;
-#endif
-
-      default:
-        net_cat.info(false)
-          << "NSPR error code " << errcode;
-      }
+        << " unexpectedly\n";
     }
-    net_cat.info(false)
-      << " (os error = " << PR_GetOSError() << ").\n";
   }
 
   // Turns out we do need to explicitly mark the connection as closed
@@ -374,9 +311,8 @@ connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 add_reader(ConnectionReader *reader) {
-  PR_Lock(_set_mutex);
+  MutexHolder holder(_set_mutex);
   _readers.insert(reader);
-  PR_Unlock(_set_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,9 +323,8 @@ add_reader(ConnectionReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 remove_reader(ConnectionReader *reader) {
-  PR_Lock(_set_mutex);
+  MutexHolder holder(_set_mutex);
   _readers.erase(reader);
-  PR_Unlock(_set_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,9 +335,8 @@ remove_reader(ConnectionReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 add_writer(ConnectionWriter *writer) {
-  PR_Lock(_set_mutex);
+  MutexHolder holder(_set_mutex);
   _writers.insert(writer);
-  PR_Unlock(_set_mutex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +347,6 @@ add_writer(ConnectionWriter *writer) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
-  PR_Lock(_set_mutex);
+  MutexHolder holder(_set_mutex);
   _writers.erase(writer);
-  PR_Unlock(_set_mutex);
 }

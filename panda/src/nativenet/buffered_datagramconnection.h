@@ -26,7 +26,7 @@
 //      3. Socket is open and  writable.. ( Fully powered up )...
 //
 ///////////////////////////////////////////////////////////////
-class EXPCL_PANDA Buffered_DatagramConnection : protected Socket_TCP
+class EXPCL_PANDA Buffered_DatagramConnection : public Socket_TCP
 {
 private:
   struct AddressQueue : private pvector<Socket_Address> // this is used to do a round robin for addres to connect to ..
@@ -89,7 +89,24 @@ private:
   friend class Buffered_DatagramReader;
   friend class Buffered_DatagramWriter;
 
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    Socket_IP::init_type();
+    register_type(_type_handle, "Buffered_DatagramConnection",
+                  Socket_IP::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
+
 ////////////////////////////////////////////////////////////////////
 // Function name	: Buffered_DatagramConnection::ClearAll
 // Description	    :  used to do a full reset of buffers

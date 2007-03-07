@@ -17,11 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "netAddress.h"
-#include "pprerror.h"
 #include "config_net.h"
-
-#include <prio.h>
-#include <prnetdb.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -31,19 +27,18 @@
 ////////////////////////////////////////////////////////////////////
 NetAddress::
 NetAddress() {
-  PR_InitializeNetAddr(PR_IpAddrLoopback, 0, &_addr);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::Constructor
 //       Access: Public
-//  Description: Constructs an address from a given PRNetAddr.
+//  Description: Constructs an address from a given Socket_Address.
 //               Normally, this constructor should not be used by user
 //               code; instead, create a default NetAddress and use
 //               one of the set_*() functions to set up an address.
 ////////////////////////////////////////////////////////////////////
 NetAddress::
-NetAddress(const PRNetAddr &addr) : _addr(addr) {
+NetAddress(const Socket_Address &addr) : _addr(addr) {
 }
 
 
@@ -57,9 +52,7 @@ NetAddress(const PRNetAddr &addr) : _addr(addr) {
 ////////////////////////////////////////////////////////////////////
 bool NetAddress::
 set_any(int port) {
-  PR_InitializeNetAddr(PR_IpAddrAny, port, &_addr);
-
-  return true;
+  return _addr.set_any_IP(port);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,9 +63,7 @@ set_any(int port) {
 ////////////////////////////////////////////////////////////////////
 bool NetAddress::
 set_localhost(int port) {
-  PR_InitializeNetAddr(PR_IpAddrLoopback, port, &_addr);
-
-  return true;
+  return _addr.set_host("127.0.0.1", port);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,90 +75,7 @@ set_localhost(int port) {
 ////////////////////////////////////////////////////////////////////
 bool NetAddress::
 set_host(const string &hostname, int port) {
-  // If the hostname appears to be a dot-separated IPv4 address, then
-  // parse it directly and store it.  Some OS system libraries
-  // (notably Win95) can't parse this themselves.
-  union {
-    PRUint32 l;
-    unsigned char n[4];
-  } ipaddr;
-  int ni = 0;
-  bool is_ip = true;
-  size_t p = 0;
-  size_t q = 0;
-  unsigned int num = 0;
-
-  while (p < hostname.length() && ni < 4 && is_ip) {
-    if (hostname[p] == '.' && p > q) {
-      // Now we have a number between q and p.
-      ipaddr.n[ni] = (unsigned char)num;
-      p++;
-      q = p;
-      num = 0;
-      ni++;
-
-      if (num >= 256 || ni >= 4) {
-        is_ip = false;
-      }
-
-    } else if (isdigit(hostname[p])) {
-      num = 10 * num + (unsigned int)(hostname[p] - '0');
-      p++;
-      if (num >= 256) {
-        is_ip = false;
-      }
-    } else {
-      is_ip = false;
-    }
-  }
-
-  if (p == hostname.length() && ni < 4 && is_ip && p > q) {
-    ipaddr.n[ni] = (unsigned char)num;
-    ni++;
-
-    if (num >= 256) {
-      is_ip = false;
-    }
-  }
-
-  if (p == hostname.length() && ni == 4 && is_ip) {
-    net_cat.debug()
-      << "Parsed IP " << (int)ipaddr.n[0] << "." << (int)ipaddr.n[1]
-      << "." << (int)ipaddr.n[2] << "." << (int)ipaddr.n[3] << "\n";
-
-    memset(&_addr, 0, sizeof(PRNetAddr));
-    _addr.inet.family = PR_AF_INET;
-    _addr.inet.port = PR_htons(port);
-    _addr.inet.ip = ipaddr.l;
-
-  } else {
-    // If it's not a numeric IPv4 address, pass the whole thing on to
-    // GetHostByName and let NSPR deal with it.
-
-    char buf[PR_NETDB_BUF_SIZE];
-    PRHostEnt host;
-    PRStatus result =
-      PR_GetHostByName(hostname.c_str(), buf, PR_NETDB_BUF_SIZE, &host);
-    if (result != PR_SUCCESS) {
-      pprerror("PR_GetHostByName");
-      net_cat.error()
-        << "Unable to look up hostname " << hostname << ".\n";
-      return false;
-    }
-
-    PRIntn next = PR_EnumerateHostEnt(0, &host, port, &_addr);
-
-    if (next == -1) {
-      pprerror("PR_EnumerateHostEnt");
-      return false;
-    } else if (next == 0) {
-      net_cat.error()
-        << "No addresses available for " << hostname << ".\n";
-      return false;
-    }
-  }
-
-  return true;
+  return _addr.set_host(hostname, port);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +85,7 @@ set_host(const string &hostname, int port) {
 ////////////////////////////////////////////////////////////////////
 void NetAddress::
 clear() {
-  PR_InitializeNetAddr(PR_IpAddrLoopback, 0, &_addr);
+  _addr.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +95,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 int NetAddress::
 get_port() const {
-  return PR_ntohs(_addr.inet.port);
+  return _addr.get_port();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +106,7 @@ get_port() const {
 ////////////////////////////////////////////////////////////////////
 void NetAddress::
 set_port(int port) {
-  PR_InitializeNetAddr(PR_IpAddrNull, port, &_addr);
+  _addr.set_port(port);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,17 +117,7 @@ set_port(int port) {
 ////////////////////////////////////////////////////////////////////
 string NetAddress::
 get_ip_string() const {
-  static const int buf_len = 1024;
-  char buf[buf_len];
-
-  PRStatus result =
-    PR_NetAddrToString(&_addr, buf, buf_len);
-  if (result != PR_SUCCESS) {
-    pprerror("PR_NetAddrToString");
-    return "error";
-  }
-
-  return string(buf);
+  return _addr.get_ip();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,7 +128,7 @@ get_ip_string() const {
 ////////////////////////////////////////////////////////////////////
 PN_uint32 NetAddress::
 get_ip() const {
-  return PR_ntohl(_addr.inet.ip);
+  return _addr.GetIPAddressRaw();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,7 +142,8 @@ get_ip() const {
 PN_uint8 NetAddress::
 get_ip_component(int n) const {
   nassertr(n >= 0 && n < 4, 0);
-  const PN_uint8 *ip = (const PN_uint8 *)&_addr.inet.ip;
+  PN_uint32 ip_long = _addr.GetIPAddressRaw();
+  const PN_uint8 *ip = (const PN_uint8 *)&ip_long;
   return ip[n];
 }
 
@@ -252,11 +151,11 @@ get_ip_component(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::get_addr
 //       Access: Public
-//  Description: Returns the PRNetAddr for this address.
+//  Description: Returns the Socket_Address for this address.
 ////////////////////////////////////////////////////////////////////
-PRNetAddr *NetAddress::
+const Socket_Address &NetAddress::
 get_addr() const {
-  return (PRNetAddr *)&_addr;
+  return _addr;
 }
 
 ////////////////////////////////////////////////////////////////////

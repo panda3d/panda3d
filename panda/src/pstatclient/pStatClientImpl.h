@@ -94,7 +94,7 @@ private:
   void handle_server_control_message(const PStatServerControlMessage &message);
 
   virtual void connection_reset(const PT(Connection) &connection, 
-                                PRErrorCode errcode);
+                                bool okflag);
 
   PStatClient *_client;
 

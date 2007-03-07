@@ -3,6 +3,7 @@
 
 #include "pandabase.h"
 #include "numeric_types.h"
+#include "socket_portable.h"
 
 ///////////////////////////////////
 // Class : Socket_Address

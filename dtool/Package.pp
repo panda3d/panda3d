@@ -108,10 +108,12 @@
 #set PYTHON_FRAMEWORK $[unixfilename $[PYTHON_FRAMEWORK]]
 #set HAVE_PYTHON $[HAVE_PYTHON]
 
-#set NSPR_IPATH $[unixfilename $[NSPR_IPATH]]
-#set NSPR_LPATH $[unixfilename $[NSPR_LPATH]]
-#set NSPR_LIBS $[NSPR_LIBS]
-#set HAVE_NSPR $[HAVE_NSPR]
+#set NATIVE_NET_IPATH $[unixfilename $[NATIVE_NET_IPATH]]
+#set NATIVE_NET_LPATH $[unixfilename $[NATIVE_NET_LPATH]]
+#set NATIVE_NET_LIBS $[NATIVE_NET_LIBS]
+#set WANT_NATIVE_NET $[WANT_NATIVE_NET]
+
+#set HAVE_NET $[HAVE_NET]
 
 #set OPENSSL_IPATH $[unixfilename $[OPENSSL_IPATH]]
 #set OPENSSL_LPATH $[unixfilename $[OPENSSL_LPATH]]
@@ -237,11 +239,6 @@
 #set HAVE_THREADS $[HAVE_THREADS]
 #set DEBUG_THREADS $[DEBUG_THREADS]
 #set MUTEX_SPINLOCK $[MUTEX_SPINLOCK]
-
-#set NET_IPATH $[unixfilename $[NET_IPATH]]
-#set NET_LPATH $[unixfilename $[NET_LPATH]]
-#set NET_LIBS $[NET_LIBS]
-#set HAVE_NET $[HAVE_NET]
 
 #set DO_PSTATS $[DO_PSTATS]
 

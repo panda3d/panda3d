@@ -1,4 +1,5 @@
 #define SELECT_TAU select.tau
+#define USE_PACKAGES threads
 
 #begin lib_target
   #define TARGET dtoolbase
@@ -10,7 +11,6 @@
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     cmath.I cmath.h \
@@ -22,7 +22,6 @@
     memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
-    mutexNsprImpl.h mutexNsprImpl.I \
     mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
@@ -44,13 +43,11 @@
     addHash.cxx \
     atomicAdjustDummyImpl.cxx \
     atomicAdjustI386Impl.cxx \
-    atomicAdjustNsprImpl.cxx \
     atomicAdjustPosixImpl.cxx \
     atomicAdjustWin32Impl.cxx \
     dtoolbase.cxx \
     memoryBase.cxx \
     mutexDummyImpl.cxx \
-    mutexNsprImpl.cxx \
     mutexLinuxImpl.cxx \
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
@@ -65,7 +62,6 @@
     atomicAdjust.h \
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I \
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I \
-    atomicAdjustNsprImpl.h atomicAdjustNsprImpl.I \
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     cmath.I cmath.h \
@@ -76,7 +72,6 @@
     memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
-    mutexNsprImpl.h mutexNsprImpl.I \
     mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \

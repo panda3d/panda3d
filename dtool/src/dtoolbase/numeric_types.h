@@ -25,34 +25,7 @@
 // the various numeric types for unsigned and signed numbers of
 // various widths.
 
-// At the present, we use the logic in NSPR to determine this for us.
-// Later (especially for non-NSPR platforms) we'll have to do the work
-// ourselves.
-
-
-#ifdef HAVE_NSPR
-
-#include <prtypes.h>
-
-typedef PRInt8 PN_int8;
-typedef PRInt16 PN_int16;
-typedef PRInt32 PN_int32;
-typedef PRInt64 PN_int64;
-
-typedef PRUint8 PN_uint8;
-typedef PRUint16 PN_uint16;
-typedef PRUint32 PN_uint32;
-typedef PRUint64 PN_uint64;
-
-typedef PRFloat64 PN_float64;
-
-// NSPR doesn't define a float32.
-typedef float PN_float32;
-
-#else // HAVE_NSPR
-
-// Without NSPR, and without any other information, we need some
-// fallback.  For now, we'll just assume a typical environment.
+// For now, we'll just assume a typical 32-bit environment.
 
 typedef signed char PN_int8;
 typedef short PN_int16;
@@ -72,8 +45,6 @@ typedef unsigned long long PN_uint64;
 
 typedef double PN_float64;
 typedef float PN_float32;
-
-#endif  // HAVE_NSPR
 
 #endif
 

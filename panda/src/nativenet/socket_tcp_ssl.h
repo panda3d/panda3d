@@ -1,16 +1,11 @@
 #ifndef __SOCKET_TCP_SSL_H__
 #define __SOCKET_TCP_SSL_H__ 
 
-/////////////////////////////////////////////////////////////////////
-// Class : Socket_TCP
-//
-// Description : Base functionality for a TCP connected socket
-//               This class is pretty useless by itself but it does hide some of the
-//               platform differences from machine to machine
-//
-/////////////////////////////////////////////////////////////////////
 #include "pandabase.h"
+#include "socket_ip.h"
 #include "numeric_types.h"
+
+#ifdef HAVE_OPENSSL
 
 #include <openssl/rsa.h>       /* SSLeay stuff */
 #include <openssl/crypto.h>
@@ -19,9 +14,14 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+/////////////////////////////////////////////////////////////////////
+// Class : Socket_TCP_SSL
+//
+// Description : 
+//
+/////////////////////////////////////////////////////////////////////
 
-
-extern SSL_CTX *global_ssl_ctx;
+extern EXPCL_PANDA SSL_CTX *global_ssl_ctx;
 
 
 struct SSlStartup
@@ -47,7 +47,7 @@ struct SSlStartup
 };
 
 
-class Socket_TCP_SSL : public Socket_IP
+class EXPCL_PANDA Socket_TCP_SSL : public Socket_IP
 {
 public:
     
@@ -84,6 +84,23 @@ private:
                 _ssl = NULL;
             }
         }
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    Socket_IP::init_type();
+    register_type(_type_handle, "Socket_TCP_SSL",
+                  Socket_IP::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 //////////////////////////////////////////////////////////////
@@ -101,7 +118,7 @@ inline Socket_TCP_SSL::Socket_TCP_SSL(SOCKET sck) : ::Socket_IP(sck)
         return;
     SSL_set_fd (_ssl,(int)GetSocket() );
 
-    int err =  SSL_accept(_ssl);
+    SSL_accept(_ssl);
     ERR_clear_error();
 
 //    printf(" Ssl Accept = %d \n",err);
@@ -244,7 +261,9 @@ inline bool Socket_TCP_SSL::ErrorIs_WouldBlocking(int err)
 {
     if(_ssl == NULL || err >= 0)
     {
-   	    LOGWARNING("Socket_TCP_SSL::ErrorIs_WouldBlocking->Called With Error numebr %d or _ssl is NULL",err);
+      nativenet_cat.warning()
+        << "Socket_TCP_SSL::ErrorIs_WouldBlocking->Called With Error number "
+        << err << " or _ssl is NULL\n";
         return false;
     }
 
@@ -296,9 +315,13 @@ inline void Socket_TCP_SSL::DetailErrorFormat(void)
     {
         ERR_error_string_n(l, buf, sizeof( buf) );
         BIO_snprintf(buf2, sizeof(buf2), "***%lu:%s:%s:%d:%s\n", es, buf,file, line, (flags & ERR_TXT_STRING) ? data : "NoText");
-        LOGWARNING("Socket_TCP_SSL::DetailErrorFormat->[%s]",buf2);
+        nativenet_cat.warning()
+          << "Socket_TCP_SSL::DetailErrorFormat->[" << buf2 << "]\n";
     }
 }
+
+#endif  // HAVE_OPENSSL
+
 #endif //__SOCKET_TCP_SSL_H__
 
 

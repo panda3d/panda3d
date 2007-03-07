@@ -22,9 +22,8 @@
 #include "pandabase.h"
 
 #include "netDatagram.h"
-
-#include <prlock.h>
-#include <prcvar.h>
+#include "pmutex.h"
+#include "conditionVarFull.h"
 #include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -47,17 +46,10 @@ public:
   int get_current_queue_size() const;
 
 private:
-  PRLock *_cvlock;
-  PRCondVar *_cv;
+  Mutex _cvlock;
+  ConditionVarFull _cv;
 
-#ifdef __ICL
-  // The Intel compiler for some reason dumps core on a queue of
-  // NetDatagrams.
-  typedef pdeque<NetDatagram *> QueueType;
-#else
   typedef pdeque<NetDatagram> QueueType;
-#endif
-
   QueueType _queue;
   bool _shutdown;
   int _max_queue_size;

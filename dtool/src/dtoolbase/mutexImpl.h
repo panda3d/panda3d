@@ -55,13 +55,6 @@ typedef MutexPosixImpl MutexImpl;
 typedef ReMutexPosixImpl ReMutexImpl;
 #define HAVE_REMUTEXIMPL 1
 
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "mutexNsprImpl.h"
-typedef MutexNsprImpl MutexImpl;
-typedef ReMutexNsprImpl ReMutexImpl;
-#define HAVE_REMUTEXIMPL 1
-
 #endif
 
 #endif

@@ -25,8 +25,6 @@
 #include "queuedReturn.h"
 #include "pdeque.h"
 
-#include <prlock.h>
-
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +51,7 @@ PUBLISHED:
 
 protected:
   virtual void connection_reset(const PT(Connection) &connection, 
-                                PRErrorCode errcode);
+                                bool okflag);
 };
 
 #endif

@@ -24,10 +24,9 @@
 #include "netDatagram.h"
 
 #include "datagramIterator.h"
+#include "numeric_types.h"
 
-#include <prtypes.h>
-
-static const int datagram_udp_header_size = sizeof(PRUint16);
+static const int datagram_udp_header_size = sizeof(PN_uint16);
 
 class NetDatagram;
 

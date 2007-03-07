@@ -1,5 +1,5 @@
-// Filename: pprerror.h
-// Created by:  drose (08Feb00)
+// Filename: socket_tcp_ssl.cxx
+// Created by:  drose (01Mar07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,12 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PPRERROR_H
-#define PPRERROR_H
+#include "socket_tcp_ssl.h"
 
-#include "pandabase.h"
+#ifdef HAVE_OPENSSL
 
-void pprerror(const char *format, ...);
+SSL_CTX *global_ssl_ctx;
+TypeHandle Socket_TCP_SSL::_type_handle;
 
-#endif
-
+#endif  // HAVE_OPENSSL

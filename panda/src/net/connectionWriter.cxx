@@ -19,11 +19,33 @@
 #include "connectionWriter.h"
 #include "connectionManager.h"
 #include "datagramTCPHeader.h"
-#include "pprerror.h"
 #include "config_net.h"
-
+#include "socket_tcp.h"
+#include "socket_udp.h"
 #include "pnotify.h"
-#include <prerror.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::WriterThread::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+ConnectionWriter::WriterThread::
+WriterThread(ConnectionWriter *writer, int thread_index) :
+  Thread("WriterThread", "WriterThread"),
+  _writer(writer),
+  _thread_index(thread_index)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::WriterThread::thread_main
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void ConnectionWriter::WriterThread::
+thread_main() {
+  _writer->thread_run(_thread_index);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::Constructor
@@ -57,17 +79,13 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _tcp_header_size = datagram_tcp16_header_size;
   _immediate = (num_threads <= 0);
 
-  for (int i = 0; i < num_threads; i++) {
-    PRThread *thread =
-      PR_CreateThread(PR_USER_THREAD,
-                      thread_start, (void *)this,
-                      PR_PRIORITY_NORMAL,
-                      PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
-                      PR_JOINABLE_THREAD,
-                      0);  // Select a suitable stack size.
-
-    nassertv(thread != (PRThread *)NULL);
+  int i;
+  for (i = 0; i < num_threads; i++) {
+    PT(WriterThread) thread = new WriterThread(this, i);
     _threads.push_back(thread);
+  }
+  for (i = 0; i < num_threads; i++) {
+    _threads[i]->start(TP_normal, true, true);
   }
 
   _manager->add_writer(this);
@@ -91,16 +109,7 @@ ConnectionWriter::
   // Now wait for all threads to terminate.
   Threads::iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    // Interrupt the thread just in case it was stuck waiting for I/O.
-    PRStatus result = PR_Interrupt(*ti);
-    if (result != PR_SUCCESS) {
-      pprerror("PR_Interrupt");
-    }
-
-    result = PR_JoinThread(*ti);
-    if (result != PR_SUCCESS) {
-      pprerror("PR_JoinThread");
-    }
+    (*ti)->join();
   }
 }
 
@@ -123,7 +132,7 @@ ConnectionWriter::
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection) {
   nassertr(connection != (Connection *)NULL, false);
-  nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_TCP, false);
+  nassertr(connection->get_socket()->is_exact_type(Socket_TCP::get_class_type()), false);
 
   NetDatagram copy(datagram);
   copy.set_connection(connection);
@@ -159,10 +168,9 @@ bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection,
      const NetAddress &address) {
   nassertr(connection != (Connection *)NULL, false);
-  nassertr(PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_UDP, false);
+  nassertr(connection->get_socket()->is_exact_type(Socket_UDP::get_class_type()), false);
 
-  if (PR_GetDescType(connection->get_socket()) == PR_DESC_SOCKET_UDP &&
-      (int)datagram.get_length() > maximum_udp_datagram) {
+  if ((int)datagram.get_length() > maximum_udp_datagram) {
     net_cat.warning()
       << "Attempt to send UDP datagram of " << datagram.get_length()
       << " bytes, more than the\n"
@@ -300,26 +308,13 @@ clear_manager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConnectionWriter::thread_start
-//       Access: Private, Static
-//  Description: The static wrapper around the thread's executing
-//               function.  This must be a static member function
-//               because it is passed through the C interface to
-//               PR_CreateThread().
-////////////////////////////////////////////////////////////////////
-void ConnectionWriter::
-thread_start(void *data) {
-  ((ConnectionWriter *)data)->thread_run();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::thread_run
 //       Access: Private
 //  Description: This is the actual executing function for each
 //               thread.
 ////////////////////////////////////////////////////////////////////
 void ConnectionWriter::
-thread_run() {
+thread_run(int thread_index) {
   nassertv(!_immediate);
 
   NetDatagram datagram;

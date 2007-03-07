@@ -21,8 +21,7 @@
 
 #include "pandabase.h"
 #include "numeric_types.h"
-
-#include <prio.h>
+#include "socket_address.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NetAddress
@@ -32,7 +31,7 @@
 class EXPCL_PANDA NetAddress {
 PUBLISHED:
   NetAddress();
-  NetAddress(const PRNetAddr &addr);
+  NetAddress(const Socket_Address &addr);
 
   bool set_any(int port);
   bool set_localhost(int port);
@@ -46,12 +45,12 @@ PUBLISHED:
   PN_uint32 get_ip() const;
   PN_uint8 get_ip_component(int n) const;
 
-  PRNetAddr *get_addr() const;
+  const Socket_Address &get_addr() const;
 
   void output(ostream &out) const;
 
 private:
-  PRNetAddr _addr;
+  Socket_Address _addr;
 };
 
 INLINE ostream &operator << (ostream &out, const NetAddress &addr) {

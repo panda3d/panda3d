@@ -25,8 +25,6 @@
 #include "connection.h"
 #include "netAddress.h"
 #include "queuedReturn.h"
-
-#include <prlock.h>
 #include "pdeque.h"
 
 

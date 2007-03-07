@@ -20,8 +20,8 @@
 #include "connection.h"
 #include "connectionManager.h"
 #include "netAddress.h"
-#include "pprerror.h"
 #include "config_net.h"
+#include "socket_tcp_listen.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionListener::Constructor
@@ -56,13 +56,15 @@ receive_datagram(const NetDatagram &) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionListener::
 process_incoming_data(SocketInfo *sinfo) {
-  PRNetAddr addr;
+  Socket_TCP_Listen *socket;
+  DCAST_INTO_V(socket, sinfo->get_socket());
 
-  PRFileDesc *socket =
-    PR_Accept(sinfo->get_socket(), &addr, PR_INTERVAL_NO_TIMEOUT);
-
-  if (socket == (PRFileDesc *)NULL) {
-    pprerror("PR_Accept");
+  Socket_Address addr;
+  Socket_TCP *session = new Socket_TCP;
+  if (!socket->GetIncomingConnection(*session, addr)) {
+    net_cat.error()
+      << "Error when accepting new connection.\n";
+    delete session;
 
   } else {
     NetAddress net_addr(addr);
@@ -71,7 +73,7 @@ process_incoming_data(SocketInfo *sinfo) {
       << " on port " << sinfo->_connection->get_address().get_port()
       << "\n";
 
-    PT(Connection) new_connection = new Connection(_manager, socket);
+    PT(Connection) new_connection = new Connection(_manager, session);
     if (_manager != (ConnectionManager *)NULL) {
       _manager->new_connection(new_connection);
     }

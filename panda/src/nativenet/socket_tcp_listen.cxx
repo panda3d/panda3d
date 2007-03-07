@@ -1,5 +1,5 @@
-// Filename: mutexNsprImpl.cxx
-// Created by:  drose (09Aug02)
+// Filename: socket_tcp_listen.cxx
+// Created by:  drose (01Mar07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,10 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
+#include "socket_tcp_listen.h"
 
-#ifdef HAVE_NSPR
-
-#include "mutexNsprImpl.h"
-
-#endif  // HAVE_NSPR
+TypeHandle Socket_TCP_Listen::_type_handle;

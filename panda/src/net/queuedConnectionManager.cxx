@@ -98,8 +98,8 @@ get_reset_connection(PT(Connection) &connection) {
 //               been reset.
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionManager::
-connection_reset(const PT(Connection) &connection, PRErrorCode errcode) {
-  ConnectionManager::connection_reset(connection, errcode);
+connection_reset(const PT(Connection) &connection, bool okflag) {
+  ConnectionManager::connection_reset(connection, okflag);
 
   // Largely, we don't care if this particular queue fills up.  If it
   // does, it probably just means the user isn't bothering to track
