@@ -7,6 +7,7 @@
     pstatclient:c net:c putil:c pipeline:c \
     panda:m \
     pandabase:c express:c pandaexpress:m \
+    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
 
   #define SOURCES \

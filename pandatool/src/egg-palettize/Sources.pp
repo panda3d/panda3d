@@ -3,7 +3,7 @@
   pgraph:c gobj:c lerp:c linmath:c putil:c \
   pnmimage:c pnmimagetypes:c display:c pipeline:c \
   event:c mathutil:c cull:c gsgbase:c pstatclient:c \
-  $[if $[HAVE_NET],net:c] \
+  $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
   panda:m \
   pandabase:c express:c downloader:c pandaexpress:m \
   interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c \

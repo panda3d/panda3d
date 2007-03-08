@@ -12,7 +12,7 @@
     char:c dgraph:c display:c device:c cull:c \
     downloader:c pipeline:c pnmtext:c \
     event:c gsgbase:c lerp:c \
-    $[if $[HAVE_NET],net:c] \
+    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     panda:m \
     pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \

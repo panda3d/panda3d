@@ -6,7 +6,8 @@
   pnmimagetypes:c pnmimage:c pgraph:c gobj:c putil:c \
   lerp:c mathutil:c linmath:c event:c pstatclient:c \
   gsgbase:c grutil:c display:c text:c cull:c pnmtext:c \
-  tform:c device:c $[if $[HAVE_NET],net:c] \
+  tform:c device:c \
+  $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
   panda:m \
   pandabase:c express:c pandaexpress:m \
   interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c \
