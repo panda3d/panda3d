@@ -36,12 +36,14 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyLong_AsLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLongLong(...);
+  EXPCL_DTOOLCONFIG int PyLong_FromLong(...);
   EXPCL_DTOOLCONFIG int PyLong_FromLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLong(...);
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_Type(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
+  EXPCL_DTOOLCONFIG int PyObject_CallMethodObjArgs(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
   EXPCL_DTOOLCONFIG int PyObject_Cmp(...);
   EXPCL_DTOOLCONFIG int PyObject_Free(...);
@@ -119,12 +121,14 @@ int PyList_New(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
+int PyLong_FromLong(...) { return 0; }
 int PyLong_FromLongLong(...) { return 0; }
 int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
+int PyObject_CallMethodObjArgs(...) { return 0; }
 int PyObject_Call(...) { return 0; }
 int PyObject_Cmp(...) { return 0; }
 int PyObject_Free(...) { return 0; }
