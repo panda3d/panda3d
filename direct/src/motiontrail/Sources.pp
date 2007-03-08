@@ -12,7 +12,7 @@
     event:c \
     pstatclient:c \
     pnmimage:c \
-    $[if $[HAVE_NET],net:c] \
+    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     pgraph:c \
     lerp:c \
     panda:m \

@@ -3,7 +3,8 @@
     pstatclient:c pipeline:c panda:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m prc:c pandabase:c \
-    linmath:c putil:c $[if $[HAVE_NET],net:c]
+    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+    linmath:c putil:c
 
 #define LOCAL_LIBS \
     directbase

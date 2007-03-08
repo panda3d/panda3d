@@ -5,7 +5,8 @@
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m \
   prc:c pstatclient:c pandabase:c linmath:c putil:c \
-  pipeline:c $[if $[HAVE_NET],net:c] \
+  pipeline:c \
+  $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
   pystub
 
 #define C++FLAGS -DWITHIN_PANDA
