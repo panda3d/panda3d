@@ -379,7 +379,12 @@ class MetaInterval(CMetaInterval):
         self.__manager.removeInterval(self)
         self.privPostEvent()
 
-
+    def clearToInitial(self):
+        # This is overloaded at the Python level to properly call
+        # pause() at the Python level, then upcall to finish the job
+        # at the C++ level.
+        self.pause()
+        CMetaInterval.clearToInitial(self)
 
     # Internal functions:
 
