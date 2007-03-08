@@ -80,15 +80,15 @@ PUBLISHED:
   INLINE void step_fast1(dReal stepsize, int maxiterations);
 
   INLINE int compare_to(const OdeWorld &other) const;
-  INLINE void init_surface_table(PN_uint8 num_surfaces);
-  INLINE void assign_surface_body(OdeBody& body, int surface);
-  INLINE void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
-                                dReal mu, 
-                                dReal bounce, 
-                                dReal bounce_vel, 
-                                dReal soft_erp,
-                                dReal soft_cfm,
-                                dReal slip);
+  void init_surface_table(PN_uint8 num_surfaces);
+  void assign_surface_body(OdeBody& body, int surface);
+  void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
+                         dReal mu, 
+                         dReal bounce, 
+                         dReal bounce_vel, 
+                         dReal soft_erp,
+                         dReal soft_cfm,
+                         dReal slip);
   
     
 public: 

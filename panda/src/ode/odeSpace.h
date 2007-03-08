@@ -69,8 +69,8 @@ PUBLISHED:
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled();
-  INLINE void set_auto_collide_world(OdeWorld&);
-  INLINE void set_auto_collide_joint_group(OdeJointGroup&);
+  void set_auto_collide_world(OdeWorld&);
+  void set_auto_collide_joint_group(OdeJointGroup&);
 
   void add(OdeGeom& geom);
   void add(OdeSpace& space);
