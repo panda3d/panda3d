@@ -6,11 +6,11 @@ class JobManager:
     """
     Similar to the taskMgr but designed for tasks that are CPU-intensive and/or
     not time-critical. Jobs run one at a time, in order of priority, in
-    the timeslice that the JobManager is allowed to run each frame.
+    the timeslice that the JobManager is allotted each frame.
     """
     notify = directNotify.newCategory("JobManager")
 
-    # there's one main task for the JobManager, all jobs run in this task
+    # there's one task for the JobManager, all jobs run in this task
     TaskName = 'jobManager'
     # run for one millisecond per frame by default
     DefTimeslice = .001
@@ -85,14 +85,24 @@ class JobManager:
             endT = globalClock.getRealTime() + (self._timeslice * .9)
             while True:
                 # always process the highest priority first
+                # TODO: give occasional timeslices to lower priorities to avoid starving
+                # lower-priority jobs
                 jobId2job = self._pri2jobId2job[self._highestPriority]
                 # process jobs with equal priority in the order they came in
                 jobId = self._pri2jobIds[self._highestPriority][-1]
                 job = jobId2job[jobId]
                 gen = job._getGenerator()
+                job.resume()
                 while globalClock.getRealTime() < endT:
-                    result = gen.next()
+                    try:
+                        result = gen.next()
+                    except StopIteration:
+                        # Job didn't yield Job.Done, it ran off the end and returned
+                        # treat it as if it returned Job.Done
+                        self.notify.warning('job %s never yielded Job.Done' % job)
+                        result = Job.Done
                     if result is Job.Done:
+                        job.suspend()
                         self.remove(job)
                         # highest-priority job is done.
                         # grab the next one if there's time left
@@ -100,9 +110,10 @@ class JobManager:
                 else:
                     # we've run out of time
                     assert self.notify.debug('out of time: %s, %s' % (endT, globalClock.getRealTime()))
+                    job.suspend()
                     break
                 
                 if len(self._pri2jobId2job) == 0:
-                    # there's nothing left to do
+                    # there's nothing left to do, all the jobs are done!
                     break
         return task.cont

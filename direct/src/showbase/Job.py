@@ -1,8 +1,11 @@
 class Job:
     # Base class for cpu-intensive or non-time-critical operations that
     # are run through the JobManager.
+
+    # values to yield from your run() generator method
     Done = object()
-    Continue = object()
+    Continue = None # 'yield None' is acceptable in place of 'yield Job.Continue'
+
     Priorities = ScratchPad(Low=-100, Normal=0, High=100)
     _SerialGen = SerialNumGen()
     
@@ -15,16 +18,26 @@ class Job:
         del self._name
         del self._generator
 
+    def run(self):
+        # override and do your processing
+        # yield Job.Continue when possible/reasonable
+        # try not to run longer than the JobManager's timeslice between yields
+        # when done, yield Job.Done
+        raise "don't call down"
+
     def getPriority(self):
         # override if you want a different priority
         # you can use numbers other than those in Job.Priorities
         return Job.Priorities.Normal
 
-    def run(self):
-        # override and yield Job.Continue when possible/reasonable
-        # try not to run longer than the JobManager's timeslice between yields
-        # when done, yield Job.Done
-        raise "don't call down"
+    def suspend(self):
+        # called when JobManager is going to stop running this job for a while
+        # most jobs don't need to override this
+        pass
+    def resume(self):
+        # called when JobManager is going to start running this job again
+        # most jobs don't need to override this
+        pass
 
     def _getJobId(self):
         return self._id
@@ -48,7 +61,7 @@ if __debug__: # __dev__ not yet available at this point
                 while self._accum < 100:
                     self._accum += 1
                     print 'counter = %s, accum = %s' % (self._counter, self._accum)
-                    yield Job.Continue
+                    yield None
 
                 self._accum = 0
                 self._counter += 1
@@ -57,9 +70,7 @@ if __debug__: # __dev__ not yet available at this point
                     print 'Job.Done'
                     yield Job.Done
                 else:
-                    yield Job.Continue
+                    yield None
 
     def addTestJob():
-        t = TestJob()
-        jobMgr.add(t)
-        
+        jobMgr.add(TestJob())
