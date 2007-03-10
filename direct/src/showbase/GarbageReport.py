@@ -4,7 +4,8 @@ __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr
-from direct.showbase.TaskThreaded import TaskThreaded, TaskThread
+#from direct.showbase.TaskThreaded import TaskThreaded, TaskThread
+from direct.showbase.Job import Job
 import gc
 
 class FakeObject:
@@ -16,7 +17,7 @@ def _createGarbage():
     a.other = b
     b.other = a
 
-class GarbageReport(TaskThreaded):
+class GarbageReport(Job):
     """Detects leaked Python objects (via gc.collect()) and reports on garbage
     items, garbage-to-garbage references, and garbage cycles.
     If you just want to dump the report to the log, use GarbageLogger."""
@@ -29,19 +30,24 @@ class GarbageReport(TaskThreaded):
         # if log is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
-        TaskThreaded.__init__(self, name, threaded, timeslice=timeslice)
+        Job.__init__(self, name)
         # stick the arguments onto a ScratchPad so we can access them from the thread
         # functions and delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback)
+        self._printing = False
+        jobMgr.add(self)
 
+    def run(self):
         # do the garbage collection
         wasOn = gcDebugOn()
         oldFlags = gc.get_debug()
         if not wasOn:
             gc.set_debug(gc.DEBUG_SAVEALL)
         gc.collect()
+        yield None
         self.notify.debug('gc.garbage == %s' % fastRepr(gc.garbage))
+        yield None
         self.garbage = list(gc.garbage)
         self.notify.debug('self.garbage == %s' % self.garbage)
         del gc.garbage[:]
@@ -49,6 +55,7 @@ class GarbageReport(TaskThreaded):
             gc.set_debug(oldFlags)
 
         self.numGarbage = len(self.garbage)
+        yield None
 
         if self._args.verbose:
             self.notify.info('found %s garbage items' % self.numGarbage)
@@ -64,220 +71,124 @@ class GarbageReport(TaskThreaded):
         self.cycleIds = set()
 
         # grab the referrers (pointing to garbage)
-        class GetReferrers(TaskThread):
-            def setUp(self):
-                if self.parent._args.fullReport and (self.parent.numGarbage != 0):
-                    if self.parent._args.verbose:
-                        self.parent.notify.info('getting referrers...')
-                    self.index = 0
-                else:
-                    self.finished()
-            def run(self):
-                parent = self.parent
-                for i in xrange(self.index, parent.numGarbage):
-                    byNum, byRef = parent._getReferrers(parent.garbage[i])
-                    parent.referrersByNumber[i] = byNum
-                    parent.referrersByReference[i] = byRef
-                    if (not (i & 0x0F)) and (not self.timeLeft()):
-                        # we've run out of time, save the index
-                        self.index = i+1
-                        return
-                self.finished()
-            def done(self):
-                self.parent.scheduleThread(self.parent.getReferents)
+        if self._args.fullReport and (self.numGarbage != 0):
+            if self._args.verbose:
+                self.notify.info('getting referrers...')
+            for i in xrange(self.numGarbage):
+                byNum, byRef = parent._getReferrers(self.garbage[i])
+                self.referrersByNumber[i] = byNum
+                self.referrersByReference[i] = byRef
+                if (not (i & 0x0F)):
+                    yield None
 
         # grab the referents (pointed to by garbage)
-        class GetReferents(TaskThread):
-            def setUp(self):
-                if self.parent.numGarbage == 0:
-                    self.finished()
-                else:
-                    if self.parent._args.verbose:
-                        self.parent.notify.info('getting referents...')
-                    self.index = 0
-            def run(self):
-                parent = self.parent
-                for i in xrange(self.index, self.parent.numGarbage):
-                    byNum, byRef = parent._getReferents(parent.garbage[i])
-                    parent.referentsByNumber[i] = byNum
-                    parent.referentsByReference[i] = byRef
-                    if (not (i & 0x0F)) and (not self.timeLeft()):
-                        # we've run out of time, save the index
-                        self.index = i+1
-                        return
-                self.finished()
-            def done(self):
-                self.parent.scheduleThread(self.parent.getCycles)
+        if self.numGarbage > 0:
+            if self._args.verbose:
+                self.notify.info('getting referents...')
+            for i in xrange(self.numGarbage):
+                byNum, byRef = self._getReferents(self.garbage[i])
+                self.referentsByNumber[i] = byNum
+                self.referentsByReference[i] = byRef
+                if (not (i & 0x0F)):
+                    yield None
 
         # find the cycles
-        class GetCycles(TaskThread):
-            def setUp(self):
-                if self.parent._args.findCycles and self.parent.numGarbage > 0:
-                    if self.parent._args.verbose:
-                        self.parent.notify.info('detecting cycles...')
-                    self.index = 0
-                else:
-                    self.finished()
-            def run(self):
-                for i in xrange(self.index, self.parent.numGarbage):
-                    newCycles = self.parent._getCycles(i, self.parent.cycleSets)
-                    self.parent.cycles.extend(newCycles)
-                    # if we're not doing a full report, add this cycle's IDs to the master set
-                    if not self.parent._args.fullReport:
-                        for cycle in newCycles:
-                            self.parent.cycleIds.update(set(cycle))
-                    if (not (i & 0x0F)) and (not self.timeLeft()):
-                        # we've run out of time, save the index
-                        self.index = i+1
-                        return
-                self.finished()
-            def done(self):
-                self.parent.scheduleThread(self.parent.createReport)
+        if self._args.findCycles and self.numGarbage > 0:
+            if self._args.verbose:
+                self.notify.info('detecting cycles...')
+            for i in xrange(self.numGarbage):
+                newCycles = self._getCycles(i, self.cycleSets)
+                self.cycles.extend(newCycles)
+                # if we're not doing a full report, add this cycle's IDs to the master set
+                if not self._args.fullReport:
+                    for cycle in newCycles:
+                        self.cycleIds.update(set(cycle))
+                if (not (i & 0x0F)):
+                    yield None
 
-        class CreateReport(TaskThread):
-            def setUp(self):
-                self.s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
-                    self.parent._args.name, self.parent.numGarbage)]
-                if self.parent.numGarbage == 0:
-                    self.finished()
-                else:
-                    self.curPhase = 0
-                    self.index = 0
-                    # make a list of the ids we will actually be printing
-                    if self.parent._args.fullReport:
-                        self.garbageIds = range(self.parent.numGarbage)
-                    else:
-                        self.garbageIds = list(self.parent.cycleIds)
-                        self.garbageIds.sort()
-                    self.numGarbage = len(self.garbageIds)
-            def run(self):
-                if self.curPhase == 0:
-                    # log each individual item with a number in front of it
-                    if self.index == 0:
-                        if not self.parent._args.fullReport:
-                            abbrev = '(abbreviated) '
-                        else:
-                            abbrev = ''
-                        self.s.append('\n===== Garbage Items %s=====' % abbrev)
-                        digits = 0
-                        n = self.parent.numGarbage
-                        while n > 0:
-                            digits += 1
-                            n /= 10
-                        self.digits = digits
-                        self.format = '%0' + '%s' % digits + 'i:%s \t%s'
-                    for i in xrange(self.index, self.numGarbage):
-                        id = self.garbageIds[i]
-                        objStr = safeRepr(self.parent.garbage[id])
-                        maxLen = 5000
-                        if len(objStr) > maxLen:
-                            snip = '<SNIP>'
-                            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
-                        self.s.append(self.format % (id, itype(self.parent.garbage[id]), objStr))
-                        if (not (i & 0x7F)) and (not self.timeLeft()):
-                            # we've run out of time, save the index
-                            self.index = i+1
-                            return
-                    self.curPhase = 1
-                    self.index = 0
-                if self.curPhase == 1:
-                    if self.parent._args.findCycles:
-                        if self.index == 0:
-                            self.s.append('\n===== Cycles =====')
-                        for i in xrange(self.index, len(self.parent.cycles)):
-                            self.s.append('%s' % self.parent.cycles[i])
-                            if (not (i & 0x7F)) and (not self.timeLeft()):
-                                # we've run out of time, save the index
-                                self.index = i+1
-                                return
-                    self.curPhase = 2
-                    self.index = 0
-                if self.parent._args.fullReport:
-                    format = '%0' + '%s' % self.digits + 'i:%s'
-                    if self.curPhase == 2:
-                        if self.index == 0:
-                            self.s.append('\n===== Referrers By Number (what is referring to garbage item?) =====')
-                        for i in xrange(self.index, self.parent.numGarbage):
-                            self.s.append(format % (i, self.parent.referrersByNumber[i]))
-                            if (not (i & 0x7F)) and (not self.timeLeft()):
-                                # we've run out of time, save the index
-                                self.index = i+1
-                                return
-                        self.curPhase = 3
-                        self.index = 0
-                    if self.curPhase == 3:
-                        if self.index == 0:
-                            self.s.append('\n===== Referents By Number (what is garbage item referring to?) =====')
-                        for i in xrange(self.index, self.parent.numGarbage):
-                            self.s.append(format % (i, self.parent.referentsByNumber[i]))
-                            if (not (i & 0x7F)) and (not self.timeLeft()):
-                                # we've run out of time, save the index
-                                self.index = i+1
-                                return
-                        self.curPhase = 4
-                        self.index = 0
-                    if self.curPhase == 4:
-                        if self.index == 0:
-                            self.s.append('\n===== Referrers (what is referring to garbage item?) =====')
-                        for i in xrange(self.index, self.parent.numGarbage):
-                            self.s.append(format % (i, self.parent.referrersByReference[i]))
-                            if (not (i & 0x7F)) and (not self.timeLeft()):
-                                # we've run out of time, save the index
-                                self.index = i+1
-                                return
-                        self.curPhase = 5
-                        self.index = 0
-                    if self.curPhase == 5:
-                        if self.index == 0:
-                            self.s.append('\n===== Referents (what is garbage item referring to?) =====')
-                        for i in xrange(self.index, self.parent.numGarbage):
-                            self.s.append(format % (i, self.parent.referentsByReference[i]))
-                            if (not (i & 0x7F)) and (not self.timeLeft()):
-                                # we've run out of time, save the index
-                                self.index = i+1
-                                return
-                self.finished()
+        s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
+            self._args.name, self.numGarbage)]
+        if self.numGarbage > 0:
+            # make a list of the ids we will actually be printing
+            if self._args.fullReport:
+                garbageIds = range(self.numGarbage)
+            else:
+                garbageIds = list(self.cycleIds)
+                garbageIds.sort()
+            numGarbage = len(garbageIds)
 
-            def done(self):
-                self.parent._report = self.s
-                self.parent.scheduleThread(self.parent.printReport)
+            # log each individual item with a number in front of it
+            if not self._args.fullReport:
+                abbrev = '(abbreviated) '
+            else:
+                abbrev = ''
+            s.append('\n===== Garbage Items %s=====' % abbrev)
+            digits = 0
+            n = numGarbage
+            while n > 0:
+                digits += 1
+                n /= 10
+            digits = digits
+            format = '%0' + '%s' % digits + 'i:%s \t%s'
 
-        class PrintReport(TaskThread):
-            def setUp(self):
-                if not self.parent._args.log:
-                    self.finished()
-                else:
-                    self.index = 0
-            def run(self):
-                if self.index > 0:
-                    self.parent.notify.info('RESUME')
-                for i in xrange(self.index, len(self.parent._report)):
-                    print self.parent._report[i]
-                    if (not (i & 0x3F)) and (not self.timeLeft()):
-                        self.parent.notify.info('SUSPEND')
-                        # we've run out of time, save the index
-                        self.index = i+1
-                        return
-                self.finished()
-            def done(self):
-                if self.parent._args.doneCallback:
-                    self.parent._args.doneCallback(self.parent)
+            for i in xrange(numGarbage):
+                id = garbageIds[i]
+                objStr = safeRepr(self.garbage[id])
+                maxLen = 5000
+                if len(objStr) > maxLen:
+                    snip = '<SNIP>'
+                    objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+                s.append(format % (id, itype(self.garbage[id]), objStr))
+                if (not (i & 0x7F)):
+                    yield None
 
-        self.getReferrers = GetReferrers()
-        self.getReferents = GetReferents()
-        self.getCycles = GetCycles()
-        self.createReport = CreateReport()
-        self.printReport = PrintReport()
+            if self._args.findCycles:
+                s.append('\n===== Garbage Cycles =====')
+                for i in xrange(len(self.cycles)):
+                    s.append('%s' % self.cycles[i])
+                    if (not (i & 0x7F)):
+                        yield None
 
-        self.scheduleThread(self.getReferrers)
+            if self._args.fullReport:
+                format = '%0' + '%s' % digits + 'i:%s'
+                s.append('\n===== Referrers By Number (what is referring to garbage item?) =====')
+                for i in xrange(numGarbage):
+                    s.append(format % (i, self.referrersByNumber[i]))
+                    if (not (i & 0x7F)):
+                        yield None
+                s.append('\n===== Referents By Number (what is garbage item referring to?) =====')
+                for i in xrange(numGarbage):
+                    s.append(format % (i, self.referentsByNumber[i]))
+                    if (not (i & 0x7F)):
+                        yield None
+                s.append('\n===== Referrers (what is referring to garbage item?) =====')
+                for i in xrange(numGarbage):
+                    s.append(format % (i, self.referrersByReference[i]))
+                    if (not (i & 0x7F)):
+                        yield None
+                s.append('\n===== Referents (what is garbage item referring to?) =====')
+                for i in xrange(numGarbage):
+                    s.append(format % (i, self.referentsByReference[i]))
+                    if (not (i & 0x7F)):
+                        yield None
+
+        self._report = s
+
+        if self._args.log:
+            self._printing = True
+            for i in xrange(len(self._report)):
+                print self._report[i]
+                if (not (i & 0x3F)):
+                    yield None
+            self._printing = False
+
+        if self._args.doneCallback:
+            self._args.doneCallback(self)
+
+        yield Job.Done
 
     def destroy(self):
-        print 'GarbageReport.destroy'
-        del self.getReferrers
-        del self.getReferents
-        del self.getCycles
-        del self.createReport
-        del self.printReport
+        #print 'GarbageReport.destroy'
         del self._args
         del self.garbage
         del self.numGarbage
@@ -290,6 +201,14 @@ class GarbageReport(TaskThreaded):
         del self._report
         if hasattr(self, '_reportStr'):
             del self._reportStr
+        Job.destroy(self)
+
+    def suspend(self):
+        if self._printing:
+            self.notify.info('SUSPEND')
+    def resume(self):
+        if self._printing:
+            self.notify.info('RESUME')
 
     def getNumItems(self):
         return self.numGarbage
