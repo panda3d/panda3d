@@ -1,0 +1,108 @@
+from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.Job import Job
+
+class JobManager:
+    """
+    Similar to the taskMgr but designed for tasks that are CPU-intensive and/or
+    not time-critical. Jobs run one at a time, in order of priority, in
+    the timeslice that the JobManager is allowed to run each frame.
+    """
+    notify = directNotify.newCategory("JobManager")
+
+    # there's one main task for the JobManager, all jobs run in this task
+    TaskName = 'jobManager'
+    # run for one millisecond per frame by default
+    DefTimeslice = .001
+
+    def __init__(self, timeslice=None):
+        if timeslice is None:
+            timeslice = JobManager.DefTimeslice
+        # how long do we run per frame
+        self._timeslice = timeslice
+        # store the jobs in these structures to allow fast lookup by various keys
+        # priority -> jobId -> job
+        self._pri2jobId2job = {}
+        # priority -> chronological list of jobIds
+        self._pri2jobIds = {}
+        # jobId -> priority
+        self._jobId2pri = {}
+        self._highestPriority = Job.Priorities.Normal
+
+    def destroy(self):
+        taskMgr.remove(JobManager.TaskName)
+        del self._pri2jobId2job
+
+    def add(self, job):
+        assert self.notify.debugCall()
+        pri = job.getPriority()
+        jobId = job._getJobId()
+        # store the job in the main table
+        self._pri2jobId2job.setdefault(pri, {})
+        self._pri2jobId2job[pri][jobId] = job
+        # and also store a direct mapping from the job's ID to its priority
+        self._jobId2pri[jobId] = pri
+        # add the jobId onto the end of the list of jobIds for this priority
+        self._pri2jobIds.setdefault(pri, [])
+        self._pri2jobIds[pri].append(jobId)
+        if pri > self._highestPriority:
+            self._highestPriority = pri
+        if len(self._jobId2pri) == 1:
+            taskMgr.add(self._process, JobManager.TaskName)
+        
+    def remove(self, job):
+        assert self.notify.debugCall()
+        jobId = job._getJobId()
+        # look up the job's priority
+        pri = self._jobId2pri.pop(jobId)
+        # TODO: this removal is a linear search
+        self._pri2jobIds[pri].remove(jobId)
+        # remove the job from the main table
+        del self._pri2jobId2job[pri][jobId]
+        if len(self._pri2jobId2job[pri]) == 0:
+            del self._pri2jobId2job[pri]
+            if pri == self._highestPriority:
+                if len(self._jobId2pri) > 0:
+                    # calculate a new highest priority
+                    # TODO: this is not very fast
+                    priorities = self._pri2jobId2job.keys()
+                    priorities.sort()
+                    self._highestPriority = priorities[-1]
+                else:
+                    taskMgr.remove(JobManager.TaskName)
+                    self._highestPriority = 0
+
+    # how long should we run per frame?
+    def getTimeslice(self):
+        return self._timeslice
+    def setTimeslice(self, timeslice):
+        self._timeslice = timeslice
+
+    def _process(self, task=None):
+        if len(self._pri2jobId2job):
+            assert self.notify.debugCall()
+            # figure out how long we can run
+            endT = globalClock.getRealTime() + (self._timeslice * .9)
+            while True:
+                # always process the highest priority first
+                jobId2job = self._pri2jobId2job[self._highestPriority]
+                # process jobs with equal priority in the order they came in
+                jobId = self._pri2jobIds[self._highestPriority][-1]
+                job = jobId2job[jobId]
+                gen = job._getGenerator()
+                while globalClock.getRealTime() < endT:
+                    result = gen.next()
+                    if result is Job.Done:
+                        self.remove(job)
+                        # highest-priority job is done.
+                        # grab the next one if there's time left
+                        break
+                else:
+                    # we've run out of time
+                    assert self.notify.debug('out of time: %s, %s' % (endT, globalClock.getRealTime()))
+                    break
+                
+                if len(self._pri2jobId2job) == 0:
+                    # there's nothing left to do
+                    break
+        return task.cont
