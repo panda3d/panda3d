@@ -16,6 +16,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 from MessengerGlobal import *
 from BulletinBoardGlobal import *
 from direct.task.TaskManagerGlobal import *
+from JobManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
 from direct.particles.ParticleManagerGlobal import *
@@ -205,6 +206,7 @@ class ShowBase(DirectObject.DirectObject):
         self.messenger = messenger
         self.bboard = bulletinBoard
         self.taskMgr = taskMgr
+        self.jobMgr = jobMgr
 
         # Particle manager
         self.particleMgr = particleMgr
@@ -247,6 +249,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["camera"] = self.camera
         __builtins__["loader"] = self.loader
         __builtins__["taskMgr"] = self.taskMgr
+        __builtins__["jobMgr"] = self.jobMgr
         __builtins__["eventMgr"] = self.eventMgr
         __builtins__["messenger"] = self.messenger
         __builtins__["bboard"] = self.bboard
