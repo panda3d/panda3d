@@ -211,7 +211,7 @@ process_primitive(const GeomPrimitive *primitive,
 	vReader.set_row(vRowIndex);
 	nReader.set_row(vRowIndex);
 	vertex = vReader.get_data3f();
-	normal = nReader.get_data3f();
+	//normal = nReader.get_data3f();
 	_faces[_num_faces].Indices[m] = _num_vertices;
 	
 	_vertices[_num_vertices].Vertex[0] = vertex[0];
@@ -219,7 +219,7 @@ process_primitive(const GeomPrimitive *primitive,
 	_vertices[_num_vertices].Vertex[2] = vertex[2];
 	
 	out.width(10); out << "" << "vertex " << j << " has: pos(" \
-			   << vertex << ") normal(" << normal << ")" << "\n";
+			   << vertex << ") normal(" << "normal"  << ")" << "\n";
       }
     }
   } else if (dPrimitive->get_type() == GeomTristrips::get_class_type()){
@@ -232,13 +232,13 @@ process_primitive(const GeomPrimitive *primitive,
 	vReader.set_row(vRowIndex);
 	nReader.set_row(vRowIndex);
 	vertex = vReader.get_data3f();
-	normal = nReader.get_data3f();
+	//normal = nReader.get_data3f();
 	
 	_vertices[_num_vertices].Vertex[0] = vertex[0];
 	_vertices[_num_vertices].Vertex[1] = vertex[1];
 	_vertices[_num_vertices].Vertex[2] = vertex[2];
 	out.width(10); out << "" << "vertex " << j << " has: pos(" \
-			   << vertex << ") normal(" << normal << ")" << "\n";
+			   << vertex << ") normal(" << "normal" << ")" << "\n";
 	if (m < 3) {
 	  _faces[_num_faces].Indices[m] = _num_vertices;
 	} else {
