@@ -37,6 +37,7 @@ class GarbageReport(Job):
                                 findCycles=findCycles, doneCallback=doneCallback)
         self._printing = False
         jobMgr.add(self)
+        self.numGarbage = 0
 
     def run(self):
         # do the garbage collection
