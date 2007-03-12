@@ -1200,11 +1200,18 @@ class ShowBase(DirectObject.DirectObject):
             self.physicsMgr.doPhysics(dt)
         return Task.cont
 
-    def createStats(self):
-        # You must specify a pstats-host in your Config.prc
+    def createStats(self, hostname=None, port=None):
+        # You can specify pstats-host in your Config.prc or use ~pstats/~aipstats
         # The default is localhost
         if self.wantStats:
-            PStatClient.connect()
+            if PStatClient.isConnected():
+                PStatClient.disconnect()
+            # these default values match the C++ default values
+            if hostname is None:
+                hostname = ''
+            if port is None:
+                port = -1
+            PStatClient.connect(hostname, port)
 
     def addSfxManager(self, extraSfxManager):
         # keep a list of sfx manager objects to apply settings to,
