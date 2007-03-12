@@ -342,6 +342,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
+  mark_internal_bounds_stale(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,6 +388,7 @@ add_primitive(const GeomPrimitive *primitive) {
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
+  mark_internal_bounds_stale(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,6 +414,7 @@ remove_primitive(int i) {
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
+  mark_internal_bounds_stale(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,6 +438,7 @@ clear_primitives() {
   cdata->_shade_model = SM_uniform;
   reset_geom_rendering(cdata);
   clear_cache_stage(current_thread);
+  mark_internal_bounds_stale(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////

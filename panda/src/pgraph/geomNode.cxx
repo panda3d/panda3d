@@ -484,6 +484,8 @@ check_valid() const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 unify(int max_indices) {
+  bool any_changed = false;
+
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -507,6 +509,7 @@ unify(int max_indices) {
           if (new_entry._geom->copy_primitives_from(entry._geom)) {
             // Successfully combined!
             unified = true;
+            any_changed = true;
           }
         }
       }
@@ -528,6 +531,10 @@ unify(int max_indices) {
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  if (any_changed) {
+    mark_internal_bounds_stale();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
