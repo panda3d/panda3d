@@ -49,7 +49,8 @@
     odeCylinderGeom.I odeCylinderGeom.h \
     odeRayGeom.I odeRayGeom.h \
     odeTriMeshData.I odeTriMeshData.h \
-    odeTriMeshGeom.I odeTriMeshGeom.h 
+    odeTriMeshGeom.I odeTriMeshGeom.h \
+    odeHelperStructs.h
 
   #define INCLUDED_SOURCES \
     config_ode.cxx \
