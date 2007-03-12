@@ -26,8 +26,15 @@
 #include "pmap.h"
 #include "numeric_types.h"
 
+
+#include "ode_includes.h"
+#include "odeHelperStructs.h"
+
 class OdeBody;
 class OdeJoint;
+    
+
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeWorld
@@ -80,6 +87,7 @@ PUBLISHED:
   INLINE void step_fast1(dReal stepsize, int maxiterations);
 
   INLINE int compare_to(const OdeWorld &other) const;
+
   void init_surface_table(PN_uint8 num_surfaces);
   void assign_surface_body(OdeBody& body, int surface);
   void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
@@ -88,21 +96,28 @@ PUBLISHED:
                          dReal bounce_vel, 
                          dReal soft_erp,
                          dReal soft_cfm,
-                         dReal slip);
+                         dReal slip,
+                         dReal dampen);
+  float apply_dampening(float dt, OdeBody& body);
+
   
     
 public: 
   INLINE dWorldID get_id() const;
-  INLINE dSurfaceParameters& get_surface(PN_uint8 surface1, PN_uint8 surface2);
-  INLINE void set_surface(int pos1, int pos2, dSurfaceParameters& entry);
-  INLINE int get_surface_body(dBodyID id);
+  INLINE sSurfaceParams& get_surface(PN_uint8 surface1, PN_uint8 surface2);
+  INLINE void set_surface(int pos1, int pos2, sSurfaceParams& entry);
+  INLINE sBodyParams get_surface_body(dBodyID id);
+  INLINE void set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp);
+
   
 private:
   dWorldID _id;
-  dSurfaceParameters *_surface_table;
+  sSurfaceParams *_surface_table;
   PN_uint8 _num_surfaces;
-  typedef pmap<dBodyID, int> BodySurfaceMap;
+  typedef pmap<dBodyID, sBodyParams> BodySurfaceMap;
   BodySurfaceMap _body_surface_map;
+
+
 
 public:
   static TypeHandle get_class_type() {
