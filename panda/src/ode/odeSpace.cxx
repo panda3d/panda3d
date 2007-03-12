@@ -131,18 +131,19 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
     
     dContact contact[OdeSpace::MAX_CONTACTS];
     
-    dSurfaceParameters collide_params;
-    collide_params = _collide_world->get_surface(_collide_world->get_surface_body(b1),_collide_world->get_surface_body(b2));
+    
+    sSurfaceParams collide_params;
+    collide_params = _collide_world->get_surface(_collide_world->get_surface_body(b1).surfaceType,_collide_world->get_surface_body(b2).surfaceType);
     
     for (i=0; i < OdeSpace::MAX_CONTACTS; i++)
     {
   
-        contact[i].surface.mode = collide_params.mode; 
-        contact[i].surface.mu = collide_params.mu; 
-        contact[i].surface.mu2 = collide_params.mu2; 
-        contact[i].surface.bounce = collide_params.bounce; 
-        contact[i].surface.bounce_vel = collide_params.bounce_vel; 
-        contact[i].surface.soft_cfm = collide_params.soft_cfm; 
+        contact[i].surface.mode = collide_params.colparams.mode; 
+        contact[i].surface.mu = collide_params.colparams.mu; 
+        contact[i].surface.mu2 = collide_params.colparams.mu2; 
+        contact[i].surface.bounce = collide_params.colparams.bounce; 
+        contact[i].surface.bounce_vel = collide_params.colparams.bounce_vel; 
+        contact[i].surface.soft_cfm = collide_params.colparams.soft_cfm; 
 
     }
     
@@ -161,6 +162,7 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
                 OdeSpace::contactCount += 1;
             }
         }
+        _collide_world->set_dampen_on_bodies(b1, b2, collide_params.dampen);
     }
 }
 
