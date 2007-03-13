@@ -2509,7 +2509,45 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], notifyFunc = None, dConfigParam = []):
+def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
+    """
+    This is a decorator generating function.  Use is similar to
+    a @decorator, except you must be sure to call it as a function.
+    It actually returns the decorator which is then used to transform
+    your decorated function. Confusing at first, I know.
+
+    Decoration occurs at function definition time.
+
+    If __dev__ is not defined, or resolves to False, this function
+    has no effect and no wrapping/transform occurs.  So in production,
+    it's as if the report has been asserted out.
+    
+    Parameters::
+    types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
+            This allows you to specify certain common bits of info.
+
+            args: Prints the arguments as they were passed to this
+                  function.
+            timeStamp:  Adds the current frame time to the output.
+            
+            frameCount: Adds the current frame count to the output.
+                        Usually cleaner than the timeStamp output.
+
+            avLocation: Adds the localAvatar's network location
+                        to the output.  Useful for interest debugging.
+
+    prefix: Optional string to prepend to output, just before the function.
+            Allows for easy grepping.
+    notifyFunc: A notify function such as info, debug, warning, etc.
+                By default the report will be printed to stdout. This 
+                will allow you send the report to a designated 'notify'
+                output.
+
+    dConfigParams: A list of Config.prc string variables.
+                   By default the report will always print.  If you
+                   specify this param, it will only print if one of the
+                   specified config strings resolve to True.
+    """
     def decorator(f):
         return f
     try:
@@ -2518,28 +2556,43 @@ def report(types = [], notifyFunc = None, dConfigParam = []):
     except NameError,e:
         return decorator
 
+    from direct.distributed.ClockDelta import globalClockDelta
+
     def decorator(f):
         def wrap(*args,**kwargs):
-            aargs = args
-            kkwargs = kwargs
-            rArgs = [`x`+', ' for x in args] + [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
+            if args:
+                rArgs = [args[0].__class__.__name__ + ', ']
+            else:
+                rArgs = []
+
+            if 'args' in types:
+                rArgs += [`x`+', ' for x in args[1:]] + \
+                         [ x + ' = ' + '%s, ' % `y` for x,y in kwargs.items()]
             
             if not rArgs:
                 rArgs = '()'
             else:
                 rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
                 
-            outStr = f.func_name + rArgs
+            outStr = '%s%s' % (f.func_name, rArgs)
+
+            preStr = ''
             
             if 'frameCount' in types:
                 outStr = '%8d : %s' % (globalClock.getFrameCount(), outStr)
                 
             if 'timeStamp' in types:
-                outStr = '%5.3f : %s' % (globalClock.getFrameTime(), outStr)
+                outStr = '%8.3f : %s' % (globalClock.getFrameTime(), outStr)
 
+            if 'deltaStamp' in types:
+                outStr = '%8.2f : %s' % (globalClock.getRealTime() - \
+                                         globalClockDelta.delta, outStr)                
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
-                
+
+            if prefix:
+                outStr = '%s %s' % (prefix, outStr)
+
             # determine whether we should print
             doPrint = False
             if not dConfigParam:
