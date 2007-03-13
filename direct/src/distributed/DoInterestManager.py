@@ -19,11 +19,11 @@ from direct.showbase.PythonUtil import report
 class InterestState:
     StateActive = 'Active'
     StatePendingDel = 'PendingDel'
-    def __init__(self, desc, state, scope, event, parentId, zoneIdList,
+    def __init__(self, desc, state, context, event, parentId, zoneIdList,
                  eventCounter, auto=False):
         self.desc = desc
         self.state = state
-        self.scope = scope
+        self.context = context
         # We must be ready to keep track of multiple events. If somebody
         # requested an interest to be removed and we get a second request
         # for removal of the same interest before we get a response for the
@@ -52,8 +52,8 @@ class InterestState:
     def isPendingDelete(self):
         return self.state == InterestState.StatePendingDel
     def __repr__(self):
-        return 'InterestState(desc=%s, state=%s, scope=%s, event=%s, parentId=%s, zoneIdList=%s)' % (
-            self.desc, self.state, self.scope, self.events, self.parentId, self.zoneIdList)
+        return 'InterestState(desc=%s, state=%s, context=%s, event=%s, parentId=%s, zoneIdList=%s)' % (
+            self.desc, self.state, self.context, self.events, self.parentId, self.zoneIdList)
 
 class InterestHandle:
     """This class helps to ensure that valid handles get passed in to DoInterestManager funcs"""
@@ -68,8 +68,8 @@ class InterestHandle:
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self._id)
 
-# scope value for interest changes that have no complete event
-NO_SCOPE = 0
+# context value for interest changes that have no complete event
+NO_CONTEXT = 0
 
 class DoInterestManager(DirectObject.DirectObject):
     """
@@ -89,9 +89,9 @@ class DoInterestManager(DirectObject.DirectObject):
     # high bit is reserved for server interests
     _HandleMask = 0x7FFF
 
-    # 'scope' refers to a single request to change an interest set
-    _ScopeIdSerialNum = 100
-    _ScopeIdMask = 0x3FFFFFFF # avoid making Python create a long
+    # 'context' refers to a single request to change an interest set
+    _ContextIdSerialNum = 100
+    _ContextIdMask = 0x3FFFFFFF # avoid making Python create a long
 
     _interests = {}
     if __debug__:
@@ -108,8 +108,8 @@ class DoInterestManager(DirectObject.DirectObject):
         self._removeInterestEvent = uniqueName('DoInterestManager-Remove')
         self._noNewInterests = False
         self._completeDelayedCallback = None
-        # keep track of request scopes that have not completed
-        self._outstandingScopes = set()
+        # keep track of request contexts that have not completed
+        self._outstandingContexts = set()
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
 
@@ -137,7 +137,7 @@ class DoInterestManager(DirectObject.DirectObject):
 
     def resetInterestStateForConnectionLoss(self):
         DoInterestManager._interests.clear()
-        self._outstandingScopes = set()
+        self._outstandingContexts = set()
         self._completeEventCount = ScratchPad(num=0)
         if __debug__:
             self._addDebugInterestHistory("RESET", "", 0, 0, 0, [])
@@ -175,20 +175,20 @@ class DoInterestManager(DirectObject.DirectObject):
                         '' % (parentId, parent.__class__.__name__))
 
         if auto:
-            scopeId = 0
+            contextId = 0
             event = None
         else:
-            scopeId = self._getNextScopeId()
-            self._outstandingScopes.add(scopeId)
+            contextId = self._getNextContextId()
+            self._outstandingContexts.add(contextId)
             if event is None:
                 event = self._getAnonymousEvent('addInterest')
         DoInterestManager._interests[handle] = InterestState(
-            description, InterestState.StateActive, scopeId, event, parentId, zoneIdList, self._completeEventCount)
+            description, InterestState.StateActive, contextId, event, parentId, zoneIdList, self._completeEventCount)
         if self.__verbose():
             print 'CR::INTEREST.addInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s, auto=%s)' % (
                 handle, parentId, zoneIdList, description, event, auto)
         if not auto:
-            self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description)
+            self._sendAddInterest(handle, contextId, parentId, zoneIdList, description)
         if event:
             messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
@@ -230,11 +230,11 @@ class DoInterestManager(DirectObject.DirectObject):
                 if auto:
                     self._considerRemoveInterest(handle)
                 else:
-                    scopeId = self._getNextScopeId()
-                    intState.scope = scopeId
+                    contextId = self._getNextContextId()
+                    intState.context = contextId
                     if event is not None:
                         intState.addEvent(event)
-                    self._sendRemoveInterest(handle, scopeId)
+                    self._sendRemoveInterest(handle, contextId)
                     if event is None:
                         self._considerRemoveInterest(handle)
                 if self.__verbose():
@@ -274,18 +274,19 @@ class DoInterestManager(DirectObject.DirectObject):
                 description = DoInterestManager._interests[handle].desc
 
             # are we overriding an existing change?
-            if DoInterestManager._interests[handle].scope != NO_SCOPE:
+            if DoInterestManager._interests[handle].context != NO_CONTEXT:
                 DoInterestManager._interests[handle].clearEvents()
 
-            scopeId = self._getNextScopeId()
-            DoInterestManager._interests[handle].scope = scopeId
+            contextId = self._getNextContextId()
+            DoInterestManager._interests[handle].context = contextId
+            DoInterestManager._interests[handle].parentId = parentId            
             DoInterestManager._interests[handle].zoneIdList = zoneIdList
             DoInterestManager._interests[handle].addEvent(event)
 
             if self.__verbose():
                 print 'CR::INTEREST.alterInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s)' % (
                     handle, parentId, zoneIdList, description, event)
-            self._sendAddInterest(handle, scopeId, parentId, zoneIdList, description, action='modify')
+            self._sendAddInterest(handle, contextId, parentId, zoneIdList, description, action='modify')
             exists = True
             assert self.printInterestsIfDebug()
         else:
@@ -332,15 +333,15 @@ class DoInterestManager(DirectObject.DirectObject):
                 'interest %s already in use' % handle)
         DoInterestManager._HandleSerialNum = handle
         return DoInterestManager._HandleSerialNum
-    def _getNextScopeId(self):
-        scopeId = DoInterestManager._ScopeIdSerialNum
+    def _getNextContextId(self):
+        contextId = DoInterestManager._ContextIdSerialNum
         while True:
-            scopeId = (scopeId + 1) & DoInterestManager._ScopeIdMask
-            # skip over the 'no scope' id
-            if scopeId != NO_SCOPE:
+            contextId = (contextId + 1) & DoInterestManager._ContextIdMask
+            # skip over the 'no context' id
+            if contextId != NO_CONTEXT:
                 break
-        DoInterestManager._ScopeIdSerialNum = scopeId
-        return DoInterestManager._ScopeIdSerialNum
+        DoInterestManager._ContextIdSerialNum = contextId
+        return DoInterestManager._ContextIdSerialNum
 
     def _considerRemoveInterest(self, handle):
         """
@@ -351,7 +352,7 @@ class DoInterestManager(DirectObject.DirectObject):
         if DoInterestManager._interests.has_key(handle):
             if DoInterestManager._interests[handle].isPendingDelete():
                 # make sure there is no pending event for this interest
-                if DoInterestManager._interests[handle].scope == NO_SCOPE:
+                if DoInterestManager._interests[handle].context == NO_CONTEXT:
                     assert len(DoInterestManager._interests[handle].events) == 0
                     del DoInterestManager._interests[handle]
 
@@ -362,11 +363,11 @@ class DoInterestManager(DirectObject.DirectObject):
             return 1 # for assert
 
         def _addDebugInterestHistory(self, action, description, handle,
-                                     scopeId, parentId, zoneIdList):
+                                     contextId, parentId, zoneIdList):
             if description is None:
                 description = ''
             DoInterestManager._debug_interestHistory.append(
-                (action, description, handle, scopeId, parentId, zoneIdList))
+                (action, description, handle, contextId, parentId, zoneIdList))
             DoInterestManager._debug_maxDescriptionLen = max(
                 DoInterestManager._debug_maxDescriptionLen, len(description))
 
@@ -374,18 +375,18 @@ class DoInterestManager(DirectObject.DirectObject):
             print "***************** Interest History *************"
             format = '%9s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %6s %6s %9s %s'
             print format % (
-                "Action", "Description", "Handle", "Scope", "ParentId",
+                "Action", "Description", "Handle", "Context", "ParentId",
                 "ZoneIdList")
             for i in DoInterestManager._debug_interestHistory:
                 print format % tuple(i)
-            print "Note: interests with a Scope of 0 do not get" \
+            print "Note: interests with a Context of 0 do not get" \
                 " done/finished notices."
             
         def printInterestSets(self):
             print "******************* Interest Sets **************"
             format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
             print format % (
-                "Handle", "Description", "State", "Scope",
+                "Handle", "Description", "State", "Context",
                 "ParentId", "ZoneIdList", "Event")
             for id, state in DoInterestManager._interests.items():
                 if len(state.events) == 0:
@@ -394,7 +395,7 @@ class DoInterestManager(DirectObject.DirectObject):
                     event = state.events[0]
                 else:
                     event = state.events
-                print format % (id, state.desc, state.state, state.scope,
+                print format % (id, state.desc, state.state, state.context,
                                 state.parentId, state.zoneIdList, event)
             print "************************************************"
 
@@ -402,7 +403,7 @@ class DoInterestManager(DirectObject.DirectObject):
             self.printInterestHistory()
             self.printInterestSets()
             
-    def _sendAddInterest(self, handle, scopeId, parentId, zoneIdList, description,
+    def _sendAddInterest(self, handle, contextId, parentId, zoneIdList, description,
                          action=None):
         """
         Part of the new otp-server code.
@@ -419,7 +420,7 @@ class DoInterestManager(DirectObject.DirectObject):
             if action is None:
                 action = 'add'
             self._addDebugInterestHistory(
-                action, description, handle, scopeId, parentId, zoneIdList)
+                action, description, handle, contextId, parentId, zoneIdList)
         if parentId == 0:
             DoInterestManager.notify.error(
                 'trying to set interest to invalid parent: %s' % parentId)
@@ -427,7 +428,7 @@ class DoInterestManager(DirectObject.DirectObject):
         # Add message type
         datagram.addUint16(CLIENT_ADD_INTEREST)
         datagram.addUint16(handle)
-        datagram.addUint32(scopeId)
+        datagram.addUint32(contextId)
         datagram.addUint32(parentId)
         if isinstance(zoneIdList, types.ListType):
             vzl = list(zoneIdList)
@@ -439,7 +440,7 @@ class DoInterestManager(DirectObject.DirectObject):
            datagram.addUint32(zoneIdList)
         self.send(datagram)
 
-    def _sendRemoveInterest(self, handle, scopeId):
+    def _sendRemoveInterest(self, handle, contextId):
         """
         handle is a client-side created number that refers to
                 a set of interests.  The same handle number doesn't
@@ -452,13 +453,13 @@ class DoInterestManager(DirectObject.DirectObject):
         # Add message type
         datagram.addUint16(CLIENT_REMOVE_INTEREST)
         datagram.addUint16(handle)
-        if scopeId != 0:
-            datagram.addUint32(scopeId)
+        if contextId != 0:
+            datagram.addUint32(contextId)
         self.send(datagram)
         if __debug__:
             state = DoInterestManager._interests[handle]
             self._addDebugInterestHistory(
-                "remove", state.desc, handle, scopeId,
+                "remove", state.desc, handle, contextId,
                 state.parentId, state.zoneIdList)
 
     def cleanupWaitAllInterestsClosed(self):
@@ -472,16 +473,16 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         handle = di.getUint16()
-        scopeId = di.getUint32()
+        contextId = di.getUint32()
         if self.__verbose():
             print 'CR::INTEREST.interestDone(handle=%s)' % handle
         DoInterestManager.notify.debug(
-            "handleInterestDoneMessage--> Received handle %s, scope %s" % (
-            handle, scopeId))
+            "handleInterestDoneMessage--> Received handle %s, context %s" % (
+            handle, contextId))
         eventsToSend = []
-        # if the scope matches, send out the event
-        if scopeId == DoInterestManager._interests[handle].scope:
-            DoInterestManager._interests[handle].scope = NO_SCOPE
+        # if the context matches, send out the event
+        if contextId == DoInterestManager._interests[handle].context:
+            DoInterestManager._interests[handle].context = NO_CONTEXT
             # the event handlers may call back into the interest manager. Send out
             # the events after we're once again in a stable state.
             #DoInterestManager._interests[handle].sendEvents()
@@ -489,12 +490,12 @@ class DoInterestManager(DirectObject.DirectObject):
             DoInterestManager._interests[handle].clearEvents()
         else:
             DoInterestManager.notify.warning(
-                "handleInterestDoneMessage--> handle: %s: Expecting scope %s, got %s" % (
-                handle, DoInterestManager._interests[handle].scope, scopeId))
+                "handleInterestDoneMessage--> handle: %s: Expecting context %s, got %s" % (
+                handle, DoInterestManager._interests[handle].context, contextId))
         if __debug__:
             state = DoInterestManager._interests[handle]
             self._addDebugInterestHistory(
-                "finished", state.desc, handle, scopeId, state.parentId,
+                "finished", state.desc, handle, contextId, state.parentId,
                 state.zoneIdList)
         self._considerRemoveInterest(handle)
         for event in eventsToSend:
