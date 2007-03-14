@@ -6,6 +6,7 @@ class Job:
     Done = object()
     Continue = None # 'yield None' is acceptable in place of 'yield Job.Continue'
 
+    # these priorities are reference points, you can use whatever numbers you want
     Priorities = ScratchPad(Low=-100, Normal=0, High=100)
     _SerialGen = SerialNumGen()
     
@@ -27,18 +28,21 @@ class Job:
 
     def getPriority(self):
         # override if you want a different priority
-        # you can use numbers other than those in Job.Priorities
         return Job.Priorities.Normal
 
     def suspend(self):
         # called when JobManager is going to stop running this job for a while
-        # most jobs don't need to override this
         pass
     def resume(self):
         # called when JobManager is going to start running this job again
-        # most jobs don't need to override this
         pass
 
+    def finished(self):
+        # called when the job finishes and has been removed from the JobManager
+        pass
+
+    def getJobName(self):
+        return self._name
     def _getJobId(self):
         return self._id
 
@@ -46,6 +50,9 @@ class Job:
         if self._generator is None:
             self._generator = self.run()
         return self._generator
+    def _cleanupGenerator(self):
+        if self._generator is not None:
+            self._generator = None
 
 if __debug__: # __dev__ not yet available at this point
     from direct.showbase.Job import Job

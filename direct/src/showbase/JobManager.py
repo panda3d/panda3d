@@ -59,6 +59,8 @@ class JobManager:
         self._pri2jobIds[pri].remove(jobId)
         # remove the job from the main table
         del self._pri2jobId2job[pri][jobId]
+        # clean up the job's generator, if any
+        job._cleanupGenerator()
         if len(self._pri2jobId2job[pri]) == 0:
             del self._pri2jobId2job[pri]
             if pri == self._highestPriority:
@@ -71,6 +73,31 @@ class JobManager:
                 else:
                     taskMgr.remove(JobManager.TaskName)
                     self._highestPriority = 0
+
+    def finish(self, job):
+        # run this job, right now, until it finishes
+        assert self.notify.debugCall()
+        jobId = job._getJobId()
+        # look up the job's priority
+        pri = self._jobId2pri[jobId]
+        # grab the job
+        job = self._pri2jobId2job[pri][jobId]
+        gen = job._getGenerator()
+        job.resume()
+        while True:
+            try:
+                result = gen.next()
+            except StopIteration:
+                # Job didn't yield Job.Done, it ran off the end and returned
+                # treat it as if it returned Job.Done
+                self.notify.warning('job %s never yielded Job.Done' % job)
+                result = Job.Done
+            if result is Job.Done:
+                job.suspend()
+                self.remove(job)
+                job.finished()
+                # job is done.
+                break
 
     # how long should we run per frame?
     def getTimeslice(self):
@@ -104,6 +131,7 @@ class JobManager:
                     if result is Job.Done:
                         job.suspend()
                         self.remove(job)
+                        job.finished()
                         # highest-priority job is done.
                         # grab the next one if there's time left
                         break

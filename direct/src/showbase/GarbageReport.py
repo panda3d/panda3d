@@ -4,7 +4,6 @@ __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr
-#from direct.showbase.TaskThreaded import TaskThreaded, TaskThread
 from direct.showbase.Job import Job
 import gc
 
@@ -26,18 +25,18 @@ class GarbageReport(Job):
     NotGarbage = 'NG'
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, timeslice=None, doneCallback=None):
+                 threaded=False, doneCallback=None):
         # if log is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
         Job.__init__(self, name)
-        # stick the arguments onto a ScratchPad so we can access them from the thread
-        # functions and delete them all at once
+        # stick the arguments onto a ScratchPad so we can delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback)
         self._printing = False
         jobMgr.add(self)
-        self.numGarbage = 0
+        if threaded == False:
+            jobMgr.finish(self)
 
     def run(self):
         # do the garbage collection
@@ -183,10 +182,20 @@ class GarbageReport(Job):
                     yield None
             self._printing = False
 
+        yield Job.Done
+
+    def suspend(self):
+        if self._printing:
+            self.notify.info('SUSPEND')
+    def resume(self):
+        if self._printing:
+            self.notify.info('RESUME')
+
+    def finished(self):
         if self._args.doneCallback:
             self._args.doneCallback(self)
-
-        yield Job.Done
+        if self._args.log:
+            self.destroy()
 
     def destroy(self):
         #print 'GarbageReport.destroy'
@@ -203,13 +212,6 @@ class GarbageReport(Job):
         if hasattr(self, '_reportStr'):
             del self._reportStr
         Job.destroy(self)
-
-    def suspend(self):
-        if self._printing:
-            self.notify.info('SUSPEND')
-    def resume(self):
-        if self._printing:
-            self.notify.info('RESUME')
 
     def getNumItems(self):
         return self.numGarbage
