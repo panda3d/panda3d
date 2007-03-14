@@ -10,7 +10,8 @@ __all__ = ['ShowBase', 'WindowControls']
 from pandac.PandaModules import *
 
 # This needs to be available early for DirectGUI imports
-__builtins__["config"] = ConfigConfigureGetConfigConfigShowbase
+import __builtin__
+__builtin__.config = ConfigConfigureGetConfigConfigShowbase
 
 from direct.directnotify.DirectNotifyGlobal import *
 from MessengerGlobal import *
@@ -39,8 +40,8 @@ if __debug__:
     from direct.directutil import DeltaProfiler
 import OnScreenDebug
 
-__builtins__["FADE_SORT_INDEX"] = 1000
-__builtins__["NO_FADE_SORT_INDEX"] = 2000
+__builtin__.FADE_SORT_INDEX = 1000
+__builtin__.NO_FADE_SORT_INDEX = 2000
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
@@ -241,38 +242,38 @@ class ShowBase(DirectObject.DirectObject):
         # Now we can make the TaskManager start using the new globalClock.
         taskMgr.globalClock = globalClock
 
-        __builtins__["base"] = self
-        __builtins__["render2d"] = self.render2d
-        __builtins__["aspect2d"] = self.aspect2d
-        __builtins__["render"] = self.render
-        __builtins__["hidden"] = self.hidden
-        __builtins__["camera"] = self.camera
-        __builtins__["loader"] = self.loader
-        __builtins__["taskMgr"] = self.taskMgr
-        __builtins__["jobMgr"] = self.jobMgr
-        __builtins__["eventMgr"] = self.eventMgr
-        __builtins__["messenger"] = self.messenger
-        __builtins__["bboard"] = self.bboard
+        __builtin__.base = self
+        __builtin__.render2d = self.render2d
+        __builtin__.aspect2d = self.aspect2d
+        __builtin__.render = self.render
+        __builtin__.hidden = self.hidden
+        __builtin__.camera = self.camera
+        __builtin__.loader = self.loader
+        __builtin__.taskMgr = self.taskMgr
+        __builtin__.jobMgr = self.jobMgr
+        __builtin__.eventMgr = self.eventMgr
+        __builtin__.messenger = self.messenger
+        __builtin__.bboard = self.bboard
         # Config needs to be defined before ShowBase is constructed
-        #__builtins__["config"] = self.config
-        __builtins__["run"] = self.run
-        __builtins__["ostream"] = Notify.out()
-        __builtins__["directNotify"] = directNotify
-        __builtins__["giveNotify"] = giveNotify
-        __builtins__["globalClock"] = globalClock
-        __builtins__["vfs"] = vfs
-        __builtins__["cpMgr"] = ConfigPageManager.getGlobalPtr()
-        __builtins__["cvMgr"] = ConfigVariableManager.getGlobalPtr()
-        __builtins__["pandaSystem"] = PandaSystem.getGlobalPtr()
-        __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
-        __builtins__["wantUberdog"] = base.config.GetBool('want-uberdog', 1)
+        #__builtin__.config = self.config
+        __builtin__.run = self.run
+        __builtin__.ostream = Notify.out()
+        __builtin__.directNotify = directNotify
+        __builtin__.giveNotify = giveNotify
+        __builtin__.globalClock = globalClock
+        __builtin__.vfs = vfs
+        __builtin__.cpMgr = ConfigPageManager.getGlobalPtr()
+        __builtin__.cvMgr = ConfigVariableManager.getGlobalPtr()
+        __builtin__.pandaSystem = PandaSystem.getGlobalPtr()
+        __builtin__.__dev__ = base.config.GetBool('want-dev', 0)
+        __builtin__.wantUberdog = base.config.GetBool('want-uberdog', 1)
         if __debug__:
-            __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
-        __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()
+            __builtin__.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
+        __builtin__.onScreenDebug = OnScreenDebug.OnScreenDebug()
 
         if self.wantRender2dp:
-            __builtins__["render2dp"] = self.render2dp
-            __builtins__["aspect2dp"] = self.aspect2dp
+            __builtin__.render2dp = self.render2dp
+            __builtin__.aspect2dp = self.aspect2dp
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
@@ -903,7 +904,7 @@ class ShowBase(DirectObject.DirectObject):
         # we can move around to move all cameras as a group.
         if self.camera == None:
             self.camera = self.render.attachNewNode('camera')
-            __builtins__["camera"] = self.camera
+            __builtin__.camera = self.camera
 
         cam = self.camera.attachNewNode(camNode)
 
@@ -2057,7 +2058,7 @@ class ShowBase(DirectObject.DirectObject):
             from direct.directtools import DirectSession
             base.direct.enable()
         else:
-            __builtins__["direct"] = self.direct = None
+            __builtin__.direct = self.direct = None
 
     def __doStartDirect(self):
         if self.__directStarted:

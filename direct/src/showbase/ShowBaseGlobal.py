@@ -17,7 +17,8 @@ def inspect(anObject):
     from direct.tkpanels import Inspector
     return Inspector.inspect(anObject)
 
-__builtins__["inspect"] = inspect
+import __builtin__
+__builtin__.inspect = inspect
 # this also appears in AIBaseGlobal
 if (not __debug__) and __dev__:
     notify = directNotify.newCategory('ShowBaseGlobal')
