@@ -1,15 +1,19 @@
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, fastRepr, invertDictLossless
 from direct.showbase.PythonUtil import itype, safeRepr
+from direct.showbase.Job import Job
 import types
 
-"""
-import types;from direct.showbase.ContainerReport import ContainerReport;ContainerReport().log()
-"""
-
-class ContainerReport:
+class ContainerReport(Job):
+    notify = directNotify.newCategory("ContainerReport")
+    # set of containers that should not be included in the report
     PrivateIds = set()
-    def __init__(self, name, log=False, limit=None):
-        self._name = name
+
+    def __init__(self, name, log=False, limit=None, threaded=False):
+        Job.__init__(self, name)
+        self._log = log
+        self._limit = limit
+        # set up our data structures
         self._visitedIds = set()
         self._id2pathStr = {}
         self._id2container = {}
@@ -17,6 +21,25 @@ class ContainerReport:
         self._instanceDictIds = set()
         # for breadth-first searching
         self._queue = Queue()
+        jobMgr.add(self)
+        if threaded == False:
+            jobMgr.finish(self)
+
+    def destroy(self):
+        del self._queue
+        del self._instanceDictIds
+        del self._type2id2len
+        del self._id2container
+        del self._id2pathStr
+        del self._visitedIds
+        del self._limit
+        del self._log
+
+    def finished(self):
+        if self._log:
+            self.destroy()
+
+    def run(self):
         ContainerReport.PrivateIds.update(set([
             id(ContainerReport.PrivateIds),
             id(self._visitedIds),
@@ -44,41 +67,8 @@ class ContainerReport:
                                    'simbase')
         self._queue.push(__builtins__)
         self._id2pathStr[id(__builtins__)] = ''
-        self._traverse()
-        if log:
-            self.log(limit=limit)
-    def _enqueueContainer(self, obj, pathStr=None):
-        # call this to add a container that should be examined before any (other) direct
-        # children of __builtins__
-        # this is mostly to fix up the names of variables
-        self._queue.push(obj)
-        objId = id(obj)
-        if pathStr is not None:
-            self._id2pathStr[objId] = pathStr
-        # if it's a container, put it in the tables
-        try:
-            length = len(obj)
-        except:
-            length = None
-        if length is not None and length > 0:
-            self._id2container[objId] = obj
-            self._type2id2len.setdefault(type(obj), {})
-            self._type2id2len[type(obj)][objId] = length
-    def _examine(self, obj):
-        # return False if it's an object that can't contain or lead to other objects
-        if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
-                         types.BuiltinMethodType, types.ComplexType,
-                         types.FloatType, types.IntType, types.LongType,
-                         types.NoneType, types.NotImplementedType,
-                         types.TypeType, types.CodeType, types.FunctionType):
-            return False
-        # if it's an internal object, ignore it
-        if id(obj) in ContainerReport.PrivateIds:
-            return False
-        # this object might lead to more objects. put it on the queue
-        self._enqueueContainer(obj)
-        return True
-    def _traverse(self):
+        yield None
+
         while len(self._queue) > 0:
             parentObj = self._queue.pop()
             #print '%s: %s, %s' % (id(parentObj), type(parentObj), self._id2pathStr[id(parentObj)])
@@ -110,7 +100,7 @@ class ContainerReport:
                 try:
                     keys.sort()
                 except TypeError, e:
-                    print '%s: %s' % (self._id2pathStr[id(parentObj)], repr(e))
+                    print 'non-sortable dict keys: %s: %s' % (self._id2pathStr[id(parentObj)], repr(e))
                 for key in keys:
                     attr = parentObj[key]
                     if id(attr) not in self._visitedIds:
@@ -172,6 +162,47 @@ class ContainerReport:
                 del childName
                 del child
                 continue
+            yield None
+
+        if self._log:
+            self.printingBegin()
+            for i in self._output(limit=self._limit):
+                yield None
+            self.printingEnd()
+
+        yield Job.Done
+        
+    def _enqueueContainer(self, obj, pathStr=None):
+        # call this to add a container that should be examined before any (other) direct
+        # children of __builtins__
+        # this is mostly to fix up the names of variables
+        self._queue.push(obj)
+        objId = id(obj)
+        if pathStr is not None:
+            self._id2pathStr[objId] = pathStr
+        # if it's a container, put it in the tables
+        try:
+            length = len(obj)
+        except:
+            length = None
+        if length is not None and length > 0:
+            self._id2container[objId] = obj
+            self._type2id2len.setdefault(type(obj), {})
+            self._type2id2len[type(obj)][objId] = length
+    def _examine(self, obj):
+        # return False if it's an object that can't contain or lead to other objects
+        if type(obj) in (types.BooleanType, types.BuiltinFunctionType,
+                         types.BuiltinMethodType, types.ComplexType,
+                         types.FloatType, types.IntType, types.LongType,
+                         types.NoneType, types.NotImplementedType,
+                         types.TypeType, types.CodeType, types.FunctionType):
+            return False
+        # if it's an internal object, ignore it
+        if id(obj) in ContainerReport.PrivateIds:
+            return False
+        # this object might lead to more objects. put it on the queue
+        self._enqueueContainer(obj)
+        return True
 
     def _outputType(self, type, limit=None):
         if type not in self._type2id2len:
@@ -192,21 +223,25 @@ class ContainerReport:
                 #print '%s: %s' % (l, self._id2pathStr[id])
                 pathStrList.append(self._id2pathStr[id])
                 count += 1
-                if limit is not None and count >= limit:
-                    return
+                if (count & 0x7f) == 0:
+                    yield None
             pathStrList.sort()
             for pathstr in pathStrList:
                 print '%s: %s' % (l, pathstr)
+            if limit is not None and count >= limit:
+                return
 
     def _output(self, **kArgs):
         print "===== ContainerReport: \'%s\' =====" % (self._name,)
         initialTypes = (types.DictType, types.ListType, types.TupleType)
         for type in initialTypes:
-            self._outputType(type, **kArgs)
+            for i in self._outputType(type, **kArgs):
+                yield None
         otherTypes = list(set(self._type2id2len.keys()).difference(set(initialTypes)))
         otherTypes.sort()
         for type in otherTypes:
-            self._outputType(type, **kArgs)
+            for i in self._outputType(type, **kArgs):
+                yield None
 
     def log(self, **kArgs):
         self._output(**kArgs)
