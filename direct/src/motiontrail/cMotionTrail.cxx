@@ -709,7 +709,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
         }
       }
 
-      delete nurbs_curve_result_array;
+      delete[] nurbs_curve_result_array;
     }
     else {
 
@@ -834,7 +834,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
     // end geometry
     this -> end_geometry ( );   
 
-    delete _vertex_array;
+    delete[] _vertex_array;
     _vertex_array = 0;
   }
 }
