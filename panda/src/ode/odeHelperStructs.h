@@ -13,5 +13,6 @@ struct sBodyParams
         dReal dampen;
     };
     
-#endif odeHelperStructs_h
+#endif
+
     
