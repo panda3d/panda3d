@@ -37,6 +37,8 @@ class GarbageReport(Job):
         if threaded == False:
             jobMgr.finish(self)
 
+        self.numGarbage = 0
+
     def run(self):
         # do the garbage collection
         wasOn = gcDebugOn()
