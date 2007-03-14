@@ -33,7 +33,6 @@ class GarbageReport(Job):
         # stick the arguments onto a ScratchPad so we can delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback)
-        self._printing = False
         jobMgr.add(self)
         if threaded == False:
             jobMgr.finish(self)
@@ -46,10 +45,14 @@ class GarbageReport(Job):
             gc.set_debug(gc.DEBUG_SAVEALL)
         gc.collect()
         yield None
-        self.notify.debug('gc.garbage == %s' % fastRepr(gc.garbage))
-        yield None
+        # don't repr the garbage list if we don't have to
+        if self.notify.getDebug():
+            self.notify.debug('gc.garbage == %s' % fastRepr(gc.garbage))
+            yield None
         self.garbage = list(gc.garbage)
-        self.notify.debug('self.garbage == %s' % self.garbage)
+        # don't repr the garbage list if we don't have to
+        if self.notify.getDebug():
+            self.notify.debug('self.garbage == %s' % self.garbage)
         del gc.garbage[:]
         if not wasOn:
             gc.set_debug(oldFlags)
@@ -175,21 +178,14 @@ class GarbageReport(Job):
         self._report = s
 
         if self._args.log:
-            self._printing = True
+            self.printingBegin()
             for i in xrange(len(self._report)):
                 print self._report[i]
                 if (not (i & 0x3F)):
                     yield None
-            self._printing = False
+            self.printingEnd()
 
         yield Job.Done
-
-    def suspend(self):
-        if self._printing:
-            self.notify.info('SUSPEND')
-    def resume(self):
-        if self._printing:
-            self.notify.info('RESUME')
 
     def finished(self):
         if self._args.doneCallback:

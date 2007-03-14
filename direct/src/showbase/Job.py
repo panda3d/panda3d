@@ -14,28 +14,40 @@ class Job:
         self._name = name
         self._generator = None
         self._id = Job._SerialGen.next()
+        self._printing = False
 
     def destroy(self):
         del self._name
         del self._generator
+        del self._printing
 
     def run(self):
+        # this is a generator
         # override and do your processing
         # yield Job.Continue when possible/reasonable
         # try not to run longer than the JobManager's timeslice between yields
+        #
         # when done, yield Job.Done
+        #
         raise "don't call down"
 
     def getPriority(self):
         # override if you want a different priority
         return Job.Priorities.Normal
 
+    def printingBegin(self):
+        self._printing = True
+    def printingEnd(self):
+        self._printing = False
+
+    def resume(self):
+        # called every time JobManager is going to start running this job
+        if self._printing:
+            print 'JOB:%s:RESUME' % self._name
     def suspend(self):
         # called when JobManager is going to stop running this job for a while
-        pass
-    def resume(self):
-        # called when JobManager is going to start running this job again
-        pass
+        if self._printing:
+            print 'JOB:%s:SUSPEND' % self._name
 
     def finished(self):
         # called when the job finishes and has been removed from the JobManager
