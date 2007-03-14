@@ -22,7 +22,7 @@ public:
     // see socket_tcp and socket_ssl
 
     template < class SOCK_TYPE>
-        inline int PumpMessageReader(Datagram &inmsg, SOCK_TYPE &sck)
+    inline int PumpMessageReader(Datagram &inmsg, SOCK_TYPE &sck)
     {
         if(GetMessageFromBuffer(inmsg) == true)
             return 1;
@@ -39,7 +39,7 @@ public:
 
 
     template < class SOCK_TYPE>
-        inline int ReadPump(SOCK_TYPE &sck)
+    inline int ReadPump(SOCK_TYPE &sck)
     {		
         int		answer = 0;
         size_t		readsize = BufferAvailabe();
@@ -60,6 +60,7 @@ public:
                 if(!sck.ErrorIs_WouldBlocking(gotbytes) )
                 {
                     answer = -3;  // hard error ?
+                    printf("buffered_datagram_reader:ReadPump socket read error -- %d, %s\n", GETERROR(),  sck.getPeerName().get_ip_port().c_str());
                 }
                 else
                 {
@@ -75,11 +76,14 @@ public:
             else   // 0 mean other end disconect arggggg
             {
                 answer = -1;
+                printf("buffered_datagram_reader:ReadPump other end of socket closed -- %s\n",  sck.getPeerName().get_ip_port().c_str());
             }
         }		
         else
         {
             answer = -2;
+            printf("buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- %s\nBufferAvaiable = %d, AmountBuffered = %d, BufferSize = %d\n", sck.getPeerName().get_ip_port().c_str(), readsize, AmountBuffered(), GetBufferSize());
+            
         }
         return answer;
     }

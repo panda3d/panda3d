@@ -31,7 +31,7 @@ inline bool PutFast(const char * data, size_t len);
 
 public:
 	inline size_t		AmountBuffered(void);
-	inline size_t      BufferAvailabe(void);
+        inline size_t           BufferAvailabe(void);
 	inline void		ResetContent(void);
 
 	inline RingBuffer(size_t in_size = 4096);
