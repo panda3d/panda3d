@@ -164,6 +164,8 @@ class JobManager:
             # run through the jobs at this priority in the order that they will run
             for jobId in self._pri2jobIds[pri]:
                 job = jobId2job[jobId]
-                s += '\n%3d: %s' % (jobId, job.getJobName())
+                s += '\n%4d: %s' % (jobId, job.getJobName())
+        else:
+            s += '\n    no jobs running'
         s += '\n'
         return s
