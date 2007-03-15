@@ -115,7 +115,7 @@ private:
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 inline void Buffered_DatagramConnection::ClearAll(void) {
-  printf("Buffered_DatagramConnection::ClearAll Starting Auto Reset\n");
+  nativenet_cat.error() << "Buffered_DatagramConnection::ClearAll Starting Auto Reset\n";
   Close();
   _Writer.ReSet();
   _Reader.ReSet();
@@ -210,7 +210,8 @@ inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void)
 inline Buffered_DatagramConnection::Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) 
 	:  _Writer(do_blocking_writes,wbufsize,write_flush_point) , _Reader(rbufsize) 
 {
-  printf("Buffered_DatagramConnection Constructor rbufsize = %d wbufsize = %d write_flush_point = %d\n",rbufsize, wbufsize, write_flush_point);
+  nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize 
+                        << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
 }
 ////////////////////////////////////////////////////////////////////
 // Function name	:  Buffered_DatagramConnection::SendMessage
@@ -228,7 +229,7 @@ inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
         
 	if(val >= 0)
 	  return true;
-	printf("Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = %d\n",_Writer.AmountBuffered());
+	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
         ClearAll();
       }
       return false;
@@ -240,7 +241,7 @@ inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
 	if(val >= 0)
 	    return true;
 
-	printf("Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = %d\n",_Writer.AmountBuffered());
+	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = " _Writer.AmountBuffered() << "\n";
 	ClearAll();
     return false;
 }
@@ -278,7 +279,7 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
     if(ans1 == 0)
       return false;
     if(ans1 <0) {
-      printf("Buffered_DatagramConnection::GetMessage->Error On PumpMessageReader--Out Buffer = %d\n",_Writer.AmountBuffered());
+      nativenet_cat.error() << "Buffered_DatagramConnection::GetMessage->Error On PumpMessageReader--Out Buffer = " << _Writer.AmountBuffered() << "\n";
       ClearAll();
       return false;
     }
@@ -301,8 +302,9 @@ bool Buffered_DatagramConnection::Flush(void)
         int flush_resp = _Writer.FlushNoBlock(*this);
 		if(flush_resp < 0)
 		{
-                        printf("Buffered_DatagramConnection::Flush->Error On Flush [%d]\n",GetLastError());
-		        printf("Buffered_DatagramConnection::Flush->Error ..Write--Out Buffer = %d\n",_Writer.AmountBuffered());
+                  nativenet_cat.error() << "Buffered_DatagramConnection::Flush->Error On Flush [" <<GetLastError() << "]\n" 
+
+                                       << "Buffered_DatagramConnection::Flush->Error ..Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
 			ClearAll();  
 			return false;
 		}
@@ -319,8 +321,8 @@ bool Buffered_DatagramConnection::Flush(void)
 ////////////////////////////////////////////////////////////////////
 inline void Buffered_DatagramConnection::Reset()
 {
-    printf("Buffered_DatagramConnection::Reset()\n");
-    ClearAll();
+  nativenet_cat.error() << "Buffered_DatagramConnection::Reset()\n";
+  ClearAll();`
 };
 
 

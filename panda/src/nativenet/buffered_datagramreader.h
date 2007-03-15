@@ -60,7 +60,7 @@ public:
                 if(!sck.ErrorIs_WouldBlocking(gotbytes) )
                 {
                     answer = -3;  // hard error ?
-                    printf("buffered_datagram_reader:ReadPump socket read error -- %d, %s\n", GETERROR(),  sck.GetPeerName().get_ip_port().c_str());
+                    nativenet_cat.error() << "buffered_datagram_reader:ReadPump socket read error -- " << GETERROR() <<", " <<  sck.GetPeerName().get_ip_port().c_str() << "\n";
                 }
                 else
                 {
@@ -76,13 +76,13 @@ public:
             else   // 0 mean other end disconect arggggg
             {
                 answer = -1;
-                printf("buffered_datagram_reader:ReadPump other end of socket closed -- %s\n",  sck.GetPeerName().get_ip_port().c_str());
+                nativenet_cat.error() << "buffered_datagram_reader:ReadPump other end of socket closed -- " <<  sck.GetPeerName().get_ip_port().c_str() << "\n";
             }
         }		
         else
         {
             answer = -2;
-            printf("buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- %s\nBufferAvaiable = %d, AmountBuffered = %d, BufferSize = %d\n", sck.GetPeerName().get_ip_port().c_str(), readsize, AmountBuffered(), GetBufferSize());
+            nativenet_cat.error() << "buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- " << sck.GetPeerName().get_ip_port().c_str() << "\nBufferAvaiable = " << readsize " AmountBuffered = " << AmountBuffered() << " BufferSize " << GetBufferSize() << "\n";
             
         }
         return answer;
