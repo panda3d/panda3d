@@ -68,8 +68,7 @@ class JobManager:
                 if len(self._jobId2pri) > 0:
                     # calculate a new highest priority
                     # TODO: this is not very fast
-                    priorities = self._pri2jobId2job.keys()
-                    priorities.sort()
+                    priorities = self._getSortedPriorities()
                     self._highestPriority = priorities[-1]
                 else:
                     taskMgr.remove(JobManager.TaskName)
@@ -107,6 +106,12 @@ class JobManager:
     def setTimeslice(self, timeslice):
         self._timeslice = timeslice
 
+    def _getSortedPriorities(self):
+        # returns all job priorities in ascending order
+        priorities = self._pri2jobId2job.keys()
+        priorities.sort()
+        return priorities
+
     def _process(self, task=None):
         if len(self._pri2jobId2job):
             assert self.notify.debugCall()
@@ -118,7 +123,7 @@ class JobManager:
                 # lower-priority jobs
                 jobId2job = self._pri2jobId2job[self._highestPriority]
                 # process jobs with equal priority in the order they came in
-                jobId = self._pri2jobIds[self._highestPriority][-1]
+                jobId = self._pri2jobIds[self._highestPriority][0]
                 job = jobId2job[jobId]
                 gen = job._getGenerator()
                 job.resume()
@@ -147,3 +152,18 @@ class JobManager:
                     # there's nothing left to do, all the jobs are done!
                     break
         return task.cont
+
+    def __repr__(self):
+        s  =   '================================================='
+        s += '\nJobManager: jobs, in descending order of priority'
+        s += '\n================================================='
+        pris = self._getSortedPriorities()
+        pris.reverse()
+        for pri in pris:
+            jobId2job = self._pri2jobId2job[pri]
+            # run through the jobs at this priority in the order that they will run
+            for jobId in self._pri2jobIds[pri]:
+                job = jobId2job[jobId]
+                s += '\n%3d: %s' % (jobId, job.getJobName())
+        s += '\n'
+        return s
