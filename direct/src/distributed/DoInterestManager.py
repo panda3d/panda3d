@@ -489,7 +489,7 @@ class DoInterestManager(DirectObject.DirectObject):
             eventsToSend = list(DoInterestManager._interests[handle].getEvents())
             DoInterestManager._interests[handle].clearEvents()
         else:
-            DoInterestManager.notify.warning(
+            DoInterestManager.notify.debug(
                 "handleInterestDoneMessage--> handle: %s: Expecting context %s, got %s" % (
                 handle, DoInterestManager._interests[handle].context, contextId))
         if __debug__:
