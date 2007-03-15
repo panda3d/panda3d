@@ -1,8 +1,11 @@
 #ifndef __BUFFEREDREADER_GM_H__
 #define __BUFFEREDREADER_GM_H__
 
+
 #include "ringbuffer.h"
 #include "datagram.h"
+#include "config_nativenet.h"
+
 
 inline unsigned short GetUnsignedShort(char * in)
 {

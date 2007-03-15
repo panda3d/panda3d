@@ -17,6 +17,8 @@
 #include "pvector.h"
 #include "buffered_datagramreader.h"
 #include "buffered_datagramwriter.h"
+#include "config_nativenet.h"
+
 
 ////////////////////////////////////////////////////////////////
 // there are 3 states   
