@@ -25,19 +25,18 @@ class GarbageReport(Job):
     NotGarbage = 'NG'
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, doneCallback=None):
-        # if log is True, GarbageReport will self-destroy after logging
+                 threaded=False, doneCallback=None, autoDestroy=False):
+        # if autoDestroy is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
         Job.__init__(self, name)
         # stick the arguments onto a ScratchPad so we can delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
-                                findCycles=findCycles, doneCallback=doneCallback)
+                                findCycles=findCycles, doneCallback=doneCallback,
+                                autoDestroy=autoDestroy)
         jobMgr.add(self)
-        if threaded == False:
+        if not threaded:
             jobMgr.finish(self)
-
-        self.numGarbage = 0
 
     def run(self):
         # do the garbage collection
@@ -185,6 +184,9 @@ class GarbageReport(Job):
                 print self._report[i]
                 if (not (i & 0x3F)):
                     yield None
+            # add an extra line at the end for readability
+            if self.numGarbage > 0:
+                print ''
             self.printingEnd()
 
         yield Job.Done
@@ -192,14 +194,15 @@ class GarbageReport(Job):
     def finished(self):
         if self._args.doneCallback:
             self._args.doneCallback(self)
-        if self._args.log:
+        if self._args.autoDestroy:
             self.destroy()
 
     def destroy(self):
         #print 'GarbageReport.destroy'
         del self._args
         del self.garbage
-        del self.numGarbage
+        # don't get rid of this, we might need it
+        #del self.numGarbage
         del self.referrersByReference
         del self.referrersByNumber
         del self.referentsByReference
@@ -212,6 +215,7 @@ class GarbageReport(Job):
         Job.destroy(self)
 
     def getNumItems(self):
+        # if the job hasn't run yet, we don't have a numGarbage yet
         return self.numGarbage
 
     def getGarbage(self):
@@ -301,4 +305,5 @@ class GarbageLogger(GarbageReport):
     one of these. It automatically destroys itself after logging"""
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
+        kArgs['autoDestroy'] = True
         GarbageReport.__init__(self, name, *args, **kArgs)
