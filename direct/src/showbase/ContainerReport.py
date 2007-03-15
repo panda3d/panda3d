@@ -67,9 +67,11 @@ class ContainerReport(Job):
                                    'simbase')
         self._queue.push(__builtins__)
         self._id2pathStr[id(__builtins__)] = ''
-        yield None
 
         while len(self._queue) > 0:
+            # yield up here instead of at the end, since we skip back to the
+            # top of the while loop from various points
+            yield None
             parentObj = self._queue.pop()
             #print '%s: %s, %s' % (id(parentObj), type(parentObj), self._id2pathStr[id(parentObj)])
             isInstanceDict = False
@@ -100,9 +102,13 @@ class ContainerReport(Job):
                 try:
                     keys.sort()
                 except TypeError, e:
-                    print 'non-sortable dict keys: %s: %s' % (self._id2pathStr[id(parentObj)], repr(e))
+                    self.notify.warning('non-sortable dict keys: %s: %s' % (self._id2pathStr[id(parentObj)], repr(e)))
                 for key in keys:
-                    attr = parentObj[key]
+                    try:
+                        attr = parentObj[key]
+                    except KeyError, e:
+                        self.notify.warning('could not index into %s with key %s' % (self._id2pathStr[id(parentObj)],
+                                                                                     key))
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
@@ -162,7 +168,6 @@ class ContainerReport(Job):
                 del childName
                 del child
                 continue
-            yield None
 
         if self._log:
             self.printingBegin()
