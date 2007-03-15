@@ -38,6 +38,7 @@
   
   #define INSTALL_HEADERS \
         buffered_datagramconnection.h \
+        config_nativenet.h \
 	ringbuffer.h ringbuffer.i socket_ip.h socket_tcp_listen.h \
         time_accumulator.h time_out.h \
 	buffered_datagramreader.h buffered_datagramreader.i \
