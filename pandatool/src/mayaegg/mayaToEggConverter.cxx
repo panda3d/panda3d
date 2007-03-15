@@ -2074,15 +2074,15 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                 if (uvs[0] > 1.0 || uvs[0] < -1.0) {
                   // apply upto 1/1000th precision, but round up
                   uvs[0] = (long)(uvs[0]*1000);
-                  cout << "before rounding uvs[0]: " << uvs[0] << endl;
+                  mayaegg_cat.debug() << "before rounding uvs[0]: " << uvs[0] << endl;
                   uvs[0] = (double)(round((double)uvs[0]/10.0)*10.0)/1000.0;
-                  cout << "after rounding uvs[0]: " << uvs[0] << endl;
+                  mayaegg_cat.debug() << "after rounding uvs[0]: " << uvs[0] << endl;
                 }
                 if (uvs[1] > 1.0 || uvs[1] < -1.0) {
                   uvs[1] = (long)(uvs[1]*1000);
-                  cout << "before rounding uvs[1]: " << uvs[1] << endl;
+                  mayaegg_cat.debug() << "before rounding uvs[1]: " << uvs[1] << endl;
                   uvs[1] = (double)(round((double)uvs[1]/10.0)*10.0)/1000.0;
-                  cout << "after rounding uvs[1]: " << uvs[1] << endl;
+                  mayaegg_cat.debug() << "after rounding uvs[1]: " << uvs[1] << endl;
                 }
               }
               vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
