@@ -140,15 +140,19 @@ make(const string &body, int preprocessor) {
 //
 //               Currently, macroexpand is just a stub that returns an
 //               expansion which is exactly equal to the input string.
+//
+//               The "caps" parameter should describe the capabilities
+//               of the gsg on which this is intended to run.
 ////////////////////////////////////////////////////////////////////
 PT(ShaderExpansion) Shader::
-macroexpand(const RenderState *context) const {
+macroexpand(const RenderState *context,
+            const ShaderExpansion::ShaderCaps &caps) const {
   if (_fixed_expansion) {
     return _fixed_expansion;
   }
   // I am casting away the 'const' so as to be able
   // to write to this field.  This field is just a cache.
-  ((Shader*)this)->_fixed_expansion = ShaderExpansion::make(_name,_body);
+  ((Shader*)this)->_fixed_expansion = ShaderExpansion::make(_name,_body,caps);
   return _fixed_expansion;
 }
 

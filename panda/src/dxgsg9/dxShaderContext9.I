@@ -27,6 +27,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 valid (GSG *gsg) {
-  return _state;
+#ifdef HAVE_CG
+  if (_cg_context) {
+    return true;
+  }
+#endif
+  return false;
 }
 

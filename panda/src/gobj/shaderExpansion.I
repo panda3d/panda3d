@@ -36,3 +36,69 @@ get_text() const {
   return _text;
 }
 
+////////////////////////////////////////////////////////////////////
+//  Function: ShaderExpansion::get_header
+//  Access: Public
+//  Description: Return the ShaderExpansion's header line.
+////////////////////////////////////////////////////////////////////
+INLINE const string &ShaderExpansion::
+get_header() const {
+  return _header;
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: ShaderExpansion::get_error_flag
+//  Access: Public
+//  Description: Returns true if the shader contains a compile-time
+//               error.  This doesn't tell you whether or not the
+//               shader is supported on the current video card.
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderExpansion::
+get_error_flag() const {
+  return _error_flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: ShaderExpansion::ShaderCapabilities Constructor
+//  Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderExpansion::ShaderCaps::
+ShaderCaps() {
+  clear();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//  Function: ShaderExpansion::ShaderCapabilities::clear()
+//  Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ShaderExpansion::ShaderCaps::
+clear() {
+#ifdef HAVE_CG
+  _active_vprofile = 0;
+  _active_fprofile = 0;
+  _ultimate_vprofile = 0;
+  _ultimate_fprofile = 0;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////////////
+//  Function: ShaderExpansion::ShaderCapabilities::operator ==
+//  Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderExpansion::ShaderCaps::
+operator == (const ShaderCaps &other) const {
+#ifdef HAVE_CG
+  if ((_active_vprofile != other._active_vprofile) ||
+      (_active_fprofile != other._active_fprofile) ||
+      (_ultimate_vprofile != other._ultimate_vprofile) ||
+      (_ultimate_fprofile != other._ultimate_fprofile)) {
+     return false;
+  }
+#endif
+  return true;
+}

@@ -17,9 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#ifdef HAVE_CGGL
-#include "Cg/cgGL.h"
-#endif
 #include "string_utils.h"
 #include "internalName.h"
 #include "shaderExpansion.h"
@@ -49,23 +46,18 @@ public:
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
-  bool _state;
 
 private:
 
-#ifdef HAVE_CGGL
+#ifdef HAVE_CG
   CGcontext _cg_context;
-  CGprofile _cg_profile[2];
-  CGprogram _cg_program[3];
-
-  void report_cg_compile_errors(const string &file, CGcontext ctx);
-  bool try_cg_compile(ShaderExpansion *s, GSG *gsg);
-  void suggest_cg_profile(const string &vpro, const string &fpro);
-  CGprofile parse_cg_profile(const string &id, bool vertex);
+  CGprogram _cg_vprogram;
+  CGprogram _cg_fprogram;
+  pvector <CGparameter> _cg_parameter_map;
 #endif
-  
-  void release_resources(void);
 
+  void release_resources(void);
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

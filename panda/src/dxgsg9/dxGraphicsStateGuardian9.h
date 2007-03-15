@@ -250,11 +250,7 @@ protected:
 
 public:
   DXScreenData *_screen;
-
-#ifdef HAVE_CGDX9
-  CGcontext _cg_context;
-#endif
-
+  
 protected:
   LPDIRECT3DDEVICE9 _d3d_device;  // same as _screen->_d3d_device, cached for spd
   IDirect3DSwapChain9 *_swap_chain;

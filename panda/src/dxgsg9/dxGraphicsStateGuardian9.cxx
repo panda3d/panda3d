@@ -61,6 +61,9 @@
 #include "pStatTimer.h"
 #include "pStatCollector.h"
 #include "wdxGraphicsBuffer9.h"
+#ifdef HAVE_CG
+#include "Cg/cgD3D9.h"
+#endif
 
 #include <mmsystem.h>
 
@@ -147,10 +150,6 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
   _vertex_shader_maximum_constants = 0;
 
   _supports_stream_offset = false;
-
-#ifdef HAVE_CGDX9
-  _cg_context = 0;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,14 +168,6 @@ DXGraphicsStateGuardian9::
     delete _lru;
     _lru = 0;
   }
-
-#ifdef HAVE_CGDX9
-  if (_cg_context) {
-    cgD3D9SetDevice (NULL);
-    cgDestroyContext (_cg_context);
-    _cg_context = 0;
-  }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,10 +337,9 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(ShaderExpansion *se) {
-#ifdef HAVE_CGDX9
+#ifdef HAVE_CG
   CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
-  if (this -> _cg_context) return result;
-  delete result;
+  return result;
 #endif
   return NULL;
 }
@@ -2395,7 +2385,6 @@ reset() {
 
   _vertex_shader_maximum_constants = d3d_caps.MaxVertexShaderConst;
 
-#ifdef HAVE_CGDX9
   switch (_pixel_shader_version_major)
   {
     case 0:
@@ -2419,10 +2408,48 @@ reset() {
       _shader_model = SM_40;
       break;
   }
-#else
-  _shader_model = SM_00;
-#endif
+
   _auto_detect_shader_model = _shader_model;
+
+#ifdef HAVE_CG
+  cgD3D9SetDevice (_d3d_device);
+
+  if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
+      cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
+    _supports_basic_shaders = true;
+    _shader_caps._active_vprofile = (int)cgD3D9GetLatestVertexProfile();
+    _shader_caps._active_fprofile = (int)cgD3D9GetLatestPixelProfile();
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_3_0;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_3_0;
+  }
+  
+  if (dxgsg9_cat.is_debug()) {
+    
+    CGprofile vertex_profile;
+    CGprofile pixel_profile;
+    
+    vertex_profile = cgD3D9GetLatestVertexProfile( );
+    pixel_profile = cgD3D9GetLatestPixelProfile( );
+    
+    const char *vertex_profile_str =
+      cgGetProfileString(vertex_profile);
+    const char *pixel_profile_str =
+      cgGetProfileString(pixel_profile);
+    
+    if (vertex_profile_str == NULL) {
+      vertex_profile_str = "(null)";
+    }
+    if (pixel_profile_str == NULL) {
+      pixel_profile_str = "(null)";
+    }
+    
+    dxgsg9_cat.debug()
+      << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
+      << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
+      << "\nshader model = " << _shader_model
+      << "\n";
+  }
+#endif
 
   _supports_stream_offset = (d3d_caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) != 0;
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
@@ -2474,52 +2501,6 @@ reset() {
   _screen->_supports_automatic_mipmap_generation = false;
 
   this -> reset_render_states ( );
-
-  // duplicates OpenGL version (ARB_vertex_program extension and
-  // ARB_fragment_program extension)
-  if (_vertex_shader_version_major >= 1 &&
-      _pixel_shader_version_major >= 2) {
-    _supports_basic_shaders = true;
-  }
-
-#ifdef HAVE_CGDX9
-  if (_cg_context == 0) {
-    _cg_context = cgCreateContext ( );
-    cgD3D9SetDevice (_d3d_device);
-  }
-  else {
-    cgD3D9SetDevice (_d3d_device);
-  }
-
-  if (_cg_context) {
-    if (dxgsg9_cat.is_debug()) {
-
-      CGprofile vertex_profile;
-      CGprofile pixel_profile;
-
-      vertex_profile = cgD3D9GetLatestVertexProfile( );
-      pixel_profile = cgD3D9GetLatestPixelProfile( );
-
-      const char *vertex_profile_str =
-        cgGetProfileString(vertex_profile);
-      const char *pixel_profile_str =
-        cgGetProfileString(pixel_profile);
-
-      if (vertex_profile_str == NULL) {
-        vertex_profile_str = "(null)";
-      }
-      if (pixel_profile_str == NULL) {
-        pixel_profile_str = "(null)";
-      }
-
-      dxgsg9_cat.debug()
-        << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
-        << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
-        << "\nshader model = " << _shader_model
-        << "\n";
-    }
-  }
-#endif
 
   _max_vertices_per_array = d3d_caps.MaxVertexIndex;
   _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
@@ -2945,7 +2926,7 @@ do_issue_shader() {
   ShaderExpansion *expansion = _target_rs->get_shader_expansion();
   if (expansion == 0) {
     if (_target._shader->get_shader() != 0) {
-      expansion = _target._shader->get_shader()->macroexpand(_target_rs);
+      expansion = _target._shader->get_shader()->macroexpand(_target_rs, _shader_caps);
       // I am casting away the const-ness of this pointer, because
       // the 'shader-expansion' field is just a cache.
       ((RenderState *)((const RenderState*)_target_rs))->

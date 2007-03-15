@@ -194,8 +194,8 @@ public:
 
   void clear(DrawableRegion *clearable);
 
-  const LMatrix4f *fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered);
-  const LMatrix4f *fetch_specified_part(ShaderContext::ShaderMatInput input, InternalName *name, LMatrix4f &t);
+  const LMatrix4f *fetch_specified_value(ShaderExpansion::ShaderMatSpec &spec, bool altered);
+  const LMatrix4f *fetch_specified_part(ShaderExpansion::ShaderMatInput input, InternalName *name, LMatrix4f &t);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
@@ -409,6 +409,8 @@ protected:
   int _shader_model;
 
   static PT(TextureStage) _alpha_scale_texture_stage;
+
+  ShaderExpansion::ShaderCaps _shader_caps;
 
 public:
   // Statistics

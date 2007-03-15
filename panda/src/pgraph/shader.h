@@ -45,7 +45,8 @@ PUBLISHED:
   INLINE bool            get_loaded() const;
   INLINE bool            get_load_error() const;
 
-  PT(ShaderExpansion) macroexpand(const RenderState *context) const;
+  PT(ShaderExpansion) macroexpand(const RenderState *context,
+                                  const ShaderExpansion::ShaderCaps &caps) const;
 
 public:
   Shader();

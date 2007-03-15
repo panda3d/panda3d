@@ -88,7 +88,7 @@ PreparedGraphicsObjects::
        sci != _prepared_shaders.end();
        ++sci) {
     ShaderContext *sc = (*sci);
-    sc->_shader_expansion->clear_prepared(this);
+    sc->_expansion->clear_prepared(this);
   }
 
   _prepared_shaders.clear();
@@ -460,12 +460,12 @@ void PreparedGraphicsObjects::
 release_shader(ShaderContext *sc) {
   ReMutexHolder holder(_lock);
 
-  sc->_shader_expansion->clear_prepared(this);
+  sc->_expansion->clear_prepared(this);
 
   // We have to set the Shader pointer to NULL at this point, since
   // the Shader itself might destruct at any time after it has been
   // released.
-  sc->_shader_expansion = (ShaderExpansion *)NULL;
+  sc->_expansion = (ShaderExpansion *)NULL;
 
   bool removed = (_prepared_shaders.erase(sc) != 0);
   nassertv(removed);
@@ -492,8 +492,8 @@ release_all_shaders() {
        sci != _prepared_shaders.end();
        ++sci) {
     ShaderContext *sc = (*sci);
-    sc->_shader_expansion->clear_prepared(this);
-    sc->_shader_expansion = (ShaderExpansion *)NULL;
+    sc->_expansion->clear_prepared(this);
+    sc->_expansion = (ShaderExpansion *)NULL;
 
     _released_shaders.insert(sc);
   }

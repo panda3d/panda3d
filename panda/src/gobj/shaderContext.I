@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderContext::
 ShaderContext(ShaderExpansion *se) :
-  _shader_expansion(se)
+  _expansion(se)
 {
 }
 

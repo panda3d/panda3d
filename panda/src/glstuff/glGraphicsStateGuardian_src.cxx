@@ -50,6 +50,10 @@
 #include "indirectLess.h"
 #include "pStatTimer.h"
 
+#ifdef HAVE_CG
+#include "Cg/cgGL.h"
+#endif
+
 #include <algorithm>
 
 #define DEBUG_BUFFERS false
@@ -669,10 +673,14 @@ reset() {
     }
   }
 
-#ifdef HAVE_CGGL
+#ifdef HAVE_CG
   if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
       cgGLIsProfileSupported(CG_PROFILE_ARBVP1)) {
     _supports_basic_shaders = true;
+    _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
+    _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
   }
 #endif
 
@@ -1076,7 +1084,7 @@ reset() {
   void gl_set_stencil_functions (StencilRenderStates *stencil_render_states);
   gl_set_stencil_functions (_stencil_render_states);
 
-#ifdef HAVE_CGGL
+#ifdef HAVE_CG
 
   typedef struct
   {
@@ -3357,7 +3365,7 @@ do_issue_shader() {
   ShaderExpansion *expansion = _target_rs->get_shader_expansion();
   if (expansion == 0) {
     if (_target._shader->get_shader() != 0) {
-      expansion = _target._shader->get_shader()->macroexpand(_target_rs);
+      expansion = _target._shader->get_shader()->macroexpand(_target_rs, _shader_caps);
       // I am casting away the const-ness of this pointer, because
       // the 'shader-expansion' field is just a cache.
       ((RenderState *)((const RenderState*)_target_rs))->

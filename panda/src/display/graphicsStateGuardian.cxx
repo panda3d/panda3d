@@ -783,7 +783,7 @@ clear(DrawableRegion *clearable) {
 //
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f *GraphicsStateGuardian::
-fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered) {
+fetch_specified_value(ShaderExpansion::ShaderMatSpec &spec, bool altered) {
   static LMatrix4f acc;
   const LMatrix4f *val1;
   const LMatrix4f *val2;
@@ -791,26 +791,26 @@ fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered) {
   static LMatrix4f t2;
 
   switch(spec._func) {
-  case ShaderContext::SMF_compose:
+  case ShaderExpansion::SMF_compose:
     val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
     val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
     acc.multiply(*val1, *val2);
     return &acc;
-  case ShaderContext::SMF_compose_cache_first:
+  case ShaderExpansion::SMF_compose_cache_first:
     if (altered) {
       spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
     }
     val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
     acc.multiply(spec._cache, *val2);
     return &acc;
-  case ShaderContext::SMF_compose_cache_second:
+  case ShaderExpansion::SMF_compose_cache_second:
     if (altered) {
       spec._cache = *fetch_specified_part(spec._part[1], spec._arg[1], t2);
     }
     val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
     acc.multiply(*val1, spec._cache);
     return &acc;
-  case ShaderContext::SMF_first:
+  case ShaderExpansion::SMF_first:
     return fetch_specified_part(spec._part[0], spec._arg[0], t1);
   default:
     // should never get here
@@ -824,24 +824,24 @@ fetch_specified_value(ShaderContext::ShaderMatSpec &spec, bool altered) {
 //  Description: See fetch_specified_value
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f *GraphicsStateGuardian::
-fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMatrix4f &t) {
+fetch_specified_part(ShaderExpansion::ShaderMatInput part, InternalName *name, LMatrix4f &t) {
   switch(part) {
-  case ShaderContext::SMO_identity: {
+  case ShaderExpansion::SMO_identity: {
     return &LMatrix4f::ident_mat();
   }
-  case ShaderContext::SMO_window_size: {
+  case ShaderExpansion::SMO_window_size: {
     t = LMatrix4f::translate_mat(_current_display_region->get_pixel_width(),
                                  _current_display_region->get_pixel_height(),
                                  0.0);
     return &t;
   }
-  case ShaderContext::SMO_pixel_size: {
+  case ShaderExpansion::SMO_pixel_size: {
     t = LMatrix4f::translate_mat(_current_display_region->get_pixel_width(),
                                  _current_display_region->get_pixel_height(),
                                  0.0);
     return &t;
   }
-  case ShaderContext::SMO_card_center: {
+  case ShaderExpansion::SMO_card_center: {
     int px = _current_display_region->get_pixel_width();
     int py = _current_display_region->get_pixel_height();
     t = LMatrix4f::translate_mat((px*0.5) / Texture::up_to_power_2(px),
@@ -849,14 +849,14 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
                                  0.0);
     return &t;
   }
-  case ShaderContext::SMO_mat_constant_x: {
+  case ShaderExpansion::SMO_mat_constant_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     if (input->get_nodepath().is_empty()) {
       return &LMatrix4f::ident_mat();
     }
     return &(input->get_nodepath().node()->get_transform()->get_mat());
   }
-  case ShaderContext::SMO_vec_constant_x: {
+  case ShaderExpansion::SMO_vec_constant_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     const float *data = input->get_vector().get_data();
     t = LMatrix4f(data[0],data[1],data[2],data[3],
@@ -865,28 +865,28 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
                   data[0],data[1],data[2],data[3]);
     return &t;
   }
-  case ShaderContext::SMO_world_to_view: {
+  case ShaderExpansion::SMO_world_to_view: {
     return &(get_scene()->get_world_transform()->get_mat());
     break;
   }
-  case ShaderContext::SMO_view_to_world: {
+  case ShaderExpansion::SMO_view_to_world: {
     return &(get_scene()->get_camera_transform()->get_mat());
   }
-  case ShaderContext::SMO_model_to_view: {
+  case ShaderExpansion::SMO_model_to_view: {
     return &(get_external_transform()->get_mat());
   }
-  case ShaderContext::SMO_view_to_model: {
+  case ShaderExpansion::SMO_view_to_model: {
     // DANGER: SLOW AND NOT CACHEABLE!
     t.invert_from(get_external_transform()->get_mat());
     return &t;
   }
-  case ShaderContext::SMO_apiview_to_view: {
+  case ShaderExpansion::SMO_apiview_to_view: {
     return &(_inv_cs_transform->get_mat());
   }
-  case ShaderContext::SMO_view_to_apiview: {
+  case ShaderExpansion::SMO_view_to_apiview: {
     return &(_cs_transform->get_mat());
   }
-  case ShaderContext::SMO_clip_to_view: {
+  case ShaderExpansion::SMO_clip_to_view: {
     if (_current_lens->get_coordinate_system() == _coordinate_system) {
       return &(_current_lens->get_projection_mat_inv(_current_stereo_channel));
     } else {
@@ -895,7 +895,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       return &t;
     }
   }
-  case ShaderContext::SMO_view_to_clip: {
+  case ShaderExpansion::SMO_view_to_clip: {
     if (_current_lens->get_coordinate_system() == _coordinate_system) {
       return &(_current_lens->get_projection_mat(_current_stereo_channel));
     } else {
@@ -904,15 +904,15 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       return &t;
     }
   }
-  case ShaderContext::SMO_apiclip_to_view: {
+  case ShaderExpansion::SMO_apiclip_to_view: {
     t = _projection_mat_inv->get_mat() * _inv_cs_transform->get_mat();
     return &t;
   }
-  case ShaderContext::SMO_view_to_apiclip: {
+  case ShaderExpansion::SMO_view_to_apiclip: {
     t = _cs_transform->get_mat() * _projection_mat->get_mat();
     return &t;
   }
-  case ShaderContext::SMO_view_x_to_view: {
+  case ShaderExpansion::SMO_view_x_to_view: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
 
     if (input->get_nodepath().is_empty()) {
@@ -927,7 +927,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
-  case ShaderContext::SMO_view_to_view_x: {
+  case ShaderExpansion::SMO_view_to_view_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
 
     if (input->get_nodepath().is_empty()) {
@@ -942,7 +942,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       invert(input->get_nodepath().get_net_transform()->get_mat());
     return &t;
   }
-  case ShaderContext::SMO_apiview_x_to_view: {
+  case ShaderExpansion::SMO_apiview_x_to_view: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
     t = LMatrix4f::convert_mat(_internal_coordinate_system, _coordinate_system) *
@@ -950,7 +950,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
-  case ShaderContext::SMO_view_to_apiview_x: {
+  case ShaderExpansion::SMO_view_to_apiview_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
     t = (get_scene()->get_camera_transform()->get_mat() *
@@ -958,7 +958,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
          LMatrix4f::convert_mat(_coordinate_system, _internal_coordinate_system));
     return &t;
   }
-  case ShaderContext::SMO_clip_x_to_view: {
+  case ShaderExpansion::SMO_clip_x_to_view: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, input->get_nodepath().node())->get_lens();
@@ -968,7 +968,7 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
-  case ShaderContext::SMO_view_to_clip_x: {
+  case ShaderExpansion::SMO_view_to_clip_x: {
     const ShaderInput *input = _target._shader->get_shader_input(name);
     nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, input->get_nodepath().node())->get_lens();
@@ -978,11 +978,11 @@ fetch_specified_part(ShaderContext::ShaderMatInput part, InternalName *name, LMa
       lens->get_projection_mat(_current_stereo_channel);
     return &t;
   }
-  case ShaderContext::SMO_apiclip_x_to_view: {
+  case ShaderExpansion::SMO_apiclip_x_to_view: {
     // NOT IMPLEMENTED
     return &LMatrix4f::ident_mat();
   }
-  case ShaderContext::SMO_view_to_apiclip_x: {
+  case ShaderExpansion::SMO_view_to_apiclip_x: {
     // NOT IMPLEMENTED
     return &LMatrix4f::ident_mat();
   }

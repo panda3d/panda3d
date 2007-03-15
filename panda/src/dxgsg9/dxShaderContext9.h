@@ -21,11 +21,6 @@
 
 #include "dtool_config.h"
 #include "pandabase.h"
-#ifdef HAVE_CGDX9
-#include "Cg/cg.h"
-#include "Cg/cgGL.h"
-#include "Cg/cgD3D9.h"
-#endif
 #include "string_utils.h"
 #include "internalName.h"
 #include "shaderExpansion.h"
@@ -39,47 +34,49 @@
 class VertexElementArray;
 class CLP(GraphicsStateGuardian);
 
-typedef struct
-{
-  int vertex_shader;
-  int total_constant_descriptions;
-  D3DXCONSTANT_DESC *constant_description_array;
-}
-DX_PARAMETER;
-
-typedef struct
-{
-  int state;
-  union
-  {
-    DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader;
-    DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader;
-  };
-  LPD3DXCONSTANTTABLE constant_table;
-  D3DXCONSTANTTABLE_DESC constant_table_description;
-
-  int total_semantics;
-  D3DXSEMANTIC *semantic_array;
-}
-DIRECT_3D_SHADER;
+// Caution: adding HLSL support is going to be tricky, as the parsing needs
+// to be done in the cull thread, which cannot use the DX API.  - Josh
+//
+//
+// typedef struct
+// {
+//   int vertex_shader;
+//   int total_constant_descriptions;
+//   D3DXCONSTANT_DESC *constant_description_array;
+// }
+// DX_PARAMETER;
+// 
+// typedef struct
+// {
+//   int state;
+//   union
+//   {
+//     DIRECT_3D_VERTEX_SHADER direct_3d_vertex_shader;
+//     DIRECT_3D_PIXEL_SHADER direct_3d_pixel_shader;
+//   };
+//   LPD3DXCONSTANTTABLE constant_table;
+//   D3DXCONSTANTTABLE_DESC constant_table_description;
+// 
+//   int total_semantics;
+//   D3DXSEMANTIC *semantic_array;
+// }
+// DIRECT_3D_SHADER;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXShaderContext9
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
 
-typedef CLP(GraphicsStateGuardian) GSG;
-
 class EXPCL_PANDADX CLP(ShaderContext): public ShaderContext {
 public:
-
+  typedef CLP(GraphicsStateGuardian) GSG;
+  
   CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
   ~CLP(ShaderContext)();
 
   INLINE bool valid(GSG *gsg);
   bool bind(GSG *gsg);
   void unbind(GSG *gsg);
-
   void issue_parameters(GSG *gsg, bool altered);
   void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
@@ -87,68 +84,20 @@ public:
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 
-  int _vertex_size;
   class VertexElementArray *_vertex_element_array;
 
   // FOR DEBUGGING
+  int _vertex_size;
   string _name;
-
-  bool _state;
-  bool _cg_shader;
-  bool _transpose_matrix;
-
+  
 private:
 
-#ifdef HAVE_CGDX9
-  struct ShaderAutoBind {
-    CGparameter parameter;
-    int value;
-    DX_PARAMETER *dx_parameter;
-  };
-  struct ShaderArgBind {
-    CGparameter parameter;
-    PT(InternalName) name;
-    DX_PARAMETER *dx_parameter;
-  };
-  struct ShaderTexBind {
-    CGparameter parameter;
-    PT(InternalName) name;
-    int stage;
-    int desiredtype;
-    PT(InternalName) suffix;
-    DX_PARAMETER *dx_parameter;
-  };
-  struct ShaderTransBind {
-    CGparameter parameter;
-    PT(InternalName) src_name;
-    PT(InternalName) rel_name;
-    int trans_piece;
-    DX_PARAMETER *dx_parameter;
-  };
-  struct ShaderVarying {
-    CGparameter parameter;
-    PT(InternalName) name;
-    int append_uv;
-    DX_PARAMETER *dx_parameter;
-  };
-
-//  CGcontext _cg_context;
-  CGprofile _cg_profile[2];
-  CGprogram _cg_program[2];
-
-  void report_cg_compile_errors(const string &file, CGcontext ctx);
-
-  bool try_cg_compile(ShaderExpansion *s, GSG *gsg);
-  void suggest_cg_profile(const string &vpro, const string &fpro);
-  CGprofile parse_cg_profile(const string &id, bool vertex);
+#ifdef HAVE_CG
+  CGcontext _cg_context;
+  CGprogram _cg_vprogram;
+  CGprogram _cg_fprogram;
+  pvector <CGparameter> _cg_parameter_map;
 #endif
-
-public:
-
-  DIRECT_3D_SHADER _direct_3d_vertex_shader;
-  DIRECT_3D_SHADER _direct_3d_pixel_shader;
-  int _total_dx_parameters;
-  DX_PARAMETER *_dx_parameter_array;
 
 private:
 
