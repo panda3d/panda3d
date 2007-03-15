@@ -82,7 +82,7 @@ public:
         else
         {
             answer = -2;
-            nativenet_cat.error() << "buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- " << sck.GetPeerName().get_ip_port().c_str() << "\nBufferAvaiable = " << readsize " AmountBuffered = " << AmountBuffered() << " BufferSize " << GetBufferSize() << "\n";
+    nativenet_cat.error() << "buffered_datagram_reader:ReadPump Yeep! buffer has no room to read to -- " << sck.GetPeerName().get_ip_port().c_str() << "\nBufferAvaiable = " << readsize <<" AmountBuffered = " << AmountBuffered() << " BufferSize " << GetBufferSize() << "\n";
             
         }
         return answer;

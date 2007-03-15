@@ -241,7 +241,7 @@ inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
 	if(val >= 0)
 	    return true;
 
-	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = " _Writer.AmountBuffered() << "\n";
+	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
 	ClearAll();
     return false;
 }
@@ -322,7 +322,7 @@ bool Buffered_DatagramConnection::Flush(void)
 inline void Buffered_DatagramConnection::Reset()
 {
   nativenet_cat.error() << "Buffered_DatagramConnection::Reset()\n";
-  ClearAll();`
+  ClearAll();
 };
 
 

@@ -26,8 +26,8 @@
 	socket_udp_outgoing.h time_general.h
         
   #define INCLUDED_SOURCES \
-    buffered_datagramconnection.cxx \
     config_nativenet.cxx \
+    buffered_datagramconnection.cxx \
     socket_ip.cxx \
     socket_tcp.cxx \
     socket_tcp_listen.cxx \
