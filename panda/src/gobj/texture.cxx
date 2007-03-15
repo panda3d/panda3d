@@ -368,6 +368,7 @@ generate_alpha_scale_map() {
   set_wrap_u(WM_clamp);
   set_minfilter(FT_nearest);
   set_magfilter(FT_nearest);
+  set_compression(CM_off);
 
   PTA_uchar image = make_ram_image();
   _keep_ram_image = true;
