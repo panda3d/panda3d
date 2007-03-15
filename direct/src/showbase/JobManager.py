@@ -154,9 +154,9 @@ class JobManager:
         return task.cont
 
     def __repr__(self):
-        s  =   '================================================='
-        s += '\nJobManager: jobs, in descending order of priority'
-        s += '\n================================================='
+        s  =   '======================================================='
+        s += '\nJobManager: active jobs in descending order of priority'
+        s += '\n======================================================='
         pris = self._getSortedPriorities()
         pris.reverse()
         for pri in pris:
