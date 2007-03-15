@@ -76,6 +76,7 @@ if __debug__: # __dev__ not yet available at this point
             self._finished = False
 
         def run(self):
+            self.printingBegin()
             while True:
                 while self._accum < 100:
                     self._accum += 1
@@ -87,6 +88,7 @@ if __debug__: # __dev__ not yet available at this point
 
                 if self._counter >= 100:
                     print 'Job.Done'
+                    self.printingEnd()
                     yield Job.Done
                 else:
                     yield None
