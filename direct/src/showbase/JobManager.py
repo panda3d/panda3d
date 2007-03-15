@@ -49,6 +49,7 @@ class JobManager:
             self._highestPriority = pri
         if len(self._jobId2pri) == 1:
             taskMgr.add(self._process, JobManager.TaskName)
+        self.notify.debug('added job %s' % job.getJobName())
         
     def remove(self, job):
         assert self.notify.debugCall()
@@ -73,6 +74,7 @@ class JobManager:
                 else:
                     taskMgr.remove(JobManager.TaskName)
                     self._highestPriority = 0
+        self.notify.debug('removed job %s' % job.getJobName())
 
     def finish(self, job):
         # run this job, right now, until it finishes
