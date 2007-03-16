@@ -66,7 +66,7 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _size = _max-_min+1; // +1 because min and max are inclusive.
   nassertv(_size != 0); // size must be > 0.
 
-  _table=new PN_uint32[_size];
+  _table = new PN_uint32[_size];
   nassertv(_table); // This should be redundant if new throws an exception.
 
   for (PN_uint32 i = 0; i < _size; ++i) {
@@ -75,7 +75,7 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _table[_size - 1] = IndexEnd;
   _next_free = 0;
   _last_free = _size - 1;
-  _free=_size;
+  _free = _size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,12 +105,10 @@ allocate() {
     return IndexEnd;
   }
   PN_uint32 index = _next_free;
-  _next_free = _table[_next_free];
-
-  #ifndef NDEBUG //[
   nassertr(_table[index] != IndexAllocated, IndexEnd);
+
+  _next_free = _table[_next_free];
   _table[index] = IndexAllocated;
-  #endif //]
 
   --_free;
 
@@ -127,41 +125,68 @@ allocate() {
 //               pass).  The specified id is removed from the
 //               available pool.
 //
-//               Because of the limitations of this algorithm, this
-//               may only be called before the first call to
-//               allocate(); and all the calls to initial_reserve_id()
-//               must be made in descending order by id.
+//               Because of the limitations of this algorithm, this is
+//               most efficient when it is called before the first
+//               call to allocate(), and when all the calls to
+//               initial_reserve_id() are made in descending order by
+//               id.  However, this is a performance warning only; if
+//               performance is not an issue, any id may be reserved
+//               at any time.
 ////////////////////////////////////////////////////////////////////
 void UniqueIdAllocator::
 initial_reserve_id(PN_uint32 id) {
-  nassertv(_next_free == 0);  // Must call before any call to allocate().
   nassertv(id >= _min && id <= _max); // Attempt to reserve out-of-range id.
   PN_uint32 index = id - _min; // Convert to _table index.
 
   nassertv(_table[index] != IndexAllocated);
 
-  // Because we insist that this call be made before any calls to
-  // allocate(), and in descending order, it follows that the _table
-  // is still set up such that _table[i] = i+1, at least for all slots
-  // <= index.  Thus, the free link to slot [index] is guaranteed to
-  // be the slot right before it.
+  if (_free == 1) {
+    // We just reserved the last element in the free chain.
+    _next_free = IndexEnd;
 
-  if (index == 0) {
+  } else if (_next_free == index) {
+    // We're reserving the head of the free chain.
     _next_free = _table[index];
 
   } else {
-    nassertv(_table[index - 1] == index);
-    _table[index - 1] = _table[index];
+    // Since we don't store back pointers in the free chain, we have
+    // to search for the element in the free chain that points to this
+    // index.
+
+    // However, there is an easy optimal case: because we expect that
+    // this call will be made before any calls to allocate(),
+    // hopefully is it still true that the _table is still set up such
+    // that _table[i] = i+1 (and if the numbers are reserved in
+    // descending order, this will be true at least for all i <=
+    // index).  Thus, the free link to slot [index] is expected to be
+    // the slot right before it, or if not, it usually won't be far
+    // before it.
+
+    PN_uint32 prev_index = index;
+    while (prev_index > 0 && _table[prev_index - 1] != index) {
+      --prev_index;
+    }
+    if (prev_index > 0 && _table[prev_index - 1] == index) {
+      // We've found it.
+      --prev_index;
+
+    } else {
+      // OK, it wasn't found below; we have to search above.
+      prev_index = index + 1;
+      while (prev_index < _size && _table[prev_index] != index) {
+        ++prev_index;
+      }
+    }
+
+    nassertv(_table[prev_index] == index);
+    _table[prev_index] = _table[index];
 
     if (index == _last_free) {
-      _last_free = index - 1;
+      _last_free = prev_index;
     }
   }
 
-  #ifndef NDEBUG //[
   _table[index] = IndexAllocated;
-  #endif //]
-
   --_free;
 }
 

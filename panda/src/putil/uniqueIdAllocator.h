@@ -73,7 +73,7 @@ protected:
   // IndexEnd.
 
   // For an allocated id, the table entry at the corresponding index
-  // is undefined (but in debug mode, it contains IndexAllocated).
+  // contains IndexAllocated.
   PN_uint32 *_table;
 
   // The minimum and maximum as passed to the constructor.
