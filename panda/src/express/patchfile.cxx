@@ -1456,11 +1456,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
         if (stream_new.gcount() == (int)magic_number.size() &&
             memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
           is_multifile = true;
-        } else {
-          cerr << "magic number files on stream_new\n";
         }
-      } else {
-        cerr << "magic number files on stream_orig\n";
       }
       delete[] buffer;
     }
