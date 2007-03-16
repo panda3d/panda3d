@@ -1137,9 +1137,9 @@ ShaderExpansion(const string &name, const string &text,
                 const ShaderCaps &caps) :
   _name(name),
   _text(text),
-  _parse(0),
   _header(""),
-  _error_flag(true)
+  _error_flag(true),
+  _parse(0)
 {
   string header;
   parse_init();

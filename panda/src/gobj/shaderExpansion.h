@@ -181,7 +181,7 @@ public:
     int _active_fprofile;
     int _ultimate_vprofile;
     int _ultimate_fprofile;
-#endif;
+#endif
     INLINE void clear();
     INLINE bool operator == (const ShaderCaps &other) const;
     INLINE ShaderCaps();
