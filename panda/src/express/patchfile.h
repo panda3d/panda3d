@@ -123,12 +123,6 @@ private:
                            PN_uint32 offset_orig, PN_uint32 offset_new,
                            istream &stream_orig, istream &stream_new,
                            TarDef &tar_orig, TarDef &tar_new);
-  
-  bool patch_subfile(ostream &write_stream, 
-                     PN_uint32 offset_orig, PN_uint32 offset_new,
-                     const Filename &filename,
-                     istream &stream_orig, streampos orig_start, streampos orig_end,
-                     istream &stream_new, streampos new_start, streampos new_end);
 
   // Because this is static, we can only call read_tar() one at a
   // time--no threads, please.
@@ -144,6 +138,12 @@ private:
                           ostream &write_stream, 
                           PN_uint32 offset_orig, PN_uint32 offset_new,
                           istream &stream_orig, istream &stream_new);
+  
+  bool patch_subfile(ostream &write_stream, 
+                     PN_uint32 offset_orig, PN_uint32 offset_new,
+                     const Filename &filename,
+                     istream &stream_orig, streampos orig_start, streampos orig_end,
+                     istream &stream_new, streampos new_start, streampos new_end);
 
   static const PN_uint32 _HASH_BITS;
   static const PN_uint32 _HASHTABLESIZE;
