@@ -15,6 +15,7 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef PATCHFILE_H
 #define PATCHFILE_H
 
@@ -31,6 +32,7 @@
 #include "buffer.h"
 #include "pointerTo.h"
 #include "hashVal.h" // MD5 stuff
+#include "ordered_vector.h"
 
 #include <algorithm>
 
@@ -41,18 +43,6 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patchfile {
 PUBLISHED:
-  /*
-  enum PatchfileStatus {
-    PF_ok = 2,
-    PF_success = 1,
-    PF_error = -1,
-    PF_error_filenotfound = -2,
-    PF_error_invalidpatchfile = -3,
-    PF_error_wrongpatchfile = -4,
-    PF_error_renamingtempfile = -5,
-  };
-  */
-
   Patchfile();
   Patchfile(PT(Buffer) buffer);
   ~Patchfile();
@@ -108,9 +98,51 @@ private:
                     istream &stream_orig, istream &stream_new);
   void write_terminator(ostream &write_stream);
 
-  bool compute_patches(ostream &write_stream, PN_uint32 copy_offset,
-                       istream &stream_orig, istream &stream_new);
+  bool compute_file_patches(ostream &write_stream, 
+                            PN_uint32 offset_orig, PN_uint32 offset_new,
+                             istream &stream_orig, istream &stream_new);
   bool compute_mf_patches(ostream &write_stream, 
+                          PN_uint32 offset_orig, PN_uint32 offset_new,
+                          istream &stream_orig, istream &stream_new);
+#ifdef HAVE_TAR
+  class TarSubfile {
+  public:
+    inline bool operator < (const TarSubfile &other) const {
+      return _name < other._name;
+    }
+    string _name;
+    streampos _header_start;
+    streampos _data_start;
+    streampos _data_end;
+    streampos _end;
+  };
+  typedef ov_set<TarSubfile> TarDef;
+
+  bool read_tar(TarDef &tar, istream &stream);
+  bool compute_tar_patches(ostream &write_stream, 
+                           PN_uint32 offset_orig, PN_uint32 offset_new,
+                           istream &stream_orig, istream &stream_new,
+                           TarDef &tar_orig, TarDef &tar_new);
+  
+  bool patch_subfile(ostream &write_stream, 
+                     PN_uint32 offset_orig, PN_uint32 offset_new,
+                     const Filename &filename,
+                     istream &stream_orig, streampos orig_start, streampos orig_end,
+                     istream &stream_new, streampos new_start, streampos new_end);
+
+  // Because this is static, we can only call read_tar() one at a
+  // time--no threads, please.
+  static istream *_tar_istream;
+  
+  static int tar_openfunc(const char *filename, int oflags, ...);
+  static int tar_closefunc(int fd);
+  static ssize_t tar_readfunc(int fd, void *buffer, size_t nbytes);
+  static ssize_t tar_writefunc(int fd, const void *buffer, size_t nbytes);
+#endif  // HAVE_TAR
+
+  bool do_compute_patches(const Filename &file_orig, const Filename &file_new,
+                          ostream &write_stream, 
+                          PN_uint32 offset_orig, PN_uint32 offset_new,
                           istream &stream_orig, istream &stream_new);
 
   static const PN_uint32 _HASH_BITS;

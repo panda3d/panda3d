@@ -31,26 +31,19 @@
 #include <stdio.h> // for tempnam
 #include <string.h>  // for strstr
 
+#ifdef HAVE_TAR
+#include "libtar.h"
+#include <fcntl.h>  // for O_RDONLY
+#endif  // HAVE_TAR
+
 #ifdef WIN32_VC
 #define tempnam _tempnam
 #endif
 
-// PROFILING ///////////////////////////////////////////////////////
-//#define PROFILE_PATCH_BUILD
-#ifdef PROFILE_PATCH_BUILD
+#ifdef HAVE_TAR
+istream *Patchfile::_tar_istream = NULL;
+#endif  // HAVE_TAR
 
-#include "clockObject.h"
-ClockObject *globalClock = ClockObject::get_global_clock();
-
-#define GET_PROFILE_TIME() globalClock->get_real_time()
-#define START_PROFILE(var) double var = GET_PROFILE_TIME()
-#define END_PROFILE(startTime, name) \
-  cout << name << " took " << (GET_PROFILE_TIME() - (startTime)) << " seconds" << endl
-
-#else
-#define START_PROFILE(var)
-#define END_PROFILE(startTime, name)
-#endif
 ////////////////////////////////////////////////////////////////////
 
 // this actually slows things down...
@@ -595,8 +588,6 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
 
   PN_uint32 i;
 
-  START_PROFILE(clearTables);
-
   // clear hash table
   for(i = 0; i < _HASHTABLESIZE; i++) {
     hash_table[i] = _NULL_VALUE;
@@ -607,28 +598,12 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
     link_table[i] = _NULL_VALUE;
   }
 
-  END_PROFILE(clearTables, "clearing hash and link tables");
-
   if(length_orig < _footprint_length) return;
-
-  START_PROFILE(hashingFootprints);
-#ifdef PROFILE_PATCH_BUILD
-  double hashCalc = 0.0;
-  double linkSearch = 0.0;
-#endif
 
   // run through original file and hash each footprint
   for(i = 0; i < (length_orig - _footprint_length); i++) {
 
-#ifdef PROFILE_PATCH_BUILD
-    double t = GET_PROFILE_TIME();
-#endif
-
     PN_uint32 hash_value = calc_hash(&buffer_orig[i]);
-
-#ifdef PROFILE_PATCH_BUILD
-    hashCalc += GET_PROFILE_TIME() - t;
-#endif
 
     // we must now store this file index in the hash table
     // at the offset of the hash value
@@ -657,27 +632,13 @@ build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
       // hash entry is taken, go to the link table
       PN_uint32 link_offset = hash_table[hash_value];
 
-#ifdef PROFILE_PATCH_BUILD
-      double t = GET_PROFILE_TIME();
-#endif
       while (_NULL_VALUE != link_table[link_offset]) {
         link_offset = link_table[link_offset];
       }
-#ifdef PROFILE_PATCH_BUILD
-      linkSearch += GET_PROFILE_TIME() - t;
-#endif
-
       link_table[link_offset] = i;
     }
     */
   }
-
-#ifdef PROFILE_PATCH_BUILD
-  cout << "calculating footprint hashes took " << hashCalc << " seconds" << endl;
-  cout << "traversing the link table took " << linkSearch << " seconds" << endl;
-#endif
-
-  END_PROFILE(hashingFootprints, "hashing footprints");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -924,8 +885,6 @@ write_header(ostream &write_stream,
              istream &stream_orig, istream &stream_new) {
   // prepare to write the patch file header
 
-  START_PROFILE(writeHeader);
-
   // write the patch file header
   StreamWriter patch_writer(write_stream);
   patch_writer.add_uint32(_magic_number);
@@ -958,15 +917,12 @@ write_header(ostream &write_stream,
     express_cat.debug()
       << " New: " << _MD5_ofResult << "\n";
   }
-
-  END_PROFILE(writeHeader, "writing patch file header");
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::write_terminator
 //       Access: Private
-//  Description:
-//               Writes the patchfile terminator.
+//  Description: Writes the patchfile terminator.
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 write_terminator(ostream &write_stream) {
@@ -977,17 +933,17 @@ write_terminator(ostream &write_stream) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::compute_patches
+//     Function: Patchfile::compute_file_patches
 //       Access: Private
-//  Description:
-//               Computes the patches for the entire file (if it is
+//  Description: Computes the patches for the entire file (if it is
 //               not a multifile) or for a single subfile (if it is)
 //
 //               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-compute_patches(ostream &write_stream, PN_uint32 copy_offset,
-                istream &stream_orig, istream &stream_new) {
+compute_file_patches(ostream &write_stream, 
+                     PN_uint32 offset_orig, PN_uint32 offset_new,
+                     istream &stream_orig, istream &stream_new) {
   // read in original file
   stream_orig.seekg(0, ios::end);
   nassertr(stream_orig, false);
@@ -1014,8 +970,6 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
   stream_new.seekg(0, ios::beg);
   stream_new.read(buffer_new, result_file_length);
 
-  START_PROFILE(allocTables);
-
   // allocate hash/link tables
   if (_hash_table == (PN_uint32 *)NULL) {
     if (express_cat.is_debug()) {
@@ -1032,17 +986,10 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
 
   PN_uint32* link_table = new PN_uint32[source_file_length];
 
-  END_PROFILE(allocTables, "allocating hash and link tables");
-
-  START_PROFILE(buildTables);
-
   // build hash and link tables for original file
   build_hash_link_tables(buffer_orig, source_file_length, _hash_table, link_table);
 
-  END_PROFILE(buildTables, "building hash and link tables");
-
   // run through new file
-  START_PROFILE(buildPatchfile);
 
   PN_uint32 new_pos = 0;
   PN_uint32 start_pos = new_pos; // this is the position for the start of ADD operations
@@ -1071,7 +1018,7 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
             << endl;
         }
         cache_add_and_copy(write_stream, num_skipped, &buffer_new[start_pos],
-                           COPY_length, COPY_pos + copy_offset);
+                           COPY_length, COPY_pos + offset_orig);
         new_pos += (PN_uint32)COPY_length;
         start_pos = new_pos;
       }
@@ -1095,8 +1042,6 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
     start_pos += remaining_bytes;
   }
 
-  END_PROFILE(buildPatchfile, "building patch file");
-
   delete[] link_table;
 
   delete[] buffer_orig;
@@ -1108,8 +1053,7 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::compute_mf_patches
 //       Access: Private
-//  Description:
-//               Computes patches for the files, knowing that they are
+//  Description: Computes patches for the files, knowing that they are
 //               both Panda Multifiles.  This will build patches one
 //               subfile at a time, which can potentially be much,
 //               much faster for large Multifiles that contain many
@@ -1117,6 +1061,7 @@ compute_patches(ostream &write_stream, PN_uint32 copy_offset,
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 compute_mf_patches(ostream &write_stream, 
+                   PN_uint32 offset_orig, PN_uint32 offset_new,
                    istream &stream_orig, istream &stream_new) {
   Multifile mf_orig, mf_new;
   if (!mf_orig.open_read(&stream_orig) ||
@@ -1137,10 +1082,12 @@ compute_mf_patches(ostream &write_stream,
   {
     ISubStream index_orig(&stream_orig, 0, mf_orig.get_index_end());
     ISubStream index_new(&stream_new, 0, mf_new.get_index_end());
-    if (!compute_patches(write_stream, 0, index_orig, index_new)) {
+    if (!do_compute_patches("", "",
+                            write_stream, offset_orig, offset_new,
+                            index_orig, index_new)) {
       return false;
     }
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == mf_new.get_index_end(), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_index_end(), false);
   }
 
   // Now walk through each subfile in the new multifile.  If a
@@ -1150,46 +1097,12 @@ compute_mf_patches(ostream &write_stream,
   // never even notice this case).
   int new_num_subfiles = mf_new.get_num_subfiles();
   for (int ni = 0; ni < new_num_subfiles; ++ni) {
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == mf_new.get_subfile_internal_start(ni), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_subfile_internal_start(ni), false);
     string name = mf_new.get_subfile_name(ni);
     int oi = mf_orig.find_subfile(name);
 
-    /*
     if (oi < 0) {
-      string new_ext = Filename(name).get_extension();
-      if (new_ext != "jpg") {
-        // This is a newly-added subfile.  Look for another subfile with
-        // the same extension, so we can generate a patch against that
-        // other subfile--the idea is that there are likely to be
-        // similar byte sequences in files with the same extension, so
-        // "patching" a new subfile against a different subfile may come
-        // out smaller than baldly adding the new subfile.
-        size_t new_size = mf_new.get_subfile_internal_length(ni);
-        
-        int orig_num_subfiles = mf_orig.get_num_subfiles();
-        size_t best_size = 0;
-        for (int i = 0; i < orig_num_subfiles; ++i) {
-          string orig_ext = Filename(mf_orig.get_subfile_name(i)).get_extension();
-          if (orig_ext == new_ext) {
-            size_t orig_size = mf_orig.get_subfile_internal_length(i);
-            
-            // Find the smallest candidate that is no smaller than our
-            // target file.  If all the candidates are smaller than our
-            // target file, choose the largest of them.
-            if ((best_size < new_size && orig_size > best_size) ||
-                (best_size >= new_size && orig_size >= new_size && orig_size < best_size)) {
-              best_size = orig_size;
-              oi = i;
-            }
-          }
-        }
-      }
-    }
-    */
-
-    if (oi < 0) {
-      // This is a newly-added subfile, and we didn't find another
-      // subfile with a matching extension.  Add it the hard way.
+      // This is a newly-added subfile.  Add it the hard way.
       express_cat.info()
         << "Adding subfile " << mf_new.get_subfile_name(ni) << "\n";
 
@@ -1204,75 +1117,231 @@ compute_mf_patches(ostream &write_stream,
     } else {
       // This subfile exists in both the original and the new files.
       // Patch it.
-
       streampos orig_start = mf_orig.get_subfile_internal_start(oi);
       size_t orig_size = mf_orig.get_subfile_internal_length(oi);
-      ISubStream subfile_orig(&stream_orig, orig_start, orig_start + (streampos)orig_size);
 
       streampos new_start = mf_new.get_subfile_internal_start(ni);
       size_t new_size = mf_new.get_subfile_internal_length(ni);
-      ISubStream subfile_new(&stream_new, new_start, new_start + (streampos)new_size);
 
-      bool is_unchanged = false;
-      if (orig_size == new_size) {
-        HashVal hash_orig, hash_new;
-        hash_orig.hash_stream(subfile_orig);
-        hash_new.hash_stream(subfile_new);
-
-        if (hash_orig == hash_new) {
-          // Actually, the subfile is unchanged; just emit it.
-          is_unchanged = true;
-        }
-      }
-
-      if (is_unchanged) {
-        if (express_cat.is_debug()) {
-          express_cat.debug()
-            << "Keeping subfile " << mf_new.get_subfile_name(ni);
-          if (mf_orig.get_subfile_name(oi) != mf_new.get_subfile_name(ni)) {
-            express_cat.debug(false)
-              << " (identical to " << mf_orig.get_subfile_name(oi) << ")";
-          }
-          express_cat.debug(false) << "\n";
-        }
-        cache_add_and_copy(write_stream, 0, NULL, 
-                           orig_size, orig_start);
-
-      } else {
-        express_cat.info()
-          << "Patching subfile " << mf_new.get_subfile_name(ni);
-        if (mf_orig.get_subfile_name(oi) != mf_new.get_subfile_name(ni)) {
-          express_cat.info(false)
-            << " (against " << mf_orig.get_subfile_name(oi) << ")";
-        }
-        express_cat.info(false) << "\n";
-
-        if (!compute_patches(write_stream, orig_start,
-                             subfile_orig, subfile_new)) {
-          return false;
-        }
-
-        /*
-        // Simply copy the new file; don't attempt to patch.
-        if (express_cat.is_debug()) {
-          express_cat.debug()
-            << "Copying subfile " << mf_new.get_subfile_name(ni) << "\n";
-        }
-        streampos new_start = mf_new.get_subfile_internal_start(ni);
-        size_t new_size = mf_new.get_subfile_internal_length(ni);
-        char *buffer_new = new char[new_size];
-        stream_new.seekg(new_start, ios::beg);
-        stream_new.read(buffer_new, new_size);
-        cache_add_and_copy(write_stream, new_size, buffer_new,
-                           0, 0);
-        delete[] buffer_new;
-        */
+      if (!patch_subfile(write_stream, offset_orig, offset_new, 
+                         mf_new.get_subfile_name(ni),
+                         stream_orig, orig_start, orig_start + (streampos)orig_size,
+                         stream_new, new_start, new_start + (streampos)new_size)) {
+        return false;
       }
     }
   }
 
   return true;
 }
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::read_tar
+//       Access: Private
+//  Description: Uses libtar to extract the location within the tar
+//               file of each of the subfiles.  Returns true if the
+//               tar file is read successfully, false if there is an
+//               error (e.g. it is not a tar file).
+////////////////////////////////////////////////////////////////////
+bool Patchfile::
+read_tar(TarDef &tar, istream &stream) {
+  TAR *tfile;
+  tartype_t tt;
+  tt.openfunc = tar_openfunc;
+  tt.closefunc = tar_closefunc;
+  tt.readfunc = tar_readfunc;
+  tt.writefunc = tar_writefunc;
+
+  stream.seekg(0, ios::beg);
+  nassertr(_tar_istream == NULL, false);
+  _tar_istream = &stream;
+  if (tar_open(&tfile, "dummy", &tt, O_RDONLY, 0, 0) != 0) {
+    _tar_istream = NULL;
+    return false;
+  }
+
+  // Walk through the tar file, noting the current file position as we
+  // reach each subfile.  Use this information to infer the start and
+  // end of each subfile within the stream.
+
+  streampos last_pos = 0;
+  int flag = th_read(tfile);
+  while (flag == 0) {
+    TarSubfile subfile;
+    subfile._name = th_get_pathname(tfile);
+    subfile._header_start = last_pos;
+    subfile._data_start = stream.tellg();
+    subfile._data_end = subfile._data_start + (streampos)th_get_size(tfile);
+    tar_skip_regfile(tfile);
+    subfile._end = stream.tellg();
+    tar.push_back(subfile);
+
+    last_pos = subfile._end;
+    flag = th_read(tfile);
+  }
+
+  // Create one more "subfile" for the bytes at the tail of the file.
+  // This subfile has no name.
+  TarSubfile subfile;
+  subfile._header_start = last_pos;
+  stream.clear();
+  stream.seekg(0, ios::end);
+  subfile._data_start = stream.tellg();
+  subfile._data_end = subfile._data_start;
+  subfile._end = subfile._data_start;
+  tar.push_back(subfile);
+
+  tar_close(tfile);
+  _tar_istream = NULL;
+  return (flag == 1);
+}
+#endif  // HAVE_TAR
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::compute_tar_patches
+//       Access: Private
+//  Description: Computes patches for the files, knowing that they are
+//               both tar files.  This is similar to
+//               compute_mf_patches().
+//
+//               The tar indexes should have been built up by a
+//               previous call to read_tar().
+////////////////////////////////////////////////////////////////////
+bool Patchfile::
+compute_tar_patches(ostream &write_stream, 
+                    PN_uint32 offset_orig, PN_uint32 offset_new,
+                    istream &stream_orig, istream &stream_new,
+                    TarDef &tar_orig, TarDef &tar_new) {
+
+  // Sort the orig list by filename, so we can quickly look up files
+  // from the new list.
+  tar_orig.sort();
+
+  // However, it is important to keep the new list in its original,
+  // on-disk order.
+
+  // Walk through each subfile in the new tar file.  If a particular
+  // subfile exists in both source files, we compute the patches for
+  // the subfile; for a new subfile, we trivially add it.  If a
+  // subfile has been removed, we simply don't add it (we'll never
+  // even notice this case).
+
+  TarDef::const_iterator ni;
+  streampos last_pos = 0;
+  for (ni = tar_new.begin(); ni != tar_new.end(); ++ni) {
+    const TarSubfile &sf_new =(*ni);
+    nassertr(sf_new._header_start == last_pos, false);
+
+    TarDef::const_iterator oi = tar_orig.find(sf_new);
+
+    if (oi == tar_orig.end()) {
+      // This is a newly-added subfile.  Add it the hard way.
+      express_cat.info()
+        << "Adding subfile " << sf_new._name << "\n";
+
+      streampos new_start = sf_new._header_start;
+      size_t new_size = sf_new._end - sf_new._header_start;
+      char *buffer_new = new char[new_size];
+      stream_new.seekg(new_start, ios::beg);
+      stream_new.read(buffer_new, new_size);
+      cache_add_and_copy(write_stream, new_size, buffer_new, 0, 0);
+      delete[] buffer_new;
+
+    } else {
+      // This subfile exists in both the original and the new files.
+      // Patch it.
+      const TarSubfile &sf_orig =(*oi);
+
+      // We patch the header and data of the file separately, so we
+      // can accurately detect nested multifiles.  The extra data at
+      // the end of the file (possibly introduced by a tar file's
+      // blocking) is the footer, which is also patched separately.
+      if (!patch_subfile(write_stream, offset_orig, offset_new, "", 
+                         stream_orig, sf_orig._header_start, sf_orig._data_start,
+                         stream_new, sf_new._header_start, sf_new._data_start)) {
+        return false;
+      }
+
+      if (!patch_subfile(write_stream, offset_orig, offset_new, sf_new._name,
+                         stream_orig, sf_orig._data_start, sf_orig._data_end,
+                         stream_new, sf_new._data_start, sf_new._data_end)) {
+        return false;
+      }
+
+      if (!patch_subfile(write_stream, offset_orig, offset_new, "",
+                         stream_orig, sf_orig._data_end, sf_orig._end,
+                         stream_new, sf_new._data_end, sf_new._end)) {
+        return false;
+      }
+    }
+
+    last_pos = sf_new._end;
+  }
+
+  return true;
+}
+#endif  // HAVE_TAR
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::tar_openfunc
+//       Access: Private, Static
+//  Description: A callback function to redirect libtar to read from
+//               our istream instead of using low-level Unix I/O.
+////////////////////////////////////////////////////////////////////
+int Patchfile::
+tar_openfunc(const char *, int, ...) {
+  // Since we don't actually open a file--the stream is already
+  // open--we do nothing here.
+  return 0;
+}
+#endif  // HAVE_TAR
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::tar_closefunc
+//       Access: Private, Static
+//  Description: A callback function to redirect libtar to read from
+//               our istream instead of using low-level Unix I/O.
+////////////////////////////////////////////////////////////////////
+int Patchfile::
+tar_closefunc(int) {
+  // Since we don't actually open a file, no need to close it either.
+  return 0;
+}
+#endif  // HAVE_TAR
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::tar_readfunc
+//       Access: Private, Static
+//  Description: A callback function to redirect libtar to read from
+//               our istream instead of using low-level Unix I/O.
+////////////////////////////////////////////////////////////////////
+ssize_t Patchfile::
+tar_readfunc(int, void *buffer, size_t nbytes) {
+  nassertr(_tar_istream != NULL, 0);
+  _tar_istream->read((char *)buffer, nbytes);
+  return (ssize_t)_tar_istream->gcount();
+}
+#endif  // HAVE_TAR
+
+#ifdef HAVE_TAR
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::tar_writefunc
+//       Access: Private, Static
+//  Description: A callback function to redirect libtar to read from
+//               our istream instead of using low-level Unix I/O.
+////////////////////////////////////////////////////////////////////
+ssize_t Patchfile::
+tar_writefunc(int, const void *, size_t) {
+  // Since we use libtar only for reading, it is an error if this
+  // method gets called.
+  nassertr(false, -1);
+}
+#endif  // HAVE_TAR
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::build
@@ -1289,8 +1358,6 @@ compute_mf_patches(ostream &write_stream,
 bool Patchfile::
 build(Filename file_orig, Filename file_new, Filename patch_name) {
   patch_name.set_binary();
-
-  START_PROFILE(overall);
 
   // Open the original file for read
   ifstream stream_orig;
@@ -1326,8 +1393,52 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
 
   write_header(write_stream, stream_orig, stream_new);
 
-  // Check whether our input files are Panda multifiles.
+  if (!do_compute_patches(file_orig, file_new, 
+                          write_stream, 0, 0,
+                          stream_orig, stream_new)) {
+    return false;
+  }
+
+  write_terminator(write_stream);
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Patch file will generate " << _add_pos << "-byte file.\n";
+  }
+
+#ifndef NDEBUG
+ {
+   // Make sure the resulting file would be the right size.
+   stream_new.seekg(0, ios::end);
+   streampos result_file_length = stream_new.tellg();
+   nassertr(_add_pos == result_file_length, false);
+ }
+#endif  // NDEBUG
+
+  return (_last_copy_pos != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::do_compute_patches
+//       Access: Private
+//  Description: Computes the patches for the indicated A to B files,
+//               or subfiles.  Checks for multifiles or tar files
+//               before falling back to whole-file patching.
+////////////////////////////////////////////////////////////////////
+bool Patchfile::
+do_compute_patches(const Filename &file_orig, const Filename &file_new,
+                   ostream &write_stream, 
+                   PN_uint32 offset_orig, PN_uint32 offset_new,
+                   istream &stream_orig, istream &stream_new) {
+  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new, false);
+
+  // Check whether our input files are Panda multifiles or tar files.
   bool is_multifile = false;
+#ifdef HAVE_TAR
+  bool is_tarfile = false;
+  TarDef tar_orig, tar_new;
+#endif  // HAVE_TAR
+
   if (_allow_multifile) {
     if (strstr(file_orig.get_basename().c_str(), ".mf") != NULL ||
         strstr(file_new.get_basename().c_str(), ".mf") != NULL) {
@@ -1345,41 +1456,113 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
         if (stream_new.gcount() == (int)magic_number.size() &&
             memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
           is_multifile = true;
+        } else {
+          cerr << "magic number files on stream_new\n";
         }
+      } else {
+        cerr << "magic number files on stream_orig\n";
       }
       delete[] buffer;
     }
+#ifdef HAVE_TAR
+    if (strstr(file_orig.get_basename().c_str(), ".tar") != NULL ||
+        strstr(file_new.get_basename().c_str(), ".tar") != NULL) {
+      if (read_tar(tar_orig, stream_orig) &&
+          read_tar(tar_new, stream_new)) {
+        is_tarfile = true;
+      }
+    }
+#endif  // HAVE_TAR
   }
 
   if (is_multifile) {
     if (express_cat.is_debug()) {
       express_cat.debug()
-        << "Input files appear to be Panda Multifiles.\n";
+        << file_orig.get_basename() << " appears to be a Panda Multifile.\n";
     }
-    if (!compute_mf_patches(write_stream, stream_orig, stream_new)) {
+    if (!compute_mf_patches(write_stream, offset_orig, offset_new,
+                            stream_orig, stream_new)) {
       return false;
     }
+#ifdef HAVE_TAR
+  } else if (is_tarfile) {
+    if (express_cat.is_debug()) {
+      express_cat.debug()
+        << file_orig.get_basename() << " appears to be a tar file.\n";
+    }
+    if (!compute_tar_patches(write_stream, offset_orig, offset_new,
+                             stream_orig, stream_new, tar_orig, tar_new)) {
+      return false;
+    }
+#endif  // HAVE_TAR
   } else {
     if (express_cat.is_debug()) {
       express_cat.debug()
-        << "Input files are NOT Panda Multifiles.\n";
+        << file_orig.get_basename() << " is not a multifile.\n";
     }
-    if (!compute_patches(write_stream, 0, stream_orig, stream_new)) {
+    if (!compute_file_patches(write_stream, offset_orig, offset_new,
+                              stream_orig, stream_new)) {
       return false;
     }
   }
 
-  write_terminator(write_stream);
+  return true;
+}
+                    
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::patch_subfile
+//       Access: Private
+//  Description: Generates patches for a nested subfile of a Panda
+//               Multifile or a tar file.
+////////////////////////////////////////////////////////////////////
+bool Patchfile::
+patch_subfile(ostream &write_stream, 
+              PN_uint32 offset_orig, PN_uint32 offset_new,
+              const Filename &filename,
+              istream &stream_orig, streampos orig_start, streampos orig_end,
+              istream &stream_new, streampos new_start, streampos new_end) {
+  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + new_start, false);
 
-  END_PROFILE(overall, "total patch building operation");
+  size_t new_size = new_end - new_start;
+  size_t orig_size = orig_end - orig_start;
 
-  if (express_cat.is_debug()) {
-    express_cat.debug()
-      << "Patch file will generate " << _add_pos << "-byte file.\n";
+  ISubStream subfile_orig(&stream_orig, orig_start, orig_end);
+  ISubStream subfile_new(&stream_new, new_start, new_end);
+  
+  bool is_unchanged = false;
+  if (orig_size == new_size) {
+    HashVal hash_orig, hash_new;
+    hash_orig.hash_stream(subfile_orig);
+    hash_new.hash_stream(subfile_new);
+    
+    if (hash_orig == hash_new) {
+      // Actually, the subfile is unchanged; just emit it.
+      is_unchanged = true;
+    }
   }
-  //  nassertr(_add_pos == result_file_length, false);
+  
+  if (is_unchanged) {
+    if (express_cat.is_debug() && !filename.empty()) {
+      express_cat.debug()
+        << "Keeping subfile " << filename << "\n";
+    }
+    cache_add_and_copy(write_stream, 0, NULL, 
+                       orig_size, offset_orig + orig_start);
+    
+  } else {
+    if (!filename.empty()) {
+      express_cat.info()
+        << "Patching subfile " << filename << "\n";
+    }
+    
+    if (!do_compute_patches(filename, filename, write_stream, 
+                            offset_orig + orig_start, offset_new + new_start,
+                            subfile_orig, subfile_new)) {
+      return false;
+    }
+  }
 
-  return (_last_copy_pos != 0);
+  return true;
 }
 
 #endif // HAVE_OPENSSL

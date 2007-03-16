@@ -4,7 +4,7 @@
 
 #begin lib_target
   #define TARGET express
-  #define USE_PACKAGES zlib openssl
+  #define USE_PACKAGES zlib openssl tar
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
