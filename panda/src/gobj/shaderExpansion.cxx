@@ -1125,7 +1125,7 @@ cg_compile_for(const ShaderCaps &caps,
 
   return true;
 }
-#endif HAVE_CG
+#endif  // HAVE_CG
 
 ////////////////////////////////////////////////////////////////////
 //  Function: ShaderExpansion::Constructor
