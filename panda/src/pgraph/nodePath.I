@@ -384,7 +384,7 @@ get_num_children(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 get_child(int n, Thread *current_thread) const {
-  nassertr(n >= 0 && n < get_num_children(current_thread), NodePath());
+  nassertr_always(n >= 0 && n < get_num_children(current_thread), NodePath());
   NodePath child;
   int pipeline_stage = current_thread->get_pipeline_stage();
   child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n, current_thread),
