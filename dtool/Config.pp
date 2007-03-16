@@ -463,6 +463,13 @@
 #define TIFF_LIBS tiff z
 #defer HAVE_TIFF $[libtest $[TIFF_LPATH],$[TIFF_LIBS]]
 
+// Is libtar installed, and where?  This is used to optimize patch
+// generation against tar files.
+#define TAR_IPATH
+#define TAR_LPATH
+#define TAR_LIBS tar
+#defer HAVE_TAR $[libtest $[TAR_LPATH],$[TAR_LIBS]]
+
 
 // Is libfftw installed, and where?
 #define FFTW_IPATH /usr/local/include

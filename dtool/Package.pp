@@ -135,6 +135,11 @@
 #set TIFF_LIBS $[TIFF_LIBS]
 #set HAVE_TIFF $[HAVE_TIFF]
 
+#set TAR_IPATH $[unixfilename $[TAR_IPATH]]
+#set TAR_LPATH $[unixfilename $[TAR_LPATH]]
+#set TAR_LIBS $[TAR_LIBS]
+#set HAVE_TAR $[HAVE_TAR]
+
 #set FFTW_IPATH $[unixfilename $[FFTW_IPATH]]
 #set FFTW_LPATH $[unixfilename $[FFTW_LPATH]]
 #set FFTW_LIBS $[FFTW_LIBS]

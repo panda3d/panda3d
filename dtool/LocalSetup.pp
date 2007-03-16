@@ -31,6 +31,11 @@
 #else
 #print - Did not find libtiff
 #endif
+#if $[HAVE_TAR]
+#print + libtar
+#else
+#print - Did not find libtar
+#endif
 #if $[HAVE_FFTW]
 #print + fftw
 #else
@@ -189,6 +194,9 @@ $[cdefine HAVE_PNG]
 
 /* Define if we have libtiff installed.  */
 $[cdefine HAVE_TIFF]
+
+/* Define if we have libtar installed.  */
+$[cdefine HAVE_TAR]
 
 /* Define if we have libfftw installed.  */
 $[cdefine HAVE_FFTW]

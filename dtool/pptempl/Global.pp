@@ -211,6 +211,13 @@
   #define tiff_libs $[TIFF_LIBS]
 #endif
 
+#if $[HAVE_TAR]
+  #define tar_ipath $[wildcard $[TAR_IPATH]]
+  #define tar_lpath $[wildcard $[TAR_LPATH]]
+  #define tar_cflags $[TAR_CFLAGS]
+  #define tar_libs $[TAR_LIBS]
+#endif
+
 #if $[HAVE_FFTW]
   #define fftw_ipath $[wildcard $[FFTW_IPATH]]
   #define fftw_lpath $[wildcard $[FFTW_LPATH]]
