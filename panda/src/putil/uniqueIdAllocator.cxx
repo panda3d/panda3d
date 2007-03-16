@@ -62,7 +62,7 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   : _min(min), _max(max) {
   uniqueIdAllocator_debug("UniqueIdAllocator("<<min<<", "<<max<<")");
 
-  nassertv(_max > _min);
+  nassertv(_max >= _min);
   _size = _max-_min+1; // +1 because min and max are inclusive.
   nassertv(_size != 0); // size must be > 0.
 
