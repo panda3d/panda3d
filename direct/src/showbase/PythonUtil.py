@@ -2543,7 +2543,7 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
                 will allow you send the report to a designated 'notify'
                 output.
 
-    dConfigParams: A list of Config.prc string variables.
+    dConfigParam: A list of Config.prc string variables.
                    By default the report will always print.  If you
                    specify this param, it will only print if one of the
                    specified config strings resolve to True.
@@ -2598,14 +2598,14 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
             if not dConfigParam:
                 doPrint = True
             else:
-                if isinstance(dConfigParam,str):
-                    if(config.GetBool(dConfigParam, 0)):
+                if not isinstance(dConfigParam, (list,tuple)):
+                    dConfigParamList = (dConfigParam,)
+                else:
+                    dConfigParamList = dConfigParam
+                for param in dConfigParamList:
+                    if(config.GetBool(param, 0)):
                         doPrint = True
-                elif isinstance(dConfigParam, (list,tuple)):
-                    for param in dConfigParam:
-                        if(config.GetBool(dConfigParam, 0)):
-                            doPrint = True
-                            break
+                        break
 
             if doPrint:
                 if notifyFunc:
