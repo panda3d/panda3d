@@ -1558,6 +1558,7 @@ MakeDirectory("built/plugins")
 MakeDirectory("built/include")
 MakeDirectory("built/include/parser-inc")
 MakeDirectory("built/include/parser-inc/openssl")
+MakeDirectory("built/include/parser-inc/netinet")
 MakeDirectory("built/include/parser-inc/Cg")
 MakeDirectory("built/include/openssl")
 MakeDirectory("built/tmp")
@@ -1655,6 +1656,7 @@ DEFAULT_SETTINGS=[
     ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
     ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
+    ("IS_LINUX",                       'UNDEF',                  '1'),
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("USE_STL_ALLOCATOR",              '1',                      '1'),
     ("USE_MEMORY_DLMALLOC",            '1',                      'UNDEF'),
@@ -1902,6 +1904,7 @@ ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy *
 
 CopyAllFiles('built/include/parser-inc/','dtool/src/parser-inc/')
 CopyAllFiles('built/include/parser-inc/openssl/','dtool/src/parser-inc/')
+CopyAllFiles('built/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
 CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 
@@ -1937,6 +1940,7 @@ CopyAllHeaders('panda/src/mathutil')
 CopyAllHeaders('panda/src/gsgbase')
 CopyAllHeaders('panda/src/pnmimage')
 CopyAllHeaders('panda/src/nativenet')
+CopyAllHeaders('panda/src/net')
 CopyAllHeaders('panda/src/pstatclient')
 CopyAllHeaders('panda/src/gobj')
 CopyAllHeaders('panda/src/lerp')
