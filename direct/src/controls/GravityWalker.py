@@ -387,6 +387,8 @@ class GravityWalker(DirectObject.DirectObject):
         have been disabled.
         """
         assert self.notify.debugStateCall(self)
+        if not hasattr(self, 'cWallSphereNodePath'):
+            return
         self.isAirborne = 0
         self.mayJump = 1
         tempCTrav = CollisionTraverser("oneTimeCollide")
