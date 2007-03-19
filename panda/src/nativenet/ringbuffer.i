@@ -184,3 +184,4 @@ inline bool RingBuffer::Get(char * data, size_t len)
 	}
 	return answer;
 }
+
