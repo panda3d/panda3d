@@ -21,12 +21,11 @@
 
 #ifdef HAVE_DX9
 
+#define WIN32_LEAN_AND_MEAN
 #include <d3d9.h>
-
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
 #include "displaySearchParameters.h"
-
 
 #define DX8 0
 #define Direct3DCreate Direct3DCreate9

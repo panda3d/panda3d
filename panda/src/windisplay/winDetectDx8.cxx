@@ -21,8 +21,8 @@
 
 #ifdef HAVE_DX8
 
+#define WIN32_LEAN_AND_MEAN
 #include <d3d8.h>
-
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
 #include "displaySearchParameters.h"

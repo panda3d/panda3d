@@ -25,7 +25,7 @@
 #include "mutexHolder.h"
 
 #ifdef WIN32_VC
-#include <winsock.h>  // For gethostname()
+#include <winsock2.h>  // For gethostname()
 #endif
 
 ////////////////////////////////////////////////////////////////////

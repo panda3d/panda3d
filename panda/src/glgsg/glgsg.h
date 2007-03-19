@@ -40,6 +40,7 @@
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

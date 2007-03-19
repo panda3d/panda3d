@@ -23,7 +23,7 @@
 #include "selectThreadImpl.h"
 
 #ifdef WIN32_VC
-
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 ////////////////////////////////////////////////////////////////////

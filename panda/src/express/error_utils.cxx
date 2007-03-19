@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 #if defined(WIN32_VC)
-  #include <winsock.h>
+  #include <winsock2.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////

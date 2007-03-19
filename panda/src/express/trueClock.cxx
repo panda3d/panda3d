@@ -34,6 +34,7 @@ TrueClock *TrueClock::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 
 #include <sys/timeb.h>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 static const double _0001 = 1.0 / 1000.0;

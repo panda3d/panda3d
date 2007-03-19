@@ -28,6 +28,7 @@
 #include "pnmWriter.h"
 
 #if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>  // we need to include this before jpeglib.
 #endif
 
