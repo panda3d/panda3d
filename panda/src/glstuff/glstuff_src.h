@@ -37,26 +37,6 @@
 // This file is not protected from multiple inclusion; it may need to
 // be included multiple times.
 
-
-// Before including gl.h, need to include windows.h
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN 1
-#include <windows.h>
-#endif
-
-// This prevents glext.h from getting included by gl.h
-// That way, we can provide our own, better version.
-#define __glext_h_
-#define GL_GLEXT_VERSION 0
-
-#include <GL/gl.h>
-#ifdef HAVE_GLU
-#include <GL/glu.h>
-#endif
-
-#undef GL_GLEXT_VERSION
-#include "panda_glext.h"
-
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
 #include "glVertexBufferContext_src.h"

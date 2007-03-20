@@ -37,6 +37,32 @@
 #define EXPCL_GL EXPCL_PANDAGL
 #define EXPTP_GL EXPTP_PANDAGL
 
+// Before including gl.h, need to include windows.h
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#endif
+
+// This prevents glext.h from getting included by gl.h
+// That way, we can provide our own, better version.
+#define __glext_h_
+#define GL_GLEXT_VERSION 0
+
+#ifdef IS_OSX
+  #include <OpenGL/gl.h>
+  #ifdef HAVE_GLU
+  #include <OpenGL/glu.h>
+  #endif
+#else
+  #include <GL/gl.h>
+  #ifdef HAVE_GLU
+  #include <GL/glu.h>
+  #endif
+#endif
+
+#undef GL_GLEXT_VERSION
+#include "panda_glext.h"
+
 #include "glstuff_src.h"
 
 #endif  // GLGSG_H

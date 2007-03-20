@@ -44,13 +44,17 @@
 #define EXPCL_GL EXPCL_PANDAMESA
 #define EXPTP_GL EXPTP_PANDAMESA
 
-// Don't include Mesa's provided glext.h file; we'll provide our own
-// that's more current.
+// This prevents glext.h from getting included by gl.h
+// That way, we can provide our own, better version.
 #define __glext_h_
+#define GL_GLEXT_VERSION 0
 
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/osmesa.h>
+
+#undef GL_GLEXT_VERSION
+#include "panda_glext.h"
 
 #include "glstuff_src.h"
 
