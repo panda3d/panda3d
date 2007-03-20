@@ -18,17 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexUV::filter_name
+//       Access: Published, Static
+//  Description: Returns the actual name that should be set for a
+//               given name string.  Usually this is the same string
+//               that is input, but for historical reasons the texture
+//               coordinate name "default" is mapped to the empty
+//               string.
+////////////////////////////////////////////////////////////////////
+INLINE string EggVertexUV::
+filter_name(const string &name) {
+  if (name == "default") {
+    return string();
+  }
+  return name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexUV::set_name
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
 set_name(const string &name) {
-  if (name == "default") {
-    clear_name();
-  } else {
-    Namable::set_name(name);
-  }
+  Namable::set_name(filter_name(name));
 }
 
 ////////////////////////////////////////////////////////////////////

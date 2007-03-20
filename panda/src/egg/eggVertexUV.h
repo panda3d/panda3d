@@ -41,6 +41,7 @@ PUBLISHED:
   EggVertexUV &operator = (const EggVertexUV &copy);
   virtual ~EggVertexUV();
 
+  INLINE static string filter_name(const string &name);
   INLINE void set_name(const string &name);
 
   INLINE int get_num_dimensions() const;

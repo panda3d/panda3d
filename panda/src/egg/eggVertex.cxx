@@ -122,7 +122,7 @@ EggVertex::
 ////////////////////////////////////////////////////////////////////
 bool EggVertex::
 has_uv(const string &name) const {
-  UVMap::const_iterator ui = _uv_map.find(name);
+  UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     EggVertexUV *uv_obj = (*ui).second;
     return !uv_obj->has_w();
@@ -139,7 +139,7 @@ has_uv(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 bool EggVertex::
 has_uvw(const string &name) const {
-  UVMap::const_iterator ui = _uv_map.find(name);
+  UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     EggVertexUV *uv_obj = (*ui).second;
     return uv_obj->has_w();
@@ -156,7 +156,7 @@ has_uvw(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 TexCoordd EggVertex::
 get_uv(const string &name) const {
-  UVMap::const_iterator ui = _uv_map.find(name);
+  UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   nassertr(ui != _uv_map.end(), TexCoordd::zero());
   return (*ui).second->get_uv();
 }
@@ -170,7 +170,7 @@ get_uv(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 const TexCoord3d &EggVertex::
 get_uvw(const string &name) const {
-  UVMap::const_iterator ui = _uv_map.find(name);
+  UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   nassertr(ui != _uv_map.end(), TexCoord3d::zero());
   return (*ui).second->get_uvw();
 }
@@ -184,16 +184,17 @@ get_uvw(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
 set_uv(const string &name, const TexCoordd &uv) {
-  PT(EggVertexUV) &uv_obj = _uv_map[name];
+  string fname = EggVertexUV::filter_name(name);
+  PT(EggVertexUV) &uv_obj = _uv_map[fname];
 
   if (uv_obj.is_null()) {
-    uv_obj = new EggVertexUV(name, uv);
+    uv_obj = new EggVertexUV(fname, uv);
   } else {
     uv_obj = new EggVertexUV(*uv_obj);
     uv_obj->set_uv(uv);
   }
 
-  nassertv(get_uv(name) == uv);
+  nassertv(get_uv(fname) == uv);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,16 +207,17 @@ set_uv(const string &name, const TexCoordd &uv) {
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
 set_uvw(const string &name, const TexCoord3d &uvw) {
-  PT(EggVertexUV) &uv_obj = _uv_map[name];
+  string fname = EggVertexUV::filter_name(name);
+  PT(EggVertexUV) &uv_obj = _uv_map[fname];
 
   if (uv_obj.is_null()) {
-    uv_obj = new EggVertexUV(name, uvw);
+    uv_obj = new EggVertexUV(fname, uvw);
   } else {
     uv_obj = new EggVertexUV(*uv_obj);
     uv_obj->set_uvw(uvw);
   }
 
-  nassertv(get_uvw(name) == uvw);
+  nassertv(get_uvw(fname) == uvw);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,7 +232,7 @@ set_uvw(const string &name, const TexCoord3d &uvw) {
 ////////////////////////////////////////////////////////////////////
 const EggVertexUV *EggVertex::
 get_uv_obj(const string &name) const {
-  UVMap::const_iterator ui = _uv_map.find(name);
+  UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     return (*ui).second;
   }
@@ -247,7 +249,7 @@ get_uv_obj(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 EggVertexUV *EggVertex::
 modify_uv_obj(const string &name) {
-  UVMap::iterator ui = _uv_map.find(name);
+  UVMap::iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     if ((*ui).second->get_ref_count() != 1) {
       // Copy on write.
@@ -279,7 +281,7 @@ set_uv_obj(EggVertexUV *uv) {
 ///////////////////////////////////////////////////////////////////
 void EggVertex::
 clear_uv(const string &name) {
-  _uv_map.erase(name);
+  _uv_map.erase(EggVertexUV::filter_name(name));
 }
 
 
