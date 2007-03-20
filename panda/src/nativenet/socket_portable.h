@@ -357,7 +357,7 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 /************************************************************************
 * NO DEFINITION => GIVE COMPILATION ERROR
 ************************************************************************/
-/* No Host Type defined !! */
+No Host Type defined !!
 #error  Fatal
 #endif
 
