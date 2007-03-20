@@ -37,24 +37,6 @@
 #define EXPCL_GL EXPCL_PANDAGL
 #define EXPTP_GL EXPTP_PANDAGL
 
-
-#ifdef WIN32_VC
-// Must include windows.h before gl.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-#ifdef  IS_OSX
-#define __glext_h_
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#ifdef HAVE_GLU
-#include <GL/glu.h>
-#endif
-#endif 
-
 #include "glstuff_src.h"
 
 #endif  // GLGSG_H

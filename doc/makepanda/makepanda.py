@@ -4699,21 +4699,13 @@ Version: VERSION
 Release: 1
 License: Panda3D License
 Group: Development/Libraries
-BuildRoot: linuxroot
+BuildRoot: PANDASOURCE/linuxroot
 %description
 The Panda3D engine.
-%prep
-%setup -q
-%build
-true
-%install
-true
 %post
 /sbin/ldconfig
 %postun
 /sbin/ldconfig
-%clean
-true
 %files
 %defattr(-,root,root)
 /etc/Confauto.prc
@@ -4730,13 +4722,13 @@ def MakeInstallerLinux():
     import compileall
     PYTHONV=os.path.basename(PYTHONSDK)
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
-    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz ")
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz i386 panda3d.spec")
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
     oscmd("mkdir -p linuxroot/usr/share/panda3d")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
-    oscmd("mkdir -p linuxroot/etc")
+    oscmd("mkdir -p linuxroot/etc/ld.so.conf.d")
     oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > linuxroot/etc/Config.prc")
     oscmd("cp built/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
     oscmd("cp --recursive built/include linuxroot/usr/include/panda3d")
@@ -4750,6 +4742,7 @@ def MakeInstallerLinux():
     oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
     oscmd("cp doc/LICENSE               linuxroot/usr/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
+    oscmd("echo '/usr/lib/panda3d'   >  linuxroot/etc/ld.so.conf.d/panda3d.conf")
     oscmd("echo '/usr/share/panda3d' >  linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
     oscmd("cp built/bin/*               linuxroot/usr/bin/")
     for base in os.listdir("built/lib"):
@@ -4773,10 +4766,15 @@ def MakeInstallerLinux():
         oscmd("chmod -R 755 linuxroot")
 
     if (os.path.exists("/usr/bin/rpmbuild")):
-        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV)
-        WriteFile("panda3d.spec", SPEC)
-
-
+        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",PANDASOURCE)
+        WriteFile("panda3d.spec", txt)
+        oscmd("rpmbuild --define '_rpmdir "+PANDASOURCE+"' -bb panda3d.spec")
+        oscmd("mv i386/panda3d-"+VERSION+"-1.i386.rpm .")
+        
+    oscmd("chmod -R 755 linuxroot")
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz i386 panda3d.spec")
+    
+        
 if (INSTALLER != 0):
     if (sys.platform == "win32"):
         MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
