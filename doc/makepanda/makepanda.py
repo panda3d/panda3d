@@ -1395,7 +1395,7 @@ def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"NVIDIACG")):
         cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
         if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
-        cmd = cmd + " -lCg"
+        cmd = cmd + " -lCg "
     if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
     if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
     if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
@@ -1406,6 +1406,7 @@ def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
     if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
     if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
+    cmd = cmd + " -lpthread"
     oscmd(cmd)
 
 def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
@@ -2767,30 +2768,30 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistort.in', obj='libdistort_igate
 
 if OMIT.count("OPENSSL")==0:
     IPATH=['panda/src/downloadertools']
-    OPTS=['OPENSSL', 'ZLIB']
+    OPTS=['OPENSSL', 'ZLIB', 'ADVAPI']
     LIBS=['libpandaexpress.dll', 'libpanda.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll', 'libp3pystub.dll']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='apply_patch.cxx', obj='apply_patch_apply_patch.obj')
-    EnqueueLink(dll='apply_patch.exe', opts=['ADVAPI'], obj=['apply_patch_apply_patch.obj']+LIBS)
+    EnqueueLink(dll='apply_patch.exe', opts=OPTS, obj=['apply_patch_apply_patch.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='build_patch.cxx', obj='build_patch_build_patch.obj')
-    EnqueueLink(dll='build_patch.exe', opts=['ADVAPI'], obj=['build_patch_build_patch.obj']+LIBS)
+    EnqueueLink(dll='build_patch.exe', opts=OPTS, obj=['build_patch_build_patch.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='check_adler.cxx', obj='check_adler_check_adler.obj')
-    EnqueueLink(dll='check_adler.exe', opts=['ADVAPI',  'ZLIB'], obj=['check_adler_check_adler.obj']+LIBS)
+    EnqueueLink(dll='check_adler.exe', opts=OPTS, obj=['check_adler_check_adler.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='check_crc.cxx', obj='check_crc_check_crc.obj')
-    EnqueueLink(dll='check_crc.exe', opts=['ADVAPI',  'ZLIB'], obj=['check_crc_check_crc.obj']+LIBS)
+    EnqueueLink(dll='check_crc.exe', opts=OPTS, obj=['check_crc_check_crc.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
-    EnqueueLink(dll='check_md5.exe', opts=['ADVAPI',  'OPENSSL'], obj=['check_md5_check_md5.obj']+LIBS)
+    EnqueueLink(dll='check_md5.exe', opts=OPTS, obj=['check_md5_check_md5.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
-    EnqueueLink(dll='multify.exe', opts=['ADVAPI'], obj=['multify_multify.obj']+LIBS)
+    EnqueueLink(dll='multify.exe', opts=OPTS, obj=['multify_multify.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pzip.cxx', obj='pzip_pzip.obj')
-    EnqueueLink(dll='pzip.exe', opts=['ADVAPI',  'ZLIB'], obj=['pzip_pzip.obj']+LIBS)
+    EnqueueLink(dll='pzip.exe', opts=OPTS, obj=['pzip_pzip.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='punzip.cxx', obj='punzip_punzip.obj')
-    EnqueueLink(dll='punzip.exe', opts=['ADVAPI',  'ZLIB'], obj=['punzip_punzip.obj']+LIBS)
+    EnqueueLink(dll='punzip.exe', opts=OPTS, obj=['punzip_punzip.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
-    EnqueueLink(dll='pdecrypt.exe', opts=['ADVAPI',  'OPENSSL'], obj=['pdecrypt_pdecrypt.obj']+LIBS)
+    EnqueueLink(dll='pdecrypt.exe', opts=OPTS, obj=['pdecrypt_pdecrypt.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
-    EnqueueLink(dll='pencrypt.exe', opts=['ADVAPI',  'OPENSSL'], obj=['pencrypt_pencrypt.obj']+LIBS)
+    EnqueueLink(dll='pencrypt.exe', opts=OPTS, obj=['pencrypt_pencrypt.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='show_ddb.cxx', obj='show_ddb_show_ddb.obj')
-    EnqueueLink(dll='show_ddb.exe', opts=['ADVAPI'], obj=['show_ddb_show_ddb.obj']+LIBS)
+    EnqueueLink(dll='show_ddb.exe', opts=OPTS, obj=['show_ddb_show_ddb.obj']+LIBS)
 
 #
 # DIRECTORY: panda/src/windisplay/
@@ -3044,7 +3045,7 @@ EnqueueLink(dll='libpandaeggstripped.dll', opts=['ADVAPI'], obj=[
 
 if (sys.platform != "win32"):
     IPATH=['panda/src/mesadisplay', 'panda/src/glstuff']
-    OPTS=['BUILDING_PANDAGLUT',  'GLUT']
+    OPTS=['BUILDING_PANDAGLUT', 'NVIDIACG', 'GLUT']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mesadisplay_composite.cxx', obj='mesadisplay_composite.obj')
     IPATH=['panda/metalibs/pandagl']
     EnqueueLink(opts=['GLUT'], dll='libpandamesa.dll', obj=[
@@ -3292,9 +3293,9 @@ if (OMIT.count("PYTHON")==0):
 
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/dcparse', 'direct/src/dcparser']
-    OPTS=['WITHINPANDA']
+    OPTS=['WITHINPANDA', 'ADVAPI']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparse.cxx', obj='dcparse_dcparse.obj')
-    EnqueueLink(dll='dcparse.exe', opts=['ADVAPI'], obj=[
+    EnqueueLink(dll='dcparse.exe', opts=OPTS, obj=[
                  'dcparse_dcparse.obj',
                  'libp3direct.dll',
                  'libpandaexpress.dll',
@@ -4677,8 +4678,8 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     oscmd( cmd)
     os.rename("nsis-output.exe", file)
 
-def MakeInstallerDPKG(file):
-    DEB="""
+
+INSTALLER_DEB_FILE="""
 Package: panda3d
 Version: VERSION
 Section: libdevel
@@ -4690,55 +4691,97 @@ Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The panda3D free 3D engine
 """
+
+INSTALLER_SPEC_FILE="""
+Summary: Panda 3D Engine
+Name: panda3d
+Version: VERSION
+Release: 1
+License: Panda3D License
+Group: Development/Libraries
+BuildRoot: linuxroot
+%description
+The Panda3D engine.
+%prep
+%setup -q
+%build
+true
+%install
+true
+%post
+/sbin/ldconfig
+%postun
+/sbin/ldconfig
+%clean
+true
+%files
+%defattr(-,root,root)
+/etc/Confauto.prc
+/etc/Config.prc
+/usr/share/panda3d
+/etc/ld.so.conf.d/panda3d.conf
+/usr/bin
+/usr/lib
+/usr/include/panda3d
+"""
+
+
+def MakeInstallerLinux():
     import compileall
     PYTHONV=os.path.basename(PYTHONSDK)
-    if (os.path.isdir("debtmp")): oscmd( "chmod -R 755 debtmp")
-    oscmd("rm -rf debtmp data.tar.gz control.tar.gz ")
-    oscmd("mkdir -p debtmp/usr/bin")
-    oscmd("mkdir -p debtmp/usr/include")
-    oscmd("mkdir -p debtmp/usr/share/panda3d")
-    oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/lib-dynload")
-    oscmd("mkdir -p debtmp/usr/lib/"+PYTHONV+"/site-packages")
-    oscmd("mkdir -p debtmp/etc")
-    oscmd("mkdir -p debtmp/DEBIAN")
-    oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > debtmp/etc/Config.prc")
-    oscmd("cp built/etc/Confauto.prc  debtmp/etc/Confauto.prc")
-    oscmd("cp --recursive built/include debtmp/usr/include/panda3d")
-    oscmd("cp --recursive direct        debtmp/usr/share/panda3d/direct")
-    oscmd("cp --recursive built/pandac  debtmp/usr/share/panda3d/pandac")
-    oscmd("cp --recursive built/Pmw     debtmp/usr/share/panda3d/Pmw")
-    oscmd("cp built/direct/__init__.py  debtmp/usr/share/panda3d/direct/__init__.py")
-    oscmd("cp --recursive SceneEditor   debtmp/usr/share/panda3d/SceneEditor")
-    oscmd("cp --recursive built/models  debtmp/usr/share/panda3d/models")
-    oscmd("cp --recursive samples       debtmp/usr/share/panda3d/samples")
-    oscmd("cp doc/LICENSE               debtmp/usr/share/panda3d/LICENSE")
-    oscmd("cp doc/LICENSE               debtmp/usr/include/panda3d/LICENSE")
-    oscmd("cp doc/ReleaseNotes          debtmp/usr/share/panda3d/ReleaseNotes")
-    oscmd("echo '/usr/share/panda3d' >  debtmp/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
-    oscmd("cp built/bin/*               debtmp/usr/bin/")
+    if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz ")
+    oscmd("mkdir -p linuxroot/usr/bin")
+    oscmd("mkdir -p linuxroot/usr/include")
+    oscmd("mkdir -p linuxroot/usr/share/panda3d")
+    oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
+    oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
+    oscmd("mkdir -p linuxroot/etc")
+    oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > linuxroot/etc/Config.prc")
+    oscmd("cp built/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
+    oscmd("cp --recursive built/include linuxroot/usr/include/panda3d")
+    oscmd("cp --recursive direct        linuxroot/usr/share/panda3d/direct")
+    oscmd("cp --recursive built/pandac  linuxroot/usr/share/panda3d/pandac")
+    oscmd("cp --recursive built/Pmw     linuxroot/usr/share/panda3d/Pmw")
+    oscmd("cp built/direct/__init__.py  linuxroot/usr/share/panda3d/direct/__init__.py")
+    oscmd("cp --recursive SceneEditor   linuxroot/usr/share/panda3d/SceneEditor")
+    oscmd("cp --recursive built/models  linuxroot/usr/share/panda3d/models")
+    oscmd("cp --recursive samples       linuxroot/usr/share/panda3d/samples")
+    oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
+    oscmd("cp doc/LICENSE               linuxroot/usr/include/panda3d/LICENSE")
+    oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
+    oscmd("echo '/usr/share/panda3d' >  linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
+    oscmd("cp built/bin/*               linuxroot/usr/bin/")
     for base in os.listdir("built/lib"):
-        oscmd("ln -sf /usr/lib/"+base+" debtmp/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
-        oscmd("cp built/lib/"+base+" debtmp/usr/lib/"+base)
-    for base in os.listdir("debtmp/usr/share/panda3d/direct/src"):
+        oscmd("ln -sf /usr/lib/"+base+" linuxroot/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
+        oscmd("cp built/lib/"+base+" linuxroot/usr/lib/"+base)
+    for base in os.listdir("linuxroot/usr/share/panda3d/direct/src"):
         if ((base != "extensions") and (base != "extensions_native")):
-            compileall.compile_dir("debtmp/usr/share/panda3d/direct/src/"+base)
-    compileall.compile_dir("debtmp/usr/share/panda3d/Pmw")
-    compileall.compile_dir("debtmp/usr/share/panda3d/SceneEditor")
-    oscmd("chmod -R 555 debtmp/usr/share/panda3d")
-    oscmd("cd debtmp ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
-    oscmd("cd debtmp ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
-    WriteFile("debtmp/DEBIAN/conffiles","/etc/Config.prc\n")
-    WriteFile("debtmp/DEBIAN/control",DEB[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV))
-    oscmd("dpkg-deb -b debtmp "+file)
-    oscmd("chmod -R 755 debtmp")
-    oscmd("rm -rf debtmp")
+            compileall.compile_dir("linuxroot/usr/share/panda3d/direct/src/"+base)
+    compileall.compile_dir("linuxroot/usr/share/panda3d/Pmw")
+    compileall.compile_dir("linuxroot/usr/share/panda3d/SceneEditor")
+    oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
+
+    if (os.path.exists("/usr/bin/dpkg-deb")):
+        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV)
+        oscmd("mkdir -p linuxroot/DEBIAN")
+        oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
+        oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+        WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
+        WriteFile("linuxroot/DEBIAN/control",txt)
+        oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_i386.deb")
+        oscmd("chmod -R 755 linuxroot")
+
+    if (os.path.exists("/usr/bin/rpmbuild")):
+        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV)
+        WriteFile("panda3d.spec", SPEC)
 
 
 if (INSTALLER != 0):
     if (sys.platform == "win32"):
         MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
-    elif (sys.platform == "linux2") and (os.path.isfile("/usr/bin/dpkg-deb")):
-        MakeInstallerDPKG("panda3d_"+VERSION+"_i386.deb")
+    elif (sys.platform == "linux2"):
+        MakeInstallerLinux()
     else:
         exit("Do not know how to make an installer for this platform")
 
