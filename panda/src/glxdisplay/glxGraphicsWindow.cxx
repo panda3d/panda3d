@@ -361,6 +361,9 @@ process_events() {
     case MapNotify:
       properties.set_minimized(false);
       system_changed_properties(properties);
+
+      // Auto-focus the window when it is mapped.
+      XSetInputFocus(_display, _xwindow, RevertToPointerRoot, CurrentTime);
       break;
 
     case ClientMessage:
@@ -512,6 +515,15 @@ set_properties_now(WindowProperties &properties) {
       XDefineCursor(_display, _xwindow, None);
     }
     properties.clear_cursor_hidden();
+  }
+
+  if (properties.has_foreground()) {
+    if (properties.get_foreground()) {
+      XSetInputFocus(_display, _xwindow, RevertToPointerRoot, CurrentTime);
+    } else {
+      XSetInputFocus(_display, PointerRoot, RevertToPointerRoot, CurrentTime);
+    }
+    properties.clear_foreground();
   }
 
   set_wm_properties(wm_properties, true);
