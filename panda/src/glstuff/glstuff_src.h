@@ -38,6 +38,12 @@
 // be included multiple times.
 
 
+// Before including gl.h, need to include windows.h
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#endif
+
 // This prevents glext.h from getting included by gl.h
 // That way, we can provide our own, better version.
 #define __glext_h_
@@ -50,10 +56,6 @@
 
 #undef GL_GLEXT_VERSION
 #include "panda_glext.h"
-
-#ifndef GL_VERSION_1_5
-#error "hey, where's 1.5"
-#endif
 
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
