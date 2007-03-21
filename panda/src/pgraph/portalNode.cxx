@@ -286,7 +286,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
       // Get the net trasform of the _cell_out as seen from the camera.
       CPT(TransformState) cell_transform = 
-        trav->get_camera_transform()->invert_compose(_cell_out.get_net_transform());
+        //        trav->get_camera_transform()->invert_compose(_cell_out.get_net_transform());
+        _cell_out.get_net_transform();
 
       CPT(TransformState) frustum_transform = 
         _cell_out.get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());

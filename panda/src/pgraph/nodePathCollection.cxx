@@ -441,7 +441,32 @@ set_color(float r, float g, float b, float a, int priority) {
 void NodePathCollection::
 set_color(const Colorf &color, int priority) {
   for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).node()->set_attrib(ColorAttrib::make_flat(color), priority);
+    get_path(i).set_color(color, priority);
+    //get_path(i).node()->set_attrib(ColorAttrib::make_flat(color), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_color_scale
+//       Access: Published
+//  Description: Applies color scales to all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_color_scale(float r, float g, float b, float a, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).set_color_scale(Colorf(r, g, b, a), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_color_scale
+//       Access: Published
+//  Description: Applies color scales to all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_color_scale(const Colorf &color, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).set_color_scale(color, priority);
   }
 }
 

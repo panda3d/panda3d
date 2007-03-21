@@ -72,6 +72,10 @@ PUBLISHED:
                  int priority = 0);
   void set_color(const Colorf &color, int priority = 0);
 
+  void set_color_scale(float r, float g, float b, float a = 1.0,
+                       int priority = 0);
+  void set_color_scale(const Colorf &color, int priority = 0);
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
