@@ -111,9 +111,6 @@ class DirectScrolledList(DirectFrame):
         self.recordMaxHeight()
         self.scrollTo(0)
 
-        # test
-        base.sl = self
-
     def setForceHeight(self):
         assert self.notify.debugStateCall(self)
         self.forceHeight = self["forceHeight"]
