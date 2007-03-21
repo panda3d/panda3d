@@ -61,9 +61,11 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+public:
   static void init_type() {
     MovingPartScalar::init_type();
     register_type(_type_handle, "CharacterSlider",
