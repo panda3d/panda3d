@@ -2099,6 +2099,7 @@ run_download_to_file() {
 
   if (_body_stream->is_closed()) {
     // Done.
+    _download_to_file.close();
     _started_download = false;
     return false;
   } else {

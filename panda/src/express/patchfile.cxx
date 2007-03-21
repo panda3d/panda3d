@@ -295,9 +295,19 @@ run() {
     // read # of ADD bytes
     nassertr(_buffer->get_length() >= (int)sizeof(ADD_length), false);
     ADD_length = patch_reader.get_uint16();
+    if (_patch_stream.fail()) {
+      express_cat.error()
+        << "Truncated patch file.\n";
+      return EU_error_file_invalid;
+    }
 
     bytes_read += (int)ADD_length;
     _total_bytes_processed += (int)ADD_length;
+    if (_total_bytes_processed > _total_bytes_to_process) {
+      express_cat.error()
+        << "Runaway patch file.\n";
+      return EU_error_file_invalid;
+    }
 
     // if there are bytes to add, read them from patch file and write them to output
     if (express_cat.is_spam() && ADD_length != 0) {
@@ -310,6 +320,11 @@ run() {
     while (bytes_left > 0) {
       PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
       _patch_stream.read(_buffer->_buffer, bytes_this_time);
+      if (_patch_stream.fail()) {
+        express_cat.error()
+          << "Truncated patch file.\n";
+        return EU_error_file_invalid;
+      }
       _write_stream.write(_buffer->_buffer, bytes_this_time);
       bytes_left -= bytes_this_time;
     }
@@ -318,21 +333,41 @@ run() {
     // read # of COPY bytes
     nassertr(_buffer->get_length() >= (int)sizeof(COPY_length), false);
     COPY_length = patch_reader.get_uint16();
+    if (_patch_stream.fail()) {
+      express_cat.error()
+        << "Truncated patch file.\n";
+      return EU_error_file_invalid;
+    }
 
     bytes_read += (int)COPY_length;
     _total_bytes_processed += (int)COPY_length;
+    if (_total_bytes_processed > _total_bytes_to_process) {
+      express_cat.error()
+        << "Runaway patch file.\n";
+      return EU_error_file_invalid;
+    }
 
     // if there are bytes to copy, read them from original file and write them to output
     if (0 != COPY_length) {
       // read copy offset
       nassertr(_buffer->get_length() >= (int)sizeof(COPY_offset), false);
       COPY_offset = patch_reader.get_int32();
+      if (_patch_stream.fail()) {
+        express_cat.error()
+          << "Truncated patch file.\n";
+        return EU_error_file_invalid;
+      }
 
       // seek to the copy source pos
       if (_version_number < 2) {
         _origfile_stream.seekg(COPY_offset, ios::beg);
       } else {
         _origfile_stream.seekg(COPY_offset, ios::cur);
+      }
+      if (_origfile_stream.fail()) {
+        express_cat.error()
+          << "Invalid copy offset in patch file.\n";
+        return EU_error_file_invalid;
       }
 
       if (express_cat.is_spam()) {
@@ -349,6 +384,11 @@ run() {
       while (bytes_left > 0) {
         PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
         _origfile_stream.read(_buffer->_buffer, bytes_this_time);
+        if (_origfile_stream.fail()) {
+          express_cat.error()
+            << "Invalid copy length in patch file.\n";
+          return EU_error_file_invalid;
+        }
         _write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;
       }
