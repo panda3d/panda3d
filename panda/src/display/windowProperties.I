@@ -468,6 +468,53 @@ clear_minimized() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_raw_mice
+//       Access: Published
+//  Description: Specifies whether the window should read the raw
+//               mouse devices.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_raw_mice(bool raw_mice) {
+  if (raw_mice) {
+    _flags |= F_raw_mice;
+  } else {
+    _flags &= ~F_raw_mice;
+  }
+  _specified |= S_raw_mice;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_raw_mice
+//       Access: Published
+//  Description: Returns true if the window reads the raw mice.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+get_raw_mice() const {
+  return (_flags & F_raw_mice) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_raw_mice
+//       Access: Published
+//  Description: Returns true if set_raw_mice() has been specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_raw_mice() const {
+  return ((_specified & S_raw_mice) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_raw_mice
+//       Access: Published
+//  Description: Removes the raw_mice specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_raw_mice() {
+  _specified &= ~S_raw_mice;
+  _flags &= ~F_raw_mice;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::set_open
 //       Access: Published
 //  Description: Specifies whether the window should be open.  It is

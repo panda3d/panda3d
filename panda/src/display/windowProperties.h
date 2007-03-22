@@ -106,6 +106,11 @@ PUBLISHED:
   INLINE bool has_minimized() const;
   INLINE void clear_minimized();
 
+  INLINE void set_raw_mice(bool raw_mice);
+  INLINE bool get_raw_mice() const;
+  INLINE bool has_raw_mice() const;
+  INLINE void clear_raw_mice();
+
   INLINE void set_open(bool open);
   INLINE bool get_open() const;
   INLINE bool has_open() const;
@@ -161,6 +166,7 @@ private:
     S_cursor_filename  = 0x1000,
     S_mouse_mode       = 0x2000,
     S_parent_window    = 0x4000,
+    S_raw_mice         = 0x8000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -174,6 +180,7 @@ private:
     F_open           = S_open,
     F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
+    F_raw_mice       = S_raw_mice,
   };
 
   int _specified;

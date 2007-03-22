@@ -200,7 +200,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open the default rendering window.
         if self.windowType != 'none':
-            self.openDefaultWindow(startDirect = False)
+	    props = WindowProperties.getDefault()
+	    if (self.config.GetBool('read-raw-mice', 1)):
+	        props.setRawMice(1)
+            self.openDefaultWindow(startDirect = False, props=props)
 
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
@@ -433,7 +436,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def openWindow(self, props = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
-                   makeCamera = 1, scene = None, stereo = None):
+                   makeCamera = 1, scene = None, stereo = None, rawmice = 0):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.

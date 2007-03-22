@@ -90,17 +90,11 @@ ConfigVariableString screenshot_filename
  PRC_DESC("This specifies the filename pattern to be used to generate "
           "screenshots captured via save_screenshot_default().  See "
           "DisplayRegion::save_screenshot()."));
+
 ConfigVariableString screenshot_extension
 ("screenshot-extension", "jpg",
  PRC_DESC("This specifies the default filename extension (and therefore the "
           "default image type) to be used for saving screenshots."));
-
-// I'll remove this permanently in a few days. - Josh
-//ConfigVariableBool show_buffers
-//("show-buffers", false,
-// PRC_DESC("Set this true to cause offscreen GraphicsBuffers to be created as "
-//          "GraphicsWindows, if possible, so that their contents may be viewed "
-//          "interactively.  Handy during development of multipass algorithms."));
 
 ConfigVariableBool prefer_texture_buffer
 ("prefer-texture-buffer", true,
