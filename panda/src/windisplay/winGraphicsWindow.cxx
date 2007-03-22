@@ -29,6 +29,9 @@
 
 #include <tchar.h>
 
+
+
+
 TypeHandle WinGraphicsWindow::_type_handle;
 
 WinGraphicsWindow::WindowHandles WinGraphicsWindow::_window_handles;
@@ -105,6 +108,7 @@ WinGraphicsWindow(GraphicsPipe *pipe,
   _rcontrol_down = false;
   _lalt_down = false;
   _ralt_down = false;
+  _hparent = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +144,6 @@ move_pointer(int device, int x, int y) {
       !_input_devices[0].get_pointer().get_in_window()) {
     // If the window doesn't have input focus, or the mouse isn't
     // currently within the window, forget it.
-
     return false;
   }
 
@@ -303,11 +306,15 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_z_order();
   }
 
-  if (properties.has_foreground() && properties.get_foreground()) {
-    if (!SetForegroundWindow(_hWnd)) {
-      windisplay_cat.warning()
-        << "SetForegroundWindow() failed!\n";
-    } else {
+  if (properties.has_foreground() && properties.get_foreground()) 
+  {
+    if (!SetActiveWindow(_hWnd)) 
+    {
+      windisplay_cat.warning()  << "SetForegroundWindow() failed!\n";
+
+    } 
+    else 
+    {
       _properties.set_foreground(true);
     }
 
@@ -394,9 +401,13 @@ open_window() {
     new_foreground_window = old_foreground_window;
   }
 
-  if (!SetForegroundWindow(new_foreground_window)) {
+  if (!SetActiveWindow(new_foreground_window))
+  {
     windisplay_cat.warning()
       << "SetForegroundWindow() failed!\n";
+  }
+  else
+  {
   }
 
   // Determine the initial open status of the IME.
@@ -732,7 +743,8 @@ support_overlay_window(bool) {
 //  Description: Creates a fullscreen-style window.
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
-open_fullscreen_window() {
+open_fullscreen_window()
+{
   //  from MSDN:
   //  An OpenGL window has its own pixel format. Because of this, only
   //  device contexts retrieved for the client area of an OpenGL
@@ -779,9 +791,17 @@ open_fullscreen_window() {
   // up the desktop during the mode change
   const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
+
+
+
+  
   _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style,
                        0, 0, dwWidth, dwHeight, 
                        hDesktopWindow, NULL, hinstance, 0);
+
+
+
+
   if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
@@ -873,11 +893,51 @@ open_regular_window() {
 
   const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
+
+
+    _hparent = NULL;
+    if(_properties.has_parent_window())
+        _hparent = (HWND) _properties.get_parent_window();
+
+
+    if(!_hparent)
+    {
+        _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
                        x_origin, y_origin,
                        win_rect.right - win_rect.left,
                        win_rect.bottom - win_rect.top,
                        NULL, NULL, hinstance, 0);
+
+    }
+    else
+    {
+          x_origin = 0;
+          y_origin = 0;
+
+
+        if (_properties.has_origin()) {
+            x_origin = _properties.get_x_origin();
+            y_origin = _properties.get_y_origin();
+        }
+
+      _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
+                       WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
+                       //x_origin, y_origin, 
+                       x_origin,y_origin,
+                       x_size, y_size,
+                       _hparent, NULL, hinstance, 0);
+
+
+      if(_hWnd)
+      {
+          // join or keyboard state with the parents
+        AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
+        // set us as the focus window for keyboard input
+        SetFocus(_hWnd);
+        _properties.set_foreground(true);
+      }
+  }
+
 
   if (!_hWnd) {
     windisplay_cat.error()
@@ -1068,20 +1128,24 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     
       case WM_ACTIVATE:
         properties.set_minimized((wparam & 0xffff0000) != 0);
-        if ((wparam & 0xffff) != WA_INACTIVE) {
+        if ((wparam & 0xffff) != WA_INACTIVE) 
+        {
           properties.set_foreground(true);
-          if (is_fullscreen()) {
+          if (is_fullscreen()) 
+          {
             // When a fullscreen window goes active, it automatically gets
             // un-minimized.
             ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
             GdiFlush();
-            SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, 
-                         SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+            SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
             fullscreen_restored(properties);
           }
-        } else {
+        }
+        else 
+        {
           properties.set_foreground(false);
-          if (is_fullscreen()) {
+          if (is_fullscreen()) 
+          {
             // When a fullscreen window goes inactive, it automatically
             // gets minimized.
             properties.set_minimized(true);
@@ -1232,6 +1296,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
         }
+        break;
 
         
       case WM_IME_SETCONTEXT:
@@ -1729,20 +1794,25 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         break;
     
       case WM_KILLFOCUS: 
-        if (windisplay_cat.is_debug()) {
+        if (windisplay_cat.is_debug()) 
+        {
           windisplay_cat.debug()
             << "killfocus\n";
         }
-        if (!_lost_keypresses) {
+        if (!_lost_keypresses) 
+        {
           // Record the current state of the keyboard when the focus is
           // lost, so we can check it for changes when we regain focus.
           GetKeyboardState(_keyboard_state);
           if (windisplay_cat.is_debug()) {
             // Report the set of keys that are held down at the time of
             // the killfocus event.
-            for (int i = 0; i < num_virtual_keys; i++) {
-              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
-                if ((_keyboard_state[i] & 0x80) != 0) {
+            for (int i = 0; i < num_virtual_keys; i++) 
+            {
+              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) 
+              {
+                if ((_keyboard_state[i] & 0x80) != 0) 
+                {
                   windisplay_cat.debug()
                     << "on killfocus, key is down: " << i
                     << " (" << lookup_key(i) << ")\n";
@@ -1751,14 +1821,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
           }
 
-          if (!hold_keys_across_windows) {
+          if (!hold_keys_across_windows) 
+          {
             // If we don't want to remember the keystate while the
             // window focus is lost, then generate a keyup event
             // right now for each key currently held.
             double message_time = get_message_time();
-            for (int i = 0; i < num_virtual_keys; i++) {
-              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
-                if ((_keyboard_state[i] & 0x80) != 0) {
+            for (int i = 0; i < num_virtual_keys; i++) 
+            {
+              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) 
+              {
+                if ((_keyboard_state[i] & 0x80) != 0) 
+                {
                   handle_keyrelease(lookup_key(i), message_time);
                   _keyboard_state[i] &= ~0x80;
                 }
@@ -1770,6 +1844,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // on may be lost.
           _lost_keypresses = true;
         }
+        properties.set_foreground(false);
+        system_changed_properties(properties);
         break;
     
       case WM_SETFOCUS: 
@@ -1797,6 +1873,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "setfocus\n";
         }
+        properties.set_foreground(true);
+        system_changed_properties(properties);
         break;
   }
 
@@ -2450,3 +2528,5 @@ void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
   view_rect->right = lr.x;
   view_rect->bottom = lr.y;
 }
+
+

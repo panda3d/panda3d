@@ -115,6 +115,7 @@ private:
 
 protected:
   HWND _hWnd;
+  HWND _hparent;
 
 private:
   HWND _ime_hWnd;
