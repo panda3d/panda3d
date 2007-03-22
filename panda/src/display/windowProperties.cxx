@@ -48,6 +48,7 @@ operator = (const WindowProperties &copy) {
   _z_order = copy._z_order;
   _flags = copy._flags;
   _mouse_mode = copy._mouse_mode;
+  _parent_window = copy._parent_window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,6 +146,7 @@ clear() {
   _z_order = Z_normal;
   _flags = 0;
   _mouse_mode = MOUSE_absolute;
+  _parent_window = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,9 +197,15 @@ add_properties(const WindowProperties &other) {
   if (other.has_z_order()) {
     set_z_order(other.get_z_order());
   }
+
   if (other.has_mouse_mode()) {
     set_mouse_mode(other.get_mouse_mode());
   }
+
+  if (other.has_parent_window()) {
+    set_parent_window(other.get_parent_window());
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -251,6 +259,10 @@ output(ostream &out) const {
   if (has_mouse_mode()) {
     out << get_mouse_mode() << " ";
   }
+  if (has_parent_window()) {
+    out << get_parent_window() << " ";
+  }
+
 }
 
 ostream &

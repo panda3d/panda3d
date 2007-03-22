@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "filename.h"
 #include "pnotify.h"
-
+   
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowProperties
 // Description : A container for the various kinds of properties we
@@ -32,6 +32,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WindowProperties {
 PUBLISHED:
+
+
   enum ZOrder {
     Z_bottom,
     Z_normal,
@@ -129,6 +131,12 @@ PUBLISHED:
   INLINE bool has_z_order() const;
   INLINE void clear_z_order();
 
+
+  INLINE void set_parent_window(size_t parent);
+  INLINE size_t  get_parent_window() const;
+  INLINE bool has_parent_window() const;
+  INLINE void clear_parent_window();
+
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
@@ -152,6 +160,7 @@ private:
     S_icon_filename    = 0x0800,
     S_cursor_filename  = 0x1000,
     S_mouse_mode       = 0x2000,
+    S_parent_window    = 0x4000,
   };
 
   // This bitmask represents the true/false settings for various
@@ -178,6 +187,7 @@ private:
   Filename _icon_filename;
   ZOrder _z_order;
   int _flags;
+  size_t _parent_window;  // a HWND or WindowRef or .. what ever it is on X win...
 };
 
 EXPCL_PANDA ostream &

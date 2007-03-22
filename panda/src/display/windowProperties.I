@@ -573,6 +573,7 @@ set_icon_filename(const Filename &icon_filename) {
   _specified |= S_icon_filename;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::get_icon_filename
 //       Access: Published
@@ -742,6 +743,48 @@ INLINE void WindowProperties::
 clear_mouse_mode() {
   _specified &= ~S_mouse_mode;
   _mouse_mode=MOUSE_absolute;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_parent_window
+//       Access: Published
+//  Description: Removes the z_order specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_parent_window(size_t parent) {
+  _parent_window=parent;
+  _specified |= S_parent_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_parent_window
+//       Access: Published
+//  Description: Removes the parent Window 
+////////////////////////////////////////////////////////////////////
+INLINE size_t WindowProperties::
+get_parent_window() const {
+ return _parent_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_parent_window
+//       Access: Published
+//  Description: Checks the S_parent_window specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_parent_window() const {
+  return ((_specified & S_parent_window)!=0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_parent_window
+//       Access: Published
+//  Description: Removes the S_parent_window specification from the properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_parent_window() {
+  _specified &= ~S_parent_window;
+  _parent_window=NULL;
 }
 
 
