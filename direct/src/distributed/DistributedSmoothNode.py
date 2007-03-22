@@ -381,7 +381,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         This assumes you have a client repository that knows its
         localAvatarDoId -- stored in self.cr.localAvatarDoId
         """
-
         if smoothing and EnableSmoothing:
             if prediction and EnablePrediction:
                 # Prediction and smoothing.

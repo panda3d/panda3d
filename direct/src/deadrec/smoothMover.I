@@ -667,6 +667,33 @@ get_reset_velocity_age() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_directional_velocity
+//       Access: Published, Static
+//  Description: Sets the flag that indicates whether the avatar's
+//               direction is considered in computing the velocity.
+//               When this is true, velocity is automatically
+//               decomposed into a forward and a lateral velocity (and
+//               both may be positive or negative); when it is false,
+//               all velocity is always returned as forward velocity
+//               (and it is always positive).
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_directional_velocity(bool flag) {
+  _directional_velocity = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_directional_velocity
+//       Access: Published, Static
+//  Description: Returns the current state of the 'directional
+//               velocity' flag.  See set_directional_velocity().
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+get_directional_velocity() {
+  return _directional_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_avg_timestamp_delay
 //       Access: Private
 //  Description: Returns the average delay observed in the last n

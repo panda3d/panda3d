@@ -236,6 +236,42 @@ broadcast_pos_hpr_xyh() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CDistributedSmoothNodeBase::broadcast_pos_hpr_xy
+//       Access: Published
+//  Description: Examines only X and Y of the pos/hpr information,
+//               and broadcasts the appropriate messages.
+////////////////////////////////////////////////////////////////////
+void CDistributedSmoothNodeBase::
+broadcast_pos_hpr_xy() {
+  LPoint3f xyz = _node_path.get_pos();
+
+  int flags = 0;
+
+  if (!IS_THRESHOLD_EQUAL(_store_xyz[0], xyz[0], smooth_node_epsilon)) {
+    _store_xyz[0] = xyz[0];
+    flags |= F_new_x;
+  }
+
+  if (!IS_THRESHOLD_EQUAL(_store_xyz[1], xyz[1], smooth_node_epsilon)) {
+    _store_xyz[1] = xyz[1];
+    flags |= F_new_y;
+  }
+
+  if (flags == 0) {
+    // No change.  Send one and only one "stop" message.
+    if (!_store_stop) {
+      _store_stop = true;
+      d_setSmStop();
+    }
+
+  } else {
+    // Any other change.
+    _store_stop = false;
+    d_setSmXY(_store_xyz[0], _store_xyz[1]);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::begin_send_update
 //       Access: Private
 //  Description: Fills up the packer with the data appropriate for

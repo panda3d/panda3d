@@ -7,7 +7,7 @@ from direct.showbase.PythonUtil import randFloat, Enum
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
     """
-    BroadcastTypes = Enum('FULL, XYH')
+    BroadcastTypes = Enum('FULL, XYH, XY')
     
     def __init__(self):
         self.cnode = CDistributedSmoothNodeBase()
@@ -51,6 +51,7 @@ class DistributedSmoothNodeBase:
         broadcastFuncs = {
             BT.FULL: self.cnode.broadcastPosHprFull,
             BT.XYH:  self.cnode.broadcastPosHprXyh,
+            BT.XY:  self.cnode.broadcastPosHprXy,
             }
         self.d_broadcastPosHpr = broadcastFuncs[self.broadcastType]
         

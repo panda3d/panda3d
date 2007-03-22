@@ -60,6 +60,7 @@ SmoothMover() {
   _prediction_mode = PM_off;
   _delay = 0.2;
   _accept_clock_skew = true;
+  _directional_velocity = true;
   _max_position_age = 0.25;
   _expected_broadcast_period = 0.2;
   _reset_velocity_age = 0.3;
@@ -220,6 +221,10 @@ compute_smooth_position(double timestamp) {
     if (_smooth_position_known) {
       double age = timestamp - _smooth_timestamp;
       if (age > _reset_velocity_age) {
+        if (deadrec_cat.is_debug()) {
+          deadrec_cat.debug()
+            << "points empty; reset velocity, age = " << age << "\n";
+        }
         _smooth_forward_velocity = 0.0;
         _smooth_lateral_velocity = 0.0;
         _smooth_rotational_velocity = 0.0;
@@ -258,7 +263,9 @@ compute_smooth_position(double timestamp) {
 
   if (deadrec_cat.is_spam()) {
     deadrec_cat.spam()
-      << "time = " << timestamp << ", " << _points.size() << " points, last = " << _last_point_before << ", " << _last_point_after << "\n";
+      << "time = " << timestamp << ", " << _points.size()
+      << " points, last = " << _last_point_before << ", " 
+      << _last_point_after << "\n";
     deadrec_cat.spam(false)
       << "  ";
     for (int pi = 0; pi < (int)_points.size(); pi++) {
@@ -367,11 +374,12 @@ compute_smooth_position(double timestamp) {
       set_smooth_pos(point._pos, point._hpr, timestamp);
     }
 
-    if (orig_timestamp - _last_heard_from > _reset_velocity_age) {
-      // Furthermore, if we haven't heard from this client in a while,
-      // reset the velocity.  This decision is based entirely on our
-      // local timestamps, not on the other client's reported
-      // timestamps.
+    double age = timestamp - timestamp_before;
+    if (age > _reset_velocity_age) {
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "  reset_velocity, age = " << age << "\n";
+      }
       _smooth_forward_velocity = 0.0;
       _smooth_lateral_velocity = 0.0;
       _smooth_rotational_velocity = 0.0;
@@ -390,7 +398,16 @@ compute_smooth_position(double timestamp) {
     
     if (point_b._pos == point_a._pos && point_b._hpr == point_a._hpr) {
       // The points are equivalent, so just return that.
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "Points are equivalent\n";
+      }
       set_smooth_pos(point_b._pos, point_b._hpr, timestamp);
+
+      // This implies that velocity is 0.
+      _smooth_forward_velocity = 0.0;
+      _smooth_lateral_velocity = 0.0;
+      _smooth_rotational_velocity = 0.0;
 
     } else {
       // The points are different, so we have to do some work.
@@ -400,9 +417,18 @@ compute_smooth_position(double timestamp) {
         // If the first point is too old, assume there were a lot of
         // implicit standing still messages that weren't sent.  Insert a new
         // sample point to reflect this.
+        if (deadrec_cat.is_spam()) {
+          deadrec_cat.spam()
+            << "  first point too old: age = " << age << "\n";
+        }
         SamplePoint new_point = point_b;
         new_point._timestamp = point_a._timestamp - _expected_broadcast_period;
-        if (new_point._timestamp > timestamp) {
+        if (deadrec_cat.is_spam()) {
+          deadrec_cat.spam()
+            << "  constructed new timestamp at " << new_point._timestamp
+            << "\n";
+        }
+        if (new_point._timestamp > point_b._timestamp) {
           _points.insert(_points.begin() + point_after, new_point);
           
           // Now we've monkeyed with the sequence.  Start over.
@@ -655,28 +681,35 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
 void SmoothMover::
 compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
                  double age) {
-  // Also compute the velocity.  To get just the forward component
-  // of velocity, we need to project the velocity vector onto the y
-  // axis, as rotated by the current hpr.
-  if (!_computed_forward_axis) {
-    LMatrix3f rot_mat;
-    compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
-    _forward_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
-
-    if (deadrec_cat.is_spam()) {
-      deadrec_cat.spam()
-        << "  compute forward_axis = " << _forward_axis << "\n";
-    }
-  }
-   
-  LVector3f lateral_axis = _forward_axis.cross(LVector3f(0.0,0.0,1.0));
-
-  float forward_distance = pos_delta.dot(_forward_axis);
-  float lateral_distance = pos_delta.dot(lateral_axis);
-
-  _smooth_forward_velocity = forward_distance / age;
-  _smooth_lateral_velocity = lateral_distance / age;
   _smooth_rotational_velocity = hpr_delta[0] / age;
+
+  if (_directional_velocity) {
+    // To get just the forward component of velocity, we need to project
+    // the velocity vector onto the y axis, as rotated by the current
+    // hpr.
+    if (!_computed_forward_axis) {
+      LMatrix3f rot_mat;
+      compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
+      _forward_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
+      
+      if (deadrec_cat.is_spam()) {
+        deadrec_cat.spam()
+          << "  compute forward_axis = " << _forward_axis << "\n";
+      }
+    }
+    
+    LVector3f lateral_axis = _forward_axis.cross(LVector3f(0.0,0.0,1.0));
+    
+    float forward_distance = pos_delta.dot(_forward_axis);
+    float lateral_distance = pos_delta.dot(lateral_axis);
+    
+    _smooth_forward_velocity = forward_distance / age;
+    _smooth_lateral_velocity = lateral_distance / age;
+
+  } else {
+    _smooth_forward_velocity = pos_delta.length();
+    _smooth_lateral_velocity = 0.0f;
+  }   
 
   if (deadrec_cat.is_spam()) {
     deadrec_cat.spam()

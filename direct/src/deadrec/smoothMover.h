@@ -146,6 +146,9 @@ PUBLISHED:
   INLINE void set_reset_velocity_age(double age); 
   INLINE double get_reset_velocity_age(); 
 
+  INLINE void set_directional_velocity(bool flag); 
+  INLINE bool get_directional_velocity(); 
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 
@@ -213,6 +216,7 @@ private:
   double _max_position_age;
   double _expected_broadcast_period;
   double _reset_velocity_age;
+  bool _directional_velocity;
 };
 
 #include "smoothMover.I"

@@ -56,6 +56,7 @@ PUBLISHED:
 
   void broadcast_pos_hpr_full();
   void broadcast_pos_hpr_xyh();
+  void broadcast_pos_hpr_xy();
 
 private:
   INLINE static bool only_changed(int flags, int compare);
