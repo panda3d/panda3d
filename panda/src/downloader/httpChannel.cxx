@@ -830,7 +830,6 @@ reached_done_state() {
       }
       _started_download = true;
 
-
       _done_state = S_read_trailer;
       _last_run_time = TrueClock::get_global_ptr()->get_short_time();
       return true;
@@ -2097,6 +2096,17 @@ run_download_to_file() {
 
   _download_to_file.flush();
 
+  switch (_body_stream->get_read_state()) {
+  case ISocketStream::RS_complete:
+    finished_body(false);
+    break;
+
+  case ISocketStream::RS_error:
+    _state = HTTPChannel::S_failure;
+    _status_entry._status_code = HTTPChannel::SC_lost_connection;
+    break;
+  }
+
   if (_body_stream->is_closed()) {
     // Done.
     _download_to_file.close();
@@ -2145,6 +2155,17 @@ run_download_to_ram() {
 
     _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
     count = _body_stream->gcount();
+  }
+
+  switch (_body_stream->get_read_state()) {
+  case ISocketStream::RS_complete:
+    finished_body(false);
+    break;
+
+  case ISocketStream::RS_error:
+    _state = HTTPChannel::S_failure;
+    _status_entry._status_code = HTTPChannel::SC_lost_connection;
+    break;
   }
 
   if (_body_stream->is_closed()) {

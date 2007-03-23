@@ -37,6 +37,7 @@ ChunkedStreamBuf::
 ChunkedStreamBuf() {
   _chunk_remaining = 0;
   _done = true;
+  _read_state = ISocketStream::RS_initial;
 
 #ifdef HAVE_IOSTREAM
   char *buf = new char[4096];
@@ -74,6 +75,7 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
   nassertv(!_source.is_null());
   _chunk_remaining = 0;
   _done = false;
+  _read_state = ISocketStream::RS_reading;
   _doc = doc;
 
   if (_doc != (HTTPChannel *)NULL) {
@@ -154,9 +156,7 @@ read_chars(char *start, size_t length) {
 
     if (read_count == 0 && (*_source)->is_closed()) {
       // Whoops, the socket closed while we were downloading.
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        _doc->_state = HTTPChannel::S_failure;
-      }
+      _read_state = ISocketStream::RS_error;
     }
 
     return read_count;
@@ -175,9 +175,7 @@ read_chars(char *start, size_t length) {
     // EOF (or data unavailable) while trying to read the chunk size.
     if ((*_source)->is_closed()) {
       // Whoops, the socket closed while we were downloading.
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        _doc->_state = HTTPChannel::S_failure;
-      }
+      _read_state = ISocketStream::RS_error;
     }
     return 0;
   }
@@ -192,9 +190,7 @@ read_chars(char *start, size_t length) {
     _done = true;
     _doc->_file_size = _doc->_transfer_file_size;
     _doc->_got_file_size = true;
-    if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-      _doc->finished_body(true);
-    }
+    _read_state = ISocketStream::RS_complete;
     return 0;
   }
 

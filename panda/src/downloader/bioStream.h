@@ -45,6 +45,7 @@ public:
 
   virtual bool is_closed();
   virtual void close();
+  virtual ReadState get_read_state();
 
 private:
   BioStreamBuf _buf;

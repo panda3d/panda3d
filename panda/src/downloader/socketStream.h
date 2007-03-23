@@ -126,8 +126,16 @@ public:
   INLINE ISocketStream(streambuf *buf);
 
 PUBLISHED:
+  enum ReadState {
+    RS_initial,
+    RS_reading,
+    RS_complete,
+    RS_error,
+  };
+
   virtual bool is_closed() = 0;
   virtual void close() = 0;
+  virtual ReadState get_read_state() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////

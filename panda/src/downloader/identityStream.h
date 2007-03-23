@@ -55,6 +55,7 @@ public:
 
   virtual bool is_closed();
   virtual void close();
+  virtual ReadState get_read_state();
 
 private:
   IdentityStreamBuf _buf;

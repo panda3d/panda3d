@@ -48,4 +48,15 @@ close() {
   _buf.close_read();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: IChunkedStream::get_read_state
+//       Access: Public, Virtual
+//  Description: Returns an enum indicating how we are coming along in
+//               reading the document.
+////////////////////////////////////////////////////////////////////
+IChunkedStream::ReadState IChunkedStream::
+get_read_state() {
+  return _buf.get_read_state();
+}
+
 #endif  // HAVE_OPENSSL

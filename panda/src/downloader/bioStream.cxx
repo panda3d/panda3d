@@ -104,4 +104,20 @@ close() {
   _buf.close();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: IBioStream::get_read_state
+//       Access: Public, Virtual
+//  Description: Returns an enum indicating how we are coming along in
+//               reading the document.
+////////////////////////////////////////////////////////////////////
+IBioStream::ReadState IBioStream::
+get_read_state() {
+  // For an IBioStream, this method is meaningless, and always returns
+  // RS_error.
+
+  // This method is intended for those specialized streams that scan
+  // through an HTTP document.
+  return RS_error;
+}
+
 #endif  // HAVE_OPENSSL

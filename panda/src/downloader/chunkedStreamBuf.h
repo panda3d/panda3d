@@ -43,6 +43,7 @@ public:
   void close_read();
 
   INLINE bool is_closed() const;
+  INLINE ISocketStream::ReadState get_read_state() const;
 
 protected:
   virtual int underflow();
@@ -55,6 +56,7 @@ private:
   size_t _chunk_remaining;
   bool _done;
   string _working_getline;
+  ISocketStream::ReadState _read_state;
 
   PT(HTTPChannel) _doc;
   int _read_index;

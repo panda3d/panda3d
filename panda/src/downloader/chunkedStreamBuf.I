@@ -26,3 +26,13 @@ INLINE bool ChunkedStreamBuf::
 is_closed() const {
   return (_source == (BioStreamPtr *)NULL || (*_source)->is_closed());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ChunkedStreamBuf::get_read_state
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ISocketStream::ReadState ChunkedStreamBuf::
+get_read_state() const {
+  return _read_state;
+}

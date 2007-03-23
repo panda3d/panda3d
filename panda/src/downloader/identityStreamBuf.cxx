@@ -35,6 +35,7 @@ IdentityStreamBuf::
 IdentityStreamBuf() {
   _has_content_length = true;
   _bytes_remaining = 0;
+  _read_state = ISocketStream::RS_initial;
 
 #ifdef HAVE_IOSTREAM
   char *buf = new char[4096];
@@ -67,16 +68,12 @@ IdentityStreamBuf::
 //               from the identity encoding.
 ////////////////////////////////////////////////////////////////////
 void IdentityStreamBuf::
-open_read(BioStreamPtr *source, HTTPChannel *doc, 
+open_read(BioStreamPtr *source, 
           bool has_content_length, size_t content_length) {
   _source = source;
-  _doc = doc;
   _has_content_length = has_content_length;
   _bytes_remaining = content_length;
-
-  if (_doc != (HTTPChannel *)NULL) {
-    _read_index = doc->_read_index;
-  }
+  _read_state = ISocketStream::RS_reading;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,9 +139,7 @@ read_chars(char *start, size_t length) {
     if (read_count == 0) {
       if ((*_source)->is_closed()) {
         // socket closed; we're done.
-        if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-          _doc->finished_body(false);
-        }
+        _read_state = ISocketStream::RS_complete;
       }
       return 0;
     }
@@ -162,10 +157,7 @@ read_chars(char *start, size_t length) {
       if (read_count == 0) {
         if ((*_source)->is_closed()) {
           // socket closed unexpectedly; problem.
-          if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-            _doc->_state = HTTPChannel::S_failure;
-            _doc->_status_entry._status_code = HTTPChannel::SC_lost_connection;
-          }
+          _read_state = ISocketStream::RS_error;
         }
         return 0;
       }
@@ -173,9 +165,7 @@ read_chars(char *start, size_t length) {
       
     if (_bytes_remaining == 0) {
       // We're done.
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-        _doc->finished_body(false);
-      }
+      _read_state = ISocketStream::RS_complete;
     }
   }
 
