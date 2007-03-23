@@ -1976,6 +1976,17 @@ run_reading_body() {
     getline(*_body_stream, line);
   }
 
+  switch (_body_stream->get_read_state()) {
+  case ISocketStream::RS_complete:
+    finished_body(false);
+    break;
+
+  case ISocketStream::RS_error:
+    _state = HTTPChannel::S_failure;
+    _status_entry._status_code = HTTPChannel::SC_lost_connection;
+    break;
+  }
+
   if (!_body_stream->is_closed()) {
     // There's more to come later.
     return true;
