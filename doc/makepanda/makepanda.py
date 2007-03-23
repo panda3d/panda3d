@@ -1627,6 +1627,7 @@ DEFAULT_SETTINGS=[
     ("HAVE_GETOPT",                    'UNDEF',                  '1'),
     ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
     ("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
+    ("HAVE_LINUX_INPUT_H",             'UNDEF',                  '1'),
     ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
     ("HAVE_STREAMSIZE",                '1',                      '1'),
     ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
@@ -1857,8 +1858,8 @@ if (sys.platform != "win32"):
     confautoprc = confautoprc.replace("aux-display pandadx8","")
     confautoprc = confautoprc.replace("aux-display pandadx7","")
 
-ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
 ConditionalWriteFile("built/etc/Config.prc", configprc)
+ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #

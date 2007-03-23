@@ -201,7 +201,7 @@ class ShowBase(DirectObject.DirectObject):
         # Open the default rendering window.
         if self.windowType != 'none':
 	    props = WindowProperties.getDefault()
-	    if (self.config.GetBool('read-raw-mice', 1)):
+	    if (self.config.GetBool('read-raw-mice', 0)):
 	        props.setRawMice(1)
             self.openDefaultWindow(startDirect = False, props=props)
 

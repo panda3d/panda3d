@@ -37,7 +37,13 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#ifdef HAVE_LINUX_INPUT_H
+#include <linux/input.h>
+#endif
+
 TypeHandle glxGraphicsWindow::_type_handle;
+
+#define test_bit(bit, array) ((array)[(bit)/8] & (1<<((bit)&7)))
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::Constructor
@@ -235,7 +241,9 @@ process_events() {
   if (_xwindow == (Window)0) {
     return;
   }
-
+  
+  poll_raw_mice();
+  
   XEvent event;
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
@@ -683,6 +691,13 @@ open_window() {
   
   XMapWindow(_display, _xwindow);
 
+  if (_properties.get_raw_mice()) {
+    open_raw_mice();
+  } else {
+    glxdisplay_cat.error() <<
+      "Raw mice not requested.\n";
+  }
+  
   return true;
 }
 
@@ -1001,6 +1016,140 @@ setup_colormap(XVisualInfo *visual) {
         << visual_class << ".\n";
       break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::open_raw_mice
+//       Access: Private
+//  Description: Adds raw mice to the _input_devices list.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+open_raw_mice()
+{
+#ifdef HAVE_LINUX_INPUT_H
+  bool any_present = false;
+  bool any_mice = false;
+  
+  for (int i=0; i<64; i++) {
+    uint8_t evtypes[EV_MAX/8 + 1];
+    ostringstream fnb;
+    fnb << "/dev/input/event" << i;
+    string fn = fnb.str();
+    int fd = open(fn.c_str(), O_RDONLY | O_NONBLOCK, 0);
+    if (fd >= 0) {
+      any_present = true;
+      char name[256];
+      char phys[256];
+      char uniq[256];
+      if ((ioctl(fd, EVIOCGNAME(sizeof(name)), name) < 0)||
+	  (ioctl(fd, EVIOCGPHYS(sizeof(phys)), phys) < 0)||
+	  (ioctl(fd, EVIOCGPHYS(sizeof(uniq)), uniq) < 0)||
+	  (ioctl(fd, EVIOCGBIT(0, EV_MAX), &evtypes) < 0)) {
+	close(fd);
+	glxdisplay_cat.error() <<
+	  "Opening raw mice: ioctl failed on " << fn << "\n";
+      } else {
+	if (test_bit(EV_REL, evtypes) || test_bit(EV_ABS, evtypes)) {
+	  string full_id = ((string)name) + " " + uniq;
+	  MouseDeviceInfo inf;
+	  inf._fd = fd;
+	  inf._input_device_index = _input_devices.size();
+	  inf._io_buffer = "";
+	  _mouse_device_info.push_back(inf);
+	  GraphicsWindowInputDevice device =
+	    GraphicsWindowInputDevice::pointer_only(full_id);
+	  _input_devices.push_back(device);
+	  any_mice = true;
+	} else {
+	  close(fd);
+	}
+      }
+    } else {
+      if ((errno == ENOENT)||(errno == ENOTDIR)) {
+	break;
+      } else {
+	any_present = true;
+	glxdisplay_cat.error() << 
+	  "Opening raw mice: " << strerror(errno) << " " << fn << "\n";
+      }
+    }
+  }
+  
+  if (!any_present) {
+    glxdisplay_cat.error() << 
+      "Opening raw mice: files not found: /dev/input/event*\n";
+  } else if (!any_mice) {
+    glxdisplay_cat.error() << 
+      "Opening raw mice: no mouse devices detected in /dev/input/event*\n";
+  }
+#else
+  glxdisplay_cat.error() <<
+    "Opening raw mice: panda not compiled with raw mouse support.\n";
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::poll_raw_mice
+//       Access: Private
+//  Description: Reads events from the raw mouse device files.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+poll_raw_mice()
+{
+#ifdef HAVE_LINUX_INPUT_H
+  for (int dev=0; dev<_mouse_device_info.size(); dev++) {
+    MouseDeviceInfo &inf = _mouse_device_info[dev];
+
+    // Read all bytes into buffer.
+    if (inf._fd >= 0) {
+      while (1) {
+	char tbuf[1024];
+	int nread = read(inf._fd, tbuf, sizeof(tbuf));
+	if (nread > 0) {
+	  inf._io_buffer += string(tbuf, nread);
+	} else {
+	  if ((nread < 0)&&((errno == EWOULDBLOCK) || (errno==EAGAIN))) {
+	    break;
+	  }
+	  close(inf._fd);
+	  inf._fd = -1;
+	  break;
+	}
+      }
+    }
+
+    // Process events.
+    int nevents = inf._io_buffer.size() / sizeof(struct input_event);
+    if (nevents == 0) {
+      continue;
+    }
+    const input_event *events = (const input_event *)(inf._io_buffer.c_str());
+    GraphicsWindowInputDevice &dev = _input_devices[inf._input_device_index];
+    int x = dev.get_pointer().get_x();
+    int y = dev.get_pointer().get_y();
+    for (int i=0; i<nevents; i++) {
+      if (events[i].type == EV_REL) {
+	if (events[i].code == REL_X) x += events[i].value;
+	if (events[i].code == REL_Y) y += events[i].value;
+      } else if (events[i].type == EV_ABS) {
+	if (events[i].code == ABS_X) x = events[i].value;
+	if (events[i].code == ABS_Y) y = events[i].value;
+      } else if (events[i].type == EV_KEY) {
+	if ((events[i].code >= BTN_MOUSE)&&(events[i].code < BTN_MOUSE+8)) {
+	  int btn = events[i].code - BTN_MOUSE;
+	  dev.set_pointer_in_window(x,y);
+	  if (events[i].value) {
+	    dev.button_down(MouseButton::button(btn));
+	  } else {
+	    dev.button_up(MouseButton::button(btn));
+	  }
+	}
+      }
+    }
+    inf._io_buffer.erase(0,nevents*sizeof(struct input_event));
+    dev.set_pointer_in_window(x,y);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

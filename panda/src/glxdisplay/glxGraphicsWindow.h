@@ -70,6 +70,9 @@ private:
 
   static Bool check_event(Display *display, XEvent *event, char *arg);
 
+  void open_raw_mice();
+  void poll_raw_mice();
+  
 private:
   Display *_display;
   int _screen;
@@ -90,6 +93,13 @@ private:
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
 
+  struct MouseDeviceInfo {
+    int    _fd;
+    int    _input_device_index;
+    string _io_buffer;
+  };
+  pvector<MouseDeviceInfo> _mouse_device_info;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
