@@ -728,9 +728,9 @@ find_type_by_id(int id) const {
 //       Access: Private
 ///////////////////////////////////////////////////////////////////
 extern "C" int 
-get_best_parent_from_Set(int id, const std::set<int> &set) {
+get_best_parent_from_Set(int id, const std::set<int> &this_set) {
   // most common case..
-  if (set.find(id) != set.end()) {
+  if (this_set.find(id) != this_set.end()) {
     return id;
   }
 
@@ -739,6 +739,6 @@ get_best_parent_from_Set(int id, const std::set<int> &set) {
     return -1;
   }
 
-  return th.get_best_parent_from_Set(set);
+  return th.get_best_parent_from_Set(this_set);
 }
 

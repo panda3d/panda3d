@@ -119,7 +119,7 @@ private:
 
 ///////////////////////////////////////////
 // Helper function to allow for "C" interaction into the type system
-extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &set);
+extern "C" EXPCL_DTOOL  int get_best_parent_from_Set(int id, const std::set<int> &this_set);
 
 #include "typeRegistry.I"
 
