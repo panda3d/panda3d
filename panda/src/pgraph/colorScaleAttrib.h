@@ -53,10 +53,10 @@ public:
   virtual bool lower_attrib_can_override() const;
   virtual void output(ostream &out) const;
   virtual void store_into_slot(AttribSlots *slots) const;
-  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
