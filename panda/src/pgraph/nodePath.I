@@ -1180,6 +1180,16 @@ set_color_scale(float sr, float sg, float sb, float sa, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::compose_color_scale
+//       Access: Published
+//  Description: Sets the color scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+compose_color_scale(float sr, float sg, float sb, float sa, int priority) {
+  compose_color_scale(LVecBase4f(sr, sg, sb, sa), priority);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_sr
 //       Access: Published
 //  Description: Sets the red scale component of the transform

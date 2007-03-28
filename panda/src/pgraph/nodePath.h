@@ -512,8 +512,12 @@ PUBLISHED:
                        int priority = 0);
   INLINE void set_color_scale(float sx, float sy, float sz, float sa,
                               int priority = 0);
+  void compose_color_scale(const LVecBase4f &scale,
+                           int priority = 0);
+  INLINE void compose_color_scale(float sx, float sy, float sz, float sa,
+                                  int priority = 0);
   void set_color_scale_off(int priority = 0);
-
+  
   void set_alpha_scale(float scale, int priority = 0);
   void set_all_color_scale(float scale, int priority = 0);
   INLINE void set_sr(float sr);

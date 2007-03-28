@@ -2147,6 +2147,39 @@ clear_color_scale() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::compose_color_scale
+//       Access: Published
+//  Description: multiplies the color scale component of the transform,
+//               with previous color scale leaving translation and 
+//               rotation untouched.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+compose_color_scale(const LVecBase4f &scale, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+
+    // Modify the existing ColorScaleAttrib by multiplying with the 
+    // indicated colorScale.
+    LVecBase4f prev_color_scale = csa->get_scale();
+    LVecBase4f new_color_scale(prev_color_scale[0]*scale[0],
+                               prev_color_scale[1]*scale[1],
+                               prev_color_scale[2]*scale[2],
+                               prev_color_scale[3]*scale[3]);
+    node()->set_attrib(csa->set_scale(new_color_scale), priority);
+
+  } else {
+    // Create a new ColorScaleAttrib for this node.
+    node()->set_attrib(ColorScaleAttrib::make(scale), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color_scale
 //       Access: Published
 //  Description: Sets the color scale component of the transform,

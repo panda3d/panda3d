@@ -471,6 +471,30 @@ set_color_scale(const Colorf &color, int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::compose_color_scale
+//       Access: Published
+//  Description: Applies color scales to all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+compose_color_scale(float r, float g, float b, float a, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).compose_color_scale(Colorf(r, g, b, a), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::compose_color_scale
+//       Access: Published
+//  Description: Applies color scales to all NodePaths in the collection
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+compose_color_scale(const Colorf &color, int priority) {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).compose_color_scale(color, priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the
