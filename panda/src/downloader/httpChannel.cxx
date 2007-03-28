@@ -1985,6 +1985,9 @@ run_reading_body() {
     _state = HTTPChannel::S_failure;
     _status_entry._status_code = HTTPChannel::SC_lost_connection;
     break;
+
+  default:
+    break;
   }
 
   if (!_body_stream->is_closed()) {
@@ -2116,6 +2119,9 @@ run_download_to_file() {
     _state = HTTPChannel::S_failure;
     _status_entry._status_code = HTTPChannel::SC_lost_connection;
     break;
+
+  default:
+    break;
   }
 
   if (_body_stream->is_closed()) {
@@ -2176,6 +2182,9 @@ run_download_to_ram() {
   case ISocketStream::RS_error:
     _state = HTTPChannel::S_failure;
     _status_entry._status_code = HTTPChannel::SC_lost_connection;
+    break;
+
+  default:
     break;
   }
 
