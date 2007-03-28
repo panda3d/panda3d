@@ -23,6 +23,7 @@
 #include "typedReferenceCount.h"
 #include "pvector.h"
 #include "config_interval.h"
+#include "pStatCollector.h"
 
 class CIntervalManager;
 
@@ -139,6 +140,7 @@ protected:
   State _state;
   double _curr_t;
   string _name;
+  string _pname;
   string _done_event;
   double _duration;
 
@@ -168,6 +170,9 @@ private:
   // dirty.
   typedef pvector<CInterval *> Parents;
   Parents _parents;
+
+  static PStatCollector _root_pcollector;
+  PStatCollector _ival_pcollector;
   
 public:
   static TypeHandle get_class_type() {

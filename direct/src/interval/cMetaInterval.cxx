@@ -144,6 +144,7 @@ add_c_interval(CInterval *c_interval,
   nassertr(c_interval != (CInterval *)NULL, -1);
 
   c_interval->_parents.push_back(this);
+  c_interval->_ival_pcollector = PStatCollector(_ival_pcollector, c_interval->_pname);
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_c_interval;

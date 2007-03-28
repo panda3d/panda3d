@@ -6,7 +6,7 @@ from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 from IntervalManager import ivalMgr
 import Interval
-from direct.task import Task
+from direct.task.Task import Task, TaskManager
 import types
 if __debug__:
     import direct.showbase.PythonUtil as PythonUtil
@@ -96,6 +96,11 @@ class MetaInterval(CMetaInterval):
         self.__manager = ivalMgr
         self.setAutoPause(autoPause)
         self.setAutoFinish(autoFinish)
+
+        self.pstats = None
+        if __debug__ and TaskManager.taskTimerVerbose:
+            self.pname = name.split('-', 1)[0]
+            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
 
         self.pythonIvals = []
 
@@ -319,6 +324,8 @@ class MetaInterval(CMetaInterval):
             # It's a Python-style Interval, so add it as an external.
             index = len(self.pythonIvals)
             self.pythonIvals.append(ival)
+            if self.pstats:
+                ival.pstats = PStatCollector(self.pstats, ival.pname)
             self.addExtIndex(index, ival.getName(), ival.getDuration(),
                              ival.getOpenEnded(), relTime, relTo)
 
@@ -482,12 +489,20 @@ class MetaInterval(CMetaInterval):
     def privDoEvent(self, t, event):
         # This function overrides the C++ function to initialize the
         # intervals first if necessary.
+        if self.pstats:
+            self.pstats.start()
         self.__updateIvals()
         CMetaInterval.privDoEvent(self, t, event)
+        if self.pstats:
+            self.pstats.stop()
 
     def privPostEvent(self):
+        if self.pstats:
+            self.pstats.start()
         self.__doPythonCallbacks()
         CMetaInterval.privPostEvent(self)
+        if self.pstats:
+            self.pstats.stop()
 
     def setIntervalStartTime(self, *args, **kw):
         # This function overrides from the parent level to force it to

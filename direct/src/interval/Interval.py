@@ -5,8 +5,9 @@ __all__ = ['Interval']
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import *
-from direct.task import Task
+from direct.task.Task import Task, TaskManager
 from direct.showbase import PythonUtil
+from pandac.PandaModules import *
 import math
 
 class Interval(DirectObject):
@@ -32,6 +33,11 @@ class Interval(DirectObject):
         self.__playRate = 1.0
         self.__doLoop = 0
         self.__loopCount = 0
+
+        self.pstats = None
+        if __debug__ and TaskManager.taskTimerVerbose:
+            self.pname = name.split('-', 1)[0]
+            self.pstats = PStatCollector("App:Show code:ivalLoop:%s" % (self.pname))
 
         # Set true if the interval should be invoked if it was
         # completely skipped over during initialize or finalize, false
@@ -171,6 +177,8 @@ class Interval(DirectObject):
         return self.doneEvent
 
     def privDoEvent(self, t, event):
+        if self.pstats:
+            self.pstats.start()
         if event == CInterval.ETStep:
             self.privStep(t)
         elif event == CInterval.ETFinalize:
@@ -189,6 +197,8 @@ class Interval(DirectObject):
             self.privReverseInitialize(t)
         else:
             self.notify.error('Invalid event type: %s' % (event))
+        if self.pstats:
+            self.pstats.stop()
 
 
     def privInitialize(self, t):
@@ -344,17 +354,20 @@ class Interval(DirectObject):
     def privPostEvent(self):
         # Call after calling any of the priv* methods to do any required
         # Python finishing steps.
+        if self.pstats:
+            self.pstats.start()
         t = self.getT()
         if hasattr(self, "setTHooks"):
             for func in self.setTHooks:
                 func(t)
+        if self.pstats:
+            self.pstats.stop()
 
     def __spawnTask(self):
         # Spawn task
-        from direct.task import Task
         self.__removeTask()
         taskName = self.getName() + '-play'
-        task = Task.Task(self.__playTask)
+        task = Task(self.__playTask)
         task.interval = self
         taskMgr.add(task, taskName)
 
@@ -369,7 +382,6 @@ class Interval(DirectObject):
                 taskMgr.remove(task)
 
     def __playTask(self, task):
-        from direct.task import Task
         again = self.stepPlay()
         self.privPostEvent()
         if again:

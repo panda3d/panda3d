@@ -17,50 +17,21 @@ class IntervalManager(CIntervalManager):
     # the Python extensions is to add support for Python-based
     # intervals (like MetaIntervals).
 
-    if PandaModules.__dict__.has_key("Dtool_PyNavtiveInterface"):
-        def __init__(self, globalPtr = 0):
-            # Pass globalPtr == 1 to the constructor to trick it into
-            # "constructing" a Python wrapper around the global
-            # CIntervalManager object.
-            ##self.cObj = CIntervalManager.getGlobalPtr()
-            ##Dtool_BarrowThisRefrence(self, self.cObj)
-            ##self.dd = self
-            if globalPtr:
-                self.cObj = CIntervalManager.getGlobalPtr()
-                # Temporary try..except for old Panda.
-                try:
-                    Dtool_BorrowThisReference(self, self.cObj)
-                except:
-                    Dtool_BarrowThisRefrence(self, self.cObj)
-                self.dd = self
-            else:
-                CIntervalManager.__init__(self)
-            self.eventQueue = EventQueue()
-            self.MyEventmanager = EventManager.EventManager(self.eventQueue)
-            self.setEventQueue(self.eventQueue)
-            self.ivals = []
-            self.removedIvals = {}
-    else:  ## the old interface
-        def __init__(self, globalPtr = 0):
-            # Pass globalPtr == 1 to the constructor to trick it into
-            # "constructing" a Python wrapper around the global
-            # CIntervalManager object.
-            if globalPtr:
-                #CIntervalManager.__init__(self, None)
-                cObj = CIntervalManager.getGlobalPtr()
-                self.this = cObj.this
-                self.userManagesMemory = 0
-            else:
-                CIntervalManager.__init__(self)
-            # Set up a custom event queue for handling C++ events from
-            # intervals.
-            self.eventQueue = EventQueue()
-            self.MyEventmanager = EventManager.EventManager(self.eventQueue)
-            self.setEventQueue(self.eventQueue)
-            self.ivals = []
-            self.removedIvals = {}
-
-
+    def __init__(self, globalPtr = 0):
+        # Pass globalPtr == 1 to the constructor to trick it into
+        # "constructing" a Python wrapper around the global
+        # CIntervalManager object.
+        if globalPtr:
+            self.cObj = CIntervalManager.getGlobalPtr()
+            Dtool_BorrowThisReference(self, self.cObj)
+            self.dd = self
+        else:
+            CIntervalManager.__init__(self)
+        self.eventQueue = EventQueue()
+        self.MyEventmanager = EventManager.EventManager(self.eventQueue)
+        self.setEventQueue(self.eventQueue)
+        self.ivals = []
+        self.removedIvals = {}
 
     def addInterval(self, interval):
         index = self.addCInterval(interval, 1)
@@ -153,10 +124,6 @@ class IntervalManager(CIntervalManager):
             self.ivals.append(None)
         assert self.ivals[index] == None or self.ivals[index] == interval
         self.ivals[index] = interval
-
-
-    #def __repr__(self):
-    #    return self.__str__()
 
 # The global IntervalManager object.
 ivalMgr = IntervalManager(1)

@@ -22,9 +22,20 @@
 #include "clockObject.h"
 #include "event.h"
 #include "eventQueue.h"
-#include <math.h>
+#include "pStatTimer.h"
 
+PStatCollector CInterval::_root_pcollector("App:Show code:ivalLoop");
 TypeHandle CInterval::_type_handle;
+
+static inline string
+get_pstats_name(const string &name) {
+  string pname = name;
+  size_t hyphen = pname.find('-');
+  if (hyphen != string::npos) {
+    pname = pname.substr(0, hyphen);
+  }
+  return pname;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CInterval::Constructor
@@ -36,9 +47,11 @@ CInterval(const string &name, double duration, bool open_ended) :
   _state(S_initial),
   _curr_t(0.0),
   _name(name),
+  _pname(get_pstats_name(name)),
   _duration(max(duration, 0.0)),
   _open_ended(open_ended),
-  _dirty(false)
+  _dirty(false),
+  _ival_pcollector(_root_pcollector, _pname)
 {
   _auto_pause = false;
   _auto_finish = false;
@@ -283,6 +296,7 @@ is_playing() const {
 ////////////////////////////////////////////////////////////////////
 void CInterval::
 priv_do_event(double t, EventType event) {
+  PStatTimer timer(_ival_pcollector);
   switch (event) {
   case ET_initialize:
     priv_initialize(t);
@@ -497,6 +511,7 @@ void CInterval::
 setup_play(double start_t, double end_t, double play_rate, bool do_loop) {
   nassertv(start_t < end_t || end_t < 0.0);
   nassertv(play_rate != 0.0);
+  PStatTimer timer(_ival_pcollector);
 
   double duration = get_duration();
 
