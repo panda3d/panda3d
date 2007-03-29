@@ -150,6 +150,46 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_name
+//       Access: Published
+//  Description: Returns the local name of this collector.  This is
+//               the rightmost part of the fullname, after the
+//               rightmost colon.
+////////////////////////////////////////////////////////////////////
+INLINE string PStatCollector::
+get_name() const {
+  if (_client != (PStatClient *)NULL) {
+    return _client->get_collector_name(_index);
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_fullname
+//       Access: Published
+//  Description: Returns the full name of this collector.  This
+//               includes the names of all the collector's parents,
+//               concatenated together with colons.
+////////////////////////////////////////////////////////////////////
+INLINE string PStatCollector::
+get_fullname() const {
+  if (_client != (PStatClient *)NULL) {
+    return _client->get_collector_fullname(_index);
+  }
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PStatCollector::
+output(ostream &out) const {
+  out << "PStatCollector(\"" << get_fullname() << "\")";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::is_active
 //       Access: Published
 //  Description: Returns true if this particular collector is active

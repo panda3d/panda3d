@@ -69,6 +69,9 @@ PUBLISHED:
   INLINE void operator = (const PStatCollector &copy);
 
   INLINE bool is_valid() const;
+  INLINE string get_name() const;
+  INLINE string get_fullname() const;
+  INLINE void output(ostream &out) const;
 
   INLINE bool is_active();
   INLINE bool is_started();
@@ -151,6 +154,13 @@ PUBLISHED:
 };
 
 #include "pStatCollector.I"
+
+inline ostream &operator << (ostream &out, const PStatCollector &pcol) {
+#ifdef DO_PSTATS
+  pcol.output(out);
+#endif  // DO_PSTATS
+  return out;
+}
 
 #endif
 
