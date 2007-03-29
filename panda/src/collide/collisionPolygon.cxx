@@ -329,7 +329,7 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
 //               number of bounding volume tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionPolygon::
+PStatCollector &CollisionPolygon::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
@@ -341,7 +341,7 @@ get_volume_pcollector() {
 //               number of intersection tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionPolygon::
+PStatCollector &CollisionPolygon::
 get_test_pcollector() {
   return _test_pcollector;
 }

@@ -66,7 +66,7 @@ test_intersection(const CollisionEntry &) const {
 //               number of bounding volume tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionInvSphere::
+PStatCollector &CollisionInvSphere::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
@@ -78,7 +78,7 @@ get_volume_pcollector() {
 //               number of intersection tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionInvSphere::
+PStatCollector &CollisionInvSphere::
 get_test_pcollector() {
   return _test_pcollector;
 }

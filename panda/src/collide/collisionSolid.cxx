@@ -158,7 +158,7 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
 //               number of bounding volume tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionSolid::
+PStatCollector &CollisionSolid::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
@@ -170,7 +170,7 @@ get_volume_pcollector() {
 //               number of intersection tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionSolid::
+PStatCollector &CollisionSolid::
 get_test_pcollector() {
   return _test_pcollector;
 }

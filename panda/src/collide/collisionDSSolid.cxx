@@ -132,7 +132,7 @@ get_collision_origin() const {
 //               number of bounding volume tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionDSSolid::
+PStatCollector &CollisionDSSolid::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
@@ -144,7 +144,7 @@ get_volume_pcollector() {
 //               number of intersection tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionDSSolid::
+PStatCollector &CollisionDSSolid::
 get_test_pcollector() {
   return _test_pcollector;
 }

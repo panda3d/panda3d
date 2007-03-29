@@ -45,8 +45,8 @@ public:
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
-  virtual PStatCollector get_volume_pcollector();
-  virtual PStatCollector get_test_pcollector();
+  virtual PStatCollector &get_volume_pcollector();
+  virtual PStatCollector &get_test_pcollector();
 
   virtual void output(ostream &out) const;
 

@@ -65,8 +65,8 @@ public:
                                 const CullTraverserData &data,
                                 bool bounds_only) const;
 
-  virtual PStatCollector get_volume_pcollector();
-  virtual PStatCollector get_test_pcollector();
+  virtual PStatCollector &get_volume_pcollector();
+  virtual PStatCollector &get_test_pcollector();
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

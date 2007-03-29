@@ -39,7 +39,7 @@ make_copy() {
 //               number of bounding volume tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionGeom::
+PStatCollector &CollisionGeom::
 get_volume_pcollector() {
   return _volume_pcollector;
 }
@@ -51,7 +51,7 @@ get_volume_pcollector() {
 //               number of intersection tests made against a solid
 //               of this type in a given frame.
 ////////////////////////////////////////////////////////////////////
-PStatCollector CollisionGeom::
+PStatCollector &CollisionGeom::
 get_test_pcollector() {
   return _test_pcollector;
 }

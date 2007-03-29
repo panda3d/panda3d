@@ -43,8 +43,8 @@ private:
 public:
   virtual CollisionSolid *make_copy();
 
-  virtual PStatCollector get_volume_pcollector();
-  virtual PStatCollector get_test_pcollector();
+  virtual PStatCollector &get_volume_pcollector();
+  virtual PStatCollector &get_test_pcollector();
 
   virtual void output(ostream &out) const;
 
