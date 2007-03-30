@@ -3456,7 +3456,12 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   alight.Direction = *(D3DVECTOR *)dir.get_data();
 
   alight.Range =  __D3DLIGHT_RANGE_MAX;
-  alight.Falloff =  1.0f;
+
+  // Not sure why this factor of 60.0f is necessary; I determined it
+  // empirically.  It seems to successfully approximate the OpenGL
+  // spotlight equation, at least for reasonably smallish FOV's.
+  alight.Falloff =  light_obj->get_exponent() / 60.0f;
+
   alight.Theta =  0.0f;
   alight.Phi = deg_2_rad(lens->get_hfov());
 
