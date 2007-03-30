@@ -49,7 +49,7 @@ CConnectionRepository(bool has_owner_view) :
 #ifdef HAVE_OPENSSL
   _http_conn(NULL),
 #endif
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
   _cw(&_qcm, 0),
   _qcr(&_qcm, 0),
 #endif
@@ -65,7 +65,7 @@ CConnectionRepository(bool has_owner_view) :
   _msg_type(0),
   _has_owner_view(has_owner_view)
 {
-#if defined(HAVE_NSPR) && defined(SIMULATE_NETWORK_DELAY)
+#if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
     _qcr.start_delay(min_lag, max_lag);
   }
@@ -119,38 +119,38 @@ get_stream() {
 #endif  // HAVE_OPENSSL
 
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
 ////////////////////////////////////////////////////////////////////
-//     Function: CConnectionRepository::try_connect_nspr
+//     Function: CConnectionRepository::try_connect_net
 //       Access: Published
-//  Description: Uses NSPR to try to connect to the server and port
-//               named in the indicated URL.  Returns true if
-//               successful, false otherwise.
+//  Description: Uses Panda's "net" library to try to connect to the
+//               server and port named in the indicated URL.  Returns
+//               true if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
-try_connect_nspr(const URLSpec &url) {
+try_connect_net(const URLSpec &url) {
   disconnect();
 
-  _nspr_conn = 
+  _net_conn = 
     _qcm.open_TCP_client_connection(url.get_server(), url.get_port(),
                                     game_server_timeout_ms);
 
-  if (_nspr_conn != (Connection *)NULL) {
-    _nspr_conn->set_no_delay(true);
-    _qcr.add_connection(_nspr_conn);
+  if (_net_conn != (Connection *)NULL) {
+    _net_conn->set_no_delay(true);
+    _qcr.add_connection(_net_conn);
     return true;
   }
 
   return false;
 }
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
 #ifdef WANT_NATIVE_NET
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::connect_native
 //       Access: Published
-//  Description: Connects to the server using a native system roger 
-//               put together
+//  Description: Connects to the server using Panda's low-level and
+//               fast "native net" library.
 ////////////////////////////////////////////////////////////////////
 bool CConnectionRepository::
 connect_native(const URLSpec &url) {
@@ -178,13 +178,16 @@ connect_native(const URLSpec &url) {
 //               is non-blocking.  If you call this on a blocking
 //               socket, it will force all datagrams to be held up
 //               until the socket closes.
+//
+//               This has no effect if the connection method is via
+//               the "native net" library.
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 start_delay(double min_delay, double max_delay) {
   if (min_delay != 0.0 || max_delay != 0.0) {
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
     _qcr.start_delay(min_delay, max_delay);
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 #ifdef HAVE_OPENSSL
     if (_http_conn != (SocketStream *)NULL) {
       _http_conn->start_delay(min_delay, max_delay);
@@ -206,9 +209,9 @@ start_delay(double min_delay, double max_delay) {
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 stop_delay() {
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
   _qcr.stop_delay();
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 #ifdef HAVE_OPENSSL
   if (_http_conn != (SocketStream *)NULL) {
     _http_conn->stop_delay();
@@ -312,22 +315,22 @@ is_connected() {
     return (_bdc.IsConnected());
 #endif
 
-#ifdef HAVE_NSPR
-  if (_nspr_conn) {
+#ifdef HAVE_NET
+  if (_net_conn) {
     if (_qcm.reset_connection_available()) {
       PT(Connection) reset_connection;
       if (_qcm.get_reset_connection(reset_connection)) {
         _qcm.close_connection(reset_connection);
-        if (reset_connection == _nspr_conn) {
+        if (reset_connection == _net_conn) {
           // Whoops, lost our connection.
-          _nspr_conn = NULL;
+          _net_conn = NULL;
           return false;
         }
       }
     }
     return true;
   }
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
 #ifdef HAVE_OPENSSL
   if (_http_conn) {
@@ -369,12 +372,12 @@ send_datagram(const Datagram &dg) {
     return _bdc.SendMessage(dg);
 #endif
 
-#ifdef HAVE_NSPR
-  if (_nspr_conn) {
-    _cw.send(dg, _nspr_conn);
+#ifdef HAVE_NET
+  if (_net_conn) {
+    _cw.send(dg, _net_conn);
     return true;
   }
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
 #ifdef HAVE_OPENSSL
   if (_http_conn) {
@@ -411,11 +414,11 @@ consider_flush() {
     return true;  //Maybe we should just flush here for now?
 #endif
 
-#ifdef HAVE_NSPR
-  if (_nspr_conn) {
-    return _nspr_conn->consider_flush();
+#ifdef HAVE_NET
+  if (_net_conn) {
+    return _net_conn->consider_flush();
   }
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
 #ifdef HAVE_OPENSSL
   if (_http_conn) {
@@ -443,11 +446,11 @@ flush() {
     return _bdc.Flush();
   #endif
 
-  #ifdef HAVE_NSPR
-  if (_nspr_conn) {
-    return _nspr_conn->flush();
+  #ifdef HAVE_NET
+  if (_net_conn) {
+    return _net_conn->flush();
   }
-  #endif  // HAVE_NSPR
+  #endif  // HAVE_NET
 
   #ifdef HAVE_OPENSSL
   if (_http_conn) {
@@ -471,12 +474,12 @@ disconnect() {
     _bdc.ClearAddresses();
   }
   #endif
-  #ifdef HAVE_NSPR
-  if (_nspr_conn) {
-    _qcm.close_connection(_nspr_conn);
-    _nspr_conn = NULL;
+  #ifdef HAVE_NET
+  if (_net_conn) {
+    _qcm.close_connection(_net_conn);
+    _net_conn = NULL;
   }
-  #endif  // HAVE_NSPR
+  #endif  // HAVE_NET
 
   #ifdef HAVE_OPENSSL
   if (_http_conn) {
@@ -502,16 +505,16 @@ do_check_datagram() {
     return _bdc.GetMessage(_dg);
   }
   #endif
-  #ifdef HAVE_NSPR
-  if (_nspr_conn) {
-    _nspr_conn->consider_flush();
+  #ifdef HAVE_NET
+  if (_net_conn) {
+    _net_conn->consider_flush();
     if (_qcr.get_overflow_flag()) {
       throw_event(get_overflow_event_name());
       _qcr.reset_overflow_flag();
     }
     return (_qcr.data_available() && _qcr.get_data(_dg));
   }
-  #endif  // HAVE_NSPR
+  #endif  // HAVE_NET
 
   #ifdef HAVE_OPENSSL
   if (_http_conn) {

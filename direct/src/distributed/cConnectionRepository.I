@@ -79,7 +79,7 @@ set_python_repository(PyObject *python_repository) {
 }
 #endif  // HAVE_PYTHON
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_qcm
 //       Access: Published
@@ -90,9 +90,9 @@ INLINE QueuedConnectionManager &CConnectionRepository::
 get_qcm() {
   return _qcm;
 }
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_cw
 //       Access: Published
@@ -104,9 +104,9 @@ get_cw() {
   return _cw;
 }
   INLINE ConnectionWriter &get_cw();
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_qcr
 //       Access: Published
@@ -118,7 +118,7 @@ get_qcr() {
   return _qcr;
 }
   INLINE QueuedConnectionReader &get_qcr();
-#endif  // HAVE_NSPR
+#endif  // HAVE_NET
 
 #ifdef WANT_NATIVE_NET
 ////////////////////////////////////////////////////////////////////

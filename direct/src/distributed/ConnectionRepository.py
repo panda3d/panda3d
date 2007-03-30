@@ -22,7 +22,7 @@ class ConnectionRepository(
     taskPriority = -30
 
     CM_HTTP=0
-    CM_NSPR=1
+    CM_NET=1
     CM_NATIVE=2
 
 
@@ -41,28 +41,46 @@ class ConnectionRepository(
         
         self.config = config
 
-        if hasattr(self, 'setVerbose'):
-            if self.config.GetBool('verbose-repository'):
-                self.setVerbose(1)
+        if self.config.GetBool('verbose-repository'):
+            self.setVerbose(1)
 
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
         # OpenSSL socket library (even though SSL is not involved).
-        # This is not as robust a socket library as NSPR's, but the
+        # This is not as robust a socket library as NET's, but the
         # HTTPClient interface does a good job of negotiating the
         # connection over an HTTP proxy if one is in use.
         #
-        # Set it to 'nspr' to use Panda's net interface
+        # Set it to 'net' to use Panda's net interface
         # (e.g. QueuedConnectionManager, etc.) to establish the
-        # connection, which ultimately uses the NSPR socket library.
-        # This is a much better socket library, but it may be more
-        # than you need for most applications; and there is no support
-        # for proxies.
+        # connection.  This is a higher-level layer build on top of
+        # the low-level "native net" library.  There is no support for
+        # proxies.  This is a good, general choice.
         #
-        # Set it to 'default' to use the HTTPClient interface if a
-        # proxy is in place, but the NSPR interface if we don't have a
-        # proxy.
-        self.connectMethod=connectMethod
+        # Set it to 'native' to use Panda's low-level native net
+        # interface directly.  This is much faster than either http or
+        # net for high-bandwidth (e.g. server) applications, but it
+        # doesn't support the simulated delay via the start_delay()
+        # call.
+        #
+        # Set it to 'default' to use an appropriate interface
+        # according to the type of ConnectionRepository we are
+        # creating.
+        userConnectMethod = self.config.GetString('connect-method', 'default')
+        if userConnectMethod == 'http':
+            connectMethod = self.CM_HTTP
+        elif userConnectMethod == 'net':
+            connectMethod = self.CM_NET
+        elif userConnectMethod == 'native':
+            connectMethod = self.CM_NATIVE
+
+        self.connectMethod = connectMethod
+        if self.connectMethod == self.CM_HTTP:
+            self.notify.info("Using connect method 'http'")
+        elif self.connectMethod == self.CM_NET:
+            self.notify.info("Using connect method 'net'")
+        elif self.connectMethod == self.CM_NATIVE:
+            self.notify.info("Using connect method 'native'")
         
         self.connectHttp = None
         self.http = None
@@ -375,7 +393,7 @@ class ConnectionRepository(
         else:
             self.notify.info("Connecting to gameserver directly (no proxy).")
 
-        #Redefine the connection to http or nspr in the default case
+        #Redefine the connection to http or net in the default case
 
         self.bootedIndex = None
         self.bootedText = None
@@ -393,11 +411,11 @@ class ConnectionRepository(
                     ch, serverList, 0,
                     successCallback, successArgs,
                     failureCallback, failureArgs)
-        elif self.connectMethod == self.CM_NSPR or (not hasattr(self,"connectNative")):
+        elif self.connectMethod == self.CM_NET or (not hasattr(self,"connectNative")):
             # Try each of the servers in turn.
             for url in serverList:
-                self.notify.info("Connecting to %s via NSPR interface." % (url.cStr()))
-                if self.tryConnectNspr(url):
+                self.notify.info("Connecting to %s via NET interface." % (url.cStr()))
+                if self.tryConnectNet(url):
                     self.startReaderPollTask()
                     if successCallback:
                         successCallback(*successArgs)

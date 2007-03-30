@@ -28,7 +28,7 @@
 #include "pStatCollector.h"
 #include "datagramIterator.h"
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
 #include "queuedConnectionManager.h"
 #include "connectionWriter.h"
 #include "queuedConnectionReader.h"
@@ -79,8 +79,8 @@ PUBLISHED:
   void set_connection_http(HTTPChannel *channel);
   SocketStream *get_stream();
 #endif
-#ifdef HAVE_NSPR
-  bool try_connect_nspr(const URLSpec &url);
+#ifdef HAVE_NET
+  bool try_connect_net(const URLSpec &url);
 
   INLINE QueuedConnectionManager &get_qcm();
   INLINE ConnectionWriter &get_cw();
@@ -140,11 +140,11 @@ private:
   SocketStream *_http_conn;
 #endif
 
-#ifdef HAVE_NSPR
+#ifdef HAVE_NET
   QueuedConnectionManager _qcm;
   ConnectionWriter _cw;
   QueuedConnectionReader _qcr;
-  PT(Connection) _nspr_conn;
+  PT(Connection) _net_conn;
 #endif
 
 #ifdef WANT_NATIVE_NET
