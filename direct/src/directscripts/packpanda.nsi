@@ -109,6 +109,7 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS "${PANDA}\models\audio\*"
             SetOutPath $INSTDIR\bin
             File /r "${PANDA}\bin\pzip.exe"
+            File /r "${PANDA}\bin\vcredist_x86.exe"
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
@@ -192,13 +193,15 @@ Section "${SMDIRECTORY}" SecCore
 
         !endif
 
-
 SectionEnd
 
 
 Section -post
 
         !ifndef PPGAME
+
+        # Install the visual studio runtime system.
+        ExecWait '"$INSTDIR\bin\vcredist_x86.exe" /Q:a /C:"msiexec.exe /qn /i vcredist.msi"'
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\python"
         Call RemoveFromPath
