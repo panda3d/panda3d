@@ -3457,13 +3457,14 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   alight.Range =  __D3DLIGHT_RANGE_MAX;
 
-  // Not sure why this factor of 60.0f is necessary; I determined it
-  // empirically.  It seems to successfully approximate the OpenGL
-  // spotlight equation, at least for reasonably smallish FOV's.
-  alight.Falloff =  light_obj->get_exponent() / 60.0f;
+  // I determined this formular empirically.  It seems to mostly
+  // approximate the OpenGL spotlight equation, for a reasonable range
+  // of values for FOV.
+  float fov = lens->get_hfov();
+  alight.Falloff =  light_obj->get_exponent() * (fov * fov * fov) / 1620000.0f;
 
   alight.Theta =  0.0f;
-  alight.Phi = deg_2_rad(lens->get_hfov());
+  alight.Phi = deg_2_rad(fov);
 
   const LVecBase3f &att = light_obj->get_attenuation();
   alight.Attenuation0 = att[0];
