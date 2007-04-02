@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Spotlight::CData::
 CData() :
-  _exponent(0.0f),
+  _exponent(50.0f),
   _specular_color(1.0f, 1.0f, 1.0f, 1.0f),
   _attenuation(1.0f, 0.0f, 0.0f)
 {
