@@ -831,7 +831,7 @@ has_parent_window() const {
 INLINE void WindowProperties::
 clear_parent_window() {
   _specified &= ~S_parent_window;
-  _parent_window=NULL;
+  _parent_window = (size_t)NULL;
 }
 
 
