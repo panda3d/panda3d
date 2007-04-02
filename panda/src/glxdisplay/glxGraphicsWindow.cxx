@@ -485,10 +485,11 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_size();
   }
   if (properties.has_z_order()) {
-    // We'll send the classing stacking request through the standard
+    // We'll send the classic stacking request through the standard
     // interface, for users of primitive window managers; but we'll
     // also send it as a window manager hint, for users of modern
     // window managers.
+    _properties.set_z_order(properties.get_z_order());
     switch (properties.get_z_order()) {
     case WindowProperties::Z_bottom:
       changes.stack_mode = Below;
@@ -853,17 +854,10 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)state_data, next_state_data);
 
-  if (!already_mapped) {
+  if (already_mapped) {
     // We have to request state changes differently when the window
     // has been mapped.  To do this, we need to send a client message
     // to the root window for each change.
-
-    // This doesn't appear to be working for me, though I think I'm
-    // doing everything right.  There's no feedback mechanism,
-    // however, so it's impossible to tell whether I'm actually doing
-    // something wrong, or whether this feature is simply not
-    // supported in my current window manager.  I'll leave it here for
-    // now.
 
     glxGraphicsPipe *glx_pipe;
     DCAST_INTO_V(glx_pipe, _pipe);
