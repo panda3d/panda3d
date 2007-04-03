@@ -13,6 +13,31 @@ from pandac.PandaModules import *
 
 class GridParent:
 
+    # this lets GridParents share CellOrigins
+    GridZone2CellOrigin = {}
+    GridZone2count = {}
+    @staticmethod
+    def getCellOrigin(grid, zoneId):
+        tup = (grid, zoneId)
+        if tup not in GridParent.GridZone2count:
+            GridParent.GridZone2count[tup] = 0
+            # For readability when debugging, append the zone to the name
+            GridParent.GridZone2CellOrigin[tup] = grid.attachNewNode("cellOrigin-%s" % zoneId)
+            # Get grid cell origin
+            cellPos = grid.getZoneCellOrigin(zoneId)
+            # Set the gridNode's position
+            GridParent.GridZone2CellOrigin[tup].setPos(*cellPos)
+        GridParent.GridZone2count[tup] += 1
+        return GridParent.GridZone2CellOrigin[tup]
+    @staticmethod
+    def releaseCellOrigin(grid, zoneId):
+        tup = (grid, zoneId)
+        GridParent.GridZone2count[tup] -= 1
+        if GridParent.GridZone2count[tup] == 0:
+            del GridParent.GridZone2count[tup]
+            GridParent.GridZone2CellOrigin[tup].removeNode()
+            del GridParent.GridZone2CellOrigin[tup]
+
     def __init__(self, av):
         # The object on the grid will need to broadcast his position relative to
         # his current grid cell in order to use 16 bit
@@ -26,7 +51,8 @@ class GridParent:
         self.grid = None
         # NOTE: this node gets renamed when it is put on a zone, so if you
         # are looking for it by name, try cellOrigin*.
-        self.cellOrigin = NodePath("cellOrigin")
+        self.ownCellOrigin = NodePath("cellOrigin")
+        self.cellOrigin = self.ownCellOrigin
 
     def delete(self):
         if self.av:
@@ -35,7 +61,13 @@ class GridParent:
             del self.av
             self.av = None
         # Remove the gridNodes
-        self.cellOrigin.removeNode()
+        if self.ownCellOrigin is not None:
+            self.ownCellOrigin.removeNode()
+            self.ownCellOrigin = None
+        if self.grid is not None:
+            self.releaseCellOrigin(self.grid, self.zoneId)
+            self.grid = None
+            self.zoneId = None
 
     def setGridParent(self, grid, zoneId, teleport=0):
         # If teleport=0, preserve the avatar's absolute position.  If teleport=1
@@ -51,21 +83,11 @@ class GridParent:
             # position so we do not lose the avatars absolute position.
             self.av.wrtReparentTo(hidden)
 
-        if grid != self.grid:
-            # Setup the grid for the first time
-            # set/change the grid that we are working on.
-            self.grid = grid
-            # Reparent the gridNodes under this grid
-            self.cellOrigin.reparentTo(grid)
-            self.cellOrigin.setPosHpr(0, 0, 0, 0, 0, 0)
-
-        # Get grid cell origin
-        cellPos = self.grid.getZoneCellOrigin(zoneId)
-
-        # Set the gridNode's position
-        self.cellOrigin.setPos(*cellPos)
-        # For readability when debugging, append the zone to the name
-        self.cellOrigin.setName("cellOrigin-%s" % (zoneId))
+        if self.grid is not None:
+            self.releaseCellOrigin(self.grid, self.zoneId)
+        self.grid = grid
+        self.zoneId = zoneId
+        self.cellOrigin = self.getCellOrigin(self.grid, self.zoneId)
 
         # Reparent our avatar to this node
         if not teleport:
