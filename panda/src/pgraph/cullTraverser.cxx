@@ -433,9 +433,8 @@ make_tight_bounds_viz(PandaNode *node) {
     strip->add_vertex(1);
     strip->close_primitive();
       
-    PT(Geom) geom = new Geom(vdata);
+    geom = new Geom(vdata);
     geom->add_primitive(strip);
-    geom = geom.p();
   }
 
   return geom;
