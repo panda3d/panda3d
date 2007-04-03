@@ -97,6 +97,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   int maximum_bits_per_pixel;
 
   UINT texture_memory;
+  UINT video_memory;
 
   int window_width;
   int window_height;
@@ -122,6 +123,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   maximum_bits_per_pixel = display_search_parameters._maximum_bits_per_pixel;
 
   shader_model = GraphicsStateGuardian::SM_00;
+  video_memory = 0;
   texture_memory = 0;
 
   state = DisplayInformation::DS_unknown;    
@@ -386,8 +388,67 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
           result = direct_3d -> CreateDevice (adapter, device_type, window_handle, behavior_flags, &present_parameters, &direct_3d_device);
           if (result == D3D_OK) {  
-            texture_memory = direct_3d_device -> GetAvailableTextureMem ( );
 
+            // allocate 512x512 32-bit textures (1MB size) until we run out or hit the limit            
+            #define MAXIMUM_TEXTURES (2048 - 1)
+            
+            int total_textures;
+            HRESULT texture_result; 
+            #if DX8
+            IDirect3DTexture8 *texture_array [MAXIMUM_TEXTURES];
+            #else
+            IDirect3DTexture9 *texture_array [MAXIMUM_TEXTURES];
+            #endif
+            
+            total_textures = 0;
+            while (total_textures < MAXIMUM_TEXTURES) {
+
+              #if DX8
+              texture_result = direct_3d_device -> CreateTexture (
+                512,
+                512,
+                1,
+                D3DUSAGE_RENDERTARGET,
+                D3DFMT_A8R8G8B8,
+                D3DPOOL_DEFAULT,
+                &texture_array [total_textures]);
+              #else
+              texture_result = direct_3d_device -> CreateTexture (
+                512,
+                512,
+                1,
+                D3DUSAGE_RENDERTARGET,
+                D3DFMT_A8R8G8B8,
+                D3DPOOL_DEFAULT,
+                &texture_array [total_textures],
+                NULL);
+              #endif
+              if (texture_result == D3D_OK) {                
+                total_textures++;
+              }
+              else {
+                if (texture_result == D3DERR_OUTOFVIDEOMEMORY) {
+                  if (debug) {
+                    printf ("D3DERR_OUTOFVIDEOMEMORY \n");
+                  }                
+                }                
+                break;
+              }               
+            }
+
+            // free all allocated textures
+            int index;           
+            for (index = 0; index < total_textures; index++) {
+              texture_array [index] -> Release ( );            
+            }
+
+            video_memory = (total_textures * 1024 * 1024);
+            
+            if (debug) {
+              printf ("video_memory = %d \n", video_memory);
+            }
+
+            texture_memory = direct_3d_device -> GetAvailableTextureMem ( );
             if (debug) {
               printf ("texture_memory = %d \n", texture_memory);
             }
@@ -440,6 +501,7 @@ static int get_display_information (DisplaySearchParameters &display_search_para
     display_information -> _total_display_modes = total_display_modes;
     display_information -> _display_mode_array = display_mode_array;
     display_information -> _shader_model = shader_model;
+    display_information -> _video_memory = video_memory;
     display_information -> _texture_memory = texture_memory;
   }
 
