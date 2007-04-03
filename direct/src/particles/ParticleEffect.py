@@ -65,13 +65,15 @@ class ParticleEffect(NodePath):
 
     def disable(self):
         self.detachNode()
-        for p in self.particlesDict.values():
-            p.setRenderParent(p.node)
-        for f in self.forceGroupDict.values():
-            f.disable()
-        for p in self.particlesDict.values():
-            p.disable()
-        self.fEnabled = 0
+        # band-aid added for client crash - grw
+        if hasattr(self, 'forceGroupDict') and hasattr(self, 'particlesDict'):
+            for p in self.particlesDict.values():
+                p.setRenderParent(p.node)
+            for f in self.forceGroupDict.values():
+                f.disable()
+            for p in self.particlesDict.values():
+                p.disable()
+            self.fEnabled = 0
         
     def isEnabled(self):
         """
