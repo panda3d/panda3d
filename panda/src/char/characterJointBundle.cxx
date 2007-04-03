@@ -45,19 +45,39 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharacterJointBundle::set_node
+//     Function: CharacterJointBundle::add_node
 //       Access: Protected, Virtual
-//  Description: Changes the PartBundleNode pointer associated with
-//               the PartBundle.  Normally called only by the
-//               PartBundleNode itself, for instance when the bundle
-//               is flattened with another node.
+//  Description: Adds the PartBundleNode pointer to the set of nodes
+//               associated with the PartBundle.  Normally called only
+//               by the PartBundleNode itself, for instance when the
+//               bundle is flattened with another node.
 ////////////////////////////////////////////////////////////////////
 void CharacterJointBundle::
-set_node(PartBundleNode *node) {
-  PartBundle::set_node(node);
+add_node(PartBundleNode *node) {
+  PartBundle::add_node(node);
   if (node->is_of_type(Character::get_class_type())) {
     Character *character = DCAST(Character, node);
     r_set_character(this, character);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterJointBundle::remove_node
+//       Access: Protected, Virtual
+//  Description: Removes the PartBundleNode pointer from the set of
+//               nodes associated with the PartBundle.  Normally
+//               called only by the PartBundleNode itself, for
+//               instance when the bundle is flattened with another
+//               node.
+////////////////////////////////////////////////////////////////////
+void CharacterJointBundle::
+remove_node(PartBundleNode *node) {
+  PartBundle::remove_node(node);
+
+  // If there is still a Character on the list, assign that one to all
+  // of the joints.
+  if (get_num_nodes() > 0) {
+    r_set_character(this, get_node(get_num_nodes() - 1));
   }
 }
 

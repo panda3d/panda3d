@@ -147,14 +147,26 @@ get_root_xform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::get_num_nodes
+//       Access: Published
+//  Description: Returns the number of PartBundleNodes that contain a
+//               pointer to this PartBundle.
+////////////////////////////////////////////////////////////////////
+INLINE int PartBundle::
+get_num_nodes() const {
+  return _nodes.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::get_node
 //       Access: Published
-//  Description: Returns the PartBundleNode associated with this
-//               PartBundle.
+//  Description: Returns the nth PartBundleNode associated with
+//               this PartBundle.
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundleNode *PartBundle::
-get_node() const {
-  return _node;
+get_node(int n) const {
+  nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
+  return _nodes[n];
 }
 
 

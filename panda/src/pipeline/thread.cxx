@@ -146,6 +146,12 @@ bool Thread::
 start(ThreadPriority priority, bool global, bool joinable) {
   nassertr(!_started, false);
 
+  if (!support_threads) {
+    thread_cat.warning()
+      << *this << " could not be started: support-threads is false.\n";
+    return false;
+  }
+
   if (threads_always_global) {
     global = true;
   } else if (threads_never_global) {

@@ -40,25 +40,29 @@ PStatCollector Character::_animation_pcollector("*:Animation");
 //  Description: Use make_copy() or copy_subgraph() to copy a Character.
 ////////////////////////////////////////////////////////////////////
 Character::
-Character(const Character &copy) :
+Character(const Character &copy, bool copy_bundles) :
   PartBundleNode(copy),
   _joints_pcollector(copy._joints_pcollector),
   _skinning_pcollector(copy._skinning_pcollector)
 {
   set_cull_callback();
 
-  // Copy the bundle(s).
-  int num_bundles = copy.get_num_bundles();
-  for (int i = 0; i < num_bundles; ++i) {
-    PartBundle *orig_bundle = copy.get_bundle(i);
-    PartBundle *new_bundle = 
-      new CharacterJointBundle(orig_bundle->get_name());
-    add_bundle(new_bundle);
-
-    // Make a copy of the joint/slider hierarchy.
-    copy_joints(new_bundle, orig_bundle);
-  }
-
+  if (copy_bundles) {
+    // Copy the bundle(s).
+    int num_bundles = copy.get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      PartBundle *orig_bundle = copy.get_bundle(i);
+      PT(PartBundle) new_bundle = DCAST(PartBundle, orig_bundle->copy_subgraph());
+      add_bundle(new_bundle);
+    }
+  } else {
+    // Share the bundles.
+    int num_bundles = copy.get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      PartBundle *orig_bundle = copy.get_bundle(i);
+      add_bundle(orig_bundle);
+    }
+  }    
   _last_auto_update = -1.0;
 }
 
@@ -102,7 +106,22 @@ Character::
 ////////////////////////////////////////////////////////////////////
 PandaNode *Character::
 make_copy() const {
-  return new Character(*this);
+  return new Character(*this, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::dupe_for_flatten
+//       Access: Public, Virtual
+//  Description: This is similar to make_copy(), but it makes a copy
+//               for the specific purpose of flatten.  Typically, this
+//               will be a new PandaNode with a new pointer, but all
+//               of the internal data will always be shared with the
+//               original; whereas the new node returned by
+//               make_copy() might not share the internal data.
+////////////////////////////////////////////////////////////////////
+PandaNode *Character::
+dupe_for_flatten() const {
+  return new Character(*this, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -349,31 +368,6 @@ do_update() {
     for (int i = 0; i < num_bundles; ++i) {
       get_bundle(i)->update();
     }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Character::copy_joints
-//       Access: Private
-//  Description: Recursively walks the joint/slider hierarchy and
-//               creates a new copy of the hierarchy.
-////////////////////////////////////////////////////////////////////
-void Character::
-copy_joints(PartGroup *copy, PartGroup *orig) {
-  if (copy->get_type() != orig->get_type()) {
-    char_cat.warning()
-      << "Don't know how to copy " << orig->get_type() << "\n";
-  }
-
-  PartGroup::Children::const_iterator ci;
-  for (ci = orig->_children.begin(); ci != orig->_children.end(); ++ci) {
-    PartGroup *orig_child = (*ci);
-    PartGroup *copy_child = orig_child->make_copy();
-    if (copy_child->is_of_type(CharacterJoint::get_class_type())) {
-      DCAST(CharacterJoint, copy_child)->set_character(this);
-    }
-    copy->_children.push_back(copy_child);
-    copy_joints(copy_child, orig_child);
   }
 }
 

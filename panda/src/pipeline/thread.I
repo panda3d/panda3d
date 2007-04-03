@@ -233,6 +233,9 @@ get_current_pipeline_stage() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Thread::
 is_threading_supported() {
+  if (!support_threads) {
+    return false;
+  }
   return ThreadImpl::is_threading_supported();
 }
 

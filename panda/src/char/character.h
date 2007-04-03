@@ -44,13 +44,14 @@ class ComputedVertices;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Character : public PartBundleNode {
 protected:
-  Character(const Character &copy);
+  Character(const Character &copy, bool copy_bundles);
 
 public:
   Character(const string &name);
   virtual ~Character();
 
   virtual PandaNode *make_copy() const;
+  virtual PandaNode *dupe_for_flatten() const;
 
   virtual PandaNode *combine_with(PandaNode *other); 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -76,7 +77,6 @@ PUBLISHED:
 
 private:
   void do_update();
-  void copy_joints(PartGroup *copy, PartGroup *orig);
 
   typedef pmap<const PandaNode *, PandaNode *> NodeMap;
   typedef pmap<const PartGroup *, PartGroup *> JointMap;

@@ -25,6 +25,7 @@
 #include "threadPriority.h"
 #include "threadImpl.h"
 #include "pnotify.h"
+#include "config_pipeline.h"
 
 class Mutex;
 class ReMutex;

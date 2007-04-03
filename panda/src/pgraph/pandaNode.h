@@ -83,6 +83,7 @@ private:
 
 public:
   virtual PandaNode *make_copy() const;
+  virtual PandaNode *dupe_for_flatten() const;
 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;

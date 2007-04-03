@@ -315,7 +315,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   tex->set_x_size(Texture::up_to_power_2(get_x_size()));
   tex->set_y_size(Texture::up_to_power_2(get_y_size()));
 
-  if ((mode == RTM_bind_or_copy)&&(support_render_texture==0)) {
+  if (mode == RTM_bind_or_copy && !support_render_texture) {
     mode = RTM_copy_texture;
   }
   else {

@@ -31,6 +31,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "luse.h"
+#include "pvector.h"
 
 class AnimBundle;
 class PartBundleNode;
@@ -105,7 +106,8 @@ PUBLISHED:
   INLINE void xform(const LMatrix4f &mat);
   INLINE const LMatrix4f &get_root_xform() const;
 
-  INLINE PartBundleNode *get_node() const;
+  INLINE int get_num_nodes() const;
+  INLINE PartBundleNode *get_node(int n) const;
 
   void clear_control_effects();
   INLINE void set_control_effect(AnimControl *control, float effect);
@@ -128,7 +130,8 @@ public:
   virtual void control_activated(AnimControl *control);
 
 protected:
-  virtual void set_node(PartBundleNode *node);
+  virtual void add_node(PartBundleNode *node);
+  virtual void remove_node(PartBundleNode *node);
 
 private:
   class CData;
@@ -138,7 +141,8 @@ private:
   void recompute_net_blend(CData *cdata);
   void clear_and_stop_intersecting(AnimControl *control, CData *cdata);
 
-  PartBundleNode *_node;
+  typedef pvector<PartBundleNode *> Nodes;
+  Nodes _nodes;
 
   // This is the data that must be cycled between pipeline stages.
   class CData : public CycleData {

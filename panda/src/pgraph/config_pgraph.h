@@ -37,6 +37,7 @@ NotifyCategoryDecl(portal, EXPCL_PANDA, EXPTP_PANDA);
 extern ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool allow_portal_cull;
 extern ConfigVariableBool unambiguous_graph;
+extern ConfigVariableBool no_unsupported_copy;
 extern ConfigVariableBool allow_unrelated_wrt;
 extern ConfigVariableBool paranoid_compose;
 extern ConfigVariableBool compose_componentwise;

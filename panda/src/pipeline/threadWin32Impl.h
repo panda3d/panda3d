@@ -29,9 +29,6 @@
 #include "mutexWin32Impl.h"
 #include "conditionVarWin32Impl.h"
 
-#define WIN32_LEAN_AND_MEAN 1
-#include <windows.h>
-
 class Thread;
 
 ////////////////////////////////////////////////////////////////////

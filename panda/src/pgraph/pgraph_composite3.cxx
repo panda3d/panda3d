@@ -12,6 +12,7 @@
 #include "lodNode.cxx"
 #include "materialAttrib.cxx"
 #include "materialCollection.cxx"
+#include "modelFlattenRequest.cxx"
 #include "modelLoadRequest.cxx"
 #include "modelNode.cxx"
 #include "modelPool.cxx"

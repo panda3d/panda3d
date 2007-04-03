@@ -74,7 +74,7 @@ private:
   const WorkingNodePath *_next;
   PT(NodePathComponent) _start;
 
-  PandaNode *_node;
+  PT(PandaNode) _node;
 };
 
 INLINE ostream &operator << (ostream &out, const WorkingNodePath &node_path);

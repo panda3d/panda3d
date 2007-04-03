@@ -60,6 +60,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "lodNode.h"
 #include "materialAttrib.h"
+#include "modelFlattenRequest.h"
 #include "modelLoadRequest.h"
 #include "modelNode.h"
 #include "modelRoot.h"
@@ -126,6 +127,12 @@ ConfigVariableBool unambiguous_graph
  PRC_DESC("Set this true to make ambiguous path warning messages generate an "
           "assertion failure instead of just a warning (which can then be "
           "trapped with assert-abort)."));
+
+ConfigVariableBool no_unsupported_copy
+("no-unsupported-copy", false,
+ PRC_DESC("Set this true to make an attempt to copy an unsupported type "
+          "generate an assertion failure instead of just a warning (which "
+          "can then be trapped with assert-abort)."));
 
 ConfigVariableBool allow_unrelated_wrt
 ("allow-unrelated-wrt", true,
@@ -341,6 +348,7 @@ init_libpgraph() {
   LoaderFileType::init_type();
   LoaderFileTypeBam::init_type();
   MaterialAttrib::init_type();
+  ModelFlattenRequest::init_type();
   ModelLoadRequest::init_type();
   ModelNode::init_type();
   ModelRoot::init_type();

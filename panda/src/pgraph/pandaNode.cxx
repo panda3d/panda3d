@@ -197,13 +197,29 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::dupe_for_flatten
+//       Access: Public, Virtual
+//  Description: This is similar to make_copy(), but it makes a copy
+//               for the specific purpose of flatten.  Typically, this
+//               will be a new PandaNode with a new pointer, but all
+//               of the internal data will always be shared with the
+//               original; whereas the new node returned by
+//               make_copy() might not share the internal data.
+////////////////////////////////////////////////////////////////////
+PandaNode *PandaNode::
+dupe_for_flatten() const {
+  return make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::safe_to_flatten
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to flatten out
 //               this particular kind of PandaNode by duplicating
-//               instances, false otherwise (for instance, a Camera
-//               cannot be safely flattened, because the Camera
-//               pointer itself is meaningful).
+//               instances (by calling dupe_for_flatten()), false
+//               otherwise (for instance, a Camera cannot be safely
+//               flattened, because the Camera pointer itself is
+//               meaningful).
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 safe_to_flatten() const {
@@ -2397,6 +2413,10 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const 
   if (copy->get_type() != get_type()) {
     pgraph_cat.warning()
       << "Don't know how to copy nodes of type " << get_type() << "\n";
+
+    if (no_unsupported_copy) {
+      nassertr(false, NULL);
+    }
   }
 
   copy->r_copy_children(this, inst_map, current_thread);

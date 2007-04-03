@@ -37,10 +37,10 @@ CharacterJointBundle(const CharacterJointBundle &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJointBundle::get_node
 //       Access: Public
-//  Description: Returns the Character node associated with this
-//               PartBundle.
+//  Description: Returns the nth Character associated with
+//               this PartBundle.
 ////////////////////////////////////////////////////////////////////
 INLINE Character *CharacterJointBundle::
-get_node() const {
-  return DCAST(Character, PartBundle::get_node());
+get_node(int n) const {
+  return DCAST(Character, PartBundle::get_node(n));
 }

@@ -32,6 +32,13 @@ ConfigureFn(config_pipeline) {
   init_libpipeline();
 }
 
+ConfigVariableBool support_threads
+("support-threads", true,
+ PRC_DESC("Set this false to disallow the creation of threads using Panda's "
+          "Thread interface, even if threading support is compiled in.  This "
+          "does not affect the operation of mutexes and other synchronization "
+          "primitives, just the creation of threads."));
+
 ConfigVariableInt thread_stack_size
 ("thread-stack-size", 4194304,
  PRC_DESC("Specifies the minimum size, in bytes, of the stack that will be "

@@ -29,6 +29,7 @@ ConfigureDecl(config_pipeline, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pipeline, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(thread, EXPCL_PANDA, EXPTP_PANDA);
 
+extern ConfigVariableBool support_threads;
 extern ConfigVariableInt thread_stack_size;
 extern ConfigVariableBool threads_always_global;
 extern ConfigVariableBool threads_never_global;

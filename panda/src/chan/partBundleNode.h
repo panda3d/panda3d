@@ -43,7 +43,7 @@ protected:
 
 public:
   virtual ~PartBundleNode();
-  virtual bool safe_to_flatten() const;
+  virtual bool safe_to_transform() const;
   virtual void xform(const LMatrix4f &mat);
 
 PUBLISHED:

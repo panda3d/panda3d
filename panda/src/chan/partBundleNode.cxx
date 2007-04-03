@@ -33,23 +33,29 @@ PartBundleNode::
 ~PartBundleNode() {
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    nassertv((*bi)->_node == this);
-    (*bi)->_node = NULL;
+    (*bi)->remove_node(this);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::safe_to_flatten
+//     Function: PartBundleNode::safe_to_transform
 //       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to flatten out
-//               this particular kind of Node by duplicating
-//               instances, false otherwise (for instance, a Camera
-//               cannot be safely flattened, because the Camera
-//               pointer itself is meaningful).
+//  Description: Returns true if it is generally safe to transform
+//               this particular kind of PandaNode by calling the
+//               xform() method, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PartBundleNode::
-safe_to_flatten() const {
-  return false;
+safe_to_transform() const {
+  // If any of our bundles appear on multiple nodes, we can't
+  // transform any of them without transforming all of them at once.
+  Bundles::const_iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    if ((*bi)->get_num_nodes() > 1) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,6 +67,11 @@ safe_to_flatten() const {
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
 xform(const LMatrix4f &mat) {
+  if (mat.almost_equal(LMatrix4f::ident_mat())) {
+    // Don't bother.
+    return;
+  }
+
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
     (*bi)->xform(mat);
@@ -74,9 +85,8 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
 add_bundle(PartBundle *bundle) {
-  nassertv(bundle->_node == NULL);
   _bundles.push_back(bundle);
-  bundle->set_node(this);
+  bundle->add_node(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +101,8 @@ steal_bundles(PartBundleNode *other) {
   for (bi = other->_bundles.begin(); bi != other->_bundles.end(); ++bi) {
     PartBundle *bundle = (*bi);
     _bundles.push_back(bundle);
-    bundle->set_node(this);
+    bundle->remove_node(other);
+    bundle->add_node(this);
   }
   other->_bundles.clear();
 }
@@ -127,7 +138,7 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
     (*bi) = DCAST(PartBundle, p_list[pi++]);
-    (*bi)->_node = this;
+    (*bi)->add_node(this);
   }
 
   return pi;

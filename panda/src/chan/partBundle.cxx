@@ -30,6 +30,8 @@
 #include "bamWriter.h"
 #include "configVariableEnum.h"
 
+#include <algorithm>
+
 TypeHandle PartBundle::_type_handle;
 
 
@@ -64,8 +66,7 @@ PartBundle(const PartBundle &copy) :
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const string &name) : 
-  PartGroup(name),
-  _node(NULL)
+  PartGroup(name)
 {
 }
 
@@ -319,16 +320,33 @@ control_activated(AnimControl *control) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::set_node
+//     Function: PartBundle::add_node
 //       Access: Protected, Virtual
-//  Description: Changes the PartBundleNode pointer associated with
-//               the PartBundle.  Normally called only by the
-//               PartBundleNode itself, for instance when the bundle
-//               is flattened with another node.
+//  Description: Adds the PartBundleNode pointer to the set of nodes
+//               associated with the PartBundle.  Normally called only
+//               by the PartBundleNode itself, for instance when the
+//               bundle is flattened with another node.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-set_node(PartBundleNode *node) {
-  _node = node;
+add_node(PartBundleNode *node) {
+  nassertv(find(_nodes.begin(), _nodes.end(), node) == _nodes.end());
+  _nodes.push_back(node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::remove_node
+//       Access: Protected, Virtual
+//  Description: Removes the PartBundleNode pointer from the set of
+//               nodes associated with the PartBundle.  Normally
+//               called only by the PartBundleNode itself, for
+//               instance when the bundle is flattened with another
+//               node.
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+remove_node(PartBundleNode *node) {
+  Nodes::iterator ni = find(_nodes.begin(), _nodes.end(), node);
+  nassertv(ni != _nodes.end());
+  _nodes.erase(ni);
 }
 
 ////////////////////////////////////////////////////////////////////

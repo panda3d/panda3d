@@ -175,15 +175,19 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
           pgraph_cat.spam()
             << "Cannot duplicate nodes of type " << child_node->get_type()
             << ".\n";
-          resist_copy = true;
         }
+        resist_copy = true;
 
       } else {
-        PT(PandaNode) new_node = child_node->make_copy();
+        PT(PandaNode) new_node = child_node->dupe_for_flatten();
         if (new_node->get_type() != child_node->get_type()) {
           pgraph_cat.error()
             << "Don't know how to copy nodes of type "
             << child_node->get_type() << "\n";
+
+          if (no_unsupported_copy) {
+            nassertv(false);
+          }
           resist_copy = true;
 
         } else {

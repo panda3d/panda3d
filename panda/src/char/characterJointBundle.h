@@ -40,11 +40,12 @@ public:
   CharacterJointBundle(const string &name = "");
 
 PUBLISHED:
-  INLINE Character *get_node() const;
+  INLINE Character *get_node(int n) const;
 
 protected:
   virtual PartGroup *make_copy() const;
-  virtual void set_node(PartBundleNode *node);
+  virtual void add_node(PartBundleNode *node);
+  virtual void remove_node(PartBundleNode *node);
 
 private:
   void r_set_character(PartGroup *group, Character *character);

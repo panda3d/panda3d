@@ -47,6 +47,7 @@ FindApproxLevelEntry(const FindApproxLevelEntry &parent,
   _approx_path(parent._approx_path),
   _next(next)
 {
+  nassertv(validate_ptr(this) && validate_ptr(&parent));
   nassertv(_node_path.is_valid());
 }
 

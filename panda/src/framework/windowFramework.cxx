@@ -1043,7 +1043,7 @@ make_camera() {
 
   PT(Lens) lens = new PerspectiveLens;
 
-  if (aspect_ratio != 0.0f) {
+  if (aspect_ratio != 0.0) {
     // If we're given an explict aspect ratio, use it
     lens->set_aspect_ratio(aspect_ratio);
 
