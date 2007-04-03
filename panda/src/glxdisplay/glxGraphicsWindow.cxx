@@ -436,6 +436,27 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
+  if (_pipe == (GraphicsPipe *)NULL) {
+    // If the pipe is null, we're probably closing down.
+    GraphicsWindow::set_properties_now(properties);
+    return;
+  }
+
+  glxGraphicsPipe *glx_pipe;
+  DCAST_INTO_V(glx_pipe, _pipe);
+
+  // Fullscreen mode is implemented with a hint to the window manager.
+  // However, we also implicitly set the origin to (0, 0) and the size
+  // to the desktop size, and request undecorated mode, in case the
+  // user has a less-capable window manager (or no window manager at
+  // all).
+  if (properties.get_fullscreen()) {
+    properties.set_undecorated(true);
+    properties.set_origin(0, 0);
+    properties.set_size(glx_pipe->get_display_width(),
+                        glx_pipe->get_display_height());
+  }
+
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
@@ -444,9 +465,6 @@ set_properties_now(WindowProperties &properties) {
 
   // The window is already open; we are limited to what we can change
   // on the fly.
-
-  glxGraphicsPipe *glx_pipe;
-  DCAST_INTO_V(glx_pipe, _pipe);
 
   // We'll pass some property requests on as a window manager hint.
   WindowProperties wm_properties = _properties;
@@ -459,7 +477,7 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_title();
   }
 
-  // Ditto for fullscreen.
+  // Ditto for fullscreen mode.
   if (properties.has_fullscreen()) {
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
@@ -609,7 +627,6 @@ open_window() {
   Visual *visual = visual_info->visual;
   int depth = visual_info->depth;
 
-
   if (!_properties.has_origin()) {
     _properties.set_origin(0, 0);
   }
@@ -695,8 +712,10 @@ open_window() {
   if (_properties.get_raw_mice()) {
     open_raw_mice();
   } else {
-    glxdisplay_cat.error() <<
-      "Raw mice not requested.\n";
+    if (glxdisplay_cat.is_debug()) {
+      glxdisplay_cat.debug()
+        << "Raw mice not requested.\n";
+    }
   }
   
   return true;
