@@ -39,7 +39,7 @@
 #endif
 
 #ifndef NDEBUG
-// In development mode, we defined USE_DELETEDCHAINFLAG, which
+// In development mode, we define USE_DELETEDCHAINFLAG, which
 // triggers the piggyback of an additional word of data on every
 // allocated block, so we can ensure that an object is not
 // double-deleted and that the deleted chain remains intact.
@@ -85,6 +85,8 @@ public:
   INLINE static Type *allocate(size_t size, TypeHandle type_handle);
   INLINE static void deallocate(Type *ptr, TypeHandle type_handle);
 
+  INLINE static bool validate(const Type *ptr);
+
 private:
   class ObjectNode {
   public:
@@ -117,6 +119,7 @@ private:
   // If we don't have atomic compare-and-exchange, we need to use a
   // Mutex to protect the above linked list.
   static INLINE void init_lock();
+  static void do_init_lock();
   static MutexImpl *_lock;
 #endif
 };
@@ -126,15 +129,18 @@ private:
 // DeletedChain.
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline void *operator new(size_t size) {                   \
-    return (void *)DeletedChain< Type >::allocate(size, get_type_handle(Type));       \
+    return (void *)DeletedChain< Type >::allocate(size, get_type_handle(Type)); \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    DeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type));             \
+    DeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
   }                                                          \
   inline void operator delete(void *, void *) {              \
+  }                                                          \
+  inline static bool validate_ptr(const void *ptr) {         \
+    return DeletedChain< Type >::validate((const Type *)ptr); \
   }
 
 #include "deletedChain.T"
