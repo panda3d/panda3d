@@ -124,7 +124,7 @@
 #define obj_prefix
 
 // Additional global defines for building under Microsoft Visual Studio .NET.
-#define extra_defines FORCE_INLINING HAVE_DINKUM WIN32_VC WIN32 WIN32_LEAN_AND_MEAN
+#define extra_defines FORCE_INLINING HAVE_DINKUM WIN32_VC WIN32
 
 // Additional compiler flags.
 #defer extra_cflags /EHsc /Zm500 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
