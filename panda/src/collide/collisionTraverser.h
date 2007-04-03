@@ -84,7 +84,7 @@ private:
   typedef pvector<CollisionLevelState> LevelStates;
   void prepare_colliders(LevelStates &level_states, const NodePath &root);
 
-  void r_traverse(CollisionLevelState &level_state);
+  void r_traverse(CollisionLevelState &level_state, size_t pass);
 
   void compare_collider_to_node(CollisionEntry &entry,
                                 const GeometricBoundingVolume *from_parent_gbv,
@@ -139,6 +139,9 @@ private:
   PStatCollector _this_pcollector;
   typedef pvector<PStatCollector> PassCollectors;
   PassCollectors _pass_collectors;
+  // pstats category for actual collision detection (vs. bounding heirarchy collision detection)
+  typedef pvector<PStatCollector> SolidCollideCollectors;
+  SolidCollideCollectors _solid_collide_collectors;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {

@@ -279,7 +279,7 @@ traverse(const NodePath &root) {
     #ifdef DO_PSTATS
     PStatTimer pass_timer(get_pass_collector(pass));
     #endif
-    r_traverse(level_states[pass]);
+    r_traverse(level_states[pass], pass);
   }
 
   hi = _handlers.begin();
@@ -521,7 +521,7 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-r_traverse(CollisionLevelState &level_state) {
+r_traverse(CollisionLevelState &level_state, size_t pass) {
   if (!level_state.any_in_bounds()) {
     return;
   }
@@ -551,6 +551,9 @@ r_traverse(CollisionLevelState &level_state) {
 
         if ((entry._from_node->get_from_collide_mask() &
              cnode->get_into_collide_mask()) != 0) {
+          #ifdef DO_PSTATS
+          PStatTimer collide_timer(_solid_collide_collectors[pass]);
+          #endif
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
 
@@ -593,6 +596,9 @@ r_traverse(CollisionLevelState &level_state) {
 
         if ((entry._from_node->get_from_collide_mask() &
              gnode->get_into_collide_mask()) != 0) {
+          #ifdef DO_PSTATS
+          PStatTimer collide_timer(_solid_collide_collectors[pass]);
+          #endif
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
 
@@ -612,7 +618,7 @@ r_traverse(CollisionLevelState &level_state) {
     int index = node->get_visible_child();
     if (index >= 0 && index < node->get_num_children()) {
       CollisionLevelState next_state(level_state, node->get_child(index));
-      r_traverse(next_state);
+      r_traverse(next_state, pass);
     }
 
   } else if (node->is_lod_node()) {
@@ -630,7 +636,7 @@ r_traverse(CollisionLevelState &level_state) {
         next_state.set_include_mask(next_state.get_include_mask() &
           ~GeomNode::get_default_collide_mask());
       }
-      r_traverse(next_state);
+      r_traverse(next_state, pass);
     }
 
   } else {
@@ -638,7 +644,7 @@ r_traverse(CollisionLevelState &level_state) {
     int num_children = node->get_num_children();
     for (int i = 0; i < num_children; ++i) {
       CollisionLevelState next_state(level_state, node->get_child(i));
-      r_traverse(next_state);
+      r_traverse(next_state, pass);
     }
   }
 }
@@ -664,6 +670,9 @@ compare_collider_to_node(CollisionEntry &entry,
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, entry._into_node);
     int num_solids = cnode->get_num_solids();
+    collide_cat.spam()
+      << "Colliding against CollisionNode " << entry._into_node << " which has " << num_solids
+      << " collision solids.\n";
     for (int s = 0; s < num_solids; ++s) {
       entry._into = cnode->get_solid(s);
       if (entry._from != entry._into) {
@@ -889,6 +898,8 @@ get_pass_collector(int pass) {
     name << "pass " << (_pass_collectors.size() + 1);
     PStatCollector col(_this_pcollector, name.str());
     _pass_collectors.push_back(col);
+    PStatCollector sc_col(col, "solid_collide");
+    _solid_collide_collectors.push_back(sc_col);
   }
 
   return _pass_collectors[pass];
