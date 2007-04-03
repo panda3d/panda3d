@@ -52,7 +52,8 @@ class Messenger:
         If the persistent flag is set, it will continue to respond
         to this event, otherwise it will respond only once.
         """
-        if Messenger.notify.getDebug():
+        notifyDebug = Messenger.notify.getDebug()
+        if notifyDebug:
             Messenger.notify.debug(
                 "object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
                 (object, event, method, extraArgs, persistent))
@@ -66,7 +67,7 @@ class Messenger:
 
         # Make sure we are not inadvertently overwriting an existing event
         # on this particular object.
-        if Messenger.notify.getDebug():        
+        if notifyDebug:        
             if acceptorDict.has_key(object):
                 oldMethod = acceptorDict[object][0]
                 if oldMethod == method:
@@ -81,6 +82,7 @@ class Messenger:
         acceptorDict[object] = [method, extraArgs, persistent]
 
         # Remember that this object is listening for this event
+        # TODO: can we really guarantee that all DirectObjects are valid dict keys?
         eventDict = self.__objectEvents.setdefault(object, {})
         eventDict.setdefault(event, None)
 
