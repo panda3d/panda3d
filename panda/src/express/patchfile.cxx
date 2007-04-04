@@ -1380,6 +1380,7 @@ tar_writefunc(int, const void *, size_t) {
   // Since we use libtar only for reading, it is an error if this
   // method gets called.
   nassertr(false, -1);
+  return -1;
 }
 #endif  // HAVE_TAR
 
