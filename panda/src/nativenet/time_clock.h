@@ -247,7 +247,7 @@ inline std::string Time_Clock::Format(char * pFormat) const
                 *pch++ = ch1;
                 break;
             case 'N':
-                pch += sprintf(pch, "%03ld", _my_time.tv_usec / 1000);
+                pch += sprintf(pch, "%03ld", (long)(_my_time.tv_usec / 1000));
                 break;
             }
         }
@@ -295,7 +295,7 @@ inline std::string Time_Clock::FormatGmt(char * pFormat) const
                 *pch++ = ch1;
                 break;
             case 'N':
-                pch += sprintf(pch, "%03ld", _my_time.tv_usec / 1000);
+                pch += sprintf(pch, "%03ld", (long)(_my_time.tv_usec / 1000));
                 break;
             }
         }
