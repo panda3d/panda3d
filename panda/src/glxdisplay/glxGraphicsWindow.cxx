@@ -1063,7 +1063,17 @@ open_raw_mice()
 	  "Opening raw mice: ioctl failed on " << fn << "\n";
       } else {
 	if (test_bit(EV_REL, evtypes) || test_bit(EV_ABS, evtypes)) {
-	  string full_id = ((string)name) + " " + uniq;
+          for (char *p=name; *p; p++) {
+            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
+              *p = '_';
+            }
+          }
+          for (char *p=uniq; *p; p++) {
+            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
+              *p = '_';
+            }
+          }
+	  string full_id = ((string)name) + "." + uniq;
 	  MouseDeviceInfo inf;
 	  inf._fd = fd;
 	  inf._input_device_index = _input_devices.size();

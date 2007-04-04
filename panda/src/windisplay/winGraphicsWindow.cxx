@@ -537,7 +537,14 @@ initialize_input_devices() {
           if (strncmp(psName,"\\??\\",4)==0) psName += 4;
           char *pound1 = strchr(psName,'#');
           char *pound2 = pound1 ? strchr(pound1+1,'#') : 0;
-          if (pound2) *pound2 = 0;
+          char *pound3 = pound2 ? strchr(pound2+1,'#') : 0;
+          if (pound3) *pound3 = 0;
+          for (char *p = psName; *p; p++) {
+            if (((*p<'a')||(*p>'z')) && ((*p<'A')||(*p>'Z')) && ((*p<'0')||(*p>'9'))) {
+              *p = '_';
+            }
+          }
+          if (pound2) *pound2 = '.';
           _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
           GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(psName);
           device.set_pointer_in_window(0,0);
