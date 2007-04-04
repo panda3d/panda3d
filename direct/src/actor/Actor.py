@@ -308,7 +308,6 @@ class Actor(DirectObject, NodePath):
             else:
                 # just copy these to ourselve
                 otherCopy = other.copyTo(self)
-            self.setGeomNode(otherCopy.getChild(0))
 
             # copy the part dictionary from other
             self.__copyPartBundles(other)

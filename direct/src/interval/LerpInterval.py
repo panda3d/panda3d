@@ -6,6 +6,7 @@ from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 from direct.showbase import LerpBlendHelpers
+import profile, pstats
 
 #
 # Most of the intervals defined in this module--the group up here at
@@ -633,6 +634,15 @@ class LerpFunctionInterval(Interval.Interval):
 
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
+
+    def _privStep(self, t):
+        profile.runctx('self._privStep(t)', globals(), locals(), 't.prof')
+        print "LerpFunctionInterval %s" % (self.function.__name__)
+        s = pstats.Stats('t.prof')
+        s.sort_stats('time')
+        #s.sort_stats('cumulative')
+        s.print_stats(5)
+        self.privStep = self._privStep
 
     def privStep(self, t):
         # Evaluate the function

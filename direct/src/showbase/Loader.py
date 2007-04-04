@@ -21,8 +21,9 @@ class Loader(DirectObject):
     loaderIndex = 0
     
     class Callback:
-        def __init__(self, numObjects, callback, extraArgs):
+        def __init__(self, numObjects, gotList, callback, extraArgs):
             self.objects = [None] * numObjects
+            self.gotList = gotList
             self.callback = callback
             self.extraArgs = extraArgs
             self.numRemaining = numObjects
@@ -32,7 +33,10 @@ class Loader(DirectObject):
             self.numRemaining -= 1
 
             if self.numRemaining == 0:
-                self.callback(*(self.objects + self.extraArgs))
+                if self.gotList:
+                    self.callback(self.objects, *self.extraArgs)
+                else:
+                    self.callback(*(self.objects + self.extraArgs))
 
     # special methods
     def __init__(self, base):
@@ -50,6 +54,7 @@ class Loader(DirectObject):
 
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
+                  allowInstance = False,
                   callback = None, extraArgs = []):
         """
         Attempts to load a model or models from one or more relative
@@ -101,6 +106,8 @@ class Loader(DirectObject):
                 loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFNoCache)
             else:
                 loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoCache)
+        if allowInstance:
+            loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFAllowInstance)
 
         if isinstance(modelPath, types.StringTypes) or \
            isinstance(modelPath, Filename):
@@ -136,7 +143,7 @@ class Loader(DirectObject):
             # requested models have been loaded, we'll invoke the
             # callback (passing it the models on the parameter list).
             
-            cb = Loader.Callback(len(modelList), callback, extraArgs)
+            cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
             i=0
             for modelPath in modelList:
                 request = ModelLoadRequest(Filename(modelPath), loaderOptions)
@@ -414,7 +421,7 @@ class Loader(DirectObject):
             # requested sounds have been loaded, we'll invoke the
             # callback (passing it the sounds on the parameter list).
             
-            cb = Loader.Callback(len(soundList), callback, extraArgs)
+            cb = Loader.Callback(len(soundList), gotList, callback, extraArgs)
             for i in range(len(soundList)):
                 soundPath = soundList[i]
                 request = AudioLoadRequest(manager, soundPath, positional)
@@ -440,6 +447,64 @@ class Loader(DirectObject):
     def unloadShader(self, shaderPath):
         if (shaderPath != None):
             ShaderPool.releaseShader(shaderPath)
+
+    def asyncFlattenStrong(self, model, inPlace = True,
+                           callback = None, extraArgs = []):
+        """ Performs a model.flattenStrong() operation in a sub-thread
+        (if threading is compiled into Panda).  The model may be a
+        single NodePath, or it may be a list of NodePaths.
+
+        Each model is duplicated and flattened in the sub-thread.
+
+        If inPlace is True, then when the flatten operation completes,
+        the newly flattened copies are automatically dropped into the
+        scene graph, in place the original models.
+
+        If a callback is specified, then it is called after the
+        operation is finished, receiving the flattened model (or a
+        list of flattened models)."""
+        
+        if isinstance(model, NodePath):
+            # We were given a single model.
+            modelList = [model]
+            gotList = False
+        else:
+            # Assume we were given a list of models.
+            modelList = model
+            gotList = True
+
+        if inPlace:
+            extraArgs = [gotList, callback, modelList, extraArgs]
+            callback = self.__asyncFlattenDone
+            gotList = True
+
+        cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
+        i=0
+        for model in modelList:
+            request = ModelFlattenRequest(model.node())
+            request.setDoneEvent(self.hook)
+            request.setPythonObject((cb, i))
+            i+=1
+            self.loader.loadAsync(request)
+
+    def __asyncFlattenDone(self, models, 
+                           gotList, callback, origModelList, extraArgs):
+        """ The asynchronous flatten operation has completed; quietly
+        drop in the new models. """
+        print "asyncFlattenDone: %s" % (models,)
+        assert(len(models) == len(origModelList))
+        for i in range(len(models)):
+            origModelList[i].getChildren().detach()
+            orig = origModelList[i].node()
+            flat = models[i].node()
+            orig.copyAllProperties(flat)
+            orig.replaceNode(flat)
+
+        if callback:
+            if gotList:
+                callback(origModelList, *extraArgs)
+            else:
+                callback(*(origModelList + extraArgs))
 
     def __gotAsyncObject(self, request):
         """A model or sound file or some such thing has just been
