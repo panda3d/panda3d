@@ -45,10 +45,11 @@ class JobManager:
         # add the jobId onto the end of the list of jobIds for this priority
         self._pri2jobIds.setdefault(pri, [])
         self._pri2jobIds[pri].append(jobId)
-        if pri > self._highestPriority:
-            self._highestPriority = pri
         if len(self._jobId2pri) == 1:
             taskMgr.add(self._process, JobManager.TaskName)
+            self._highestPriority = pri
+        elif pri > self._highestPriority:
+            self._highestPriority = pri
         self.notify.debug('added job %s' % job.getJobName())
         
     def remove(self, job):
