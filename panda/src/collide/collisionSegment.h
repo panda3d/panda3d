@@ -43,6 +43,8 @@ PUBLISHED:
   INLINE CollisionSegment(float ax, float ay, float az,
                           float bx, float by, float bz);
 
+  virtual LPoint3f get_collision_origin() const;
+
 public:
   INLINE CollisionSegment(const CollisionSegment &copy);
   virtual CollisionSolid *make_copy();
@@ -51,7 +53,6 @@ public:
   test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual void output(ostream &out) const;
 

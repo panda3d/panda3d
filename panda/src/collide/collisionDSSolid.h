@@ -41,6 +41,8 @@ PUBLISHED:
     float bx, float by, float bz, float radius_b,
     const Planef &plane_a, const Planef &plane_b);
 
+  virtual LPoint3f get_collision_origin() const;
+
 protected:
   INLINE CollisionDSSolid();
 
@@ -54,7 +56,6 @@ public:
   INLINE float get_lens_radius() const;
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();

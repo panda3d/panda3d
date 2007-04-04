@@ -40,6 +40,8 @@ PUBLISHED:
   INLINE CollisionRay(float ox, float oy, float oz,
                       float dx, float dy, float dz);
 
+  virtual LPoint3f get_collision_origin() const;
+
 public:
   INLINE CollisionRay(const CollisionRay &copy);
   virtual CollisionSolid *make_copy();
@@ -48,7 +50,6 @@ public:
   test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual void output(ostream &out) const;
 

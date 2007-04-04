@@ -32,6 +32,8 @@ PUBLISHED:
   INLINE CollisionSphere(const LPoint3f &center, float radius);
   INLINE CollisionSphere(float cx, float cy, float cz, float radius);
 
+  virtual LPoint3f get_collision_origin() const;
+
 protected:
   INLINE CollisionSphere();
 
@@ -43,7 +45,6 @@ public:
   test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();

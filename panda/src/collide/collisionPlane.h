@@ -38,11 +38,12 @@ PUBLISHED:
   INLINE CollisionPlane(const Planef &plane);
   INLINE CollisionPlane(const CollisionPlane &copy);
 
+  virtual LPoint3f get_collision_origin() const;
+
 public:
   virtual CollisionSolid *make_copy();
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();

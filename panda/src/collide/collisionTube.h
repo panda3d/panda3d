@@ -39,6 +39,8 @@ PUBLISHED:
                        float bx, float by, float bz,
                        float radius);
 
+  virtual LPoint3f get_collision_origin() const;
+
 private:
   INLINE CollisionTube();
 
@@ -47,7 +49,6 @@ public:
   virtual CollisionSolid *make_copy();
 
   virtual void xform(const LMatrix4f &mat);
-  virtual LPoint3f get_collision_origin() const;
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
