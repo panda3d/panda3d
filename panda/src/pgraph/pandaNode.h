@@ -305,6 +305,10 @@ private:
   bool stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
                            int pipeline_stage, Thread *current_thread);
 
+  INLINE bool verify_child_no_cycles(PandaNode *child_node);
+  void report_cycle(PandaNode *node);
+  bool find_node_above(PandaNode *node);
+
   // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
   static PT(NodePathComponent) attach(NodePathComponent *parent, 

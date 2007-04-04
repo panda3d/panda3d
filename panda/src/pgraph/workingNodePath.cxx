@@ -34,6 +34,7 @@ is_valid() const {
     return (_start != (NodePathComponent *)NULL);
   }
 
+  nassertr(_node != _next->_node, false);
   return _next->is_valid();
 }
 

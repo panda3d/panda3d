@@ -586,6 +586,13 @@ copy_subgraph(Thread *current_thread) const {
 void PandaNode::
 add_child(PandaNode *child_node, int sort, Thread *current_thread) {
   nassertv(child_node != (PandaNode *)NULL);
+
+  if (!verify_child_no_cycles(child_node)) {
+    // Whoops, adding this child node would introduce a cycle in the
+    // scene graph.
+    return;
+  }
+
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
   remove_child(child_node);
@@ -607,6 +614,7 @@ add_child(PandaNode *child_node, int sort, Thread *current_thread) {
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(_cycler);
 
   force_bounds_stale();
+
   children_changed();
   child_node->parents_changed();
 }
@@ -685,7 +693,8 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
 //  Description: Searches for the orig_child node in the node's list
 //               of children, and replaces it with the new_child
 //               instead.  Returns true if the replacement is made, or
-//               false if the node is not a child.
+//               false if the node is not a child or if there is some
+//               other problem.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child,
@@ -696,6 +705,12 @@ replace_child(PandaNode *orig_child, PandaNode *new_child,
   if (orig_child == new_child) {
     // Trivial no-op.
     return true;
+  }
+
+  if (!verify_child_no_cycles(new_child)) {
+    // Whoops, adding this child node would introduce a cycle in the
+    // scene graph.
+    return false;
   }
   
   // Make sure the orig_child node is not destructed during the
@@ -829,6 +844,12 @@ void PandaNode::
 add_stashed(PandaNode *child_node, int sort, Thread *current_thread) {
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertv(pipeline_stage == 0);
+
+  if (!verify_child_no_cycles(child_node)) {
+    // Whoops, adding this child node would introduce a cycle in the
+    // scene graph.
+    return;
+  }
 
   // Ensure the child_node is not deleted while we do this.
   PT(PandaNode) keep_child = child_node;
@@ -2653,6 +2674,44 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::report_cycle
+//       Access: Private
+//  Description: Raises an assertion when a graph cycle attempt is
+//               detected (and aborted).
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+report_cycle(PandaNode *child_node) {
+  ostringstream strm;
+  strm << "Detected attempt to create a cycle in the scene graph: " 
+       << NodePath::any_path(this) << " : " << *child_node;
+  nassert_raise(strm.str());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::find_node_above
+//       Access: Private
+//  Description: Returns true if the indicated node is this node, or
+//               any ancestor of this node; or false if it is not in
+//               this node's ancestry.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+find_node_above(PandaNode *node) {
+  if (node == this) {
+    return true;
+  }
+
+  Parents parents = get_parents();
+  for (int i = 0; i < parents.get_num_parents(); ++i) {
+    PandaNode *parent = parents.get_parent(i);
+    if (parent->find_node_above(node)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::attach
 //       Access: Private, Static
 //  Description: Creates a new parent-child relationship, and returns
@@ -2793,6 +2852,13 @@ bool PandaNode::
 reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed, int pipeline_stage, Thread *current_thread) {
   bool any_ok = false;
+
+  if (new_parent != (NodePathComponent *)NULL &&
+      !new_parent->get_node()->verify_child_no_cycles(child->get_node())) {
+    // Whoops, adding this child node would introduce a cycle in the
+    // scene graph.
+    return false;
+  }
 
   for (int pipeline_stage_i = pipeline_stage;
        pipeline_stage_i >= 0; 

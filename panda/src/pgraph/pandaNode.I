@@ -763,6 +763,28 @@ do_find_parent(PandaNode *node, const CData *cdata) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::verify_child_no_cycles
+//       Access: Private
+//  Description: Ensures that attaching the indicated child node to
+//               this node would not introduce a cycle in the graph.
+//               Returns true if the attachment is valid, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+verify_child_no_cycles(PandaNode *child_node) {
+#ifndef NDEBUG
+  if (detect_graph_cycles) {
+    if (!find_node_above(child_node)) {
+      return true;
+    }
+    report_cycle(child_node);
+    return false;
+  }
+#endif  // NDEBUG
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_dirty_prev_transform
 //       Access: Private
 //  Description: Sets the dirty_prev_transform flag, and adds the node

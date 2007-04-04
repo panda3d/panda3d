@@ -128,6 +128,12 @@ ConfigVariableBool unambiguous_graph
           "assertion failure instead of just a warning (which can then be "
           "trapped with assert-abort)."));
 
+ConfigVariableBool detect_graph_cycles
+("detect-graph-cycles", true,
+ PRC_DESC("Set this true to attempt to detect cycles in the scene graph "
+          "(e.g. a node which is its own parent) as soon as they are "
+          "made.  This has no effect in NDEBUG mode."));
+
 ConfigVariableBool no_unsupported_copy
 ("no-unsupported-copy", false,
  PRC_DESC("Set this true to make an attempt to copy an unsupported type "

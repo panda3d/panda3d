@@ -61,6 +61,7 @@ WorkingNodePath(const WorkingNodePath &parent, PandaNode *child) {
   _next = &parent;
   _start = (NodePathComponent *)NULL;
   _node = child;
+  nassertv(_node != _next->_node);
 }
 
 ////////////////////////////////////////////////////////////////////
