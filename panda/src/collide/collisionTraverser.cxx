@@ -275,22 +275,43 @@ traverse(const NodePath &root) {
     get_recorder()->begin_traversal();
   }
   #endif  // DO_COLLISION_RECORDING
-
-  LevelStates level_states;
-  prepare_colliders(level_states, root);
   
   Handlers::iterator hi;
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
     (*hi).first->begin_group();
   }
 
-  // Make a number of passes, one for each group of 32 Colliders (or
-  // whatever number of bits we have available in CurrentMask).
-  for (size_t pass = 0; pass < level_states.size(); ++pass) {
-    #ifdef DO_PSTATS
-    PStatTimer pass_timer(get_pass_collector(pass));
-    #endif
-    r_traverse(level_states[pass], pass);
+  bool do_array_pass = true;
+  if (_colliders.size() <= CollisionLevelStateWord::get_max_colliders() ||
+      !allow_collider_bitarray) {
+    // Use the word-at-a-time traverser, which might need to make
+    // several passes.
+    LevelStatesWord level_states;
+    prepare_colliders_word(level_states, root);
+
+    if (level_states.size() == 1 || !allow_collider_bitarray) {
+      do_array_pass = false;
+      // Make a number of passes, one for each group of 32 Colliders (or
+      // whatever number of bits we have available in CurrentMask).
+      for (size_t pass = 0; pass < level_states.size(); ++pass) {
+#ifdef DO_PSTATS
+        PStatTimer pass_timer(get_pass_collector(pass));
+#endif
+        r_traverse_word(level_states[pass], pass);
+      }
+    }
+  }
+
+  if (do_array_pass) {
+    // Use the array-at-a-time traverser, which can do the whole thing
+    // at once, even if there are many colliders.
+    CollisionLevelStateArray level_state(root);
+    prepare_colliders_array(level_state, root);
+
+#ifdef DO_PSTATS
+    PStatTimer pass_timer(get_pass_collector(0));
+#endif
+    r_traverse_array(level_state);
   }
 
   hi = _handlers.begin();
@@ -309,7 +330,7 @@ traverse(const NodePath &root) {
   }
   #endif  // DO_COLLISION_RECORDING
 
-  CollisionLevelState::_node_volume_pcollector.flush_level();
+  CollisionLevelStateBase::_node_volume_pcollector.flush_level();
   _cnode_volume_pcollector.flush_level();
   _gnode_volume_pcollector.flush_level();
   _geom_volume_pcollector.flush_level();
@@ -459,17 +480,22 @@ write(ostream &out, int indent_level) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::prepare_colliders
+//     Function: CollisionTraverser::prepare_colliders_word
 //       Access: Private
-//  Description:
+//  Description: Fills up the set of LevelStates corresponding to the
+//               active colliders in use.
+//
+//               This flavor uses a CollisionLevelStateWord, which is
+//               limited to a certain number of colliders per pass
+//               (typically 32).
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-prepare_colliders(CollisionTraverser::LevelStates &level_states, 
-                  const NodePath &root) {
+prepare_colliders_word(CollisionTraverser::LevelStatesWord &level_states, 
+                       const NodePath &root) {
   int num_colliders = _colliders.size();
-  int max_colliders = CollisionLevelState::get_max_colliders();
+  int max_colliders = CollisionLevelStateWord::get_max_colliders();
 
-  CollisionLevelState level_state(root);
+  CollisionLevelStateWord level_state(root);
   // This reserve() call is only correct if there is exactly one solid
   // per collider added to the traverser, which is the normal case.
   // If there is more than one solid in any of the colliders, this
@@ -497,7 +523,7 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
       (*oci)._in_graph = true;
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
       
-      CollisionLevelState::ColliderDef def;
+      CollisionLevelStateWord::ColliderDef def;
       def._node = cnode;
       def._node_path = cnode_path;
       
@@ -528,12 +554,12 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionTraverser::r_traverse
+//     Function: CollisionTraverser::r_traverse_word
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-r_traverse(CollisionLevelState &level_state, size_t pass) {
+r_traverse_word(CollisionLevelStateWord &level_state, size_t pass) {
   if (!level_state.any_in_bounds()) {
     return;
   }
@@ -629,8 +655,8 @@ r_traverse(CollisionLevelState &level_state, size_t pass) {
     // visible child.
     int index = node->get_visible_child();
     if (index >= 0 && index < node->get_num_children()) {
-      CollisionLevelState next_state(level_state, node->get_child(index));
-      r_traverse(next_state, pass);
+      CollisionLevelStateWord next_state(level_state, node->get_child(index));
+      r_traverse_word(next_state, pass);
     }
 
   } else if (node->is_lod_node()) {
@@ -643,20 +669,214 @@ r_traverse(CollisionLevelState &level_state, size_t pass) {
     int index = DCAST(LODNode, node)->get_lowest_switch();
     int num_children = node->get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelState next_state(level_state, node->get_child(i));
+      CollisionLevelStateWord next_state(level_state, node->get_child(i));
       if (i != index) {
         next_state.set_include_mask(next_state.get_include_mask() &
           ~GeomNode::get_default_collide_mask());
       }
-      r_traverse(next_state, pass);
+      r_traverse_word(next_state, pass);
     }
 
   } else {
     // Otherwise, visit all the children.
     int num_children = node->get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelState next_state(level_state, node->get_child(i));
-      r_traverse(next_state, pass);
+      CollisionLevelStateWord next_state(level_state, node->get_child(i));
+      r_traverse_word(next_state, pass);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::prepare_colliders_array
+//       Access: Private
+//  Description: Fills up the set of LevelStates corresponding to the
+//               active colliders in use.
+//
+//               This flavor uses a CollisionLevelStateArray, which
+//               has no limit in the number of colliders it can handle
+//               in one pass.
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+prepare_colliders_array(CollisionLevelStateArray &level_state, 
+                        const NodePath &root) {
+  int num_colliders = _colliders.size();
+  // This reserve() call is only correct if there is exactly one solid
+  // per collider added to the traverser, which is the normal case.
+  // If there is more than one solid in any of the colliders, this
+  // reserve() call won't reserve enough, but the code is otherwise
+  // correct.
+  level_state.reserve(num_colliders);
+
+  OrderedColliders sorted = _ordered_colliders;
+  sort(sorted.begin(), sorted.end(), SortByColliderSort());
+
+  OrderedColliders::iterator oci;
+  for (oci = sorted.begin(); oci != sorted.end(); ++oci) {
+    NodePath cnode_path = (*oci)._node_path;
+
+    if (!cnode_path.is_same_graph(root)) {
+      if ((*oci)._in_graph) {
+        // Only report this warning once.
+        collide_cat.info()
+          << "Collider " << cnode_path
+          << " is not in scene graph.  Ignoring.\n";
+        (*oci)._in_graph = false;
+      }
+
+    } else {
+      (*oci)._in_graph = true;
+      CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
+      
+      CollisionLevelStateArray::ColliderDef def;
+      def._node = cnode;
+      def._node_path = cnode_path;
+      
+      int num_solids = cnode->get_num_solids();
+      for (int s = 0; s < num_solids; ++s) {
+        CollisionSolid *collider = cnode->get_solid(s);
+        def._collider = collider;
+        level_state.prepare_collider(def, root);
+      }
+    }
+
+    --num_colliders;
+    nassertv(num_colliders >= 0);
+  }
+
+  nassertv(num_colliders == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::r_traverse_array
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+r_traverse_array(CollisionLevelStateArray &level_state) {
+  if (!level_state.any_in_bounds()) {
+    return;
+  }
+  level_state.apply_transform();
+
+  PandaNode *node = level_state.node();
+  if (node->is_exact_type(CollisionNode::get_class_type())) {
+    CollisionNode *cnode;
+    DCAST_INTO_V(cnode, node);
+    CPT(BoundingVolume) node_bv = cnode->get_bounds();
+    const GeometricBoundingVolume *node_gbv = NULL;
+    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      DCAST_INTO_V(node_gbv, node_bv);
+    }
+
+    CollisionEntry entry;
+    entry._into_node = cnode;
+    entry._into_node_path = level_state.get_node_path();
+    if (_respect_prev_transform) {
+      entry._flags |= CollisionEntry::F_respect_prev_transform;
+    }
+
+    int num_colliders = level_state.get_num_colliders();
+    for (int c = 0; c < num_colliders; ++c) {
+      if (level_state.has_collider(c)) {
+        entry._from_node = level_state.get_collider_node(c);
+
+        if ((entry._from_node->get_from_collide_mask() &
+             cnode->get_into_collide_mask()) != 0) {
+          #ifdef DO_PSTATS
+          PStatTimer collide_timer(_solid_collide_collectors[0]);
+          #endif
+          entry._from_node_path = level_state.get_collider_node_path(c);
+          entry._from = level_state.get_collider(c);
+
+          compare_collider_to_node(
+              entry, 
+              level_state.get_parent_bound(c),
+              level_state.get_local_bound(c),
+              node_gbv);
+        }
+      }
+    }
+
+  } else if (node->is_geom_node()) {
+    #ifndef NDEBUG
+    if (collide_cat.is_spam()) {
+      collide_cat.spam()
+        << "Reached " << *node << "\n";
+    }
+    #endif
+    
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+    CPT(BoundingVolume) node_bv = gnode->get_bounds();
+    const GeometricBoundingVolume *node_gbv = NULL;
+    if (node_bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      DCAST_INTO_V(node_gbv, node_bv);
+    }
+
+    CollisionEntry entry;
+    entry._into_node = gnode;
+    entry._into_node_path = level_state.get_node_path();
+    if (_respect_prev_transform) {
+      entry._flags |= CollisionEntry::F_respect_prev_transform;
+    }
+
+    int num_colliders = level_state.get_num_colliders();
+    for (int c = 0; c < num_colliders; ++c) {
+      if (level_state.has_collider(c)) {
+        entry._from_node = level_state.get_collider_node(c);
+
+        if ((entry._from_node->get_from_collide_mask() &
+             gnode->get_into_collide_mask()) != 0) {
+          #ifdef DO_PSTATS
+          PStatTimer collide_timer(_solid_collide_collectors[0]);
+          #endif
+          entry._from_node_path = level_state.get_collider_node_path(c);
+          entry._from = level_state.get_collider(c);
+
+          compare_collider_to_geom_node(
+              entry, 
+              level_state.get_parent_bound(c),
+              level_state.get_local_bound(c),
+              node_gbv);
+        }
+      }
+    }
+  }
+
+  if (node->has_single_child_visibility()) {
+    // If it's a switch node or sequence node, visit just the one
+    // visible child.
+    int index = node->get_visible_child();
+    if (index >= 0 && index < node->get_num_children()) {
+      CollisionLevelStateArray next_state(level_state, node->get_child(index));
+      r_traverse_array(next_state);
+    }
+
+  } else if (node->is_lod_node()) {
+    // If it's an LODNode, visit the lowest level of detail with all
+    // bits, allowing collision with geometry under the lowest level
+    // of default; and visit all other levels without
+    // GeomNode::get_default_collide_mask(), allowing only collision
+    // with CollisionNodes and special geometry under higher levels of
+    // detail.
+    int index = DCAST(LODNode, node)->get_lowest_switch();
+    int num_children = node->get_num_children();
+    for (int i = 0; i < num_children; ++i) {
+      CollisionLevelStateArray next_state(level_state, node->get_child(i));
+      if (i != index) {
+        next_state.set_include_mask(next_state.get_include_mask() &
+          ~GeomNode::get_default_collide_mask());
+      }
+      r_traverse_array(next_state);
+    }
+
+  } else {
+    // Otherwise, visit all the children.
+    int num_children = node->get_num_children();
+    for (int i = 0; i < num_children; ++i) {
+      CollisionLevelStateArray next_state(level_state, node->get_child(i));
+      r_traverse_array(next_state);
     }
   }
 }

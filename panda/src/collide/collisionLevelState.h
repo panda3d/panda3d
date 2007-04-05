@@ -21,66 +21,44 @@
 
 #include "pandabase.h"
 
-#include "luse.h"
-#include "pointerToArray.h"
-#include "geometricBoundingVolume.h"
-#include "nodePath.h"
-#include "workingNodePath.h"
-#include "pointerTo.h"
-#include "plist.h"
-#include "pStatCollector.h"
+#include "collisionLevelStateBase.h"
+#include "collisionNode.h"
 #include "bitMask.h"
-
-class CollisionSolid;
-class CollisionNode;
+#include "bitArray.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionLevelState
 // Description : This is the state information the
 //               CollisionTraverser retains for each level during
 //               traversal.
+//
+//               This is the template class that specifies the
+//               CurrentMask type: the type of bitmask that is used to
+//               keep track of the set of active colliders for each
+//               node.
 ////////////////////////////////////////////////////////////////////
-class CollisionLevelState {
+template<class MaskType>
+class CollisionLevelState : public CollisionLevelStateBase {
 public:
-  class ColliderDef {
-  public:
-    CollisionSolid *_collider;
-    CollisionNode *_node;
-    NodePath _node_path;
-  };
-
   INLINE CollisionLevelState(const NodePath &node_path);
-  INLINE CollisionLevelState(const CollisionLevelState &parent, 
+  INLINE CollisionLevelState(const CollisionLevelState<MaskType> &parent, 
                              PandaNode *child);
-  INLINE CollisionLevelState(const CollisionLevelState &copy);
-  INLINE void operator = (const CollisionLevelState &copy);
+  INLINE CollisionLevelState(const CollisionLevelState<MaskType> &copy);
+  INLINE void operator = (const CollisionLevelState<MaskType> &copy);
 
-  void clear();
-  void reserve(int num_colliders);
-  void prepare_collider(const ColliderDef &def, const NodePath &root);
-
-  INLINE static int get_max_colliders();
+  INLINE void clear();
+  INLINE void prepare_collider(const ColliderDef &def, const NodePath &root);
 
   bool any_in_bounds();
   void apply_transform();
-  
-  INLINE NodePath get_node_path() const;
-  INLINE PandaNode *node() const;
 
-  INLINE int get_num_colliders() const;
+  INLINE static bool has_max_colliders();
+  INLINE static int get_max_colliders();
+
   INLINE bool has_collider(int n) const;
   INLINE bool has_any_collider() const;
 
-  INLINE CollisionSolid *get_collider(int n) const;
-  INLINE CollisionNode *get_collider_node(int n) const;
-  INLINE NodePath get_collider_node_path(int n) const;
-  INLINE const GeometricBoundingVolume *get_local_bound(int n) const;
-  INLINE const GeometricBoundingVolume *get_parent_bound(int n) const;
-
   INLINE void omit_collider(int n);
-
-  INLINE void set_include_mask(CollideMask include_mask);
-  INLINE CollideMask get_include_mask() const;
 
 private:
   // CurrentMask here is a locally-defined value that simply serves
@@ -88,25 +66,22 @@ private:
   // current node.  Don't confuse it with CollideMask, which is a set
   // of user-defined bits that specify which CollisionSolids may
   // possibly intersect with each other.
-  typedef BitMaskNative CurrentMask;
-
-  WorkingNodePath _node_path;
-
-  typedef PTA(ColliderDef) Colliders;
-  Colliders _colliders;
+  typedef MaskType CurrentMask;
   CurrentMask _current;
-  CollideMask _include_mask;
-
-  typedef PTA(CPT(GeometricBoundingVolume)) BoundingVolumes;
-  BoundingVolumes _local_bounds;
-  BoundingVolumes _parent_bounds;
-
-  static PStatCollector _node_volume_pcollector;
 
   friend class CollisionTraverser;
 };
 
 #include "collisionLevelState.I"
+
+// Now instantiate a pair of implementations of CollisionLevelState:
+// one that uses a word-at-a-time bitmask to track the active
+// colliders (and thus is limited to handling 32 or 64 colliders in a
+// given pass), and another that uses an infinite BitArray to track
+// these colliders (and thus has no particular limit).
+
+typedef CollisionLevelState<BitMaskNative> CollisionLevelStateWord;
+typedef CollisionLevelState<BitArray> CollisionLevelStateArray;
 
 #endif
 

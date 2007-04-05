@@ -81,10 +81,12 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
-  typedef pvector<CollisionLevelState> LevelStates;
-  void prepare_colliders(LevelStates &level_states, const NodePath &root);
+  typedef pvector<CollisionLevelStateWord> LevelStatesWord;
+  void prepare_colliders_word(LevelStatesWord &level_states, const NodePath &root);
+  void r_traverse_word(CollisionLevelStateWord &level_state, size_t pass);
 
-  void r_traverse(CollisionLevelState &level_state, size_t pass);
+  void prepare_colliders_array(CollisionLevelStateArray &level_state, const NodePath &root);
+  void r_traverse_array(CollisionLevelStateArray &level_state);
 
   void compare_collider_to_node(CollisionEntry &entry,
                                 const GeometricBoundingVolume *from_parent_gbv,

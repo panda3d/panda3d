@@ -63,6 +63,13 @@ ConfigVariableBool respect_effective_normal
           "collision solids (including polygons and planes) use their actual "
           "normal for intersection and physics tests."));
 
+ConfigVariableBool allow_collider_bitarray
+("allow-collider-bitarray", true,
+ PRC_DESC("Set this true to enable the use of a BitArray to manage many "
+          "colliders added to a single traverser in one pass.  If this is "
+          "false, a finite BitMask is always used instead, which is faster "
+          "per node visited, but may require multiple passes."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide
