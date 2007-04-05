@@ -25,7 +25,24 @@
 // the various numeric types for unsigned and signed numbers of
 // various widths.
 
-// For now, we'll just assume a typical 32-bit environment.
+#if defined(_LP64)
+// A 64-bit environment.
+
+typedef signed char PN_int8;
+typedef short PN_int16;
+typedef int PN_int32;
+
+typedef unsigned char PN_uint8;
+typedef unsigned short PN_uint16;
+typedef unsigned int PN_uint32;
+typedef long PN_int64;
+typedef unsigned long PN_uint64;
+
+typedef double PN_float64;
+typedef float PN_float32;
+
+#else  // _LP64
+// A 32-bit environment.
 
 typedef signed char PN_int8;
 typedef short PN_int16;
@@ -46,6 +63,7 @@ typedef unsigned long long PN_uint64;
 typedef double PN_float64;
 typedef float PN_float32;
 
+#endif  // _LP64
 #endif
 
 

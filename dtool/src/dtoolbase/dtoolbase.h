@@ -265,6 +265,15 @@
 
 #endif
 
+/* Try to determine if we're compiling in a 64-bit mode. */
+
+#if defined(_LP64)
+#define NATIVE_WORDSIZE 64
+#else
+#define NATIVE_WORDSIZE 32
+#endif
+
+
 /*
  We define the macros BEGIN_PUBLISH and END_PUBLISH to bracket
  functions and global variable definitions that are to be published
