@@ -25,7 +25,7 @@
 INLINE CollisionLevelState::
 CollisionLevelState(const NodePath &node_path) :
   _node_path(node_path),
-  _current(0),
+  _current(CollisionLevelState::CurrentMask::all_off()),
   _include_mask(CollideMask::all_on())
 {
 }
@@ -85,7 +85,7 @@ operator = (const CollisionLevelState &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionLevelState::
 get_max_colliders() {
-  return sizeof(CurrentMask) * 8;
+  return CurrentMask::get_max_num_bits();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ get_num_colliders() const {
 INLINE bool CollisionLevelState::
 has_collider(int n) const {
   nassertr(n >= 0 && n < (int)_colliders.size(), false);
-  return (_current & get_mask(n)) != 0;
+  return (_current.get_bit(n));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,7 +139,7 @@ has_collider(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionLevelState::
 has_any_collider() const {
-  return _current != 0;
+  return !_current.is_zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ omit_collider(int n) {
   nassertv(n >= 0 && n < (int)_colliders.size());
   nassertv(has_collider(n));
 
-  _current &= ~get_mask(n);
+  _current.clear_bit(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,15 +267,4 @@ set_include_mask(CollideMask include_mask) {
 INLINE CollideMask CollisionLevelState::
 get_include_mask() const {
   return _include_mask;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionLevelState::get_mask
-//       Access: Private
-//  Description: Returns a single bit associated with the nth
-//               collider.
-////////////////////////////////////////////////////////////////////
-INLINE CollisionLevelState::CurrentMask CollisionLevelState::
-get_mask(int n) const {
-  return ((CurrentMask)1) << n;
 }

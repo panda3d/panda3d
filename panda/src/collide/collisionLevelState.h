@@ -29,6 +29,7 @@
 #include "pointerTo.h"
 #include "plist.h"
 #include "pStatCollector.h"
+#include "bitMask.h"
 
 class CollisionSolid;
 class CollisionNode;
@@ -87,9 +88,7 @@ private:
   // current node.  Don't confuse it with CollideMask, which is a set
   // of user-defined bits that specify which CollisionSolids may
   // possibly intersect with each other.
-  typedef unsigned int CurrentMask;
-
-  INLINE CurrentMask get_mask(int n) const;
+  typedef BitMaskNative CurrentMask;
 
   WorkingNodePath _node_path;
 

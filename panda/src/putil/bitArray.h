@@ -45,7 +45,7 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BitArray {
 public:
-  typedef BitMask32 MaskType;
+  typedef BitMaskNative MaskType;
   typedef MaskType::WordType WordType;
   enum { num_bits_per_word = MaskType::num_bits };
 

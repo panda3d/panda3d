@@ -40,11 +40,22 @@
 #include "pStatTimer.h"
 #include "indent.h"
 
+#include <algorithm>
+
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 
 PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
 PStatCollector CollisionTraverser::_gnode_volume_pcollector("Collision Volumes:GeomNode");
 PStatCollector CollisionTraverser::_geom_volume_pcollector("Collision Volumes:Geom");
+
+// This function object class is used in prepare_colliders(), below.
+class SortByColliderSort {
+public:
+  inline bool operator () (const CollisionTraverser::OrderedColliderDef &a,
+                           const CollisionTraverser::OrderedColliderDef &b) const {
+    return DCAST(CollisionNode, a._node_path.node())->get_collider_sort() < DCAST(CollisionNode, b._node_path.node())->get_collider_sort();
+  }
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Constructor
@@ -466,10 +477,11 @@ prepare_colliders(CollisionTraverser::LevelStates &level_states,
   // correct.
   level_state.reserve(min(num_colliders, max_colliders));
 
+  OrderedColliders sorted = _ordered_colliders;
+  sort(sorted.begin(), sorted.end(), SortByColliderSort());
+
   OrderedColliders::iterator oci;
-  for (oci = _ordered_colliders.begin(); 
-       oci != _ordered_colliders.end(); 
-       ++oci) {
+  for (oci = sorted.begin(); oci != sorted.end(); ++oci) {
     NodePath cnode_path = (*oci)._node_path;
 
     if (!cnode_path.is_same_graph(root)) {

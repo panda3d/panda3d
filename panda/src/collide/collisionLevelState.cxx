@@ -33,7 +33,7 @@ clear() {
   _colliders.clear();
   _local_bounds.clear();
   _parent_bounds.clear();
-  _current = 0;
+  _current.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +44,8 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void CollisionLevelState::
 reserve(int num_colliders) {
-  nassertv(num_colliders <= get_max_colliders());
+  nassertv(!CurrentMask::has_max_num_bits() ||
+           num_colliders <= CurrentMask::get_max_num_bits());
   _colliders.reserve(num_colliders);
   _local_bounds.reserve(num_colliders);
 }
@@ -58,7 +59,8 @@ reserve(int num_colliders) {
 void CollisionLevelState::
 prepare_collider(const ColliderDef &def, const NodePath &root) {
   int index = (int)_colliders.size();
-  nassertv(index < get_max_colliders());
+  nassertv(!CurrentMask::has_max_num_bits() ||
+           index <= CurrentMask::get_max_num_bits());
   _colliders.push_back(def);
 
   CollisionSolid *collider = def._collider;
@@ -93,11 +95,9 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     _local_bounds.push_back(gbv);
   }
   
-  CurrentMask mask = get_mask(index); 
-  _current |= mask;
+  _current.set_bit(index);
 
   _parent_bounds = _local_bounds;
-  nassertv(mask != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,8 +137,7 @@ any_in_bounds() {
         // no collide bits in common between our collider and this
         // node.
         CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
-        if (cnode->get_collide_geom() ||
-            (from_mask & node()->get_net_collide_mask()) != 0) {
+        if (!(from_mask & node()->get_net_collide_mask()).is_zero()) {
           // There are bits in common, so go ahead and try the
           // bounding volume.
           const GeometricBoundingVolume *col_gbv =

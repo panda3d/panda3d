@@ -142,6 +142,8 @@ private:
   // pstats category for actual collision detection (vs. bounding heirarchy collision detection)
   typedef pvector<PStatCollector> SolidCollideCollectors;
   SolidCollideCollectors _solid_collide_collectors;
+
+  friend class SortByColliderSort;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {

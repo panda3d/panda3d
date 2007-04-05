@@ -61,15 +61,15 @@ PUBLISHED:
   INLINE CollideMask get_from_collide_mask() const;
   INLINE CollideMask get_into_collide_mask() const;
 
-  void set_collide_geom(bool flag);
-  bool get_collide_geom() const;
-
   INLINE void clear_solids();
   INLINE int get_num_solids() const;
   INLINE CollisionSolid *get_solid(int n) const;
   INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
+
+  INLINE int get_collider_sort() const;
+  INLINE void set_collider_sort(int sort);
 
   INLINE static CollideMask get_default_collide_mask();
 
@@ -83,11 +83,11 @@ private:
   // traversal will take place in App only.  Perhaps we will revisit
   // this later.
   CollideMask _from_collide_mask;
-  bool _collide_geom;
+  int _collider_sort;
 
   typedef pvector< PT(CollisionSolid) > Solids;
   Solids _solids;
-
+  
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

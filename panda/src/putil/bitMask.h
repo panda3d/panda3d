@@ -144,6 +144,15 @@ INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, BITMASK32_DEF);
 
 typedef BitMask<PN_uint32, 32> BitMask32;
+typedef BitMask<PN_uint64, 64> BitMask64;
+
+#if NATIVE_WORDSIZE == 32
+typedef BitMask32 BitMaskNative;
+#elif NATIVE_WORDSIZE == 64
+typedef BitMask64 BitMaskNative;
+#else
+#error No definition for NATIVE_WORDSIZE--should be defined in dtoolbase.h.
+#endif  // NATIVE_WORDSIZE
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -44,7 +44,7 @@ CollisionNode::
 CollisionNode(const string &name) :
   PandaNode(name),
   _from_collide_mask(get_default_collide_mask()),
-  _collide_geom(false)
+  _collider_sort(0)
 {
   set_cull_callback();
 
@@ -300,62 +300,6 @@ output(ostream &out) const {
 void CollisionNode::
 set_from_collide_mask(CollideMask mask) {
   _from_collide_mask = mask;
-
-  if (_collide_geom) {
-    _from_collide_mask |= GeomNode::get_default_collide_mask();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::set_collide_geom
-//       Access: Published
-//  Description: Sets the state of the "collide geom" flag for this
-//               CollisionNode.  
-//
-//               This flag is now deprecated, now that GeomNodes have
-//               their own into_collide_mask, just like CollisionNodes
-//               do.  Instead of using set_collide_geom(), you should
-//               use the from_collide_mask to control which GeomNodes
-//               each CollisionNode will intersect with.  
-//
-//               In particular, you may be interested in setting
-//               from_collide_mask to the value returned by
-//               GeomNode::get_default_collide_mask(), which is the
-//               default into_collide_mask that all GeomNodes will be
-//               given (unless they are explicitly given some other
-//               mask).
-////////////////////////////////////////////////////////////////////
-void CollisionNode::
-set_collide_geom(bool flag) {
-  // Only repeat this warning every five seconds or so--no need to be
-  // completely spammy.
-  static double last_warning = -10.0;
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  double elapsed = now - last_warning;
-  if (elapsed > 5.0) {
-    last_warning = now;
-    collide_cat.warning()
-      << "Using deprecated set_collide_geom().  Replace this with an appropriate call to set_from_collide_mask(), e.g. set_from_collide_mask(GeomNode::get_default_collide_mask()).\n";
-  }
-    
-  _collide_geom = flag;
-
-  if (_collide_geom) {
-    _from_collide_mask |= GeomNode::get_default_collide_mask();
-  } else {
-    _from_collide_mask &= ~GeomNode::get_default_collide_mask();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionNode::get_collide_geom
-//       Access: Published
-//  Description: Returns the current state of the collide_geom flag.
-//               See set_collide_geom().
-////////////////////////////////////////////////////////////////////
-bool CollisionNode::
-get_collide_geom() const {
-  return _collide_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
