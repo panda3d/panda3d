@@ -119,7 +119,7 @@ private:
   // If we don't have atomic compare-and-exchange, we need to use a
   // Mutex to protect the above linked list.
   static INLINE void init_lock();
-  static void do_init_lock();
+  static void do_init_lock(MutexImpl *lock);
   static MutexImpl *_lock;
 #endif
 };

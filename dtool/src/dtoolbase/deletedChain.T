@@ -232,14 +232,14 @@ type_to_node(Type *ptr) {
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::init_lock
-//       Access: Private
+//       Access: Private, Static
 //  Description: Ensures the lock pointer has been allocated.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 INLINE void DeletedChain<Type>::
 init_lock() {
   if (_lock == (MutexImpl *)NULL) {
-    do_init_lock();
+    do_init_lock(_lock);
   }
 }
 #endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
@@ -247,26 +247,31 @@ init_lock() {
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::do_init_lock
-//       Access: Private
-//  Description: Allocates the lock pointer if necessary.  Makes some
+//       Access: Private, Static
+//  Description: Allocates the lock pointer if necessary.  Takes some
 //               pains to protect itself from race conditions.
+//
+//               We have to receive the MutexImpl object as a
+//               parameter, because this is a non-inline function, and
+//               the template pointer might get evaluated differently
+//               for inline vs. non-inline functions.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 void DeletedChain<Type>::
-do_init_lock() {
-  MutexImpl *lock = new MutexImpl;
+do_init_lock(MutexImpl *lock) {
+  MutexImpl *new_lock = new MutexImpl;
 
   // Even though DELETED_CHAIN_USE_ATOMIC_EXCHANGE is not true, we
   // will take advantage of the atomic exchange operation here, at
   // startup.  We have to rely on something, after all, before we have
   // created the first mutex.
   MutexImpl *result;
-  result = (MutexImpl *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_lock, (void *)NULL, (void *)lock);
+  result = (MutexImpl *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)lock, (void *)NULL, (void *)new_lock);
   
   if (result != NULL) {
-    delete lock;
+    delete new_lock;
   }
   
-  assert(_lock != (MutexImpl *)NULL);
+  assert(lock != (MutexImpl *)NULL);
 }
 #endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
