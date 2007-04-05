@@ -258,7 +258,7 @@ init_lock() {
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 void DeletedChain<Type>::
-do_init_lock(MutexImpl *lock) {
+do_init_lock(MutexImpl *&lock) {
   MutexImpl *new_lock = new MutexImpl;
 
   // Even though DELETED_CHAIN_USE_ATOMIC_EXCHANGE is not true, we
