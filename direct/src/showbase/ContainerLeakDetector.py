@@ -27,9 +27,9 @@ class CheckContainers(Job):
             name = self._leakDetector._id2pathStr[id]
             try:
                 container = eval(name)
-            except NameError, ne:
+            except Exception, e:
                 # this container no longer exists
-                self.notify.debug('container %s no longer exists', name)
+                self.notify.debug('container %s no longer exists; caught exception in eval (%s)' % (name, e))
                 del self._leakDetector._id2pathStr[id]
                 continue
             cLen = len(container)
@@ -45,7 +45,7 @@ class CheckContainers(Job):
                         if diff > idx2name2len[self._index-1][name]:
                             minutes = (self._leakDetector._index2delay[self._index] -
                                        self._leakDetector._index2delay[self._index-1]) / 60.
-                            self.notify.warning('container %s grew > 200% in %s minutes' % (name, minutes))
+                            self.notify.warning('container %s grew > 200%% in %s minutes' % (name, minutes))
                     if self._index > 3:
                         diff2 = idx2name2len[self._index-1][name] - idx2name2len[self._index-2][name]
                         diff3 = idx2name2len[self._index-2][name] - idx2name2len[self._index-3][name]
@@ -82,7 +82,7 @@ class ContainerLeakDetector(Job):
         self._checkContainersJob = None
         # run first check after one hour
         if firstCheckDelay is None:
-            firstCheckDelay = 60. * 60.
+            firstCheckDelay = 60. * 15.
         self._nextCheckDelay = firstCheckDelay
         self._index2containerName2len = {}
         self._index2delay = {}
