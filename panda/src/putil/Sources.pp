@@ -32,6 +32,7 @@
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     deferredDeletor.h \
+    doubleBitMask.I doubleBitMask.h \
     drawMask.h \
     factoryBase.I factoryBase.h \
     factoryParam.I factoryParam.h factoryParams.I \
@@ -81,6 +82,7 @@
     config_util.cxx configurable.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     deferredDeletor.cxx \
+    doubleBitMask.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
     globalPointerRegistry.cxx \
@@ -126,6 +128,7 @@
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
     deferredDeletor.h \
+    doubleBitMask.I doubleBitMask.h \
     drawMask.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \

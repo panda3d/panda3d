@@ -1,5 +1,0 @@
-ignoremember _factory
-ignoremember get_factory
-
-ignoretype FactoryBase
-ignoretype Factory<TypedWriteable>

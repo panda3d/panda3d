@@ -18,6 +18,7 @@
 #include "datagramInputFile.cxx"
 #include "datagramOutputFile.cxx"
 #include "deferredDeletor.cxx"
+#include "doubleBitMask.cxx"
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"

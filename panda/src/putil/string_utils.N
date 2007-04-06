@@ -1,5 +1,0 @@
-forcetype string
-ignoremember rbegin
-ignoremember rend
-
-ignoreinvolved __reserve_t

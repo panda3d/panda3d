@@ -1,0 +1,16 @@
+ignoremember _factory
+ignoremember get_factory
+
+ignoretype FactoryBase
+ignoretype Factory<TypedWriteable>
+
+forcetype string
+ignoremember rbegin
+ignoremember rend
+
+ignoreinvolved __reserve_t
+
+forcetype DoubleBitMaskNative
+renametype DoubleBitMaskNative DoubleBitMaskNative
+forcetype QuadBitMaskNative
+renametype QuadBitMaskNative QuadBitMaskNative
