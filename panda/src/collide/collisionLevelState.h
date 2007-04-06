@@ -24,7 +24,7 @@
 #include "collisionLevelStateBase.h"
 #include "collisionNode.h"
 #include "bitMask.h"
-#include "bitArray.h"
+#include "doubleBitMask.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionLevelState
@@ -74,14 +74,13 @@ private:
 
 #include "collisionLevelState.I"
 
-// Now instantiate a pair of implementations of CollisionLevelState:
+// Now instantiate a handful of implementations of CollisionLevelState:
 // one that uses a word-at-a-time bitmask to track the active
-// colliders (and thus is limited to handling 32 or 64 colliders in a
-// given pass), and another that uses an infinite BitArray to track
-// these colliders (and thus has no particular limit).
+// colliders, and a couple that use more words at a time.
 
-typedef CollisionLevelState<BitMaskNative> CollisionLevelStateWord;
-typedef CollisionLevelState<BitArray> CollisionLevelStateArray;
+typedef CollisionLevelState<BitMaskNative> CollisionLevelStateSingle;
+typedef CollisionLevelState<DoubleBitMaskNative> CollisionLevelStateDouble;
+typedef CollisionLevelState<QuadBitMaskNative> CollisionLevelStateQuad;
 
 #endif
 

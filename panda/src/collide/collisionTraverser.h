@@ -81,12 +81,17 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 private:
-  typedef pvector<CollisionLevelStateWord> LevelStatesWord;
-  void prepare_colliders_word(LevelStatesWord &level_states, const NodePath &root);
-  void r_traverse_word(CollisionLevelStateWord &level_state, size_t pass);
+  typedef pvector<CollisionLevelStateSingle> LevelStatesSingle;
+  void prepare_colliders_single(LevelStatesSingle &level_states, const NodePath &root);
+  void r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass);
 
-  void prepare_colliders_array(CollisionLevelStateArray &level_state, const NodePath &root);
-  void r_traverse_array(CollisionLevelStateArray &level_state);
+  typedef pvector<CollisionLevelStateDouble> LevelStatesDouble;
+  void prepare_colliders_double(LevelStatesDouble &level_states, const NodePath &root);
+  void r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass);
+
+  typedef pvector<CollisionLevelStateQuad> LevelStatesQuad;
+  void prepare_colliders_quad(LevelStatesQuad &level_states, const NodePath &root);
+  void r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass);
 
   void compare_collider_to_node(CollisionEntry &entry,
                                 const GeometricBoundingVolume *from_parent_gbv,
