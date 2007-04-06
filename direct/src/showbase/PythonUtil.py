@@ -2818,3 +2818,4 @@ __builtin__.ArgumentEater = ArgumentEater
 __builtin__.ClassTree = ClassTree
 __builtin__.invertDict = invertDict
 __builtin__.invertDictLossless = invertDictLossless
+__builtin__.getBase = getBase
