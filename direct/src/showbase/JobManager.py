@@ -34,7 +34,6 @@ class JobManager:
         del self._pri2jobId2job
 
     def add(self, job):
-        assert self.notify.debugCall()
         pri = job.getPriority()
         jobId = job._getJobId()
         # store the job in the main table
@@ -50,10 +49,9 @@ class JobManager:
             self._highestPriority = pri
         elif pri > self._highestPriority:
             self._highestPriority = pri
-        self.notify.debug('added job %s' % job.getJobName())
+        self.notify.debug('added job: %s' % job.getJobName())
         
     def remove(self, job):
-        assert self.notify.debugCall()
         jobId = job._getJobId()
         # look up the job's priority
         pri = self._jobId2pri.pop(jobId)
@@ -74,7 +72,7 @@ class JobManager:
                 else:
                     taskMgr.remove(JobManager.TaskName)
                     self._highestPriority = 0
-        self.notify.debug('removed job %s' % job.getJobName())
+        self.notify.debug('removed job: %s' % job.getJobName())
 
     def finish(self, job):
         # run this job, right now, until it finishes
@@ -115,7 +113,7 @@ class JobManager:
 
     def _process(self, task=None):
         if len(self._pri2jobId2job):
-            assert self.notify.debugCall()
+            #assert self.notify.debugCall()
             # figure out how long we can run
             endT = globalClock.getRealTime() + (self._timeslice * .9)
             while True:
@@ -145,7 +143,7 @@ class JobManager:
                         break
                 else:
                     # we've run out of time
-                    assert self.notify.debug('out of time: %s, %s' % (endT, globalClock.getRealTime()))
+                    #assert self.notify.debug('timeslice end: %s, %s' % (endT, globalClock.getRealTime()))
                     job.suspend()
                     break
                 
