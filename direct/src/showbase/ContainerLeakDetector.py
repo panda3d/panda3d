@@ -1,16 +1,29 @@
+from pandac.PandaModules import PStatCollector
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
 from direct.showbase.PythonUtil import itype, serialNum, safeRepr
 from direct.showbase.Job import Job
-import types, weakref, gc, random, __builtin__
+import types, weakref, random, __builtin__
 
 def _createContainerLeak():
     def leakContainer(task):
-        if not hasattr(simbase, 'leakContainer'):
-            simbase.leakContainer = []
-        simbase.leakContainer.append(1)
+        base = getBase()
+        if not hasattr(base, 'leakContainer'):
+            base.leakContainer = {}
+        # use tuples as keys since they can't be weakref'd, and use an instance
+        # since it can't be repr/eval'd
+        # that will force the leak detector to hold a normal 'non-weak' reference
+        class LeakKey:
+            pass
+        base.leakContainer[(LeakKey(),)] = {}
+        # test the non-weakref object reference handling
+        if random.random() < .01:
+            key = random.choice(base.leakContainer.keys())
+            ContainerLeakDetector.notify.debug(
+                'removing reference to leakContainer key %s so it will be garbage-collected' % key)
+            del base.leakContainer[key]
         return task.cont
-    taskMgr.add(leakContainer, 'leakContainer-%s' % serialNum())
+    task = taskMgr.add(leakContainer, 'leakContainer-%s' % serialNum())
 
 class CheckContainers(Job):
     """
@@ -41,13 +54,14 @@ class CheckContainers(Job):
                 container = self._leakDetector.getContainerById(id)
             except Exception, e:
                 # this container no longer exists
-                self.notify.debug('container %s no longer exists; caught exception in getContainerById (%s)' % (
+                self.notify.debug(
+                    '%s no longer exists; caught exception in getContainerById (%s)' % (
                     self._leakDetector.getContainerNameById(id), e))
                 self._leakDetector.removeContainerById(id)
                 continue
             if container is None:
                 # this container no longer exists
-                self.notify.debug('container %s no longer exists; getContainerById returned None' %
+                self.notify.debug('%s no longer exists; getContainerById returned None' %
                                   self._leakDetector.getContainerNameById(id))
                 self._leakDetector.removeContainerById(id)
                 continue
@@ -55,8 +69,9 @@ class CheckContainers(Job):
                 cLen = len(container)
             except Exception, e:
                 # this container no longer exists
-                self.notify.debug('%s is no longer a container, it is now %s (%s)' %
-                                  (self._leakDetector.getContainerNameById(id), safeRepr(container), e))
+                self.notify.debug(
+                    '%s is no longer a container, it is now %s (%s)' %
+                    (self._leakDetector.getContainerNameById(id), safeRepr(container), e))
                 self._leakDetector.removeContainerById(id)
                 continue
             self._leakDetector._index2containerId2len[self._index][id] = cLen
@@ -72,7 +87,12 @@ class CheckContainers(Job):
                             minutes = (self._leakDetector._index2delay[self._index] -
                                        self._leakDetector._index2delay[self._index-1]) / 60.
                             name = self._leakDetector.getContainerNameById(id)
-                            self.notify.warning('container %s grew > 200%% in %s minutes' % (name, minutes))
+                            if idx2id2len[self._index-1][id] != 0:
+                                percent = int(100. * (float(diff) / idx2id2len[self._index-1][id]))
+                                self.notify.warning(
+                                    '%s grew %s%% in %s minutes (currently %s items)' % (
+                                    name, percent, minutes, idx2id2len[self._index][id]))
+                                yield None
                     if (self._index > 3 and
                         id in idx2id2len[self._index-2] and
                         id in idx2id2len[self._index-3]):
@@ -81,32 +101,36 @@ class CheckContainers(Job):
                         if self._index <= 5:
                             if diff > 0 and diff2 > 0 and diff3 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                msg = ('%s consistently increased in length over the last 3 periods (currently %s items)' %
+                                msg = ('%s consistently increased in length over the last '
+                                       '3 periods (currently %s items)' %
                                        (name, idx2id2len[self._index][id]))
                                 self.notify.warning(msg)
+                                yield None
                         elif (id in idx2id2len[self._index-4] and
                               id in idx2id2len[self._index-5]):
-                            # if size has consistently increased over the last 5 checks, send out a warning
+                            # if size has consistently increased over the last 5 checks,
+                            # send out a warning
                             diff4 = idx2id2len[self._index-3][id] - idx2id2len[self._index-4][id]
                             diff5 = idx2id2len[self._index-4][id] - idx2id2len[self._index-5][id]
                             if diff > 0 and diff2 > 0 and diff3 > 0 and diff4 > 0 and diff5 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                msg = ('%s consistently increased in length over the last 5 periods (currently %s items), notifying system' %
+                                msg = ('%s consistently increased in length over the last '
+                                       '5 periods (currently %s items)' %
                                        (name, idx2id2len[self._index][id]))
-                                self.notify.warning(msg)
+                                self.notify.warning('%s, sending notification' % msg)
+                                yield None
                                 messenger.send(self._leakDetector.getLeakEvent(), [msg])
         yield Job.Done
 
 class PruneContainerRefs(Job):
     """
-    Job to destroy any container refs that have Indirections that are holding references
-    to objects that should be garbage-collected
+    Job to destroy any container refs that are no longer valid.
+    Checks validity by asking for each container
     """
     def __init__(self, name, leakDetector):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
         self.notify = self._leakDetector.notify
-        self._index = index
         ContainerLeakDetector.addPrivateId(self.__dict__)
 
     def destroy(self):
@@ -114,23 +138,29 @@ class PruneContainerRefs(Job):
         Job.destroy(self)
 
     def getPriority(self):
-        return Job.Priorities.Normal
+        return Job.Priorities.Normal-1
     
     def run(self):
         ids = self._leakDetector._id2ref.keys()
         for id in ids:
             yield None
-            ref = self._leakDetector._id2ref[id]
-            ref.destroyIfGarbageDictKey()
+            try:
+                container = self._leakDetector.getContainerById(id)
+            except:
+                # reference is invalid, remove it
+                self._leakDetector.removeContainerById(id)
         yield Job.Done
 
 class NoDictKey:
     pass
 
 class Indirection:
-    # represents the indirection that brings you from a container to an element of the container
-    # stored as a string to be used as part of an eval
-    # each dictionary dereference is individually eval'd since the dict key might have been garbage-collected
+    """
+    Represents the indirection that brings you from a container to an element of the container.
+    Stored as a string to be used as part of an eval, or as a key to be looked up in a dict.
+    Each dictionary dereference is individually eval'd since the dict key might have been
+    garbage-collected
+    """
 
     def __init__(self, evalStr=None, dictKey=NoDictKey):
         # if this is a dictionary lookup, pass dictKey instead of evalStr
@@ -161,11 +191,13 @@ class Indirection:
                     self.dictKey = weakref.ref(dictKey)
                     self._isWeakRef = True
                 except TypeError, e:
+                    ContainerLeakDetector.notify.debug('could not weakref dict key %s' % dictKey)
                     self.dictKey = dictKey
                     self._isWeakRef = False
 
     def destroy(self):
-        del self.dictKey
+        # re-entrant
+        self.dictKey = NoDictKey
 
     def acquire(self):
         self._refCount += 1
@@ -177,13 +209,6 @@ class Indirection:
     def isDictKey(self):
         # is this an indirection through a dictionary?
         return self.dictKey is not NoDictKey
-    def isGarbageDictKey(self):
-        # are we holding a non-weak reference to an object that should be
-        # garbage-collected?
-        if self.isDictKey() and not self._isWeakRef:
-            referrers = gc.get_referrers(self.dictKey)
-            print referrers
-            import pdb;pdb.set_trace()
 
     def _getNonWeakDictKey(self):
         if not self._isWeakRef:
@@ -216,8 +241,6 @@ class Indirection:
             return self.evalStr
 
         # we're stored as a dict key
-        # this might not eval, but that's OK, we're not using this string to find
-        # the object, we dereference the parent dict
         keyRepr = safeRepr(self._getNonWeakDictKey())
         # if the previous indirection was an instance dict, change our syntax from ['key'] to .key
         if prevIndirection is not None and prevIndirection.evalStr is not None:
@@ -231,7 +254,7 @@ class Indirection:
 class ContainerRef:
     """
     stores a reference to a container in a way that does not prevent garbage
-    collection of the container
+    collection of the container if possible
     stored as a series of 'indirections' (obj.foo -> '.foo', dict[key] -> '[key]', etc.)
     """
     class FailedEval(Exception):
@@ -246,17 +269,10 @@ class ContainerRef:
         self.addIndirection(indirection)
 
     def destroy(self):
+        # re-entrant
         for indirection in self._indirections:
             indirection.release()
-        del self._indirections
-
-    def destroyIfGarbageDictKey(self):
-        # if any of our indirections are holding onto objects that
-        # should be garbage-collected, destroy
-        for indirection in self._indirections:
-            if indirection.isGarbageDictKey():
-                self.destroy()
-                return
+        self._indirections = []
 
     def addIndirection(self, indirection):
         indirection.acquire()
@@ -283,6 +299,7 @@ class ContainerRef:
         evalStr = ''
         curObj = None
         for indirection in self._indirections:
+            yield None
             if not indirection.isDictKey():
                 # build up a string to be eval'd
                 evalStr += indirection.getString()
@@ -294,7 +311,7 @@ class ContainerRef:
                 curObj = indirection.dereferenceDictKey(curObj)
                 evalStr = ''
 
-        return self._evalWithObj(evalStr, curObj)
+        yield self._evalWithObj(evalStr, curObj)
         
     def __repr__(self):
         str = ''
@@ -319,7 +336,8 @@ class ContainerLeakDetector(Job):
     """
     Low-priority Python object-graph walker that looks for leaking containers.
     To reduce memory usage, this does a random walk of the Python objects to
-    discover containers rather than keep a set of all visited objects.
+    discover containers rather than keep a set of all visited objects; it may
+    visit the same object many times but eventually it will discover every object.
     Checks container sizes at ever-increasing intervals.
     """
     notify = directNotify.newCategory("ContainerLeakDetector")
@@ -371,6 +389,7 @@ class ContainerLeakDetector(Job):
             ]))
 
     def destroy(self):
+        self.ignoreAll()
         if self._checkContainersJob is not None:
             jobMgr.remove(self._checkContainersJob)
             self._checkContainersJob = None
@@ -401,17 +420,19 @@ class ContainerLeakDetector(Job):
         return self._id2ref.keys()
 
     def getContainerById(self, id):
-        return self._id2ref[id].getContainer()
+        for result in self._id2ref[id].getContainer():
+            pass
+        return result
     def getContainerNameById(self, id):
         return repr(self._id2ref[id])
     def removeContainerById(self, id):
+        self._id2ref[id].destroy()
         del self._id2ref[id]
 
     def run(self):
         taskMgr.doMethodLater(self._nextCheckDelay, self._checkForLeaks,
                               self._getCheckTaskName())
-        taskMgr.doMethodLater(self._pruneTaskPeriod, self._pruneContainerRefs,
-                              self._getPruneTaskName())
+        self._scheduleNextPruning()
 
         while True:
             # yield up here instead of at the end, since we skip back to the
@@ -422,19 +443,16 @@ class ContainerLeakDetector(Job):
             if self._curObjRef is None:
                 self._curObjRef = self._baseObjRef
             try:
-                curObj = self._curObjRef.getContainer()
+                for result in self._curObjRef.getContainer():
+                    yield None
+                curObj = result
             except:
                 self.notify.debug('lost current container: %s' % self._curObjRef)
-                while len(self._id2ref):
-                    _id = random.choice(self._id2ref.keys())
-                    curObj = self.getContainerById(_id)
-                    if curObj is not None:
-                        break
-                    # container is no longer valid
-                    del self._id2ref[_id]
-                self._curObjRef = self._id2ref[_id]
+                # that container is gone, try again
+                self._curObjRef = None
+                continue
             #print '%s: %s, %s' % (id(curObj), type(curObj), self._id2ref[id(curObj)])
-            #self.notify.debug('--> %s' % self._curObjRef)
+            self.notify.debug('--> %s' % self._curObjRef)
 
             # keep a copy of this obj's eval str, it might not be in _id2ref
             curObjRef = self._curObjRef
@@ -443,34 +461,48 @@ class ContainerLeakDetector(Job):
 
             if type(curObj) in (types.ModuleType, types.InstanceType):
                 child = curObj.__dict__
-                if not self._isDeadEnd(child):
-                    self._curObjRef = ContainerRef(Indirection(evalStr='.__dict__'), curObjRef)
-                    if self._isContainer(child):
-                        self._nameContainer(child, self._curObjRef)
+                isContainer = self._isContainer(child)
+                notDeadEnd = not self._isDeadEnd(child)
+                if isContainer or notDeadEnd:
+                    objRef = ContainerRef(Indirection(evalStr='.__dict__'), curObjRef)
+                    yield None
+                    if isContainer:
+                        self._nameContainer(child, objRef)
+                    if notDeadEnd:
+                        self._curObjRef = objRef
                 continue
 
             if type(curObj) is types.DictType:
                 key = None
                 attr = None
                 keys = curObj.keys()
-                # we will continue traversing the object graph via the last container
-                # in the list; shuffle the list to randomize the traversal
-                random.shuffle(keys)
+                # we will continue traversing the object graph via one key of the dict,
+                # choose it at random without taking a big chunk of CPU time
+                numKeysLeft = len(keys)
+                nextObjRef = None
                 for key in keys:
+                    yield None
                     try:
                         attr = curObj[key]
                     except KeyError, e:
                         self.notify.warning('could not index into %s with key %s' % (curObjRef, key))
                         continue
-                    if not self._isDeadEnd(attr, key):
+                    isContainer = self._isContainer(attr)
+                    notDeadEnd = False
+                    if nextObjRef is None:
+                        notDeadEnd = not self._isDeadEnd(attr, key)
+                    if isContainer or notDeadEnd:
                         if curObj is __builtin__.__dict__:
-                            indirection=Indirection(evalStr=key)
-                            self._curObjRef = ContainerRef(indirection)
+                            objRef = ContainerRef(Indirection(evalStr=key))
                         else:
-                            indirection=Indirection(dictKey=key)
-                            self._curObjRef = ContainerRef(indirection, curObjRef)
-                        if self._isContainer(attr):
-                            self._nameContainer(attr, self._curObjRef)
+                            objRef = ContainerRef(Indirection(dictKey=key), curObjRef)
+                        yield None
+                        if isContainer:
+                            self._nameContainer(attr, objRef)
+                        if notDeadEnd and nextObjRef is None:
+                            if random.randrange(numKeysLeft) == 0:
+                                nextObjRef = objRef
+                        numKeysLeft -= 1
                 del key
                 del attr
                 continue
@@ -485,6 +517,7 @@ class ContainerLeakDetector(Job):
                         index = 0
                         attrs = []
                         while 1:
+                            yield None
                             try:
                                 attr = itr.next()
                             except:
@@ -492,14 +525,25 @@ class ContainerLeakDetector(Job):
                                 attr = None
                                 break
                             attrs.append(attr)
-                        # we will continue traversing the object graph via the last container
-                        # in the list; shuffle the list to randomize the traversal
-                        random.shuffle(attrs)
+                        # we will continue traversing the object graph via one attr,
+                        # choose it at random without taking a big chunk of CPU time
+                        numAttrsLeft = len(attrs)
+                        nextObjRef = None
                         for attr in attrs:
-                            if not self._isDeadEnd(attr):
-                                self._curObjRef = ContainerRef(Indirection(evalStr='[%s]' % index), curObjRef)
-                                if self._isContainer(attr):
-                                    self._nameContainer(attr, self._curObjRef)
+                            yield None
+                            isContainer = self._isContainer(attr)
+                            notDeadEnd = False
+                            if nextObjRef is None:
+                                notDeadEnd = not self._isDeadEnd(attr)
+                            if isContainer or notDeadEnd:
+                                objRef = ContainerRef(Indirection(evalStr='[%s]' % index), curObjRef)
+                                yield None
+                                if isContainer:
+                                    self._nameContainer(attr, objRef)
+                                if notDeadEnd and nextObjRef is None:
+                                    if random.randrange(numAttrsLeft) == 0:
+                                        nextObjRef = objRef
+                            numAttrsLeft -= 1
                             index += 1
                         del attr
                     except StopIteration, e:
@@ -514,15 +558,26 @@ class ContainerLeakDetector(Job):
             else:
                 childName = None
                 child = None
-                # we will continue traversing the object graph via the last container
-                # in the list; shuffle the list to randomize the traversal
-                random.shuffle(childNames)
+                # we will continue traversing the object graph via one child,
+                # choose it at random without taking a big chunk of CPU time
+                numChildrenLeft = len(childNames)
+                nextObjRef = None
                 for childName in childNames:
+                    yield None
                     child = getattr(curObj, childName)
-                    if not self._isDeadEnd(child, childName):
-                        self._curObjRef = ContainerRef(Indirection(evalStr='.%s' % childName), curObjRef)
-                        if self._isContainer(child):
-                            self._nameContainer(child, self._curObjRef)
+                    isContainer = self._isContainer(child)
+                    notDeadEnd = False
+                    if nextObjRef is None:
+                        notDeadEnd = not self._isDeadEnd(child, childName)
+                    if isContainer or notDeadEnd:
+                        objRef = ContainerRef(Indirection(evalStr='.%s' % childName), curObjRef)
+                        yield None
+                        if isContainer:
+                            self._nameContainer(child, objRef)
+                        if notDeadEnd and nextObjRef is None:
+                            if random.randrange(numChildrenLeft) == 0:
+                                nextObjRef = objRef
+                    numChildrenLeft -= 1
                 del childName
                 del child
                 continue
@@ -535,9 +590,8 @@ class ContainerLeakDetector(Job):
                          types.FloatType, types.IntType, types.LongType,
                          types.NoneType, types.NotImplementedType,
                          types.TypeType, types.CodeType, types.FunctionType,
-                         types.StringType, types.UnicodeType):
-            return True
-        if id(obj) in self._id2ref:
+                         types.StringType, types.UnicodeType,
+                         types.TupleType):
             return True
         # if it's an internal object, ignore it
         if id(obj) in ContainerLeakDetector.PrivateIds:
@@ -553,7 +607,6 @@ class ContainerLeakDetector(Job):
             if className == 'method-wrapper':
                 return True
         return False
-            
 
     def _isContainer(self, obj):
         try:
@@ -572,21 +625,32 @@ class ContainerLeakDetector(Job):
         # if this container is new, or the objRef repr is shorter than what we already have,
         # put it in the table
         if contId not in self._id2ref or len(repr(objRef)) < len(repr(self._id2ref[contId])):
+            if contId in self._id2ref:
+                self.removeContainerById(contId)
             self._id2ref[contId] = objRef
+
+    def _scheduleNextLeakCheck(self):
+        taskMgr.doMethodLater(self._nextCheckDelay, self._checkForLeaks,
+                              self._getCheckTaskName())
+        self._nextCheckDelay *= 2
 
     def _checkForLeaks(self, task=None):
         self._index2delay[len(self._index2containerId2len)] = self._nextCheckDelay
         self._checkContainersJob = CheckContainers(
             '%s-checkForLeaks' % self.getJobName(), self, len(self._index2containerId2len))
+        self.acceptOnce(self._checkContainersJob.getFinishedEvent(),
+                        self._scheduleNextLeakCheck)
         jobMgr.add(self._checkContainersJob)
-        
-        self._nextCheckDelay *= 2
-        taskMgr.doMethodLater(self._nextCheckDelay, self._checkForLeaks,
-                              self._getCheckTaskName())
         return task.done
 
-    def _pruneContainerRefs(self, task=None):
+    def _scheduleNextPruning(self):
         taskMgr.doMethodLater(self._pruneTaskPeriod, self._pruneContainerRefs,
                               self._getPruneTaskName())
-        return task.done
 
+    def _pruneContainerRefs(self, task=None):
+        self._pruneContainersJob = PruneContainerRefs(
+            '%s-pruneContainerRefs' % self.getJobName(), self)
+        self.acceptOnce(self._pruneContainersJob.getFinishedEvent(),
+                        self._scheduleNextPruning)
+        jobMgr.add(self._pruneContainersJob)
+        return task.done
