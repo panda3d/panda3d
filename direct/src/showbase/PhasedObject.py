@@ -98,7 +98,6 @@ class PhasedObject:
         Will force the unloading, in correct order, of all currently
         loaded phases.
         """
-        print 'PO - cleanup'
         if self.phase >= 0:
             self.setPhase(-1)
 
@@ -115,7 +114,7 @@ class PhasedObject:
                 lambda: self.__phaseNotFound('unload',aPhase))()
 
     def __phaseNotFound(self, mode, aPhase):
-        assert self.notify.warning('skipping phase %s%s\n' % (mode,aPhase))
+        assert self.notify.debug('%s%s() not found!\n' % (mode,aPhase))
         
 if __debug__:
     class AnfaPhasedObject(PhasedObject):

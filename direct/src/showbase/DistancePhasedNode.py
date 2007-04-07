@@ -3,7 +3,7 @@ from direct.directnotify import DirectNotifyGlobal
 from pandac.PandaModules import *
 from PhasedObject import PhasedObject
 
-class DistancePhasedNode(NodePath, DirectObject, PhasedObject):
+class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     """
     This class defines a PhasedObject,NodePath object that will handle the phasing
     of an object in the scene graph according to its distance from some 
@@ -110,9 +110,9 @@ class DistancePhasedNode(NodePath, DirectObject, PhasedObject):
             cName = 'Phase%s-%d' % (name, self.__id)
             cSphereNode = CollisionNode(cName)
             cSphereNode.setIntoCollideMask(self.phaseCollideMask)
+            cSphereNode.setFromCollideMask(BitMask32.allOff())
             cSphereNode.addSolid(cSphere)
             cSphereNodePath = self.attachNewNode(cSphereNode)
-            cSphereNodePath.show()
             cSphereNodePath.stash()
             self._colSpheres.append(cSphereNodePath)
 
@@ -169,16 +169,17 @@ class DistancePhasedNode(NodePath, DirectObject, PhasedObject):
                 self.ignore(self.__getExitEvent(phaseName))
         
     def __handleEnterEvent(self, phaseName, cEntry):
-        print cEntry
         self.setPhase(phaseName)
 
     def __handleExitEvent(self, phaseName, cEntry):
-        print cEntry
         phase = self.getAliasPhase(phaseName) - 1
         self.setPhase(phase)
 
     def __oneTimeCollide(self):
-        base.cTrav.traverse(self)
+        # we use render here since if we only try to
+        # traverse ourself, we end up calling exit
+        # events for the rest of the eventHandlers. >:(
+        base.cTrav.traverse(render)
         base.eventMgr.doEvents()
         
 class BufferedDistancePhasedNode(DistancePhasedNode):
@@ -198,11 +199,12 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
     """
     notify = directNotify.newCategory("BufferedDistancePhasedObject")
 
-    def __init__(self, name, bufferParamMap = {}):
+    def __init__(self, name, bufferParamMap = {},
+                 enterPrefix = 'enter', exitPrefix = 'exit', phaseCollideMask = BitMask32.allOn()):
         sParams = dict(bufferParamMap)
         for key in sParams:
             sParams[key] = sParams[key][0]
-        DistancePhasedNode.__init__(self, name, sParams)
+        DistancePhasedNode.__init__(self, name, sParams, enterPrefix, exitPrefix, phaseCollideMask)
         self.bufferParamMap = bufferParamMap
         self.bufferParamList = sorted(bufferParamMap.items(),
                                       key = lambda x: x[1],
@@ -248,4 +250,3 @@ if __debug__ and 0:
     p.reparentTo(render)
     p._DistancePhasedNode__oneTimeCollide()
     base.eventMgr.doEvents()
-
