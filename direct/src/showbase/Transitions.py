@@ -80,6 +80,42 @@ class Transitions:
                 )
             self.fade.setBin('unsorted', 0)
 
+    
+    def getFadeInIval(self, t=0.5, finishIval=None):
+        """
+        Returns an interval without starting it.  This is particularly useful in
+        cutscenes, so when the cutsceneIval is escaped out of we can finish the fade immediately
+        """
+        transitionIval = Sequence(Func(self.noTransitions),
+                                  Func(self.loadFade),
+                                  Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
+                                  self.lerpFunc(self.fade, t,
+                                                self.alphaOff,
+                                                self.alphaOn),
+                                  Func(self.fade.detachNode),
+                                  name = self.fadeTaskName,
+                                  )
+        if finishIval:
+            transitionIval.append(finishIval)
+        return transitionIval
+
+    def getFadeOutIval(self, t=0.5, finishIval=None):
+        """
+        Create a sequence that lerps the color out, then
+        parents the fade to hidden
+        """
+        transitionIval = Sequence(Func(self.noTransitions),
+                                  Func(self.noFade),
+                                  Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
+                                  self.lerpFunc(self.fade, t,
+                                                self.alphaOn,
+                                                self.alphaOff),
+                                  name = self.fadeTaskName,
+                                  )
+        if finishIval:
+            transitionIval.append(finishIval)
+        return transitionIval
+    
     def fadeIn(self, t=0.5, finishIval=None):
         """
         Play a fade in transition over t seconds.
@@ -87,23 +123,15 @@ class Transitions:
         from black to transparent. When the color lerp is finished, it
         parents the fade polygon to hidden.
         """
-        self.noTransitions()
-        self.loadFade()
         if (t == 0):
             # Fade in immediately with no lerp
+            self.noTransitions()
+            self.loadFade()
             self.fade.detachNode()
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.fade.reparentTo(render2d, FADE_SORT_INDEX)
-            self.transitionIval = Sequence(self.lerpFunc(self.fade, t,
-                                                         self.alphaOff,
-                                                         self.alphaOn),
-                                 Func(self.fade.detachNode),
-                                 name = self.fadeTaskName,
-                                 )
-            if finishIval:
-                self.transitionIval.append(finishIval)
+            self.transitionIval = self.getFadeInIval(t, finishIval)
             self.transitionIval.start()
 
     def fadeOut(self, t=0.5, finishIval=None):
@@ -115,22 +143,16 @@ class Transitions:
         fadeIn or call noFade.
         lerp
         """
-        self.noTransitions()
-        self.loadFade()
-        self.fade.reparentTo(render2d, FADE_SORT_INDEX)
         if (t == 0):
             # Fade out immediately with no lerp
+            self.noTransitions()
+            self.loadFade()
+            self.fade.reparentTo(render2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.transitionIval = Sequence(self.lerpFunc(self.fade, t,
-                                                         self.alphaOn,
-                                                         self.alphaOff),
-                                 name = self.fadeTaskName,
-                                 )
-            if finishIval:
-                self.transitionIval.append(finishIval)
+            self.transitionIval = self.getFadeOutIval(t,finishIval)
             self.transitionIval.start()
 
     def fadeOutActive(self):
