@@ -1,4 +1,9 @@
-class Job:
+from direct.showbase.DirectObject import DirectObject
+
+if __debug__:
+    from pandac.PandaModules import PStatCollector
+
+class Job(DirectObject):
     # Base class for cpu-intensive or non-time-critical operations that
     # are run through the JobManager.
 
@@ -15,11 +20,16 @@ class Job:
         self._generator = None
         self._id = Job._SerialGen.next()
         self._printing = False
+        if __debug__:
+            self._pstats = PStatCollector("App:Show code:jobManager:%s" % self._name)
 
     def destroy(self):
         del self._name
         del self._generator
         del self._printing
+
+    def getFinishedEvent(self):
+        return 'job-finished-%s' % self._id
 
     def run(self):
         # this is a generator

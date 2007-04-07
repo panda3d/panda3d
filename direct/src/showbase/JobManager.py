@@ -83,6 +83,8 @@ class JobManager:
         # grab the job
         job = self._pri2jobId2job[pri][jobId]
         gen = job._getGenerator()
+        if __debug__:
+            job._pstats.start()
         job.resume()
         while True:
             try:
@@ -96,8 +98,11 @@ class JobManager:
                 job.suspend()
                 self.remove(job)
                 job.finished()
+                messenger.send(job.getFinishedEvent())
                 # job is done.
                 break
+        if __debug__:
+            job._pstats.stop()
 
     # how long should we run per frame?
     def getTimeslice(self):
@@ -125,6 +130,8 @@ class JobManager:
                 jobId = self._pri2jobIds[self._highestPriority][0]
                 job = jobId2job[jobId]
                 gen = job._getGenerator()
+                if __debug__:
+                    job._pstats.start()
                 job.resume()
                 while globalClock.getRealTime() < endT:
                     try:
@@ -138,6 +145,9 @@ class JobManager:
                         job.suspend()
                         self.remove(job)
                         job.finished()
+                        if __debug__:
+                            job._pstats.stop()
+                        messenger.send(job.getFinishedEvent())
                         # highest-priority job is done.
                         # grab the next one if there's time left
                         break
@@ -145,6 +155,8 @@ class JobManager:
                     # we've run out of time
                     #assert self.notify.debug('timeslice end: %s, %s' % (endT, globalClock.getRealTime()))
                     job.suspend()
+                    if __debug__:
+                        job._pstats.stop()
                     break
                 
                 if len(self._pri2jobId2job) == 0:
