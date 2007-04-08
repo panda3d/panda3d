@@ -105,7 +105,7 @@ class Transitions:
         parents the fade to hidden
         """
         transitionIval = Sequence(Func(self.noTransitions),
-                                  Func(self.noFade),
+                                  Func(self.loadFade),
                                   Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
