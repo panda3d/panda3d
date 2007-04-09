@@ -221,8 +221,9 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         # we use 'render'here since if we only try to
         # traverse ourself, we end up calling exit
         # events for the rest of the eventHandlers. >:(
-        base.cTrav.traverse(render)
-        base.eventMgr.doEvents()
+        if base.cTrav:
+            base.cTrav.traverse(render)
+            base.eventMgr.doEvents()
         
 class BufferedDistancePhasedNode(DistancePhasedNode):
     """
