@@ -12,8 +12,8 @@ class JobManager:
 
     # there's one task for the JobManager, all jobs run in this task
     TaskName = 'jobManager'
-    # run for one millisecond per frame by default
-    DefTimeslice = .001
+    # run for 1/2 millisecond per frame by default
+    DefTimeslice = (1./1000.) / 2.
 
     def __init__(self, timeslice=None):
         if timeslice is None:
@@ -169,14 +169,15 @@ class JobManager:
         s += '\nJobManager: active jobs in descending order of priority'
         s += '\n======================================================='
         pris = self._getSortedPriorities()
-        pris.reverse()
-        for pri in pris:
-            jobId2job = self._pri2jobId2job[pri]
-            # run through the jobs at this priority in the order that they will run
-            for jobId in self._pri2jobIds[pri]:
-                job = jobId2job[jobId]
-                s += '\n%4d: %s' % (jobId, job.getJobName())
-        else:
+        if len(pris) == 0:
             s += '\n    no jobs running'
+        else:
+            pris.reverse()
+            for pri in pris:
+                jobId2job = self._pri2jobId2job[pri]
+                # run through the jobs at this priority in the order that they will run
+                for jobId in self._pri2jobIds[pri]:
+                    job = jobId2job[jobId]
+                    s += '\n%4d: %s' % (jobId, job.getJobName())
         s += '\n'
         return s
