@@ -1,4 +1,4 @@
-from direct.directnotify import DirectNotifyGlobal
+from direct.directnotify.DirectNotifyGlobal import *
 
 class PhasedObject:
     """
@@ -35,9 +35,18 @@ class PhasedObject:
         self.phase = -1
         self.phaseAliasMap = {}
         self.aliasPhaseMap = {}
+        self.__phasing = False
 
         for alias,phase in aliasMap.items():
             self.setAlias(phase, alias)
+
+    def __repr__(self):
+        return 'PhasedObject(%s)' % str(self.aliasPhaseMap)
+
+    def __str__(self):
+        outStr = PhasedObject.__repr__(self)
+        outStr += ' in phase \'%s\'' % self.getPhase()
+        return outStr
         
     def setAlias(self, phase, alias):
         """
@@ -83,15 +92,21 @@ class PhasedObject:
         functions corresponding to the difference between the current
         phase and aPhase, starting at the current phase.
         """
+        assert not self.__phasing, 'Already phasing. Cannot setPhase() while phasing in progress.'
+        self.__phasing = True
+        
         phase = self.aliasPhaseMap.get(aPhase,aPhase)
         assert isinstance(phase,int), 'Phase alias \'%s\' not found' % aPhase
         assert phase >= -1, 'Invalid phase number \'%s\'' % phase
+        
         if phase > self.phase:
             for x in range(self.phase + 1, phase + 1):
                 self.__loadPhase(x)
         elif phase < self.phase:
             for x in range(self.phase, phase, -1):
                 self.__unloadPhase(x)
+
+        self.__phasing = False
 
     def cleanup(self):
         """
@@ -102,16 +117,16 @@ class PhasedObject:
             self.setPhase(-1)
 
     def __loadPhase(self, phase):
-        self.phase = phase
         aPhase = self.phaseAliasMap.get(phase,phase)
         getattr(self, 'loadPhase%s' % aPhase,
                 lambda: self.__phaseNotFound('load',aPhase))()
+        self.phase = phase
 
     def __unloadPhase(self, phase):
-        self.phase = (phase - 1)
         aPhase = self.phaseAliasMap.get(phase,phase)
         getattr(self, 'unloadPhase%s' % aPhase,
                 lambda: self.__phaseNotFound('unload',aPhase))()
+        self.phase = (phase - 1)
 
     def __phaseNotFound(self, mode, aPhase):
         assert self.notify.debug('%s%s() not found!\n' % (mode,aPhase))

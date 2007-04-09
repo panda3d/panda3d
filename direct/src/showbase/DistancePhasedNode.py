@@ -14,9 +14,11 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     What you will need to define to use this class:
      - The distances at which you want the phases to load/unload
+     - Whether you want the object to clean itself up or not when
+       exitting the largest distance sphere
      - What the load/unload functions are
-     - What sort of events to listen for to signal a collision
-     - (Optional) - a collision bitmask for the phase collision spheres.
+     - What sort of events to listen for when a collision occurs
+     - (Optional) - a collision bitmask for the phase collision spheres
 
     You specify the distances and function names by the phaseParamMap
     parameter to __init__().  For example:
@@ -28,7 +30,8 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
     def unloadPhaseAlias(self):
         pass
 
-    IMPORTANT!: If you unload the last phase, by either calling
+    IMPORTANT!: The following only applies when autoCleanup == True:
+                If you unload the last phase, by either calling
                 cleanup() or by exitting the last phase's distance,
                 you will need to explicitly call reset() to get the
                 distance phasing to work again. This was done so if
@@ -43,6 +46,12 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         
     @staticmethod
     def __allocateId():
+        """
+        Give each phase node a unique id in order to filter out
+        collision events from other phase nodes.  We do it in
+        this manner so the client doesn't need to worry about
+        giving each phase node a unique name.
+        """
         if DistancePhasedNode.__InstanceDeque:
             return DistancePhasedNode.__InstanceDeque.pop(0)
         else:
@@ -53,10 +62,15 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     @staticmethod
     def __deallocateId(id):
+        """
+        Reuse abandoned ids.
+        """
         DistancePhasedNode.__InstanceDeque.append(id)
 
     def __init__(self, name, phaseParamMap = {},
-                 enterPrefix = 'enter', exitPrefix = 'exit', phaseCollideMask = BitMask32.allOn()):
+                 autoCleanup = True,
+                 enterPrefix = 'enter', exitPrefix = 'exit',
+                 phaseCollideMask = BitMask32.allOn()):
         NodePath.__init__(self, name)
         self.phaseParamMap = phaseParamMap
         self.phaseParamList = sorted(phaseParamMap.items(),
@@ -66,7 +80,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
                               dict([(alias,phase) for (phase,alias) in enumerate([item[0] for item in self.phaseParamList])]))
         self.__id = self.__allocateId()
 
-        
+        self.autoCleanup = autoCleanup
         self.phaseCollideMask = phaseCollideMask
         self.enterPrefix = enterPrefix
         self.exitPrefix = exitPrefix
@@ -76,6 +90,19 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
 
     def __del__(self):
         self.__deallocateId(self.__id)
+
+    def __repr__(self):
+        outStr = 'DistancePhasedObject('
+        outStr += '%s' % `self.getName()`
+        for param, value in zip(('phaseParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask'),
+                                ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()')):
+            outStr += eval('(\', ' + param + ' = %s\' % `self.' + param + '`,\'\')[self.' + param + ' == ' + value + ']')
+        outStr += ')'
+        return outStr
+
+    def __str__(self):
+        return '%s in phase \'%s\'' % (NodePath.__str__(self), self.getPhase())
+        
 
     def cleanup(self):
         """
@@ -107,16 +134,17 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         for name, dist in self.phaseParamList:
             cSphere = CollisionSphere(0.0, 0.0, 0.0, dist)
             cSphere.setTangible(0)
-            cName = 'Phase%s-%d' % (name, self.__id)
+            cName = 'PhaseNode%s-%d' % (name, self.__id)
             cSphereNode = CollisionNode(cName)
             cSphereNode.setIntoCollideMask(self.phaseCollideMask)
             cSphereNode.setFromCollideMask(BitMask32.allOff())
             cSphereNode.addSolid(cSphere)
             cSphereNodePath = self.attachNewNode(cSphereNode)
             cSphereNodePath.stash()
+            cSphereNodePath.show()
             self._colSpheres.append(cSphereNodePath)
 
-        self.__enableCollisions(-1, startup = True)
+        self.__enableCollisions(-1)
         
     def setPhase(self, aPhase):
         """
@@ -124,47 +152,55 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         """
         phase = self.getAliasPhase(aPhase)
         PhasedObject.setPhase(self, aPhase)
-        self.__disableCollisions(cleanup = (phase == -1))
+        self.__disableCollisions()
         self.__enableCollisions(phase)
         
-        if phase == -1:
+        if phase == -1 and self.autoCleanup:
             self.cleanup()
         else:
             self.__oneTimeCollide()
         
     def __getEnterEvent(self, phaseName):
-        return '%sPhase%s-%d' % (self.enterPrefix, phaseName, self.__id)
+        return '%sPhaseNode%s-%d' % (self.enterPrefix, phaseName, self.__id)
 
     def __getExitEvent(self, phaseName):
-        return '%sPhase%s-%d' % (self.exitPrefix, phaseName, self.__id)
+        return '%sPhaseNode%s-%d' % (self.exitPrefix, phaseName, self.__id)
     
-    def __enableCollisions(self, phase, startup = False):
-        if startup:
-            phaseName = self.getPhaseAlias(0)
-            self.accept(self.__getExitEvent(phaseName),
-                        self.__handleExitEvent,
-                        extraArgs = [phaseName])
-            self._colSpheres[0].unstash()
-            
+    def __enableCollisions(self, phase):
+        """
+        Turns on collisions for the spheres bounding this
+        phase zone by unstashing their geometry.  Enables
+        the exit event for the larger and the enter event
+        for the smaller.  Handles the  extreme(end) phases
+        gracefully.
+        """
         if 0 <= phase:
             phaseName = self.getPhaseAlias(phase)
             self.accept(self.__getExitEvent(phaseName),
                         self.__handleExitEvent,
                         extraArgs = [phaseName])
             self._colSpheres[phase].unstash()
-            
-        if 0 <= phase < len(self._colSpheres)-1 or startup:
-            phaseName = self.getPhaseAlias(phase + 1)
+
+        if 0 <= phase+1 < len(self._colSpheres):
+            phaseName = self.getPhaseAlias(phase+1)
             self.accept(self.__getEnterEvent(phaseName),
                         self.__handleEnterEvent,
                         extraArgs = [phaseName])
             self._colSpheres[phase+1].unstash()
 
     def __disableCollisions(self, cleanup = False):
+        """
+        Disables all collision geometry by stashing
+        the geometry.  If autoCleanup == True and we're
+        not currently cleaning up, leave the exit event
+        and collision sphere active for the largest(thus lowest)
+        phase.  This is so that we can still cleanup if
+        the phase node exits the largest sphere.
+        """
         for x,sphere in enumerate(self._colSpheres):
             phaseName = self.getPhaseAlias(x)
             self.ignore(self.__getEnterEvent(phaseName))
-            if x > 0 or cleanup:
+            if x > 0 or not self.autoCleanup or cleanup:
                 sphere.stash()
                 self.ignore(self.__getExitEvent(phaseName))
         
@@ -176,7 +212,13 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         self.setPhase(phase)
 
     def __oneTimeCollide(self):
-        # we use render here since if we only try to
+        """
+        Fire off a one-time collision traversal of the
+        scene graph.  This allows us to process our entire
+        phasing process in one frame in the cases where
+        we cross more than one phase border.
+        """
+        # we use 'render'here since if we only try to
         # traverse ourself, we end up calling exit
         # events for the rest of the eventHandlers. >:(
         base.cTrav.traverse(render)
@@ -186,9 +228,9 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
     """
     This class is similar to DistancePhasedNode except you can also
     specify a buffer distance for each phase.  Upon entering that phase,
-    its distance will be increased by the buffer amount.  Likewise,
-    upon leaving the distance will be decremented by that amount, back
-    to it's original size.  In this manner, you can avoid the problem
+    its distance will be increased by the buffer amount.  Conversely,
+    the distance will be decremented by that amount, back to its
+    original size, upon leaving.  In this manner, you can avoid the problem
     of 'phase flicker' as someone repeatedly steps across a static phase
     border.
 
@@ -199,16 +241,33 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
     """
     notify = directNotify.newCategory("BufferedDistancePhasedObject")
 
-    def __init__(self, name, bufferParamMap = {},
+    def __init__(self, name, bufferParamMap = {}, autoCleanup = True,
                  enterPrefix = 'enter', exitPrefix = 'exit', phaseCollideMask = BitMask32.allOn()):
         sParams = dict(bufferParamMap)
         for key in sParams:
             sParams[key] = sParams[key][0]
-        DistancePhasedNode.__init__(self, name, sParams, enterPrefix, exitPrefix, phaseCollideMask)
+        DistancePhasedNode.__init__(self, name = name,
+                                    phaseParamMap = sParams,
+                                    autoCleanup = autoCleanup,
+                                    enterPrefix = enterPrefix,
+                                    exitPrefix = exitPrefix,
+                                    phaseCollideMask = phaseCollideMask)
         self.bufferParamMap = bufferParamMap
         self.bufferParamList = sorted(bufferParamMap.items(),
                                       key = lambda x: x[1],
                                       reverse = True)
+
+    def __repr__(self):
+        outStr = 'BufferedDistancePhasedNode('
+        outStr += '%s' % `self.getName()`
+        for param, value in zip(('bufferParamMap', 'autoCleanup', 'enterPrefix', 'exitPrefix', 'phaseCollideMask'),
+                                ('{}', 'True','\'enter\'','\'exit\'','BitMask32.allOn()')):
+            outStr += eval('(\', ' + param + ' = %s\' % `self.' + param + '`,\'\')[self.' + param + ' == ' + value + ']')
+        outStr += ')'
+        return outStr
+
+    def __str__(self):
+        return '%s in phase \'%s\'' % (NodePath.__str__(self), self.getPhase())
 
     def setPhase(self, aPhase):
         """
@@ -226,7 +285,8 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
         for x,sphere in enumerate(self._colSpheres[phase+1:]):
             sphere.node().getSolid(0).setRadius(self.bufferParamList[x+phase+1][1][0])
             sphere.node().markInternalBoundsStale()
-            
+
+    
 if __debug__ and 0:
     cSphere = CollisionSphere(0,0,0,0.1)
     cNode = CollisionNode('camCol')
@@ -245,7 +305,8 @@ if __debug__ and 0:
     # messenger.toggleVerbose()
     base.cTrav.addCollider(cNodePath,eventHandler)
 
-    p = BufferedDistancePhasedNode('p',{'At':(10,20),'Near':(100,200),'Far':(1000, 1020)})
+    p = BufferedDistancePhasedNode('p',{'At':(10,20),'Near':(100,200),'Far':(1000, 1020)},
+                                   autoCleanup = True)
 
     p.reparentTo(render)
     p._DistancePhasedNode__oneTimeCollide()
