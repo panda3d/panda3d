@@ -32,7 +32,7 @@ class Loader(DirectObject):
 
         def gotObject(self, index, object):
             self.objects[index] = object
-a            self.numRemaining -= 1
+            self.numRemaining -= 1
 
             if self.numRemaining == 0:
                 if self.gotList:
