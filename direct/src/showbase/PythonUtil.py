@@ -2819,3 +2819,5 @@ __builtin__.ClassTree = ClassTree
 __builtin__.invertDict = invertDict
 __builtin__.invertDictLossless = invertDictLossless
 __builtin__.getBase = getBase
+__builtin__.safeRepr = safeRepr
+__builtin__.fastRepr = fastRepr
