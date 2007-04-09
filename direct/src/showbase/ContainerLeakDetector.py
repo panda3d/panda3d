@@ -1,7 +1,7 @@
 from pandac.PandaModules import PStatCollector
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import Queue, invertDictLossless
-from direct.showbase.PythonUtil import itype, serialNum, safeRepr
+from direct.showbase.PythonUtil import itype, serialNum, safeRepr, fastRepr
 from direct.showbase.Job import Job
 import types, weakref, random, __builtin__
 
@@ -20,7 +20,7 @@ def _createContainerLeak():
         if random.random() < .01:
             key = random.choice(base.leakContainer.keys())
             ContainerLeakDetector.notify.debug(
-                'removing reference to leakContainer key %s so it will be garbage-collected' % key)
+                'removing reference to leakContainer key %s so it will be garbage-collected' % safeRepr(key))
             del base.leakContainer[key]
         return task.cont
     task = taskMgr.add(leakContainer, 'leakContainer-%s' % serialNum())
@@ -29,6 +29,8 @@ class CheckContainers(Job):
     """
     Job to check container sizes and find potential leaks; sub-job of ContainerLeakDetector
     """
+    ReprItems = 5
+    
     def __init__(self, name, leakDetector, index):
         Job.__init__(self, name)
         self._leakDetector = leakDetector
@@ -99,22 +101,28 @@ class CheckContainers(Job):
                                        self._leakDetector._index2delay[self._index-1]) / 60.
                             name = self._leakDetector.getContainerNameById(id)
                             if idx2id2len[self._index-1][id] != 0:
-                                percent = int(100. * (float(diff) / idx2id2len[self._index-1][id]))
+                                percent = 100. * (float(diff) / float(idx2id2len[self._index-1][id]))
+                                for container in self._leakDetector.getContainerByIdGen(id):
+                                    yield None
                                 self.notify.warning(
-                                    '%s grew %s%% in %.2f minutes (currently %s items)' % (
-                                    name, percent, minutes, idx2id2len[self._index][id]))
+                                    '%s (%s) grew %.2f%% in %.2f minutes (currently %s items): %s' % (
+                                    name, itype(container), percent, minutes, idx2id2len[self._index][id],
+                                    fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                 yield None
-                    if (self._index > 3 and
+                    if (self._index > 2 and
                         id in idx2id2len[self._index-2] and
                         id in idx2id2len[self._index-3]):
                         diff2 = idx2id2len[self._index-1][id] - idx2id2len[self._index-2][id]
                         diff3 = idx2id2len[self._index-2][id] - idx2id2len[self._index-3][id]
-                        if self._index <= 5:
+                        if self._index <= 4:
                             if diff > 0 and diff2 > 0 and diff3 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                msg = ('%s consistently increased in size over the last '
-                                       '3 periods (currently %s items)' %
-                                       (name, idx2id2len[self._index][id]))
+                                for container in self._leakDetector.getContainerByIdGen(id):
+                                    yield None
+                                msg = ('%s (%s) consistently increased in size over the last '
+                                       '3 periods (currently %s items): %s' %
+                                       (name, itype(container), idx2id2len[self._index][id],
+                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                 self.notify.warning(msg)
                                 yield None
                         elif (id in idx2id2len[self._index-4] and
@@ -125,10 +133,14 @@ class CheckContainers(Job):
                             diff5 = idx2id2len[self._index-4][id] - idx2id2len[self._index-5][id]
                             if diff > 0 and diff2 > 0 and diff3 > 0 and diff4 > 0 and diff5 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                msg = ('%s consistently increased in size over the last '
-                                       '5 periods (currently %s items)' %
-                                       (name, idx2id2len[self._index][id]))
-                                self.notify.warning('%s, sending notification' % msg)
+                                for container in self._leakDetector.getContainerByIdGen(id):
+                                    yield None
+                                msg = ('%s (%s) consistently increased in size over the last '
+                                       '5 periods (currently %s items): %s' %
+                                       (name, itype(container), idx2id2len[self._index][id],
+                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                self.notify.warning(msg)
+                                self.notify.warning('sending notification...')
                                 yield None
                                 for result in self._leakDetector.getContainerByIdGen(id):
                                     yield None
@@ -316,6 +328,9 @@ class ContainerRef:
         #import pdb;pdb.set_trace()
         evalStr = ''
         curObj = None
+        # make sure the indirections don't go away on us
+        for indirection in self._indirections:
+            indirection.acquire()
         for indirection in self._indirections:
             yield None
             if not indirection.isDictKey():
@@ -328,6 +343,9 @@ class ContainerRef:
                 # try to look up this key in the curObj dictionary
                 curObj = indirection.dereferenceDictKey(curObj)
                 evalStr = ''
+        for indirection in self._indirections:
+            yield None
+            indirection.release()
 
         yield self._evalWithObj(evalStr, curObj)
         
@@ -336,6 +354,9 @@ class ContainerRef:
         prevIndirection = None
         curIndirection = None
         nextIndirection = None
+        # make sure the indirections don't go away on us
+        for indirection in self._indirections:
+            indirection.acquire()
         for i in xrange(len(self._indirections)):
             yield None
             if i > 0:
@@ -349,6 +370,9 @@ class ContainerRef:
                 nextIndirection = None
             str += curIndirection.getString(prevIndirection=prevIndirection,
                                             nextIndirection=nextIndirection)
+        for indirection in self._indirections:
+            yield None
+            indirection.release()
         yield str
 
     def __repr__(self):
@@ -373,9 +397,8 @@ class ContainerLeakDetector(Job):
         self._serialNum = serialNum()
         self._priority = (Job.Priorities.Low + Job.Priorities.Normal) / 2
         self._checkContainersJob = None
-        # run first check after one hour
         if firstCheckDelay is None:
-            firstCheckDelay = 60. * 15.
+            firstCheckDelay = 60. * (15./2)
         self._nextCheckDelay = firstCheckDelay
         self._pruneTaskPeriod = config.GetFloat('leak-detector-prune-period', 60. * 30.)
         self._index2containerId2len = {}
