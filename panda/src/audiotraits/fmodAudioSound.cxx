@@ -116,6 +116,9 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     result = _manager->_system->createSound( blank_data, FMOD_SOFTWARE | flag | FMOD_OPENMEMORY | FMOD_OPENRAW, &exinfo, &_sound);
     fmod_audio_errcheck("createSound (blank)", result);
   }
+
+  result->setMode(FMOD_LOOP_OFF);  
+  result->setLoopCount(-1);
   
   //This is just to collect the defaults of the sound, so we don't
   //Have to query FMOD everytime for the info.
