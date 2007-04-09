@@ -329,9 +329,10 @@ class ContainerRef:
         evalStr = ''
         curObj = None
         # make sure the indirections don't go away on us
-        for indirection in self._indirections:
+        indirections = self._indirections
+        for indirection in indirections:
             indirection.acquire()
-        for indirection in self._indirections:
+        for indirection in indirections:
             yield None
             if not indirection.isDictKey():
                 # build up a string to be eval'd
@@ -343,7 +344,7 @@ class ContainerRef:
                 # try to look up this key in the curObj dictionary
                 curObj = indirection.dereferenceDictKey(curObj)
                 evalStr = ''
-        for indirection in self._indirections:
+        for indirection in indirections:
             yield None
             indirection.release()
 
@@ -355,22 +356,23 @@ class ContainerRef:
         curIndirection = None
         nextIndirection = None
         # make sure the indirections don't go away on us
-        for indirection in self._indirections:
+        indirections = self._indirections
+        for indirection in indirections:
             indirection.acquire()
-        for i in xrange(len(self._indirections)):
+        for i in xrange(len(indirections)):
             yield None
             if i > 0:
-                prevIndirection = self._indirections[i-1]
+                prevIndirection = indirections[i-1]
             else:
                 prevIndirection = None
-            curIndirection = self._indirections[i]
-            if i < len(self._indirections)-1:
-                nextIndirection = self._indirections[i+1]
+            curIndirection = indirections[i]
+            if i < len(indirections)-1:
+                nextIndirection = indirections[i+1]
             else:
                 nextIndirection = None
             str += curIndirection.getString(prevIndirection=prevIndirection,
                                             nextIndirection=nextIndirection)
-        for indirection in self._indirections:
+        for indirection in indirections:
             yield None
             indirection.release()
         yield str
