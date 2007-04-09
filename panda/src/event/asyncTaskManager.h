@@ -28,6 +28,7 @@
 #include "conditionVarFull.h"
 #include "pvector.h"
 #include "pdeque.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncTaskManager
@@ -100,6 +101,9 @@ protected:
   int _num_tasks;
   State _state;
   
+  static PStatCollector _task_pcollector;
+  static PStatCollector _wait_pcollector;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

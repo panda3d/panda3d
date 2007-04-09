@@ -23,8 +23,13 @@
 #include "eventParameter.h"
 #include "mutexHolder.h"
 #include "indent.h"
+#include "pStatClient.h"
+#include "pStatTimer.h"
 
 TypeHandle AsyncTaskManager::_type_handle;
+
+PStatCollector AsyncTaskManager::_task_pcollector("Task");
+PStatCollector AsyncTaskManager::_wait_pcollector("Wait");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskManager::Constructor
@@ -406,9 +411,17 @@ void AsyncTaskManager::AsyncTaskManagerThread::
 thread_main() {
   MutexHolder holder(_manager->_lock);
   while (_manager->_state != AsyncTaskManager::S_shutdown) {
-    _manager->service_one_task(this);
+    PStatClient::thread_tick(_manager->get_name());
+
+    {
+      PStatTimer timer(_task_pcollector);
+      _manager->service_one_task(this);
+    }
+
     if (_manager->_active.empty() &&
         _manager->_state != AsyncTaskManager::S_shutdown) {
+      PStatClient::thread_tick(_manager->get_name());
+      PStatTimer timer(_wait_pcollector);
       _manager->_cvar.wait();
     }
   }
