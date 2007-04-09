@@ -141,7 +141,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
             cSphereNode.addSolid(cSphere)
             cSphereNodePath = self.attachNewNode(cSphereNode)
             cSphereNodePath.stash()
-            cSphereNodePath.show()
+            # cSphereNodePath.show() # For debugging
             self._colSpheres.append(cSphereNodePath)
 
         self.__enableCollisions(-1)
