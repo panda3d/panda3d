@@ -86,9 +86,9 @@ class Transitions:
         Returns an interval without starting it.  This is particularly useful in
         cutscenes, so when the cutsceneIval is escaped out of we can finish the fade immediately
         """
-        transitionIval = Sequence(Func(self.noTransitions),
-                                  Func(self.loadFade),
-                                  Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
+        self.noTransitions()        
+        self.loadFade()
+        transitionIval = Sequence(Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
                                                 self.alphaOn),
@@ -104,9 +104,12 @@ class Transitions:
         Create a sequence that lerps the color out, then
         parents the fade to hidden
         """
-        transitionIval = Sequence(Func(self.noTransitions),
-                                  Func(self.loadFade),
-                                  Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
+        self.noTransitions()
+        self.loadFade()
+
+        print "t = %s" % t
+        
+        transitionIval = Sequence(Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
                                                 self.alphaOff),
