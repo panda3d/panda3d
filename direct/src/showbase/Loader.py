@@ -27,10 +27,12 @@ class Loader(DirectObject):
             self.callback = callback
             self.extraArgs = extraArgs
             self.numRemaining = numObjects
+            self.cancelled = False
+            self.requests = {}
 
         def gotObject(self, index, object):
             self.objects[index] = object
-            self.numRemaining -= 1
+a            self.numRemaining -= 1
 
             if self.numRemaining == 0:
                 if self.gotList:
@@ -82,7 +84,9 @@ class Loader(DirectObject):
         loading, the callback function will be invoked with the n
         loaded models passed as its parameter list.  It is possible
         that the callback will be invoked immediately, even before
-        loadModel() returns.
+        loadModel() returns.  In this case, the return value will be
+        an object that may later be passed to loader.cancelRequest()
+        to cancel the asynchronous request.
 
         True asynchronous model loading requires Panda to have been
         compiled with threading support enabled (you can test
@@ -151,6 +155,26 @@ class Loader(DirectObject):
                 request.setPythonObject((cb, i))
                 i+=1
                 self.loader.loadAsync(request)
+                cb.requests[request] = True
+            return cb
+
+    def cancelRequest(self, cb):
+        """Cancels an aysynchronous loading or flatten request issued
+        earlier.  The callback associated with the request will not be
+        called after cancelRequest() has been performed. """
+        
+        if not cb.cancelled:
+            cb.cancelled = True
+            for request in cb.requests:
+                self.loader.remove(request)
+            cb.requests = None
+
+    def isRequestPending(self, cb):
+        """ Returns true if an asynchronous loading or flatten request
+        issued earlier is still pending, or false if it has completed or
+        been cancelled. """
+        
+        return bool(cb.requests)
 
     def loadModelOnce(self, modelPath):
         """
@@ -428,6 +452,8 @@ class Loader(DirectObject):
                 request.setDoneEvent(self.hook)
                 request.setPythonObject((cb, i))
                 self.loader.loadAsync(request)
+                cb.requests[request] = True
+            return cb
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
 ##         if nodeCount == 0:
@@ -486,12 +512,14 @@ class Loader(DirectObject):
             request.setPythonObject((cb, i))
             i+=1
             self.loader.loadAsync(request)
+            cb.requests[request] = True
+        return cb
 
     def __asyncFlattenDone(self, models, 
                            gotList, callback, origModelList, extraArgs):
         """ The asynchronous flatten operation has completed; quietly
         drop in the new models. """
-        print "asyncFlattenDone: %s" % (models,)
+        self.notify.debug("asyncFlattenDone: %s" % (models,))
         assert(len(models) == len(origModelList))
         for i in range(len(models)):
             origModelList[i].getChildren().detach()
@@ -513,6 +541,10 @@ class Loader(DirectObject):
         time."""
 
         cb, i = request.getPythonObject()
+        if cb.cancelled:
+            return
+
+        del cb.requests[request]
 
         object = None
         if hasattr(request, "getModel"):
