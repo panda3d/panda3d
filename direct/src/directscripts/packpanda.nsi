@@ -87,7 +87,8 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR
         File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
-        File /r /x CVS /x *.pyc /x *.map /x *.pdb /x *.exe /x *.manifest "${PANDA}\bin\*"
+        File /r "${PANDA}\bin\*.dll"
+        File /r "${PANDA}\bin\Microsoft.VC80.CRT.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDA}\etc\*"
         SetOutPath $INSTDIR\direct\src\directscripts
@@ -109,7 +110,6 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS "${PANDA}\models\audio\*"
             SetOutPath $INSTDIR\bin
             File /r "${PANDA}\bin\pzip.exe"
-            File /r "${PANDA}\bin\vcredist_x86.exe"
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
@@ -201,7 +201,7 @@ Section -post
         !ifndef PPGAME
 
         # Install the visual studio runtime system.
-        ExecWait '"$INSTDIR\bin\vcredist_x86.exe" /Q:a /C:"msiexec.exe /qn /i vcredist.msi"'
+        # ExecWait '"$INSTDIR\bin\vcredist_x86.exe" /Q:a /C:"msiexec.exe /qn /i vcredist.msi"'
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\python"
         Call RemoveFromPath

@@ -28,6 +28,7 @@ from glob import glob
 
 COMPILER=0
 THIRDPARTYLIBS=0
+VC80CRTVERSION=""
 OPTIMIZE="3"
 INSTALLER=0
 GENMAN=0
@@ -312,6 +313,28 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 
 ########################################################################
 ##
+## Visual Studio Manifest Manipulation.
+##
+########################################################################
+
+VC80CRTVERSIONRE=re.compile(" name=['\"]Microsoft.VC80.CRT['\"] version=['\"]([0-9.]+)['\"] ")
+
+def getVC80CRTVersion(fn):
+    manifest = ReadFile(fn)
+    version = VC80CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot locate version number in "+manifn)
+    return version.group(1)
+
+def setVC80CRTVersion(fn, ver):
+    manifest = ReadFile(fn)
+    version = VC80CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot find version number in "+wdll+".manifest")
+    WriteFile(fn, manifest[:version.start(1)]+VC80CRTVERSION+manifest[version.end(1):])
+
+########################################################################
+##
 ## Command-line parser.
 ##
 ## You can type "makepanda --help" to see all the options.
@@ -570,7 +593,7 @@ def AddToPathEnv(path,add):
         os.environ[path] = add
 
 def ChooseCompiler():
-    global COMPILER, THIRDPARTYLIBS
+    global COMPILER, THIRDPARTYLIBS, VC80CRTVERSION
 
     # Try to use Linux GCC
 
@@ -579,7 +602,7 @@ def ChooseCompiler():
 	THIRDPARTYLIBS="thirdparty/linux-libs-a/"
 	return
 
-    # Try to use Visual Studio 8
+    # Panda now depends on visual studio 2005 or visual studio express 2005.
 
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "8.0")
     print "VCDIR=",vcdir
@@ -597,56 +620,11 @@ def ChooseCompiler():
         AddToPathEnv("LIB",     platsdk + "lib")
 	COMPILER="MSVC"
 	THIRDPARTYLIBS="thirdparty/win-libs-vc8/"
+        VC80CRTVERSION = getVC80CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC80.CRT.manifest")
 	return
 
-    # Try to use Visual Studio 7
-
-    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.1", "InstallDir")
-    if (vcdir == 0):
-        vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\7.0", "InstallDir")
-    if (vcdir != 0) and (vcdir[-13:] == "\\Common7\\IDE\\"):
-        vcdir = vcdir[:-12]
-        WARNINGS.append("Using visual studio: "+vcdir)
-        AddToPathEnv("PATH",    vcdir + "vc7\\bin")
-        AddToPathEnv("PATH",    vcdir + "Common7\\IDE")
-        AddToPathEnv("PATH",    vcdir + "Common7\\Tools")
-        AddToPathEnv("PATH",    vcdir + "Common7\\Tools\\bin\\prerelease")
-        AddToPathEnv("PATH",    vcdir + "Common7\\Tools\\bin")
-        AddToPathEnv("INCLUDE", vcdir + "vc7\\ATLMFC\\INCLUDE")
-        AddToPathEnv("INCLUDE", vcdir + "vc7\\include")
-        AddToPathEnv("INCLUDE", vcdir + "vc7\\PlatformSDK\\include\\prerelease")
-        AddToPathEnv("INCLUDE", vcdir + "vc7\\PlatformSDK\\include")
-        AddToPathEnv("LIB",     vcdir + "vc7\\ATLMFC\\LIB")
-        AddToPathEnv("LIB",     vcdir + "vc7\\LIB")
-        AddToPathEnv("LIB",     vcdir + "vc7\\PlatformSDK\\lib\\prerelease")
-        AddToPathEnv("LIB",     vcdir + "vc7\\PlatformSDK\\lib")
-	COMPILER="MSVC"
-	THIRDPARTYLIBS="thirdparty/win-libs-vc7/"
-        return
-
-    # Try to use the Visual Toolkit 2003
-
-    vcdir = GetRegistryKey("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment","VCToolkitInstallDir")
-    if (vcdir != 0) or (os.environ.has_key("VCTOOLKITINSTALLDIR")):
-        if (vcdir == 0): vcdir = os.environ["VCTOOLKITINSTALLDIR"]
-        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\8F9E5EF3-A9A5-491B-A889-C58EFFECE8B3",
-                               "Install Dir")
-        if (platsdk == 0): exit("Found VC Toolkit, but cannot locate MS Platform SDK")
-        WARNINGS.append("Using visual toolkit: "+vcdir)
-        WARNINGS.append("Using MS Platform SDK: "+platsdk)
-        AddToPathEnv("PATH", vcdir + "\\bin")
-        AddToPathEnv("INCLUDE", platsdk + "\\include")
-        AddToPathEnv("INCLUDE", vcdir + "\\include")
-        AddToPathEnv("LIB",     platsdk + "\\lib")
-        AddToPathEnv("LIB",     vcdir + "\\lib")
-        AddToPathEnv("LIB",     "thirdparty\\win-libs-vc7\\extras\\lib")
-	COMPILER="MSVC"
-	THIRDPARTYLIBS="thirdparty/win-libs-vc7/"
-        return
-
     # Give up
-    exit("Cannot locate Microsoft Visual Studio 7.0, 7.1, or the Visual Toolkit 2003")
-
+    exit("Cannot locate Microsoft Visual Studio 2005 or Visual Studio Express 2005")
 
 ChooseCompiler()
 
@@ -1135,9 +1113,9 @@ def CompileIgateMSVC(ipath,opts,outd,outc,wobj,src,module,library,files):
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
         optlevel=getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' '
-        if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
-        if (optlevel==4): cmd = cmd + ' -DFORCE_INLINING'
+        if (optlevel==2): cmd = cmd + ' -DNDEBUG '
+        if (optlevel==3): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
+        if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
         cmd = cmd + ' -Sbuilt/include/parser-inc'
         cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
@@ -1300,7 +1278,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ########################################################################
 
 def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
-    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG /MANIFEST:NO '
+    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
     if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
@@ -1377,10 +1355,11 @@ def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
-#    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
-#    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
-#    else:                   mtcmd = mtcmd + ';1'
-#    oscmd(mtcmd)
+    setVC80CRTVersion(wdll+".manifest", VC80CRTVERSION)
+    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
+    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
+    else:                   mtcmd = mtcmd + ';1'
+    oscmd(mtcmd)
 
 def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
@@ -3004,10 +2983,13 @@ EnqueueLink(dll='libpandaegg.dll', opts=['ADVAPI'], obj=[
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA',  'FFTW', 'PNG', 'JPEG', 'TIFF', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
+OPTS=['BUILDING_PANDA',  'FFTW', 'PNG', 'JPEG', 'TIFF', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 OBJFILES=[
           'pipeline_composite.obj',
           'event_composite.obj',
+          'net_composite.obj',
+          'nativenet_composite.obj',
+          'pstatclient_composite.obj',
           'linmath_composite.obj',
           'mathutil_composite.obj',
           'putil_composite1.obj', 'putil_composite2.obj',
