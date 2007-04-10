@@ -47,7 +47,7 @@ class Indirection:
         self._refCount = 0
         if dictKey is not NoDictKey:
             # if we can repr/eval the key, store it as an evalStr
-            keyRepr = repr(dictKey)
+            keyRepr = safeRepr(dictKey)
             useEval = False
             try:
                 keyEval = eval(keyRepr)
@@ -67,7 +67,7 @@ class Indirection:
                     self.dictKey = weakref.ref(dictKey)
                     self._isWeakRef = True
                 except TypeError, e:
-                    ContainerLeakDetector.notify.debug('could not weakref dict key %s' % dictKey)
+                    ContainerLeakDetector.notify.debug('could not weakref dict key %s' % keyRepr)
                     self.dictKey = dictKey
                     self._isWeakRef = False
 
@@ -337,7 +337,6 @@ class FindContainers(Job):
                 # that container is gone, try again
                 self._curObjRef = None
                 continue
-            #print '%s: %s, %s' % (id(curObj), type(curObj), self._id2ref[id(curObj)])
             self.notify.debug('--> %s' % self._curObjRef)
 
             # keep a copy of this obj's eval str, it might not be in _id2ref
@@ -373,7 +372,7 @@ class FindContainers(Job):
                         attr = curObj[key]
                     except KeyError, e:
                         # this is OK because we are yielding during the iteration
-                        self.notify.debug('could not index into %s with key %s' % (curObjRef, key))
+                        self.notify.debug('could not index into %s with key %s' % (curObjRef, safeRepr(key)))
                         continue
                     isContainer = self._isContainer(attr)
                     notDeadEnd = False
@@ -593,7 +592,7 @@ class CheckContainers(Job):
                                        (name, itype(container), idx2id2len[self._index][id],
                                         fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                 self.notify.warning(msg)
-                                self.notify.warning('sending notification...')
+                                self.notify.info('sending notification...')
                                 yield None
                                 for result in self._leakDetector.getContainerByIdGen(id):
                                     yield None
