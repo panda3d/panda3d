@@ -250,8 +250,8 @@ PUBLISHED:
   INLINE static bool is_connected() { return false; }
   INLINE static void resume_after_pause() { }
 
-  static void main_tick() { }
-  static void thread_tick(const string &) { }
+  INLINE static void main_tick() { }
+  INLINE static void thread_tick(const string &) { }
 };
 
 #endif  // DO_PSTATS
