@@ -10,9 +10,12 @@ class Job(DirectObject):
     # values to yield from your run() generator method
     Done = object()
     Continue = None # 'yield None' is acceptable in place of 'yield Job.Continue'
+    Sleep = object() # yield any remaining time for this job until next frame
 
-    # these priorities are reference points, you can use whatever numbers you want
-    Priorities = ScratchPad(Low=-100, Normal=0, High=100)
+    # These priorities determine how many timeslices a job gets relative to other
+    # jobs. A job with priority of 1000 will run 10 times more often than a job
+    # with priority of 100.
+    Priorities = ScratchPad(Min=1, Low=100, Normal=1000, High=10000)
     _SerialGen = SerialNumGen()
     
     def __init__(self, name):

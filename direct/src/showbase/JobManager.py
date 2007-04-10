@@ -13,7 +13,7 @@ class JobManager:
     # there's one task for the JobManager, all jobs run in this task
     TaskName = 'jobManager'
     # run for 1/2 millisecond per frame by default
-    DefTimeslice = (1./1000.) / 2.
+    DefTimeslice = (1./1000.) * .5
 
     def __init__(self, timeslice=None):
         if timeslice is None:
@@ -27,6 +27,14 @@ class JobManager:
         self._pri2jobIds = {}
         # jobId -> priority
         self._jobId2pri = {}
+        # how many timeslices to give each job; this is used to efficiently implement
+        # the relative job priorities
+        self._jobId2timeslices = {}
+        # this is the working copy of _jobId2timeslices that we use to count down how
+        # many timeslices to give each job
+        self._jobId2timeslicesLeft = {}
+        # this is used to round-robin the jobs in _jobId2timeslicesLeft
+        self._curJobIndex = 0
         self._highestPriority = Job.Priorities.Normal
 
     def destroy(self):
@@ -44,6 +52,8 @@ class JobManager:
         # add the jobId onto the end of the list of jobIds for this priority
         self._pri2jobIds.setdefault(pri, [])
         self._pri2jobIds[pri].append(jobId)
+        # record the job's relative timeslice count
+        self._jobId2timeslices[jobId] = pri
         if len(self._jobId2pri) == 1:
             taskMgr.add(self._process, JobManager.TaskName)
             self._highestPriority = pri
@@ -61,6 +71,9 @@ class JobManager:
         del self._pri2jobId2job[pri][jobId]
         # clean up the job's generator, if any
         job._cleanupGenerator()
+        # remove the job's timeslice count
+        self._jobId2timeslices.pop(jobId)
+        self._jobId2timeslicesLeft.pop(jobId)
         if len(self._pri2jobId2job[pri]) == 0:
             del self._pri2jobId2job[pri]
             if pri == self._highestPriority:
@@ -122,13 +135,18 @@ class JobManager:
             # figure out how long we can run
             endT = globalClock.getRealTime() + (self._timeslice * .9)
             while True:
-                # always process the highest priority first
-                # TODO: give occasional timeslices to lower priorities to avoid starving
-                # lower-priority jobs
-                jobId2job = self._pri2jobId2job[self._highestPriority]
-                # process jobs with equal priority in the order they came in
-                jobId = self._pri2jobIds[self._highestPriority][0]
-                job = jobId2job[jobId]
+                # round-robin the jobs, dropping them as they run out of priority timeslices
+                # until all timeslices are used
+                if len(self._jobId2timeslicesLeft) == 0:
+                    self._jobId2timeslicesLeft = dict(self._jobId2timeslices)
+                self._curJobIndex = (self._curJobIndex + 1) % len(self._jobId2timeslicesLeft)
+                jobId = self._jobId2timeslicesLeft.keys()[self._curJobIndex]
+                # use up one of this job's timeslices
+                self._jobId2timeslicesLeft[jobId] -= 1
+                if self._jobId2timeslicesLeft[jobId] == 0:
+                    del self._jobId2timeslicesLeft[jobId]
+                pri = self._jobId2pri[jobId]
+                job = self._pri2jobId2job[pri][jobId]
                 gen = job._getGenerator()
                 if __debug__:
                     job._pstats.start()
@@ -141,15 +159,21 @@ class JobManager:
                         # treat it as if it returned Job.Done
                         self.notify.warning('job %s never yielded Job.Done' % job)
                         result = Job.Done
-                    if result is Job.Done:
+
+                    if result is Job.Sleep:
+                        job.suspend()
+                        if __debug__:
+                            job._pstats.stop()
+                        # grab the next job if there's time left
+                        break
+                    elif result is Job.Done:
                         job.suspend()
                         self.remove(job)
                         job.finished()
                         if __debug__:
                             job._pstats.stop()
                         messenger.send(job.getFinishedEvent())
-                        # highest-priority job is done.
-                        # grab the next one if there's time left
+                        # grab the next job if there's time left
                         break
                 else:
                     # we've run out of time
