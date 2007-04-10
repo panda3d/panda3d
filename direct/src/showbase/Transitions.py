@@ -107,8 +107,6 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        print "t = %s" % t
-        
         transitionIval = Sequence(Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
