@@ -1301,8 +1301,8 @@ class ParamObj:
             # install a setter stub that will a) call the real setter and
             # then the applier, or b) call the setter and queue the
             # applier, depending on whether our params are locked
-            self.__dict__[setterName] = Functor(setterStub, param,
-                                                setterFunc, self)
+            setattr(self, setterName, new.instancemethod(
+                Functor(setterStub, param, setterFunc), self, self.__class__))
 
         if params is not None:
             params.applyTo(self)
