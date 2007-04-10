@@ -970,7 +970,7 @@ def CopyTree(dstdir,srcdir):
 ########################################################################
 
 def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
-    cmd = "cl /wd4996 /Fo" + wobj + " /nologo /c"
+    cmd = "cl /wd4996 /Fo" + wobj + " /nologo /c "
     if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
     for ver in DXVERSIONS:
         if (PkgSelected(opts,"DX"+ver)):
@@ -990,9 +990,9 @@ def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
     if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
-    if (optlevel==2): cmd = cmd + " /MD /Zi "
-    if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
-    if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /GL "
+    if (optlevel==2): cmd = cmd + " /MD /Zi /DNDEBUG "
+    if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING /DNDEBUG "
+    if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
     cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
     building = getbuilding(opts)
     if (building): cmd = cmd + " /DBUILDING_" + building
@@ -1013,9 +1013,9 @@ def CompileCxxLINUX(wobj,fullsrc,ipath,opts):
     if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
     optlevel = getoptlevel(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + " -g"
-    if (optlevel==2): cmd = cmd + " -O1"
-    if (optlevel==3): cmd = cmd + " -O2"
-    if (optlevel==4): cmd = cmd + " -O2"
+    if (optlevel==2): cmd = cmd + " -O1 -DNDEBUG"
+    if (optlevel==3): cmd = cmd + " -O2 -DNDEBUG"
+    if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
     building = getbuilding(opts)
     if (building): cmd = cmd + " -DBUILDING_" + building
     cmd = cmd + ' ' + fullsrc
@@ -1300,7 +1300,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ########################################################################
 
 def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
-    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
+    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG /MANIFEST:NO '
     if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
@@ -1377,10 +1377,10 @@ def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
             cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
     oscmd(cmd)
-    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
-    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
-    else:                   mtcmd = mtcmd + ';1'
-    oscmd(mtcmd)
+#    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
+#    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
+#    else:                   mtcmd = mtcmd + ';1'
+#    oscmd(mtcmd)
 
 def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
     if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
