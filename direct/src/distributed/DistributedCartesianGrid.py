@@ -52,6 +52,9 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         # If this distributed object is a DistributedGrid return 1.  0 by default
         return 1
 
+    def setCellWidth(self, width):
+        self.cellWidth = width
+
     def setParentingRules(self, style, rule):
         assert self.notify.debug("setParentingRules: style: %s, rule: %s" % (style, rule))
         rules = rule.split(self.RuleSeparator)

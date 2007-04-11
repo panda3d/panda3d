@@ -10,13 +10,14 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
     RuleSeparator = ":"
 
-    def __init__(self, air, startingZone, gridSize, gridRadius,
+    def __init__(self, air, startingZone, gridSize, gridRadius, cellWidth,
             style="Cartesian"):
         DistributedNodeAI.__init__(self, air)
         self.style = style
         self.startingZone = startingZone
         self.gridSize = gridSize
         self.gridRadius = gridRadius
+        self.cellWidth = cellWidth
 
         # Keep track of all AI objects added to the grid
         self.gridObjects = {}
@@ -31,6 +32,9 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
         # 0 by default
         return 1
 
+    def getCellWidth(self):
+        return self.cellWidth
+    
     def getParentingRules(self):
         self.notify.debug("calling getter")
         rule = ("%i%s%i%s%i" % (self.startingZone, self.RuleSeparator,
