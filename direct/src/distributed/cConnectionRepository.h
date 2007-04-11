@@ -128,6 +128,7 @@ private:
   bool do_check_datagram();
   bool handle_update_field();
   bool handle_update_field_owner();
+  void handle_python_exception();
 
   void describe_message(ostream &out, const string &prefix, 
                         const Datagram &dg) const;
