@@ -119,8 +119,8 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 
   // Some WAV files contain a loop bit.  This is not handled
   // consistently.  Override it.
-  _sound->setMode(FMOD_LOOP_OFF);
   _sound->setLoopCount(-1);
+  _sound->setMode(FMOD_LOOP_OFF);
   
   //This is just to collect the defaults of the sound, so we don't
   //Have to query FMOD everytime for the info.

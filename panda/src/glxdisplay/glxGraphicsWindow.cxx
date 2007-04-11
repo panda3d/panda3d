@@ -1082,6 +1082,8 @@ open_raw_mice()
 	  GraphicsWindowInputDevice device =
 	    GraphicsWindowInputDevice::pointer_only(full_id);
 	  _input_devices.push_back(device);
+	  glxdisplay_cat.info() << "Raw mouse " <<
+	    inf._input_device_index << " detected: " << full_id << "\n";
 	  any_mice = true;
 	} else {
 	  close(fd);
