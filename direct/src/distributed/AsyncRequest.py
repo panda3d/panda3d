@@ -123,7 +123,7 @@ class AsyncRequest(DirectObject):
         self.cancelTimeOut()
         self.timeoutTask=taskMgr.doMethodLater(
             self._timeoutTime, self._timeout, "AsyncRequestTimer-%s"%(id(self,)))
-        self._timeoutCount = TimeoutFailureCount 
+        # self._timeoutCount = TimeoutFailureCount 
 
     def cancelTimeOut(self):
         if self.timeoutTask:
@@ -193,6 +193,7 @@ class AsyncRequest(DirectObject):
             self.acceptOnce(
                 "doFieldResponse-%s"%(context,),
                 self._checkCompletion, [key])
+            # self.neededObjects[key] = None
             self.air.queryObjectField(dclassName, fieldName, doId, context)
             self.startTimeOut()
             
@@ -214,6 +215,7 @@ class AsyncRequest(DirectObject):
             self.acceptOnce(
                 "doRequestResponse-%s"%(context,),
                 self._checkCompletion, [None])
+            # self.neededObjects[doId] = None
             self.air.queryObjectAll(doId, context)
             self.startTimeOut()
 
@@ -252,7 +254,7 @@ class AsyncRequest(DirectObject):
         assert not self.__deleted
         assert name
         assert className
-        self.neededObjects[name]=None
+        self.neededObjects[name] = None
         if context is None:
             context=self.air.allocateContext()
         self.accept(
@@ -286,7 +288,7 @@ class AsyncRequest(DirectObject):
         assert not self.__deleted
         assert name
         assert className
-        self.neededObjects[name]=None
+        self.neededObjects[name] = None
         if context is None:
             context=self.air.allocateContext()
         self.accept(
