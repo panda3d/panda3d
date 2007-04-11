@@ -1340,6 +1340,18 @@ def flattenMultitex(self, stateFrom = None, target = None,
 Dtool_funcToMethod(flattenMultitex, NodePath)
 del flattenMultitex
 #####################################################################
+def getNumDescendants(self):
+        num = 0
+        stack = [self]
+        while len(stack):
+                np = stack.pop()
+                numChildren = np.getNumChildren()
+                num += numChildren
+                stack.extend(np.getChildrenAsList())
+        return num
+Dtool_funcToMethod(getNumDescendants, NodePath)
+del getNumDescendants
+#####################################################################
 
 def subdivideCollisions(self, numSolidsInLeaves = 2):
         """
