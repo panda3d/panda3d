@@ -111,7 +111,7 @@ private:
 
   bool _derivations_fresh;
 
-  static MutexImpl *_lock;
+  static ReMutexImpl *_lock;
   static TypeRegistry *_global_pointer;
 
   friend class TypeHandle;

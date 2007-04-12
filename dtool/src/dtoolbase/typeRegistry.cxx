@@ -25,7 +25,7 @@
 
 #include <algorithm>
 
-MutexImpl *TypeRegistry::_lock = NULL;
+ReMutexImpl *TypeRegistry::_lock = NULL;
 TypeRegistry *TypeRegistry::_global_pointer = NULL;
 
 ////////////////////////////////////////////////////////////////////
