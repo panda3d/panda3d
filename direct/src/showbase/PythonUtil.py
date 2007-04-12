@@ -2526,27 +2526,30 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
     types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
             This allows you to specify certain common bits of info.
 
-            args: Prints the arguments as they were passed to this
-                  function.
+            args:       Prints the arguments as they were passed to
+                        this function.
             timeStamp:  Adds the current frame time to the output.
-            
+            deltaStamp: Adds the current AI synched frame time to
+                        the output 
             frameCount: Adds the current frame count to the output.
                         Usually cleaner than the timeStamp output.
-
             avLocation: Adds the localAvatar's network location
                         to the output.  Useful for interest debugging.
-
+            interests:  Prints the current interest state after the
+                        report.
+            stackTrace: Prints a stack trace after the report.
+            
     prefix: Optional string to prepend to output, just before the function.
-            Allows for easy grepping.
+            Allows for easy grepping and is useful when merging AI/Client
+            reports into a single file.
     notifyFunc: A notify function such as info, debug, warning, etc.
                 By default the report will be printed to stdout. This 
                 will allow you send the report to a designated 'notify'
                 output.
-
     dConfigParam: A list of Config.prc string variables.
-                   By default the report will always print.  If you
-                   specify this param, it will only print if one of the
-                   specified config strings resolve to True.
+                  By default the report will always print.  If you
+                  specify this param, it will only print if one of the
+                  specified config strings resolve to True.
     """
     def decorator(f):
         return f
@@ -2574,7 +2577,11 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
             else:
                 rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
                 
+
             outStr = '%s%s' % (f.func_name, rArgs)
+
+            if prefix:
+                outStr = '%s %s' % (prefix, outStr)
 
             preStr = ''
             
@@ -2590,8 +2597,6 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
 
-            if prefix:
-                outStr = '%s %s' % (prefix, outStr)
 
             # determine whether we should print
             doPrint = False
@@ -2613,7 +2618,7 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
                 else:
                     print outStr
 
-                if 'printInterests' in types:
+                if 'interests' in types:
                     base.cr.printInterestSets()
                     
                 if 'stackTrace' in types:
