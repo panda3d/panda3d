@@ -1228,28 +1228,21 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
         vertices.push_back(*pi);
       }
 
+      typedef pvector<EggAttributes> Attributes;
+      Attributes attributes;
+
       if (prim->is_of_type(EggCompositePrimitive::get_class_type())) {
         // A compositive primitive has the additional complication of
         // dealing with its attributes.
-        typedef pvector<EggAttributes> Attributes;
-        Attributes attributes;
-
         EggCompositePrimitive *cprim = DCAST(EggCompositePrimitive, prim);
         int i;
         int num_components = cprim->get_num_components();
         for (i = 0; i < num_components; i++) {
           attributes.push_back(*cprim->get_component(i));
         }
-
-        cprim->clear();
-
-        for (i = 0; i < num_components; i++) {
-          cprim->set_component(i, &attributes[i]);
-        }
-
-      } else {
-        prim->clear();
       }
+
+      prim->clear();
 
       // Now look for a new home for the vertices.  First, see if any
       // of the vertex pools we've already created already have a copy
@@ -1325,6 +1318,17 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
         EggVertex *new_vertex = (*vi);
         nassertv(new_vertex != (EggVertex *)NULL);
         prim->add_vertex(new_vertex);
+      }
+
+      if (prim->is_of_type(EggCompositePrimitive::get_class_type())) {
+        // Now restore the composite attributes.
+        EggCompositePrimitive *cprim = DCAST(EggCompositePrimitive, prim);
+        int i;
+        int num_components = cprim->get_num_components();
+        nassertv(num_components == (int)attributes.size());
+        for (i = 0; i < num_components; i++) {
+          cprim->set_component(i, &attributes[i]);
+        }
       }
         
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
