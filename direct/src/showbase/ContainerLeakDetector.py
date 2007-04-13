@@ -554,12 +554,17 @@ class CheckContainers(Job):
                             name = self._leakDetector.getContainerNameById(id)
                             if idx2id2len[self._index-1][id] != 0:
                                 percent = 100. * (float(diff) / float(idx2id2len[self._index-1][id]))
-                                for container in self._leakDetector.getContainerByIdGen(id):
-                                    yield None
-                                self.notify.warning(
-                                    '%s (%s) grew %.2f%% in %.2f minutes (%s items at last measurement, current contents: %s)' % (
-                                    name, itype(container), percent, minutes, idx2id2len[self._index][id],
-                                    fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                try:
+                                    for container in self._leakDetector.getContainerByIdGen(id):
+                                        yield None
+                                except:
+                                    # TODO
+                                    self.notify.debug('caught exception in getContainerByIdGen (1)')
+                                else:
+                                    self.notify.warning(
+                                        '%s (%s) grew %.2f%% in %.2f minutes (%s items at last measurement, current contents: %s)' % (
+                                        name, itype(container), percent, minutes, idx2id2len[self._index][id],
+                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                 yield None
                     if (self._index > 2 and
                         id in idx2id2len[self._index-2] and
@@ -569,13 +574,18 @@ class CheckContainers(Job):
                         if self._index <= 4:
                             if diff > 0 and diff2 > 0 and diff3 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                for container in self._leakDetector.getContainerByIdGen(id):
-                                    yield None
-                                msg = ('%s (%s) consistently increased in size over the last '
-                                       '3 periods (%s items at last measurement, current contents: %s)' %
-                                       (name, itype(container), idx2id2len[self._index][id],
-                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
-                                self.notify.warning(msg)
+                                try:
+                                    for container in self._leakDetector.getContainerByIdGen(id):
+                                        yield None
+                                except:
+                                    # TODO
+                                    self.notify.debug('caught exception in getContainerByIdGen (2)')
+                                else:
+                                    msg = ('%s (%s) consistently increased in size over the last '
+                                           '3 periods (%s items at last measurement, current contents: %s)' %
+                                           (name, itype(container), idx2id2len[self._index][id],
+                                            fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                    self.notify.warning(msg)
                                 yield None
                         elif (id in idx2id2len[self._index-4] and
                               id in idx2id2len[self._index-5]):
@@ -585,19 +595,21 @@ class CheckContainers(Job):
                             diff5 = idx2id2len[self._index-4][id] - idx2id2len[self._index-5][id]
                             if diff > 0 and diff2 > 0 and diff3 > 0 and diff4 > 0 and diff5 > 0:
                                 name = self._leakDetector.getContainerNameById(id)
-                                for container in self._leakDetector.getContainerByIdGen(id):
+                                try:
+                                    for container in self._leakDetector.getContainerByIdGen(id):
+                                        yield None
+                                except:
+                                    # TODO
+                                    self.notify.debug('caught exception in getContainerByIdGen (3)')
+                                else:
+                                    msg = ('%s (%s) consistently increased in size over the last '
+                                           '5 periods (%s items at last measurement, current contents: %s)' %
+                                           (name, itype(container), idx2id2len[self._index][id],
+                                            fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                    self.notify.warning(msg)
+                                    self.notify.info('sending notification...')
                                     yield None
-                                msg = ('%s (%s) consistently increased in size over the last '
-                                       '5 periods (%s items at last measurement, current contents: %s)' %
-                                       (name, itype(container), idx2id2len[self._index][id],
-                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
-                                self.notify.warning(msg)
-                                self.notify.info('sending notification...')
-                                yield None
-                                for result in self._leakDetector.getContainerByIdGen(id):
-                                    yield None
-                                container = result
-                                messenger.send(self._leakDetector.getLeakEvent(), [container, name])
+                                    messenger.send(self._leakDetector.getLeakEvent(), [container, name])
         yield Job.Done
 
 class PruneContainerRefs(Job):
