@@ -152,13 +152,30 @@ else:
 #
 ##############################################################################
 
+def limitedCopyTree(src, dst, rmdir):
+    if (os.path.isdir(src)):
+        if (rmdir.has_key(os.path.basename(src))):
+            return
+        os.mkdir(dst)
+        for x in os.listdir(src):
+            limitedCopyTree(os.path.join(src,x), os.path.join(dst,x), rmdir)
+    else:
+        shutil.copyfile(src, dst)
+
+
 TMPDIR=os.path.abspath("packpanda-TMP")
 print ""
 print "Copying the game to "+TMPDIR+"..."
 if (os.path.exists(TMPDIR)):
-   try: shutil.rmtree(TMPDIR)
-   except: sys.exit("Cannot delete "+TMPDIR)
-try: shutil.copytree(DIR, TMPDIR)
+    try: shutil.rmtree(TMPDIR)
+    except: sys.exit("Cannot delete "+TMPDIR)
+try:
+    rmdir = {}
+    for x in OPTIONS["rmdir"]:
+        rmdir[x] = 1
+    limitedCopyTree(DIR, TMPDIR, rmdir)
+    if not os.path.isdir( TMPDIR ):
+        os.mkdir(TMPDIR)
 except: sys.exit("Cannot copy game to "+TMPDIR)
 
 ##############################################################################
