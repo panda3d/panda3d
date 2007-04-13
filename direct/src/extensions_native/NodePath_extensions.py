@@ -1352,8 +1352,21 @@ def getNumDescendants(self):
 Dtool_funcToMethod(getNumDescendants, NodePath)
 del getNumDescendants
 #####################################################################
+def removeNonCollisions(self):
+        # remove anything that is not collision-related
+        stack = [self]
+        while len(stack):
+                np = stack.pop()
+                # if there are no CollisionNodes under this node, remove it
+                if np.findAllMatches('**/+CollisionNode').getNumPaths() == 0:
+                        np.detachNode()
+                else:
+                        stack.extend(np.getChildrenAsList())
+Dtool_funcToMethod(removeNonCollisions, NodePath)
+del removeNonCollisions
+#####################################################################
 
-def subdivideCollisions(self, numSolidsInLeaves = 2):
+def subdivideCollisions(self, numSolidsInLeaves):
         """
         expand CollisionNodes out into balanced trees, with a particular number
         of solids in the leaves
