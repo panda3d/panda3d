@@ -320,163 +320,170 @@ class FindContainers(Job):
             self._id2ref[contId] = objRef
 
     def run(self):
-        while True:
-            # yield up here instead of at the end, since we skip back to the
-            # top of the while loop from various points
-            yield None
-            #import pdb;pdb.set_trace()
-            curObj = None
-            if self._curObjRef is None:
-                self._curObjRef = self._baseObjRef
-            try:
-                for result in self._curObjRef.getContainer():
-                    yield None
-                curObj = result
-            except:
-                self.notify.debug('lost current container: %s' % self._curObjRef)
-                # that container is gone, try again
-                self._curObjRef = None
-                continue
-            self.notify.debug('--> %s' % self._curObjRef)
-
-            # keep a copy of this obj's eval str, it might not be in _id2ref
-            curObjRef = self._curObjRef
-            # if we hit a dead end, start over at a container we know about
-            self._curObjRef = None
-
-            if type(curObj) in (types.ModuleType, types.InstanceType):
-                child = curObj.__dict__
-                isContainer = self._isContainer(child)
-                notDeadEnd = not self._isDeadEnd(child)
-                if isContainer or notDeadEnd:
-                    objRef = ContainerRef(Indirection(evalStr='.__dict__'), curObjRef)
-                    yield None
-                    if isContainer:
-                        for i in self._nameContainerGen(child, objRef):
-                            yield None
-                    if notDeadEnd:
-                        self._curObjRef = objRef
-                continue
-
-            if type(curObj) is types.DictType:
-                key = None
-                attr = None
-                keys = curObj.keys()
-                # we will continue traversing the object graph via one key of the dict,
-                # choose it at random without taking a big chunk of CPU time
-                numKeysLeft = len(keys)
-                nextObjRef = None
-                for key in keys:
-                    yield None
-                    try:
-                        attr = curObj[key]
-                    except KeyError, e:
-                        # this is OK because we are yielding during the iteration
-                        self.notify.debug('could not index into %s with key %s' % (curObjRef, safeRepr(key)))
-                        continue
-                    isContainer = self._isContainer(attr)
-                    notDeadEnd = False
-                    if nextObjRef is None:
-                        notDeadEnd = not self._isDeadEnd(attr, key)
-                    if isContainer or notDeadEnd:
-                        if curObj is __builtin__.__dict__:
-                            objRef = ContainerRef(Indirection(evalStr=key))
-                        else:
-                            objRef = ContainerRef(Indirection(dictKey=key), curObjRef)
-                        yield None
-                        if isContainer:
-                            for i in self._nameContainerGen(attr, objRef):
-                                yield None
-                        if notDeadEnd and nextObjRef is None:
-                            if random.randrange(numKeysLeft) == 0:
-                                nextObjRef = objRef
-                        numKeysLeft -= 1
-                if nextObjRef is not None:
-                    self._curObjRef = nextObjRef
-                del key
-                del attr
-                continue
-
-            if type(curObj) is not types.FileType:
+        try:
+            while True:
+                # yield up here instead of at the end, since we skip back to the
+                # top of the while loop from various points
+                yield None
+                #import pdb;pdb.set_trace()
+                curObj = None
+                if self._curObjRef is None:
+                    self._curObjRef = self._baseObjRef
                 try:
-                    itr = iter(curObj)
+                    for result in self._curObjRef.getContainer():
+                        yield None
+                    curObj = result
                 except:
-                    pass
-                else:
-                    try:
-                        index = 0
-                        attrs = []
-                        while 1:
-                            yield None
-                            try:
-                                attr = itr.next()
-                            except:
-                                # some custom classes don't do well when iterated
-                                attr = None
-                                break
-                            attrs.append(attr)
-                        # we will continue traversing the object graph via one attr,
-                        # choose it at random without taking a big chunk of CPU time
-                        numAttrsLeft = len(attrs)
-                        nextObjRef = None
-                        for attr in attrs:
-                            yield None
-                            isContainer = self._isContainer(attr)
-                            notDeadEnd = False
-                            if nextObjRef is None:
-                                notDeadEnd = not self._isDeadEnd(attr)
-                            if isContainer or notDeadEnd:
-                                objRef = ContainerRef(Indirection(evalStr='[%s]' % index), curObjRef)
-                                yield None
-                                if isContainer:
-                                    for i in self._nameContainerGen(attr, objRef):
-                                        yield None
-                                if notDeadEnd and nextObjRef is None:
-                                    if random.randrange(numAttrsLeft) == 0:
-                                        nextObjRef = objRef
-                            numAttrsLeft -= 1
-                            index += 1
-                        if nextObjRef is not None:
-                            self._curObjRef = nextObjRef
-                        del attr
-                    except StopIteration, e:
-                        pass
-                    del itr
+                    self.notify.debug('lost current container: %s' % self._curObjRef)
+                    # that container is gone, try again
+                    self._curObjRef = None
                     continue
+                self.notify.debug('--> %s' % self._curObjRef)
 
-            try:
-                childNames = dir(curObj)
-            except:
-                pass
-            else:
-                childName = None
-                child = None
-                # we will continue traversing the object graph via one child,
-                # choose it at random without taking a big chunk of CPU time
-                numChildrenLeft = len(childNames)
-                nextObjRef = None
-                for childName in childNames:
-                    yield None
-                    child = getattr(curObj, childName)
+                # keep a copy of this obj's eval str, it might not be in _id2ref
+                curObjRef = self._curObjRef
+                # if we hit a dead end, start over at a container we know about
+                self._curObjRef = None
+
+                if type(curObj) in (types.ModuleType, types.InstanceType):
+                    child = curObj.__dict__
                     isContainer = self._isContainer(child)
-                    notDeadEnd = False
-                    if nextObjRef is None:
-                        notDeadEnd = not self._isDeadEnd(child, childName)
+                    notDeadEnd = not self._isDeadEnd(child)
                     if isContainer or notDeadEnd:
-                        objRef = ContainerRef(Indirection(evalStr='.%s' % childName), curObjRef)
+                        objRef = ContainerRef(Indirection(evalStr='.__dict__'), curObjRef)
                         yield None
                         if isContainer:
                             for i in self._nameContainerGen(child, objRef):
                                 yield None
-                        if notDeadEnd and nextObjRef is None:
-                            if random.randrange(numChildrenLeft) == 0:
-                                nextObjRef = objRef
-                    numChildrenLeft -= 1
-                if nextObjRef is not None:
-                    self._curObjRef = nextObjRef
-                del childName
-                del child
-                continue
+                        if notDeadEnd:
+                            self._curObjRef = objRef
+                    continue
+
+                if type(curObj) is types.DictType:
+                    key = None
+                    attr = None
+                    keys = curObj.keys()
+                    # we will continue traversing the object graph via one key of the dict,
+                    # choose it at random without taking a big chunk of CPU time
+                    numKeysLeft = len(keys)
+                    nextObjRef = None
+                    for key in keys:
+                        yield None
+                        try:
+                            attr = curObj[key]
+                        except KeyError, e:
+                            # this is OK because we are yielding during the iteration
+                            self.notify.debug('could not index into %s with key %s' % (curObjRef, safeRepr(key)))
+                            continue
+                        isContainer = self._isContainer(attr)
+                        notDeadEnd = False
+                        if nextObjRef is None:
+                            notDeadEnd = not self._isDeadEnd(attr, key)
+                        if isContainer or notDeadEnd:
+                            if curObj is __builtin__.__dict__:
+                                objRef = ContainerRef(Indirection(evalStr=key))
+                            else:
+                                objRef = ContainerRef(Indirection(dictKey=key), curObjRef)
+                            yield None
+                            if isContainer:
+                                for i in self._nameContainerGen(attr, objRef):
+                                    yield None
+                            if notDeadEnd and nextObjRef is None:
+                                if random.randrange(numKeysLeft) == 0:
+                                    nextObjRef = objRef
+                            numKeysLeft -= 1
+                    if nextObjRef is not None:
+                        self._curObjRef = nextObjRef
+                    del key
+                    del attr
+                    continue
+
+                if type(curObj) is not types.FileType:
+                    try:
+                        itr = iter(curObj)
+                    except:
+                        pass
+                    else:
+                        try:
+                            index = 0
+                            attrs = []
+                            while 1:
+                                yield None
+                                try:
+                                    attr = itr.next()
+                                except:
+                                    # some custom classes don't do well when iterated
+                                    attr = None
+                                    break
+                                attrs.append(attr)
+                            # we will continue traversing the object graph via one attr,
+                            # choose it at random without taking a big chunk of CPU time
+                            numAttrsLeft = len(attrs)
+                            nextObjRef = None
+                            for attr in attrs:
+                                yield None
+                                isContainer = self._isContainer(attr)
+                                notDeadEnd = False
+                                if nextObjRef is None:
+                                    notDeadEnd = not self._isDeadEnd(attr)
+                                if isContainer or notDeadEnd:
+                                    objRef = ContainerRef(Indirection(evalStr='[%s]' % index), curObjRef)
+                                    yield None
+                                    if isContainer:
+                                        for i in self._nameContainerGen(attr, objRef):
+                                            yield None
+                                    if notDeadEnd and nextObjRef is None:
+                                        if random.randrange(numAttrsLeft) == 0:
+                                            nextObjRef = objRef
+                                numAttrsLeft -= 1
+                                index += 1
+                            if nextObjRef is not None:
+                                self._curObjRef = nextObjRef
+                            del attr
+                        except StopIteration, e:
+                            pass
+                        del itr
+                        continue
+
+                try:
+                    childNames = dir(curObj)
+                except:
+                    pass
+                else:
+                    childName = None
+                    child = None
+                    # we will continue traversing the object graph via one child,
+                    # choose it at random without taking a big chunk of CPU time
+                    numChildrenLeft = len(childNames)
+                    nextObjRef = None
+                    for childName in childNames:
+                        yield None
+                        child = getattr(curObj, childName)
+                        isContainer = self._isContainer(child)
+                        notDeadEnd = False
+                        if nextObjRef is None:
+                            notDeadEnd = not self._isDeadEnd(child, childName)
+                        if isContainer or notDeadEnd:
+                            objRef = ContainerRef(Indirection(evalStr='.%s' % childName), curObjRef)
+                            yield None
+                            if isContainer:
+                                for i in self._nameContainerGen(child, objRef):
+                                    yield None
+                            if notDeadEnd and nextObjRef is None:
+                                if random.randrange(numChildrenLeft) == 0:
+                                    nextObjRef = objRef
+                        numChildrenLeft -= 1
+                    if nextObjRef is not None:
+                        self._curObjRef = nextObjRef
+                    del childName
+                    del child
+                    continue
+        except Exception, e:
+            print 'FindContainers job caught exception: %s' % e
+            if __dev__:
+                #raise e
+                pass
+            yield Job.done
 
 class CheckContainers(Job):
     """
@@ -499,117 +506,124 @@ class CheckContainers(Job):
         return Job.Priorities.Normal
     
     def run(self):
-        self._leakDetector._index2containerId2len[self._index] = {}
-        ids = self._leakDetector.getContainerIds()
-        # record the current len of each container
-        for id in ids:
-            yield None
-            try:
-                for result in self._leakDetector.getContainerByIdGen(id):
-                    yield None
-                container = result
-            except Exception, e:
-                # this container no longer exists
-                if self.notify.getDebug():
-                    for contName in self._leakDetector.getContainerNameByIdGen(id):
-                        yield None
-                    self.notify.debug(
-                        '%s no longer exists; caught exception in getContainerById (%s)' % (
-                        contName, e))
-                self._leakDetector.removeContainerById(id)
-                continue
-            if container is None:
-                # this container no longer exists
-                if self.notify.getDebug():
-                    for contName in self._leakDetector.getContainerNameByIdGen(id):
-                        yield None
-                    self.notify.debug('%s no longer exists; getContainerById returned None' %
-                                      contName)
-                self._leakDetector.removeContainerById(id)
-                continue
-            try:
-                cLen = len(container)
-            except Exception, e:
-                # this container no longer exists
-                if self.notify.getDebug():
-                    for contName in self._leakDetector.getContainerNameByIdGen(id):
-                        yield None
-                    self.notify.debug(
-                        '%s is no longer a container, it is now %s (%s)' %
-                        (contName, safeRepr(container), e))
-                self._leakDetector.removeContainerById(id)
-                continue
-            self._leakDetector._index2containerId2len[self._index][id] = cLen
-        # compare the current len of each container to past lens
-        if self._index > 0:
-            idx2id2len = self._leakDetector._index2containerId2len
-            for id in idx2id2len[self._index]:
+        try:
+            self._leakDetector._index2containerId2len[self._index] = {}
+            ids = self._leakDetector.getContainerIds()
+            # record the current len of each container
+            for id in ids:
                 yield None
-                if id in idx2id2len[self._index-1]:
-                    diff = idx2id2len[self._index][id] - idx2id2len[self._index-1][id]
-                    if diff > 0:
-                        if diff > idx2id2len[self._index-1][id]:
-                            minutes = (self._leakDetector._index2delay[self._index] -
-                                       self._leakDetector._index2delay[self._index-1]) / 60.
-                            name = self._leakDetector.getContainerNameById(id)
-                            if idx2id2len[self._index-1][id] != 0:
-                                percent = 100. * (float(diff) / float(idx2id2len[self._index-1][id]))
-                                try:
-                                    for container in self._leakDetector.getContainerByIdGen(id):
-                                        yield None
-                                except:
-                                    # TODO
-                                    self.notify.debug('caught exception in getContainerByIdGen (1)')
-                                else:
-                                    self.notify.warning(
-                                        '%s (%s) grew %.2f%% in %.2f minutes (%s items at last measurement, current contents: %s)' % (
-                                        name, itype(container), percent, minutes, idx2id2len[self._index][id],
-                                        fastRepr(container, maxLen=CheckContainers.ReprItems)))
-                                yield None
-                    if (self._index > 2 and
-                        id in idx2id2len[self._index-2] and
-                        id in idx2id2len[self._index-3]):
-                        diff2 = idx2id2len[self._index-1][id] - idx2id2len[self._index-2][id]
-                        diff3 = idx2id2len[self._index-2][id] - idx2id2len[self._index-3][id]
-                        if self._index <= 4:
-                            if diff > 0 and diff2 > 0 and diff3 > 0:
+                try:
+                    for result in self._leakDetector.getContainerByIdGen(id):
+                        yield None
+                    container = result
+                except Exception, e:
+                    # this container no longer exists
+                    if self.notify.getDebug():
+                        for contName in self._leakDetector.getContainerNameByIdGen(id):
+                            yield None
+                        self.notify.debug(
+                            '%s no longer exists; caught exception in getContainerById (%s)' % (
+                            contName, e))
+                    self._leakDetector.removeContainerById(id)
+                    continue
+                if container is None:
+                    # this container no longer exists
+                    if self.notify.getDebug():
+                        for contName in self._leakDetector.getContainerNameByIdGen(id):
+                            yield None
+                        self.notify.debug('%s no longer exists; getContainerById returned None' %
+                                          contName)
+                    self._leakDetector.removeContainerById(id)
+                    continue
+                try:
+                    cLen = len(container)
+                except Exception, e:
+                    # this container no longer exists
+                    if self.notify.getDebug():
+                        for contName in self._leakDetector.getContainerNameByIdGen(id):
+                            yield None
+                        self.notify.debug(
+                            '%s is no longer a container, it is now %s (%s)' %
+                            (contName, safeRepr(container), e))
+                    self._leakDetector.removeContainerById(id)
+                    continue
+                self._leakDetector._index2containerId2len[self._index][id] = cLen
+            # compare the current len of each container to past lens
+            if self._index > 0:
+                oashdfjkahsdf
+                idx2id2len = self._leakDetector._index2containerId2len
+                for id in idx2id2len[self._index]:
+                    yield None
+                    if id in idx2id2len[self._index-1]:
+                        diff = idx2id2len[self._index][id] - idx2id2len[self._index-1][id]
+                        if diff > 0:
+                            if diff > idx2id2len[self._index-1][id]:
+                                minutes = (self._leakDetector._index2delay[self._index] -
+                                           self._leakDetector._index2delay[self._index-1]) / 60.
                                 name = self._leakDetector.getContainerNameById(id)
-                                try:
-                                    for container in self._leakDetector.getContainerByIdGen(id):
-                                        yield None
-                                except:
-                                    # TODO
-                                    self.notify.debug('caught exception in getContainerByIdGen (2)')
-                                else:
-                                    msg = ('%s (%s) consistently increased in size over the last '
-                                           '3 periods (%s items at last measurement, current contents: %s)' %
-                                           (name, itype(container), idx2id2len[self._index][id],
+                                if idx2id2len[self._index-1][id] != 0:
+                                    percent = 100. * (float(diff) / float(idx2id2len[self._index-1][id]))
+                                    try:
+                                        for container in self._leakDetector.getContainerByIdGen(id):
+                                            yield None
+                                    except:
+                                        # TODO
+                                        self.notify.debug('caught exception in getContainerByIdGen (1)')
+                                    else:
+                                        self.notify.warning(
+                                            '%s (%s) grew %.2f%% in %.2f minutes (%s items at last measurement, current contents: %s)' % (
+                                            name, itype(container), percent, minutes, idx2id2len[self._index][id],
                                             fastRepr(container, maxLen=CheckContainers.ReprItems)))
-                                    self.notify.warning(msg)
-                                yield None
-                        elif (id in idx2id2len[self._index-4] and
-                              id in idx2id2len[self._index-5]):
-                            # if size has consistently increased over the last 5 checks,
-                            # send out a warning
-                            diff4 = idx2id2len[self._index-3][id] - idx2id2len[self._index-4][id]
-                            diff5 = idx2id2len[self._index-4][id] - idx2id2len[self._index-5][id]
-                            if diff > 0 and diff2 > 0 and diff3 > 0 and diff4 > 0 and diff5 > 0:
-                                name = self._leakDetector.getContainerNameById(id)
-                                try:
-                                    for container in self._leakDetector.getContainerByIdGen(id):
-                                        yield None
-                                except:
-                                    # TODO
-                                    self.notify.debug('caught exception in getContainerByIdGen (3)')
-                                else:
-                                    msg = ('%s (%s) consistently increased in size over the last '
-                                           '5 periods (%s items at last measurement, current contents: %s)' %
-                                           (name, itype(container), idx2id2len[self._index][id],
-                                            fastRepr(container, maxLen=CheckContainers.ReprItems)))
-                                    self.notify.warning(msg)
-                                    self.notify.info('sending notification...')
                                     yield None
-                                    messenger.send(self._leakDetector.getLeakEvent(), [container, name])
+                        if (self._index > 2 and
+                            id in idx2id2len[self._index-2] and
+                            id in idx2id2len[self._index-3]):
+                            diff2 = idx2id2len[self._index-1][id] - idx2id2len[self._index-2][id]
+                            diff3 = idx2id2len[self._index-2][id] - idx2id2len[self._index-3][id]
+                            if self._index <= 4:
+                                if diff > 0 and diff2 > 0 and diff3 > 0:
+                                    name = self._leakDetector.getContainerNameById(id)
+                                    try:
+                                        for container in self._leakDetector.getContainerByIdGen(id):
+                                            yield None
+                                    except:
+                                        # TODO
+                                        self.notify.debug('caught exception in getContainerByIdGen (2)')
+                                    else:
+                                        msg = ('%s (%s) consistently increased in size over the last '
+                                               '3 periods (%s items at last measurement, current contents: %s)' %
+                                               (name, itype(container), idx2id2len[self._index][id],
+                                                fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                        self.notify.warning(msg)
+                                    yield None
+                            elif (id in idx2id2len[self._index-4] and
+                                  id in idx2id2len[self._index-5]):
+                                # if size has consistently increased over the last 5 checks,
+                                # send out a warning
+                                diff4 = idx2id2len[self._index-3][id] - idx2id2len[self._index-4][id]
+                                diff5 = idx2id2len[self._index-4][id] - idx2id2len[self._index-5][id]
+                                if diff > 0 and diff2 > 0 and diff3 > 0 and diff4 > 0 and diff5 > 0:
+                                    name = self._leakDetector.getContainerNameById(id)
+                                    try:
+                                        for container in self._leakDetector.getContainerByIdGen(id):
+                                            yield None
+                                    except:
+                                        # TODO
+                                        self.notify.debug('caught exception in getContainerByIdGen (3)')
+                                    else:
+                                        msg = ('%s (%s) consistently increased in size over the last '
+                                               '5 periods (%s items at last measurement, current contents: %s)' %
+                                               (name, itype(container), idx2id2len[self._index][id],
+                                                fastRepr(container, maxLen=CheckContainers.ReprItems)))
+                                        self.notify.warning(msg)
+                                        self.notify.info('sending notification...')
+                                        yield None
+                                        messenger.send(self._leakDetector.getLeakEvent(), [container, name])
+        except Exception, e:
+            print 'CheckContainers job caught exception: %s' % e
+            if __dev__:
+                #raise e
+                pass
         yield Job.Done
 
 class PruneContainerRefs(Job):
@@ -631,16 +645,22 @@ class PruneContainerRefs(Job):
         return Job.Priorities.Normal
     
     def run(self):
-        ids = self._leakDetector.getContainerIds()
-        for id in ids:
-            yield None
-            try:
-                for result in self._leakDetector.getContainerByIdGen(id):
-                    yield None
-                container = result
-            except:
-                # reference is invalid, remove it
-                self._leakDetector.removeContainerById(id)
+        try:
+            ids = self._leakDetector.getContainerIds()
+            for id in ids:
+                yield None
+                try:
+                    for result in self._leakDetector.getContainerByIdGen(id):
+                        yield None
+                    container = result
+                except:
+                    # reference is invalid, remove it
+                    self._leakDetector.removeContainerById(id)
+        except Exception, e:
+            print 'PruneContainerRefs job caught exception: %s' % e
+            if __dev__:
+                #raise e
+                pass
         yield Job.Done
 
 class ContainerLeakDetector(Job):
