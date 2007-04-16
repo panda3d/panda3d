@@ -33,6 +33,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         self.visAvatar = None
         self.gridVisContext = None
         # Do we have grid lines visualized?
+        self._onOffState = False
         if __debug__:
             self.haveGridLines = 0
 
@@ -77,6 +78,11 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
     @report(types = ['frameCount', 'avLocation'], dConfigParam = 'want-connector-report')
     def startProcessVisibility(self, avatar):
+        if not self._onOffState:
+            # if we've been told that we're OFF, don't try
+            # to process visibilty
+            return
+        
         assert not self.cr._noNewInterests
         if self.cr.noNewInterests():
             self.notify.warning(
@@ -223,9 +229,11 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
 
     def turnOff(self):
+        self._onOffState = False
         self.stopProcessVisibility()
         
     def turnOn(self, av = None):
+        self._onOffState = True
         if av:
             self.startProcessVisibility(av)
         
@@ -363,3 +371,9 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             if not self.haveGridLines:
                 self.initializeGridLines()
             self.updateGrid()
+
+    def setWorldContext(self, worldContext):
+        pass
+    
+    def clearWorldContext(self, event = None):
+        pass

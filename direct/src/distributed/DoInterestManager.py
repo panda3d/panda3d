@@ -49,6 +49,8 @@ class InterestState:
         for event in self.events:
             messenger.send(event)
         self.clearEvents()
+    def setDesc(self, desc):
+        self.desc = desc
     def isPendingDelete(self):
         return self.state == InterestState.StatePendingDel
     def __repr__(self):
@@ -149,6 +151,11 @@ class DoInterestManager(DirectObject.DirectObject):
             return False
         return DoInterestManager._interests.has_key(handle.asInt())
 
+    def updateInterestDescription(self, handle, desc):
+        iState = DoInterestManager._interests.get(handle.asInt())
+        if iState:
+            iState.setDesc(desc)
+            
     def addInterest(self, parentId, zoneIdList, description, event=None, auto=False):
         """
         Look into a (set of) zone(s).
