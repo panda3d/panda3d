@@ -73,7 +73,8 @@ class JobManager:
         job._cleanupGenerator()
         # remove the job's timeslice count
         self._jobId2timeslices.pop(jobId)
-        self._jobId2timeslicesLeft.pop(jobId)
+        if jobId in self._jobId2timeslicesLeft:
+            del self._jobId2timeslicesLeft[jobId]
         if len(self._pri2jobId2job[pri]) == 0:
             del self._pri2jobId2job[pri]
             if pri == self._highestPriority:
