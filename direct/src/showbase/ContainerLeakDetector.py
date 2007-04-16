@@ -550,7 +550,6 @@ class CheckContainers(Job):
                 self._leakDetector._index2containerId2len[self._index][id] = cLen
             # compare the current len of each container to past lens
             if self._index > 0:
-                oashdfjkahsdf
                 idx2id2len = self._leakDetector._index2containerId2len
                 for id in idx2id2len[self._index]:
                     yield None
