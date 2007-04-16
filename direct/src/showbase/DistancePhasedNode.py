@@ -268,9 +268,15 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
     def __init__(self, name, bufferParamMap = {}, autoCleanup = True,
                  enterPrefix = 'enter', exitPrefix = 'exit', phaseCollideMask = BitMask32.allOn(), fromCollideNode = None):
+        self.bufferParamMap = bufferParamMap
+        self.bufferParamList = sorted(bufferParamMap.items(),
+                                      key = lambda x: x[1],
+                                      reverse = True)
+
         sParams = dict(bufferParamMap)
         for key in sParams:
             sParams[key] = sParams[key][0]
+
         DistancePhasedNode.__init__(self, name = name,
                                     phaseParamMap = sParams,
                                     autoCleanup = autoCleanup,
@@ -278,10 +284,6 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
                                     exitPrefix = exitPrefix,
                                     phaseCollideMask = phaseCollideMask,
                                     fromCollideNode = fromCollideNode)
-        self.bufferParamMap = bufferParamMap
-        self.bufferParamList = sorted(bufferParamMap.items(),
-                                      key = lambda x: x[1],
-                                      reverse = True)
 
     def __repr__(self):
         outStr = 'BufferedDistancePhasedNode('
