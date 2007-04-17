@@ -221,8 +221,7 @@ stop_delay() {
 #endif  // SIMULATE_NETWORK_DELAY
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CConnectionRepository::check_datagram
-//       Access: Published
+//     Function: CConnectionRepository::check_datagram//       Access: Published
 //  Description: Returns true if a new datagram is available, false
 //               otherwise.  If the return value is true, the new
 //               datagram may be retrieved via get_datagram(), or
@@ -251,9 +250,10 @@ check_datagram() {
       unsigned char  wc_cnt;
       wc_cnt = _di.get_uint8();
       _msg_channels.clear();
-      for(unsigned char lp1 = 0; lp1 < wc_cnt; lp1++) {
-        CHANNEL_TYPE  schan  = _di.get_uint64();
-        _msg_channels.push_back(schan);
+      for(unsigned char lp1 = 0; lp1 < wc_cnt; lp1++)
+      {
+            CHANNEL_TYPE  schan  = _di.get_uint64();
+            _msg_channels.push_back(schan);
       }
       _msg_sender = _di.get_uint64();
       
@@ -576,7 +576,6 @@ handle_update_field() {
       Py_DECREF(distobj);
       
       if (PyErr_Occurred()) {
-        handle_python_exception();
         return false;
       }
     }
@@ -651,7 +650,6 @@ handle_update_field_owner() {
         Py_DECREF(distobjOV);
       
         if (PyErr_Occurred()) {
-          handle_python_exception();
           return false;
         }
       }
@@ -688,7 +686,6 @@ handle_update_field_owner() {
         Py_DECREF(distobj);
       
         if (PyErr_Occurred()) {
-          handle_python_exception();
           return false;
         }
       }
@@ -698,53 +695,6 @@ handle_update_field_owner() {
   #endif  // HAVE_PYTHON  
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CConnectionRepository::handle_python_exception
-//       Access: Private
-//  Description: Called when a Python exception is raised during
-//               processing of an update or whatever.  Gets the error
-//               string and passes it back to the calling Python
-//               process in a sensible way.
-////////////////////////////////////////////////////////////////////
-void CConnectionRepository::
-handle_python_exception() {
-  PyObject *exc, *val, *tb;
-  PyErr_Fetch(&exc, &val, &tb);
-
-  ostringstream strm;
-  strm << "\n";
-
-  PyObject *exc_name = PyObject_GetAttrString(exc, "__name__");
-  if (exc_name == (PyObject *)NULL) {
-    PyObject *exc_str = PyObject_Str(exc);
-    strm << PyString_AsString(exc_str);
-    Py_DECREF(exc_str);
-  } else {
-    PyObject *exc_str = PyObject_Str(exc_name);
-    strm << PyString_AsString(exc_str);
-    Py_DECREF(exc_str);
-    Py_DECREF(exc_name);
-  }
-  Py_DECREF(exc);
-
-  if (val != (PyObject *)NULL) {
-    PyObject *val_str = PyObject_Str(val);
-    strm << ": " << PyString_AsString(val_str);
-    Py_DECREF(val_str);
-    Py_DECREF(val);
-  }
-  if (tb != (PyObject *)NULL) {
-    Py_DECREF(tb);
-  }
-
-  strm << "\nException occurred while processing ";
-  describe_message(strm, "", _dg);
-  string message = strm.str();
-  nout << message << "\n";
-
-  nassert_raise(message);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -763,10 +713,7 @@ describe_message(ostream &out, const string &prefix,
   CHANNEL_TYPE do_id;
   int msg_type;
   bool is_update = false;
-  string full_prefix;
-  if (!prefix.empty()) {
-    full_prefix = "CR::" + prefix + ":";
-  }
+  string full_prefix = "CR::" + prefix;
 
   if (!_client_datagram) 
   {
@@ -809,8 +756,9 @@ describe_message(ostream &out, const string &prefix,
     if (msgName.length() == 0) {
       msgName += "unknown message ";
       msgName += msg_type;
+      msgName += "\n";
     }
-    out << full_prefix << msgName << "\n";
+    out << full_prefix << ":" << msgName << "\n";
     dg.dump_hex(out, 2);
 
   } else {
@@ -851,14 +799,15 @@ describe_message(ostream &out, const string &prefix,
     int field_id = packer.raw_unpack_uint16();
 
     if (dclass == (DCClass *)NULL) {
-      out << full_prefix << "unknown_object(" << do_id 
-          << ").unknown_field(" << field_id << ")\n";
+      out << full_prefix << "update for unknown object " << do_id 
+          << ", field " << field_id << "\n";
 
     } else {
-      out << full_prefix << dclass->get_name() << "(" << do_id << ").";
+      out << full_prefix <<
+        ":" << dclass->get_name() << "(" << do_id << ").";
       DCField *field = dclass->get_field_by_index(field_id);
       if (field == (DCField *)NULL) {
-        out << "unknown_field(" << field_id << ")\n";
+        out << "unknown field " << field_id << "\n";
         
       } else {
         out << field->get_name();
