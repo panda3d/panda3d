@@ -206,6 +206,8 @@ PUBLISHED:
   INLINE NodePath get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
   NodePathCollection get_stashed_children(Thread *current_thread = Thread::get_current_thread()) const;
 
+  INLINE int count_num_descendants() const;
+
   INLINE bool has_parent(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE NodePath get_parent(Thread *current_thread = Thread::get_current_thread()) const;
   int get_sort(Thread *current_thread = Thread::get_current_thread()) const;

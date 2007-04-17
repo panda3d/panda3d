@@ -573,6 +573,25 @@ copy_subgraph(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::count_num_descendants
+//       Access: Published
+//  Description: Returns the number of nodes at and below this level.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+count_num_descendants() const {
+  int count = 1;
+  Children children = get_children();
+  int num_children = children.get_num_children();
+
+  for (int i = 0; i < num_children; ++i) {
+    PandaNode *child = children.get_child(i);
+    count += child->count_num_descendants();
+  }
+
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::add_child
 //       Access: Published
 //  Description: Adds a new child to the node.  The child is added in

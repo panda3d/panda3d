@@ -124,6 +124,8 @@ PUBLISHED:
   INLINE int get_child_sort(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int find_child(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
 
+  int count_num_descendants() const;
+
   void add_child(PandaNode *child_node, int sort = 0,
                  Thread *current_thread = Thread::get_current_thread());
   void remove_child(int child_index, Thread *current_thread = Thread::get_current_thread());

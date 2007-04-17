@@ -393,6 +393,19 @@ get_child(int n, Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::count_num_descendants
+//       Access: Published
+//  Description: Returns the number of nodes at and below this level.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+count_num_descendants() const {
+  if (is_empty()) {
+    return 0;
+  }
+  return _head->get_node()->count_num_descendants();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_parent
 //       Access: Published
 //  Description: Returns true if the referenced node has a parent;
