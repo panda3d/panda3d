@@ -54,7 +54,7 @@ BUILTFROMCACHE = {}
 CXXINCLUDECACHE = {}
 THREADCOUNT=0
 DXVERSIONS=["8","9"]
-MAYAVERSIONS=["6","65","7","8"]
+MAYAVERSIONS=["6","65","7","8","85"]
 MAXVERSIONS=["6","7","8"]
 ICACHEPATH="built/tmp/makepanda-dcache"
 INTERRUPT=0
@@ -328,10 +328,9 @@ def getVC80CRTVersion(fn):
 
 def setVC80CRTVersion(fn, ver):
     manifest = ReadFile(fn)
-    version = VC80CRTVERSIONRE.search(manifest)
-    if (version == None):
-        exit("Cannot find version number in "+wdll+".manifest")
-    WriteFile(fn, manifest[:version.start(1)]+VC80CRTVERSION+manifest[version.end(1):])
+    subst = " name='Microsoft.VC80.CRT' version='"+ver+"' "
+    manifest = VC80CRTVERSIONRE.sub(subst, manifest)
+    WriteFile(fn, manifest)
 
 ########################################################################
 ##
@@ -458,6 +457,8 @@ if (os.path.isdir("sdks")):
     MAYASDK["MAYA6"]  = "sdks/maya6"
     MAYASDK["MAYA65"] = "sdks/maya65"
     MAYASDK["MAYA7"]  = "sdks/maya7"
+    MAYASDK["MAYA8"]  = "sdks/maya8"
+    MAYASDK["MAYA85"]  = "sdks/maya85"
 
 ########################################################################
 ##
@@ -1278,7 +1279,7 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ########################################################################
 
 def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
-    cmd = 'link /nologo /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:MSVCRTD.LIB /DEBUG '
+    cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
     if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
     if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
     optlevel = getoptlevel(opts,OPTIMIZE)
