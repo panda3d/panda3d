@@ -2782,6 +2782,104 @@ class HotkeyBreaker:
             if self.breakKeys.pop(breakKey,False):
                 import pdb;pdb.set_trace()
 
+def nullGen():
+    # generator that ends immediately
+    if False:
+        # yield that never runs but still exists, making this func a generator
+        yield None
+
+def loopGen(l):
+    # generator that yields the items of an iterable object forever
+    def _gen(l):
+        while True:
+            for item in l:
+                yield item
+    gen = _gen(l)
+    # don't leak
+    _gen = None
+    return gen
+
+def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
+    # iterates and finally yields a flywheel generator object
+    # the number of appearances for each object is controlled by passing in
+    # a list of counts, or a functor that returns a count when called with
+    # an object from the 'objects' list.
+    # if scale is provided, all counts are scaled by the scale value and then int()'ed.
+    def flywheel(index2objectAndCount):
+        # generator to produce a sequence whose elements appear a specific number of times
+        while len(index2objectAndCount):
+            keyList = index2objectAndCount.keys()
+            for key in keyList:
+                if index2objectAndCount[key][1] > 0:
+                    yield index2objectAndCount[key][0]
+                    index2objectAndCount[key][1] -= 1
+                if index2objectAndCount[key][1] == 0:
+                    del index2objectAndCount[key]
+    # if we were not given a list of counts, create it by calling countFunc
+    if countList is None:
+        countList = []
+        for object in objects:
+            yield None
+            countList.append(countFunc(object))
+    if scale is not None:
+        # scale the counts if we've got a scale factor
+        for i in xrange(len(countList)):
+            yield None
+            if countList[i] > 0:
+                countList[i] = max(1, int(countList[i] * scale))
+    # create a dict for the flywheel to use during its iteration to efficiently select
+    # the objects for the sequence
+    index2objectAndCount = {}
+    for i in xrange(len(countList)):
+        yield None
+        index2objectAndCount[i] = [objects[i], countList[i]]
+    # create the flywheel generator
+    yield flywheel(index2objectAndCount)
+
+def flywheel(*args, **kArgs):
+    # create a flywheel generator
+    # see arguments and comments in flywheelGen above
+    # example usage:
+    """
+    >>> for i in flywheel([1,2,3], countList=[10, 5, 1]):
+    ...   print i,
+    ... 
+    1 2 3 1 2 1 2 1 2 1 2 1 1 1 1 1
+    """
+    for flywheel in makeFlywheelGen(*args, **kArgs):
+        pass
+    return flywheel
+
+if __debug__:
+    f = flywheel(['a','b','c','d'], countList=[11,20,3,4])
+    obj2count = {}
+    for obj in f:
+        obj2count.setdefault(obj, 0)
+        obj2count[obj] += 1
+    assert obj2count['a'] == 11
+    assert obj2count['b'] == 20
+    assert obj2count['c'] == 3
+    assert obj2count['d'] == 4
+
+    f = flywheel([1,2,3,4], countFunc=lambda x: x*2)
+    obj2count = {}
+    for obj in f:
+        obj2count.setdefault(obj, 0)
+        obj2count[obj] += 1
+    assert obj2count[1] == 2
+    assert obj2count[2] == 4
+    assert obj2count[3] == 6
+    assert obj2count[4] == 8
+
+    f = flywheel([1,2,3,4], countFunc=lambda x: x, scale = 3)
+    obj2count = {}
+    for obj in f:
+        obj2count.setdefault(obj, 0)
+        obj2count[obj] += 1
+    assert obj2count[1] == 1 * 3
+    assert obj2count[2] == 2 * 3
+    assert obj2count[3] == 3 * 3
+    assert obj2count[4] == 4 * 3
 
 import __builtin__
 __builtin__.Functor = Functor
@@ -2826,3 +2924,6 @@ __builtin__.invertDictLossless = invertDictLossless
 __builtin__.getBase = getBase
 __builtin__.safeRepr = safeRepr
 __builtin__.fastRepr = fastRepr
+__builtin__.nullGen = nullGen
+__builtin__.flywheel = flywheel
+__builtin__.loopGen = loopGen
