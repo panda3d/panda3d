@@ -30,11 +30,8 @@ class JobManager:
         # how many timeslices to give each job; this is used to efficiently implement
         # the relative job priorities
         self._jobId2timeslices = {}
-        # this is the working copy of _jobId2timeslices that we use to count down how
-        # many timeslices to give each job
-        self._jobId2timeslicesLeft = {}
-        # this is used to round-robin the jobs in _jobId2timeslicesLeft
-        self._curJobIndex = 0
+        # this is a generator that we use to give high-priority jobs more timeslices
+        self._jobIdGenerator = None
         self._highestPriority = Job.Priorities.Normal
 
     def destroy(self):
@@ -73,8 +70,6 @@ class JobManager:
         job._cleanupGenerator()
         # remove the job's timeslice count
         self._jobId2timeslices.pop(jobId)
-        if jobId in self._jobId2timeslicesLeft:
-            del self._jobId2timeslicesLeft[jobId]
         if len(self._pri2jobId2job[pri]) == 0:
             del self._pri2jobId2job[pri]
             if pri == self._highestPriority:
@@ -136,17 +131,22 @@ class JobManager:
             # figure out how long we can run
             endT = globalClock.getRealTime() + (self._timeslice * .9)
             while True:
-                # round-robin the jobs, dropping them as they run out of priority timeslices
-                # until all timeslices are used
-                if len(self._jobId2timeslicesLeft) == 0:
-                    self._jobId2timeslicesLeft = dict(self._jobId2timeslices)
-                self._curJobIndex = (self._curJobIndex + 1) % len(self._jobId2timeslicesLeft)
-                jobId = self._jobId2timeslicesLeft.keys()[self._curJobIndex]
-                # use up one of this job's timeslices
-                self._jobId2timeslicesLeft[jobId] -= 1
-                if self._jobId2timeslicesLeft[jobId] == 0:
-                    del self._jobId2timeslicesLeft[jobId]
-                pri = self._jobId2pri[jobId]
+                if self._jobIdGenerator is None:
+                    # round-robin the jobs, giving high-priority jobs more timeslices
+                    self._jobIdGenerator = flywheel(
+                        self._jobId2timeslices.keys(),
+                        countFunc = lambda jobId: self._jobId2timeslices[jobId])
+                try:
+                    # grab the next jobId in the sequence
+                    jobId = self._jobIdGenerator.next()
+                except StopIteration:
+                    self._jobIdGenerator = None
+                    continue
+                # OK, we've selected a job to run
+                pri = self._jobId2pri.get(jobId)
+                if pri is None:
+                    # this job is no longer present
+                    continue
                 job = self._pri2jobId2job[pri][jobId]
                 gen = job._getGenerator()
                 if __debug__:
