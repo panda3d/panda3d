@@ -111,10 +111,12 @@ class ProjectileInterval(Interval):
         def calcStartVel(startPos, endPos, duration, zAccel):
             # p(t) = p_0 + t*v_0 + .5*a*t^2
             # v_0 = [p(t) - p_0 - .5*a*t^2] / t
-            t = duration
-            return Point3((endPos[0] - startPos[0]) / duration,
+            if (duration == 0):
+                return Point3(0, 0, 0)
+            else:
+                return Point3((endPos[0] - startPos[0]) / duration,
                           (endPos[1] - startPos[1]) / duration,
-                          (endPos[2] - startPos[2] - (.5*zAccel*t*t)) / t)
+                          (endPos[2] - startPos[2] - (.5*zAccel*duration*duration)) / duration)
 
         def calcTimeOfImpactOnPlane(startHeight, endHeight, startVel, accel):
             return PythonUtil.solveQuadratic(accel * .5, startVel,
