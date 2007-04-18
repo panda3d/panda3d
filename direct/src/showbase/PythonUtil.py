@@ -2813,7 +2813,7 @@ def makeFlywheelGen(objects, countList=None, countFunc=None, scale=None):
                 if index2objectAndCount[key][1] > 0:
                     yield index2objectAndCount[key][0]
                     index2objectAndCount[key][1] -= 1
-                if index2objectAndCount[key][1] == 0:
+                if index2objectAndCount[key][1] <= 0:
                     del index2objectAndCount[key]
     # if we were not given a list of counts, create it by calling countFunc
     if countList is None:
