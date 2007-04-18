@@ -236,6 +236,7 @@ pop_struct() {
 %token TOKENPASTE
 
 %token KW_BEGIN_PUBLISH
+%token KW_BLOCKING
 %token KW_BOOL
 %token KW_CATCH
 %token KW_CHAR
@@ -531,6 +532,10 @@ storage_class:
         | storage_class KW_REGISTER
 {
   $$ = $1 | (int)CPPInstance::SC_register;
+}
+        | storage_class KW_BLOCKING
+{
+  $$ = $1 | (int)CPPInstance::SC_blocking;
 }
         ;
 

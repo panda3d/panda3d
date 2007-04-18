@@ -277,15 +277,19 @@
 /*
  We define the macros BEGIN_PUBLISH and END_PUBLISH to bracket
  functions and global variable definitions that are to be published
- via interrogate to scripting languages.
+ via interrogate to scripting languages.  Also, the macro BLOCKING is
+ used to flag any function or method that might perform I/O blocking
+ and thus needs to release Python threads for its duration.
  */
 #ifdef CPPPARSER
 #define BEGIN_PUBLISH __begin_publish
 #define END_PUBLISH __end_publish
+#define BLOCKING __blocking
 #undef USE_STL_ALLOCATOR  // Don't try to parse these template classes in interrogate.
 #else
 #define BEGIN_PUBLISH
 #define END_PUBLISH
+#define BLOCKING
 #endif
 
 #ifdef __cplusplus

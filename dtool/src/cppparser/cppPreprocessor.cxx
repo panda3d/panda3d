@@ -1929,6 +1929,7 @@ get_number(int c, int c2) {
 int CPPPreprocessor::
 check_keyword(const string &name) {
   if (name == "__begin_publish") return KW_BEGIN_PUBLISH;
+  if (name == "__blocking") return KW_BLOCKING;
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;

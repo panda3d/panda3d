@@ -2275,6 +2275,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
     // return expression.
+    if (remap->_blocking) {
+      indent(out, extra_indent_level)
+        << "PyThreadState *_save;\n";
+      indent(out, extra_indent_level)
+        << "Py_UNBLOCK_THREADS\n";
+    }
     string tt;
     string return_expr = remap->call_function(out, extra_indent_level, false, container, pexprs);
     CPPType *type = remap->_return_type->get_orig_type();
@@ -2282,6 +2288,11 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     type->output_instance(out, "return_value", &parser);
     //    type->output_instance(tt, "return_value", &parser);
     out << " = " << return_expr << ";\n";
+
+    if (remap->_blocking) {
+      indent(out, extra_indent_level)
+        << "Py_BLOCK_THREADS\n";
+    }
     
     if (track_interpreter) {
       indent(out,extra_indent_level) << "in_interpreter = 1;\n";
@@ -2295,8 +2306,20 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     pack_return_value(out, extra_indent_level, remap, return_expr,ForwardDeclrs,is_inplace);
 
   } else {
+    if (remap->_blocking) {
+      indent(out, extra_indent_level)
+        << "PyThreadState *_save;\n";
+      indent(out, extra_indent_level)
+        << "Py_UNBLOCK_THREADS\n";
+    }
+
     string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
     if (return_expr.empty()) {
+      if (remap->_blocking) {
+        indent(out, extra_indent_level)
+          << "Py_BLOCK_THREADS\n";
+      }
+
       if (track_interpreter) {
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
@@ -2313,6 +2336,11 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         type->output_instance(out, "return_value", &parser);
         out << " = " << return_expr << ";\n";
       }
+      if (remap->_blocking) {
+        indent(out, extra_indent_level)
+          << "Py_BLOCK_THREADS\n";
+      }
+
       if (track_interpreter) {
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }

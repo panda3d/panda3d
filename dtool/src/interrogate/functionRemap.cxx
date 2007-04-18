@@ -47,6 +47,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _void_return = true;
   _ForcedVoidReturn = false;
   _has_this = false;
+  _blocking = false;
   _const_method = false;
   _first_true_parameter = 0;
   _num_default_parameters = num_default_parameters;
@@ -436,6 +437,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
   } else if ((ifunc._flags & InterrogateFunction::F_setter) != 0) {
     _type = T_setter;
+  }
+
+  if (_cpptype != (CPPType *)NULL &&
+      ((_cppfunc->_storage_class & CPPInstance::SC_blocking) != 0)) {
+    // If it's marked as a "blocking" method or function, record that.
+    _blocking = true;
   }
 
   if (_cpptype != (CPPType *)NULL &&
