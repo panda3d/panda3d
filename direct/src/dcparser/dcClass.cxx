@@ -880,7 +880,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
 //               object from the client.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-client_format_update(const string &field_name, int do_id, 
+client_format_update(const string &field_name, DOID_TYPE do_id, 
                      PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
@@ -904,7 +904,7 @@ client_format_update(const string &field_name, int do_id,
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-ai_format_update(const string &field_name, int do_id, 
+ai_format_update(const string &field_name, DOID_TYPE do_id, 
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
   if (field == (DCField *)NULL) {
@@ -932,8 +932,8 @@ ai_format_update(const string &field_name, int do_id,
 //               in addition to the normal required fields.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-client_format_generate(PyObject *distobj, int do_id, 
-                   int zone_id, PyObject *optional_fields) const {
+client_format_generate(PyObject *distobj, DOID_TYPE do_id, 
+                   ZONEID_TYPE zone_id, PyObject *optional_fields) const {
   DCPacker packer;
 
   //packer.raw_pack_uint8('A');
@@ -1007,8 +1007,8 @@ client_format_generate(PyObject *distobj, int do_id,
 //               in addition to the normal required fields.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-ai_format_generate(PyObject *distobj, int do_id, 
-                   int parent_id, int zone_id,
+ai_format_generate(PyObject *distobj, DOID_TYPE do_id, 
+                   DOID_TYPE parent_id, ZONEID_TYPE zone_id,
                    CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                    PyObject *optional_fields) const {
   DCPacker packer;
@@ -1093,7 +1093,7 @@ ai_format_generate(PyObject *distobj, int do_id,
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_database_generate_context(
-    unsigned int context_id, unsigned int parent_id, unsigned int zone_id,
+    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
     CHANNEL_TYPE owner_channel,
     CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
 {
@@ -1137,7 +1137,7 @@ ai_database_generate_context(
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
 ai_database_generate_context_old(
-    unsigned int context_id, unsigned int parent_id, unsigned int zone_id,
+    unsigned int context_id, DOID_TYPE parent_id, ZONEID_TYPE zone_id,
     CHANNEL_TYPE database_server_id, CHANNEL_TYPE from_channel_id) const 
 {
   DCPacker packer;

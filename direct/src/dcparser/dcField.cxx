@@ -438,7 +438,7 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
 //               object from the client.
 ////////////////////////////////////////////////////////////////////
 Datagram DCField::
-client_format_update(int do_id, PyObject *args) const {
+client_format_update(DOID_TYPE do_id, PyObject *args) const {
   DCPacker packer;
 
   packer.raw_pack_uint16(CLIENT_OBJECT_UPDATE_FIELD);
@@ -464,7 +464,7 @@ client_format_update(int do_id, PyObject *args) const {
 //               object from the AI.
 ////////////////////////////////////////////////////////////////////
 Datagram DCField::
-ai_format_update(int do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
+ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCPacker packer;
 
   packer.raw_pack_uint8(1);

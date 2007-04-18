@@ -114,11 +114,16 @@ typedef long long PN_int64;
 typedef unsigned long long PN_uint64;
 #endif
 
+typedef unsigned char PN_uint8;
+typedef unsigned short PN_uint16;
+typedef unsigned int PN_uint32;
 
 
 #endif  // WITHIN_PANDA
 
 //typedef       unsigned long   CHANNEL_TYPE;
 typedef       PN_uint64   CHANNEL_TYPE;
+typedef       PN_uint32   DOID_TYPE;
+typedef       PN_uint32   ZONEID_TYPE;
 
 #endif  // DCBASE_H
