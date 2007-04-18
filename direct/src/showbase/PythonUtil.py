@@ -25,7 +25,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
-'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360']
+'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
+'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', ]
 
 import types
 import string
