@@ -641,14 +641,14 @@ set_properties_now(WindowProperties &properties) {
       properties.clear_mouse_mode();
     }
     else {
-      if(properties.get_mouse_mode() == WindowProperties::MOUSE_absolute) {
-        _properties.set_mouse_mode(WindowProperties::MOUSE_absolute);
+      if(properties.get_mouse_mode() == WindowProperties::M_absolute) {
+        _properties.set_mouse_mode(WindowProperties::M_absolute);
         mouse_mode_absolute();
         properties.clear_mouse_mode();
       }
       else
       {
-        _properties.set_mouse_mode(WindowProperties::MOUSE_relative);
+        _properties.set_mouse_mode(WindowProperties::M_relative);
         mouse_mode_relative();
         properties.clear_mouse_mode();        
       }    

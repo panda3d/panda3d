@@ -1277,7 +1277,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 {
                     GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
-                    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                    if(_properties.get_mouse_mode()==WindowProperties::M_relative)
                     {
                       GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                       MouseData currMouse=get_pointer(0);
@@ -1304,7 +1304,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 {
                     GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     //				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-                    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                    if(_properties.get_mouse_mode()==WindowProperties::M_relative)
                     {
                       GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                       MouseData currMouse=get_pointer(0);
@@ -1328,7 +1328,7 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                 break;
             case kEventMouseMoved:	
             case kEventMouseDragged:
-                if(_properties.get_mouse_mode()==WindowProperties::MOUSE_relative)
+                if(_properties.get_mouse_mode()==WindowProperties::M_relative)
                 {
                   GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                   
@@ -1544,7 +1544,7 @@ if (osxdisplay_cat.is_debug())
     pt.v = y; 
     _input_devices[0].set_pointer_in_window(x, y);  
 
-    if(_properties.get_mouse_mode()==WindowProperties::MOUSE_absolute)
+    if(_properties.get_mouse_mode()==WindowProperties::M_absolute)
     {
        LocalPointToSystemPoint(pt); 
        CGPoint newCursorPosition = {0, 0}; 

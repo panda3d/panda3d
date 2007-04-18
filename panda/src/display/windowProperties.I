@@ -789,7 +789,7 @@ has_mouse_mode() const {
 INLINE void WindowProperties::
 clear_mouse_mode() {
   _specified &= ~S_mouse_mode;
-  _mouse_mode=MOUSE_absolute;
+  _mouse_mode = M_absolute;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,8 +41,8 @@ PUBLISHED:
   };
   
   enum MouseMode {
-    MOUSE_absolute,
-    MOUSE_relative,
+    M_absolute,
+    M_relative,
   };
 
   WindowProperties();
