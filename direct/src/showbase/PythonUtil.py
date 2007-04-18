@@ -2927,3 +2927,4 @@ __builtin__.fastRepr = fastRepr
 __builtin__.nullGen = nullGen
 __builtin__.flywheel = flywheel
 __builtin__.loopGen = loopGen
+__builtin__.StackTrace = StackTrace
