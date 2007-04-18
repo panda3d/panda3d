@@ -19,9 +19,9 @@ import fnmatch
 import string
 import signal
 try:
-  from libp3heapq import heappush, heappop, heapify
+    from libp3heapq import heappush, heappop, heapify
 except:
-  from libheapq import heappush, heappop, heapify
+    from libheapq import heappush, heappop, heapify
 import types
 
 if __debug__:
@@ -91,7 +91,7 @@ class Task:
             self.maxDt = 0.0
             self.runningTotal = 0.0
             self.pstats = None
-        self.extraArgs = None
+        self.extraArgs = []
         # Used for doLaters
         self.wakeTime = 0.0
         # for repeating doLaters
@@ -456,14 +456,18 @@ class TaskManager:
             self.notify.error('doMethodLater: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
-        task.extraArgs = extraArgs
-        if uponDeath:
-            task.uponDeath = uponDeath
+        if extraArgs == None:
+            extraArgs = []
+            appendTask = True
 
         # if told to, append the task object to the extra args list so the
         # method called will be able to access any properties on the task
-        if (appendTask == True and extraArgs != None):
+        if appendTask:
             extraArgs.append(task)
+          
+        task.extraArgs = extraArgs
+        if uponDeath:
+            task.uponDeath = uponDeath
 
         # TaskManager.notify.debug('spawning doLater: %s' % (task))
         # Add this task to the nameDict
@@ -484,7 +488,8 @@ class TaskManager:
                            sentArgs = [task, task.name, task.id])
         return task
 
-    def add(self, funcOrTask, name, priority=0, extraArgs=None, uponDeath=None):
+    def add(self, funcOrTask, name, priority=0, extraArgs=None, uponDeath=None,
+            appendTask = False):
         """
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
@@ -499,6 +504,15 @@ class TaskManager:
                 'add: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
+        if extraArgs == None:
+            extraArgs = []
+            appendTask = True
+
+        # if told to, append the task object to the extra args list so the
+        # method called will be able to access any properties on the task
+        if appendTask:
+            extraArgs.append(task)
+
         task.extraArgs = extraArgs
         if uponDeath:
             task.uponDeath = uponDeath
@@ -644,11 +658,7 @@ class TaskManager:
             startTime = self.trueClock.getShortTime()
             
             # don't record timing info
-            if task.extraArgs != None:
-                ret = task(*task.extraArgs)
-            else:
-                ret = task(task)
-
+            ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
             
             # Record the dt
@@ -660,10 +670,7 @@ class TaskManager:
             if task.pstats:
                 task.pstats.start()
             startTime = self.trueClock.getShortTime()
-            if task.extraArgs != None:
-                ret = task(*task.extraArgs)
-            else:
-                ret = task(task)
+            ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
             if task.pstats:
                 task.pstats.stop()
