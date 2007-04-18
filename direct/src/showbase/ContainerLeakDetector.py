@@ -334,11 +334,7 @@ class FindContainers(Job):
         return False
 
     def _hasLength(self, obj):
-        try:
-            len(obj)
-        except:
-            return False
-        return True
+        return hasattr(obj, '__len__')
 
     def _addContainerGen(self, cont, objRef):
         contId = id(cont)
