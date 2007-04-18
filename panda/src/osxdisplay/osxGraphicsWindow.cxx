@@ -1291,9 +1291,9 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                     }
                     ButtonHandle button_h = MouseButton::one();
                     if(kEventMouseButtonSecondary == button)
-                        button_h = MouseButton::two();
-                    if(kEventMouseButtonTertiary == button)
                         button_h = MouseButton::three();
+                    if(kEventMouseButtonTertiary == button)
+                        button_h = MouseButton::two();
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_down(button_h);
 					result = noErr;
@@ -1318,9 +1318,9 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
                     }
                     ButtonHandle button_h = MouseButton::one();
                     if(kEventMouseButtonSecondary == button)
-                        button_h = MouseButton::two();
-                    if(kEventMouseButtonTertiary == button)
                         button_h = MouseButton::three();
+                    if(kEventMouseButtonTertiary == button)
+                        button_h = MouseButton::two();
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_up(button_h);
 					result = noErr;					
