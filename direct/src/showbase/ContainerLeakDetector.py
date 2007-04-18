@@ -265,6 +265,14 @@ class FindContainers(Job):
         # set up the base containers, the ones that hold most objects
         ref = ContainerRef(Indirection(evalStr='__builtin__.__dict__'))
         self._id2baseStartRef[id(__builtin__.__dict__)] = ref
+        # container for objects that want to make sure they are found by
+        # the object exploration algorithm, including objects that exist
+        # just to measure things such as C++ memory usage, scene graph size,
+        # framerate, etc. See LeakDetectors.py
+        if not hasattr(__builtin__, "leakDetectors"):
+            __builtin__.leakDetectors = {}
+        ref = ContainerRef(Indirection(evalStr='leakDetectors'))
+        self._id2baseStartRef[id(leakDetectors)] = ref
         for i in self._addContainerGen(__builtin__.__dict__, ref):
             pass
         try:
@@ -369,9 +377,9 @@ class FindContainers(Job):
 
     def run(self):
         try:
-            # this toggles between the sets of start refs every time we start a new traversal
-            workingListSelector = loopGen([self._baseStartRefWorkingList,
-                                           self._discoveredStartRefWorkingList])
+            # this yields a different set of start refs every time we start a new traversal
+            # force creation of a new workingListSelector inside the while loop right off the bat
+            workingListSelector = nullGen()
             # this holds the current step of the current traversal
             curObjRef = None
             while True:
@@ -381,7 +389,19 @@ class FindContainers(Job):
                 #import pdb;pdb.set_trace()
                 if curObjRef is None:
                     # choose an object to start a traversal from
-                    startRefWorkingList = workingListSelector.next()
+                    try:
+                        startRefWorkingList = workingListSelector.next()
+                    except StopIteration:
+                        # do relative # of traversals on each set based on how many refs it contains
+                        baseLen = len(self._baseStartRefWorkingList.source)
+                        discLen = len(self._discoveredStartRefWorkingList.source)
+                        minLen = float(max(1, min(baseLen, discLen)))
+                        # this will cut down the traversals of the larger set by 2/3
+                        minLen *= 3.
+                        workingListSelector = flywheel([self._baseStartRefWorkingList, self._discoveredStartRefWorkingList],
+                                                       [baseLen/minLen, discLen/minLen])
+                        yield None
+                        continue
 
                     # grab the next start ref from this sequence and see if it's still valid
                     while True:
@@ -396,12 +416,12 @@ class FindContainers(Job):
                                 break
                             # make a generator that yields containers a # of times that is
                             # proportional to their length
-                            for flywheel in makeFlywheelGen(
+                            for fw in makeFlywheelGen(
                                 startRefWorkingList.source.values(),
                                 countFunc=lambda x: self.getStartObjAffinity(x),
                                 scale=.05):
                                 yield None
-                            startRefWorkingList.refGen = flywheel
+                            startRefWorkingList.refGen = fw
                     if curObjRef is None:
                         # this ref set is empty, choose another
                         # the base set should never be empty (__builtin__ etc.)
@@ -540,8 +560,7 @@ class FindContainers(Job):
         except Exception, e:
             print 'FindContainers job caught exception: %s' % e
             if __dev__:
-                #raise e
-                pass
+                raise
         yield Job.Done
 
 class CheckContainers(Job):
@@ -680,8 +699,7 @@ class CheckContainers(Job):
         except Exception, e:
             print 'CheckContainers job caught exception: %s' % e
             if __dev__:
-                #raise e
-                pass
+                raise
         yield Job.Done
 
 class PruneContainerRefs(Job):
@@ -736,8 +754,7 @@ class PruneContainerRefs(Job):
         except Exception, e:
             print 'PruneContainerRefs job caught exception: %s' % e
             if __dev__:
-                #raise e
-                pass
+                raise
         yield Job.Done
 
 class ContainerLeakDetector(Job):
