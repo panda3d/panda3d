@@ -198,10 +198,19 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
     def d_setLocation(self, parentId, zoneId):
         self.air.sendSetLocation(self, parentId, zoneId)
 
+    def checkFFparentId(self, parentId):
+        if parentId == 4294967295:
+            msg = 'DOAI.setLocation, parentId == 4294967295, doId = %s, class = %s, stack = %s' % (
+                self.doId, self.__class__.__name__, PythonUtil.StackTrace().compact())
+            print msg
+            self.air.writeServerEvent('parentIdFFFFFFFF', self.doId, msg)
+
     def setLocation(self, parentId, zoneId):
         # Prevent Duplicate SetLocations for being Called
         if (self.parentId == parentId) and (self.zoneId == zoneId):
             return
+
+        self.checkFFparentId(parentId)
 
         oldParentId = self.parentId
         oldZoneId = self.zoneId

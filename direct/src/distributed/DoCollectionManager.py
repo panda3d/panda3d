@@ -241,6 +241,8 @@ class DoCollectionManager:
             #assert len(self._doHierarchy) == len(self.doId2do)
 
             # Set the new parent and zone on the object
+            if hasattr(object, 'checkFFparentId'):
+                object.checkFFparentId(parentId)
             object.parentId = parentId
             object.zoneId = zoneId
 
