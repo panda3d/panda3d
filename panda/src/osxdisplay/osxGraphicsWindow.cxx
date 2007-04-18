@@ -1163,48 +1163,53 @@ void handleWindowDMEvent (void *userData, short theMessage, void *notifyData)
 ////////////////////////////////////////////////////////////////////
 // key input handler
 OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
-  OSStatus result = eventNotHandledErr;
-
   if (osxdisplay_cat.is_debug()) {
     UInt32 keyCode;
     GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
 
-    osxdisplay_cat.spam()
+    osxdisplay_cat.debug()
       << ClockObject::get_global_clock()->get_real_time() 
-      << " handleKeyInput: " << (void *)this << ", " << keyCode << "\n";
+      << " handleKeyInput: " << (void *)this << ", " << keyCode 
+      << ", " << (int)keyDown << "\n";
   }
   
-  result = CallNextEventHandler(myHandler, event);	
-  if (eventNotHandledErr == result) { 
-    UInt32 newModifiers = 0;
-    OSStatus error = GetEventParameter(event, kEventParamKeyModifiers,typeUInt32, NULL,sizeof(UInt32), NULL, &newModifiers);
-    if(error == noErr) {						   
-      HandleModifireDeleta(newModifiers);
-    }
-    
-    UInt32 keyCode;
-    GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
-    ButtonHandle button = OSX_TranslateKey(keyCode, event);
+  CallNextEventHandler(myHandler, event);
 
-    if (keyDown) {
-      if ((newModifiers & cmdKey) != 0) {
-        if (button == KeyboardButton::ascii_key("q") ||
-            button == KeyboardButton::ascii_key("w")) {
-          // Command-Q or Command-W: quit the application or close the
-          // window, respectively.  For now, we treat them both the
-          // same: close the window.
-          user_close_request();
-        }
+  // We don't check the result of the above function.  In principle,
+  // this should return eventNotHandledErr if the key event is not
+  // handled by the OS, but in practice, testing this just seems to
+  // eat the Escape keypress meaninglessly.  Keypresses like F11 that
+  // are already mapped in the desktop seem to not even come into this
+  // function in the first place.
+  UInt32 newModifiers = 0;
+  OSStatus error = GetEventParameter(event, kEventParamKeyModifiers, 
+                                     typeUInt32, NULL, sizeof(UInt32), 
+                                     NULL, &newModifiers);
+  if(error == noErr) {						   
+    HandleModifireDeleta(newModifiers);
+  }
+    
+  UInt32 keyCode;
+  GetEventParameter(event, kEventParamKeyCode, typeUInt32, NULL,
+                    sizeof(UInt32), NULL, &keyCode);
+  ButtonHandle button = OSX_TranslateKey(keyCode, event);
+
+  if (keyDown) {
+    if ((newModifiers & cmdKey) != 0) {
+      if (button == KeyboardButton::ascii_key("q") ||
+          button == KeyboardButton::ascii_key("w")) {
+        // Command-Q or Command-W: quit the application or close the
+        // window, respectively.  For now, we treat them both the
+        // same: close the window.
+        user_close_request();
       }
-      SendKeyEvent(button, true);
-      result = noErr; 
-    } else {
-      SendKeyEvent(button, false);
-      result = noErr; 
     }
-  }	
+    SendKeyEvent(button, true);
+  } else {
+    SendKeyEvent(button, false);
+  }
   
-  return result;
+  return noErr;
 }
  ////////////////////////////////////////////////////////////////////
  //     Function: 
