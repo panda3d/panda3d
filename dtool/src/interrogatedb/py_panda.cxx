@@ -106,7 +106,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
       ostringstream str;
       str << function_name << "() argument " << param << " must be ";
 
-      PyObject *fname = PyObject_GetAttrString((PyObject *)classdef->_PyType.ob_type, "__name__");
+      PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
       if (fname != (PyObject *)NULL) {
         str << PyString_AsString(fname);
         Py_DECREF(fname);
