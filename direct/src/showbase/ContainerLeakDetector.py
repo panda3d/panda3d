@@ -129,38 +129,54 @@ class Indirection:
     def __repr__(self):
         return self.getString()
 
-class ContainerRef:
+class ObjectRef:
     """
     stores a reference to a container in a way that does not prevent garbage
     collection of the container if possible
     stored as a series of 'indirections' (obj.foo -> '.foo', dict[key] -> '[key]', etc.)
     """
-    notify = directNotify.newCategory("ContainerRef")
+    notify = directNotify.newCategory("ObjectRef")
 
     class FailedEval(Exception):
         pass
 
-    def __init__(self, indirection, other=None):
+    def __init__(self, indirection, objId, other=None):
         self._indirections = []
+        # this is a cache of the ids of our component objects
+        self._objIds = set()
         # are we building off of an existing ref?
         if other is not None:
+            self._objIds = set(other._objIds)
             for ind in other._indirections:
-                self.addIndirection(ind)
-        self.addIndirection(indirection)
+                self._indirections.append(ind)
+        self._indirections.append(indirection)
+
+        # make sure we're not storing a reference to the actual object,
+        # that could cause a memory leak
+        assert type(objId) in (types.IntType, types.LongType)
+        # prevent cycles (i.e. base.loader.base.loader)
+        assert objId not in self._objIds
+        self._objIds.add(objId)
+
+        # make sure our indirections don't get destroyed while we're using them
+        for ind in self._indirections:
+            ind.acquire()
         self.notify.debug(repr(self))
 
     def destroy(self):
-        # re-entrant
         for indirection in self._indirections:
             indirection.release()
-        self._indirections = []
-
-    def addIndirection(self, indirection):
-        indirection.acquire()
-        self._indirections.append(indirection)
+        del self._indirections
 
     def getNumIndirections(self):
         return len(self._indirections)
+
+    def goesThrough(self, obj):
+        # since we cache the ids involved in this reference,
+        # this isn't perfect, for example if base.myObject is reassigned
+        # to a different object after this Ref was created this would return
+        # false, allowing a ref to base.myObject.otherObject.myObject
+        return id(obj) in self._objIds
 
     def _getContainerByEval(self, evalStr, curObj=None):
         if curObj is not None:
@@ -263,7 +279,7 @@ class FindContainers(Job):
         ContainerLeakDetector.addPrivateObj(self.__dict__)
 
         # set up the base containers, the ones that hold most objects
-        ref = ContainerRef(Indirection(evalStr='__builtin__.__dict__'))
+        ref = ObjectRef(Indirection(evalStr='__builtin__.__dict__'), id(__builtin__.__dict__))
         self._id2baseStartRef[id(__builtin__.__dict__)] = ref
         # container for objects that want to make sure they are found by
         # the object exploration algorithm, including objects that exist
@@ -271,7 +287,7 @@ class FindContainers(Job):
         # framerate, etc. See LeakDetectors.py
         if not hasattr(__builtin__, "leakDetectors"):
             __builtin__.leakDetectors = {}
-        ref = ContainerRef(Indirection(evalStr='leakDetectors'))
+        ref = ObjectRef(Indirection(evalStr='leakDetectors'), id(leakDetectors))
         self._id2baseStartRef[id(leakDetectors)] = ref
         for i in self._addContainerGen(__builtin__.__dict__, ref):
             pass
@@ -280,7 +296,7 @@ class FindContainers(Job):
         except:
             pass
         else:
-            ref = ContainerRef(Indirection(evalStr='base.__dict__'))
+            ref = ObjectRef(Indirection(evalStr='base.__dict__'), id(base.__dict__))
             self._id2baseStartRef[id(base.__dict__)] = ref
             for i in self._addContainerGen(base.__dict__, ref):
                 pass
@@ -289,7 +305,7 @@ class FindContainers(Job):
         except:
             pass
         else:
-            ref = ContainerRef(Indirection(evalStr='simbase.__dict__'))
+            ref = ObjectRef(Indirection(evalStr='simbase.__dict__'), id(simbase.__dict__))
             self._id2baseStartRef[id(simbase.__dict__)] = ref
             for i in self._addContainerGen(simbase.__dict__, ref):
                 pass
@@ -459,14 +475,17 @@ class FindContainers(Job):
                     hasLength = self._hasLength(child)
                     notDeadEnd = not self._isDeadEnd(child)
                     if hasLength or notDeadEnd:
-                        objRef = ContainerRef(Indirection(evalStr='.__dict__'), parentObjRef)
-                        yield None
-                        if hasLength:
-                            for i in self._addContainerGen(child, objRef):
-                                yield None
-                        if notDeadEnd:
-                            self._addDiscoveredStartRef(child, objRef)
-                            curObjRef = objRef
+                        # prevent cycles in the references (i.e. base.loader.base)
+                        if not parentObjRef.goesThrough(child):
+                            objRef = ObjectRef(Indirection(evalStr='.__dict__'),
+                                                  id(child), parentObjRef)
+                            yield None
+                            if hasLength:
+                                for i in self._addContainerGen(child, objRef):
+                                    yield None
+                            if notDeadEnd:
+                                self._addDiscoveredStartRef(child, objRef)
+                                curObjRef = objRef
                     continue
 
                 if type(curObj) is types.DictType:
@@ -492,18 +511,22 @@ class FindContainers(Job):
                         if curObjRef is None:
                             notDeadEnd = not self._isDeadEnd(attr, key)
                         if hasLength or notDeadEnd:
-                            if curObj is __builtin__.__dict__:
-                                objRef = ContainerRef(Indirection(evalStr='%s' % key))
-                            else:
-                                objRef = ContainerRef(Indirection(dictKey=key), parentObjRef)
-                            yield None
-                            if hasLength:
-                                for i in self._addContainerGen(attr, objRef):
-                                    yield None
-                            if notDeadEnd:
-                                self._addDiscoveredStartRef(attr, objRef)
-                                if curObjRef is None and random.randrange(numKeysLeft) == 0:
-                                    curObjRef = objRef
+                            # prevent cycles in the references (i.e. base.loader.base)
+                            if not parentObjRef.goesThrough(curObj[key]):
+                                if curObj is __builtin__.__dict__:
+                                    objRef = ObjectRef(Indirection(evalStr='%s' % key),
+                                                          id(curObj[key]))
+                                else:
+                                    objRef = ObjectRef(Indirection(dictKey=key),
+                                                          id(curObj[key]), parentObjRef)
+                                yield None
+                                if hasLength:
+                                    for i in self._addContainerGen(attr, objRef):
+                                        yield None
+                                if notDeadEnd:
+                                    self._addDiscoveredStartRef(attr, objRef)
+                                    if curObjRef is None and random.randrange(numKeysLeft) == 0:
+                                        curObjRef = objRef
                     del key
                     del attr
                     continue
@@ -537,16 +560,18 @@ class FindContainers(Job):
                                 if curObjRef is None:
                                     notDeadEnd = not self._isDeadEnd(attr)
                                 if hasLength or notDeadEnd:
-                                    objRef = ContainerRef(Indirection(evalStr='[%s]' % index),
-                                                          parentObjRef)
-                                    yield None
-                                    if hasLength:
-                                        for i in self._addContainerGen(attr, objRef):
-                                            yield None
-                                    if notDeadEnd:
-                                        self._addDiscoveredStartRef(attr, objRef)
-                                        if curObjRef is None and random.randrange(numAttrsLeft) == 0:
-                                            curObjRef = objRef
+                                    # prevent cycles in the references (i.e. base.loader.base)
+                                    if not parentObjRef.goesThrough(curObj[index]):
+                                        objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
+                                                              id(curObj[index]), parentObjRef)
+                                        yield None
+                                        if hasLength:
+                                            for i in self._addContainerGen(attr, objRef):
+                                                yield None
+                                        if notDeadEnd:
+                                            self._addDiscoveredStartRef(attr, objRef)
+                                            if curObjRef is None and random.randrange(numAttrsLeft) == 0:
+                                                curObjRef = objRef
                             del attr
                         except StopIteration, e:
                             pass
@@ -698,7 +723,7 @@ class CheckContainers(Job):
                 raise
         yield Job.Done
 
-class PruneContainerRefs(Job):
+class PruneObjectRefs(Job):
     """
     Job to destroy any container refs that are no longer valid.
     Checks validity by asking for each container
@@ -748,7 +773,7 @@ class PruneContainerRefs(Job):
                     # reference is invalid, remove it
                     del _id2discoveredStartRef[id]
         except Exception, e:
-            print 'PruneContainerRefs job caught exception: %s' % e
+            print 'PruneObjectRefs job caught exception: %s' % e
             if __dev__:
                 raise
         yield Job.Done
@@ -883,12 +908,12 @@ class ContainerLeakDetector(Job):
         return task.done
 
     def _scheduleNextPruning(self):
-        taskMgr.doMethodLater(self._pruneTaskPeriod, self._pruneContainerRefs,
+        taskMgr.doMethodLater(self._pruneTaskPeriod, self._pruneObjectRefs,
                               self._getPruneTaskName())
 
-    def _pruneContainerRefs(self, task=None):
-        self._pruneContainersJob = PruneContainerRefs(
-            '%s-pruneContainerRefs' % self.getJobName(), self)
+    def _pruneObjectRefs(self, task=None):
+        self._pruneContainersJob = PruneObjectRefs(
+            '%s-pruneObjectRefs' % self.getJobName(), self)
         self.acceptOnce(self._pruneContainersJob.getFinishedEvent(),
                         self._scheduleNextPruning)
         jobMgr.add(self._pruneContainersJob)
