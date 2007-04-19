@@ -205,6 +205,6 @@ class JobManager:
                 # run through the jobs at this priority in the order that they will run
                 for jobId in self._pri2jobIds[pri]:
                     job = jobId2job[jobId]
-                    s += '\n%4d: %s' % (jobId, job.getJobName())
+                    s += '\n%5d: %s (jobId %s)' % (pri, job.getJobName(), jobId)
         s += '\n'
         return s
