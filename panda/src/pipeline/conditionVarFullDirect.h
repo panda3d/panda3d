@@ -45,7 +45,7 @@ private:
   INLINE ConditionVarFullDirect(const ConditionVarFullDirect &copy);
   INLINE void operator = (const ConditionVarFullDirect &copy);
 
-public:
+PUBLISHED:
   INLINE MutexDirect &get_mutex() const;
 
   INLINE void wait();

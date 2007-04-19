@@ -43,6 +43,16 @@ GeomVertexArrayData() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::make_cow_copy
+//       Access: Protected, Virtual
+//  Description: Required to implement CopyOnWriteObject.
+////////////////////////////////////////////////////////////////////
+PT(CopyOnWriteObject) GeomVertexArrayData::
+make_cow_copy() {
+  return new GeomVertexArrayData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::Constructor
 //       Access: Published
 //  Description: 
@@ -69,7 +79,7 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayData::
 GeomVertexArrayData(const GeomVertexArrayData &copy) :
-  TypedWritableReferenceCount(copy),
+  CopyOnWriteObject(copy),
   _array_format(copy._array_format),
   _cycler(copy._cycler)
 {
@@ -87,7 +97,7 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 operator = (const GeomVertexArrayData &copy) {
-  TypedWritableReferenceCount::operator = (copy);
+  CopyOnWriteObject::operator = (copy);
   _array_format = copy._array_format;
   _cycler = copy._cycler;
 
@@ -334,7 +344,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritableReferenceCount::write_datagram(manager, dg);
+  CopyOnWriteObject::write_datagram(manager, dg);
 
   manager->write_pointer(dg, _array_format);
   manager->write_cdata(dg, _cycler, this);
@@ -402,7 +412,7 @@ read_raw_data(BamReader *manager, DatagramIterator &scan) {
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+  int pi = CopyOnWriteObject::complete_pointers(p_list, manager);
 
   _array_format = DCAST(GeomVertexArrayFormat, p_list[pi++]);
 
@@ -473,7 +483,7 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritableReferenceCount::fillin(scan, manager);
+  CopyOnWriteObject::fillin(scan, manager);
 
   manager->read_pointer(scan);
   manager->read_cdata(scan, _cycler, this);

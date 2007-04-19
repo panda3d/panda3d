@@ -54,6 +54,16 @@ GeomVertexData() :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::make_cow_copy
+//       Access: Protected, Virtual
+//  Description: Required to implement CopyOnWriteObject.
+////////////////////////////////////////////////////////////////////
+PT(CopyOnWriteObject) GeomVertexData::
+make_cow_copy() {
+  return new GeomVertexData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Constructor
 //       Access: Published
 //  Description: 
@@ -79,7 +89,7 @@ GeomVertexData(const string &name,
     for (int i = 0; i < num_arrays; i++) {
       PT(GeomVertexArrayData) array = new GeomVertexArrayData
         (format->get_array(i), usage_hint);
-      cdata->_arrays.push_back(array);
+      cdata->_arrays.push_back(array.p());
     }
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
@@ -92,7 +102,7 @@ GeomVertexData(const string &name,
 ////////////////////////////////////////////////////////////////////
 GeomVertexData::
 GeomVertexData(const GeomVertexData &copy) :
-  TypedWritableReferenceCount(copy),
+  CopyOnWriteObject(copy),
   _name(copy._name),
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
@@ -119,7 +129,7 @@ GeomVertexData(const GeomVertexData &copy) :
 GeomVertexData::
 GeomVertexData(const GeomVertexData &copy, 
                const GeomVertexFormat *format) :
-  TypedWritableReferenceCount(copy),
+  CopyOnWriteObject(copy),
   _name(copy._name),
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
@@ -139,7 +149,7 @@ GeomVertexData(const GeomVertexData &copy,
     for (int i = 0; i < num_arrays; i++) {
       PT(GeomVertexArrayData) array = new GeomVertexArrayData
         (format->get_array(i), usage_hint);
-      cdata->_arrays.push_back(array);
+      cdata->_arrays.push_back(array.p());
     }
 
     // It's important that we *not* copy the animated_vertices pointer.
@@ -159,7 +169,7 @@ GeomVertexData(const GeomVertexData &copy,
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 operator = (const GeomVertexData &copy) {
-  TypedWritableReferenceCount::operator = (copy);
+  CopyOnWriteObject::operator = (copy);
 
   clear_cache();
 
@@ -222,10 +232,8 @@ set_usage_hint(GeomVertexData::UsageHint usage_hint) {
   for (ai = cdata->_arrays.begin();
        ai != cdata->_arrays.end();
        ++ai) {
-    if ((*ai)->get_ref_count() > 1) {
-      (*ai) = new GeomVertexArrayData(*(*ai));
-    }
-    (*ai)->set_usage_hint(usage_hint);
+    PT(GeomVertexArrayData) array_obj = (*ai).get_write_pointer();
+    array_obj->set_usage_hint(usage_hint);
   }
   clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
@@ -270,7 +278,7 @@ set_format(const GeomVertexFormat *format) {
   for (int i = 0; i < num_arrays; i++) {
     PT(GeomVertexArrayData) array = new GeomVertexArrayData
       (cdataw->_format->get_array(i), usage_hint);
-    cdataw->_arrays.push_back(array);
+    cdataw->_arrays.push_back(array.p());
   }
 
   // Now copy the original data back in.  This will automatically
@@ -303,10 +311,8 @@ clear_rows() {
   for (ai = cdata->_arrays.begin();
        ai != cdata->_arrays.end();
        ++ai) {
-    if ((*ai)->get_ref_count() > 1) {
-      (*ai) = new GeomVertexArrayData(*(*ai));
-    }
-    (*ai)->clear_rows();
+    PT(GeomVertexArrayData) array_obj = (*ai).get_write_pointer();
+    array_obj->clear_rows();
   }
   clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
@@ -350,21 +356,15 @@ set_transform_table(const TransformTable *table) {
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
-TransformBlendTable *GeomVertexData::
+PT(TransformBlendTable) GeomVertexData::
 modify_transform_blend_table() {
-  // Perform copy-on-write: if the reference count on the table is
-  // greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
   CDWriter cdata(_cycler, true);
 
-  if (cdata->_transform_blend_table->get_ref_count() > 1) {
-    cdata->_transform_blend_table = new TransformBlendTable(*cdata->_transform_blend_table);
-  }
   clear_cache_stage();
   cdata->_modified = Geom::get_next_modified();
   cdata->_animated_vertices_modified = UpdateSeq();
 
-  return cdata->_transform_blend_table;
+  return cdata->_transform_blend_table.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -490,7 +490,8 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 
   // Now go back through and copy any data that's left over.
   for (source_i = 0; source_i < num_arrays; ++source_i) {
-    CPTA_uchar array_data = source->get_array(source_i)->get_data();
+    CPT(GeomVertexArrayData) array_obj = source->get_array(source_i);
+    CPTA_uchar array_data = array_obj->get_data();
     const GeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
     int num_columns = source_array_format->get_num_columns();
     for (int di = 0; di < num_columns; ++di) {
@@ -507,7 +508,8 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
 
         if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
-          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
+          PTA_uchar dest_array_data = dest_array_obj->modify_data();
 
           bytewise_copy(dest_array_data + dest_column->get_start(), 
                         dest_array_format->get_stride(),
@@ -517,7 +519,8 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         } else if (dest_column->is_packed_argb() && 
                    source_column->is_uint8_rgba()) {
           // A common special case: OpenGL color to DirectX color.
-          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
+          PTA_uchar dest_array_data = dest_array_obj->modify_data();
 
           uint8_rgba_to_packed_argb
             (dest_array_data + dest_column->get_start(), 
@@ -529,7 +532,8 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
                    source_column->is_packed_argb()) {
           // Another common special case: DirectX color to OpenGL
           // color.
-          PTA_uchar dest_array_data = modify_array(dest_i)->modify_data();
+          PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
+          PTA_uchar dest_array_data = dest_array_obj->modify_data();
 
           packed_argb_to_uint8_rgba
             (dest_array_data + dest_column->get_start(), 
@@ -649,8 +653,12 @@ copy_row_from(int dest_row, const GeomVertexData *source,
   int num_arrays = source_format->get_num_arrays();
 
   for (int i = 0; i < num_arrays; ++i) {
-    PTA_uchar dest_array_data = modify_array(i)->modify_data();
-    CPTA_uchar source_array_data = source->get_array(i)->get_data();
+    PT(GeomVertexArrayData) dest_array_obj = modify_array(i);
+    PTA_uchar dest_array_data = dest_array_obj->modify_data();
+
+    CPT(GeomVertexArrayData) source_array_obj = source->get_array(i);
+    CPTA_uchar source_array_data = source_array_obj->get_data();
+
     const GeomVertexArrayFormat *array_format = source_format->get_array(i);
     int stride = array_format->get_stride();
 
@@ -914,13 +922,13 @@ animate_vertices(Thread *current_thread) const {
   }
 
   UpdateSeq modified;
-  if (cdata->_transform_blend_table != (TransformBlendTable *)NULL) {
+  if (!cdata->_transform_blend_table.is_null()) {
     if (cdata->_slider_table != (SliderTable *)NULL) {
       modified = 
-        max(cdata->_transform_blend_table->get_modified(current_thread),
+        max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
             cdata->_slider_table->get_modified(current_thread));
     } else {
-      modified = cdata->_transform_blend_table->get_modified(current_thread);
+      modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
     }
 
   } else if (cdata->_slider_table != (SliderTable *)NULL) {
@@ -1092,10 +1100,11 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level) << get_name() << "\n";
   }
   get_format()->write_with_data(out, indent_level + 2, this);
-  if (get_transform_blend_table() != (TransformBlendTable *)NULL) {
+  CPT(TransformBlendTable) table = get_transform_blend_table();
+  if (table != (TransformBlendTable *)NULL) {
     indent(out, indent_level)
       << "Transform blend table:\n";
-    get_transform_blend_table()->write(out, indent_level + 2);
+    table->write(out, indent_level + 2);
   }
 }
 
@@ -1321,7 +1330,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   }
 
   // Then apply the transforms.
-  CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table;
+  CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer();
   if (tb_table != (TransformBlendTable *)NULL) {
     PStatTimer timer3(_skinning_pcollector);
 
@@ -1414,7 +1423,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritableReferenceCount::write_datagram(manager, dg);
+  CopyOnWriteObject::write_datagram(manager, dg);
 
   dg.add_string(_name);
   manager->write_cdata(dg, _cycler);
@@ -1450,7 +1459,7 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 int GeomVertexData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
-  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+  int pi = CopyOnWriteObject::complete_pointers(p_list, manager);
   return pi;
 }
 
@@ -1486,10 +1495,11 @@ finalize(BamReader *manager) {
     cdata->_format = new_format;
 
     CPT(GeomVertexArrayFormat) new_array_format = new_format->get_array(i);
-    nassertv(cdata->_arrays[i]->_array_format->compare_to(*new_array_format) == 0);
+    PT(GeomVertexArrayData) array_obj = cdata->_arrays[i].get_unsafe_pointer();
+    nassertv(array_obj->_array_format->compare_to(*new_array_format) == 0);
 
-    manager->change_pointer(cdata->_arrays[i]->_array_format, new_array_format);
-    cdata->_arrays[i]->_array_format = new_array_format;
+    manager->change_pointer(array_obj->_array_format, new_array_format);
+    array_obj->_array_format = new_array_format;
   }
 
   if (cdata->_transform_table != (TransformTable *)NULL) {
@@ -1516,7 +1526,7 @@ finalize(BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritableReferenceCount::fillin(scan, manager);
+  CopyOnWriteObject::fillin(scan, manager);
 
   set_name(scan.get_string());
   manager->read_cdata(scan, _cycler);
@@ -1582,11 +1592,11 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint16(_arrays.size());
   Arrays::const_iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
-    manager->write_pointer(dg, *ai);
+    manager->write_pointer(dg, (*ai).get_read_pointer());
   }
 
   manager->write_pointer(dg, _transform_table);
-  manager->write_pointer(dg, _transform_blend_table);
+  manager->write_pointer(dg, _transform_blend_table.get_read_pointer());
   manager->write_pointer(dg, _slider_table);
 }
 
@@ -1620,7 +1630,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // a SparseArray for each of them that reflects the complete
     // number of rows in the data.
     SparseArray all_rows;
-    all_rows.set_range(0, _arrays[0]->get_num_rows());
+    all_rows.set_range(0, _arrays[0].get_read_pointer()->get_num_rows());
 
     if (_slider_table != (SliderTable *)NULL) {
       int num_sliders = _slider_table->get_num_sliders();
@@ -1628,8 +1638,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
         ((SliderTable *)_slider_table.p())->set_slider_rows(i, all_rows);
       }
     }
-    if (_transform_blend_table != (TransformBlendTable *)NULL) {
-      _transform_blend_table->set_rows(all_rows);
+    if (!_transform_blend_table.is_null()) {
+      _transform_blend_table.get_unsafe_pointer()->set_rows(all_rows);
     }
   }
 
@@ -1671,7 +1681,7 @@ get_num_bytes() const {
 
   GeomVertexData::Arrays::const_iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    num_bytes += (*ai)->get_data_size_bytes();
+    num_bytes += (*ai).get_read_pointer()->get_data_size_bytes();
   }
 
   return num_bytes;
@@ -1808,7 +1818,7 @@ make_array_readers() {
   _array_readers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::const_iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    _array_readers.push_back(new GeomVertexArrayDataPipelineReader(*ai, _current_thread));
+    _array_readers.push_back(new GeomVertexArrayDataPipelineReader((*ai).get_read_pointer(), _current_thread));
   }
 
   _got_array_readers = true;
@@ -1868,13 +1878,7 @@ set_num_rows(int n) {
 
   for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
     if (_array_writers[i]->get_num_rows() != n) {
-      // Copy-on-write.
-      if (_cdata->_arrays[i]->get_ref_count() > 1) {
-        delete _array_writers[i];
-        _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
-        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
-      }
-      if (_cdata->_arrays[i]->has_column(InternalName::get_color())) {
+      if (_array_writers[i]->get_object()->has_column(InternalName::get_color())) {
         color_array = i;
         orig_color_rows = _array_writers[i]->get_num_rows();
       }
@@ -1944,12 +1948,6 @@ unclean_set_num_rows(int n) {
 
   for (size_t i = 0; i < _cdata->_arrays.size(); i++) {
     if (_array_writers[i]->get_num_rows() != n) {
-      // Copy-on-write.
-      if (_cdata->_arrays[i]->get_ref_count() > 1) {
-        delete _array_writers[i];
-        _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
-        _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
-      }
       _array_writers[i]->unclean_set_num_rows(n);
       any_changed = true;
     }
@@ -1969,26 +1967,22 @@ unclean_set_num_rows(int n) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-GeomVertexArrayData *GeomVertexDataPipelineWriter::
+PT(GeomVertexArrayData) GeomVertexDataPipelineWriter::
 modify_array(int i) {
-  // Perform copy-on-write: if the reference count on the vertex data
-  // is greater than 1, assume some other GeomVertexData has the same
-  // pointer, so make a copy of it first.
   nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
 
-  if (_cdata->_arrays[i]->get_ref_count() > 1) {
-    _cdata->_arrays[i] = new GeomVertexArrayData(*_cdata->_arrays[i]);
+  PT(GeomVertexArrayData) new_data;
+  if (_got_array_writers) {
+    new_data = _array_writers[i]->get_object();
+  } else {
+    new_data = _cdata->_arrays[i].get_write_pointer();
   }
+
   _object->clear_cache_stage();
   _cdata->_modified = Geom::get_next_modified();
   _cdata->_animated_vertices_modified = UpdateSeq();
 
-  if (_got_array_writers) {
-    delete _array_writers[i];
-    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
-  }
-
-  return _cdata->_arrays[i];
+  return new_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2006,7 +2000,7 @@ set_array(int i, const GeomVertexArrayData *array) {
 
   if (_got_array_writers) {
     delete _array_writers[i];
-    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i], _force_to_0, _current_thread);
+    _array_writers[i] = new GeomVertexArrayDataPipelineWriter(_cdata->_arrays[i].get_write_pointer(), _force_to_0, _current_thread);
   }
 }
 
@@ -2022,10 +2016,8 @@ make_array_writers() {
   _array_writers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    if ((*ai)->get_ref_count() > 1) {
-      (*ai) = new GeomVertexArrayData(*(*ai));
-    }
-    _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(*ai, _force_to_0, _current_thread));
+    PT(GeomVertexArrayData) array_obj = (*ai).get_write_pointer();
+    _array_writers.push_back(new GeomVertexArrayDataPipelineWriter(array_obj, _force_to_0, _current_thread));
   }
 
   _object->clear_cache_stage();
@@ -2033,7 +2025,6 @@ make_array_writers() {
   _cdata->_animated_vertices_modified = UpdateSeq();
 
   _got_array_writers = true;
-  nassertv(get_array_writer(0)->get_data_size_bytes() == get_array(0)->get_data_size_bytes());
 }
 
 ////////////////////////////////////////////////////////////////////

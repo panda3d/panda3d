@@ -24,6 +24,16 @@
 TypeHandle TransformBlendTable::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformBlendTable::make_cow_copy
+//       Access: Protected, Virtual
+//  Description: Required to implement CopyOnWriteObject.
+////////////////////////////////////////////////////////////////////
+PT(CopyOnWriteObject) TransformBlendTable::
+make_cow_copy() {
+  return new TransformBlendTable(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformBlendTable::Constructor
 //       Access: Published
 //  Description: 

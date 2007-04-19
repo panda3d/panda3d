@@ -48,9 +48,11 @@ class EXPCL_PANDA Mutex : public MutexDebug
 class EXPCL_PANDA Mutex : public MutexDirect
 #endif  // DEBUG_THREADS
 {
-public:
+PUBLISHED:
   INLINE Mutex();
+public:
   INLINE Mutex(const char *name);
+PUBLISHED:
   INLINE Mutex(const string &name);
   INLINE ~Mutex();
 private:

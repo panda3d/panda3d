@@ -43,10 +43,10 @@ private:
   void operator = (const Multifile &copy);
 
 PUBLISHED:
-  bool open_read(const Filename &multifile_name);
-  bool open_write(const Filename &multifile_name);
-  bool open_read_write(const Filename &multifile_name);
-  void close();
+  BLOCKING bool open_read(const Filename &multifile_name);
+  BLOCKING bool open_write(const Filename &multifile_name);
+  BLOCKING bool open_read_write(const Filename &multifile_name);
+  BLOCKING void close();
 
   INLINE const Filename &get_multifile_name() const;
 
@@ -71,8 +71,8 @@ PUBLISHED:
                      int compression_level);
   string update_subfile(const string &subfile_name, const Filename &filename,
                         int compression_level);
-  bool flush();
-  bool repack();
+  BLOCKING bool flush();
+  BLOCKING bool repack();
 
   int get_num_subfiles() const;
   int find_subfile(const string &subfile_name) const;
@@ -90,10 +90,10 @@ PUBLISHED:
   streampos get_subfile_internal_start(int index) const;
   size_t get_subfile_internal_length(int index) const;
 
-  INLINE string read_subfile(int index);
-  istream *open_read_subfile(int index);
-  bool extract_subfile(int index, const Filename &filename);
-  bool compare_subfile(int index, const Filename &filename);
+  BLOCKING INLINE string read_subfile(int index);
+  BLOCKING istream *open_read_subfile(int index);
+  BLOCKING bool extract_subfile(int index, const Filename &filename);
+  BLOCKING bool compare_subfile(int index, const Filename &filename);
 
   void output(ostream &out) const;
   void ls(ostream &out = cout) const;

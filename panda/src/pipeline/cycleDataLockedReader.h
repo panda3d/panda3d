@@ -50,6 +50,9 @@
 template<class CycleDataType>
 class CycleDataLockedReader {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   INLINE CycleDataLockedReader(const PipelineCycler<CycleDataType> &cycler,
                                Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy);
@@ -74,6 +77,7 @@ private:
   // This is all we need for the trivial, do-nothing implementation.
   const CycleDataType *_pointer;
 #endif  // DO_PIPELINING
+#endif  // CPPPARSER
 };
 
 #include "cycleDataLockedReader.I"

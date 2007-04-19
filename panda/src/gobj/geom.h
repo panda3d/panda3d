@@ -20,7 +20,8 @@
 #define GEOM_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
+#include "copyOnWritePointer.h"
 #include "cycleData.h"
 #include "cycleDataLockedReader.h"
 #include "cycleDataReader.h"
@@ -58,11 +59,16 @@ class PreparedGraphicsObjects;
 //               and all of them must be rendered at the same time, in
 //               the same graphics state.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Geom : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA Geom : public CopyOnWriteObject, public GeomEnums {
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
+
 PUBLISHED:
   Geom(const GeomVertexData *data);
+
 protected:
   Geom(const Geom &copy);
+
 PUBLISHED:
   void operator = (const Geom &copy);
   virtual ~Geom();
@@ -84,8 +90,8 @@ PUBLISHED:
   int make_nonindexed(bool composite_only);
 
   INLINE int get_num_primitives() const;
-  INLINE const GeomPrimitive *get_primitive(int i) const;
-  INLINE GeomPrimitive *modify_primitive(int i);
+  INLINE CPT(GeomPrimitive) get_primitive(int i) const;
+  INLINE PT(GeomPrimitive) modify_primitive(int i);
   void set_primitive(int i, const GeomPrimitive *primitive);
   void add_primitive(const GeomPrimitive *primitive);
   void remove_primitive(int i);
@@ -165,7 +171,7 @@ private:
   void reset_geom_rendering(CData *cdata);
 
 private:
-  typedef pvector<PT(GeomPrimitive) > Primitives;
+  typedef pvector<COWPT(GeomPrimitive) > Primitives;
 
   // We have to use reference-counting pointers here instead of having
   // explicit cleanup in the GeomVertexFormat destructor, because the
@@ -269,7 +275,7 @@ private:
       return Geom::get_class_type();
     }
 
-    PT(GeomVertexData) _data;
+    COWPT(GeomVertexData) _data;
     Primitives _primitives;
     PrimitiveType _primitive_type;
     ShadeModel _shade_model;
@@ -327,9 +333,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "Geom",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
     CDataCache::init_type();
     CacheEntry::init_type();
     CData::init_type();
@@ -376,7 +382,7 @@ public:
   INLINE UsageHint get_usage_hint() const;
   INLINE CPT(GeomVertexData) get_vertex_data() const;
   INLINE int get_num_primitives() const;
-  INLINE const GeomPrimitive *get_primitive(int i) const;
+  INLINE CPT(GeomPrimitive) get_primitive(int i) const;
 
   INLINE UpdateSeq get_modified() const;
 
@@ -386,7 +392,7 @@ public:
             const GeomVertexDataPipelineReader *data_reader) const;
 
 private:
-  const Geom *_object;
+  CPT(Geom) _object;
   Thread *_current_thread;
   const Geom::CData *_cdata;
 

@@ -57,7 +57,7 @@ void CollisionLevelStateBase::
 prepare_collider(const ColliderDef &def, const NodePath &root) {
   _colliders.push_back(def);
 
-  CollisionSolid *collider = def._collider;
+  const CollisionSolid *collider = def._collider;
   CPT(BoundingVolume) bv = collider->get_bounds();
   if (!bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
     _local_bounds.push_back((GeometricBoundingVolume *)NULL);

@@ -205,7 +205,7 @@ test_intersection_from_ds_solid(const CollisionEntry &entry) const {
   float lens_radius = length(
     LVector3f(ds_solid->get_lens_radius(), 0.0f, 0.0f) * wrt_mat);
   LVector3f lens_vec = lens_center - into_center;
-  float lens_distance_squared = dot(lens_vec, lens_vec);
+  //  float lens_distance_squared = dot(lens_vec, lens_vec);
 
   LVector3f surface_normal; // into
   //LPoint3f surface_point; // into

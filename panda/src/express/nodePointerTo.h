@@ -32,6 +32,9 @@
 template <class T>
 class NodePointerTo : public NodePointerToBase<T> {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   typedef TYPENAME NodePointerToBase<T>::To To;
   INLINE NodePointerTo(To *ptr = (To *)NULL);
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
@@ -47,6 +50,7 @@ public:
 
   INLINE NodePointerTo<T> &operator = (To *ptr);
   INLINE NodePointerTo<T> &operator = (const NodePointerTo<T> &copy);
+#endif  // CPPPARSER
 };
 
 
@@ -58,6 +62,9 @@ public:
 template <class T>
 class NodeConstPointerTo : public NodePointerToBase<T> {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   typedef TYPENAME NodePointerToBase<T>::To To;
   INLINE NodeConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE NodeConstPointerTo(const NodePointerTo<T> &copy);
@@ -73,6 +80,7 @@ public:
   INLINE NodeConstPointerTo<T> &operator = (const To *ptr);
   INLINE NodeConstPointerTo<T> &operator = (const NodePointerTo<T> &copy);
   INLINE NodeConstPointerTo<T> &operator = (const NodeConstPointerTo<T> &copy);
+#endif  // CPPPARSER
 };
 
 #define NPT(type) NodePointerTo< type >

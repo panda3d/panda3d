@@ -57,7 +57,7 @@ operator = (const MutexDirect &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDirect::lock
-//       Access: Public
+//       Access: Published
 //  Description: Grabs the mutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
 //               grabs it.  In either case, the function does not
@@ -78,7 +78,7 @@ lock() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDirect::release
-//       Access: Public
+//       Access: Published
 //  Description: Releases the mutex.  It is an error to call this if
 //               the mutex was not already locked.
 //
@@ -94,7 +94,7 @@ release() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDirect::debug_is_locked
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current thread has locked the
 //               Mutex, false otherwise.  This method is only intended
 //               for use in debugging, hence the method name; in the

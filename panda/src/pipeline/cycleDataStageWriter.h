@@ -37,6 +37,9 @@
 template<class CycleDataType>
 class CycleDataStageWriter {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
                               Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
@@ -71,6 +74,7 @@ private:
   // This is all we need for the trivial, do-nothing implementation.
   CycleDataType *_pointer;
 #endif  // DO_PIPELINING
+#endif  // CPPPARSER
 };
 
 #include "cycleDataStageWriter.I"

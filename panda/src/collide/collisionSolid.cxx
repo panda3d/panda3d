@@ -58,6 +58,7 @@ CollisionSolid() : _lock("CollisionSolid") {
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
+  CopyOnWriteObject(copy),
   _effective_normal(copy._effective_normal),
   _internal_bounds(copy._internal_bounds),
   _flags(copy._flags),
@@ -73,6 +74,16 @@ CollisionSolid(const CollisionSolid &copy) :
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 ~CollisionSolid() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::make_cow_copy
+//       Access: Protected, Virtual
+//  Description: Required to implement CopyOnWriteObject.
+////////////////////////////////////////////////////////////////////
+PT(CopyOnWriteObject) CollisionSolid::
+make_cow_copy() {
+  return make_copy();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -27,6 +27,7 @@
 #include "pipelineCycler.h"
 #include "cycleData.h"
 #include "pvector.h"
+#include "copyOnWritePointer.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomNode
@@ -64,9 +65,8 @@ PUBLISHED:
 
   INLINE void set_preserved(bool value);
   INLINE int get_num_geoms() const;
-  INLINE const Geom *get_geom(int n) const;
-  INLINE Geom *get_unique_geom(int n);
-  INLINE Geom *modify_geom(int n);
+  INLINE CPT(Geom) get_geom(int n) const;
+  INLINE PT(Geom) modify_geom(int n);
   INLINE const RenderState *get_geom_state(int n) const;
   INLINE void set_geom_state(int n, const RenderState *state);
 
@@ -98,14 +98,14 @@ public:
   class GeomEntry {
   public:
     INLINE GeomEntry(Geom *geom, const RenderState *state);
-    PT(Geom) _geom;
+    COWPT(Geom) _geom;
     CPT(RenderState) _state;
   };
 
 private:
 
   bool _preserved;
-  typedef RefCountObj< pvector<GeomEntry> > GeomList;
+  typedef CopyOnWriteObj< pvector<GeomEntry> > GeomList;
   typedef pmap<const InternalName *, int> NameCount;
 
   INLINE void count_name(NameCount &name_count, const InternalName *name);
@@ -124,12 +124,12 @@ private:
       return GeomNode::get_class_type();
     }
 
-    INLINE const GeomList *get_geoms() const;
-    INLINE GeomList *modify_geoms();
+    INLINE CPT(GeomList) get_geoms() const;
+    INLINE PT(GeomList) modify_geoms();
     INLINE void set_geoms(GeomList *geoms);
 
   private:
-    PT(GeomList) _geoms;
+    COWPT(GeomList) _geoms;
   };
 
   PipelineCycler<CData> _cycler;
@@ -151,7 +151,7 @@ public:
     INLINE void operator = (const Geoms &copy);
 
     INLINE int get_num_geoms() const;
-    INLINE const Geom *get_geom(int n) const;
+    INLINE CPT(Geom) get_geom(int n) const;
     INLINE const RenderState *get_geom_state(int n) const;
 
   private:
@@ -173,6 +173,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
+    GeomList::init_type();
     PandaNode::init_type();
     register_type(_type_handle, "GeomNode",
                   PandaNode::get_class_type());

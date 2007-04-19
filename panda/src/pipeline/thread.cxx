@@ -128,12 +128,8 @@ output(ostream &out) const {
 //               returns.
 //
 //               priority is intended as a hint to the relative
-//               importance of this thread, and global should be set
-//               true if the thread will perform a lot of blocking
-//               I/O, or false otherwise (see the NSPR documentation
-//               on global vs. local threads for more on this).  Both
-//               of these parameters may be ignored by the thread
-//               implementation.
+//               importance of this thread.  This may be ignored by
+//               the thread implementation.
 //
 //               joinable should be set true if you intend to call
 //               join() to wait for the thread to terminate, or false
@@ -143,7 +139,7 @@ output(ostream &out) const {
 //               successfully started, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool Thread::
-start(ThreadPriority priority, bool global, bool joinable) {
+start(ThreadPriority priority, bool joinable) {
   nassertr(!_started, false);
 
   if (!support_threads) {
@@ -152,13 +148,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
     return false;
   }
 
-  if (threads_always_global) {
-    global = true;
-  } else if (threads_never_global) {
-    global = false;
-  }
-
-  _started = _impl.start(priority, global, joinable);
+  _started = _impl.start(priority, joinable);
 
   if (!_started) {
     thread_cat.warning()

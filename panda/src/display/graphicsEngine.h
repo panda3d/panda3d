@@ -93,10 +93,10 @@ PUBLISHED:
   int get_num_windows() const;
   GraphicsOutput *get_window(int n) const;
 
-  void render_frame();
-  void open_windows();
-  void sync_frame();
-  void flip_frame();
+  BLOCKING void render_frame();
+  BLOCKING void open_windows();
+  BLOCKING void sync_frame();
+  BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
 

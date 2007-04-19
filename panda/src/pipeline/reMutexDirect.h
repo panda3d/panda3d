@@ -39,9 +39,9 @@ private:
   INLINE ReMutexDirect(const ReMutexDirect &copy);
   INLINE void operator = (const ReMutexDirect &copy);
 
-public:
-  INLINE void lock() const;
-  INLINE void lock(Thread *current_thread) const;
+PUBLISHED:
+  BLOCKING INLINE void lock() const;
+  BLOCKING INLINE void lock(Thread *current_thread) const;
   INLINE void elevate_lock() const;
   INLINE void release() const;
 

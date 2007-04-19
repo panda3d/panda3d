@@ -40,9 +40,11 @@ class EXPCL_PANDA ReMutex : public MutexDebug
 class EXPCL_PANDA ReMutex : public ReMutexDirect
 #endif  // DEBUG_THREADS
 {
-public:
+PUBLISHED:
   INLINE ReMutex();
+public:
   INLINE ReMutex(const char *name);
+PUBLISHED:
   INLINE ReMutex(const string &name);
   INLINE ~ReMutex();
 private:

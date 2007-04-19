@@ -119,15 +119,7 @@ xform(const LMatrix4f &mat) {
 
   Solids::iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
-    CollisionSolid *solid = (*si);
-
-    // We may have to copy each of our solids as we transform them if
-    // someone else is sharing their pointers.
-    if (solid->get_ref_count() > 1) {
-      solid = solid->make_copy();
-      (*si) = solid;
-    }
-
+    PT(CollisionSolid) solid = (*si).get_write_pointer();
     solid->xform(mat);
   }
   mark_internal_bounds_stale();
@@ -156,8 +148,8 @@ combine_with(PandaNode *other) {
     // name, because the name is often meaningful.
     CollisionNode *cother = DCAST(CollisionNode, other);
     if (get_name() == cother->get_name()) {
-      const PT(CollisionSolid) *solids_begin = &cother->_solids[0];
-      const PT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
+      const COWPT(CollisionSolid) *solids_begin = &cother->_solids[0];
+      const COWPT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
       _solids.insert(_solids.end(), solids_begin, solids_end);
       mark_internal_bounds_stale();
       return this;
@@ -215,9 +207,9 @@ bool CollisionNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Append our collision vizzes to the drawing, even though they're
   // not actually part of the scene graph.
-  Solids::iterator si;
+  Solids::const_iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
-    CollisionSolid *solid = (*si);
+    CPT(CollisionSolid) solid = (*si).get_read_pointer();
     PT(PandaNode) node = solid->get_viz(trav, data, false);
     if (node != (PandaNode *)NULL) {
       CullTraverserData next_data(data, node);
@@ -240,7 +232,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // ghosted.
       
       for (si = _solids.begin(); si != _solids.end(); ++si) {
-        CollisionSolid *solid = (*si);
+        CPT(CollisionSolid) solid = (*si).get_read_pointer();
         PT(PandaNode) node = solid->get_viz(trav, data, false);
         if (node != (PandaNode *)NULL) {
           CullTraverserData next_data(data, node);
@@ -323,7 +315,8 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {
-    CPT(BoundingVolume) volume = (*gi)->get_bounds();
+    CPT(CollisionSolid) solid = (*gi).get_read_pointer();
+    CPT(BoundingVolume) volume = solid->get_bounds();
     cpt_volumes.push_back(volume);
     child_volumes.push_back(volume);
   }
@@ -396,7 +389,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   int num_solids = _solids.size();
   dg.add_uint16(num_solids);
   for(int i = 0; i < num_solids; i++) {
-    manager->write_pointer(dg, _solids[i]);
+    manager->write_pointer(dg, _solids[i].get_read_pointer());
   }
 
   dg.add_uint32(_from_collide_mask.get_word());

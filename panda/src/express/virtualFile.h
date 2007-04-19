@@ -48,18 +48,18 @@ PUBLISHED:
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
 
-  PT(VirtualFileList) scan_directory() const;
+  BLOCKING PT(VirtualFileList) scan_directory() const;
 
   void output(ostream &out) const;
-  void ls(ostream &out = cout) const;
-  void ls_all(ostream &out = cout) const;
+  BLOCKING void ls(ostream &out = cout) const;
+  BLOCKING void ls_all(ostream &out = cout) const;
 
-  INLINE string read_file(bool auto_unwrap) const;
-  virtual istream *open_read_file(bool auto_unwrap) const;
-  void close_read_file(istream *stream) const;
-  virtual off_t get_file_size(istream *stream) const;
-  virtual off_t get_file_size() const;
-  virtual time_t get_timestamp() const;
+  BLOCKING INLINE string read_file(bool auto_unwrap) const;
+  BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
+  BLOCKING void close_read_file(istream *stream) const;
+  BLOCKING virtual off_t get_file_size(istream *stream) const;
+  BLOCKING virtual off_t get_file_size() const;
+  BLOCKING virtual time_t get_timestamp() const;
 
 public:
   INLINE void set_original_filename(const Filename &filename);

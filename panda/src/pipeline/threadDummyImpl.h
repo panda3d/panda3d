@@ -46,7 +46,7 @@ public:
   INLINE ThreadDummyImpl(Thread *parent_obj);
   INLINE ~ThreadDummyImpl();
 
-  INLINE bool start(ThreadPriority priority, bool global, bool joinable);
+  INLINE bool start(ThreadPriority priority, bool joinable);
   INLINE void interrupt();
   INLINE void join();
 

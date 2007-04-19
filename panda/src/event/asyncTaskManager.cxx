@@ -88,7 +88,7 @@ add(AsyncTask *task) {
       _threads.reserve(_num_threads);
       for (int i = 0; i < _num_threads; ++i) {
         PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
-        if (thread->start(TP_low, true, true)) {
+        if (thread->start(TP_low, true)) {
           _threads.push_back(thread);
         }
       }
@@ -137,7 +137,7 @@ add_and_do(AsyncTask *task) {
       _threads.reserve(_num_threads);
       for (int i = 0; i < _num_threads; ++i) {
         PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
-        if (thread->start(TP_low, true, true)) {
+        if (thread->start(TP_low, true)) {
           _threads.push_back(thread);
         }
       }

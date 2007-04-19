@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "transformBlend.h"
 #include "vertexTransform.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "pmap.h"
@@ -51,7 +51,10 @@ class FactoryParams;
 //               TransformTable for one set up to compute its
 //               dynamic vertices on the graphics card.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformBlendTable : public TypedWritableReferenceCount {
+class EXPCL_PANDA TransformBlendTable : public CopyOnWriteObject {
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
+
 PUBLISHED:
   TransformBlendTable();
   TransformBlendTable(const TransformBlendTable &copy);
@@ -141,9 +144,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "TransformBlendTable",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

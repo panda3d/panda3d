@@ -241,7 +241,7 @@ get_max_vertex() const {
 INLINE int GeomPrimitive::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
-  return cdata->_vertices->get_data_size_bytes();
+  return cdata->_vertices.get_read_pointer()->get_data_size_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -284,10 +284,10 @@ check_valid(const GeomVertexData *vertex_data) const {
 //               attempt to modify the returned array; use
 //               modify_vertices() or set_vertices() for this.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomPrimitive::
+INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_vertices() const {
   CDReader cdata(_cycler);
-  return cdata->_vertices;
+  return cdata->_vertices.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -344,7 +344,7 @@ get_ends() const {
 //               Note that simple primitive types, like triangles, do
 //               not have a mins array.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomPrimitive::
+INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_mins() const {
   GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
@@ -362,7 +362,7 @@ get_mins() const {
 //               Note that simple primitive types, like triangles, do
 //               not have a maxs array.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomPrimitive::
+INLINE CPT(GeomVertexArrayData) GeomPrimitive::
 get_maxs() const {
   GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   reader.check_minmax();
@@ -485,10 +485,9 @@ GeomPrimitivePipelineReader(const GeomPrimitive *object,
 #ifdef DO_PIPELINING
   _cdata->ref();
 #endif  // DO_PIPELINING
-  if (_cdata->_vertices != (GeomVertexArrayData *)NULL) {
+  if (!_cdata->_vertices.is_null()) {
     _vertices_reader =
-      new GeomVertexArrayDataPipelineReader(_cdata->_vertices, _current_thread);
-    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
+      new GeomVertexArrayDataPipelineReader(_cdata->_vertices.get_read_pointer(), _current_thread);
   }
 }
 
@@ -520,7 +519,6 @@ operator = (const GeomPrimitivePipelineReader &) {
 INLINE GeomPrimitivePipelineReader::
 ~GeomPrimitivePipelineReader() {
   if (_vertices_reader != (GeomVertexArrayDataPipelineReader *)NULL) {
-    nassertv(_vertices_reader->get_object() == _cdata->_vertices);
     delete _vertices_reader;
   }
 #ifdef _DEBUG
@@ -596,7 +594,7 @@ get_index_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomPrimitivePipelineReader::
 is_indexed() const {
-  return (_cdata->_vertices != (GeomVertexArrayData *)NULL);
+  return (!_cdata->_vertices.is_null());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -609,7 +607,7 @@ get_num_vertices() const {
   if (_cdata->_num_vertices != -1) {
     return _cdata->_num_vertices;
   } else {
-    nassertr(_cdata->_vertices != (GeomVertexArrayData *)NULL, 0);
+    nassertr(!_cdata->_vertices.is_null(), 0);
     return _vertices_reader->get_num_rows();
   }
 }
@@ -665,7 +663,7 @@ get_modified() const {
 INLINE int GeomPrimitivePipelineReader::
 get_index_stride() const {
   nassertr(is_indexed(), 0);
-  return _cdata->_vertices->get_array_format()->get_stride();
+  return _cdata->_vertices.get_read_pointer()->get_array_format()->get_stride();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -703,11 +701,11 @@ get_ends() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomPrimitivePipelineReader::
+INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_mins() const {
   nassertr(is_indexed(), NULL);
   nassertr(_cdata->_got_minmax, NULL);
-  return _cdata->_mins;
+  return _cdata->_mins.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -715,11 +713,11 @@ get_mins() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomPrimitivePipelineReader::
+INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_maxs() const {
   nassertr(is_indexed(), NULL);
   nassertr(_cdata->_got_minmax, NULL);
-  return _cdata->_maxs;
+  return _cdata->_maxs.get_read_pointer();
 }
 
 INLINE ostream &

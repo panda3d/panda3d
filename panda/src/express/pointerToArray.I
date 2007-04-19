@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef CPPPARSER
+
 template<class Element>
 pvector<Element> PointerToArray<Element>::_empty_array;
 
@@ -1006,3 +1008,4 @@ clear() {
 #endif // DO_PSTATS
 }
 
+#endif  // CPPPARSEr

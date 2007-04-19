@@ -167,11 +167,11 @@ get_num_arrays() const {
 //               indicated array, for application code to directly
 //               examine (but not modify) the underlying vertex data.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomVertexData::
+INLINE CPT(GeomVertexArrayData) GeomVertexData::
 get_array(int i) const {
   CDReader cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
-  return cdata->_arrays[i];
+  return cdata->_arrays[i].get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +188,7 @@ get_array(int i) const {
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayData *GeomVertexData::
+INLINE PT(GeomVertexArrayData) GeomVertexData::
 modify_array(int i) {
   GeomVertexDataPipelineWriter writer(this, true, Thread::get_current_thread());
   return writer.modify_array(i);
@@ -260,10 +260,10 @@ clear_transform_table() {
 //               have a TransformBlendTable assigned (which implies
 //               the vertices will not be animated by the CPU).
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformBlendTable *GeomVertexData::
+INLINE CPT(TransformBlendTable) GeomVertexData::
 get_transform_blend_table() const {
   CDReader cdata(_cycler);
-  return cdata->_transform_blend_table;
+  return cdata->_transform_blend_table.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -589,10 +589,10 @@ get_num_arrays() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomVertexDataPipelineBase::
+INLINE CPT(GeomVertexArrayData) GeomVertexDataPipelineBase::
 get_array(int i) const {
   nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), NULL);
-  return _cdata->_arrays[i];
+  return _cdata->_arrays[i].get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -610,9 +610,9 @@ get_transform_table() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformBlendTable *GeomVertexDataPipelineBase::
+INLINE CPT(TransformBlendTable) GeomVertexDataPipelineBase::
 get_transform_blend_table() const {
-  return _cdata->_transform_blend_table;
+  return _cdata->_transform_blend_table.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

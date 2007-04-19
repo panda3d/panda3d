@@ -168,16 +168,16 @@ PUBLISHED:
   INLINE void clear_extra_headers();
   INLINE void send_extra_header(const string &key, const string &value);
 
-  INLINE bool get_document(const DocumentSpec &url);
-  INLINE bool get_subdocument(const DocumentSpec &url, 
-                              size_t first_byte, size_t last_byte);
-  INLINE bool get_header(const DocumentSpec &url);
-  INLINE bool post_form(const DocumentSpec &url, const string &body);
-  INLINE bool put_document(const DocumentSpec &url, const string &body);
-  INLINE bool delete_document(const DocumentSpec &url);
-  INLINE bool get_trace(const DocumentSpec &url);
-  INLINE bool connect_to(const DocumentSpec &url);
-  INLINE bool get_options(const DocumentSpec &url);
+  BLOCKING INLINE bool get_document(const DocumentSpec &url);
+  BLOCKING INLINE bool get_subdocument(const DocumentSpec &url, 
+                                       size_t first_byte, size_t last_byte);
+  BLOCKING INLINE bool get_header(const DocumentSpec &url);
+  BLOCKING INLINE bool post_form(const DocumentSpec &url, const string &body);
+  BLOCKING INLINE bool put_document(const DocumentSpec &url, const string &body);
+  BLOCKING INLINE bool delete_document(const DocumentSpec &url);
+  BLOCKING INLINE bool get_trace(const DocumentSpec &url);
+  BLOCKING INLINE bool connect_to(const DocumentSpec &url);
+  BLOCKING INLINE bool get_options(const DocumentSpec &url);
 
   INLINE void begin_get_document(const DocumentSpec &url);
   INLINE void begin_get_subdocument(const DocumentSpec &url, 
@@ -188,8 +188,8 @@ PUBLISHED:
   INLINE void begin_connect_to(const DocumentSpec &url);
 
   ISocketStream *read_body();
-  bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
-  bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
+  BLOCKING bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
+  BLOCKING bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
   SocketStream *get_connection();
 
   INLINE size_t get_bytes_downloaded() const;

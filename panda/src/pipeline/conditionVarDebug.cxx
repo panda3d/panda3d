@@ -51,7 +51,7 @@ ConditionVarDebug::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarDebug::wait
-//       Access: Public
+//       Access: Published
 //  Description: Waits on the condition.  The caller must already be
 //               holding the lock associated with the condition
 //               variable before calling this function.
@@ -106,7 +106,7 @@ wait() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarDebug::signal
-//       Access: Public
+//       Access: Published
 //  Description: Informs one of the other threads who are currently
 //               blocked on wait() that the relevant condition has
 //               changed.  If multiple threads are currently waiting,
@@ -144,7 +144,7 @@ signal() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarDebug::output
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: This method is declared virtual in ConditionVarDebug,
 //               but non-virtual in ConditionVarDirect.
 ////////////////////////////////////////////////////////////////////

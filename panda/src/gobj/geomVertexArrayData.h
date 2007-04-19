@@ -20,7 +20,7 @@
 #define GEOMVERTEXARRAYDATA_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
 #include "geomVertexArrayFormat.h"
 #include "geomEnums.h"
 #include "pta_uchar.h"
@@ -58,9 +58,12 @@ class GraphicsStateGuardianBase;
 //               GeomVertexReader/Writer/Rewriter for high-level tools
 //               to manipulate the actual vertex data.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayData : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA GeomVertexArrayData : public CopyOnWriteObject, public GeomEnums {
 private:
   GeomVertexArrayData();
+
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
   GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
@@ -179,9 +182,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "GeomVertexArrayData",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
     CData::init_type();
   }
   virtual TypeHandle get_type() const {
@@ -225,7 +228,7 @@ public:
   INLINE UpdateSeq get_modified() const;
 
 protected:
-  GeomVertexArrayData *_object;
+  PT(GeomVertexArrayData) _object;
   Thread *_current_thread;
   GeomVertexArrayData::CData *_cdata;
 };

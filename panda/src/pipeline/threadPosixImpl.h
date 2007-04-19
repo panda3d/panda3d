@@ -41,7 +41,7 @@ public:
   INLINE ThreadPosixImpl(Thread *parent_obj);
   ~ThreadPosixImpl();
 
-  bool start(ThreadPriority priority, bool global, bool joinable);
+  bool start(ThreadPriority priority, bool joinable);
   void interrupt();
   void join();
 

@@ -48,7 +48,7 @@ class CollisionLevelStateBase {
 public:
   class ColliderDef {
   public:
-    CollisionSolid *_collider;
+    CPT(CollisionSolid) _collider;
     CollisionNode *_node;
     NodePath _node_path;
   };
@@ -68,7 +68,7 @@ public:
 
   INLINE int get_num_colliders() const;
 
-  INLINE CollisionSolid *get_collider(int n) const;
+  INLINE const CollisionSolid *get_collider(int n) const;
   INLINE CollisionNode *get_collider_node(int n) const;
   INLINE NodePath get_collider_node_path(int n) const;
   INLINE const GeometricBoundingVolume *get_local_bound(int n) const;

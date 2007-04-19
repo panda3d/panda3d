@@ -1892,7 +1892,7 @@ get_window_renderer(const string &name, int pipeline_stage) {
   thread->set_min_pipeline_stage(pipeline_stage);
   _pipeline->set_min_stages(pipeline_stage + 1);
 
-  thread->start(TP_normal, true, true);
+  thread->start(TP_normal, true);
   _threads[name] = thread;
 
   nassertr(thread->get_pipeline_stage() < _pipeline->get_num_stages(), thread.p());

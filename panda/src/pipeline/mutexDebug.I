@@ -39,7 +39,7 @@ operator = (const MutexDebug &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::lock
-//       Access: Public
+//       Access: Published
 //  Description: Grabs the mutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
 //               grabs it.  In either case, the function does not
@@ -62,7 +62,7 @@ lock() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::lock
-//       Access: Public
+//       Access: Published
 //  Description: This variant on lock() accepts the current thread as
 //               a parameter, if it is already known, as an
 //               optimization.
@@ -79,7 +79,7 @@ lock(Thread *current_thread) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::elevate_lock
-//       Access: Public
+//       Access: Published
 //  Description: This method increments the lock count, assuming the
 //               calling thread already holds the lock.  After this
 //               call, release() will need to be called one additional
@@ -107,7 +107,7 @@ elevate_lock() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::release
-//       Access: Public
+//       Access: Published
 //  Description: Releases the mutex.  It is an error to call this if
 //               the mutex was not already locked.
 //
@@ -125,7 +125,7 @@ release() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::debug_is_locked
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current thread has locked the
 //               Mutex, false otherwise.  This method is only intended
 //               for use in debugging, hence the method name; in the

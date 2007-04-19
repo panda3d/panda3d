@@ -46,6 +46,7 @@
     pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
     pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pmutex.h pmutex.I \
+    pythonThread.h \
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
@@ -88,6 +89,7 @@
     pipelineCyclerTrivialImpl.cxx \
     pipelineCyclerTrueImpl.cxx \
     pmutex.cxx \
+    pythonThread.cxx \
     reMutex.cxx \
     reMutexDirect.cxx \
     reMutexHolder.cxx \
@@ -132,6 +134,7 @@
     pipelineCyclerTrivialImpl.h pipelineCyclerTrivialImpl.I \
     pipelineCyclerTrueImpl.h pipelineCyclerTrueImpl.I \
     pmutex.h pmutex.I \
+    pythonThread.h \
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \

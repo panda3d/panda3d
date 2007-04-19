@@ -20,6 +20,7 @@
 #include "mainThread.h"
 #include "externalThread.h"
 #include "thread.h"
+#include "pythonThread.h"
 #include "pandaSystem.h"
 
 #include "dconfig.h"
@@ -45,18 +46,6 @@ ConfigVariableInt thread_stack_size
           "created for each newly-created thread.  Not all thread "
           "implementations respect this value."));
 
-ConfigVariableBool threads_always_global
-("threads-always-global", false,
- PRC_DESC("Set this true to override the application's 'global' setting "
-          "for each created thread, and create every thread with global "
-          "true.  Also see threads-never-global."));
-
-ConfigVariableBool threads_never_global
-("threads-never-global", false,
- PRC_DESC("Set this true to override the application's 'global' setting "
-          "for each created thread, and create every thread with global "
-          "false.  Also see threads-always-global."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpipeline
 //  Description: Initializes the library.  This must be called at
@@ -76,11 +65,14 @@ init_libpipeline() {
   MainThread::init_type();
   ExternalThread::init_type();
   Thread::init_type();
+#ifdef HAVE_PYTHON
+  PythonThread::init_type();
+#endif  // HAVE_PYTHON
 
 #ifdef HAVE_THREADS
  {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("threads");
   }
-#endif
+#endif  // HAVE_THREADS
 }

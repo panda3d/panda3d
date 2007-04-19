@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef CPPPARSER
+
 #ifdef DO_PIPELINING
 // This is the implementation for full support of pipelining (as well
 // as the sanity-check only implementation).
@@ -333,3 +335,4 @@ get_current_thread() const {
 }
 
 #endif  // DO_PIPELINING
+#endif  // CPPPARSER

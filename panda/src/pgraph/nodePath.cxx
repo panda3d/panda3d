@@ -5522,6 +5522,16 @@ verify_complete(Thread *current_thread) const {
     return true;
   }
 
+#ifdef HAVE_THREADS
+  if (Thread::is_threading_supported()) {
+    // In a threaded environment, we can't reliably test this, since a
+    // sub-thread may be mucking with the NodePath's ancestry as we
+    // try to validate it.  NodePaths are inherently not thread-safe,
+    // but generally that's not an issue.
+    return true;
+  }
+#endif  // HAVE_THREADS
+
   const NodePathComponent *comp = _head;
   nassertr(comp != (const NodePathComponent *)NULL, false);
 
@@ -5530,7 +5540,7 @@ verify_complete(Thread *current_thread) const {
   PandaNode *node = comp->get_node();
   nassertr(node != (const PandaNode *)NULL, false);
   int length = comp->get_length(pipeline_stage, current_thread);
-
+  
   comp = comp->get_next(pipeline_stage, current_thread);
   length--;
   while (comp != (const NodePathComponent *)NULL) {

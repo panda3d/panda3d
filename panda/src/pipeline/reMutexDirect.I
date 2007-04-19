@@ -69,7 +69,7 @@ operator = (const ReMutexDirect &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::lock
-//       Access: Public
+//       Access: Published
 //  Description: Grabs the reMutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
 //               grabs it.  In either case, the function does not
@@ -94,7 +94,7 @@ lock() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::lock
-//       Access: Public
+//       Access: Published
 //  Description: This variant on lock() accepts the current thread as
 //               a parameter, if it is already known, as an
 //               optimization.
@@ -111,7 +111,7 @@ lock(Thread *current_thread) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::elevate_lock
-//       Access: Public
+//       Access: Published
 //  Description: This method increments the lock count, assuming the
 //               calling thread already holds the lock.  After this
 //               call, release() will need to be called one additional
@@ -136,7 +136,7 @@ elevate_lock() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::release
-//       Access: Public
+//       Access: Published
 //  Description: Releases the reMutex.  It is an error to call this if
 //               the reMutex was not already locked.
 //
@@ -156,7 +156,7 @@ release() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::debug_is_locked
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current thread has locked the
 //               ReMutex, false otherwise.  This method is only intended
 //               for use in debugging, hence the method name; in the

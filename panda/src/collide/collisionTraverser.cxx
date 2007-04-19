@@ -290,7 +290,7 @@ traverse(const NodePath &root) {
   }
 
   bool traversal_done = false;
-  if (_colliders.size() <= CollisionLevelStateSingle::get_max_colliders() ||
+  if ((int)_colliders.size() <= CollisionLevelStateSingle::get_max_colliders() ||
       !allow_collider_multiple) {
     // Use the single-word-at-a-time traverser, which might need to make
     // lots of passes.
@@ -312,7 +312,7 @@ traverse(const NodePath &root) {
   }
 
   if (!traversal_done &&
-      _colliders.size() <= CollisionLevelStateDouble::get_max_colliders()) {
+      (int)_colliders.size() <= CollisionLevelStateDouble::get_max_colliders()) {
     // Try the double-word-at-a-time traverser.
     LevelStatesDouble level_states;
     prepare_colliders_double(level_states, root);
@@ -565,7 +565,7 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
       
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
-        CollisionSolid *collider = cnode->get_solid(s);
+        CPT(CollisionSolid) collider = cnode->get_solid(s);
         def._collider = collider;
         level_state.prepare_collider(def, root);
 
@@ -780,7 +780,7 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
       
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
-        CollisionSolid *collider = cnode->get_solid(s);
+        CPT(CollisionSolid) collider = cnode->get_solid(s);
         def._collider = collider;
         level_state.prepare_collider(def, root);
 
@@ -995,7 +995,7 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
       
       int num_solids = cnode->get_num_solids();
       for (int s = 0; s < num_solids; ++s) {
-        CollisionSolid *collider = cnode->get_solid(s);
+        CPT(CollisionSolid) collider = cnode->get_solid(s);
         def._collider = collider;
         level_state.prepare_collider(def, root);
 

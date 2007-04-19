@@ -41,7 +41,7 @@ INLINE ThreadDummyImpl::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool ThreadDummyImpl::
-start(ThreadPriority, bool, bool) {
+start(ThreadPriority, bool) {
   return false;
 }
 

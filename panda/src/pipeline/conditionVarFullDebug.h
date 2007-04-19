@@ -45,7 +45,7 @@ private:
   INLINE ConditionVarFullDebug(const ConditionVarFullDebug &copy);
   INLINE void operator = (const ConditionVarFullDebug &copy);
 
-public:
+PUBLISHED:
   INLINE MutexDebug &get_mutex() const;
 
   void wait();

@@ -40,6 +40,9 @@
 template<class MaskType>
 class CollisionLevelState : public CollisionLevelStateBase {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   INLINE CollisionLevelState(const NodePath &node_path);
   INLINE CollisionLevelState(const CollisionLevelState<MaskType> &parent, 
                              PandaNode *child);
@@ -70,6 +73,7 @@ private:
   CurrentMask _current;
 
   friend class CollisionTraverser;
+#endif  // CPPPARSER
 };
 
 #include "collisionLevelState.I"

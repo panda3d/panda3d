@@ -45,10 +45,10 @@ private:
   INLINE ConditionVarDirect(const ConditionVarDirect &copy);
   INLINE void operator = (const ConditionVarDirect &copy);
 
-public:
+PUBLISHED:
   INLINE MutexDirect &get_mutex() const;
 
-  INLINE void wait();
+  BLOCKING INLINE void wait();
   INLINE void signal();
   void output(ostream &out) const;
 

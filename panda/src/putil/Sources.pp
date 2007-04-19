@@ -26,7 +26,8 @@
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     clockObject.h clockObject.I \
     collideMask.h \
-    portalMask.h \
+    copyOnWriteObject.h copyOnWriteObject.I \
+    copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \
     config_util.N config_util.h configurable.h \
     datagramInputFile.I datagramInputFile.h \
@@ -52,6 +53,7 @@
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nonDeletor.h \
+    portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h \
     sparseArray.I sparseArray.h \
@@ -79,6 +81,8 @@
     buttonHandle.cxx buttonRegistry.cxx \
     cachedTypedWritableReferenceCount.cxx \
     clockObject.cxx \
+    copyOnWriteObject.cxx \
+    copyOnWritePointer.cxx \
     config_util.cxx configurable.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
     deferredDeletor.cxx \
@@ -122,7 +126,9 @@
     buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     clockObject.h clockObject.I \
-    collideMask.h portalMask.h \
+    collideMask.h \
+    copyOnWriteObject.h copyOnWriteObject.I \
+    copyOnWritePointer.h copyOnWritePointer.I \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \
     datagramInputFile.I datagramInputFile.h \
@@ -148,6 +154,7 @@
     nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     nonDeletor.h \
+    portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
     sparseArray.I sparseArray.h \

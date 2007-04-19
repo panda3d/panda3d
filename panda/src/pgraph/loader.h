@@ -79,8 +79,8 @@ PUBLISHED:
 
   Loader(const string &name = "loader", int num_threads = -1);
 
-  INLINE PT(PandaNode) load_sync(const Filename &filename, 
-                                 const LoaderOptions &options = LoaderOptions()) const;
+  BLOCKING INLINE PT(PandaNode) load_sync(const Filename &filename, 
+                                          const LoaderOptions &options = LoaderOptions()) const;
 
   INLINE void load_async(AsyncTask *request);
 

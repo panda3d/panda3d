@@ -38,6 +38,16 @@ TypeHandle Geom::CData::_type_handle;
 TypeHandle GeomPipelineReader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_cow_copy
+//       Access: Protected, Virtual
+//  Description: Required to implement CopyOnWriteObject.
+////////////////////////////////////////////////////////////////////
+PT(CopyOnWriteObject) Geom::
+make_cow_copy() {
+  return make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::Constructor
 //       Access: Published
 //  Description: 
@@ -59,7 +69,7 @@ Geom(const GeomVertexData *data) {
 ////////////////////////////////////////////////////////////////////
 Geom::
 Geom(const Geom &copy) :
-  TypedWritableReferenceCount(copy),
+  CopyOnWriteObject(copy),
   _cycler(copy._cycler)  
 {
 }
@@ -74,7 +84,7 @@ Geom(const Geom &copy) :
 ////////////////////////////////////////////////////////////////////
 void Geom::
 operator = (const Geom &copy) {
-  TypedWritableReferenceCount::operator = (copy);
+  CopyOnWriteObject::operator = (copy);
 
   clear_cache();
 
@@ -100,7 +110,7 @@ Geom::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_copy
-//       Access: Public, Virtual
+//       Access: Protected, Virtual
 //  Description: Returns a newly-allocated Geom that is a shallow copy
 //               of this one.  It will be a different Geom pointer,
 //               but its internal data may or may not be shared with
@@ -130,10 +140,8 @@ set_usage_hint(Geom::UsageHint usage_hint) {
 
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    if ((*pi)->get_ref_count() > 1) {
-      (*pi) = (*pi)->make_copy();
-    }
-    (*pi)->set_usage_hint(usage_hint);
+    PT(GeomPrimitive) prim = (*pi).get_write_pointer();
+    prim->set_usage_hint(usage_hint);
   }
 
   clear_cache_stage(current_thread);
@@ -158,12 +166,9 @@ modify_vertex_data() {
   // is greater than 1, assume some other Geom has the same pointer,
   // so make a copy of it first.
   CDWriter cdata(_cycler, true, current_thread);
-  if (cdata->_data->get_ref_count() > 1) {
-    cdata->_data = new GeomVertexData(*cdata->_data);
-  }
   clear_cache_stage(current_thread);
   mark_internal_bounds_stale(cdata);
-  return cdata->_data;
+  return cdata->_data.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,13 +218,11 @@ offset_vertices(const GeomVertexData *data, int offset) {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    if ((*pi)->get_ref_count() > 1) {
-      (*pi) = (*pi)->make_copy();
-    }
-    (*pi)->offset_vertices(offset);
+    PT(GeomPrimitive) prim = (*pi).get_write_pointer();
+    prim->offset_vertices(offset);
 
 #ifndef NDEBUG
-    if (!(*pi)->check_valid(data)) {
+    if (!prim->check_valid(data)) {
       all_is_valid = false;
     }
 #endif
@@ -249,8 +252,8 @@ make_nonindexed(bool composite_only) {
   int num_changed = 0;
 
   CDWriter cdata(_cycler, true, current_thread);
-  CPT(GeomVertexData) orig_data = cdata->_data;
-  PT(GeomVertexData) new_data = new GeomVertexData(*cdata->_data);
+  CPT(GeomVertexData) orig_data = cdata->_data.get_read_pointer();
+  PT(GeomVertexData) new_data = new GeomVertexData(*orig_data);
   new_data->clear_rows();
 
 #ifndef NDEBUG
@@ -260,8 +263,8 @@ make_nonindexed(bool composite_only) {
   Primitives new_prims;
   new_prims.reserve(cdata->_primitives.size());
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    PT(GeomPrimitive) primitive = (*pi)->make_copy();
-    new_prims.push_back(primitive);
+    PT(GeomPrimitive) primitive = (*pi).get_read_pointer()->make_copy();
+    new_prims.push_back(primitive.p());
 
     // GeomPoints are considered "composite" for the purposes of
     // making nonindexed, since there's no particular advantage to
@@ -316,7 +319,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
-  nassertv(primitive->check_valid(cdata->_data));
+  nassertv(primitive->check_valid(cdata->_data.get_read_pointer()));
 
   // All primitives within a particular Geom must have the same
   // fundamental primitive type (triangles, points, or lines).
@@ -362,7 +365,7 @@ add_primitive(const GeomPrimitive *primitive) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
 
-  nassertv(primitive->check_valid(cdata->_data));
+  nassertv(primitive->check_valid(cdata->_data.get_read_pointer()));
 
   // All primitives within a particular Geom must have the same
   // fundamental primitive type (triangles, points, or lines).
@@ -462,11 +465,11 @@ decompose_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi)->decompose();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->decompose();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!(*pi)->check_valid(cdata->_data)) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
       all_is_valid = false;
     }
 #endif
@@ -500,11 +503,11 @@ rotate_in_place() {
 #endif
   Primitives::iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) new_prim = (*pi)->rotate();
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->rotate();
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!(*pi)->check_valid(cdata->_data)) {
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
       all_is_valid = false;
     }
 #endif
@@ -548,7 +551,7 @@ unify_in_place(int max_indices) {
 
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
-    CPT(GeomPrimitive) primitive = (*pi);
+    CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
     if (new_prim == (GeomPrimitive *)NULL) {
       // The first primitive type we come across is copied directly.
       new_prim = primitive->make_copy();
@@ -577,7 +580,7 @@ unify_in_place(int max_indices) {
   }
 
   // Now we have just one primitive.
-  nassertv(new_prim->check_valid(cdata->_data));
+  nassertv(new_prim->check_valid(cdata->_data.get_read_pointer()));
 
   // The new primitive, naturally, inherits the Geom's overall shade
   // model.
@@ -607,12 +610,12 @@ unify_in_place(int max_indices) {
         ++i;
       }
 
-      cdata->_primitives.push_back(smaller);
+      cdata->_primitives.push_back(smaller.p());
     }
 
   } else {
     // The new_prim has few enough vertices; keep it.
-    cdata->_primitives.push_back(new_prim);
+    cdata->_primitives.push_back(new_prim.p());
   }
 
   cdata->_modified = Geom::get_next_modified();
@@ -685,7 +688,7 @@ get_num_bytes() const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    num_bytes += (*pi)->get_num_bytes();
+    num_bytes += (*pi).get_read_pointer()->get_num_bytes();
   }
 
   return num_bytes;
@@ -799,8 +802,9 @@ output(ostream &out) const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    num_faces += (*pi)->get_num_faces();
-    types.insert((*pi)->get_type());
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    num_faces += prim->get_num_faces();
+    types.insert(prim->get_type());
   }
 
   out << get_type() << " [";
@@ -825,7 +829,7 @@ write(ostream &out, int indent_level) const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    (*pi)->write(out, indent_level);
+    (*pi).get_read_pointer()->write(out, indent_level);
   }
 }
 
@@ -1067,8 +1071,9 @@ do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    (*pi)->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
-                             got_mat, mat, current_thread);
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    prim->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
+                            got_mat, mat, current_thread);
   }
 }
 
@@ -1112,7 +1117,7 @@ check_will_be_valid(const GeomVertexData *vertex_data) const {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    if (!(*pi)->check_valid(vertex_data)) {
+    if (!(*pi).get_read_pointer()->check_valid(vertex_data)) {
       return false;
     }
   }
@@ -1132,7 +1137,8 @@ reset_usage_hint(Geom::CData *cdata) {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    cdata->_usage_hint = min(cdata->_usage_hint, (*pi)->get_usage_hint());
+    cdata->_usage_hint = min(cdata->_usage_hint, 
+                             (*pi).get_read_pointer()->get_usage_hint());
   }
   cdata->_got_usage_hint = true;
 }
@@ -1149,17 +1155,18 @@ reset_geom_rendering(Geom::CData *cdata) {
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();
        ++pi) {
-    cdata->_geom_rendering |= (*pi)->get_geom_rendering();
+    cdata->_geom_rendering |= (*pi).get_read_pointer()->get_geom_rendering();
   }
 
   if ((cdata->_geom_rendering & GR_point) != 0) {
-    if (cdata->_data->has_column(InternalName::get_size())) {
+    CPT(GeomVertexData) data = cdata->_data.get_read_pointer();
+    if (data->has_column(InternalName::get_size())) {
       cdata->_geom_rendering |= GR_per_point_size;
     }
-    if (cdata->_data->has_column(InternalName::get_aspect_ratio())) {
+    if (data->has_column(InternalName::get_aspect_ratio())) {
       cdata->_geom_rendering |= GR_point_aspect_ratio;
     }
-    if (cdata->_data->has_column(InternalName::get_rotate())) {
+    if (data->has_column(InternalName::get_rotate())) {
       cdata->_geom_rendering |= GR_point_rotate;
     }
   }
@@ -1237,8 +1244,8 @@ finalize(BamReader *manager) {
   // Make sure our GeomVertexData is finalized first.  This may result
   // in the data getting finalized multiple times, but it doesn't mind
   // that.
-  if (cdata->_data != (GeomVertexData *)NULL) {
-    cdata->_data->finalize(manager);
+  if (!cdata->_data.is_null()) {
+    cdata->_data.get_write_pointer()->finalize(manager);
   }
 
   reset_geom_rendering(cdata);
@@ -1323,12 +1330,12 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void Geom::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  manager->write_pointer(dg, _data);
+  manager->write_pointer(dg, _data.get_read_pointer());
 
   dg.add_uint16(_primitives.size());
   Primitives::const_iterator pi;
   for (pi = _primitives.begin(); pi != _primitives.end(); ++pi) {
-    manager->write_pointer(dg, *pi);
+    manager->write_pointer(dg, (*pi).get_read_pointer());
   }
 
   dg.add_uint8(_primitive_type);
@@ -1402,12 +1409,12 @@ check_usage_hint() const {
     // already have modified the pointer on the object since we
     // queried it.
     {
-      Geom::CDWriter fresh_cdata(((Geom *)_object)->_cycler, 
+      Geom::CDWriter fresh_cdata(((Geom *)_object.p())->_cycler, 
                                  false, _current_thread);
       if (!fresh_cdata->_got_usage_hint) {
         // The cache is still stale.  We have to do the work of
         // freshening it.
-        ((Geom *)_object)->reset_usage_hint(fresh_cdata);
+        ((Geom *)_object.p())->reset_usage_hint(fresh_cdata);
         nassertv(fresh_cdata->_got_usage_hint);
       }
 
@@ -1436,7 +1443,7 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
   for (pi = _cdata->_primitives.begin(); 
        pi != _cdata->_primitives.end();
        ++pi) {
-    const GeomPrimitive *primitive = (*pi);
+    CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
     GeomPrimitivePipelineReader reader(primitive, _current_thread);
     reader.check_minmax();
     if (!reader.check_valid(data_reader)) {
@@ -1461,7 +1468,7 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
     for (pi = _cdata->_primitives.begin(); 
          pi != _cdata->_primitives.end();
          ++pi) {
-      const GeomPrimitive *primitive = (*pi);
+      CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
       GeomPrimitivePipelineReader reader(primitive, _current_thread);
       if (reader.get_num_vertices() != 0) {
         reader.check_minmax();

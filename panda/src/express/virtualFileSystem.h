@@ -52,28 +52,28 @@ PUBLISHED:
     MF_read_only      = 0x0002,
   };
 
-  bool mount(Multifile *multifile, const string &mount_point, int flags);
-  bool mount(const Filename &physical_filename, const string &mount_point, 
-             int flags, const string &password = "");
-  int unmount(Multifile *multifile);
-  int unmount(const Filename &physical_filename);
-  int unmount_point(const string &mount_point);
-  int unmount_all();
+  BLOCKING bool mount(Multifile *multifile, const string &mount_point, int flags);
+  BLOCKING bool mount(const Filename &physical_filename, const string &mount_point, 
+                      int flags, const string &password = "");
+  BLOCKING int unmount(Multifile *multifile);
+  BLOCKING int unmount(const Filename &physical_filename);
+  BLOCKING int unmount_point(const string &mount_point);
+  BLOCKING int unmount_all();
 
-  bool chdir(const string &new_directory);
-  const Filename &get_cwd() const;
+  BLOCKING bool chdir(const string &new_directory);
+  BLOCKING const Filename &get_cwd() const;
 
-  PT(VirtualFile) get_file(const Filename &filename) const;
-  PT(VirtualFile) find_file(const Filename &filename, 
-                            const DSearchPath &searchpath) const;
-  bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
-                        const string &default_extension = string()) const;
-  int find_all_files(const Filename &filename, const DSearchPath &searchpath,
-                     DSearchPath::Results &results) const;
+  BLOCKING PT(VirtualFile) get_file(const Filename &filename) const;
+  BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
+                                     const DSearchPath &searchpath) const;
+  BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
+                                 const string &default_extension = string()) const;
+  BLOCKING int find_all_files(const Filename &filename, const DSearchPath &searchpath,
+                              DSearchPath::Results &results) const;
 
-  INLINE bool exists(const Filename &filename) const;
-  INLINE bool is_directory(const Filename &filename) const;
-  INLINE bool is_regular_file(const Filename &filename) const;
+  BLOCKING INLINE bool exists(const Filename &filename) const;
+  BLOCKING INLINE bool is_directory(const Filename &filename) const;
+  BLOCKING INLINE bool is_regular_file(const Filename &filename) const;
 
   INLINE void ls(const string &filename) const;
   INLINE void ls_all(const string &filename) const;
@@ -82,9 +82,9 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-  INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
-  INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
-  void close_read_file(istream *stream) const;
+  BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING void close_read_file(istream *stream) const;
 
 public:
   INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;

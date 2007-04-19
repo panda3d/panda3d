@@ -42,7 +42,7 @@ operator = (const ConditionVarFullDebug &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDebug::get_mutex
-//       Access: Public
+//       Access: Published
 //  Description: Returns the mutex associated with this condition
 //               variable.
 ////////////////////////////////////////////////////////////////////

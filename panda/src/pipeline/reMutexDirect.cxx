@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::output
-//       Access: Public
+//       Access: Published
 //  Description: This method is declared virtual in MutexDebug, but
 //               non-virtual in ReMutexDirect.
 ////////////////////////////////////////////////////////////////////

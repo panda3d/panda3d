@@ -118,7 +118,7 @@ public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
-  BitMaskType _hi, _lo;
+  BitMaskType _lo, _hi;
 
 public:
   static TypeHandle get_class_type() {

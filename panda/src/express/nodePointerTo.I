@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Constructor
 //       Access: Public
@@ -26,7 +27,9 @@ template<class T>
 INLINE NodePointerTo<T>::
 NodePointerTo(To *ptr) : NodePointerToBase<T>(ptr) {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Copy Constructor
 //       Access: Public
@@ -38,7 +41,9 @@ NodePointerTo(const NodePointerTo<T> &copy) :
   NodePointerToBase<T>((const NodePointerToBase<T> &)copy)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Destructor
 //       Access: Public
@@ -48,7 +53,9 @@ template<class T>
 INLINE NodePointerTo<T>::
 ~NodePointerTo() {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Dereference operator
 //       Access: Public
@@ -59,7 +66,9 @@ INLINE TYPENAME NodePointerTo<T>::To &NodePointerTo<T>::
 operator *() const {
   return *((To *)(this->_void_ptr));
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Member access operator
 //       Access: Public
@@ -70,7 +79,9 @@ INLINE TYPENAME NodePointerTo<T>::To *NodePointerTo<T>::
 operator -> () const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Typecast operator
 //       Access: Public
@@ -86,7 +97,9 @@ INLINE NodePointerTo<T>::
 operator T *() const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::p
 //       Access: Public
@@ -99,7 +112,9 @@ INLINE TYPENAME NodePointerTo<T>::To *NodePointerTo<T>::
 p() const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Assignment operator
 //       Access: Public
@@ -111,7 +126,9 @@ operator = (To *ptr) {
   reassign(ptr);
   return *this;
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePointerTo::Assignment operator
 //       Access: Public
@@ -123,7 +140,9 @@ operator = (const NodePointerTo<T> &copy) {
   reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Constructor
 //       Access: Public
@@ -135,7 +154,9 @@ NodeConstPointerTo(const TYPENAME NodeConstPointerTo<T>::To *ptr) :
   NodePointerToBase<T>((TYPENAME NodeConstPointerTo<T>::To *)ptr)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Copy Constructor
 //       Access: Public
@@ -147,7 +168,9 @@ NodeConstPointerTo(const NodePointerTo<T> &copy) :
   NodePointerToBase<T>((const NodePointerToBase<T> &)copy)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Copy Constructor
 //       Access: Public
@@ -159,7 +182,9 @@ NodeConstPointerTo(const NodeConstPointerTo<T> &copy) :
   NodePointerToBase<T>((const NodePointerToBase<T> &)copy)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Destructor
 //       Access: Public
@@ -169,7 +194,9 @@ template<class T>
 INLINE NodeConstPointerTo<T>::
 ~NodeConstPointerTo() {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Dereference operator
 //       Access: Public
@@ -180,7 +207,9 @@ INLINE const TYPENAME NodeConstPointerTo<T>::To &NodeConstPointerTo<T>::
 operator *() const {
   return *((To *)(this->_void_ptr));
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Member access operator
 //       Access: Public
@@ -191,7 +220,9 @@ INLINE const TYPENAME NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
 operator -> () const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Typecast operator
 //       Access: Public
@@ -208,7 +239,9 @@ INLINE NodeConstPointerTo<T>::
 operator const T * () const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::p
 //       Access: Public
@@ -221,7 +254,9 @@ INLINE const TYPENAME NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
 p() const {
   return (To *)(this->_void_ptr);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Assignment operator
 //       Access: Public
@@ -233,7 +268,9 @@ operator = (const To *ptr) {
   reassign((To *)ptr);
   return *this;
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Assignment operator
 //       Access: Public
@@ -245,7 +282,9 @@ operator = (const NodePointerTo<T> &copy) {
   reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeConstPointerTo::Assignment operator
 //       Access: Public
@@ -257,3 +296,4 @@ operator = (const NodeConstPointerTo<T> &copy) {
   reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
+#endif  // CPPPARSER

@@ -51,7 +51,7 @@ class EXPCL_PANDA ConditionVar : public ConditionVarDebug
 class EXPCL_PANDA ConditionVar : public ConditionVarDirect
 #endif  // DEBUG_THREADS
 {
-public:
+PUBLISHED:
   INLINE ConditionVar(Mutex &mutex);
   INLINE ~ConditionVar();
 private:
@@ -68,7 +68,7 @@ private:
   // method.
   INLINE void signal_all();
 
-public:
+PUBLISHED:
   INLINE Mutex &get_mutex() const;
 };
 

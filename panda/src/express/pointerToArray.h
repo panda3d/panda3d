@@ -99,6 +99,9 @@
 template <class Element>
 class PointerToArray : public PointerToArrayBase<Element> {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::reference reference;
@@ -110,7 +113,7 @@ public:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-PUBLISHED:
+public:
   INLINE PointerToArray();
   INLINE static PointerToArray<Element> empty_array(size_type n);
   INLINE PointerToArray(size_type n, const Element &value);
@@ -132,11 +135,7 @@ public:
 
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.
-
-PUBLISHED:
   INLINE size_type size() const;
-
-public:
   INLINE size_type max_size() const;
   INLINE bool empty() const;
 
@@ -159,7 +158,6 @@ public:
   INLINE void erase(iterator position);
   INLINE void erase(iterator first, iterator last);
 
-PUBLISHED:
 #if !defined(WIN32_VC)
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
@@ -170,8 +168,6 @@ PUBLISHED:
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
   INLINE void make_empty();
-
-public:
 
   INLINE operator Element *() const;
   INLINE Element *p() const;
@@ -206,6 +202,7 @@ private:
   // .so's, since it's a static member of a template class, but we
   // don't really care.
   static pvector<Element> _empty_array;
+#endif  // CPPPARSER
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -216,6 +213,9 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:
+  // By hiding this template from interrogate, we improve compile-time
+  // speed and memory utilization.
+#ifndef CPPPARSER
   typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::const_reference reference;
@@ -232,14 +232,12 @@ public:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-PUBLISHED:
   INLINE ConstPointerToArray();
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
   INLINE PStatCollectorForwardBase *get_col() const;
 
-public:
   // Duplicating the interface of vector.
 
   INLINE iterator begin() const;
@@ -250,10 +248,7 @@ public:
   // Equality and comparison operators are pointerwise for
   // PointerToArrays, not elementwise as in vector.
 
-PUBLISHED:
   INLINE size_type size() const;
-
-public:
   INLINE size_type max_size() const;
   INLINE bool empty() const;
 
@@ -262,14 +257,12 @@ public:
   INLINE reference front() const;
   INLINE reference back() const;
 
-PUBLISHED:
 #ifndef WIN32_VC
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
   INLINE const Element &get_element(size_type n) const;
 
-public:
   INLINE operator const Element *() const;
   INLINE const Element *p() const;
   INLINE const pvector<Element> &v() const;
@@ -296,6 +289,7 @@ private:
   // .so's, since it's a static member of a template class, but we
   // don't really care.
   static pvector<Element> _empty_array;
+#endif  // CPPPARSER
 };
 
 

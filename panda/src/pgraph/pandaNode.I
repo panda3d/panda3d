@@ -44,9 +44,9 @@ get_num_parents(Thread *current_thread) const {
 INLINE PandaNode *PandaNode::
 get_parent(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  const Up &up = *cdata->get_up();
-  nassertr(n >= 0 && n < (int)up.size(), NULL);
-  return up[n].get_parent();
+  CPT(Up) up = cdata->get_up();
+  nassertr(n >= 0 && n < (int)up->size(), NULL);
+  return (*up)[n].get_parent();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,9 +86,9 @@ get_num_children(Thread *current_thread) const {
 INLINE PandaNode *PandaNode::
 get_child(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  const Down &down = *cdata->get_down();
-  nassertr(n >= 0 && n < (int)down.size(), NULL);
-  return down[n].get_child();
+  CPT(Down) down = cdata->get_down();
+  nassertr(n >= 0 && n < (int)down->size(), NULL);
+  return (*down)[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,9 +101,9 @@ get_child(int n, Thread *current_thread) const {
 INLINE int PandaNode::
 get_child_sort(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  const Down &down = *cdata->get_down();
-  nassertr(n >= 0 && n < (int)down.size(), -1);
-  return down[n].get_sort();
+  CPT(Down) down = cdata->get_down();
+  nassertr(n >= 0 && n < (int)down->size(), -1);
+  return (*down)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ get_child_sort(int n, Thread *current_thread) const {
 INLINE int PandaNode::
 find_child(PandaNode *node, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return do_find_child(node, cdata);
+  return do_find_child(node, cdata->get_down());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,9 +195,9 @@ get_num_stashed(Thread *current_thread) const {
 INLINE PandaNode *PandaNode::
 get_stashed(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  const Down &stashed = *cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed.size(), NULL);
-  return stashed[n].get_child();
+  CPT(Down) stashed = cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed->size(), NULL);
+  return (*stashed)[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,9 +210,9 @@ get_stashed(int n, Thread *current_thread) const {
 INLINE int PandaNode::
 get_stashed_sort(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  const Down &stashed = *cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed.size(), -1);
-  return stashed[n].get_sort();
+  CPT(Down) stashed = cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed->size(), -1);
+  return (*stashed)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ get_stashed_sort(int n, Thread *current_thread) const {
 INLINE int PandaNode::
 find_stashed(PandaNode *node, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return do_find_stashed(node, cdata);
+  return do_find_child(node, cdata->get_stashed());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -754,12 +754,12 @@ get_parents(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 do_find_parent(PandaNode *node, const CData *cdata) const {
-  const Up &up = *cdata->get_up();
-  Up::const_iterator ui = up.find(UpConnection(node));
-  if (ui == up.end()) {
+  CPT(Up) up = cdata->get_up();
+  Up::const_iterator ui = up->find(UpConnection(node));
+  if (ui == up->end()) {
     return -1;
   }
-  return ui - up.begin();
+  return ui - up->begin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -930,9 +930,9 @@ set_fancy_bit(int bits, bool value) {
 //       Access: Public
 //  Description: Returns a read-only pointer to the _down list.
 ////////////////////////////////////////////////////////////////////
-INLINE const PandaNode::Down *PandaNode::CData::
+INLINE CPT(PandaNode::Down) PandaNode::CData::
 get_down() const {
-  return _down;
+  return _down.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -941,12 +941,9 @@ get_down() const {
 //  Description: Returns a modifiable, unique pointer to the _down
 //               list.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode::Down *PandaNode::CData::
+INLINE PT(PandaNode::Down) PandaNode::CData::
 modify_down() {
-  if (_down->get_ref_count() > 1) {
-    _down = new Down(*_down);
-  }
-  return _down;
+  return _down.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -954,9 +951,9 @@ modify_down() {
 //       Access: Public
 //  Description: Returns a read-only pointer to the _stashed list.
 ////////////////////////////////////////////////////////////////////
-INLINE const PandaNode::Down *PandaNode::CData::
+INLINE CPT(PandaNode::Down) PandaNode::CData::
 get_stashed() const {
-  return _stashed;
+  return _stashed.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -965,12 +962,9 @@ get_stashed() const {
 //  Description: Returns a modifiable, unique pointer to the _stashed
 //               list.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode::Down *PandaNode::CData::
+INLINE PT(PandaNode::Down) PandaNode::CData::
 modify_stashed() {
-  if (_stashed->get_ref_count() > 1) {
-    _stashed = new Down(*_stashed);
-  }
-  return _stashed;
+  return _stashed.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -978,9 +972,9 @@ modify_stashed() {
 //       Access: Public
 //  Description: Returns a read-only pointer to the _up list.
 ////////////////////////////////////////////////////////////////////
-INLINE const PandaNode::Up *PandaNode::CData::
+INLINE CPT(PandaNode::Up) PandaNode::CData::
 get_up() const {
-  return _up;
+  return _up.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -989,12 +983,9 @@ get_up() const {
 //  Description: Returns a modifiable, unique pointer to the _up
 //               list.
 ////////////////////////////////////////////////////////////////////
-INLINE PandaNode::Up *PandaNode::CData::
+INLINE PT(PandaNode::Up) PandaNode::CData::
 modify_up() {
-  if (_up->get_ref_count() > 1) {
-    _up = new Up(*_up);
-  }
-  return _up;
+  return _up.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1426,9 +1417,9 @@ get_num_parents() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNodePipelineReader::
 get_parent(int n) const {
-  const PandaNode::Up &up = *_cdata->get_up();
-  nassertr(n >= 0 && n < (int)up.size(), NULL);
-  return up[n].get_parent();
+  CPT(PandaNode::Up) up = _cdata->get_up();
+  nassertr(n >= 0 && n < (int)up->size(), NULL);
+  return (*up)[n].get_parent();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1465,9 +1456,9 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNodePipelineReader::
 get_child(int n) const {
-  const PandaNode::Down &down = *_cdata->get_down();
-  nassertr(n >= 0 && n < (int)down.size(), NULL);
-  return down[n].get_child();
+  CPT(PandaNode::Down) down = _cdata->get_down();
+  nassertr(n >= 0 && n < (int)down->size(), NULL);
+  return (*down)[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1479,9 +1470,9 @@ get_child(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 get_child_sort(int n) const {
-  const PandaNode::Down &down = *_cdata->get_down();
-  nassertr(n >= 0 && n < (int)down.size(), -1);
-  return down[n].get_sort();
+  CPT(PandaNode::Down) down = _cdata->get_down();
+  nassertr(n >= 0 && n < (int)down->size(), -1);
+  return (*down)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1492,7 +1483,7 @@ get_child_sort(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 find_child(PandaNode *node) const {
-  return _object->do_find_child(node, _cdata);
+  return _object->do_find_child(node, _cdata->get_down());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1518,9 +1509,9 @@ get_num_stashed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNodePipelineReader::
 get_stashed(int n) const {
-  const PandaNode::Down &stashed = *_cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed.size(), NULL);
-  return stashed[n].get_child();
+  CPT(PandaNode::Down) stashed = _cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed->size(), NULL);
+  return (*stashed)[n].get_child();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1532,9 +1523,9 @@ get_stashed(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 get_stashed_sort(int n) const {
-  const PandaNode::Down &stashed = *_cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed.size(), -1);
-  return stashed[n].get_sort();
+  CPT(PandaNode::Down) stashed = _cdata->get_stashed();
+  nassertr(n >= 0 && n < (int)stashed->size(), -1);
+  return (*stashed)[n].get_sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1545,7 +1536,7 @@ get_stashed_sort(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 find_stashed(PandaNode *node) const {
-  return _object->do_find_stashed(node, _cdata);
+  return _object->do_find_child(node, _cdata->get_stashed());
 }
 
 ////////////////////////////////////////////////////////////////////

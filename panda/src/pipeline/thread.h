@@ -75,17 +75,17 @@ PUBLISHED:
   INLINE static Thread *get_current_thread();
   INLINE static int get_current_pipeline_stage();
   INLINE static bool is_threading_supported();
-  INLINE static void sleep(double seconds);
+  BLOCKING INLINE static void sleep(double seconds);
 
   virtual void output(ostream &out) const;
 
-public:
   INLINE bool is_started() const;
 
-  bool start(ThreadPriority priority, bool global, bool joinable);
+  bool start(ThreadPriority priority, bool joinable);
   INLINE void interrupt();
-  INLINE void join();
+  BLOCKING INLINE void join();
 
+public:
   INLINE static void prepare_for_exit();
 
 private:

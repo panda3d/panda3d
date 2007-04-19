@@ -15,6 +15,8 @@
 #include "clockObject.cxx"
 #include "config_util.cxx"
 #include "configurable.cxx"
+#include "copyOnWriteObject.cxx"
+#include "copyOnWritePointer.cxx"
 #include "datagramInputFile.cxx"
 #include "datagramOutputFile.cxx"
 #include "deferredDeletor.cxx"

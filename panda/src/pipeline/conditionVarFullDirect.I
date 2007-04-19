@@ -68,7 +68,7 @@ operator = (const ConditionVarFullDirect &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDirect::get_mutex
-//       Access: Public
+//       Access: Published
 //  Description: Returns the mutex associated with this condition
 //               variable.
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ get_mutex() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDirect::wait
-//       Access: Public
+//       Access: Published
 //  Description: Waits on the condition.  The caller must already be
 //               holding the lock associated with the condition
 //               variable before calling this function.
@@ -110,7 +110,7 @@ wait() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDirect::signal
-//       Access: Public
+//       Access: Published
 //  Description: Informs one of the other threads who are currently
 //               blocked on wait() that the relevant condition has
 //               changed.  If multiple threads are currently waiting,
@@ -133,7 +133,7 @@ signal() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDirect::signal_all
-//       Access: Public
+//       Access: Published
 //  Description: Informs all of the other threads who are currently
 //               blocked on wait() that the relevant condition has
 //               changed.

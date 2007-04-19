@@ -99,10 +99,21 @@ get_num_solids() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE CollisionSolid *CollisionNode::
+INLINE CPT(CollisionSolid) CollisionNode::
 get_solid(int n) const {
   nassertr(n >= 0 && n < get_num_solids(), NULL);
-  return _solids[n];
+  return _solids[n].get_read_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::modify_solid
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PT(CollisionSolid) CollisionNode::
+modify_solid(int n) {
+  nassertr(n >= 0 && n < get_num_solids(), NULL);
+  return _solids[n].get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

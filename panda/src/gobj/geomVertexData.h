@@ -20,7 +20,8 @@
 #define GEOMVERTEXDATA_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
+#include "copyOnWritePointer.h"
 #include "geomVertexFormat.h"
 #include "geomVertexColumn.h"
 #include "geomVertexArrayData.h"
@@ -75,9 +76,12 @@ class GeomVertexColumn;
 //               GeomVertexWriter, and GeomVertexRewriter objects to
 //               read and write vertex data at a high level.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexData : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA GeomVertexData : public CopyOnWriteObject, public GeomEnums {
 private:
   GeomVertexData();
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
+  
 PUBLISHED:
   GeomVertexData(const string &name,
                  const GeomVertexFormat *format, 
@@ -106,16 +110,16 @@ PUBLISHED:
   void clear_rows();
 
   INLINE int get_num_arrays() const;
-  INLINE const GeomVertexArrayData *get_array(int i) const;
-  INLINE GeomVertexArrayData *modify_array(int i);
+  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
+  INLINE PT(GeomVertexArrayData) modify_array(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
 
   INLINE const TransformTable *get_transform_table() const;
   void set_transform_table(const TransformTable *table);
   INLINE void clear_transform_table();
 
-  INLINE const TransformBlendTable *get_transform_blend_table() const;
-  TransformBlendTable *modify_transform_blend_table();
+  INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
+  PT(TransformBlendTable) modify_transform_blend_table();
   void set_transform_blend_table(const TransformBlendTable *table);
   INLINE void clear_transform_blend_table();
 
@@ -184,7 +188,7 @@ private:
 private:
   string _name;
 
-  typedef pvector< PT(GeomVertexArrayData) > Arrays;
+  typedef pvector< COWPT(GeomVertexArrayData) > Arrays;
 
   // The pipelined data with each CacheEntry.
   class CDataCache : public CycleData {
@@ -273,7 +277,7 @@ private:
     CPT(GeomVertexFormat) _format;
     Arrays _arrays;
     CPT(TransformTable) _transform_table;
-    PT(TransformBlendTable) _transform_blend_table;
+    COWPT(TransformBlendTable) _transform_blend_table;
     CPT(SliderTable) _slider_table;
     PT(GeomVertexData) _animated_vertices;
     UpdateSeq _animated_vertices_modified;
@@ -329,9 +333,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "GeomVertexData",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
     CDataCache::init_type();
     CacheEntry::init_type();
     CData::init_type();
@@ -373,15 +377,15 @@ public:
 
   INLINE UsageHint get_usage_hint() const;
   INLINE int get_num_arrays() const;
-  INLINE const GeomVertexArrayData *get_array(int i) const;
+  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
   INLINE const TransformTable *get_transform_table() const;
-  INLINE const TransformBlendTable *get_transform_blend_table() const;
+  INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
   INLINE const SliderTable *get_slider_table() const;
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
 protected:
-  GeomVertexData *_object;
+  PT(GeomVertexData) _object;
   Thread *_current_thread;
   GeomVertexData::CData *_cdata;
 };
@@ -471,7 +475,7 @@ public:
   INLINE void check_array_writers() const;
   INLINE GeomVertexArrayDataPipelineWriter *get_array_writer(int i) const;
 
-  GeomVertexArrayData *modify_array(int i);
+  PT(GeomVertexArrayData) modify_array(int i);
   void set_array(int i, const GeomVertexArrayData *array);
 
   int get_num_rows() const;

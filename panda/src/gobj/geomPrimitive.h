@@ -23,7 +23,7 @@
 #include "geomEnums.h"
 #include "geomVertexArrayData.h"
 #include "geomVertexData.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
 #include "luse.h"
 #include "updateSeq.h"
 #include "pointerTo.h"
@@ -64,9 +64,10 @@ class GeomPrimitivePipelineReader;
 //               renders a strip of (n - 2) connected triangles from
 //               each sequence of n vertices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomPrimitive : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA GeomPrimitive : public CopyOnWriteObject, public GeomEnums {
 protected:
   GeomPrimitive();
+  virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
   GeomPrimitive(UsageHint usage_hint);
@@ -151,8 +152,8 @@ public:
   // recommended that application-level code use the above interfaces
   // instead.
 
-  INLINE const GeomVertexArrayData *get_vertices() const;
-  GeomVertexArrayData *modify_vertices(int num_vertices = -1);
+  INLINE CPT(GeomVertexArrayData) get_vertices() const;
+  PT(GeomVertexArrayData) modify_vertices(int num_vertices = -1);
   void set_vertices(const GeomVertexArrayData *vertices, int num_vertices = -1);
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
@@ -163,8 +164,8 @@ public:
   PTA_int modify_ends();
   void set_ends(CPTA_int ends);
 
-  INLINE const GeomVertexArrayData *get_mins() const;
-  INLINE const GeomVertexArrayData *get_maxs() const;
+  INLINE CPT(GeomVertexArrayData) get_mins() const;
+  INLINE CPT(GeomVertexArrayData) get_maxs() const;
 
   void set_minmax(int min_vertex, int max_vertex,
                   GeomVertexArrayData *mins, GeomVertexArrayData *maxs);
@@ -214,7 +215,7 @@ private:
   void do_make_indexed(CData *cdata);
   void consider_elevate_index_type(CData *cdata, int vertex);
   void do_set_index_type(CData *cdata, NumericType index_type);
-  GeomVertexArrayData *do_modify_vertices(CData *cdata);
+  PT(GeomVertexArrayData) do_modify_vertices(CData *cdata);
 
 private:
   // A GeomPrimitive keeps a list (actually, a map) of all the
@@ -245,10 +246,10 @@ private:
     int _num_vertices;
     NumericType _index_type;
     UsageHint _usage_hint;
-    PT(GeomVertexArrayData) _vertices;
+    COWPT(GeomVertexArrayData) _vertices;
     PTA_int _ends;
-    PT(GeomVertexArrayData) _mins;
-    PT(GeomVertexArrayData) _maxs;
+    COWPT(GeomVertexArrayData) _mins;
+    COWPT(GeomVertexArrayData) _maxs;
     UpdateSeq _modified;
     
     bool _got_minmax;
@@ -292,9 +293,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "GeomPrimitive",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
     CData::init_type();
   }
   virtual TypeHandle get_type() const {
@@ -348,11 +349,11 @@ public:
   INLINE const GeomVertexArrayDataPipelineReader *get_vertices_reader() const;
   INLINE CPTA_uchar get_data() const;
   INLINE CPTA_int get_ends() const;
-  INLINE const GeomVertexArrayData *get_mins() const;
-  INLINE const GeomVertexArrayData *get_maxs() const;
+  INLINE CPT(GeomVertexArrayData) get_mins() const;
+  INLINE CPT(GeomVertexArrayData) get_maxs() const;
   
 private:
-  const GeomPrimitive *_object;
+  CPT(GeomPrimitive) _object;
   Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
 

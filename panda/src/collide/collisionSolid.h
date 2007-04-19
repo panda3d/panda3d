@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "config_collide.h"
-#include "typedWritableReferenceCount.h"
+#include "copyOnWriteObject.h"
 #include "luse.h"
 #include "pointerTo.h"
 #include "renderState.h"
@@ -51,13 +51,15 @@ class CullTraverserData;
 //               function calls handle the subset of the N*N
 //               intersection tests that we care about.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSolid : public TypedWritableReferenceCount {
+class EXPCL_PANDA CollisionSolid : public CopyOnWriteObject {
 public:
   CollisionSolid();
   CollisionSolid(const CollisionSolid &copy);
   virtual ~CollisionSolid();
 
   virtual CollisionSolid *make_copy()=0;
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
   virtual LPoint3f get_collision_origin() const=0;
@@ -155,9 +157,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    CopyOnWriteObject::init_type();
     register_type(_type_handle, "CollisionSolid",
-                  TypedWritableReferenceCount::get_class_type());
+                  CopyOnWriteObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

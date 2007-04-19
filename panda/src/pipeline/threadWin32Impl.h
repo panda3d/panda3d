@@ -40,7 +40,7 @@ public:
   INLINE ThreadWin32Impl(Thread *parent_obj);
   ~ThreadWin32Impl();
 
-  bool start(ThreadPriority priority, bool global, bool joinable);
+  bool start(ThreadPriority priority, bool joinable);
   void interrupt();
   void join();
 

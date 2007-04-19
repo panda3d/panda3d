@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CPPPARSER  // interrogate has trouble with these initializers.
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Constructor
 //       Access: Public
@@ -31,6 +31,7 @@ CollisionLevelState(const NodePath &node_path) :
 }
 #endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Constructor
 //       Access: Public
@@ -44,7 +45,9 @@ CollisionLevelState(const CollisionLevelState<MaskType> &parent, PandaNode *chil
   _current(parent._current)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Copy Constructor
 //       Access: Public
@@ -57,7 +60,9 @@ CollisionLevelState(const CollisionLevelState<MaskType> &copy) :
   _current(copy._current)
 {
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Copy Assignment Operator
 //       Access: Public
@@ -69,7 +74,9 @@ operator = (const CollisionLevelState<MaskType> &copy) {
   CollisionLevelStateBase::operator = (copy);
   _current = copy._current;
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::clear
 //       Access: Public
@@ -81,7 +88,9 @@ clear() {
   CollisionLevelStateBase::clear();
   _current.clear();
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::prepare_collider
 //       Access: Public
@@ -98,7 +107,9 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
   CollisionLevelStateBase::prepare_collider(def, root);
   _current.set_bit(index);
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::any_in_bounds
 //       Access: Public
@@ -184,7 +195,9 @@ any_in_bounds() {
 #endif  // NDEBUG
   return has_any_collider();
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelStateBase::apply_transform
 //       Access: Public
@@ -226,7 +239,9 @@ apply_transform() {
     _local_bounds = new_bounds;
   }    
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::has_max_colliders
 //       Access: Public, Static
@@ -239,7 +254,9 @@ INLINE bool CollisionLevelState<MaskType>::
 has_max_colliders() {
   return CurrentMask::has_max_num_bits();
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_max_colliders
 //       Access: Public, Static
@@ -251,7 +268,9 @@ INLINE int CollisionLevelState<MaskType>::
 get_max_colliders() {
   return CurrentMask::get_max_num_bits();
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::has_collider
 //       Access: Public
@@ -264,7 +283,9 @@ has_collider(int n) const {
   nassertr(n >= 0 && n < (int)_colliders.size(), false);
   return (_current.get_bit(n));
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::has_any_collider
 //       Access: Public
@@ -275,7 +296,9 @@ INLINE bool CollisionLevelState<MaskType>::
 has_any_collider() const {
   return !_current.is_zero();
 }
+#endif  // CPPPARSER
 
+#ifndef CPPPARSER
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::omit_collider
 //       Access: Public
@@ -289,3 +312,4 @@ omit_collider(int n) {
 
   _current.clear_bit(n);
 }
+#endif  // CPPPARSER

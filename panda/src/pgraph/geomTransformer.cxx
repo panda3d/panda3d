@@ -136,7 +136,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
     GeomNode::GeomList &geoms = *(cdata->modify_geoms());
     for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);
-      PT(Geom) new_geom = entry._geom->make_copy();
+      PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
         entry._geom = new_geom;
         any_changed = true;
@@ -230,7 +230,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
   for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (transform_texcoords(new_geom, from_name, to_name, mat)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -290,7 +290,7 @@ set_color(GeomNode *node, const Colorf &color) {
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
   for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (set_color(new_geom, color)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -353,7 +353,7 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
   for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (transform_colors(new_geom, scale)) {
       entry._geom = new_geom;
       any_changed = true;
@@ -686,7 +686,7 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
   for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
-    PT(Geom) new_geom = entry._geom->make_copy();
+    PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     entry._geom = new_geom;
 
     if ((collect_bits & SceneGraphReducer::CVD_avoid_dynamic) != 0 &&

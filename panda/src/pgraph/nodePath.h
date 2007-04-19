@@ -833,7 +833,7 @@ PUBLISHED:
   INLINE void set_name(const string &name);
   INLINE string get_name() const;
 
-  bool write_bam_file(const string &filename) const;
+  BLOCKING bool write_bam_file(const string &filename) const;
 
 private:
   static NodePathComponent *

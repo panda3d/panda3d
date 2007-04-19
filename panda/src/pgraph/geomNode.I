@@ -47,25 +47,12 @@ set_preserved(bool value){
 //               shared between multiple different GeomNodes, but see
 //               get_unique_geom().
 ////////////////////////////////////////////////////////////////////
-INLINE const Geom *GeomNode::
+INLINE CPT(Geom) GeomNode::
 get_geom(int n) const {
   CDReader cdata(_cycler);
-  const GeomList &geoms = *(cdata->get_geoms());
-  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
-  return geoms[n]._geom;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::get_unique_geom
-//       Access: Public
-//  Description: This method is deprecated; you should call
-//               modify_geom() instead.
-////////////////////////////////////////////////////////////////////
-INLINE Geom *GeomNode::
-get_unique_geom(int n) {
-  pgraph_cat.warning() 
-    << "Deprecated method GeomNode::get_unique_geom() called.  Use modify_geom() instead.\n";
-  return modify_geom(n);
+  CPT(GeomList) geoms = cdata->get_geoms();
+  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  return (*geoms)[n]._geom.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,17 +73,12 @@ get_unique_geom(int n) {
 //               that were made independently in pipeline stage 0.
 //               Use with caution.
 ////////////////////////////////////////////////////////////////////
-INLINE Geom *GeomNode::
+INLINE PT(Geom) GeomNode::
 modify_geom(int n) {
   CDWriter cdata(_cycler, true);
-  GeomList &geoms = *(cdata->modify_geoms());
-  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
-  Geom *geom = geoms[n]._geom;
-  if (geom->get_ref_count() > 1) {
-    geom = geoms[n]._geom = geom->make_copy();
-  }
-
-  return geom;
+  PT(GeomList) geoms = cdata->modify_geoms();
+  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  return (*geoms)[n]._geom.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,9 +94,9 @@ modify_geom(int n) {
 INLINE const RenderState *GeomNode::
 get_geom_state(int n) const {
   CDReader cdata(_cycler);
-  const GeomList &geoms = *(cdata->get_geoms());
-  nassertr(n >= 0 && n < (int)geoms.size(), NULL);
-  return geoms[n]._state;
+  CPT(GeomList) geoms = cdata->get_geoms();
+  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  return (*geoms)[n]._state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,9 +119,9 @@ get_geom_state(int n) const {
 INLINE void GeomNode::
 set_geom_state(int n, const RenderState *state) {
   CDWriter cdata(_cycler, true);
-  GeomList &geoms = *(cdata->modify_geoms());
-  nassertv(n >= 0 && n < (int)geoms.size());
-  geoms[n]._state = state;
+  PT(GeomList) geoms = cdata->modify_geoms();
+  nassertv(n >= 0 && n < (int)geoms->size());
+  (*geoms)[n]._state = state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,10 +132,10 @@ set_geom_state(int n, const RenderState *state) {
 INLINE void GeomNode::
 remove_geom(int n) {
   CDWriter cdata(_cycler);
-  GeomList &geoms = *(cdata->modify_geoms());
-  nassertv(n >= 0 && n < (int)geoms.size());
+  PT(GeomList) geoms = cdata->modify_geoms();
+  nassertv(n >= 0 && n < (int)geoms->size());
 
-  geoms.erase(geoms.begin() + n);
+  geoms->erase(geoms->begin() + n);
   mark_internal_bounds_stale();
 }
 
@@ -260,9 +242,9 @@ CData() :
 //       Access: Public
 //  Description: Returns a read-only pointer to the _geoms list.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomNode::GeomList *GeomNode::CData::
+INLINE CPT(GeomNode::GeomList) GeomNode::CData::
 get_geoms() const {
-  return _geoms;
+  return _geoms.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,12 +253,9 @@ get_geoms() const {
 //  Description: Returns a modifiable, unique pointer to the _geoms
 //               list.
 ////////////////////////////////////////////////////////////////////
-INLINE GeomNode::GeomList *GeomNode::CData::
+INLINE PT(GeomNode::GeomList) GeomNode::CData::
 modify_geoms() {
-  if (_geoms->get_ref_count() > 1) {
-    _geoms = new GeomList(*_geoms);
-  }
-  return _geoms;
+  return _geoms.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,7 +316,7 @@ operator = (const GeomNode::Geoms &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomNode::Geoms::
 get_num_geoms() const {
-  nassertr(_geoms != (GeomList *)NULL, 0);
+  nassertr(!_geoms.is_null(), 0);
   return _geoms->size();
 }
 
@@ -348,11 +327,11 @@ get_num_geoms() const {
 //               not be modified, since the same object might be
 //               shared between multiple different GeomNodes.
 ////////////////////////////////////////////////////////////////////
-INLINE const Geom *GeomNode::Geoms::
+INLINE CPT(Geom) GeomNode::Geoms::
 get_geom(int n) const {
-  nassertr(_geoms != (GeomList *)NULL, NULL);
+  nassertr(!_geoms.is_null(), NULL);
   nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
-  return (*_geoms)[n]._geom;
+  return (*_geoms)[n]._geom.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -367,7 +346,7 @@ get_geom(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const RenderState *GeomNode::Geoms::
 get_geom_state(int n) const {
-  nassertr(_geoms != (GeomList *)NULL, NULL);
+  nassertr(!_geoms.is_null(), NULL);
   nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
   return (*_geoms)[n]._state;
 }

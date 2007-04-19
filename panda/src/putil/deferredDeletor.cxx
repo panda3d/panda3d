@@ -38,6 +38,10 @@ DeferredDeletor() : _lock("DeferredDeletor") {
 void DeferredDeletor::
 delete_object(DeleteFunc *func, void *ptr) {
   MutexHolder holder(_lock);
+  if (util_cat.is_spam()) {
+    util_cat.spam()
+      << "Deferring deleting pointer " << ptr << "\n";
+  }
   _tokens.push_back(DeleteToken(func, ptr));
 }
 

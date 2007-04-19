@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFull::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: You must pass in a Mutex to the condition variable
 //               constructor.  This mutex may be shared by other
 //               condition variables, if desired.  It is the caller's
@@ -39,7 +39,7 @@ ConditionVarFull(Mutex &mutex) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFull::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ConditionVarFull::
@@ -74,7 +74,7 @@ operator = (const ConditionVarFull &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFull::get_mutex
-//       Access: Public
+//       Access: Published
 //  Description: Returns the mutex associated with this condition
 //               variable.
 ////////////////////////////////////////////////////////////////////

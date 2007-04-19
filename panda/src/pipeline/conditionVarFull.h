@@ -57,14 +57,14 @@ class EXPCL_PANDA ConditionVarFull : public ConditionVarFullDebug
 class EXPCL_PANDA ConditionVarFull : public ConditionVarFullDirect
 #endif  // DEBUG_THREADS
 {
-public:
+PUBLISHED:
   INLINE ConditionVarFull(Mutex &mutex);
   INLINE ~ConditionVarFull();
 private:
   INLINE ConditionVarFull(const ConditionVarFull &copy);
   INLINE void operator = (const ConditionVarFull &copy);
 
-public:
+PUBLISHED:
   INLINE Mutex &get_mutex() const;
 };
 

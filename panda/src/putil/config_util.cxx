@@ -27,6 +27,7 @@
 #include "cachedTypedWritableReferenceCount.h"
 #include "clockObject.h"
 #include "configurable.h"
+#include "copyOnWriteObject.h"
 #include "datagram.h"
 #include "factoryParam.h"
 #include "namable.h"
@@ -43,6 +44,7 @@
 #include "mouseButton.h"
 #include "deferredDeletor.h"
 #include "nonDeletor.h"
+#include "spamDeletor.h"
 
 #include "dconfig.h"
 
@@ -90,6 +92,7 @@ ConfigureFn(config_util) {
   CachedTypedWritableReferenceCount::init_type();
   ClockObject::init_type();
   Configurable::init_type();
+  CopyOnWriteObject::init_type();
   Datagram::init_type();
   FactoryParam::init_type();
   Namable::init_type();
@@ -108,6 +111,7 @@ ConfigureFn(config_util) {
 
   DeferredDeletor::register_deletor();
   NonDeletor::register_deletor();
+  SpamDeletor::register_deletor();
 
   register_type(BamReader::_remove_flag, "remove");
 

@@ -115,10 +115,10 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     GeomList::iterator gi;
-    GeomList &geoms = *(cdata->modify_geoms());
-    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    PT(GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
       GeomEntry &entry = (*gi);
-      PT(Geom) new_geom = entry._geom->make_copy();
+      PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       
       AccumulatedAttribs geom_attribs = attribs;
       entry._state = geom_attribs.collect(entry._state, attrib_types);
@@ -319,9 +319,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 
   CDReader cdata(_cycler, current_thread);
   GeomList::const_iterator gi;
-  const GeomList &geoms = *(cdata->get_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
-    const Geom *geom = (*gi)._geom;
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
+    CPT(Geom) geom = (*gi)._geom.get_read_pointer();
     geom->calc_tight_bounds(min_point, max_point, found_any,
 			    geom->get_vertex_data(current_thread)->animate_vertices(current_thread),
 			    !next_transform->is_identity(), mat,
@@ -401,12 +401,12 @@ add_geoms_from(const GeomNode *other) {
     CDStageReader cdata_other(other->_cycler, pipeline_stage, current_thread);
 
     GeomList::const_iterator gi;
-    const GeomList &other_geoms = *(cdata_other->get_geoms());
-    GeomList &this_geoms = *(cdata->modify_geoms());
-    for (gi = other_geoms.begin(); gi != other_geoms.end(); ++gi) {
+    CPT(GeomList) other_geoms = cdata_other->get_geoms();
+    PT(GeomList) this_geoms = cdata->modify_geoms();
+    for (gi = other_geoms->begin(); gi != other_geoms->end(); ++gi) {
       const GeomEntry &entry = (*gi);
-      nassertv(entry._geom->check_valid());
-      this_geoms.push_back(entry);
+      nassertv(entry._geom.get_read_pointer()->check_valid());
+      this_geoms->push_back(entry);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -433,9 +433,9 @@ set_geom(int n, Geom *geom) {
   nassertv(geom->check_valid());
 
   CDWriter cdata(_cycler, true);
-  GeomList &geoms = *(cdata->modify_geoms());
-  nassertv(n >= 0 && n < (int)geoms.size());
-  geoms[n]._geom = geom;
+  PT(GeomList) geoms = cdata->modify_geoms();
+  nassertv(n >= 0 && n < (int)geoms->size());
+  (*geoms)[n]._geom = geom;
 
   mark_internal_bounds_stale();
 }
@@ -496,17 +496,19 @@ unify(int max_indices) {
     // operation, but usually there are only a handful of Geoms to
     // consider, so that's not a big deal.
     GeomList::const_iterator gi;
-    const GeomList &geoms = *(cdata->get_geoms());
-    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
-      const GeomEntry &entry = (*gi);
+    CPT(GeomList) old_geoms = cdata->get_geoms();
+    for (gi = old_geoms->begin(); gi != old_geoms->end(); ++gi) {
+      const GeomEntry &old_entry = (*gi);
       
       bool unified = false;
       GeomList::iterator gj;
       for (gj = new_geoms->begin(); gj != new_geoms->end() && !unified; ++gj) {
         GeomEntry &new_entry = (*gj);
-        if (entry._state == new_entry._state) {
+        if (old_entry._state == new_entry._state) {
           // Both states match, so try to combine the primitives.
-          if (new_entry._geom->copy_primitives_from(entry._geom)) {
+          CPT(Geom) old_geom = old_entry._geom.get_read_pointer();
+          PT(Geom) new_geom = new_entry._geom.get_write_pointer();
+          if (new_geom->copy_primitives_from(old_geom)) {
             // Successfully combined!
             unified = true;
             any_changed = true;
@@ -517,7 +519,7 @@ unify(int max_indices) {
       if (!unified) {
         // Couldn't unify this Geom with anything, so just add it to the
         // output list.
-        new_geoms->push_back(entry);
+        new_geoms->push_back(old_entry);
       }
     }
     
@@ -525,9 +527,12 @@ unify(int max_indices) {
     cdata->set_geoms(new_geoms);
 
     // Finally, go back through and unify the resulting geom(s).
-    for (gi = new_geoms->begin(); gi != new_geoms->end(); ++gi) {
-      const GeomEntry &entry = (*gi);
-      entry._geom->unify_in_place(max_indices);
+    GeomList::iterator wgi;
+    for (wgi = new_geoms->begin(); wgi != new_geoms->end(); ++wgi) {
+      GeomEntry &entry = (*wgi);
+      nassertv(entry._geom.test_ref_count_integrity());
+      PT(Geom) geom = entry._geom.get_write_pointer();
+      geom->unify_in_place(max_indices);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
@@ -548,11 +553,11 @@ write_geoms(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
-  const GeomList &geoms = *(cdata->get_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
     indent(out, indent_level + 2) 
-      << *entry._geom << " " << *entry._state << "\n";
+      << *entry._geom.get_read_pointer() << " " << *entry._state << "\n";
   }
 }
 
@@ -567,12 +572,13 @@ write_verbose(ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
-  const GeomList &geoms = *(cdata->get_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
+    CPT(Geom) geom = entry._geom.get_read_pointer();
     indent(out, indent_level + 2) 
-      << *entry._geom << " " << *entry._state << "\n";
-    entry._geom->write(out, indent_level + 4);
+      << *geom << " " << *entry._state << "\n";
+    geom->write(out, indent_level + 4);
   }
 }
 
@@ -593,8 +599,8 @@ output(ostream &out) const {
   pset<TypeHandle> attrib_types;
 
   GeomList::const_iterator gi;
-  const GeomList &geoms = *(cdata->get_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
     int num_attribs = entry._state->get_num_attribs();
     for (int i = 0; i < num_attribs; i++) {
@@ -604,7 +610,7 @@ output(ostream &out) const {
   }
 
   PandaNode::output(out);
-  out << " (" << geoms.size() << " geoms";
+  out << " (" << geoms->size() << " geoms";
 
   if (!attrib_types.empty()) {
     out << ":";
@@ -654,10 +660,10 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
 
   GeomList::const_iterator gi;
-  const GeomList &geoms = *(cdata->get_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    child_volumes.push_back(entry._geom->get_bounds());
+    child_volumes.push_back(entry._geom.get_read_pointer()->get_bounds());
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];
@@ -752,14 +758,15 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  int num_geoms = _geoms->size();
+  CPT(GeomList) geoms = _geoms.get_read_pointer();
+  int num_geoms = geoms->size();
   nassertv(num_geoms == (int)(PN_uint16)num_geoms);
   dg.add_uint16(num_geoms);
   
   GeomList::const_iterator gi;
-  for (gi = _geoms->begin(); gi != _geoms->end(); ++gi) {
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    manager->write_pointer(dg, entry._geom);
+    manager->write_pointer(dg, entry._geom.get_read_pointer());
     manager->write_pointer(dg, entry._state);
   }
 }
@@ -777,7 +784,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Get the geom and state pointers.
   GeomList::iterator gi;
-  for (gi = _geoms->begin(); gi != _geoms->end(); ++gi) {
+  PT(GeomList) geoms = _geoms.get_write_pointer();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomEntry &entry = (*gi);
     entry._geom = DCAST(Geom, p_list[pi++]);
     entry._state = DCAST(RenderState, p_list[pi++]);
@@ -797,10 +805,12 @@ void GeomNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   int num_geoms = scan.get_uint16();
   // Read the list of geoms and states.  Push back a NULL for each one.
-  _geoms->reserve(num_geoms);
+  PT(GeomList) geoms = new GeomList;
+  geoms->reserve(num_geoms);
   for (int i = 0; i < num_geoms; i++) {
     manager->read_pointer(scan);
     manager->read_pointer(scan);
-    _geoms->push_back(GeomEntry(NULL, NULL));
+    geoms->push_back(GeomEntry(NULL, NULL));
   }
+  _geoms = geoms;
 }

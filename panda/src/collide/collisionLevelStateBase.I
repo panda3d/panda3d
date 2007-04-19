@@ -110,7 +110,7 @@ get_num_colliders() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE CollisionSolid *CollisionLevelStateBase::
+INLINE const CollisionSolid *CollisionLevelStateBase::
 get_collider(int n) const {
   nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
 

@@ -88,7 +88,7 @@ get_usage_hint() const {
 INLINE CPT(GeomVertexData) Geom::
 get_vertex_data(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_data;
+  return cdata->_data.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,11 +112,11 @@ get_num_primitives() const {
 //               inspect the ith object; use modify_primitive() or
 //               set_primitive() if you want to modify it.
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomPrimitive *Geom::
+INLINE CPT(GeomPrimitive) Geom::
 get_primitive(int i) const {
   CDReader cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
-  return cdata->_primitives[i];
+  return cdata->_primitives[i].get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ get_primitive(int i) const {
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
-INLINE GeomPrimitive *Geom::
+INLINE PT(GeomPrimitive) Geom::
 modify_primitive(int i) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
@@ -139,10 +139,7 @@ modify_primitive(int i) {
   cdata->_got_usage_hint = false;
   cdata->_modified = Geom::get_next_modified();
   clear_cache_stage(current_thread);
-  if (cdata->_primitives[i]->get_ref_count() > 1) {
-    cdata->_primitives[i] = cdata->_primitives[i]->make_copy();
-  }
-  return cdata->_primitives[i];
+  return cdata->_primitives[i].get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -587,7 +584,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexData) GeomPipelineReader::
 get_vertex_data() const {
-  return _cdata->_data;
+  return _cdata->_data.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -605,10 +602,10 @@ get_num_primitives() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomPrimitive *GeomPipelineReader::
+INLINE CPT(GeomPrimitive) GeomPipelineReader::
 get_primitive(int i) const {
   nassertr(i >= 0 && i < (int)_cdata->_primitives.size(), NULL);
-  return _cdata->_primitives[i];
+  return _cdata->_primitives[i].get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

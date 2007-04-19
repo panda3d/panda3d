@@ -63,7 +63,8 @@ PUBLISHED:
 
   INLINE void clear_solids();
   INLINE int get_num_solids() const;
-  INLINE CollisionSolid *get_solid(int n) const;
+  INLINE CPT(CollisionSolid) get_solid(int n) const;
+  INLINE PT(CollisionSolid) modify_solid(int n);
   INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
@@ -85,7 +86,7 @@ private:
   CollideMask _from_collide_mask;
   int _collider_sort;
 
-  typedef pvector< PT(CollisionSolid) > Solids;
+  typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
   
 public:
