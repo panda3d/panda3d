@@ -10,11 +10,12 @@ import gc
 class FakeObject:
     pass
 
-def _createGarbage():
-    a = FakeObject()
-    b = FakeObject()
-    a.other = b
-    b.other = a
+def _createGarbage(num=1):
+    for i in xrange(num):
+        a = FakeObject()
+        b = FakeObject()
+        a.other = b
+        b.other = a
 
 class GarbageReport(Job):
     """Detects leaked Python objects (via gc.collect()) and reports on garbage
@@ -79,36 +80,39 @@ class GarbageReport(Job):
             if self._args.verbose:
                 self.notify.info('getting referrers...')
             for i in xrange(self.numGarbage):
-                byNum, byRef = parent._getReferrers(self.garbage[i])
+                yield None
+                for result in self._getReferrers(self.garbage[i]):
+                    yield None
+                byNum, byRef = result
                 self.referrersByNumber[i] = byNum
                 self.referrersByReference[i] = byRef
-                if (not (i & 0x0F)):
-                    yield None
 
         # grab the referents (pointed to by garbage)
         if self.numGarbage > 0:
             if self._args.verbose:
                 self.notify.info('getting referents...')
             for i in xrange(self.numGarbage):
-                byNum, byRef = self._getReferents(self.garbage[i])
+                yield None
+                for result in self._getReferents(self.garbage[i]):
+                    yield None
+                byNum, byRef = result                    
                 self.referentsByNumber[i] = byNum
                 self.referentsByReference[i] = byRef
-                if (not (i & 0x0F)):
-                    yield None
 
         # find the cycles
         if self._args.findCycles and self.numGarbage > 0:
             if self._args.verbose:
                 self.notify.info('detecting cycles...')
             for i in xrange(self.numGarbage):
-                newCycles = self._getCycles(i, self.cycleSets)
+                yield None
+                for newCycles in self._getCycles(i, self.cycleSets):
+                    yield None
                 self.cycles.extend(newCycles)
                 # if we're not doing a full report, add this cycle's IDs to the master set
                 if not self._args.fullReport:
                     for cycle in newCycles:
+                        yield None
                         self.cycleIds.update(set(cycle))
-                if (not (i & 0x0F)):
-                    yield None
 
         s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
             self._args.name, self.numGarbage)]
@@ -130,12 +134,14 @@ class GarbageReport(Job):
             digits = 0
             n = numGarbage
             while n > 0:
+                yield None
                 digits += 1
                 n /= 10
             digits = digits
             format = '%0' + '%s' % digits + 'i:%s \t%s'
 
             for i in xrange(numGarbage):
+                yield None
                 id = garbageIds[i]
                 objStr = safeRepr(self.garbage[id])
                 maxLen = 5000
@@ -143,47 +149,39 @@ class GarbageReport(Job):
                     snip = '<SNIP>'
                     objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
                 s.append(format % (id, itype(self.garbage[id]), objStr))
-                if (not (i & 0x7F)):
-                    yield None
 
             if self._args.findCycles:
                 s.append('\n===== Garbage Cycles =====')
                 for i in xrange(len(self.cycles)):
+                    yield None
                     s.append('%s' % self.cycles[i])
-                    if (not (i & 0x7F)):
-                        yield None
 
             if self._args.fullReport:
                 format = '%0' + '%s' % digits + 'i:%s'
                 s.append('\n===== Referrers By Number (what is referring to garbage item?) =====')
                 for i in xrange(numGarbage):
+                    yield None
                     s.append(format % (i, self.referrersByNumber[i]))
-                    if (not (i & 0x7F)):
-                        yield None
                 s.append('\n===== Referents By Number (what is garbage item referring to?) =====')
                 for i in xrange(numGarbage):
+                    yield None
                     s.append(format % (i, self.referentsByNumber[i]))
-                    if (not (i & 0x7F)):
-                        yield None
                 s.append('\n===== Referrers (what is referring to garbage item?) =====')
                 for i in xrange(numGarbage):
+                    yield None
                     s.append(format % (i, self.referrersByReference[i]))
-                    if (not (i & 0x7F)):
-                        yield None
                 s.append('\n===== Referents (what is garbage item referring to?) =====')
                 for i in xrange(numGarbage):
+                    yield None
                     s.append(format % (i, self.referentsByReference[i]))
-                    if (not (i & 0x7F)):
-                        yield None
 
         self._report = s
 
         if self._args.log:
             self.printingBegin()
             for i in xrange(len(self._report)):
+                yield None
                 print self._report[i]
-                if (not (i & 0x3F)):
-                    yield None
             # add an extra line at the end for readability
             if self.numGarbage > 0:
                 print ''
@@ -232,35 +230,43 @@ class GarbageReport(Job):
         # referrers (pointing to garbage)
         # returns two lists, first by index into gc.garbage, second by
         # direct reference
+        yield None
         byRef = gc.get_referrers(obj)
+        yield None
         # look to see if each referrer is another garbage item
         byNum = []
         for referrer in byRef:
+            yield None
             try:
                 num = self.garbage.index(referrer)
                 byNum.append(num)
             except:
                 #num = GarbageReport.NotGarbage
                 pass
-        return byNum, byRef
+        yield byNum, byRef
 
     def _getReferents(self, obj):
+        # TODO: make this a generator
         # referents (pointed to by garbage)
         # returns two lists, first by index into gc.garbage, second by
         # direct reference
+        yield None
         byRef = gc.get_referents(obj)
+        yield None
         # look to see if each referent is another garbage item
         byNum = []
         for referent in byRef:
+            yield None
             try:
                 num = self.garbage.index(referent)
                 byNum.append(num)
             except:
                 #num = GarbageReport.NotGarbage
                 pass
-        return byNum, byRef
+        yield byNum, byRef
 
     def _getCycles(self, index, cycleSets=None):
+        # TODO: make this a generator
         # detect garbage cycles for a particular item of garbage
         assert self.notify.debugCall()
         # returns list of lists, sublists are garbage reference cycles
@@ -272,6 +278,7 @@ class GarbageReport(Job):
         rootId = index
         stateStack.push(([rootId], rootId, 0))
         while True:
+            yield None
             if len(stateStack) == 0:
                 break
             candidateCycle, curId, resumeIndex = stateStack.pop()
@@ -279,6 +286,7 @@ class GarbageReport(Job):
                 print 'restart: %s root=%s cur=%s resume=%s' % (
                     candidateCycle, rootId, curId, resumeIndex)
             for index in xrange(resumeIndex, len(self.referentsByNumber[curId])):
+                yield None
                 refId = self.referentsByNumber[curId][index]
                 if self.notify.getDebug():
                     print '       : %s -> %s' % (curId, refId)
@@ -298,7 +306,7 @@ class GarbageReport(Job):
                     stateStack.push((list(candidateCycle), curId, index+1))
                     stateStack.push((list(candidateCycle) + [refId], refId, 0))
                     break
-        return cycles
+        yield cycles
 
 class GarbageLogger(GarbageReport):
     """If you just want to log the current garbage to the log file, make
