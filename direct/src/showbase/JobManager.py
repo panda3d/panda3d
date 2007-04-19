@@ -51,6 +51,8 @@ class JobManager:
         self._pri2jobIds[pri].append(jobId)
         # record the job's relative timeslice count
         self._jobId2timeslices[jobId] = pri
+        # reset the jobId round-robin
+        self._jobIdGenerator = None
         if len(self._jobId2pri) == 1:
             taskMgr.add(self._process, JobManager.TaskName)
             self._highestPriority = pri
