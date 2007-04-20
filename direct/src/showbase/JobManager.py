@@ -1,6 +1,7 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.Job import Job
+from direct.showbase.PythonUtil import getBase
 
 class JobManager:
     """
@@ -12,12 +13,8 @@ class JobManager:
 
     # there's one task for the JobManager, all jobs run in this task
     TaskName = 'jobManager'
-    # run for 1/2 millisecond per frame by default
-    DefTimeslice = (1./1000.) * .5
 
     def __init__(self, timeslice=None):
-        if timeslice is None:
-            timeslice = JobManager.DefTimeslice
         # how long do we run per frame
         self._timeslice = timeslice
         # store the jobs in these structures to allow fast lookup by various keys
@@ -116,8 +113,14 @@ class JobManager:
             job._pstats.stop()
 
     # how long should we run per frame?
+    @staticmethod
+    def getDefaultTimeslice():
+        # run for 1/2 millisecond per frame by default
+        return getBase().config.GetFloat('job-manager-timeslice', (1./1000.) * .5)
     def getTimeslice(self):
-        return self._timeslice
+        if self._timeslice:
+            return self._timeslice
+        return self.getDefaultTimeslice()
     def setTimeslice(self, timeslice):
         self._timeslice = timeslice
 
@@ -131,7 +134,7 @@ class JobManager:
         if len(self._pri2jobId2job):
             #assert self.notify.debugCall()
             # figure out how long we can run
-            endT = globalClock.getRealTime() + (self._timeslice * .9)
+            endT = globalClock.getRealTime() + (self.getTimeslice() * .9)
             while True:
                 if self._jobIdGenerator is None:
                     # round-robin the jobs, giving high-priority jobs more timeslices
