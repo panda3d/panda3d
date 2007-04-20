@@ -1,5 +1,6 @@
 # objects that report different types of leaks to the ContainerLeakDetector
 
+from pandac.PandaModules import *
 from direct.showbase.PythonUtil import gcDebugOn
 import __builtin__, gc
 
@@ -52,3 +53,10 @@ class SceneGraphLeakDetector(LeakDetector):
     def _leakNode(self, task=None):
         self._render.attachNewNode('leakNode-%s' % serialNum())
         taskMgr.doMethodLater(10, self._leakNode, self._leakTaskName)
+
+class CppMemoryUsage(LeakDetector):
+    def __len__(self):
+        if config.GetBool('track-memory-usage', 0):
+            return int(MemoryUsage.getCppSize())
+        else:
+            return 0
