@@ -801,8 +801,10 @@ class ContainerLeakDetector(Job):
         self._pruneContainersJob = None
 
         if firstCheckDelay is None:
-            firstCheckDelay = 60. * (15./2)
-        self._nextCheckDelay = firstCheckDelay
+            firstCheckDelay = 60. * 15.
+        # divide by two, since the first check just takes length measurements and
+        # doesn't check for leaks
+        self._nextCheckDelay = firstCheckDelay/2.
         self._pruneTaskPeriod = config.GetFloat('leak-detector-prune-period', 60. * 30.)
 
         # main dict of id(container)->containerRef
