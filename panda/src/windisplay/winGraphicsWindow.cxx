@@ -1852,8 +1852,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // on may be lost.
           _lost_keypresses = true;
         }
-        properties.set_foreground(false);
-        system_changed_properties(properties);
         break;
     
       case WM_SETFOCUS: 
@@ -1881,7 +1879,28 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "setfocus\n";
         }
+
+        if (_lost_keypresses) {
+          resend_lost_keypresses();
+        }
+        break;
+
+
+     case PM_ACTIVE:
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "PM_ACTIVE\n";
+        }
         properties.set_foreground(true);
+        system_changed_properties(properties);
+        break;
+
+      case PM_INACTIVE:
+        if (windisplay_cat.is_debug()) {
+          windisplay_cat.debug()
+            << "PM_INACTIVE\n";
+        }
+        properties.set_foreground(false);
         system_changed_properties(properties);
         break;
   }
@@ -1976,7 +1995,15 @@ resend_lost_keypresses() {
               << "key has gone down: " << i << " (" << lookup_key(i) << ")\n";
           }
           
-          handle_keyresume(lookup_key(i), message_time);
+          // Roger
+          //handle_keyresume(lookup_key(i), message_time);
+          // resume does not seem to work and sending the pointer position seems to 
+          // weird ot some cursor controls
+           ButtonHandle key = lookup_key(i);
+           if (key != ButtonHandle::none())
+                _input_devices[0].button_down(key, message_time);
+
+
         } else {
           // The key is now released.
           if (windisplay_cat.is_debug()) {

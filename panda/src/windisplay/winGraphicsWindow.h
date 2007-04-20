@@ -26,6 +26,10 @@
 
 class WinGraphicsPipe;
 
+#define PM_ACTIVE   (WM_APP+123)
+#define PM_INACTIVE  (WM_APP+124)
+
+
 ////////////////////////////////////////////////////////////////////
 //       Class : WinGraphicsWindow
 // Description : An abstract base class for glGraphicsWindow and
