@@ -709,14 +709,16 @@ class CheckContainers(Job):
                                         # TODO
                                         self.notify.debug('caught exception in getContainerByIdGen (3)')
                                     else:
-                                        msg = ('%s (%s) consistently increased in size over the last '
+                                        msg = ('leak detected: %s (%s) consistently increased in size over the last '
                                                '5 periods (%s items at last measurement, current contents: %s)' %
                                                (name, itype(container), idx2id2len[self._index][objId],
                                                 fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                         self.notify.warning(msg)
-                                        self.notify.info('sending notification...')
                                         yield None
                                         messenger.send(self._leakDetector.getLeakEvent(), [container, name])
+                                        if config.GetBool('pdb-on-leak-detect', 0):
+                                            import pdb;pdb.set_trace()
+                                            pass
         except Exception, e:
             print 'CheckContainers job caught exception: %s' % e
             if __dev__:
