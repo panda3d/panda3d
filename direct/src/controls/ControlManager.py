@@ -93,6 +93,9 @@ class ControlManager:
         controls.setCollisionsActive(0)
         self.controls[name] = controls
 
+    def get(self, name):
+        return self.controls.get(name)
+        
     def remove(self, name):
         """
         name is any key that was used to refer to the
@@ -245,3 +248,4 @@ class ControlManager:
             onScreenDebug.add("InputState slideLeft", "%d"%(inputState.isSet("slideLeft")))
             onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
+

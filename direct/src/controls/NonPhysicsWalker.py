@@ -64,6 +64,13 @@ class NonPhysicsWalker(DirectObject.DirectObject):
     def setFloorBitMask(self, bitMask):
         self.cRayBitMask = bitMask
 
+    def swapFloorBitMask(self, oldMask, newMask):
+        self.cRayBitMask = self.cRayBitMask &~ oldMask
+        self.cRayBitMask |= newMask
+
+        if self.cRayNodePath and not self.cRayNodePath.isEmpty():
+            self.cRayNodePath.node().setFromCollideMask(self.cRayBitMask)
+            
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """

@@ -280,6 +280,13 @@ class GravityWalker(DirectObject.DirectObject):
     def setFloorBitMask(self, bitMask):
         self.floorBitmask = bitMask
 
+    def swapFloorBitMask(self, oldMask, newMask):
+        self.floorBitmask = self.floorBitmask &~ oldMask
+        self.floorBitmask |= newMask
+
+        if self.cRayNodePath and not self.cRayNodePath.isEmpty():
+            self.cRayNodePath.node().setFromCollideMask(self.floorBitmask)
+
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
