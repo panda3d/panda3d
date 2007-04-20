@@ -573,7 +573,11 @@ class GravityWalker(DirectObject.DirectObject):
             onScreenDebug.add("__oldDt", "% 10.4f"%self.__oldDt)
             onScreenDebug.add("self.__oldPosDelta",
                               self.__oldPosDelta.pPrintValues())
-        velocity = self.__oldPosDelta*(1.0/self.__oldDt)
+        # avoid divide by zero crash - grw
+        if self.__oldDt == 0:
+            velocity = 0
+        else:
+            velocity = self.__oldPosDelta*(1.0/self.__oldDt)
         self.priorParent = Vec3(velocity)
         if __debug__:
             if self.wantDebugIndicator:
