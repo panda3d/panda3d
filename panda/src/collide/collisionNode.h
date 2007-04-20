@@ -67,7 +67,7 @@ PUBLISHED:
   INLINE PT(CollisionSolid) modify_solid(int n);
   INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);
-  INLINE int add_solid(CollisionSolid *solid);
+  INLINE int add_solid(const CollisionSolid *solid);
 
   INLINE int get_collider_sort() const;
   INLINE void set_collider_sort(int sort);

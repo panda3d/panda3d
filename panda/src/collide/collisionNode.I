@@ -149,8 +149,8 @@ remove_solid(int n) {
 //               solids.
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionNode::
-add_solid(CollisionSolid *solid) {
-  _solids.push_back(solid);
+add_solid(const CollisionSolid *solid) {
+  _solids.push_back((CollisionSolid *)solid);
   mark_internal_bounds_stale();
   return _solids.size() - 1;
 }
