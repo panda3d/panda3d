@@ -76,6 +76,7 @@ using namespace std;
 #define PUBLISHED public
 #define BEGIN_PUBLISH
 #define END_PUBLISH
+#define BLOCKING
 
 // Panda defines some assert-type macros.  We map those to the
 // standard assert macro outside of Panda.
