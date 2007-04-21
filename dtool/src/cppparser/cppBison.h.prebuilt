@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 2.1.  */
+/* A Bison parser, made by GNU Bison 1.875b.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -71,65 +71,65 @@
      RSHIFTEQUAL = 297,
      TOKENPASTE = 298,
      KW_BEGIN_PUBLISH = 299,
-     KW_BOOL = 300,
-     KW_CATCH = 301,
-     KW_CHAR = 302,
-     KW_WCHAR_T = 303,
-     KW_CLASS = 304,
-     KW_CONST = 305,
-     KW_DELETE = 306,
-     KW_DOUBLE = 307,
-     KW_DYNAMIC_CAST = 308,
-     KW_ELSE = 309,
-     KW_END_PUBLISH = 310,
-     KW_ENUM = 311,
-     KW_EXTERN = 312,
-     KW_EXPLICIT = 313,
-     KW_PUBLISHED = 314,
-     KW_FALSE = 315,
-     KW_FLOAT = 316,
-     KW_FRIEND = 317,
-     KW_FOR = 318,
-     KW_GOTO = 319,
-     KW_IF = 320,
-     KW_INLINE = 321,
-     KW_INT = 322,
-     KW_LONG = 323,
-     KW_LONGLONG = 324,
-     KW_MUTABLE = 325,
-     KW_NAMESPACE = 326,
-     KW_NEW = 327,
-     KW_OPERATOR = 328,
-     KW_PRIVATE = 329,
-     KW_PROTECTED = 330,
-     KW_PUBLIC = 331,
-     KW_REGISTER = 332,
-     KW_RETURN = 333,
-     KW_SHORT = 334,
-     KW_SIGNED = 335,
-     KW_SIZEOF = 336,
-     KW_STATIC = 337,
-     KW_STATIC_CAST = 338,
-     KW_STRUCT = 339,
-     KW_TEMPLATE = 340,
-     KW_THROW = 341,
-     KW_TRUE = 342,
-     KW_TRY = 343,
-     KW_TYPEDEF = 344,
-     KW_TYPENAME = 345,
-     KW_UNION = 346,
-     KW_UNSIGNED = 347,
-     KW_USING = 348,
-     KW_VIRTUAL = 349,
-     KW_VOID = 350,
-     KW_VOLATILE = 351,
-     KW_WHILE = 352,
-     START_CPP = 353,
-     START_CONST_EXPR = 354,
-     START_TYPE = 355
+     KW_BLOCKING = 300,
+     KW_BOOL = 301,
+     KW_CATCH = 302,
+     KW_CHAR = 303,
+     KW_WCHAR_T = 304,
+     KW_CLASS = 305,
+     KW_CONST = 306,
+     KW_DELETE = 307,
+     KW_DOUBLE = 308,
+     KW_DYNAMIC_CAST = 309,
+     KW_ELSE = 310,
+     KW_END_PUBLISH = 311,
+     KW_ENUM = 312,
+     KW_EXTERN = 313,
+     KW_EXPLICIT = 314,
+     KW_PUBLISHED = 315,
+     KW_FALSE = 316,
+     KW_FLOAT = 317,
+     KW_FRIEND = 318,
+     KW_FOR = 319,
+     KW_GOTO = 320,
+     KW_IF = 321,
+     KW_INLINE = 322,
+     KW_INT = 323,
+     KW_LONG = 324,
+     KW_LONGLONG = 325,
+     KW_MUTABLE = 326,
+     KW_NAMESPACE = 327,
+     KW_NEW = 328,
+     KW_OPERATOR = 329,
+     KW_PRIVATE = 330,
+     KW_PROTECTED = 331,
+     KW_PUBLIC = 332,
+     KW_REGISTER = 333,
+     KW_RETURN = 334,
+     KW_SHORT = 335,
+     KW_SIGNED = 336,
+     KW_SIZEOF = 337,
+     KW_STATIC = 338,
+     KW_STATIC_CAST = 339,
+     KW_STRUCT = 340,
+     KW_TEMPLATE = 341,
+     KW_THROW = 342,
+     KW_TRUE = 343,
+     KW_TRY = 344,
+     KW_TYPEDEF = 345,
+     KW_TYPENAME = 346,
+     KW_UNION = 347,
+     KW_UNSIGNED = 348,
+     KW_USING = 349,
+     KW_VIRTUAL = 350,
+     KW_VOID = 351,
+     KW_VOLATILE = 352,
+     KW_WHILE = 353,
+     START_CPP = 354,
+     START_CONST_EXPR = 355,
+     START_TYPE = 356
    };
 #endif
-/* Tokens.  */
 #define REAL 258
 #define INTEGER 259
 #define CHAR_TOK 260
@@ -172,62 +172,63 @@
 #define RSHIFTEQUAL 297
 #define TOKENPASTE 298
 #define KW_BEGIN_PUBLISH 299
-#define KW_BOOL 300
-#define KW_CATCH 301
-#define KW_CHAR 302
-#define KW_WCHAR_T 303
-#define KW_CLASS 304
-#define KW_CONST 305
-#define KW_DELETE 306
-#define KW_DOUBLE 307
-#define KW_DYNAMIC_CAST 308
-#define KW_ELSE 309
-#define KW_END_PUBLISH 310
-#define KW_ENUM 311
-#define KW_EXTERN 312
-#define KW_EXPLICIT 313
-#define KW_PUBLISHED 314
-#define KW_FALSE 315
-#define KW_FLOAT 316
-#define KW_FRIEND 317
-#define KW_FOR 318
-#define KW_GOTO 319
-#define KW_IF 320
-#define KW_INLINE 321
-#define KW_INT 322
-#define KW_LONG 323
-#define KW_LONGLONG 324
-#define KW_MUTABLE 325
-#define KW_NAMESPACE 326
-#define KW_NEW 327
-#define KW_OPERATOR 328
-#define KW_PRIVATE 329
-#define KW_PROTECTED 330
-#define KW_PUBLIC 331
-#define KW_REGISTER 332
-#define KW_RETURN 333
-#define KW_SHORT 334
-#define KW_SIGNED 335
-#define KW_SIZEOF 336
-#define KW_STATIC 337
-#define KW_STATIC_CAST 338
-#define KW_STRUCT 339
-#define KW_TEMPLATE 340
-#define KW_THROW 341
-#define KW_TRUE 342
-#define KW_TRY 343
-#define KW_TYPEDEF 344
-#define KW_TYPENAME 345
-#define KW_UNION 346
-#define KW_UNSIGNED 347
-#define KW_USING 348
-#define KW_VIRTUAL 349
-#define KW_VOID 350
-#define KW_VOLATILE 351
-#define KW_WHILE 352
-#define START_CPP 353
-#define START_CONST_EXPR 354
-#define START_TYPE 355
+#define KW_BLOCKING 300
+#define KW_BOOL 301
+#define KW_CATCH 302
+#define KW_CHAR 303
+#define KW_WCHAR_T 304
+#define KW_CLASS 305
+#define KW_CONST 306
+#define KW_DELETE 307
+#define KW_DOUBLE 308
+#define KW_DYNAMIC_CAST 309
+#define KW_ELSE 310
+#define KW_END_PUBLISH 311
+#define KW_ENUM 312
+#define KW_EXTERN 313
+#define KW_EXPLICIT 314
+#define KW_PUBLISHED 315
+#define KW_FALSE 316
+#define KW_FLOAT 317
+#define KW_FRIEND 318
+#define KW_FOR 319
+#define KW_GOTO 320
+#define KW_IF 321
+#define KW_INLINE 322
+#define KW_INT 323
+#define KW_LONG 324
+#define KW_LONGLONG 325
+#define KW_MUTABLE 326
+#define KW_NAMESPACE 327
+#define KW_NEW 328
+#define KW_OPERATOR 329
+#define KW_PRIVATE 330
+#define KW_PROTECTED 331
+#define KW_PUBLIC 332
+#define KW_REGISTER 333
+#define KW_RETURN 334
+#define KW_SHORT 335
+#define KW_SIGNED 336
+#define KW_SIZEOF 337
+#define KW_STATIC 338
+#define KW_STATIC_CAST 339
+#define KW_STRUCT 340
+#define KW_TEMPLATE 341
+#define KW_THROW 342
+#define KW_TRUE 343
+#define KW_TRY 344
+#define KW_TYPEDEF 345
+#define KW_TYPENAME 346
+#define KW_UNION 347
+#define KW_UNSIGNED 348
+#define KW_USING 349
+#define KW_VIRTUAL 350
+#define KW_VOID 351
+#define KW_VOLATILE 352
+#define KW_WHILE 353
+#define START_CPP 354
+#define START_CONST_EXPR 355
+#define START_TYPE 356
 
 
 
