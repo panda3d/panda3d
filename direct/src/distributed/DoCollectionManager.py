@@ -199,6 +199,8 @@ class DoCollectionManager:
                 "handleObjectLocation: doId: %s parentId: %s zoneId: %s"%
                 (doId, parentId, zoneId))
             # Let the object finish the job
+            if hasattr(distObj, 'checkFFparentId'):
+                obj.checkFFparentId(parentId)
             obj.setLocation(parentId, zoneId)
             #self.storeObjectLocation(doId, parentId, zoneId)
         else:
@@ -213,6 +215,8 @@ class DoCollectionManager:
         zoneId = di.getUint32()
         distObj = self.doId2do.get(self.getMsgChannel())
         if distObj is not None:
+            if hasattr(distObj, 'checkFFparentId'):
+                distObj.checkFFparentId(parentId)
             distObj.setLocation(parentId, zoneId)
         else:
             self.notify.warning('handleSetLocation: object %s not present' % self.getMsgChannel())
