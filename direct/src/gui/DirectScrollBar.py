@@ -108,6 +108,16 @@ class DirectScrollBar(DirectFrame):
     def setPageSize(self):
         self.guiItem.setPageSize(self['pageSize'])
 
+    def scrollStep(self, stepCount):
+        """Scrolls the indicated number of steps forward.  If
+        stepCount is negative, scrolls backward."""
+        self['value'] = self.guiItem.getValue() + self.guiItem.getScrollSize() * stepCount
+
+    def scrollPage(self, pageCount):
+        """Scrolls the indicated number of pages forward.  If
+        pageCount is negative, scrolls backward."""
+        self['value'] = self.guiItem.getValue() + self.guiItem.getPageSize() * pageCount
+
     def setOrientation(self):
         if self['orientation'] == DGG.HORIZONTAL:
             self.guiItem.setAxis(Vec3(1, 0, 0))
