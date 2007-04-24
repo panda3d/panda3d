@@ -199,7 +199,7 @@ class DoCollectionManager:
                 "handleObjectLocation: doId: %s parentId: %s zoneId: %s"%
                 (doId, parentId, zoneId))
             # Let the object finish the job
-            if hasattr(distObj, 'checkFFparentId'):
+            if hasattr(obj, 'checkFFparentId'):
                 obj.checkFFparentId(parentId)
             obj.setLocation(parentId, zoneId)
             #self.storeObjectLocation(doId, parentId, zoneId)
