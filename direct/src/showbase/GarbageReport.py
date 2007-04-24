@@ -246,7 +246,6 @@ class GarbageReport(Job):
         yield byNum, byRef
 
     def _getReferents(self, obj):
-        # TODO: make this a generator
         # referents (pointed to by garbage)
         # returns two lists, first by index into gc.garbage, second by
         # direct reference
