@@ -700,6 +700,18 @@ operator >>= (int shift) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_key
+//       Access: Published
+//  Description: Returns a mostly unique integer key per unique
+//               bitmask, suitable for using in a hash table.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_key() const {
+  return (int)_word;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::generate_hash
 //       Access: Public
 //  Description: Adds the bitmask to the indicated hash generator.

@@ -114,6 +114,8 @@ PUBLISHED:
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
+  INLINE int get_key() const;
+
 public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
