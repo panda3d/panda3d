@@ -27,6 +27,9 @@ class JobManager:
         # how many timeslices to give each job; this is used to efficiently implement
         # the relative job priorities
         self._jobId2timeslices = {}
+        # how much time did the job use beyond the allotted timeslice, used to balance
+        # out CPU usage
+        self._jobId2overflowTime = {}
         # this is a generator that we use to give high-priority jobs more timeslices
         self._jobIdGenerator = None
         self._highestPriority = Job.Priorities.Normal
@@ -48,6 +51,8 @@ class JobManager:
         self._pri2jobIds[pri].append(jobId)
         # record the job's relative timeslice count
         self._jobId2timeslices[jobId] = pri
+        # init the overflow time tracking
+        self._jobId2overflowTime[jobId] = 0.
         # reset the jobId round-robin
         self._jobIdGenerator = None
         if len(self._jobId2pri) == 1:
@@ -69,6 +74,8 @@ class JobManager:
         job._cleanupGenerator()
         # remove the job's timeslice count
         self._jobId2timeslices.pop(jobId)
+        # remove the overflow time
+        self._jobId2overflowTime.pop(jobId)
         if len(self._pri2jobId2job[pri]) == 0:
             del self._pri2jobId2job[pri]
             if pri == self._highestPriority:
@@ -152,6 +159,14 @@ class JobManager:
                 if pri is None:
                     # this job is no longer present
                     continue
+                # check if there's overflow time that we need to make up for
+                overflowTime = self._jobId2overflowTime[jobId]
+                timeLeft = endT - globalClock.getRealTime()
+                if overflowTime >= timeLeft:
+                    self._jobId2overflowTime[jobId] = max(0., overflowTime-timeLeft)
+                    # don't run any more jobs this frame, this makes up
+                    # for the extra overflow time that was used before
+                    break
                 job = self._pri2jobId2job[pri][jobId]
                 gen = job._getGenerator()
                 if __debug__:
@@ -185,6 +200,9 @@ class JobManager:
                     # we've run out of time
                     #assert self.notify.debug('timeslice end: %s, %s' % (endT, globalClock.getRealTime()))
                     job.suspend()
+                    overflowTime = globalClock.getRealTime() - endT
+                    if overflowTime > self.getTimeslice():
+                        self._jobId2overflowTime[jobId] += overflowTime
                     if __debug__:
                         job._pstats.stop()
                     break
