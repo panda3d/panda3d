@@ -30,6 +30,7 @@ class JobManager:
         # how much time did the job use beyond the allotted timeslice, used to balance
         # out CPU usage
         self._jobId2overflowTime = {}
+        self._useOverflowTime = None
         # this is a generator that we use to give high-priority jobs more timeslices
         self._jobIdGenerator = None
         self._highestPriority = Job.Priorities.Normal
@@ -123,7 +124,7 @@ class JobManager:
     @staticmethod
     def getDefaultTimeslice():
         # run for 1/2 millisecond per frame by default
-        return getBase().config.GetFloat('job-manager-timeslice', (1./1000.) * .5)
+        return getBase().config.GetFloat('job-manager-timeslice-ms', .5) / 1000.
     def getTimeslice(self):
         if self._timeslice:
             return self._timeslice
@@ -138,6 +139,8 @@ class JobManager:
         return priorities
 
     def _process(self, task=None):
+        if self._useOverflowTime is None:
+            self._useOverflowTime = config.GetBool('job-use-overflow-time', 1)
         if len(self._pri2jobId2job):
             #assert self.notify.debugCall()
             # figure out how long we can run
@@ -160,13 +163,14 @@ class JobManager:
                     # this job is no longer present
                     continue
                 # check if there's overflow time that we need to make up for
-                overflowTime = self._jobId2overflowTime[jobId]
-                timeLeft = endT - globalClock.getRealTime()
-                if overflowTime >= timeLeft:
-                    self._jobId2overflowTime[jobId] = max(0., overflowTime-timeLeft)
-                    # don't run any more jobs this frame, this makes up
-                    # for the extra overflow time that was used before
-                    break
+                if self._useOverflowTime:
+                    overflowTime = self._jobId2overflowTime[jobId]
+                    timeLeft = endT - globalClock.getRealTime()
+                    if overflowTime >= timeLeft:
+                        self._jobId2overflowTime[jobId] = max(0., overflowTime-timeLeft)
+                        # don't run any more jobs this frame, this makes up
+                        # for the extra overflow time that was used before
+                        break
                 job = self._pri2jobId2job[pri][jobId]
                 gen = job._getGenerator()
                 if __debug__:
