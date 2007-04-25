@@ -39,7 +39,6 @@ class Indirection:
     TODO: store string components that are duplicates of strings in the actual system so that
     Python will keep one copy and reduce memory usage
     """
-
     def __init__(self, evalStr=None, dictKey=NoDictKey):
         # if this is a dictionary lookup, pass dictKey instead of evalStr
         self.evalStr = evalStr
@@ -196,7 +195,7 @@ class ObjectRef:
             return None
         return container
 
-    def getContainer(self):
+    def getContainerGen(self):
         # try to get a handle on the container by eval'ing and looking things
         # up in dictionaries, depending on the type of each indirection
         #import pdb;pdb.set_trace()
@@ -225,7 +224,7 @@ class ObjectRef:
         # TODO: check that this is still the object we originally pointed to
         yield self._getContainerByEval(evalStr, curObj=curObj)
         
-    def getNameGen(self):
+    def getEvalStrGen(self):
         str = ''
         prevIndirection = None
         curIndirection = None
@@ -253,7 +252,7 @@ class ObjectRef:
         yield str
 
     def __repr__(self):
-        for result in self.getNameGen():
+        for result in self.getEvalStrGen():
             pass
         return result
 
@@ -357,9 +356,9 @@ class FindContainers(Job):
         # if this container is new, or the objRef repr is shorter than what we already have,
         # put it in the table
         if contId in self._id2ref:
-            for existingRepr in self._id2ref[contId].getNameGen():
+            for existingRepr in self._id2ref[contId].getEvalStrGen():
                 yield None
-            for newRepr in objRef.getNameGen():
+            for newRepr in objRef.getEvalStrGen():
                 yield None
         if contId not in self._id2ref or len(newRepr) < len(existingRepr):
             if contId in self._id2ref:
@@ -454,10 +453,10 @@ class FindContainers(Job):
                         curObjRef = containerRef
 
                 try:
-                    for curObj in curObjRef.getContainer():
+                    for curObj in curObjRef.getContainerGen():
                         yield None
                 except:
-                    self.notify.debug('lost current container, ref.getContainer() failed')
+                    self.notify.debug('lost current container, ref.getContainerGen() failed')
                     # that container is gone, try again
                     curObjRef = None
                     continue
@@ -478,7 +477,7 @@ class FindContainers(Job):
                         # prevent cycles in the references (i.e. base.loader.base)
                         if not parentObjRef.goesThrough(child):
                             objRef = ObjectRef(Indirection(evalStr='.__dict__'),
-                                                  id(child), parentObjRef)
+                                               id(child), parentObjRef)
                             yield None
                             if hasLength:
                                 for i in self._addContainerGen(child, objRef):
@@ -515,10 +514,10 @@ class FindContainers(Job):
                             if not parentObjRef.goesThrough(curObj[key]):
                                 if curObj is __builtin__.__dict__:
                                     objRef = ObjectRef(Indirection(evalStr='%s' % key),
-                                                          id(curObj[key]))
+                                                       id(curObj[key]))
                                 else:
                                     objRef = ObjectRef(Indirection(dictKey=key),
-                                                          id(curObj[key]), parentObjRef)
+                                                       id(curObj[key]), parentObjRef)
                                 yield None
                                 if hasLength:
                                     for i in self._addContainerGen(attr, objRef):
@@ -563,7 +562,7 @@ class FindContainers(Job):
                                     # prevent cycles in the references (i.e. base.loader.base)
                                     if not parentObjRef.goesThrough(curObj[index]):
                                         objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
-                                                              id(curObj[index]), parentObjRef)
+                                                           id(curObj[index]), parentObjRef)
                                         yield None
                                         if hasLength:
                                             for i in self._addContainerGen(attr, objRef):
@@ -759,7 +758,7 @@ class PruneObjectRefs(Job):
             for id in ids:
                 yield None
                 try:
-                    for container in _id2baseStartRef[id].getContainer():
+                    for container in _id2baseStartRef[id].getContainerGen():
                         yield None
                 except:
                     # reference is invalid, remove it
@@ -769,7 +768,7 @@ class PruneObjectRefs(Job):
             for id in ids:
                 yield None
                 try:
-                    for container in _id2discoveredStartRef[id].getContainer():
+                    for container in _id2discoveredStartRef[id].getContainerGen():
                         yield None
                 except:
                     # reference is invalid, remove it
@@ -858,13 +857,13 @@ class ContainerLeakDetector(Job):
 
     def getContainerByIdGen(self, id):
         # return a generator to look up a container
-        return self._id2ref[id].getContainer()
+        return self._id2ref[id].getContainerGen()
     def getContainerById(self, id):
-        for result in self._id2ref[id].getContainer():
+        for result in self._id2ref[id].getContainerGen():
             pass
         return result
     def getContainerNameByIdGen(self, id):
-        return self._id2ref[id].getNameGen()
+        return self._id2ref[id].getEvalStrGen()
     def getContainerNameById(self, id):
         if id in self._id2ref:
             return repr(self._id2ref[id])
