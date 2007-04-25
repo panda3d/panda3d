@@ -191,7 +191,7 @@ class DirectScrolledList(DirectFrame):
             self.notify.info('crash 27633 fixed!')
             return
 
-        numItemsVisible=self["numItemsVisible"]
+        numItemsVisible = self["numItemsVisible"]
         numItemsTotal = len(self["items"])
         if(centered):
             self.index = index - (numItemsVisible/2)
@@ -209,26 +209,26 @@ class DirectScrolledList(DirectFrame):
         else:
             if (self.index <= 0):
                 self.index = 0
-                self.__buttonUp(0)
+                #print "at list start, ", len(self["items"]),"  ", self["numItemsVisible"]
                 self.decButton['state'] = DGG.DISABLED
                 self.incButton['state'] = DGG.NORMAL
                 ret = 0
             elif (self.index >= (numItemsTotal - numItemsVisible)):
                 self.index = numItemsTotal - numItemsVisible
-                # print "at list end, ", len(self["items"]),"  ", self["numItemsVisible"]
-                self.__buttonUp(0)
+                #print "at list end, ", len(self["items"]),"  ", self["numItemsVisible"]
                 self.incButton['state'] = DGG.DISABLED
                 self.decButton['state'] = DGG.NORMAL
                 ret = 0
             else:
                 # deal with an edge condition - make sure any tasks are removed from the disabled arrows.
                 if (self.incButton['state'] == DGG.DISABLED) or (self.decButton['state'] == DGG.DISABLED):
+                    #print "leaving list start/end, ", len(self["items"]),"  ", self["numItemsVisible"]
                     self.__buttonUp(0)
                 self.incButton['state'] = DGG.NORMAL
                 self.decButton['state'] = DGG.NORMAL
                 ret = 1
 
-        # print "self.index set to ", self.index
+        #print "self.index set to ", self.index
 
         # Hide them all
         for item in self["items"]:
@@ -307,21 +307,27 @@ class DirectScrolledList(DirectFrame):
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = 1
+        taskName = self.taskName("scroll")
+        #print "incButtonDown: adding ", taskName
+        taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
-        taskMgr.add(task, self.taskName("scroll"))
-
+        
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = -1
+        taskName = self.taskName("scroll")
+        #print "decButtonDown: adding ", taskName
+        taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
-        taskMgr.add(task, self.taskName("scroll"))
-        
+       
     def __buttonUp(self, event):
         assert self.notify.debugStateCall(self)
-        taskMgr.remove(self.taskName("scroll"))
+        taskName = self.taskName("scroll")
+        #print "buttonUp: removing ", taskName
+        taskMgr.remove(taskName)
         
     def addItem(self, item, refresh=1):
         """
@@ -392,7 +398,7 @@ class DirectScrolledList(DirectFrame):
         """
         assert self.notify.debugStateCall(self)
         self.recordMaxHeight()
-        #print "refresh called"
+        print "refresh called"
         self.scrollTo(self.index)
 
     def getSelectedIndex(self):
