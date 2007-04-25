@@ -398,7 +398,7 @@ class DirectScrolledList(DirectFrame):
         """
         assert self.notify.debugStateCall(self)
         self.recordMaxHeight()
-        print "refresh called"
+        #print "refresh called"
         self.scrollTo(self.index)
 
     def getSelectedIndex(self):
