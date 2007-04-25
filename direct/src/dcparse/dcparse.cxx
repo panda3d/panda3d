@@ -216,7 +216,7 @@ main(int argc, char *argv[]) {
 
   } else {
     unsigned long hash = file.get_hash();
-    cerr << "File hash is " << hash << "\n";
+    cerr << "File hash is " << hash << " (signed " << (long)hash << ")\n";
   }
 
 #ifdef DO_MEMORY_USAGE
