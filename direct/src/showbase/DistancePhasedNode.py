@@ -307,11 +307,11 @@ class BufferedDistancePhasedNode(DistancePhasedNode):
 
     def __adjustCollisions(self, phase):
         for x,sphere in enumerate(self._colSpheres[:phase+1]):
-            sphere.node().getSolid(0).setRadius(self.bufferParamList[x][1][1])
+            sphere.node().modifySolid(0).setRadius(self.bufferParamList[x][1][1])
             sphere.node().markInternalBoundsStale()
 
         for x,sphere in enumerate(self._colSpheres[phase+1:]):
-            sphere.node().getSolid(0).setRadius(self.bufferParamList[x+phase+1][1][0])
+            sphere.node().modifySolid(0).setRadius(self.bufferParamList[x+phase+1][1][0])
             sphere.node().markInternalBoundsStale()
 
     
