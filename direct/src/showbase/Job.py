@@ -23,6 +23,7 @@ class Job(DirectObject):
         self._generator = None
         self._id = Job._SerialGen.next()
         self._printing = False
+        self._priority = Job.Priorities.Normal
         if __debug__:
             self._pstats = PStatCollector("App:Show code:jobManager:%s" % self._name)
 
@@ -45,8 +46,9 @@ class Job(DirectObject):
         raise "don't call down"
 
     def getPriority(self):
-        # override if you want a different priority
-        return Job.Priorities.Normal
+        return self._priority
+    def setPriority(self, priority):
+        self._priority = priority
 
     def printingBegin(self):
         self._printing = True

@@ -26,7 +26,7 @@ class GarbageReport(Job):
     NotGarbage = 'NG'
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, doneCallback=None, autoDestroy=False):
+                 threaded=False, doneCallback=None, autoDestroy=False, priority=None):
         # if autoDestroy is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
@@ -35,6 +35,8 @@ class GarbageReport(Job):
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback,
                                 autoDestroy=autoDestroy)
+        if priority is not None:
+            self.setPriority(priority)
         jobMgr.add(self)
         if not threaded:
             jobMgr.finish(self)
@@ -114,8 +116,12 @@ class GarbageReport(Job):
                         yield None
                         self.cycleIds.update(set(cycle))
 
-        s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
-            self._args.name, self.numGarbage)]
+        if self._args.findCycles:
+            s = ['===== GarbageReport: \'%s\' (%s items, %s cycles) =====' % (
+                self._args.name, self.numGarbage, len(self.cycles))]
+        else:
+            s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
+                self._args.name, self.numGarbage)]
         if self.numGarbage > 0:
             # make a list of the ids we will actually be printing
             if self._args.fullReport:
@@ -265,7 +271,6 @@ class GarbageReport(Job):
         yield byNum, byRef
 
     def _getCycles(self, index, cycleSets=None):
-        # TODO: make this a generator
         # detect garbage cycles for a particular item of garbage
         assert self.notify.debugCall()
         # returns list of lists, sublists are garbage reference cycles

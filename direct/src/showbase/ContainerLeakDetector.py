@@ -820,6 +820,7 @@ class ContainerLeakDetector(Job):
         ContainerLeakDetector.addPrivateObj(ContainerLeakDetector.PrivateIds)
         ContainerLeakDetector.addPrivateObj(self.__dict__)
 
+        self.setPriority(Job.Priorities.Min)
         jobMgr.add(self)
 
     def destroy(self):
@@ -839,9 +840,6 @@ class ContainerLeakDetector(Job):
     def getLeakEvent(self):
         # passes description string as argument
         return 'containerLeakDetected-%s' % self._serialNum
-
-    def getPriority(self):
-        return Job.Priorities.Min
 
     @classmethod
     def addPrivateObj(cls, obj):
