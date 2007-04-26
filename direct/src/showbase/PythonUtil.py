@@ -26,7 +26,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
-'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', ]
+'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice', ]
 
 import types
 import string
@@ -2093,55 +2093,59 @@ def safeRepr(obj):
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
 def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
-    """ caps the length of iterable types """
-    if _visitedIds is None:
-        _visitedIds = set()
-    if id(obj) in _visitedIds:
-        return '<ALREADY-VISITED %s>' % itype(obj)
-    if type(obj) in (types.TupleType, types.ListType):
-        s = ''
-        s += {types.TupleType: '(',
-              types.ListType:  '[',}[type(obj)]
-        if len(obj) > maxLen:
-            o = obj[:maxLen]
-            ellips = '...'
+    """ caps the length of iterable types, so very large objects will print faster.
+    also prevents infinite recursion """
+    try:
+        if _visitedIds is None:
+            _visitedIds = set()
+        if id(obj) in _visitedIds:
+            return '<ALREADY-VISITED %s>' % itype(obj)
+        if type(obj) in (types.TupleType, types.ListType):
+            s = ''
+            s += {types.TupleType: '(',
+                  types.ListType:  '[',}[type(obj)]
+            if len(obj) > maxLen:
+                o = obj[:maxLen]
+                ellips = '...'
+            else:
+                o = obj
+                ellips = ''
+            _visitedIds.add(id(obj))
+            for item in o:
+                s += fastRepr(item, maxLen, _visitedIds=_visitedIds)
+                s += ', '
+            _visitedIds.remove(id(obj))
+            s += ellips
+            s += {types.TupleType: ')',
+                  types.ListType:  ']',}[type(obj)]
+            return s
+        elif type(obj) is types.DictType:
+            s = '{'
+            if len(obj) > maxLen:
+                o = obj.keys()[:maxLen]
+                ellips = '...'
+            else:
+                o = obj.keys()
+                ellips = ''
+            _visitedIds.add(id(obj))
+            for key in o:
+                value = obj[key]
+                s += '%s: %s, ' % (fastRepr(key, maxLen, _visitedIds=_visitedIds),
+                                   fastRepr(value, maxLen, _visitedIds=_visitedIds))
+            _visitedIds.remove(id(obj))
+            s += ellips
+            s += '}'
+            return s
+        elif type(obj) is types.StringType:
+            maxLen *= strFactor
+            if len(obj) > maxLen:
+                return safeRepr(obj[:maxLen])
+            else:
+                return safeRepr(obj)
         else:
-            o = obj
-            ellips = ''
-        _visitedIds.add(id(obj))
-        for item in o:
-            s += fastRepr(item, maxLen, _visitedIds=_visitedIds)
-            s += ', '
-        _visitedIds.remove(id(obj))
-        s += ellips
-        s += {types.TupleType: ')',
-              types.ListType:  ']',}[type(obj)]
-        return s
-    elif type(obj) is types.DictType:
-        s = '{'
-        if len(obj) > maxLen:
-            o = obj.keys()[:maxLen]
-            ellips = '...'
-        else:
-            o = obj.keys()
-            ellips = ''
-        _visitedIds.add(id(obj))
-        for key in o:
-            value = obj[key]
-            s += '%s: %s, ' % (fastRepr(key, maxLen, _visitedIds=_visitedIds),
-                               fastRepr(value, maxLen, _visitedIds=_visitedIds))
-        _visitedIds.remove(id(obj))
-        s += ellips
-        s += '}'
-        return s
-    elif type(obj) is types.StringType:
-        maxLen *= strFactor
-        if len(obj) > maxLen:
-            return repr(obj[:maxLen])
-        else:
-            return repr(obj)
-    else:
-        return safeRepr(obj)
+            return safeRepr(obj)
+    except:
+        return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
 def tagRepr(obj, tag):
     """adds a string onto the repr output of an instance"""
@@ -2882,6 +2886,13 @@ if __debug__:
     assert obj2count[3] == 3 * 3
     assert obj2count[4] == 4 * 3
 
+def choice(condition, ifTrue, ifFalse):
+    # equivalent of C++ (condition ? ifTrue : ifFalse)
+    if condition:
+        return ifTrue
+    else:
+        return ifFalse
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -2929,3 +2940,4 @@ __builtin__.nullGen = nullGen
 __builtin__.flywheel = flywheel
 __builtin__.loopGen = loopGen
 __builtin__.StackTrace = StackTrace
+__builtin__.choice = choice
