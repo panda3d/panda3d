@@ -39,7 +39,11 @@
 class EXPCL_PANDA ShaderContext: public SavedContext {
 public:
   INLINE ShaderContext(ShaderExpansion *se);
-  
+
+PUBLISHED:
+  INLINE ShaderExpansion *get_expansion() const;
+
+public:  
   ShaderExpansion *_expansion;
 
 public:

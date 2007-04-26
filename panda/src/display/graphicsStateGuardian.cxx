@@ -371,6 +371,18 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_prepared_objects
+//       Access: Public, Virtual
+//  Description: Returns the set of texture and geom objects that have
+//               been prepared with this GSG (and possibly other GSG's
+//               that share objects).
+////////////////////////////////////////////////////////////////////
+PreparedGraphicsObjects *GraphicsStateGuardian::
+get_prepared_objects() {
+  return _prepared_objects;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
 //       Access: Public
 //  Description: Sets the SceneSetup object that indicates the initial
@@ -402,18 +414,6 @@ set_scene(SceneSetup *scene_setup) {
 SceneSetup *GraphicsStateGuardian::
 get_scene() const {
   return _scene_setup;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_prepared_objects
-//       Access: Public, Virtual
-//  Description: Returns the set of texture and geom objects that have
-//               been prepared with this GSG (and possibly other GSG's
-//               that share objects).
-////////////////////////////////////////////////////////////////////
-PreparedGraphicsObjects *GraphicsStateGuardian::
-get_prepared_objects() {
-  return _prepared_objects;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -138,6 +138,20 @@ enqueue_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_texture_queued
+//       Access: Public
+//  Description: Returns true if the texture has been queued on this
+//               GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_texture_queued(const Texture *tex) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedTextures::const_iterator qi = _enqueued_textures.find((Texture *)tex);
+  return (qi != _enqueued_textures.end());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::dequeue_texture
 //       Access: Public
 //  Description: Removes a texture from the queued list of textures to
@@ -205,7 +219,7 @@ int PreparedGraphicsObjects::
 release_all_textures() {
   ReMutexHolder holder(_lock);
 
-  int num_textures = (int)_prepared_textures.size();
+  int num_textures = (int)_prepared_textures.size() + (int)_enqueued_textures.size();
 
   Textures::iterator tci;
   for (tci = _prepared_textures.begin();
@@ -219,8 +233,31 @@ release_all_textures() {
   }
 
   _prepared_textures.clear();
+  _enqueued_textures.clear();
 
   return num_textures;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_textures
+//       Access: Public
+//  Description: Returns the number of textures that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_textures() const {
+  return _enqueued_textures.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_textures
+//       Access: Public
+//  Description: Returns the number of textures that have already been
+//               prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_textures() const {
+  return _prepared_textures.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,6 +312,20 @@ enqueue_geom(Geom *geom) {
   ReMutexHolder holder(_lock);
 
   _enqueued_geoms.insert(geom);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_geom_queued
+//       Access: Public
+//  Description: Returns true if the geom has been queued on this
+//               GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_geom_queued(const Geom *geom) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedGeoms::const_iterator qi = _enqueued_geoms.find((Geom *)geom);
+  return (qi != _enqueued_geoms.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,7 +396,7 @@ int PreparedGraphicsObjects::
 release_all_geoms() {
   ReMutexHolder holder(_lock);
 
-  int num_geoms = (int)_prepared_geoms.size();
+  int num_geoms = (int)_prepared_geoms.size() + (int)_enqueued_geoms.size();
 
   Geoms::iterator gci;
   for (gci = _prepared_geoms.begin();
@@ -359,8 +410,31 @@ release_all_geoms() {
   }
 
   _prepared_geoms.clear();
+  _enqueued_geoms.clear();
 
   return num_geoms;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_geoms
+//       Access: Public
+//  Description: Returns the number of geoms that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_geoms() const {
+  return _enqueued_geoms.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_geoms
+//       Access: Public
+//  Description: Returns the number of geoms that have already been
+//               prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_geoms() const {
+  return _prepared_geoms.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -415,6 +489,20 @@ enqueue_shader(ShaderExpansion *se) {
   ReMutexHolder holder(_lock);
 
   _enqueued_shaders.insert(se);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_shader_queued
+//       Access: Public
+//  Description: Returns true if the shader has been queued on this
+//               GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_shader_queued(const ShaderExpansion *shader) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedShaders::const_iterator qi = _enqueued_shaders.find((ShaderExpansion *)shader);
+  return (qi != _enqueued_shaders.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -485,7 +573,7 @@ int PreparedGraphicsObjects::
 release_all_shaders() {
   ReMutexHolder holder(_lock);
 
-  int num_shaders = (int)_prepared_shaders.size();
+  int num_shaders = (int)_prepared_shaders.size() + (int)_enqueued_shaders.size();
 
   Shaders::iterator sci;
   for (sci = _prepared_shaders.begin();
@@ -499,8 +587,31 @@ release_all_shaders() {
   }
 
   _prepared_shaders.clear();
+  _enqueued_shaders.clear();
 
   return num_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_shaders
+//       Access: Public
+//  Description: Returns the number of shaders that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_shaders() const {
+  return _enqueued_shaders.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_shaders
+//       Access: Public
+//  Description: Returns the number of shaders that have already been
+//               prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_shaders() const {
+  return _prepared_shaders.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -555,6 +666,20 @@ enqueue_vertex_buffer(GeomVertexArrayData *data) {
   ReMutexHolder holder(_lock);
 
   _enqueued_vertex_buffers.insert(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_vertex_buffer_queued
+//       Access: Public
+//  Description: Returns true if the vertex buffer has been queued on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_vertex_buffer_queued(const GeomVertexArrayData *data) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedVertexBuffers::const_iterator qi = _enqueued_vertex_buffers.find((GeomVertexArrayData *)data);
+  return (qi != _enqueued_vertex_buffers.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -625,7 +750,7 @@ int PreparedGraphicsObjects::
 release_all_vertex_buffers() {
   ReMutexHolder holder(_lock);
 
-  int num_vertex_buffers = (int)_prepared_vertex_buffers.size();
+  int num_vertex_buffers = (int)_prepared_vertex_buffers.size() + (int)_enqueued_vertex_buffers.size();
 
   VertexBuffers::iterator vbci;
   for (vbci = _prepared_vertex_buffers.begin();
@@ -639,8 +764,31 @@ release_all_vertex_buffers() {
   }
 
   _prepared_vertex_buffers.clear();
+  _enqueued_vertex_buffers.clear();
 
   return num_vertex_buffers;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_vertex_buffers
+//       Access: Public
+//  Description: Returns the number of vertex buffers that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_vertex_buffers() const {
+  return _enqueued_vertex_buffers.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_vertex_buffers
+//       Access: Public
+//  Description: Returns the number of vertex buffers that have
+//               already been prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_vertex_buffers() const {
+  return _prepared_vertex_buffers.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -695,6 +843,20 @@ enqueue_index_buffer(GeomPrimitive *data) {
   ReMutexHolder holder(_lock);
 
   _enqueued_index_buffers.insert(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_index_buffer_queued
+//       Access: Public
+//  Description: Returns true if the index buffer has been queued on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_index_buffer_queued(const GeomPrimitive *data) const {
+  ReMutexHolder holder(_lock);
+
+  EnqueuedIndexBuffers::const_iterator qi = _enqueued_index_buffers.find((GeomPrimitive *)data);
+  return (qi != _enqueued_index_buffers.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -765,7 +927,7 @@ int PreparedGraphicsObjects::
 release_all_index_buffers() {
   ReMutexHolder holder(_lock);
 
-  int num_index_buffers = (int)_prepared_index_buffers.size();
+  int num_index_buffers = (int)_prepared_index_buffers.size() + (int)_enqueued_index_buffers.size();
 
   IndexBuffers::iterator ibci;
   for (ibci = _prepared_index_buffers.begin();
@@ -779,8 +941,31 @@ release_all_index_buffers() {
   }
 
   _prepared_index_buffers.clear();
+  _enqueued_index_buffers.clear();
 
   return num_index_buffers;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued_index_buffers
+//       Access: Public
+//  Description: Returns the number of index buffers that have been
+//               enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_queued_index_buffers() const {
+  return _enqueued_index_buffers.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared_index_buffers
+//       Access: Public
+//  Description: Returns the number of index buffers that have
+//               already been prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+get_num_prepared_index_buffers() const {
+  return _prepared_index_buffers.size();
 }
 
 ////////////////////////////////////////////////////////////////////

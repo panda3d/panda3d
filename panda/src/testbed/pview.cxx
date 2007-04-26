@@ -77,7 +77,7 @@ event_W(CPT_Event, void *) {
     WindowFramework *old_window = framework.get_window(0);
     GraphicsWindow *win = old_window->get_graphics_window();
     pipe = win->get_pipe();
-    gsg = win->get_gsg();
+    //    gsg = win->get_gsg();
   }
 
   WindowFramework *window = framework.open_window(pipe, gsg);

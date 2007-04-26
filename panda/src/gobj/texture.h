@@ -311,6 +311,7 @@ PUBLISHED:
   INLINE UpdateSeq get_image_modified() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
@@ -352,10 +353,10 @@ PUBLISHED:
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
 
-public:
-
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
+
+public:
   void texture_uploaded();
   
   virtual bool has_cull_callback() const;

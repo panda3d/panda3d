@@ -40,12 +40,14 @@ class EXPCL_PANDA IndexBufferContext : public BufferContext {
 public:
   INLINE IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
 
+PUBLISHED:
   INLINE GeomPrimitive *get_data() const;
 
   INLINE bool changed_size(const GeomPrimitivePipelineReader *reader) const;
   INLINE bool changed_usage_hint(const GeomPrimitivePipelineReader *reader) const;
   INLINE bool was_modified(const GeomPrimitivePipelineReader *reader) const;
 
+public:
   INLINE void mark_loaded(const GeomPrimitivePipelineReader *reader);
 
 private:

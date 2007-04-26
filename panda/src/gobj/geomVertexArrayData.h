@@ -95,8 +95,8 @@ PUBLISHED:
   INLINE PTA_uchar modify_data();
   INLINE void set_data(CPTA_uchar data);
 
-public:
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
   VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                                    GraphicsStateGuardianBase *gsg);

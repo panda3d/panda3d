@@ -176,8 +176,8 @@ public:
   virtual int get_num_unused_vertices_per_primitive() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
 
-public:
   IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                                   GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);

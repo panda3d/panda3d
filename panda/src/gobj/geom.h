@@ -126,13 +126,14 @@ PUBLISHED:
   void clear_cache_stage(Thread *current_thread);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-public:
   GeomContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                            GraphicsStateGuardianBase *gsg);
 
+public:
   void draw(GraphicsStateGuardianBase *gsg, 
             const GeomMunger *munger,
             const GeomVertexData *vertex_data,

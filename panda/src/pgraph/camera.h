@@ -41,9 +41,8 @@ class DisplayRegion;
 class EXPCL_PANDA Camera : public LensNode {
 PUBLISHED:
   Camera(const string &name);
-
-protected:
   Camera(const Camera &copy);
+
 public:
   virtual ~Camera();
 

@@ -44,6 +44,10 @@ class EXPCL_PANDA GeomContext : public SavedContext {
 public:
   INLINE GeomContext(Geom *geom);
 
+PUBLISHED:
+  INLINE Geom *get_geom() const;
+
+public:
   // This cannot be a PT(Geom), because the geom and the GSG
   // both own their GeomContexts!  That would create a circular
   // reference count.

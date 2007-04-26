@@ -1077,6 +1077,23 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::is_prepared
+//       Access: Published
+//  Description: Returns true if the data has already been prepared
+//               or enqueued for preparation on the indicated GSG,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomPrimitive::
+is_prepared(PreparedGraphicsObjects *prepared_objects) const {
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    return true;
+  }
+  return prepared_objects->is_index_buffer_queued(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::prepare_now
 //       Access: Public
 //  Description: Creates a context for the data on the particular

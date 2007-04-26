@@ -4048,10 +4048,7 @@ close_gsg() {
   // Unlike in OpenGL, in DX9 it is safe to try to explicitly release
   // any textures here.  And it may even be a good idea.
   if (_prepared_objects->get_ref_count() == 1) {
-    release_all_textures();
-    release_all_geoms();
-    release_all_vertex_buffers();
-    release_all_index_buffers();
+    release_all();
 
     // Now we need to actually delete all of the objects we just
     // released.

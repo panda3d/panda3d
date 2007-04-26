@@ -47,9 +47,11 @@ public:
   BufferContext(BufferResidencyTracker *residency);
   virtual ~BufferContext();
 
+PUBLISHED:
   INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+public:
   INLINE void set_active(bool flag);
   INLINE void set_resident(bool flag);
 

@@ -27,3 +27,13 @@ GeomContext(Geom *geom) :
   _geom(geom)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomContext::get_geom
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Geom *GeomContext::
+get_geom() const {
+  return _geom;
+}

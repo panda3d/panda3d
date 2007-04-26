@@ -26,6 +26,7 @@
 #include "colorScaleAttrib.h"
 #include "renderModeAttrib.h"
 #include "pointerTo.h"
+#include "weakPointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StandardMunger
@@ -55,7 +56,7 @@ private:
   int _num_components;
   NumericType _numeric_type;
   Contents _contents;
-  PT(GraphicsStateGuardian) _gsg;
+  WPT(GraphicsStateGuardian) _gsg;
   CPT(RenderModeAttrib) _render_mode;
 
   bool _munge_color;

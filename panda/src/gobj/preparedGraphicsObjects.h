@@ -63,49 +63,68 @@ public:
   PreparedGraphicsObjects();
   ~PreparedGraphicsObjects();
 
+PUBLISHED:
   INLINE const string &get_name() const;
 
   INLINE void release_all();
+  INLINE int get_num_queued() const;
+  INLINE int get_num_prepared() const;
 
   void enqueue_texture(Texture *tex);
+  bool is_texture_queued(const Texture *tex) const;
   bool dequeue_texture(Texture *tex);
   void release_texture(TextureContext *tc);
   int release_all_textures();
+  int get_num_queued_textures() const;
+  int get_num_prepared_textures() const;
 
   TextureContext *prepare_texture_now(Texture *tex, GraphicsStateGuardianBase *gsg);
 
   void enqueue_geom(Geom *geom);
+  bool is_geom_queued(const Geom *geom) const;
   bool dequeue_geom(Geom *geom);
   void release_geom(GeomContext *gc);
   int release_all_geoms();
+  int get_num_queued_geoms() const;
+  int get_num_prepared_geoms() const;
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
   void enqueue_shader(ShaderExpansion *shader);
+  bool is_shader_queued(const ShaderExpansion *shader) const;
   bool dequeue_shader(ShaderExpansion *shader);
   void release_shader(ShaderContext *sc);
   int release_all_shaders();
+  int get_num_queued_shaders() const;
+  int get_num_prepared_shaders() const;
 
   ShaderContext *prepare_shader_now(ShaderExpansion *shader, GraphicsStateGuardianBase *gsg);
 
   void enqueue_vertex_buffer(GeomVertexArrayData *data);
+  bool is_vertex_buffer_queued(const GeomVertexArrayData *data) const;
   bool dequeue_vertex_buffer(GeomVertexArrayData *data);
   void release_vertex_buffer(VertexBufferContext *vbc);
   int release_all_vertex_buffers();
+  int get_num_queued_vertex_buffers() const;
+  int get_num_prepared_vertex_buffers() const;
 
   VertexBufferContext *
   prepare_vertex_buffer_now(GeomVertexArrayData *data,
                             GraphicsStateGuardianBase *gsg);
 
   void enqueue_index_buffer(GeomPrimitive *data);
+  bool is_index_buffer_queued(const GeomPrimitive *data) const;
   bool dequeue_index_buffer(GeomPrimitive *data);
   void release_index_buffer(IndexBufferContext *ibc);
   int release_all_index_buffers();
+  int get_num_queued_index_buffers() const;
+  int get_num_prepared_index_buffers() const;
 
   IndexBufferContext *
   prepare_index_buffer_now(GeomPrimitive *data,
                            GraphicsStateGuardianBase *gsg);
 
+public:
   void begin_frame(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
   void end_frame(Thread *current_thread);

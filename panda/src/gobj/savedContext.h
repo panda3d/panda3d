@@ -36,10 +36,11 @@ class EXPCL_PANDA SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "SavedContext",

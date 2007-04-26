@@ -897,6 +897,23 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::is_prepared
+//       Access: Published
+//  Description: Returns true if the geom has already been prepared
+//               or enqueued for preparation on the indicated GSG,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+is_prepared(PreparedGraphicsObjects *prepared_objects) const {
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    return true;
+  }
+  return prepared_objects->is_geom_queued(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::release
 //       Access: Published
 //  Description: Frees the geom context only on the indicated object,

@@ -120,7 +120,12 @@ public:
   // mainly to make it easy to call these from code in some directory
   // that display depends on.
   virtual SceneSetup *get_scene() const=0;
+
+#ifndef CPPPARSER
+  // We hide this from interrogate, so that it will be properly
+  // exported from the GraphicsStateGuardian class, later.
   virtual PreparedGraphicsObjects *get_prepared_objects()=0;
+#endif
 
   virtual TextureContext *prepare_texture(Texture *tex)=0;
   virtual void release_texture(TextureContext *tc)=0;

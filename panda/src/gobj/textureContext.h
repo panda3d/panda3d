@@ -42,11 +42,14 @@ class EXPCL_PANDA TextureContext : public BufferContext {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
 
+PUBLISHED:
   INLINE Texture *get_texture() const;
 
   INLINE bool was_modified() const;
   INLINE bool was_properties_modified() const;
   INLINE bool was_image_modified() const;
+
+public:
   INLINE void mark_loaded();
 
 private:

@@ -224,6 +224,11 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
 int StandardMunger::
 compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
+
+  if (_gsg != om->_gsg) {
+    return _gsg < om->_gsg ? -1 : 1;
+  }
+
   if (_render_mode != om->_render_mode) {
     return _render_mode < om->_render_mode ? -1 : 1;
   }

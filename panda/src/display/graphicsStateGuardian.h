@@ -152,11 +152,11 @@ PUBLISHED:
   INLINE void make_global_gsg();
   INLINE static GraphicsStateGuardian *get_global_gsg();
 
+  virtual PreparedGraphicsObjects *get_prepared_objects();
+
 public:
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
-
-  virtual PreparedGraphicsObjects *get_prepared_objects();
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void release_texture(TextureContext *tc);

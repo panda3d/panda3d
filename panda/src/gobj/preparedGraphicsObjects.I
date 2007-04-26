@@ -42,3 +42,33 @@ release_all() {
   release_all_vertex_buffers();
   release_all_index_buffers();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_queued
+//       Access: Public
+//  Description: Returns the number of objects of any kind that have
+//               been enqueued to be prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int PreparedGraphicsObjects::
+get_num_queued() const {
+  return (get_num_queued_textures() + 
+          get_num_queued_geoms() +
+          get_num_queued_shaders() +
+          get_num_queued_vertex_buffers() +
+          get_num_queued_index_buffers());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_num_prepared
+//       Access: Public
+//  Description: Returns the number of objects of any kind that have
+//               already been prepared on this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE int PreparedGraphicsObjects::
+get_num_prepared() const {
+  return (get_num_prepared_textures() + 
+          get_num_prepared_geoms() +
+          get_num_prepared_shaders() +
+          get_num_prepared_vertex_buffers() +
+          get_num_prepared_index_buffers());
+}

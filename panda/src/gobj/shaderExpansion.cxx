@@ -1309,6 +1309,23 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderExpansion::is_prepared
+//       Access: Published
+//  Description: Returns true if the shader has already been prepared
+//               or enqueued for preparation on the indicated GSG,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ShaderExpansion::
+is_prepared(PreparedGraphicsObjects *prepared_objects) const {
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    return true;
+  }
+  return prepared_objects->is_shader_queued(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderExpansion::release
 //       Access: Published
 //  Description: Frees the texture context only on the indicated object,
@@ -1335,7 +1352,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderExpansion::prepare_now
-//       Access: Public
+//       Access: Published
 //  Description: Creates a context for the texture on the particular
 //               GSG, if it does not already exist.  Returns the new
 //               (or old) ShaderContext.  This assumes that the

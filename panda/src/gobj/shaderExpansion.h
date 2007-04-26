@@ -54,8 +54,12 @@ PUBLISHED:
   INLINE bool get_error_flag() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
+
+  ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+                             GraphicsStateGuardianBase *gsg);
   
 public:
 
@@ -268,9 +272,6 @@ public:
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
- public:  
-  ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
-                             GraphicsStateGuardianBase *gsg);
   
  private:  
   ShaderExpansion(const string &name, const string &text,
