@@ -33,6 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StateMunger : public GeomMunger {
 public:
+  INLINE StateMunger(GraphicsStateGuardianBase *gsg);
   virtual ~StateMunger();
   CPT(RenderState) munge_state(const RenderState *state);
 

@@ -56,7 +56,6 @@ private:
   int _num_components;
   NumericType _numeric_type;
   Contents _contents;
-  WPT(GraphicsStateGuardian) _gsg;
   CPT(RenderModeAttrib) _render_mode;
 
   bool _munge_color;

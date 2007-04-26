@@ -159,6 +159,9 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian9::
 ~DXGraphicsStateGuardian9() {
+  dxgsg9_cat.debug()
+    << "DXGraphicsStateGuardian9 " << this << " destructing\n";
+
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
   }
@@ -895,9 +898,15 @@ prepare_lens() {
 bool DXGraphicsStateGuardian9::
 begin_frame(Thread *current_thread) {
 
-DBG_S dxgsg9_cat.debug ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
+  DBG_S dxgsg9_cat.debug ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
 
   GraphicsStateGuardian::begin_frame(current_thread);
+
+  if (_d3d_device == NULL) {
+    dxgsg9_cat.debug()
+      << this << "::begin_frame(): no device.\n";
+    return false;
+  }
 
   if (_lru)
   {
@@ -2369,8 +2378,11 @@ reset() {
   // TransformState::make_identity());
   // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
-  assert(_screen->_d3d9 != NULL);
-  assert(_d3d_device != NULL);
+  nassertv(_screen->_d3d9 != NULL);
+  
+  if (_d3d_device == NULL) {
+    return;
+  }
 
   D3DCAPS9 d3d_caps;
   _d3d_device->GetDeviceCaps(&d3d_caps);
@@ -2728,7 +2740,7 @@ reset() {
   } else {
     // every card is going to have vertex fog, since it's implemented
     // in d3d runtime.
-    assert((_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
+    nassertv((_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
 
     // vertex fog may look crappy if you have large polygons in the
     // foreground and they get clipped, so you may want to disable it
@@ -4334,6 +4346,10 @@ set_context(DXScreenData *new_context) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 set_render_target() {
+  if (_d3d_device == NULL) {
+    return;
+  }
+
   LPDIRECT3DSURFACE9 back = NULL, stencil = NULL;
 
   UINT swap_chain;
@@ -4566,9 +4582,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
                  DXScreenData **screen) {
   HRESULT hr;
 
-  assert(IS_VALID_PTR(presentation_params));
-  assert(IS_VALID_PTR(_screen->_d3d9));
-  assert(IS_VALID_PTR(_d3d_device));
+  nassertr(IS_VALID_PTR(presentation_params), E_FAIL);
+  nassertr(IS_VALID_PTR(_screen->_d3d9), E_FAIL);
+  nassertr(IS_VALID_PTR(_d3d_device), E_FAIL);
 
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed
@@ -4681,10 +4697,14 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
 bool DXGraphicsStateGuardian9::
 check_cooperative_level() {
   bool bDoReactivateWindow = false;
+  if (_d3d_device == NULL) {
+    return false;
+  }
+
   HRESULT hr = _d3d_device->TestCooperativeLevel();
 
   if (SUCCEEDED(hr)) {
-    assert(SUCCEEDED(_last_testcooplevel_result));
+    nassertr(SUCCEEDED(_last_testcooplevel_result), false);
     return true;
   }
 

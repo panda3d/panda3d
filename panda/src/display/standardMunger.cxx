@@ -38,11 +38,11 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                int num_components,
                StandardMunger::NumericType numeric_type,
                StandardMunger::Contents contents) :
+  StateMunger(gsg),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents)
 {
-  _gsg = DCAST(GraphicsStateGuardian, gsg);
   _render_mode = state->get_render_mode();
 
   _munge_color = false;
@@ -54,7 +54,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   if (color_attrib != (ColorAttrib *)NULL && 
       color_attrib->get_color_type() == ColorAttrib::T_flat) {
 
-    if (!_gsg->get_color_scale_via_lighting()) {
+    if (!get_gsg()->get_color_scale_via_lighting()) {
       // We only need to munge the color directly if the GSG says it
       // can't cheat the color via lighting (presumably, in this case,
       // by applying a material).
@@ -78,8 +78,8 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
 
     // If the GSG says it can't cheat this RGB or alpha scale, we have
     // to apply the color scale directly.
-    if ((color_scale_attrib->has_rgb_scale() && !_gsg->get_color_scale_via_lighting()) ||
-        (color_scale_attrib->has_alpha_scale() && !_gsg->get_alpha_scale_via_texture(tex_attrib))) {
+    if ((color_scale_attrib->has_rgb_scale() && !get_gsg()->get_color_scale_via_lighting()) ||
+        (color_scale_attrib->has_alpha_scale() && !get_gsg()->get_alpha_scale_via_texture(tex_attrib))) {
       _munge_color_scale = true;
     }
 
@@ -127,9 +127,9 @@ munge_data_impl(const GeomVertexData *data) {
     if (table != (TransformBlendTable *)NULL &&
         table->get_num_transforms() != 0 &&
         table->get_max_simultaneous_transforms() <= 
-        _gsg->get_max_vertex_transforms()) {
+        get_gsg()->get_max_vertex_transforms()) {
       if (matrix_palette && 
-          table->get_num_transforms() <= _gsg->get_max_vertex_transform_indices()) {
+          table->get_num_transforms() <= get_gsg()->get_max_vertex_transform_indices()) {
 
         if (table->get_num_transforms() == table->get_max_simultaneous_transforms()) {
           // We can support an indexed palette, but since that won't
@@ -145,7 +145,7 @@ munge_data_impl(const GeomVertexData *data) {
         }
 
       } else if (table->get_num_transforms() <=
-                 _gsg->get_max_vertex_transforms()) {
+                 get_gsg()->get_max_vertex_transforms()) {
         // We can't support an indexed palette, but we have few enough
         // transforms that we can do a nonindexed table.
         animation.set_hardware(table->get_num_transforms(), false);
@@ -172,7 +172,7 @@ munge_data_impl(const GeomVertexData *data) {
 bool StandardMunger::
 munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
                 Thread *current_thread) {
-  int supported_geom_rendering = _gsg->get_supported_geom_rendering();
+  int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
 
   int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
   if (unsupported_bits != 0) {
@@ -224,10 +224,6 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
 int StandardMunger::
 compare_to_impl(const GeomMunger *other) const {
   const StandardMunger *om = DCAST(StandardMunger, other);
-
-  if (_gsg != om->_gsg) {
-    return _gsg < om->_gsg ? -1 : 1;
-  }
 
   if (_render_mode != om->_render_mode) {
     return _render_mode < om->_render_mode ? -1 : 1;

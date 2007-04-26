@@ -18,6 +18,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::get_gsg
+//       Access: Public
+//  Description: Returns a pointer to the GSG that created this
+//               munger.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardianBase *GeomMunger::
+get_gsg() const {
+  return _gsg;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::is_registered
 //       Access: Public
 //  Description: Returns true if this munger has been registered,
@@ -48,6 +59,17 @@ is_registered() const {
 INLINE PT(GeomMunger) GeomMunger::
 register_munger(GeomMunger *munger, Thread *current_thread) {
   return get_registry()->register_munger(munger, current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::unregister_mungers_for_gsg
+//       Access: Public, Static
+//  Description: Removes all the mungers from the registry that are
+//               associated with the indicated GSG.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomMunger::
+unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg) {
+  get_registry()->unregister_mungers_for_gsg(gsg);
 }
 
 ////////////////////////////////////////////////////////////////////

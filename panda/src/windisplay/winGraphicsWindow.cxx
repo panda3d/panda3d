@@ -335,14 +335,14 @@ close_window() {
   set_cursor_out_of_window();
   DestroyWindow(_hWnd);
 
-  // Remove the window handle from our global map.
-  _window_handles.erase(_hWnd);
-  _hWnd = (HWND)0;
-
   if (is_fullscreen()) {
     // revert to default display mode.
     ChangeDisplaySettings(NULL, 0x0);
   }
+
+  // Remove the window handle from our global map.
+  _window_handles.erase(_hWnd);
+  _hWnd = (HWND)0;
 
   GraphicsWindow::close_window();
 }

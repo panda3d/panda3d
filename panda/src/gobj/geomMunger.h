@@ -59,13 +59,16 @@ class Geom;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomMunger : public TypedReferenceCount, public GeomEnums {
 public:
-  GeomMunger();
+  GeomMunger(GraphicsStateGuardianBase *gsg);
   GeomMunger(const GeomMunger &copy);
   void operator = (const GeomMunger &copy);
   virtual ~GeomMunger();
 
+  INLINE GraphicsStateGuardianBase *get_gsg() const;
+
   INLINE bool is_registered() const;
   INLINE static PT(GeomMunger) register_munger(GeomMunger *munger, Thread *current_thread);
+  INLINE static void unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg);
 
   INLINE CPT(GeomVertexFormat) munge_format(const GeomVertexFormat *format,
                                               const GeomVertexAnimationSpec &animation) const;
@@ -117,6 +120,8 @@ private:
   // This mutex protects the above.
   Mutex _formats_lock;
 
+  GraphicsStateGuardianBase *_gsg;
+
   bool _is_registered;
   typedef pset<GeomMunger *, IndirectCompareTo<GeomMunger> > Mungers;
   class EXPCL_PANDA Registry {
@@ -124,6 +129,7 @@ private:
     Registry();
     PT(GeomMunger) register_munger(GeomMunger *munger, Thread *current_thread);
     void unregister_munger(GeomMunger *munger);
+    void unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg);
 
     Mungers _mungers;
     Mutex _registry_lock;

@@ -25,5 +25,5 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsStateGuardian *StandardMunger::
 get_gsg() const {
-  return _gsg;
+  return (GraphicsStateGuardian *)GeomMunger::get_gsg();
 }

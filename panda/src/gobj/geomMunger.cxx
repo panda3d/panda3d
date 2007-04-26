@@ -33,7 +33,8 @@ PStatCollector GeomMunger::_munge_pcollector("*:Munge");
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 GeomMunger::
-GeomMunger() :
+GeomMunger(GraphicsStateGuardianBase *gsg) :
+  _gsg(gsg),
   _is_registered(false)
 {
 #ifndef NDEBUG
@@ -281,8 +282,8 @@ compare_to_impl(const GeomMunger *other) const {
 //               they would produce a different answer to
 //               munge_format(), munge_data(), or munge_geom().  (They
 //               still might be different in other ways, but if they
-//               would produce the same answer, this function consider
-//               them to be the same.)
+//               would produce the same answer, this function will
+//               consider them to be the same.)
 ////////////////////////////////////////////////////////////////////
 int GeomMunger::
 geom_compare_to_impl(const GeomMunger *other) const {
@@ -416,4 +417,31 @@ unregister_munger(GeomMunger *munger) {
   _mungers.erase(munger->_registered_key);
   munger->_registered_key = _mungers.end();
   munger->do_unregister();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::Registry::unregister_mungers_for_gsg
+//       Access: Public
+//  Description: Removes all the mungers from the registry that are
+//               associated with the indicated GSG.
+////////////////////////////////////////////////////////////////////
+void GeomMunger::Registry::
+unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg) {
+  MutexHolder holder(_registry_lock);
+
+  Mungers::iterator mi = _mungers.begin();
+  while (mi != _mungers.end()) {
+    GeomMunger *munger = (*mi);
+    Mungers::iterator mnext = mi;
+    ++mnext;
+
+    if (munger->get_gsg() == gsg) {
+      nassertv(mi == munger->_registered_key);
+      _mungers.erase(mi);
+      munger->_registered_key = _mungers.end();
+      munger->do_unregister();
+    }
+
+    mi = mnext;
+  }
 }

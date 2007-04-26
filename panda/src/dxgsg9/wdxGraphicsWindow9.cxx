@@ -251,7 +251,11 @@ verify_window_sizes(int numsizes, int *dimen) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow9::
 close_window() {
-  wdxdisplay9_cat.debug() << "wdx closed window\n";
+  if (wdxdisplay9_cat.is_debug()) {
+    wdxdisplay9_cat.debug() 
+      << "wdxGraphicsWindow9::close_window() " << this << "\n";
+  }
+
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     _gsg.clear();
     _active = false;
@@ -316,6 +320,7 @@ open_window() {
       wdxdisplay9_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
       if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
         wdxdisplay9_cat.error() << "Unable to create window with specified parameters.\n";
+        close_window();
         return false;
       }
       _dxgsg->get_pipe()->make_device((void*)(&_wcontext));
@@ -565,8 +570,8 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   PRINT_REFCNT(wdxdisplay9, _d3d9);
 
-  assert(_d3d9 != NULL);
-  assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
+  nassertr(_d3d9 != NULL, false);
+  nassertr(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION, false);
 
   bool do_sync = sync_video;
 
@@ -993,14 +998,14 @@ choose_device() {
 bool wdxGraphicsWindow9::
 consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
-  assert(dxpipe != NULL);
+  nassertr(dxpipe != NULL, false);
   WindowProperties properties = get_properties();
   DWORD dwRenderWidth = properties.get_x_size();
   DWORD dwRenderHeight = properties.get_y_size();
   HRESULT hr;
   LPDIRECT3D9 _d3d9 = dxpipe->__d3d9;
 
-  assert(_dxgsg != NULL);
+  nassertr(_dxgsg != NULL, false);
   _wcontext._d3d9 = _d3d9;
   _wcontext._is_dx9_1 = dxpipe->__is_dx9_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
@@ -1207,8 +1212,8 @@ init_resized_window() {
   DWORD newWidth = _wcontext._presentation_params.BackBufferWidth;
   DWORD newHeight = _wcontext._presentation_params.BackBufferHeight;
 
-  assert((newWidth != 0) && (newHeight != 0));
-  assert(_wcontext._window != NULL);
+  nassertv((newWidth != 0) && (newHeight != 0));
+  nassertv(_wcontext._window != NULL);
 
   if (_wcontext._presentation_params.Windowed) {
     POINT ul, lr;
@@ -1231,7 +1236,7 @@ init_resized_window() {
   }
 
   // clear window to black ASAP
-  assert(_wcontext._window != NULL);
+  nassertv(_wcontext._window != NULL);
   ClearToBlack(_wcontext._window, get_properties());
 
   // clear textures and VB's out of video&AGP mem, so cache is reset

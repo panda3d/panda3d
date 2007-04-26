@@ -39,6 +39,7 @@
 #include "displayRegion.h"
 #include "graphicsOutput.h"
 #include "texturePool.h"
+#include "geomMunger.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -192,6 +193,8 @@ GraphicsStateGuardian::
     delete _stencil_render_states;
     _stencil_render_states = 0;
   }
+
+  GeomMunger::unregister_mungers_for_gsg(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -614,31 +617,40 @@ end_occlusion_query() {
 ////////////////////////////////////////////////////////////////////
 PT(GeomMunger) GraphicsStateGuardian::
 get_geom_munger(const RenderState *state, Thread *current_thread) {
+  // We can cast the RenderState to a non-const object because we are
+  // only updating a cache within the RenderState, not really changing
+  // any of its properties.
+  RenderState *nc_state = ((RenderState *)state);
+
   // Before we even look up the map, see if the _last_mi value points
   // to this GSG.  This is likely because we tend to visit the same
   // state multiple times during a frame.  Also, this might well be
   // the only GSG in the world anyway.
-  if (!state->_mungers.empty()) {
-    RenderState::Mungers::const_iterator mi = state->_last_mi;
+  if (!nc_state->_mungers.empty()) {
+    RenderState::Mungers::const_iterator mi = nc_state->_last_mi;
     if (!(*mi).first.was_deleted() && (*mi).first == this) {
-      return (*mi).second;
+      if ((*mi).second->is_registered()) {
+        return (*mi).second;
+      }
     }
   }
 
   // Nope, we have to look it up in the map.
-  RenderState::Mungers::const_iterator mi = state->_mungers.find(this);
-  if (mi != state->_mungers.end() && !(*mi).first.was_deleted()) {
-    ((RenderState *)state)->_last_mi = mi;
-    return (*mi).second;
+  RenderState::Mungers::iterator mi = nc_state->_mungers.find(this);
+  if (mi != nc_state->_mungers.end() && !(*mi).first.was_deleted()) {
+    if ((*mi).second->is_registered()) {
+      nc_state->_last_mi = mi;
+      return (*mi).second;
+    }
+    // This GeomMunger is no longer registered.  Remove it from the
+    // map.
+    nc_state->_mungers.erase(mi);
   }
 
   // Nothing in the map; create a new entry.
-  PT(GeomMunger) munger = make_geom_munger(state, current_thread);
+  PT(GeomMunger) munger = make_geom_munger(nc_state, current_thread);
+  nassertr(munger->is_registered(), munger);
 
-  // Cast the RenderState to a non-const object.  We can do this
-  // because we are only updating a cache within the RenderState, not
-  // really changing any of its properties.
-  RenderState *nc_state = (RenderState *)state;
   mi = nc_state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
   nc_state->_last_mi = mi;
 
