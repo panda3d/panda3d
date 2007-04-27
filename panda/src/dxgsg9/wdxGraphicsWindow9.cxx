@@ -275,9 +275,13 @@ bool wdxGraphicsWindow9::
 open_window() {
   PT(DXGraphicsDevice9) dxdev;
   WindowProperties props;
-  bool discard_device = false;
 
-  // GSG creation/initialization.
+  // For now, let's make this configurable.  If this is true, then you
+  // can't open multiple different windows with the same GSG, but you
+  // may have more luck opening different windows with different
+  // GSG's.
+  bool discard_device = ConfigVariableBool("always-discard-device", true);
+
   if (_gsg == 0) {
     _dxgsg = new DXGraphicsStateGuardian9(_pipe);
     _gsg = _dxgsg;

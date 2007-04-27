@@ -270,7 +270,12 @@ bool wdxGraphicsWindow8::
 open_window() {
   PT(DXGraphicsDevice8) dxdev;
   WindowProperties props;
-  bool discard_device = false;
+
+  // For now, let's make this configurable.  If this is true, then you
+  // can't open multiple different windows with the same GSG, but you
+  // may have more luck opening different windows with different
+  // GSG's.
+  bool discard_device = ConfigVariableBool("always-discard-device", true);
 
   // GSG creation/initialization.
   if (_gsg == 0) {

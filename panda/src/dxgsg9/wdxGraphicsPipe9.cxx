@@ -418,6 +418,10 @@ bool wdxGraphicsPipe9::
 find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
                        bool bForce16bpp, bool bVerboseMode) const {
+  if (dxgsg9_cat.is_debug()) {
+    bVerboseMode = true;
+  }
+
   // list fmts in order of preference
 #define NUM_TEST_ZFMTS 3
   static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16};
@@ -544,6 +548,9 @@ search_for_valid_displaymode(DXScreenData &scrn,
                              D3DFORMAT *pSuggestedPixFmt,
                              bool bForce16bppZBuffer,
                              bool bVerboseMode) {
+  if (dxgsg9_cat.is_debug()) {
+    bVerboseMode = true;
+  }
 
   assert(IS_VALID_PTR(scrn._d3d9));
 
@@ -590,7 +597,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
        (scrn._max_available_video_memory != UNKNOWN_VIDMEM_SIZE) &&
        (!special_check_fullscreen_resolution(scrn, RequestedX_Size, RequestedY_Size)));
 
-    if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
+    if (bVerboseMode) {
       wdxdisplay9_cat.info()
         << "DoMemBasedChecks = " << bDoMemBasedChecks << endl;
     }
@@ -674,7 +681,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
           ((float)RequestedX_Size) * ((float)RequestedY_Size) *
           bytes_per_pixel * 2 + REQD_TEXMEM;
 
-        if (bVerboseMode || wdxdisplay9_cat.is_spam())
+        if (bVerboseMode)
           wdxdisplay9_cat.info()
             << "Testing Mode (" <<RequestedX_Size<<"x" << RequestedY_Size
             << ", " << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "
@@ -682,7 +689,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
             << scrn._max_available_video_memory << endl;
 
         if (RendTgtMinMemReqmt > scrn._max_available_video_memory) {
-          if (bVerboseMode || wdxdisplay9_cat.is_debug())
+          if (bVerboseMode)
             wdxdisplay9_cat.info()
               << "not enough VidMem for render tgt, skipping display fmt "
               << D3DFormatStr(dispmode.Format) << " ("
@@ -707,7 +714,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
           float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
           float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedX_Size)*((float)RequestedY_Size)*zbytes_per_pixel;
 
-          if (bVerboseMode || wdxdisplay9_cat.is_spam())
+          if (bVerboseMode)
             wdxdisplay9_cat.info()
               << "Testing Mode w/Z (" << RequestedX_Size << "x"
               << RequestedY_Size << ", " << D3DFormatStr(dispmode.Format)
@@ -715,7 +722,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
               << scrn._max_available_video_memory << endl;
 
           if (MinMemReqmt > scrn._max_available_video_memory) {
-            if (bVerboseMode || wdxdisplay9_cat.is_debug())
+            if (bVerboseMode)
               wdxdisplay9_cat.info()
                 << "not enough VidMem for RendTgt+zbuf, skipping display fmt "
                 << D3DFormatStr(dispmode.Format) << " (" << (int)MinMemReqmt
@@ -750,7 +757,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
         }
       }
 
-      if (bVerboseMode || wdxdisplay9_cat.is_spam())
+      if (bVerboseMode)
         wdxdisplay9_cat.info()
           << "Validated Mode (" << RequestedX_Size << "x"
           << RequestedY_Size << ", " << D3DFormatStr(dispmode.Format) << endl;
@@ -797,7 +804,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
       *pSuggestedPixFmt = D3DFMT_A2R10G10B10;
     }
 
-    if (bVerboseMode || wdxdisplay9_cat.is_spam()) {
+    if (bVerboseMode) {
       wdxdisplay9_cat.info()
         << "search_for_valid_device returns fmt: "
         << D3DFormatStr(*pSuggestedPixFmt) << endl;
