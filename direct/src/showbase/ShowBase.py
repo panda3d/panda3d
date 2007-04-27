@@ -500,7 +500,7 @@ class ShowBase(DirectObject.DirectObject):
         # Set up a 3-d camera for the window by default.
         if makeCamera:
             self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
-                            stereo = stereo)
+                            stereo = stereo, keepCam = makeCamera)
 
         return win
 
@@ -538,6 +538,13 @@ class ShowBase(DirectObject.DirectObject):
         # Now we can actually close the window.
         self.graphicsEngine.removeWindow(win)
         self.winList.remove(win)
+
+        messenger.send('close_window', [win])
+
+        if not self.winList:
+            # Give the window(s) a chance to actually close before we
+            # continue.
+            base.graphicsEngine.renderFrame()
 
         if win == self.win:
             self.win = None
@@ -874,7 +881,8 @@ class ShowBase(DirectObject.DirectObject):
     def makeCamera(self, win, sort = 0, scene = None,
                    displayRegion = (0, 1, 0, 1), stereo = None,
                    aspectRatio = None, clearDepth = 0, clearColor = None,
-                   lens = None, camName = 'cam', mask = None):
+                   lens = None, camName = 'cam', mask = None,
+                   keepCam = None):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
@@ -883,17 +891,38 @@ class ShowBase(DirectObject.DirectObject):
         pair of DisplayRegions.  If stereo is False, then a standard
         camera is created.  If stereo is None or omitted, a stereo
         camera is created if the window says it can render in stereo.
+
+        If keepCam is a NodePath, that is used as the camera to apply
+        to the window, rather than creating a new camera.
         """
-        # First, make a new Camera node.
-        camNode = Camera(camName)
-        if lens == None:
-            lens = PerspectiveLens()
+        # self.camera is the parent node of all cameras: a node that
+        # we can move around to move all cameras as a group.
+        if self.camera == None:
+            self.camera = self.render.attachNewNode('camera')
+            __builtin__.camera = self.camera
 
-            if aspectRatio == None:
-                aspectRatio = self.getAspectRatio(win)
-            lens.setAspectRatio(aspectRatio)
+        if isinstance(keepCam, NodePath):
+            # Use the existing camera node.
+            cam = keepCam
+            camNode = keepCam.node()
+            assert(isinstance(camNode, Camera))
+            lens = camNode.getLens()
+            cam.reparentTo(self.camera)
 
-        camNode.setLens(lens)
+        else:
+            # Make a new Camera node.
+            camNode = Camera(camName)
+            if lens == None:
+                lens = PerspectiveLens()
+
+                if aspectRatio == None:
+                    aspectRatio = self.getAspectRatio(win)
+                lens.setAspectRatio(aspectRatio)
+
+            cam = self.camera.attachNewNode(camNode)
+
+        if lens != None:
+            camNode.setLens(lens)
 
         if scene != None:
             camNode.setScene(scene)
@@ -902,14 +931,6 @@ class ShowBase(DirectObject.DirectObject):
             if (isinstance(mask, int)):
                 mask = BitMask32(mask)
             camNode.setCameraMask(mask)
-
-        # self.camera is the parent node of all cameras: a node that
-        # we can move around to move all cameras as a group.
-        if self.camera == None:
-            self.camera = self.render.attachNewNode('camera')
-            __builtin__.camera = self.camera
-
-        cam = self.camera.attachNewNode(camNode)
 
         if self.cam == None:
             self.cam = cam
