@@ -51,6 +51,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyList_Append(...);
   EXPCL_DTOOLCONFIG int PyList_AsTuple(...);
   EXPCL_DTOOLCONFIG int PyList_New(...);
+  EXPCL_DTOOLCONFIG int PyLong_AsLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLongLong(...);
@@ -141,6 +142,7 @@ int PyInt_Type(...) { return 0; }
 int PyList_Append(...) { return 0; }
 int PyList_AsTuple(...) { return 0; }
 int PyList_New(...) { return 0; }
+int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
