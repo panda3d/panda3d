@@ -258,6 +258,11 @@ CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
 ~CLP(GraphicsStateGuardian)() {
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "GLGraphicsStateGuardian " << this << " destructing\n";
+  }
+
   close_gsg();
 
   if (_stencil_render_states) {

@@ -1992,6 +1992,10 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 close_gsg() {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << this << " close_gsg " << get_type() << "\n";
+  }
   _closing_gsg = true;
   free_pointers();
 

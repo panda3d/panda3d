@@ -96,6 +96,11 @@ DXGraphicsStateGuardian9::
 DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
   GraphicsStateGuardian(CS_yup_left, pipe)
 {
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "DXGraphicsStateGuardian9 " << this << " constructing\n";
+  }
+
   _screen = NULL;
   _d3d_device = NULL;
 
@@ -159,8 +164,10 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian9::
 ~DXGraphicsStateGuardian9() {
-  dxgsg9_cat.debug()
-    << "DXGraphicsStateGuardian9 " << this << " destructing\n";
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "DXGraphicsStateGuardian9 " << this << " destructing\n";
+  }
 
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
@@ -4056,6 +4063,12 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 void DXGraphicsStateGuardian9::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
+
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "Closing GSG, prepared_objects count = " 
+      << _prepared_objects->get_ref_count() << "\n";
+  }
 
   // Unlike in OpenGL, in DX9 it is safe to try to explicitly release
   // any textures here.  And it may even be a good idea.
