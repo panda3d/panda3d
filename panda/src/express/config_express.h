@@ -43,6 +43,7 @@
 
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
+NotifyCategoryDecl(clock, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 
 // Actually, we can't determine this config variable the normal way,
 // because we must be able to access it at static init time.  Instead

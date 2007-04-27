@@ -36,6 +36,7 @@
 
 ConfigureDef(config_express);
 NotifyCategoryDef(express, "");
+NotifyCategoryDef(clock, ":express");
 
 ConfigureFn(config_express) {
   init_libexpress();

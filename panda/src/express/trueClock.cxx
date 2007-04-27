@@ -164,7 +164,7 @@ TrueClock() {
       (QueryPerformanceFrequency((LARGE_INTEGER *)&int_frequency) != 0);
     if (_has_high_res) {
       if (int_frequency <= 0) {
-        express_cat.error()
+        clock_cat.error()
           << "TrueClock::get_real_time() - frequency is negative!" << endl;
         _has_high_res = false;
 
@@ -197,11 +197,11 @@ TrueClock() {
   }
 
   if (!_has_high_res) {
-    express_cat.warning()
+    clock_cat.warning()
       << "No high resolution clock available." << endl;
 
   } else if (_paranoid_clock) {
-    express_cat.info()
+    clock_cat.info()
       << "Not trusting the high resolution clock." << endl;
   }
 }
@@ -251,7 +251,7 @@ correct_time(double time) {
     // A step backward in the high-precision clock, or more than a
     // small jump on only one of the clocks, is cause for alarm.
 
-    express_cat.debug()
+    clock_cat.debug()
       << "Clock error detected; elapsed time " << time_delta
       << "s on high-resolution counter, and " << tod_delta
       << "s on time-of-day clock.\n";
@@ -310,7 +310,7 @@ correct_time(double time) {
     double corrected_tod = tod + _tod_offset;
     if (corrected_time - corrected_tod > paranoid_clock_jump_error_max_delta &&
         _time_scale > 0.00001) {
-      express_cat.info()
+      clock_cat.info()
         << "Force-adjusting time_scale to catch up to errors.\n";
       set_time_scale(time, _time_scale * 0.5);
     }
@@ -357,8 +357,8 @@ correct_time(double time) {
         // Actually report it a little bit later, to give the time
         // scale a chance to settle down.
         _report_time_scale_time = tod + _tod_offset + keep_interval;
-        if (express_cat.is_debug()) {
-          express_cat.debug()
+        if (clock_cat.is_debug()) {
+          clock_cat.debug()
             << "Will report time scale, now " << 100.0 / _time_scale
             << "%, tod_age = " << tod_age << ", time_age = " << time_age
             << ", ratio = " << ratio << "\n";
@@ -385,7 +385,7 @@ correct_time(double time) {
     double percent = 100.0 / _time_scale;
     // Round percent to the nearest 5% to reduce confusion in the logs.
     percent = floor(percent / 20.0 + 0.5) * 20.0;
-    express_cat.info()
+    clock_cat.info()
       << "Clock appears to be running at " << percent << "% real time.\n";
     _last_reported_time_scale = _time_scale;
     _time_scale_changed = false;
@@ -411,8 +411,8 @@ correct_time(double time) {
     if (corrected_time < corrected_tod) {
       // We caught up.
       _chase_clock = CC_keep_even;
-      if (express_cat.is_debug()) {
-        express_cat.debug()
+      if (clock_cat.is_debug()) {
+        clock_cat.debug()
           << "Clock back down to real time.\n";
         // Let's report the clock error now, so an app can resync now
         // that we're at a good time.
@@ -433,8 +433,8 @@ correct_time(double time) {
       // Oops, we're dropping behind; need to speed up.
       _chase_clock = CC_speed_up;
 
-      if (express_cat.is_debug()) {
-        express_cat.debug()
+      if (clock_cat.is_debug()) {
+        clock_cat.debug()
           << "Clock is behind by " << (corrected_tod - corrected_time)
           << "s; speeding up to correct.\n";
       }
@@ -442,8 +442,8 @@ correct_time(double time) {
       // Oops, we're going too fast; need to slow down.
       _chase_clock = CC_slow_down;
 
-      if (express_cat.is_debug()) {
-        express_cat.debug()
+      if (clock_cat.is_debug()) {
+        clock_cat.debug()
           << "Clock is ahead by " << (corrected_time - corrected_tod)
           << "s; slowing down to correct.\n";
       }
@@ -454,8 +454,8 @@ correct_time(double time) {
     if (corrected_time > corrected_tod) {
       // We caught up.
       _chase_clock = CC_keep_even;
-      if (express_cat.is_debug()) {
-        express_cat.debug()
+      if (clock_cat.is_debug()) {
+        clock_cat.debug()
           << "Clock back up to real time.\n";
         // Let's report the clock error now, so an app can resync now
         // that we're at a good time.
@@ -472,8 +472,8 @@ correct_time(double time) {
     break;
   }
   
-  if (express_cat.is_spam()) {
-    express_cat.spam()
+  if (clock_cat.is_spam()) {
+    clock_cat.spam()
       << "time " << time << " tod " << corrected_tod
       << " corrected time " << corrected_time << "\n";
   }
