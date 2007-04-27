@@ -436,7 +436,8 @@ class ShowBase(DirectObject.DirectObject):
 
     def openWindow(self, props = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
-                   makeCamera = 1, scene = None, stereo = None, rawmice = 0):
+                   makeCamera = 1, keepCamera = 0,
+                   scene = None, stereo = None, rawmice = 0):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -451,6 +452,19 @@ class ShowBase(DirectObject.DirectObject):
             if pipe == None:
                 # We couldn't get a pipe.
                 return None
+
+        if isinstance(gsg, GraphicsOutput):
+            # If the gsg is a window or buffer, it means to use the
+            # GSG from that buffer.
+            gsg = gsg.getGsg()
+            
+        # If we are using DirectX, force a new GSG to be created,
+        # since at the moment DirectX seems to misbehave if we do
+        # not do this.  This will cause a delay while all textures
+        # etc. are reloaded, so we should revisit this later if we
+        # can fix the underlying bug in our DirectX support.
+        if pipe.getType().getName().startswith('wdx'):
+            gsg = None
 
         if type == None:
             type = self.windowType
@@ -492,19 +506,28 @@ class ShowBase(DirectObject.DirectObject):
         if hasattr(win, "requestProperties"):
             win.requestProperties(props)
 
+        mainWindow = False
         if self.win == None:
+            mainWindow = True
             self.win = win
 
         self.winList.append(win)
 
         # Set up a 3-d camera for the window by default.
-        if makeCamera:
+        if keepCamera:
             self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
-                            stereo = stereo, keepCam = makeCamera)
+                            stereo = stereo, useCamera = base.cam)
+        elif makeCamera:
+            self.makeCamera(win, scene = scene, aspectRatio = aspectRatio,
+                            stereo = stereo)
+
+        messenger.send('open_window', [win, mainWindow])
+        if mainWindow:
+            messenger.send('open_main_window')
 
         return win
 
-    def closeWindow(self, win):
+    def closeWindow(self, win, keepCamera = 0):
         """
         Closes the indicated window and removes it from the list of
         windows.  If it is the main window, clears the main window
@@ -519,7 +542,9 @@ class ShowBase(DirectObject.DirectObject):
             
             dr.setCamera(NodePath())
 
-            if not cam.isEmpty() and cam.node().getNumDisplayRegions() == 0:
+            if not cam.isEmpty() and \
+               cam.node().getNumDisplayRegions() == 0 and \
+               not keepCamera:
                 # If the camera is used by no other DisplayRegions,
                 # remove it.
                 if self.camList.count(cam) != 0:
@@ -539,18 +564,22 @@ class ShowBase(DirectObject.DirectObject):
         self.graphicsEngine.removeWindow(win)
         self.winList.remove(win)
 
-        messenger.send('close_window', [win])
+        mainWindow = False
+        if win == self.win:
+            mainWindow = True
+            self.win = None
+            if self.frameRateMeter:
+                self.frameRateMeter.clearWindow()
+                self.frameRateMeter = None
+
+        messenger.send('close_window', [win, mainWindow])
+        if mainWindow:
+            messenger.send('close_main_window')
 
         if not self.winList:
             # Give the window(s) a chance to actually close before we
             # continue.
             base.graphicsEngine.renderFrame()
-
-        if win == self.win:
-            self.win = None
-            if self.frameRateMeter:
-                self.frameRateMeter.clearWindow()
-                self.frameRateMeter = None
 
     def openDefaultWindow(self, *args, **kw):
         # Creates the main window for the first time, without being
@@ -567,6 +596,13 @@ class ShowBase(DirectObject.DirectObject):
         startDirect = kw.get('startDirect', True)
         if 'startDirect' in kw:
             del kw['startDirect']
+
+        if self.win:
+            # If we've already opened a window before, this does
+            # little more work than openMainWindow() alone.
+            self.openMainWindow(*args, **kw)
+            self.graphicsEngine.openWindows()
+            return
             
         self.openMainWindow(*args, **kw)
 
@@ -597,6 +633,13 @@ class ShowBase(DirectObject.DirectObject):
                 # error not to open a window.
                 raise StandardError, 'Could not open window.'
 
+        # The default is trackball mode, which is more convenient for
+        # ad-hoc development in Python using ShowBase.  Applications
+        # can explicitly call base.useDrive() if they prefer a drive
+        # interface.
+        self.mouseInterface = self.trackball
+        self.useTrackball()
+
         if startDirect:
             self.__doStartDirect()
 
@@ -619,6 +662,8 @@ class ShowBase(DirectObject.DirectObject):
         which case base.win may be either None, or the previous,
         closed window).
         """
+        keepCamera = kw.get('keepCamera', 0)
+        
         success = 1
         oldWin = self.win
         oldLens = self.camLens
@@ -630,8 +675,8 @@ class ShowBase(DirectObject.DirectObject):
             oldClearDepthActive = self.win.getClearDepthActive()
             oldClearDepth = self.win.getClearDepth()
             oldClearStencilActive = self.win.getClearStencilActive()
-            oldClearStencil = self.win.getClearStencil()            
-            self.closeWindow(self.win)
+            oldClearStencil = self.win.getClearStencil()
+            self.closeWindow(self.win, keepCamera = keepCamera)
 
         # Open a new window.
         self.openWindow(*args, **kw)
@@ -882,7 +927,7 @@ class ShowBase(DirectObject.DirectObject):
                    displayRegion = (0, 1, 0, 1), stereo = None,
                    aspectRatio = None, clearDepth = 0, clearColor = None,
                    lens = None, camName = 'cam', mask = None,
-                   keepCam = None):
+                   useCamera = None):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
@@ -892,8 +937,9 @@ class ShowBase(DirectObject.DirectObject):
         camera is created.  If stereo is None or omitted, a stereo
         camera is created if the window says it can render in stereo.
 
-        If keepCam is a NodePath, that is used as the camera to apply
-        to the window, rather than creating a new camera.
+        If useCamera is not None, it is a NodePath to be used as the
+        camera to apply to the window, rather than creating a new
+        camera.
         """
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
@@ -901,10 +947,10 @@ class ShowBase(DirectObject.DirectObject):
             self.camera = self.render.attachNewNode('camera')
             __builtin__.camera = self.camera
 
-        if isinstance(keepCam, NodePath):
+        if useCamera:
             # Use the existing camera node.
-            cam = keepCam
-            camNode = keepCam.node()
+            cam = useCamera
+            camNode = useCamera.node()
             assert(isinstance(camNode, Camera))
             lens = camNode.getLens()
             cam.reparentTo(self.camera)
@@ -1129,13 +1175,6 @@ class ShowBase(DirectObject.DirectObject):
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
         self.mouse2cam.node().setNode(self.camera.node())
-
-        # The default is trackball mode, which is more convenient for
-        # ad-hoc development in Python using ShowBase.  Applications
-        # can explicitly call base.useDrive() if they prefer a drive
-        # interface.
-        self.mouseInterface = self.trackball
-        self.useTrackball()
 
         # A special ButtonThrower to generate keyboard events and
         # include the time from the OS.  This is separate only to
