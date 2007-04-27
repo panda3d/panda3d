@@ -691,7 +691,7 @@ pack_object(PyObject *object) {
   if (PyInt_Check(object)) {
   #else
   if (PyLong_Check(object)) {
-    pack_int(PyLong_AsUnsignedLong(object));
+    pack_uint(PyLong_AsUnsignedLong(object));
   } else if (PyInt_Check(object)) {
   #endif
     pack_int(PyInt_AS_LONG(object));
