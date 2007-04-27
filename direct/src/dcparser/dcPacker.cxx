@@ -686,12 +686,73 @@ unpack_skip() {
 void DCPacker::
 pack_object(PyObject *object) {
   nassertv(_mode == M_pack || _mode == M_repack);
+  DCPackType pack_type = get_pack_type();
 
+  // had to add this for basic 64 and unsigned data to get packed right ..
+  // Not sure if we can just do the rest this way..
+
+ switch(pack_type)
+  {
+  case PT_int64:
+      if(PyLong_Check(object))
+      {
+            pack_int64(PyLong_AsLongLong(object));
+            return;
+      }
+      else if (PyInt_Check(object))
+      {
+            pack_int64(PyInt_AsLong(object));
+            return;
+      }
+      break;
+  case PT_uint64:
+      if(PyLong_Check(object))
+      {
+            pack_uint64(PyLong_AsUnsignedLongLong(object));
+            return;
+      }
+      else if(PyInt_Check(object))
+      {
+            PyObject  *obj1 = PyNumber_Long(object);
+            pack_int(PyLong_AsUnsignedLongLong(obj1));
+            Py_DECREF(obj1);
+            return;
+      }
+      break;
+  case PT_int:
+      if(PyLong_Check(object))
+      {
+            pack_int(PyLong_AsLong(object));
+            return;
+      }
+      else if (PyInt_Check(object))
+      {
+            pack_int(PyInt_AsLong(object));
+            return;
+      }
+      break;
+  case PT_uint:
+      if(PyLong_Check(object))
+      {
+            pack_uint(PyLong_AsUnsignedLong(object));
+            return;
+      }
+      else if (PyInt_Check(object))
+      {
+            PyObject  *obj1 = PyNumber_Long(object);
+            pack_uint(PyLong_AsUnsignedLong(obj1));
+            Py_DECREF(obj1);
+            return;
+      }
+      break;
+  default:
+      break;
+  }
   #ifdef USE_PYTHON_2_2_OR_EARLIER
   if (PyInt_Check(object)) {
   #else
   if (PyLong_Check(object)) {
-    pack_uint(PyLong_AsUnsignedLong(object));
+    pack_int(PyLong_AsLong(object));
   } else if (PyInt_Check(object)) {
   #endif
     pack_int(PyInt_AS_LONG(object));
