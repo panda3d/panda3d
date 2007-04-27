@@ -118,8 +118,10 @@ class MotionTrail(NodePath, DirectObject):
         self.cmotion_trail.setGeomNode (self.geom_node)
 
         self.modified_vertices = True
-
-        self.use_python_version = False
+        if base.config.GetBool('want-python-motion-trails', 0):
+            self.use_python_version = True
+        else:
+            self.use_python_version = False
         
         return
 
