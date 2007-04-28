@@ -86,7 +86,7 @@ class Transitions:
         Returns an interval without starting it.  This is particularly useful in
         cutscenes, so when the cutsceneIval is escaped out of we can finish the fade immediately
         """
-        self.noTransitions()        
+        #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
         transitionIval = Sequence(Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
@@ -126,6 +126,7 @@ class Transitions:
         """
         if (t == 0):
             # Fade in immediately with no lerp
+            #print "transitiosn: fadeIn 0.0"
             self.noTransitions()
             self.loadFade()
             self.fade.detachNode()
@@ -165,6 +166,7 @@ class Transitions:
         to darken out the world. Useful for drawing attention to
         a dialog box for instance
         """
+        #print "transitiosn: fadeScreen"
         self.noTransitions()
         self.loadFade()
         self.fade.reparentTo(render2d, FADE_SORT_INDEX)
@@ -179,6 +181,7 @@ class Transitions:
         to darken out the world. Useful for drawing attention to
         a dialog box for instance
         """
+        #print "transitiosn: fadeScreenColor"
         self.noTransitions()
         self.loadFade()
         self.fade.reparentTo(render2d, FADE_SORT_INDEX)
@@ -188,6 +191,7 @@ class Transitions:
         """
         Removes any current fade tasks and parents the fade polygon away
         """
+        #print "transitiosn: noFade"
         if self.transitionIval:
             self.transitionIval.pause()
             self.transitionIval = None
