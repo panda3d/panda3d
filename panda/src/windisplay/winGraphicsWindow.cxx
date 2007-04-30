@@ -402,13 +402,17 @@ open_window() {
     new_foreground_window = old_foreground_window;
   }
 
-  if (!SetActiveWindow(new_foreground_window))
-  {
+  if (!SetActiveWindow(new_foreground_window)) {
+    windisplay_cat.warning()
+      << "SetActiveWindow() failed!\n";
+  }
+
+  // Let's aggressively call SetForegroundWindow() in addition to
+  // SetActiveWindow().  It seems to work in some cases to make the
+  // window come to the top, where SetActiveWindow doesn't work.
+  if (!SetForegroundWindow(new_foreground_window)) {
     windisplay_cat.warning()
       << "SetForegroundWindow() failed!\n";
-  }
-  else
-  {
   }
 
   // Determine the initial open status of the IME.
@@ -799,17 +803,10 @@ open_fullscreen_window()
   // up the desktop during the mode change
   const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
-
-
-
   
   _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style,
                        0, 0, dwWidth, dwHeight, 
                        hDesktopWindow, NULL, hinstance, 0);
-
-
-
-
   if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
