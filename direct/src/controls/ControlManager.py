@@ -193,7 +193,6 @@ class ControlManager:
         if self.currentControls:
             self.currentControls.setCollisionsActive(1)
             
-
     def collisionsOff(self):
         assert self.notify.debugCall(id(self))
         if self.currentControls:
@@ -201,7 +200,8 @@ class ControlManager:
 
     def placeOnFloor(self):
         assert self.notify.debugCall(id(self))
-        self.currentControls.placeOnFloor()
+        if self.currentControls:
+            self.currentControls.placeOnFloor()
 
     def enable(self):
         assert self.notify.debugCall(id(self))
