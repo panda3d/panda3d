@@ -16,7 +16,7 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "dtool_config.h"
+/*#include "dtool_config.h"*/
 #include "dtoolbase.h"
 
 #ifndef HAVE_GETOPT
@@ -44,13 +44,21 @@ char **params = NULL;
 char *logfile_name = NULL;
 int logfile_fd = -1;
 int stop_on_terminate = 0;
+int stop_always = 0;
 char *respawn_script = NULL;
 int respawn_count_time = 0;
+
+/* If requested, delay these many seconds between restart attempts */
+int respawn_delay_time = 5;
+
 
 /* We shouldn't respawn more than (spam_respawn_count - 1) times over
    spam_respawn_time seconds. */
 int spam_respawn_count = 5;
-int spam_respawn_time = 30;
+int spam_respawn_time = 60;
+int spam_restart_delay_time = 600;  /* Optionally, do not exit if we spam too much; simply sleep for this many seconds*/
+
+
 
 pid_t child_pid = 0;
 
@@ -228,6 +236,11 @@ sigterm_handler() {
   exit(1);
 }
 
+void 
+sigalarm_handler() {
+  fprintf(stderr, "sleep epoch was complete.\n");
+}
+
 void
 do_autorestart() {
   char time_buffer[TIME_BUFFER_SIZE];
@@ -277,6 +290,10 @@ do_autorestart() {
     if (respawn_script != NULL) {
       invoke_respawn_script(now);
     }
+    
+    if (respawn_delay_time) {
+      sleep(respawn_delay_time);
+    }
 
     /* Make sure we're not respawning too fast. */
     if (spam_respawn_count > 1) {
@@ -286,11 +303,22 @@ do_autorestart() {
         num_sri++;
       } else {
         time_t last = spam_respawn[(sri + 1) % spam_respawn_count];
-        if (now - last < spam_respawn_time) {
+        if (now - last < spam_respawn_time && !spam_restart_delay_time) {
           fprintf(stderr, "respawning too fast, giving up.\n");
           break;
+        } else {
+          fprintf(stderr, "respawning too fast, will sleep for %d seconds.\n", spam_restart_delay_time);
+          signal (SIGALRM, sigalarm_handler);
+          alarm(spam_restart_delay_time);
+          pause();
+          signal (SIGALRM, SIG_IGN);
         }
       }
+    }
+    
+    if (stop_always) {
+      fprintf(stderr, "instructed to not autorestart, exiting.\n");
+      break;
     }
       
     strftime(time_buffer, TIME_BUFFER_SIZE, "%T on %A, %d %b %Y", localtime(&now));
@@ -383,6 +411,12 @@ help() {
           "     Route stdout and stderr from the child process into the indicated\n"
           "     log file.\n\n"
 
+
+          "  -n\n"
+          "     Do not attempt to restart the process under any circumstance.\n"
+          "     The program can still be used to execute a script on abnormal\n"
+          "     process termination.\n\n"
+
           "  -t\n"
           "     Stop on terminate: don't restart if the child process exits\n"
           "     normally or is killed with a SIGTERM.  With this flag, the\n"
@@ -391,12 +425,12 @@ help() {
           "     than SIGTERM.  Without this flag, the default behavior is to\n"
           "     restarted the child process if it exits for any reason.\n\n"
 
-          "  -r count,secs\n"
-          "     Give up if the process respawns 'count' times within 'secs'\n"
-          "     seconds.  This is designed to prevent respawning from using\n"
-          "     too many system resources if something is wrong with the child\n"
-          "     process.  The default value is %d,%d.  Use -r 0,0 to disable\n"
-          "     this feature.\n\n"
+          "  -r count,secs,sleep\n"
+          "     Sleep 'sleep' seconds if the process respawns 'count' times\n"
+          "     within 'secs' seconds.  This is designed to prevent respawning\n"
+          "     from using too many system resources if something is wrong with\n"
+          "     the child process.  The default value is %d,%d,%d. Use -r 0,0,0\n"
+          "     to disable this feature.\n\n"
 
           "  -s \"command\"\n"
           "     Run the indicated command or script each time the process is\n"
@@ -411,22 +445,38 @@ help() {
           "     for the purposes of passing an argument to the script named with\n"
           "     -s.\n\n"
 
+          "  -d secs\n"
+          "     Specifies the number of seconds to delay for between restarts.\n"
+          "     The default is %d.\n\n"
+
           "  -h\n"
           "     Output this help information.\n\n",
-          spam_respawn_count, spam_respawn_time);
+          spam_respawn_count, spam_respawn_time, spam_restart_delay_time, respawn_delay_time);
 }
 
 void
-parse_int_pair(char *param, int *a, int *b) {
-  char *comma = strchr(param, ',');
+parse_int_triplet(char *param, int *a, int *b, int *c) {
+  char *comma;
+  char *comma2;
+  
+  comma = strchr(param, ',');
   if (comma == NULL) {
     fprintf(stderr, "Comma required: %s\n", param);
     exit(1);
   }
 
+  comma2 = strchr(comma+1, ',');
+  if (comma2 == NULL) {
+    fprintf(stderr, "Second comma required: %s\n", param);
+    exit(1);
+  }
+
   *comma = '\0';
+  *comma2 = '\0';
+  
   *a = atoi(param);
   *b = atoi(comma + 1);
+  *c = atoi(comma2 + 1);
 }
 
 int 
@@ -434,7 +484,7 @@ main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   /* The initial '+' instructs GNU getopt not to reorder switches. */
-  static const char *optflags = "+l:tr:s:c:h";
+  static const char *optflags = "+l:ntr:s:c:d:wh";
   int flag;
 
   flag = getopt(argc, argv, optflags);
@@ -444,12 +494,20 @@ main(int argc, char *argv[]) {
       logfile_name = optarg;
       break;
 
+    case 'n':
+      stop_always = 1;
+      break;
+
     case 't':
       stop_on_terminate = 1;
       break;
 
     case 'r':
-      parse_int_pair(optarg, &spam_respawn_count, &spam_respawn_time);
+      parse_int_triplet(optarg, &spam_respawn_count, &spam_respawn_time, &spam_restart_delay_time);
+      break;
+
+    case 'w':
+      spam_restart_delay_time = atoi(optarg);
       break;
 
     case 's':
@@ -458,6 +516,10 @@ main(int argc, char *argv[]) {
 
     case 'c':
       respawn_count_time = atoi(optarg);
+      break;
+
+    case 'd':
+      respawn_delay_time = atoi(optarg);
       break;
 
     case 'h':
