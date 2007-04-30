@@ -275,7 +275,8 @@ open_window() {
   // can't open multiple different windows with the same GSG, but you
   // may have more luck opening different windows with different
   // GSG's.
-  bool discard_device = ConfigVariableBool("always-discard-device", true);
+  static ConfigVariableBool always_discard_device("always-discard-device", true);
+  bool discard_device = always_discard_device;
 
   // GSG creation/initialization.
   if (_gsg == 0) {
