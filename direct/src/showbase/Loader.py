@@ -188,7 +188,7 @@ class Loader(DirectObject):
 
         return self.loadModel(modelPath, noCache = False)
 
-    def loadModelCopy(self, modelPath):
+    def loadModelCopy(self, modelPath, loaderOptions = None):
         """loadModelCopy(self, string)
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
@@ -196,7 +196,7 @@ class Loader(DirectObject):
         """
         Loader.notify.debug("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
 
-        return self.loadModel(modelPath, noCache = False)
+        return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
     def loadModelNode(self, modelPath):
         """

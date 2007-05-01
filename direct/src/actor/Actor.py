@@ -569,16 +569,6 @@ class Actor(DirectObject, NodePath):
         sortedKeys.sort()
         index = sortedKeys.index(lodName)
         self.__LODNode.node().forceSwitch(index)
-##         self.resetLOD()
-##         # store the data in the switches for later use
-##         sortedKeys = self.switches.keys()
-##         for eachLod in sortedKeys:
-##             index = sortedKeys.index(eachLod)
-##             # set the switches to not display ever
-##             self.__LODNode.node().setSwitch(index, 0, 10000)
-##         # turn the given LOD on 'always'
-##         index = sortedKeys.index(lodName)
-##         self.__LODNode.node().setSwitch(index, 10000, 0)
 
     def printLOD(self):
         sortedKeys = self.switches.keys()
