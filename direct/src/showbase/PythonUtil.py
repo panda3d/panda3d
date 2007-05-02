@@ -2786,20 +2786,23 @@ class HotkeyBreaker:
         if __dev__:
             self.breakKeys[breakKey] = True
 
-    def setBreakPt(self,breakKeys = []):
+    def setBreakPt(self, breakKey = None, persistent = False):
         if __dev__:
-            if not breakKeys:
+            if not breakKey:
                 import pdb;pdb.set_trace()
-                return
+                return True
             else:
-                if not isinstance(breakKeys, (list,tuple)):
-                    keys = (breakKeys,)
-                else:
-                    keys = tuple(breakKeys)
-                for key in keys:
-                    if self.breakKeys.pop(key,False):
-                        import pdb;pdb.set_trace()
-                        return
+                if self.breakKeys.get(breakKey,False):
+                    if not persistent:
+                        self.breakKeys.pop(breakKey)
+                    import pdb;pdb.set_trace()
+                    return True
+        return True
+
+    def clearBreakPt(self, breakKey):
+        if __dev__:
+            return bool(self.breakKeys.pop(breakKey,None))
+
 def nullGen():
     # generator that ends immediately
     if False:
