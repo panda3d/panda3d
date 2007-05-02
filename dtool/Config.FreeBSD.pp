@@ -20,7 +20,7 @@
 // *******************************************************************
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const
+#define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
