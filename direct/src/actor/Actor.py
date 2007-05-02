@@ -626,11 +626,14 @@ class Actor(DirectObject, NodePath):
         Get the named node under the LOD to which we parent all LOD
         specific geometry to. Returns 'None' if not found
         """
-        lod = self.__LODNode.find("**/" + str(lodName))
-        if lod.isEmpty():
-            return None
+        if self.__LODNode:
+            lod = self.__LODNode.find("**/" + str(lodName))
+            if lod.isEmpty():
+                return None
+            else:
+                return lod
         else:
-            return lod
+            return None
 
     def hasLOD(self):
         """
@@ -1377,12 +1380,40 @@ class Actor(DirectObject, NodePath):
         for control in self.getAnimControls(animName, partName, lodName):
             control.getPart().setControlEffect(control, effect)
 
-    def getAnimControl(self, animName, partName="modelRoot", lodName="lodRoot"):
-        """getAnimControl(self, string, string, string="lodRoot")
-        Search the animControl dictionary indicated by lodName for
-        a given anim and part. Return the animControl if present,
-        or None otherwise
+    def getAnimFilename(self, animName, partName='modelRoot'):
         """
+        getAnimFilename(self, animName)
+        return the animFilename given the animName
+        """
+        if self.switches:
+            lodName = str(self.switches.keys()[0])
+        else:
+            lodName = 'lodRoot'
+
+        try:
+            return self.__animControlDict[lodName][partName][animName].filename
+        except:
+            return None
+
+    def getAnimControl(self, animName, partName=None, lodName=None):
+        """
+        getAnimControl(self, string, string, string="lodRoot")
+        Search the animControl dictionary indicated by lodName for
+        a given anim and part. If none specified, try the first part and lod.
+        Return the animControl if present, or None otherwise
+        """
+        if not partName:
+            if self.__subpartDict.keys():
+                partName = self.__subpartDict.keys()[0]
+            else:
+                partName = 'modelRoot'
+
+        if not lodName:
+            if self.switches:
+                lodName = str(self.switches.keys()[0])
+            else:
+                lodName = 'lodRoot'
+
         partDict = self.__animControlDict.get(lodName)
         # if this assertion fails, named lod was not present
         assert partDict != None
@@ -1697,18 +1728,34 @@ class Actor(DirectObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}
         """
+        if (lodName == 'all'):
+            lodNames = self.switches.keys()
+            lodNames.sort()
+            for i in range(0,len(lodNames)):
+                lodNames[i] = str(lodNames[i])
+        else:
+            lodNames = [lodName]
+            
         assert Actor.notify.debug("in loadAnims: %s, part: %s, lod: %s" %
-                                  (anims, partName, lodName))
+                                  (anims, partName, lodNames[0]))
 
+        firstLoad = True
+        for lName in lodNames:
+            try:
+                self.__animControlDict[lName][partName]
+                firstLoad = False
+            except:
+                self.__animControlDict.setdefault(lName, {})
+                self.__animControlDict[lName].setdefault(partName, {})
         for animName, filename in anims.items():
             # make sure this lod is in anim control dict
-            self.__animControlDict.setdefault(lodName, {})
-            self.__animControlDict[lodName].setdefault(partName, {})
-
-            # store the file path only; we will bind it (and produce
-            # an AnimControl) when it is played
-            self.__animControlDict[lodName][partName][animName] = Actor.AnimDef(filename)
-
+            for lName in lodNames:
+                # store the file path only; we will bind it (and produce
+                # an AnimControl) when it is played
+                if not firstLoad:
+                    self.__animControlDict[lName][partName][animName].filename = filename
+                else:
+                    self.__animControlDict[lName][partName][animName] = Actor.AnimDef(filename)
 
     def unloadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
         """unloadAnims(self, string:string{}, string='modelRoot',
