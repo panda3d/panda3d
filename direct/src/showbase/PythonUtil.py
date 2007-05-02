@@ -2793,8 +2793,10 @@ class HotkeyBreaker:
                 return
             else:
                 if not isinstance(breakKeys, (list,tuple)):
-                    breakKeys = (breakKeys,)
-                for key in breakKeys:
+                    keys = (breakKeys,)
+                else:
+                    keys = tuple(breakKeys)
+                for key in keys:
                     if self.breakKeys.pop(key,False):
                         import pdb;pdb.set_trace()
                         return
