@@ -807,6 +807,7 @@ class ContainerLeakDetector(Job):
         # divide by two, since the first check just takes length measurements and
         # doesn't check for leaks
         self._nextCheckDelay = firstCheckDelay/2.
+        self._checkDelayScale = config.GetFloat('leak-detector-check-delay-scale', 1.5)
         self._pruneTaskPeriod = config.GetFloat('leak-detector-prune-period', 60. * 30.)
 
         # main dict of id(container)->containerRef
@@ -900,7 +901,7 @@ class ContainerLeakDetector(Job):
         # fib:    1   2    4    7   12   20    33    54    88    143    232
         # * 2.:   1   3    7   15   31   63   127   255   511   1023   2047
         # * 1.5:  1 2.5 4.75  8.1 13.2 20.8  32.2  49.3  74.9  113.3    171
-        self._nextCheckDelay = self._nextCheckDelay * 1.5
+        self._nextCheckDelay = self._nextCheckDelay * self._checkDelayScale
 
     def _checkForLeaks(self, task=None):
         self._index2delay[len(self._index2containerId2len)] = self._nextCheckDelay
