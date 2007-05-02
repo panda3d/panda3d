@@ -653,7 +653,9 @@ class CheckContainers(Job):
                     yield None
                     if objId in idx2id2len[self._index-1]:
                         diff = idx2id2len[self._index][objId] - idx2id2len[self._index-1][objId]
-                        if diff > 0:
+                        """
+                        # this check is too spammy
+                        if diff > 20:
                             if diff > idx2id2len[self._index-1][objId]:
                                 minutes = (self._leakDetector._index2delay[self._index] -
                                            self._leakDetector._index2delay[self._index-1]) / 60.
@@ -672,6 +674,7 @@ class CheckContainers(Job):
                                             name, itype(container), percent, minutes, idx2id2len[self._index][objId],
                                             fastRepr(container, maxLen=CheckContainers.ReprItems)))
                                     yield None
+                                    """
                         if (self._index > 2 and
                             objId in idx2id2len[self._index-2] and
                             objId in idx2id2len[self._index-3]):
