@@ -145,9 +145,12 @@ combine_with(PandaNode *other) {
   if (is_exact_type(get_class_type()) &&
       other->is_exact_type(get_class_type())) {
     // Two CollisionNodes can combine, but only if they have the same
-    // name, because the name is often meaningful.
+    // name, because the name is often meaningful, and only if they
+    // have the same collide masks.
     CollisionNode *cother = DCAST(CollisionNode, other);
-    if (get_name() == cother->get_name()) {
+    if (get_name() == cother->get_name() &&
+        get_from_collide_mask() == cother->get_from_collide_mask() &&
+        get_into_collide_mask() == cother->get_into_collide_mask()) {
       const COWPT(CollisionSolid) *solids_begin = &cother->_solids[0];
       const COWPT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
       _solids.insert(_solids.end(), solids_begin, solids_end);
