@@ -2560,9 +2560,29 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
         return f
     try:
         if not __dev__:
-            return decorator            
+            return decorator
+
+        # determine whether we should use the decorator
+        # based on the value of dConfigParam.
+        doPrint = False
+        if not dConfigParam:
+            doPrint = True
+        else:
+            if not isinstance(dConfigParam, (list,tuple)):
+                dConfigParamList = (dConfigParam,)
+            else:
+                dConfigParamList = dConfigParam
+            for param in dConfigParamList:
+                if(config.GetBool(param, 0)):
+                    doPrint = True
+                    break
+
+        if not doPrint:
+            return decorator
+        
     except NameError,e:
         return decorator
+
 
     from direct.distributed.ClockDelta import globalClockDelta
 
@@ -2602,32 +2622,16 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
 
-
-            # determine whether we should print
-            doPrint = False
-            if not dConfigParam:
-                doPrint = True
+            if notifyFunc:
+                notifyFunc(outStr)
             else:
-                if not isinstance(dConfigParam, (list,tuple)):
-                    dConfigParamList = (dConfigParam,)
-                else:
-                    dConfigParamList = dConfigParam
-                for param in dConfigParamList:
-                    if(config.GetBool(param, 0)):
-                        doPrint = True
-                        break
+                print outStr
 
-            if doPrint:
-                if notifyFunc:
-                    notifyFunc(outStr)
-                else:
-                    print outStr
-
-                if 'interests' in types:
-                    base.cr.printInterestSets()
+            if 'interests' in types:
+                base.cr.printInterestSets()
                     
-                if 'stackTrace' in types:
-                    print StackTrace()
+            if 'stackTrace' in types:
+                print StackTrace()
 
             return f(*args,**kwargs)
 
@@ -2765,6 +2769,8 @@ class HotkeyBreaker:
         from direct.showbase.DirectObject import DirectObject
         self.do = DirectObject()
         self.breakKeys = {}
+        if not isinstance(breakKeys, (list,tuple)):
+            breakKeys = (breakKeys,)
         for key in breakKeys:
             self.addBreakKey(key)
         
@@ -2780,13 +2786,18 @@ class HotkeyBreaker:
         if __dev__:
             self.breakKeys[breakKey] = True
 
-    def setBreakPt(self,breakKey = None):
+    def setBreakPt(self,breakKeys = []):
         if __dev__:
-            if breakKey == None:
+            if not breakKeys:
                 import pdb;pdb.set_trace()
-            if self.breakKeys.pop(breakKey,False):
-                import pdb;pdb.set_trace()
-
+                return
+            else:
+                if not isinstance(breakKeys, (list,tuple)):
+                    breakKeys = (breakKeys,)
+                for key in breakKeys:
+                    if self.breakKeys.pop(key,False):
+                        import pdb;pdb.set_trace()
+                        return
 def nullGen():
     # generator that ends immediately
     if False:
