@@ -1728,7 +1728,9 @@ class Actor(DirectObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}
         """
+        reload = True
         if (lodName == 'all'):
+            reload = False
             lodNames = self.switches.keys()
             lodNames.sort()
             for i in range(0,len(lodNames)):
@@ -1740,13 +1742,17 @@ class Actor(DirectObject, NodePath):
                                   (anims, partName, lodNames[0]))
 
         firstLoad = True
-        for lName in lodNames:
+        if not reload:
             try:
-                self.__animControlDict[lName][partName]
+                self.__animControlDict[lodNames[0]][partName]
                 firstLoad = False
             except:
+                pass
+        for lName in lodNames:
+            if firstLoad:
                 self.__animControlDict.setdefault(lName, {})
                 self.__animControlDict[lName].setdefault(partName, {})
+
         for animName, filename in anims.items():
             # make sure this lod is in anim control dict
             for lName in lodNames:
