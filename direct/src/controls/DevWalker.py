@@ -110,6 +110,12 @@ class DevWalker(DirectObject.DirectObject):
         levitateUp = inputState.isSet("levitateUp")
         levitateDown = inputState.isSet("levitateDown")
         run = inputState.isSet("run") and self.runMultiplier or 1.0
+
+        # Check for Auto-Run
+        if base.localAvatar.getAutoRun():
+            forward = 1
+            reverse = 0
+        
         # Determine what the speeds are based on the buttons:
         self.speed=(
                 (forward and self.avatarControlForwardSpeed or

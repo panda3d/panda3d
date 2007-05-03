@@ -11,6 +11,12 @@ class SwimWalker(NonPhysicsWalker.NonPhysicsWalker):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft") or inputState.isSet("slideLeft")
         turnRight = inputState.isSet("turnRight") or inputState.isSet("slideRight")
+
+        # Check for Auto-Run
+        if base.localAvatar.getAutoRun():
+            forward = 1
+            reverse = 0
+        
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)

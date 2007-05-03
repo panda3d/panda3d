@@ -201,6 +201,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         turnRight = inputState.isSet("turnRight")
         slide = inputState.isSet(self.slideName) or 0
         #jump = inputState.isSet("jump")
+        
+        # Check for Auto-Run
+        if base.localAvatar.getAutoRun():
+            forward = 1
+            reverse = 0
+                
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or
                     reverse and -self.avatarControlReverseSpeed)
