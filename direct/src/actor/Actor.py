@@ -1403,10 +1403,7 @@ class Actor(DirectObject, NodePath):
         Return the animControl if present, or None otherwise
         """
         if not partName:
-            if self.__subpartDict.keys():
-                partName = self.__subpartDict.keys()[0]
-            else:
-                partName = 'modelRoot'
+            partName = 'modelRoot'
 
         if not lodName:
             if self.switches:
