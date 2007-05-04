@@ -79,6 +79,7 @@ class Transitions:
                 state = DGG.NORMAL,
                 )
             self.fade.setBin('unsorted', 0)
+            self.fade.setColor(0,0,0,0)
 
     
     def getFadeInIval(self, t=0.5, finishIval=None):
@@ -196,6 +197,8 @@ class Transitions:
             self.transitionIval.pause()
             self.transitionIval = None
         if self.fade:
+            # Make sure to reset the color, since fadeOutActive() is looking at it
+            self.fade.setColor(self.alphaOff)
             self.fade.detachNode()
 
     def setFadeColor(self, r, g, b):
