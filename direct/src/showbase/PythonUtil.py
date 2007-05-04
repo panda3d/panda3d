@@ -19,8 +19,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'weightedRand', 'randUint31', 'randInt32', 'randUint32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
 'SingletonError', 'printListEnum', 'gcDebugOn', 'safeRepr',
-'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'setTrace',
-'_equal', '_notEqual', '_isNone', '_notNone', '_contains', '_notIn',
+'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'setTrace', 'pm',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
@@ -2188,77 +2187,9 @@ def appendStr(obj, st):
     appendedStr = None
     return obj
 
-# debugging functions that conditionally bring up the debugger in __dev__
-# all can be used with assert, as in 'assert _equal(a,b)'
-def setTrace():
-    if __dev__:
-        print StackTrace()
-        import pdb;pdb.set_trace()
-        # setTrace
-    return True
-def _is(a,b):
-    if a is not b:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert a is b
-    return True
-def _equal(a,b):
-    if a != b:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert a == b
-    return True
-def _notEqual(a,b):
-    if a == b:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert a != b
-    return True
-def _isNone(a):
-    if a is not None:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert a is None
-    return True
-def _notNone(a):
-    if a is None:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            pass # import pdb;pdb.set_trace()
-        else:
-            assert a is not None
-    return True
-def _contains(container,item):
-    if item not in container:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert item in container
-    return True
-def _notIn(container,item):
-    if item in container:
-        if __dev__:
-            print StackTrace()
-            import pdb;pdb.set_trace()
-            # setTrace
-        else:
-            assert item not in container
-    return True
+import pdb
+setTrace = pdb.set_trace
+pm = pdb.pm
 
 class ScratchPad:
     """empty class to stick values onto"""
@@ -2920,13 +2851,7 @@ __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
 __builtin__.setTrace = setTrace
-__builtin__._is = _is
-__builtin__._equal = _equal
-__builtin__._notEqual = _notEqual
-__builtin__._isNone = _isNone
-__builtin__._notNone = _notNone
-__builtin__._contains = _contains
-__builtin__._notIn = _notIn
+__builtin__.pm = pm
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
 __builtin__.appendStr = appendStr
@@ -2936,10 +2861,6 @@ __builtin__.notNone = notNone
 __builtin__.clampScalar = clampScalar
 __builtin__.makeList = makeList
 __builtin__.makeTuple = makeTuple
-__builtin__.rad90 = rad90
-__builtin__.rad180 = rad180
-__builtin__.rad270 = rad270
-__builtin__.rad360 = rad360
 __builtin__.printStack = printStack
 __builtin__.printVerboseStack = printVerboseStack
 __builtin__.DelayedCall = DelayedCall
