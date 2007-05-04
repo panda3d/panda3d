@@ -90,7 +90,7 @@ class ContainerReport(Job):
             if type(parentObj) in (types.ModuleType, types.InstanceType):
                 child = parentObj.__dict__
                 if self._examine(child):
-                    assert _is(self._queue.back(), child)
+                    assert (self._queue.back() is child)
                     self._instanceDictIds.add(id(child))
                     self._id2pathStr[id(child)] = str(self._id2pathStr[id(parentObj)])
                 continue
@@ -112,7 +112,7 @@ class ContainerReport(Job):
                     if id(attr) not in self._visitedIds:
                         self._visitedIds.add(id(attr))
                         if self._examine(attr):
-                            assert _is(self._queue.back(), attr)
+                            assert (self._queue.back() is attr)
                             if parentObj is __builtins__:
                                 self._id2pathStr[id(attr)] = key
                             else:
@@ -142,7 +142,7 @@ class ContainerReport(Job):
                             if id(attr) not in self._visitedIds:
                                 self._visitedIds.add(id(attr))
                                 if self._examine(attr):
-                                    assert _is(self._queue.back(), attr)
+                                    assert (self._queue.back() is attr)
                                     self._id2pathStr[id(attr)] = self._id2pathStr[id(parentObj)] + '[%s]' % index
                             index += 1
                         del attr
@@ -163,7 +163,7 @@ class ContainerReport(Job):
                     if id(child) not in self._visitedIds:
                         self._visitedIds.add(id(child))
                         if self._examine(child):
-                            assert _is(self._queue.back(), child)
+                            assert (self._queue.back() is child)
                             self._id2pathStr[id(child)] = self._id2pathStr[id(parentObj)] + '.%s' % childName
                 del childName
                 del child
