@@ -18,12 +18,11 @@
 ////////////////////////////////////////////////////////////////////
 class   Buffered_DatagramWriter  :  public RingBuffer
 {
-	bool	_are_we_going_to_block_on_write;
 	int		_flush_point;
 public:
 	inline void ReSet(void);			// destroy all buffered data
 
-	Buffered_DatagramWriter(bool  do_blocking, size_t in_size , int in_flush_point = -1);
+	Buffered_DatagramWriter( size_t in_size , int in_flush_point = -1);
 	inline int AddData(const void * data, size_t len, Socket_TCP &sck);
 	inline int AddData(const void * data, size_t len);
 // THE FUNCTIONS THAT TAKE A SOCKET NEED TO BE TEMPLATED TO WORK..
@@ -60,12 +59,6 @@ public:
           
           if(Writesize > 0) {
             int Writen = sck.SendData(GetMessageHead(),(int)Writesize);
-            if(_are_we_going_to_block_on_write == true && Writen < 0 && sck.ErrorIs_WouldBlocking(Writen) == true) {
-              //sck.SetBlocking();
-              Writen = sck.SendData(GetMessageHead(),(int)Writesize);		
-              //sck.SetNonBlocking();
-            }
-
             
             if(Writen > 0) {
               _StartPos += Writen;
@@ -98,9 +91,8 @@ inline void Buffered_DatagramWriter::ReSet(void) {
 //
 //
 ////////////////////////////////////////////////
-inline Buffered_DatagramWriter::Buffered_DatagramWriter(bool  do_blocking, size_t in_size , int in_flush_point) : RingBuffer(in_size) {	
+inline Buffered_DatagramWriter::Buffered_DatagramWriter( size_t in_size , int in_flush_point) : RingBuffer(in_size) {	
   _flush_point = in_flush_point;
-  _are_we_going_to_block_on_write = do_blocking;
 }
 
 //////////////////////////////////////////////////////////////
@@ -120,12 +112,12 @@ inline int Buffered_DatagramWriter::AddData(const void * data, size_t len, Socke
   if(answer >= 0)
     answer = AddData(data,len);
   
-  /*
+  
   if(answer >= 0 && _flush_point != -1)
     if(_flush_point <  (int)AmountBuffered())
       if(Flush(sck) < 0)
         answer = -1;
-  */		
+  
   return answer;
 }
 

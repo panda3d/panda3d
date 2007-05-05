@@ -70,12 +70,23 @@ PUBLISHED:
   inline bool GetMessage(Datagram &val);
   inline bool DoConnect(void);           // all the real state magic is in here
   inline bool IsConnected(void); 
-  inline Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) ;
+  inline Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) ;
   virtual ~Buffered_DatagramConnection(void) ;
   // the reason thsi all exists
   inline bool SendMessage(const Datagram &msg);
   inline bool Flush(void);
   inline void Reset(void);
+
+//  int WaitFor_Read_Error(const Socket_fdset & fd, const Time_Span & timeout);
+
+  inline void WaitForNetworkReadEvent(float MaxTime)
+  {
+    Socket_fdset  fdset;
+    fdset.setForSocket(*this);
+    Socket_Selector  selector;
+    Time_Span   waittime(MaxTime);
+    selector.WaitFor_Read_Error(fdset,waittime);
+  }
 
   
   // address queue stuff
@@ -127,11 +138,9 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
   if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
      return false;
     
-  if(ActiveOpen(_Adddress) == true) {
+  if(ActiveOpen(_Adddress,true) == true) {
+    SetNoDelay();
     SetNonBlocking(); // maybe should be blocking?
-    //Let the operators do this
-    //SetSendBufferSize(1024*50);  // we need to hand tune these for the os we are using
-    //SetRecvBufferSize(1024*50);
     NewWriteBuffer();
     return true;
   }
@@ -209,8 +218,8 @@ inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void)
 // Argument         : int rbufsize
 // Argument         : int wbufsize
 ////////////////////////////////////////////////////////////////////
-inline Buffered_DatagramConnection::Buffered_DatagramConnection(bool do_blocking_writes, int rbufsize, int wbufsize, int write_flush_point) 
-	:  _Writer(do_blocking_writes,wbufsize,write_flush_point) , _Reader(rbufsize) 
+inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) 
+	:  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize) 
 {
   nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize 
                         << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
@@ -276,7 +285,8 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
 ////////////////////////////////////////////////////////////////////
 inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 {
-  if(IsConnected()) {
+  if(IsConnected()) 
+  {
     int ans1 = _Reader.PumpMessageReader(val,*this);
     if(ans1 == 0)
       return false;
@@ -289,6 +299,8 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
   }
   return false;
 }
+
+
 
 ////////////////////////////////////////////////////////////////////
 // Function name	: Buffered_DatagramConnection::Flush

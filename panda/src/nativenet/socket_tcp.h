@@ -22,11 +22,12 @@ PUBLISHED:
     inline int  SetLinger(int interval_seconds = 0);
     inline int  DontLinger();    
     inline int  SetSendBufferSize(int insize);
-    inline bool ActiveOpen(const Socket_Address & theaddress);
+    //inline bool ActiveOpen(const Socket_Address & theaddress);
+    inline bool ActiveOpen(const Socket_Address & theaddress, bool setdelay);
     inline bool ActiveOpenNonBlocking(const Socket_Address & theaddress);
     inline bool ErrorIs_WouldBlocking(int err);
     inline bool ShutdownSend();
-    inline int SendData(const std::string &str);
+    inline int  SendData(const std::string &str);
 //    inline int RecvData( std::string &str, int max_len);
 
     std::string RecvData(int max_len);
@@ -127,11 +128,14 @@ int Socket_TCP::SetSendBufferSize(int insize)
 // Description   : This function will try and set the socket up for active open to a specified
 //       address and port provided by the input parameter
 ////////////////////////////////////////////////////////////////////
-bool Socket_TCP::ActiveOpen(const Socket_Address & theaddress)
+bool Socket_TCP::ActiveOpen(const Socket_Address & theaddress, bool setdelay)
 {
     _socket = DO_NEWTCP();
     if (_socket == BAD_SOCKET)
         return false;
+
+    if(setdelay)
+        SetNoDelay();
     
     if (DO_CONNECT(_socket, &theaddress.GetAddressInfo()) != 0)
         return ErrorClose();

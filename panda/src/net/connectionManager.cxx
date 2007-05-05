@@ -149,7 +149,7 @@ open_TCP_server_rendezvous(int port, int backlog) {
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   Socket_TCP *socket = new Socket_TCP;
-  bool okflag = socket->ActiveOpen(address.get_addr());
+  bool okflag = socket->ActiveOpen(address.get_addr(),true);
   if (!okflag) {
     net_cat.error()
       << "Unable to open TCP connection to server "

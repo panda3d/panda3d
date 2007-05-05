@@ -177,33 +177,19 @@ append_data(const void *data, size_t size) {
 
 void Datagram::assign(const void *data, size_t size)
 {
-  nassertv((int)size >= 0);
+    nassertv((int)size >= 0);
 
-  if (_data == (uchar *)NULL) {
-    // Create a new array.
-    _data = PTA_uchar::empty_array(0);
-
-  } else if (_data.get_ref_count() != 1) {
-    // Copy on write.
-    PTA_uchar new_data = PTA_uchar::empty_array(0);
-    new_data.v() = _data.v();
-    _data = new_data;
-  }
-
-  // Now append the data.
-
-  // It is very important that we *don't* do this reserve() operation.
-  // This actually slows it down on Windows, which takes the reserve()
-  // request as a fixed size the array should be set to (!) instead of
-  // as a minimum size to guarantee.  This forces the array to
-  // reallocate itself with *every* call to append_data!
-  //  _data.reserve(_data.size() + size);
-
-  _data.clear();
-  const uchar *source = (const uchar *)data;
-  for (size_t i = 0; i < size; ++i) {
-    _data.v().push_back(source[i]);
-  }
+    if (_data == (uchar *)NULL || _data.get_ref_count() != 1) 
+    {
+        // Create a new array. 
+        // or copy on change..
+        _data = PTA_uchar::empty_array(0);
+    }
+    else
+    {
+        _data.v().clear();
+    }
+    _data.v().insert(_data.v().begin(),(uchar *)data,&((uchar *)data)[size]);
 }
 ////////////////////////////////////////////////////////////////////
 //     Function : output

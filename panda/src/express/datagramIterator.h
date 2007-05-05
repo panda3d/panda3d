@@ -32,6 +32,8 @@
 //               know the correct type and order of each element.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramIterator {
+public:    
+    INLINE void assign(Datagram &datagram, size_t offset = 0);
 PUBLISHED:
   INLINE DatagramIterator();
   INLINE DatagramIterator(const Datagram &datagram, size_t offset = 0);

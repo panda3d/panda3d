@@ -61,7 +61,16 @@ operator = (const DatagramIterator &copy) {
   _datagram = copy._datagram;
   _current_index = copy._current_index;
 }
-
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::assign
+//       Access: Public
+//  Description: direct Assigment to a Datagram
+////////////////////////////////////////////////////////////////////
+INLINE void DatagramIterator::assign(Datagram &datagram, size_t offset)
+{
+    _datagram =&datagram;
+    _current_index = offset;     
+}
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Destructor
 //       Access: Public
