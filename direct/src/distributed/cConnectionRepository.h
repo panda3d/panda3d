@@ -27,6 +27,7 @@
 #include "dcField.h"  // to pick up Python.h
 #include "pStatCollector.h"
 #include "datagramIterator.h"
+#include "clockObject.h"
 
 #ifdef HAVE_NET
 #include "queuedConnectionManager.h"
@@ -98,6 +99,13 @@ PUBLISHED:
 #endif
 
   bool check_datagram();
+#ifdef HAVE_PYTHON
+#ifdef WANT_NATIVE_NET
+    bool check_datagram_ai(PyObject *PycallBackFunction);
+    bool network_based_reader_and_yielder(PyObject *PycallBackFunction,ClockObject &clock, float returnBy);
+#endif
+#endif
+    
   INLINE void get_datagram(Datagram &dg);
   INLINE void get_datagram_iterator(DatagramIterator &di);
   INLINE CHANNEL_TYPE get_msg_channel(int offset = 0) const;
@@ -125,6 +133,13 @@ PUBLISHED:
   INLINE bool get_verbose() const;
 
 private:
+#ifdef HAVE_PYTHON
+#ifdef WANT_NATIVE_NET
+    bool handle_update_field_ai(PyObject *doId2do);
+#endif
+#endif
+
+
   bool do_check_datagram();
   bool handle_update_field();
   bool handle_update_field_owner();
@@ -134,6 +149,7 @@ private:
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;
+  PyObject *_python_ai_datagramiterator;
 #endif
 
 #ifdef HAVE_OPENSSL

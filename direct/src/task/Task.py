@@ -337,6 +337,8 @@ class TaskManager:
         self.__doLaterList = []
 
         self._profileFrames = False
+        self.MaxEpockSpeed = 1.0/30.0;   
+
 
         # We copy this value in from __builtins__ when it gets set.
         # But since the TaskManager might have to run before it gets
@@ -362,6 +364,7 @@ class TaskManager:
 
         # A default task.
         self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
+
 
     def stepping(self, value):
         self.stepping = value
@@ -410,6 +413,13 @@ class TaskManager:
         heapify(self.__doLaterList)
         newLen = len(self.__doLaterList)
         return oldLen - newLen
+        
+    def __getNextDoLaterTime(self):
+        if self.__doLaterList:                        
+            dl = self.__doLaterList[0]
+            return dl.wakeTime
+        return -1;
+                       
 
     def __doLaterProcessor(self, task):
         # Removing the tasks during the for loop is a bad idea
@@ -784,6 +794,24 @@ class TaskManager:
         if num is None:
             num = 1
         self._profileFrameCount = num
+    
+
+    # in the event we want to do frame time managment.. this is the function to 
+    #  replace or overload..        
+    def  doYield(self , frameStartTime, nextScheuledTaksTime):
+          None
+          
+    def  doYieldExample(self , frameStartTime, nextScheuledTaksTime):
+        minFinTime = frameStartTime + self.MaxEpockSpeed
+        if nextScheuledTaksTime > 0 and nextScheuledTaksTime < minFinTime:
+            print ' Adjusting Time'
+            minFinTime = nextScheuledTaksTime;
+        delta = minFinTime - self.globalClock.getRealTime();
+        while(delta > 0.002):
+            print ' sleep %s'% (delta)
+            time.sleep(delta)           
+            delta = minFinTime - self.globalClock.getRealTime();
+    
 
     @profiled()
     def _doProfiledFrames(self, *args, **kArgs):
@@ -795,6 +823,7 @@ class TaskManager:
     def step(self):
         # assert TaskManager.notify.debug('step: begin')
         self.currentTime, self.currentFrame = self.__getTimeFrame()
+        startFrameTime = self.globalClock.getRealTime()
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
@@ -839,10 +868,15 @@ class TaskManager:
         # Add new pending tasks
         self.__addPendingTasksToTaskList()
 
+        #this is the spot for a Internal Yield Function
+        nextTaskTime = self.__getNextDoLaterTime()                                    
+        self.doYield(startFrameTime,nextTaskTime)            
+        
         # Restore default interrupt handler
         signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
+
 
     def run(self):
         # Set the clock to have last frame's time in case we were

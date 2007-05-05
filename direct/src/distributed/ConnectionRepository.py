@@ -87,7 +87,7 @@ class ConnectionRepository(
 
         # This DatagramIterator is constructed once, and then re-used
         # each time we read a datagram.
-        self.__di = PyDatagramIterator()
+        self.private__di = PyDatagramIterator()
 
         self.recorder = None
 
@@ -529,8 +529,8 @@ class ConnectionRepository(
 
     def readerPollOnce(self):
         if self.checkDatagram():
-            self.getDatagramIterator(self.__di)
-            self.handleDatagram(self.__di)
+            self.getDatagramIterator(self.private__di)
+            self.handleDatagram(self.private__di)
             return 1
 
         # Unable to receive a datagram: did we lose the connection?
