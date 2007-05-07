@@ -237,7 +237,7 @@ class Messenger:
                 # method itself might call accept() or acceptOnce()
                 # again.
                 assert callable(method)
-                apply(method, (extraArgs + sentArgs))
+                method (*(extraArgs + sentArgs))
 
     def clear(self):
         """
