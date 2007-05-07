@@ -4409,11 +4409,13 @@ set_draw_buffer(const RenderBuffer &rb) {
   }
 
   // Also ensure that any global color channels are masked out.
-  GLP(ColorMask)((_color_write_mask & ColorWriteAttrib::C_red) != 0,
-                 (_color_write_mask & ColorWriteAttrib::C_green) != 0,
-                 (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
-                 (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
-
+  if (CLP(color_mask)) {
+    GLP(ColorMask)((_color_write_mask & ColorWriteAttrib::C_red) != 0,
+                   (_color_write_mask & ColorWriteAttrib::C_green) != 0,
+                   (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
+                   (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
+  }
+    
   report_my_gl_errors();
 }
 
