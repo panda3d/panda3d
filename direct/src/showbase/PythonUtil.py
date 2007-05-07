@@ -2187,9 +2187,17 @@ def appendStr(obj, st):
     appendedStr = None
     return obj
 
-import pdb
-setTrace = pdb.set_trace
-pm = pdb.pm
+# convenience shortcuts for __dev__ debugging
+# we don't have the __dev__ flag at this point
+try:
+    import pdb
+    setTrace = pdb.set_trace
+    pm = pdb.pm
+except:
+    # we're in production, there is no pdb module. assign these to something so that the
+    # __builtin__ exports will work
+    setTrace = None
+    pm = None
 
 class ScratchPad:
     """empty class to stick values onto"""
