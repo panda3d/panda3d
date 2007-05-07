@@ -153,6 +153,9 @@ any_in_bounds() {
           // bounding volume.
           const GeometricBoundingVolume *col_gbv =
             get_local_bound(c);
+
+          is_in = true;  // If there's no bounding volume, we're implicitly in.
+
           if (col_gbv != (GeometricBoundingVolume *)NULL) {
             is_in = (node_gbv->contains(col_gbv) != 0);
             _node_volume_pcollector.add_level(1);
@@ -164,8 +167,8 @@ any_in_bounds() {
                 << "Comparing " << c << ": " << *col_gbv
                 << " to " << *node_gbv << ", is_in = " << is_in << "\n";
             }
-#endif  // NDEBUG
           }
+#endif  // NDEBUG
         }
 
         if (!is_in) {
@@ -211,33 +214,52 @@ apply_transform() {
   // previous node.
   _parent_bounds = _local_bounds;
 
-  // Recompute the bounds list of this node (if we have a transform).
-  const TransformState *node_transform = node()->get_transform();
-  if (!node_transform->is_identity()) {
-    CPT(TransformState) inv_transform = 
-      node_transform->invert_compose(TransformState::make_identity());
-    const LMatrix4f &mat = inv_transform->get_mat();
-
-    // Now build the new bounding volumes list.
+  if (node()->is_final()) {
+    // If this node has a "final" bounds, we blank out all of the from
+    // bounding volumes, since we've already tested against this
+    // node's into bounds, and there's no need to test any further
+    // bounding volumes at this node level or below.
     BoundingVolumes new_bounds;
 
     int num_colliders = get_num_colliders();
     new_bounds.reserve(num_colliders);
     for (int c = 0; c < num_colliders; c++) {
-      if (!has_collider(c) ||
-          get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
-        new_bounds.push_back((GeometricBoundingVolume *)NULL);
-      } else {
-        const GeometricBoundingVolume *old_bound = get_local_bound(c);
-        GeometricBoundingVolume *new_bound = 
-          DCAST(GeometricBoundingVolume, old_bound->make_copy());
-        new_bound->xform(mat);
-        new_bounds.push_back(new_bound);
-      }
+      new_bounds.push_back((GeometricBoundingVolume *)NULL);
     }
     
     _local_bounds = new_bounds;
-  }    
+
+  } else {
+    // Otherwise, in the usual case, the bounds tests will continue.
+    // Recompute the bounds list of this node (if we have a
+    // transform).
+    const TransformState *node_transform = node()->get_transform();
+    if (!node_transform->is_identity()) {
+      CPT(TransformState) inv_transform = 
+        node_transform->invert_compose(TransformState::make_identity());
+      const LMatrix4f &mat = inv_transform->get_mat();
+      
+      // Now build the new bounding volumes list.
+      BoundingVolumes new_bounds;
+      
+      int num_colliders = get_num_colliders();
+      new_bounds.reserve(num_colliders);
+      for (int c = 0; c < num_colliders; c++) {
+        if (!has_collider(c) ||
+            get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
+          new_bounds.push_back((GeometricBoundingVolume *)NULL);
+        } else {
+          const GeometricBoundingVolume *old_bound = get_local_bound(c);
+          GeometricBoundingVolume *new_bound = 
+            DCAST(GeometricBoundingVolume, old_bound->make_copy());
+          new_bound->xform(mat);
+          new_bounds.push_back(new_bound);
+        }
+      }
+      
+      _local_bounds = new_bounds;
+    }    
+  }
 }
 #endif  // CPPPARSER
 
