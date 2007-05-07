@@ -3,8 +3,9 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase.DirectObject import DirectObject
 from ConnectionRepository import *
 
-DefaultTimeout = 8.0
-DefaultNumRetries = 0
+ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS = 8.0
+ASYNC_REQUEST_INFINITE_RETRIES = -1
+ASYNC_REQUEST_DEFAULT_NUM_RETRIES = 0
 
 if __debug__:
     _overrideTimeoutTimeForAllAsyncRequests = config.GetFloat("async-request-timeout", -1.0)
@@ -41,8 +42,8 @@ class AsyncRequest(DirectObject):
         notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 
     def __init__(self, air, replyToChannelId = None,
-                 timeoutTime = DefaultTimeout,
-                 numRetries = DefaultNumRetries):
+                 timeoutTime = ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS,
+                 numRetries = ASYNC_REQUEST_DEFAULT_NUM_RETRIES):
         """
         air is the AI Respository.
         replyToChannelId may be an avatarId, an accountId, or a channelId.
@@ -195,19 +196,19 @@ class AsyncRequest(DirectObject):
             taskMgr.remove(self.timeoutTask)
             self.timeoutTask = None
         if createAnew:
-            self._numRetries = self._initialNumRetries
+            self.numRetries = self._initialNumRetries
             self.timeoutTask = taskMgr.doMethodLater(
-                self._timeoutTime, self._taskTimeoutCallback,
+                self._timeoutTime, self.timeout,
                 "AsyncRequestTimer-%s"%(id(self,)))
 
-    def _taskTimeoutCallback(self, task):
+    def timeout(self, task):
         assert AsyncRequest.notify.debugCall(
             "neededObjects: %s"%(self.neededObjects,))
-        if self._numRetries > 0:
+        if self.numRetries > 0:
             assert AsyncRequest.notify.debug(
                 'Timed out. Trying %d more time(s) : %s' %
-                (self._numRetries + 1, `self.neededObjects`))
-            self._numRetries -= 1
+                (self.numRetries + 1, `self.neededObjects`))
+            self.numRetries -= 1
             return Task.again
         else:
             if __debug__:
