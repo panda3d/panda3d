@@ -18,7 +18,7 @@ class DistributedObjectUD(DistributedObjectBase):
             self.DistributedObjectUD_initialized = 1
             DistributedObjectBase.__init__(self, air)
 
-            self.accountName=''
+            self.accountName = ''
             # Record the repository
             self.air = air
 
@@ -55,22 +55,21 @@ class DistributedObjectUD(DistributedObjectBase):
                 and conditionally show generated, disabled, neverDisable,
                 or cachable
             """
-            spaces=' '*(indent+2)
+            spaces = ' ' * (indent + 2)
             try:
-                print "%s%s:"%(
-                    ' '*indent, self.__class__.__name__)
-                print "%sfrom DistributedObject doId:%s, parent:%s, zone:%s"%(
-                    spaces,
-                    self.doId, self.parentId, self.zoneId),
-                flags=[]
+                print "%s%s:" % (' ' * indent, self.__class__.__name__)
+                print ("%sfrom "
+                       "DistributedObject doId:%s, parent:%s, zone:%s" %
+                       (spaces, self.doId, self.parentId, self.zoneId)),
+                flags = []
                 if self.__generated:
                     flags.append("generated")
                 if self.air == None:
                     flags.append("deleted")
                 if len(flags):
-                    print "(%s)"%(" ".join(flags),),
+                    print "(%s)" % (" ".join(flags),),
                 print
-            except Exception, e: print "%serror printing status"%(spaces,), e
+            except Exception, e: print "%serror printing status" % (spaces,), e
 
     def getDeleteEvent(self):
         # this is sent just before we get deleted
@@ -230,6 +229,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # arguments are newZoneId, oldZoneId
         # includes the quiet zone.
         return 'DOChangeZone-%s' % self.doId
+    
     def getLogicalZoneChangeEvent(self):
         # this event is generated whenever this object changes to a
         # non-quiet-zone zone.
@@ -283,8 +283,8 @@ class DistributedObjectUD(DistributedObjectBase):
         # have we already allocated a doId?
         if self.__preallocDoId:
             self.__preallocDoId = 0
-            return self.generateWithRequiredAndId(
-                self.doId, zoneId, optionalFields)
+            return self.generateWithRequiredAndId(self.doId, zoneId,
+                                                  optionalFields)
 
         # The repository is the one that really does the work
         parentId = self.air.districtId
@@ -315,7 +315,7 @@ class DistributedObjectUD(DistributedObjectBase):
         # have we already allocated a doId?
         if self.__preallocDoId:
             assert doId is None or doId == self.__preallocDoId
-            doId=self.__preallocDoId
+            doId = self.__preallocDoId
             self.__preallocDoId = 0
 
         # Assign it an id
@@ -324,7 +324,7 @@ class DistributedObjectUD(DistributedObjectBase):
         else:
             self.doId = doId
         # Put the new DO in the dictionaries
-        self.air.addDOToTables(self, location=(parentId, zoneId))
+        self.air.addDOToTables(self, location = (parentId, zoneId))
         # Send a generate message
         self.sendGenerateWithRequired(self.air, parentId, zoneId, optionalFields)
 
