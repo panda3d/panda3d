@@ -49,5 +49,6 @@ init_libparticlesystem() {
   }
   initialized = true;
 
+  ParticleSystem::init_type();
 }
 
