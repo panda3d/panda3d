@@ -19,7 +19,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'weightedRand', 'randUint31', 'randInt32', 'randUint32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
 'SingletonError', 'printListEnum', 'gcDebugOn', 'safeRepr',
-'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'setTrace', 'pm',
+'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'set_trace', 'pm',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
@@ -2191,12 +2191,12 @@ def appendStr(obj, st):
 # we don't have the __dev__ flag at this point
 try:
     import pdb
-    setTrace = pdb.set_trace
+    set_trace = pdb.set_trace
     pm = pdb.pm
 except:
     # we're in production, there is no pdb module. assign these to something so that the
     # __builtin__ exports will work
-    setTrace = None
+    set_trace = None
     pm = None
 
 class ScratchPad:
@@ -2858,7 +2858,7 @@ __builtin__.ScratchPad = ScratchPad
 __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
-__builtin__.setTrace = setTrace
+__builtin__.set_trace = set_trace
 __builtin__.pm = pm
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
