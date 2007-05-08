@@ -200,7 +200,8 @@ class ParticleEffect(NodePath):
         try:
             exec data
         except:
-            self.notify.error('loadConfig: failed to load particle file: '+ repr(filename))
+            self.notify.warning('loadConfig: failed to load particle file: '+ repr(filename))
+            raise
 
     def accelerate(self,time,stepCount = 1,stepTime=0.0):
         for particles in self.getParticlesList():
