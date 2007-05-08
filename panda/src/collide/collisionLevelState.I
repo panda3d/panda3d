@@ -167,8 +167,8 @@ any_in_bounds() {
                 << "Comparing " << c << ": " << *col_gbv
                 << " to " << *node_gbv << ", is_in = " << is_in << "\n";
             }
-          }
 #endif  // NDEBUG
+          }
         }
 
         if (!is_in) {
