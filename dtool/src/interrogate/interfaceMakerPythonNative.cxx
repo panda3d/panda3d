@@ -2274,12 +2274,15 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
   if (!remap->_void_return && 
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
-    // return expression.
+    // return expression. 
     if (remap->_blocking) {
       indent(out, extra_indent_level)
         << "PyThreadState *_save;\n";
       indent(out, extra_indent_level)
         << "Py_UNBLOCK_THREADS\n";
+    }
+    if (track_interpreter) {
+      indent(out,extra_indent_level) << "in_interpreter = 0;\n";
     }
     string tt;
     string return_expr = remap->call_function(out, extra_indent_level, false, container, pexprs);
@@ -2289,13 +2292,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     //    type->output_instance(tt, "return_value", &parser);
     out << " = " << return_expr << ";\n";
 
+    if (track_interpreter) {
+      indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+    }
     if (remap->_blocking) {
       indent(out, extra_indent_level)
         << "Py_BLOCK_THREADS\n";
-    }
-    
-    if (track_interpreter) {
-      indent(out,extra_indent_level) << "in_interpreter = 1;\n";
     }
     if (!extra_cleanup.empty()) {
       indent(out,extra_indent_level) <<  extra_cleanup << "\n";
@@ -2312,16 +2314,18 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       indent(out, extra_indent_level)
         << "Py_UNBLOCK_THREADS\n";
     }
+    if (track_interpreter) {
+      indent(out,extra_indent_level) << "in_interpreter = 0;\n";
+    }
 
     string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
     if (return_expr.empty()) {
+      if (track_interpreter) {
+        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+      }
       if (remap->_blocking) {
         indent(out, extra_indent_level)
           << "Py_BLOCK_THREADS\n";
-      }
-
-      if (track_interpreter) {
-        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";
@@ -2336,13 +2340,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         type->output_instance(out, "return_value", &parser);
         out << " = " << return_expr << ";\n";
       }
+      if (track_interpreter) {
+        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
+      }
       if (remap->_blocking) {
         indent(out, extra_indent_level)
           << "Py_BLOCK_THREADS\n";
-      }
-
-      if (track_interpreter) {
-        indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";
