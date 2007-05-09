@@ -118,7 +118,7 @@ determine_dynamic_type() {
         _dynamic_type = _static_type;
         _flags &= ~F_reconsider_dynamic_type;
 
-        nassert_raise("Unregistered type.");
+        //nassert_raise("Unregistered type");
         return;
       }
 
@@ -133,7 +133,7 @@ determine_dynamic_type() {
         }
 
       } else {
-        express_cat.error()
+        express_cat.warning()
           << "Pointer " << (void *)_ref_ptr << " previously indicated as type "
           << orig_type << " is now type " << got_type << "!\n";
       }

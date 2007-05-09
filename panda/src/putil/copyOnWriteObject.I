@@ -145,9 +145,9 @@ init_type() {
 
   TypeHandle base_type = register_dynamic_type(base_name);
 
-  CachedTypedWritableReferenceCount::init_type();
+  CopyOnWriteObject::init_type();
   _type_handle =
     register_dynamic_type("CopyOnWriteObj<" + base_name + ">",
                           base_type, 
-                          CachedTypedWritableReferenceCount::get_class_type());
+                          CopyOnWriteObject::get_class_type());
 }
