@@ -119,7 +119,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 
   // Some WAV files contain a loop bit.  This is not handled
   // consistently.  Override it.
-  _sound->setLoopCount(-1);
+  _sound->setLoopCount(1);
   _sound->setMode(FMOD_LOOP_OFF);
   
   //This is just to collect the defaults of the sound, so we don't
@@ -205,13 +205,11 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_loop(bool loop) {
-  FMOD_RESULT result;
-  if ( loop ) {
-    result = _sound->setMode(FMOD_LOOP_NORMAL);
+  if (loop) {
+    set_loop_count(0);
   } else {
-    result = _sound->setMode(FMOD_LOOP_OFF);  
+    set_loop_count(1);
   }
-  fmod_audio_errcheck("_sound->setMode()", result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,24 +219,11 @@ set_loop(bool loop) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioSound::
 get_loop() const {
-  // 0 means loop forever,
-  // >1 means loop that many times
-  // So _loop_count != 1 means we're looping
-
-  FMOD_RESULT result;
-  FMOD_MODE loopMode;
-  bool loopState;
-
-  result = _sound->getMode( &loopMode );
-  fmod_audio_errcheck("_sound->getMode()", result);
-
-  if ( (loopMode & FMOD_LOOP_NORMAL) != 0 ) {
-    loopState = true;
+  if (get_loop_count() == 1) {
+    return false;
   } else {
-    loopState = false;
+    return true;
   }
-
-  return (loopState);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -257,17 +242,23 @@ set_loop_count(unsigned long loop_count) {
 
   //LOCALS
   FMOD_RESULT result;
-  int numberOfLoops;
 
-  numberOfLoops = (int) loop_count;
-  numberOfLoops = numberOfLoops - 1;
-
-  if (numberOfLoops == 0) {
+  if (loop_count == 0) {
     result = _sound->setLoopCount( -1 );
+    fmod_audio_errcheck("_sound->setLoopCount()", result);
+    result =_sound->setMode(FMOD_LOOP_NORMAL);    
+    fmod_audio_errcheck("_sound->setMode()", result);
+  } else if (loop_count == 1) {
+    result = _sound->setLoopCount( 1 );
+    fmod_audio_errcheck("_sound->setLoopCount()", result);
+    result =_sound->setMode(FMOD_LOOP_OFF);    
+    fmod_audio_errcheck("_sound->setMode()", result);
   } else {
-    result = _sound->setLoopCount( numberOfLoops );
+    result = _sound->setLoopCount( loop_count );
+    fmod_audio_errcheck("_sound->setLoopCount()", result);
+    result =_sound->setMode(FMOD_LOOP_NORMAL);
+    fmod_audio_errcheck("_sound->setMode()", result);
   }
-  fmod_audio_errcheck("_sound->setLoopCount()", result);
 
   audio_debug("FmodAudioSound::set_loop_count()   Sound's loop count should be set to: " << loop_count);
 }
@@ -279,9 +270,6 @@ set_loop_count(unsigned long loop_count) {
 ////////////////////////////////////////////////////////////////////
 unsigned long FmodAudioSound::
 get_loop_count() const {
-
-  audio_debug("FmodAudioSound::get_loop_count() Getting the sound's loop count. ");
-
   FMOD_RESULT result;
   int loop_count;
   unsigned long returnedNumber;
@@ -289,11 +277,11 @@ get_loop_count() const {
   result = _sound->getLoopCount( &loop_count );
   fmod_audio_errcheck("_sound->getLoopCount()", result);
 
-  audio_debug("FmodAudioSound::get_loop_count() returning "<< loop_count);
-
-  returnedNumber = (unsigned long) loop_count;
-
-  return loop_count;
+  if (loop_count <= 0) {
+    return 0;
+  } else {
+    return (unsigned long)loop_count;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
