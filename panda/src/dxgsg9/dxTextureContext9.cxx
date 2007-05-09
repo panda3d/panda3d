@@ -145,16 +145,27 @@ create_texture(DXScreenData &scrn) {
   }
 
   // check for texture compression
+  Texture::CompressionMode compression_mode = Texture::CompressionMode::CM_off;
+  bool texture_stored_compressed = false;
+  
+  if (get_texture()->get_compression() != Texture::CompressionMode::CM_off) {
+    compression_mode = get_texture()->get_ram_image_compression();
+    // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
+    nassertr(((Texture::CompressionMode::CM_dxt1+1)==Texture::CompressionMode::CM_dxt2)&&((Texture::CompressionMode::CM_dxt2+1)==Texture::CompressionMode::CM_dxt3)&&((Texture::CompressionMode::CM_dxt3+1)==Texture::CompressionMode::CM_dxt4)&&((Texture::CompressionMode::CM_dxt4+1)==Texture::CompressionMode::CM_dxt5),false);
+    if ((compression_mode >= Texture::CompressionMode::CM_dxt1) && (compression_mode <= Texture::CompressionMode::CM_dxt5)) {
+      texture_stored_compressed = true;
+    }
+  }
   switch (get_texture()->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
     case Texture::TT_cube_map:
-      // check config setting
-      if (compressed_textures) {
         // no compression for render target textures
         if (get_texture()->get_render_to_texture() == false) {
-          compress_texture = true;
-        }
+          // check config setting and stored format
+          if (compressed_textures || texture_stored_compressed){
+            compress_texture = true;
+          }
       }
       break;
     case Texture::TT_3d_texture:
@@ -338,7 +349,27 @@ create_texture(DXScreenData &scrn) {
 
     if (!dx_force_16bpptextures) {
       if (compress_texture) {
-        CHECK_FOR_FMT(DXT3, Conv32toDXT3);    
+        if (texture_stored_compressed){
+          // if the texture is already compressed, we need to choose the corresponding format, 
+          // otherwise we might end up cross-compressing from e.g. DXT5 to DXT3
+          switch (compression_mode){
+          case Texture::CompressionMode::CM_dxt2:
+            CHECK_FOR_FMT(DXT2, Conv32toDXT2);
+            break;
+          case Texture::CompressionMode::CM_dxt3:
+            CHECK_FOR_FMT(DXT3, Conv32toDXT3);
+            break;
+          case Texture::CompressionMode::CM_dxt4:
+            CHECK_FOR_FMT(DXT4, Conv32toDXT4);
+            break;
+          case Texture::CompressionMode::CM_dxt5:
+            CHECK_FOR_FMT(DXT5, Conv32toDXT5);
+            break;
+          }
+          // if no compressed format matches, just fall trhough to pick a different format          
+        }
+        else
+          CHECK_FOR_FMT(DXT3, Conv32toDXT3);    
       }
       if (num_color_channels == 4) {
         CHECK_FOR_FMT(A8R8G8B8, Conv32to32);
@@ -798,7 +829,10 @@ create_texture(DXScreenData &scrn) {
     case D3DFMT_DXT1:
       bytes_per_texel = 0.5f;
       break;
+    case D3DFMT_DXT2:
     case D3DFMT_DXT3:
+    case D3DFMT_DXT4:
+    case D3DFMT_DXT5:
       bytes_per_texel = 1.0f;
       break;
       
@@ -1199,6 +1233,163 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: calculate_row_byte_length
+//       Access: Private, hidden
+//  Description: local helper function, which calculates the 
+//               'row_byte_length' or 'pitch' needed for calling
+//               D3DXLoadSurfaceFromMemory.
+//               Takes compressed formats (DXTn) into account.
+////////////////////////////////////////////////////////////////////
+static UINT calculate_row_byte_length (int width, int num_color_channels, D3DFORMAT tex_format)
+{
+    UINT source_row_byte_length = 0;
+
+    // check for compressed textures and adjust source_row_byte_length and source_format accordingly
+    switch (tex_format) {
+      case D3DFMT_DXT1:
+          // for dxt1 compressed textures, the row_byte_lenght is "the width of one row of cells, in bytes"
+          // cells are 4 pixels wide, take up 8 bytes, and at least 1 cell has to be there.
+          source_row_byte_length = max(1,width / 4)*8;
+        break;
+      case D3DFMT_DXT2:
+      case D3DFMT_DXT3:
+      case D3DFMT_DXT4:
+      case D3DFMT_DXT5:
+          // analogue as above, but cells take up 16 bytes
+          source_row_byte_length = max(1,width / 4)*16;
+        break;
+      default:
+        // no known compression format.. usual calculation
+        source_row_byte_length = width*num_color_channels;
+        break;
+    }
+    return source_row_byte_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext9::fill_d3d_texture_mipmap_pixels
+//       Access: Private
+//  Description: Called from fill_d3d_texture_pixels, this function
+//               fills a single mipmap with texture data.
+//               Takes care of all necessery conversions and error
+//               handling.
+////////////////////////////////////////////////////////////////////
+HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format)
+{
+  // This whole function was refactored out of fill_d3d_texture_pixels to make the code 
+  // more readable and to avoid code duplication.
+  IDirect3DSurface9 *mip_surface = NULL;
+  bool using_temp_buffer = false;
+  HRESULT hr = E_FAIL;
+  CPTA_uchar image = get_texture()->get_ram_mipmap_image(mip_level);
+  BYTE *pixels = (BYTE*) image.p();
+  DWORD width  = (DWORD) get_texture()->get_expected_mipmap_x_size(mip_level);
+  DWORD height = (DWORD) get_texture()->get_expected_mipmap_y_size(mip_level);
+  int component_width = get_texture()->get_component_width();
+
+  pixels += depth_index * get_texture()->get_expected_ram_mipmap_page_size(mip_level);
+  
+  if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
+    nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
+    hr = _d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)depth_index, mip_level, &mip_surface);
+  } else {
+    nassertr(IS_VALID_PTR(_d3d_2d_texture), E_FAIL);
+    hr = _d3d_2d_texture->GetSurfaceLevel(mip_level, &mip_surface);
+  }
+
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+      << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
+    return E_FAIL;
+  }
+
+  RECT source_size;
+  source_size.left = source_size.top = 0;
+  source_size.right = width;
+  source_size.bottom = height;
+
+  UINT source_row_byte_length = calculate_row_byte_length(width, get_texture()->get_num_components(), source_format);
+
+  DWORD mip_filter;
+  // need filtering if size changes, (also if bitdepth reduced (need
+  // dithering)??)
+  mip_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
+
+  // D3DXLoadSurfaceFromMemory will load black luminance and we want
+  // full white, so convert to explicit luminance-alpha format
+  if (_d3d_format == D3DFMT_A8) {
+    // alloc buffer for explicit D3DFMT_A8L8
+    USHORT *temp_buffer = new USHORT[width * height];
+    if (!IS_VALID_PTR(temp_buffer)) {
+      dxgsg9_cat.error()
+        << "FillDDTextureMipmapPixels couldnt alloc mem for temp pixbuf!\n";
+      goto exit_FillMipmapSurf;
+    }
+    using_temp_buffer = true;
+
+    USHORT *out_pixels = temp_buffer;
+    BYTE *source_pixels = pixels + component_width - 1;
+    for (UINT y = 0; y < height; y++) {
+      for (UINT x = 0; x < width; x++, source_pixels += component_width, out_pixels++) {
+        // add full white, which is our interpretation of alpha-only
+        // (similar to default adding full opaque alpha 0xFF to
+        // RGB-only textures)
+        *out_pixels = ((*source_pixels) << 8 ) | 0xFF;
+      }
+    }
+
+    source_format = D3DFMT_A8L8;
+    source_row_byte_length = width * sizeof(USHORT);
+    pixels = (BYTE*)temp_buffer;
+  } 
+  else if (component_width != 1) {
+    // Convert from 16-bit per channel (or larger) format down to
+    // 8-bit per channel.  This throws away precision in the
+    // original image, but dx8 doesn't support high-precision images
+    // anyway.
+
+    int num_components = get_texture()->get_num_components();
+    int num_pixels = width * height * num_components;
+    BYTE *temp_buffer = new BYTE[num_pixels];
+    if (!IS_VALID_PTR(temp_buffer)) {
+      dxgsg9_cat.error() << "FillDDTextureMipmapPixels couldnt alloc mem for temp pixbuf!\n";
+      goto exit_FillMipmapSurf;
+    }
+    using_temp_buffer = true;
+
+    BYTE *source_pixels = pixels + component_width - 1;
+    for (int i = 0; i < num_pixels; i++) {
+      temp_buffer[i] = *source_pixels;
+      source_pixels += component_width;
+    }
+    pixels = (BYTE*)temp_buffer;
+  }
+
+  // filtering may be done here if texture if targetsize != origsize
+#ifdef DO_PSTATS
+  GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * height);
+#endif
+  hr = D3DXLoadSurfaceFromMemory
+    (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
+      source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
+      &source_size, mip_filter, (D3DCOLOR)0x0);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+      << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
+  }
+
+exit_FillMipmapSurf:
+  if (using_temp_buffer) {
+    SAFE_DELETE_ARRAY(pixels);
+  }
+
+  RELEASE(mip_surface, dxgsg9, "FillDDTextureMipmapPixels MipSurface texture ptr", RELEASE_ONCE);
+  return hr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext9::fill_d3d_texture_pixels
 //       Access: Private
 //  Description:
@@ -1219,176 +1410,103 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
     // operations or something.
     return S_OK;
   }
+  nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
+  nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
 
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
-  nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
-
-  DWORD orig_width  = (DWORD) get_texture()->get_x_size();
-  DWORD orig_height = (DWORD) get_texture()->get_y_size();
   DWORD orig_depth = (DWORD) get_texture()->get_z_size();
-  DWORD num_color_channels = get_texture()->get_num_components();
   D3DFORMAT source_format = _d3d_format;
-  BYTE *image_pixels = (BYTE*)image.p();
-  int component_width = get_texture()->get_component_width();
-
-  nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
-
-  IDirect3DSurface9 *mip_level_0 = NULL;
-  bool using_temp_buffer = false;
-  BYTE *pixels = NULL;
-
+  
+  nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
+  
+  // check for compressed textures and adjust source_format accordingly
+  if (get_texture()->get_compression() != Texture::CM_off) {
+    switch (get_texture()->get_ram_image_compression()) {
+      case Texture::CM_dxt1:
+          source_format = D3DFMT_DXT1;
+        break;
+      case Texture::CM_dxt2:
+          source_format = D3DFMT_DXT2;
+        break;
+      case Texture::CM_dxt3:
+          source_format = D3DFMT_DXT3;
+        break;
+      case Texture::CM_dxt4:
+          source_format = D3DFMT_DXT4;
+        break;
+      case Texture::CM_dxt5:
+          source_format = D3DFMT_DXT5;
+        break;
+      default:
+        // no known compression format.. no adjustment
+        break;
+    }
+  }
+  
   for (unsigned int di = 0; di < orig_depth; di++) {
-    pixels = image_pixels + di * get_texture()->get_expected_ram_page_size();
-    mip_level_0 = NULL;
-
-    if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
-      nassertr(IS_VALID_PTR(_d3d_cube_texture), E_FAIL);
-      hr = _d3d_cube_texture->GetCubeMapSurface((D3DCUBEMAP_FACES)di, 0, &mip_level_0);
-    } else {
-      nassertr(IS_VALID_PTR(_d3d_2d_texture), E_FAIL);
-      hr = _d3d_2d_texture->GetSurfaceLevel(0, &mip_level_0);
-    }
-
+    
+    // fill top level mipmap
+    hr = fill_d3d_texture_mipmap_pixels(0, di, source_format);
     if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
-      << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
-      return E_FAIL;
-    }
-
-    RECT source_size;
-    source_size.left = source_size.top = 0;
-    source_size.right = orig_width;
-    source_size.bottom = orig_height;
-
-    UINT source_row_byte_length = orig_width * num_color_channels;
-
-    DWORD level_0_filter, mip_filter_flags;
-    using_temp_buffer = false;
-
-    // need filtering if size changes, (also if bitdepth reduced (need
-    // dithering)??)
-    level_0_filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
-
-    // D3DXLoadSurfaceFromMemory will load black luminance and we want
-    // full white, so convert to explicit luminance-alpha format
-    if (_d3d_format == D3DFMT_A8) {
-      // alloc buffer for explicit D3DFMT_A8L8
-      USHORT *temp_buffer = new USHORT[orig_width * orig_height];
-      if (!IS_VALID_PTR(temp_buffer)) {
-        dxgsg9_cat.error()
-          << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-        goto exit_FillDDSurf;
-      }
-      using_temp_buffer = true;
-
-      USHORT *out_pixels = temp_buffer;
-      BYTE *source_pixels = pixels + component_width - 1;
-      for (UINT y = 0; y < orig_height; y++) {
-        for (UINT x = 0;
-             x < orig_width;
-             x++, source_pixels += component_width, out_pixels++) {
-          // add full white, which is our interpretation of alpha-only
-          // (similar to default adding full opaque alpha 0xFF to
-          // RGB-only textures)
-          *out_pixels = ((*source_pixels) << 8 ) | 0xFF;
-        }
-      }
-
-      source_format = D3DFMT_A8L8;
-      source_row_byte_length = orig_width * sizeof(USHORT);
-      pixels = (BYTE*)temp_buffer;
-
-    } else if (component_width != 1) {
-      // Convert from 16-bit per channel (or larger) format down to
-      // 8-bit per channel.  This throws away precision in the
-      // original image, but dx8 doesn't support high-precision images
-      // anyway.
-
-      int num_components = get_texture()->get_num_components();
-      int num_pixels = orig_width * orig_height * num_components;
-      BYTE *temp_buffer = new BYTE[num_pixels];
-      if (!IS_VALID_PTR(temp_buffer)) {
-        dxgsg9_cat.error() << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
-        goto exit_FillDDSurf;
-      }
-      using_temp_buffer = true;
-
-      BYTE *source_pixels = pixels + component_width - 1;
-      for (int i = 0; i < num_pixels; i++) {
-        temp_buffer[i] = *source_pixels;
-        source_pixels += component_width;
-      }
-      pixels = (BYTE*)temp_buffer;
-    }
-
-
-    // filtering may be done here if texture if targetsize != origsize
-#ifdef DO_PSTATS
-    GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_row_byte_length * orig_height);
-#endif
-    hr = D3DXLoadSurfaceFromMemory
-      (mip_level_0, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
-       source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
-       &source_size, level_0_filter, (D3DCOLOR)0x0);
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
-        << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
-      goto exit_FillDDSurf;
+      return hr; // error message was already output in fill_d3d_texture_mipmap_pixels
     }
 
     if (_has_mipmaps) {
-      if (_managed == false && supports_automatic_mipmap_generation) {
-        if (false)
-        {
-//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_PYRAMIDALQUAD);
-//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_GAUSSIANQUAD);
-//        hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_ANISOTROPIC);
-          hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_LINEAR);
+      // if we have pre-calculated mipmap levels, use them, otherwise generate on the fly
+      int miplevel_count = _d3d_2d_texture->GetLevelCount(); // what if it's not a 2d texture?
+
+      if (miplevel_count <= get_texture()->get_num_ram_mipmap_images()) {
+        dxgsg9_cat.debug()
+        << "Using pre-calculated mipmap levels for texture  " << get_texture()->get_name();
+
+        for (int mip_level = 1; mip_level < miplevel_count; ++mip_level) {
+          hr = fill_d3d_texture_mipmap_pixels(mip_level, di, source_format);
           if (FAILED(hr)) {
-            dxgsg9_cat.error() << "SetAutoGenFilterType failed " << D3DERRORSTRING(hr);
+            return hr; // error message was already output in fill_d3d_texture_mipmap_pixels
+          }
+        }        
+      } 
+      else {
+        // mipmaps need to be generated, either use autogen or d3dx functions
+
+        if (_managed == false && supports_automatic_mipmap_generation) {
+          if (false)
+          {
+            //hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_PYRAMIDALQUAD);
+            //hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_GAUSSIANQUAD);
+            //hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_ANISOTROPIC);
+            hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_LINEAR);
+            if (FAILED(hr)) {
+              dxgsg9_cat.error() << "SetAutoGenFilterType failed " << D3DERRORSTRING(hr);
+            }
+
+            _d3d_texture -> GenerateMipSubLevels ( );
+          }
+        }
+        else {
+          DWORD mip_filter_flags;
+          if (!dx_use_triangle_mipgen_filter) {
+            mip_filter_flags = D3DX_FILTER_BOX;
+          } else {
+            mip_filter_flags = D3DX_FILTER_TRIANGLE;
           }
 
-          _d3d_texture -> GenerateMipSubLevels ( );
-        }
-      }
-      else {
-        if (!dx_use_triangle_mipgen_filter) {
-          mip_filter_flags = D3DX_FILTER_BOX;
-        } else {
-          mip_filter_flags = D3DX_FILTER_TRIANGLE;
-        }
-
-        // mip_filter_flags |= D3DX_FILTER_DITHER;
-        hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
-                               mip_filter_flags);
-        if (FAILED(hr)) {
-          dxgsg9_cat.error()
-            << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
-            << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
-          goto exit_FillDDSurf;
+          // mip_filter_flags |= D3DX_FILTER_DITHER;
+          hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
+                                mip_filter_flags);
+          if (FAILED(hr)) {
+            dxgsg9_cat.error()
+              << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+              << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
+          }
         }
       }
     }
-    if (using_temp_buffer) {
-      SAFE_DELETE_ARRAY(pixels);
-    }
-
-    RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
   }
-  return hr;
-
- exit_FillDDSurf:
-  if (using_temp_buffer) {
-    SAFE_DELETE_ARRAY(pixels);
-  }
-
-  RELEASE(mip_level_0, dxgsg9, "FillDDSurf MipLev0 texture ptr", RELEASE_ONCE);
-
   return hr;
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext9::fill_d3d_volume_texture_pixels

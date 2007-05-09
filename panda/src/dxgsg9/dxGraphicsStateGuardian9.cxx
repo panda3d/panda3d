@@ -2720,6 +2720,24 @@ reset() {
     }
   }
 
+  // check if compressed textures are supported
+  #define CHECK_FOR_DXTVERSION(num) \
+  if (_screen->_supported_tex_formats_mask & DXT##num##_FLAG) {\
+    if (dxgsg9_cat.is_debug()) {\
+      dxgsg9_cat.debug() << "Compressed texture format DXT" << #num << " supported \n";\
+    }\
+    _supports_compressed_texture = true;\
+    _compressed_texture_formats.set_bit(Texture::CM_dxt##num);\
+  }
+
+  CHECK_FOR_DXTVERSION(1)
+  CHECK_FOR_DXTVERSION(2)
+  CHECK_FOR_DXTVERSION(3)
+  CHECK_FOR_DXTVERSION(4)
+  CHECK_FOR_DXTVERSION(5)
+
+  #undef CHECK_FOR_DXTVERSION
+
   _screen->_supports_rgba16f_texture_format = false;
   hr = _screen->_d3d9->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format, 0x0, D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F);
   if (SUCCEEDED(hr)){

@@ -49,6 +49,7 @@ public:
           int z);
 
 private:
+  HRESULT fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format);
   HRESULT fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation);
   HRESULT fill_d3d_volume_texture_pixels();
   static int down_to_power_2(int value);
