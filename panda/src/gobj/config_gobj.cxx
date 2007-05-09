@@ -82,6 +82,14 @@ ConfigVariableDouble texture_scale
           "scale factor is applied before textures-power-2 or "
           "max-texture-dimension."));
 
+ConfigVariableList exclude_texture_scale
+("exclude-texture-scale", 
+ PRC_DESC("This is a list of glob patterns for texture filenames "
+          "(excluding the directory part of the filename, but including "
+          "the extension); for instance, 'digits_*.png'.  Any texture "
+          "filenames that match one of these patterns will not be affected "
+          "by max-texture-dimension or texture-scale."));
+
 ConfigVariableBool keep_texture_ram
 ("keep-texture-ram", false,
  PRC_DESC("Set this to true to retain the ram image for each texture after it "

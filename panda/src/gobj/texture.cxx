@@ -2830,11 +2830,23 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
+  string basename = _filename.get_basename();
+  bool exclude = false;
+  int num_excludes = exclude_texture_scale.get_num_unique_values();
+  for (int i = 0; i < num_excludes && !exclude; ++i) {
+    GlobPattern pat(exclude_texture_scale.get_unique_value(i));
+    if (pat.matches(basename)) {
+      exclude = true;
+    }
+  }
+
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
 
-  new_x_size = (int)cfloor(new_x_size * texture_scale + 0.5);
-  new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
+  if (!exclude) {
+    new_x_size = (int)cfloor(new_x_size * texture_scale + 0.5);
+    new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
+  }
 
   switch (textures_power_2) {
   case ATS_down:
@@ -2864,7 +2876,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
     break;
   }
 
-  if (max_texture_dimension > 0) {
+  if (max_texture_dimension > 0 && !exclude) {
     new_x_size = min(new_x_size, (int)max_texture_dimension);
     new_y_size = min(new_y_size, (int)max_texture_dimension);
   }
