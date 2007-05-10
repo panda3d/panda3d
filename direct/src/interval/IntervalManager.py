@@ -55,7 +55,9 @@ class IntervalManager(CIntervalManager):
             return self.getCInterval(index)
         return None
 
-    def finishIntervalsMatching(self, pattern):
+    def getIntervalsMatching(self, pattern):
+        ivals = []
+        
         count = 0
         maxIndex = self.getMaxIndex()
         for index in range(maxIndex):
@@ -66,14 +68,25 @@ class IntervalManager(CIntervalManager):
                 # automatically removes it.
                 count += 1
                 if index < len(self.ivals) and self.ivals[index]:
-                    # Finish the python version if we have it
-                    self.ivals[index].finish()
+                    # Get the python version if we have it
+                    ivals.append(self.ivals[index])
                 else:
                     # Otherwise, it's a C-only interval.
-                    ival.finish()
+                    ivals.append(ival)
 
-        return count
+        return ivals
 
+    def finishIntervalsMatching(self, pattern):
+        ivals = self.getIntervalsMatching(pattern)
+        for ival in ivals:
+            ival.finish()
+        return len(ivals)
+
+    def pauseIntervalsMatching(self, pattern):
+        ivals = self.getIntervalsMatching(pattern)
+        for ival in ivals:
+            ival.pause()
+        return len(ivals)
 
     def step(self):
         # This method should be called once per frame to perform all
