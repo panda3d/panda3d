@@ -471,7 +471,8 @@ update_level_data(const PStatFrameData &frame_data) {
     int collector_index = (*gi).first;
     float value = (*gi).second;
 
-    // Walk up to the top.
+    // Walk up to the top, but stop when we find a parent with actual
+    // data.
     while (collector_index != 0 && collector_index != _constraint) {
       const PStatCollectorDef &def =
         _client_data->get_collector_def(collector_index);
@@ -480,8 +481,8 @@ update_level_data(const PStatFrameData &frame_data) {
       if (pi != alone_values.end()) {
         // The parent has data; subtract it.
         (*pi).second -= value;
+        break;
       }
-
       collector_index = parent_index;
     }
   }
