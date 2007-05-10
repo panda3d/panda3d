@@ -74,6 +74,7 @@ assign_initial_position(LPoint3f& pos) {
     theta = LERP(NORMALIZED_RAND(), _start_theta, _end_theta + 2.0f * MathNumbers::pi_f);
   }    
   
+  theta += (MathNumbers::pi_f / 2.0);
   this->_cos_theta = cosf(theta);
   this->_sin_theta = sinf(theta);
 
