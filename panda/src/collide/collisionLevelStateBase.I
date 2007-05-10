@@ -25,6 +25,7 @@
 INLINE CollisionLevelStateBase::
 CollisionLevelStateBase(const NodePath &node_path) :
   _node_path(node_path),
+  _colliders(get_class_type()),
   _include_mask(CollideMask::all_on())
 {
 }

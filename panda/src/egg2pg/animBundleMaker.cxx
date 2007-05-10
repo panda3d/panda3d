@@ -240,7 +240,8 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
 
   // First we have to copy the table data from PTA_double to
   // PTA_float.
-  PTA_float new_data=PTA_float::empty_array(egg_anim->get_num_rows());
+  PTA_float new_data = PTA_float::empty_array(egg_anim->get_num_rows(),
+                                              table->get_class_type());
   for (int i = 0; i < egg_anim->get_num_rows(); i++) {
     new_data[i] = (float)egg_anim->get_value(i);
   }
@@ -325,7 +326,8 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
 
           // Now we have to copy the table data from PTA_double to
           // PTA_float.
-          PTA_float new_data=PTA_float::empty_array(child->get_num_rows());
+          PTA_float new_data=PTA_float::empty_array(child->get_num_rows(),
+                                                    table->get_class_type());
           for (int i = 0; i < child->get_num_rows(); i++) {
             new_data[i] = (float)child->get_value(i);
           }

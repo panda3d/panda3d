@@ -38,7 +38,7 @@ INLINE CPTA_float AnimChannelMatrixXfmTable::
 get_table(char table_id) const {
   int table_index = get_table_index(table_id);
   if (table_index < 0) {
-    return CPTA_float();
+    return CPTA_float(get_class_type());
   }
   return _tables[table_index];
 }

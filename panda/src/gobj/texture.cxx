@@ -41,8 +41,6 @@
 
 #include <stddef.h>
 
-PT(PStatCollectorForward) Texture::_tex_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:pvector:array:Texture Data"));
-
 TypeHandle Texture::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -971,7 +969,7 @@ get_ram_image() {
   }
 
   if (_ram_images.empty()) {
-    return CPTA_uchar();
+    return CPTA_uchar(get_class_type());
   }
 
   return _ram_images[0]._image;
@@ -1004,7 +1002,6 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
       _ram_images[0]._page_size != page_size ||
       _ram_image_compression != compression) {
     _ram_images[0]._image = image;
-    _ram_images[0]._image.set_col(_tex_mem_pcollector);
     _ram_images[0]._page_size = page_size;
     _ram_image_compression = compression;
     ++_image_modified;
@@ -1082,7 +1079,7 @@ get_ram_mipmap_image(int n) {
   if (n < (int)_ram_images.size()) {
     return _ram_images[n]._image;
   }
-  return CPTA_uchar();
+  return CPTA_uchar(get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1096,15 +1093,14 @@ get_ram_mipmap_image(int n) {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 make_ram_mipmap_image(int n) {
-  nassertr(_ram_image_compression == CM_off, PTA_uchar());
+  nassertr(_ram_image_compression == CM_off, PTA_uchar(get_class_type()));
 
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
     _ram_images.back()._page_size = 0;
   }
 
-  _ram_images[n]._image = PTA_uchar::empty_array(get_expected_ram_mipmap_image_size(n));
-  _ram_images[n]._image.set_col(_tex_mem_pcollector);
+  _ram_images[n]._image = PTA_uchar::empty_array(get_expected_ram_mipmap_image_size(n), get_class_type());
   _ram_images[n]._page_size = get_expected_ram_mipmap_page_size(n);
   ++_image_modified;
   return _ram_images[n]._image;
@@ -1136,7 +1132,6 @@ set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
   if (_ram_images[n]._image != image ||
       _ram_images[n]._page_size != page_size) {
     _ram_images[n]._image = image;
-    _ram_images[n]._image.set_col(_tex_mem_pcollector);
     _ram_images[n]._page_size = page_size;
     ++_image_modified;
   }
@@ -2406,8 +2401,7 @@ do_make_ram_image() {
   _ram_images.clear();
   _ram_images.push_back(RamImage());
   _ram_images[0]._page_size = get_expected_ram_page_size();
-  _ram_images[0]._image = PTA_uchar::empty_array(get_expected_ram_image_size());
-  _ram_images[0]._image.set_col(_tex_mem_pcollector);
+  _ram_images[0]._image = PTA_uchar::empty_array(get_expected_ram_image_size(), get_class_type());
   _ram_image_compression = CM_off;
 }
 
@@ -2736,7 +2730,6 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
   }
 
   nassertv(p == &image[idx] + page_size);
-  image.set_col(_tex_mem_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2999,8 +2992,7 @@ filter_2d_mipmap_pages(Texture::RamImage &to, const Texture::RamImage &from,
 
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   to._page_size = (size_t)to_y_size * to_row_size;
-  to._image = PTA_uchar::empty_array(to._page_size * _z_size);
-  to._image.set_col(_tex_mem_pcollector);
+  to._image = PTA_uchar::empty_array(to._page_size * _z_size, get_class_type());
 
   Filter2DComponent *filter_component = (_component_type == T_unsigned_byte ? &filter_2d_unsigned_byte : filter_2d_unsigned_short);
 
@@ -3096,8 +3088,7 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   size_t to_page_size = (size_t)to_y_size * to_row_size;
   to._page_size = to_page_size;
-  to._image = PTA_uchar::empty_array(to_page_size * to_z_size);
-  to._image.set_col(_tex_mem_pcollector);
+  to._image = PTA_uchar::empty_array(to_page_size * to_z_size, get_class_type());
 
   Filter3DComponent *filter_component = (_component_type == T_unsigned_byte ? &filter_3d_unsigned_byte : filter_3d_unsigned_short);
 
@@ -3497,12 +3488,11 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       size_t u_size = scan.get_uint32();
 
       // fill the _image buffer with image data
-      PTA_uchar image = PTA_uchar::empty_array(u_size);
+      PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
       for (size_t u_idx = 0; u_idx < u_size; ++u_idx) {
         image[(int)u_idx] = scan.get_uint8();
       }
       _ram_images[n]._image = image;
-      _ram_images[n]._image.set_col(_tex_mem_pcollector);
     }
     _loaded_from_image = true;
     ++_image_modified;

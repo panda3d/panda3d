@@ -28,6 +28,7 @@
 #include "collisionDSSolid.h"
 #include "collisionInvSphere.h"
 #include "collisionLine.h"
+#include "collisionLevelStateBase.h"
 #include "collisionNode.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
@@ -36,6 +37,7 @@
 #include "collisionSegment.h"
 #include "collisionSolid.h"
 #include "collisionSphere.h"
+#include "collisionTraverser.h"
 #include "collisionTube.h"
 #include "collisionVisualizer.h"
 #include "dconfig.h"
@@ -99,6 +101,7 @@ init_libcollide() {
   CollisionDSSolid::init_type();
   CollisionInvSphere::init_type();
   CollisionLine::init_type();
+  CollisionLevelStateBase::init_type();
   CollisionNode::init_type();
   CollisionPlane::init_type();
   CollisionPolygon::init_type();
@@ -106,6 +109,7 @@ init_libcollide() {
   CollisionSegment::init_type();
   CollisionSolid::init_type();
   CollisionSphere::init_type();
+  CollisionTraverser::init_type();
   CollisionTube::init_type();
 
 #ifdef DO_COLLISION_RECORDING

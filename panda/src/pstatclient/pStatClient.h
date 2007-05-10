@@ -222,6 +222,7 @@ private:
 
   static PStatCollector _total_size_pcollector;
   static PStatCollector _cpp_size_pcollector;
+  static PStatCollector _cpp_other_size_pcollector;
   static PStatCollector _interpreter_size_pcollector;
   static PStatCollector _pstats_pcollector;
   static PStatCollector _clock_wait_pcollector;

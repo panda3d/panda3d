@@ -20,6 +20,9 @@
 template<class Base>
 TypeHandle CopyOnWriteObj<Base>::_type_handle;
 
+template<class Base, class Param1>
+TypeHandle CopyOnWriteObj1<Base, Param1>::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWriteObject::Constructor
 //       Access: Public
@@ -148,6 +151,76 @@ init_type() {
   CopyOnWriteObject::init_type();
   _type_handle =
     register_dynamic_type("CopyOnWriteObj<" + base_name + ">",
+                          base_type, 
+                          CopyOnWriteObject::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObj1::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+INLINE CopyOnWriteObj1<Base, Param1>::
+CopyOnWriteObj1(Param1 p1) : Base(p1) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObj1::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+INLINE CopyOnWriteObj1<Base, Param1>::
+CopyOnWriteObj1(const Base &copy) : 
+  Base(copy) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObj1::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+INLINE CopyOnWriteObj1<Base, Param1>::
+CopyOnWriteObj1(const CopyOnWriteObj1<Base, Param1> &copy) : 
+  CopyOnWriteObject(copy),
+  Base(copy) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObj1::make_cow_copy
+//       Access: Protected, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+PT(CopyOnWriteObject) CopyOnWriteObj1<Base, Param1>::
+make_cow_copy() {
+  return new CopyOnWriteObj1<Base, Param1>(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWriteObj1::init_type
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+void CopyOnWriteObj1<Base, Param1>::
+init_type() {
+#if defined(HAVE_RTTI) && !defined(__EDG__)
+  // If we have RTTI, we can determine the name of the base type.
+  string base_name = typeid(Base).name();
+#else
+  string base_name = "unknown";
+#endif
+
+  TypeHandle base_type = register_dynamic_type(base_name);
+
+  CopyOnWriteObject::init_type();
+  _type_handle =
+    register_dynamic_type("CopyOnWriteObj1<" + base_name + ">",
                           base_type, 
                           CopyOnWriteObject::get_class_type());
 }

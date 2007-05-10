@@ -34,6 +34,7 @@
 
 PStatCollector PStatClient::_total_size_pcollector("Main memory");
 PStatCollector PStatClient::_cpp_size_pcollector("Main memory:C++");
+PStatCollector PStatClient::_cpp_other_size_pcollector("Main memory:C++:Other");
 PStatCollector PStatClient::_interpreter_size_pcollector("Main memory:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
@@ -227,14 +228,30 @@ main_tick() {
     while ((int)type_handle_cols.size() < num_typehandles) {
       type_handle_cols.push_back(TypeHandleCollector());
     }
-    
+
+    size_t total_usage = 0;
+    int i;
+    for (int i = 0; i < num_typehandles; ++i) {
+      TypeHandle type = type_reg->get_typehandle(i);
+      for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
+        TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;
+        size_t usage = type.get_memory_usage(mc);
+        total_usage += usage;
+      }
+    }
+    size_t min_usage = total_usage / 1024;
+    if (!pstats_mem_other) {
+      min_usage = 0;
+    }
+    size_t other_usage = total_usage;
+
     for (int i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
       for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
         TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;
         PStatCollector &col = type_handle_cols[i]._mem_class[mi];
         size_t usage = type.get_memory_usage(mc);
-        if (usage != 0 || col.is_valid()) {
+        if (usage > min_usage || col.is_valid()) {
           // We have some memory usage on this TypeHandle.  See if we
           // have a collector for it.
           if (!col.is_valid()) {
@@ -243,9 +260,14 @@ main_tick() {
             col = PStatCollector(strm.str());
           }
           col.set_level(usage);
+          other_usage -= usage;
         }
       }
     }
+
+    // The remaining amount--all collectors smaller than 0.1% of the
+    // total--go into "other".
+    _cpp_other_size_pcollector.set_level(other_usage);
   }
 #endif  // DO_MEMORY_USAGE
 

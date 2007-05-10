@@ -28,6 +28,7 @@
 #include "pStatCollector.h"
 
 #include "pset.h"
+#include "register_type.h"
 
 class CollisionNode;
 class CollisionRecorder;
@@ -149,6 +150,17 @@ private:
   // pstats category for actual collision detection (vs. bounding heirarchy collision detection)
   typedef pvector<PStatCollector> SolidCollideCollectors;
   SolidCollideCollectors _solid_collide_collectors;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "CollisionTraverser");
+  }
+
+private:
+  static TypeHandle _type_handle;
 
   friend class SortByColliderSort;
 };

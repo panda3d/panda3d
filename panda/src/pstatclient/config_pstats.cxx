@@ -62,6 +62,12 @@ ConfigVariableDouble pstats_history
 ConfigVariableDouble pstats_average_time
 ("pstats-average-time", 3.0);
 
+ConfigVariableBool pstats_mem_other
+("pstats-mem-other", true,
+ PRC_DESC("Set this true to collect memory categories smaller than 0.1% of "
+          "the total into a single \"Other\" category, or false to show "
+          "each nonzero memory category."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpstatclient
 //  Description: Initializes the library.  This must be called at

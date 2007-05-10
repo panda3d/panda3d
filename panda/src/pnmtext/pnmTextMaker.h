@@ -41,7 +41,7 @@ class PNMTextGlyph;
 //               traversal.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMTextMaker : public FreetypeFont {
-public:
+PUBLISHED:
   PNMTextMaker(const Filename &font_filename, int face_index);
   PNMTextMaker(const char *font_data, int data_length, int face_index);
   ~PNMTextMaker();

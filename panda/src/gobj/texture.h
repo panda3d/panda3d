@@ -27,7 +27,6 @@
 #include "internalName.h"
 #include "graphicsStateGuardianBase.h"
 #include "updateSeq.h"
-#include "pStatCollectorForward.h"
 #include "pmap.h"
 #include "config_gobj.h"
 
@@ -535,8 +534,6 @@ private:
   // The auxiliary data is not recorded to a bam file.
   typedef pmap<string, PT(TypedReferenceCount) > AuxData;
   AuxData _aux_data;
-
-  static PT(PStatCollectorForward) _tex_mem_pcollector;
 
   // Datagram stuff
 public:

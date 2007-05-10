@@ -20,6 +20,8 @@
 #define BUTTONHANDLE_H
 
 #include "pandabase.h"
+#include "typeHandle.h"
+#include "register_type.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonHandle
@@ -55,6 +57,17 @@ PUBLISHED:
 private:
   int _index;
   static ButtonHandle _none;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "ButtonHandle");
+  }
+
+private:
+  static TypeHandle _type_handle;
 
 friend class ButtonRegistry;
 };

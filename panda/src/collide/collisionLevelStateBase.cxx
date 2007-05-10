@@ -23,6 +23,8 @@
 
 PStatCollector CollisionLevelStateBase::_node_volume_pcollector("Collision Volumes:PandaNode");
 
+TypeHandle CollisionLevelStateBase::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelStateBase::clear
 //       Access: Public

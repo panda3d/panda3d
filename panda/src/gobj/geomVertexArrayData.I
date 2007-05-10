@@ -121,7 +121,7 @@ unclean_set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayData::
 clear_rows() {
-  set_data(PTA_uchar());
+  set_data(PTA_uchar(GeomVertexArrayData::get_class_type()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +201,8 @@ set_data(CPTA_uchar array) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayData::CData::
 CData() :
-  _usage_hint(UH_unspecified)
+  _usage_hint(UH_unspecified),
+  _data(GeomVertexArrayData::get_class_type())
 {
   _data.node_ref();
 }

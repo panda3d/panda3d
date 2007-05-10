@@ -48,6 +48,8 @@ PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:C
 PStatCollector CollisionTraverser::_gnode_volume_pcollector("Collision Volumes:GeomNode");
 PStatCollector CollisionTraverser::_geom_volume_pcollector("Collision Volumes:Geom");
 
+TypeHandle CollisionTraverser::_type_handle;
+
 // This function object class is used in prepare_colliders(), below.
 class SortByColliderSort {
 public:

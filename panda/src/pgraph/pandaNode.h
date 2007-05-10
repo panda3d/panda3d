@@ -365,7 +365,7 @@ public:
   };
 
 private:
-  typedef CopyOnWriteObj< ov_multiset<DownConnection> > Down;
+  typedef CopyOnWriteObj1< ov_multiset<DownConnection>, TypeHandle > Down;
 
   class EXPCL_PANDA UpConnection {
   public:
@@ -378,7 +378,7 @@ private:
     // children do not circularly reference each other.
     PandaNode *_parent;
   };
-  typedef CopyOnWriteObj< ov_set<UpConnection> > Up;
+  typedef CopyOnWriteObj1< ov_set<UpConnection>, TypeHandle > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This
   // represents the set of instances of this node that we have

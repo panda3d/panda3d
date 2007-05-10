@@ -32,7 +32,6 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "pStatCollector.h"
-#include "pStatCollectorForward.h"
 #include "pmap.h"
 
 class PreparedGraphicsObjects;
@@ -160,9 +159,6 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
-
-private:
-  static PT(PStatCollectorForward) _vdata_mem_pcollector;
 
 public:
   static void register_with_read_factory();

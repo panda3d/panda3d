@@ -117,6 +117,39 @@ private:
   static TypeHandle _type_handle;
 };
 
+////////////////////////////////////////////////////////////////////
+//       Class : CopyOnWriteObj1
+// Description : For objects (e.g. pvectors) whose constructor
+//               takes a single parameter.
+////////////////////////////////////////////////////////////////////
+template<class Base, class Param1>
+class CopyOnWriteObj1 : public CopyOnWriteObject, public Base {
+public:
+  INLINE CopyOnWriteObj1(Param1 p1);
+  INLINE CopyOnWriteObj1(const Base &copy);
+  INLINE CopyOnWriteObj1(const CopyOnWriteObj1<Base, Param1> &copy);
+
+protected:
+  virtual PT(CopyOnWriteObject) make_cow_copy();
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+PUBLISHED:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+
+public:
+  static void init_type();
+
+private:
+  static TypeHandle _type_handle;
+};
+
 #include "copyOnWriteObject.I"
 
 #endif

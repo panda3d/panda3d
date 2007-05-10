@@ -3631,9 +3631,9 @@ CData() {
   _net_draw_show_mask = DrawMask::all_off();
   ++_next_update;
 
-  _down = new PandaNode::Down;
-  _stashed = new PandaNode::Down;
-  _up = new PandaNode::Up;
+  _down = new PandaNode::Down(PandaNode::get_class_type());
+  _stashed = new PandaNode::Down(PandaNode::get_class_type());
+  _up = new PandaNode::Up(PandaNode::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

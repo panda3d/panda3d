@@ -36,7 +36,7 @@ TypeHandle AnimChannelScalarTable::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(){
+AnimChannelScalarTable() : _table(get_class_type()) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,8 +60,10 @@ AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const string &name)
-  : AnimChannelScalar(parent, name) {
+AnimChannelScalarTable(AnimGroup *parent, const string &name) :
+  AnimChannelScalar(parent, name),
+  _table(get_class_type())
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,8 +161,7 @@ make_copy(AnimGroup *parent) const {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   AnimChannelScalar::write_datagram(manager, me);
 
   if (compress_channels && !FFTCompressor::is_compression_available()) {
@@ -272,13 +273,12 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator& scan, BamReader* manager) {
   AnimChannelScalar::fillin(scan, manager);
 
   bool wrote_compressed = scan.get_bool();
 
-  PTA_float temp_table=PTA_float::empty_array(0);
+  PTA_float temp_table = PTA_float::empty_array(0, get_class_type());
 
   if (!wrote_compressed) {
     // Regular floats.
@@ -343,8 +343,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //  Description: Factory method to generate a AnimChannelScalarTable object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* AnimChannelScalarTable::
-make_AnimChannelScalarTable(const FactoryParams &params)
-{
+make_AnimChannelScalarTable(const FactoryParams &params) {
   AnimChannelScalarTable *me = new AnimChannelScalarTable;
   DatagramIterator scan;
   BamReader *manager;
@@ -360,8 +359,7 @@ make_AnimChannelScalarTable(const FactoryParams &params)
 //  Description: Factory method to generate a AnimChannelScalarTable object
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_AnimChannelScalarTable);
 }
 

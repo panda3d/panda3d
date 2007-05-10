@@ -46,6 +46,8 @@ extern EXPCL_PANDA ConfigVariableBool pstats_scroll_mode;
 extern EXPCL_PANDA ConfigVariableDouble pstats_history;
 extern EXPCL_PANDA ConfigVariableDouble pstats_average_time;
 
+extern EXPCL_PANDA ConfigVariableBool pstats_mem_other;
+
 extern EXPCL_PANDA void init_libpstatclient();
 
 #endif

@@ -24,8 +24,22 @@
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE ordered_vector<Key, Compare>::
-ordered_vector(const Compare &compare) :
-  _compare(compare)
+ordered_vector(TypeHandle type_handle) :
+  _compare(Compare()),
+  _vector(type_handle)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ordered_vector::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ordered_vector<Key, Compare>::
+ordered_vector(const Compare &compare, TypeHandle type_handle) :
+  _compare(compare),
+  _vector(type_handle)
 {
 }
 
@@ -721,8 +735,20 @@ find_insert_position(TYPENAME ordered_vector<Key, Compare>::ITERATOR first,
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE ov_set<Key, Compare>::
-ov_set(const Compare &compare) :
-  ordered_vector<Key, Compare>(compare)
+ov_set(TypeHandle type_handle) :
+  ordered_vector<Key, Compare>(type_handle)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_set::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_set<Key, Compare>::
+ov_set(const Compare &compare, TypeHandle type_handle) :
+  ordered_vector<Key, Compare>(compare, type_handle)
 {
 }
 
@@ -802,8 +828,20 @@ verify_list() const {
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
 INLINE ov_multiset<Key, Compare>::
-ov_multiset(const Compare &compare) :
-  ordered_vector<Key, Compare>(compare)
+ov_multiset(TypeHandle type_handle) :
+  ordered_vector<Key, Compare>(type_handle)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ov_multiset::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class Key, class Compare>
+INLINE ov_multiset<Key, Compare>::
+ov_multiset(const Compare &compare, TypeHandle type_handle) :
+  ordered_vector<Key, Compare>(compare, type_handle)
 {
 }
 

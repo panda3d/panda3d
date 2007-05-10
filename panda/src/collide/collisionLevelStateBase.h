@@ -30,6 +30,7 @@
 #include "plist.h"
 #include "pStatCollector.h"
 #include "bitMask.h"
+#include "register_type.h"
 
 class CollisionSolid;
 class CollisionNode;
@@ -89,6 +90,17 @@ protected:
   BoundingVolumes _parent_bounds;
 
   static PStatCollector _node_volume_pcollector;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "CollisionLevelStateBase");
+  }
+
+private:
+  static TypeHandle _type_handle;
 
   friend class CollisionTraverser;
 };

@@ -24,6 +24,7 @@
 #include "bamReaderParam.h"
 #include "bitArray.h"
 #include "bitMask.h"
+#include "buttonHandle.h"
 #include "cachedTypedWritableReferenceCount.h"
 #include "clockObject.h"
 #include "configurable.h"
@@ -89,6 +90,8 @@ ConfigureFn(config_util) {
   BamReaderParam::init_type();
   BitArray::init_type();
   BitMask32::init_type();
+  BitMask64::init_type();
+  ButtonHandle::init_type();
   CachedTypedWritableReferenceCount::init_type();
   ClockObject::init_type();
   Configurable::init_type();

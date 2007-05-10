@@ -49,7 +49,7 @@ protected:
   bool load_font(const char *font_data, int data_length, int face_index);
   void unload_font();
 
-public:
+PUBLISHED:
   INLINE ~FreetypeFont();
 
   INLINE bool set_point_size(float point_size);

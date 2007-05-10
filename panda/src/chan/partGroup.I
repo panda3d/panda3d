@@ -26,7 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PartGroup::
 PartGroup(const string &name) :
-  Namable(name)
+  Namable(name),
+  _children(get_class_type())
 {
 }
 
@@ -39,7 +40,8 @@ PartGroup(const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE PartGroup::
 PartGroup(const PartGroup &copy) :
-  Namable(copy)
+  Namable(copy),
+  _children(get_class_type())
 {
   // We don't copy children in the copy constructor.  However,
   // copy_subgraph() will do this.

@@ -23,4 +23,6 @@
     pnmTextGlyph.h pnmTextGlyph.I \
     pnmTextMaker.h pnmTextMaker.I
 
+  #define IGATESCAN all
+
 #end lib_target

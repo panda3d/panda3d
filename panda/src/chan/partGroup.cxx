@@ -39,7 +39,10 @@ TypeHandle PartGroup::_type_handle;
 //               delete the entire hierarchy.
 ////////////////////////////////////////////////////////////////////
 PartGroup::
-PartGroup(PartGroup *parent, const string &name) : Namable(name) {
+PartGroup(PartGroup *parent, const string &name) : 
+  Namable(name),
+  _children(get_class_type())
+{
   nassertv(parent != NULL);
 
   parent->_children.push_back(this);

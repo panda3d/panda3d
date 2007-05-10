@@ -153,7 +153,9 @@ public:
 public:
   // Constructors.  We don't implement the whole slew of STL
   // constructors here yet.
-  INLINE ordered_vector(const Compare &compare = Compare());
+  INLINE ordered_vector(TypeHandle type_handle = ov_set_type_handle);
+  INLINE ordered_vector(const Compare &compare,
+                        TypeHandle type_handle = ov_set_type_handle);
   INLINE ordered_vector(const ordered_vector<Key, Compare> &copy);
   INLINE ordered_vector<Key, Compare> &operator = (const ordered_vector<Key, Compare> &copy);
   INLINE ~ordered_vector();
@@ -281,7 +283,9 @@ public:
   typedef TYPENAME ordered_vector<Key, Compare>::ITERATOR ITERATOR;
   typedef TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
 
-  INLINE ov_set(const Compare &compare = Compare());
+  INLINE ov_set(TypeHandle type_handle = ov_set_type_handle);
+  INLINE ov_set(const Compare &compare,
+                TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_set(const ov_set<Key, Compare> &copy);
   INLINE ov_set<Key, Compare> &operator = (const ov_set<Key, Compare> &copy);
 
@@ -304,7 +308,9 @@ public:
   typedef TYPENAME ordered_vector<Key, Compare>::ITERATOR ITERATOR;
   typedef TYPENAME ordered_vector<Key, Compare>::VALUE_TYPE VALUE_TYPE;
 
-  INLINE ov_multiset(const Compare &compare = Compare());
+  INLINE ov_multiset(TypeHandle type_handle = ov_set_type_handle);
+  INLINE ov_multiset(const Compare &compare,
+                     TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);
   INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
 

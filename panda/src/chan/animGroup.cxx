@@ -45,7 +45,10 @@ TypeHandle AnimGroup::_type_handle;
 //               children.
 ////////////////////////////////////////////////////////////////////
 AnimGroup::
-AnimGroup(const string &name) : Namable(name) {
+AnimGroup(const string &name) : 
+  Namable(name),
+  _children(get_class_type())
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +60,10 @@ AnimGroup(const string &name) : Namable(name) {
 //               make_copy() only.
 ////////////////////////////////////////////////////////////////////
 AnimGroup::
-AnimGroup(AnimGroup *parent, const AnimGroup &copy) : Namable(copy) {
+AnimGroup(AnimGroup *parent, const AnimGroup &copy) : 
+  Namable(copy),
+  _children(get_class_type())
+{
   if (parent != (AnimGroup *)NULL) {
     parent->_children.push_back(this);
     _root = parent->_root;
@@ -74,7 +80,10 @@ AnimGroup(AnimGroup *parent, const AnimGroup &copy) : Namable(copy) {
 //               delete the entire hierarchy.
 ////////////////////////////////////////////////////////////////////
 AnimGroup::
-AnimGroup(AnimGroup *parent, const string &name) : Namable(name) {
+AnimGroup(AnimGroup *parent, const string &name) : 
+  Namable(name),
+  _children(get_class_type())
+ {
   nassertv(parent != NULL);
 
   parent->_children.push_back(this);

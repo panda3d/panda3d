@@ -71,6 +71,7 @@
 
 #include "pandabase.h"
 #include "pointerToBase.h"
+#include "register_type.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerTo
@@ -171,6 +172,20 @@ PUBLISHED:
 
 #define PT(type) PointerTo< type >
 #define CPT(type) ConstPointerTo< type >
+
+// Now that we have defined PointerTo, we can define what it means to
+// take the TypeHandle of a PointerTo object.
+
+template<class T>
+INLINE TypeHandle _get_type_handle(const PointerTo<T> *) {
+  return T::get_class_type();
+}
+
+template<class T>
+INLINE TypeHandle _get_type_handle(const ConstPointerTo<T> *) {
+  return T::get_class_type();
+}
+
 
 #include "pointerTo.I"
 

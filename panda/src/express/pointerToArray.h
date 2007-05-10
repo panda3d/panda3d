@@ -78,6 +78,9 @@
 #pragma warning (disable : 4506)
 #endif
 
+template <class Element>
+class ConstPointerToArray;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToArray
 // Description : A special kind of PointerTo that stores an array of
@@ -114,13 +117,10 @@ public:
   typedef TYPENAME pvector<Element>::size_type size_type;
 
 public:
-  INLINE PointerToArray();
-  INLINE static PointerToArray<Element> empty_array(size_type n);
-  INLINE PointerToArray(size_type n, const Element &value);
+  INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
+  INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
+  INLINE PointerToArray(size_type n, const Element &value, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
-
-  INLINE PStatCollectorForwardBase *get_col() const;
-  INLINE void set_col(PStatCollectorForwardBase *col);
 
 public:
   // Duplicating the interface of vector.  The following member
@@ -196,13 +196,18 @@ public:
   INLINE void clear();
 
 private:
+  TypeHandle _type_handle;
+
+private:
   // This static empty array is kept around just so we can return
-  // something meangful when begin() or end() is called and we have a
+  // something meaningful when begin() or end() is called and we have a
   // NULL pointer.  It might not be shared properly between different
   // .so's, since it's a static member of a template class, but we
   // don't really care.
   static pvector<Element> _empty_array;
 #endif  // CPPPARSER
+
+  friend class ConstPointerToArray<Element>;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -232,11 +237,9 @@ public:
   typedef TYPENAME pvector<Element>::difference_type difference_type;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-  INLINE ConstPointerToArray();
+  INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
-
-  INLINE PStatCollectorForwardBase *get_col() const;
 
   // Duplicating the interface of vector.
 
@@ -283,6 +286,9 @@ public:
   INLINE void clear();
 
 private:
+  TypeHandle _type_handle;
+
+private:
   // This static empty array is kept around just so we can return
   // something meangful when begin() or end() is called and we have a
   // NULL pointer.  It might not be shared properly between different
@@ -290,6 +296,8 @@ private:
   // don't really care.
   static pvector<Element> _empty_array;
 #endif  // CPPPARSER
+
+  friend class PointerToArray<Element>;
 };
 
 

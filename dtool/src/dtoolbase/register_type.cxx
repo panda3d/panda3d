@@ -21,7 +21,9 @@
 
 TypeHandle long_type_handle;
 TypeHandle int_type_handle;
+TypeHandle uint_type_handle;
 TypeHandle short_type_handle;
+TypeHandle ushort_type_handle;
 TypeHandle char_type_handle;
 TypeHandle uchar_type_handle;
 TypeHandle bool_type_handle;
@@ -39,6 +41,7 @@ TypeHandle float_p_type_handle;
 TypeHandle void_p_type_handle;
 
 TypeHandle pvector_type_handle;
+TypeHandle ov_set_type_handle;
 TypeHandle pdeque_type_handle;
 TypeHandle plist_type_handle;
 TypeHandle pmap_type_handle;
@@ -50,7 +53,9 @@ void init_system_type_handles() {
     done = true;
     register_type(long_type_handle, "long");
     register_type(int_type_handle, "int");
+    register_type(uint_type_handle, "uint");
     register_type(short_type_handle, "short");
+    register_type(ushort_type_handle, "ushort");
     register_type(char_type_handle, "char");
     register_type(uchar_type_handle, "uchar");
     register_type(bool_type_handle, "bool");
@@ -67,6 +72,7 @@ void init_system_type_handles() {
     register_type(void_p_type_handle, "void*");
 
     register_type(pvector_type_handle, "pvector");
+    register_type(ov_set_type_handle, "ov_set");
     register_type(pdeque_type_handle, "pdeque");
     register_type(plist_type_handle, "plist");
     register_type(pmap_type_handle, "pmap");

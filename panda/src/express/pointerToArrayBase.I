@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
-ReferenceCountedVector() {
+ReferenceCountedVector(TypeHandle type_handle) : pvector<Element>(type_handle) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,9 +38,6 @@ ReferenceCountedVector(const ReferenceCountedVector<Element> &copy) :
   NodeReferenceCount(copy),
   pvector<Element>(copy)
 {
-#ifdef DO_PSTATS
-  set_col(copy._col);
-#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,8 +47,8 @@ ReferenceCountedVector(const ReferenceCountedVector<Element> &copy) :
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
-ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initial_size) :
-  pvector<Element>(initial_size)
+ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initial_size, TypeHandle type_handle) :
+  pvector<Element>(initial_size, type_handle)
 {
 }
 
@@ -63,43 +60,8 @@ ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initi
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
 ~ReferenceCountedVector() {
-  adjust_size(size(), 0);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCountedVector::get_col
-//       Access: Public
-//  Description: Returns the pointer to the PStatCollector object that
-//               tracks the total allocated size of this buffer.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE PStatCollectorForwardBase *ReferenceCountedVector<Element>::
-get_col() const {
-#ifdef DO_PSTATS
-  return _col;
-#else
-  return NULL;
-#endif  // DO_PSTATS
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCountedVector::set_col
-//       Access: Public
-//  Description: Changes the pointer to the PStatCollector object that
-//               tracks the total allocated size of this buffer.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void ReferenceCountedVector<Element>::
-set_col(PStatCollectorForwardBase *col) {
-#ifdef DO_PSTATS
-  if (_col != col) {
-    adjust_size(size(), 0);
-    _col = col;
-    adjust_size(0, size());
-  }
-#endif  // DO_PSTATS
-}
-
+ 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCountedVector::size
 //       Access: Public
@@ -119,7 +81,6 @@ size() const {
 template<class Element>
 INLINE TYPENAME ReferenceCountedVector<Element>::iterator ReferenceCountedVector<Element>::
 insert(iterator position, const Element &x) {
-  adjust_size(0, 1);
   return pvector<Element>::insert(position, x);
 }
 
@@ -131,7 +92,6 @@ insert(iterator position, const Element &x) {
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
 insert(iterator position, size_type n, const Element &x) {
-  adjust_size(0, n);
   pvector<Element>::insert(position, n, x);
 }
 
@@ -143,7 +103,6 @@ insert(iterator position, size_type n, const Element &x) {
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
 erase(iterator position) {
-  adjust_size(1, 0);
   pvector<Element>::erase(position);
 }
 
@@ -155,7 +114,6 @@ erase(iterator position) {
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
 erase(iterator first, iterator last) {
-  adjust_size(last - first, 0);
   pvector<Element>::erase(first, last);
 }
 
@@ -167,7 +125,6 @@ erase(iterator first, iterator last) {
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
 pop_back() {
-  adjust_size(1, 0);
   pvector<Element>::pop_back();
 }
 
@@ -179,25 +136,7 @@ pop_back() {
 template<class Element>
 INLINE void ReferenceCountedVector<Element>::
 clear() {
-  adjust_size(size(), 0);
   pvector<Element>::clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCountedVector::adjust_size
-//       Access: Private
-//  Description: This internal function is used to update the
-//               connected PStatCollector (if any) with the change in
-//               size.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void ReferenceCountedVector<Element>::
-adjust_size(size_t orig_size, size_t new_size) {
-#ifdef DO_PSTATS
-  if (_col != (PStatCollectorForwardBase *)NULL) {
-    _col->add_level((float)new_size - (float)orig_size);
-  }
-#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

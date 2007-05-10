@@ -39,6 +39,9 @@ TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 /////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable() {
+  for (int i = 0; i < num_matrix_components; i++) {
+    _tables[i] = CPTA_float(get_class_type());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,7 +68,11 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &co
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
-  : AnimChannelMatrix(parent, name) {
+  : AnimChannelMatrix(parent, name) 
+{
+  for (int i = 0; i < num_matrix_components; i++) {
+    _tables[i] = CPTA_float(get_class_type());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,7 +286,7 @@ set_table(char table_id, const CPTA_float &table) {
 void AnimChannelMatrixXfmTable::
 clear_all_tables() {
   for (int i = 0; i < num_matrix_components; i++) {
-    _tables[i] = NULL;
+    _tables[i] = CPTA_float(get_class_type());
   }
 }
 
@@ -431,7 +438,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     for (int i = 0; i < num_matrix_components; i++) {
       int size = scan.get_uint16();
-      PTA_float ind_table;
+      PTA_float ind_table(get_class_type());
       for (int j = 0; j < size; j++) {
         ind_table.push_back(scan.get_float32());
       }
@@ -454,9 +461,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         default_hpr[2] = _tables[8][0];
       }
 
-      PTA_float h_table = PTA_float::empty_array(num_hprs);
-      PTA_float p_table = PTA_float::empty_array(num_hprs);
-      PTA_float r_table = PTA_float::empty_array(num_hprs);
+      PTA_float h_table = PTA_float::empty_array(num_hprs, get_class_type());
+      PTA_float p_table = PTA_float::empty_array(num_hprs, get_class_type());
+      PTA_float r_table = PTA_float::empty_array(num_hprs, get_class_type());
 
       for (size_t hi = 0; hi < num_hprs; hi++) {
         float h = (hi < _tables[6].size() ? _tables[6][hi] : default_hpr[0]);
@@ -493,12 +500,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     int i;
     // First, read in the scales and shears.
     for (i = 0; i < 3; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0);
+      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
     for (i = 3; i < 6; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0);
+      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
@@ -506,9 +513,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     // Read in the HPR array and store it back in the joint angles.
     vector_LVecBase3f hprs;
     compressor.read_hprs(scan, hprs, new_hpr);
-    PTA_float h_table = PTA_float::empty_array(hprs.size());
-    PTA_float p_table = PTA_float::empty_array(hprs.size());
-    PTA_float r_table = PTA_float::empty_array(hprs.size());
+    PTA_float h_table = PTA_float::empty_array(hprs.size(), get_class_type());
+    PTA_float p_table = PTA_float::empty_array(hprs.size(), get_class_type());
+    PTA_float r_table = PTA_float::empty_array(hprs.size(), get_class_type());
 
     for (i = 0; i < (int)hprs.size(); i++) {
       if (!new_hpr && temp_hpr_fix) {
@@ -538,7 +545,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     // Now read in the translations.
     for (i = 9; i < num_matrix_components; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0);
+      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }

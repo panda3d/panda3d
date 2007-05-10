@@ -49,14 +49,11 @@ public:
   typedef TYPENAME pvector<Element>::iterator iterator;
   typedef TYPENAME pvector<Element>::size_type size_type;
 
-  INLINE ReferenceCountedVector();
+  INLINE ReferenceCountedVector(TypeHandle type_handle);
   INLINE ReferenceCountedVector(const ReferenceCountedVector<Element> &copy);
-  INLINE ReferenceCountedVector(size_type initial_size);
+  INLINE ReferenceCountedVector(size_type initial_size, TypeHandle type_handle);
   INLINE ~ReferenceCountedVector();
   ALLOC_DELETED_CHAIN(ReferenceCountedVector<Element>);
-
-  INLINE PStatCollectorForwardBase *get_col() const;
-  INLINE void set_col(PStatCollectorForwardBase *col);
 
   INLINE size_type size() const;
 
@@ -68,13 +65,6 @@ public:
 
   INLINE void pop_back();
   INLINE void clear();
-
-private:
-  INLINE void adjust_size(size_t orig_size, size_t new_size);
-
-#ifdef DO_PSTATS
-  PT(PStatCollectorForwardBase) _col;
-#endif
 };
 
 ////////////////////////////////////////////////////////////////////

@@ -87,7 +87,9 @@ register_dynamic_type(const string &name,
 // A few system-wide TypeHandles are defined for some basic types.
 extern TypeHandle EXPCL_DTOOL long_type_handle;
 extern TypeHandle EXPCL_DTOOL int_type_handle;
+extern TypeHandle EXPCL_DTOOL uint_type_handle;
 extern TypeHandle EXPCL_DTOOL short_type_handle;
+extern TypeHandle EXPCL_DTOOL ushort_type_handle;
 extern TypeHandle EXPCL_DTOOL char_type_handle;
 extern TypeHandle EXPCL_DTOOL uchar_type_handle;
 extern TypeHandle EXPCL_DTOOL bool_type_handle;
@@ -105,6 +107,7 @@ extern TypeHandle float_p_type_handle;
 extern TypeHandle void_p_type_handle;
 
 extern TypeHandle EXPCL_DTOOL pvector_type_handle;
+extern TypeHandle EXPCL_DTOOL ov_set_type_handle;
 extern TypeHandle EXPCL_DTOOL pdeque_type_handle;
 extern TypeHandle EXPCL_DTOOL plist_type_handle;
 extern TypeHandle EXPCL_DTOOL pmap_type_handle;
@@ -132,8 +135,18 @@ INLINE TypeHandle _get_type_handle(const int *) {
 }
 
 template<>
+INLINE TypeHandle _get_type_handle(const unsigned int *) {
+  return uint_type_handle;
+}
+
+template<>
 INLINE TypeHandle _get_type_handle(const short *) {
   return short_type_handle;
+}
+
+template<>
+INLINE TypeHandle _get_type_handle(const unsigned short *) {
+  return ushort_type_handle;
 }
 
 template<>

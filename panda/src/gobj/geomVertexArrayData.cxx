@@ -29,8 +29,6 @@ TypeHandle GeomVertexArrayData::CData::_type_handle;
 TypeHandle GeomVertexArrayDataPipelineReader::_type_handle;
 TypeHandle GeomVertexArrayDataPipelineWriter::_type_handle;
 
-PT(PStatCollectorForward) GeomVertexArrayData::_vdata_mem_pcollector = new PStatCollectorForward(PStatCollector("Main memory:C++:pvector:array:Vertex Data"));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::Default Constructor
 //       Access: Private
@@ -308,7 +306,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 PTA_uchar GeomVertexArrayData::
 reverse_data_endianness(const PTA_uchar &data) {
   // First, make a complete copy of the data.
-  PTA_uchar new_data;
+  PTA_uchar new_data(get_class_type());
   new_data.v() = data.v();
 
   int num_columns = _array_format->get_num_columns();
@@ -397,7 +395,7 @@ write_raw_data(BamWriter *manager, Datagram &dg, const PTA_uchar &data) {
 PTA_uchar GeomVertexArrayData::
 read_raw_data(BamReader *manager, DatagramIterator &scan) {
   size_t size = scan.get_uint32();
-  PTA_uchar data = PTA_uchar::empty_array(size);
+  PTA_uchar data = PTA_uchar::empty_array(size, get_class_type());
   const unsigned char *source_data = 
     (const unsigned char *)scan.get_datagram().get_data();
   memcpy(data, source_data + scan.get_current_index(), size);
@@ -467,7 +465,6 @@ finalize(BamReader *manager) {
 
   // Now is also the time to node_ref the data.
   cdata->_data.node_ref();
-  cdata->_data.set_col(_vdata_mem_pcollector);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -569,7 +566,7 @@ set_num_rows(int n) {
     if (_cdata->_data.get_node_ref_count() > 1) {
       // Copy-on-write: the data is already reffed somewhere else,
       // so we're just going to make a copy.
-      PTA_uchar new_data;
+      PTA_uchar new_data(GeomVertexArrayData::get_class_type());
       new_data.reserve(n * stride);
       new_data.insert(new_data.end(), n * stride, 0);
       memcpy(new_data, _cdata->_data, 
@@ -577,7 +574,6 @@ set_num_rows(int n) {
       _cdata->_data.node_unref();
       _cdata->_data = new_data;
       _cdata->_data.node_ref();
-      _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
       
     } else {
       // We've got the only reference to the data, so we can change
@@ -611,12 +607,11 @@ unclean_set_num_rows(int n) {
   
   if (delta != 0) {
     // Just make a new array.  No reason to keep the old one around.
-    PTA_uchar new_data = PTA_uchar::empty_array(n * stride);
+    PTA_uchar new_data = PTA_uchar::empty_array(n * stride, GeomVertexArrayData::get_class_type());
 
     _cdata->_data.node_unref();
     _cdata->_data = new_data;
     _cdata->_data.node_ref();
-    _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
     _cdata->_modified = Geom::get_next_modified();
 
     return true;
@@ -639,10 +634,9 @@ modify_data() {
   if (_cdata->_data.get_node_ref_count() > 1) {
     PTA_uchar orig_data = _cdata->_data;
     _cdata->_data.node_unref();
-    _cdata->_data = PTA_uchar();
+    _cdata->_data = PTA_uchar(GeomVertexArrayData::get_class_type());
     _cdata->_data.v() = orig_data.v();
     _cdata->_data.node_ref();
-    _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
   }
   _cdata->_modified = Geom::get_next_modified();
 
@@ -659,6 +653,5 @@ set_data(CPTA_uchar array) {
   _cdata->_data.node_unref();
   _cdata->_data = (PTA_uchar &)array;
   _cdata->_data.node_ref();
-  _cdata->_data.set_col(GeomVertexArrayData::_vdata_mem_pcollector);
   _cdata->_modified = Geom::get_next_modified();
 }
