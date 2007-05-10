@@ -730,6 +730,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                                         (self.guiId, self,
                                          base.guiItems[self.guiId]))
                 base.guiItems[self.guiId] = self
+                if hasattr(base, 'printGuiCreates'):
+                    printStack()
         # Attach button to parent and make that self
         if (parent == None):
             parent = aspect2d
