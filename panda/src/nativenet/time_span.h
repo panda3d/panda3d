@@ -90,8 +90,8 @@ inline Time_Span::Time_Span(time_t time)
 //////////////////////////////////////////////////////////////
 inline Time_Span::Time_Span(float Seconds)
 {
-    _my_time.tv_sec = Seconds; // this truncats .. desired result..
-    _my_time.tv_usec = (Seconds - (double)_my_time.tv_sec) * (double)USEC;
+    _my_time.tv_sec = (long)Seconds; // this truncats .. desired result..
+    _my_time.tv_usec = (long)((Seconds - (double)_my_time.tv_sec) * (double)USEC);
 }
 //////////////////////////////////////////////////////////////
 // Function name : Time_Span::Time_Span
