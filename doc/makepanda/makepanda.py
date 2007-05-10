@@ -37,7 +37,7 @@ VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMODEX","NVIDIACG",
           "OPENSSL","FREETYPE","FFTW","MILES",
-          "MAYA6","MAYA65","MAYA7","MAYA8","MAX6","MAX7","MAX8",
+          "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8",
           "BISON","FLEX","FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
@@ -508,7 +508,8 @@ if sys.platform == "win32":
 MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
                  ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
                  ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
-                 ("MAYA8",  "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath")
+                 ("MAYA8",  "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath"),
+                 ("MAYA85", "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath")
 ]
 
 for (ver,key) in MAYAVERSIONINFO:
@@ -1147,9 +1148,9 @@ def CompileIgateLINUX(ipath,opts,outd,outc,wobj,src,module,library,files):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' '
-        if (optlevel==3): cmd = cmd + ' '
-        if (optlevel==4): cmd = cmd + ' '
+        if (optlevel==2): cmd = cmd + ' -DNDEBUG '
+        if (optlevel==3): cmd = cmd + ' -DNDEBUG '
+        if (optlevel==4): cmd = cmd + ' -DNDEBUG '
         cmd = cmd + ' -Sbuilt/include/parser-inc -S/usr/include'
         cmd = cmd + ' -Ithirdparty/win-python/include'
         for pkg in PACKAGES:
