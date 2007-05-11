@@ -33,3 +33,9 @@ forcetype ConfigVariableString
 forcetype istream
 forcetype ostream
 forcetype iostream
+
+forcetype PointerToArray<unsigned char>
+forcetype ConstPointerToArray<unsigned char>
+
+renametype PointerToArray<unsigned char> PTAUchar
+renametype ConstPointerToArray<unsigned char> CPTAUchar

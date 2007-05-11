@@ -102,9 +102,25 @@ class ConstPointerToArray;
 template <class Element>
 class PointerToArray : public PointerToArrayBase<Element> {
 public:
-  // By hiding this template from interrogate, we improve compile-time
-  // speed and memory utilization.
-#ifndef CPPPARSER
+  // By hiding this template from interrogate, we would improve
+  // compile-time speed and memory utilization.  However, we do want
+  // to export a minimal subset of this class.  So we define just the
+  // exportable interface here.
+#ifdef CPPPARSER
+PUBLISHED:
+  typedef TYPENAME pvector<Element>::size_type size_type;
+  INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
+  INLINE PointerToArray(const PointerToArray<Element> &copy);
+  INLINE size_type size() const;
+  INLINE const Element &get_element(size_type n) const;
+  INLINE void set_element(size_type n, const Element &value);
+  INLINE string get_data() const;
+  INLINE void set_data(const string &data);
+  INLINE string get_subdata(size_type n, size_type count) const;
+  INLINE void set_subdata(size_type n, size_type count, const string &data);
+
+#else  // CPPPARSER
+  // This is the actual, complete interface.
   typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::reference reference;
@@ -162,8 +178,6 @@ public:
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
-  INLINE const Element &get_element(size_type n) const;
-  INLINE void set_element(size_type n, const Element &value);
 
   INLINE void push_back(const Element &x);
   INLINE void pop_back();
@@ -172,6 +186,14 @@ public:
   INLINE operator Element *() const;
   INLINE Element *p() const;
   INLINE pvector<Element> &v() const;
+
+  // Methods to help out Python and other high-level languages.
+  INLINE const Element &get_element(size_type n) const;
+  INLINE void set_element(size_type n, const Element &value);
+  INLINE string get_data() const;
+  INLINE void set_data(const string &data);
+  INLINE string get_subdata(size_type n, size_type count) const;
+  INLINE void set_subdata(size_type n, size_type count, const string &data);
 
   //These functions are only to be used in Reading through BamReader.
   //They are designed to work in pairs, so that you register what is
@@ -218,9 +240,20 @@ private:
 template <class Element>
 class ConstPointerToArray : public PointerToArrayBase<Element> {
 public:
-  // By hiding this template from interrogate, we improve compile-time
-  // speed and memory utilization.
-#ifndef CPPPARSER
+  // By hiding this template from interrogate, we would improve
+  // compile-time speed and memory utilization.  However, we do want
+  // to export a minimal subset of this class.  So we define just the
+  // exportable interface here.
+#ifdef CPPPARSER
+PUBLISHED:
+  typedef TYPENAME pvector<Element>::size_type size_type;
+  INLINE size_type size() const;
+  INLINE const Element &get_element(size_type n) const;
+  INLINE string get_data() const;
+  INLINE string get_subdata(size_type n, size_type count) const;
+
+#else  // CPPPARSER
+  // This is the actual, complete interface.
   typedef TYPENAME PointerToArrayBase<Element>::To To;
   typedef TYPENAME pvector<Element>::value_type value_type;
   typedef TYPENAME pvector<Element>::const_reference reference;
@@ -264,11 +297,15 @@ public:
   INLINE reference operator [](size_type n) const;
   INLINE reference operator [](int n) const;
 #endif
-  INLINE const Element &get_element(size_type n) const;
 
   INLINE operator const Element *() const;
   INLINE const Element *p() const;
   INLINE const pvector<Element> &v() const;
+
+  // Methods to help out Python and other high-level languages.
+  INLINE const Element &get_element(size_type n) const;
+  INLINE string get_data() const;
+  INLINE string get_subdata(size_type n, size_type count) const;
 
   INLINE int get_ref_count() const;
 

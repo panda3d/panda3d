@@ -26,7 +26,7 @@ pvector<Element> ConstPointerToArray<Element>::_empty_array;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -39,7 +39,7 @@ PointerToArray(TypeHandle type_handle) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::empty_array
-//       Access: Published, Static
+//       Access: Public, Static
 //  Description: Return an empty array of size n
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -55,7 +55,7 @@ PointerToArray<Element>::empty_array(size_type n, TypeHandle type_handle) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -70,7 +70,7 @@ PointerToArray(size_type n, const Element &value, TypeHandle type_handle) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Copy Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -312,7 +312,7 @@ erase(iterator first, iterator last) {
 #if !defined(WIN32_VC)
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Indexing operator
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -330,7 +330,7 @@ operator [](size_type n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Indexing operator
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -341,39 +341,8 @@ operator [](int n) const {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::get_element
-//       Access: Published
-//  Description: This method exists mainly to access the elements of
-//               the array easily from a high-level language such as
-//               Python, especially on Windows, where the above index
-//               element accessor methods can't be defined because of
-//               a confusion with the pointer typecast operator.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE const Element &PointerToArray<Element>::
-get_element(size_type n) const {
-  return (*this)[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::set_element
-//       Access: Published
-//  Description: This method exists mainly to access the elements of
-//               the array easily from a high-level language such as
-//               Python, especially on Windows, where the above index
-//               element accessor methods can't be defined because of
-//               a confusion with the pointer typecast operator.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE void PointerToArray<Element>::
-set_element(size_type n, const Element &value) {
-  nassertv(n < ((To *)(this->_void_ptr))->size());
-  (*this)[n] = value;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::push_back
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -387,7 +356,7 @@ push_back(const Element &x) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::pop_back
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -402,7 +371,7 @@ pop_back() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::make_empty
-//       Access: Published
+//       Access: Public
 //  Description: Empties the array pointed to.  This is different from
 //               clear(), which reassigns the pointer to a NULL
 //               pointer.
@@ -460,6 +429,123 @@ v() const {
     ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   return *((To *)(this->_void_ptr));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const Element &PointerToArray<Element>::
+get_element(size_type n) const {
+  return (*this)[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::set_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+set_element(size_type n, const Element &value) {
+  nassertv(n < ((To *)(this->_void_ptr))->size());
+  (*this)[n] = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_data
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It returns the entire contents of the vector as a
+//               block of raw data in a string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE string PointerToArray<Element>::
+get_data() const {
+  return get_subdata(0, size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::set_data
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It replaces the entire contents of the vector from a
+//               block of raw data in a string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+set_data(const string &data) {
+  set_subdata(0, size(), data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::get_subdata
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It returns the contents of a portion of the
+//               vector--from element (n) through element (n + count -
+//               1)--as a block of raw data in a string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE string PointerToArray<Element>::
+get_subdata(size_type n, size_type count) const {
+  n = min(n, size());
+  count = max(count, n);
+  count = min(count, size() - n);
+  return string((const char *)(p() + n), sizeof(Element) * count);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::set_subdata
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It replaces the contents of a portion of the
+//               vector--from element (n) through element (n + count -
+//               1)--as a block of raw data in a string.  The length
+//               of the string must be an even multiple of Element
+//               size bytes.  The array may be expanded or truncated
+//               if the length of the string does not correspond to
+//               exactly count elements.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+set_subdata(size_type n, size_type count, const string &data) {
+  nassertv((data.length() % sizeof(Element)) == 0);
+  size_type ncount = data.length() / sizeof(Element);
+  if (ncount < count) {
+    // Reduce the array.
+    erase(begin() + n + ncount, begin() + n + count);
+  } else if (count < ncount) {
+    // Expand the array.
+    insert(begin() + n + count, ncount - count, Element());
+  }
+
+  // Now boldly replace the data.  Hope there aren't any constructors
+  // or destructors involved here.  The user better know what she is
+  // doing.
+  memcpy(p() + n, data.data(), sizeof(Element) * ncount);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -575,7 +661,7 @@ clear() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -588,7 +674,7 @@ ConstPointerToArray(TypeHandle type_handle) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -601,7 +687,7 @@ ConstPointerToArray(const PointerToArray<Element> &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -670,7 +756,7 @@ rend() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::size
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -755,7 +841,7 @@ back() const {
 #ifndef WIN32_VC
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Indexing operator
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -773,7 +859,7 @@ operator [](size_type n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Indexing operator
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
@@ -782,21 +868,6 @@ operator [](int n) const {
   return operator[]((size_type)n);
 }
 #endif
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::get_element
-//       Access: Published
-//  Description: This method exists mainly to access the elements of
-//               the array easily from a high-level language such as
-//               Python, especially on Windows, where the above index
-//               element accessor methods can't be defined because of
-//               a confusion with the pointer typecast operator.
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE const Element &ConstPointerToArray<Element>::
-get_element(size_type n) const {
-  return (*this)[n];
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Typecast operator
@@ -841,6 +912,57 @@ v() const {
     ((ConstPointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   return *(To *)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_element
+//       Access: Published
+//  Description: This method exists mainly to access the elements of
+//               the array easily from a high-level language such as
+//               Python, especially on Windows, where the above index
+//               element accessor methods can't be defined because of
+//               a confusion with the pointer typecast operator.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const Element &ConstPointerToArray<Element>::
+get_element(size_type n) const {
+  return (*this)[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_data
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It returns the entire contents of the vector as a
+//               block of raw data in a string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE string ConstPointerToArray<Element>::
+get_data() const {
+  return get_subdata(0, size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::get_subdata
+//       Access: Published
+//  Description: This method exists mainly to access the data of
+//               the array easily from a high-level language such as
+//               Python.
+//
+//               It returns the contents of a portion of the
+//               vector--from element (n) through element (n + count -
+//               1)--as a block of raw data in a string.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE string ConstPointerToArray<Element>::
+get_subdata(size_type n, size_type count) const {
+  n = min(n, size());
+  count = max(count, n);
+  count = min(count, size() - n);
+  return string((const char *)(p() + n), sizeof(Element) * count);
 }
 
 ////////////////////////////////////////////////////////////////////
