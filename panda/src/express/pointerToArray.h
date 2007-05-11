@@ -118,6 +118,8 @@ PUBLISHED:
   INLINE void set_data(const string &data);
   INLINE string get_subdata(size_type n, size_type count) const;
   INLINE void set_subdata(size_type n, size_type count, const string &data);
+  INLINE int get_ref_count() const;
+  INLINE int get_node_ref_count() const;
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
@@ -251,6 +253,8 @@ PUBLISHED:
   INLINE const Element &get_element(size_type n) const;
   INLINE string get_data() const;
   INLINE string get_subdata(size_type n, size_type count) const;
+  INLINE int get_ref_count() const;
+  INLINE int get_node_ref_count() const;
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
