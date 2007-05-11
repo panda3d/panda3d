@@ -178,6 +178,17 @@ dequeue_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_texture_prepared
+//       Access: Public
+//  Description: Returns true if the texture has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_texture_prepared(const Texture *tex) const {
+  return tex->is_prepared((PreparedGraphicsObjects *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_texture
 //       Access: Public
 //  Description: Indicates that a texture context, created by a
@@ -352,6 +363,17 @@ dequeue_geom(Geom *geom) {
     return true;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_geom_prepared
+//       Access: Public
+//  Description: Returns true if the vertex buffer has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_geom_prepared(const Geom *geom) const {
+  return geom->is_prepared((PreparedGraphicsObjects *)this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -532,6 +554,17 @@ dequeue_shader(ShaderExpansion *se) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_shader_prepared
+//       Access: Public
+//  Description: Returns true if the shader has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_shader_prepared(const ShaderExpansion *shader) const {
+  return shader->is_prepared((PreparedGraphicsObjects *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_shader
 //       Access: Public
 //  Description: Indicates that a shader context, created by a
@@ -709,6 +742,17 @@ dequeue_vertex_buffer(GeomVertexArrayData *data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_vertex_buffer_prepared
+//       Access: Public
+//  Description: Returns true if the vertex buffer has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_vertex_buffer_prepared(const GeomVertexArrayData *data) const {
+  return data->is_prepared((PreparedGraphicsObjects *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_vertex_buffer
 //       Access: Public
 //  Description: Indicates that a data context, created by a
@@ -883,6 +927,17 @@ dequeue_index_buffer(GeomPrimitive *data) {
     return true;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::is_index_buffer_prepared
+//       Access: Public
+//  Description: Returns true if the index buffer has been prepared on
+//               this GSG, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+is_index_buffer_prepared(const GeomPrimitive *data) const {
+  return data->is_prepared((PreparedGraphicsObjects *)this);
 }
 
 ////////////////////////////////////////////////////////////////////

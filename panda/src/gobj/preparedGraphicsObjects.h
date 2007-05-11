@@ -73,6 +73,7 @@ PUBLISHED:
   void enqueue_texture(Texture *tex);
   bool is_texture_queued(const Texture *tex) const;
   bool dequeue_texture(Texture *tex);
+  bool is_texture_prepared(const Texture *tex) const;
   void release_texture(TextureContext *tc);
   int release_all_textures();
   int get_num_queued_textures() const;
@@ -83,6 +84,7 @@ PUBLISHED:
   void enqueue_geom(Geom *geom);
   bool is_geom_queued(const Geom *geom) const;
   bool dequeue_geom(Geom *geom);
+  bool is_geom_prepared(const Geom *geom) const;
   void release_geom(GeomContext *gc);
   int release_all_geoms();
   int get_num_queued_geoms() const;
@@ -93,6 +95,7 @@ PUBLISHED:
   void enqueue_shader(ShaderExpansion *shader);
   bool is_shader_queued(const ShaderExpansion *shader) const;
   bool dequeue_shader(ShaderExpansion *shader);
+  bool is_shader_prepared(const ShaderExpansion *shader) const;
   void release_shader(ShaderContext *sc);
   int release_all_shaders();
   int get_num_queued_shaders() const;
@@ -103,6 +106,7 @@ PUBLISHED:
   void enqueue_vertex_buffer(GeomVertexArrayData *data);
   bool is_vertex_buffer_queued(const GeomVertexArrayData *data) const;
   bool dequeue_vertex_buffer(GeomVertexArrayData *data);
+  bool is_vertex_buffer_prepared(const GeomVertexArrayData *data) const;
   void release_vertex_buffer(VertexBufferContext *vbc);
   int release_all_vertex_buffers();
   int get_num_queued_vertex_buffers() const;
@@ -115,6 +119,7 @@ PUBLISHED:
   void enqueue_index_buffer(GeomPrimitive *data);
   bool is_index_buffer_queued(const GeomPrimitive *data) const;
   bool dequeue_index_buffer(GeomPrimitive *data);
+  bool is_index_buffer_prepared(const GeomPrimitive *data) const;
   void release_index_buffer(IndexBufferContext *ibc);
   int release_all_index_buffers();
   int get_num_queued_index_buffers() const;
