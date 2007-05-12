@@ -61,6 +61,8 @@
 
 using namespace std;
 
+#define PY_PANDA_SMALLER_FOOTPRINT  1
+
 ///////////////////////////////////////////////////////////////////////////////////
 // this is tempory .. untill this is glued better into the panda build system
 ///////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +86,7 @@ EXPCL_DTOOLCONFIG   RunTimeTypeList & GetRunTimeTypeList();
 
 //////////////////////////////////////////////////////////
 // used to stamp dtool instance.. 
-#define PY_PANDA_SIGNATURE 0xdeadbeaf
+#define PY_PANDA_SIGNATURE 0xbeaf
 typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
 typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
 typedef  void   ( *FreeFunction  )(PyObject *);
@@ -96,6 +98,21 @@ inline void     Dtool_Deallocate_General(PyObject * self);
 ////////////////////////////////////////////////////////////////////////
 // THIS IS THE INSTANCE CONTAINER FOR ALL panda py objects....
 ////////////////////////////////////////////////////////////////////////
+#ifdef  PY_PANDA_SMALLER_FOOTPRINT
+// this should save   8 bytes per object ....
+struct Dtool_PyInstDef 
+{
+  PyObject_HEAD
+  void *_ptr_to_object;
+  struct Dtool_PyTypedObject *_My_Type;
+  unsigned short _signature ; 
+  int _memory_rules : 1;   // true if we own the pointer and should delete it or unref it
+  int _is_const     : 1;       // true if this is a "const" pointer.
+};
+
+
+
+#else
 struct Dtool_PyInstDef {
   PyObject_HEAD
   void *_ptr_to_object;
@@ -104,6 +121,7 @@ struct Dtool_PyInstDef {
   unsigned long _signature;
   struct Dtool_PyTypedObject *_My_Type;
 };
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 // A Offset Dictionary Defining How to read the Above Object..

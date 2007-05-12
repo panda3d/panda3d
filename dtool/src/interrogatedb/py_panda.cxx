@@ -23,9 +23,9 @@
 
 PyMemberDef standard_type_members[] = {
   {"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
-  {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
-  {"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY,"C++ 'this' const flag"},
-  {"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY,"A type check signature"},
+//  {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
+//  {"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY,"C++ 'this' const flag"},
+//  {"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY,"A type check signature"},
   {"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
   {NULL}  /* Sentinel */
 };
