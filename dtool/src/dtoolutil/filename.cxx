@@ -51,6 +51,8 @@
 #include <unistd.h>
 #endif
 
+bool Filename::_got_temp_directory;
+Filename Filename::_temp_directory;
 TypeHandle Filename::_type_handle;
 
 #ifdef WIN32
@@ -434,6 +436,44 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
   } while (result.exists());
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_temp_directory
+//       Access: Published
+//  Description: Returns a path to a system-defined temporary
+//               directory.
+////////////////////////////////////////////////////////////////////
+const Filename &Filename::
+get_temp_directory() {
+  if (!_got_temp_directory) {
+#ifdef WIN32
+    static const size_t buffer_size = 4096;
+    char buffer[buffer_size];
+    if (GetTempPath(buffer_size, buffer) != 0) {
+      _temp_directory = from_os_specific(buffer);
+      if (_temp_directory.is_directory()) {
+        if (_temp_directory.make_canonical()) {
+          _got_temp_directory = true;
+        }
+      }
+    }
+
+    if (!_got_temp_directory) {
+      // if $TMP or $TEMP contain bogus strings, GetTempPath() may
+      // return a bogus string.
+      _temp_directory = ExecutionEnvironment::get_cwd();
+      _got_temp_directory = true;
+    }
+
+#else
+    // Posix case.
+    _temp_directory = "/tmp";
+    _got_temp_directory = true;
+#endif  // WIN32
+  }
+
+  return _temp_directory;
 }
 
 ////////////////////////////////////////////////////////////////////

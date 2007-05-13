@@ -87,6 +87,8 @@ PUBLISHED:
                             const string &suffix = string(),
                             Type type = T_general);
 
+  static const Filename &get_temp_directory();
+
   // Assignment is via the = operator.
   INLINE Filename &operator = (const string &filename);
   INLINE Filename &operator = (const char *filename);
@@ -217,6 +219,9 @@ protected:
   size_t _hash_end;
 
   int _flags;
+
+  static bool _got_temp_directory;
+  static Filename _temp_directory;
 
 public:
   static TypeHandle get_class_type() {
