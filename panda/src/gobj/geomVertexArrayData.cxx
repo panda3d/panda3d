@@ -49,6 +49,12 @@ ConfigVariableInt max_compressed_vertex_data
           "the least-recently-used ones will be temporarily flushed to "
           "disk until they are needed.  Set it to -1 for no limit."));
 
+ConfigVariableInt vertex_data_compression_level
+("vertex-data-compression-level", 1,
+ PRC_DESC("Specifies the zlib compression level to use when compressing "
+          "vertex data.  The number should be in the range 1 to 9, where "
+          "larger values are slower but give better compression."));
+
 ConfigVariableInt max_disk_vertex_data
 ("max-disk-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of vertex data "
@@ -451,8 +457,9 @@ make_compressed() {
       uLongf buffer_size = cdata->_data_full_size + ((cdata->_data_full_size + 999) / 1000) + 12;
       Bytef *buffer = new Bytef[buffer_size];
 
-      int result = compress(buffer, &buffer_size,
-                            &cdata->_data[0], cdata->_data_full_size);
+      int result = compress2(buffer, &buffer_size,
+                             &cdata->_data[0], cdata->_data_full_size,
+                             vertex_data_compression_level);
       if (result != Z_OK) {
         gobj_cat.error()
           << "Couldn't compress: zlib error " << result << "\n";
