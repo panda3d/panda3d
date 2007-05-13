@@ -217,6 +217,7 @@ PUBLISHED:
     RC_resident,
     RC_compressed,
     RC_disk,
+    RC_compressed_disk,
 
     RC_end_of_list,  // list marker; do not use
   };

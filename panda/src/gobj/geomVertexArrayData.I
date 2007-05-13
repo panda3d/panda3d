@@ -199,7 +199,22 @@ get_ram_class() const {
 INLINE SimpleLru *GeomVertexArrayData::
 get_global_lru(RamClass rclass) {
   nassertr(rclass >= 0 && rclass < RC_end_of_list, NULL);
-  return &_global_lru[rclass];
+  return _global_lru[rclass];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::get_save_file
+//       Access: Published, Static
+//  Description: Returns the global VertexDataSaveFile that will be
+//               used to save vertex data buffers to disk when
+//               necessary.
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataSaveFile *GeomVertexArrayData::
+get_save_file() {
+  if (_save_file == (VertexDataSaveFile *)NULL) {
+    make_save_file();
+  }
+  return _save_file;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,7 +225,7 @@ get_global_lru(RamClass rclass) {
 INLINE void GeomVertexArrayData::
 set_ram_class(RamClass rclass) {
   _ram_class = rclass;
-  mark_used_lru(&_global_lru[rclass]);
+  mark_used_lru(_global_lru[rclass]);
 }
 
 ////////////////////////////////////////////////////////////////////

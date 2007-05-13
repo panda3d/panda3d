@@ -25,6 +25,8 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
+#include "configVariableFilename.h"
+#include "configVariableString.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
 
@@ -67,6 +69,9 @@ extern ConfigVariableDouble default_fov;
 extern ConfigVariableDouble default_iod;
 extern ConfigVariableDouble default_converge;
 extern ConfigVariableDouble default_keystone;
+
+extern ConfigVariableFilename vertex_save_file_directory;
+extern ConfigVariableString vertex_save_file_prefix;
 
 #endif
 

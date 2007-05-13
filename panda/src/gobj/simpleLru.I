@@ -55,6 +55,8 @@ get_max_size() const {
 //       Access: Published
 //  Description: Changes the max size of all objects that are allowed
 //               to be active on the LRU.
+//
+//               If the size is (size_t)-1, there is no limit.
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLru::
 set_max_size(size_t max_size) {
@@ -69,7 +71,7 @@ set_max_size(size_t max_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLru::
 consider_evict() {
-  if (_max_size != 0 && _total_size > _max_size) {
+  if (_total_size > _max_size) {
     do_evict();
   }
 }

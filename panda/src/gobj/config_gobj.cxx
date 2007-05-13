@@ -270,6 +270,20 @@ ConfigVariableDouble default_keystone
 ("default-keystone", 0.0f,
  PRC_DESC("The default keystone correction, as an x y pair, for all cameras."));
 
+ConfigVariableFilename vertex_save_file_directory
+("vertex-save-file-directory", "",
+ PRC_DESC("The directory in which the saved vertex data file is created "
+          "for saving vertex buffers that have been evicted from RAM.  If "
+          "this is the empty string, or an invalid directory, a system "
+          "default directory will be chosen."));
+
+ConfigVariableString vertex_save_file_prefix
+("vertex-save-file-prefix", "p3d_vdata_",
+ PRC_DESC("A prefix used to generate the filename for the saved vertex "
+          "data file which is created for saving vertex buffers that have "
+          "been evicted from RAM.  A uniquifying sequence number and "
+          "filename extension will be appended to this string."));
+
 
 
 ConfigureFn(config_gobj) {

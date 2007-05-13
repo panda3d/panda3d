@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleLru::Destructor
-//       Access: Protected, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 SimpleLru::
@@ -30,7 +30,8 @@ SimpleLru::
   // We're shutting down.  Force-remove everything remaining, but
   // don't explicitly evict it (that would force vertex buffers to
   // write themselves to disk unnecessarily).
-  while (_next != (LinkedListNode *)NULL) {
+  while (_next != (LinkedListNode *)this) {
+    nassertv(_next != (LinkedListNode *)NULL);
     ((SimpleLruPage *)_next)->_lru = NULL;
     ((SimpleLruPage *)_next)->remove_from_list();
   }

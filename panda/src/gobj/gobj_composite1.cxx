@@ -26,3 +26,4 @@
 #include "geomVertexWriter.cxx"
 #include "indexBufferContext.cxx"
 #include "internalName.cxx"
+#include "lens.cxx"

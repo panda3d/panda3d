@@ -25,26 +25,35 @@
 #include "pset.h"
 #include "config_gobj.h"
 #include "pStatTimer.h"
+#include "configVariableInt.h"
+#include "vertexDataSaveFile.h"
+#include "simpleAllocator.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif
 
 ConfigVariableInt max_ram_vertex_data
-("max-ram-vertex-data", 0,
+("max-ram-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
           "that is allowed to remain resident in system RAM at one time. "
           "If more than this number of bytes of vertices are created, "
           "the least-recently-used ones will be temporarily compressed in "
-          "system RAM until they are needed.  Set it to 0 for no limit."));
+          "system RAM until they are needed.  Set it to -1 for no limit."));
 
 ConfigVariableInt max_compressed_vertex_data
-("max-compressed-vertex-data", 0,
+("max-compressed-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
           "that is allowed to remain compressed in system RAM at one time. "
           "If more than this number of bytes of vertices are created, "
           "the least-recently-used ones will be temporarily flushed to "
-          "disk until they are needed.  Set it to 0 for no limit."));
+          "disk until they are needed.  Set it to -1 for no limit."));
+
+ConfigVariableInt max_disk_vertex_data
+("max-disk-vertex-data", -1,
+ PRC_DESC("Specifies the maximum number of bytes of vertex data "
+          "that is allowed to be written to disk.  Set it to -1 for no "
+          "limit."));
 
 // We make this a static constant rather than a dynamic variable,
 // since we can't tolerate this value changing at runtime.
@@ -57,16 +66,23 @@ static const size_t min_vertex_data_compress_size =
             "storage.  Buffers smaller than this are assumed to be likely to "
             "have minimal compression gains (or even end up larger)."));
 
+SimpleLru GeomVertexArrayData::_ram_lru(max_ram_vertex_data);
+SimpleLru GeomVertexArrayData::_compressed_lru(max_compressed_vertex_data);
+SimpleLru GeomVertexArrayData::_disk_lru(0);
 
-
-SimpleLru GeomVertexArrayData::_global_lru[RC_end_of_list] = {
-  SimpleLru(max_ram_vertex_data),
-  SimpleLru(max_compressed_vertex_data),
-  SimpleLru(0)
+SimpleLru *GeomVertexArrayData::_global_lru[RC_end_of_list] = {
+  &GeomVertexArrayData::_ram_lru,
+  &GeomVertexArrayData::_compressed_lru,
+  &GeomVertexArrayData::_disk_lru,
+  &GeomVertexArrayData::_disk_lru,
 };
+
+VertexDataSaveFile *GeomVertexArrayData::_save_file;
 
 PStatCollector GeomVertexArrayData::_vdata_compress_pcollector("*:Vertex Data:Compress");
 PStatCollector GeomVertexArrayData::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
+PStatCollector GeomVertexArrayData::_vdata_save_pcollector("*:Vertex Data:Save");
+PStatCollector GeomVertexArrayData::_vdata_restore_pcollector("*:Vertex Data:Restore");
 
 
 TypeHandle GeomVertexArrayData::_type_handle;
@@ -83,6 +99,7 @@ GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
   _endian_reversed = false;
   _ram_class = RC_resident;
+  _saved_block = NULL;
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -118,7 +135,8 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
   _endian_reversed = false;
 
   _ram_class = RC_resident;
-  mark_used_lru(&_global_lru[RC_resident]);
+  _saved_block = NULL;
+  mark_used_lru(_global_lru[RC_resident]);
 
   nassertv(_array_format->is_registered());
 }
@@ -138,7 +156,8 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   _endian_reversed = false;
 
   _ram_class = copy._ram_class;
-  mark_used_lru(&_global_lru[_ram_class]);
+  _saved_block = NULL;
+  mark_used_lru(_global_lru[_ram_class]);
 
   nassertv(_array_format->is_registered());
 }
@@ -175,6 +194,10 @@ operator = (const GeomVertexArrayData &copy) {
 GeomVertexArrayData::
 ~GeomVertexArrayData() {
   release_all();
+
+  if (_saved_block != (SimpleAllocatorBlock *)NULL) {
+    delete _saved_block;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -340,9 +363,11 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 lru_epoch() {
-  for (int i = 0; i < (int)RC_end_of_list; ++i) {
-    get_global_lru((RamClass)i)->consider_evict();
-  }
+  _ram_lru.consider_evict();
+  _compressed_lru.consider_evict();
+
+  // No automatic eviction from the Disk LRU.
+  //_disk_lru.consider_evict();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -354,6 +379,17 @@ lru_epoch() {
 void GeomVertexArrayData::
 make_resident() {
   // TODO: make this work with pipelining properly.
+
+  if (_ram_class == RC_resident) {
+    // If we're already resident, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+    restore_from_disk();
+  }
+
   if (_ram_class == RC_compressed) {
     CDWriter cdata(_cycler, true);
 #ifdef HAVE_ZLIB
@@ -372,15 +408,15 @@ make_resident() {
       if (result != Z_OK) {
         gobj_cat.error()
           << "Couldn't expand: zlib error " << result << "\n";
+        nassert_raise("zlib error");
       }
       nassertv(dest_len == new_data.size());
       cdata->_data.swap(new_data);
     }
 #endif
     set_lru_size(cdata->_data.size());
+    set_ram_class(RC_resident);
   }
-  
-  set_ram_class(RC_resident);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,8 +428,18 @@ make_resident() {
 void GeomVertexArrayData::
 make_compressed() {
   // TODO: make this work with pipelining properly.
-  if (_ram_class == RC_resident) {
 
+  if (_ram_class == RC_compressed) {
+    // If we're already compressed, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+    restore_from_disk();
+  }
+
+  if (_ram_class == RC_resident) {
     CDWriter cdata(_cycler, true);
 #ifdef HAVE_ZLIB
     if (cdata->_data_full_size > min_vertex_data_compress_size) {
@@ -410,6 +456,7 @@ make_compressed() {
       if (result != Z_OK) {
         gobj_cat.error()
           << "Couldn't compress: zlib error " << result << "\n";
+        nassert_raise("zlib error");
       }
     
       Data new_data(buffer_size, get_class_type());
@@ -424,8 +471,8 @@ make_compressed() {
       }
     }
 #endif
-    set_ram_class(RC_compressed);
     set_lru_size(cdata->_data.size());
+    set_ram_class(RC_compressed);
   }
 }
 
@@ -438,7 +485,84 @@ make_compressed() {
 void GeomVertexArrayData::
 make_disk() {
   // TODO: make this work with pipelining properly.
-  if (_ram_class == RC_compressed) {
+
+  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+    // If we're already compressed, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
+    nassertv(_saved_block == (SimpleAllocatorBlock *)NULL);
+    CDWriter cdata(_cycler, true);
+
+    PStatTimer timer(_vdata_save_pcollector);
+
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Storing " << *this << ", " << cdata->_data.size()
+        << " bytes, to disk\n";
+    }
+
+    const unsigned char *data = &cdata->_data[0];
+    size_t size = cdata->_data.size();
+    _saved_block = get_save_file()->write_data(data, size);
+    if (_saved_block == NULL) {
+      // Can't write it to disk.  Too bad.
+      mark_used_lru();
+      return;
+    }
+
+    // We swap the pvector with an empty one, to really make it free
+    // its memory.  Otherwise it might optimistically keep the memory
+    // allocated.
+    Data new_data(get_class_type());
+    cdata->_data.swap(new_data);
+
+    if (_ram_class == RC_resident) {
+      set_ram_class(RC_disk);
+    } else {
+      set_ram_class(RC_compressed_disk);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::restore_from_disk
+//       Access: Published
+//  Description: Restores the vertex data from disk and makes it
+//               either compressed or resident (according to whether
+//               it was stored compressed on disk).
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayData::
+restore_from_disk() {
+  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+    nassertv(_saved_block != (SimpleAllocatorBlock *)NULL);
+    CDWriter cdata(_cycler, true);
+
+    PStatTimer timer(_vdata_restore_pcollector);
+
+    size_t size = _saved_block->get_size();
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Restoring " << *this << ", " << size
+        << " bytes, from disk\n";
+    }
+
+    Data new_data(size, get_class_type());
+    if (!get_save_file()->read_data(&new_data[0], size, _saved_block)) {
+      nassert_raise("read error");
+    }
+    cdata->_data.swap(new_data);
+
+    delete _saved_block;
+    _saved_block = NULL;
+
+    if (_ram_class == RC_compressed_disk) {
+      set_ram_class(RC_compressed);
+    } else {
+      set_ram_class(RC_resident);
+    }
   }
 }
 
@@ -463,7 +587,11 @@ evict_lru() {
 
   switch (_ram_class) {
   case RC_resident:
-    make_compressed();
+    if (_compressed_lru.get_max_size() == 0) {
+      make_disk();
+    } else {
+      make_compressed();
+    }
     break;
 
   case RC_compressed:
@@ -471,6 +599,7 @@ evict_lru() {
     break;
 
   case RC_disk:
+  case RC_compressed_disk:
     gobj_cat.warning()
       << "Cannot evict array data from disk.\n";
     break;
@@ -537,6 +666,21 @@ reverse_data_endianness(unsigned char *dest, const unsigned char *source,
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::make_save_file
+//       Access: Private, Static
+//  Description: Creates the global VertexDataSaveFile that will be
+//               used to save vertex data buffers to disk when
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayData::
+make_save_file() {
+  size_t max_size = (size_t)max_disk_vertex_data;
+
+  _save_file = new VertexDataSaveFile(vertex_save_file_directory,
+                                      vertex_save_file_prefix, max_size);
 }
 
 ////////////////////////////////////////////////////////////////////

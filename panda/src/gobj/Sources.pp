@@ -50,6 +50,7 @@
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \
+    simpleAllocator.h simpleAllocator.I \
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
@@ -63,6 +64,7 @@
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexDataSaveFile.I vertexDataSaveFile.h \
     vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h \
     videoTexture.I videoTexture.h
@@ -107,6 +109,7 @@
     savedContext.cxx \
     shaderContext.cxx \
     shaderExpansion.cxx \
+    simpleAllocator.cxx \
     simpleLru.cxx \
     sliderTable.cxx \
     texture.cxx textureContext.cxx texturePool.cxx \
@@ -118,6 +121,7 @@
     userVertexSlider.cxx \
     userVertexTransform.cxx \
     vertexBufferContext.cxx \
+    vertexDataSaveFile.cxx \
     vertexSlider.cxx \
     vertexTransform.cxx \
     videoTexture.cxx
@@ -164,6 +168,7 @@
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \
+    simpleAllocator.h simpleAllocator.I \
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
@@ -177,6 +182,7 @@
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexDataSaveFile.I vertexDataSaveFile.h \
     vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h \
     videoTexture.I videoTexture.h

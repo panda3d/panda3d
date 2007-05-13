@@ -39,8 +39,9 @@
 class PreparedGraphicsObjects;
 class VertexBufferContext;
 class GraphicsStateGuardianBase;
-
 class GeomVertexArrayDataHandle;
+class VertexDataSaveFile;
+class SimpleAllocatorBlock;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomVertexArrayData
@@ -109,10 +110,12 @@ PUBLISHED:
 
   INLINE static SimpleLru *get_global_lru(RamClass rclass);
   static void lru_epoch();
+  INLINE static VertexDataSaveFile *get_save_file();
 
   void make_resident();
   void make_compressed();
   void make_disk();
+  void restore_from_disk();
 
 public:
   virtual void evict_lru();
@@ -123,6 +126,7 @@ private:
                                const unsigned char *source, size_t size);
 
   INLINE void set_ram_class(RamClass rclass);
+  static void make_save_file();
 
 
   CPT(GeomVertexArrayFormat) _array_format;
@@ -140,6 +144,7 @@ private:
   bool _endian_reversed;
 
   RamClass _ram_class;
+  SimpleAllocatorBlock *_saved_block;
 
   typedef pvector<unsigned char> Data;
 
@@ -190,10 +195,16 @@ private:
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  static SimpleLru _global_lru[RC_end_of_list];
+  static SimpleLru _ram_lru;
+  static SimpleLru _compressed_lru;
+  static SimpleLru _disk_lru;
+  static SimpleLru *_global_lru[RC_end_of_list];
+  static VertexDataSaveFile *_save_file;
 
   static PStatCollector _vdata_compress_pcollector;
   static PStatCollector _vdata_decompress_pcollector;
+  static PStatCollector _vdata_save_pcollector;
+  static PStatCollector _vdata_restore_pcollector;
 
 public:
   static void register_with_read_factory();
