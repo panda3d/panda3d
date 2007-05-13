@@ -365,16 +365,16 @@ make_resident() {
           << "Expanding " << *this << " from " << cdata->_data.size()
           << " to " << cdata->_data_full_size << "\n";
       }
-      PTA_uchar new_data = PTA_uchar::empty_array(cdata->_data_full_size, get_class_type());
+      Data new_data(cdata->_data_full_size, get_class_type());
       uLongf dest_len = cdata->_data_full_size;
-      int result = uncompress(new_data.p(), &dest_len,
-                              cdata->_data.p(), cdata->_data.size());
+      int result = uncompress(&new_data[0], &dest_len,
+                              &cdata->_data[0], cdata->_data.size());
       if (result != Z_OK) {
         gobj_cat.error()
           << "Couldn't expand: zlib error " << result << "\n";
       }
       nassertv(dest_len == new_data.size());
-      cdata->_data = new_data;
+      cdata->_data.swap(new_data);
     }
 #endif
     set_lru_size(cdata->_data.size());
@@ -406,17 +406,17 @@ make_compressed() {
       Bytef *buffer = new Bytef[buffer_size];
 
       int result = compress(buffer, &buffer_size,
-                            cdata->_data.p(), cdata->_data_full_size);
+                            &cdata->_data[0], cdata->_data_full_size);
       if (result != Z_OK) {
         gobj_cat.error()
           << "Couldn't compress: zlib error " << result << "\n";
       }
     
-      PTA_uchar new_data = PTA_uchar::empty_array(buffer_size, get_class_type());
-      memcpy(new_data.p(), buffer, buffer_size);
+      Data new_data(buffer_size, get_class_type());
+      memcpy(&new_data[0], buffer, buffer_size);
       delete[] buffer;
 
-      cdata->_data = new_data;
+      cdata->_data.swap(new_data);
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
           << "Compressed " << *this << " from " << cdata->_data_full_size
@@ -506,46 +506,37 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::reverse_data_endianness
 //       Access: Private
-//  Description: Returns a new data array with all numeric values
+//  Description: Fills a new data array with all numeric values
 //               expressed in the indicated array reversed,
 //               byte-for-byte, to convert littleendian to bigendian
 //               and vice-versa.
 ////////////////////////////////////////////////////////////////////
-PTA_uchar GeomVertexArrayData::
-reverse_data_endianness(const PTA_uchar &data) {
-  // First, make a complete copy of the data.
-  PTA_uchar new_data(get_class_type());
-  new_data.v() = data.v();
-
+void GeomVertexArrayData::
+reverse_data_endianness(unsigned char *dest, const unsigned char *source, 
+                        size_t size) {
   int num_columns = _array_format->get_num_columns();
 
-  // Now, walk through each row of the data.
-  unsigned char *begin = new_data;
-  unsigned char *end = new_data + new_data.size();
-  for (unsigned char *row_data = begin; 
-       row_data < end; 
-       row_data += _array_format->get_stride()) {
-    nassertr(row_data + _array_format->get_stride() <= end, new_data);
-
+  // Walk through each row of the data.
+  for (size_t pi = 0; pi < size; pi += _array_format->get_stride()) {
     // For each row, visit all of the columns; and for each column,
     // visit all of the components of that column.
     for (int ci = 0; ci < num_columns; ++ci) {
       const GeomVertexColumn *col = _array_format->get_column(ci);
       int component_bytes = col->get_component_bytes();
       if (component_bytes > 1) {
-        unsigned char *col_data = row_data + col->get_start();
+        // Get the index of the beginning of the column.
+        size_t ci = pi + col->get_start();
+
         int num_components = col->get_num_components();
         for (int cj = 0; cj < num_components; ++cj) {
           // Reverse the bytes of each component.
-          ReversedNumericData nd(col_data, component_bytes);
-          nd.store_value(col_data, component_bytes);
-          col_data += component_bytes;
+          ReversedNumericData nd(source + ci, component_bytes);
+          nd.store_value(dest + ci, component_bytes);
+          pi += component_bytes;
         }
       }
     }
   }
-  
-  return new_data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -575,27 +566,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::write_raw_data
-//       Access: Public
-//  Description: Called by CData::write_datagram to write the raw data
-//               of the array to the indicated datagram.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-write_raw_data(BamWriter *manager, Datagram &dg, const PTA_uchar &data) {
-  dg.add_uint32(data.size());
-
-  if (manager->get_file_endian() == BE_native) {
-    // For native endianness, we only have to write the data directly.
-    dg.append_data(data, data.size());
-
-  } else {
-    // Otherwise, we have to convert it.
-    PTA_uchar new_data = reverse_data_endianness(data);
-    dg.append_data(new_data, new_data.size());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::read_raw_data
 //       Access: Public
 //  Description: Called by CData::fillin to read the raw data
@@ -609,20 +579,6 @@ read_raw_data(BamReader *manager, DatagramIterator &scan) {
     (const unsigned char *)scan.get_datagram().get_data();
   memcpy(data, source_data + scan.get_current_index(), size);
   scan.skip_bytes(size);
-
-  if (manager->get_file_endian() != BE_native) {
-    // For non-native endian files, we have to convert the data.  
-    if (_array_format == (GeomVertexArrayFormat *)NULL) {
-      // But we can't do that until we've completed the _array_format
-      // pointer, which tells us how to convert it.
-      _endian_reversed = true;
-    } else {
-      // Since we have the _array_format pointer now, we can reverse
-      // it immediately (and we should, to support threaded CData
-      // updates).
-      data = reverse_data_endianness(data);
-    }
-  }
 
   return data;
 }
@@ -669,11 +625,10 @@ finalize(BamReader *manager) {
 
   if (_endian_reversed) {
     // Now is the time to endian-reverse the data.
-    cdata->_data = reverse_data_endianness(cdata->_data);
+    Data new_data(cdata->_data.size(), get_class_type());
+    reverse_data_endianness(&new_data[0], &cdata->_data[0], cdata->_data.size());
+    cdata->_data.swap(new_data);
   }
-
-  // Now is also the time to node_ref the data.
-  cdata->_data.node_ref();
 
   set_ram_class(RC_resident);
 }
@@ -743,7 +698,19 @@ void GeomVertexArrayData::CData::
 write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
   dg.add_uint8(_usage_hint);
-  WRITE_PTA(manager, dg, array_data->write_raw_data, _data);
+
+  dg.add_uint32(_data.size());
+
+  if (manager->get_file_endian() == BE_native) {
+    // For native endianness, we only have to write the data directly.
+    dg.append_data(&_data[0], _data.size());
+
+  } else {
+    // Otherwise, we have to convert it.
+    Data new_data(_data.size(), GeomVertexArrayData::get_class_type());
+    array_data->reverse_data_endianness(&new_data[0], &_data[0], _data.size());
+    dg.append_data(&new_data[0], new_data.size());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -757,7 +724,41 @@ void GeomVertexArrayData::CData::
 fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
   _usage_hint = (UsageHint)scan.get_uint8();
-  READ_PTA(manager, scan, array_data->read_raw_data, _data);
+
+  if (manager->get_file_minor_ver() < 8) {
+    // Before bam version 6.8, the array data was a PTA_uchar.
+    PTA_uchar new_data;
+    READ_PTA(manager, scan, array_data->read_raw_data, new_data);
+    _data = new_data.v();
+
+  } else {
+    // Now, the array data is just stored directly.
+    size_t size = scan.get_uint32();
+    Data new_data(size, GeomVertexArrayData::get_class_type());
+    const unsigned char *source_data = 
+      (const unsigned char *)scan.get_datagram().get_data();
+    memcpy(&new_data[0], source_data + scan.get_current_index(), size);
+    scan.skip_bytes(size);
+
+    _data.swap(new_data);
+  }
+
+  if (manager->get_file_endian() != BE_native) {
+    // For non-native endian files, we have to convert the data.  
+    if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {
+      // But we can't do that until we've completed the _array_format
+      // pointer, which tells us how to convert it.
+      array_data->_endian_reversed = true;
+    } else {
+      // Since we have the _array_format pointer now, we can reverse
+      // it immediately (and we should, to support threaded CData
+      // updates).
+      Data new_data(_data.size(), GeomVertexArrayData::get_class_type());
+      array_data->reverse_data_endianness(&new_data[0], &_data[0], _data.size());
+      _data.swap(new_data);
+    }
+  }
+
   _data_full_size = _data.size();
   array_data->set_lru_size(_data_full_size);
 
@@ -814,8 +815,8 @@ unclean_set_num_rows(int n) {
   
   if (delta != 0) {
     // Just make a new array.  No reason to keep the old one around.
-    //_cdata->_data = GeomVertexArrayData::Data('\0', n * stride, GeomVertexArrayData::get_class_type());
-    _cdata->_data = PTA_uchar::empty_array(n * stride, GeomVertexArrayData::get_class_type());
+    GeomVertexArrayData::Data new_data(n * stride, GeomVertexArrayData::get_class_type());
+    _cdata->_data.swap(new_data);
 
     _cdata->_modified = Geom::get_next_modified();
     _cdata->_data_full_size = _cdata->_data.size();
@@ -841,7 +842,7 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
   check_resident();
   other->check_resident();
 
-  _cdata->_data.v() = other->_cdata->_data.v();
+  _cdata->_data = other->_cdata->_data;
   _cdata->_modified = Geom::get_next_modified();
   _cdata->_data_full_size = _cdata->_data.size();
 
@@ -867,7 +868,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
   check_resident();
   other->check_resident();
 
-  pvector<unsigned char> &to_v = _cdata->_data.v();
+  GeomVertexArrayData::Data &to_v = _cdata->_data;
   to_start = min(to_start, to_v.size());
   to_size = min(to_size, to_v.size() - to_start);
 

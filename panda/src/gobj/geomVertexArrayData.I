@@ -234,11 +234,10 @@ CData() :
 INLINE GeomVertexArrayData::CData::
 CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
-  _data(GeomVertexArrayData::get_class_type()),
+  _data(copy._data),
   _data_full_size(copy._data_full_size),
   _modified(copy._modified)
 {
-  _data.v() = copy._data.v();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,7 +249,7 @@ INLINE void GeomVertexArrayData::CData::
 operator = (const GeomVertexArrayData::CData &copy) {
   _usage_hint = copy._usage_hint;
   _modified = copy._modified;
-  _data.v() = copy._data.v();
+  _data = copy._data;
   _data_full_size = copy._data_full_size;
 }
 
@@ -364,7 +363,7 @@ get_object() {
 INLINE const unsigned char *GeomVertexArrayDataHandle::
 get_pointer() const {
   check_resident();
-  return _cdata->_data.p();
+  return &_cdata->_data[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,7 +376,7 @@ INLINE unsigned char *GeomVertexArrayDataHandle::
 get_pointer() {
   nassertr(_writable, NULL);
   check_resident();
-  return _cdata->_data.p();
+  return &_cdata->_data[0];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -119,7 +119,8 @@ public:
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
-  PTA_uchar reverse_data_endianness(const PTA_uchar &data);
+  void reverse_data_endianness(unsigned char *dest, 
+                               const unsigned char *source, size_t size);
 
   INLINE void set_ram_class(RamClass rclass);
 
@@ -161,7 +162,7 @@ private:
     }
 
     UsageHint _usage_hint;
-    PTA_uchar _data;
+    Data _data;
     size_t _data_full_size;
     UpdateSeq _modified;
 
@@ -197,7 +198,6 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  void write_raw_data(BamWriter *manager, Datagram &dg, const PTA_uchar &data);
   PTA_uchar read_raw_data(BamReader *manager, DatagramIterator &source);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
