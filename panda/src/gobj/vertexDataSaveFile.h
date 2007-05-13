@@ -48,6 +48,7 @@ public:
 private:
   SimpleAllocator _allocator;
   Filename _filename;
+  bool _is_valid;
 
 #ifdef _WIN32
   HANDLE _handle;

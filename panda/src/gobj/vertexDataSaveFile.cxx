@@ -28,15 +28,30 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
                    size_t max_size) :
   _allocator(max_size)
 {
+  Filename dir;
+  if (directory.empty()) {
+    dir = Filename::get_temp_directory();
+  } else {
+    dir = directory;
+  }
+
+  _is_valid = false;
+
   // Try to open and lock a writable temporary filename.
   int index = 0;
   while (true) {
     ++index;
     ostringstream strm;
     strm << prefix << "_" << index << ".dat";
+
     string basename = strm.str();
-    _filename = Filename(directory, basename);
+    _filename = Filename(dir, basename);
     string os_specific = _filename.to_os_specific();
+
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Creating vertex data save file " << os_specific << "\n"; 
+    }
 
 #ifdef _WIN32
     // Windows case.
@@ -44,23 +59,51 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
                          0, NULL, CREATE_ALWAYS, 
                          FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_RANDOM_ACCESS,
                          NULL);
-    if (_handle == INVALID_HANDLE_VALUE) {
+    if (_handle != INVALID_HANDLE_VALUE) {
+      // The file was successfully opened and locked.
+      break;
+
+    } else {
       // Couldn't open the file.  Either the directory was bad, or the
-      // file was locked.
+      // file was already locked by another.
       DWORD err = GetLastError();
-      if (err == ERROR_SHARING_VIOLATION) {
-        // Try the next file.
-        break;
+
+      if (err != ERROR_SHARING_VIOLATION) {
+        // File couldn't be opened; permission problem or bogus directory.
+        if (!dir.empty()) {
+          // Try the current directory, once.
+          dir = Filename();
+        } else {
+          gobj_cat.error()
+            << "Couldn't open vertex data save file.\n";
+          return;
+        }
       }
 
-      // File couldn't be opened; permission problem or bogus directory.
-      // TODO: handle this
+      // Couldn't lock the file.  Try the next one.
     }
 
 #else
     // Posix case.
     _fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
-    nassertv(_fd != -1);  // TODO: handle this.
+    if (_fd == -1) {
+      // Couldn't open the file: permissions problem or bad directory.
+      if (!_filename.exists()) {
+        // It must be a bad directory.
+        if (!dir.empty()) {
+          // Try the current directory, once.
+          dir = Filename();
+        } else {
+          gobj_cat.error()
+            << "Couldn't open vertex data save file.\n";
+          return;
+        }
+      }
+
+      // If it's a permissions problem, it might be a user-level
+      // permissions issue.  Continue to the next.
+      continue;
+    }
     
     // Now try to lock the file, so we can be sure that no other
     // process is simultaneously writing to the same save file.
@@ -70,13 +113,14 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
       // case there's an old version of the file we picked up.
       ftruncate(_fd, 0);
 
-      // On Unix, it's safe to unlink (delete) the temporary file after
-      // it's been opened.  The file remains open, but disappears from
-      // the directory.  This ensures it won't accidentally get left
-      // behind should this process crash without closing and deleting
-      // the file cleanly.
-      //unlink(os_specific.c_str());
-      //_filename = Filename();
+      // On Unix, it's safe to unlink (delete) the temporary file
+      // after it's been opened.  The file remains open, but
+      // disappears from the directory.  This is kind of like
+      // DELETE_ON_CLOSE, to ensure the temporary file won't
+      // accidentally get left behind, except it's a little more
+      // proactive.
+      unlink(os_specific.c_str());
+      _filename = Filename();
       break;
     }
 
@@ -84,6 +128,8 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     close(_fd);
 #endif  // _WIN32
   }
+
+  _is_valid = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,9 +149,14 @@ VertexDataSaveFile::
   }
 #endif  // _WIN32
 
+  // No need to remove the file, since in both above cases we have
+  // already removed it.  And removing it now, after we have closed
+  // and unlocked it, might accidentally remove someone else's copy.
+  /*
   if (!_filename.empty()) {
     _filename.unlink();
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
