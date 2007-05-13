@@ -16,3 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveFile::is_valid
+//       Access: Public
+//  Description: Returns true if the save file was successfully
+//               created and is ready for use, false if there was an
+//               error.
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexDataSaveFile::
+is_valid() const {
+  return _is_valid;
+}
+

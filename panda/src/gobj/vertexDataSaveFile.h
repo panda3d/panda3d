@@ -41,6 +41,8 @@ public:
                      size_t max_size);
   ~VertexDataSaveFile();
 
+  INLINE bool is_valid() const;
+  
   SimpleAllocatorBlock *write_data(const unsigned char *data, size_t size);
   bool read_data(unsigned char *data, size_t size,
                  SimpleAllocatorBlock *block);

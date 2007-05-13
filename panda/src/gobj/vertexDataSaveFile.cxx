@@ -169,6 +169,10 @@ VertexDataSaveFile::
 ////////////////////////////////////////////////////////////////////
 SimpleAllocatorBlock *VertexDataSaveFile::
 write_data(const unsigned char *data, size_t size) {
+  if (!_is_valid) {
+    return NULL;
+  }
+
   SimpleAllocatorBlock *block = _allocator.alloc(size);
   if (block != (SimpleAllocatorBlock *)NULL) {
 
@@ -218,6 +222,10 @@ write_data(const unsigned char *data, size_t size) {
 ////////////////////////////////////////////////////////////////////
 bool VertexDataSaveFile::
 read_data(unsigned char *data, size_t size, SimpleAllocatorBlock *block) {
+  if (!_is_valid) {
+    return false;
+  }
+
   nassertr(size == block->get_size(), false);
 
 #ifdef _WIN32
