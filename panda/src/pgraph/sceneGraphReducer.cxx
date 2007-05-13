@@ -67,7 +67,7 @@ flatten(PandaNode *root, int combine_siblings_bits) {
     // Now visit each of the children in turn.
     int num_children = cr.get_num_children();
     for (int i = 0; i < num_children; i++) {
-      PandaNode *child_node = cr.get_child(i);
+      PT(PandaNode) child_node = cr.get_child(i);
       num_pass_nodes += r_flatten(root, child_node, combine_siblings_bits);
     }
 
@@ -271,7 +271,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
       PandaNode::Children cr = parent_node->get_children();
       int num_children = cr.get_num_children();
       for (int i = 0; i < num_children; i++) {
-        PandaNode *child_node = cr.get_child(i);
+        PT(PandaNode) child_node = cr.get_child(i);
         num_nodes += r_flatten(parent_node, child_node, combine_siblings_bits);
       }
     }

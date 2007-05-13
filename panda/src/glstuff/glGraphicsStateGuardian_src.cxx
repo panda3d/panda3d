@@ -1782,7 +1782,7 @@ update_standard_vertex_arrays() {
 #endif  // SUPPORT_IMMEDIATE_MODE
   {
     // We may use vertex arrays or buffers to render primitives.
-    const GeomVertexArrayDataPipelineReader *array_reader;
+    const GeomVertexArrayDataHandle *array_reader;
     int num_values;
     Geom::NumericType numeric_type;
     int start;
@@ -2697,7 +2697,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataPipelineReader *reader) {
+                    const GeomVertexArrayDataHandle *reader) {
   nassertv(_supports_buffers);
   nassertv(reader->get_modified() != UpdateSeq::initial());
 
@@ -2724,12 +2724,12 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     if (num_bytes != 0) {
       if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes,
-                      reader->get_data(),
+                      reader->get_pointer(),
                       get_usage(reader->get_usage_hint()));
 
       } else {
         _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
-                         reader->get_data());
+                         reader->get_pointer());
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2795,10 +2795,10 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 //               in client memory, that is, the data array passed in.
 ////////////////////////////////////////////////////////////////////
 const unsigned char *CLP(GraphicsStateGuardian)::
-setup_array_data(const GeomVertexArrayDataPipelineReader *array_reader) {
+setup_array_data(const GeomVertexArrayDataHandle *array_reader) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return array_reader->get_data();
+    return array_reader->get_pointer();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       array_reader->get_usage_hint() == Geom::UH_client) {
@@ -2812,12 +2812,12 @@ setup_array_data(const GeomVertexArrayDataPipelineReader *array_reader) {
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
-    return array_reader->get_data();
+    return array_reader->get_pointer();
   }
 
   // Prepare the buffer object and bind it.
   VertexBufferContext *vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, array_reader->get_data());
+  nassertr(vbc != (VertexBufferContext *)NULL, array_reader->get_pointer());
   apply_vertex_buffer(vbc, array_reader);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
@@ -2884,6 +2884,7 @@ apply_index_buffer(IndexBufferContext *ibc,
 
   if (gibc->was_modified(reader)) {
     PStatTimer timer(_load_index_buffer_pcollector, reader->get_current_thread());
+    
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2893,12 +2894,12 @@ apply_index_buffer(IndexBufferContext *ibc,
     if (num_bytes != 0) {
       if (gibc->changed_size(reader) || gibc->changed_usage_hint(reader)) {
         _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
-                      reader->get_data(),
+                      reader->get_pointer(),
                       get_usage(reader->get_usage_hint()));
 
       } else {
         _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
-                         reader->get_data());
+                         reader->get_pointer());
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2966,7 +2967,7 @@ const unsigned char *CLP(GraphicsStateGuardian)::
 setup_primitive(const GeomPrimitivePipelineReader *reader) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return reader->get_data();
+    return reader->get_pointer();
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       reader->get_usage_hint() == Geom::UH_client) {
@@ -2980,12 +2981,12 @@ setup_primitive(const GeomPrimitivePipelineReader *reader) {
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
     }
-    return reader->get_data();
+    return reader->get_pointer();
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = ((GeomPrimitive *)reader->get_object())->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, reader->get_data());
+  nassertr(ibc != (IndexBufferContext *)NULL, reader->get_pointer());
   apply_index_buffer(ibc, reader);
 
   // NULL is the OpenGL convention for the first byte of the buffer object.

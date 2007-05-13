@@ -157,16 +157,14 @@ private:
 
   void initialize();
 
-  INLINE void set_pointer(int row, 
-                          GeomVertexArrayDataPipelineWriter *array_writer);
+  INLINE void set_pointer(int row);
   INLINE void quick_set_pointer(int row);
   INLINE unsigned char *inc_pointer();
   INLINE unsigned char *inc_add_pointer();
 
   bool set_vertex_column(int array, const GeomVertexColumn *column,
                          GeomVertexDataPipelineWriter *data_writer);
-  bool set_array_column(const GeomVertexColumn *column,
-                        GeomVertexArrayDataPipelineWriter *array_writer);
+  bool set_array_column(const GeomVertexColumn *column);
 
   // It is important that we only store *one* of the following two
   // pointers.  If we are storing a GeomVertexData/array index, we
@@ -181,7 +179,7 @@ private:
   GeomVertexColumn::Packer *_packer;
   int _stride;
 
-  PTA_uchar _data;
+  PT(GeomVertexArrayDataHandle) _handle;
   unsigned char *_pointer_begin;
   unsigned char *_pointer_end;
   unsigned char *_pointer;

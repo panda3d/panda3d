@@ -409,27 +409,27 @@ public:
   INLINE const GeomVertexData *get_object() const;
 
   INLINE void check_array_readers() const;
-  INLINE const GeomVertexArrayDataPipelineReader *get_array_reader(int i) const;
+  INLINE const GeomVertexArrayDataHandle *get_array_reader(int i) const;
   int get_num_rows() const;
 
   bool get_array_info(const InternalName *name, 
-                      const GeomVertexArrayDataPipelineReader *&array_reader,
+                      const GeomVertexArrayDataHandle *&array_reader,
                       int &num_values, NumericType &numeric_type, 
                       int &start, int &stride) const;
 
   INLINE bool has_vertex() const;
   INLINE bool is_vertex_transformed() const;
-  bool get_vertex_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+  bool get_vertex_info(const GeomVertexArrayDataHandle *&array_reader,
                        int &num_values, NumericType &numeric_type, 
                        int &start, int &stride) const;
 
   INLINE bool has_normal() const;
-  bool get_normal_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+  bool get_normal_info(const GeomVertexArrayDataHandle *&array_reader,
                        NumericType &numeric_type,
                        int &start, int &stride) const;
 
   INLINE bool has_color() const;
-  bool get_color_info(const GeomVertexArrayDataPipelineReader *&array_reader,
+  bool get_color_info(const GeomVertexArrayDataHandle *&array_reader,
                       int &num_values, NumericType &numeric_type, 
                       int &start, int &stride) const;
 
@@ -438,7 +438,7 @@ private:
   void delete_array_readers();
 
   bool _got_array_readers;
-  typedef pvector<GeomVertexArrayDataPipelineReader *> ArrayReaders;
+  typedef pvector<CPT(GeomVertexArrayDataHandle) > ArrayReaders;
   ArrayReaders _array_readers;
 
 public:
@@ -473,7 +473,7 @@ public:
   INLINE GeomVertexData *get_object() const;
 
   INLINE void check_array_writers() const;
-  INLINE GeomVertexArrayDataPipelineWriter *get_array_writer(int i) const;
+  INLINE GeomVertexArrayDataHandle *get_array_writer(int i) const;
 
   PT(GeomVertexArrayData) modify_array(int i);
   void set_array(int i, const GeomVertexArrayData *array);
@@ -488,7 +488,7 @@ private:
 
   bool _force_to_0;
   bool _got_array_writers;
-  typedef pvector<GeomVertexArrayDataPipelineWriter *> ArrayWriters;
+  typedef pvector<PT(GeomVertexArrayDataHandle) > ArrayWriters;
   ArrayWriters _array_writers;
 
 public:

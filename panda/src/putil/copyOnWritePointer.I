@@ -121,7 +121,7 @@ get_write_pointer() {
   if (_object == (CopyOnWriteObject *)NULL) {
     return NULL;
   }
-  if (_object->get_ref_count() > 1) {
+  if (_object->get_cache_ref_count() > 1) {
     PT(CopyOnWriteObject) new_object = _object->make_cow_copy();
     cache_unref_delete(_object);
     _object = new_object;

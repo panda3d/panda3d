@@ -158,7 +158,6 @@ public:
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
   INLINE int get_index_stride() const;
-  INLINE CPTA_uchar get_data() const;
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
@@ -346,8 +345,8 @@ public:
   INLINE UpdateSeq get_modified() const;
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
   INLINE int get_index_stride() const;
-  INLINE const GeomVertexArrayDataPipelineReader *get_vertices_reader() const;
-  INLINE CPTA_uchar get_data() const;
+  INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
+  INLINE const unsigned char *get_pointer() const;
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;
@@ -357,7 +356,7 @@ private:
   Thread *_current_thread;
   const GeomPrimitive::CData *_cdata;
 
-  GeomVertexArrayDataPipelineReader *_vertices_reader;
+  CPT(GeomVertexArrayDataHandle) _vertices_reader;
 
 public:
   static TypeHandle get_class_type() {

@@ -57,8 +57,7 @@ set_column(int array, const GeomVertexColumn *column) {
     return set_vertex_column(array, column, &reader);
   }
   if (_array_data != (const GeomVertexArrayData *)NULL) {
-    GeomVertexArrayDataPipelineReader reader(_array_data, _current_thread);
-    return set_array_column(column, &reader);
+    return set_array_column(column);
   }
 
   // No data is associated with the Reader.
@@ -121,12 +120,11 @@ set_vertex_column(int array, const GeomVertexColumn *column,
 #endif
 
   _array = array;
-  const GeomVertexArrayDataPipelineReader *array_reader = 
-    data_reader->get_array_reader(_array);
-  _stride = array_reader->get_array_format()->get_stride();
+  _handle = data_reader->get_array_reader(_array);
+  _stride = _handle->get_array_format()->get_stride();
 
   _packer = column->_packer;
-  set_pointer(_start_row, array_reader);
+  set_pointer(_start_row);
   
   return true;
 }
@@ -139,18 +137,18 @@ set_vertex_column(int array, const GeomVertexColumn *column,
 //               GeomVertexArrayData.
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexReader::
-set_array_column(const GeomVertexColumn *column,
-                 const GeomVertexArrayDataPipelineReader *array_reader) {
+set_array_column(const GeomVertexColumn *column) {
   if (column == (const GeomVertexColumn *)NULL) {
     return set_column(0, NULL);
   }
 
   nassertr(_array_data != (const GeomVertexArrayData *)NULL, false);
 
-  _stride = array_reader->get_array_format()->get_stride();
+  _handle = _array_data->get_handle();
+  _stride = _handle->get_array_format()->get_stride();
 
   _packer = column->_packer;
-  set_pointer(_start_row, array_reader);
+  set_pointer(_start_row);
   
   return true;
 }

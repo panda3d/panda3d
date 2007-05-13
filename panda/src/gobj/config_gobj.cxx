@@ -287,8 +287,7 @@ ConfigureFn(config_gobj) {
   GeomTrifans::init_type();
   GeomTristrips::init_type();
   GeomVertexArrayData::init_type();
-  GeomVertexArrayDataPipelineReader::init_type();
-  GeomVertexArrayDataPipelineWriter::init_type();
+  GeomVertexArrayDataHandle::init_type();
   GeomVertexArrayFormat::init_type();
   GeomVertexData::init_type();
   GeomVertexDataPipelineReader::init_type();

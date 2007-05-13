@@ -43,6 +43,7 @@
 #include "objectDeletor.h"
 #include "bamCache.h"
 #include "cullableObject.h"
+#include "geomVertexArrayData.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -75,6 +76,12 @@ PStatCollector GraphicsEngine::_cyclers_pcollector("PipelineCyclers");
 PStatCollector GraphicsEngine::_dirty_cyclers_pcollector("Dirty PipelineCyclers");
 PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
+
+PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
+PStatCollector GraphicsEngine::_vertex_data_resident_pcollector("Vertex Data:Resident");
+PStatCollector GraphicsEngine::_vertex_data_compressed_pcollector("Vertex Data:Compressed");
+PStatCollector GraphicsEngine::_vertex_data_disk_pcollector("Vertex Data:Disk");
+
 // These are counted independently by the collision system; we
 // redefine them here so we can reset them at each frame.
 PStatCollector GraphicsEngine::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
@@ -95,7 +102,6 @@ PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
 PStatCollector GraphicsEngine::_test_geom_pcollector("Collision Tests:CollisionGeom");
-PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -672,6 +678,8 @@ render_frame() {
     PStatTimer timer(_delete_pcollector, current_thread);
     deletor->flush();
   }
+
+  GeomVertexArrayData::lru_epoch();
   
   GeomCacheManager::flush_level();
   CullTraverser::flush_level();
@@ -714,6 +722,11 @@ render_frame() {
     _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
   }
 
+  _sw_sprites_pcollector.clear_level();
+  _vertex_data_resident_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->get_total_size());
+  _vertex_data_compressed_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_compressed)->get_total_size());
+  _vertex_data_disk_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_disk)->get_total_size());
+
   _cnode_volume_pcollector.clear_level();
   _gnode_volume_pcollector.clear_level();
   _geom_volume_pcollector.clear_level();
@@ -732,7 +745,6 @@ render_frame() {
   _test_inv_sphere_pcollector.clear_level();
   _volume_geom_pcollector.clear_level();
   _test_geom_pcollector.clear_level();
-  _sw_sprites_pcollector.clear_level();
 
 #endif  // DO_PSTATS
 

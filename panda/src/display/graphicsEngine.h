@@ -359,6 +359,11 @@ private:
   static PStatCollector _dirty_cyclers_pcollector;
   static PStatCollector _delete_pcollector;
 
+  static PStatCollector _sw_sprites_pcollector;
+  static PStatCollector _vertex_data_resident_pcollector;
+  static PStatCollector _vertex_data_compressed_pcollector;
+  static PStatCollector _vertex_data_disk_pcollector;
+
   static PStatCollector _cnode_volume_pcollector;
   static PStatCollector _gnode_volume_pcollector;
   static PStatCollector _geom_volume_pcollector;
@@ -377,7 +382,6 @@ private:
   static PStatCollector _test_inv_sphere_pcollector;
   static PStatCollector _volume_geom_pcollector;
   static PStatCollector _test_geom_pcollector;
-  static PStatCollector _sw_sprites_pcollector;
 
   friend class WindowRenderer;
   friend class GraphicsOutput;

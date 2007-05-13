@@ -210,6 +210,17 @@ PUBLISHED:
     AT_hardware, // Hardware-accelerated animation on the graphics card.
   };
 
+  // These are used to indicate the current residency state of vertex
+  // data, which may or may not have been temporarily evicted to
+  // satisfy memory requirements.
+  enum RamClass {
+    RC_resident,
+    RC_compressed,
+    RC_disk,
+
+    RC_end_of_list,  // list marker; do not use
+  };
+
 };
 
 EXPCL_PANDA ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);

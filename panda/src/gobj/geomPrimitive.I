@@ -304,18 +304,6 @@ get_index_stride() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_data
-//       Access: Public
-//  Description: A convenience function to return the actual data of
-//               the index array.
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar GeomPrimitive::
-get_data() const {
-  nassertr(is_indexed(), CPTA_uchar());
-  return get_vertices()->get_data();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_ends
 //       Access: Public
 //  Description: Returns a const pointer to the primitive ends
@@ -486,8 +474,7 @@ GeomPrimitivePipelineReader(const GeomPrimitive *object,
   _cdata->ref();
 #endif  // DO_PIPELINING
   if (!_cdata->_vertices.is_null()) {
-    _vertices_reader =
-      new GeomVertexArrayDataPipelineReader(_cdata->_vertices.get_read_pointer(), _current_thread);
+    _vertices_reader = _cdata->_vertices.get_read_pointer()->get_handle();
   }
 }
 
@@ -518,9 +505,6 @@ operator = (const GeomPrimitivePipelineReader &) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomPrimitivePipelineReader::
 ~GeomPrimitivePipelineReader() {
-  if (_vertices_reader != (GeomVertexArrayDataPipelineReader *)NULL) {
-    delete _vertices_reader;
-  }
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #endif // _DEBUG
@@ -671,19 +655,19 @@ get_index_stride() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayDataPipelineReader *GeomPrimitivePipelineReader::
+INLINE const GeomVertexArrayDataHandle *GeomPrimitivePipelineReader::
 get_vertices_reader() const {
   return _vertices_reader;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_data
+//     Function: GeomPrimitivePipelineReader::get_pointer
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar GeomPrimitivePipelineReader::
-get_data() const {
-  return _vertices_reader->get_data();
+INLINE const unsigned char *GeomPrimitivePipelineReader::
+get_pointer() const {
+  return _vertices_reader->get_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

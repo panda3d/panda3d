@@ -393,7 +393,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 void DXGraphicsStateGuardian9::
 apply_vertex_buffer(VertexBufferContext *vbc,
                     CLP(ShaderContext) *shader_context,
-                    const GeomVertexArrayDataPipelineReader *reader) {
+                    const GeomVertexArrayDataHandle *reader) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
   DBG_SH3 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
@@ -1186,7 +1186,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   _vertex_array_shader_context = _current_shader_context;
 
   const GeomVertexFormat *format = _data_reader->get_format ( );
-  const GeomVertexArrayDataPipelineReader *data;
+  const GeomVertexArrayDataHandle *data;
   int number_of_arrays = _data_reader -> get_num_arrays ( );
 
   if (_current_shader_context && number_of_arrays > 1) {
@@ -1422,9 +1422,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
         (D3DPT_TRIANGLELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_data(),
+         reader->get_pointer(),
          index_type,
-         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_array_reader(0)->get_pointer(),
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -1446,7 +1446,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
       draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
       reader->get_first_vertex(),
       reader->get_num_vertices(),
-      _data_reader->get_array_reader(0)->get_data(),
+      _data_reader->get_array_reader(0)->get_pointer(),
       _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
@@ -1497,8 +1497,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            reader->get_num_vertices() - 2,
-           reader->get_data(), index_type,
-           _data_reader->get_array_reader(0)->get_data(),
+           reader->get_pointer(), index_type,
+           _data_reader->get_array_reader(0)->get_pointer(),
            _data_reader->get_format()->get_array(0)->get_stride());
       }
     } else {
@@ -1518,7 +1518,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
         reader->get_num_vertices() - 2,
         reader->get_first_vertex(),
         reader->get_num_vertices(),
-        _data_reader->get_array_reader(0)->get_data(),
+        _data_reader->get_array_reader(0)->get_pointer(),
         _data_reader->get_format()->get_array(0)->get_stride());
       }
     }
@@ -1561,9 +1561,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Indexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
-        CPTA_uchar vertices = reader->get_data();
+        const unsigned char *vertices = reader->get_pointer();
         D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
         unsigned int start = 0;
@@ -1598,7 +1598,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Nonindexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
         unsigned int start = 0;
@@ -1664,9 +1664,9 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Indexed, client arrays.
-      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
-      CPTA_uchar vertices = reader->get_data();
+      const unsigned char *vertices = reader->get_pointer();
       D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
       unsigned int start = 0;
@@ -1701,7 +1701,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Nonindexed, client arrays.
-      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
       unsigned int start = 0;
@@ -1753,9 +1753,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
         (D3DPT_LINELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_data(),
+         reader->get_pointer(),
          index_type,
-         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_array_reader(0)->get_pointer(),
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -1771,7 +1771,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
       draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
       reader->get_first_vertex(),
       reader->get_num_vertices(),
-      _data_reader->get_array_reader(0)->get_data(),
+      _data_reader->get_array_reader(0)->get_pointer(),
       _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
@@ -1814,7 +1814,7 @@ draw_points(const GeomPrimitivePipelineReader *reader) {
     draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
                       reader->get_first_vertex(),
                       reader->get_num_vertices(),
-                      _data_reader->get_array_reader(0)->get_data(),
+                      _data_reader->get_array_reader(0)->get_pointer(),
                       _data_reader->get_format()->get_array(0)->get_stride());
   }
 }
@@ -2220,11 +2220,11 @@ bool vertex_buffer_page_in_function (LruPage *lru_page)
 
   // allocate vertex buffer
   Thread *current_thread = Thread::get_current_thread();
-  GeomVertexArrayDataPipelineReader reader(vertex_buffer->get_data(), current_thread);
-  vertex_buffer -> allocate_vbuffer (*(gsg->_screen), &reader);
+  CPT(GeomVertexArrayDataHandle) reader = vertex_buffer->get_data()->get_handle(current_thread);
+  vertex_buffer -> allocate_vbuffer (*(gsg->_screen), reader);
 
   // update vertex buffer
-  vertex_buffer -> upload_data(&reader);
+  vertex_buffer -> upload_data(reader);
   vertex_buffer -> set_resident(true);
 
   if (DEBUG_LRU && dxgsg9_cat.is_debug())

@@ -305,7 +305,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataPipelineReader *reader) {
+                    const GeomVertexArrayDataHandle *reader) {
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
 
   if (dvbc->_vbuffer == NULL) {
@@ -807,7 +807,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   const GeomVertexFormat *format = _data_reader->get_format();
 
   // The munger should have put the FVF data in the first array.
-  const GeomVertexArrayDataPipelineReader *data = _data_reader->get_array_reader(0);
+  const GeomVertexArrayDataHandle *data = _data_reader->get_array_reader(0);
 
   VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
@@ -930,9 +930,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
         (D3DPT_TRIANGLELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_data(),
+         reader->get_pointer(),
          index_type,
-         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_array_reader(0)->get_pointer(),
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -949,7 +949,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
       draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
                         reader->get_first_vertex(),
                         reader->get_num_vertices(),
-                        _data_reader->get_array_reader(0)->get_data(),
+                        _data_reader->get_array_reader(0)->get_pointer(),
                         _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
@@ -990,8 +990,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            reader->get_num_vertices() - 2,
-           reader->get_data(), index_type,
-           _data_reader->get_array_reader(0)->get_data(),
+           reader->get_pointer(), index_type,
+           _data_reader->get_array_reader(0)->get_pointer(),
            _data_reader->get_format()->get_array(0)->get_stride());
       }
     } else {
@@ -1008,7 +1008,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
                           reader->get_num_vertices() - 2,
                           reader->get_first_vertex(),
                           reader->get_num_vertices(),
-                          _data_reader->get_array_reader(0)->get_data(),
+                          _data_reader->get_array_reader(0)->get_pointer(),
                           _data_reader->get_format()->get_array(0)->get_stride());
       }
     }
@@ -1050,9 +1050,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Indexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
-        CPTA_uchar vertices = reader->get_data();
+        const unsigned char *vertices = reader->get_pointer();
         D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
         unsigned int start = 0;
@@ -1087,7 +1087,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Nonindexed, client arrays, individual triangle strips.
-        CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
         unsigned int start = 0;
@@ -1150,9 +1150,9 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Indexed, client arrays.
-      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
-      CPTA_uchar vertices = reader->get_data();
+      const unsigned char *vertices = reader->get_pointer();
       D3DFORMAT index_type = get_index_type(reader->get_index_type());
 
       unsigned int start = 0;
@@ -1187,7 +1187,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Nonindexed, client arrays.
-      CPTA_uchar array_data = _data_reader->get_array_reader(0)->get_data();
+      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_pointer();
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
       unsigned int start = 0;
@@ -1238,9 +1238,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
         (D3DPT_LINELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_data(),
+         reader->get_pointer(),
          index_type,
-         _data_reader->get_array_reader(0)->get_data(),
+         _data_reader->get_array_reader(0)->get_pointer(),
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -1256,7 +1256,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
       draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
                         reader->get_first_vertex(),
                         reader->get_num_vertices(),
-                        _data_reader->get_array_reader(0)->get_data(),
+                        _data_reader->get_array_reader(0)->get_pointer(),
                         _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
@@ -1299,7 +1299,7 @@ draw_points(const GeomPrimitivePipelineReader *reader) {
     draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
                       reader->get_first_vertex(),
                       reader->get_num_vertices(),
-                      _data_reader->get_array_reader(0)->get_data(),
+                      _data_reader->get_array_reader(0)->get_pointer(),
                       _data_reader->get_format()->get_array(0)->get_stride());
   }
 }

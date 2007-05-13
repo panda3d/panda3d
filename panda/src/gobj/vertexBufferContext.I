@@ -47,7 +47,7 @@ get_data() const {
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool VertexBufferContext::
-changed_size(const GeomVertexArrayDataPipelineReader *reader) const {
+changed_size(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return get_data_size_bytes() != (size_t)reader->get_data_size_bytes();
 }
@@ -59,7 +59,7 @@ changed_size(const GeomVertexArrayDataPipelineReader *reader) const {
 //               since the last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool VertexBufferContext::
-changed_usage_hint(const GeomVertexArrayDataPipelineReader *reader) const {
+changed_usage_hint(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return _usage_hint != reader->get_usage_hint();
 }
@@ -71,7 +71,7 @@ changed_usage_hint(const GeomVertexArrayDataPipelineReader *reader) const {
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
 INLINE bool VertexBufferContext::
-was_modified(const GeomVertexArrayDataPipelineReader *reader) const {
+was_modified(const GeomVertexArrayDataHandle *reader) const {
   nassertr(reader->get_object() == _data, false);
   return get_modified() != reader->get_modified();
 }
@@ -84,7 +84,7 @@ was_modified(const GeomVertexArrayDataPipelineReader *reader) const {
 //               internal flags for changed_size() and modified().
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexBufferContext::
-mark_loaded(const GeomVertexArrayDataPipelineReader *reader) {
+mark_loaded(const GeomVertexArrayDataHandle *reader) {
   nassertv(reader->get_object() == _data);
   update_data_size_bytes(reader->get_data_size_bytes());
   update_modified(reader->get_modified());

@@ -131,9 +131,9 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataPipelineReader *reader);
+                           const GeomVertexArrayDataHandle *reader);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
-  const unsigned char *setup_array_data(const GeomVertexArrayDataPipelineReader *data);
+  const unsigned char *setup_array_data(const GeomVertexArrayDataHandle *data);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
   void apply_index_buffer(IndexBufferContext *ibc,

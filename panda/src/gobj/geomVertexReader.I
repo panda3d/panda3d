@@ -147,7 +147,7 @@ GeomVertexReader(const GeomVertexReader &copy) :
   _current_thread(copy._current_thread),
   _packer(copy._packer),
   _stride(copy._stride),
-  _data(copy._data),
+  _handle(copy._handle),
   _pointer_begin(copy._pointer_begin),
   _pointer_end(copy._pointer_end),
   _pointer(copy._pointer),
@@ -168,7 +168,7 @@ operator = (const GeomVertexReader &copy) {
   _current_thread = copy._current_thread;
   _packer = copy._packer;
   _stride = copy._stride;
-  _data = copy._data;
+  _handle = copy._handle;
   _pointer_begin = copy._pointer_begin;
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
@@ -242,9 +242,7 @@ set_column(int column) {
                              &reader);
   }
   if (_array_data != (const GeomVertexArrayData *)NULL) {
-    GeomVertexArrayDataPipelineReader reader(_array_data, _current_thread);
-    return set_array_column(reader.get_array_format()->get_column(column),
-                            &reader);
+    return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
 }
@@ -291,9 +289,7 @@ set_column(const InternalName *name) {
                              &reader);
   }
   if (_array_data != (const GeomVertexArrayData *)NULL) {
-    GeomVertexArrayDataPipelineReader reader(_array_data, _current_thread);
-    return set_array_column(reader.get_array_format()->get_column(name),
-                            &reader);
+    return set_array_column(_array_data->get_array_format()->get_column(name));
   }
 
   return false;
@@ -511,10 +507,9 @@ get_packer() const {
 //               and sets the internal pointer to the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
-set_pointer(int row, const GeomVertexArrayDataPipelineReader *array_reader) {
-  _data = array_reader->get_data();
-  _pointer_begin = _data;
-  _pointer_end = _pointer_begin + array_reader->get_data_size_bytes();
+set_pointer(int row) {
+  _pointer_begin = _handle->get_pointer();
+  _pointer_end = _pointer_begin + _handle->get_data_size_bytes();
   quick_set_pointer(row);
 }
 
@@ -529,21 +524,16 @@ INLINE void GeomVertexReader::
 quick_set_pointer(int row) {
   nassertv(has_column());
 
-#if defined(_DEBUG) && !defined(HAVE_THREADS)
-  // Make sure we still have the same pointer as stored the array.  We
-  // only perform this test in debug mode, because it is expensive,
-  // and only in single-threaded mode, because in threaded mode
-  // another thread might have reallocated the other pointer outside
-  // of our control anyway.
-  if (_vertex_data != (const GeomVertexData *)NULL) {
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertv(_pointer_begin == array_data->get_data());
-  } else {
-    nassertv(_pointer_begin == _array_data->get_data());
-  }
+#if defined(_DEBUG)
+  // Make sure we still have the same pointer as stored in the array.
+  nassertv(_pointer_begin == _handle->get_pointer());
 #endif
 
   _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
+
+#if defined(_DEBUG)
+  nassertv(_pointer_begin == _pointer_end || _pointer < _pointer_end);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,14 +544,11 @@ quick_set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomVertexReader::
 inc_pointer() {
-#ifdef _DEBUG
+#if defined(_DEBUG)
   nassertr(_pointer < _pointer_end, empty_buffer);
-  if (_vertex_data != (const GeomVertexData *)NULL){ 
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertr(_pointer >= array_data->get_data().p() && _pointer < array_data->get_data().p() + array_data->get_data_size_bytes(), empty_buffer);
-  } else {
-    nassertr(_pointer >= _array_data->get_data().p() && _pointer < _array_data->get_data().p() + _array_data->get_data_size_bytes(), empty_buffer);
-  }
+  // Make sure we still have the same pointer as stored in the array.
+  nassertr(_pointer_begin == _handle->get_pointer(), empty_buffer);
+  nassertr(_pointer < _pointer_begin + _handle->get_data_size_bytes(), empty_buffer);
 #endif
 
   const unsigned char *orig_pointer = _pointer;

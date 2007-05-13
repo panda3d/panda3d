@@ -57,7 +57,7 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   void apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataPipelineReader *reader);
+                           const GeomVertexArrayDataHandle *reader);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);

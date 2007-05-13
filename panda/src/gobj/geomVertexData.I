@@ -711,7 +711,7 @@ check_array_readers() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayDataPipelineReader *GeomVertexDataPipelineReader::
+INLINE const GeomVertexArrayDataHandle *GeomVertexDataPipelineReader::
 get_array_reader(int i) const {
   nassertr(_got_array_readers, NULL);
   nassertr(i >= 0 && i < (int)_array_readers.size(), NULL);
@@ -846,7 +846,7 @@ check_array_writers() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineWriter *GeomVertexDataPipelineWriter::
+INLINE GeomVertexArrayDataHandle *GeomVertexDataPipelineWriter::
 get_array_writer(int i) const {
   nassertr(_got_array_writers, NULL);
   nassertr(i >= 0 && i < (int)_array_writers.size(), NULL);

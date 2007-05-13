@@ -218,7 +218,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
   } else
 #endif // SUPPORT_IMMEDIATE_MODE
   {
-    const GeomVertexArrayDataPipelineReader *array_reader;
+    const GeomVertexArrayDataHandle *array_reader;
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     int nvarying = _expansion->_var_spec.size();

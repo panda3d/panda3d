@@ -459,7 +459,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
     {
       if (_vertex_element_array == 0) {
         bool error;
-        const GeomVertexArrayDataPipelineReader *array_reader;
+        const GeomVertexArrayDataHandle *array_reader;
         Geom::NumericType numeric_type;
         int start, stride, num_values;
         int nvarying = _expansion->_var_spec.size();

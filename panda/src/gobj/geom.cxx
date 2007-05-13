@@ -223,6 +223,10 @@ offset_vertices(const GeomVertexData *data, int offset) {
 
 #ifndef NDEBUG
     if (!prim->check_valid(data)) {
+      gobj_cat.warning()
+        << *prim << " is invalid for " << *data << ":\n";
+      prim->write(gobj_cat.warning(false), 4);
+      
       all_is_valid = false;
     }
 #endif

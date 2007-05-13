@@ -189,7 +189,7 @@ DXVertexBufferContext8::
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext8::
 create_vbuffer(DXScreenData &scrn,
-               const GeomVertexArrayDataPipelineReader *reader) {
+               const GeomVertexArrayDataHandle *reader) {
   nassertv(reader->get_object() == get_data());
   Thread *current_thread = reader->get_current_thread();
 
@@ -232,7 +232,7 @@ create_vbuffer(DXScreenData &scrn,
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext8::
-upload_data(const GeomVertexArrayDataPipelineReader *reader) {
+upload_data(const GeomVertexArrayDataHandle *reader) {
   nassertv(reader->get_object() == get_data());
   nassertv(_vbuffer != NULL);
   Thread *current_thread = reader->get_current_thread();
@@ -257,7 +257,7 @@ upload_data(const GeomVertexArrayDataPipelineReader *reader) {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, reader->get_data(), data_size);
+  memcpy(local_pointer, reader->get_pointer(), data_size);
 
   _vbuffer->Unlock();
 }

@@ -575,9 +575,10 @@ write_with_data(ostream &out, int indent_level,
   indent(out, indent_level)
     << data->get_num_rows() << " rows.\n";
   for (size_t i = 0; i < _arrays.size(); i++) {
-    CPTA_uchar array_data = data->get_array(i)->get_data();
+    CPT(GeomVertexArrayDataHandle) handle = data->get_array(i)->get_handle();
+    const unsigned char *array_data = handle->get_pointer();
     indent(out, indent_level)
-      << "Array " << i << " (" << (void *)array_data.p() << ", "
+      << "Array " << i << " (" << (void *)array_data << ", "
       << *_arrays[i] << "):\n";
     _arrays[i]->write_with_data(out, indent_level + 2, data->get_array(i));
   }

@@ -145,7 +145,7 @@ GeomVertexWriter(const GeomVertexWriter &copy) :
   _current_thread(copy._current_thread),
   _packer(copy._packer),
   _stride(copy._stride),
-  _data(copy._data),
+  _handle(copy._handle),
   _pointer_begin(copy._pointer_begin),
   _pointer_end(copy._pointer_end),
   _pointer(copy._pointer),
@@ -166,7 +166,7 @@ operator = (const GeomVertexWriter &copy) {
   _current_thread = copy._current_thread;
   _packer = copy._packer;
   _stride = copy._stride;
-  _data = copy._data;
+  _handle = copy._handle;
   _pointer_begin = copy._pointer_begin;
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
@@ -240,9 +240,7 @@ set_column(int column) {
                              &writer);
   }
   if (_array_data != (GeomVertexArrayData *)NULL) {
-    GeomVertexArrayDataPipelineWriter writer(_array_data, true, _current_thread);
-    return set_array_column(writer.get_array_format()->get_column(column),
-                            &writer);
+    return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
 }
@@ -289,9 +287,7 @@ set_column(const InternalName *name) {
                              &writer);
   }
   if (_array_data != (GeomVertexArrayData *)NULL) {
-    GeomVertexArrayDataPipelineWriter writer(_array_data, true, _current_thread);
-    return set_array_column(writer.get_array_format()->get_column(name),
-                            &writer);
+    return set_array_column(_array_data->get_array_format()->get_column(name));
   }
   return false;
 }
@@ -814,10 +810,9 @@ get_packer() const {
 //               and sets the internal pointer to the indicated row.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
-set_pointer(int row, GeomVertexArrayDataPipelineWriter *array_writer) {
-  _data = array_writer->modify_data();
-  _pointer_begin = _data;
-  _pointer_end = _pointer_begin + array_writer->get_data_size_bytes();
+set_pointer(int row) {
+  _pointer_begin = _handle->get_pointer();
+  _pointer_end = _pointer_begin + _handle->get_data_size_bytes();
   quick_set_pointer(row);
 }
 
@@ -832,21 +827,16 @@ INLINE void GeomVertexWriter::
 quick_set_pointer(int row) {
   nassertv(has_column());
 
-#if defined(_DEBUG) && !defined(HAVE_THREADS)
-  // Make sure we still have the same pointer as stored the array.  We
-  // only perform this test in debug mode, because it is expensive,
-  // and only in single-threaded mode, because in threaded mode
-  // another thread might have reallocated the other pointer outside
-  // of our control anyway.
-  if (_vertex_data != (const GeomVertexData *)NULL) {
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertv(_pointer_begin == array_data->get_data());
-  } else {
-    nassertv(_pointer_begin == _array_data->get_data());
-  }
+#if defined(_DEBUG)
+  // Make sure we still have the same pointer as stored in the array.
+  nassertv(_pointer_begin == _handle->get_pointer());
 #endif
 
   _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
+
+#if defined(_DEBUG)
+  nassertv(_pointer_begin == _pointer_end || _pointer <= _pointer_end);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -857,14 +847,11 @@ quick_set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *GeomVertexWriter::
 inc_pointer() {
-#ifdef _DEBUG
+#if defined(_DEBUG)
   nassertr(_pointer < _pointer_end, empty_buffer);
-  if (_vertex_data != (GeomVertexData *)NULL){ 
-    const GeomVertexArrayData *array_data = _vertex_data->get_array(_array);
-    nassertr(_pointer >= array_data->get_data().p() && _pointer < array_data->get_data().p() + array_data->get_data_size_bytes(), empty_buffer);
-  } else {
-    nassertr(_pointer >= _array_data->get_data().p() && _pointer < _array_data->get_data().p() + _array_data->get_data_size_bytes(), empty_buffer);
-  }
+  // Make sure we still have the same pointer as stored in the array.
+  nassertr(_pointer_begin == _handle->get_pointer(), empty_buffer);
+  nassertr(_pointer < _pointer_begin + _handle->get_data_size_bytes(), empty_buffer);
 #endif
 
   unsigned char *orig_pointer = _pointer;
@@ -885,16 +872,23 @@ inc_add_pointer() {
   if (_pointer >= _pointer_end) {
     // Reset the data pointer.
     int write_row = get_write_row();
+
     if (_vertex_data != (GeomVertexData *)NULL) {
+      // If we have a whole GeomVertexData, we must set the length of
+      // all its arrays at once.
       GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
       writer.check_array_writers();
       writer.set_num_rows(max(write_row + 1, writer.get_num_rows()));
-      set_pointer(write_row, writer.get_array_writer(_array));
+      _handle = writer.get_array_writer(_array);
+
     } else {
-      GeomVertexArrayDataPipelineWriter writer(_array_data, true, _current_thread);
-      writer.set_num_rows(max(write_row + 1, writer.get_num_rows()));
-      set_pointer(write_row, &writer);
+      // Otherwise, we can get away with modifying only the one array
+      // we're using.
+      _handle->set_num_rows(max(write_row + 1, _handle->get_num_rows()));
     }
+
+    set_pointer(write_row);
   }
   return inc_pointer();
 }
+

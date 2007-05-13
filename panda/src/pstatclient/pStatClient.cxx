@@ -231,7 +231,7 @@ main_tick() {
 
     size_t total_usage = 0;
     int i;
-    for (int i = 0; i < num_typehandles; ++i) {
+    for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
       for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
         TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;
@@ -245,7 +245,7 @@ main_tick() {
     }
     size_t other_usage = total_usage;
 
-    for (int i = 0; i < num_typehandles; ++i) {
+    for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
       for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
         TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;

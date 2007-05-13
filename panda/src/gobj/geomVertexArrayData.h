@@ -33,10 +33,14 @@
 #include "pipelineCycler.h"
 #include "pStatCollector.h"
 #include "pmap.h"
+#include "reMutex.h"
+#include "simpleLru.h"
 
 class PreparedGraphicsObjects;
 class VertexBufferContext;
 class GraphicsStateGuardianBase;
+
+class GeomVertexArrayDataHandle;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomVertexArrayData
@@ -57,7 +61,7 @@ class GraphicsStateGuardianBase;
 //               GeomVertexReader/Writer/Rewriter for high-level tools
 //               to manipulate the actual vertex data.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayData : public CopyOnWriteObject, public GeomEnums {
+class EXPCL_PANDA GeomVertexArrayData : public CopyOnWriteObject, public SimpleLruPage, public GeomEnums {
 private:
   GeomVertexArrayData();
 
@@ -90,9 +94,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-  INLINE CPTA_uchar get_data() const;
-  INLINE PTA_uchar modify_data();
-  INLINE void set_data(CPTA_uchar data);
+  INLINE CPT(GeomVertexArrayDataHandle) get_handle(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE PT(GeomVertexArrayDataHandle) modify_handle(Thread *current_thread = Thread::get_current_thread());
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
@@ -102,9 +105,24 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
+  INLINE RamClass get_ram_class() const;
+
+  INLINE static SimpleLru *get_global_lru(RamClass rclass);
+  static void lru_epoch();
+
+  void make_resident();
+  void make_compressed();
+  void make_disk();
+
+public:
+  virtual void evict_lru();
+
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   PTA_uchar reverse_data_endianness(const PTA_uchar &data);
+
+  INLINE void set_ram_class(RamClass rclass);
+
 
   CPT(GeomVertexArrayFormat) _array_format;
 
@@ -120,11 +138,17 @@ private:
   // to indicate the data must be endian-reversed in finalize().
   bool _endian_reversed;
 
+  RamClass _ram_class;
+
+  typedef pvector<unsigned char> Data;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
+    INLINE void operator = (const CData &copy);
+
     virtual ~CData();
     ALLOC_DELETED_CHAIN(CData);
     virtual CycleData *make_copy() const;
@@ -138,7 +162,12 @@ private:
 
     UsageHint _usage_hint;
     PTA_uchar _data;
+    size_t _data_full_size;
     UpdateSeq _modified;
+
+    // This implements read-write locking.  Anyone who gets the data for
+    // reading or writing will hold this mutex during the lock.
+    ReMutex _rw_lock;
     
   public:
     static TypeHandle get_class_type() {
@@ -159,6 +188,11 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
+
+  static SimpleLru _global_lru[RC_end_of_list];
+
+  static PStatCollector _vdata_compress_pcollector;
+  static PStatCollector _vdata_decompress_pcollector;
 
 public:
   static void register_with_read_factory();
@@ -194,104 +228,92 @@ private:
   friend class GeomCacheManager;
   friend class GeomVertexData;
   friend class PreparedGraphicsObjects;
-  friend class GeomVertexArrayDataPipelineBase;
-  friend class GeomVertexArrayDataPipelineReader;
-  friend class GeomVertexArrayDataPipelineWriter;
+  friend class GeomVertexArrayDataHandle;
 };
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayDataPipelineBase
-// Description : The common code from
+//       Class : GeomVertexArrayDataHandle
+// Description : This data object is returned by
+//               GeomVertexArrayData::get_handle() or modify_handle().
+//               As long as it exists, the data is locked; when the
+//               last of these destructs, the data is unlocked.
+//
+//               Only one thread at a time may lock the data; other
+//               threads attempting to lock the data will block.  A
+//               given thread may simultaneously lock the data
+//               multiple times.
+//
+//               This class serves in lieu of a pair of
 //               GeomVertexArrayDataPipelineReader and
-//               GeomVertexArrayDataPipelineWriter.
+//               GeomVertexArrayDataPipelineWriter classes
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayDataPipelineBase : public GeomEnums {
-protected:
-  INLINE GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
-                                         Thread *current_thread,
-                                         GeomVertexArrayData::CData *cdata);
+class EXPCL_PANDA GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
+private:
+  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object, 
+                                   Thread *current_thread,
+                                   const GeomVertexArrayData::CData *_cdata, 
+                                   bool writable);
+  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
+  INLINE void operator = (const GeomVertexArrayDataHandle &);
+  
+PUBLISHED:
+  INLINE ~GeomVertexArrayDataHandle();
+
 public:
-  INLINE ~GeomVertexArrayDataPipelineBase();
+  ALLOC_DELETED_CHAIN(GeomVertexArrayDataHandle);
 
   INLINE Thread *get_current_thread() const;
+  INLINE const GeomVertexArrayData *get_object() const;
+  INLINE GeomVertexArrayData *get_object();
 
+  INLINE const unsigned char *get_pointer() const;
+  INLINE unsigned char *get_pointer();
+
+PUBLISHED:
   INLINE const GeomVertexArrayFormat *get_array_format() const;
-
   INLINE UsageHint get_usage_hint() const;
-  INLINE CPTA_uchar get_data() const;
+
   INLINE int get_num_rows() const;
+  bool set_num_rows(int n);
+  bool unclean_set_num_rows(int n);
+  INLINE void clear_rows();
+
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
-protected:
+  void copy_data_from(const GeomVertexArrayDataHandle *other);
+  void copy_subdata_from(size_t to_start, size_t to_size,
+                         const GeomVertexArrayDataHandle *other,
+                         size_t from_start, size_t from_size);
+
+  /*
+  INLINE string get_data() const;
+  void set_data(const string &data);
+  INLINE string get_subdata(size_t start, size_t size) const;
+  void set_subdata(size_t start, size_t size, const string &data);
+  */
+
+  INLINE void check_resident() const;
+  
+private:
+  ReMutexHolder _holder;
   PT(GeomVertexArrayData) _object;
   Thread *_current_thread;
   GeomVertexArrayData::CData *_cdata;
-};
-
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayDataPipelineReader
-// Description : Encapsulates the data from a GeomVertexArrayData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayDataPipelineReader : public GeomVertexArrayDataPipelineBase {
-public:
-  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, Thread *current_thread);
-private:
-  INLINE GeomVertexArrayDataPipelineReader(const GeomVertexArrayDataPipelineReader &copy);
-  INLINE void operator = (const GeomVertexArrayDataPipelineReader &copy);
-
-public:
-  INLINE ~GeomVertexArrayDataPipelineReader();
-  ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineReader);
-
-  INLINE const GeomVertexArrayData *get_object() const;
+  bool _writable;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    register_type(_type_handle, "GeomVertexArrayDataPipelineReader");
+    register_type(_type_handle, "GeomVertexArrayDataHandle");
   }
 
 private:
   static TypeHandle _type_handle;
-};
 
-////////////////////////////////////////////////////////////////////
-//       Class : GeomVertexArrayDataPipelineWriter
-// Description : Encapsulates the data from a GeomVertexArrayData,
-//               pre-fetched for one stage of the pipeline.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayDataPipelineWriter : public GeomVertexArrayDataPipelineBase {
-public:
-  INLINE GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, bool force_to_0, Thread *current_thread);
-private:
-  INLINE GeomVertexArrayDataPipelineWriter(const GeomVertexArrayDataPipelineWriter &copy);
-  INLINE void operator = (const GeomVertexArrayDataPipelineWriter &copy);
-
-public:
-  INLINE ~GeomVertexArrayDataPipelineWriter();
-  ALLOC_DELETED_CHAIN(GeomVertexArrayDataPipelineWriter);
-
-  bool set_num_rows(int n);
-  bool unclean_set_num_rows(int n);
-
-  INLINE GeomVertexArrayData *get_object() const;
-  PTA_uchar modify_data();
-  void set_data(CPTA_uchar data);
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type() {
-    register_type(_type_handle, "GeomVertexArrayDataPipelineWriter");
-  }
-
-private:
-  static TypeHandle _type_handle;
+  friend class GeomVertexArrayData;
 };
 
 INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);

@@ -62,8 +62,7 @@ has_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayData::
 get_num_rows() const {
-  GeomVertexArrayDataPipelineReader reader(this, Thread::get_current_thread());
-  return reader.get_num_rows();
+  return get_handle()->get_num_rows();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,8 +89,7 @@ get_num_rows() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexArrayData::
 set_num_rows(int n) {
-  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
-  return writer.set_num_rows(n);
+  return modify_handle()->set_num_rows(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,8 +107,7 @@ set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexArrayData::
 unclean_set_num_rows(int n) {
-  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
-  return writer.unclean_set_num_rows(n);
+  return modify_handle()->unclean_set_num_rows(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,7 +118,7 @@ unclean_set_num_rows(int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayData::
 clear_rows() {
-  set_data(PTA_uchar(GeomVertexArrayData::get_class_type()));
+  return modify_handle()->clear_rows();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,7 +129,7 @@ clear_rows() {
 INLINE int GeomVertexArrayData::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
-  return cdata->_data.size();
+  return cdata->_data_full_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,49 +146,71 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_data
+//     Function: GeomVertexArrayData::get_handle
 //       Access: Published
-//  Description: Returns a const pointer to the actual vertex data,
-//               for application code to directly examine (but not
-//               modify).
+//  Description: Returns an object that can be used to read the actual
+//               data bytes stored in the array.  Calling this method
+//               locks the data, and will block any other threads
+//               attempting to read or write the data, until the
+//               returned object destructs.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar GeomVertexArrayData::
-get_data() const {
-  CDReader cdata(_cycler);
-  return cdata->_data;
+INLINE CPT(GeomVertexArrayDataHandle) GeomVertexArrayData::
+get_handle(Thread *current_thread) const {
+  return new GeomVertexArrayDataHandle(this, current_thread, 
+                                       _cycler.read_unlocked(current_thread),
+                                       false);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::modify_data
+//     Function: GeomVertexArrayData::modify_handle
 //       Access: Published
-//  Description: Returns a modifiable pointer to the actual vertex
-//               array, so that application code may directly
-//               manipulate it.  Use with caution.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
+//  Description: Returns an object that can be used to read or write
+//               the actual data bytes stored in the array.  Calling
+//               this method locks the data, and will block any other
+//               threads attempting to read or write the data, until
+//               the returned object destructs.
 ////////////////////////////////////////////////////////////////////
-INLINE PTA_uchar GeomVertexArrayData::
-modify_data() {
-  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
-  return writer.modify_data();
+INLINE PT(GeomVertexArrayDataHandle) GeomVertexArrayData::
+modify_handle(Thread *current_thread) {
+  return new GeomVertexArrayDataHandle(this, current_thread, 
+                                       _cycler.write_upstream(true, current_thread),
+                                       true);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_data
+//     Function: GeomVertexArrayData::get_ram_class
 //       Access: Published
-//  Description: Replaces the vertex data array with a completely new
-//               array.
-//
-//               Don't call this in a downstream thread unless you
-//               don't mind it blowing away other changes you might
-//               have recently made in an upstream thread.
+//  Description: Returns the current ram class of the array.  If this
+//               is other than RC_resident, the array data is not
+//               resident in memory.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData::RamClass GeomVertexArrayData::
+get_ram_class() const {
+  return _ram_class;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::get_global_lru
+//       Access: Published, Static
+//  Description: Returns a pointer to the global LRU object that
+//               manages the GeomVertexArrayData's with the indicated
+//               RamClass.
+////////////////////////////////////////////////////////////////////
+INLINE SimpleLru *GeomVertexArrayData::
+get_global_lru(RamClass rclass) {
+  nassertr(rclass >= 0 && rclass < RC_end_of_list, NULL);
+  return &_global_lru[rclass];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::set_ram_class
+//       Access: Private
+//  Description: Puts the data in a new ram class.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayData::
-set_data(CPTA_uchar array) {
-  GeomVertexArrayDataPipelineWriter writer(this, true, Thread::get_current_thread());
-  writer.set_data(array);
+set_ram_class(RamClass rclass) {
+  _ram_class = rclass;
+  mark_used_lru(&_global_lru[rclass]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -202,9 +221,9 @@ set_data(CPTA_uchar array) {
 INLINE GeomVertexArrayData::CData::
 CData() :
   _usage_hint(UH_unspecified),
-  _data(GeomVertexArrayData::get_class_type())
+  _data(GeomVertexArrayData::get_class_type()),
+  _data_full_size(0)
 {
-  _data.node_ref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,24 +234,41 @@ CData() :
 INLINE GeomVertexArrayData::CData::
 CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
-  _data(copy._data),
+  _data(GeomVertexArrayData::get_class_type()),
+  _data_full_size(copy._data_full_size),
   _modified(copy._modified)
 {
-  _data.node_ref();
+  _data.v() = copy._data.v();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::Constructor
+//     Function: GeomVertexArrayData::CData::Copy Assignment
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineBase::
-GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object, 
-                                Thread *current_thread,
-                                GeomVertexArrayData::CData *cdata) :
-  _object(object),
+INLINE void GeomVertexArrayData::CData::
+operator = (const GeomVertexArrayData::CData &copy) {
+  _usage_hint = copy._usage_hint;
+  _modified = copy._modified;
+  _data.v() = copy._data.v();
+  _data_full_size = copy._data_full_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataHandle::
+GeomVertexArrayDataHandle(const GeomVertexArrayData *object, 
+                          Thread *current_thread,
+                          const GeomVertexArrayData::CData *cdata,
+                          bool writable) :
+  _holder(((GeomVertexArrayData::CData *)cdata)->_rw_lock),
+  _object((GeomVertexArrayData *)object),
   _current_thread(current_thread),
-  _cdata(cdata)
+  _cdata((GeomVertexArrayData::CData *)cdata),
+  _writable(writable)
 {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
@@ -243,15 +279,41 @@ GeomVertexArrayDataPipelineBase(GeomVertexArrayData *object,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::Destructor
+//     Function: GeomVertexArrayDataHandle::Copy Constructor
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataHandle::
+GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy) :
+  _holder(copy._cdata->_rw_lock)
+{
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::Copy Assignment Operator
+//       Access: Private
+//  Description: Don't attempt to copy these objects.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexArrayDataHandle::
+operator = (const GeomVertexArrayDataHandle &) {
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineBase::
-~GeomVertexArrayDataPipelineBase() {
+INLINE GeomVertexArrayDataHandle::
+~GeomVertexArrayDataHandle() {
 #ifdef _DEBUG
   nassertv(_object->test_ref_count_nonzero());
 #endif // _DEBUG
+
+  if (_writable) {
+    _object->_cycler.release_write(_cdata);
+  }
 
 #ifdef DO_PIPELINING
   unref_delete((CycleData *)_cdata);
@@ -264,184 +326,134 @@ INLINE GeomVertexArrayDataPipelineBase::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_current_thread
+//     Function: GeomVertexArrayDataHandle::get_current_thread
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Thread *GeomVertexArrayDataPipelineBase::
+INLINE Thread *GeomVertexArrayDataHandle::
 get_current_thread() const {
   return _current_thread;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_array_format
+//     Function: GeomVertexArrayDataHandle::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayData *GeomVertexArrayDataHandle::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_object
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData *GeomVertexArrayDataHandle::
+get_object() {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_pointer
+//       Access: Public
+//  Description: Returns a pointer to the beginning of the actual data
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE const unsigned char *GeomVertexArrayDataHandle::
+get_pointer() const {
+  check_resident();
+  return _cdata->_data.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_pointer
+//       Access: Public
+//  Description: Returns a pointer to the beginning of the actual data
+//               stream.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned char *GeomVertexArrayDataHandle::
+get_pointer() {
+  nassertr(_writable, NULL);
+  check_resident();
+  return _cdata->_data.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_array_format
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayFormat *GeomVertexArrayDataPipelineBase::
+INLINE const GeomVertexArrayFormat *GeomVertexArrayDataHandle::
 get_array_format() const {
   return _object->_array_format;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_usage_hint
+//     Function: GeomVertexArrayDataHandle::get_usage_hint
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineBase::UsageHint GeomVertexArrayDataPipelineBase::
+INLINE GeomVertexArrayDataHandle::UsageHint GeomVertexArrayDataHandle::
 get_usage_hint() const {
   return _cdata->_usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_data
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar GeomVertexArrayDataPipelineBase::
-get_data() const {
-  return _cdata->_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_num_rows
+//     Function: GeomVertexArrayDataHandle::get_num_rows
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayDataPipelineBase::
+INLINE int GeomVertexArrayDataHandle::
 get_num_rows() const {
   return get_data_size_bytes() / _object->_array_format->get_stride();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_data_size_bytes
+//     Function: GeomVertexArrayDataHandle::clear_rows
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayDataPipelineBase::
-get_data_size_bytes() const {
-  return _cdata->_data.size();
+INLINE void GeomVertexArrayDataHandle::
+clear_rows() {
+  set_num_rows(0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineBase::get_modified
-//       Access: Public
+//     Function: GeomVertexArrayDataHandle::get_data_size_bytes
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE UpdateSeq GeomVertexArrayDataPipelineBase::
+INLINE int GeomVertexArrayDataHandle::
+get_data_size_bytes() const {
+  return _cdata->_data_full_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_modified
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq GeomVertexArrayDataHandle::
 get_modified() const {
   return _cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineReader::Constructor
-//       Access: Public
-//  Description:
+//     Function: GeomVertexArrayDataHandle::check_resident
+//       Access: Published
+//  Description: Forces the vertex data into system RAM, if it is not
+//               already there; also, marks it recently-used.
 ////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineReader::
-GeomVertexArrayDataPipelineReader(const GeomVertexArrayData *object, 
-                                  Thread *current_thread) :
-  GeomVertexArrayDataPipelineBase((GeomVertexArrayData *)object,
-                                  current_thread,
-                                  (GeomVertexArrayData::CData *)object->_cycler.read_unlocked(current_thread))
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineReader::Copy Constructor
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineReader::
-GeomVertexArrayDataPipelineReader(const GeomVertexArrayDataPipelineReader &copy) :
-  GeomVertexArrayDataPipelineBase(copy)
-{
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineReader::Copy Assignment Operator
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexArrayDataPipelineReader::
-operator = (const GeomVertexArrayDataPipelineReader &) {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineReader::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineReader::
-~GeomVertexArrayDataPipelineReader() {
-  //  _object->_cycler.release_read(_cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineReader::get_object
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomVertexArrayDataPipelineReader::
-get_object() const {
-  return _object;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineWriter::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineWriter::
-GeomVertexArrayDataPipelineWriter(GeomVertexArrayData *object, bool force_to_0,
-                                  Thread *current_thread) :
-  GeomVertexArrayDataPipelineBase(object, current_thread,
-                                  object->_cycler.write_upstream(force_to_0, current_thread))
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineWriter::Copy Constructor
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineWriter::
-GeomVertexArrayDataPipelineWriter(const GeomVertexArrayDataPipelineWriter &copy) :
-  GeomVertexArrayDataPipelineBase(copy) 
-{
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineWriter::Copy Assignment Operator
-//       Access: Private
-//  Description: Don't attempt to copy these objects.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexArrayDataPipelineWriter::
-operator = (const GeomVertexArrayDataPipelineWriter &) {
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineWriter::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayDataPipelineWriter::
-~GeomVertexArrayDataPipelineWriter() {
-  _object->_cycler.release_write(_cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataPipelineWriter::get_object
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayData *GeomVertexArrayDataPipelineWriter::
-get_object() const {
-  return _object;
+void GeomVertexArrayDataHandle::
+check_resident() const {
+  if (_object->get_ram_class() != RC_resident) {
+    _object->make_resident();
+  } else {
+    _object->mark_used_lru();
+  }
+  nassertv(_cdata->_data.size() == _cdata->_data_full_size);
 }
 
 INLINE ostream &

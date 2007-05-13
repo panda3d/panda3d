@@ -1314,7 +1314,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
       }
     } else {
       for (int i = 0; i < num_vertices; ++i) {
-        reader.set_row(index.get_data1i());
+        int ii = index.get_data1i();
+        reader.set_row(ii);
         const LVecBase3f &vertex = reader.get_data3f();
         
         if (found_any) {

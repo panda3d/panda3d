@@ -50,6 +50,7 @@
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \
+    simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
@@ -106,6 +107,7 @@
     savedContext.cxx \
     shaderContext.cxx \
     shaderExpansion.cxx \
+    simpleLru.cxx \
     sliderTable.cxx \
     texture.cxx textureContext.cxx texturePool.cxx \
     texturePoolFilter.cxx \
@@ -162,6 +164,7 @@
     savedContext.I savedContext.h \
     shaderContext.h shaderContext.I \
     shaderExpansion.h shaderExpansion.I \
+    simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \

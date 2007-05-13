@@ -484,15 +484,16 @@ collect_vertex_data(Geom *geom, int collect_bits) {
   new_data->set_num_rows(new_num_vertices);
 
   for (int i = 0; i < vdata->get_num_arrays(); ++i) {
-    GeomVertexArrayData *new_array = new_data->modify_array(i);
-    const GeomVertexArrayData *old_array = vdata->get_array(i);
+    PT(GeomVertexArrayData) new_array = new_data->modify_array(i);
+    CPT(GeomVertexArrayData) old_array = vdata->get_array(i);
     int stride = format->get_array(i)->get_stride();
     int start_byte = offset * stride;
     int copy_bytes = old_array->get_data_size_bytes();
     nassertr(start_byte + copy_bytes == new_array->get_data_size_bytes(), 0);
 
-    memcpy(new_array->modify_data() + start_byte,
-           old_array->get_data(), copy_bytes);
+    new_array->modify_handle()->copy_subdata_from
+      (start_byte, copy_bytes, 
+       old_array->get_handle(), 0, copy_bytes);
   }
 
   // Also, copy the animation data (if any).  This means combining
