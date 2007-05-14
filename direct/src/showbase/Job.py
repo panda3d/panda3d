@@ -57,12 +57,22 @@ class Job(DirectObject):
 
     def resume(self):
         # called every time JobManager is going to start running this job
+        """
         if self._printing:
+            # we may be suspended/resumed multiple times per frame, that gets spammy
+            # if we need to pick out the output of a job, put a prefix onto each line
+            # of the output
             print 'JOB:%s:RESUME' % self._name
+            """
+        pass
     def suspend(self):
         # called when JobManager is going to stop running this job for a while
+        """
         if self._printing:
-            print 'JOB:%s:SUSPEND' % self._name
+            #print 'JOB:%s:SUSPEND' % self._name
+            pass
+            """
+        pass
 
     def finished(self):
         # called when the job finishes and has been removed from the JobManager

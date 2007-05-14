@@ -136,7 +136,7 @@ class GarbageReport(Job):
                 abbrev = '(abbreviated) '
             else:
                 abbrev = ''
-            s.append('\n===== Garbage Items %s=====' % abbrev)
+            s.append('===== Garbage Items %s=====' % abbrev)
             digits = 0
             n = numGarbage
             while n > 0:
@@ -157,26 +157,26 @@ class GarbageReport(Job):
                 s.append(format % (id, itype(self.garbage[id]), objStr))
 
             if self._args.findCycles:
-                s.append('\n===== Garbage Cycles =====')
+                s.append('===== Garbage Cycles =====')
                 for i in xrange(len(self.cycles)):
                     yield None
                     s.append('%s' % self.cycles[i])
 
             if self._args.fullReport:
                 format = '%0' + '%s' % digits + 'i:%s'
-                s.append('\n===== Referrers By Number (what is referring to garbage item?) =====')
+                s.append('===== Referrers By Number (what is referring to garbage item?) =====')
                 for i in xrange(numGarbage):
                     yield None
                     s.append(format % (i, self.referrersByNumber[i]))
-                s.append('\n===== Referents By Number (what is garbage item referring to?) =====')
+                s.append('===== Referents By Number (what is garbage item referring to?) =====')
                 for i in xrange(numGarbage):
                     yield None
                     s.append(format % (i, self.referentsByNumber[i]))
-                s.append('\n===== Referrers (what is referring to garbage item?) =====')
+                s.append('===== Referrers (what is referring to garbage item?) =====')
                 for i in xrange(numGarbage):
                     yield None
                     s.append(format % (i, self.referrersByReference[i]))
-                s.append('\n===== Referents (what is garbage item referring to?) =====')
+                s.append('===== Referents (what is garbage item referring to?) =====')
                 for i in xrange(numGarbage):
                     yield None
                     s.append(format % (i, self.referentsByReference[i]))
@@ -187,10 +187,7 @@ class GarbageReport(Job):
             self.printingBegin()
             for i in xrange(len(self._report)):
                 yield None
-                print self._report[i]
-            # add an extra line at the end for readability
-            if self.numGarbage > 0:
-                print ''
+                self.notify.info(self._report[i])
             self.printingEnd()
 
         yield Job.Done
