@@ -20,6 +20,7 @@
 #include "config_pgraph.h"
 
 #include "indent.h"
+#include "lodNode.h"
 #include "geomNode.h"
 #include "geomVertexData.h"
 #include "geom.h"
@@ -41,6 +42,7 @@
 ////////////////////////////////////////////////////////////////////
 SceneGraphAnalyzer::
 SceneGraphAnalyzer() {
+  _lod_mode = LM_all;
   clear();
 }
 
@@ -62,15 +64,19 @@ SceneGraphAnalyzer::
 void SceneGraphAnalyzer::
 clear() {
   _nodes.clear();
+  _vdatas.clear();
+  _vadatas.clear();
   _textures.clear();
 
   _num_nodes = 0;
   _num_instances = 0;
   _num_transforms = 0;
   _num_nodes_with_attribs = 0;
+  _num_lod_nodes = 0;
   _num_geom_nodes = 0;
   _num_geoms = 0;
   _num_geom_vertex_datas = 0;
+  _vertex_data_size = 0;
 
   _num_vertices = 0;
   _num_normals = 0;
@@ -116,7 +122,7 @@ void SceneGraphAnalyzer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _num_nodes << " total nodes (including "
-    << _num_instances << " instances).\n";
+    << _num_instances << " instances); " << _num_lod_nodes << " LODNodes.\n";
 
   indent(out, indent_level)
     << _num_transforms << " transforms";
@@ -142,6 +148,10 @@ write(ostream &out, int indent_level) const {
       << _num_short_normals << " are too short.  Average normal length is "
       << _total_normal_length / (float)_num_normals << "\n";
   }
+
+  indent(out, indent_level)
+    << "vertices occupy " << (_vertex_data_size + 1023) / 1024 
+    << "K memory.\n";
 
   indent(out, indent_level)
     << _num_tris << " triangles:\n";
@@ -220,6 +230,31 @@ collect_statistics(PandaNode *node, bool under_instance) {
     collect_statistics(DCAST(GeomNode, node));
   }
 
+  if (node->is_lod_node()) {
+    LODNode *lod_node = DCAST(LODNode, node);
+    ++_num_lod_nodes;
+
+    switch (_lod_mode) {
+    case LM_lowest:
+    case LM_highest:
+      {
+        int sw = (_lod_mode == LM_lowest) ? lod_node->get_lowest_switch() : lod_node->get_highest_switch();
+        if (sw >= 0 && sw < node->get_num_children()) {
+          PandaNode *child = node->get_child(sw);
+          collect_statistics(child, under_instance);
+        }
+        return;
+      }
+
+    case LM_none:
+      return;
+
+    case LM_all:
+      // fall through to the loop below.
+      break;
+    }
+  }
+
   int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
@@ -237,7 +272,7 @@ void SceneGraphAnalyzer::
 collect_statistics(GeomNode *geom_node) {
   nassertv(geom_node != (GeomNode *)NULL);
 
-  _num_geom_nodes++;
+  ++_num_geom_nodes;
 
   int num_geoms = geom_node->get_num_geoms();
   _num_geoms += num_geoms;
@@ -267,7 +302,7 @@ collect_statistics(GeomNode *geom_node) {
 ////////////////////////////////////////////////////////////////////
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
-  const GeomVertexData *vdata = geom->get_vertex_data();
+  CPT(GeomVertexData) vdata = geom->get_vertex_data();
   bool inserted = _vdatas.insert(vdata).second;
   if (inserted) {
     // This is the first time we've encountered this vertex data.
@@ -286,13 +321,26 @@ collect_statistics(const Geom *geom) {
     const GeomVertexFormat *format = vdata->get_format();
     int num_texcoords = format->get_num_texcoords();
     _num_texcoords += num_rows * num_texcoords;
+
+    int num_arrays = vdata->get_num_arrays();
+    for (int i = 0; i < num_arrays; ++i) {
+      collect_statistics(vdata->get_array(i));
+    }
   }
 
   // Now consider the primitives in the Geom.
   int num_primitives = geom->get_num_primitives();
   for (int i = 0; i < num_primitives; ++i) {
-    const GeomPrimitive *prim = geom->get_primitive(i);
+    CPT(GeomPrimitive) prim = geom->get_primitive(i);
 
+    if (prim->is_indexed()) {
+      collect_statistics(prim->get_vertices());
+      if (prim->is_composite()) {
+        collect_statistics(prim->get_mins());
+        collect_statistics(prim->get_maxs());
+      }
+    }
+      
     if (prim->is_of_type(GeomPoints::get_class_type())) {
       _num_points += prim->get_num_primitives();
       
@@ -354,5 +402,21 @@ collect_statistics(Texture *texture) {
   } else {
     // This texture has been encountered before; don't count it again.
     (*ti).second++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::collect_statistics
+//       Access: Private
+//  Description: Recursively visits each node, counting up the
+//               statistics.
+////////////////////////////////////////////////////////////////////
+void SceneGraphAnalyzer::
+collect_statistics(const GeomVertexArrayData *vadata) {
+  nassertv(vadata != NULL);
+  bool inserted = _vadatas.insert(vadata).second;
+  if (inserted) {
+    // This is the first time we've encountered this vertex array.
+    _vertex_data_size += vadata->get_data_size_bytes();
   }
 }

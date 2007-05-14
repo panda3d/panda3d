@@ -5725,7 +5725,26 @@ analyze() const {
   nassertv_always(!is_empty());
   SceneGraphAnalyzer sga;
   sga.add_node(node());
-  sga.write(nout);
+
+  if (sga.get_num_lod_nodes() == 0) {
+    sga.write(nout);
+
+  } else {
+    nout << "At highest LOD:\n";
+    SceneGraphAnalyzer sga2;
+    sga2.set_lod_mode(SceneGraphAnalyzer::LM_highest);
+    sga2.add_node(node());
+    sga2.write(nout);
+
+    nout << "\nAt lowest LOD:\n";
+    sga2.clear();
+    sga2.set_lod_mode(SceneGraphAnalyzer::LM_lowest);
+    sga2.add_node(node());
+    sga2.write(nout);
+
+    nout << "\nAll nodes:\n";
+    sga.write(nout);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

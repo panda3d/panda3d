@@ -41,6 +41,16 @@ PUBLISHED:
   SceneGraphAnalyzer();
   ~SceneGraphAnalyzer();
 
+  enum LodMode {
+    LM_lowest,
+    LM_highest,
+    LM_all,
+    LM_none,
+  };
+
+  INLINE void set_lod_mode(LodMode lod_mode);
+  INLINE LodMode get_lod_mode(LodMode lod_mode) const;
+
   void clear();
   void add_node(PandaNode *node);
 
@@ -50,9 +60,11 @@ PUBLISHED:
   INLINE int get_num_instances() const;
   INLINE int get_num_transforms() const;
   INLINE int get_num_nodes_with_attribs() const;
+  INLINE int get_num_lod_nodes() const;
   INLINE int get_num_geom_nodes() const;
   INLINE int get_num_geoms() const;
   INLINE int get_num_geom_vertex_datas() const;
+  INLINE int get_vertex_data_size() const;
 
   INLINE int get_num_vertices() const;
   INLINE int get_num_normals() const;
@@ -79,13 +91,18 @@ private:
   void collect_statistics(GeomNode *geom_node);
   void collect_statistics(const Geom *geom);
   void collect_statistics(Texture *texture);
+  void collect_statistics(const GeomVertexArrayData *vadata);
 
   typedef pmap<PandaNode *, int> Nodes;
-  typedef pset<const GeomVertexData *> VDatas;
+  typedef pset<CPT(GeomVertexData) > VDatas;
+  typedef pset<CPT(GeomVertexArrayData) > VADatas;
   typedef pmap<Texture *, int> Textures;
+
+  LodMode _lod_mode;
 
   Nodes _nodes;
   VDatas _vdatas;
+  VADatas _vadatas;
   Textures _textures;
 
 private:
@@ -93,9 +110,11 @@ private:
   int _num_instances;
   int _num_transforms;
   int _num_nodes_with_attribs;
+  int _num_lod_nodes;
   int _num_geom_nodes;
   int _num_geoms;
   int _num_geom_vertex_datas;
+  size_t _vertex_data_size;
 
   int _num_vertices;
   int _num_normals;

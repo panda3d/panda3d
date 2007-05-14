@@ -18,6 +18,26 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::set_lod_mode
+//       Access: Published
+//  Description: Specifies the mode in which LODNodes are analyzed.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneGraphAnalyzer::
+set_lod_mode(LodMode lod_mode) {
+  _lod_mode = lod_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_lod_mode
+//       Access: Published
+//  Description: Returns the mode in which LODNodes are analyzed.
+////////////////////////////////////////////////////////////////////
+INLINE  SceneGraphAnalyzer::LodMode SceneGraphAnalyzer::
+get_lod_mode(LodMode lod_mode) const {
+  return _lod_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::get_num_nodes
 //       Access: Published
 //  Description: 
@@ -58,6 +78,16 @@ get_num_nodes_with_attribs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_num_lod_nodes
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_num_lod_nodes() const {
+  return _num_lod_nodes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::get_num_geom_nodes
 //       Access: Published
 //  Description: 
@@ -85,6 +115,16 @@ get_num_geoms() const {
 int SceneGraphAnalyzer::
 get_num_geom_vertex_datas() const {
   return _num_geom_vertex_datas;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_vertex_data_size
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_vertex_data_size() const {
+  return _vertex_data_size;
 }
 
 
