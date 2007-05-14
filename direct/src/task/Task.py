@@ -76,7 +76,7 @@ class Task:
         debugTaskTraceback = 0 # base.config.GetBool('debug-task-traceback', 0)
     count = 0
     def __init__(self, callback, priority = 0):
-        if __debug__:
+        if __dev__:
             if self.debugTaskTraceback:
                 self.debugInitTraceback = StackTrace("Task "+str(callback), 1, 10)
         # Unique ID for each task

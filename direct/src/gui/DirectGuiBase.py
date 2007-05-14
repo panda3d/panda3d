@@ -13,7 +13,10 @@ from direct.showbase import DirectObject
 from direct.task import Task
 from direct.showbase import ShowBase
 from direct.showbase.PythonUtil import recordCreationStack
+from pandac.PandaModules import PStatCollector
 import string, types
+
+guiObjectCollector = PStatCollector("Client::GuiObjects")
 
 """
 Base class for all Direct Gui items.  Handles composite widgets and
@@ -648,9 +651,9 @@ def toggleGuiGridSnap():
 def setGuiGridSpacing(spacing):
     DirectGuiWidget.gridSpacing = spacing
 
-if __debug__:
-    # this will help track down who created DirectGui objects
-    # call obj.getCreationStackTrace() to figure out who created it
+if __dev__:
+    # this will help track down the code that created DirectGui objects
+    # call obj.getCreationStackTrace() to figure out what code created it
     DirectGuiBase = recordCreationStack(DirectGuiBase)
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
@@ -723,6 +726,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             self.guiItem.setId(self['guiId'])
         self.guiId = self.guiItem.getId()
         if __dev__:
+            guiObjectCollector.addLevel(1)
+            guiObjectCollector.flushLevel()
             # track gui items by guiId for tracking down leaks
             if hasattr(base, 'guiItems'):
                 if self.guiId in base.guiItems:
@@ -1020,16 +1025,18 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.updateFrameStyle()
 
     def destroy(self):
-        if __dev__:
-            if hasattr(base, 'guiItems'):
-                if self.guiId in base.guiItems:
-                    del base.guiItems[self.guiId]
-                else:
-                    base.notify.warning(
-                        'DirectGuiWidget.destroy(): '
-                        'gui item %s not in base.guiItems' %
-                        self.guiId)
         if hasattr(self, "frameStyle"):
+            if __dev__:
+                guiObjectCollector.subLevel(1)
+                guiObjectCollector.flushLevel()
+                if hasattr(base, 'guiItems'):
+                    if self.guiId in base.guiItems:
+                        del base.guiItems[self.guiId]
+                    else:
+                        base.notify.warning(
+                            'DirectGuiWidget.destroy(): '
+                            'gui item %s not in base.guiItems' %
+                            self.guiId)
             # Destroy children
             for child in self.getChildrenAsList():
                 childGui = self.guiDict.get(child.getName())
