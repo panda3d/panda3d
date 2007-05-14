@@ -29,6 +29,7 @@ class PandaNode;
 class GeomNode;
 class Geom;
 class GeomVertexData;
+class GeomVertexArrayData;
 class Texture;
 
 ////////////////////////////////////////////////////////////////////
