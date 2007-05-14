@@ -30,20 +30,23 @@ class SimpleLruPage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SimpleLru : public LinkedListNode {
 PUBLISHED:
-  INLINE SimpleLru(size_t max_size);
+  SimpleLru(size_t max_size);
   ~SimpleLru();
 
   INLINE size_t get_total_size() const;
   INLINE size_t get_max_size() const;
   INLINE void set_max_size(size_t max_size);
+  size_t count_active_size() const;
 
   INLINE void consider_evict();
+  INLINE void begin_epoch();
 
 private:
   void do_evict();
 
   size_t _total_size;
   size_t _max_size;
+  SimpleLruPage *_active_marker;
 
   friend class SimpleLruPage;
 };

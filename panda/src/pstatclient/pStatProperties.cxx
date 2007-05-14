@@ -203,6 +203,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Vertex Data:Disk",                 { 0.6, 0.9, 0.1 } },
   { 1, "Vertex Data:Compressed",           { 0.5, 0.1, 0.4 } },
   { 1, "Vertex Data:Resident",             { 0.9, 0.1, 0.7 } },
+  { 1, "Vertex Data:Active",               { 0.5, 0.7, 0.9 } },
   { 1, "TransformStates",                  { 1.0, 0.5, 0.5 },  "", 5000 },
   { 1, "TransformStates:On nodes",         { 0.2, 0.8, 1.0 } },
   { 1, "TransformStates:Cached",           { 1.0, 0.0, 0.2 } },

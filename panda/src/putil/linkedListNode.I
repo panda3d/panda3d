@@ -89,6 +89,23 @@ insert_before(LinkedListNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LinkedListNode::insert_after
+//       Access: Protected
+//  Description: Adds a LinkedListNode record after the indicated
+//               node in the doubly-linked list.
+////////////////////////////////////////////////////////////////////
+INLINE void LinkedListNode::
+insert_after(LinkedListNode *node) {
+  nassertv(node->_prev != NULL && node->_prev->_next == node && node->_next->_prev == node);
+  nassertv(_prev == (LinkedListNode *)NULL &&
+           _next == (LinkedListNode *)NULL);
+  _next = node->_next;
+  _prev = node;
+  _next->_prev = this;
+  node->_next = this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LinkedListNode::take_list_from
 //       Access: Protected
 //  Description: Given that this LinkedListNode represents the root of

@@ -20,12 +20,26 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+SimpleLru::
+SimpleLru(size_t max_size) : LinkedListNode(true) {
+  _total_size = 0;
+  _max_size = max_size;
+  _active_marker = new SimpleLruPage(0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SimpleLru::Destructor
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 SimpleLru::
 ~SimpleLru() {
+  delete _active_marker;
+
 #ifndef NDEBUG
   // We're shutting down.  Force-remove everything remaining, but
   // don't explicitly evict it (that would force vertex buffers to
@@ -36,6 +50,25 @@ SimpleLru::
     ((SimpleLruPage *)_next)->remove_from_list();
   }
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::count_active_size
+//       Access: Published
+//  Description: Returns the total size of the pages that were
+//               enqueued since the last call to begin_epoch().
+////////////////////////////////////////////////////////////////////
+size_t SimpleLru::
+count_active_size() const {
+  size_t total = 0;
+
+  LinkedListNode *node = _prev;
+  while (node != _active_marker && node != this) {
+    total += ((SimpleLruPage *)node)->get_lru_size();
+    node = ((SimpleLruPage *)node)->_prev;
+  }
+
+  return total;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -78,6 +78,7 @@ PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 
 PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
+PStatCollector GraphicsEngine::_vertex_data_active_pcollector("Vertex Data:Active");
 PStatCollector GraphicsEngine::_vertex_data_resident_pcollector("Vertex Data:Resident");
 PStatCollector GraphicsEngine::_vertex_data_compressed_pcollector("Vertex Data:Compressed");
 PStatCollector GraphicsEngine::_vertex_data_disk_pcollector("Vertex Data:Disk");
@@ -679,8 +680,6 @@ render_frame() {
     deletor->flush();
   }
 
-  GeomVertexArrayData::lru_epoch();
-  
   GeomCacheManager::flush_level();
   CullTraverser::flush_level();
   RenderState::flush_level();
@@ -723,9 +722,6 @@ render_frame() {
   }
 
   _sw_sprites_pcollector.clear_level();
-  _vertex_data_resident_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->get_total_size());
-  _vertex_data_compressed_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_compressed)->get_total_size());
-  _vertex_data_disk_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_disk)->get_total_size());
 
   _cnode_volume_pcollector.clear_level();
   _gnode_volume_pcollector.clear_level();
@@ -746,8 +742,20 @@ render_frame() {
   _volume_geom_pcollector.clear_level();
   _test_geom_pcollector.clear_level();
 
+  if (PStatClient::is_connected()) {
+    size_t resident = GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->get_total_size();
+    size_t active = GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->count_active_size();
+    _vertex_data_active_pcollector.set_level(active);
+    _vertex_data_resident_pcollector.set_level(resident - active);
+    _vertex_data_compressed_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_compressed)->get_total_size());
+    _vertex_data_disk_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_disk)->get_total_size());
+    
+  }
+
 #endif  // DO_PSTATS
 
+  GeomVertexArrayData::lru_epoch();
+  
   // Now signal all of our threads to begin their next frame.
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {

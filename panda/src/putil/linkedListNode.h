@@ -40,6 +40,7 @@ protected:
 
   INLINE void remove_from_list();
   INLINE void insert_before(LinkedListNode *node);
+  INLINE void insert_after(LinkedListNode *node);
 
   INLINE void take_list_from(LinkedListNode *other_root);
 

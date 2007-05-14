@@ -18,17 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-SimpleLru::
-SimpleLru(size_t max_size) : LinkedListNode(true) {
-  _total_size = 0;
-  _max_size = max_size;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SimpleLru::get_total_size
 //       Access: Published
 //  Description: Returns the total size of all objects currently
@@ -74,6 +63,20 @@ consider_evict() {
   if (_total_size > _max_size) {
     do_evict();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::begin_epoch
+//       Access: Published
+//  Description: Marks the end of the previous epoch and the beginning
+//               of the next one.  This will evict any objects that
+//               are pending eviction, and also update any internal
+//               bookkeeping.
+////////////////////////////////////////////////////////////////////
+INLINE void SimpleLru::
+begin_epoch() {
+  consider_evict();
+  _active_marker->enqueue_lru(this);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -369,11 +369,11 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 lru_epoch() {
-  _ram_lru.consider_evict();
-  _compressed_lru.consider_evict();
+  _ram_lru.begin_epoch();
+  _compressed_lru.begin_epoch();
 
   // No automatic eviction from the Disk LRU.
-  //_disk_lru.consider_evict();
+  //_disk_lru.begin_epoch();
 }
 
 ////////////////////////////////////////////////////////////////////
