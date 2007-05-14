@@ -889,7 +889,6 @@ class Functor:
         del self.__doc__
     
     def __call__(self, *args, **kargs):
-        """call function"""
         _args = list(self._args)
         _args.extend(args)
         _kargs = self._kargs.copy()
@@ -1124,7 +1123,8 @@ del savedSettings
 
 class ParamObj:
     # abstract base for classes that want to support a formal parameter
-    # set whose values may be queried, changed, 'bulk' changed, and
+    # set whose values may be queried, changed, 'bulk' changed (defer reaction
+    # to changes until multiple changes have been performed), and
     # extracted/stored/applied all at once (see documentation above)
 
     # ParamSet subclass: container of parameter values. Derived class must
@@ -1231,12 +1231,10 @@ class ParamObj:
             params = self.ParamSet(**kwArgs)
 
         self._paramLockRefCount = 0
-        # this holds dictionaries of parameter values prior to the set that we
-        # are performing
-        self._priorValuesStack = Stack()
-        # this holds the name of the parameter that we are currently modifying
-        # at the top of the stack
-        self._curParamStack = Stack()
+        # these hold the current value of parameters while they are being set to
+        # a new value, to support getPriorValue()
+        self._curParamStack = []
+        self._priorValuesStack = []
 
         def setterStub(param, setterFunc, self,
                        value):
@@ -1245,8 +1243,7 @@ class ParamObj:
             # been set, and on unlock, we'll call the applyers for those
             # values
             if self._paramLockRefCount > 0:
-                setterFunc(value)
-                priorValues = self._priorValuesStack.top()
+                priorValues = self._priorValuesStack[-1]
                 if param not in priorValues:
                     try:
                         priorValue = getSetter(self, param, 'get')()
@@ -1254,16 +1251,17 @@ class ParamObj:
                         priorValue = None
                     priorValues[param] = priorValue
                 self._paramsSet[param] = None
+                setterFunc(value)
             else:
                 # prepare for call to getPriorValue
-                self._priorValuesStack.push({
+                self._priorValuesStack.append({
                     param: getSetter(self, param, 'get')()
                     })
                 setterFunc(value)
                 # call the applier, if there is one
                 applier = getattr(self, getSetterName(param, 'apply'), None)
                 if applier is not None:
-                    self._curParamStack.push(param)
+                    self._curParamStack.append(param)
                     applier()
                     self._curParamStack.pop()
                 self._priorValuesStack.pop()
@@ -1336,13 +1334,13 @@ class ParamObj:
         self._paramsSet = {}
         # this will store the values of modified params (from prior to
         # the lock).
-        self._priorValuesStack.push({})
+        self._priorValuesStack.append({})
     def _handleUnlockParams(self):
         for param in self._paramsSet:
             # call the applier, if there is one
             applier = getattr(self, getSetterName(param, 'apply'), None)
             if applier is not None:
-                self._curParamStack.push(param)
+                self._curParamStack.append(param)
                 applier()
                 self._curParamStack.pop()
         self._priorValuesStack.pop()
@@ -1354,7 +1352,7 @@ class ParamObj:
     def getPriorValue(self):
         # call this within an apply function to find out what the prior value
         # of the param was
-        return self._priorValuesStack.top()[self._curParamStack.top()]
+        return self._priorValuesStack[-1][self._curParamStack[-1]]
 
     def __repr__(self):
         argStr = ''
@@ -1362,6 +1360,28 @@ class ParamObj:
             argStr += '%s=%s,' % (param,
                                   repr(getSetter(self, param, 'get')()))
         return '%s(%s)' % (self.__class__.__name__, argStr)
+
+if __debug__:
+    class ParamObjTest(ParamObj):
+        class ParamSet(ParamObj.ParamSet):
+            Params = {
+                'num': 0,
+            }
+        def applyNum(self):
+            self.priorValue = self.getPriorValue()
+    pto = ParamObjTest()
+    assert pto.getNum() == 0
+    pto.setNum(1)
+    assert pto.priorValue == 0
+    assert pto.getNum() == 1
+    pto.lockParams()
+    pto.setNum(2)
+    # make sure applyNum is not called until we call unlockParams
+    assert pto.priorValue == 0
+    assert pto.getNum() == 2
+    pto.unlockParams()
+    assert pto.priorValue == 1
+    assert pto.getNum() == 2
 
 """
 POD (Plain Ol' Data)
