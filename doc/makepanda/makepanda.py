@@ -904,6 +904,14 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
             if (suflen==0) or (x[-suflen:]==suffix):
                 CopyFile(dstdir+x, srcdir+x)
 
+def CompileAllModels(dstdir, srcdir):
+    for x in os.listdir(srcdir):
+        if (x.endswith(".flt")) or (x.endswith(".egg")):
+            eggpz = os.path.basename(x[:-4] + ".egg.pz")
+            bampz = os.path.basename(x[:-4] + ".bam.pz")
+            EnqueueEggPZ("", dstdir + eggpz, srcdir + x)
+            EnqueueBamPZ("", dstdir + bampz, dstdir + eggpz)
+
 def CopyAllHeaders(dir, skip=[]):
     # get a list of headers
     dirlist = os.listdir(dir)
@@ -1429,26 +1437,40 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
 
 ##########################################################################################
 #
-# EnqueueBam
+# EnqueueEggPZ
 #
 ##########################################################################################
 
-def CompileBam(preconv, bam, egg):
-    if (egg[-4:] == ".flt"):
-        ifile = os.path.basename(egg)
-        oscmd("built/bin/flt2egg " + preconv + " -o built/tmp/"+ifile+".egg" + " " + egg)
-        oscmd("built/bin/egg2bam -o " + bam + " built/tmp/"+ifile+".egg")
-    else:
-        oscmd("built/bin/egg2bam " + preconv + " -o " + bam + " " + egg)
+def CompileEggPZ(preconv, eggpz, src):
+    if (src.endswith(".egg")):
+        CopyFile(eggpz[:-3], src)
+    elif (src.endswith(".flt")):
+        oscmd("built/bin/flt2egg " + preconv + " -o " + eggpz[:-3] + " " + src)
+    oscmd("built/bin/pzip " + eggpz[:-3])
 
-def EnqueueBam(preconv, bam, egg):
+def EnqueueEggPZ(preconv, eggpz, src):
     if (sys.platform == "win32"):
         flt2egg = "built/bin/flt2egg.exe"
-        egg2bam = "built/bin/egg2bam.exe"
     else:
         flt2egg = "built/bin/flt2egg"
+    DependencyQueue(CompileEggPZ, [preconv, eggpz, src], [eggpz], [src], [flt2egg])
+
+##########################################################################################
+#
+# EnqueueBamPZ
+#
+##########################################################################################
+
+def CompileBamPZ(preconv, bampz, src):
+    oscmd("built/bin/egg2bam " + preconv + " -o " + bampz[:-3] + " " + src)
+    oscmd("built/bin/pzip " + bampz[:-3])
+
+def EnqueueBamPZ(preconv, bampz, src):
+    if (sys.platform == "win32"):
+        egg2bam = "built/bin/egg2bam.exe"
+    else:
         egg2bam = "built/bin/egg2bam"
-    DependencyQueue(CompileBam, [preconv, bam, egg], [bam], [egg], [flt2egg, egg2bam])
+    DependencyQueue(CompileBamPZ, [preconv, bampz, src], [bampz], [src], [egg2bam])
 
 ##########################################################################################
 #
@@ -2521,6 +2543,9 @@ if (OMIT.count("FREETYPE")==0):
     IPATH=['panda/src/pnmtext']
     OPTS=['BUILDING_PANDA',  'FREETYPE']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmtext_composite.cxx', obj='pnmtext_composite.obj')
+    EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpnmtext.in', obj='libpnmtext_igate.obj',
+                 src='panda/src/pnmtext',  module='panda', library='libpnmtext',
+                 skip=[], also=["pnmtext_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/text/
@@ -2671,6 +2696,7 @@ if OMIT.count("VRPN")==0:
     INFILES.append("libpvrpn.in")
 if OMIT.count("FREETYPE")==0:
     OBJFILES.append("pnmtext_composite.obj")
+    OBJFILES.append("libpnmtext_igate.obj")
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpanda_module.obj',
             module='panda', library='libpanda', files=INFILES)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
@@ -4477,27 +4503,13 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDAAPP")==0):
 #
 
 if (OMIT.count("PANDATOOL")==0):
-    EnqueueBam("-pr ../=", "built/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/gridBack.bam",       "dmodels/src/misc/gridBack.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/iris.bam",           "dmodels/src/misc/iris.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/lilsmiley.bam",      "dmodels/src/misc/lilsmiley.egg")
-    EnqueueBam("-pr ../=", "built/models/misc/objectHandles.bam",  "dmodels/src/misc/objectHandles.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/rgbCube.bam",        "dmodels/src/misc/rgbCube.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/smiley.bam",         "dmodels/src/misc/smiley.egg")
-    EnqueueBam("-pr ../=", "built/models/misc/sphere.bam",         "dmodels/src/misc/sphere.flt")
-    EnqueueBam("-pr ../=", "built/models/misc/Pointlight.bam",     "dmodels/src/misc/Pointlight.egg")
-    EnqueueBam("-pr ../=", "built/models/misc/Dirlight.bam",       "dmodels/src/misc/Dirlight.egg")
-    EnqueueBam("-pr ../=", "built/models/misc/Spotlight.bam",      "dmodels/src/misc/Spotlight.egg")
-    EnqueueBam("-pr ../=", "built/models/misc/xyzAxis.bam",        "dmodels/src/misc/xyzAxis.flt")
-    
+
+    CompileAllModels("built/models/misc/", "dmodels/src/misc/")
+    CompileAllModels("built/models/gui/",  "dmodels/src/gui/")
+    CompileAllModels("built/models/",      "models/")
+
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
-    
-    CopyAllFiles("built/models/",            "models/",                ".egg")
-    CopyAllFiles("built/models/",            "models/",                ".bam")
     
     CopyAllFiles("built/models/maps/",       "models/maps/",           ".jpg")
     CopyAllFiles("built/models/maps/",       "models/maps/",           ".png")
