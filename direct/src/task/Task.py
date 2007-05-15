@@ -81,7 +81,11 @@ class Task:
         except:
             pass
         else:
-            if config.GetBool('record-task-creation-stack', __dev__):
+            try:
+                isDev = __dev__
+            except:
+                isDev = False
+            if config.GetBool('record-task-creation-stack', isDev):
                 if self.debugTaskTraceback:
                     self.debugInitTraceback = StackTrace("Task "+str(callback), 1, 10)
         # Unique ID for each task
