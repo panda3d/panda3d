@@ -53,7 +53,8 @@ PUBLISHED:
     TT_color           = 0x002,
     TT_color_scale     = 0x004,
     TT_tex_matrix      = 0x008,
-    TT_other           = 0x010,
+    TT_clip_plane      = 0x010,
+    TT_other           = 0x020,
   };
 
   enum CombineSiblings {
@@ -123,7 +124,7 @@ PUBLISHED:
   INLINE void set_combine_radius(float combine_radius);
   INLINE float get_combine_radius() const;
 
-  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~0);
+  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~TT_clip_plane);
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
 

@@ -40,6 +40,7 @@ AccumulatedAttribs(const AccumulatedAttribs &copy) :
   _color_scale(copy._color_scale),
   _tex_matrix(copy._tex_matrix),
   _texture(copy._texture),
+  _clip_plane(copy._clip_plane),
   _other(copy._other)
 {
 }
@@ -56,5 +57,6 @@ operator = (const AccumulatedAttribs &copy) {
   _color_scale = copy._color_scale;
   _tex_matrix = copy._tex_matrix;
   _texture = copy._texture;
+  _clip_plane = copy._clip_plane;
   _other = copy._other;
 }

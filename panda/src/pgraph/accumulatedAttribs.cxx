@@ -23,6 +23,7 @@
 #include "colorScaleAttrib.h"
 #include "texMatrixAttrib.h"
 #include "textureAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "config_pgraph.h"
 
 
@@ -55,6 +56,13 @@ write(ostream &out, int attrib_types, int indent_level) const {
       indent(out, indent_level) << "no tex matrix\n";
     } else {
       _tex_matrix->write(out, indent_level);
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
+    if (_clip_plane == (const RenderAttrib *)NULL) {
+      indent(out, indent_level) << "no clip plane\n";
+    } else {
+      _clip_plane->write(out, indent_level);
     }
   }
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
@@ -137,11 +145,63 @@ collect(PandaNode *node, int attrib_types) {
     }
   }
 
+  if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
+    const RenderAttrib *node_attrib = 
+      node->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      // The node has a clip plane attribute; apply it.
+      if (_clip_plane == (const RenderAttrib *)NULL) {
+        _clip_plane = node_attrib;
+      } else {
+        _clip_plane = _clip_plane->compose(node_attrib);
+      }
+      node->clear_attrib(ClipPlaneAttrib::get_class_type());
+    }
+  }
+
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
     // Collect everything else.
     nassertv(_other != (RenderState *)NULL);
-    _other = _other->compose(node->get_state());
-    node->set_state(RenderState::make_empty());
+    CPT(RenderState) collect_state = node->get_state();
+    CPT(RenderState) keep_state = RenderState::make_empty();
+
+    const RenderAttrib *attrib = collect_state->get_attrib(ColorAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(ColorAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(ColorAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+
+    attrib = collect_state->get_attrib(ColorScaleAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(ColorScaleAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(ColorScaleAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+
+    attrib = collect_state->get_attrib(TexMatrixAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(TexMatrixAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(TexMatrixAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+
+    attrib = collect_state->get_attrib(TextureAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(TextureAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(TextureAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+
+    attrib = collect_state->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(ClipPlaneAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(ClipPlaneAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+    
+    _other = _other->compose(collect_state);
+    node->set_state(keep_state);
   }
 }
 
@@ -212,6 +272,19 @@ collect(const RenderState *state, int attrib_types) {
     }
   }
 
+  if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
+    const RenderAttrib *node_attrib = 
+      new_state->get_attrib(ClipPlaneAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      if (_clip_plane == (const RenderAttrib *)NULL) {
+        _clip_plane = node_attrib;
+      } else {
+        _clip_plane = _clip_plane->compose(node_attrib);
+      }
+      new_state = new_state->remove_attrib(ClipPlaneAttrib::get_class_type());
+    }
+  }
+
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
     // Collect everything else.
     nassertr(_other != (RenderState *)NULL, new_state);
@@ -275,6 +348,19 @@ apply_to_node(PandaNode *node, int attrib_types) {
         node->set_attrib(_tex_matrix);
       }
       _tex_matrix = (RenderAttrib *)NULL;
+    }
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
+    if (_clip_plane != (RenderAttrib *)NULL) {
+      const RenderAttrib *node_attrib =
+        node->get_attrib(ClipPlaneAttrib::get_class_type());
+      if (node_attrib != (RenderAttrib *)NULL) {
+        node->set_attrib(_clip_plane->compose(node_attrib));
+      } else {
+        node->set_attrib(_clip_plane);
+      }
+      _clip_plane = (RenderAttrib *)NULL;
     }
   }
 

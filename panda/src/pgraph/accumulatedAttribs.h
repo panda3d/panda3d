@@ -51,6 +51,7 @@ public:
   CPT(RenderAttrib) _color_scale;
   CPT(RenderAttrib) _tex_matrix;
   CPT(RenderAttrib) _texture;
+  CPT(RenderAttrib) _clip_plane;
   CPT(RenderState) _other;
 };
 
