@@ -229,7 +229,7 @@ TypeHandle TypeRegistry::
 find_type(const string &name) const {
   _lock->lock();
 
-  TypeHandle handle;
+  TypeHandle handle = TypeHandle::none();
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
   if (ri != _name_registry.end()) {
