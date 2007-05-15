@@ -391,6 +391,9 @@ INLINE unsigned char *GeomVertexArrayDataHandle::
 get_pointer() {
   nassertr(_writable, NULL);
   check_resident();
+  if (_cdata->_data.size() == 0) {
+    return NULL;
+  }
   return &_cdata->_data[0];
 }
 
