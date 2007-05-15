@@ -1431,78 +1431,80 @@ do_issue_clip_plane() {
   for (int li = 0; li < num_on_planes; li++) {
     NodePath plane = new_attrib->get_on_plane(li);
     nassertv(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()));
+    PlaneNode *plane_node = (PlaneNode *)plane.node();
+    if ((plane_node->get_clip_effect() & PlaneNode::CE_visible) != 0) {
+      num_enabled++;
 
-    num_enabled++;
-
-    // Clipping should be enabled before we apply any planes.
-    enable_clip_planes(true);
-    _clip_planes_enabled = true;
-    _clip_planes_enabled_this_frame = true;
-
-    // Check to see if this plane has already been bound to an id
-    int cur_plane_id = -1;
-    for (i = 0; i < cur_max_planes; i++) {
-      if (_clip_plane_info[i]._plane == plane) {
-        // Plane has already been bound to an id, we only need to
-        // enable the plane, not reapply it.
-        cur_plane_id = -2;
-        enable_clip_plane(i, true);
-        _clip_plane_info[i]._enabled = true;
-        _clip_plane_info[i]._next_enabled = true;
-        break;
-      }
-    }
-
-    // See if there are any unbound plane ids
-    if (cur_plane_id == -1) {
+      // Clipping should be enabled before we apply any planes.
+      enable_clip_planes(true);
+      _clip_planes_enabled = true;
+      _clip_planes_enabled_this_frame = true;
+      
+      // Check to see if this plane has already been bound to an id
+      int cur_plane_id = -1;
       for (i = 0; i < cur_max_planes; i++) {
-        if (_clip_plane_info[i]._plane.is_empty()) {
-          _clip_plane_info[i]._plane = plane;
-          cur_plane_id = i;
+        if (_clip_plane_info[i]._plane == plane) {
+          // Plane has already been bound to an id, we only need to
+          // enable the plane, not reapply it.
+          cur_plane_id = -2;
+          enable_clip_plane(i, true);
+          _clip_plane_info[i]._enabled = true;
+          _clip_plane_info[i]._next_enabled = true;
           break;
         }
       }
-    }
-
-    // If there were no unbound plane ids, see if we can replace
-    // a currently unused but previously bound id
-    if (cur_plane_id == -1) {
-      for (i = 0; i < cur_max_planes; i++) {
-        if (!new_attrib->has_on_plane(_clip_plane_info[i]._plane)) {
-          _clip_plane_info[i]._plane = plane;
-          cur_plane_id = i;
-          break;
+      
+      // See if there are any unbound plane ids
+      if (cur_plane_id == -1) {
+        for (i = 0; i < cur_max_planes; i++) {
+          if (_clip_plane_info[i]._plane.is_empty()) {
+            _clip_plane_info[i]._plane = plane;
+            cur_plane_id = i;
+            break;
+          }
         }
       }
-    }
-
-    // If we *still* don't have a plane id, slot a new one.
-    if (cur_plane_id == -1) {
-      if (_max_clip_planes < 0 || cur_max_planes < _max_clip_planes) {
-        cur_plane_id = cur_max_planes;
-        _clip_plane_info.push_back(ClipPlaneInfo());
-        cur_max_planes++;
-        nassertv(cur_max_planes == (int)_clip_plane_info.size());
+      
+      // If there were no unbound plane ids, see if we can replace
+      // a currently unused but previously bound id
+      if (cur_plane_id == -1) {
+        for (i = 0; i < cur_max_planes; i++) {
+          if (!new_attrib->has_on_plane(_clip_plane_info[i]._plane)) {
+            _clip_plane_info[i]._plane = plane;
+            cur_plane_id = i;
+            break;
+          }
+        }
       }
-    }
-
-    if (cur_plane_id >= 0) {
-      enable_clip_plane(cur_plane_id, true);
-      _clip_plane_info[cur_plane_id]._enabled = true;
-      _clip_plane_info[cur_plane_id]._next_enabled = true;
-
-      if (!any_bound) {
-        begin_bind_clip_planes();
-        any_bound = true;
+      
+      // If we *still* don't have a plane id, slot a new one.
+      if (cur_plane_id == -1) {
+        if (_max_clip_planes < 0 || cur_max_planes < _max_clip_planes) {
+          cur_plane_id = cur_max_planes;
+          _clip_plane_info.push_back(ClipPlaneInfo());
+          cur_max_planes++;
+          nassertv(cur_max_planes == (int)_clip_plane_info.size());
+        }
       }
-
-      // This is the first time this frame that this plane has been
-      // bound to this particular id.
-      bind_clip_plane(plane, cur_plane_id);
-
-    } else if (cur_plane_id == -1) {
-      gsg_cat.warning()
-        << "Failed to bind " << plane << " to id.\n";
+      
+      if (cur_plane_id >= 0) {
+        enable_clip_plane(cur_plane_id, true);
+        _clip_plane_info[cur_plane_id]._enabled = true;
+        _clip_plane_info[cur_plane_id]._next_enabled = true;
+        
+        if (!any_bound) {
+          begin_bind_clip_planes();
+          any_bound = true;
+        }
+        
+        // This is the first time this frame that this plane has been
+        // bound to this particular id.
+        bind_clip_plane(plane, cur_plane_id);
+        
+      } else if (cur_plane_id == -1) {
+        gsg_cat.warning()
+          << "Failed to bind " << plane << " to id.\n";
+      }
     }
   }
 

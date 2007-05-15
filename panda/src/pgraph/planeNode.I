@@ -133,6 +133,34 @@ INLINE int PlaneNode::
 get_priority() const {
   return _priority;
 }
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::set_clip_effect
+//       Access: Published
+//  Description: Specifies the sort of things this plane will actually
+//               clip (when it is used as a clip plane).  This is a
+//               bitmask union of ClipEffect values.  If it includes
+//               CE_visible, then it will clip visible geometry; if it
+//               includes CE_collision, then it will clip collision
+//               polygons.  If it includes neither bit, it will still
+//               affect culling, but objects will either be wholly
+//               behind the clipping plane, or wholly present.
+////////////////////////////////////////////////////////////////////
+INLINE void PlaneNode::
+set_clip_effect(int clip_effect) {
+  _clip_effect = clip_effect;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PlaneNode::get_clip_effect
+//       Access: Published
+//  Description: Returns the clip_effect bits for this clip plane.
+//               See set_clip_effect().
+////////////////////////////////////////////////////////////////////
+INLINE int PlaneNode::
+get_clip_effect() const {
+  return _clip_effect;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PlaneNode::get_sort_seq

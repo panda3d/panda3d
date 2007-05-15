@@ -75,7 +75,8 @@ fillin(DatagramIterator &scan, BamReader *) {
 PlaneNode::
 PlaneNode(const string &name, const Planef &plane) :
   PandaNode(name),
-  _priority(0)
+  _priority(0),
+  _clip_effect(~0)
 {
   set_cull_callback();
 
@@ -94,6 +95,7 @@ PlaneNode::
 PlaneNode(const PlaneNode &copy) :
   PandaNode(copy),
   _priority(copy._priority),
+  _clip_effect(copy._clip_effect),
   _cycler(copy._cycler)
 {
 }
@@ -316,6 +318,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
   dg.add_int32(_priority);
+  dg.add_uint8(_clip_effect);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,4 +353,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
   _priority = scan.get_int32();
+
+  if (manager->get_file_minor_ver() < 9) {
+    _clip_effect = ~0;
+  } else {
+    _clip_effect = scan.get_uint8();
+  }
 }

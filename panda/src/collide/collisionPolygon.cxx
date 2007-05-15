@@ -613,12 +613,19 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   if (cpa != (ClipPlaneAttrib *)NULL) {
     // We have a clip plane; apply it.
     Points new_points;
-    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
-    if (new_points.size() < 3) {
-      return NULL;
-    }
-    if (!point_is_inside(p, new_points)) {
-      return NULL;
+    if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
+      // All points are behind the clip plane.
+      if (!point_is_inside(p, _points)) {
+        return NULL;
+      }
+
+    } else {
+      if (new_points.size() < 3) {
+        return NULL;
+      }
+      if (!point_is_inside(p, new_points)) {
+        return NULL;
+      }
     }
 
   } else {
@@ -682,12 +689,19 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   if (cpa != (ClipPlaneAttrib *)NULL) {
     // We have a clip plane; apply it.
     Points new_points;
-    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
-    if (new_points.size() < 3) {
-      return NULL;
-    }
-    if (!point_is_inside(p, new_points)) {
-      return NULL;
+    if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
+      // All points are behind the clip plane.
+      if (!point_is_inside(p, _points)) {
+        return NULL;
+      }
+
+    } else {
+      if (new_points.size() < 3) {
+        return NULL;
+      }
+      if (!point_is_inside(p, new_points)) {
+        return NULL;
+      }
     }
 
   } else {
@@ -753,12 +767,19 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   if (cpa != (ClipPlaneAttrib *)NULL) {
     // We have a clip plane; apply it.
     Points new_points;
-    apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform());
-    if (new_points.size() < 3) {
-      return NULL;
-    }
-    if (!point_is_inside(p, new_points)) {
-      return NULL;
+    if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
+      // All points are behind the clip plane.
+      if (!point_is_inside(p, _points)) {
+        return NULL;
+      }
+
+    } else {
+      if (new_points.size() < 3) {
+        return NULL;
+      }
+      if (!point_is_inside(p, new_points)) {
+        return NULL;
+      }
     }
 
   } else {
@@ -1165,28 +1186,27 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
   bool all_in = true;
 
   int num_planes = cpa->get_num_on_planes();
-  if (num_planes > 0) {
+  bool first_plane = true;
+
+  for (int i = 0; i < num_planes; i++) {
     NodePath plane_path = cpa->get_on_plane(0);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
-    CPT(TransformState) new_transform = 
-      net_transform->invert_compose(plane_path.get_net_transform());
-    
-    Planef plane = plane_node->get_plane() * new_transform->get_mat();
-    if (!clip_polygon(new_points, _points, plane)) {
-      all_in = false;
-    }
-
-    for (int i = 1; i < num_planes; i++) {
-      NodePath plane_path = cpa->get_on_plane(0);
-      PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
+    if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
       CPT(TransformState) new_transform = 
         net_transform->invert_compose(plane_path.get_net_transform());
       
       Planef plane = plane_node->get_plane() * new_transform->get_mat();
-      Points last_points;
-      last_points.swap(new_points);
-      if (!clip_polygon(new_points, last_points, plane)) {
-        all_in = false;
+      if (first_plane) {
+        first_plane = false;
+        if (!clip_polygon(new_points, _points, plane)) {
+          all_in = false;
+        }
+      } else {
+        Points last_points;
+        last_points.swap(new_points);
+        if (!clip_polygon(new_points, last_points, plane)) {
+          all_in = false;
+        }
       }
     }
   }

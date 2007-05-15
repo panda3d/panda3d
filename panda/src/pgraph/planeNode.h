@@ -65,6 +65,13 @@ PUBLISHED:
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
 
+  enum ClipEffect {
+    CE_visible    = 0x0001,
+    CE_collision  = 0x0002,
+  };
+  INLINE void set_clip_effect(int clip_effect);
+  INLINE int get_clip_effect() const;
+
 public:
   INLINE static UpdateSeq get_sort_seq();
 
@@ -77,6 +84,7 @@ private:
   // so, and cycling it makes it difficult to synchronize with the
   // ClipPlaneAttribs.
   int _priority;
+  int _clip_effect;
   static UpdateSeq _sort_seq;
 
   // This is the data that must be cycled between pipeline stages.
