@@ -378,6 +378,9 @@ get_object() {
 INLINE const unsigned char *GeomVertexArrayDataHandle::
 get_pointer() const {
   check_resident();
+  if (_cdata->_data.size() == 0) {
+    return NULL;
+  }
   return &_cdata->_data[0];
 }
 
