@@ -30,6 +30,13 @@ ImageInfo() {
   set_program_description
     ("This program reads the headers of a series of one or more "
      "image files and reports the image sizes to standard output.");
+
+  add_option
+    ("2", "", 0,
+     "Report only images that have a non-power-of-two size in either "
+     "dimension.  Images whose dimensions are both a power of two will "
+     "not be mentioned.",
+     &ImageInfo::dispatch_none, &_report_power_2, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,9 +59,13 @@ run() {
       }
     } else {
       // Successfully read the image header.
-      nout << filename << ": " << header.get_x_size() << " x "
-           << header.get_y_size() << " x " << header.get_num_channels()
-           << " (maxval = " << header.get_maxval() << ")\n";
+      if (!_report_power_2 || 
+          !is_power_2(header.get_x_size()) ||
+          !is_power_2(header.get_y_size())) {
+        nout << filename << ": " << header.get_x_size() << " x "
+             << header.get_y_size() << " x " << header.get_num_channels()
+             << " (maxval = " << header.get_maxval() << ")\n";
+      }
     }
   }
 }
@@ -76,6 +87,17 @@ handle_args(ProgramBase::Args &args) {
   _filenames = args;
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageInfo::is_power_2
+//       Access: Private
+//  Description: Returns true if the indicated value is a power of 2,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ImageInfo::
+is_power_2(int value) const {
+  return (value & (value - 1)) == 0;
 }
 
 

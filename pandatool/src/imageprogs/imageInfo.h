@@ -38,7 +38,11 @@ public:
 protected:
   virtual bool handle_args(Args &args);
 
+private:
+  bool is_power_2(int value) const;
+
   Args _filenames;
+  bool _report_power_2;
 };
 
 #endif
