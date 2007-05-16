@@ -1071,7 +1071,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         print space + 'Scale: ' + self.getScale().pPrintValues()
         # Print out children info
         for child in self.getChildrenAsList():
-            messenger.send(PRINT + child.getName(), [indent + 2])
+            messenger.send(DGG.PRINT + child.getName(), [indent + 2])
 
     def copyOptions(self, other):
         """
