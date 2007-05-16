@@ -93,6 +93,9 @@ PUBLISHED:
 
   INLINE void set_read_size(int x_size, int y_size);
   INLINE void clear_read_size();
+  INLINE bool has_read_size() const;
+  INLINE int get_read_x_size() const;
+  INLINE int get_read_y_size() const;
 
   bool read(const Filename &filename, PNMFileType *type = NULL,
             bool report_unknown_type = true);

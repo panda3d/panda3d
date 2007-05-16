@@ -191,6 +191,40 @@ clear_read_size() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::has_read_size
+//       Access: Published
+//  Description: Returns true if set_read_size() has been called.
+////////////////////////////////////////////////////////////////////
+INLINE bool PNMImage::
+has_read_size() const {
+  return _has_read_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_read_x_size
+//       Access: Published
+//  Description: Returns the requested x_size of the image if
+//               set_read_size() has been called, or the image x_size
+//               otherwise (if it is known).
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImage::
+get_read_x_size() const {
+  return _has_read_size ? _read_x_size : get_x_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_read_y_size
+//       Access: Published
+//  Description: Returns the requested y_size of the image if
+//               set_read_size() has been called, or the image y_size
+//               otherwise (if it is known).
+////////////////////////////////////////////////////////////////////
+INLINE int PNMImage::
+get_read_y_size() const {
+  return _has_read_size ? _read_y_size : get_y_size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::is_valid
 //       Access: Published
 //  Description: Returns true if the image has been read in or

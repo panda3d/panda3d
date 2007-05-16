@@ -1978,6 +1978,11 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       // image anyway, so we don't even need to make the size right.
       x_size = 1;
       y_size = 1;
+
+    } else {
+      consider_rescale(image, fullpath.get_basename());
+      x_size = image.get_read_x_size();
+      y_size = image.get_read_y_size();
     }
 
     image = PNMImage(x_size, y_size, image.get_num_channels(), 
@@ -2001,6 +2006,15 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                           get_expected_mipmap_y_size(n));
     }
 
+    if (image.get_x_size() != image.get_read_x_size() ||
+        image.get_y_size() != image.get_read_y_size()) {
+      gobj_cat.info()
+        << "Implicitly rescaling " << fullpath.get_basename() << " from "
+        << image.get_x_size() << " by " << image.get_y_size() << " to "
+        << image.get_read_x_size() << " by " << image.get_read_y_size()
+        << "\n";
+    }
+
     if (!image.read(fullpath, NULL, false)) {
       gobj_cat.error()
         << "Texture::read() - couldn't read: " << fullpath << endl;
@@ -2020,15 +2034,10 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
           << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
         return false;
       }
-      int x_size = alpha_image.get_x_size();
-      int y_size = alpha_image.get_y_size();
-      if (textures_header_only) {
-        x_size = 1;
-        y_size = 1;
-      }
+      int x_size = image.get_x_size();
+      int y_size = image.get_y_size();
       alpha_image = PNMImage(x_size, y_size, alpha_image.get_num_channels(),
-                             alpha_image.get_maxval(),
-                             alpha_image.get_type());
+                             alpha_image.get_maxval(), alpha_image.get_type());
       alpha_image.fill(1.0);
       if (alpha_image.has_alpha()) {
         alpha_image.alpha_fill(1.0);
@@ -2910,11 +2919,6 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
 
   if (pnmimage.get_x_size() != new_x_size ||
       pnmimage.get_y_size() != new_y_size) {
-    gobj_cat.info()
-      << "Implicitly rescaling " << name << " from "
-      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
-      << new_x_size << " by " << new_y_size << "\n";
-
     pnmimage.set_read_size(new_x_size, new_y_size);
   }
 }
