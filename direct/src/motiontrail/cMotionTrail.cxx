@@ -580,7 +580,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
           printf ("nurbs_start_t %f, nurbs_end_t %f \n", nurbs_start_t, nurbs_end_t);
         }
       }
-
+      
       // create quads from NurbsCurveResult                    
       float total_curve_segments;
       
@@ -709,6 +709,10 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
         }
       }
 
+      for (index = 0; index < total_vertices; index++) {
+        nurbs_curve_result_array [index] = 0;
+      }
+      
       delete[] nurbs_curve_result_array;
     }
     else {

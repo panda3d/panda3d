@@ -47,6 +47,12 @@ class MotionTrail(NodePath, DirectObject):
     motion_trail_list = [ ]
     motion_trail_task_name = "motion_trail_task"
 
+    global_enable = True    
+
+    @classmethod
+    def setGlobalEnable (self, enable):
+        MotionTrail.global_enable = enable
+
     def __init__ (self,name,parent_node_path):
 
         DirectObject.__init__(self)
@@ -147,38 +153,43 @@ class MotionTrail(NodePath, DirectObject):
         index = 0
         while (index < total_motion_trails):
             motion_trail = MotionTrail.motion_trail_list [index]
-            if (motion_trail.use_python_version):
-                # Python version
-                if (motion_trail.active and motion_trail.check_for_update (current_time)):
-                    transform = None                
-                    if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
-                        motion_trail.root_node_path.update ( )
+                        
+            if (MotionTrail.global_enable):                       
+                if (motion_trail.use_python_version):
+                    # Python version
+                    if (motion_trail.active and motion_trail.check_for_update (current_time)):
+                        transform = None                
+                        if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
+                            motion_trail.root_node_path.update ( )
 
-                    if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
-                        transform = motion_trail.getMat(motion_trail.root_node_path)
-                    else:
-                        transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+                        if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
+                            transform = motion_trail.getMat(motion_trail.root_node_path)
+                        else:
+                            transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
 
-                    if (transform != None):
-                        motion_trail.update_motion_trail (current_time, transform)
+                        if (transform != None):
+                            motion_trail.update_motion_trail (current_time, transform)
+                else:
+                    # C++ version
+                    if (motion_trail.active and motion_trail.cmotion_trail.checkForUpdate (current_time)):
+                        transform = None                
+                        if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
+                            motion_trail.root_node_path.update ( )
 
-                index += 1
+                        if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
+                            transform = motion_trail.getMat(motion_trail.root_node_path)
+                        else:
+                            transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
+
+                        if (transform != None):
+                            motion_trail.transferVertices ( )
+                            motion_trail.cmotion_trail.updateMotionTrail (current_time, transform)
+
             else:
-                # C++ version
-                if (motion_trail.active and motion_trail.cmotion_trail.checkForUpdate (current_time)):
-                    transform = None                
-                    if (motion_trail.root_node_path != None) and (motion_trail.root_node_path != render):
-                        motion_trail.root_node_path.update ( )
-
-                    if (motion_trail.root_node_path and (motion_trail.relative_to_render == False)):
-                        transform = motion_trail.getMat(motion_trail.root_node_path)
-                    else:
-                        transform = Mat4 (motion_trail.getNetTransform ( ).getMat ( ))
-
-                    if (transform != None):
-                        motion_trail.transferVertices ( )
-                        motion_trail.cmotion_trail.updateMotionTrail (current_time, transform)
-                index += 1
+                motion_trail.reset_motion_trail()
+                motion_trail.reset_motion_trail_geometry()
+            
+            index += 1
                                              
         return Task.cont
 
