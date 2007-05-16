@@ -454,31 +454,31 @@ supports_read_row() const {
 //               if there is an error or end of file.
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeSoftImage::Reader::
-read_row(xel *row_data, xelval *alpha_data) {
+read_row(xel *row_data, xelval *alpha_data, int x_size, int) {
   if (!is_valid()) {
     return false;
   }
   switch (soft_color) {
   case rgb:
-    if (!read_scanline(row_data, alpha_data, _x_size, _file,
+    if (!read_scanline(row_data, alpha_data, x_size, _file,
                        read_rgb, rgb_ctype)) {
       return false;
     }
     break;
 
   case rgba:
-    if (!read_scanline(row_data, alpha_data, _x_size, _file,
+    if (!read_scanline(row_data, alpha_data, x_size, _file,
                        read_rgba, rgb_ctype)) {
       return false;
     }
     break;
 
   case rgb_a:
-    if (!read_scanline(row_data, alpha_data, _x_size, _file,
+    if (!read_scanline(row_data, alpha_data, x_size, _file,
                        read_rgb, rgb_ctype)) {
       return false;
     }
-    if (!read_scanline(row_data, alpha_data, _x_size, _file,
+    if (!read_scanline(row_data, alpha_data, x_size, _file,
                        read_alpha, alpha_ctype)) {
       return false;
     }

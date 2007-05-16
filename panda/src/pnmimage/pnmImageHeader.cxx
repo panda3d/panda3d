@@ -35,8 +35,9 @@
 //               false.
 ////////////////////////////////////////////////////////////////////
 bool PNMImageHeader::
-read_header(const Filename &filename, PNMFileType *type) {
-  PNMReader *reader = make_reader(filename, type);
+read_header(const Filename &filename, PNMFileType *type,
+            bool report_unknown_type) {
+  PNMReader *reader = make_reader(filename, type, report_unknown_type);
   if (reader != (PNMReader *)NULL) {
     (*this) = (*reader);
     delete reader;

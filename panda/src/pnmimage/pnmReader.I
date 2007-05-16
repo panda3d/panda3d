@@ -26,8 +26,26 @@ PNMReader(PNMFileType *type, istream *file, bool owns_file) :
   _type(type),
   _owns_file(owns_file),
   _file(file),
-  _is_valid(true)
+  _is_valid(true),
+  _has_read_size(false)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::set_read_size
+//       Access: Public
+//  Description: Instructs the reader to attempt to scale the image to
+//               the indicated size while reading it.  The reader may
+//               or may not follow this suggestion, or may follow it
+//               only partially (e.g. by reading a file which is
+//               slightly reduced in size, but not the precise size
+//               requested).
+////////////////////////////////////////////////////////////////////
+void PNMReader::
+set_read_size(int x_size, int y_size) {
+  _read_x_size = x_size;
+  _read_y_size = y_size;
+  _has_read_size = true;
 }
 
 ////////////////////////////////////////////////////////////////////

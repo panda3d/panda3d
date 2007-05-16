@@ -592,7 +592,7 @@ supports_read_row() const {
 //               if there is an error or end of file.
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeTIFF::Reader::
-read_row(xel *row_data, xelval *alpha_data) {
+read_row(xel *row_data, xelval *alpha_data, int x_size, int) {
   if (!is_valid()) {
     return false;
   }
@@ -639,7 +639,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 
   switch ( photomet ) {
   case PHOTOMETRIC_MINISBLACK:
-    for ( col = 0; col < _x_size; ++col )
+    for ( col = 0; col < x_size; ++col )
       {
         sample = (this->*next_sample)(buf_ptr, bits_left);
         gray = sample;
@@ -661,7 +661,7 @@ read_row(xel *row_data, xelval *alpha_data) {
     break;
 
   case PHOTOMETRIC_MINISWHITE:
-    for ( col = 0; col < _x_size; ++col )
+    for ( col = 0; col < x_size; ++col )
       {
         sample = (this->*next_sample)(buf_ptr, bits_left);
         gray = _maxval - sample;
@@ -685,7 +685,7 @@ read_row(xel *row_data, xelval *alpha_data) {
     break;
 
   case PHOTOMETRIC_PALETTE:
-    for ( col = 0; col < _x_size; ++col )
+    for ( col = 0; col < x_size; ++col )
       {
         sample = (this->*next_sample)(buf_ptr, bits_left);
         row_data[col] = colormap[sample];
@@ -712,7 +712,7 @@ read_row(xel *row_data, xelval *alpha_data) {
     break;
 
   case PHOTOMETRIC_RGB:
-    for ( col = 0; col < _x_size; ++col ) {
+    for ( col = 0; col < x_size; ++col ) {
       sample = (this->*next_sample)(buf_ptr, bits_left);
       r = sample;
       sample = (this->*next_sample)(buf_ptr, bits_left);

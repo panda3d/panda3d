@@ -182,33 +182,33 @@ supports_read_row() const {
 //               if there is an error or end of file.
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeSGI::Reader::
-read_row(xel *row_data, xelval *alpha_data) {
+read_row(xel *row_data, xelval *alpha_data, int x_size, int y_size) {
   if (!is_valid()) {
     return false;
   }
   nassertr(current_row >= 0, false);
 
-  ScanElem *red = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
-  ScanElem *grn = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
-  ScanElem *blu = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
-  ScanElem *alpha = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
+  ScanElem *red = (ScanElem *)alloca(x_size * sizeof(ScanElem));
+  ScanElem *grn = (ScanElem *)alloca(x_size * sizeof(ScanElem));
+  ScanElem *blu = (ScanElem *)alloca(x_size * sizeof(ScanElem));
+  ScanElem *alpha = (ScanElem *)alloca(x_size * sizeof(ScanElem));
 
-  read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, red,
+  read_channel(_file, x_size, y_size, _num_channels, bpc, table, red,
                table_start, 0, current_row);
 
   if (!is_grayscale()) {
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, grn,
+    read_channel(_file, x_size, y_size, _num_channels, bpc, table, grn,
                  table_start, 1, current_row);
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, blu,
+    read_channel(_file, x_size, y_size, _num_channels, bpc, table, blu,
                  table_start, 2, current_row);
   }
 
   if (has_alpha()) {
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, alpha,
+    read_channel(_file, x_size, y_size, _num_channels, bpc, table, alpha,
                  table_start, _num_channels - 1, current_row);
   }
 
-  for (int x = 0; x < _x_size; x++) {
+  for (int x = 0; x < x_size; x++) {
     if (is_grayscale()) {
       PPM_PUTB(row_data[x], (xelval)red[x]);
     } else {

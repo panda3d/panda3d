@@ -229,7 +229,7 @@ supports_read_row() const {
 //               if there is an error or end of file.
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeAlias::Reader::
-read_row(xel *row_data, xelval *) {
+read_row(xel *row_data, xelval *, int x_size, int) {
   if (!is_valid()) {
     return false;
   }
@@ -239,9 +239,9 @@ read_row(xel *row_data, xelval *) {
   unsigned char red, grn, blu;
 
   x = 0;
-  while (x < _x_size) {
+  while (x < x_size) {
     num = read_uchar_ALIAS(_file);
-    if (num==0 || x+num > _x_size) {
+    if (num==0 || x+num > x_size) {
       return false;
     }
     blu = read_uchar_ALIAS(_file);

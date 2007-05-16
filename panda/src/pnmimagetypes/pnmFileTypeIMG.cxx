@@ -254,10 +254,10 @@ supports_read_row() const {
 //               if there is an error or end of file.
 ////////////////////////////////////////////////////////////////////
 bool PNMFileTypeIMG::Reader::
-read_row(xel *row_data, xelval *) {
+read_row(xel *row_data, xelval *, int x_size, int) {
   int x;
   xelval red, grn, blu;
-  for (x = 0; x < _x_size; x++) {
+  for (x = 0; x < x_size; x++) {
     red = read_uchar_IMG(_file);
     grn = read_uchar_IMG(_file);
     blu = read_uchar_IMG(_file);

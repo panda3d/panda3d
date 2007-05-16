@@ -31,6 +31,7 @@ PNMImage::
 PNMImage(const Filename &filename, PNMFileType *type) {
   _array = NULL;
   _alpha = NULL;
+  _has_read_size = false;
 
   bool result = read(filename, type);
   if (!result) {
@@ -61,6 +62,7 @@ clear() {
   _maxval = 255;
   _comment.clear();
   _type = (PNMFileType *)NULL;
+  _has_read_size = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,6 +83,7 @@ clear(int x_size, int y_size, int num_channels,
   _maxval = maxval;
   _comment.clear();
   _type = type;
+  _has_read_size = false;
 
   if (has_alpha()) {
     allocate_alpha();
@@ -220,13 +223,12 @@ remix_channels(const LMatrix4f &conv) {
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
 read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
-  clear();
-
-  PNMReader *reader = PNMImageHeader::make_reader(filename, type,
-                                                  report_unknown_type);
+  PNMReader *reader = make_reader(filename, type, report_unknown_type);
   if (reader == (PNMReader *)NULL) {
+    clear();
     return false;
   }
+
   return read(reader);
 }
 
@@ -247,11 +249,10 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
 bool PNMImage::
 read(istream &data, const string &filename, PNMFileType *type,
      bool report_unknown_type) {
-  clear();
-
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, string(), type, report_unknown_type);
   if (reader == (PNMReader *)NULL) {
+    clear();
     return false;
   }
   return read(reader);
@@ -272,6 +273,10 @@ read(istream &data, const string &filename, PNMFileType *type,
 ////////////////////////////////////////////////////////////////////
 bool PNMImage::
 read(PNMReader *reader) {
+  bool has_read_size = _has_read_size;
+  int read_x_size = _read_x_size;
+  int read_y_size = _read_y_size;
+
   clear();
 
   if (reader == NULL) {
@@ -283,6 +288,11 @@ read(PNMReader *reader) {
     return false;
   }
 
+  if (has_read_size) {
+    reader->set_read_size(read_x_size, read_y_size);
+  }
+  reader->prepare_read();
+
   copy_header_from(*reader);
 
   // We reassign y_size after reading because we might have read a
@@ -293,10 +303,20 @@ read(PNMReader *reader) {
   if (_y_size == 0) {
     clear();
     return false;
-  } else {
-    setup_rc();
-    return true;
   }
+
+  setup_rc();
+
+  if (has_read_size && (_x_size != read_x_size || _y_size != read_y_size)) {
+    // The Reader didn't comply with our size request.  Do the sizing
+    // explicitly, then.
+    PNMImage new_image(read_x_size, read_y_size, get_num_channels(),
+                       get_maxval(), get_type());
+    new_image.quick_filter_from(*this);
+    take_from(new_image);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -52,7 +52,7 @@ public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
 
     virtual bool supports_read_row() const;
-    virtual bool read_row(xel *array, xelval *alpha);
+    virtual bool read_row(xel *array, xelval *alpha, int x_size, int y_size);
 
   private:
     enum { unknown, rgb, rgba, rgb_a } soft_color;

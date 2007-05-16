@@ -90,18 +90,6 @@ ConfigVariableInt jpeg_quality
           "size)."));
 
 
-// These control the scaling that is automatically performed on a JPEG
-// file for decompression.  You might specify to scale down by a
-// fraction, e.g. 1/8, by specifying jpeg_scale_num = 1 and
-// jpeg_scale_denom = 8.  This will reduce decompression time
-// correspondingly.  Attempting to use this to scale up, or to scale
-// by any fraction other than an even power of two, may not be
-// supported.
-ConfigVariableInt jpeg_scale_num
-("jpeg-scale-num", 1);
-ConfigVariableInt jpeg_scale_denom
-("jpeg-scale-denom", 1);
-
 ConfigVariableInt bmp_bpp
 ("bmp-bpp", 0,
  PRC_DESC("This controls how many bits per pixel are written out for BMP "

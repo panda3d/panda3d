@@ -52,8 +52,6 @@ extern ConfigVariableBool tga_colormap;
 extern ConfigVariableBool tga_grayscale;
 
 extern ConfigVariableInt jpeg_quality;
-extern ConfigVariableInt jpeg_scale_num;
-extern ConfigVariableInt jpeg_scale_denom;
 
 extern ConfigVariableInt bmp_bpp;
 

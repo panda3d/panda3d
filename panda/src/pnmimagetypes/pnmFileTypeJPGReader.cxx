@@ -295,9 +295,36 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
    * See libjpeg.doc for more info.
    */
 
+  _num_channels = _cinfo.num_components;
+  _x_size = (int)_cinfo.image_width;
+  _y_size = (int)_cinfo.image_height;
+  _maxval = MAXJSAMPLE;
+
   /* Step 6: set parameters for decompression */
-  _cinfo.scale_num = jpeg_scale_num;
-  _cinfo.scale_denom = jpeg_scale_denom;
+  _cinfo.scale_num = 1;
+  _cinfo.scale_denom = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeJPG::Reader::prepare_read
+//       Access: Public, Virtual
+//  Description: This method will be called before read_data() or
+//               read_row() is called.  It instructs the reader to
+//               initialize its data structures as necessary to
+//               actually perform the read operation.  
+//
+//               After this call, _x_size and _y_size should reflect
+//               the actual size that will be filled by read_data()
+//               (as possibly modified by set_read_size()).
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeJPG::Reader::
+prepare_read() {
+  if (_has_read_size && _read_x_size != 0 && _read_y_size != 0) {
+    // Attempt to get the scale close to our target scale.
+    int x_reduction = _cinfo.image_width / _read_x_size;
+    int y_reduction = _cinfo.image_height / _read_y_size;
+    _cinfo.scale_denom = max(min(x_reduction, y_reduction), 1);
+  }
 
   /* Step 7: Start decompressor */
 
@@ -309,7 +336,6 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   _num_channels = _cinfo.output_components;
   _x_size = (int)_cinfo.output_width;
   _y_size = (int)_cinfo.output_height;
-  _maxval = MAXJSAMPLE;
 }
 
 ////////////////////////////////////////////////////////////////////

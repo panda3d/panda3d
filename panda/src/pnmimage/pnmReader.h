@@ -38,22 +38,33 @@ protected:
 
 public:
   virtual ~PNMReader();
+  INLINE void set_read_size(int x_size, int y_size);
 
   INLINE PNMFileType *get_type() const;
 
+  virtual void prepare_read();
   virtual int read_data(xel *array, xelval *alpha);
   virtual bool supports_read_row() const;
-  virtual bool read_row(xel *array, xelval *alpha);
+  virtual bool read_row(xel *array, xelval *alpha, int x_size, int y_size);
 
   virtual bool supports_stream_read() const;
 
   INLINE bool is_valid() const;
+
+private:
+  int get_reduction_shift(int orig_size, int new_size);
 
 protected:
   PNMFileType *_type;
   bool _owns_file;
   istream *_file;
   bool _is_valid;
+
+  int _read_x_size, _read_y_size;
+  bool _has_read_size;
+
+  int _x_shift, _y_shift;
+  int _orig_x_size, _orig_y_size;
 };
 
 #include "pnmReader.I"

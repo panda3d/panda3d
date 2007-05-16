@@ -91,6 +91,9 @@ PUBLISHED:
   INLINE void alpha_fill(double alpha = 0.0);
   void alpha_fill_val(xelval alpha = 0);
 
+  INLINE void set_read_size(int x_size, int y_size);
+  INLINE void clear_read_size();
+
   bool read(const Filename &filename, PNMFileType *type = NULL,
             bool report_unknown_type = true);
   bool read(istream &data, const string &filename = string(), 
@@ -239,6 +242,9 @@ private:
   xel *_array;
   xelval *_alpha;
   double _default_rc, _default_gc, _default_bc;
+
+  int _read_x_size, _read_y_size;
+  bool _has_read_size;
 };
 
 #include "pnmImage.I"

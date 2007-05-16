@@ -1979,6 +1979,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       x_size = 1;
       y_size = 1;
     }
+
     image = PNMImage(x_size, y_size, image.get_num_channels(), 
                      image.get_maxval(), image.get_type());
     image.fill(0.2, 0.3, 1.0);
@@ -1987,6 +1988,19 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     }
 
   } else {
+    if (!image.read_header(fullpath, NULL, false)) {
+      gobj_cat.error()
+        << "Texture::read() - couldn't read: " << fullpath << endl;
+      return false;
+    }
+
+    if (z == 0 && n == 0) {
+      consider_rescale(image, fullpath.get_basename());
+    } else {
+      image.set_read_size(get_expected_mipmap_x_size(n),
+                          get_expected_mipmap_y_size(n));
+    }
+
     if (!image.read(fullpath, NULL, false)) {
       gobj_cat.error()
         << "Texture::read() - couldn't read: " << fullpath << endl;
@@ -2021,6 +2035,22 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       }
       
     } else {
+      if (!alpha_image.read_header(alpha_fullpath, NULL, true)) {
+        gobj_cat.error()
+          << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
+        return false;
+      }
+
+      if (image.get_x_size() != alpha_image.get_x_size() ||
+          image.get_y_size() != alpha_image.get_y_size()) {
+        gobj_cat.info()
+          << "Implicitly rescaling " << alpha_fullpath.get_basename()
+          << " from " << alpha_image.get_x_size() << " by "
+          << alpha_image.get_y_size() << " to " << image.get_x_size()
+          << " by " << image.get_y_size() << "\n";
+        alpha_image.set_read_size(image.get_x_size(), image.get_y_size());
+      }
+
       if (!alpha_image.read(alpha_fullpath, NULL, true)) {
         gobj_cat.error()
           << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
@@ -2045,13 +2075,12 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     
     set_fullpath(fullpath);
     set_alpha_fullpath(alpha_fullpath);
-    
-    consider_rescale(image, fullpath.get_basename());
   }
 
   if (!alpha_fullpath.empty()) {
-    // The grayscale (alpha channel) image must be the same size as the
-    // main image.
+    // The grayscale (alpha channel) image must be the same size as
+    // the main image.  This should really have been already
+    // guaranteed by the above.
     if (image.get_x_size() != alpha_image.get_x_size() ||
         image.get_y_size() != alpha_image.get_y_size()) {
       gobj_cat.info()
@@ -2818,8 +2847,13 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::consider_rescale
 //       Access: Private
-//  Description: Scales the PNMImage according to the whims of the
-//               Config.prc file.
+//  Description: Asks the PNMImage to change its scale when it reads
+//               the image, according to the whims of the Config.prc
+//               file.
+//
+//               This method should be called after
+//               pnmimage.read_header() has been called, but before
+//               pnmimage.read().
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
@@ -2877,14 +2911,11 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
   if (pnmimage.get_x_size() != new_x_size ||
       pnmimage.get_y_size() != new_y_size) {
     gobj_cat.info()
-      << "Automatically rescaling " << name << " from "
+      << "Implicitly rescaling " << name << " from "
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
       << new_x_size << " by " << new_y_size << "\n";
 
-    PNMImage scaled(new_x_size, new_y_size, pnmimage.get_num_channels(),
-                    pnmimage.get_maxval(), pnmimage.get_type());
-    scaled.quick_filter_from(pnmimage);
-    pnmimage = scaled;
+    pnmimage.set_read_size(new_x_size, new_y_size);
   }
 }
 

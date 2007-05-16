@@ -73,6 +73,7 @@ public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
     ~Reader();
 
+    virtual void prepare_read();
     virtual int read_data(xel *array, xelval *alpha);
 
   private:

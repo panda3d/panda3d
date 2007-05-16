@@ -25,6 +25,8 @@ INLINE PNMImage::
 PNMImage() {
   _array = NULL;
   _alpha = NULL;
+
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,6 +155,39 @@ fill_val(xelval gray) {
 INLINE void PNMImage::
 alpha_fill(double alpha) {
   alpha_fill_val((xelval)(alpha * get_maxval()));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_read_size
+//       Access: Published
+//  Description: Specifies the size to we'd like to scale the image
+//               upon reading it.  This will affect the next call to
+//               read().  This is usually used to reduce the image
+//               size, e.g. for a thumbnail.
+//
+//               If the file type reader supports it (e.g. JPEG), then
+//               this will scale the image during the read operation,
+//               consequently reducing memory and CPU utilization.  If
+//               the file type reader does not support it, this will
+//               load the image normally, and them perform a linear
+//               scale after it has been loaded.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+set_read_size(int x_size, int y_size) {
+  _read_x_size = x_size;
+  _read_y_size = y_size;
+  _has_read_size = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::clear_read_size
+//       Access: Published
+//  Description: Undoes the effect of a previous call to
+//               set_read_size().
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+clear_read_size() {
+  _has_read_size = false;
 }
 
 ////////////////////////////////////////////////////////////////////

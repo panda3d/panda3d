@@ -53,7 +53,7 @@ public:
     virtual ~Reader();
 
     virtual bool supports_read_row() const;
-    virtual bool read_row(xel *array, xelval *alpha);
+    virtual bool read_row(xel *array, xelval *alpha, int x_size, int y_size);
 
     typedef struct {
       long start;     /* offset in file */
