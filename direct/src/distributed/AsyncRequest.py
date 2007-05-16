@@ -91,7 +91,27 @@ class AsyncRequest(DirectObject):
         self.acceptOnce(
             "doFieldResponse-%s"%(context,),
             self._checkCompletion, [key])
+        
         self.air.queryObjectField(dclassName, fieldName, doId, context)
+        self._resetTimeoutTask()
+
+    def askForObjectFields(
+            self, dclassName, fieldNames, doId, key = None, context = None):
+        """
+        Request an already created object, i.e. read from database.
+        """
+        assert AsyncRequest.notify.debugCall()
+        if key is None:
+            # default the dictionary key to the fieldName
+            key = fieldNames[0]
+        assert doId
+        if context is None:
+            context = self.air.allocateContext()
+        self.air.contextToClassName[context] = dclassName
+        self.acceptOnce(
+            "doFieldResponse-%s"%(context,),
+            self._checkCompletion, [key])
+        self.air.queryObjectFields(dclassName, fieldNames, doId, context)
         self._resetTimeoutTask()
 
     def askForObject(self, doId, context = None):
