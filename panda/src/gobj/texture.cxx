@@ -2866,12 +2866,11 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name) {
-  string basename = _filename.get_basename();
   bool exclude = false;
   int num_excludes = exclude_texture_scale.get_num_unique_values();
   for (int i = 0; i < num_excludes && !exclude; ++i) {
     GlobPattern pat(exclude_texture_scale.get_unique_value(i));
-    if (pat.matches(basename)) {
+    if (pat.matches(name)) {
       exclude = true;
     }
   }
