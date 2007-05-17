@@ -850,7 +850,7 @@ def CxxFindSource(name, ipath):
     exit("Could not find source file: "+name)
 
 def CxxFindHeader(srcfile, incfile, ipath):
-    if (incfile[:1]=="."):
+    if (incfile.startswith(".")):
         last = srcfile.rfind("/")
         if (last < 0): exit("CxxFindHeader cannot handle this case #1")
         srcdir = srcfile[:last+1]
@@ -866,10 +866,9 @@ def CxxFindHeader(srcfile, incfile, ipath):
         full = srcdir + incfile
         if GetTimestamp(full) > 0: return full
         return 0
-    else: 
+    else:
         for dir in ipath:
-            if (dir == "."): full = srcfile
-            else: full = dir + "/" + srcfile
+            full = dir + "/" + incfile
             if GetTimestamp(full) > 0: return full
         return 0
 
@@ -970,11 +969,12 @@ def SDependencyQueue(ipath, call, targets, sources):
     xipath = ["built/tmp"] + ipath + ["built/include"]
     osources = {}
     for x in sources:
+        file = FindLocation(x, xipath)
         if (x.endswith(".cxx")) or (x.endswith(".I")) or (x.endswith(".h")) or (x.endswith(".c")):
-            for dep in CxxCalcDependencies(CxxFindSource(x, xipath), xipath, []):
+            for dep in CxxCalcDependencies(file, xipath, []):
                 osources[dep] = 1
         else:
-            osources[FindLocation(x, xipath)] = 1
+            osources[file] = 1
     osources = osources.keys()
     osources.sort()
     otargets = FindLocations(targets, xipath)
