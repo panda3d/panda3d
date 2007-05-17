@@ -686,6 +686,8 @@ reset() {
     _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
+    _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
   }
 #endif
 
@@ -3382,32 +3384,27 @@ do_issue_shader() {
   if (expansion) {
     context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
   }
-
-  if (context == 0 || (context && context -> valid ( ) == false)) {
+  
+  if (context == 0 || (context -> valid ( ) == false)) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind();
       _current_shader_expansion = 0;
       _current_shader_context = 0;
     }
-    return;
-  }
-
-  if (context != _current_shader_context) {
-    // Use a completely different shader than before.
-    // Unbind old shader, bind the new one.
-    if (_current_shader_context != 0) {
-      _current_shader_context->unbind();
-      _current_shader_context = 0;
-      _current_shader_expansion = 0;
-    }
-    if (context != 0) {
+  } else {
+    if (context != _current_shader_context) {
+      // Use a completely different shader than before.
+      // Unbind old shader, bind the new one.
+      if (_current_shader_context != 0) {
+        _current_shader_context->unbind();
+      }
       context->bind(this);
       _current_shader_expansion = expansion;
       _current_shader_context = context;
+    } else {
+      // Use the same shader as before, but with new input arguments.
+      context->issue_parameters(this, true);
     }
-  } else {
-    // Use the same shader as before, but with new input arguments.
-    context->issue_parameters(this, true);
   }
 
   report_my_gl_errors();
@@ -5654,7 +5651,7 @@ set_state_and_transform(const RenderState *target,
   _target.clear_to_defaults();
   target->store_into_slots(&_target);
   _state_rs = 0;
-
+  
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
@@ -6061,6 +6058,12 @@ update_standard_texture_bindings() {
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+    // This shouldn't be necessary, but a bug in the radeon
+    // driver makes it so.
+    glDisable(GL_TEXTURE_GEN_R);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glDisable(GL_TEXTURE_GEN_Q);
   }
 
   // Save the count of texture stages for next time.
@@ -6088,8 +6091,14 @@ disable_standard_texture_bindings() {
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+    // This shouldn't be necessary, but a bug in the radeon
+    // driver makes it so.
+    glDisable(GL_TEXTURE_GEN_R);
+    glDisable(GL_TEXTURE_GEN_S);
+    glDisable(GL_TEXTURE_GEN_T);
+    glDisable(GL_TEXTURE_GEN_Q);
   }
-
+  
   _num_active_texture_stages = 0;
   
   report_my_gl_errors();
