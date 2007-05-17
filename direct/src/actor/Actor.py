@@ -478,6 +478,9 @@ class Actor(DirectObject, NodePath):
     def getAnimControlDict(self):
         return self.__animControlDict
 
+    def removeAnimControlDict(self):
+        self.__animControlDict = {}
+
     def getPartBundleDict(self):
         return self.__partBundleDict
 
