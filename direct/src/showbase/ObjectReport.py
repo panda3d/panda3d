@@ -7,6 +7,7 @@ from direct.showbase import DirectObject, ObjectPool, GarbageReport
 from direct.showbase.PythonUtil import makeList, Sync
 import gc
 import sys
+import __builtin__
 
 """
 >>> from direct.showbase import ObjectReport
@@ -100,9 +101,6 @@ class ObjectReport:
     notify = directNotify.newCategory('ObjectReport')
 
     def __init__(self, name, log=True):
-        if not hasattr(sys, 'getobjects'):
-            self.notify.error(
-                '%s only works in debug Python (pyd-shell)' % self.__class__.__name__)
         gr = GarbageReport.GarbageReport('ObjectReport\'s GarbageReport: %s' % name, log=log)
         gr.destroy()
         del gr
@@ -124,8 +122,38 @@ class ObjectReport:
     def diff(self, other):
         return self._pool.diff(other._pool)
 
+    def getObjectPool(self):
+        return self._pool
+
     def _getObjectList(self):
-        return sys.getobjects(0)
+        if hasattr(sys, 'getobjects'):
+            return sys.getobjects(0)
+        else:
+            gc.collect()
+            # grab gc's object list
+            gc_objects = gc.get_objects()
+            # use get_referents to find everything else
+            objects = gc_objects
+            objects.append(__builtin__.__dict__)
+            nextObjList = gc_objects
+            found = set()
+            found.add(id(objects))
+            found.add(id(found))
+            found.add(id(gc_objects))
+            for obj in objects:
+                found.add(id(obj))
+            # repeatedly call get_referents until we can't find any more objects
+            while len(nextObjList):
+                curObjList = nextObjList
+                nextObjList = []
+                for obj in curObjList:
+                    refs = gc.get_referents(obj)
+                    for ref in refs:
+                        if id(ref) not in found:
+                            found.add(id(ref))
+                            objects.append(ref)
+                            nextObjList.append(ref)
+            return objects
         """
         if hasattr(sys, 'getobjects'):
             return sys.getobjects(0)
