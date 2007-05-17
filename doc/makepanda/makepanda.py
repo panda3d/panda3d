@@ -1128,7 +1128,7 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
 def CompileFlex(pre,src,obj,ipath,opts,dashi):
     wsrc=FindLocation(src, ipath)
     wobj=FindLocation(obj, ipath)
-    wdst=wobj[:-4]+".cxx"
+    wdst="built/tmp/"+obj[:-4]+".cxx"
     ipath = ["built/tmp"] + ipath + ["built/include"]
     if (COMPILER == "MSVC"):
         if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+wdst+" "+wsrc)
