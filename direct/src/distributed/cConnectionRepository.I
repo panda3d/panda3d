@@ -40,6 +40,30 @@ has_owner_view() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_handle_c_updates
+//       Access: Published
+//  Description: Set true to specify this repository should process
+//               distributed updates internally in C++ code, or false
+//               if it should return them to Python.
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_handle_c_updates(bool handle_c_updates) {
+  _handle_c_updates = handle_c_updates;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_handle_c_updates
+//       Access: Published
+//  Description: Returns true if this repository will process
+//               distributed updates internally in C++ code, or false
+//               if it will return them to Python.
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_handle_c_updates() const {
+  return _handle_c_updates;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_client_datagram
 //       Access: Published
 //  Description: Sets the client_datagram flag.  If this is true,

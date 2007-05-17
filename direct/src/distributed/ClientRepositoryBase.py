@@ -33,6 +33,11 @@ class ClientRepositoryBase(ConnectionRepository):
         self.context=100000
         self.setClientDatagram(1)
 
+        self.deferredGenerates = []
+        self.deferredDoIds = {}
+        self.lastGenerate = 0
+        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0.2))
+
         self.recorder = base.recorder
 
         self.readDCFile(dcFileNames)
@@ -56,6 +61,23 @@ class ClientRepositoryBase(ConnectionRepository):
         self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
+
+    def setDeferInterval(self, deferInterval):
+        """Specifies the minimum amount of time, in seconds, that must
+        elapse before generating any two DistributedObjects whose
+        class type is marked "deferrable".  Set this to 0 to indicate
+        no deferring will occur."""
+
+        # Temporary condition for old Pandas.
+        if hasattr(self, 'setHandleCUpdates'):
+            self.deferInterval = deferInterval
+            self.setHandleCUpdates(self.deferInterval != 0)
+        else:
+            self.deferInterval = 0
+
+        if self.deferredGenerates:
+            taskMgr.remove('deferredGenerate')
+            taskMgr.doMethodLater(self.deferInterval, self.__doDeferredGenerate, 'deferredGenerate')
 
     ## def queryObjectAll(self, doID, context=0):
         ## """
@@ -154,12 +176,97 @@ class ClientRepositoryBase(ConnectionRepository):
         classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
+
+        dclass = self.dclassesByNumber[classId]
+
+        deferrable = getattr(dclass.getClassDef(), 'deferrable', False)
+        if not self.deferInterval:
+            deferrable = False
+        
+        now = globalClock.getFrameTime()
+        if self.deferredGenerates or deferrable:
+            # This object is deferrable, or there are already deferred
+            # objects in the queue (so all objects have to be held
+            # up).
+            if self.deferredGenerates or now - self.lastGenerate < self.deferInterval:
+                # Queue it for later.
+                assert(self.notify.debug("deferring generate for %s %s" % (dclass.getName(), doId)))
+                self.deferredGenerates.append(doId)
+                
+                # Keep a copy of the datagram, and move the di to the copy
+                dg = Datagram(di.getDatagram())
+                di = DatagramIterator(dg, di.getCurrentIndex())
+            
+                self.deferredDoIds[doId] = ((parentId, zoneId, classId, doId, di), deferrable, dg, [])
+                if len(self.deferredGenerates) == 1:
+                    # We just deferred the first object on the queue;
+                    # start the task to generate it.
+                    taskMgr.remove('deferredGenerate')
+                    taskMgr.doMethodLater(self.deferInterval, self.__doDeferredGenerate, 'deferredGenerate')
+                    
+            else:
+                # We haven't generated any deferrable objects in a
+                # while, so it's safe to go ahead and generate this
+                # one immediately.
+                self.lastGenerate = now
+                self.__doGenerate(parentId, zoneId, classId, doId, di)
+                
+        else:
+            self.__doGenerate(parentId, zoneId, classId, doId, di)
+
+    def __doGenerate(self, parentId, zoneId, classId, doId, di):
         # Look up the dclass
         dclass = self.dclassesByNumber[classId]
+        assert(self.notify.debug("performing generate for %s %s" % (dclass.getName(), doId)))
         dclass.startGenerate()
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
         dclass.stopGenerate()
+
+    def flushGenerates(self):
+        """ Forces all pending generates to be performed immediately. """
+        while self.deferredGenerates:
+            doId = self.deferredGenerates[0]
+            del self.deferredGenerates[0]
+            if doId in self.deferredDoIds:
+                args, deferrable, dg, updates = self.deferredDoIds[doId]
+                del self.deferredDoIds[doId]
+                self.__doGenerate(*args)
+                
+                for dg, di in updates:
+                    self.__doUpdate(doId, di)
+
+        taskMgr.remove('deferredGenerate')
+
+    def __doDeferredGenerate(self, task):
+        """ This is the task that generates an object on the deferred
+        queue. """
+        
+        now = globalClock.getFrameTime()
+        if now - self.lastGenerate < self.deferInterval:
+            # Come back later.
+            return Task.again
+
+        while self.deferredGenerates:
+            # Generate the next deferred object.
+            doId = self.deferredGenerates[0]
+            del self.deferredGenerates[0]
+            if doId in self.deferredDoIds:
+                args, deferrable, dg, updates = self.deferredDoIds[doId]
+                del self.deferredDoIds[doId]
+                self.__doGenerate(*args)
+                
+                for dg, di in updates:
+                    self.__doUpdate(doId, di)
+
+                if deferrable:
+                    # If this was an actual deferrable object, wait
+                    # for the next pass to generate any more.
+                    self.lastGenerate = now
+                    return Task.again
+
+        # All objects are generaetd.
+        return Task.done
 
     def handleGenerateWithRequiredOtherOwner(self, di):
         # Get the class Id
@@ -360,6 +467,16 @@ class ClientRepositoryBase(ConnectionRepository):
                 cache.cache(distObj)
             else:
                 distObj.deleteOrDelay()
+
+        elif self.deferredDoIds.has_key(doId):
+            # The object had been deferred.  Great; we don't even have
+            # to generate it now.
+            del self.deferredDoIds[doId]
+            i = self.deferredGenerates.index(doId)
+            del self.deferredGenerates[i]
+            if len(self.deferredGenerates) == 0:
+                taskMgr.remove('deferredGenerate')
+            
         else:
             self._logFailedDisable(doId, ownerView)
 
@@ -393,9 +510,23 @@ class ClientRepositoryBase(ConnectionRepository):
         """
         # Get the DO Id
         doId = di.getUint32()
-        #print("Updating " + str(doId))
-        # Find the DO
 
+        if doId in self.deferredDoIds:
+            # This object hasn't really been generated yet.  Sit on
+            # the update.
+            args, deferrable, dg0, updates = self.deferredDoIds[doId]
+
+            # Keep a copy of the datagram, and move the di to the copy
+            dg = Datagram(di.getDatagram())
+            di = DatagramIterator(dg, di.getCurrentIndex())
+
+            updates.append((dg, di))
+        else:
+            # This object has been fully generated.  It's OK to update.
+            self.__doUpdate(doId, di)
+
+    def __doUpdate(self, doId, di):
+        # Find the DO
         do = self.doId2do.get(doId)
         if do is not None:
             # Let the dclass finish the job

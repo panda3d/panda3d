@@ -70,7 +70,8 @@ CConnectionRepository(bool has_owner_view) :
 //  _msg_channels(),
   _msg_sender(0),
   _msg_type(0),
-  _has_owner_view(has_owner_view)
+  _has_owner_view(has_owner_view),
+  _handle_c_updates(true)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -290,14 +291,19 @@ check_datagram() {
 #ifdef HAVE_PYTHON
     case CLIENT_OBJECT_UPDATE_FIELD:
     case STATESERVER_OBJECT_UPDATE_FIELD:
-      if (_has_owner_view) {
-        if (!handle_update_field_owner()) {
-          return false;
+      if (_handle_c_updates) {
+        if (_has_owner_view) {
+          if (!handle_update_field_owner()) {
+            return false;
+          }
+        } else {
+          if (!handle_update_field()) {
+            return false;
+          }
         }
       } else {
-        if (!handle_update_field()) {
-          return false;
-        }
+        // Let the caller (Python) deal with this update.
+        return true;
       }
       break;
 #endif  // HAVE_PYTHON

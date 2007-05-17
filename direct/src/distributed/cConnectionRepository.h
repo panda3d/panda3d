@@ -62,12 +62,15 @@ class SocketStream;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT CConnectionRepository {
 PUBLISHED:
-  CConnectionRepository(bool has_owner_view=false);
+  CConnectionRepository(bool has_owner_view = false);
   ~CConnectionRepository();
 
   INLINE DCFile &get_dc_file();
 
   INLINE bool has_owner_view() const;
+
+  INLINE void set_handle_c_updates(bool handle_c_updates);
+  INLINE bool get_handle_c_updates() const;
 
   INLINE void set_client_datagram(bool client_datagram);
   INLINE bool get_client_datagram() const;
@@ -170,6 +173,7 @@ private:
 
   DCFile _dc_file;
   bool _has_owner_view;
+  bool _handle_c_updates;
   bool _client_datagram;
   bool _simulated_disconnect;
   bool _verbose;
