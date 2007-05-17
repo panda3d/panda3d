@@ -38,7 +38,7 @@ COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMODEX","NVIDIACG",
           "OPENSSL","FREETYPE","FFTW","MILES",
           "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8",
-          "BISON","FLEX","FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
+          "FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
 DIRECTXSDK = {}
@@ -49,7 +49,8 @@ PYTHONSDK=0
 STARTTIME=time.time()
 SLAVEFILE=0
 DEPENDENCYQUEUE=[]
-FILEDATECACHE = {}
+TIMESTAMPCACHE = {}
+FINDSOURCESTUBS = {}
 BUILTFROMCACHE = {}
 CXXINCLUDECACHE = {}
 THREADCOUNT=0
@@ -73,6 +74,27 @@ except ImportError:
 
 ########################################################################
 ##
+## The Timestamp Cache
+##
+## The make utility is constantly fetching the timestamps of files.
+## This can represent the bulk of the file accesses during the make
+## process.  The timestamp cache eliminates redundant checks.
+##
+########################################################################
+
+def GetTimestamp(path):
+    if TIMESTAMPCACHE.has_key(path):
+        return TIMESTAMPCACHE[path]
+    try: date = os.path.getmtime(path)
+    except: date = 0
+    TIMESTAMPCACHE[path] = date
+    return date
+
+def ClearTimestamp(path):
+    del TIMESTAMPCACHE[path]
+
+########################################################################
+##
 ## The Dependency cache.
 ##
 ## Makepanda's strategy for file dependencies is different from most
@@ -83,12 +105,82 @@ except ImportError:
 ## to the previous list of input files and their dates.  If they match,
 ## there is no need to build the file.
 ##
-## Also, makepanda automatically calculates dependencies from CXX
-## include files.  It does so by scanning the CXX files.  After it scans,
-## it records the date of the source file and the list of includes that
-## it contains.  It assumes that if the file date hasn't changed, that
+########################################################################
+
+def JustBuilt(files,others):
+    dates = []
+    for file in files:
+        del TIMESTAMPCACHE[file]
+        dates.append(GetTimestamp(file))
+    for file in others:
+        dates.append(GetTimestamp(file))
+    key = tuple(files)
+    BUILTFROMCACHE[key] = [others,dates]
+
+def NeedsBuild(files,others):
+    dates = []
+    for file in files:
+        dates.append(GetTimestamp(file))
+    for file in others:
+        dates.append(GetTimestamp(file))
+    key = tuple(files)
+    if (BUILTFROMCACHE.has_key(key)):
+        if (BUILTFROMCACHE[key] == [others,dates]):
+            return 0
+        else:
+            oldothers = BUILTFROMCACHE[key][0]
+            if (oldothers != others):
+                for f in files:
+                    print "CAUTION: file dependencies changed: "+f
+                if (VERBOSE > 1):
+                    add = SetDifference(others, oldothers)
+                    sub = SetDifference(oldothers, others)
+                    print " - Add: "+str(add)
+                    print " - Sub: "+str(sub)
+    return 1
+
+########################################################################
+##
+## The CXX include cache:
+##
+## The following routine scans a CXX file and returns a list of
+## the include-directives inside that file.  It's not recursive:
+## it just returns the includes that are immediately inside the file.
+##
+## Since scanning a CXX file is slow, we cache the result.  It records
+## the date of the source file and the list of includes that it
+## contains.  It assumes that if the file date hasn't changed, that
 ## the list of include-statements inside the file has not changed
 ## either.
+##
+########################################################################
+
+global CxxIncludeRegex
+CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$')
+
+def CxxGetIncludes(path):
+    date = GetTimestamp(path)
+    if (CXXINCLUDECACHE.has_key(path)):
+        cached = CXXINCLUDECACHE[path]
+        if (cached[0]==date): return cached[1]
+    try: sfile = open(path, 'rb')
+    except:
+        exit("Cannot open source file \""+path+"\" for reading.")
+    include = []
+    for line in sfile:
+        match = CxxIncludeRegex.match(line,0)
+        if (match):
+            incname = match.group(1)
+            include.append(incname)
+    sfile.close()
+    CXXINCLUDECACHE[path] = [date, include]
+    return include
+
+########################################################################
+##
+## Error exit has to be done carefully, because the 
+## dependency cache must be saved, and because this can
+## only be done by the main thread.
 ##
 ########################################################################
 
@@ -113,14 +205,6 @@ def LoadDependencyCache():
 
 LoadDependencyCache()
 
-########################################################################
-##
-## Error exit has to be done carefully, because the 
-## dependency cache must be saved, and because this can
-## only be done by the main thread.
-##
-########################################################################
-
 def exit(msg):
     if (threading.currentThread() == MAINTHREAD):
         SaveDependencyCache()
@@ -135,57 +219,62 @@ def exit(msg):
 
 ########################################################################
 ##
-## Utility Routines
+## GetDirectoryContents
+##
+## At times, makepanda will use a function like "os.listdir" to process
+## all the files in a directory.  Unfortunately, that means that any
+## accidental addition of a file to a directory could cause makepanda
+## to misbehave without warning.
+##
+## To alleviate this weakness, we created GetDirectoryContents.  This
+## uses "os.listdir" to fetch the directory contents, but then it
+## compares the results to the appropriate CVS/Entries to see if
+## they match.  If not, it prints a big warning message.
 ##
 ########################################################################
 
-def filedate(path):
-    if FILEDATECACHE.has_key(path):
-        return FILEDATECACHE[path]
-    try: date = os.path.getmtime(path)
-    except: date = 0
-    FILEDATECACHE[path] = date
-    return date
+def GetDirectoryContents(dir, filters="*", skip=[]):
+    if (type(filters)==str):
+        filters = [filters]
+    actual = {}
+    files = os.listdir(dir)
+    for filter in filters:
+        for file in fnmatch.filter(files, filter):
+            if (skip.count(file)==0) and (os.path.isfile(dir + "/" + file)):
+                actual[file] = 1
+    if (os.path.isfile(dir + "/CVS/Entries")):
+        cvs = {}
+        srchandle = open(dir+"/CVS/Entries", "r")
+        files = []
+        for line in srchandle:
+            if (line[0]=="/"):
+                s = line.split("/",2)
+                if (len(s)==3):
+                    files.append(s[1])
+        srchandle.close()
+        for filter in filters:
+            for file in fnmatch.filter(files, filter):
+                if (skip.count(file)==0):
+                    cvs[file] = 1
+        for file in actual.keys():
+            if (cvs.has_key(file)==0):
+                msg = "WARNING: %s is in %s, but not in CVS"%(file, dir)
+                print msg
+                WARNINGS.append(msg)
+        for file in cvs.keys():
+            if (actual.has_key(file)==0):
+                msg = "WARNING: %s is not in %s, but is in CVS"%(file, dir)
+                print msg
+                WARNINGS.append(msg)
+    results = actual.keys()
+    results.sort()
+    return results
 
-def JustBuilt(files,others):
-    dates = []
-    for file in files:
-        del FILEDATECACHE[file]
-        dates.append(filedate(file))
-    for file in others:
-        dates.append(filedate(file))
-    key = tuple(files)
-    BUILTFROMCACHE[key] = [others,dates]
-
-def NeedsBuild(files,others):
-    dates = []
-    for file in files:
-        dates.append(filedate(file))
-    for file in others:
-        dates.append(filedate(file))
-    key = tuple(files)
-    if (BUILTFROMCACHE.has_key(key)):
-        if (BUILTFROMCACHE[key] == [others,dates]):
-            return 0
-        else:
-            oldothers = BUILTFROMCACHE[key][0]
-            if (oldothers != others):
-                add = SetDifference(others, oldothers)
-                sub = SetDifference(oldothers, others)
-                for f in files:
-                    print "CAUTION: file dependencies changed: "+f
-                if (VERBOSE > 1):
-                    print " - Add: "+str(add)
-                    print " - Sub: "+str(sub)
-    return 1
-
-def xpaths(prefix,base,suffix):
-    if type(base) == str:
-        return prefix + base + suffix
-    result = []
-    for x in base:
-        result.append(xpaths(prefix,x,suffix))
-    return result
+########################################################################
+##
+## Utility routines.
+##
+########################################################################
 
 if sys.platform == "win32":
     import _winreg
@@ -273,10 +362,6 @@ def WriteFile(wfile,data):
         dsthandle.close()
     except: exit("Cannot write "+wfile)
 
-def CreatePlaceHolder(file):
-    if (os.path.isfile(file)==0):
-        WriteFile(file,"")
-
 def ConditionalWriteFile(dest,desiredcontents):
     try:
         rfile = open(dest, 'rb')
@@ -302,9 +387,6 @@ def PkgSelected(pkglist, pkg):
     if (pkglist.count(pkg)==0): return 0
     if (OMIT.count(pkg)): return 0
     return 1
-
-def DependencyQueue(fn, args, targets, sources, altsrc):
-    DEPENDENCYQUEUE.append([fn,args,targets,sources, altsrc])
 
 def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
@@ -745,40 +827,18 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 
 ########################################################################
 ##
-## CxxGetIncludes
+## CxxFindSource: given a source file name and a directory list,
+## searches the directory list for the given source file.  Returns
+## the full pathname of the located file.
 ##
-## return a list of the include-directives in a given source file
+## CxxFindHeader: given a source file, an include directive, and a
+## directory list, searches the directory list for the given header
+## file.  Returns the full pathname of the located file.
 ##
-########################################################################
-
-global CxxIncludeRegex
-CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$')
-
-def CxxGetIncludes(path):
-    date = filedate(path)
-    if (CXXINCLUDECACHE.has_key(path)):
-        cached = CXXINCLUDECACHE[path]
-        if (cached[0]==date): return cached[1]
-    try: sfile = open(path, 'rb')
-    except:
-        exit("Cannot open source file \""+path+"\" for reading.")
-    include = []
-    for line in sfile:
-        match = CxxIncludeRegex.match(line,0)
-        if (match):
-            incname = match.group(1)
-            include.append(incname)
-    sfile.close()
-    CXXINCLUDECACHE[path] = [date, include]
-    return include
-
-########################################################################
-##
-## CxxFindSource
-##
-## given a source file name and a directory list, searches the
-## directory list for the given source file.  Returns the full
-## pathname of the located file.
+## Of course, CxxFindSource and CxxFindHeader cannot find a source
+## file that has not been created yet.  This can cause dependency
+## problems.  So the function CreateStubHeader can be used to create
+## a file that CxxFindSource or CxxFindHeader can subsequently find.
 ##
 ########################################################################
 
@@ -786,17 +846,8 @@ def CxxFindSource(name, ipath):
     for dir in ipath:
         if (dir == "."): full = name
         else: full = dir + "/" + name
-        if filedate(full) > 0: return full
-    return 0
-
-########################################################################
-##
-## CxxFindHeader
-##
-## given a source file name and an include directive in that source
-## file, locates the relevant header file.
-##
-########################################################################
+        if GetTimestamp(full) > 0: return full
+    exit("Could not find source file: "+name)
 
 def CxxFindHeader(srcfile, incfile, ipath):
     if (incfile[:1]=="."):
@@ -813,9 +864,65 @@ def CxxFindHeader(srcfile, incfile, ipath):
                 srcdir = srcdir[:last+1]
             else: exit("CxxFindHeader cannot handle this case #3")
         full = srcdir + incfile
-        if filedate(full) > 0: return full
+        if GetTimestamp(full) > 0: return full
         return 0
-    else: return CxxFindSource(incfile, ipath)
+    else: 
+        for dir in ipath:
+            if (dir == "."): full = srcfile
+            else: full = dir + "/" + srcfile
+            if GetTimestamp(full) > 0: return full
+        return 0
+
+def CreateStubHeader(file):
+    if (os.path.exists(file)==0):
+        WriteFile(file,"/* stub header */")
+
+########################################################################
+##
+## FindLocation
+##
+########################################################################
+
+def FindLocation(fn, ipath):
+    if (COMPILER=="LINUX"):
+        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
+        if (fn.endswith(".lib")): return "built/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")): return "built/tmp/"+fn
+        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+    if (COMPILER=="MSVC"):
+        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")): return "built/tmp/"+fn
+        if (fn.endswith(".dll")): return "built/bin/"+fn
+        if (fn.endswith(".dlo")): return "built/plugins/"+fn
+        if (fn.endswith(".dli")): return "built/plugins/"+fn
+        if (fn.endswith(".dle")): return "built/plugins/"+fn
+        if (fn.endswith(".mll")): return "built/plugins/"+fn
+        if (fn.endswith(".exe")): return "built/bin/"+fn
+        if (fn.endswith(".lib")): return "built/lib/"+fn
+        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".lib"
+        if (fn.endswith(".dat")): return "built/tmp/"+fn
+        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+    return fn
+
+def FindLocations(files, ipath):
+    result = []
+    for x in files:
+        result.append(FindLocation(x, ipath))
+    return result
 
 ########################################################################
 ##
@@ -853,28 +960,25 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
     CxxDependencyCache[srcfile] = result
     return result
 
-def CxxCalcDependenciesAll(srcfiles, ipath):
-    dep = {}
-    for srcfile in srcfiles:
-        for x in CxxCalcDependencies(srcfile, ipath, []):
-            dep[x] = 1
-    return dep.keys()
+########################################################################
+##
+## 
+##
+########################################################################
 
-def ReadCvsEntries(dir):
-    try:
-        if (os.path.isfile(dir+"/CVS-Entries")):
-            srchandle = open(dir+"/CVS-Entries", "r")
+def SDependencyQueue(ipath, call, targets, sources):
+    xipath = ["built/tmp"] + ipath + ["built/include"]
+    osources = {}
+    for x in sources:
+        if (x.endswith(".cxx")) or (x.endswith(".I")) or (x.endswith(".h")) or (x.endswith(".c")):
+            for dep in CxxCalcDependencies(CxxFindSource(x, xipath), xipath, []):
+                osources[dep] = 1
         else:
-            srchandle = open(dir+"/CVS/Entries", "r")
-        files = []
-        for line in srchandle:
-            if (line[0]=="/"):
-                s = line.split("/",2)
-                if (len(s)==3): files.append(s[1])
-        srchandle.close()
-        files.sort()
-        return files
-    except: return 0
+            osources[FindLocation(x, xipath)] = 1
+    osources = osources.keys()
+    osources.sort()
+    otargets = FindLocations(targets, xipath)
+    DEPENDENCYQUEUE.append([call[0],call[1:],otargets,osources,[]])
 
 ########################################################################
 ##
@@ -897,53 +1001,23 @@ def CopyFile(dstfile,srcfile):
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):
-    suflen = len(suffix)
-    files = os.listdir(srcdir)
-    for x in files:
-        if (os.path.isfile(srcdir+x)):
-            if (suflen==0) or (x[-suflen:]==suffix):
-                CopyFile(dstdir+x, srcdir+x)
+    for x in GetDirectoryContents(srcdir, ["*"+suffix]):
+        CopyFile(dstdir+x, srcdir+x)
 
 def CompileAllModels(dstdir, srcdir):
-    for x in os.listdir(srcdir):
-        if (x.endswith(".flt")) or (x.endswith(".egg")):
-            eggpz = os.path.basename(x[:-4] + ".egg.pz")
-            bampz = os.path.basename(x[:-4] + ".bam.pz")
-            EnqueueEggPZ("", dstdir + eggpz, srcdir + x)
-            EnqueueBamPZ("", dstdir + bampz, dstdir + eggpz)
+    for x in GetDirectoryContents(srcdir, ["*.egg", "*.flt"]):
+        eggpz = os.path.basename(x[:-4] + ".egg.pz")
+        bampz = os.path.basename(x[:-4] + ".bam.pz")
+        EnqueueEggPZ("", dstdir + eggpz, srcdir + x)
+        EnqueueBamPZ("", dstdir + bampz, dstdir + eggpz)
 
 def CopyAllHeaders(dir, skip=[]):
-    # get a list of headers
-    dirlist = os.listdir(dir)
-    dirlist.sort()
-    files = fnmatch.filter(dirlist,"*.h")+fnmatch.filter(dirlist,"*.I")+fnmatch.filter(dirlist,"*.T")
-    # actually copy the headers.
-    copied = []
-    if (skip!="ALL"):
-        # even if you skip all, the warning-messages
-        # about "x is not in CVS" are still useful.
-        for filename in files:
-            if (skip.count(filename)==0):
-                srcfile = dir + "/" + filename
-                dstfile = "built/include/" + filename
-                if (NeedsBuild([dstfile],[srcfile])):
-                    copied.append(filename)
-                    WriteFile(dstfile,ReadFile(srcfile))
-                    JustBuilt([dstfile],[srcfile])
-    # sanity check - do headers in directory match headers in CVS?
-    cvsentries = ReadCvsEntries(dir)
-    if (cvsentries != 0):
-        cvsheaders = fnmatch.filter(cvsentries,"*.h")+fnmatch.filter(cvsentries,"*.I")+fnmatch.filter(cvsentries,"*.T")
-        for x in SetDifference(files, cvsheaders):
-            if ((skip=="ALL") or (skip.count(x)==0)):
-                msg = "WARNING: header file %s is in your directory, but not in CVS"%(dir+"/"+x)
-                print msg
-                WARNINGS.append(msg)
-        for x in SetDifference(cvsheaders, files):
-            if ((skip=="ALL") or (skip.count(x)==0)):
-                msg = "WARNING: header file %s is CVS, but not in your directory"%(dir+"/"+x)
-                print msg
-                WARNINGS.append(msg)
+    for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
+        srcfile = dir + "/" + filename
+        dstfile = "built/include/" + filename
+        if (NeedsBuild([dstfile],[srcfile])):
+            WriteFile(dstfile,ReadFile(srcfile))
+            JustBuilt([dstfile],[srcfile])
 
 def CopyTree(dstdir,srcdir):
     if (os.path.isdir(dstdir)): return 0
@@ -957,73 +1031,65 @@ def CopyTree(dstdir,srcdir):
 ##
 ########################################################################
 
-def CompileCxxMSVC(wobj,fullsrc,ipath,opts):
-    cmd = "cl /wd4996 /Fo" + wobj + " /nologo /c "
-    if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
-    for ver in DXVERSIONS:
-        if (PkgSelected(opts,"DX"+ver)):
-            cmd = cmd + ' /I"' + DIRECTXSDK["DX"+ver] + '/include"'
-    for ver in MAYAVERSIONS:
-        if (PkgSelected(opts,"MAYA"+ver)):
-            cmd = cmd + ' /I"' + MAYASDK["MAYA"+ver] + '/include"'
-    for ver in MAXVERSIONS:
-        if (PkgSelected(opts,"MAX"+ver)):
-            cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
-    for pkg in PACKAGES:
-        if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
-            cmd = cmd + " /I" + THIRDPARTYLIBS + pkg.lower() + "/include"
-    for x in ipath: cmd = cmd + " /I" + x
-    if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
-    if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-    if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
-    optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
-    if (optlevel==2): cmd = cmd + " /MD /Zi /DNDEBUG "
-    if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING /DNDEBUG "
-    if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
-    cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
-    building = getbuilding(opts)
-    if (building): cmd = cmd + " /DBUILDING_" + building
-    cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + fullsrc
-    oscmd(cmd)
-
-def CompileCxxLINUX(wobj,fullsrc,ipath,opts):
-    if (fullsrc[-2:]==".c"): cmd = 'gcc -fPIC -c -o ' + wobj
-    else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + wobj
-    if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'vrpn/include'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fftw/include'
-    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmodex/include'
-    if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nvidiacg/include'
-    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
-    if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
-    for x in ipath: cmd = cmd + ' -I' + x
-    if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
-    optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + " -g"
-    if (optlevel==2): cmd = cmd + " -O1 -DNDEBUG"
-    if (optlevel==3): cmd = cmd + " -O2 -DNDEBUG"
-    if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
-    building = getbuilding(opts)
-    if (building): cmd = cmd + " -DBUILDING_" + building
-    cmd = cmd + ' ' + fullsrc
-    oscmd(cmd)
+def CompileCxx(obj,src,ipath,opts):
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    wobj = FindLocation(obj, ipath)
+    wsrc = FindLocation(src, ipath)
+    if (COMPILER=="MSVC"):
+        cmd = "cl /wd4996 /Fo" + wobj + " /nologo /c "
+        if (OMIT.count("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
+        for ver in DXVERSIONS:
+            if (PkgSelected(opts,"DX"+ver)):
+                cmd = cmd + ' /I"' + DIRECTXSDK["DX"+ver] + '/include"'
+        for ver in MAYAVERSIONS:
+            if (PkgSelected(opts,"MAYA"+ver)):
+                cmd = cmd + ' /I"' + MAYASDK["MAYA"+ver] + '/include"'
+        for ver in MAXVERSIONS:
+            if (PkgSelected(opts,"MAX"+ver)):
+                cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
+        for pkg in PACKAGES:
+            if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
+                cmd = cmd + " /I" + THIRDPARTYLIBS + pkg.lower() + "/include"
+        for x in ipath: cmd = cmd + " /I" + x
+        if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
+        if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
+        if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
+        optlevel = getoptlevel(opts,OPTIMIZE)
+        if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
+        if (optlevel==2): cmd = cmd + " /MD /Zi /DNDEBUG "
+        if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING /DNDEBUG "
+        if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
+        cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
+        building = getbuilding(opts)
+        if (building): cmd = cmd + " /DBUILDING_" + building
+        cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + wsrc
+        oscmd(cmd)
+    if (COMPILER=="LINUX"):
+        if (wsrc.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + wobj
+        else:                     cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + wobj
+        if (OMIT.count("PYTHON")==0): cmd = cmd + ' -I"' + PYTHONSDK + '"'
+        if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'vrpn/include'
+        if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fftw/include'
+        if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmodex/include'
+        if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nvidiacg/include'
+        if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
+        if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
+        for x in ipath: cmd = cmd + ' -I' + x
+        if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
+        optlevel = getoptlevel(opts,OPTIMIZE)
+        if (optlevel==1): cmd = cmd + " -g"
+        if (optlevel==2): cmd = cmd + " -O1 -DNDEBUG"
+        if (optlevel==3): cmd = cmd + " -O2 -DNDEBUG"
+        if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
+        building = getbuilding(opts)
+        if (building): cmd = cmd + " -DBUILDING_" + building
+        cmd = cmd + ' ' + wsrc
+        oscmd(cmd)
 
 def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
     if ((obj==0)|(src==0)):
         exit("syntax error in EnqueueCxx directive")
-    if (COMPILER=="MSVC"):
-        wobj = "built/tmp/"+obj
-        fn = CompileCxxMSVC
-    if (COMPILER=="LINUX"):
-        wobj = "built/tmp/" + obj[:-4] + ".o"
-        fn = CompileCxxLINUX
-    ipath = ["built/tmp"] + ipath + ["built/include"]
-    fullsrc = CxxFindSource(src, ipath)
-    if (fullsrc == 0):
-        exit("Cannot find source file "+src)
-    dep = CxxCalcDependencies(fullsrc, ipath, []) + xdep
-    DependencyQueue(fn, [wobj,fullsrc,ipath,opts], [wobj], dep, [])
+    SDependencyQueue(ipath, [CompileCxx,obj,src,ipath,opts], [obj], [src]+xdep)
 
 ########################################################################
 ##
@@ -1031,44 +1097,27 @@ def EnqueueCxx(obj=0,src=0,ipath=[],opts=[],xdep=[]):
 ##
 ########################################################################
 
-def CompileBisonMSVC(pre, dsth, dstc, wobj, ipath, opts, src):
+def CompileBison(pre, dsth, obj, ipath, opts, src):
     ifile = os.path.basename(src)
-    oscmd('thirdparty/win-util/bison -y -d -obuilt/tmp/'+ifile+'.c -p '+pre+' '+src)
-    CopyFile(dstc, "built/tmp/"+ifile+".c")
-    CopyFile(dsth, "built/tmp/"+ifile+".h")
-    CompileCxxMSVC(wobj,dstc,ipath,opts)
-
-def CompileBisonLINUX(pre, dsth, dstc, wobj, ipath, opts, src):
-    ifile = os.path.basename(src)
-    oscmd("bison -y -d -obuilt/tmp/"+ifile+".c -p "+pre+" "+src)
-    CopyFile(dstc, "built/tmp/"+ifile+".c")
-    CopyFile(dsth, "built/tmp/"+ifile+".h")
-    CompileCxxLINUX(wobj,dstc,ipath,opts)
+    wsrc = FindLocation(src, ipath)
+    wobj = FindLocation(obj, ipath)
+    wdstc = "built/tmp/" + obj[:-4] + ".cxx"
+    wdsth = "built/include/" + dsth
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    if (COMPILER == "MSVC"):
+        oscmd('thirdparty/win-util/bison -y -d -obuilt/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
+        CopyFile(wdstc, "built/tmp/"+ifile+".c")
+        CopyFile(wdsth, "built/tmp/"+ifile+".h")
+    if (COMPILER == "LINUX"):
+        oscmd("bison -y -d -obuilt/tmp/"+ifile+".c -p "+pre+" "+wsrc)
+        CopyFile(wdstc, "built/tmp/"+ifile+".c")
+        CopyFile(wdsth, "built/tmp/"+ifile+".h")
+    CompileCxx(obj,obj[:-4]+".cxx",ipath,opts)
 
 def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(dsth==0)|(src==0)):
         exit("syntax error in EnqueueBison directive")
-    if (COMPILER=="MSVC"):
-        wobj="built/tmp/"+obj
-        fn = CompileBisonMSVC
-    if (COMPILER=="LINUX"):
-        wobj="built/tmp/"+obj[:-4]+".o"
-        fn = CompileBisonLINUX
-    ipath = ["built/tmp"] + ipath + ["built/include"]
-    fullsrc = CxxFindSource(src, ipath)
-    if (fullsrc == 0):
-        exit("Cannot find source file "+src)
-    if (OMIT.count("BISON")):
-        dir = os.path.dirname(fullsrc)
-        CopyFile("built/tmp/"+obj[:-4]+".cxx", dir+"/"+src[:-4]+".cxx.prebuilt")
-        CopyFile("built/include/"+src[:-4]+".h", dir+"/"+src[:-4]+".h.prebuilt")
-        EnqueueCxx(ipath=ipath,opts=opts,obj=obj,src=obj[:-4]+".cxx")
-    else:
-        dstc = "built/tmp/"+obj[:-4]+".cxx"
-        dsth = "built/include/"+src[:-4]+".h"
-        CreatePlaceHolder(dsth)
-        CreatePlaceHolder(dstc)
-        DependencyQueue(fn, [pre,dsth,dstc,wobj,ipath,opts,fullsrc], [wobj, dsth], [fullsrc], [])
+    SDependencyQueue(ipath, [CompileBison,pre,dsth,obj,ipath,opts,src], [obj, dsth], [src])
 
 ########################################################################
 ##
@@ -1076,37 +1125,23 @@ def EnqueueBison(ipath=0,opts=0,pre=0,obj=0,dsth=0,src=0):
 ##
 ########################################################################
 
-def CompileFlexMSVC(pre,dst,src,wobj,ipath,opts,dashi):
-    if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+dst+" "+src)
-    else:       oscmd("thirdparty/win-util/flex    -P" + pre + " -o"+dst+" "+src)
-    CompileCxxMSVC(wobj,dst,ipath,opts)
-
-def CompileFlexLINUX(pre,dst,src,wobj,ipath,opts,dashi):
-    if (dashi): oscmd("flex -i -P" + pre + " -o"+dst+" "+src)
-    else:       oscmd("flex    -P" + pre + " -o"+dst+" "+src)
-    CompileCxxLINUX(wobj,dst,ipath,opts)
+def CompileFlex(pre,src,obj,ipath,opts,dashi):
+    wsrc=FindLocation(src, ipath)
+    wobj=FindLocation(obj, ipath)
+    wdst=wobj[:-4]+".cxx"
+    ipath = ["built/tmp"] + ipath + ["built/include"]
+    if (COMPILER == "MSVC"):
+        if (dashi): oscmd("thirdparty/win-util/flex -i -P" + pre + " -o"+wdst+" "+wsrc)
+        else:       oscmd("thirdparty/win-util/flex    -P" + pre + " -o"+wdst+" "+wsrc)
+    if (COMPILER == "LINUX"):
+        if (dashi): oscmd("flex -i -P" + pre + " -o"+wdst+" "+wsrc)
+        else:       oscmd("flex    -P" + pre + " -o"+wdst+" "+wsrc)
+    CompileCxx(obj,obj[:-4]+".cxx",ipath,opts)
 
 def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
     if ((ipath==0)|(opts==0)|(pre==0)|(obj==0)|(src==0)):
         exit("syntax error in EnqueueFlex directive")
-    if (COMPILER=="MSVC"):
-        wobj="built/tmp/"+obj[:-4]+".obj"
-        fn=CompileFlexMSVC
-    if (COMPILER=="LINUX"):
-        wobj="built/tmp/"+obj[:-4]+".o"
-        fn=CompileFlexLINUX
-    ipath = ["built/tmp"] + ipath + ["built/include"]
-    fullsrc = CxxFindSource(src, ipath)
-    if (fullsrc == 0):
-        exit("Cannot find source file "+src)
-    if (OMIT.count("FLEX")):
-        dir = os.path.dirname(fullsrc)
-        CopyFile("built/tmp/"+obj[:-4]+".cxx", dir+"/"+src[:-4]+".cxx.prebuilt")
-        EnqueueCxx(ipath=IPATH, opts=OPTS, obj=obj, src=obj[:-4]+".cxx")
-    else:
-        dst = "built/tmp/"+obj[:-4]+".cxx"
-        CreatePlaceHolder(dst)
-        DependencyQueue(fn, [pre,dst,fullsrc,wobj,ipath,opts,dashi], [wobj], [fullsrc], [])
+    SDependencyQueue(ipath, [CompileFlex,pre,src,obj,ipath,opts,dashi], [obj], [src])
 
 ########################################################################
 ##
@@ -1114,10 +1149,18 @@ def EnqueueFlex(ipath=0,opts=0,pre=0,obj=0,src=0,dashi=0):
 ##
 ########################################################################
 
-def CompileIgateMSVC(ipath,opts,outd,outc,wobj,src,module,library,files):
+def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
+    outc = obj[:-4]+".cxx"
+    wobj = FindLocation(obj, ipath)
+    woutd = FindLocation(outd, ipath)
+    woutc = "built/tmp/"+outc
+    xipath = ipath + ["built/include"]
     if (OMIT.count("PYTHON")):
-        WriteFile(outc,"")
-    else:
+        WriteFile(woutc,"")
+        WriteFile(woutd,"")
+        CompileCxx(obj,outc,ipath,opts)
+        return
+    if (COMPILER=="MSVC"):
         cmd = "built/bin/interrogate -srcdir "+src+" -I"+src
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
@@ -1131,9 +1174,9 @@ def CompileIgateMSVC(ipath,opts,outd,outc,wobj,src,module,library,files):
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
                 cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
-        cmd = cmd + ' -oc ' + outc + ' -od ' + outd
+        cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in ipath: cmd = cmd + ' -I' + x
+        for x in xipath: cmd = cmd + ' -I' + x
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
@@ -1146,12 +1189,9 @@ def CompileIgateMSVC(ipath,opts,outd,outc,wobj,src,module,library,files):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxMSVC(wobj,outc,ipath,opts)
-
-def CompileIgateLINUX(ipath,opts,outd,outc,wobj,src,module,library,files):
-    if (OMIT.count("PYTHON")):
-        WriteFile(outc,"")
-    else:
+        CompileCxx(obj,outc,ipath,opts)
+        return
+    if (COMPILER=="LINUX"):
         cmd = 'built/bin/interrogate -srcdir '+src
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
         optlevel = getoptlevel(opts,OPTIMIZE)
@@ -1164,9 +1204,9 @@ def CompileIgateLINUX(ipath,opts,outd,outc,wobj,src,module,library,files):
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
                 cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
-        cmd = cmd + ' -oc ' + outc + ' -od ' + outd
+        cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in ipath: cmd = cmd + ' -I' + x
+        for x in xipath: cmd = cmd + ' -I' + x
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
@@ -1176,33 +1216,24 @@ def CompileIgateLINUX(ipath,opts,outd,outc,wobj,src,module,library,files):
                 cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxLINUX(wobj,outc,ipath,opts)
+        CompileCxx(obj,outc,ipath,opts)
+        return
+
+def FindInterrogateInputs(dir, skip, also):
+    if (skip == "ALL"):
+        files = []
+    else:
+        files = GetDirectoryContents(dir, ["*.h"], skip)
+    files.sort()
+    for x in also: files.append(x)
+    return files
 
 def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, also=0, skip=0):
     if ((ipath==0)|(opts==0)|(outd==0)|(obj==0)|(src==0)|(module==0)|(library==0)|(also==0)|(skip==0)):
         exit("syntax error in EnqueueIgate directive")
-    if (COMPILER=="MSVC"):
-        altdep = "built/bin/interrogate.exe"
-        wobj = "built/tmp/"+obj
-        fn = CompileIgateMSVC
-    if (COMPILER=="LINUX"):
-        altdep = "built/bin/interrogate"
-        wobj = "built/tmp/"+obj[:-4]+".o"
-        fn = CompileIgateLINUX
-    outd = 'built/pandac/input/'+outd
-    dirlisting = os.listdir(src)
-    files = fnmatch.filter(dirlisting,"*.h")
-    if (skip=='ALL'): files=[]
-    else:
-        files.sort()
-        for x in skip:
-            if (files.count(x)!=0): files.remove(x)
-    for x in also: files.append(x)
-    ipath = ["built/tmp"] + ipath + ["built/include"]
-    dep = ["built/tmp/dtool_have_python.dat"]
-    dep = dep + CxxCalcDependenciesAll(xpaths(src+"/",files,""), ipath)
-    outc = "built/tmp/"+obj[:-4]+".cxx"
-    DependencyQueue(fn, [ipath,opts,outd,outc,wobj,src,module,library,files], [wobj, outd], dep, [altdep])
+    files = FindInterrogateInputs(src, skip, also)
+    dep = files + ["dtool_have_python.dat", "interrogate.exe"]
+    SDependencyQueue(ipath, [CompileIgate,ipath,opts,outd,obj,src,module,library,files], [obj, outd], dep)
 
 ########################################################################
 ##
@@ -1210,42 +1241,34 @@ def EnqueueIgate(ipath=0, opts=0, outd=0, obj=0, src=0, module=0, library=0, als
 ##
 ########################################################################
 
-def CompileImodMSVC(outc, wobj, module, library, ipath, opts, files):
+def CompileImod(obj, module, library, ipath, opts, files):
+    outc = obj[:-4]+".cxx"
+    woutc = "built/tmp/"+outc
+    wfiles = FindLocations(files, ipath)
     if (OMIT.count("PYTHON")):
-        WriteFile(outc,"")
-    else:
+        WriteFile(woutc,"")
+        CompileCxx(obj,outc,ipath,opts)
+        return
+    if (COMPILER=="MSVC"):
         cmd = 'built/bin/interrogate_module '
-        cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
-        for x in files: cmd = cmd + ' ' + x
+        cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
+        for x in wfiles: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxMSVC(wobj,outc,ipath,opts)
-
-def CompileImodLINUX(outc, wobj, module, library, ipath, opts, files):
-    if (OMIT.count("PYTHON")):
-        WriteFile(outc,"")
-    else:
+        CompileCxx(obj,outc,ipath,opts)
+        return
+    if (COMPILER=="LINUX"):
         cmd = 'built/bin/interrogate_module '
-        cmd = cmd + ' -oc ' + outc + ' -module ' + module + ' -library ' + library + ' -python-native '
-        for x in files: cmd = cmd + ' ' + x
+        cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
+        for x in wfiles: cmd = cmd + ' ' + x
         oscmd(cmd)
-    CompileCxxLINUX(wobj,outc,ipath,opts)
+        CompileCxx(obj,outc,ipath,opts)
+        return
 
 def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
     if ((ipath==0)|(opts==0)|(obj==0)|(module==0)|(library==0)|(files==0)):
         exit("syntax error in EnqueueImod directive")
-    if (COMPILER=="MSVC"):
-        altdep = "built/bin/interrogate_module.exe"
-        wobj = "built/tmp/"+obj[:-4]+".obj"
-        fn = CompileImodMSVC
-    if (COMPILER=="LINUX"):
-        altdep = "built/bin/interrogate_module"
-        wobj = "built/tmp/"+obj[:-4]+".o"
-        fn = CompileImodLINUX
-    ipath = ["built/tmp"] + ipath + ["built/include"]
-    outc = "built/tmp/"+obj[:-4]+".cxx"
-    files = xpaths("built/pandac/input/",files,"")
-    dep = files + ["built/tmp/dtool_have_python.dat"]
-    DependencyQueue(fn, [outc, wobj, module, library, ipath, opts, files], [wobj], dep, [altdep])
+    dep = files + ["dtool_have_python.dat", "interrogate_module.exe"]
+    SDependencyQueue(ipath, [CompileImod, obj, module, library, ipath, opts, files], [obj], dep)
 
 ########################################################################
 ##
@@ -1253,33 +1276,23 @@ def EnqueueImod(ipath=0, opts=0, obj=0, module=0, library=0, files=0):
 ##
 ########################################################################
 
-def CompileLibMSVC(wlib, wobj, opts):
-    cmd = 'link /lib /nologo /OUT:' + wlib
-    optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==4): cmd = cmd + " /LTCG "
-    for x in wobj: cmd = cmd + ' ' + x
-    oscmd(cmd)
-
-def CompileLibLINUX(wlib, wobj, opts):
-    cmd = 'ar cru ' + wlib
-    for x in wobj: cmd=cmd + ' ' + x
-    oscmd(cmd)
+def CompileLib(lib, obj, opts):
+    wlib = FindLocation(lib, [])
+    wobj = FindLocations(obj, [])
+    if (COMPILER=="MSVC"):
+        cmd = 'link /lib /nologo /OUT:' + wlib
+        optlevel = getoptlevel(opts,OPTIMIZE)
+        if (optlevel==4): cmd = cmd + " /LTCG "
+        for x in wobj: cmd = cmd + ' ' + x
+        oscmd(cmd)
+    if (COMPILER=="LINUX"):
+        cmd = 'ar cru ' + wlib
+        for x in wobj: cmd=cmd + ' ' + x
+        oscmd(cmd)
 
 def EnqueueLib(lib=0, obj=[], opts=[]):
     if (lib==0): exit("syntax error in EnqueueLib directive")
-
-    if (COMPILER=="MSVC"):
-        if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".lib"
-        else:                  wlib = "built/lib/" + lib[:-4] + ".lib"
-        wobj = xpaths("built/tmp/",obj,"")
-        DependencyQueue(CompileLibMSVC, [wlib, wobj, opts], [wlib], wobj, [])
-
-    if (COMPILER=="LINUX"):
-        if (lib[-4:]==".ilb"): wlib = "built/tmp/" + lib[:-4] + ".a"
-        else:                  wlib = "built/lib/" + lib[:-4] + ".a"
-        wobj = []
-        for x in obj: wobj.append("built/tmp/" + x[:-4] + ".o")
-        DependencyQueue(CompileLibLINUX, [wlib, wobj, opts], [wlib], wobj, [])
+    SDependencyQueue([], [CompileLib,lib,obj,opts], [lib], obj)
 
 ########################################################################
 ##
@@ -1287,153 +1300,124 @@ def EnqueueLib(lib=0, obj=[], opts=[]):
 ##
 ########################################################################
 
-def CompileLinkMSVC(wdll, wlib, wobj, opts, dll, ldef):
-    cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-    if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
-    if (wdll[-4:]!=".exe"): cmd = cmd + " /DLL"
-    optlevel = getoptlevel(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
-    if (optlevel==2): cmd = cmd + " /MAP:NUL "
-    if (optlevel==3): cmd = cmd + " /MAP:NUL "
-    if (optlevel==4): cmd = cmd + " /MAP:NUL /LTCG "
-    cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-    if (ldef!=0): cmd = cmd + ' /DEF:"' + ldef + '"'
-    cmd = cmd + ' /OUT:' + wdll
-    if (wlib != 0): cmd = cmd + ' /IMPLIB:' + wlib
-    if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:thirdparty/win-python/libs '
-    for x in wobj: cmd = cmd + ' ' + x
-    if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
-    for ver in DXVERSIONS:
-        if (PkgSelected(opts,"DX"+ver)):
-            cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib/x86"'
-            cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib"'
-            cmd = cmd + ' d3dVER.lib d3dxVER.lib dxerrVER.lib ddraw.lib dxguid.lib'.replace("VER",ver)
-    if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
-    if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
-    if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
-    if (opts.count("WINCOMDLG")):   cmd = cmd + ' comdlg32.lib'
-    if (opts.count("WINUSER")):     cmd = cmd + " user32.lib"
-    if (opts.count("WINMM")):       cmd = cmd + " winmm.lib"
-    if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
-    if (opts.count("WINKERNEL")):   cmd = cmd + " kernel32.lib"
-    if (opts.count("WINOLDNAMES")): cmd = cmd + " oldnames.lib"
-    if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
-    if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
-    if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-    if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
-    if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
-    if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
-    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
-    if (PkgSelected(opts,"VRPN")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
-    if (PkgSelected(opts,"FMODEX")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmodex/lib/fmodex_vc.lib'
-    if (PkgSelected(opts,"MILES")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'miles/lib/mss32.lib'
-    if (PkgSelected(opts,"NVIDIACG")):
-        if (opts.count("CGGL")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgGL.lib'
-        if (opts.count("CGDX9")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgD3D9.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cg.lib'
-    if (PkgSelected(opts,"OPENSSL")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandassl.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandaeay.lib'
-    if (PkgSelected(opts,"FREETYPE")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'freetype/lib/freetype.lib'
-    if (PkgSelected(opts,"FFTW")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/rfftw.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/fftw.lib'
-    if (PkgSelected(opts,"FFMPEG")):
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avcodec-51-panda.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avformat-50-panda.lib'
-        cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avutil-49-panda.lib'
-    for ver in MAYAVERSIONS:
-        if (PkgSelected(opts,"MAYA"+ver)):
-            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
-            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMaya.lib"'
-            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaAnim.lib"'
-            cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaUI.lib"'
-    for ver in MAXVERSIONS:
-        if (PkgSelected(opts,"MAX"+ver)):
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/core.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/edmodel.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/gfx.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/geom.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/mesh.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
-            cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
-    oscmd(cmd)
-    setVC80CRTVersion(wdll+".manifest", VC80CRTVERSION)
-    mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
-    if (wdll[-4:]!=".exe"): mtcmd = mtcmd + ';2'
-    else:                   mtcmd = mtcmd + ';1'
-    oscmd(mtcmd)
-
-def CompileLinkLINUX(wdll, obj, wobj, opts, dll, ldef):
-    if (dll[-4:]==".exe"): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-    else:                  cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-    for x in obj:
-        suffix = x[-4:]
-        if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
-        elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
-        elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
-        elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
-    if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
-    if (PkgSelected(opts,"NVIDIACG")):
-        cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
-        if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
-        cmd = cmd + " -lCg "
-    if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
-    if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
-    if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
-    if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
-    if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
-    if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
-    if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-    if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
-    if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
-    if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
-    cmd = cmd + " -lpthread"
-    oscmd(cmd)
+def CompileLink(dll, obj, opts, ldef):
+    wdll = FindLocation(dll, [])
+    if (COMPILER=="MSVC"):
+        cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
+        if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
+        if (wdll.endswith(".exe")==0): cmd = cmd + " /DLL"
+        optlevel = getoptlevel(opts,OPTIMIZE)
+        if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
+        if (optlevel==2): cmd = cmd + " /MAP:NUL "
+        if (optlevel==3): cmd = cmd + " /MAP:NUL "
+        if (optlevel==4): cmd = cmd + " /MAP:NUL /LTCG "
+        cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
+        if (ldef!=0): cmd = cmd + ' /DEF:"' + ldef + '"'
+        cmd = cmd + ' /OUT:' + wdll
+        if (dll.endswith(".dll")):
+            cmd = cmd + ' /IMPLIB:built/lib/'+dll[:-4]+".lib"
+        if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:thirdparty/win-python/libs '
+        for x in obj:
+            if (x.endswith(".dll")): cmd = cmd + ' built/lib/' + x[:-4] + ".lib"
+            else: cmd = cmd + ' ' + FindLocation(x,[])
+        if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
+        for ver in DXVERSIONS:
+            if (PkgSelected(opts,"DX"+ver)):
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib/x86"'
+                cmd = cmd + ' /LIBPATH:"' + DIRECTXSDK["DX"+ver] + '/lib"'
+                cmd = cmd + ' d3dVER.lib d3dxVER.lib dxerrVER.lib ddraw.lib dxguid.lib'.replace("VER",ver)
+        if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
+        if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
+        if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
+        if (opts.count("WINCOMDLG")):   cmd = cmd + ' comdlg32.lib'
+        if (opts.count("WINUSER")):     cmd = cmd + " user32.lib"
+        if (opts.count("WINMM")):       cmd = cmd + " winmm.lib"
+        if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
+        if (opts.count("WINKERNEL")):   cmd = cmd + " kernel32.lib"
+        if (opts.count("WINOLDNAMES")): cmd = cmd + " oldnames.lib"
+        if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
+        if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
+        if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
+        if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
+        if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
+        if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
+        if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
+        if (PkgSelected(opts,"VRPN")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
+        if (PkgSelected(opts,"FMODEX")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmodex/lib/fmodex_vc.lib'
+        if (PkgSelected(opts,"MILES")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'miles/lib/mss32.lib'
+        if (PkgSelected(opts,"NVIDIACG")):
+            if (opts.count("CGGL")):
+                cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgGL.lib'
+            if (opts.count("CGDX9")):
+                cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgD3D9.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cg.lib'
+        if (PkgSelected(opts,"OPENSSL")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandassl.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandaeay.lib'
+        if (PkgSelected(opts,"FREETYPE")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'freetype/lib/freetype.lib'
+        if (PkgSelected(opts,"FFTW")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/rfftw.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/fftw.lib'
+        if (PkgSelected(opts,"FFMPEG")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avcodec-51-panda.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avformat-50-panda.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avutil-49-panda.lib'
+        for ver in MAYAVERSIONS:
+            if (PkgSelected(opts,"MAYA"+ver)):
+                cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
+                cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMaya.lib"'
+                cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaAnim.lib"'
+                cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/OpenMayaUI.lib"'
+        for ver in MAXVERSIONS:
+            if (PkgSelected(opts,"MAX"+ver)):
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/core.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/edmodel.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/gfx.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/geom.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/mesh.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/maxutil.lib"'
+                cmd = cmd + ' "' + MAXSDK["MAX"+ver] +  '/lib/paramblk2.lib"'
+        oscmd(cmd)
+        setVC80CRTVersion(wdll+".manifest", VC80CRTVERSION)
+        mtcmd = 'mt -manifest ' + wdll + '.manifest -outputresource:' + wdll
+        if (wdll.endswith(".exe")==0): mtcmd = mtcmd + ';2'
+        else:                          mtcmd = mtcmd + ';1'
+        oscmd(mtcmd)
+    if (COMPILER=="LINUX"):
+        if (dll.endswith(".exe")): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        else:                      cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        for x in obj:
+            suffix = x[-4:]
+            if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
+            elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
+            elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
+            elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
+        if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
+        if (PkgSelected(opts,"NVIDIACG")):
+            cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
+            if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
+            cmd = cmd + " -lCg "
+        if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
+        if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
+        if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
+        if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
+        if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
+        if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
+        if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
+        if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
+        if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
+        if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
+        cmd = cmd + " -lpthread"
+        oscmd(cmd)
 
 def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
     if (dll==0): exit("syntax error in EnqueueLink directive")
-
-    if (COMPILER=="MSVC"):
-        wobj = []
-        for x in obj:
-            suffix = x[-4:]
-            if   (suffix==".obj"): wobj.append("built/tmp/"+x)
-            elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".lib")
-            elif (suffix==".lib"): wobj.append("built/lib/"+x)
-            elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".lib")
-            else: exit("unknown suffix in object list.")
-        if (dll[-4:]==".exe"):
-            wdll = "built/bin/"+dll
-            DependencyQueue(CompileLinkMSVC, [wdll, 0,    wobj, opts, dll, ldef], [wdll], wobj, [])
-        elif (dll[-4:]==".dll"):
-            wdll = "built/bin/"+dll
-            wlib = "built/lib/"+dll[:-4]+".lib"
-            DependencyQueue(CompileLinkMSVC, [wdll, wlib, wobj, opts, dll, ldef], [wdll, wlib], wobj, [])
-        else:
-            wdll = "built/plugins/"+dll
-            DependencyQueue(CompileLinkMSVC, [wdll, 0, wobj, opts, dll, ldef], [wdll], wobj, [])
-
-    if (COMPILER=="LINUX"):
-        if (dll[-4:]==".exe"): wdll = "built/bin/"+dll[:-4]
-        else: wdll = "built/lib/"+dll[:-4]+".so"
-        wobj = []
-        for x in obj:
-            suffix = x[-4:]
-            if   (suffix==".obj"): wobj.append("built/tmp/"+x[:-4]+".o")
-            elif (suffix==".dll"): wobj.append("built/lib/"+x[:-4]+".so")
-            elif (suffix==".lib"): wobj.append("built/lib/"+x[:-4]+".a")
-            elif (suffix==".ilb"): wobj.append("built/tmp/"+x[:-4]+".a")
-            else: exit("unknown suffix in object list.")
-        DependencyQueue(CompileLinkLINUX, [wdll, obj, wobj, opts, dll, ldef], [wdll], wobj, [])
-
+    SDependencyQueue([], [CompileLink, dll, obj, opts, ldef], [dll], obj + xdep)
 
 ##########################################################################################
 #
@@ -1449,11 +1433,8 @@ def CompileEggPZ(preconv, eggpz, src):
     oscmd("built/bin/pzip " + eggpz[:-3])
 
 def EnqueueEggPZ(preconv, eggpz, src):
-    if (sys.platform == "win32"):
-        flt2egg = "built/bin/flt2egg.exe"
-    else:
-        flt2egg = "built/bin/flt2egg"
-    DependencyQueue(CompileEggPZ, [preconv, eggpz, src], [eggpz], [src], [flt2egg])
+    dep = [src, "flt2egg.exe"]
+    SDependencyQueue([], [CompileEggPZ, preconv, eggpz, src], [eggpz], dep)
 
 ##########################################################################################
 #
@@ -1466,11 +1447,8 @@ def CompileBamPZ(preconv, bampz, src):
     oscmd("built/bin/pzip " + bampz[:-3])
 
 def EnqueueBamPZ(preconv, bampz, src):
-    if (sys.platform == "win32"):
-        egg2bam = "built/bin/egg2bam.exe"
-    else:
-        egg2bam = "built/bin/egg2bam"
-    DependencyQueue(CompileBamPZ, [preconv, bampz, src], [bampz], [src], [egg2bam])
+    dep = [src, "egg2bam.exe"]
+    SDependencyQueue([], [CompileBamPZ, preconv, bampz, src], [bampz], dep)
 
 ##########################################################################################
 #
@@ -1573,11 +1551,9 @@ MakeDirectory("built/models/icons")
 MakeDirectory("built/models/maps")
 MakeDirectory("built/models/misc")
 MakeDirectory("built/models/gui")
-
-if (OMIT.count("PYTHON")==0):
-    MakeDirectory("built/direct")
-    MakeDirectory("built/pandac")
-    MakeDirectory("built/pandac/input")
+MakeDirectory("built/direct")
+MakeDirectory("built/pandac")
+MakeDirectory("built/pandac/input")
 
 ##########################################################################################
 #
@@ -1922,14 +1898,14 @@ CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 CopyAllHeaders('dtool/src/dtoolbase')
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
 CopyAllHeaders('dtool/metalibs/dtool')
-CopyAllHeaders('dtool/src/cppparser', skip="ALL")
+CopyAllHeaders('dtool/src/cppparser')
 CopyAllHeaders('dtool/src/prc')
 CopyAllHeaders('dtool/src/dconfig')
 CopyAllHeaders('dtool/src/interrogatedb')
 CopyAllHeaders('dtool/metalibs/dtoolconfig')
 CopyAllHeaders('dtool/src/pystub')
 CopyAllHeaders('dtool/src/interrogate')
-CopyAllHeaders('dtool/src/test_interrogate', skip="ALL")
+CopyAllHeaders('dtool/src/test_interrogate')
 CopyAllHeaders('panda/src/putil')
 CopyAllHeaders('panda/src/pandabase')
 CopyAllHeaders('panda/src/express')
@@ -2114,6 +2090,7 @@ EnqueueLink(opts=['ADVAPI',  'OPT3'], dll='libp3dtool.dll', obj=[
 
 IPATH=['dtool/src/cppparser']
 OPTS=['OPT3']
+CreateStubHeader("built/include/cppBison.h")
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='cppyy', src='cppBison.yxx', dsth='cppBison.h', obj='cppParser_cppBison.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite.cxx', obj='cppParser_composite.obj')
 EnqueueLib(lib='libcppParser.ilb', obj=[
@@ -2154,7 +2131,7 @@ OPTS=['BUILDING_DTOOLCONFIG',  'OPT3']
 SRCFILE="pydtool.cxx"
 if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=["built/tmp/dtool_have_python.dat"])
+EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=["dtool_have_python.dat"])
 EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='libp3dtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
@@ -2256,7 +2233,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='express_composite1.cxx', obj='express_co
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='express_composite2.cxx', obj='express_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libexpress.in', obj='libexpress_igate.obj',
             src='panda/src/express',  module='pandaexpress', library='libexpress',
-            skip=[], also=["express_composite1.cxx", "express_composite2.cxx"])
+            skip=[], also=["express_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/downloader/
@@ -2313,7 +2290,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='putil_composite1.cxx', obj='putil_compos
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='putil_composite2.cxx', obj='putil_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libputil.in', obj='libputil_igate.obj',
             src='panda/src/putil',  module='panda', library='libputil',
-            skip=["test_bam.h"], also=["putil_composite1.cxx", "putil_composite2.cxx"])
+            skip=["test_bam.h"], also=["putil_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/audio/
@@ -2425,7 +2402,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite1.cxx', obj='gobj_composit
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gobj_composite2.cxx', obj='gobj_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgobj.in', obj='libgobj_igate.obj',
             src='panda/src/gobj',  module='panda', library='libgobj',
-            skip=[], also=["gobj_composite1.cxx", "gobj_composite2.cxx"])
+            skip=[], also=["gobj_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/lerp/
@@ -2452,9 +2429,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='pgraph_composite4.cxx', obj='pgraph_comp
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgraph.in', obj='libpgraph_igate.obj',
             src='panda/src/pgraph',  module='panda', library='libpgraph',
             skip=["antialiasAttrib.h"],
-            also=["nodePath.cxx",
-                  "pgraph_composite1.cxx", "pgraph_composite2.cxx",
-                  "pgraph_composite3.cxx", "pgraph_composite4.cxx"])
+            also=["nodePath.cxx", "pgraph_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/cull/
@@ -2701,10 +2676,10 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpanda_module.obj',
             module='panda', library='libpanda', files=INFILES)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
-        'built/tmp/dtool_have_helix.dat',
-        'built/tmp/dtool_have_vrpn.dat',
-        'built/tmp/dtool_have_nspr.dat',
-        'built/tmp/dtool_have_freetype.dat',
+        'dtool_have_helix.dat',
+        'dtool_have_vrpn.dat',
+        'dtool_have_nspr.dat',
+        'dtool_have_freetype.dat',
 ])
 
 #
@@ -2823,31 +2798,6 @@ if (sys.platform == "win32"):
       ])
 
 #
-# DIRECTORY: panda/metalibs/pandadx7/
-#
-# 
-# if OMIT.count("DX7")==0:
-#     IPATH=['panda/src/dxgsg7']
-#     OPTS=['BUILDING_PANDADX', 'DXSDK']
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxGraphicsStateGuardian7.cxx', obj='dxgsg7_dxGraphicsStateGuardian7.obj')
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dxgsg7_composite.cxx', obj='dxgsg7_composite.obj')
-# 
-#     IPATH=['panda/metalibs/pandadx7']
-#     OPTS=['BUILDING_PANDADX', 'DXSDK']
-#     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pandadx7.cxx', obj='pandadx7_pandadx7.obj')
-#     EnqueueLink(dll='libpandadx7.dll', opts=['ADVAPI', 'WINGDI', 'WINKERNEL', 'WINUSER', 'WINMM', 'DXDRAW', 'DXGUID', 'D3D8'], obj=[
-#       'pandadx7_pandadx7.obj',
-#       'dxgsg7_dxGraphicsStateGuardian7.obj',
-#       'dxgsg7_composite.obj',
-#       'libpanda.dll',
-#       'libpandaexpress.dll',
-#       'libp3windisplay.dll',
-#       'libp3dtoolconfig.dll',
-#       'libp3dtool.dll',
-#       ])
-# 
-
-#
 # DIRECTORY: panda/metalibs/pandadx8/
 #
 
@@ -2898,13 +2848,14 @@ if OMIT.count("DX9")==0:
 
 IPATH=['panda/src/egg']
 OPTS=['BUILDING_PANDAEGG',  'ZLIB']
+CreateStubHeader("built/include/parser.h")
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='eggyy', src='parser.yxx', dsth='parser.h', obj='egg_parser.obj')
 EnqueueFlex(ipath=IPATH, opts=OPTS, pre='eggyy', src='lexer.lxx', obj='egg_lexer.obj', dashi=1)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg_composite1.cxx', obj='egg_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='egg_composite2.cxx', obj='egg_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libegg.in', obj='libegg_igate.obj',
             src='panda/src/egg',  module='pandaegg', library='libegg',
-            skip=["parser.h"], also=["egg_composite1.cxx","egg_composite2.cxx"])
+            skip=["parser.h"], also=["egg_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/egg2pg/
@@ -3025,9 +2976,9 @@ OBJFILES=[
           'pnmimage_composite.obj',
           'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll']
 EnqueueLink(opts=OPTS, dll='libpandastripped.dll', obj=OBJFILES, xdep=[
-        'built/tmp/dtool_have_helix.dat',
-        'built/tmp/dtool_have_vrpn.dat',
-        'built/tmp/dtool_have_freetype.dat',
+        'dtool_have_helix.dat',
+        'dtool_have_vrpn.dat',
+        'dtool_have_freetype.dat',
 ])
 
 #
@@ -3205,6 +3156,7 @@ if (OMIT.count("PYTHON")==0):
 if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/dcparser']
     OPTS=['WITHINPANDA', 'BUILDING_DIRECT']
+    CreateStubHeader("built/include/dcParser.h")
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcParser.yxx', dsth='dcParser.h', obj='dcparser_dcParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='dcyy', src='dcLexer.lxx', obj='dcparser_dcLexer.obj', dashi=0)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparser_composite.cxx', obj='dcparser_composite.obj')
@@ -4047,6 +3999,7 @@ for VER in MAXVERSIONS:
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/vrml']
     OPTS=['ZLIB']
+    CreateStubHeader("built/include/vrmlParser.h")
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='vrmlyy', src='vrmlParser.yxx', dsth='vrmlParser.h', obj='pvrml_vrmlParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='vrmlyy', src='vrmlLexer.lxx', obj='pvrml_vrmlLexer.obj', dashi=0)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='parse_vrml.cxx', obj='pvrml_parse_vrml.obj')
@@ -4085,6 +4038,7 @@ if (OMIT.count("PANDATOOL")==0):
 if (OMIT.count("PANDATOOL")==0):
     IPATH=['pandatool/src/xfile']
     OPTS=['ZLIB']
+    CreateStubHeader("built/include/xParser.h")
     EnqueueBison(ipath=IPATH, opts=OPTS, pre='xyy', src='xParser.yxx', dsth='xParser.h', obj='xfile_xParser.obj')
     EnqueueFlex(ipath=IPATH, opts=OPTS, pre='xyy', src='xLexer.lxx', obj='xfile_xLexer.obj', dashi=1)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='xfile_composite1.cxx', obj='xfile_composite1.obj')
@@ -4618,20 +4572,14 @@ RunDependencyQueue(DEPENDENCYQUEUE)
 
 ##########################################################################################
 #
-# Copy Sounds, Icons, and Models into the build.
-#
-##########################################################################################
-
-
-##########################################################################################
-#
 # Run genpycode
 #
 ##########################################################################################
 
 if (OMIT.count("PYTHON")==0):
-    allin = os.listdir("built/pandac/input")
-    inputs = xpaths("built/pandac/input/",allin,"")
+    inputs = []
+    for x in GetDirectoryContents("built/pandac/input", ["*.in"]):
+        inputs.append("built/pandac/input/" + x)
     if (NeedsBuild(['built/pandac/PandaModules.py'],inputs)):
         if (GENMAN): oscmd("built/bin/genpycode -d")
         else       : oscmd("built/bin/genpycode")
