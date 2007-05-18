@@ -4,7 +4,8 @@ __all__ = ['Diff', 'ObjectPool']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import invertDictLossless, makeList, safeRepr
-from direct.showbase.PythonUtil import getNumberedTypedString
+from direct.showbase.PythonUtil import getNumberedTypedString, getNumberedTypedSortedString
+from direct.showbase.PythonUtil import getNumberedTypedSortedStringWithReferrersGen
 import types
 import gc
 
@@ -96,8 +97,8 @@ class ObjectPool:
                 s += '\n%s\t%s' % (count, typ)
         return s
 
-    def printObjsByType(self):
-        print 'Object Pool: Objects By Type'
+    def printObjsByType(self, printReferrers=False):
+        print   'Object Pool: Objects By Type'
         print '\n============================'
         counts = list(set(self._count2types.keys()))
         counts.sort()
@@ -105,8 +106,12 @@ class ObjectPool:
         for count in counts:
             types = makeList(self._count2types[count])
             for typ in types:
-                print 'TYPE: %s' % repr(typ)
-                print getNumberedTypedString(self._type2objs[typ])
+                print 'TYPE: %s, %s objects' % (repr(typ), len(self._type2objs[typ]))
+                if printReferrers:
+                    for line in getNumberedTypedSortedStringWithReferrersGen(self._type2objs[typ]):
+                        print line
+                else:
+                    print getNumberedTypedSortedString(self._type2objs[typ])
 
     def containerLenStr(self):
         s  =   'Object Pool: Container Lengths'

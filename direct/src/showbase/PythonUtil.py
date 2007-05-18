@@ -21,6 +21,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'SingletonError', 'printListEnum', 'gcDebugOn', 'safeRepr',
 'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'set_trace', 'pm',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
+'getNumberedTypedSortedString', 'getNumberedTypedSortedStringWithReferrers',
+'getNumberedTypedSortedStringWithReferrersGen',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
@@ -38,6 +40,7 @@ import sys
 import random
 import time
 import new
+import gc
 #if __debug__:
 import traceback
 
@@ -2317,15 +2320,81 @@ def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
     first = True
     s = ''
+    snip = '<SNIP>'
     for i in xrange(len(items)):
         if not first:
             s += '\n'
         first = False
         objStr = fastRepr(items[i])
         if len(objStr) > maxLen:
-            snip = '<SNIP>'
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         s += format % (i, itype(items[i]), objStr)
+    return s
+
+def getNumberedTypedSortedString(items, maxLen=5000, numPrefix=''):
+    """get a string that has each item of the list on its own line,
+    the items are stringwise-sorted, and each item is numbered on
+    the left from zero"""
+    digits = 0
+    n = len(items)
+    while n > 0:
+        digits += 1
+        n /= 10
+    digits = digits
+    format = numPrefix + '%0' + '%s' % digits + 'i:%s \t%s'
+    snip = '<SNIP>'
+    strs = []
+    for item in items:
+        objStr = fastRepr(item)
+        if len(objStr) > maxLen:
+            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+        strs.append(objStr)
+    first = True
+    s = ''
+    strs.sort()
+    for i in xrange(len(strs)):
+        if not first:
+            s += '\n'
+        first = False
+        objStr = strs[i]
+        s += format % (i, itype(items[i]), strs[i])
+    return s
+
+def getNumberedTypedSortedStringWithReferrersGen(items, maxLen=10000, numPrefix=''):
+    """get a string that has each item of the list on its own line,
+    the items are stringwise-sorted, the object's referrers are shown,
+    and each item is numbered on the left from zero"""
+    digits = 0
+    n = len(items)
+    while n > 0:
+        digits += 1
+        n /= 10
+    digits = digits
+    format = numPrefix + '%0' + '%s' % digits + 'i:%s @ %s \t%s'
+    snip = '<SNIP>'
+    strs = []
+    for item in items:
+        strs.append(fastRepr(item))
+    strs.sort()
+    for i in xrange(len(strs)):
+        item = items[i]
+        objStr = strs[i]
+        objStr += ', \tREFERRERS=['
+        referrers = gc.get_referrers(item)
+        for ref in referrers:
+            objStr += '%s@%s, ' % (itype(ref), id(ref))
+        objStr += ']'
+        if len(objStr) > maxLen:
+            objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+        yield format % (i, itype(items[i]), id(items[i]), objStr)
+
+def getNumberedTypedSortedStringWithReferrers(items, maxLen=10000, numPrefix=''):
+    """get a string that has each item of the list on its own line,
+    the items are stringwise-sorted, the object's referrers are shown,
+    and each item is numbered on the left from zero"""
+    s = ''
+    for line in getNumberedTypedSortedStringWithReferrersGen(items, maxLen, numPrefix):
+        s += '%s\n' % line
     return s
 
 def printNumberedTyped(items, maxLen=5000):
