@@ -36,7 +36,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.deferredGenerates = []
         self.deferredDoIds = {}
         self.lastGenerate = 0
-        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0.2))
+        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0))
         self.noDefer = False  # Set this True to temporarily disable deferring.
 
         self.recorder = base.recorder
