@@ -72,8 +72,6 @@ class Task:
     cont = 1
     again = 2
 
-    if __debug__:
-        debugTaskTraceback = 0 # base.config.GetBool('debug-task-traceback', 0)
     count = 0
     def __init__(self, callback, priority = 0):
         try:
@@ -85,9 +83,8 @@ class Task:
                 isDev = __dev__
             except:
                 isDev = False
-            if config.GetBool('record-task-creation-stack', isDev):
-                if self.debugTaskTraceback:
-                    self.debugInitTraceback = StackTrace("Task "+str(callback), 1, 10)
+            if config.GetBool('record-task-creation-stack', 0):
+                self.debugInitTraceback = StackTrace("Task "+str(callback), 1, 10)
         # Unique ID for each task
         self.id = Task.count
         Task.count += 1
