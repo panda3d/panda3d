@@ -5177,6 +5177,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
         break;
 
       case D3DERR_OUTOFVIDEOMEMORY:
+      case E_OUTOFMEMORY:
         if (_lru) {
           // increase the page out size as the number of attempts increases
           if (_lru -> page_out_lru (allocation_size * attempts)) {
@@ -5184,11 +5185,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
           }
         }
         break;
-
-      case E_OUTOFMEMORY:
-        // ??? is this case system memory
-        break;
-
+        
       default:
         break;
     }
