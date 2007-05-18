@@ -30,6 +30,9 @@
 #include <tchar.h>
 
 
+#define WANT_NEW_FOCUS_MANAGMENT
+
+
 
 
 TypeHandle WinGraphicsWindow::_type_handle;
@@ -1804,6 +1807,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "killfocus\n";
         }
+
+#ifndef WANT_NEW_FOCUS_MANAGMENT
         if (!_lost_keypresses) 
         {
           // Record the current state of the keyboard when the focus is
@@ -1849,6 +1854,19 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // on may be lost.
           _lost_keypresses = true;
         }
+#else // WANT_NEW_FOCUS_MANAGMENT
+        {
+            double message_time = get_message_time();
+            for (int i = 0; i < num_virtual_keys; i++) 
+            {
+                ButtonHandle bh = lookup_key(i);
+                if(bh != ButtonHandle::none())
+                    handle_keyrelease(bh,message_time);
+            }
+            memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
+            _lost_keypresses = true;
+        }
+#endif // WANT_NEW_FOCUS_MANAGMENT
         break;
     
       case WM_SETFOCUS: 
@@ -1973,8 +1991,9 @@ resend_lost_keypresses() {
 
   BYTE new_keyboard_state[num_virtual_keys];
   GetKeyboardState(new_keyboard_state);
-
   double message_time = get_message_time();
+
+#ifndef WANT_NEW_FOCUS_MANAGMENT
   for (int i = 0; i < num_virtual_keys; i++) {
     // Filter out these particular three.  We don't want to test
     // these, because these are virtual duplicates for
@@ -2020,6 +2039,17 @@ resend_lost_keypresses() {
       }
     }
   }
+#else // WANT_NEW_FOCUS_MANAGMENT
+  for (int i = 0; i < num_virtual_keys; i++) 
+  {
+      if ((new_keyboard_state[i] & 0x80) != 0) 
+      {
+          ButtonHandle key = lookup_key(i);
+          if (key != ButtonHandle::none())
+              _input_devices[0].button_down(key, message_time);
+      }
+  }
+#endif  // WANT_NEW_FOCUS_MANAGMENT
 
   // Keypresses are no longer lost.
   _lost_keypresses = false;
