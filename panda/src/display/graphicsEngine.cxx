@@ -747,7 +747,7 @@ render_frame() {
   _test_geom_pcollector.clear_level();
 
   if (PStatClient::is_connected()) {
-    size_t small = GeomVertexArrayData::get_small_lru()->get_total_size();
+    size_t small_buf = GeomVertexArrayData::get_small_lru()->get_total_size();
     size_t independent = GeomVertexArrayData::get_independent_lru()->get_total_size();
     size_t resident = VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->get_total_size();
     size_t compressed = VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->get_total_size();
@@ -756,7 +756,7 @@ render_frame() {
     size_t total_disk = save_file->get_total_file_size();
     size_t used_disk = save_file->get_used_file_size();
 
-    _vertex_data_small_pcollector.set_level(small);
+    _vertex_data_small_pcollector.set_level(small_buf);
     _vertex_data_independent_pcollector.set_level(independent);
     _vertex_data_resident_pcollector.set_level(resident);
     _vertex_data_compressed_pcollector.set_level(compressed);
