@@ -875,6 +875,16 @@ def getSetter(targetObj, valueName, prefix='set'):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
 
+"""
+# with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
+def Functor(function, *args, **kArgs):
+    argsCopy = args[:]
+    def functor(*cArgs, **ckArgs):
+        kArgs.update(ckArgs)
+        return function(*(argsCopy + cArgs), **kArgs)
+    return functor
+"""
+
 class Functor:
     def __init__(self, function, *args, **kargs):
         assert callable(function), "function should be a callable obj"
@@ -892,11 +902,9 @@ class Functor:
         del self.__doc__
     
     def __call__(self, *args, **kargs):
-        _args = list(self._args)
-        _args.extend(args)
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
-        return apply(self._function, _args, _kargs)
+        return self._function(*(self._args + args), **_kargs)
 
     def __repr__(self):
         s = 'Functor(%s' % self._function.__name__
@@ -1183,19 +1191,19 @@ class ParamObj:
             for param in self.getParams():
                 self.paramVals[param] = getSetter(obj, param, 'get')()
             obj.unlockParams()
-        # CLASS METHODS
+        @classmethod
         def getParams(cls):
             # returns safely-mutable list of param names
             cls._compileDefaultParams()
             return cls._Params.keys()
-        getParams = classmethod(getParams)
+        @classmethod
         def getDefaultValue(cls, param):
             cls._compileDefaultParams()
             dv = cls._Params[param]
             if callable(dv):
                 dv = dv()
             return dv
-        getDefaultValue = classmethod(getDefaultValue)
+        @classmethod
         def _compileDefaultParams(cls):
             if cls.__dict__.has_key('_Params'):
                 # we've already compiled the defaults for this class
@@ -1210,7 +1218,6 @@ class ParamObj:
                 if c.__dict__.has_key('Params'):
                     # apply this class' default param values to our dict
                     cls._Params.update(c.Params)
-        _compileDefaultParams = classmethod(_compileDefaultParams)
         def __repr__(self):
             argStr = ''
             for param in self.getParams():
