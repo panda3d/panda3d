@@ -112,6 +112,19 @@ get_trust_level() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigPage::set_trust_level
+//       Access: Published
+//  Description: Explicitly sets the trust level on this particular
+//               page.  Note that any subsequent changes to the page,
+//               or to any variable declarations on it, will reset the
+//               trust level to zero.
+////////////////////////////////////////////////////////////////////
+INLINE void ConfigPage::
+set_trust_level(int trust_level) {
+  _trust_level = trust_level;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigPage::get_signature
 //       Access: Published
 //  Description: Returns the raw binary signature that was found in

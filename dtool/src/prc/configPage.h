@@ -53,6 +53,7 @@ PUBLISHED:
 
   INLINE int get_page_seq() const;
   INLINE int get_trust_level() const;
+  INLINE void set_trust_level(int trust_level);
   INLINE const string &get_signature() const;
 
   void clear();
