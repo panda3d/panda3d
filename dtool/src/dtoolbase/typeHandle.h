@@ -130,7 +130,11 @@ PUBLISHED:
   size_t get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, size_t size);
   void dec_memory_usage(MemoryClass memory_class, size_t size);
-#endif
+#else
+  INLINE size_t get_memory_usage(MemoryClass) const { return 0; }
+  INLINE void inc_memory_usage(MemoryClass, size_t) { }
+  INLINE void dec_memory_usage(MemoryClass, size_t) { }
+#endif  // DO_MEMORY_USAGE
 
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
