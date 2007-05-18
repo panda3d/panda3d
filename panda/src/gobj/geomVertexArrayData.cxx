@@ -26,69 +26,27 @@
 #include "config_gobj.h"
 #include "pStatTimer.h"
 #include "configVariableInt.h"
-#include "vertexDataSaveFile.h"
 #include "simpleAllocator.h"
+#include "vertexDataBuffer.h"
 
-#ifdef HAVE_ZLIB
-#include <zlib.h>
-#endif
-
-ConfigVariableInt max_ram_vertex_data
-("max-ram-vertex-data", -1,
+ConfigVariableInt max_independent_vertex_data
+("max-independent-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
-          "that is allowed to remain resident in system RAM at one time. "
-          "If more than this number of bytes of vertices are created, "
-          "the least-recently-used ones will be temporarily compressed in "
-          "system RAM until they are needed.  Set it to -1 for no limit."));
+          "that is independent of the paging system.  This is an "
+          "initial buffer before max-ram-vertex-data, specifically "
+          "designed for vertex datas that are dynamic in nature and "
+          "may change size or be created and destroyed frequently."));
 
-ConfigVariableInt max_compressed_vertex_data
-("max-compressed-vertex-data", -1,
- PRC_DESC("Specifies the maximum number of bytes of all vertex data "
-          "that is allowed to remain compressed in system RAM at one time. "
-          "If more than this number of bytes of vertices are created, "
-          "the least-recently-used ones will be temporarily flushed to "
-          "disk until they are needed.  Set it to -1 for no limit."));
+ConfigVariableInt vertex_data_page_size
+("vertex-data-page-size", 512,
+ PRC_DESC("The number of bytes to allocate at a time for vertex data.  "
+          "This also controls the page size that is compressed and written "
+          "to disk when vertex data pages are evicted from memory."));
 
-ConfigVariableInt vertex_data_compression_level
-("vertex-data-compression-level", 1,
- PRC_DESC("Specifies the zlib compression level to use when compressing "
-          "vertex data.  The number should be in the range 1 to 9, where "
-          "larger values are slower but give better compression."));
+SimpleLru GeomVertexArrayData::_independent_lru(max_independent_vertex_data);
+SimpleLru GeomVertexArrayData::_small_lru(max_independent_vertex_data);
 
-ConfigVariableInt max_disk_vertex_data
-("max-disk-vertex-data", -1,
- PRC_DESC("Specifies the maximum number of bytes of vertex data "
-          "that is allowed to be written to disk.  Set it to -1 for no "
-          "limit."));
-
-// We make this a static constant rather than a dynamic variable,
-// since we can't tolerate this value changing at runtime.
-static const size_t min_vertex_data_compress_size = 
-  ConfigVariableInt
-  ("min-vertex-data-compress-size", 64,
-   PRC_DESC("This is the minimum number of bytes that we deem worthy of "
-            "passing through zlib to compress, when a vertex buffer is "
-            "evicted from resident state and compressed for long-term "
-            "storage.  Buffers smaller than this are assumed to be likely to "
-            "have minimal compression gains (or even end up larger)."));
-
-SimpleLru GeomVertexArrayData::_ram_lru(max_ram_vertex_data);
-SimpleLru GeomVertexArrayData::_compressed_lru(max_compressed_vertex_data);
-SimpleLru GeomVertexArrayData::_disk_lru(0);
-
-SimpleLru *GeomVertexArrayData::_global_lru[RC_end_of_list] = {
-  &GeomVertexArrayData::_ram_lru,
-  &GeomVertexArrayData::_compressed_lru,
-  &GeomVertexArrayData::_disk_lru,
-  &GeomVertexArrayData::_disk_lru,
-};
-
-VertexDataSaveFile *GeomVertexArrayData::_save_file;
-
-PStatCollector GeomVertexArrayData::_vdata_compress_pcollector("*:Vertex Data:Compress");
-PStatCollector GeomVertexArrayData::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
-PStatCollector GeomVertexArrayData::_vdata_save_pcollector("*:Vertex Data:Save");
-PStatCollector GeomVertexArrayData::_vdata_restore_pcollector("*:Vertex Data:Restore");
+VertexDataBook GeomVertexArrayData::_book(vertex_data_page_size);
 
 
 TypeHandle GeomVertexArrayData::_type_handle;
@@ -104,8 +62,6 @@ TypeHandle GeomVertexArrayDataHandle::_type_handle;
 GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
   _endian_reversed = false;
-  _ram_class = RC_resident;
-  _saved_block = NULL;
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -117,7 +73,6 @@ GeomVertexArrayData() : SimpleLruPage(0) {
 ////////////////////////////////////////////////////////////////////
 PT(CopyOnWriteObject) GeomVertexArrayData::
 make_cow_copy() {
-  make_resident();
   return new GeomVertexArrayData(*this);
 }
 
@@ -140,10 +95,7 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
 
   _endian_reversed = false;
 
-  _ram_class = RC_resident;
-  _saved_block = NULL;
-  mark_used_lru(_global_lru[RC_resident]);
-
+  set_lru_size(0);
   nassertv(_array_format->is_registered());
 }
   
@@ -161,10 +113,9 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
 {
   _endian_reversed = false;
 
-  _ram_class = copy._ram_class;
-  _saved_block = NULL;
-  mark_used_lru(_global_lru[_ram_class]);
+  copy.mark_used_lru();
 
+  set_lru_size(get_data_size_bytes());
   nassertv(_array_format->is_registered());
 }
 
@@ -180,6 +131,9 @@ void GeomVertexArrayData::
 operator = (const GeomVertexArrayData &copy) {
   CopyOnWriteObject::operator = (copy);
   SimpleLruPage::operator = (copy);
+
+  copy.mark_used_lru();
+
   _array_format = copy._array_format;
   _cycler = copy._cycler;
 
@@ -200,10 +154,6 @@ operator = (const GeomVertexArrayData &copy) {
 GeomVertexArrayData::
 ~GeomVertexArrayData() {
   release_all();
-
-  if (_saved_block != (SimpleAllocatorBlock *)NULL) {
-    delete _saved_block;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,208 +319,9 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 lru_epoch() {
-  _ram_lru.begin_epoch();
-  _compressed_lru.begin_epoch();
-
-  // No automatic eviction from the Disk LRU.
-  //_disk_lru.begin_epoch();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_resident
-//       Access: Published
-//  Description: Moves the vertex data to fully resident status by
-//               expanding it or reading it from disk as necessary.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-make_resident() {
-  // TODO: make this work with pipelining properly.
-
-  if (_ram_class == RC_resident) {
-    // If we're already resident, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    restore_from_disk();
-  }
-
-  if (_ram_class == RC_compressed) {
-    CDWriter cdata(_cycler, true);
-#ifdef HAVE_ZLIB
-    if (cdata->_data_full_size > min_vertex_data_compress_size) {
-      PStatTimer timer(_vdata_decompress_pcollector);
-
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Expanding " << *this << " from " << cdata->_data.size()
-          << " to " << cdata->_data_full_size << "\n";
-      }
-      Data new_data(cdata->_data_full_size, get_class_type());
-      uLongf dest_len = cdata->_data_full_size;
-      int result = uncompress(&new_data[0], &dest_len,
-                              &cdata->_data[0], cdata->_data.size());
-      if (result != Z_OK) {
-        gobj_cat.error()
-          << "Couldn't expand: zlib error " << result << "\n";
-        nassert_raise("zlib error");
-      }
-      nassertv(dest_len == new_data.size());
-      cdata->_data.swap(new_data);
-    }
-#endif
-    set_lru_size(cdata->_data.size());
-    set_ram_class(RC_resident);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_compressed
-//       Access: Published
-//  Description: Moves the vertex data to compressed status by
-//               compressing it or reading it from disk as necessary.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-make_compressed() {
-  // TODO: make this work with pipelining properly.
-
-  if (_ram_class == RC_compressed) {
-    // If we're already compressed, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    restore_from_disk();
-  }
-
-  if (_ram_class == RC_resident) {
-    CDWriter cdata(_cycler, true);
-#ifdef HAVE_ZLIB
-    if (cdata->_data_full_size > min_vertex_data_compress_size) {
-      PStatTimer timer(_vdata_compress_pcollector);
-
-      // According to the zlib manual, we need to provide this much
-      // buffer to the compress algorithm: 0.1% bigger plus twelve
-      // bytes.
-      uLongf buffer_size = cdata->_data_full_size + ((cdata->_data_full_size + 999) / 1000) + 12;
-      Bytef *buffer = new Bytef[buffer_size];
-
-      int result = compress2(buffer, &buffer_size,
-                             &cdata->_data[0], cdata->_data_full_size,
-                             vertex_data_compression_level);
-      if (result != Z_OK) {
-        gobj_cat.error()
-          << "Couldn't compress: zlib error " << result << "\n";
-        nassert_raise("zlib error");
-      }
-    
-      Data new_data(buffer_size, get_class_type());
-      memcpy(&new_data[0], buffer, buffer_size);
-      delete[] buffer;
-
-      cdata->_data.swap(new_data);
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Compressed " << *this << " from " << cdata->_data_full_size
-          << " to " << cdata->_data.size() << "\n";
-      }
-    }
-#endif
-    set_lru_size(cdata->_data.size());
-    set_ram_class(RC_compressed);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_disk
-//       Access: Published
-//  Description: Moves the vertex data to disk status by
-//               writing it to disk as necessary.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-make_disk() {
-  // TODO: make this work with pipelining properly.
-
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    // If we're already compressed, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
-    nassertv(_saved_block == (SimpleAllocatorBlock *)NULL);
-    CDWriter cdata(_cycler, true);
-
-    PStatTimer timer(_vdata_save_pcollector);
-
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Storing " << *this << ", " << cdata->_data.size()
-        << " bytes, to disk\n";
-    }
-
-    const unsigned char *data = &cdata->_data[0];
-    size_t size = cdata->_data.size();
-    _saved_block = get_save_file()->write_data(data, size);
-    if (_saved_block == NULL) {
-      // Can't write it to disk.  Too bad.
-      mark_used_lru();
-      return;
-    }
-
-    // We swap the pvector with an empty one, to really make it free
-    // its memory.  Otherwise it might optimistically keep the memory
-    // allocated.
-    Data new_data(get_class_type());
-    cdata->_data.swap(new_data);
-
-    if (_ram_class == RC_resident) {
-      set_ram_class(RC_disk);
-    } else {
-      set_ram_class(RC_compressed_disk);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::restore_from_disk
-//       Access: Published
-//  Description: Restores the vertex data from disk and makes it
-//               either compressed or resident (according to whether
-//               it was stored compressed on disk).
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-restore_from_disk() {
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    nassertv(_saved_block != (SimpleAllocatorBlock *)NULL);
-    CDWriter cdata(_cycler, true);
-
-    PStatTimer timer(_vdata_restore_pcollector);
-
-    size_t size = _saved_block->get_size();
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Restoring " << *this << ", " << size
-        << " bytes, from disk\n";
-    }
-
-    Data new_data(size, get_class_type());
-    if (!get_save_file()->read_data(&new_data[0], size, _saved_block)) {
-      nassert_raise("read error");
-    }
-    cdata->_data.swap(new_data);
-
-    delete _saved_block;
-    _saved_block = NULL;
-
-    if (_ram_class == RC_compressed_disk) {
-      set_ram_class(RC_compressed);
-    } else {
-      set_ram_class(RC_resident);
-    }
-  }
+  _independent_lru.begin_epoch();
+  VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->begin_epoch();
+  VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->begin_epoch();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -590,30 +341,9 @@ restore_from_disk() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 evict_lru() {
-  nassertv(get_lru() == get_global_lru(_ram_class));
-
-  switch (_ram_class) {
-  case RC_resident:
-    if (_compressed_lru.get_max_size() == 0) {
-      make_disk();
-    } else {
-      make_compressed();
-    }
-    break;
-
-  case RC_compressed:
-    make_disk();
-    break;
-
-  case RC_disk:
-  case RC_compressed_disk:
-    gobj_cat.warning()
-      << "Cannot evict array data from disk.\n";
-    break;
-
-  case RC_end_of_list:
-    break;
-  }
+  dequeue_lru();
+  CDWriter cdata(_cycler, true);
+  cdata->_buffer.page_out(_book);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -676,21 +406,6 @@ reverse_data_endianness(unsigned char *dest, const unsigned char *source,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::make_save_file
-//       Access: Private, Static
-//  Description: Creates the global VertexDataSaveFile that will be
-//               used to save vertex data buffers to disk when
-//               necessary.
-////////////////////////////////////////////////////////////////////
-void GeomVertexArrayData::
-make_save_file() {
-  size_t max_size = (size_t)max_disk_vertex_data;
-
-  _save_file = new VertexDataSaveFile(vertex_save_file_directory,
-                                      vertex_save_file_prefix, max_size);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
@@ -709,7 +424,6 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  make_resident();
   CopyOnWriteObject::write_datagram(manager, dg);
 
   manager->write_pointer(dg, _array_format);
@@ -776,12 +490,12 @@ finalize(BamReader *manager) {
 
   if (_endian_reversed) {
     // Now is the time to endian-reverse the data.
-    Data new_data(cdata->_data.size(), get_class_type());
-    reverse_data_endianness(&new_data[0], &cdata->_data[0], cdata->_data.size());
-    cdata->_data.swap(new_data);
+    VertexDataBuffer new_buffer(cdata->_buffer.get_size());
+    reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(), cdata->_buffer.get_size());
+    cdata->_buffer.swap(new_buffer);
   }
 
-  set_ram_class(RC_resident);
+  set_lru_size(cdata->_buffer.get_size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -850,17 +564,17 @@ write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
   dg.add_uint8(_usage_hint);
 
-  dg.add_uint32(_data.size());
+  dg.add_uint32(_buffer.get_size());
 
   if (manager->get_file_endian() == BE_native) {
     // For native endianness, we only have to write the data directly.
-    dg.append_data(&_data[0], _data.size());
+    dg.append_data(_buffer.get_read_pointer(), _buffer.get_size());
 
   } else {
     // Otherwise, we have to convert it.
-    Data new_data(_data.size(), GeomVertexArrayData::get_class_type());
-    array_data->reverse_data_endianness(&new_data[0], &_data[0], _data.size());
-    dg.append_data(&new_data[0], new_data.size());
+    unsigned char *new_data = (unsigned char *)alloca(_buffer.get_size());
+    array_data->reverse_data_endianness(new_data, _buffer.get_read_pointer(), _buffer.get_size());
+    dg.append_data(new_data, _buffer.get_size());
   }
 }
 
@@ -880,18 +594,17 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
     // Before bam version 6.8, the array data was a PTA_uchar.
     PTA_uchar new_data;
     READ_PTA(manager, scan, array_data->read_raw_data, new_data);
-    _data = new_data.v();
+    _buffer.unclean_realloc(new_data.size());
+    memcpy(_buffer.get_write_pointer(), &new_data[0], new_data.size());
 
   } else {
     // Now, the array data is just stored directly.
     size_t size = scan.get_uint32();
-    Data new_data(size, GeomVertexArrayData::get_class_type());
+    _buffer.unclean_realloc(size);
     const unsigned char *source_data = 
       (const unsigned char *)scan.get_datagram().get_data();
-    memcpy(&new_data[0], source_data + scan.get_current_index(), size);
+    memcpy(_buffer.get_write_pointer(), source_data + scan.get_current_index(), size);
     scan.skip_bytes(size);
-
-    _data.swap(new_data);
   }
 
   if (manager->get_file_endian() != BE_native) {
@@ -904,14 +617,13 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
       // Since we have the _array_format pointer now, we can reverse
       // it immediately (and we should, to support threaded CData
       // updates).
-      Data new_data(_data.size(), GeomVertexArrayData::get_class_type());
-      array_data->reverse_data_endianness(&new_data[0], &_data[0], _data.size());
-      _data.swap(new_data);
+      VertexDataBuffer new_buffer(_buffer.get_size());
+      array_data->reverse_data_endianness(new_buffer.get_write_pointer(), _buffer.get_read_pointer(), _buffer.get_size());
+      _buffer.swap(new_buffer);
     }
   }
 
-  _data_full_size = _data.size();
-  array_data->set_lru_size(_data_full_size);
+  array_data->set_lru_size(_buffer.get_size());
 
   _modified = Geom::get_next_modified();
 }
@@ -927,23 +639,22 @@ set_num_rows(int n) {
   check_resident();
 
   int stride = _object->_array_format->get_stride();
-  int delta = n - (_cdata->_data.size() / stride);
-  
-  if (delta != 0) {
-    if (delta > 0) {
-      _cdata->_data.insert(_cdata->_data.end(), delta * stride, 0);
-      
-    } else {
-      _cdata->_data.erase(_cdata->_data.begin() + n * stride, 
-                          _cdata->_data.end());
+  size_t new_size = n * stride;
+  size_t orig_size = _cdata->_buffer.get_size();
+
+  if (new_size != orig_size) {
+    _cdata->_buffer.clean_realloc(new_size);
+
+    // Now ensure that the newly-added rows are initialized to 0.
+    if (new_size > orig_size) {
+      memset(_cdata->_buffer.get_write_pointer() + orig_size, 0,
+             new_size - orig_size);
     }
 
     _cdata->_modified = Geom::get_next_modified();
-    _cdata->_data_full_size = _cdata->_data.size();
 
     if (get_current_thread()->get_pipeline_stage() == 0) {
-      _object->set_ram_class(RC_resident);
-      _object->set_lru_size(_cdata->_data_full_size);
+      _object->set_lru_size(_cdata->_buffer.get_size());
     }
     return true;
   }
@@ -962,19 +673,18 @@ unclean_set_num_rows(int n) {
   check_resident();
 
   int stride = _object->_array_format->get_stride();
-  int delta = n - (_cdata->_data.size() / stride);
-  
-  if (delta != 0) {
-    // Just make a new array.  No reason to keep the old one around.
-    GeomVertexArrayData::Data new_data(n * stride, GeomVertexArrayData::get_class_type());
-    _cdata->_data.swap(new_data);
+  size_t new_size = n * stride;
+  size_t orig_size = _cdata->_buffer.get_size();
+
+  if (new_size != orig_size) {
+    _cdata->_buffer.unclean_realloc(new_size);
+    // No need to fill to zero or copy the old buffer, since this is
+    // unclean_set_num_rows().
 
     _cdata->_modified = Geom::get_next_modified();
-    _cdata->_data_full_size = _cdata->_data.size();
 
     if (get_current_thread()->get_pipeline_stage() == 0) {
-      _object->set_ram_class(RC_resident);
-      _object->set_lru_size(_cdata->_data_full_size);
+      _object->set_lru_size(_cdata->_buffer.get_size());
     }
     return true;
   }
@@ -993,13 +703,15 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
   check_resident();
   other->check_resident();
 
-  _cdata->_data = other->_cdata->_data;
+  _cdata->_buffer.unclean_realloc(other->_cdata->_buffer.get_size());
+  memcpy(_cdata->_buffer.get_write_pointer(),
+         other->_cdata->_buffer.get_read_pointer(),
+         other->_cdata->_buffer.get_size());
+
   _cdata->_modified = Geom::get_next_modified();
-  _cdata->_data_full_size = _cdata->_data.size();
 
   if (get_current_thread()->get_pipeline_stage() == 0) {
-    _object->set_ram_class(RC_resident);
-    _object->set_lru_size(_cdata->_data_full_size);
+    _object->set_lru_size(_cdata->_buffer.get_size());
   }
 }
 
@@ -1019,30 +731,107 @@ copy_subdata_from(size_t to_start, size_t to_size,
   check_resident();
   other->check_resident();
 
-  GeomVertexArrayData::Data &to_v = _cdata->_data;
-  to_start = min(to_start, to_v.size());
-  to_size = min(to_size, to_v.size() - to_start);
+  VertexDataBuffer &to_buffer = _cdata->_buffer;
+  to_start = min(to_start, to_buffer.get_size());
+  to_size = min(to_size, to_buffer.get_size() - to_start);
 
-  from_start = min(from_start, other->_cdata->_data.size());
-  from_size = min(from_size, other->_cdata->_data.size() - from_start);
+  const VertexDataBuffer &from_buffer = other->_cdata->_buffer;
+  from_start = min(from_start, from_buffer.get_size());
+  from_size = min(from_size, from_buffer.get_size() - from_start);
 
   if (from_size < to_size) {
     // Reduce the array.
-    to_v.erase(to_v.begin() + to_start + from_size, to_v.begin() + to_start + to_size);
+    unsigned char *pointer = to_buffer.get_write_pointer();
+    memmove(pointer + to_start + to_size, 
+            pointer + to_start + from_size,
+            from_size - (to_start + to_size));
+    to_buffer.clean_realloc(to_buffer.get_size() + from_size - to_size);
 
   } else if (to_size < from_size) {
     // Expand the array.
-    to_v.insert(to_v.begin() + to_start + to_size, from_size - to_size, char());
+    to_buffer.clean_realloc(to_buffer.get_size() + from_size - to_size);
+    unsigned char *pointer = to_buffer.get_write_pointer();
+    memmove(pointer + to_start + to_size, 
+            pointer + to_start + from_size,
+            from_size - (to_start + from_size));
   }
 
   // Now copy the data.
-  memcpy(&to_v[0] + to_start, other->get_pointer() + from_start, from_size);
+  memcpy(to_buffer.get_write_pointer() + to_start, 
+         other->get_read_pointer() + from_start, 
+         from_size);
   _cdata->_modified = Geom::get_next_modified();
-  _cdata->_data_full_size = _cdata->_data.size();
 
   if (get_current_thread()->get_pipeline_stage() == 0) {
-    _object->set_ram_class(RC_resident);
-    _object->set_lru_size(_cdata->_data_full_size);
+    _object->set_lru_size(_cdata->_buffer.get_size());
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::set_data
+//       Access: Public
+//  Description: Replaces the entire raw data array with the contents
+//               of the indicated string.  This is primarily for the
+//               benefit of high-level languages like Python.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayDataHandle::
+set_data(const string &data) {
+  nassertv(_writable);
+  check_resident();
+
+  _cdata->_buffer.unclean_realloc(data.size());
+  memcpy(_cdata->_buffer.get_write_pointer(), data.data(), data.size());
+
+  _cdata->_modified = Geom::get_next_modified();
+
+  if (get_current_thread()->get_pipeline_stage() == 0) {
+    _object->set_lru_size(_cdata->_buffer.get_size());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_subdata_from
+//       Access: Public
+//  Description: Replaces a portion of the data array from the
+//               indicated string.  If size != data.size(), the size
+//               of this data array is adjusted accordingly.
+//
+//               This is primarily for the benefit of high-level
+//               languages like Python.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayDataHandle::
+set_subdata(size_t start, size_t size, const string &data) {
+  nassertv(_writable);
+  check_resident();
+
+  VertexDataBuffer &to_buffer = _cdata->_buffer;
+  start = min(start, to_buffer.get_size());
+  size = min(size, to_buffer.get_size() - start);
+  
+  size_t from_size = data.size();
+
+  if (from_size < size) {
+    // Reduce the array.
+    unsigned char *pointer = to_buffer.get_write_pointer();
+    memmove(pointer + start + size, 
+            pointer + start + from_size,
+            from_size - (start + size));
+    to_buffer.clean_realloc(to_buffer.get_size() + from_size - size);
+
+  } else if (size < from_size) {
+    // Expand the array.
+    to_buffer.clean_realloc(to_buffer.get_size() + from_size - size);
+    unsigned char *pointer = to_buffer.get_write_pointer();
+    memmove(pointer + start + size, 
+            pointer + start + from_size,
+            from_size - (start + from_size));
+  }
+
+  // Now copy the data.
+  memcpy(to_buffer.get_write_pointer() + start, data.data(), from_size);
+  _cdata->_modified = Geom::get_next_modified();
+
+  if (get_current_thread()->get_pipeline_stage() == 0) {
+    _object->set_lru_size(_cdata->_buffer.get_size());
+  }
+}

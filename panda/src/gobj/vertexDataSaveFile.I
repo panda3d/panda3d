@@ -29,3 +29,25 @@ is_valid() const {
   return _is_valid;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveFile::get_total_file_size
+//       Access: Public
+//  Description: Returns the amount of space consumed by the save
+//               file, including unused portions.
+////////////////////////////////////////////////////////////////////
+INLINE size_t VertexDataSaveFile::
+get_total_file_size() const {
+  return _total_file_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveFile::get_used_file_size
+//       Access: Public
+//  Description: Returns the amount of space within the save file that
+//               is currently in use.
+////////////////////////////////////////////////////////////////////
+INLINE size_t VertexDataSaveFile::
+get_used_file_size() const {
+  return _allocator.get_total_size();
+}
+

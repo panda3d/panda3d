@@ -129,7 +129,7 @@ clear_rows() {
 INLINE int GeomVertexArrayData::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
-  return cdata->_data_full_size;
+  return cdata->_buffer.get_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,54 +178,54 @@ modify_handle(Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_ram_class
-//       Access: Published
-//  Description: Returns the current ram class of the array.  If this
-//               is other than RC_resident, the array data is not
-//               resident in memory.
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayData::RamClass GeomVertexArrayData::
-get_ram_class() const {
-  return _ram_class;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_global_lru
+//     Function: GeomVertexArrayData::get_independent_lru
 //       Access: Published, Static
 //  Description: Returns a pointer to the global LRU object that
-//               manages the GeomVertexArrayData's with the indicated
-//               RamClass.
+//               manages the GeomVertexArrayData's that have not (yet)
+//               been paged out.
 ////////////////////////////////////////////////////////////////////
 INLINE SimpleLru *GeomVertexArrayData::
-get_global_lru(RamClass rclass) {
-  nassertr(rclass >= 0 && rclass < RC_end_of_list, NULL);
-  return _global_lru[rclass];
+get_independent_lru() {
+  return &_independent_lru;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::get_save_file
+//     Function: GeomVertexArrayData::get_small_lru
 //       Access: Published, Static
-//  Description: Returns the global VertexDataSaveFile that will be
-//               used to save vertex data buffers to disk when
-//               necessary.
+//  Description: Returns a pointer to the global LRU object that
+//               manages the GeomVertexArrayData's that are deemed too
+//               small to be paged out.
 ////////////////////////////////////////////////////////////////////
-INLINE VertexDataSaveFile *GeomVertexArrayData::
-get_save_file() {
-  if (_save_file == (VertexDataSaveFile *)NULL) {
-    make_save_file();
-  }
-  return _save_file;
+INLINE SimpleLru *GeomVertexArrayData::
+get_small_lru() {
+  return &_small_lru;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayData::set_ram_class
+//     Function: GeomVertexArrayData::get_book
+//       Access: Published, Static
+//  Description: Returns the global VertexDataBook that will be
+//               used to allocate vertex data buffers.
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataBook &GeomVertexArrayData::
+get_book() {
+  return _book;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::set_lru_size
 //       Access: Private
-//  Description: Puts the data in a new ram class.
+//  Description: Should be called when the size of the buffer changes.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayData::
-set_ram_class(RamClass rclass) {
-  _ram_class = rclass;
-  mark_used_lru(_global_lru[rclass]);
+set_lru_size(size_t lru_size) {
+  SimpleLruPage::set_lru_size(lru_size);
+
+  if (lru_size <= vertex_data_small_size) {
+    SimpleLruPage::mark_used_lru(&_small_lru);
+  } else {
+    SimpleLruPage::mark_used_lru(&_independent_lru);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,9 +235,7 @@ set_ram_class(RamClass rclass) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayData::CData::
 CData() :
-  _usage_hint(UH_unspecified),
-  _data(GeomVertexArrayData::get_class_type()),
-  _data_full_size(0)
+  _usage_hint(UH_unspecified)
 {
 }
 
@@ -249,8 +247,7 @@ CData() :
 INLINE GeomVertexArrayData::CData::
 CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
-  _data(copy._data),
-  _data_full_size(copy._data_full_size),
+  _buffer(copy._buffer),
   _modified(copy._modified)
 {
 }
@@ -263,9 +260,8 @@ CData(const GeomVertexArrayData::CData &copy) :
 INLINE void GeomVertexArrayData::CData::
 operator = (const GeomVertexArrayData::CData &copy) {
   _usage_hint = copy._usage_hint;
+  _buffer = copy._buffer;
   _modified = copy._modified;
-  _data = copy._data;
-  _data_full_size = copy._data_full_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,34 +366,28 @@ get_object() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_pointer
+//     Function: GeomVertexArrayDataHandle::get_read_pointer
 //       Access: Public
-//  Description: Returns a pointer to the beginning of the actual data
-//               stream.
+//  Description: Returns a readable pointer to the beginning of the
+//               actual data stream.
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomVertexArrayDataHandle::
-get_pointer() const {
+get_read_pointer() const {
   check_resident();
-  if (_cdata->_data.size() == 0) {
-    return NULL;
-  }
-  return &_cdata->_data[0];
+  return _cdata->_buffer.get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_pointer
+//     Function: GeomVertexArrayDataHandle::get_write_pointer
 //       Access: Public
-//  Description: Returns a pointer to the beginning of the actual data
-//               stream.
+//  Description: Returns a writable pointer to the beginning of the
+//               actual data stream.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *GeomVertexArrayDataHandle::
-get_pointer() {
+get_write_pointer() {
   nassertr(_writable, NULL);
   check_resident();
-  if (_cdata->_data.size() == 0) {
-    return NULL;
-  }
-  return &_cdata->_data[0];
+  return _cdata->_buffer.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,7 +437,7 @@ clear_rows() {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayDataHandle::
 get_data_size_bytes() const {
-  return _cdata->_data_full_size;
+  return _cdata->_buffer.get_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,6 +451,36 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_data
+//       Access: Published
+//  Description: Returns the entire raw data of the
+//               GeomVertexArrayData object, formatted as a string.
+//               This is primarily for the benefit of high-level
+//               languages such as Python.
+////////////////////////////////////////////////////////////////////
+INLINE string GeomVertexArrayDataHandle::
+get_data() const {
+  check_resident();
+  return string((const char *)_cdata->_buffer.get_read_pointer(), _cdata->_buffer.get_size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_subdata
+//       Access: Published
+//  Description: Returns a subset of the raw data of the
+//               GeomVertexArrayData object, formatted as a string.
+//               This is primarily for the benefit of high-level
+//               languages such as Python.
+////////////////////////////////////////////////////////////////////
+INLINE string GeomVertexArrayDataHandle::
+get_subdata(size_t start, size_t size) const {
+  check_resident();
+  start = min(start, _cdata->_buffer.get_size());
+  size = min(size, _cdata->_buffer.get_size() - start);
+  return string((const char *)_cdata->_buffer.get_read_pointer() + start, size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::check_resident
 //       Access: Published
 //  Description: Forces the vertex data into system RAM, if it is not
@@ -468,12 +488,7 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayDataHandle::
 check_resident() const {
-  if (_object->get_ram_class() != RC_resident) {
-    _object->make_resident();
-  } else {
-    _object->mark_used_lru();
-  }
-  nassertv(_cdata->_data.size() == _cdata->_data_full_size);
+  _object->mark_used_lru();
 }
 
 INLINE ostream &

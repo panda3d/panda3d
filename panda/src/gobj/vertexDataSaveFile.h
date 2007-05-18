@@ -42,6 +42,9 @@ public:
   ~VertexDataSaveFile();
 
   INLINE bool is_valid() const;
+
+  INLINE size_t get_total_file_size() const;
+  INLINE size_t get_used_file_size() const;
   
   SimpleAllocatorBlock *write_data(const unsigned char *data, size_t size);
   bool read_data(unsigned char *data, size_t size,
@@ -51,6 +54,7 @@ private:
   SimpleAllocator _allocator;
   Filename _filename;
   bool _is_valid;
+  size_t _total_file_size;
 
 #ifdef _WIN32
   HANDLE _handle;

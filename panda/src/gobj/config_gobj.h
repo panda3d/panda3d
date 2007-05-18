@@ -63,15 +63,16 @@ extern EXPCL_PANDA ConfigVariableBool textures_header_only;
 extern EXPCL_PANDA ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA ConfigVariableInt geom_cache_min_frames;
 
-extern ConfigVariableDouble default_near;
-extern ConfigVariableDouble default_far;
-extern ConfigVariableDouble default_fov;
-extern ConfigVariableDouble default_iod;
-extern ConfigVariableDouble default_converge;
-extern ConfigVariableDouble default_keystone;
+extern EXPCL_PANDA ConfigVariableDouble default_near;
+extern EXPCL_PANDA ConfigVariableDouble default_far;
+extern EXPCL_PANDA ConfigVariableDouble default_fov;
+extern EXPCL_PANDA ConfigVariableDouble default_iod;
+extern EXPCL_PANDA ConfigVariableDouble default_converge;
+extern EXPCL_PANDA ConfigVariableDouble default_keystone;
 
-extern ConfigVariableFilename vertex_save_file_directory;
-extern ConfigVariableString vertex_save_file_prefix;
+extern EXPCL_PANDA ConfigVariableFilename vertex_save_file_directory;
+extern EXPCL_PANDA ConfigVariableString vertex_save_file_prefix;
+extern EXPCL_PANDA ConfigVariableInt vertex_data_small_size;
 
 #endif
 

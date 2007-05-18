@@ -51,6 +51,8 @@
 #include "transformTable.h"
 #include "userVertexSlider.h"
 #include "userVertexTransform.h"
+#include "vertexDataBook.h"
+#include "vertexDataBuffer.h"
 #include "vertexTransform.h"
 #include "vertexSlider.h"
 #include "videoTexture.h"
@@ -284,6 +286,12 @@ ConfigVariableString vertex_save_file_prefix
           "been evicted from RAM.  A uniquifying sequence number and "
           "filename extension will be appended to this string."));
 
+ConfigVariableInt vertex_data_small_size
+("vertex-data-small-size", 64,
+ PRC_DESC("When a GeomVertexArrayData is this number of bytes or smaller, it "
+          "is deemed too small to pay the overhead of paging it in and out, "
+          "and it is permanently retained resident."));
+
 
 
 ConfigureFn(config_gobj) {
@@ -330,6 +338,8 @@ ConfigureFn(config_gobj) {
   UserVertexTransform::init_type();
   VertexBufferContext::init_type();
   VertexSlider::init_type();
+  VertexDataBuffer::init_type();
+  VertexDataPage::init_type();
   VertexTransform::init_type();
   VideoTexture::init_type();
 

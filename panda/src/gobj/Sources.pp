@@ -64,6 +64,8 @@
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexDataBook.I vertexDataBook.h \
+    vertexDataBuffer.I vertexDataBuffer.h \
     vertexDataSaveFile.I vertexDataSaveFile.h \
     vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h \
@@ -121,6 +123,8 @@
     userVertexSlider.cxx \
     userVertexTransform.cxx \
     vertexBufferContext.cxx \
+    vertexDataBook.cxx \
+    vertexDataBuffer.cxx \
     vertexDataSaveFile.cxx \
     vertexSlider.cxx \
     vertexTransform.cxx \
@@ -182,6 +186,8 @@
     userVertexSlider.I userVertexSlider.h \
     userVertexTransform.I userVertexTransform.h \
     vertexBufferContext.I vertexBufferContext.h \
+    vertexDataBook.I vertexDataBook.h \
+    vertexDataBuffer.I vertexDataBuffer.h \
     vertexDataSaveFile.I vertexDataSaveFile.h \
     vertexSlider.I vertexSlider.h \
     vertexTransform.I vertexTransform.h \

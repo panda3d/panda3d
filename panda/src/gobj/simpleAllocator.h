@@ -35,16 +35,23 @@ class SimpleAllocatorBlock;
 class EXPCL_PANDA SimpleAllocator : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleAllocator(size_t max_size);
-  ~SimpleAllocator();
+  virtual ~SimpleAllocator();
 
   SimpleAllocatorBlock *alloc(size_t size);
 
   INLINE size_t get_total_size() const;
   INLINE size_t get_max_size() const;
   INLINE void set_max_size(size_t max_size);
+  INLINE size_t get_contiguous() const;
+
+  INLINE SimpleAllocatorBlock *get_first_block() const;
 
   void output(ostream &out) const;
   void write(ostream &out) const;
+
+protected:
+  virtual SimpleAllocatorBlock *make_block(size_t start, size_t size);
+  INLINE void mark_contiguous(const LinkedListNode *block);
 
 private:
   // This is implemented as a linked-list chain of allocated blocks.
@@ -59,6 +66,11 @@ private:
   size_t _total_size;
   size_t _max_size;
 
+  // This is what we currently believe our max contiguous space to be.
+  // This guess might be larger than the actual available space, but
+  // it will not be smaller.
+  size_t _contiguous;
+
   friend class SimpleAllocatorBlock;
 };
 
@@ -68,7 +80,7 @@ private:
 //               SimpleAllocator::alloc().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SimpleAllocatorBlock : public LinkedListNode {
-private:
+protected:
   INLINE SimpleAllocatorBlock(SimpleAllocator *alloc,
                               size_t start, size_t size);
 
@@ -81,6 +93,11 @@ PUBLISHED:
   INLINE size_t get_start() const;
   INLINE size_t get_size() const;
   INLINE bool is_free() const;
+
+  INLINE size_t get_max_size() const;
+  INLINE bool realloc(size_t size);
+
+  INLINE SimpleAllocatorBlock *get_next_block() const;
 
   void output(ostream &out) const;
 

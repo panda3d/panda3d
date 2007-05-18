@@ -55,6 +55,19 @@ INLINE LinkedListNode::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LinkedListNode::is_on_list
+//       Access: Protected
+//  Description: Returns true if the node is member of any list, false
+//               if it has been removed or never added.  The head of a
+//               list generally appears to to always be a member of
+//               itself.
+////////////////////////////////////////////////////////////////////
+INLINE bool LinkedListNode::
+is_on_list() const {
+  return (_next != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LinkedListNode::remove_from_list
 //       Access: Protected
 //  Description: Removes a LinkedListNode record from the
@@ -62,6 +75,7 @@ INLINE LinkedListNode::
 ////////////////////////////////////////////////////////////////////
 INLINE void LinkedListNode::
 remove_from_list() {
+  nassertv(_prev != NULL && _next != NULL);
   nassertv(_prev->_next == this && _next->_prev == this);
   _prev->_next = _next;
   _next->_prev = _prev;

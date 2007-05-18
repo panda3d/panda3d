@@ -346,7 +346,7 @@ public:
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
   INLINE int get_index_stride() const;
   INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
-  INLINE const unsigned char *get_pointer() const;
+  INLINE const unsigned char *get_read_pointer() const;
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;

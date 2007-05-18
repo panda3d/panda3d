@@ -23,6 +23,8 @@
 #include "userVertexSlider.cxx"
 #include "userVertexTransform.cxx"
 #include "vertexBufferContext.cxx"
+#include "vertexDataBook.cxx"
+#include "vertexDataBuffer.cxx"
 #include "vertexDataSaveFile.cxx"
 #include "vertexSlider.cxx"
 #include "vertexTransform.cxx"

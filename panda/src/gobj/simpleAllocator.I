@@ -26,7 +26,8 @@ INLINE SimpleAllocator::
 SimpleAllocator(size_t max_size) : 
   LinkedListNode(true),
   _total_size(0),
-  _max_size(max_size)
+  _max_size(max_size),
+  _contiguous(max_size)
 {
 }
 
@@ -60,6 +61,58 @@ get_max_size() const {
 INLINE void SimpleAllocator::
 set_max_size(size_t max_size) {
   _max_size = max_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::get_contiguous
+//       Access: Published
+//  Description: Returns an upper-bound estimate of the size of the
+//               largest contiguous block that may be allocated.  It
+//               is guaranteed that an attempt to allocate a block
+//               larger than this will fail, though it is not
+//               guaranteed that an attempt to allocate a block this
+//               size or smaller will succeed.
+////////////////////////////////////////////////////////////////////
+INLINE size_t SimpleAllocator::
+get_contiguous() const {
+  return _contiguous;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::get_first_block
+//       Access: Published
+//  Description: Returns a pointer to the first allocated block, or
+//               NULL if there are no allocated blocks.
+////////////////////////////////////////////////////////////////////
+INLINE SimpleAllocatorBlock *SimpleAllocator::
+get_first_block() const {
+  return (_next == this) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::increase_contiguous
+//       Access: Protected
+//  Description: Some space has been made available following the
+//               indicated block.  Increase the contiguous space
+//               accordingly.
+////////////////////////////////////////////////////////////////////
+INLINE void SimpleAllocator::
+mark_contiguous(const LinkedListNode *block) {
+  size_t space;
+  if (block == this) {
+    // This is the beginning of the list.
+    if (_next == this) {
+      // And the list is empty.
+      space = _max_size;
+    } else {
+      space = ((SimpleAllocatorBlock *)_next)->get_start();
+    }
+  } else {
+    space = ((SimpleAllocatorBlock *)block)->get_max_size() - ((SimpleAllocatorBlock *)block)->get_size();
+  }
+  if (space > _contiguous) {
+    _contiguous = space;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +150,9 @@ INLINE void SimpleAllocatorBlock::
 free() {
   if (_allocator != (SimpleAllocator *)NULL) {
     _allocator->_total_size -= _size;
+    LinkedListNode *prev = _prev;
     remove_from_list();
+    _allocator->mark_contiguous(prev);
     _allocator = NULL;
   }
 }
@@ -146,4 +201,61 @@ get_size() const {
 INLINE bool SimpleAllocatorBlock::
 is_free() const {
   return (_allocator != (SimpleAllocator *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocatorBlock::get_max_size
+//       Access: Published
+//  Description: Returns the maximum size this block can be
+//               reallocated to, as limited by the following block.
+////////////////////////////////////////////////////////////////////
+INLINE size_t SimpleAllocatorBlock::
+get_max_size() const {
+  nassertr(_allocator != (SimpleAllocator *)NULL, 0);
+
+  size_t end;
+  if (_next == _allocator) {
+    end = _allocator->get_max_size();
+  } else {
+    end = ((SimpleAllocatorBlock *)_next)->_start;
+  }
+  return end - _start;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocatorBlock::realloc
+//       Access: Published
+//  Description: Changes the size of this block to the specified size.
+//               Returns true if the change is accepted, false if
+//               there was not enough room.
+////////////////////////////////////////////////////////////////////
+INLINE bool SimpleAllocatorBlock::
+realloc(size_t size) {
+  if (size > get_max_size()) {
+    return false;
+  }
+
+  _allocator->_total_size -= _size;
+  _allocator->_total_size += size;
+
+  if (size < _size) {
+    // We're decreasing the block size.
+    _size = size;
+    _allocator->mark_contiguous(this);
+  } else {
+    // We're increasing the block size.
+    _size = size;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocatorBlock::get_next_block
+//       Access: Published
+//  Description: Returns a pointer to the next allocated block in the
+//               chain, or NULL if there are no more allocated blocks.
+////////////////////////////////////////////////////////////////////
+INLINE SimpleAllocatorBlock *SimpleAllocatorBlock::
+get_next_block() const {
+  return (_next == _allocator) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
 }

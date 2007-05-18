@@ -508,7 +508,7 @@ get_packer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
 set_pointer(int row) {
-  _pointer_begin = _handle->get_pointer();
+  _pointer_begin = _handle->get_read_pointer();
   _pointer_end = _pointer_begin + _handle->get_data_size_bytes();
   quick_set_pointer(row);
 }
@@ -526,7 +526,7 @@ quick_set_pointer(int row) {
 
 #if defined(_DEBUG)
   // Make sure we still have the same pointer as stored in the array.
-  nassertv(_pointer_begin == _handle->get_pointer());
+  nassertv(_pointer_begin == _handle->get_read_pointer());
 #endif
 
   _pointer = _pointer_begin + _packer->_column->get_start() + _stride * row;
@@ -547,7 +547,7 @@ inc_pointer() {
 #if defined(_DEBUG)
   nassertr(_pointer < _pointer_end, empty_buffer);
   // Make sure we still have the same pointer as stored in the array.
-  nassertr(_pointer_begin == _handle->get_pointer(), empty_buffer);
+  nassertr(_pointer_begin == _handle->get_read_pointer(), empty_buffer);
   nassertr(_pointer < _pointer_begin + _handle->get_data_size_bytes(), empty_buffer);
 #endif
 

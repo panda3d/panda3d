@@ -400,7 +400,6 @@ apply_state(GeomNode *node, const RenderState *state) {
 int GeomTransformer::
 collect_vertex_data(Geom *geom, int collect_bits) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
-
   if (vdata->get_num_rows() > _max_collect_vertices) {
     // Don't even bother.
     return 0;
@@ -587,6 +586,7 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     // The TransformBlendTable.  This one is the easiest, because we
     // can modify it directly, and it will uniquify blend objects for
     // us.
+
     CPT(TransformBlendTable) old_btable;
     if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
       old_btable = vdata->get_transform_blend_table();
@@ -657,7 +657,6 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     }
     new_data->set_slider_table(SliderTable::register_table(new_sliders));
   }
-
 
   AlreadyCollectedData &acd = _already_collected[vdata];
   acd._data = new_data;

@@ -35,12 +35,14 @@
 #include "pmap.h"
 #include "reMutex.h"
 #include "simpleLru.h"
+#include "vertexDataBuffer.h"
+#include "config_gobj.h"
 
 class PreparedGraphicsObjects;
 class VertexBufferContext;
 class GraphicsStateGuardianBase;
 class GeomVertexArrayDataHandle;
-class VertexDataSaveFile;
+class VertexDataBook;
 class SimpleAllocatorBlock;
 
 ////////////////////////////////////////////////////////////////////
@@ -106,27 +108,20 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  INLINE RamClass get_ram_class() const;
-
-  INLINE static SimpleLru *get_global_lru(RamClass rclass);
+  INLINE static SimpleLru *get_independent_lru();
+  INLINE static SimpleLru *get_small_lru();
   static void lru_epoch();
-  INLINE static VertexDataSaveFile *get_save_file();
-
-  void make_resident();
-  void make_compressed();
-  void make_disk();
-  void restore_from_disk();
+  INLINE static VertexDataBook &get_book();
 
 public:
   virtual void evict_lru();
 
 private:
+  INLINE void set_lru_size(size_t lru_size);
+
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   void reverse_data_endianness(unsigned char *dest, 
                                const unsigned char *source, size_t size);
-
-  INLINE void set_ram_class(RamClass rclass);
-  static void make_save_file();
 
 
   CPT(GeomVertexArrayFormat) _array_format;
@@ -142,11 +137,6 @@ private:
   // This is only used when reading from a bam file.  It is set true
   // to indicate the data must be endian-reversed in finalize().
   bool _endian_reversed;
-
-  RamClass _ram_class;
-  SimpleAllocatorBlock *_saved_block;
-
-  typedef pvector<unsigned char> Data;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -167,8 +157,7 @@ private:
     }
 
     UsageHint _usage_hint;
-    Data _data;
-    size_t _data_full_size;
+    VertexDataBuffer _buffer;
     UpdateSeq _modified;
 
     // This implements read-write locking.  Anyone who gets the data for
@@ -195,16 +184,9 @@ private:
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
-  static SimpleLru _ram_lru;
-  static SimpleLru _compressed_lru;
-  static SimpleLru _disk_lru;
-  static SimpleLru *_global_lru[RC_end_of_list];
-  static VertexDataSaveFile *_save_file;
-
-  static PStatCollector _vdata_compress_pcollector;
-  static PStatCollector _vdata_decompress_pcollector;
-  static PStatCollector _vdata_save_pcollector;
-  static PStatCollector _vdata_restore_pcollector;
+  static SimpleLru _independent_lru;
+  static SimpleLru _small_lru;
+  static VertexDataBook _book;
 
 public:
   static void register_with_read_factory();
@@ -277,8 +259,8 @@ public:
   INLINE const GeomVertexArrayData *get_object() const;
   INLINE GeomVertexArrayData *get_object();
 
-  INLINE const unsigned char *get_pointer() const;
-  INLINE unsigned char *get_pointer();
+  INLINE const unsigned char *get_read_pointer() const;
+  INLINE unsigned char *get_write_pointer();
 
 PUBLISHED:
   INLINE const GeomVertexArrayFormat *get_array_format() const;
@@ -297,12 +279,10 @@ PUBLISHED:
                          const GeomVertexArrayDataHandle *other,
                          size_t from_start, size_t from_size);
 
-  /*
   INLINE string get_data() const;
   void set_data(const string &data);
   INLINE string get_subdata(size_t start, size_t size) const;
   void set_subdata(size_t start, size_t size, const string &data);
-  */
 
   INLINE void check_resident() const;
   

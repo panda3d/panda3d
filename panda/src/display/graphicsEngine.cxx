@@ -44,6 +44,8 @@
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"
+#include "vertexDataSaveFile.h"
+#include "vertexDataBook.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -78,10 +80,12 @@ PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 
 
 PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
-PStatCollector GraphicsEngine::_vertex_data_active_pcollector("Vertex Data:Active");
+PStatCollector GraphicsEngine::_vertex_data_small_pcollector("Vertex Data:Small");
+PStatCollector GraphicsEngine::_vertex_data_independent_pcollector("Vertex Data:Independent");
 PStatCollector GraphicsEngine::_vertex_data_resident_pcollector("Vertex Data:Resident");
 PStatCollector GraphicsEngine::_vertex_data_compressed_pcollector("Vertex Data:Compressed");
-PStatCollector GraphicsEngine::_vertex_data_disk_pcollector("Vertex Data:Disk");
+PStatCollector GraphicsEngine::_vertex_data_unused_disk_pcollector("Vertex Data:Disk:Unused");
+PStatCollector GraphicsEngine::_vertex_data_used_disk_pcollector("Vertex Data:Disk:Used");
 
 // These are counted independently by the collision system; we
 // redefine them here so we can reset them at each frame.
@@ -743,13 +747,21 @@ render_frame() {
   _test_geom_pcollector.clear_level();
 
   if (PStatClient::is_connected()) {
-    size_t resident = GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->get_total_size();
-    size_t active = GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_resident)->count_active_size();
-    _vertex_data_active_pcollector.set_level(active);
-    _vertex_data_resident_pcollector.set_level(resident - active);
-    _vertex_data_compressed_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_compressed)->get_total_size());
-    _vertex_data_disk_pcollector.set_level(GeomVertexArrayData::get_global_lru(GeomVertexArrayData::RC_disk)->get_total_size());
-    
+    size_t small = GeomVertexArrayData::get_small_lru()->get_total_size();
+    size_t independent = GeomVertexArrayData::get_independent_lru()->get_total_size();
+    size_t resident = VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->get_total_size();
+    size_t compressed = VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->get_total_size();
+
+    VertexDataSaveFile *save_file = VertexDataPage::get_save_file();
+    size_t total_disk = save_file->get_total_file_size();
+    size_t used_disk = save_file->get_used_file_size();
+
+    _vertex_data_small_pcollector.set_level(small);
+    _vertex_data_independent_pcollector.set_level(independent);
+    _vertex_data_resident_pcollector.set_level(resident);
+    _vertex_data_compressed_pcollector.set_level(compressed);
+    _vertex_data_unused_disk_pcollector.set_level(total_disk - used_disk);
+    _vertex_data_used_disk_pcollector.set_level(used_disk);
   }
 
 #endif  // DO_PSTATS

@@ -473,7 +473,7 @@ upload_data(const GeomVertexArrayDataHandle *reader) {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, reader->get_pointer(), data_size);
+  memcpy(local_pointer, reader->get_read_pointer(), data_size);
 
   _vbuffer->Unlock();
 }

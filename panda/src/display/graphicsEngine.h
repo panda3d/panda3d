@@ -360,10 +360,12 @@ private:
   static PStatCollector _delete_pcollector;
 
   static PStatCollector _sw_sprites_pcollector;
-  static PStatCollector _vertex_data_active_pcollector;
+  static PStatCollector _vertex_data_small_pcollector;
+  static PStatCollector _vertex_data_independent_pcollector;
   static PStatCollector _vertex_data_resident_pcollector;
   static PStatCollector _vertex_data_compressed_pcollector;
-  static PStatCollector _vertex_data_disk_pcollector;
+  static PStatCollector _vertex_data_used_disk_pcollector;
+  static PStatCollector _vertex_data_unused_disk_pcollector;
 
   static PStatCollector _cnode_volume_pcollector;
   static PStatCollector _gnode_volume_pcollector;

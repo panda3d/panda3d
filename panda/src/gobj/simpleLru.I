@@ -161,11 +161,14 @@ dequeue_lru() {
 //       Access: Published
 //  Description: To be called when the page is used; this will move it
 //               to the tail of the SimpleLru queue it is already on.
+//
+//               This method is const because it's not technically
+//               modifying the contents of the page itself.
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLruPage::
-mark_used_lru() {
+mark_used_lru() const {
   if (_lru != (SimpleLru *)NULL) {
-    mark_used_lru(_lru);
+    ((SimpleLruPage *)this)->mark_used_lru(_lru);
   }
 }
 
@@ -177,7 +180,6 @@ mark_used_lru() {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLruPage::
 mark_used_lru(SimpleLru *lru) {
-  dequeue_lru();
   enqueue_lru(lru);
 }
 

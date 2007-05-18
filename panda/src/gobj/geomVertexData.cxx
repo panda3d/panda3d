@@ -489,7 +489,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
   for (source_i = 0; source_i < num_arrays; ++source_i) {
     CPT(GeomVertexArrayData) array_obj = source->get_array(source_i);
     CPT(GeomVertexArrayDataHandle) array_handle = array_obj->get_handle();
-    const unsigned char *array_data = array_handle->get_pointer();
+    const unsigned char *array_data = array_handle->get_read_pointer();
     const GeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
     int num_columns = source_array_format->get_num_columns();
     for (int di = 0; di < num_columns; ++di) {
@@ -508,7 +508,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           // We can do a quick bytewise copy.
           PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
           PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
-          unsigned char *dest_array_data = dest_handle->get_pointer();
+          unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           bytewise_copy(dest_array_data + dest_column->get_start(), 
                         dest_array_format->get_stride(),
@@ -520,7 +520,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           // A common special case: OpenGL color to DirectX color.
           PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
           PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
-          unsigned char *dest_array_data = dest_handle->get_pointer();
+          unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           uint8_rgba_to_packed_argb
             (dest_array_data + dest_column->get_start(), 
@@ -534,7 +534,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           // color.
           PT(GeomVertexArrayData) dest_array_obj = modify_array(dest_i);
           PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
-          unsigned char *dest_array_data = dest_handle->get_pointer();
+          unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
           packed_argb_to_uint8_rgba
             (dest_array_data + dest_column->get_start(), 
@@ -656,11 +656,11 @@ copy_row_from(int dest_row, const GeomVertexData *source,
   for (int i = 0; i < num_arrays; ++i) {
     PT(GeomVertexArrayData) dest_array_obj = modify_array(i);
     PT(GeomVertexArrayDataHandle) dest_handle = dest_array_obj->modify_handle();
-    unsigned char *dest_array_data = dest_handle->get_pointer();
+    unsigned char *dest_array_data = dest_handle->get_write_pointer();
 
     CPT(GeomVertexArrayData) source_array_obj = source->get_array(i);
     CPT(GeomVertexArrayDataHandle) source_array_handle = source_array_obj->get_handle();
-    const unsigned char *source_array_data = source_array_handle->get_pointer();
+    const unsigned char *source_array_data = source_array_handle->get_read_pointer();
 
     const GeomVertexArrayFormat *array_format = source_format->get_array(i);
     int stride = array_format->get_stride();
@@ -1897,7 +1897,7 @@ set_num_rows(int n) {
       array_format->get_column(InternalName::get_color());
     int stride = array_format->get_stride();
     unsigned char *start = 
-      array_writer->get_pointer() + column->get_start();
+      array_writer->get_write_pointer() + column->get_start();
     unsigned char *stop = start + array_writer->get_data_size_bytes();
     unsigned char *pointer = start + stride * orig_color_rows;
     int num_values = column->get_num_values();

@@ -661,13 +661,13 @@ get_vertices_reader() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitivePipelineReader::get_pointer
+//     Function: GeomPrimitivePipelineReader::get_read_pointer
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomPrimitivePipelineReader::
-get_pointer() const {
-  return _vertices_reader->get_pointer();
+get_read_pointer() const {
+  return _vertices_reader->get_read_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

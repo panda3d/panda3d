@@ -36,6 +36,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
   }
 
   _is_valid = false;
+  _total_file_size = 0;
 
   // Try to open and lock a writable temporary filename.
   int index = 0;
@@ -209,6 +210,7 @@ write_data(const unsigned char *data, size_t size) {
     }
 #endif  // _WIN32
 
+    _total_file_size = max(_total_file_size, block->get_start() + size);
   }
 
   return block;

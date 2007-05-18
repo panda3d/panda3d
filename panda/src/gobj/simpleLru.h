@@ -70,7 +70,7 @@ PUBLISHED:
   INLINE void enqueue_lru(SimpleLru *lru);
   INLINE void dequeue_lru();
 
-  INLINE void mark_used_lru();
+  INLINE void mark_used_lru() const;
   INLINE void mark_used_lru(SimpleLru *lru);
 
   INLINE size_t get_lru_size() const;

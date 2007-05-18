@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleAllocator::Destructor
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 SimpleAllocator::
@@ -43,12 +43,17 @@ SimpleAllocator::
 ////////////////////////////////////////////////////////////////////
 SimpleAllocatorBlock *SimpleAllocator::
 alloc(size_t size) {
+  if (size > _contiguous) {
+    // Don't even bother.
+    return NULL;
+  }
+
   // First fit algorithm: walk through all the empty blocks until we
   // find one that has enough room.
 
   SimpleAllocatorBlock *block = NULL;
   size_t end = 0;
-
+  size_t best = 0;
   if (_next != this) {
     // We have at least one allocated block.
     block = (SimpleAllocatorBlock *)_next;
@@ -59,10 +64,13 @@ alloc(size_t size) {
       SimpleAllocatorBlock *next = (SimpleAllocatorBlock *)block->_next;
       size_t free_size = next->_start - end;
       if (size <= free_size) {
-        SimpleAllocatorBlock *new_block = new SimpleAllocatorBlock(this, end, size);
+        SimpleAllocatorBlock *new_block = make_block(end, size);
         new_block->insert_before(next);
         _total_size += size;
         return new_block;
+      }
+      if (free_size > best) {
+        best = free_size;
       }
       
       block = next;
@@ -73,11 +81,19 @@ alloc(size_t size) {
   // No free blocks; check for room at the end.
   size_t free_size = _max_size - end;
   if (size <= free_size) {
-    SimpleAllocatorBlock *new_block = new SimpleAllocatorBlock(this, end, size);
+    SimpleAllocatorBlock *new_block = make_block(end, size);
     new_block->insert_before(this);
     _total_size += size;
     return new_block;
   }
+
+  if (free_size > best) {
+    best = free_size;
+  }
+
+  // Now that we've walked through the entire list of blocks, we
+  // really do know accurately what the largest contiguous block is.
+  _contiguous = best;
 
   // No room for this block.
   return NULL;
@@ -92,6 +108,20 @@ void SimpleAllocator::
 output(ostream &out) const {
   out << "SimpleAllocator, " << _total_size << " of " << _max_size 
       << " allocated";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocatorBlock::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleAllocatorBlock::
+output(ostream &out) const {
+  if (_allocator == (SimpleAllocator *)NULL) {
+    out << "free block\n";
+  } else {
+    out << "block of size " << _size << " at " << _start;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,16 +142,15 @@ write(ostream &out) const {
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: SimpleAllocatorBlock::output
-//       Access: Published
-//  Description: 
+//     Function: SimpleAllocator::make_block
+//       Access: Protected, Virtual
+//  Description: Creates a new SimpleAllocatorBlock object.  Override
+//               this function to specialize the block type returned.
 ////////////////////////////////////////////////////////////////////
-void SimpleAllocatorBlock::
-output(ostream &out) const {
-  if (_allocator == (SimpleAllocator *)NULL) {
-    out << "free block\n";
-  } else {
-    out << "block of size " << _size << " at " << _start;
-  }
+SimpleAllocatorBlock *SimpleAllocator::
+make_block(size_t start, size_t size) {
+  return new SimpleAllocatorBlock(this, start, size);
 }
+

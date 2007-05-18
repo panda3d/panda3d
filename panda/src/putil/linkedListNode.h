@@ -38,6 +38,7 @@ protected:
   INLINE LinkedListNode(bool);
   INLINE ~LinkedListNode();
 
+  INLINE bool is_on_list() const;
   INLINE void remove_from_list();
   INLINE void insert_before(LinkedListNode *node);
   INLINE void insert_after(LinkedListNode *node);
