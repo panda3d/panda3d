@@ -221,7 +221,7 @@ INLINE void GeomVertexArrayData::
 set_lru_size(size_t lru_size) {
   SimpleLruPage::set_lru_size(lru_size);
 
-  if (lru_size <= vertex_data_small_size) {
+  if ((int)lru_size <= vertex_data_small_size) {
     SimpleLruPage::mark_used_lru(&_small_lru);
   } else {
     SimpleLruPage::mark_used_lru(&_independent_lru);
