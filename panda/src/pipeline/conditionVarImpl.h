@@ -47,12 +47,6 @@ typedef ConditionVarFullWin32Impl ConditionVarFullImpl;
 typedef ConditionVarPosixImpl ConditionVarImpl;
 typedef ConditionVarPosixImpl ConditionVarFullImpl;
 
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "conditionVarNsprImpl.h"
-typedef ConditionVarNsprImpl ConditionVarImpl;
-typedef ConditionVarNsprImpl ConditionVarFullImpl;
-
 #endif
 
 #endif

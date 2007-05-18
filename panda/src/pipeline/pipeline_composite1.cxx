@@ -5,7 +5,6 @@
 #include "conditionVarFull.cxx"
 #include "conditionVarFullDebug.cxx"
 #include "conditionVarFullDirect.cxx"
-#include "conditionVarNsprImpl.cxx"
 #include "conditionVarPosixImpl.cxx"
 #include "conditionVarWin32Impl.cxx"
 #include "conditionVarSpinlockImpl.cxx"

@@ -37,11 +37,6 @@ typedef ThreadWin32Impl ThreadImpl;
 #include "threadPosixImpl.h"
 typedef ThreadPosixImpl ThreadImpl;
 
-#elif defined(THREAD_NSPR_IMPL)
-
-#include "threadNsprImpl.h"
-typedef ThreadNsprImpl ThreadImpl;
-
 #endif
 
 #endif
