@@ -10,6 +10,7 @@ from OnscreenGeom import OnscreenGeom
 import string, types
 
 class DirectFrame(DirectGuiWidget):
+    DefDynGroups = ('text', 'geom', 'image')
     def __init__(self, parent = None, **kw):
         # Inherits from DirectGuiWidget
         # A Direct Frame can have:
@@ -38,7 +39,7 @@ class DirectFrame(DirectGuiWidget):
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs,
-                           dynamicGroups = ('text', 'geom', 'image'))
+                           dynamicGroups = DirectFrame.DefDynGroups)
 
         # Initialize superclasses
         DirectGuiWidget.__init__(self, parent)
