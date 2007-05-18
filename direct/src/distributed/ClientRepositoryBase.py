@@ -37,6 +37,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.deferredDoIds = {}
         self.lastGenerate = 0
         self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0.2))
+        self.noDefer = False  # Set this True to temporarily disable deferring.
 
         self.recorder = base.recorder
 
@@ -180,7 +181,7 @@ class ClientRepositoryBase(ConnectionRepository):
         dclass = self.dclassesByNumber[classId]
 
         deferrable = getattr(dclass.getClassDef(), 'deferrable', False)
-        if not self.deferInterval:
+        if not self.deferInterval or self.noDefer:
             deferrable = False
         
         now = globalClock.getFrameTime()
