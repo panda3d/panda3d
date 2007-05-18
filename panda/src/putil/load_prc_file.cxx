@@ -100,6 +100,7 @@ load_prc_file_data(const string &name, const string &data) {
   bool read_ok = page->read_prc(strm);
   
   if (read_ok) {
+    page->set_trust_level(1);  // temp hack
     return page;
     
   } else {
