@@ -46,7 +46,7 @@ do_receive_datagram(Datagram &dg) {
     // Read the first two bytes: the datagram length.
     while (_data_so_far.length() < 2) {
       int ch = _istream->get();
-      if (_istream->eof()) {
+      if (_istream->eof() || _istream->fail()) {
         _istream->clear();
         return false;
       }
@@ -66,13 +66,28 @@ do_receive_datagram(Datagram &dg) {
   }
 
   // Read the next n bytes until the datagram is filled.
-  while (_data_so_far.length() < _data_expected) {
-    int ch = _istream->get();
-    if (_istream->eof()) {
-      _istream->clear();
-      return false;
-    }
-    _data_so_far += (char)ch;
+
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  size_t read_count = min(_data_expected - _data_so_far.length(),
+                          buffer_size);
+  _istream->read(buffer, read_count);
+  size_t count = _istream->gcount();
+  while (count != 0) {
+    _data_so_far.append(buffer, count);
+    
+    read_count = min(_data_expected - _data_so_far.length(),
+                     buffer_size);
+    _istream->read(buffer, read_count);
+    count = _istream->gcount();
+  }
+
+  if (_data_so_far.length() < _data_expected) {
+    // Not yet here.  Clear the istream error flag and return false to
+    // indicate more coming.
+    _istream->clear();
+    return false;
   }
 
   dg.clear();
