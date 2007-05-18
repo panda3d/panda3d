@@ -81,7 +81,7 @@
 
     // Now compute the source files.
     #define c_sources $[filter %.c,$[get_sources]]
-    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx %.cpp,$[get_sources]]]
+    #define cxx_sources $[filter-out %_src.cxx,$[filter %.cxx %.mm %.cpp,$[get_sources]]]
     #define cxx_interrogate_sources
     #if $[PYTHON_MODULE_ONLY]
       #set cxx_interrogate_sources $[cxx_sources]
@@ -93,7 +93,7 @@
 
     // Define what the object files are.
     #foreach file $[c_sources] $[cxx_sources] $[cxx_interrogate_sources] $[yxx_sources] $[lxx_sources]
-      #define $[file]_obj $[patsubst %.c %.cxx %.cpp %.yxx %.lxx,$[ODIR]/$[obj_prefix]%$[OBJ],$[notdir $[file]]]
+      #define $[file]_obj $[patsubst %.c %.cxx %.mm %.cpp %.yxx %.lxx,$[ODIR]/$[obj_prefix]%$[OBJ],$[notdir $[file]]]
       #push 1 $[file]_obj
     #end file
 

@@ -71,7 +71,7 @@
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
   // freshen the cache file.
-  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
+  #define dep_sources $[sort $[filter %.c %.cxx %.mm %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
 
   // If there is an __init__.py in the directory, then all Python
   // files in the directory just get installed without having to be
