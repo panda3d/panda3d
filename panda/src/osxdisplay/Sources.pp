@@ -3,7 +3,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c 
 
-#define OSX_SYS_FRAMEWORKS ApplicationServices Carbon AGL CoreServices  
+#define OSX_SYS_FRAMEWORKS ApplicationServices Carbon AGL CoreServices Cocoa  
 #define USE_PACKAGES gl cggl 
 
 #begin lib_target
@@ -19,7 +19,7 @@
      osxGraphicsStateGuardian.h
     
   #define INCLUDED_SOURCES \
-    config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsWindow.cxx osxGraphicsStateGuardian.cxx osxGraphicsBuffer.cxx
+    config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsWindow.mm osxGraphicsStateGuardian.cxx osxGraphicsBuffer.cxx
 
   #define SOURCES \
     osxDisplay.xx $[INCLUDED_SOURCES] $[INSTALL_HEADERS]
