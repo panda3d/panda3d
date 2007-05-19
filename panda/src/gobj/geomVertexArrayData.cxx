@@ -732,28 +732,30 @@ copy_subdata_from(size_t to_start, size_t to_size,
   other->check_resident();
 
   VertexDataBuffer &to_buffer = _cdata->_buffer;
-  to_start = min(to_start, to_buffer.get_size());
-  to_size = min(to_size, to_buffer.get_size() - to_start);
+  size_t to_buffer_orig_size = to_buffer.get_size();
+  to_start = min(to_start, to_buffer_orig_size);
+  to_size = min(to_size, to_buffer_orig_size - to_start);
 
   const VertexDataBuffer &from_buffer = other->_cdata->_buffer;
-  from_start = min(from_start, from_buffer.get_size());
-  from_size = min(from_size, from_buffer.get_size() - from_start);
+  size_t from_buffer_orig_size = from_buffer.get_size();
+  from_start = min(from_start, from_buffer_orig_size);
+  from_size = min(from_size, from_buffer_orig_size - from_start);
 
   if (from_size < to_size) {
     // Reduce the array.
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + to_start + to_size, 
             pointer + to_start + from_size,
-            from_size - (to_start + to_size));
-    to_buffer.clean_realloc(to_buffer.get_size() + from_size - to_size);
+            to_buffer_orig_size - (to_start + to_size));
+    to_buffer.clean_realloc(to_buffer_orig_size + from_size - to_size);
 
   } else if (to_size < from_size) {
     // Expand the array.
-    to_buffer.clean_realloc(to_buffer.get_size() + from_size - to_size);
+    to_buffer.clean_realloc(to_buffer_orig_size + from_size - to_size);
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + to_start + to_size, 
             pointer + to_start + from_size,
-            from_size - (to_start + from_size));
+            to_buffer_orig_size - (to_start + to_size));
   }
 
   // Now copy the data.
@@ -805,8 +807,9 @@ set_subdata(size_t start, size_t size, const string &data) {
   check_resident();
 
   VertexDataBuffer &to_buffer = _cdata->_buffer;
-  start = min(start, to_buffer.get_size());
-  size = min(size, to_buffer.get_size() - start);
+  size_t to_buffer_orig_size = to_buffer.get_size();
+  start = min(start, to_buffer_orig_size);
+  size = min(size, to_buffer_orig_size - start);
   
   size_t from_size = data.size();
 
@@ -815,16 +818,16 @@ set_subdata(size_t start, size_t size, const string &data) {
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + start + size, 
             pointer + start + from_size,
-            from_size - (start + size));
-    to_buffer.clean_realloc(to_buffer.get_size() + from_size - size);
+            to_buffer_orig_size - (start + size));
+    to_buffer.clean_realloc(to_buffer_orig_size + from_size - size);
 
   } else if (size < from_size) {
     // Expand the array.
-    to_buffer.clean_realloc(to_buffer.get_size() + from_size - size);
+    to_buffer.clean_realloc(to_buffer_orig_size + from_size - size);
     unsigned char *pointer = to_buffer.get_write_pointer();
     memmove(pointer + start + size, 
             pointer + start + from_size,
-            from_size - (start + from_size));
+            to_buffer_orig_size - (start + size));
   }
 
   // Now copy the data.

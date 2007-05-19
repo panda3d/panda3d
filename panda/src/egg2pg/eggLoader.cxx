@@ -422,7 +422,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
           }
         }
       }
-      
+
       geom_node->add_geom(geom, render_state->_state);
     }
   }

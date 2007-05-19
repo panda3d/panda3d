@@ -55,6 +55,7 @@ extern EXPCL_PANDA ConfigVariableBool hardware_point_sprites;
 extern EXPCL_PANDA ConfigVariableBool matrix_palette;
 extern EXPCL_PANDA ConfigVariableBool display_list_animation;
 extern EXPCL_PANDA ConfigVariableBool connect_triangle_strips;
+extern EXPCL_PANDA ConfigVariableBool preserve_triangle_strips;
 
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;

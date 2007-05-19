@@ -166,7 +166,9 @@ set_index_type(GeomPrimitive::NumericType index_type) {
   nassertv(get_max_vertex() <= get_highest_index_value(index_type));
 
   CDWriter cdata(_cycler, true);
-  do_set_index_type(cdata, index_type);
+  if (cdata->_index_type != index_type) {
+    do_set_index_type(cdata, index_type);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -948,6 +950,12 @@ modify_ends() {
 
   cdata->_modified = Geom::get_next_modified();
   cdata->_got_minmax = false;
+
+  if (cdata->_ends.get_ref_count() > 1) {
+    PTA_int new_ends;
+    new_ends.v() = cdata->_ends.v();
+    cdata->_ends = new_ends;
+  }
   return cdata->_ends;
 }
 

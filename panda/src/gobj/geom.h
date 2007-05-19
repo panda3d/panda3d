@@ -171,6 +171,9 @@ private:
   void reset_usage_hint(CData *cdata);
   void reset_geom_rendering(CData *cdata);
 
+  void combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+                          Thread *current_thread);
+
 private:
   typedef pvector<COWPT(GeomPrimitive) > Primitives;
 

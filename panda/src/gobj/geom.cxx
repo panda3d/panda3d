@@ -551,75 +551,84 @@ unify_in_place(int max_indices) {
 
   CDWriter cdata(_cycler, true, current_thread);
 
-  PT(GeomPrimitive) new_prim;
+  typedef pmap<TypeHandle, PT(GeomPrimitive) > NewPrims;
+
+  NewPrims new_prims;
 
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
     CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
-    if (new_prim == (GeomPrimitive *)NULL) {
-      // The first primitive type we come across is copied directly.
-      new_prim = primitive->make_copy();
+    NewPrims::iterator npi = new_prims.find(primitive->get_type());
+    if (npi == new_prims.end()) {
+      // This is the first primitive of this type.  Just store it.
+      new_prims.insert(NewPrims::value_type(primitive->get_type(), primitive->make_copy()));
+
     } else {
-      // Thereafter, we must try to merge primitives.  If they are not
-      // the same type, we have to decompose both of them.
-      if (new_prim->get_type() != primitive->get_type()) {
-        CPT(GeomPrimitive) decomposed = new_prim->decompose();
-        new_prim = (GeomPrimitive *)decomposed.p();
-        primitive = primitive->decompose();
-
-        nassertv(new_prim->get_type() == primitive->get_type());
-      }
-
-      // Now simply copy in the vertices.
-      int num_primitives = primitive->get_num_primitives();
-      for (int pi = 0; pi < num_primitives; ++pi) {
-        int start = primitive->get_primitive_start(pi);
-        int end = primitive->get_primitive_end(pi);
-        for (int vi = start; vi < end; ++vi) {
-          new_prim->add_vertex(primitive->get_vertex(vi));
-        }
-        new_prim->close_primitive();
-      }
+      // We have already encountered another primitive of this type.
+      // Combine them.
+      combine_primitives((*npi).second, primitive, current_thread);
     }
   }
 
-  // Now we have just one primitive.
-  nassertv(new_prim->check_valid(cdata->_data.get_read_pointer()));
-
-  // The new primitive, naturally, inherits the Geom's overall shade
-  // model.
-  new_prim->set_shade_model(cdata->_shade_model);
-
-  cdata->_primitives.clear();
-
-  // Should we split it up again to satisfy max_indices?
-  if (new_prim->get_num_vertices() > max_indices) {
-    // Copy new_prim into smaller prims, no one of which has more than
-    // max_indices vertices.
-
-    int i = 0;
-
-    while (i < new_prim->get_num_primitives()) {
-      PT(GeomPrimitive) smaller = new_prim->make_copy();
-      smaller->clear_vertices();
-      while (i < new_prim->get_num_primitives() && 
-             smaller->get_num_vertices() + new_prim->get_primitive_num_vertices(i) < max_indices) {
-        int start = new_prim->get_primitive_start(i);
-        int end = new_prim->get_primitive_end(i);
-        for (int n = start; n < end; ++n) {
-          smaller->add_vertex(new_prim->get_vertex(n));
-        }
-        smaller->close_primitive();
-
-        ++i;
+  // Now, we have one or more primitives, but only one of each type.
+  if (!preserve_triangle_strips) {
+    // Recombine them into a single primitive by decomposing.
+    PT(GeomPrimitive) new_prim;
+    NewPrims::iterator npi;
+    for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
+      CPT(GeomPrimitive) prim = (*npi).second->decompose();
+      if (new_prim.is_null()) {
+        new_prim = prim->make_copy();
+      } else {
+        combine_primitives(new_prim, prim, current_thread);
       }
-
-      cdata->_primitives.push_back(smaller.p());
     }
 
-  } else {
-    // The new_prim has few enough vertices; keep it.
-    cdata->_primitives.push_back(new_prim.p());
+    new_prims.clear();
+    new_prims.insert(NewPrims::value_type(new_prim->get_type(), new_prim));
+  }
+
+  // Finally, iterate through the remaining primitives, and copy them
+  // to the output list.
+  cdata->_primitives.clear();
+  NewPrims::iterator npi;
+  for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
+    GeomPrimitive *prim = (*npi).second;
+
+    nassertv(prim->check_valid(cdata->_data.get_read_pointer()));
+
+    // Each new primitive, naturally, inherits the Geom's overall
+    // shade model.
+    prim->set_shade_model(cdata->_shade_model);
+
+    // Should we split it up again to satisfy max_indices?
+    if (prim->get_num_vertices() > max_indices) {
+      // Copy prim into smaller prims, no one of which has more than
+      // max_indices vertices.
+      int i = 0;
+      
+      while (i < prim->get_num_primitives()) {
+        PT(GeomPrimitive) smaller = prim->make_copy();
+        smaller->clear_vertices();
+        while (i < prim->get_num_primitives() && 
+               smaller->get_num_vertices() + prim->get_primitive_num_vertices(i) < max_indices) {
+          int start = prim->get_primitive_start(i);
+          int end = prim->get_primitive_end(i);
+          for (int n = start; n < end; ++n) {
+            smaller->add_vertex(prim->get_vertex(n));
+          }
+          smaller->close_primitive();
+          
+          ++i;
+        }
+      
+        cdata->_primitives.push_back(smaller.p());
+      }
+      
+    } else {
+      // The prim has few enough vertices; keep it.
+      cdata->_primitives.push_back(prim);
+    }
   }
 
   cdata->_modified = Geom::get_next_modified();
@@ -1203,6 +1212,54 @@ reset_geom_rendering(Geom::CData *cdata) {
 
   default:
     break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::combine_primitives
+//       Access: Private
+//  Description: Combines two primitives of the same type into a
+//               single primitive.  a_prim is modified to append the
+//               vertices from b_prim, which is unmodified.
+////////////////////////////////////////////////////////////////////
+void Geom::
+combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
+                   Thread *current_thread) {
+  nassertv(a_prim != b_prim);
+  nassertv(a_prim->get_type() == b_prim->get_type());
+
+  CPT(GeomPrimitive) b_prim2 = b_prim;
+
+  if (a_prim->get_index_type() != b_prim2->get_index_type()) {
+    GeomPrimitive::NumericType index_type = max(a_prim->get_index_type(), b_prim2->get_index_type());
+    a_prim->set_index_type(index_type);
+    if (b_prim2->get_index_type() != index_type) {
+      PT(GeomPrimitive) b_prim_copy = b_prim2->make_copy();
+      b_prim_copy->set_index_type(index_type);
+      b_prim2 = b_prim_copy;
+    }
+  }
+
+  if (!b_prim2->is_indexed()) {
+    PT(GeomPrimitive) b_prim_copy = b_prim2->make_copy();
+    b_prim_copy->make_indexed();
+    b_prim2 = b_prim_copy;
+  }
+
+  PT(GeomVertexArrayDataHandle) a_handle = a_prim->modify_vertices()->modify_handle(current_thread);
+  size_t orig_a_vertices = a_handle->get_num_rows();
+
+  CPT(GeomVertexArrayDataHandle) b_handle = b_prim2->get_vertices()->get_handle(current_thread);
+  a_handle->copy_subdata_from(a_handle->get_data_size_bytes(), 0,
+                              b_handle, 0, b_handle->get_data_size_bytes());
+  a_prim->clear_minmax();
+  if (a_prim->is_composite()) {
+    // Also copy the ends array.
+    PTA_int a_ends = a_prim->modify_ends();
+    CPTA_int b_ends = b_prim2->get_ends();
+    for (size_t i = 0; i < b_ends.size(); ++i) {
+      a_ends.push_back(b_ends[i] + orig_a_vertices);
+    }
   }
 }
 

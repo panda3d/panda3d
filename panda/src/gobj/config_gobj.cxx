@@ -206,6 +206,14 @@ ConfigVariableBool connect_triangle_strips
           "triangle strip may help performance by reducing the number "
           "of separate graphics calls that have to be made."));
 
+ConfigVariableBool preserve_triangle_strips
+("preserve-triangle-strips", false,
+ PRC_DESC("Set this true to indicate a preference for keeping triangle strips "
+          "when possible, instead of decomposing them into triangles.  When "
+          "this is true, flatten_strong and unify operations may be less "
+          "effective at combining multiple Geoms together, but they will "
+          "not implicitly decompose triangle strips."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "
