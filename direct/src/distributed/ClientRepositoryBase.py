@@ -36,7 +36,7 @@ class ClientRepositoryBase(ConnectionRepository):
         self.deferredGenerates = []
         self.deferredDoIds = {}
         self.lastGenerate = 0
-        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0))
+        self.setDeferInterval(base.config.GetDouble('deferred-generate-interval', 0.2))
         self.noDefer = False  # Set this True to temporarily disable deferring.
 
         self.recorder = base.recorder
@@ -192,7 +192,7 @@ class ClientRepositoryBase(ConnectionRepository):
             if self.deferredGenerates or now - self.lastGenerate < self.deferInterval:
                 # Queue it for later.
                 assert(self.notify.debug("deferring generate for %s %s" % (dclass.getName(), doId)))
-                self.deferredGenerates.append(doId)
+                self.deferredGenerates.append((CLIENT_CREATE_OBJECT_REQUIRED_OTHER, doId))
                 
                 # Keep a copy of the datagram, and move the di to the copy
                 dg = Datagram(di.getDatagram())
@@ -227,44 +227,47 @@ class ClientRepositoryBase(ConnectionRepository):
     def flushGenerates(self):
         """ Forces all pending generates to be performed immediately. """
         while self.deferredGenerates:
-            doId = self.deferredGenerates[0]
+            msgType, extra = self.deferredGenerates[0]
             del self.deferredGenerates[0]
+            self.replayDeferredGenerate(msgType, extra)
+
+        taskMgr.remove('deferredGenerate')
+
+    def replayDeferredGenerate(self, msgType, extra):
+        """ Override this to do something appropriate with deferred
+        "generate" messages when they are replayed().
+        """
+
+        if msgType == CLIENT_CREATE_OBJECT_REQUIRED_OTHER:
+            # It's a generate message.
+            doId = extra
             if doId in self.deferredDoIds:
                 args, deferrable, dg, updates = self.deferredDoIds[doId]
                 del self.deferredDoIds[doId]
                 self.__doGenerate(*args)
-                
+
+                if deferrable:
+                    self.lastGenerate = globalClock.getFrameTime()
+
                 for dg, di in updates:
                     self.__doUpdate(doId, di)
-
-        taskMgr.remove('deferredGenerate')
+        else:
+            self.notify.warning("Ignoring deferred message %s" % (msgType))
 
     def __doDeferredGenerate(self, task):
         """ This is the task that generates an object on the deferred
         queue. """
         
         now = globalClock.getFrameTime()
-        if now - self.lastGenerate < self.deferInterval:
-            # Come back later.
-            return Task.again
-
         while self.deferredGenerates:
-            # Generate the next deferred object.
-            doId = self.deferredGenerates[0]
-            del self.deferredGenerates[0]
-            if doId in self.deferredDoIds:
-                args, deferrable, dg, updates = self.deferredDoIds[doId]
-                del self.deferredDoIds[doId]
-                self.__doGenerate(*args)
-                
-                for dg, di in updates:
-                    self.__doUpdate(doId, di)
+            if now - self.lastGenerate < self.deferInterval:
+                # Come back later.
+                return Task.again
 
-                if deferrable:
-                    # If this was an actual deferrable object, wait
-                    # for the next pass to generate any more.
-                    self.lastGenerate = now
-                    return Task.again
+            # Generate the next deferred object.
+            msgType, extra = self.deferredGenerates[0]
+            del self.deferredGenerates[0]
+            self.replayDeferredGenerate(msgType, extra)
 
         # All objects are generaetd.
         return Task.done
@@ -473,7 +476,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # The object had been deferred.  Great; we don't even have
             # to generate it now.
             del self.deferredDoIds[doId]
-            i = self.deferredGenerates.index(doId)
+            i = self.deferredGenerates.index((CLIENT_CREATE_OBJECT_REQUIRED_OTHER, doId))
             del self.deferredGenerates[i]
             if len(self.deferredGenerates) == 0:
                 taskMgr.remove('deferredGenerate')
