@@ -2,7 +2,7 @@ __all__ = ['EnforcesCalldowns', 'calldownEnforced', 'EnforcedCalldownException',
            ]
 
 from direct.showbase.PythonUtil import ClassTree, getBase
-import new
+import new, __builtin__
 
 class EnforcedCalldownException(Exception):
     def __init__(self, what):
@@ -146,12 +146,12 @@ class EnforcesCalldowns:
     def _ECcheck(self, funcId):
         if self._funcId2latch[funcId] == self._funcId2calls[funcId]:
             func = EnforcesCalldowns._funcId2func[funcId]
+            __builtin__.classTree = ClassTree(self)
             raise EnforcedCalldownException(
-                '%s.%s did not call down to %s.%s\n%s' % (
+                '%s.%s did not call down to %s.%s; type \'classTree\' to see hierarchy' % (
                 self.__class__.__module__, self.__class__.__name__,
                 EnforcesCalldowns._funcId2class[funcId].__name__,
-                func.__name__,
-                ClassTree(self)))
+                func.__name__))
 
 def calldownEnforced(f):
     """
