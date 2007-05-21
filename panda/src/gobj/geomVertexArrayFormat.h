@@ -104,6 +104,7 @@ PUBLISHED:
   INLINE bool has_column(const InternalName *name) const;
 
   bool is_data_subset_of(const GeomVertexArrayFormat &other) const;
+  int count_unused_space() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

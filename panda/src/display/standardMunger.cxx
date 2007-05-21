@@ -170,8 +170,55 @@ munge_data_impl(const GeomVertexData *data) {
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
 bool StandardMunger::
-munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data,
-                Thread *current_thread) {
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, Thread *) {
+  int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
+
+  int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
+  if (unsupported_bits != 0) {
+    // Even beyond munging the vertex format, we have to convert the
+    // Geom itself into a new primitive type the GSG can render
+    // directly.
+    if ((unsupported_bits & Geom::GR_composite_bits) != 0) {
+      // This decomposes everything in the primitive, so that if (for
+      // instance) the primitive contained both strips and fans, but
+      // the GSG didn't support fans, it would decompose the strips
+      // too.  To handle this correctly, we'd need a separate
+      // decompose_fans() and decompose_strips() call; but for now,
+      // we'll just say it's good enough.  In practice, we don't have
+      // any GSG's that can support strips without also supporting
+      // fans.
+      geom = geom->decompose();
+
+      // Decomposing might produce an indexed Geom, so re-check the
+      // unsupported bits.
+      unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
+    }
+    if ((unsupported_bits & Geom::GR_shade_model_bits) != 0) {
+      // Rotate the vertices to account for different shade-model
+      // expectations (e.g. SM_flat_last_vertex to
+      // SM_flat_first_vertex)
+      geom = geom->rotate();
+    }
+    if ((unsupported_bits & Geom::GR_indexed_bits) != 0) {
+      // Convert indexed geometry to nonindexed geometry.
+      PT(Geom) new_geom = geom->make_copy();
+      new_geom->set_vertex_data(vertex_data);
+      new_geom->make_nonindexed(false);
+      geom = new_geom;
+      vertex_data = new_geom->get_vertex_data();
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StandardMunger::premunge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+bool StandardMunger::
+premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
 
   int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;

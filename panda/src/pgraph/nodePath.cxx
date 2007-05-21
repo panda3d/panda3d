@@ -5571,6 +5571,33 @@ verify_complete(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::premunge_scene
+//       Access: Published
+//  Description: Walks through the scene graph beginning at the bottom
+//               node, and internally adjusts any GeomVertexFormats
+//               for optimal rendering on the indicated GSG.  If this
+//               step is not done prior to rendering, the formats will
+//               be optimized at render time instead, for a small
+//               cost.
+//
+//               It is not normally necessary to do this on a model
+//               loaded directly from disk, since the loader will do
+//               this by default.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+premunge_scene(GraphicsStateGuardianBase *gsg) {
+  nassertv_always(!is_empty());
+
+  CPT(RenderState) state = RenderState::make_empty();
+  if (has_parent()) {
+    state = get_parent().get_net_state();
+  }
+
+  SceneGraphReducer gr;
+  gr.premunge(node(), gsg, state);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::prepare_scene
 //       Access: Published
 //  Description: Walks through the scene graph beginning at the bottom

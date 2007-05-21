@@ -29,6 +29,7 @@
 #include "pStatTimer.h"
 #include "vector_int.h"
 #include "userVertexTransform.h"
+#include "geomMunger.h"
 
 static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
 static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");
@@ -708,4 +709,31 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
   }
 
   return num_created;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::premunge_geom
+//       Access: Public
+//  Description: Uses the indicated munger to premunge the given Geom
+//               to optimize it for eventual rendering.  See
+//               SceneGraphReducer::premunge().
+////////////////////////////////////////////////////////////////////
+PT(Geom) GeomTransformer::
+premunge_geom(const Geom *geom, GeomMunger *munger) {
+  // This method had been originally provided to cache the result for
+  // a particular geom/munger and vdata/munger combination, similar to
+  // the way other GeomTransformer methods work.  On reflection, this
+  // additional caching is not necessary, since the GeomVertexFormat
+  // does its own caching, and there's no danger of that cache filling
+  // up during the span of one frame.
+
+  CPT(GeomVertexData) vdata = geom->get_vertex_data();
+  vdata = munger->premunge_data(vdata);
+  CPT(Geom) pgeom = geom;
+  munger->premunge_geom(pgeom, vdata);
+
+  PT(Geom) geom_copy = geom->make_copy();
+  geom_copy->set_vertex_data(vdata);
+
+  return geom_copy;
 }

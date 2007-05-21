@@ -32,6 +32,7 @@
 #include "indent.h"
 #include "pset.h"
 #include "config_pgraph.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomNode::_type_handle;
 
@@ -637,6 +638,35 @@ output(ostream &out) const {
 bool GeomNode::
 is_geom_node() const {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::do_premunge
+//       Access: Public
+//  Description: Uses the indicated GSG to premunge the Geoms in this
+//               node to optimize them for eventual rendering.  See
+//               SceneGraphReducer::premunge().
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+do_premunge(GraphicsStateGuardianBase *gsg,
+            const RenderState *node_state,
+            GeomTransformer &transformer) {
+  Thread *current_thread = Thread::get_current_thread();
+
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+
+    GeomList::iterator gi;
+    PT(GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
+      GeomEntry &entry = (*gi);
+      CPT(RenderState) geom_state = node_state->compose(entry._state);
+      CPT(Geom) geom = entry._geom.get_read_pointer();
+      PT(GeomMunger) munger = gsg->get_geom_munger(geom_state, current_thread);
+      entry._geom = transformer.premunge_geom(geom, munger);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////

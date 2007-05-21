@@ -96,7 +96,7 @@ remove_data(const GeomVertexData *data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::munge_geom
-//       Access: Published
+//       Access: Public
 //  Description: Applies the indicated munger to the geom and its
 //               data, and returns a (possibly different) geom and
 //               data, according to the munger's whim.  
@@ -259,6 +259,82 @@ bool GeomMunger::
 munge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &, Thread *) {
   // The default implementation does nothing (the work has already
   // been done in munge_format_impl() and munge_data_impl()).
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::do_premunge_format
+//       Access: Protected
+//  Description: The protected implementation of premunge_format().  This
+//               exists just to cast away the const pointer.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexFormat) GeomMunger::
+do_premunge_format(const GeomVertexFormat *format) {
+  nassertr(_is_registered, NULL);
+  nassertr(format->is_registered(), NULL);
+
+  MutexHolder holder(_formats_lock);
+
+  Formats::iterator fi;
+  fi = _premunge_formats.find(format);
+  if (fi != _premunge_formats.end()) {
+    // This format was previously munged, so the answer will be the
+    // same.
+    return (*fi).second;
+  }
+
+  // We have to munge this format for the first time.
+  CPT(GeomVertexFormat) derived_format = premunge_format_impl(format);
+  nassertr(derived_format->is_registered(), NULL);
+
+  // Store the answer in the map, so we can quickly get it next time.
+  bool inserted = _premunge_formats.insert(Formats::value_type(format, derived_format)).second;
+  nassertr(inserted, NULL);
+
+  return derived_format;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_format_impl
+//       Access: Protected, Virtual
+//  Description: Given a source GeomVertexFormat, converts it if
+//               necessary to the appropriate format for rendering.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexFormat) GeomMunger::
+premunge_format_impl(const GeomVertexFormat *orig) {
+  return orig;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_data_impl
+//       Access: Protected, Virtual
+//  Description: Given a source GeomVertexData, converts it as
+//               necessary for rendering.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexData) GeomMunger::
+premunge_data_impl(const GeomVertexData *data) {
+  nassertr(_is_registered, NULL);
+
+  CPT(GeomVertexFormat) orig_format = data->get_format();
+  CPT(GeomVertexFormat) new_format = premunge_format(orig_format);
+
+  if (new_format == orig_format) {
+    // Trivial case.
+    return data;
+  }
+
+  return data->convert_to(new_format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_geom_impl
+//       Access: Protected, Virtual
+//  Description: Converts a Geom and/or its data as necessary.
+////////////////////////////////////////////////////////////////////
+bool GeomMunger::
+premunge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &) {
+  // The default implementation does nothing (the work has already
+  // been done in premunge_format_impl() and premunge_data_impl()).
   return true;
 }
 

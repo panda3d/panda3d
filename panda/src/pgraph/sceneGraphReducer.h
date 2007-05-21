@@ -134,6 +134,9 @@ PUBLISHED:
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
   INLINE void unify(PandaNode *root);
 
+  INLINE void premunge(PandaNode *root, GraphicsStateGuardianBase *gsg,
+                       const RenderState *initial_state);
+
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                        int attrib_types, GeomTransformer &transformer);
@@ -164,6 +167,9 @@ protected:
   int r_make_nonindexed(PandaNode *node, int collect_bits);
   void r_unify(PandaNode *node);
 
+  void r_premunge(PandaNode *node, GraphicsStateGuardianBase *gsg,
+                  const RenderState *state);
+
 private:
   float _combine_radius;
   GeomTransformer _transformer;
@@ -173,6 +179,7 @@ private:
   static PStatCollector _collect_collector;
   static PStatCollector _make_nonindexed_collector;
   static PStatCollector _unify_collector;
+  static PStatCollector _premunge_collector;
 };
 
 #include "sceneGraphReducer.I"

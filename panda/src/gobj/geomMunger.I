@@ -107,6 +107,55 @@ munge_data(const GeomVertexData *data) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_format
+//       Access: Public
+//  Description: This is similar to munge_format(), but it is done at
+//               load time, to optimize a model for eventual rendering
+//               on a particular GSG.  At this point, we do not
+//               necessarily know the final render state that will be
+//               applied, so we cannot make any destructive changes to
+//               the geom, its data, or its format.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexFormat) GeomMunger::
+premunge_format(const GeomVertexFormat *format) const {
+  return ((GeomMunger *)this)->do_premunge_format(format);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_data
+//       Access: Public
+//  Description: This is similar to munge_data(), but it is done at
+//               load time, to optimize a model for eventual rendering
+//               on a particular GSG.  At this point, we do not
+//               necessarily know the final render state that will be
+//               applied, so we cannot make any destructive changes to
+//               the geom, its data, or its format.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(GeomVertexData) GeomMunger::
+premunge_data(const GeomVertexData *data) const {
+  return ((GeomMunger *)this)->premunge_data_impl(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomMunger::premunge_geom
+//       Access: Public
+//  Description: This is similar to munge_geom(), but it is done at
+//               load time, to optimize a model for eventual rendering
+//               on a particular GSG.  At this point, we do not
+//               necessarily know the final render state that will be
+//               applied, so we cannot make any destructive changes to
+//               the geom, its data, or its format.
+//
+//               Unlike munge_geom(), this result is not cached, since
+//               the assumption is that this operation is performed at
+//               load time once for each model.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomMunger::
+premunge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) const {
+  ((GeomMunger *)this)->premunge_geom_impl(geom, data);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomMunger::compare_to
 //       Access: Public
 //  Description: Provides an arbitrary ordering among all unique

@@ -55,10 +55,13 @@ PUBLISHED:
 
   INLINE int get_total_size() const;
 
+  void flush();
+
   static GeomCacheManager *get_global_ptr();
 
 public:
-  void evict_old_entries();
+  INLINE void evict_old_entries();
+  void evict_old_entries(int max_size, bool keep_current);
   INLINE static void flush_level();
 
 private:

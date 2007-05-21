@@ -29,6 +29,8 @@
 #include "pvector.h"
 #include "copyOnWritePointer.h"
 
+class GraphicsStateGuardianBase;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomNode
 // Description : A node that holds Geom objects, renderable pieces of
@@ -88,6 +90,10 @@ public:
   virtual void output(ostream &out) const;
 
   virtual bool is_geom_node() const;
+
+  void do_premunge(GraphicsStateGuardianBase *gsg,
+                   const RenderState *node_state,
+                   GeomTransformer &transformer);
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;

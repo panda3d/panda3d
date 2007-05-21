@@ -28,6 +28,7 @@
 class GeomNode;
 class RenderState;
 class InternalName;
+class GeomMunger;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
@@ -72,6 +73,8 @@ public:
 
   int collect_vertex_data(Geom *geom, int collect_bits);
   int collect_vertex_data(GeomNode *node, int collect_bits);
+
+  PT(Geom) premunge_geom(const Geom *geom, GeomMunger *munger);
 
 private:
   int _max_collect_vertices;

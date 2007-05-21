@@ -159,3 +159,20 @@ unify(PandaNode *root) {
   PStatTimer timer(_unify_collector);
   r_unify(root);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::premunge
+//       Access: Published
+//  Description: Walks the scene graph rooted at this node and below,
+//               and uses the indicated GSG to premunge every Geom
+//               found to optimize it for eventual rendering on the
+//               indicated GSG.
+//
+//               This operation will also apply to stashed children.
+////////////////////////////////////////////////////////////////////
+INLINE void SceneGraphReducer::
+premunge(PandaNode *root, GraphicsStateGuardianBase *gsg,
+         const RenderState *initial_state) {
+  PStatTimer timer(_premunge_collector);
+  r_premunge(root, gsg, initial_state);
+}

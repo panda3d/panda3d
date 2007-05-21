@@ -912,6 +912,30 @@ clear_cache() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::clear_munger_cache
+//       Access: Published, Static
+//  Description: Completely empties the cache of state + gsg ->
+//               munger, for all states and all gsg's.  Normally there
+//               is no need to empty this cache.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+clear_munger_cache() {
+  ReMutexHolder holder(*_states_lock);
+
+  // First, we need to count the number of times each RenderState
+  // object is recorded in the cache.
+  typedef pmap<const RenderState *, int> StateCount;
+  StateCount state_count;
+
+  States::iterator si;
+  for (si = _states->begin(); si != _states->end(); ++si) {
+    RenderState *state = (RenderState *)(*si);
+    state->_mungers.clear();
+    state->_last_mi = state->_mungers.end();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::list_cycles
 //       Access: Published, Static
 //  Description: Detects all of the reference-count cycles in the

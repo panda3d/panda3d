@@ -60,6 +60,19 @@ get_total_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomCacheManager::evict_old_entries
+//       Access: Public
+//  Description: Trims the cache size down to get_max_size() by
+//               evicting old cache entries as needed.  It is assumed
+//               that you already hold the lock before calling this
+//               method.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomCacheManager::
+evict_old_entries() {
+  evict_old_entries(get_max_size(), true);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomCacheManager::flush_level
 //       Access: Public, Static
 //  Description: Flushes the PStatCollectors used during traversal.

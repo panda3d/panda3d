@@ -57,6 +57,17 @@ GeomCacheManager::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomCacheManager::flush
+//       Access: Published
+//  Description: Immediately empties all elements in the cache.
+////////////////////////////////////////////////////////////////////
+void GeomCacheManager::
+flush() {
+  MutexHolder holder(_lock);
+  evict_old_entries(0, false);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomCacheManager::get_global_ptr
 //       Access: Published, Static
 //  Description: Returns the global cache manager pointer.
@@ -71,23 +82,22 @@ get_global_ptr() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomCacheManager::evict_old_entries
-//       Access: Private
-//  Description: Trims the cache size down to get_max_size() by
+//       Access: Public
+//  Description: Trims the cache size down to the specified size by
 //               evicting old cache entries as needed.  It is assumed
 //               that you already hold the lock before calling this
 //               method.
 ////////////////////////////////////////////////////////////////////
 void GeomCacheManager::
-evict_old_entries() {
+evict_old_entries(int max_size, bool keep_current) {
   int current_frame = ClockObject::get_global_clock()->get_frame_count();
   int min_frames = geom_cache_min_frames;
 
-  int max_size = get_max_size();
   while (_total_size > max_size) {
     PT(GeomCacheEntry) entry = _list->_next;
     nassertv(entry != _list);
 
-    if (current_frame - entry->_last_frame_used < min_frames) {
+    if (keep_current && current_frame - entry->_last_frame_used < min_frames) {
       // Never mind, this one is too new.
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()

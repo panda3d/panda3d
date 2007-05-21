@@ -35,7 +35,7 @@ class CLP(GeomContext);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(GeomMunger) : public StandardMunger, public WeakPointerCallback {
 public:
-  INLINE CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
+  CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
   ALLOC_DELETED_CHAIN(CLP(GeomMunger));
 
@@ -43,7 +43,9 @@ public:
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
-                                                    const GeomVertexAnimationSpec &animation);
+                                                  const GeomVertexAnimationSpec &animation);
+  virtual CPT(GeomVertexFormat) premunge_format_impl(const GeomVertexFormat *orig);
+
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
@@ -53,6 +55,12 @@ private:
 
   typedef pset<CLP(GeomContext) *> GeomContexts;
   GeomContexts _geom_contexts;
+
+  enum Flags {
+    F_interleaved_arrays   = 0x0001,
+    F_parallel_arrays      = 0x0002,
+  };
+  int _flags;
 
   static GeomMunger *_deleted_chain;
 

@@ -49,6 +49,7 @@ protected:
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
                                Thread *current_thread);
+  virtual bool premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
   virtual CPT(RenderState) munge_state_impl(const RenderState *state);
 

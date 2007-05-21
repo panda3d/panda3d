@@ -71,13 +71,17 @@ public:
   INLINE static void unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg);
 
   INLINE CPT(GeomVertexFormat) munge_format(const GeomVertexFormat *format,
-                                              const GeomVertexAnimationSpec &animation) const;
+                                            const GeomVertexAnimationSpec &animation) const;
 
   INLINE CPT(GeomVertexData) munge_data(const GeomVertexData *data) const;
   void remove_data(const GeomVertexData *data);
 
   void munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
                   Thread *current_thread);
+
+  INLINE CPT(GeomVertexFormat) premunge_format(const GeomVertexFormat *format) const;
+  INLINE CPT(GeomVertexData) premunge_data(const GeomVertexData *data) const;
+  INLINE void premunge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data) const;
 
 public:
   INLINE int compare_to(const GeomMunger &other) const;
@@ -87,13 +91,20 @@ protected:
   INLINE void unregister_myself();
 
   CPT(GeomVertexFormat) do_munge_format(const GeomVertexFormat *format,
-                                          const GeomVertexAnimationSpec &animation);
+                                        const GeomVertexAnimationSpec &animation);
 
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
-                                                    const GeomVertexAnimationSpec &animation);
+                                                  const GeomVertexAnimationSpec &animation);
   virtual CPT(GeomVertexData) munge_data_impl(const GeomVertexData *data);
   virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
                                Thread *current_thread);
+
+
+  CPT(GeomVertexFormat) do_premunge_format(const GeomVertexFormat *format);
+  virtual CPT(GeomVertexFormat) premunge_format_impl(const GeomVertexFormat *orig);
+  virtual CPT(GeomVertexData) premunge_data_impl(const GeomVertexData *data);
+  virtual bool premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;
 
@@ -116,6 +127,7 @@ private:
   typedef pmap<CPT(GeomVertexFormat), CPT(GeomVertexFormat) > Formats;
   typedef pmap<GeomVertexAnimationSpec, Formats> FormatsByAnimation;
   FormatsByAnimation _formats_by_animation;
+  Formats _premunge_formats;
 
   // This mutex protects the above.
   Mutex _formats_lock;

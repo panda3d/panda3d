@@ -128,6 +128,7 @@ PUBLISHED:
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
+  static void clear_munger_cache();
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();

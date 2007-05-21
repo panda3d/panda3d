@@ -31,6 +31,7 @@ PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
+PStatCollector SceneGraphReducer::_premunge_collector("*:Premunge");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::flatten
@@ -736,5 +737,34 @@ r_unify(PandaNode *node) {
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
     r_unify(children.get_child(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_premunge
+//       Access: Private
+//  Description: The recursive implementation of premunge().
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+r_premunge(PandaNode *node, GraphicsStateGuardianBase *gsg,
+           const RenderState *state) {
+  CPT(RenderState) next_state = state->compose(node->get_state());
+
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    geom_node->do_premunge(gsg, next_state, _transformer);
+  }
+
+  int i;
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (i = 0; i < num_children; ++i) {
+    r_premunge(children.get_child(i), gsg, next_state);
+  }
+
+  PandaNode::Stashed stashed = node->get_stashed();
+  int num_stashed = stashed.get_num_stashed();
+  for (i = 0; i < num_stashed; ++i) {
+    r_premunge(stashed.get_stashed(i), gsg, next_state);
   }
 }

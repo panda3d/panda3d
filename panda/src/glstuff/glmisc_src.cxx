@@ -79,6 +79,23 @@ ConfigVariableBool CLP(compile_and_execute)
             "for the first time, by allowing the display list to be "
             "rendered at the same time it is being compiled."));
 
+ConfigVariableBool CLP(interleaved_arrays)
+  ("gl-interleaved-arrays", false,
+   PRC_DESC("Set this true to convert OpenGL geometry such that the "
+            "primary data columns vertex, normal, color, and texcoord "
+            "are interleaved into one array when possible, or false to "
+            "render geometry as it appears in the GeomVertexData.  See "
+            "also gl-parallel-arrays."));
+
+ConfigVariableBool CLP(parallel_arrays)
+  ("gl-parallel-arrays", false,
+   PRC_DESC("Set this true to convert OpenGL geometry such that each "
+            "data column is a separate array, or false to "
+            "render geometry as it appears in the GeomVertexData.  See "
+            "also gl-interleaved-arrays."));
+
+extern ConfigVariableBool CLP(parallel_arrays);
+
 void CLP(init_classes)() {
   CLP(GeomContext)::init_type();
   CLP(GeomMunger)::init_type();

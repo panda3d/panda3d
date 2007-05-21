@@ -221,7 +221,7 @@ add_column(InternalName *name, int num_components,
   }
 
   return add_column(GeomVertexColumn(name, num_components, 
-                                       numeric_type, contents, start));
+                                     numeric_type, contents, start));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,6 +392,35 @@ is_data_subset_of(const GeomVertexArrayFormat &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::count_unused_space
+//       Access: Published
+//  Description: Returns the number of bytes per row that are not
+//               assigned to any column.
+////////////////////////////////////////////////////////////////////
+int GeomVertexArrayFormat::
+count_unused_space() const {
+  consider_sort_columns();
+
+  int unused_space = 0;
+  int last_pos = 0;
+
+  Columns::const_iterator ci;
+  for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
+    const GeomVertexColumn *column = (*ci);
+    if (column->get_start() > last_pos) {
+      unused_space += (column->get_start() - last_pos);
+    }
+    last_pos = column->get_start() + column->get_total_bytes();
+  }
+
+  if (_stride > last_pos) {
+    unused_space += (_stride - last_pos);
+  }
+
+  return unused_space;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::output
 //       Access: Published
 //  Description: 
@@ -399,11 +428,21 @@ is_data_subset_of(const GeomVertexArrayFormat &other) const {
 void GeomVertexArrayFormat::
 output(ostream &out) const {
   Columns::const_iterator ci;
+  int last_pos = 0;
   out << "[";
   for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
     const GeomVertexColumn *column = (*ci);
+    if (column->get_start() > last_pos) {
+      out << " ..." << (column->get_start() - last_pos) << "...";
+    }
     out << " " << *column;
+    last_pos = column->get_start() + column->get_total_bytes();
   }
+
+  if (_stride > last_pos) {
+    out << " ..." << (_stride - last_pos) << "...";
+  }
+
   out << " ]";
 }
 

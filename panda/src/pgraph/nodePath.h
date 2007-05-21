@@ -793,6 +793,7 @@ PUBLISHED:
   // Miscellaneous
   bool verify_complete(Thread *current_thread = Thread::get_current_thread()) const;
 
+  void premunge_scene(GraphicsStateGuardianBase *gsg);
   void prepare_scene(GraphicsStateGuardianBase *gsg);
 
   void show_bounds();

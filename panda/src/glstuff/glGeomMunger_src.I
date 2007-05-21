@@ -16,20 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GeomMunger)::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE CLP(GeomMunger)::
-CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
-  StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture(state->get_texture()),
-  _tex_gen(state->get_tex_gen())
-{
-  // Set a callback to unregister ourselves when either the Texture or
-  // the TexGen object gets deleted.
-  _texture.set_callback(this);
-  _tex_gen.set_callback(this);
-}
