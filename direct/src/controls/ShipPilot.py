@@ -361,7 +361,7 @@ class ShipPilot(PhysicsWalker):
             reverse = 0
 
         # How far did we move based on the amount of time elapsed?
-        dt=ClockObject.getGlobalClock().getDt()
+        dt = ClockObject.getGlobalClock().getDt()
         
         # this was causing the boat to get stuck moving forward or back
         if 0:
@@ -563,7 +563,8 @@ class ShipPilot(PhysicsWalker):
         oldPosDelta = self.shipNodePath.getPosDelta(render)
         oldDt = dt
         assert hasattr(self.ship, 'worldVelocity')
-        self.ship.worldVelocity = oldPosDelta*(1/oldDt)
+        if oldDt:
+            self.ship.worldVelocity = oldPosDelta*(1/oldDt)
         if self.wantDebugIndicator:
             onScreenDebug.add("w __oldPosDelta vec",
                 oldPosDelta.pPrintValues())
