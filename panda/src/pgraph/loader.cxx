@@ -29,6 +29,8 @@
 #include "string_utils.h"
 #include "bamCache.h"
 #include "bamCacheRecord.h"
+#include "sceneGraphReducer.h"
+#include "renderState.h"
 
 bool Loader::_file_types_loaded = false;
 TypeHandle Loader::_type_handle;
@@ -215,7 +217,10 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
             loader_cat.info()
               << "Model " << path << " found in disk cache.\n";
           }
-          return DCAST(PandaNode, record->extract_data());
+          PT(PandaNode) result = DCAST(PandaNode, record->extract_data());
+          SceneGraphReducer sgr;
+          sgr.premunge(result, RenderState::make_empty());
+          return result;
         }
       }
     }
@@ -228,6 +233,8 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
           cache->store(record);
         }
         
+        SceneGraphReducer sgr;
+        sgr.premunge(result, RenderState::make_empty());
         return result;
       }
     }

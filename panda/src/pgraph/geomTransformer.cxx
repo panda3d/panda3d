@@ -30,6 +30,7 @@
 #include "vector_int.h"
 #include "userVertexTransform.h"
 #include "geomMunger.h"
+#include "config_pgraph.h"
 
 static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
 static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");

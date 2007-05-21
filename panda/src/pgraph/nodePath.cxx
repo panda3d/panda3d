@@ -5593,8 +5593,8 @@ premunge_scene(GraphicsStateGuardianBase *gsg) {
     state = get_parent().get_net_state();
   }
 
-  SceneGraphReducer gr;
-  gr.premunge(node(), gsg, state);
+  SceneGraphReducer gr(gsg);
+  gr.premunge(node(), state);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -71,7 +71,6 @@ PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
 PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
-GraphicsStateGuardian *GraphicsStateGuardian::_global_gsg = NULL;
 
 TypeHandle GraphicsStateGuardian::_type_handle;
 
@@ -185,9 +184,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
-  if (_global_gsg == this) {
-    _global_gsg = NULL;
-  }
+  remove_gsg(this);
 
   if (_stencil_render_states) {
     delete _stencil_render_states;

@@ -29,6 +29,7 @@
 #include "pStatTimer.h"
 #include "typedObject.h"
 #include "pointerTo.h"
+#include "graphicsStateGuardianBase.h"
 
 class PandaNode;
 
@@ -45,7 +46,7 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SceneGraphReducer {
 PUBLISHED:
-  INLINE SceneGraphReducer();
+  INLINE SceneGraphReducer(GraphicsStateGuardianBase *gsg = NULL);
   INLINE ~SceneGraphReducer();
 
   enum AttribTypes {
@@ -121,6 +122,10 @@ PUBLISHED:
     MN_avoid_dynamic   = 0x004,
   };
 
+  void set_gsg(GraphicsStateGuardianBase *gsg);
+  void clear_gsg();
+  INLINE GraphicsStateGuardianBase *get_gsg() const;
+
   INLINE void set_combine_radius(float combine_radius);
   INLINE float get_combine_radius() const;
 
@@ -132,10 +137,9 @@ PUBLISHED:
 
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
-  INLINE void unify(PandaNode *root);
+  void unify(PandaNode *root);
 
-  INLINE void premunge(PandaNode *root, GraphicsStateGuardianBase *gsg,
-                       const RenderState *initial_state);
+  INLINE void premunge(PandaNode *root, const RenderState *initial_state);
 
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
@@ -165,12 +169,12 @@ protected:
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer);
   int r_make_nonindexed(PandaNode *node, int collect_bits);
-  void r_unify(PandaNode *node);
+  void r_unify(PandaNode *node, int max_indices);
 
-  void r_premunge(PandaNode *node, GraphicsStateGuardianBase *gsg,
-                  const RenderState *state);
+  void r_premunge(PandaNode *node, const RenderState *state);
 
 private:
+  PT(GraphicsStateGuardianBase) _gsg;
   float _combine_radius;
   GeomTransformer _transformer;
 

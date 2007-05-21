@@ -34,6 +34,46 @@ PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
 PStatCollector SceneGraphReducer::_premunge_collector("*:Premunge");
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::set_gsg
+//       Access: Published
+//  Description: Specifies the particular GraphicsStateGuardian that
+//               this object will attempt to optimize to.  The GSG may
+//               specify parameters such as maximum number of vertices
+//               per vertex data, max number of vertices per
+//               primitive, and whether triangle strips are preferred.
+//               It also affects the types of vertex column data that
+//               is created by premunge().
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+set_gsg(GraphicsStateGuardianBase *gsg) {
+  if (gsg != (GraphicsStateGuardianBase *)NULL) {
+    _gsg = gsg;
+  } else {
+    _gsg = GraphicsStateGuardianBase::get_default_gsg();
+  }
+
+  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
+    _transformer.set_max_collect_vertices(_gsg->get_max_vertices_per_array());
+  } else {
+    _transformer.set_max_collect_vertices(max_collect_vertices);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::clear_gsg
+//       Access: Published
+//  Description: Specifies that no particular GraphicsStateGuardian
+//               will be used to guide the optimization.  The
+//               SceneGraphReducer will instead use config variables
+//               such as max-collect-vertices and max-collect-indices.
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+clear_gsg() {
+  _gsg = NULL;
+  _transformer.set_max_collect_vertices(max_collect_vertices);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::flatten
 //       Access: Published
 //  Description: Simplifies the graph by removing unnecessary nodes
@@ -85,6 +125,25 @@ flatten(PandaNode *root, int combine_siblings_bits) {
   } while ((combine_siblings_bits & CS_recurse) != 0 && num_pass_nodes != 0);
 
   return num_total_nodes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::unify
+//       Access: Published
+//  Description: Calls unify() on every GeomNode at this level and
+//               below.  This attempts to reduce the total number of
+//               individual Geoms and GeomPrimitives by combining
+//               these objects wherever possible.  See
+//               GeomNode::unify().
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+unify(PandaNode *root) {
+  PStatTimer timer(_unify_collector);
+  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
+    r_unify(root, _gsg->get_max_vertices_per_primitive());
+  } else {
+    r_unify(root, max_collect_indices);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -727,16 +786,16 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
 //  Description: The recursive implementation of unify().
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-r_unify(PandaNode *node) {
+r_unify(PandaNode *node, int max_indices) {
   if (node->is_geom_node()) {
     GeomNode *geom_node = DCAST(GeomNode, node);
-    geom_node->unify(max_collect_indices);
+    geom_node->unify(max_indices);
   }
 
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
-    r_unify(children.get_child(i));
+    r_unify(children.get_child(i), max_indices);
   }
 }
 
@@ -746,25 +805,24 @@ r_unify(PandaNode *node) {
 //  Description: The recursive implementation of premunge().
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-r_premunge(PandaNode *node, GraphicsStateGuardianBase *gsg,
-           const RenderState *state) {
+r_premunge(PandaNode *node, const RenderState *state) {
   CPT(RenderState) next_state = state->compose(node->get_state());
 
   if (node->is_geom_node()) {
     GeomNode *geom_node = DCAST(GeomNode, node);
-    geom_node->do_premunge(gsg, next_state, _transformer);
+    geom_node->do_premunge(_gsg, next_state, _transformer);
   }
 
   int i;
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (i = 0; i < num_children; ++i) {
-    r_premunge(children.get_child(i), gsg, next_state);
+    r_premunge(children.get_child(i), next_state);
   }
 
   PandaNode::Stashed stashed = node->get_stashed();
   int num_stashed = stashed.get_num_stashed();
   for (i = 0; i < num_stashed; ++i) {
-    r_premunge(stashed.get_stashed(i), gsg, next_state);
+    r_premunge(stashed.get_stashed(i), next_state);
   }
 }

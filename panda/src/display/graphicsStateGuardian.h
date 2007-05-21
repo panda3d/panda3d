@@ -98,9 +98,9 @@ PUBLISHED:
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
-  INLINE bool prefers_triangle_strips() const;
-  INLINE int get_max_vertices_per_array() const;
-  INLINE int get_max_vertices_per_primitive() const;
+  virtual INLINE bool prefers_triangle_strips() const;
+  virtual INLINE int get_max_vertices_per_array() const;
+  virtual INLINE int get_max_vertices_per_primitive() const;
 
   INLINE int get_max_texture_stages() const;
   INLINE int get_max_texture_dimension() const;
@@ -148,9 +148,6 @@ PUBLISHED:
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
   virtual CoordinateSystem get_internal_coordinate_system() const;
-
-  INLINE void make_global_gsg();
-  INLINE static GraphicsStateGuardian *get_global_gsg();
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
 

@@ -1167,6 +1167,10 @@ reset() {
   }
 
 #endif
+
+  // Now that the GSG has been initialized, make it available for
+  // optimizations.
+  add_gsg(this);
 }
 
 

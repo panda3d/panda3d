@@ -23,6 +23,7 @@
 
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
+#include "pmutex.h"
 
 // A handful of forward references.
 
@@ -111,6 +112,10 @@ class Lens;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 PUBLISHED:
+  virtual bool prefers_triangle_strips() const=0;
+  virtual int get_max_vertices_per_array() const=0;
+  virtual int get_max_vertices_per_primitive() const=0;
+
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_occlusion_query() const=0;
@@ -203,11 +208,23 @@ public:
                           int light_id) { }
 
 PUBLISHED:
+  static GraphicsStateGuardianBase *get_default_gsg();
+  static void set_default_gsg(GraphicsStateGuardianBase *default_gsg);
+
+public:
+  static void add_gsg(GraphicsStateGuardianBase *gsg);
+  static void remove_gsg(GraphicsStateGuardianBase *gsg);
+
+private:
+  typedef pvector<GraphicsStateGuardianBase *> GSGs;
+  static GSGs _gsgs;
+  static GraphicsStateGuardianBase *_default_gsg;
+  static Mutex _lock;
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-
-public:
   static void init_type() {
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "GraphicsStateGuardianBase",

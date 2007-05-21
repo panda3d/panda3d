@@ -1727,11 +1727,6 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
   gsg->_pipe = pipe;
   gsg->_engine = this;
 
-  // If there was no global GSG previously, this becomes the one.
-  if (GraphicsStateGuardian::get_global_gsg() == NULL) {
-    gsg->make_global_gsg();
-  }
-
   WindowRenderer *draw = 
     get_window_renderer(threading_model.get_draw_name(),
                         threading_model.get_draw_stage());

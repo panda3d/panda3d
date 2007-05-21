@@ -23,9 +23,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE SceneGraphReducer::
-SceneGraphReducer() :
+SceneGraphReducer(GraphicsStateGuardianBase *gsg) :
   _combine_radius(0.0f)
 {
+  set_gsg(gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,6 +37,19 @@ SceneGraphReducer() :
 INLINE SceneGraphReducer::
 ~SceneGraphReducer() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::get_gsg
+//       Access: Published
+//  Description: Returns the particular GraphicsStateGuardian that
+//               this object will attempt to optimize to. 
+//               See set_gsg().
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsStateGuardianBase *SceneGraphReducer::
+get_gsg() const {
+  return _gsg;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::set_combine_radius
@@ -146,33 +160,20 @@ make_nonindexed(PandaNode *root, int nonindexed_bits) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::unify
-//       Access: Published
-//  Description: Calls unify() on every GeomNode at this level and
-//               below.  This attempts to reduce the total number of
-//               individual Geoms and GeomPrimitives by combining
-//               these objects wherever possible.  See
-//               GeomNode::unify().
-////////////////////////////////////////////////////////////////////
-INLINE void SceneGraphReducer::
-unify(PandaNode *root) {
-  PStatTimer timer(_unify_collector);
-  r_unify(root);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::premunge
 //       Access: Published
 //  Description: Walks the scene graph rooted at this node and below,
 //               and uses the indicated GSG to premunge every Geom
 //               found to optimize it for eventual rendering on the
-//               indicated GSG.
+//               indicated GSG.  If there is no GSG indicated for the
+//               SceneGraphReducer, this is a no-op.
 //
 //               This operation will also apply to stashed children.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
-premunge(PandaNode *root, GraphicsStateGuardianBase *gsg,
-         const RenderState *initial_state) {
-  PStatTimer timer(_premunge_collector);
-  r_premunge(root, gsg, initial_state);
+premunge(PandaNode *root, const RenderState *initial_state) {
+  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
+    PStatTimer timer(_premunge_collector);
+    r_premunge(root, initial_state);
+  }
 }
