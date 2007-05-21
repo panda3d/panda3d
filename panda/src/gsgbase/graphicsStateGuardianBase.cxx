@@ -22,6 +22,7 @@
 
 GraphicsStateGuardianBase::GSGs GraphicsStateGuardianBase::_gsgs;
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::_default_gsg;
+Mutex GraphicsStateGuardianBase::_lock;
 TypeHandle GraphicsStateGuardianBase::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
