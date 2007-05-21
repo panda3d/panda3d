@@ -18,6 +18,7 @@
 
 #include "graphicsStateGuardianBase.h"
 #include "mutexHolder.h"
+#include <algorithm>
 
 GraphicsStateGuardianBase::GSGs GraphicsStateGuardianBase::_gsgs;
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::_default_gsg;
