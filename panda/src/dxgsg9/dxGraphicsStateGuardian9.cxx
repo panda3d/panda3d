@@ -5185,7 +5185,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
           }
         }
         break;
-        
+
       default:
         break;
     }

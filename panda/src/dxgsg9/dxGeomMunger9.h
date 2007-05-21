@@ -43,7 +43,8 @@ public:
 
 protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
-                                                    const GeomVertexAnimationSpec &animation);
+                                                  const GeomVertexAnimationSpec &animation);
+  virtual CPT(GeomVertexFormat) premunge_format_impl(const GeomVertexFormat *orig);
 
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;

@@ -1408,7 +1408,10 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
     // operations or something.
-    return S_OK;
+    if (get_texture()->get_render_to_texture()) {
+      return S_OK;
+    }
+    return E_FAIL;
   }
   nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
   nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
