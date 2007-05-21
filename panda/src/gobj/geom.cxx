@@ -571,8 +571,9 @@ unify_in_place(int max_indices) {
   }
 
   // Now, we have one or more primitives, but only one of each type.
-  if (!preserve_triangle_strips) {
-    // Recombine them into a single primitive by decomposing.
+  if (!preserve_triangle_strips && new_prims.size() > 1) {
+    // More than one different type.  Recombine them into a single
+    // primitive by decomposing.
     PT(GeomPrimitive) new_prim;
     NewPrims::iterator npi;
     for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
@@ -1247,9 +1248,16 @@ combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
   }
 
   PT(GeomVertexArrayDataHandle) a_handle = a_prim->modify_vertices()->modify_handle(current_thread);
+  CPT(GeomVertexArrayDataHandle) b_handle = b_prim2->get_vertices()->get_handle(current_thread);
+
+  if (a_prim->requires_unused_vertices()) {
+    GeomVertexReader index(b_handle->get_object(), 0);
+    int b_vertex = index.get_data1i();
+    a_prim->append_unused_vertices(a_handle->get_object(), b_vertex);
+  }
+
   size_t orig_a_vertices = a_handle->get_num_rows();
 
-  CPT(GeomVertexArrayDataHandle) b_handle = b_prim2->get_vertices()->get_handle(current_thread);
   a_handle->copy_subdata_from(a_handle->get_data_size_bytes(), 0,
                               b_handle, 0, b_handle->get_data_size_bytes());
   a_prim->clear_minmax();
