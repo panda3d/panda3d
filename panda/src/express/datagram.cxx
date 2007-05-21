@@ -117,10 +117,9 @@ pad_bytes(size_t size) {
 
   if (_data == (uchar *)NULL) {
     // Create a new array.
-//    _data = PTA_uchar(0);
-      _data = PTA_uchar::empty_array(0);
+    _data = PTA_uchar::empty_array(0);
 
-  } else if (_data.get_ref_count() == 1) {
+  } else if (_data.get_ref_count() != 1) {
     // Copy on write.
     PTA_uchar new_data = PTA_uchar::empty_array(0);
     new_data.v() = _data.v();
@@ -169,27 +168,17 @@ append_data(const void *data, size_t size) {
   // reallocate itself with *every* call to append_data!
   //  _data.reserve(_data.size() + size);
 
-  const uchar *source = (const uchar *)data;
-  for (size_t i = 0; i < size; ++i) {
-    _data.v().push_back(source[i]);
-  }
+  _data.v().insert(_data.v().end(), (const unsigned char *)data, 
+                   (const unsigned char *)data + size);
 }
 
-void Datagram::assign(const void *data, size_t size)
-{
-    nassertv((int)size >= 0);
-
-    if (_data == (uchar *)NULL || _data.get_ref_count() != 1) 
-    {
-        // Create a new array. 
-        // or copy on change..
-        _data = PTA_uchar::empty_array(0);
-    }
-    else
-    {
-        _data.v().clear();
-    }
-    _data.v().insert(_data.v().begin(),(uchar *)data,&((uchar *)data)[size]);
+void Datagram::
+assign(const void *data, size_t size) {
+  nassertv((int)size >= 0);
+  
+  _data = PTA_uchar::empty_array(0);
+  _data.v().insert(_data.v().end(), (const unsigned char *)data,
+                   (const unsigned char *)data + size);
 }
 ////////////////////////////////////////////////////////////////////
 //     Function : output
