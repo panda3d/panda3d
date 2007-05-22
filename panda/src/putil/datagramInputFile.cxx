@@ -39,12 +39,12 @@ open(Filename filename) {
   filename.set_binary();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)NULL) {
+  _vfile = vfs->get_file(filename);
+  if (_vfile == (VirtualFile *)NULL) {
     // No such file.
     return false;
   }
-  _in = file->open_read_file(true);
+  _in = _vfile->open_read_file(true);
   _owns_in = (_in != (istream *)NULL);
   return _owns_in && !_in->fail();
 }
@@ -76,6 +76,7 @@ open(istream &in) {
 ////////////////////////////////////////////////////////////////////
 void DatagramInputFile::
 close() {
+  _vfile.clear();
   _in_file.close();
   if (_owns_in) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -141,18 +142,16 @@ get_datagram(Datagram &data) {
   }
 
   // Now, read the datagram itself.
-  char *buffer = new char[num_bytes];
+  char *buffer = (char *)alloca(num_bytes);
   nassertr(buffer != (char *)NULL, false);
 
   _in->read(buffer, num_bytes);
   if (_in->fail() || _in->eof()) {
     _error = true;
-    delete[] buffer;
     return false;
   }
 
   data = Datagram(buffer, num_bytes);
-  delete[] buffer;
 
   return true;
 }
@@ -185,4 +184,36 @@ is_error() {
     _error = true;
   }
   return _error;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_file
+//       Access: Public, Virtual
+//  Description: Returns the VirtualFile that provides the source for
+//               these datagrams, if any, or NULL if the datagrams do
+//               not originate from a VirtualFile.
+////////////////////////////////////////////////////////////////////
+VirtualFile *DatagramInputFile::
+get_file() {
+  return _vfile;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_file_pos
+//       Access: Public, Virtual
+//  Description: Returns the current file position within the data
+//               stream, if any, or 0 if the file position is not
+//               meaningful or cannot be determined.
+//
+//               For DatagramInputFiles that return a meaningful file
+//               position, this will be pointing to the first byte
+//               following the datagram returned after a call to
+//               get_datagram().
+////////////////////////////////////////////////////////////////////
+streampos DatagramInputFile::
+get_file_pos() {
+  if (_in == (istream *)NULL) {
+    return 0;
+  }
+  return _in->tellg();
 }

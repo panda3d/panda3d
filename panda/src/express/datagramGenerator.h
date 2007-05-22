@@ -23,6 +23,8 @@
 
 #include "datagram.h"
 
+class VirtualFile;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramGenerator
 // Description : This class defines the abstract interace to any
@@ -37,6 +39,9 @@ public:
   virtual bool get_datagram(Datagram &data) = 0;
   virtual bool is_eof() = 0;
   virtual bool is_error() = 0;
+
+  virtual VirtualFile *get_file();
+  virtual streampos get_file_pos();
 };
 
 #include "datagramGenerator.I"

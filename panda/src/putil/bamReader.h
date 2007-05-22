@@ -142,6 +142,9 @@ public:
 
   TypeHandle read_handle(DatagramIterator &scan);
 
+  INLINE VirtualFile *get_file();
+  INLINE streampos get_file_pos();
+
 public:
   INLINE static WritableFactory *get_factory();
 private:
@@ -156,7 +159,7 @@ private:
   bool resolve_cycler_pointers(PipelineCyclerBase *cycler, const vector_int &pointer_ids);
   void finalize();
 
-  bool get_datagram(Datagram &datagram);
+  INLINE bool get_datagram(Datagram &datagram);
 
 private:
   static WritableFactory *_factory;

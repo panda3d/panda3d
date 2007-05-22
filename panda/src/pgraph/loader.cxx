@@ -218,8 +218,10 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
               << "Model " << path << " found in disk cache.\n";
           }
           PT(PandaNode) result = DCAST(PandaNode, record->extract_data());
-          SceneGraphReducer sgr;
-          sgr.premunge(result, RenderState::make_empty());
+          if (premunge_data) {
+            SceneGraphReducer sgr;
+            sgr.premunge(result, RenderState::make_empty());
+          }
           return result;
         }
       }
@@ -232,9 +234,11 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
           record->set_data(result, false);
           cache->store(record);
         }
-        
-        SceneGraphReducer sgr;
-        sgr.premunge(result, RenderState::make_empty());
+
+        if (premunge_data) {
+          SceneGraphReducer sgr;
+          sgr.premunge(result, RenderState::make_empty());
+        }
         return result;
       }
     }

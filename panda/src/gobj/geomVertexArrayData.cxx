@@ -600,7 +600,13 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   } else {
     // Now, the array data is just stored directly.
     size_t size = scan.get_uint32();
+
     _buffer.unclean_realloc(size);
+    if (vertex_data_allow_reread) {
+      streampos source_pos = manager->get_file_pos() + (streampos)scan.get_current_index() - (streampos)scan.get_datagram().get_length();
+      _buffer.set_file(manager->get_file(), source_pos);
+    }
+
     const unsigned char *source_data = 
       (const unsigned char *)scan.get_datagram().get_data();
     memcpy(_buffer.get_write_pointer(), source_data + scan.get_current_index(), size);
@@ -609,6 +615,8 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
 
   if (manager->get_file_endian() != BE_native) {
     // For non-native endian files, we have to convert the data.  
+    _buffer.set_file(NULL, 0);
+
     if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {
       // But we can't do that until we've completed the _array_format
       // pointer, which tells us how to convert it.

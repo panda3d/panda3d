@@ -1152,18 +1152,3 @@ finalize() {
     fi = _finalize_list.begin();
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: BamReader::get_datagram
-//       Access: Private
-//  Description: Reads a single datagram from the stream.  Returns
-//               true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool BamReader::
-get_datagram(Datagram &datagram) {
-  if (_source->is_error()) {
-    return false;
-  }
-
-  return _source->get_datagram(datagram);
-}

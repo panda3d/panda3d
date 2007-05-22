@@ -232,6 +232,14 @@ ConfigVariableInt max_collect_indices
           "imposing a limit on the original size of any one "
           "GeomPrimitive."));
 
+ConfigVariableBool premunge_data
+("premunge-data", true,
+ PRC_DESC("Set this true to preconvert vertex data at model load time to "
+          "match the data requirements of the current GSG.  For instance, "
+          "color columns are pre-converted to match OpenGL or DirectX "
+          "encoding requirements, as appropriate.  When this is false, the "
+          "data will be munged at render time instead."));
+
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

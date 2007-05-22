@@ -23,6 +23,7 @@
 
 #include "datagramGenerator.h"
 #include "filename.h"
+#include "virtualFile.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramInputFile
@@ -44,9 +45,13 @@ public:
   virtual bool is_eof();
   virtual bool is_error();
 
+  virtual VirtualFile *get_file();
+  virtual streampos get_file_pos();
+
 private:
   bool _read_first_datagram;
   bool _error;
+  PT(VirtualFile) _vfile;
   ifstream _in_file;
   istream *_in;
   bool _owns_in;

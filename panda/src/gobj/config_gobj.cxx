@@ -300,6 +300,16 @@ ConfigVariableInt vertex_data_small_size
           "is deemed too small to pay the overhead of paging it in and out, "
           "and it is permanently retained resident."));
 
+ConfigVariableBool vertex_data_allow_reread
+("vertex-data-allow-reread", false,
+ PRC_DESC("Set this true to allow a GeomVertexArrayData to re-read itself "
+          "from the original bam file it was read from, if it is evicted "
+          "and needs to be reloaded.  This avoids the need to write the "
+          "data to the page file, but it requires that bam files are not "
+          "modified during program execution.  Set it false to prevent "
+          "this, so that the vertex data will need to be written to a "
+          "page file when it is evicted."));
+
 
 
 ConfigureFn(config_gobj) {

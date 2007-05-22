@@ -488,7 +488,7 @@ get_subdata(size_t start, size_t size) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayDataHandle::
 check_resident() const {
-  _object->mark_used_lru();
+  _object->set_lru_size(_object->get_lru_size());
 }
 
 INLINE ostream &

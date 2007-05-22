@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "vertexDataBook.h"
 #include "pointerTo.h"
+#include "virtualFile.h"
+#include "pStatCollector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexDataBuffer
@@ -49,10 +51,16 @@ public:
   void page_out(VertexDataBook &book);
   void page_in();
 
+  INLINE void set_file(VirtualFile *source_file, streampos source_pos);
+
 private:
   unsigned char *_resident_data;
   size_t _size;
   PT(VertexDataBlock) _block;
+  PT(VirtualFile) _source_file;
+  streampos _source_pos;
+
+  static PStatCollector _vdata_reread_pcollector;
 
 public:
   static TypeHandle get_class_type() {

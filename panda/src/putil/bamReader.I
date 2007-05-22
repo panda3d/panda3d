@@ -105,6 +105,35 @@ get_current_minor_ver() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_file
+//       Access: Public
+//  Description: Returns the VirtualFile that provides the source for
+//               these datagrams, if any, or NULL if the datagrams do
+//               not originate from a VirtualFile.
+////////////////////////////////////////////////////////////////////
+INLINE VirtualFile *BamReader::
+get_file() {
+  return _source->get_file();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_file_pos
+//       Access: Public
+//  Description: Returns the current file position within the data
+//               stream, if any, or 0 if the file position is not
+//               meaningful or cannot be determined.
+//
+//               For BamReaders that return a meaningful file
+//               position, this will be pointing to the first byte
+//               following the datagram returned after a call to
+//               get_datagram().
+////////////////////////////////////////////////////////////////////
+INLINE streampos BamReader::
+get_file_pos() {
+  return _source->get_file_pos();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_factory
 //       Access: Public, Static
 //  Description: Returns the global WritableFactory for generating
@@ -127,6 +156,21 @@ get_factory() {
 INLINE void BamReader::
 create_factory() {
   _factory = new WritableFactory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_datagram
+//       Access: Private
+//  Description: Reads a single datagram from the stream.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamReader::
+get_datagram(Datagram &datagram) {
+  if (_source->is_error()) {
+    return false;
+  }
+
+  return _source->get_datagram(datagram);
 }
 
 ////////////////////////////////////////////////////////////////////
