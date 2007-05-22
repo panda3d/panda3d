@@ -266,7 +266,7 @@ output(ostream &out) const {
     out << get_mouse_mode() << " ";
   }
   if (has_parent_window()) {
-    out << get_parent_window() << " ";
+    out << "parent:" << get_parent_window() << " ";
   }
 
 }
