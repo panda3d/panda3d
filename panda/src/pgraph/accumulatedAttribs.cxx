@@ -186,13 +186,6 @@ collect(PandaNode *node, int attrib_types) {
       keep_state = keep_state->add_attrib(attrib, override);
     }
 
-    attrib = collect_state->get_attrib(TextureAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(TextureAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(TextureAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-
     attrib = collect_state->get_attrib(ClipPlaneAttrib::get_class_type());
     if (attrib != (const RenderAttrib *)NULL) {
       int override = collect_state->get_override(ClipPlaneAttrib::get_class_type());
