@@ -146,7 +146,7 @@ ConfigVariableBool dx_lru_management
 // if the maximum number of pages is used up,
 // then LRU pages will be dynamically allocated/freed
 ConfigVariableInt dx_lru_maximum_pages
-("dx-lru-maximum-pages", 20000);
+("dx-lru-maximum-pages", 8192);
 
 // the amount of video memory the LRU will try not to use
 // this will allow DirectX some space in case of memory fragmentation, ...
@@ -166,7 +166,7 @@ ConfigVariableInt dx_lru_maximum_memory_requirement
 // the number of LRU pages the LRU will update per frame
 // do not set this too high or it will degrade performance
 ConfigVariableInt dx_lru_maximum_page_updates_per_frame
-("dx-lru-maximum-page-updates-per-frame", 20);
+("dx-lru-maximum-page-updates-per-frame", 40);
 
 // lru debug on/off
 ConfigVariableBool dx_lru_debug
