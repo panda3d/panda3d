@@ -808,7 +808,7 @@ void Lru::update_lru_page_old (LruPage *lru_page)
       if(this->_m.total_lru_page_priority_changes
          < FRAME_MAXIMUM_PRIORITY_CHANGES) {
         this->_m.lru_page_priority_change_array
-          [this->_m.total_lru_page_priority_changes ]= lru_page;
+          [this->_m.total_lru_page_priority_changes]= lru_page;
         this->_m.total_lru_page_priority_changes++;
       }
     }
@@ -1016,6 +1016,9 @@ bool Lru::page_out_lru (int memory_required)
 
     do {
       int index;
+      int minimum_frame_identifier;
+      
+      minimum_frame_identifier = this->_m.current_frame_identifier - 1;
 
       // page out lower priority pages first
       for(index = LPP_PageOut - 1; index >= 0; index--) {
@@ -1026,24 +1029,29 @@ bool Lru::page_out_lru (int memory_required)
         while(lru_page) {
           next_lru_page = lru_page->_m.next;
 
-          if(lru_page->_m.v.lock == false && lru_page->_m.v.in_cache) {
-            memory_required -= lru_page->_m.size;
-            this->_m.available_memory += lru_page->_m.size;
-            lru_page->_m.v.in_cache = false;
+          if(attempts == 0 && (lru_page->_m.current_frame_identifier >= minimum_frame_identifier)) {
+            // avoid swapping out pages used in the current and last frame on the first attempt
+          }
+          else {
+            if(lru_page->_m.v.lock == false && lru_page->_m.v.in_cache) {
+              memory_required -= lru_page->_m.size;
+              this->_m.available_memory += lru_page->_m.size;
+              lru_page->_m.v.in_cache = false;
 
-            // PAGE OUT CALLBACK
-            this->_m.page_out_function_array[lru_page->_m.v.type](lru_page);
-            this->_m.total_lifetime_page_outs++;
+              // PAGE OUT CALLBACK
+              this->_m.page_out_function_array[lru_page->_m.v.type](lru_page);
+              this->_m.total_lifetime_page_outs++;
 
-            // MOVE THE PAGE TO THE LPP_PageOut PRIORITY
-            this->remove_page(lru_page);
-            this->add_page(LPP_PageOut, lru_page);
+              // MOVE THE PAGE TO THE LPP_PageOut PRIORITY
+              this->remove_page(lru_page);
+              this->add_page(LPP_PageOut, lru_page);
 
-            if(memory_required <= 0) {
-              break;
+              if(memory_required <= 0) {
+                break;
+              }
             }
           }
-
+          
           lru_page = next_lru_page;
         }
 
@@ -1053,8 +1061,6 @@ bool Lru::page_out_lru (int memory_required)
       }
 
       if(memory_required > 0) {
-        // WARNING: pages could not be freed, all pages unlocked
-        this->unlock_all_pages( );
         state = false;
       }
       else {
