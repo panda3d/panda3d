@@ -3384,7 +3384,6 @@ do_issue_shader() {
         set_shader_expansion(expansion);
     }
   }
-
   if (expansion) {
     context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
   }
@@ -5640,6 +5639,7 @@ set_state_and_transform(const RenderState *target,
     target->write(gsg_cat.spam(false), 2);
   }
 #endif
+
   _state_pcollector.add_level(1);
 
   if (transform != _internal_transform) {
@@ -5699,16 +5699,11 @@ set_state_and_transform(const RenderState *target,
     _state._depth_write = _target._depth_write;
   }
 
-  if (_target._fog != _state._fog) {
-    do_issue_fog();
-    _state._fog = _target._fog;
-  }
-
   if (_target._render_mode != _state._render_mode) {
     do_issue_render_mode();
     _state._render_mode = _target._render_mode;
   }
-
+  
   if (_target._rescale_normal != _state._rescale_normal) {
     do_issue_rescale_normal();
     _state._rescale_normal = _target._rescale_normal;
@@ -5734,6 +5729,17 @@ set_state_and_transform(const RenderState *target,
     _state._texture = 0;
   }
 
+  if (_target._texture != _state._texture) {
+    determine_effective_texture();
+    int prev_active = _num_active_texture_stages;
+    do_issue_texture();
+    if (prev_active != _num_active_texture_stages) {
+      _state._tex_gen = 0;
+      _state._tex_matrix = 0;
+    }
+    _state._texture = _target._texture;
+  }
+  
   // If one of the previously-loaded TexGen modes modified the texture
   // matrix, then if either state changed, we have to change both of
   // them now.
@@ -5744,22 +5750,17 @@ set_state_and_transform(const RenderState *target,
       _state._tex_gen = 0;
     }
   }
-
-  if (_target._texture != _state._texture ||
-      _target._tex_gen != _state._tex_gen) {
-    determine_effective_texture();
-    do_issue_texture();
-    do_issue_tex_gen();
-    _state._texture = _target._texture;
-    _state._tex_gen = _target._tex_gen;
-    _state._tex_matrix = 0;
-  }
-
+  
   if (_target._tex_matrix != _state._tex_matrix) {
     do_issue_tex_matrix();
     _state._tex_matrix = _target._tex_matrix;
   }
 
+  if (_target._tex_gen != _state._tex_gen) {
+    do_issue_tex_gen();
+    _state._tex_gen = _target._tex_gen;
+  }
+  
   if (_target._material != _state._material) {
     do_issue_material();
     _state._material = _target._material;
@@ -5773,6 +5774,13 @@ set_state_and_transform(const RenderState *target,
   if (_target._stencil != _state._stencil) {
     do_issue_stencil();
     _state._stencil = _target._stencil;
+  }
+     
+  if (_current_shader_context == 0) {
+    if (_target._fog != _state._fog) {
+      do_issue_fog();
+      _state._fog = _target._fog;
+    }
   }
 
   _state_rs = _target_rs;
@@ -6033,13 +6041,6 @@ update_standard_texture_bindings() {
       GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
     }
 
-    GLP(MatrixMode)(GL_TEXTURE);
-    if (_target._tex_matrix->has_stage(stage)) {
-      GLP(LoadMatrixf)(_target._tex_matrix->get_mat(stage).get_data());
-    } else {
-      GLP(LoadIdentity)();
-    }
-
     if (stage->get_saved_result()) {
       // This texture's result will be "saved" for a future stage's
       // input.
@@ -6062,17 +6063,11 @@ update_standard_texture_bindings() {
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
-    // This shouldn't be necessary, but a bug in the radeon
-    // driver makes it so.
-    glDisable(GL_TEXTURE_GEN_R);
-    glDisable(GL_TEXTURE_GEN_S);
-    glDisable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_GEN_Q);
   }
-
+  
   // Save the count of texture stages for next time.
   _num_active_texture_stages = num_stages;
-
+  
   report_my_gl_errors();
 }
 
@@ -6095,12 +6090,6 @@ disable_standard_texture_bindings() {
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
-    // This shouldn't be necessary, but a bug in the radeon
-    // driver makes it so.
-    glDisable(GL_TEXTURE_GEN_R);
-    glDisable(GL_TEXTURE_GEN_S);
-    glDisable(GL_TEXTURE_GEN_T);
-    glDisable(GL_TEXTURE_GEN_Q);
   }
   
   _num_active_texture_stages = 0;
@@ -6133,7 +6122,7 @@ do_issue_tex_matrix() {
       // an identity matrix does work.  But this buggy-driver
       // workaround might have other performance implications, so I
       // leave it out.
-      //GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
+      // GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
     }
   }
   report_my_gl_errors();
