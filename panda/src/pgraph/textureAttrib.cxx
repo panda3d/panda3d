@@ -48,11 +48,8 @@ public:
 //     Function: TextureAttrib::make
 //       Access: Published, Static
 //  Description: Constructs a new TextureAttrib object suitable for
-//               rendering the indicated texture onto geometry.
-//
-//               This method is deprecated, and is provided for
-//               backward compatibility; you should use the
-//               multitexture form of this instead.
+//               rendering the indicated texture onto geometry, using
+//               the default TextureStage.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TextureAttrib::
 make(Texture *texture) {
@@ -64,10 +61,6 @@ make(Texture *texture) {
 //       Access: Published, Static
 //  Description: Constructs a new TextureAttrib object suitable for
 //               rendering untextured geometry.
-//
-//               This method is deprecated, and is provided for
-//               backward compatibility; you should use the
-//               multitexture form of this instead.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TextureAttrib::
 make_off() {

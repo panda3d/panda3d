@@ -53,9 +53,11 @@ TextureAttrib(const TextureAttrib &copy) :
 //               TextureAttrib, indicating that it should disable
 //               texturing.
 //
-//               This method is deprecated, and is provided for
-//               backward compatibility; you should use the
-//               multitexture form of this instead.
+//               If multitexture is in effect, a TextureAttrib may not
+//               be strictly "on" or "off"; therefore, to get a more
+//               precise answer to this question, you should consider
+//               using has_all_off() or get_num_off_stages() or
+//               has_off_stage() instead.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextureAttrib::
 is_off() const {

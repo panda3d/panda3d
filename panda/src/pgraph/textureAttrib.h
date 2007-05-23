@@ -41,9 +41,8 @@ protected:
   INLINE TextureAttrib(const TextureAttrib &copy);
 
 PUBLISHED:
-  // These methods are deprecated, but they remain for now, for
-  // backward compatibility.  They treat the TextureAttrib as a
-  // single-texture application.
+  // These methods are used to create a simple, single-textured layer.
+  // For multitexture, use the multitexture interfaces, further below.
   static CPT(RenderAttrib) make(Texture *tex);
   static CPT(RenderAttrib) make_off();
 
