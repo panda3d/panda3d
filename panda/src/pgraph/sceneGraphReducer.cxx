@@ -52,11 +52,13 @@ set_gsg(GraphicsStateGuardianBase *gsg) {
     _gsg = GraphicsStateGuardianBase::get_default_gsg();
   }
 
+  int max_vertices = max_collect_vertices;
+
   if (_gsg != (GraphicsStateGuardianBase *)NULL) {
-    _transformer.set_max_collect_vertices(_gsg->get_max_vertices_per_array());
-  } else {
-    _transformer.set_max_collect_vertices(max_collect_vertices);
+    max_vertices = min(max_vertices, _gsg->get_max_vertices_per_array());
   }
+
+  _transformer.set_max_collect_vertices(max_vertices);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,11 +141,12 @@ flatten(PandaNode *root, int combine_siblings_bits) {
 void SceneGraphReducer::
 unify(PandaNode *root) {
   PStatTimer timer(_unify_collector);
+
+  int max_indices = max_collect_indices;
   if (_gsg != (GraphicsStateGuardianBase *)NULL) {
-    r_unify(root, _gsg->get_max_vertices_per_primitive());
-  } else {
-    r_unify(root, max_collect_indices);
+    max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
+  r_unify(root, max_indices);
 }
 
 ////////////////////////////////////////////////////////////////////
