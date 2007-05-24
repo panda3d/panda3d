@@ -637,6 +637,20 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_write_pointer
+//       Access: Public
+//  Description: Returns a writable pointer to the beginning of the
+//               actual data stream.
+////////////////////////////////////////////////////////////////////
+unsigned char *GeomVertexArrayDataHandle::
+get_write_pointer() {
+  nassertr(_writable, NULL);
+  check_resident();
+  _cdata->_modified = Geom::get_next_modified();
+  return _cdata->_buffer.get_write_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::set_num_rows
 //       Access: Public
 //  Description: 

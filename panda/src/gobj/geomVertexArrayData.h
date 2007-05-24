@@ -259,7 +259,7 @@ public:
   INLINE GeomVertexArrayData *get_object();
 
   INLINE const unsigned char *get_read_pointer() const;
-  INLINE unsigned char *get_write_pointer();
+  unsigned char *get_write_pointer();
 
 PUBLISHED:
   INLINE const GeomVertexArrayFormat *get_array_format() const;

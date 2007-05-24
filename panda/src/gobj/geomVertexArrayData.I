@@ -156,9 +156,9 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 get_handle(Thread *current_thread) const {
+  const CData *cdata = _cycler.read_unlocked(current_thread);
   return new GeomVertexArrayDataHandle(this, current_thread, 
-                                       _cycler.read_unlocked(current_thread),
-                                       false);
+                                       cdata, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,9 +172,9 @@ get_handle(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PT(GeomVertexArrayDataHandle) GeomVertexArrayData::
 modify_handle(Thread *current_thread) {
+  CData *cdata = _cycler.write_upstream(true, current_thread);
   return new GeomVertexArrayDataHandle(this, current_thread, 
-                                       _cycler.write_upstream(true, current_thread),
-                                       true);
+                                       cdata, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,7 +266,7 @@ operator = (const GeomVertexArrayData::CData &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::Constructor
-//       Access: Public
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataHandle::
@@ -375,19 +375,6 @@ INLINE const unsigned char *GeomVertexArrayDataHandle::
 get_read_pointer() const {
   check_resident();
   return _cdata->_buffer.get_read_pointer();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_write_pointer
-//       Access: Public
-//  Description: Returns a writable pointer to the beginning of the
-//               actual data stream.
-////////////////////////////////////////////////////////////////////
-INLINE unsigned char *GeomVertexArrayDataHandle::
-get_write_pointer() {
-  nassertr(_writable, NULL);
-  check_resident();
-  return _cdata->_buffer.get_write_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////
