@@ -38,9 +38,11 @@
 #include "zStream.h"
 #include "indent.h"
 #include "cmath.h"
+#include "pStatTimer.h"
 
 #include <stddef.h>
 
+PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -1760,6 +1762,8 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
         int primary_file_num_channels, int alpha_file_channel,
         int z, int n, bool read_pages, bool read_mipmaps,
         bool header_only, BamCacheRecord *record) {
+  PStatTimer timer(_texture_read_pcollector);
+
   if (record != (BamCacheRecord *)NULL) {
     header_only = false;
   }

@@ -24,10 +24,10 @@
 #include "simpleAllocator.h"
 #include "referenceCount.h"
 #include "pStatCollector.h"
+#include "vertexDataSaveFile.h"
 
 class VertexDataPage;
 class VertexDataBlock;
-class VertexDataSaveFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexDataBook
@@ -43,6 +43,8 @@ PUBLISHED:
 
   INLINE int get_num_pages() const;
   INLINE VertexDataPage *get_page(int n) const;
+
+  void save_to_disk();
 
 private:
   INLINE VertexDataPage *create_new_page(size_t size);
@@ -73,7 +75,6 @@ PUBLISHED:
     RC_resident,
     RC_compressed,
     RC_disk,
-    RC_compressed_disk,
 
     RC_end_of_list,  // list marker; do not use
   };
@@ -84,9 +85,10 @@ PUBLISHED:
   void make_resident();
   void make_compressed();
   void make_disk();
+  bool save_to_disk();
   void restore_from_disk();
 
-  INLINE VertexDataBlock *alloc(size_t size);
+  VertexDataBlock *alloc(size_t size);
   INLINE VertexDataBlock *get_first_block() const;
 
   INLINE static size_t get_total_page_size();
@@ -107,7 +109,7 @@ private:
   unsigned char *_page_data;
   size_t _size, _uncompressed_size;
   RamClass _ram_class;
-  SimpleAllocatorBlock *_saved_block;
+  PT(VertexDataSaveBlock) _saved_block;
 
   static SimpleLru _resident_lru;
   static SimpleLru _compressed_lru;

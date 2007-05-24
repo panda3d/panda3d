@@ -28,6 +28,7 @@ SimpleAllocator::
   // We're shutting down.  Force-free everything remaining.
   while (_next != (LinkedListNode *)this) {
     nassertv(_next != (LinkedListNode *)NULL);
+    cerr << "force-deleting " << _next << "\n";
     ((SimpleAllocatorBlock *)_next)->free();
   }
 }
@@ -65,6 +66,8 @@ alloc(size_t size) {
       size_t free_size = next->_start - end;
       if (size <= free_size) {
         SimpleAllocatorBlock *new_block = make_block(end, size);
+        nassertr(new_block->get_allocator() == this, NULL);
+
         new_block->insert_before(next);
         _total_size += size;
         return new_block;
@@ -82,6 +85,8 @@ alloc(size_t size) {
   size_t free_size = _max_size - end;
   if (size <= free_size) {
     SimpleAllocatorBlock *new_block = make_block(end, size);
+    nassertr(new_block->get_allocator() == this, NULL);
+
     new_block->insert_before(this);
     _total_size += size;
     return new_block;

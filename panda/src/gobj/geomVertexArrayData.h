@@ -31,7 +31,6 @@
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
-#include "pStatCollector.h"
 #include "pmap.h"
 #include "reMutex.h"
 #include "simpleLru.h"

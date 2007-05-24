@@ -32,6 +32,17 @@ SimpleAllocator(size_t max_size) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::is_empty
+//       Access: Published
+//  Description: Returns true if there are no blocks allocated on this
+//               page, or false if there is at least one.
+////////////////////////////////////////////////////////////////////
+INLINE bool SimpleAllocator::
+is_empty() const {
+  return (_next == this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SimpleAllocator::get_total_size
 //       Access: Published
 //  Description: Returns the total size of allocated objects.

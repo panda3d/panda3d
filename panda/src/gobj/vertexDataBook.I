@@ -80,21 +80,6 @@ check_resident() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::alloc
-//       Access: Published
-//  Description: Allocates a new block.  Returns NULL if a block of the
-//               requested size cannot be allocated.
-//
-//               To free the allocated block, call block->free(), or
-//               simply delete the block pointer.
-////////////////////////////////////////////////////////////////////
-INLINE VertexDataBlock *VertexDataPage::
-alloc(size_t size) {
-  check_resident();
-  return (VertexDataBlock *)SimpleAllocator::alloc(size);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_first_block
 //       Access: Published
 //  Description: Returns a pointer to the first allocated block, or
@@ -197,6 +182,7 @@ get_page() const {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataBlock::
 get_pointer() const {
+  nassertr(get_page() != (VertexDataPage *)NULL, NULL);
   return get_page()->get_page_data() + get_start();
 }
 

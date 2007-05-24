@@ -91,7 +91,10 @@ page_out(VertexDataBook &book) {
     // We only need to allocate a block if we don't have a source
     // file.
     _block = book.alloc(_size);
-    memcpy(_block->get_pointer(), _resident_data, _size);
+    nassertv(_block != (VertexDataBlock *)NULL);
+    unsigned char *pointer = _block->get_pointer();
+    nassertv(pointer != (unsigned char *)NULL);
+    memcpy(pointer, _resident_data, _size);
   }
 
   free(_resident_data);

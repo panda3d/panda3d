@@ -39,6 +39,7 @@ PUBLISHED:
 
   SimpleAllocatorBlock *alloc(size_t size);
 
+  INLINE bool is_empty() const;
   INLINE size_t get_total_size() const;
   INLINE size_t get_max_size() const;
   INLINE void set_max_size(size_t max_size);

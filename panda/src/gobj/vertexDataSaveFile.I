@@ -48,6 +48,43 @@ get_total_file_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t VertexDataSaveFile::
 get_used_file_size() const {
-  return _allocator.get_total_size();
+  return SimpleAllocator::get_total_size();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveBlock::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataSaveBlock::
+VertexDataSaveBlock(VertexDataSaveFile *file, size_t start, size_t size) :
+  SimpleAllocatorBlock(file, start, size)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveBlock::set_compressed
+//       Access: Public
+//  Description: Sets the compressed flag.  This is true to indicate
+//               the data is written in zlib-compressed form to the
+//               save file; false to indicate the data is
+//               uncompressed.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataSaveBlock::
+set_compressed(bool compressed) {
+  _compressed = compressed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveBlock::get_compressed
+//       Access: Public
+//  Description: Returns the compressed flag.  This is true to
+//               indicate the data is written in zlib-compressed form
+//               to the save file; false to indicate the data is
+//               uncompressed.
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexDataSaveBlock::
+get_compressed() const {
+  return _compressed;
+}

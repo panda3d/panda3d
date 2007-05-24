@@ -29,6 +29,7 @@
 #include "updateSeq.h"
 #include "pmap.h"
 #include "config_gobj.h"
+#include "pStatCollector.h"
 
 class PNMImage;
 class TextureContext;
@@ -534,6 +535,8 @@ private:
   // The auxiliary data is not recorded to a bam file.
   typedef pmap<string, PT(TypedReferenceCount) > AuxData;
   AuxData _aux_data;
+
+  static PStatCollector _texture_read_pcollector;
 
   // Datagram stuff
 public:

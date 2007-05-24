@@ -26,7 +26,7 @@
 VertexDataSaveFile::
 VertexDataSaveFile(const Filename &directory, const string &prefix,
                    size_t max_size) :
-  _allocator(max_size)
+  SimpleAllocator(max_size)
 {
   Filename dir;
   if (directory.empty()) {
@@ -168,14 +168,15 @@ VertexDataSaveFile::
 //               cannot be written (e.g. no remaining space on the
 //               file).
 ////////////////////////////////////////////////////////////////////
-SimpleAllocatorBlock *VertexDataSaveFile::
-write_data(const unsigned char *data, size_t size) {
+PT(VertexDataSaveBlock) VertexDataSaveFile::
+write_data(const unsigned char *data, size_t size, bool compressed) {
   if (!_is_valid) {
     return NULL;
   }
 
-  SimpleAllocatorBlock *block = _allocator.alloc(size);
-  if (block != (SimpleAllocatorBlock *)NULL) {
+  PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::alloc(size);
+  if (block != (VertexDataSaveBlock *)NULL) {
+    block->set_compressed(compressed);
 
 #ifdef _WIN32
     if (SetFilePointer(_handle, block->get_start(), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
@@ -189,7 +190,6 @@ write_data(const unsigned char *data, size_t size) {
         bytes_written != size) {
       gobj_cat.error()
         << "Error writing " << size << " bytes to save file.  Disk full?\n";
-      delete block;
       return NULL;
     }
 
@@ -201,11 +201,10 @@ write_data(const unsigned char *data, size_t size) {
       return false;
     }
 
-    ssize_t result = write(_fd, data, size);
+    ssize_t result = ::write(_fd, data, size);
     if (result != (ssize_t)size) {
       gobj_cat.error()
         << "Error writing " << size << " bytes to save file.  Disk full?\n";
-      delete block;
       return NULL;
     }
 #endif  // _WIN32
@@ -223,7 +222,7 @@ write_data(const unsigned char *data, size_t size) {
 //               on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool VertexDataSaveFile::
-read_data(unsigned char *data, size_t size, SimpleAllocatorBlock *block) {
+read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
   if (!_is_valid) {
     return false;
   }
@@ -263,3 +262,15 @@ read_data(unsigned char *data, size_t size, SimpleAllocatorBlock *block) {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataSaveFile::make_block
+//       Access: Protected, Virtual
+//  Description: Creates a new SimpleAllocatorBlock object.  Override
+//               this function to specialize the block type returned.
+////////////////////////////////////////////////////////////////////
+SimpleAllocatorBlock *VertexDataSaveFile::
+make_block(size_t start, size_t size) {
+  return new VertexDataSaveBlock(this, start, size);
+}
+

@@ -61,7 +61,6 @@ SimpleLru *VertexDataPage::_global_lru[RC_end_of_list] = {
   &VertexDataPage::_resident_lru,
   &VertexDataPage::_compressed_lru,
   &VertexDataPage::_disk_lru,
-  &VertexDataPage::_disk_lru,
 };
 
 size_t VertexDataPage::_total_page_size = 0;
@@ -110,12 +109,13 @@ alloc(size_t size) {
       _next_pi = pi;
       return block;
     }
-    if (_pages[pi]->get_total_size() == 0) {
+    if (_pages[pi]->is_empty()) {
       // This page is empty, but must have been too small.  Create a
       // new page in its place.
       delete _pages[pi];
       _pages[pi] = create_new_page(size);
-      return _pages[pi]->alloc(size);
+      VertexDataBlock *block = _pages[pi]->alloc(size);
+      return block;
     }
     ++pi;
   }
@@ -129,7 +129,7 @@ alloc(size_t size) {
       _next_pi = pi;
       return block;
     }
-    if (_pages[pi]->get_total_size() == 0) {
+    if (_pages[pi]->is_empty()) {
       // This page is empty, but must have been too small.  Create a
       // new page in its place.
       delete _pages[pi];
@@ -143,7 +143,24 @@ alloc(size_t size) {
   // large enough to hold this requested block.
   VertexDataPage *page = create_new_page(size);
   _pages.push_back(page);
-  return page->alloc(size);
+  VertexDataBlock *block = page->alloc(size);
+  return block;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::save_to_disk
+//       Access: Published
+//  Description: Writes all pages to disk immediately, just in case
+//               they get evicted later.  It makes sense to make this
+//               call just before taking down a loading screen, to
+//               minimize chugs from saving pages inadvertently later.
+////////////////////////////////////////////////////////////////////
+void VertexDataBook::
+save_to_disk() {
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    (*pi)->save_to_disk();
+  }
 }
 
 
@@ -157,7 +174,6 @@ VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(pag
   _page_data = new unsigned char[get_max_size()];
   _size = page_size;
   _uncompressed_size = _size;
-  _saved_block = NULL;
   _total_page_size += _size;
   get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
   set_ram_class(RC_resident);
@@ -176,10 +192,6 @@ VertexDataPage::
   if (_page_data != NULL) {
     delete[] _page_data;
   }
-
-  if (_saved_block != (SimpleAllocatorBlock *)NULL) {
-    delete _saved_block;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,7 +208,7 @@ make_resident() {
     return;
   }
 
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+  if (_ram_class == RC_disk) {
     restore_from_disk();
   }
 
@@ -249,7 +261,7 @@ make_compressed() {
     return;
   }
 
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
+  if (_ram_class == RC_disk) {
     restore_from_disk();
   }
 
@@ -306,24 +318,15 @@ make_compressed() {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 make_disk() {
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    // If we're already compressed, just mark the page recently used.
+  if (_ram_class == RC_disk) {
+    // If we're already on disk, just mark the page recently used.
     mark_used_lru();
     return;
   }
 
   if (_ram_class == RC_resident || _ram_class == RC_compressed) {
-    nassertv(_saved_block == (SimpleAllocatorBlock *)NULL);
-    PStatTimer timer(_vdata_save_pcollector);
-
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Storing page, " << _size << " bytes, to disk\n";
-    }
-
-    _saved_block = get_save_file()->write_data(_page_data, _size);
-    if (_saved_block == NULL) {
-      // Can't write it to disk.  Too bad.
+    if (!save_to_disk()) {
+      // Can't save it to disk for some reason.
       mark_used_lru();
       return;
     }
@@ -335,12 +338,47 @@ make_disk() {
     _page_data = NULL;
     _size = 0;
 
-    if (_ram_class == RC_resident) {
-      set_ram_class(RC_disk);
+    set_ram_class(RC_disk);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::save_to_disk
+//       Access: Published
+//  Description: Writes the page to disk, but does not evict it from
+//               memory or affect its LRU status.  If it gets evicted
+//               later without having been modified, it will not need
+//               to write itself to disk again.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool VertexDataPage::
+save_to_disk() {
+  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
+    PStatTimer timer(_vdata_save_pcollector);
+
+    if (_saved_block == (VertexDataSaveBlock *)NULL) {
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Storing page, " << _size << " bytes, to disk\n";
+      }
+
+      bool compressed = (_ram_class == RC_compressed);
+      
+      _saved_block = get_save_file()->write_data(_page_data, _size, compressed);
+      if (_saved_block == (VertexDataSaveBlock *)NULL) {
+        // Can't write it to disk.  Too bad.
+        return false;
+      }
     } else {
-      set_ram_class(RC_compressed_disk);
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Page already stored: " << _size << " bytes\n";
+      }
     }
   }
+ 
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -352,8 +390,8 @@ make_disk() {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 restore_from_disk() {
-  if (_ram_class == RC_disk || _ram_class == RC_compressed_disk) {
-    nassertv(_saved_block != (VertexDataBlock *)NULL);
+  if (_ram_class == RC_disk) {
+    nassertv(_saved_block != (VertexDataSaveBlock *)NULL);
     nassertv(_page_data == (unsigned char *)NULL && _size == 0);
 
     PStatTimer timer(_vdata_restore_pcollector);
@@ -375,16 +413,36 @@ restore_from_disk() {
     get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
     _total_page_size += _size;
 
-    delete _saved_block;
-    _saved_block = NULL;
-
     set_lru_size(_size);
-    if (_ram_class == RC_compressed_disk) {
+    if (_saved_block->get_compressed()) {
       set_ram_class(RC_compressed);
     } else {
       set_ram_class(RC_resident);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::alloc
+//       Access: Published
+//  Description: Allocates a new block.  Returns NULL if a block of the
+//               requested size cannot be allocated.
+//
+//               To free the allocated block, call block->free(), or
+//               simply delete the block pointer.
+////////////////////////////////////////////////////////////////////
+VertexDataBlock *VertexDataPage::
+alloc(size_t size) {
+  check_resident();
+  VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::alloc(size);
+
+  if (block != (VertexDataBlock *)NULL) {
+    // When we allocate a new block within the page, we have to clear
+    // the disk cache (since we have just invalidated it).
+    _saved_block.clear();
+  }
+
+  return block;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,7 +487,6 @@ evict_lru() {
     break;
 
   case RC_disk:
-  case RC_compressed_disk:
     gobj_cat.warning()
       << "Cannot evict array data from disk.\n";
     break;
