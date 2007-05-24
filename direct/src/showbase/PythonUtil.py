@@ -43,7 +43,7 @@ import new
 import gc
 #if __debug__:
 import traceback
-
+import hotshot, hotshot.stats
 
 
 from direct.directutil import Verify
@@ -2778,6 +2778,7 @@ def recordCreationStack(cls):
     cls.getCreationStackTrace = getCreationStackTrace
     return cls
 
+
 # class 'decorator' that logs all method calls for a particular class
 def logMethodCalls(cls):
     if not hasattr(cls, 'notify'):
@@ -2954,12 +2955,46 @@ if __debug__:
     assert obj2count[3] == 3 * 3
     assert obj2count[4] == 4 * 3
 
+def quickProfile(name="unnamed"):
+    def profileDecorator(f):
+        if(not base.config.GetBool("use-profiler",0)):
+            return f
+        def _profiled(*args, **kArgs):
+            #import pdb;pdb.set_trace()
+            # must do this in here because we don't have base/simbase
+            # at the time that PythonUtil is loaded
+            if(not base.config.GetBool("profile-debug",0)):
+                #dumb timings
+                st=time.time()
+                f(*args,**kArgs)
+                s=time.time()-st
+                print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
+            else:
+                #detailed profile, stored in base.stats under (
+                if(not hasattr(base,"stats")):
+                    base.stats={}
+                if(not base.stats.get(name)):
+                    base.stats[name]=[]
+
+                p=hotshot.Profile("t.prof")
+                p.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None)
+                s = hotshot.stats.load('t.prof')
+                s.strip_dirs()
+                s.sort_stats("cumulative")
+                base.stats[name].append(s)
+
+        _profiled.__doc__ = f.__doc__
+        return _profiled
+    return profileDecorator
+
 def choice(condition, ifTrue, ifFalse):
     # equivalent of C++ (condition ? ifTrue : ifFalse)
     if condition:
         return ifTrue
     else:
         return ifFalse
+
+
 
 import __builtin__
 __builtin__.Functor = Functor
