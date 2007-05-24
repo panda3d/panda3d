@@ -2965,9 +2965,9 @@ def quickProfile(name="unnamed"):
             # at the time that PythonUtil is loaded
             if(not base.config.GetBool("profile-debug",0)):
                 #dumb timings
-                st=time.time()
+                st=globalClock.getRealTime()
                 f(*args,**kArgs)
-                s=time.time()-st
+                s=globalClock.getRealTime()-st
                 print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
             else:
                 #detailed profile, stored in base.stats under (
