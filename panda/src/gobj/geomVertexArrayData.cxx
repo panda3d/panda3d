@@ -398,7 +398,7 @@ reverse_data_endianness(unsigned char *dest, const unsigned char *source,
           // Reverse the bytes of each component.
           ReversedNumericData nd(source + ci, component_bytes);
           nd.store_value(dest + ci, component_bytes);
-          pi += component_bytes;
+          ci += component_bytes;
         }
       }
     }
