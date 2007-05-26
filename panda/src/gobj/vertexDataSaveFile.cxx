@@ -18,6 +18,12 @@
 
 #include "vertexDataSaveFile.h"
 
+#ifndef _WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif  // _WIN32
+
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataSaveFile::Constructor
 //       Access: Public
