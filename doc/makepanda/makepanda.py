@@ -1044,6 +1044,7 @@ def CompileCxx(obj,src,ipath,opts):
         for ver in MAYAVERSIONS:
             if (PkgSelected(opts,"MAYA"+ver)):
                 cmd = cmd + ' /I"' + MAYASDK["MAYA"+ver] + '/include"'
+                cmd = cmd + " /DMAYAVERSION=" + ver
         for ver in MAXVERSIONS:
             if (PkgSelected(opts,"MAX"+ver)):
                 cmd = cmd + ' /I"' + MAXSDK["MAX"+ver] + '/include" /I"' + MAXSDKCS["MAX"+ver] + '" /DMAX' + ver
@@ -4155,7 +4156,7 @@ for VER in MAYAVERSIONS:
                  'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaToEgg.cxx', obj='maya2egg'+VER+'_mayaToEgg.obj')
-    EnqueueLink(dll='maya2egg'+VER+'.exe',                 opts=['ADVAPI',  'MAYA'+VER], obj=[
+    EnqueueLink(dll='maya2egg'+VER+'-wrapped.exe',          opts=['ADVAPI',  'MAYA'+VER], obj=[
                  'maya2egg'+VER+'_mayaToEgg.obj',
                  'libmayaegg'+VER+'.lib',
                  'libmaya'+VER+'.lib',
@@ -4171,7 +4172,7 @@ for VER in MAYAVERSIONS:
                  'libp3pystub.dll',
     ])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaCopy.cxx', obj='mayacopy'+VER+'_mayaCopy.obj')
-    EnqueueLink(dll='mayacopy'+VER+'.exe',  opts=['ADVAPI',  'MAYA'+VER], obj=[
+    EnqueueLink(dll='mayacopy'+VER+'-wrapped.exe',  opts=['ADVAPI',  'MAYA'+VER], obj=[
                  'mayacopy'+VER+'_mayaCopy.obj',
                  'libcvscopy.lib',
                  'libmaya'+VER+'.lib',
@@ -4185,6 +4186,9 @@ for VER in MAYAVERSIONS:
                  'libp3dtool.dll',
                  'libp3pystub.dll',
     ])
+    EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaWrapper.cxx', obj='mayaWrapper'+VER+'.obj')
+    EnqueueLink(dll='maya2egg'+VER+'.exe', opts=['ADVAPI'], obj=['mayaWrapper'+VER+'.obj'])
+    EnqueueLink(dll='mayacopy'+VER+'.exe', opts=['ADVAPI'], obj=['mayaWrapper'+VER+'.obj'])
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='mayaSavePview.cxx', obj='mayasavepview'+VER+'_mayaSavePview.obj')
     EnqueueLink(dll='libmayasavepview'+VER+'.mll', opts=['ADVAPI',  'MAYA'+VER], obj=[
                  'mayasavepview'+VER+'_mayaSavePview.obj',
