@@ -56,6 +56,7 @@
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h \
+    spamDeletor.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
@@ -101,6 +102,7 @@
     nonDeletor.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
+    spamDeletor.cxx \
     sparseArray.cxx \
     string_utils.cxx timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
@@ -157,6 +159,7 @@
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
+    spamDeletor.h \
     sparseArray.I sparseArray.h \
     string_utils.I \
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
