@@ -146,10 +146,7 @@ PandaNode(const PandaNode &copy) :
     if (cdata->_transform != cdata->_prev_transform) {
       set_dirty_prev_transform();
     }
-  }
-  {
-    CDReader copy_cdata(copy._cycler);
-    CDWriter cdata(_cycler, true);
+
     cdata->_effects = copy_cdata->_effects;
     cdata->_tag_data = copy_cdata->_tag_data;
     cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
@@ -3611,29 +3608,30 @@ fillin_recorder(DatagramIterator &scan, BamReader *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PandaNode::CData::
-CData() {
-  _state = RenderState::make_empty();
-  _transform = TransformState::make_identity();
-  _prev_transform = TransformState::make_identity();
+CData() :
+  _state(RenderState::make_empty()),
+  _transform(TransformState::make_identity()),
+  _prev_transform(TransformState::make_identity()),
 
-  _effects = RenderEffects::make_empty();
-  _draw_control_mask = DrawMask::all_off();
-  _draw_show_mask = DrawMask::all_on();
-  _into_collide_mask = CollideMask::all_off();
-  _user_bounds = NULL;
-  _internal_bounds = NULL;
-  _internal_bounds_stale = true;
-  _final_bounds = false;
-  _fancy_bits = 0;
+  _effects(RenderEffects::make_empty()),
+  _draw_control_mask(DrawMask::all_off()),
+  _draw_show_mask(DrawMask::all_on()),
+  _into_collide_mask(CollideMask::all_off()),
+  _user_bounds(NULL),
+  _internal_bounds(NULL),
+  _internal_bounds_stale(true),
+  _final_bounds(false),
+  _fancy_bits(0),
 
-  _net_collide_mask = CollideMask::all_off();
-  _net_draw_control_mask = DrawMask::all_off();
-  _net_draw_show_mask = DrawMask::all_off();
+  _net_collide_mask(CollideMask::all_off()),
+  _net_draw_control_mask(DrawMask::all_off()),
+  _net_draw_show_mask(DrawMask::all_off()),
+
+  _down(new PandaNode::Down(PandaNode::get_class_type())),
+  _stashed(new PandaNode::Down(PandaNode::get_class_type())),
+  _up(new PandaNode::Up(PandaNode::get_class_type()))
+{
   ++_next_update;
-
-  _down = new PandaNode::Down(PandaNode::get_class_type());
-  _stashed = new PandaNode::Down(PandaNode::get_class_type());
-  _up = new PandaNode::Up(PandaNode::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

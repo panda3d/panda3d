@@ -95,6 +95,7 @@ public:
   INLINE CopyOnWriteObj();
   INLINE CopyOnWriteObj(const Base &copy);
   INLINE CopyOnWriteObj(const CopyOnWriteObj<Base> &copy);
+  ALLOC_DELETED_CHAIN(CopyOnWriteObj<Base>);
 
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
@@ -128,6 +129,9 @@ public:
   INLINE CopyOnWriteObj1(Param1 p1);
   INLINE CopyOnWriteObj1(const Base &copy);
   INLINE CopyOnWriteObj1(const CopyOnWriteObj1<Base, Param1> &copy);
+
+  typedef CopyOnWriteObj1<Base, Param1> ThisClass;
+  ALLOC_DELETED_CHAIN(ThisClass)
 
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
