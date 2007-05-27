@@ -967,6 +967,13 @@ $[TAB] $[COMMAND]
 Makefile : $[SOURCE_FILENAME] $[EXTRA_PPREMAKE_SOURCE]
 $[TAB] ppremake
 
+#if $[USE_TAU]
+#foreach composite_file $[composite_list]
+$[composite_file] : $[$[composite_file]_sources]
+$[TAB] ppremake
+#end composite_file
+#endif   // USE_TAU
+
 #if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
 $[DEPENDENCY_CACHE_FILENAME] : $[dep_sources]
 $[TAB] @ppremake -D $[DEPENDENCY_CACHE_FILENAME]
