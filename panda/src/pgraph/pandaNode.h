@@ -307,6 +307,9 @@ private:
   bool stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
                            int pipeline_stage, Thread *current_thread);
 
+  void quick_add_new_child(PandaNode *child_node, int sort,
+                           Thread *current_thread);
+
   INLINE bool verify_child_no_cycles(PandaNode *child_node);
   void report_cycle(PandaNode *node);
   bool find_node_above(PandaNode *node);

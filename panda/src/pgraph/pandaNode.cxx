@@ -2499,7 +2499,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
       inst_map[source_child] = dest_child;
     }
 
-    add_child(dest_child, sort, current_thread);
+    quick_add_new_child(dest_child, sort, current_thread);
   }
 }
 
@@ -2644,6 +2644,30 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
   new_child->parents_changed();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::quick_add_new_child
+//       Access: Private
+//  Description: Similar to add_child(), but performs fewer checks.
+//               The purpose of this method is to add a child node
+//               that was newly constructed, to a parent node that was
+//               newly constructed, so we know we have to make fewer
+//               sanity checks.  This is a private method; do not call
+//               it directly.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+quick_add_new_child(PandaNode *child_node, int sort, Thread *current_thread) {
+  // Apply this operation to the current stage as well as to all
+  // upstream stages.
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
+    
+    cdata->modify_down()->insert(DownConnection(child_node, sort));
+    cdata_child->modify_up()->insert(UpConnection(this));
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
 
 ////////////////////////////////////////////////////////////////////
