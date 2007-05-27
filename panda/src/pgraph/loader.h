@@ -88,7 +88,8 @@ PUBLISHED:
 
 private:
   PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
-
+  PT(PandaNode) try_load_file(const Filename &pathname, const LoaderOptions &options,
+                              LoaderFileType *requested_type) const;
   static void load_file_types();
   static bool _file_types_loaded;
 

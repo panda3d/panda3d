@@ -48,7 +48,7 @@ ns_has_model(const string &filename) {
   MutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
-  if (ti != _models.end()) {
+  if (ti != _models.end() && (*ti).second != (ModelRoot *)NULL) {
     // This model was previously loaded.
     return true;
   }
@@ -73,28 +73,27 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
     }
   }
 
-  loader_cat.info()
-    << "Loading model " << filename << "\n";
   LoaderOptions new_options(options);
   new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
-                        ~LoaderOptions::LF_search);
+                        ~(LoaderOptions::LF_search | LoaderOptions::LF_report_errors));
 
   PT(PandaNode) panda_node = model_loader.load_sync(filename, new_options);
+  PT(ModelRoot) node;
+
   if (panda_node.is_null()) {
     // This model was not found.
-    return (ModelRoot *)NULL;
-  }
-
-  PT(ModelRoot) node;
-  if (panda_node->is_of_type(ModelRoot::get_class_type())) {
-    node = DCAST(ModelRoot, panda_node);
 
   } else {
-    // We have to construct a ModelRoot node to put it under.
-    node = new ModelRoot(filename);
-    node->add_child(panda_node);
+    if (panda_node->is_of_type(ModelRoot::get_class_type())) {
+      node = DCAST(ModelRoot, panda_node);
+      
+    } else {
+      // We have to construct a ModelRoot node to put it under.
+      node = new ModelRoot(filename);
+      node->add_child(panda_node);
+    }
+    node->set_fullpath(filename);
   }
-  node->set_fullpath(filename);
 
   {
     MutexHolder holder(_lock);
@@ -194,7 +193,8 @@ ns_garbage_collect() {
   Models::iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     ModelRoot *node = (*ti).second;
-    if (node->get_model_ref_count() == 1) {
+    if (node == (ModelRoot *)NULL ||
+        node->get_model_ref_count() == 1) {
       if (loader_cat.is_debug()) {
         loader_cat.debug()
           << "Releasing " << (*ti).first << "\n";
@@ -221,13 +221,18 @@ ns_list_contents(ostream &out) const {
   out << "model pool contents:\n";
   
   Models::const_iterator ti;
+  int num_models = 0;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
-    out << (*ti).first << "\n"
-        << "  (count = " << (*ti).second->get_model_ref_count() 
-        << ")\n";
+    if ((*ti).second != NULL) {
+      ++num_models;
+      out << (*ti).first << "\n"
+          << "  (count = " << (*ti).second->get_model_ref_count() 
+          << ")\n";
+    }
   }
   
-  out << "total number of models: " << _models.size() << "\n";
+  out << "total number of models: " << num_models << " (plus " 
+      << _models.size() - num_models << " entries for nonexistent files)\n";
 }
 
 ////////////////////////////////////////////////////////////////////

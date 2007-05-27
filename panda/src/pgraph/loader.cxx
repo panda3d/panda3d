@@ -146,95 +146,115 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     return NULL;
   }
 
-  DSearchPath::Results results;
   bool search = (this_options.get_flags() & LoaderOptions::LF_search) != 0;
   if (!filename.is_local()) {
     // If we have a global filename, we don't search the model path.
     search = false;
   }
 
-  bool cache_only = (this_options.get_flags() & LoaderOptions::LF_cache_only) != 0;
+  // Now that we've decided whether to search for the file, don't try
+  // to search again.
+  this_options.set_flags(this_options.get_flags() & ~LoaderOptions::LF_search);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    
+
   if (search) {
     // Look for the file along the model path.
-    vfs->find_all_files(this_filename, get_model_path(), results);
-
-    if (results.get_num_files() == 0) {
-      if (report_errors) {
-        loader_cat.error()
-          << "Couldn't load file " << this_filename << ": not found on model path "
-          << "(which is currently: \"" << get_model_path() << "\")\n";
+    int num_dirs = model_path.get_num_directories();
+    for (int i = 0; i < num_dirs; ++i) {
+      Filename pathname(model_path.get_directory(i), this_filename);
+      PT(PandaNode) result = try_load_file(pathname, this_options, 
+                                           requested_type);
+      if (result != (PandaNode *)NULL) {
+        return result;
       }
-      return NULL;
+    }
+
+    if (report_errors) {
+      bool any_exist = false;
+      for (int i = 0; i < num_dirs; ++i) {
+        Filename pathname(model_path.get_directory(i), this_filename);
+        if (vfs->exists(pathname)) {
+          any_exist = true;
+          break;
+        }
+      }
+
+      if (any_exist) {
+        loader_cat.error()
+          << "Couldn't load file " << this_filename
+          << ": all matching files on model path invalid "
+          << "(the model path is currently: \"" << get_model_path() << "\")\n";
+      } else {
+        loader_cat.error()
+          << "Couldn't load file " << this_filename
+          << ": not found on model path "
+          << "(currently: \"" << get_model_path() << "\")\n";
+      }
     }
 
   } else {
     // Look for the file only where it is.
-    if (vfs->exists(this_filename)) {
-      results.add_file(this_filename);
-
-    } else {
-      if (report_errors) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(PandaNode) result = try_load_file(this_filename, this_options, requested_type);
+    if (result != (PandaNode *)NULL) {
+      return result;
+    }
+    if (report_errors) {
+      if (vfs->exists(this_filename)) {
+        loader_cat.error()
+          << "Couldn't load file " << this_filename << ": invalid.\n";
+      } else {
         loader_cat.error()
           << "Couldn't load file " << this_filename << ": does not exist.\n";
       }
-      return NULL;
+    }
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::try_load_file
+//       Access: Private
+//  Description: The implementatin of load_file(), this tries a single
+//               possible file without searching further along the
+//               path.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) Loader::
+try_load_file(const Filename &pathname, const LoaderOptions &options,
+              LoaderFileType *requested_type) const {
+  BamCache *cache = BamCache::get_global_ptr();
+
+  bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;
+
+  if (requested_type->get_allow_ram_cache(options)) {
+    // If we're allowing a RAM cache, use the ModelPool to load the
+    // file.
+    if (!cache_only || ModelPool::has_model(pathname)) {
+      PT(PandaNode) node = ModelPool::load_model(pathname, options);
+      if (node != (PandaNode *)NULL &&
+          (options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+        // But return a deep copy of the shared model.
+        node = node->copy_subgraph();
+      }
+      return node;
     }
   }
 
-  // Now that we've searched for the file, don't try to search again.
-  this_options.set_flags(this_options.get_flags() & ~LoaderOptions::LF_search);
+  bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
 
-  BamCache *cache = BamCache::get_global_ptr();
-  int num_files = results.get_num_files();
-  for (int i = 0; i < num_files; ++i) {
-    const Filename &path = results.get_file(i);
-
-    if (requested_type->get_allow_ram_cache(this_options)) {
-      // If we're allowing a RAM cache, use the ModelPool to load the
-      // file.
-      if (!cache_only || ModelPool::has_model(path)) {
-        PT(PandaNode) node = ModelPool::load_model(path, this_options);
-        if (node != (PandaNode *)NULL &&
-            (this_options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
-          // But return a deep copy of the shared model.
-          node = node->copy_subgraph();
+  PT(BamCacheRecord) record;
+  if (cache->get_active() && requested_type->get_allow_disk_cache(options)) {
+    // See if the model can be found in the on-disk cache, if it is
+    // active.
+    record = cache->lookup(pathname, "bam");
+    if (record != (BamCacheRecord *)NULL) {
+      if (record->has_data()) {
+        if (report_errors) {
+          loader_cat.info()
+            << "Model " << pathname << " found in disk cache.\n";
         }
-        return node;
-      }
-    }
-
-    PT(BamCacheRecord) record;
-    if (cache->get_active() && requested_type->get_allow_disk_cache(this_options)) {
-      // See if the model can be found in the on-disk cache, if it is
-      // active.
-      record = cache->lookup(path, "bam");
-      if (record != (BamCacheRecord *)NULL) {
-        if (record->has_data()) {
-          if (report_errors) {
-            loader_cat.info()
-              << "Model " << path << " found in disk cache.\n";
-          }
-          PT(PandaNode) result = DCAST(PandaNode, record->extract_data());
-          if (premunge_data) {
-            SceneGraphReducer sgr;
-            sgr.premunge(result, RenderState::make_empty());
-          }
-          return result;
-        }
-      }
-    }
-
-    if (!cache_only) {
-      PT(PandaNode) result = requested_type->load_file(path, this_options, record);
-      if (result != (PandaNode *)NULL){ 
-        if (record != (BamCacheRecord *)NULL) {
-          record->set_data(result, false);
-          cache->store(record);
-        }
-
+        PT(PandaNode) result = DCAST(PandaNode, record->extract_data());
         if (premunge_data) {
           SceneGraphReducer sgr;
           sgr.premunge(result, RenderState::make_empty());
@@ -243,20 +263,23 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       }
     }
   }
-
-  if (report_errors) {
-    // None of the matching files could be loaded.  Oh well.
-    if (num_files > 1) {
-      loader_cat.error()
-        << "Couldn't load file " << this_filename
-        << ": all matching files on model path invalid "
-        << "(the model path is currently: \"" << get_model_path() << "\")\n";
-    } else {
-      loader_cat.error()
-        << "Couldn't load file " << this_filename
-        << ": invalid.\n";
+  
+  if (!cache_only) {
+    PT(PandaNode) result = requested_type->load_file(pathname, options, record);
+    if (result != (PandaNode *)NULL){ 
+      if (record != (BamCacheRecord *)NULL) {
+        record->set_data(result, false);
+        cache->store(record);
+      }
+      
+      if (premunge_data) {
+        SceneGraphReducer sgr;
+        sgr.premunge(result, RenderState::make_empty());
+      }
+      return result;
     }
   }
+
   return NULL;
 }
 

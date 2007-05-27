@@ -61,19 +61,13 @@ open_read(const Filename &bam_filename, bool report_errors) {
   close();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->exists(bam_filename)) {
-    if (report_errors) {
-      loader_cat.error() << "Could not find " << bam_filename << "\n";
-    }
-    return false;
-  }
-
-  loader_cat.info() << "Reading " << bam_filename << "\n";
 
   if (!_din.open(bam_filename)) {
-    loader_cat.error() << "Could not open " << bam_filename << "\n";
     return false;
   }
+
+  loader_cat.info()
+    << "Reading " << bam_filename << "\n";
 
   return continue_open_read(bam_filename, report_errors);
 }
@@ -90,7 +84,6 @@ open_read(istream &in, const string &bam_filename, bool report_errors) {
   close();
 
   if (!_din.open(in)) {
-    loader_cat.error() << "Could not read bam: " << bam_filename << "\n";
     return false;
   }
 

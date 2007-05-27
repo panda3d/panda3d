@@ -76,14 +76,6 @@ load_egg_file(const string &filename, CoordinateSystem cs,
               BamCacheRecord *record) {
   Filename egg_filename = Filename::text_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->exists(egg_filename)) {
-    egg2pg_cat.error()
-      << "Could not find " << egg_filename << "\n";
-    return NULL;
-  }
-
-  egg2pg_cat.info()
-    << "Reading " << egg_filename << "\n";
 
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(egg_filename);
@@ -98,10 +90,12 @@ load_egg_file(const string &filename, CoordinateSystem cs,
   bool okflag;
   istream *istr = vfs->open_read_file(egg_filename, true);
   if (istr == (istream *)NULL) {
-    egg2pg_cat.error()
-      << "Could not open " << egg_filename << " for reading.\n";
     return NULL;
   }
+
+  egg2pg_cat.info()
+    << "Reading " << egg_filename << "\n";
+
   okflag = loader._data->read(*istr);
   vfs->close_read_file(istr);
 
