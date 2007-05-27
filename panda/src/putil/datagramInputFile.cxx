@@ -142,16 +142,36 @@ get_datagram(Datagram &data) {
   }
 
   // Now, read the datagram itself.
-  char *buffer = (char *)alloca(num_bytes);
-  nassertr(buffer != (char *)NULL, false);
 
-  _in->read(buffer, num_bytes);
-  if (_in->fail() || _in->eof()) {
-    _error = true;
-    return false;
+  // If the number of bytes is large, we will need to allocate a
+  // temporary buffer from the heap.  Otherwise, we can get away with
+  // allocating it on the stack, via alloca().
+  if (num_bytes > 65536) {
+    char *buffer = new char[num_bytes];
+    nassertr(buffer != (char *)NULL, false);
+
+    _in->read(buffer, num_bytes);
+    if (_in->fail() || _in->eof()) {
+      _error = true;
+      delete[] buffer;
+      return false;
+    }
+
+    data = Datagram(buffer, num_bytes);
+    delete[] buffer;
+
+  } else {
+    char *buffer = (char *)alloca(num_bytes);
+    nassertr(buffer != (char *)NULL, false);
+
+    _in->read(buffer, num_bytes);
+    if (_in->fail() || _in->eof()) {
+      _error = true;
+      return false;
+    }
+
+    data = Datagram(buffer, num_bytes);
   }
-
-  data = Datagram(buffer, num_bytes);
 
   return true;
 }
