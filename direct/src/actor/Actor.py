@@ -159,6 +159,7 @@ class Actor(DirectObject, NodePath):
         self.__sortedLODNames = []
         self.__animControlDict = {}
         self.__controlJoints = {}
+        self.__frozenJoints = {}        
 
         self.__subpartsComplete = False
 
@@ -310,6 +311,14 @@ class Actor(DirectObject, NodePath):
                 otherCopy = other.copyTo(self)
             self.setGeomNode(otherCopy.getChild(0))
 
+            # copy the switches for lods
+            self.switches = other.switches
+            self.__LODNode = self.find('**/+LODNode')
+            self.__hasLOD = 0
+            if (not self.__LODNode.isEmpty()):
+                self.__hasLOD = 1
+
+
             # copy the part dictionary from other
             self.__copyPartBundles(other)
             self.__copySubpartDict(other)
@@ -318,12 +327,6 @@ class Actor(DirectObject, NodePath):
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
 
-            # copy the switches for lods
-            self.switches = other.switches
-            self.__LODNode = self.find('**/+LODNode')
-            self.__hasLOD = 0
-            if (not self.__LODNode.isEmpty()):
-                self.__hasLOD = 1
 
     def __cmp__(self, other):
         # Actor inherits from NodePath, which inherits a definition of
@@ -630,7 +633,7 @@ class Actor(DirectObject, NodePath):
         specific geometry to. Returns 'None' if not found
         """
         if self.__LODNode:
-            lod = self.__LODNode.find("**/" + str(lodName))
+            lod = self.__LODNode.find("**/%s"%lodName)
             if lod.isEmpty():
                 return None
             else:
@@ -1040,6 +1043,35 @@ class Actor(DirectObject, NodePath):
             self.__controlJoints[bundle.this] = { jointName: node }
 
         return node
+
+    #This is an alternate method to control joints, which can be copied
+    #This function is optimal in a non control jointed actor 
+    def freezeJoint(self, partName, jointName, lodName="lodRoot", pos=Vec3(0,0,0), hpr=Vec3(0,0,0), scale=Vec3(1,1,1)):
+        mat=Mat4(TransformState.makePosHprScale(pos,hpr,scale).getMat())
+        
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        partDef = partBundleDict.get(subpartDef.truePartName)
+        if partDef:
+            bundle = partDef.partBundle
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+            return None
+
+        joint = bundle.findChild(jointName)
+        if joint == None:
+            Actor.notify.warning("no joint named %s!" % (jointName))
+            return None
+
+
+        if self.__frozenJoints.has_key(bundle.this):
+            self.__frozenJoints[bundle.this][jointName] = mat
+        else:
+            self.__frozenJoints[bundle.this] = { jointName: mat }
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
@@ -1625,7 +1657,7 @@ class Actor(DirectObject, NodePath):
             self.gotName = 1
 
         # we rename this node to make Actor copying easier
-        bundleNP.node().setName(Actor.partPrefix + partName)
+        bundleNP.node().setName("%s%s"%(Actor.partPrefix,partName))
 
         if (self.__partBundleDict.has_key(lodName) == 0):
             # make a dictionary to store these parts in
@@ -1636,7 +1668,7 @@ class Actor(DirectObject, NodePath):
 
         if (lodName!="lodRoot"):
             # parent to appropriate node under LOD switch
-            bundleNP.reparentTo(self.__LODNode.find("**/" + str(lodName)))
+            bundleNP.reparentTo(self.__LODNode.find("**/%s"%lodName))
         else:
             bundleNP.reparentTo(self.__geomNode)
 
@@ -1884,7 +1916,6 @@ class Actor(DirectObject, NodePath):
             # copy of the bundle hierarchy, so we don't modify other
             # Actors that share the same bundle.
             animBundle = animBundle.copyBundle()
-            
             for jointName, node in controlDict.items():
                 if node:
                     joint = animBundle.makeChildDynamic(jointName)
@@ -1892,6 +1923,21 @@ class Actor(DirectObject, NodePath):
                         joint.setValueNode(node.node())
                     else:
                         Actor.notify.error("controlled joint %s is not present" % jointName)
+
+        #fix any other joints in place
+        fixDict = self.__frozenJoints.get(bundle.this, None)
+        if fixDict:
+            # Before we apply any control joints, we have to make a
+            # copy of the bundle hierarchy, so we don't modify other
+            # Actors that share the same bundle.
+
+            animBundle = animBundle.copyBundle()
+            for jointName,mat in fixDict.items():
+                joint = animBundle.makeChildDynamic(jointName)
+                if joint:
+                    joint.setValue(mat)
+                else:
+                    Actor.notify.error("controlled joint %s is not present" % jointName)
 
         # bind anim
         animControl = bundle.bindAnim(animBundle, -1, subpartDef.subset)
@@ -1918,7 +1964,7 @@ class Actor(DirectObject, NodePath):
             if lodName == 'lodRoot':
                 partLod = self
             else:
-                partLod = self.find("**/" + lodName)
+                partLod = self.find("**/%s"%lodName)
             if partLod.isEmpty():
                 Actor.notify.warning("no lod named: %s" % (lodName))
                 return None
@@ -1929,11 +1975,14 @@ class Actor(DirectObject, NodePath):
                 assert partDef.partBundleNP.node().getNumBundles() == 1
                 
                 # find the part in our tree
-                bundleNP = partLod.find("**/" + Actor.partPrefix + partName)
+                bundleNP = partLod.find("**/%s%s"%(Actor.partPrefix,partName))
                 if (bundleNP != None):
                     # store the part bundle
                     assert bundleNP.node().getNumBundles() == 1
                     bundle = bundleNP.node().getBundle(0)
+                    otherFixed=other.__frozenJoints.get(partDef.partBundle.this,None)
+                    if(otherFixed):
+                        self.__frozenJoints[bundle.this]=otherFixed
                     self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
