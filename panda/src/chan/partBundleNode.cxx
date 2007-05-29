@@ -160,7 +160,14 @@ fillin(DatagramIterator &scan, BamReader* manager) {
     num_bundles = scan.get_uint16();
   }
 
-  for (int i = 0; i < num_bundles; ++i) {
+  nassertv(num_bundles >= 1);
+
+  // Bundle 0.  We already have a slot for this one.
+  manager->read_pointer(scan);
+
+  // Remaining bundles.  Push a new slot for each one.
+  for (int i = 1; i < num_bundles; ++i) {
     manager->read_pointer(scan);
+    _bundles.push_back(NULL);
   }
 }
