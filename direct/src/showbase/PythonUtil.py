@@ -2954,13 +2954,19 @@ if __debug__:
     assert obj2count[4] == 4 * 3
 
 
+
 bias=-1
-def quickProfile(name="unnamed"):
+def quickProfile(name="unnamed"):    
     global bias
     if(base.config.GetBool("use-profiler",0)):
         print "Calibrating profiler"
         if bias == -1:
             prof.Profile.bias = prof.Profile().calibrate(10000)
+            import pstats
+        
+            def f8(x):
+                return ("%"+"8.%df"%base.config.GetBool("profile-decimals",3)) % x
+            pstats.f8=f8
     def profileDecorator(f):
         if(not base.config.GetBool("use-profiler",0)):
             return f
