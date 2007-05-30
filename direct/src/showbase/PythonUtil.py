@@ -43,7 +43,7 @@ import new
 import gc
 #if __debug__:
 import traceback
-import hotshot, hotshot.stats
+import hotshot, hotshot.stats, profile as prof, pstats
 
 
 from direct.directutil import Verify
@@ -806,7 +806,6 @@ def profiled(category=None, terse=False):
 
     def profileDecorator(f):
         def _profiled(*args, **kArgs):
-            #import pdb;pdb.set_trace()
             # must do this in here because we don't have base/simbase
             # at the time that PythonUtil is loaded
             name = '(%s) %s from %s' % (category, f.func_name, f.__module__)
@@ -818,7 +817,6 @@ def profiled(category=None, terse=False):
                 return profile(Functor(f, *args, **kArgs), name, terse)
             else:
                 return f(*args, **kArgs)
-        #import pdb;pdb.set_trace()
         _profiled.__doc__ = f.__doc__
         return _profiled
     return profileDecorator
@@ -2955,12 +2953,18 @@ if __debug__:
     assert obj2count[3] == 3 * 3
     assert obj2count[4] == 4 * 3
 
+
+bias=-1
 def quickProfile(name="unnamed"):
+    global bias
+    if(base.config.GetBool("use-profiler",0)):
+        print "Calibrating profiler"
+        if bias == -1:
+            prof.Profile.bias = prof.Profile().calibrate(10000)
     def profileDecorator(f):
         if(not base.config.GetBool("use-profiler",0)):
             return f
         def _profiled(*args, **kArgs):
-            #import pdb;pdb.set_trace()
             # must do this in here because we don't have base/simbase
             # at the time that PythonUtil is loaded
             if(not base.config.GetBool("profile-debug",0)):
@@ -2976,16 +2980,36 @@ def quickProfile(name="unnamed"):
                 if(not base.stats.get(name)):
                     base.stats[name]=[]
 
-                p=hotshot.Profile("t.prof")
-                p.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None)
-                s = hotshot.stats.load('t.prof')
+                prof.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None,"t.prof")
+                s=pstats.Stats("t.prof")
+                #p=hotshot.Profile("t.prof")
+                #p.runctx('f(*args, **kArgs)', {'f':f,'args':args,'kArgs':kArgs},None)
+                #s = hotshot.stats.load("t.prof")
                 s.strip_dirs()
                 s.sort_stats("cumulative")
                 base.stats[name].append(s)
-
+                    
         _profiled.__doc__ = f.__doc__
         return _profiled
     return profileDecorator
+
+def getTotalAnnounceTime():
+    td=0
+    for objs in base.stats.values():
+        for stat in objs:
+            td+=getAnnounceGenerateTime(stat)
+    return td
+
+def getAnnounceGenerateTime(stat):
+    val=0
+    stats=stat.stats
+    for i in stats.keys():
+        if(i[2]=="announceGenerate"):
+            newVal=stats[i][3]
+            if(newVal>val):
+                val=newVal
+    return val
+
 
 def choice(condition, ifTrue, ifFalse):
     # equivalent of C++ (condition ? ifTrue : ifFalse)
