@@ -24,6 +24,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
+#include "luse.h"
 
 class AnimBundle;
 class BamReader;

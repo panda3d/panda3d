@@ -109,7 +109,8 @@ PUBLISHED:
   INLINE int get_num_nodes() const;
   INLINE PartBundleNode *get_node(int n) const;
 
-  INLINE void freeze_joint(string jointName, LMatrix4f transform) const;
+  INLINE void freeze_joint(const string &jointName, 
+                           const LMatrix4f &transform);
 
   void clear_control_effects();
   INLINE void set_control_effect(AnimControl *control, float effect);

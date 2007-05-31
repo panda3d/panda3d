@@ -242,11 +242,9 @@ make_child_dynamic(const string &name) {
 //               This may be called before binding the animation to a
 //               character to replace certain joints with
 //               frozen ones.
-//
-//               Returns NULL if the named child cannot be found.
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
-void make_child_fixed(const string &name, const LMatrix4f &mat) {
+make_child_fixed(const string &name, const LMatrix4f &mat) {
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     AnimGroup *child = (*ci);
@@ -256,13 +254,13 @@ void make_child_fixed(const string &name, const LMatrix4f &mat) {
       if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
         AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
         AnimChannelMatrixFixed *new_mchild = 
-          new AnimChannelMatrixFixed(this, name, mat);
+          new AnimChannelMatrixFixed(name, mat);
         new_child = new_mchild;
       } 
 
       if (new_child != (AnimGroup *)NULL) {
         new_child->_children.swap(child->_children);
-        nassertr(_children.back() == new_child, NULL);
+        nassertv(_children.back() == new_child);
 
         // The new child was appended to the end of our children list
         // by its constructor.  Reposition it to replace the original
@@ -291,17 +289,10 @@ void make_child_fixed(const string &name, const LMatrix4f &mat) {
           }
           new_children.swap(_children);
         }
-
-        return new_child;
       }
     }
-    AnimGroup *result = child->make_child_fixed(name, mat);
-    if (result != (AnimGroup *)NULL) {
-      return result;
-    }
+    child->make_child_fixed(name, mat);
   }
-
-  return (AnimGroup *)NULL;
 }
 
 
