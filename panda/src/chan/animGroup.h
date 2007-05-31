@@ -52,7 +52,7 @@ PUBLISHED:
   AnimGroup *find_child(const string &name) const;
 
   AnimGroup *make_child_dynamic(const string &name);
-
+  void make_child_fixed(const string &name, const LMatrix4f &mat);
 public:
   virtual TypeHandle get_value_type() const;
 
@@ -85,6 +85,7 @@ protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
 private:
+  typedef pvector< string > frozenJoints;
   int _num_children;
 
 public:

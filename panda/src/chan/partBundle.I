@@ -207,3 +207,17 @@ get_control_effect(AnimControl *control) const {
   return do_get_control_effect(control, cdata);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::freeze_joint
+//       Access: Protected
+//  Description: stores away a joint freeze for bind time
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+freeze_joint(string jointName, LMatrix4f transform) const
+{
+  JointTransform jt;
+  jt.name=jointName;
+  jt.transform=transform;
+
+  _frozen_joints.push_back(jt);
+}

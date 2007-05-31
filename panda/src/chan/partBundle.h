@@ -109,6 +109,8 @@ PUBLISHED:
   INLINE int get_num_nodes() const;
   INLINE PartBundleNode *get_node(int n) const;
 
+  INLINE void freeze_joint(string jointName, LMatrix4f transform) const;
+
   void clear_control_effects();
   INLINE void set_control_effect(AnimControl *control, float effect);
   INLINE float get_control_effect(AnimControl *control) const;
@@ -193,6 +195,15 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  typedef struct {
+    string name;
+    LMatrix4f transform;
+  } JointTransform ;
+
+  typedef pvector< JointTransform > JointTransformList;
+  
+  JointTransformList _frozen_joints;
 
   friend class PartBundleNode;
   friend class MovingPartBase;

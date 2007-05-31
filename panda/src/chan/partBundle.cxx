@@ -213,6 +213,11 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
       return NULL;
     }
   }
+  
+  JointTransformList::iterator jti;
+  for (jti = _frozen_joints.begin(); jti != _frozen_joints.end(); ++jti) {
+    anim->make_child_fixed((*jti).name, (*jti).transform);
+  }
 
   if (!check_hierarchy(anim, NULL, hierarchy_match_flags)) {
     return NULL;
