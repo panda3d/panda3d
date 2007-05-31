@@ -41,8 +41,6 @@ PUBLISHED:
                           const LVecBase3f &c, const LVecBase3f &d);
   INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
 
-  virtual LPoint3f get_collision_origin() const;
-
 private:
   INLINE CollisionPolygon();
 
@@ -50,6 +48,12 @@ public:
   CollisionPolygon(const CollisionPolygon &copy);
 
   virtual CollisionSolid *make_copy();
+
+PUBLISHED:
+  virtual LPoint3f get_collision_origin() const;
+
+  INLINE int get_num_points() const;
+  INLINE LPoint3f get_point(int n) const;
 
   INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
                                    const LPoint3f &c);
@@ -60,6 +64,7 @@ public:
   bool is_valid() const;
   bool is_concave() const;
 
+public:
   virtual void xform(const LMatrix4f &mat);
 
   virtual PT(PandaNode) get_viz(const CullTraverser *trav,

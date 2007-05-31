@@ -90,7 +90,6 @@ apply_transform_and_state(CullTraverser *trav,
     _net_transform = _net_transform->compose(node_transform);
 
     if ((_view_frustum != (GeometricBoundingVolume *)NULL) ||
-        (_guard_band != (GeometricBoundingVolume *)NULL) ||
         (!_cull_planes->is_empty())) {
       // We need to move the viewing frustums into the node's
       // coordinate space by applying the node's inverse transform.
@@ -99,7 +98,6 @@ apply_transform_and_state(CullTraverser *trav,
         // trying, we'll just give up on frustum culling from this
         // point down.
         _view_frustum = (GeometricBoundingVolume *)NULL;
-        _guard_band = (GeometricBoundingVolume *)NULL;
         _cull_planes = CullPlanes::make_empty();
 
       } else {
@@ -111,11 +109,6 @@ apply_transform_and_state(CullTraverser *trav,
         if (_view_frustum != (GeometricBoundingVolume *)NULL) {
           _view_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
           _view_frustum->xform(inv_transform->get_mat());
-        }
-
-        if (_guard_band != (GeometricBoundingVolume *)NULL) {
-          _guard_band = DCAST(GeometricBoundingVolume, _guard_band->make_copy());
-          _guard_band->xform(inv_transform->get_mat());
         }
 
         _cull_planes = _cull_planes->xform(inv_transform->get_mat());
@@ -166,7 +159,6 @@ is_in_view_impl() {
       // The node and its descendents are completely enclosed within
       // the frustum.  No need to cull further.
       _view_frustum = (GeometricBoundingVolume *)NULL;
-      _guard_band = (GeometricBoundingVolume *)NULL;
       
     } else {
       // The node is partially, but not completely, within the viewing

@@ -255,6 +255,10 @@ public:
   INLINE void set_stencil_clear_value(unsigned int stencil_clear_value);
   INLINE unsigned int get_stencil_clear_value();
 
+#ifdef DO_PSTATS
+  static void init_frame_pstats();
+#endif
+
 protected:
   INLINE NodePath get_light(int light_id) const;
   virtual void enable_lighting(bool enable);
@@ -277,10 +281,6 @@ protected:
   void panic_deactivate();
 
   void determine_light_color_scale();
-
-#ifdef DO_PSTATS
-  void init_frame_pstats();
-#endif
 
   static CPT(RenderState) get_unlit_state();
   static CPT(RenderState) get_unclipped_state();

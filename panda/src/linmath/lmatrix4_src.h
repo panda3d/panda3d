@@ -22,11 +22,12 @@
 // Description : This is a 4-by-4 transform matrix.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LMatrix4) {
-PUBLISHED:
+public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
   INLINE_LINMATH FLOATNAME(LMatrix4)();
+PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
@@ -130,6 +131,27 @@ PUBLISHED:
   INLINE_LINMATH bool invert_in_place();
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ident_mat();
+
+  INLINE_LINMATH void
+    set_translate_mat(const FLOATNAME(LVecBase3) &trans);
+  void
+    set_rotate_mat(FLOATTYPE angle,
+                   const FLOATNAME(LVecBase3) &axis,
+                   CoordinateSystem cs = CS_default);
+  void
+    set_rotate_mat_normaxis(FLOATTYPE angle,
+                            const FLOATNAME(LVecBase3) &axis,
+                            CoordinateSystem cs = CS_default);
+  INLINE_LINMATH void
+    set_scale_mat(const FLOATNAME(LVecBase3) &scale);
+  INLINE_LINMATH void
+    set_shear_mat(const FLOATNAME(LVecBase3) &shear, 
+                  CoordinateSystem cs = CS_default);
+  INLINE_LINMATH void
+    set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                        const FLOATNAME(LVecBase3) &shear, 
+                        CoordinateSystem cs = CS_default);
+  
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     translate_mat(const FLOATNAME(LVecBase3) &trans);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
@@ -141,11 +163,6 @@ PUBLISHED:
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     rotate_mat_normaxis(FLOATTYPE angle,
                         const FLOATNAME(LVecBase3) &axis,
-                        CoordinateSystem cs = CS_default);
-  INLINE_LINMATH static void
-    rotate_mat_normaxis(FLOATTYPE angle,
-                        const FLOATNAME(LVecBase3) &axis,
-                        FLOATNAME(LMatrix4) &result_mat,
                         CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     scale_mat(const FLOATNAME(LVecBase3) &scale);

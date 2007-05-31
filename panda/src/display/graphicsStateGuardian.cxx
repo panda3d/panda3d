@@ -1076,12 +1076,6 @@ bool GraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
   _prepared_objects->begin_frame(this, current_thread);
 
-#ifdef DO_PSTATS
-  // For Pstats to track our current texture memory usage, we have to
-  // reset the set of current textures each frame.
-  init_frame_pstats();
-#endif
-
   // We should reset the state to the default at the beginning of
   // every frame.  Although this will incur additional overhead,
   // particularly in a simple scene, it helps ensure that states that
@@ -1816,6 +1810,37 @@ void GraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 }
 
+#ifdef DO_PSTATS
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::init_frame_pstats
+//       Access: Pubilc, Static
+//  Description: Initializes the relevant PStats data at the beginning
+//               of the frame.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+init_frame_pstats() {
+  if (PStatClient::is_connected()) {
+    _data_transferred_pcollector.clear_level();
+    _vertex_buffer_switch_pcollector.clear_level();
+    _index_buffer_switch_pcollector.clear_level();
+
+    _primitive_batches_pcollector.clear_level();
+    _primitive_batches_tristrip_pcollector.clear_level();
+    _primitive_batches_trifan_pcollector.clear_level();
+    _primitive_batches_tri_pcollector.clear_level();
+    _primitive_batches_other_pcollector.clear_level();
+    _vertices_tristrip_pcollector.clear_level();
+    _vertices_trifan_pcollector.clear_level();
+    _vertices_tri_pcollector.clear_level();
+    _vertices_other_pcollector.clear_level();
+
+    _state_pcollector.clear_level();
+    _transform_state_pcollector.clear_level();
+    _texture_state_pcollector.clear_level();
+  }
+}
+#endif  // DO_PSTATS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
@@ -2069,37 +2094,6 @@ determine_light_color_scale() {
     }
   }
 }
-
-#ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::init_frame_pstats
-//       Access: Protected
-//  Description: Initializes the relevant PStats data at the beginning
-//               of the frame.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-init_frame_pstats() {
-  if (PStatClient::is_connected()) {
-    _data_transferred_pcollector.clear_level();
-    _vertex_buffer_switch_pcollector.clear_level();
-    _index_buffer_switch_pcollector.clear_level();
-
-    _primitive_batches_pcollector.clear_level();
-    _primitive_batches_tristrip_pcollector.clear_level();
-    _primitive_batches_trifan_pcollector.clear_level();
-    _primitive_batches_tri_pcollector.clear_level();
-    _primitive_batches_other_pcollector.clear_level();
-    _vertices_tristrip_pcollector.clear_level();
-    _vertices_trifan_pcollector.clear_level();
-    _vertices_tri_pcollector.clear_level();
-    _vertices_other_pcollector.clear_level();
-
-    _state_pcollector.clear_level();
-    _transform_state_pcollector.clear_level();
-    _texture_state_pcollector.clear_level();
-  }
-}
-#endif  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_unlit_state

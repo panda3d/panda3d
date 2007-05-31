@@ -11,6 +11,8 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
+    pipeOcclusionCullTraverser.I pipeOcclusionCullTraverser.h \
+    pipeOcclusionCullTraverser.cxx \
     cardMaker.I cardMaker.h \
     config_grutil.h \
     ffmpegTexture.I ffmpegTexture.h \

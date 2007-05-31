@@ -124,28 +124,28 @@ protected:
   bool clear_text();
 
 public:
-  static void event_esc(CPT_Event, void *data);
-  static void event_f(CPT_Event, void *data);
-  static void event_w(CPT_Event, void *data);
-  static void event_t(CPT_Event, void *data);
-  static void event_b(CPT_Event, void *data);
-  static void event_i(CPT_Event, void *data);
-  static void event_l(CPT_Event, void *data);
-  static void event_c(CPT_Event, void *data);
-  static void event_a(CPT_Event, void *data);
-  static void event_C(CPT_Event, void *data);
-  static void event_B(CPT_Event, void *data);
-  static void event_L(CPT_Event, void *data);
-  static void event_h(CPT_Event, void *data);
-  static void event_arrow_up(CPT_Event, void *data);
-  static void event_arrow_down(CPT_Event, void *data);
-  static void event_arrow_left(CPT_Event, void *data);
-  static void event_arrow_right(CPT_Event, void *data);
-  static void event_S(CPT_Event, void *data);
-  static void event_f9(CPT_Event, void *data);
-  static void event_comma(CPT_Event, void *data);
-  static void event_question(CPT_Event event, void *data);
-  static void event_window_event(CPT_Event, void *data);
+  static void event_esc(const Event *, void *data);
+  static void event_f(const Event *, void *data);
+  static void event_w(const Event *, void *data);
+  static void event_t(const Event *, void *data);
+  static void event_b(const Event *, void *data);
+  static void event_i(const Event *, void *data);
+  static void event_l(const Event *, void *data);
+  static void event_c(const Event *, void *data);
+  static void event_a(const Event *, void *data);
+  static void event_C(const Event *, void *data);
+  static void event_B(const Event *, void *data);
+  static void event_L(const Event *, void *data);
+  static void event_h(const Event *, void *data);
+  static void event_arrow_up(const Event *, void *data);
+  static void event_arrow_down(const Event *, void *data);
+  static void event_arrow_left(const Event *, void *data);
+  static void event_arrow_right(const Event *, void *data);
+  static void event_S(const Event *, void *data);
+  static void event_f9(const Event *, void *data);
+  static void event_comma(const Event *, void *data);
+  static void event_question(const Event * event, void *data);
+  static void event_window_event(const Event *, void *data);
 
 
 private:
@@ -158,7 +158,7 @@ private:
   GraphicsEngine *_engine;
 
   NodePath _data_root;
-  EventHandler _event_handler;
+  EventHandler &_event_handler;
 
   typedef pvector< PT(WindowFramework) > Windows;
   Windows _windows;

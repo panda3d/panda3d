@@ -14,7 +14,6 @@
     cullBinBackToFront.h cullBinBackToFront.I \
     cullBinFixed.h cullBinFixed.I \
     cullBinFrontToBack.h cullBinFrontToBack.I \
-    cullBinOcclusionTest.h cullBinOcclusionTest.I \
     cullBinStateSorted.h cullBinStateSorted.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     drawCullHandler.h drawCullHandler.I
@@ -28,7 +27,6 @@
     cullBinBackToFront.cxx \
     cullBinFixed.cxx \
     cullBinFrontToBack.cxx \
-    cullBinOcclusionTest.cxx \
     cullBinStateSorted.cxx \
     cullBinUnsorted.cxx \
     drawCullHandler.cxx
@@ -39,7 +37,6 @@
     cullBinBackToFront.h cullBinBackToFront.I \
     cullBinFixed.h cullBinFixed.I \
     cullBinFrontToBack.h cullBinFrontToBack.I \
-    cullBinOcclusionTest.h cullBinOcclusionTest.I \
     cullBinStateSorted.h cullBinStateSorted.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     drawCullHandler.h drawCullHandler.I

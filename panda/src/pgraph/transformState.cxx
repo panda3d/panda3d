@@ -36,6 +36,11 @@ UpdateSeq TransformState::_last_cycle_detect;
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector TransformState::_transform_compose_pcollector("*:State Cache:Compose Transform");
 PStatCollector TransformState::_transform_invert_pcollector("*:State Cache:Invert Transform");
+PStatCollector TransformState::_transform_calc_pcollector("*:State Cache:Calc Components");
+PStatCollector TransformState::_transform_break_cycles_pcollector("*:State Cache:Break Cycles");
+PStatCollector TransformState::_transform_new_pcollector("*:State Cache:New");
+PStatCollector TransformState::_transform_validate_pcollector("*:State Cache:Validate");
+PStatCollector TransformState::_transform_hash_pcollector("*:State Cache:Calc Hash");
 PStatCollector TransformState::_node_counter("TransformStates:On nodes");
 PStatCollector TransformState::_cache_counter("TransformStates:Cached");
 
@@ -783,6 +788,8 @@ unref() const {
         // cache, leaving only references in the cache, then we need to
         // check for a cycle involving this TransformState and break it if
         // it exists.
+
+        PStatTimer timer(_transform_break_cycles_pcollector);
         
         ++_last_cycle_detect;
         if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
@@ -931,7 +938,7 @@ get_num_states() {
 //               A nonzero return value is not necessarily indicative
 //               of leaked references; it is normal for two
 //               TransformState objects, both of which have references
-//               held outside the cache, to have to result of their
+//               held outside the cache, to have the result of their
 //               composition stored within the cache.  This result
 //               will be retained within the cache until one of the
 //               base TransformStates is released.
@@ -1200,6 +1207,8 @@ validate_states() {
     return true;
   }
 
+  PStatTimer timer(_transform_validate_pcollector);
+
   ReMutexHolder holder(*_states_lock);
   if (_states->empty()) {
     return true;
@@ -1275,6 +1284,8 @@ return_new(TransformState *state) {
     nassertr(validate_states(), state);
   }
 #endif
+
+  PStatTimer timer(_transform_new_pcollector);
 
   ReMutexHolder holder(*_states_lock);
 
@@ -1354,7 +1365,8 @@ do_compose(const TransformState *other) const {
 #ifndef NDEBUG
     if (paranoid_compose) {
       // Now verify against the matrix.
-      LMatrix4f new_mat = other->get_mat() * get_mat();
+      LMatrix4f new_mat;
+      new_mat.multiply(other->get_mat(), get_mat());
       if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
         CPT(TransformState) correct = make_mat(new_mat);
         pgraph_cat.warning()
@@ -1374,7 +1386,8 @@ do_compose(const TransformState *other) const {
     LMatrix3f new_mat = other->get_mat3() * get_mat3();
     return make_mat3(new_mat);
   } else {
-    LMatrix4f new_mat = other->get_mat() * get_mat();
+    LMatrix4f new_mat;
+    new_mat.multiply(other->get_mat(), get_mat());
     return make_mat(new_mat);
   }
 }
@@ -1465,7 +1478,8 @@ do_invert_compose(const TransformState *other) const {
           << "Unexpected singular matrix found for " << *this << "\n";
       } else {
         nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
-        LMatrix4f new_mat = other->get_mat() * (*_inv_mat);
+        LMatrix4f new_mat;
+        new_mat.multiply(other->get_mat(), *_inv_mat);
         if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
           CPT(TransformState) correct = make_mat(new_mat);
           pgraph_cat.warning()
@@ -1695,6 +1709,7 @@ remove_cache_pointers() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 do_calc_hash() {
+  PStatTimer timer(_transform_hash_pcollector);
   _hash = 0;
 
   static const int significant_flags = 
@@ -1747,6 +1762,9 @@ calc_singular() {
     // Someone else computed it first.
     return;
   }
+
+  PStatTimer timer(_transform_calc_pcollector);
+
   nassertv((_flags & F_is_invalid) == 0);
 
   // We determine if a matrix is singular by attempting to invert it
@@ -1783,6 +1801,8 @@ do_calc_components() {
     // Someone else computed it first.
     return;
   }
+
+  PStatTimer timer(_transform_calc_pcollector);
 
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {
@@ -1832,6 +1852,8 @@ do_calc_hpr() {
     return;
   }
 
+  PStatTimer timer(_transform_calc_pcollector);
+
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_components_known) == 0) {
     do_calc_components();
@@ -1858,6 +1880,8 @@ calc_quat() {
     return;
   }
 
+  PStatTimer timer(_transform_calc_pcollector);
+
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_components_known) == 0) {
     do_calc_components();
@@ -1878,6 +1902,8 @@ calc_quat() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_norm_quat() {
+  PStatTimer timer(_transform_calc_pcollector);
+
   LQuaternionf quat = get_quat();
   MutexHolder holder(_lock);
   _norm_quat = quat;
@@ -1897,6 +1923,8 @@ do_calc_mat() {
     // Someone else computed it first.
     return;
   }
+
+  PStatTimer timer(_transform_calc_pcollector);
 
   nassertv((_flags & F_is_invalid) == 0);
   if ((_flags & F_is_identity) != 0) {

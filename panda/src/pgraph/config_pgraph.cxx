@@ -212,6 +212,14 @@ ConfigVariableBool support_fade_lod
           "(ignoring the fade time).  This may be useful, for instance, to "
           "test the performance impact of using FadeLOD nodes."));
 
+ConfigVariableBool depth_offset_decals
+("depth-offset-decals", false,
+ PRC_DESC("Set this true to allow decals to be implemented via the advanced "
+          "depth offset feature, if supported, instead of via the traditional "
+          "(and slower) two-pass approach.  This is false by default "
+          "because it appears that many graphics drivers have issues with "
+          "their depth offset implementation."));
+
 ConfigVariableInt max_collect_vertices
 ("max-collect-vertices", 65535,
  PRC_DESC("Specifies the maximum number of vertices that are allowed to be "

@@ -2091,10 +2091,9 @@ set_bounds(const BoundingVolume *volume) {
     } else {
       cdata->_user_bounds = volume->make_copy();
     }
+    mark_bounds_stale(pipeline_stage, current_thread);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
-  
-  mark_internal_bounds_stale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2167,6 +2166,36 @@ get_bounds(UpdateSeq &seq, Thread *current_thread) const {
   }
   seq = cdata->_last_update;
   return cdata->_external_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_nested_vertices
+//       Access: Published
+//  Description: Returns the total number of vertices that will be
+//               rendered by this node and all of its descendents.
+//
+//               This is not necessarily an accurate count of vertices
+//               that will actually be rendered, since this will
+//               include all vertices of all LOD's, and it will also
+//               include hidden nodes.  It may also omit or only
+//               approximate certain kinds of dynamic geometry.
+//               However, it will not include stashed nodes.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_nested_vertices(Thread *current_thread) const {
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
+  if (cdata->_last_update != cdata->_next_update) {
+    // The cache is stale; it needs to be rebuilt.
+    int result;
+    {
+      CDStageWriter cdataw = 
+	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+      result = cdataw->_nested_vertices;
+    }
+    return result;
+  }
+  return cdata->_nested_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2272,17 +2301,39 @@ as_light() {
 CPT(BoundingVolume) PandaNode::
 get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
+  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+    return cdata->_user_bounds;
+  }
+
   if (cdata->_internal_bounds_stale) {
     CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
-    if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
-      cdataw->_internal_bounds = cdataw->_user_bounds;
-    } else {
-      cdataw->_internal_bounds = compute_internal_bounds(pipeline_stage, current_thread);
-    }
-    cdataw->_internal_bounds_stale = false;
+    compute_internal_bounds(cdataw, pipeline_stage, current_thread);
+    nassertr(!cdataw->_internal_bounds.is_null(), NULL);
     return cdataw->_internal_bounds;
   }
   return cdata->_internal_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_internal_vertices
+//       Access: Protected
+//  Description: Returns the total number of vertices that will be
+//               rendered by this particular node alone, not
+//               accounting for its children.
+//
+//               This may not include all vertices for certain dynamic
+//               effects.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
+  if (cdata->_internal_bounds_stale) {
+    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
+    compute_internal_bounds(cdataw, pipeline_stage, current_thread);
+    nassertr(!cdataw->_internal_bounds.is_null(), 0);
+    return cdataw->_internal_vertices;
+  }
+  return cdata->_internal_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2366,9 +2417,12 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
 //               be overridden by PandaNode classes that contain
 //               something internally.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) PandaNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
-  return new BoundingSphere;
+void PandaNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
+  bdata->_internal_bounds = new BoundingSphere;
+  bdata->_internal_vertices = 0;
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3364,6 +3418,8 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     child_volumes_ref.push_back(internal_bounds);
     child_volumes.push_back(internal_bounds);
 
+    int num_vertices = cdata->_internal_vertices;
+
     // Now expand those contents to include all of our children.
     int num_children = children.get_num_children();
 
@@ -3412,6 +3468,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 	off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
 	child_volumes_ref.push_back(child_cdataw->_external_bounds);
 	child_volumes.push_back(child_cdataw->_external_bounds);
+        num_vertices += child_cdataw->_nested_vertices;
 
       } else {
 	// Child is good.
@@ -3443,6 +3500,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 	off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
 	child_volumes_ref.push_back(child_cdata->_external_bounds);
 	child_volumes.push_back(child_cdata->_external_bounds);
+        num_vertices += child_cdata->_nested_vertices;
       }
     }
 
@@ -3483,6 +3541,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         }
 
 	cdataw->_off_clip_planes = off_clip_planes;
+        cdataw->_nested_vertices = num_vertices;
 
 	// Compute the bounding sphere around all of our child
 	// volumes.
@@ -3642,8 +3701,6 @@ CData() :
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
   _user_bounds(NULL),
-  _internal_bounds(NULL),
-  _internal_bounds_stale(true),
   _final_bounds(false),
   _fancy_bits(0),
 
@@ -3665,6 +3722,7 @@ CData() :
 ////////////////////////////////////////////////////////////////////
 PandaNode::CData::
 CData(const PandaNode::CData &copy) :
+  BoundsData(copy),
   _state(copy._state),
   _transform(copy._transform),
   _prev_transform(copy._prev_transform),
@@ -3675,8 +3733,6 @@ CData(const PandaNode::CData &copy) :
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
   _user_bounds(copy._user_bounds),
-  _internal_bounds(copy._internal_bounds),
-  _internal_bounds_stale(copy._internal_bounds_stale),
   _final_bounds(copy._final_bounds),
   _fancy_bits(copy._fancy_bits),
 
@@ -3684,6 +3740,7 @@ CData(const PandaNode::CData &copy) :
   _net_draw_control_mask(copy._net_draw_control_mask),
   _net_draw_show_mask(copy._net_draw_show_mask),
   _off_clip_planes(copy._off_clip_planes),
+  _nested_vertices(copy._nested_vertices),
   _external_bounds(copy._external_bounds),
   _last_update(copy._last_update),
   _next_update(copy._next_update),

@@ -79,6 +79,8 @@ CullableObject(const Geom *geom, const RenderState *state,
 INLINE CullableObject::
 CullableObject(const CullableObject &copy) :
   _geom(copy._geom),
+  _munger(copy._munger),
+  _munged_data(copy._munged_data),
   _state(copy._state),
   _net_transform(copy._net_transform),
   _modelview_transform(copy._modelview_transform),
@@ -96,6 +98,8 @@ CullableObject(const CullableObject &copy) :
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
   _geom = copy._geom;
+  _munger = copy._munger;
+  _munged_data = copy._munged_data;
   _state = copy._state;
   _net_transform = copy._net_transform;
   _modelview_transform = copy._modelview_transform;

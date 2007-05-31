@@ -115,6 +115,7 @@ PUBLISHED:
   bool check_valid(const GeomVertexData *vertex_data) const;
 
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
+  int get_nested_vertices(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void mark_bounds_stale() const;
   INLINE void set_bounds(const BoundingVolume *volume);
   INLINE void clear_bounds();
@@ -157,13 +158,13 @@ private:
   class CData;
 
   INLINE void mark_internal_bounds_stale(CData *cdata);
-  PT(BoundingVolume) compute_internal_bounds(Thread *current_thread) const;
+  void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 			    bool &found_any, 
 			    const GeomVertexData *vertex_data,
 			    bool got_mat, const LMatrix4f &mat,
-			    Thread *current_thread) const;
+                            const CData *cdata, Thread *current_thread) const;
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   bool check_will_be_valid(const GeomVertexData *vertex_data) const;
@@ -289,6 +290,7 @@ private:
     UpdateSeq _modified;
   
     CPT(BoundingVolume) _internal_bounds;
+    int _nested_vertices;
     bool _internal_bounds_stale;
     CPT(BoundingVolume) _user_bounds;
     

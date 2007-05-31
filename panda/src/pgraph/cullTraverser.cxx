@@ -50,14 +50,13 @@ TypeHandle CullTraverser::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
-CullTraverser(GraphicsStateGuardianBase *gsg, Thread *current_thread) :
-  _gsg(gsg),
-  _current_thread(current_thread)
+CullTraverser() :
+  _gsg(NULL),
+  _current_thread(Thread::get_current_thread())
 {
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
-  _depth_offset_decals = false;
   _cull_handler = (CullHandler *)NULL;
   _portal_clipper = (PortalClipper *)NULL;
 }
@@ -78,10 +77,32 @@ CullTraverser(const CullTraverser &copy) :
   _initial_state(copy._initial_state),
   _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
-  _guard_band(copy._guard_band),
   _cull_handler(copy._cull_handler),
   _portal_clipper(copy._portal_clipper)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::set_scene
+//       Access: Public, Virtual
+//  Description: Sets the SceneSetup object that indicates the initial
+//               camera position, etc.  This must be called before
+//               traversal begins.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg) {
+  _scene_setup = scene_setup;
+  _gsg = gsg;
+
+  _initial_state = scene_setup->get_initial_state();
+  _depth_offset_decals = _gsg->depth_offset_decals() && depth_offset_decals;
+
+  _current_thread = Thread::get_current_thread();
+
+  const Camera *camera = scene_setup->get_camera_node();
+  _tag_state_key = camera->get_tag_state_key();
+  _has_tag_state_key = !_tag_state_key.empty();
+  _camera_mask = camera->get_camera_mask();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,11 +111,11 @@ CullTraverser(const CullTraverser &copy) :
 //  Description: Begins the traversal from the indicated node.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-traverse(const NodePath &root, bool python_cull_control) {
+traverse(const NodePath &root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
   nassertv(_scene_setup != (SceneSetup *)NULL);
 
-  if (allow_portal_cull || python_cull_control) {
+  if (allow_portal_cull) {
     // This _view_frustum is in cull_center space
     PT(GeometricBoundingVolume) vf = _view_frustum;
 
@@ -115,7 +136,7 @@ traverse(const NodePath &root, bool python_cull_control) {
 
     CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           _guard_band, _current_thread);
+                           _current_thread);
     
     traverse(data);
     
@@ -133,7 +154,7 @@ traverse(const NodePath &root, bool python_cull_control) {
   } else {
     CullTraverserData data(root, TransformState::make_identity(),
                            _initial_state, _view_frustum, 
-                           _guard_band, _current_thread);
+                           _current_thread);
     
     traverse(data);
   }
@@ -148,7 +169,7 @@ traverse(const NodePath &root, bool python_cull_control) {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(CullTraverserData &data) {
-  if (data.is_in_view(_camera_mask)) {
+  if (is_in_view(data)) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam() 
         << "\n" << data._node_path
@@ -202,7 +223,7 @@ traverse(CullTraverserData &data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::traverse_below
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Traverses all the children of the indicated node,
 //               with the given data, which has been converted into
 //               the node's space.
@@ -284,6 +305,56 @@ traverse_below(CullTraverserData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::end_traverse
+//       Access: Public, Virtual
+//  Description: Should be called when the traverser has finished
+//               traversing its scene, this gives it a chance to do
+//               any necessary finalization.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+end_traverse() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::draw_bounding_volume
+//       Access: Public
+//  Description: Draws an appropriate visualization of the indicated
+//               bounding volume.
+////////////////////////////////////////////////////////////////////
+void CullTraverser::
+draw_bounding_volume(const BoundingVolume *vol, 
+                     const TransformState *net_transform,
+                     const TransformState *modelview_transform) {
+  PT(Geom) bounds_viz = make_bounds_viz(vol);
+  
+  if (bounds_viz != (Geom *)NULL) {
+    _geoms_pcollector.add_level(2);
+    CullableObject *outer_viz = 
+      new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
+                         net_transform, modelview_transform, get_gsg());
+    _cull_handler->record_object(outer_viz, this);
+    
+    CullableObject *inner_viz = 
+      new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
+                         net_transform, modelview_transform, get_gsg());
+    _cull_handler->record_object(inner_viz, this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::is_in_view
+//       Access: Protected, Virtual
+//  Description: Returns true if the current node is fully or
+//               partially within the viewing area and should be
+//               drawn, or false if it (and all of its children)
+//               should be pruned.
+////////////////////////////////////////////////////////////////////
+bool CullTraverser::
+is_in_view(CullTraverserData &data) {
+  return data.is_in_view(_camera_mask);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::show_bounds
 //       Access: Private
 //  Description: Draws an appropriate visualization of the node's
@@ -307,24 +378,9 @@ show_bounds(CullTraverserData &data, bool tight) {
     }
     
   } else {
-    PT(Geom) bounds_viz = make_bounds_viz(node->get_bounds());
-
-    if (bounds_viz != (Geom *)NULL) {
-      _geoms_pcollector.add_level(2);
-      CullableObject *outer_viz = 
-        new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data.get_net_transform(this),
-                           data.get_modelview_transform(this),
-                           get_gsg());
-      _cull_handler->record_object(outer_viz, this);
-      
-      CullableObject *inner_viz = 
-        new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                           data.get_net_transform(this),
-                           data.get_modelview_transform(this),
-                           get_gsg());
-      _cull_handler->record_object(inner_viz, this);
-    }
+    draw_bounding_volume(node->get_bounds(),
+                         data.get_net_transform(this),
+                         data.get_modelview_transform(this));
   }
 }
 
@@ -337,8 +393,8 @@ show_bounds(CullTraverserData &data, bool tight) {
 PT(Geom) CullTraverser::
 make_bounds_viz(const BoundingVolume *vol) {
   PT(Geom) geom;
-  if (vol->is_infinite()) {
-    // No way to draw an infinite bounding volume.
+  if (vol->is_infinite() || vol->is_empty()) {
+    // No way to draw an infinite or empty bounding volume.
 
   } else if (vol->is_of_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
@@ -605,7 +661,7 @@ start_decal(const CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 CullableObject *CullTraverser::
 r_get_decals(CullTraverserData &data, CullableObject *decals) {
-  if (data.is_in_view(_camera_mask)) {
+  if (is_in_view(data)) {
     PandaNodePipelineReader *node_reader = data.node_reader();
     PandaNode *node = data.node();
 

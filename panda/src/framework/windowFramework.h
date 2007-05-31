@@ -148,12 +148,12 @@ private:
   void play_button();
   void forward_button();
 
-  static void st_update_anim_controls(CPT_Event, void *data);
+  static void st_update_anim_controls(const Event *, void *data);
 
-  static void st_back_button(CPT_Event, void *data);
-  static void st_pause_button(CPT_Event, void *data);
-  static void st_play_button(CPT_Event, void *data);
-  static void st_forward_button(CPT_Event, void *data);
+  static void st_back_button(const Event *, void *data);
+  static void st_pause_button(const Event *, void *data);
+  static void st_play_button(const Event *, void *data);
+  static void st_forward_button(const Event *, void *data);
 
 private:
   PandaFramework *_panda_framework;

@@ -38,12 +38,14 @@
 #include "deletedChain.h"
 #include "plist.h"
 #include "pStatCollector.h"
+#include "cullTraverser.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
 class CullHandler;
 class Camera;
 class PNMImage;
+class CullTraverser;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DisplayRegion
@@ -97,6 +99,9 @@ PUBLISHED:
   INLINE void set_clear_depth_between_eyes(bool clear_depth_between_eyes);
   INLINE bool get_clear_depth_between_eyes() const;
 
+  INLINE void set_cull_traverser(CullTraverser *trav);
+  CullTraverser *get_cull_traverser();
+
   INLINE void set_cube_map_index(int cube_map_index);
   INLINE int get_cube_map_index() const;
 
@@ -140,6 +145,9 @@ private:
   // DisplayRegion.  It doesn't need to be cycled.
   GraphicsOutput *_window;
   bool _clear_depth_between_eyes;
+
+  // Ditto for the cull traverser.
+  PT(CullTraverser) _trav;
 
   // This is the data that is associated with the DisplayRegion that
   // needs to be cycled every frame, but represents the parameters as

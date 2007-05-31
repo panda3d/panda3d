@@ -45,19 +45,19 @@ class EventQueue;
 class EXPCL_PANDA EventHandler : public TypedObject {
 public:
   // Define a function type suitable for receiving events.
-  typedef void EventFunction(CPT_Event);
-  typedef void EventCallbackFunction(CPT_Event, void *);
+  typedef void EventFunction(const Event *);
+  typedef void EventCallbackFunction(const Event *, void *);
 
 PUBLISHED:
   EventHandler(EventQueue *queue);
 
   void process_events();
 
-  virtual void dispatch_event(const CPT_Event &event);
+  virtual void dispatch_event(const Event *);
 
   void write(ostream &out) const;
 
-  INLINE static EventHandler *get_global_event_handler(EventQueue *queue);
+  INLINE static EventHandler *get_global_event_handler(EventQueue *queue = NULL);
 
 public:
   bool add_hook(const string &event_name, EventFunction *function);
@@ -86,7 +86,7 @@ protected:
   EventQueue &_queue;
 
   static EventHandler *_global_event_handler;
-  static void make_global_event_handler(EventQueue *queue);
+  static void make_global_event_handler();
 
 private:
   void write_hook(ostream &out, const Hooks::value_type &hook) const;

@@ -76,7 +76,8 @@ public:
   INLINE static UpdateSeq get_sort_seq();
 
 protected:
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+                                       Thread *current_thread) const;
   PT(Geom) get_viz(CullTraverser *trav, CullTraverserData &data);
   
 private:

@@ -51,7 +51,6 @@ public:
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
-                           GeometricBoundingVolume *guard_band,
                            Thread *current_thread);
   INLINE CullTraverserData(const CullTraverserData &copy);
   INLINE void operator = (const CullTraverserData &copy); 
@@ -81,7 +80,6 @@ public:
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
-  PT(GeometricBoundingVolume) _guard_band;
   CPT(CullPlanes) _cull_planes;
   DrawMask _draw_mask;
 

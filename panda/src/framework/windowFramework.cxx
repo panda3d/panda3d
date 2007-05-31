@@ -1392,7 +1392,7 @@ forward_button() {
 //  Description: The static event handler function.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-st_update_anim_controls(CPT_Event, void *data) {
+st_update_anim_controls(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->update_anim_controls();
 }
@@ -1404,7 +1404,7 @@ st_update_anim_controls(CPT_Event, void *data) {
 //  Description: The static event handler function.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-st_back_button(CPT_Event, void *data) {
+st_back_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->back_button();
 }
@@ -1415,7 +1415,7 @@ st_back_button(CPT_Event, void *data) {
 //  Description: The static event handler function.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-st_pause_button(CPT_Event, void *data) {
+st_pause_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->pause_button();
 }
@@ -1426,7 +1426,7 @@ st_pause_button(CPT_Event, void *data) {
 //  Description: The static event handler function.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-st_play_button(CPT_Event, void *data) {
+st_play_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->play_button();
 }
@@ -1437,7 +1437,7 @@ st_play_button(CPT_Event, void *data) {
 //  Description: The static event handler function.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-st_forward_button(CPT_Event, void *data) {
+st_forward_button(const Event *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->forward_button();
 }

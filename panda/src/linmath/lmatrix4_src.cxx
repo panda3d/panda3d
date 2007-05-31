@@ -142,6 +142,138 @@ compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_rotate_mat
+//       Access: Public
+//  Description: Sets mat to a matrix that rotates by the given angle
+//               in degrees counterclockwise about the indicated
+//               vector.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
+               CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix4::set_rotate_mat(FLOATTYPE, const LVecBase3 &, cs)", " ", TAU_USER);
+
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
+
+  if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
+    // In a left-handed coordinate system, counterclockwise is the
+    // other direction.
+    angle = -angle;
+  }
+
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
+
+  // Normalize the axis.
+  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+  nassertv(length_sq != 0.0f);
+  FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
+  
+  axis_0 *= recip_length;
+  axis_1 *= recip_length;
+  axis_2 *= recip_length;
+
+  FLOATTYPE angle_rad=deg_2_rad(angle);
+  FLOATTYPE s,c;
+  csincos(angle_rad,&s,&c);
+  FLOATTYPE t = 1.0f - c;
+
+  FLOATTYPE t0,t1,t2,s0,s1,s2;
+
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
+
+  _m.m._00 = t0 * axis_0 + c;
+  _m.m._01 = t0 * axis_1 + s2;
+  _m.m._02 = t0 * axis_2 - s1;
+
+  _m.m._10 = t1 * axis_0 - s2;
+  _m.m._11 = t1 * axis_1 + c;
+  _m.m._12 = t1 * axis_2 + s0;
+
+  _m.m._20 = t2 * axis_0 + s1;
+  _m.m._21 = t2 * axis_1 - s0;
+  _m.m._22 = t2 * axis_2 + c;
+
+  _m.m._03 = 0.0f;
+  _m.m._13 = 0.0f;
+  _m.m._23 = 0.0f;
+
+  _m.m._30 = 0.0f;
+  _m.m._31 = 0.0f;
+  _m.m._32 = 0.0f;
+  _m.m._33 = 1.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_rotate_mat_normaxis
+//       Access: Public
+//  Description: Fills mat with a matrix that rotates by the given
+//               angle in degrees counterclockwise about the indicated
+//               vector.  Assumes axis has been prenormalized.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
+                        CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix4::set_rotate_mat_normaxis(FLOATTYPE, const LVecBase3 &, cs)", " ", TAU_USER);
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
+
+  if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
+    // In a left-handed coordinate system, counterclockwise is the
+    // other direction.
+    angle = -angle;
+  }
+
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
+
+  FLOATTYPE angle_rad=deg_2_rad(angle);
+  FLOATTYPE s,c;
+  csincos(angle_rad,&s,&c);
+  FLOATTYPE t = 1.0f - c;
+
+  FLOATTYPE t0,t1,t2,s0,s1,s2;
+
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
+
+  _m.m._00 = t0 * axis_0 + c;
+  _m.m._01 = t0 * axis_1 + s2;
+  _m.m._02 = t0 * axis_2 - s1;
+
+  _m.m._10 = t1 * axis_0 - s2;
+  _m.m._11 = t1 * axis_1 + c;
+  _m.m._12 = t1 * axis_2 + s0;
+
+  _m.m._20 = t2 * axis_0 + s1;
+  _m.m._21 = t2 * axis_1 - s0;
+  _m.m._22 = t2 * axis_2 + c;
+
+  _m.m._03 = 0.0f;
+  _m.m._13 = 0.0f;
+  _m.m._23 = 0.0f;
+
+  _m.m._30 = 0.0f;
+  _m.m._31 = 0.0f;
+  _m.m._32 = 0.0f;
+  _m.m._33 = 1.0f;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::almost_equal
 //       Access: Public
 //  Description: Returns true if two matrices are memberwise equal

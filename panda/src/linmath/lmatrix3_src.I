@@ -47,7 +47,7 @@ INLINE_LINMATH FLOATNAME(LMatrix3)::
 FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
   TAU_PROFILE("LMatrix3::LMatrix3(const LMatrix3 &)", " ", TAU_USER);
   
-  memcpy(_m.data,copy._m.data,sizeof(_m.data));
+  memcpy(_m.data, copy._m.data, sizeof(_m.data));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator = (const FLOATNAME(LMatrix3) &copy) {
   TAU_PROFILE("void LMatrix3::operator = (const LMatrix3 &)", " ", TAU_USER);
 
-  memcpy(_m.data,copy._m.data,sizeof(_m.data));
+  memcpy(_m.data, copy._m.data, sizeof(_m.data));
   return *this;
 }
 
@@ -539,8 +539,7 @@ INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (const FLOATNAME(LMatrix3) &other) const {
   TAU_PROFILE("LMatrix3 LMatrix3::operator *(const LMatrix3 &)", " ", TAU_USER);
   FLOATNAME(LMatrix3) t;
-
-  MATRIX3_PRODUCT(t,(*this),other);
+  t.multiply(*this, other);
   return t;
 }
 
@@ -553,7 +552,7 @@ multiply(const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2) {
 
   nassertv((&other1 != this) && (&other2 != this));
 
-  MATRIX3_PRODUCT((*this),other1,other2);
+  MATRIX3_PRODUCT((*this), other1, other2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -646,9 +645,9 @@ operator -= (const FLOATNAME(LMatrix3) &other) {
 INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator *= (const FLOATNAME(LMatrix3) &other) {
   TAU_PROFILE("LMatrix3 LMatrix3::operator *=(const LMatrix3 &)", " ", TAU_USER);
-  (*this) = (*this) * other;
+  FLOATNAME(LMatrix3) temp = *this;
+  multiply(temp, other);
 
-  // bugbug can we do any optimization here?
   return *this;
 }
 
@@ -755,7 +754,7 @@ transpose_in_place() {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const {
   TAU_PROFILE("FLOATTYPE LMatrix3::det2()", " ", TAU_USER);
-  return DET2(e00,e01,e10,e11);
+  return DET2(e00, e01, e10, e11);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -835,6 +834,49 @@ invert_in_place() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_translate_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that applies the indicated
+//               translation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+set_translate_mat(const FLOATNAME(LVecBase2) &trans) {
+  set(1.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f,
+      trans._v.v._0, trans._v.v._1, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_rotate_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that rotates by the given
+//               angle in degrees counterclockwise.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+set_rotate_mat(FLOATTYPE angle) {
+  TAU_PROFILE("void LMatrix3::rotate_mat(LMatrix3, FLOATTYPE)", " ", TAU_USER);
+  FLOATTYPE angle_rad = deg_2_rad(angle);
+  FLOATTYPE s, c;
+  csincos(angle_rad, &s, &c);
+  set(   c,    s,  0.0f,
+        -s,    c,  0.0f,
+      0.0f,  0.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_scale_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that applies the indicated
+//               scale in each of the two axes.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+set_scale_mat(const FLOATNAME(LVecBase2) &scale) {
+  set(scale._v.v._0, 0.0f, 0.0f,
+      0.0f, scale._v.v._1, 0.0f,
+      0.0f, 0.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::translate_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that applies the indicated
@@ -843,8 +885,8 @@ invert_in_place() {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 translate_mat(const FLOATNAME(LVecBase2) &trans) {
   return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f,
-                           trans._v.v._0, trans._v.v._1, 1.0f);
+                             0.0f, 1.0f, 0.0f,
+                             trans._v.v._0, trans._v.v._1, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,8 +898,8 @@ translate_mat(const FLOATNAME(LVecBase2) &trans) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 translate_mat(FLOATTYPE tx, FLOATTYPE ty) {
   return FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f,
-                           tx, ty, 1.0f);
+                             0.0f, 1.0f, 0.0f,
+                             tx, ty, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -868,13 +910,9 @@ translate_mat(FLOATTYPE tx, FLOATTYPE ty) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat(FLOATTYPE angle) {
-  TAU_PROFILE("LMatrix3 LMatrix3::rotate_mat(FLOATTYPE)", " ", TAU_USER);
-  FLOATTYPE angle_rad=deg_2_rad(angle);
-  FLOATTYPE s,c;
-  csincos(angle_rad,&s,&c);
-  return FLOATNAME(LMatrix3)(  c,    s,  0.0f,
-                              -s,    c,  0.0f,
-                             0.0f,  0.0f,  1.0f);
+  FLOATNAME(LMatrix3) mat;
+  mat.set_rotate_mat(angle);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -912,71 +950,8 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy) {
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
            CoordinateSystem cs) {
-  TAU_PROFILE("LMatrix3 LMatrix3::rotate_mat(FLOATTYPE, LVecBase3, CoordinateSystem)", " ", TAU_USER);
-  if (cs == CS_default) {
-    cs = get_default_coordinate_system();
-  }
   FLOATNAME(LMatrix3) mat;
-
-  if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {
-    // In a left-handed coordinate system, counterclockwise is the
-    // other direction.
-    angle = -angle;
-  }
-
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
-
-  // Normalize the axis.
-  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-  nassertr(length_sq != 0.0f, ident_mat());
-  FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
-
-  axis_0 *= recip_length;
-  axis_1 *= recip_length;
-  axis_2 *= recip_length;
-
-  FLOATTYPE angle_rad=deg_2_rad(angle);
-  FLOATTYPE s,c;
-  csincos(angle_rad,&s,&c);
-  FLOATTYPE t = 1.0f - c;
-
-  FLOATTYPE t0,t1,t2,s0,s1,s2;
-
-  t0 = t * axis_0;
-  t1 = t * axis_1;
-  t2 = t * axis_2;
-  s0 = s * axis_0;
-  s1 = s * axis_1;
-  s2 = s * axis_2;
-
-  mat._m.m._00 = t0 * axis_0 + c;
-  mat._m.m._01 = t0 * axis_1 + s2;
-  mat._m.m._02 = t0 * axis_2 - s1;
-
-  mat._m.m._10 = t1 * axis_0 - s2;
-  mat._m.m._11 = t1 * axis_1 + c;
-  mat._m.m._12 = t1 * axis_2 + s0;
-
-  mat._m.m._20 = t2 * axis_0 + s1;
-  mat._m.m._21 = t2 * axis_1 - s0;
-  mat._m.m._22 = t2 * axis_2 + c;
-
-/*
-  mat._m.m._00 = t * axis._v.v._0 * axis._v.v._0 + c;
-  mat._m.m._01 = t * axis._v.v._0 * axis._v.v._1 + s * axis._v.v._2;
-  mat._m.m._02 = t * axis._v.v._0 * axis._v.v._2 - s * axis._v.v._1;
-
-  mat._m.m._10 = t * axis._v.v._1 * axis._v.v._0 - s * axis._v.v._2;
-  mat._m.m._11 = t * axis._v.v._1 * axis._v.v._1 + c;
-  mat._m.m._12 = t * axis._v.v._1 * axis._v.v._2 + s * axis._v.v._0;
-
-  mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
-  mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
-  mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
-*/
-
+  mat.set_rotate_mat(angle, axis, cs);
   return mat;
 }
 
@@ -990,63 +965,22 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
            CoordinateSystem cs) {
-  TAU_PROFILE("LMatrix3 LMatrix3::rotate_mat_normaxis(FLOATTYPE, LVecBase3, CoordinateSystem)", " ", TAU_USER);
-  if (cs == CS_default) {
-    cs = get_default_coordinate_system();
-  }
   FLOATNAME(LMatrix3) mat;
-
-  if(IS_LEFT_HANDED_COORDSYSTEM(cs)) {
-    // In a left-handed coordinate system, counterclockwise is the
-    // other direction.
-    angle = -angle;
-  }
-
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
-
-  FLOATTYPE angle_rad=deg_2_rad(angle);
-  FLOATTYPE s,c;
-  csincos(angle_rad,&s,&c);
-  FLOATTYPE t = 1.0f - c;
-
-  FLOATTYPE t0,t1,t2,s0,s1,s2;
-
-  t0 = t * axis_0;
-  t1 = t * axis_1;
-  t2 = t * axis_2;
-  s0 = s * axis_0;
-  s1 = s * axis_1;
-  s2 = s * axis_2;
-
-  mat._m.m._00 = t0 * axis_0 + c;
-  mat._m.m._01 = t0 * axis_1 + s2;
-  mat._m.m._02 = t0 * axis_2 - s1;
-
-  mat._m.m._10 = t1 * axis_0 - s2;
-  mat._m.m._11 = t1 * axis_1 + c;
-  mat._m.m._12 = t1 * axis_2 + s0;
-
-  mat._m.m._20 = t2 * axis_0 + s1;
-  mat._m.m._21 = t2 * axis_1 - s0;
-  mat._m.m._22 = t2 * axis_2 + c;
-
-/*
-  mat._m.m._00 = t * axis._v.v._0 * axis._v.v._0 + c;
-  mat._m.m._01 = t * axis._v.v._0 * axis._v.v._1 + s * axis._v.v._2;
-  mat._m.m._02 = t * axis._v.v._0 * axis._v.v._2 - s * axis._v.v._1;
-
-  mat._m.m._10 = t * axis._v.v._1 * axis._v.v._0 - s * axis._v.v._2;
-  mat._m.m._11 = t * axis._v.v._1 * axis._v.v._1 + c;
-  mat._m.m._12 = t * axis._v.v._1 * axis._v.v._2 + s * axis._v.v._0;
-
-  mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
-  mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
-  mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
-*/
-
+  mat.set_rotate_mat_normaxis(angle, axis, cs);
   return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_scale_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that applies the indicated
+//               scale in each of the three axes.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+set_scale_mat(const FLOATNAME(LVecBase3) &scale) {
+  set(scale._v.v._0, 0.0f, 0.0f,
+      0.0f, scale._v.v._1, 0.0f,
+      0.0f, 0.0f, scale._v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1076,6 +1010,18 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_shear_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that applies the indicated
+//               shear in each of the three planes.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::
+set_shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
+  set_scale_shear_mat(FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
+                      shear, cs);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::shear_mat
 //       Access: Public, Static
 //  Description: Returns a matrix that applies the indicated
@@ -1083,8 +1029,9 @@ scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
-  return scale_shear_mat(FLOATNAME(LVecBase3)(1.0f, 1.0f, 1.0f),
-                         shear, cs);
+  FLOATNAME(LMatrix3) mat;
+  mat.set_shear_mat(shear, cs);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1095,8 +1042,24 @@ shear_mat(const FLOATNAME(LVecBase3) &shear, CoordinateSystem cs) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, CoordinateSystem cs) {
-  return scale_shear_mat(1.0f, 1.0f, 1.0f,
-                         shxy, shxz, shyz, cs);
+  FLOATNAME(LMatrix3) mat;
+  mat.set_shear_mat(FLOATNAME(LVecBase3)(shxy, shxz, shyz), cs);
+  return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::scale_shear_mat
+//       Access: Public, Static
+//  Description: Returns a matrix that applies the indicated
+//               scale and shear.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
+scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                const FLOATNAME(LVecBase3) &shear, 
+                CoordinateSystem cs) {
+  FLOATNAME(LMatrix3) mat;
+  mat.set_scale_shear_mat(scale, shear, cs);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1109,9 +1072,10 @@ INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 scale_shear_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz,
                 FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz,
                 CoordinateSystem cs) {
-  return scale_shear_mat(FLOATNAME(LVecBase3)(sx, sy, sz),
-                         FLOATNAME(LVecBase3)(shxy, shxz, shyz),
-                         cs);
+  FLOATNAME(LMatrix3) mat;
+  mat.set_scale_shear_mat(FLOATNAME(LVecBase3)(sx, sy, sz),
+                          FLOATNAME(LVecBase3)(shxy, shxz, shyz), cs);
+  return mat;
 }
 
 ////////////////////////////////////////////////////////////////////

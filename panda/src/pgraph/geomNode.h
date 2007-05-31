@@ -96,7 +96,8 @@ public:
                    GeomTransformer &transformer);
 
 protected:
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+                                       Thread *current_thread) const;
 
 public:
   // This must be declared public so that VC6 will allow the nested

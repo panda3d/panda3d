@@ -170,14 +170,6 @@ ConfigVariableString red_blue_stereo_colors
           "be a two-word string, where each word is one of 'red', 'blue', "
           "'green', or 'alpha'."));
 
-ConfigVariableBool depth_offset_decals
-("depth-offset-decals", false,
- PRC_DESC("Set this true to allow decals to be implemented via the advanced "
-          "depth offset feature, if supported, instead of via the traditional "
-          "(and slower) two-pass approach.  This is false by default "
-          "because it appears that many graphics drivers have issues with "
-          "their depth offset implementation."));
-
 ConfigVariableBool auto_generate_mipmaps
 ("auto-generate-mipmaps", false,
  PRC_DESC("Set this true to use the hardware to generate mipmaps "

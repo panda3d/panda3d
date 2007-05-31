@@ -1316,8 +1316,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_90:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
+          accent_mat.set_rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -1339,8 +1338,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_270:
-          accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
+          accent_mat.set_rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];

@@ -50,6 +50,7 @@
 #include "zStream.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
+#include "boundingSphere.h"
 
 #include <stdio.h>
 
@@ -608,18 +609,20 @@ is_renderable() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::compute_internal_bound
+//     Function: TextNode::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Called when needed to recompute the node's
 //               _internal_bound object.  Nodes that contain anything
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) TextNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+void TextNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
+  int num_vertices = 0;
+
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
-  nassertr(bound != (BoundingVolume *)NULL, bound);
+  PT(BoundingVolume) bound = new BoundingSphere;
 
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
@@ -640,7 +643,9 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
 
   gbv->around(vertices, vertices + 8);
 
-  return bound;
+  bdata->_internal_bounds = bound;
+  bdata->_internal_vertices = 0;  // TODO: estimate this better.
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

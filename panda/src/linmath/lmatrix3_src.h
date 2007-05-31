@@ -25,11 +25,13 @@
 //               texture matrix.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FLOATNAME(LMatrix3) {
-PUBLISHED:
+public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
   INLINE_LINMATH FLOATNAME(LMatrix3)();
+
+PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
       const FLOATNAME(LMatrix3) &other);
@@ -141,6 +143,13 @@ PUBLISHED:
   // The following named constructors return 3x3 matrices suitable for
   // affine transforms in 2-d coordinate space.
 
+  INLINE_LINMATH void
+    set_translate_mat(const FLOATNAME(LVecBase2) &trans);
+  INLINE_LINMATH void
+    set_rotate_mat(FLOATTYPE angle);
+  INLINE_LINMATH void
+    set_scale_mat(const FLOATNAME(LVecBase2) &scale);
+
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     translate_mat(const FLOATNAME(LVecBase2) &trans);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
@@ -154,6 +163,15 @@ PUBLISHED:
 
   // The following named constructors return 3x3 matrices suitable for
   // scale/rotate transforms in 3-d coordinate space.
+  void
+    set_rotate_mat(FLOATTYPE angle,
+                   FLOATNAME(LVecBase3) axis,
+                   CoordinateSystem cs = CS_default);
+  void
+    set_rotate_mat_normaxis(FLOATTYPE angle,
+                            const FLOATNAME(LVecBase3) &axis,
+                            CoordinateSystem cs = CS_default);
+
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     rotate_mat(FLOATTYPE angle,
                FLOATNAME(LVecBase3) axis,
@@ -163,10 +181,17 @@ PUBLISHED:
                         const FLOATNAME(LVecBase3) &axis,
                         CoordinateSystem cs = CS_default);
 
+  INLINE_LINMATH void
+    set_scale_mat(const FLOATNAME(LVecBase3) &scale);
+
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(const FLOATNAME(LVecBase3) &scale);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(FLOATTYPE sx, FLOATTYPE sy, FLOATTYPE sz);
+
+  INLINE_LINMATH void
+    set_shear_mat(const FLOATNAME(LVecBase3) &shear, 
+                  CoordinateSystem cs = CS_default);
 
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     shear_mat(const FLOATNAME(LVecBase3) &shear, 
@@ -175,7 +200,12 @@ PUBLISHED:
     shear_mat(FLOATTYPE shxy, FLOATTYPE shxz, FLOATTYPE shyz, 
               CoordinateSystem cs = CS_default);
 
-  static FLOATNAME(LMatrix3)
+  void
+    set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                        const FLOATNAME(LVecBase3) &shear, 
+                        CoordinateSystem cs = CS_default);
+
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
                     const FLOATNAME(LVecBase3) &shear, 
                     CoordinateSystem cs = CS_default);

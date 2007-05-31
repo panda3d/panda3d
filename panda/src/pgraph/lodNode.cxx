@@ -456,11 +456,11 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               be overridden by PandaNode classes that contain
 //               something internally.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) LODNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+void LODNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
-  nassertr(bound != (BoundingVolume *)NULL, bound);
+  PT(BoundingVolume) bound = new BoundingSphere;
 
   // If we have any visible rings, those count in the bounding volume.
   if (is_any_shown()) {
@@ -489,7 +489,9 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     bound->around(child_begin, child_end);
   }
 
-  return bound;
+  bdata->_internal_bounds = bound;
+  bdata->_internal_vertices = 0;
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

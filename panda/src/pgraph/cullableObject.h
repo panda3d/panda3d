@@ -83,10 +83,6 @@ public:
   CPT(TransformState) _internal_transform;
   CullableObject *_next;
 
-  // This flag is only used by certain CullBin types.  In particular,
-  // it is used by CullBinOcclusionTest.
-  bool _already_drawn;
-
 private:
   void munge_points_to_quads(const CullTraverser *traverser);
   void munge_texcoord_light_vector(const CullTraverser *traverser);

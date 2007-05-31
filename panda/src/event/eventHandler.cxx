@@ -56,8 +56,9 @@ process_events() {
 //               event.
 ////////////////////////////////////////////////////////////////////
 void EventHandler::
-dispatch_event(const CPT_Event &event) {
-  nassertv(!event.is_null());
+dispatch_event(const Event *event) {
+  nassertv(event != (Event *)NULL);
+
   // Is the event name defined in the hook table?  It will be if
   // anyone has ever assigned a hook to this particular event name.
   Hooks::const_iterator hi;
@@ -71,9 +72,10 @@ dispatch_event(const CPT_Event &event) {
     Functions::const_iterator fi;
     for (fi = copy_functions.begin(); fi != copy_functions.end(); ++fi) {
       if (event_cat.is_spam()) {
-        event_cat->spam() << "calling callback 0x" << (void*)(*fi)
-              << " for event '" << event->get_name() << "'"
-              << endl;
+        event_cat->spam()
+          << "calling callback 0x" << (void*)(*fi)
+          << " for event '" << event->get_name() << "'"
+          << endl;
       }
       (*fi)(event);
     }
@@ -148,8 +150,9 @@ write(ostream &out) const {
 bool EventHandler::
 add_hook(const string &event_name, EventFunction *function) {
   if (event_cat.is_debug()) {
-    event_cat.debug() << "adding hook for event '" << event_name
-               << "' with function 0x" << (void*)function << endl;
+    event_cat.debug()
+      << "adding hook for event '" << event_name
+      << "' with function 0x" << (void*)function << endl;
   }
   assert(!event_name.empty());
   assert(function);
@@ -313,9 +316,8 @@ remove_all_hooks() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EventHandler::
-make_global_event_handler(EventQueue *queue) {
-  assert(queue);
-  _global_event_handler = new EventHandler(queue);
+make_global_event_handler() {
+  _global_event_handler = new EventHandler(EventQueue::get_global_event_queue());
 }
 
 

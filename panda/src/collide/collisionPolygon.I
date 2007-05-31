@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
@@ -34,7 +34,7 @@ CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
@@ -51,7 +51,7 @@ CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
@@ -70,8 +70,33 @@ CollisionPolygon() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::get_num_points
+//       Access: Published
+//  Description: Returns the number of vertices of the
+//               CollisionPolygon.
+////////////////////////////////////////////////////////////////////
+INLINE int CollisionPolygon::
+get_num_points() const {
+  return _points.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::get_point
+//       Access: Published
+//  Description: Returns the nth vertex of the CollisionPolygon,
+//               expressed in 3-D space.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f CollisionPolygon::
+get_point(int n) const {
+  nassertr(n >= 0 && n < (int)_points.size(), LPoint3f::zero());
+  LMatrix4f to_3d_mat;
+  rederive_to_3d_mat(to_3d_mat);
+  return to_3d(_points[n]._p, to_3d_mat);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::verify_points
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Verifies that the indicated set of points will define
 //               a valid CollisionPolygon: that is, at least three
 //               non-collinear points, with no points repeated.
@@ -88,7 +113,7 @@ verify_points(const LPoint3f &a, const LPoint3f &b,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::verify_points
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Verifies that the indicated set of points will define
 //               a valid CollisionPolygon: that is, at least three
 //               non-collinear points, with no points repeated.
@@ -139,7 +164,7 @@ INLINE void CollisionPolygon::
 calc_to_3d_mat(LMatrix4f &to_3d_mat) const {
   // We have to be explicit about the coordinate system--we
   // specifically mean CS_zup_right, because that points the forward
-  // vector down the Y axis and moves the coords inthe (X, 0, Z).  We
+  // vector down the Y axis and moves the coords in (X, 0, Z).  We
   // want this effect regardless of the user's coordinate system of
   // choice.
 

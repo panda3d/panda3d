@@ -51,16 +51,16 @@ const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ly_to_rz_mat =
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix::scale_shear_mat
-//       Access: Public, Static
-//  Description: Returns a matrix that applies the indicated
+//     Function: LMatrix::set_scale_shear_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that applies the indicated
 //               scale and shear.
 ////////////////////////////////////////////////////////////////////
-FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
-scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
-                const FLOATNAME(LVecBase3) &shear,
-                CoordinateSystem cs) {
-  TAU_PROFILE("LMatrix3 LMatrix3::scale_shear_mat(const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
+void FLOATNAME(LMatrix3)::
+set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
+                    const FLOATNAME(LVecBase3) &shear,
+                    CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix3::set_scale_shear_mat(const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -73,57 +73,60 @@ scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
   switch (cs) {
   case CS_zup_right:
     if (temp_hpr_fix) {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
-                                 0.0f, scale._v.v._1, 0.0f,
-                                 shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
+          0.0f, scale._v.v._1, 0.0f,
+          shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
     } else {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
-                                 shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, 0.0f,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
+          shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
     }
-
+    break;
+    
   case CS_zup_left:
     if (temp_hpr_fix) {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
-                                 0.0f, scale._v.v._1, 0.0f,
-                                 -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
+          0.0f, scale._v.v._1, 0.0f,
+          -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
     } else {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
-                                 -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, 0.0f,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
+          -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
     }
-
+    break;
+    
   case CS_yup_right:
     if (temp_hpr_fix) {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, shear._v.v._1 * scale._v.v._0,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
-                                 0.0f, 0.0f, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, shear._v.v._1 * scale._v.v._0,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
+          0.0f, 0.0f, scale._v.v._2);
     } else {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
-                                 shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, 0.0f,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
+          shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
     }
-
+    break;
+    
   case CS_yup_left:
     if (temp_hpr_fix) {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, -shear._v.v._1 * scale._v.v._0,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
-                                 0.0f, 0.0f, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, -shear._v.v._1 * scale._v.v._0,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
+          0.0f, 0.0f, scale._v.v._2);
     } else {
-      return FLOATNAME(LMatrix3)(scale._v.v._0, 0.0f, 0.0f,
-                                 shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
-                                 -shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+      set(scale._v.v._0, 0.0f, 0.0f,
+          shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
+          -shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
     }
-
+    break;
+    
   case CS_default:
   case CS_invalid:
+  default:
     // These should not be possible.
+    linmath_cat.error()
+      << "Invalid coordinate system value!\n";
     break;
   }
-
-  linmath_cat.error()
-    << "Invalid coordinate system value!\n";
-  return _ident_mat;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,6 +227,119 @@ compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
     }
   }
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_rotate_mat
+//       Access: Public
+//  Description: Fills mat with a matrix that rotates by the given
+//               angle in degrees counterclockwise about the indicated
+//               vector.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+set_rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+               CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix3::set_rotate_mat(FLOATTYPE, LVecBase3, CoordinateSystem)", " ", TAU_USER);
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
+
+  if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
+    // In a left-handed coordinate system, counterclockwise is the
+    // other direction.
+    angle = -angle;
+  }
+
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
+
+  // Normalize the axis.
+  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+  nassertv(length_sq != 0.0f);
+  FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
+
+  axis_0 *= recip_length;
+  axis_1 *= recip_length;
+  axis_2 *= recip_length;
+
+  FLOATTYPE angle_rad = deg_2_rad(angle);
+  FLOATTYPE s,c;
+  csincos(angle_rad, &s, &c);
+  FLOATTYPE t = 1.0f - c;
+
+  FLOATTYPE t0, t1, t2, s0, s1, s2;
+
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
+
+  _m.m._00 = t0 * axis_0 + c;
+  _m.m._01 = t0 * axis_1 + s2;
+  _m.m._02 = t0 * axis_2 - s1;
+
+  _m.m._10 = t1 * axis_0 - s2;
+  _m.m._11 = t1 * axis_1 + c;
+  _m.m._12 = t1 * axis_2 + s0;
+
+  _m.m._20 = t2 * axis_0 + s1;
+  _m.m._21 = t2 * axis_1 - s0;
+  _m.m._22 = t2 * axis_2 + c;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix::set_rotate_mat_normaxis
+//       Access: Public
+//  Description: Fills mat with a matrix that rotates by the given
+//               angle in degrees counterclockwise about the indicated
+//               vector.  Assumes axis has been normalized.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix3)::
+set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
+                        CoordinateSystem cs) {
+  TAU_PROFILE("void LMatrix3::set_rotate_mat_normaxis(FLOATTYPE, LVecBase3, CoordinateSystem)", " ", TAU_USER);
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
+
+  if (IS_LEFT_HANDED_COORDSYSTEM(cs)) {
+    // In a left-handed coordinate system, counterclockwise is the
+    // other direction.
+    angle = -angle;
+  }
+
+  FLOATTYPE axis_0 = axis._v.v._0;
+  FLOATTYPE axis_1 = axis._v.v._1;
+  FLOATTYPE axis_2 = axis._v.v._2;
+
+  FLOATTYPE angle_rad = deg_2_rad(angle);
+  FLOATTYPE s, c;
+  csincos(angle_rad, &s, &c);
+  FLOATTYPE t = 1.0f - c;
+
+  FLOATTYPE t0, t1, t2, s0, s1, s2;
+
+  t0 = t * axis_0;
+  t1 = t * axis_1;
+  t2 = t * axis_2;
+  s0 = s * axis_0;
+  s1 = s * axis_1;
+  s2 = s * axis_2;
+
+  _m.m._00 = t0 * axis_0 + c;
+  _m.m._01 = t0 * axis_1 + s2;
+  _m.m._02 = t0 * axis_2 - s1;
+
+  _m.m._10 = t1 * axis_0 - s2;
+  _m.m._11 = t1 * axis_1 + c;
+  _m.m._12 = t1 * axis_2 + s0;
+
+  _m.m._20 = t2 * axis_0 + s1;
+  _m.m._21 = t2 * axis_1 - s0;
+  _m.m._22 = t2 * axis_2 + c;
 }
 
 ////////////////////////////////////////////////////////////////////

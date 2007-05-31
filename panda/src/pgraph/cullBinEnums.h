@@ -35,7 +35,6 @@ PUBLISHED:
     BT_back_to_front,
     BT_front_to_back,
     BT_fixed,
-    BT_occlusion_test,
   };
 };
 

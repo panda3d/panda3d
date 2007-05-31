@@ -677,11 +677,13 @@ do_premunge(GraphicsStateGuardianBase *gsg,
 //               be overridden by PandaNode classes that contain
 //               something internally.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) GeomNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+void GeomNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
+  int num_vertices = 0;
+
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
-  nassertr(bound != (BoundingVolume *)NULL, bound);
+  PT(BoundingVolume) bound = new BoundingSphere;
 
   // Now actually compute the bounding volume by putting it around all
   // of our geoms' bounding volumes.
@@ -693,14 +695,19 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   CPT(GeomList) geoms = cdata->get_geoms();
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    child_volumes.push_back(entry._geom.get_read_pointer()->get_bounds());
+    CPT(Geom) geom = entry._geom.get_read_pointer();
+    child_volumes.push_back(geom->get_bounds());
+    num_vertices += geom->get_nested_vertices();
   }
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
 
   bound->around(child_begin, child_end);
-  return bound;
+
+  bdata->_internal_bounds = bound;
+  bdata->_internal_vertices = num_vertices;
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

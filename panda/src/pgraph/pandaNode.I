@@ -574,10 +574,25 @@ clear_bounds() {
 //               volume.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(BoundingVolume) PandaNode::
-get_internal_bounds() const {
-  Thread *current_thread = Thread::get_current_thread();
+get_internal_bounds(Thread *current_thread) const {
   return get_internal_bounds(current_thread->get_pipeline_stage(),
                              current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_internal_vertices
+//       Access: Published
+//  Description: Returns the total number of vertices that will be
+//               rendered by this particular node alone, not
+//               accounting for its children.
+//
+//               This may not include all vertices for certain dynamic
+//               effects.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNode::
+get_internal_vertices(Thread *current_thread) const {
+  return get_internal_vertices(current_thread->get_pipeline_stage(),
+                               current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -907,6 +922,32 @@ operator < (const UpConnection &other) const {
 INLINE PandaNode *PandaNode::UpConnection::
 get_parent() const {
   return _parent;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::BoundsData::Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::BoundsData::
+BoundsData() :
+  _internal_bounds(NULL),
+  _internal_vertices(0),
+  _internal_bounds_stale(true)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::BoundsData::Copy Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::BoundsData::
+BoundsData(const PandaNode::BoundsData &copy) :
+  _internal_bounds(copy._internal_bounds),
+  _internal_vertices(copy._internal_vertices),
+  _internal_bounds_stale(copy._internal_bounds_stale)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1658,6 +1699,25 @@ INLINE CPT(BoundingVolume) PandaNodePipelineReader::
 get_bounds() const {
   nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_external_bounds);
   return _cdata->_external_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNodePipelineReader::get_nested_vertices
+//       Access: Public
+//  Description: Returns the total number of vertices that will be
+//               rendered by this node and all of its descendents.
+//
+//               This is not necessarily an accurate count of vertices
+//               that will actually be rendered, since this will
+//               include all vertices of all LOD's, and it will also
+//               include hidden nodes.  It may also omit or only
+//               approximate certain kinds of dynamic geometry.
+//               However, it will not include stashed nodes.
+////////////////////////////////////////////////////////////////////
+INLINE int PandaNodePipelineReader::
+get_nested_vertices() const {
+  nassertr(_cdata->_last_update == _cdata->_next_update, _cdata->_nested_vertices);
+  return _cdata->_nested_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////

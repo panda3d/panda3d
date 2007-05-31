@@ -25,7 +25,6 @@
 #include "binCullHandler.h"
 #include "cullResult.h"
 #include "cullTraverser.h"
-#include "cullBinOcclusionTest.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "pStatClient.h"
@@ -46,6 +45,7 @@
 #include "geomVertexArrayData.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
+#include "config_pgraph.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -107,6 +107,10 @@ PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
 PStatCollector GraphicsEngine::_test_geom_pcollector("Collision Tests:CollisionGeom");
+PStatCollector GraphicsEngine::_occlusion_untested_pcollector("Occlusion results:Not tested");
+PStatCollector GraphicsEngine::_occlusion_passed_pcollector("Occlusion results:Visible");
+PStatCollector GraphicsEngine::_occlusion_failed_pcollector("Occlusion results:Occluded");
+PStatCollector GraphicsEngine::_occlusion_tests_pcollector("Occlusion tests");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::Constructor
@@ -710,14 +714,13 @@ render_frame() {
   CullTraverser::_nodes_pcollector.clear_level();
   CullTraverser::_geom_nodes_pcollector.clear_level();
   CullTraverser::_geoms_pcollector.clear_level();
-  CullBinOcclusionTest::_occlusion_previous_pcollector.clear_level();
-  CullBinOcclusionTest::_occlusion_passed_pcollector.clear_level();
-  CullBinOcclusionTest::_occlusion_failed_pcollector.clear_level();
   GeomCacheManager::_geom_cache_active_pcollector.clear_level();
   GeomCacheManager::_geom_cache_record_pcollector.clear_level();
   GeomCacheManager::_geom_cache_erase_pcollector.clear_level();
   GeomCacheManager::_geom_cache_evict_pcollector.clear_level();
   
+  GraphicsStateGuardian::init_frame_pstats();
+
   _transform_states_pcollector.set_level(TransformState::get_num_states());
   _render_states_pcollector.set_level(RenderState::get_num_states());
   if (pstats_unused_states) {
@@ -745,6 +748,10 @@ render_frame() {
   _test_inv_sphere_pcollector.clear_level();
   _volume_geom_pcollector.clear_level();
   _test_geom_pcollector.clear_level();
+  _occlusion_untested_pcollector.clear_level();
+  _occlusion_passed_pcollector.clear_level();
+  _occlusion_failed_pcollector.clear_level();
+  _occlusion_tests_pcollector.clear_level();
 
   if (PStatClient::is_connected()) {
     size_t small_buf = GeomVertexArrayData::get_small_lru()->get_total_size();
@@ -1177,14 +1184,17 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
   PT(SceneSetup) scene_setup;
   {
     PStatTimer timer(_cull_setup_pcollector, current_thread);
-    cull_result = dr->get_cull_result(current_thread);
-    if (cull_result != (CullResult *)NULL) {
-      cull_result = cull_result->make_next();
-    } else {
-      cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
-    }
     DisplayRegionPipelineReader dr_reader(dr, current_thread);
     scene_setup = setup_scene(gsg, &dr_reader);
+    cull_result = dr->get_cull_result(current_thread);
+
+    if (cull_result != (CullResult *)NULL) {
+      cull_result = cull_result->make_next();
+
+    } else {
+      // This DisplayRegion has no cull results; draw it.
+      cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
+    }
   }
 
   if (scene_setup != (SceneSetup *)NULL) {
@@ -1531,13 +1541,14 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 void GraphicsEngine::
 do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         GraphicsStateGuardian *gsg, Thread *current_thread) {
-  PStatTimer timer(scene_setup->get_display_region()->get_cull_region_pcollector(), current_thread);
+  DisplayRegion *dr = scene_setup->get_display_region();
+  PStatTimer timer(dr->get_cull_region_pcollector(), current_thread);
 
-  CullTraverser trav(gsg, current_thread);
-  trav.set_cull_handler(cull_handler);
-  trav.set_depth_offset_decals(depth_offset_decals && gsg->depth_offset_decals());
-  trav.set_scene(scene_setup);
-  
+  CullTraverser *trav = dr->get_cull_traverser();
+  trav->set_cull_handler(cull_handler);
+  trav->set_scene(scene_setup, gsg);
+
+  trav->set_view_frustum(NULL);
   if (view_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the
     // bounding volume associated with the current viewing frustum.
@@ -1557,11 +1568,12 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
         scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
       local_frustum->xform(cull_center_transform->get_mat());
 
-      trav.set_view_frustum(local_frustum);
+      trav->set_view_frustum(local_frustum);
     }
   }
 
-  trav.traverse(scene_setup->get_scene_root(), get_portal_cull());
+  trav->traverse(scene_setup->get_scene_root());
+  trav->end_traverse();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -67,7 +67,8 @@ PUBLISHED:
   void reset_bound(const NodePath &rel_to);
 
 protected:
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+                                       Thread *current_thread) const;
 
 private:
   PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,

@@ -114,8 +114,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // PGTop node, for the convenience of PGItems to register themselves
   // as they are drawn.
   PGCullTraverser pg_trav(this, trav);
+  pg_trav.local_object();
   pg_trav._sort_index = _start_sort;
   pg_trav.traverse_below(data);
+  pg_trav.end_traverse();
 
   // Now tell the watcher about the new set of regions.  Strictly
   // speaking, we shouldn't do this until the frame that we're about

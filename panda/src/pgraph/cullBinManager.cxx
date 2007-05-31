@@ -348,9 +348,6 @@ parse_bin_type(const string &bin_type) {
   } else if (cmp_nocase_uh(bin_type, "front_to_back") == 0) {
     return BT_front_to_back;
 
-  } else if (cmp_nocase_uh(bin_type, "occlusion_test") == 0) {
-    return BT_occlusion_test;
-
   } else {
     return BT_invalid;
   }
@@ -380,9 +377,6 @@ operator << (ostream &out, CullBinManager::BinType bin_type) {
     
   case CullBinManager::BT_fixed:
     return out << "fixed";
-    
-  case CullBinManager::BT_occlusion_test:
-    return out << "occlusion_test";
   }
 
   return out << "**invalid BinType(" << (int)bin_type << ")**";

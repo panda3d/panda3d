@@ -40,7 +40,7 @@ LoaderOptions PandaFramework::_loader_options;
 ////////////////////////////////////////////////////////////////////
 PandaFramework::
 PandaFramework() :
-  _event_handler(EventQueue::get_global_event_queue())
+  _event_handler(*EventHandler::get_global_event_handler())
 {
   _is_open = false;
   _made_default_pipe = false;
@@ -888,7 +888,7 @@ clear_text() {
 //               window).
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_esc(CPT_Event event, void *data) { 
+event_esc(const Event *event, void *data) { 
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -926,7 +926,7 @@ event_esc(CPT_Event event, void *data) {
 //               rate.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_f(CPT_Event, void *data) {
+event_f(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   self->report_frame_rate(nout);
   self->reset_frame_rate();
@@ -938,7 +938,7 @@ event_f(CPT_Event, void *data) {
 //  Description: Default handler for w key: toggle wireframe.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_w(CPT_Event event, void *) {
+event_w(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -954,7 +954,7 @@ event_w(CPT_Event event, void *) {
 //  Description: Default handler for t key: toggle texture.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_t(CPT_Event event, void *) {
+event_t(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -971,7 +971,7 @@ event_t(CPT_Event event, void *) {
 //               rendering).
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_b(CPT_Event event, void *) {
+event_b(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -987,7 +987,7 @@ event_b(CPT_Event event, void *) {
 //  Description: Default handler for i key: invert one-sided faces.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_i(CPT_Event event, void *) {
+event_i(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1003,7 +1003,7 @@ event_i(CPT_Event event, void *) {
 //  Description: Default handler for l key: toggle lighting.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_l(CPT_Event event, void *) {
+event_l(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1020,7 +1020,7 @@ event_l(CPT_Event event, void *) {
 //               the scene, or over the highlighted part of the scene.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_c(CPT_Event event, void *data) {
+event_c(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1043,7 +1043,7 @@ event_c(CPT_Event event, void *data) {
 //               controls.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_a(CPT_Event event, void *data) {
+event_a(const Event *event, void *data) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1060,7 +1060,7 @@ event_a(CPT_Event event, void *data) {
 //               of collision solids.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_C(CPT_Event, void *data) {
+event_C(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   NodePath node = self->get_highlight();
@@ -1081,7 +1081,7 @@ event_C(CPT_Event, void *data) {
 //               the entire scene.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_B(CPT_Event, void *data) {
+event_B(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   NodePath node = self->get_highlight();
@@ -1099,7 +1099,7 @@ event_B(CPT_Event, void *data) {
 //               the scene graph, or the highlighted node.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_L(CPT_Event, void *data) {
+event_L(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   NodePath node = self->get_highlight();
@@ -1118,7 +1118,7 @@ event_L(CPT_Event, void *data) {
 //               arrow keys to highlight different nodes.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_h(CPT_Event, void *data) {
+event_h(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   
   if (self->has_highlight()) {
@@ -1135,7 +1135,7 @@ event_h(CPT_Event, void *data) {
 //               move the highlight to the node's parent.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_arrow_up(CPT_Event, void *data) {
+event_arrow_up(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   if (self->has_highlight()) {
@@ -1153,7 +1153,7 @@ event_arrow_up(CPT_Event, void *data) {
 //               move the highlight to the node's first child.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_arrow_down(CPT_Event, void *data) {
+event_arrow_down(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   if (self->has_highlight()) {
@@ -1172,7 +1172,7 @@ event_arrow_down(CPT_Event, void *data) {
 //               the left.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_arrow_left(CPT_Event, void *data) {
+event_arrow_left(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   if (self->has_highlight()) {
@@ -1204,7 +1204,7 @@ event_arrow_left(CPT_Event, void *data) {
 //               the right.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_arrow_right(CPT_Event, void *data) {
+event_arrow_right(const Event *, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   if (self->has_highlight()) {
@@ -1235,7 +1235,7 @@ event_arrow_right(CPT_Event, void *data) {
 //  Description: Default handler for shift-S key: activate stats.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_S(CPT_Event, void *) {
+event_S(const Event *, void *) {
 #ifdef DO_PSTATS
   nout << "Connecting to stats host" << endl;
   PStatClient::connect();
@@ -1250,7 +1250,7 @@ event_S(CPT_Event, void *) {
 //  Description: Default handler for f9 key: take screenshot.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_f9(CPT_Event event, void *data) {
+event_f9(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
   if (event->get_num_parameters() == 1) {
@@ -1292,7 +1292,7 @@ event_f9(CPT_Event event, void *data) {
 //  Description: Default handler for comma key: rotate background color.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_comma(CPT_Event event, void *) {
+event_comma(const Event *event, void *) {
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
     WindowFramework *wf;
@@ -1319,7 +1319,7 @@ event_comma(CPT_Event event, void *) {
 //  Description: Default handler for ? key: show the available keys.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_question(CPT_Event event, void *data) {
+event_question(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   if (event->get_num_parameters() == 1) {
     EventParameter param = event->get_parameter(0);
@@ -1375,7 +1375,7 @@ event_question(CPT_Event event, void *data) {
 //               closed, etc.
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-event_window_event(CPT_Event event, void *data) {
+event_window_event(const Event *event, void *data) {
   PandaFramework *self = (PandaFramework *)data;
   if (event->get_num_parameters() == 1) {
     // The parameter of the window event is the window itself, rather

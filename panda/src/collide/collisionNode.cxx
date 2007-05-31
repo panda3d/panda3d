@@ -31,6 +31,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "clockObject.h"
+#include "boundingSphere.h"
 
 TypeHandle CollisionNode::_type_handle;
 
@@ -305,11 +306,11 @@ set_from_collide_mask(CollideMask mask) {
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) CollisionNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+void CollisionNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
-  nassertr(bound != (BoundingVolume *)NULL, bound);
+  PT(BoundingVolume) bound = new BoundingSphere;
 
   // Now actually compute the bounding volume by putting it around all
   // of our solids' bounding volumes.
@@ -342,7 +343,9 @@ compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
   }
 #endif
 
-  return bound;
+  bdata->_internal_bounds = bound;
+  bdata->_internal_vertices = 0;
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

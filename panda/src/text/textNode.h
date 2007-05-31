@@ -243,7 +243,8 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+                                       Thread *current_thread) const;
 
 private:
   INLINE void invalidate_no_measure();

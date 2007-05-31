@@ -49,6 +49,7 @@ extern ConfigVariableBool transform_cache;
 extern ConfigVariableBool state_cache;
 extern ConfigVariableBool retransform_sprites;
 extern ConfigVariableBool support_fade_lod;
+extern ConfigVariableBool depth_offset_decals;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 extern ConfigVariableBool premunge_data;

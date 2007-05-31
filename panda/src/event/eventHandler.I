@@ -26,9 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE EventHandler *EventHandler::
 get_global_event_handler(EventQueue *queue) {
+  // The event queue parameter is present for now, for backward
+  // compatibility, but it is ignored.
   if (_global_event_handler == 0) {
-    assert(queue);
-    make_global_event_handler(queue);
+    make_global_event_handler();
   }
   return _global_event_handler;
 }

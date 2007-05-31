@@ -24,6 +24,7 @@
 #include "texturePool.h"
 #include "nodeVertexTransform.h"
 #include "rigidBodyCombiner.h"
+#include "pipeOcclusionCullTraverser.h"
 
 #include "dconfig.h"
 
@@ -69,6 +70,7 @@ init_libgrutil() {
   FrameRateMeter::init_type();
   NodeVertexTransform::init_type();
   RigidBodyCombiner::init_type();
+  PipeOcclusionCullTraverser::init_type();
 
 #ifdef HAVE_OPENCV
   

@@ -261,6 +261,11 @@ private:
   static PStatCollector _cache_update_pcollector;
   static PStatCollector _transform_compose_pcollector;
   static PStatCollector _transform_invert_pcollector;
+  static PStatCollector _transform_calc_pcollector;
+  static PStatCollector _transform_break_cycles_pcollector;
+  static PStatCollector _transform_new_pcollector;
+  static PStatCollector _transform_validate_pcollector;
+  static PStatCollector _transform_hash_pcollector;
 
   static PStatCollector _node_counter;
   static PStatCollector _cache_counter;

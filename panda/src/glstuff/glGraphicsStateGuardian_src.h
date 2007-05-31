@@ -53,6 +53,7 @@ typedef void (APIENTRYP PFNGLGENQUERIESPROC) (GLsizei n, GLuint *ids);
 typedef void (APIENTRYP PFNGLBEGINQUERYPROC) (GLenum target, GLuint id);
 typedef void (APIENTRYP PFNGLENDQUERYPROC) (GLenum target);
 typedef void (APIENTRYP PFNGLDELETEQUERIESPROC) (GLsizei n, const GLuint *ids);
+typedef void (APIENTRYP PFNGLGETQUERYIVPROC) (GLenum target, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGETQUERYOBJECTUIVPROC) (GLuint id, GLenum pname, GLuint *params);
 typedef void (APIENTRYP PFNGLPOINTPARAMETERFVPROC) (GLenum pname, const GLfloat *params);
 typedef void (APIENTRYP PFNGLDRAWRANGEELEMENTSPROC) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
@@ -451,6 +452,7 @@ public:
   PFNGLBEGINQUERYPROC _glBeginQuery;
   PFNGLENDQUERYPROC _glEndQuery;
   PFNGLDELETEQUERIESPROC _glDeleteQueries;
+  PFNGLGETQUERYIVPROC _glGetQueryiv;
   PFNGLGETQUERYOBJECTUIVPROC _glGetQueryObjectuiv;
 
   PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;
@@ -471,6 +473,7 @@ public:
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
   static PStatCollector _vertices_immediate_pcollector;
+  static PStatCollector _wait_occlusion_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

@@ -269,6 +269,20 @@ set_stereo_channel(Lens::StereoChannel stereo_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cull_traverser
+//       Access: Published
+//  Description: Returns the CullTraverser that will be used to draw
+//               the contents of this DisplayRegion.
+////////////////////////////////////////////////////////////////////
+CullTraverser *DisplayRegion::
+get_cull_traverser() {
+  if (_trav == (CullTraverser *)NULL) {
+    _trav = new CullTraverser;
+  }
+  return _trav;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::compute_pixels
 //       Access: Published
 //  Description: Computes the pixel locations of the DisplayRegion

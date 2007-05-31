@@ -204,10 +204,13 @@ is_renderable() const {
 //               be overridden by PandaNode classes that contain
 //               something internally.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) PlaneNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
+void PlaneNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-  return new BoundingPlane(cdata->_plane);
+  bdata->_internal_bounds = new BoundingPlane(cdata->_plane);
+  bdata->_internal_vertices = 0;
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

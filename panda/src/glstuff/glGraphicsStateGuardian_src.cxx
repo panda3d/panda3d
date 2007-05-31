@@ -64,6 +64,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:T
 PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
+PStatCollector CLP(GraphicsStateGuardian)::_wait_occlusion_pcollector("Wait:Occlusion");
 
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
@@ -751,6 +752,8 @@ reset() {
         get_extension_func(GLPREFIX_QUOTED, "EndQuery");
       _glDeleteQueries = (PFNGLDELETEQUERIESPROC)
         get_extension_func(GLPREFIX_QUOTED, "DeleteQueries");
+      _glGetQueryiv = (PFNGLGETQUERYIVPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GetQueryiv");
       _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
         get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuiv");
     } else if (has_extension("GL_ARB_occlusion_query")) {
@@ -763,18 +766,31 @@ reset() {
         get_extension_func(GLPREFIX_QUOTED, "EndQueryARB");
       _glDeleteQueries = (PFNGLDELETEQUERIESPROC)
         get_extension_func(GLPREFIX_QUOTED, "DeleteQueriesARB");
+      _glGetQueryiv = (PFNGLGETQUERYIVPROC)
+        get_extension_func(GLPREFIX_QUOTED, "GetQueryivARB");
       _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
         get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuivARB");
     }
   }
 
-  if (_supports_occlusion_query &&
-      (_glGenQueries == NULL || _glBeginQuery == NULL ||
-       _glEndQuery == NULL || _glDeleteQueries == NULL ||
-       _glGetQueryObjectuiv == NULL)) {
-    GLCAT.warning()
-      << "Occlusion queries advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
-    _supports_occlusion_query = false;
+  if (_supports_occlusion_query) {
+    if (_glGenQueries == NULL || _glBeginQuery == NULL ||
+        _glEndQuery == NULL || _glDeleteQueries == NULL ||
+        _glGetQueryiv == NULL || _glGetQueryObjectuiv == NULL) {
+      GLCAT.warning()
+        << "Occlusion queries advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_occlusion_query = false;
+    } else {
+      GLint num_bits;
+      _glGetQueryiv(GL_SAMPLES_PASSED, GL_QUERY_COUNTER_BITS, &num_bits);
+      if (num_bits == 0) {
+        _supports_occlusion_query = false;
+      }
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Occlusion query counter provides " << num_bits << " bits.\n";
+      }
+    }
   }
 
   _glBlendEquation = NULL;
@@ -3022,9 +3038,16 @@ begin_occlusion_query() {
   PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
 
   _glGenQueries(1, &query->_index);
-  _glBeginQuery(GL_SAMPLES_PASSED, query->_index);
 
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "beginning occlusion query index " << query->_index << "\n";
+  }
+
+  _glBeginQuery(GL_SAMPLES_PASSED, query->_index);
   _current_occlusion_query = query;
+  
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3040,8 +3063,39 @@ PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
   nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
   PT(OcclusionQueryContext) result = _current_occlusion_query;
+
+  GLuint index = DCAST(CLP(OcclusionQueryContext), result)->_index;
+    
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "ending occlusion query index " << index << "\n";
+  }
+
+#ifndef NDEBUG
+  GLint current_id;
+  _glGetQueryiv(GL_SAMPLES_PASSED, GL_CURRENT_QUERY, &current_id);
+  nassertr(current_id == index, NULL);
+#endif  // NDEBUG
+
   _current_occlusion_query = NULL;
+
   _glEndQuery(GL_SAMPLES_PASSED);
+
+  // Temporary hack to try working around an apparent driver bug on
+  // iMacs.  Occlusion queries sometimes incorrectly report 0 samples,
+  // unless we stall the pipe to keep fewer than a certain maximum
+  // number of queries pending at once.
+  static ConfigVariableInt limit_occlusion_queries("limit-occlusion-queries", 0);
+  if (limit_occlusion_queries > 0) {
+    if (index > (unsigned int)limit_occlusion_queries) {
+      PStatTimer timer(_wait_occlusion_pcollector);
+      GLuint result;
+      _glGetQueryObjectuiv(index - (unsigned int)limit_occlusion_queries, 
+                           GL_QUERY_RESULT, &result);
+    }
+  }
+
+  report_my_gl_errors();
 
   return result;
 }

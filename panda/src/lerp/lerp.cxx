@@ -201,7 +201,7 @@ void AutonomousLerp::step() {
     throw_event(_event);
 }
 
-void AutonomousLerp::handle_event(CPT(Event), void* data) {
+void AutonomousLerp::handle_event(const Event *, void* data) {
   AutonomousLerp* l = (AutonomousLerp*)data;
   l->step();
 }

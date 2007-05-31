@@ -29,6 +29,7 @@
 #include "geom.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
+#include "boundingSphere.h"
 
 TypeHandle SheetNode::_type_handle;
 
@@ -222,10 +223,16 @@ reset_bound(const NodePath &rel_to) {
 //               of substance should redefine this to do the right
 //               thing.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) SheetNode::
-compute_internal_bounds(int pipeline_stage, Thread *current_thread) const {
-  return do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage,
-                             current_thread);
+void SheetNode::
+compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+                        Thread *current_thread) const {
+  PT(BoundingVolume) bounds = 
+    do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage, 
+                        current_thread);
+
+  bdata->_internal_bounds = bounds;
+  bdata->_internal_vertices = 0;  // TODO--estimate this better.
+  bdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,8 +248,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   // properties from the current pipeline stage, the lazy way.
 
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = PandaNode::compute_internal_bounds(pipeline_stage, current_thread);
-  nassertr(bound != (BoundingVolume *)NULL, bound);
+  PT(BoundingVolume) bound = new BoundingSphere;
   
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != (NurbsSurfaceEvaluator *)NULL) {

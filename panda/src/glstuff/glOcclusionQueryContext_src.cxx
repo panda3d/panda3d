@@ -19,6 +19,7 @@
 #include "pnotify.h"
 #include "dcast.h"
 #include "mutexHolder.h"
+#include "pStatTimer.h"
 
 TypeHandle CLP(OcclusionQueryContext)::_type_handle;
 
@@ -55,6 +56,12 @@ is_answer_ready() const {
   DCAST_INTO_R(glgsg, _gsg, false);
   GLuint result;
   glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT_AVAILABLE, &result);
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "occlusion query " << _index << " ready = " << result << "\n";
+  }
+
   return (result != 0);
 }
 
@@ -86,7 +93,24 @@ int CLP(OcclusionQueryContext)::
 get_num_fragments() const {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, _gsg, 0);
+
   GLuint result;
-  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
+  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT_AVAILABLE, &result);
+  if (result) {
+    // The answer is ready now.
+    glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
+  } else {
+    // The answer is not ready; this call will block.
+    PStatTimer timer(glgsg->_wait_occlusion_pcollector);
+    glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
+  }
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "occlusion query " << _index << " reports " << result
+      << " fragments.\n";
+  }
+
+  glgsg->report_my_gl_errors();
   return result;
 }

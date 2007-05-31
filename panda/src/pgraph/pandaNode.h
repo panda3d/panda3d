@@ -251,7 +251,9 @@ PUBLISHED:
   INLINE void clear_bounds();
   CPT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(BoundingVolume) get_bounds(UpdateSeq &seq, Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE CPT(BoundingVolume) get_internal_bounds() const;
+  int get_nested_vertices(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE CPT(BoundingVolume) get_internal_bounds(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE int get_internal_vertices(Thread *current_thread = Thread::get_current_thread()) const;
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
   void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
@@ -274,8 +276,11 @@ PUBLISHED:
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
 protected:
+  class BoundsData;
+
   INLINE CPT(BoundingVolume) get_user_bounds(int pipeline_stage, Thread *current_thread) const;
   CPT(BoundingVolume) get_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  int get_internal_vertices(int pipeline_stage, Thread *current_thread) const;
   void set_internal_bounds(const BoundingVolume *volume);
 
   INLINE void mark_bounds_stale(int pipeline_stage, Thread *current_thread) const;
@@ -283,7 +288,8 @@ protected:
   void force_bounds_stale(int pipeline_stage, Thread *current_thread);
   INLINE void mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread);
 
-  virtual PT(BoundingVolume) compute_internal_bounds(int pipeline_stage, Thread *current_thread) const;
+  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+                                       Thread *current_thread) const;
   virtual void parents_changed();
   virtual void children_changed();
   virtual void transform_changed();
@@ -297,6 +303,25 @@ protected:
                                Thread *current_thread);
 
   void set_cull_callback();
+
+protected:
+  // This is a base class of CData, defined below.  It contains just
+  // the protected (not private) part of CData that will be needed by
+  // derived classes to implement compute_internal_bounds().
+  class EXPCL_PANDA BoundsData : public CycleData {
+  protected:
+    INLINE BoundsData();
+    INLINE BoundsData(const BoundsData &copy);
+
+  public:
+    // This is the "internal" bounding volume, which is normally
+    // empty, but which a particular PandaNode subclass may define to
+    // be any arbitrary volume, by calling set_internal_bounds() or by
+    // overriding compute_internal_bounds().
+    CPT(BoundingVolume) _internal_bounds;
+    int _internal_vertices;
+    bool _internal_bounds_stale;
+  };
 
 private:
   class CData;
@@ -409,7 +434,7 @@ private:
   
   // This is the data that must be cycled between pipeline stages. 
 
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA CData : public BoundsData {
   public:
     CData();
     CData(const CData &copy);
@@ -464,12 +489,7 @@ private:
     // user.  It defaults to NULL, which means an empty volume.
     CPT(BoundingVolume) _user_bounds;
 
-    // This is the "internal" bounding volume, which is normally
-    // empty, but which a particular PandaNode subclass may define to
-    // be any arbitrary volume, by calling set_internal_bounds() or by
-    // overriding compute_internal_bounds().
-    CPT(BoundingVolume) _internal_bounds;
-    bool _internal_bounds_stale;
+    // See BoundsData, above, for _internal_bounds.
 
     // This is true if the external bounds of this node should be
     // deemed "final".  See set_final().
@@ -497,6 +517,10 @@ private:
     // planes that have been turned *off* at and below this level.
     // TODO: fix the circular reference counts involved here.
     CPT(RenderAttrib) _off_clip_planes;
+
+    // The number of vertices rendered by this node and all child
+    // nodes.
+    int _nested_vertices;
 
     // This is the bounding volume around the _user_bounds, the
     // _internal_bounds, and all of the children's external bounding
@@ -712,6 +736,7 @@ public:
   INLINE CollideMask get_net_collide_mask() const;
   INLINE CPT(RenderAttrib) get_off_clip_planes() const;
   INLINE CPT(BoundingVolume) get_bounds() const;
+  INLINE int get_nested_vertices() const;
   INLINE bool is_final() const;
   INLINE int get_fancy_bits() const;
 

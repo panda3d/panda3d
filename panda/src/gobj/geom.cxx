@@ -787,17 +787,33 @@ check_valid(const GeomVertexData *vertex_data) const {
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
+  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+    return cdata->_user_bounds;
+  }
+
   if (cdata->_internal_bounds_stale) {
     CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
-    if (cdataw->_user_bounds != (BoundingVolume *)NULL) {
-      cdataw->_internal_bounds = cdataw->_user_bounds;
-    } else {
-      cdataw->_internal_bounds = compute_internal_bounds(current_thread);
-    }
-    cdataw->_internal_bounds_stale = false;
+    compute_internal_bounds(cdataw, current_thread);
     return cdataw->_internal_bounds;
   }
   return cdata->_internal_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_nested_vertices
+//       Access: Published
+//  Description: Returns the number of vertices rendered by all
+//               primitives within the Geom.
+////////////////////////////////////////////////////////////////////
+int Geom::
+get_nested_vertices(Thread *current_thread) const {
+  CDLockedReader cdata(_cycler, current_thread);
+  if (cdata->_internal_bounds_stale) {
+    CDWriter cdataw(((Geom *)this)->_cycler, cdata, false);
+    compute_internal_bounds(cdataw, current_thread);
+    return cdataw->_nested_vertices;
+  }
+  return cdata->_nested_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1054,22 +1070,24 @@ get_next_modified() {
 //  Description: Recomputes the dynamic bounding volume for this Geom.
 //               This includes all of the vertices.
 ////////////////////////////////////////////////////////////////////
-PT(BoundingVolume) Geom::
-compute_internal_bounds(Thread *current_thread) const {
+void Geom::
+compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
+  int num_vertices = 0;
+
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
   GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
 
   // Get the vertex data, after animation.
-  CPT(GeomVertexData) vertex_data = 
-    get_vertex_data(current_thread)->animate_vertices(current_thread);
+  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer();
+  vertex_data = vertex_data->animate_vertices(current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our minmax first.
   LPoint3f points[2];
   bool found_any = false;
   do_calc_tight_bounds(points[0], points[1], found_any, vertex_data,
-		       false, LMatrix4f::ident_mat(), current_thread);
+		       false, LMatrix4f::ident_mat(), cdata, current_thread);
   if (found_any) {
     // Then we put the bounding volume around both of those points.
     // Technically, we should put it around the eight points at the
@@ -1080,9 +1098,19 @@ compute_internal_bounds(Thread *current_thread) const {
     const LPoint3f *points_begin = &points[0];
     const LPoint3f *points_end = points_begin + 2;
     gbv->around(points_begin, points_end);
+
+    Primitives::const_iterator pi;
+    for (pi = cdata->_primitives.begin(); 
+         pi != cdata->_primitives.end();
+         ++pi) {
+      CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+      num_vertices += prim->get_num_vertices();
+    }
   }
 
-  return bound;
+  cdata->_internal_bounds = bound;
+  cdata->_nested_vertices = num_vertices;
+  cdata->_internal_bounds_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1095,9 +1123,7 @@ do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 		     bool &found_any, 
 		     const GeomVertexData *vertex_data,
 		     bool got_mat, const LMatrix4f &mat,
-		     Thread *current_thread) const {
-  CDReader cdata(_cycler, current_thread);
-  
+                     const CData *cdata, Thread *current_thread) const {
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); 
        pi != cdata->_primitives.end();

@@ -66,8 +66,8 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_z;
-  rot_z = Matrix::rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
-                                      CS_yup_right);
+  rot_z.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
+                                CS_yup_right);
   
   x = x * rot_z;
   y = y * rot_z;
@@ -83,8 +83,8 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the heading, and continue.
   Matrix rot_y;
-  rot_y = Matrix::rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
-                                      CS_yup_right);
+  rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
+                                CS_yup_right);
   
   x = x * rot_y;
   y = y * rot_y;
@@ -99,8 +99,8 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the pitch.
   Matrix rot_x;
-  rot_x = Matrix::rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
-                                      CS_yup_right);
+  rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
+                                CS_yup_right);
   
   x = x * rot_x;
   y = y * rot_x;
@@ -155,8 +155,8 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_y;
-  rot_y = Matrix::rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
-                                      CS_zup_right);
+  rot_y.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
+                                CS_zup_right);
   
   x = x * rot_y;
   y = y * rot_y;
@@ -172,8 +172,8 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the heading, and continue.
   Matrix rot_z;
-  rot_z = Matrix::rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
-                                      CS_zup_right);
+  rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
+                                CS_zup_right);
   
   x = x * rot_z;
   y = y * rot_z;
@@ -188,8 +188,8 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the pitch.
   Matrix rot_x;
-  rot_x = Matrix::rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
-                                      CS_zup_right);
+  rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
+                                CS_zup_right);
   
   x = x * rot_x;
   y = y * rot_x;
@@ -328,11 +328,22 @@ compose_matrix_new_hpr(FLOATNAME(LMatrix3) &mat,
                        const FLOATNAME(LVecBase3) &hpr,
                        CoordinateSystem cs) {
   TAU_PROFILE("void compose_matrix_new_hpr(LMatrix3 &, const LVecBase3 &, const LVecBase3 &, const LVecBase3 &)", " ", TAU_USER);
-  mat =
-    FLOATNAME(LMatrix3)::scale_shear_mat(scale, shear, cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::forward(cs), cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
-    FLOATNAME(LMatrix3)::rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs);
+  mat.set_scale_shear_mat(scale, shear, cs);
+  if (!IS_NEARLY_ZERO(hpr[2])) {
+    FLOATNAME(LMatrix3) r;
+    r.set_rotate_mat_normaxis(hpr[2], FLOATNAME(LVector3)::forward(cs), cs);
+    mat *= r;
+  }
+  if (!IS_NEARLY_ZERO(hpr[1])) {
+    FLOATNAME(LMatrix3) r;
+    r.set_rotate_mat_normaxis(hpr[1], FLOATNAME(LVector3)::right(cs), cs);
+    mat *= r;
+  }
+  if (!IS_NEARLY_ZERO(hpr[0])) {
+    FLOATNAME(LMatrix3) r;
+    r.set_rotate_mat_normaxis(hpr[0], FLOATNAME(LVector3)::up(cs), cs);
+    mat *= r;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,8 +377,8 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the heading, and continue.
   Matrix rot_y;
-  rot_y = Matrix::rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
-                                      CS_yup_right);
+  rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
+                                CS_yup_right);
   
   x = x * rot_y;
   y = y * rot_y;
@@ -382,8 +393,8 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the pitch.
   Matrix rot_x;
-  rot_x = Matrix::rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
-                                      CS_yup_right);
+  rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
+                                CS_yup_right);
   
   x = x * rot_x;
   y = y * rot_x;
@@ -398,8 +409,8 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_z;
-  rot_z = Matrix::rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
-                                      CS_yup_right);
+  rot_z.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
+                                CS_yup_right);
   
   x = x * rot_z;
   y = y * rot_z;
@@ -446,8 +457,8 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the heading, and continue.
   Matrix rot_z;
-  rot_z = Matrix::rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
-                                      CS_zup_right);
+  rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
+                                CS_zup_right);
   
   x = x * rot_z;
   y = y * rot_z;
@@ -462,8 +473,8 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the pitch.
   Matrix rot_x;
-  rot_x = Matrix::rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
-                                      CS_zup_right);
+  rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
+                                CS_zup_right);
   
   x = x * rot_x;
   y = y * rot_x;
@@ -478,8 +489,8 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_y;
-  rot_y = Matrix::rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
-                                      CS_zup_right);
+  rot_y.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
+                                CS_zup_right);
   
   x = x * rot_y;
   y = y * rot_y;

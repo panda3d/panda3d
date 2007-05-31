@@ -39,24 +39,6 @@ get_current_thread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_scene
-//       Access: Public
-//  Description: Sets the SceneSetup object that indicates the initial
-//               camera position, etc.  This must be called before
-//               traversal begins.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverser::
-set_scene(SceneSetup *scene_setup) {
-  _scene_setup = scene_setup;
-  _initial_state = scene_setup->get_initial_state();
-
-  const Camera *camera = scene_setup->get_camera_node();
-  _tag_state_key = camera->get_tag_state_key();
-  _has_tag_state_key = !_tag_state_key.empty();
-  _camera_mask = camera->get_camera_mask();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_scene
 //       Access: Public
 //  Description: Returns the SceneSetup object.
@@ -118,18 +100,6 @@ get_world_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_initial_state
-//       Access: Public
-//  Description: Sets the initial RenderState at the top of the scene
-//               graph we are traversing.  If this is not set, the
-//               default is the empty state.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverser::
-set_initial_state(const RenderState *initial_state) {
-  _initial_state = initial_state;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_initial_state
 //       Access: Public
 //  Description: Returns the initial RenderState at the top of the
@@ -139,20 +109,6 @@ set_initial_state(const RenderState *initial_state) {
 INLINE const RenderState *CullTraverser::
 get_initial_state() const {
   return _initial_state;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_depth_offset_decals
-//       Access: Public
-//  Description: Sets the depth_offset_decals flag.  If this is true,
-//               decals will be rendered using DepthOffsetAttribs;
-//               otherwise, decals will be rendered with a more
-//               expensive three-pass system.  This is normally set
-//               from the corresponding flag in the GSG.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverser::
-set_depth_offset_decals(bool flag) {
-  _depth_offset_decals = flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,9 +125,12 @@ get_depth_offset_decals() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_camera_mask
 //       Access: Public
-//  Description: Specifies the visibility mask from the camera viewing
-//               the scene.  Any nodes that do not have at least some
-//               bits in common with this mask will not be drawn.
+//  Description: Changes the visibility mask for the camera viewing
+//               the scene.  This is normally set automatically
+//               at the time setup_scene() is called; you should
+//               change this only if you want to render some set of
+//               objects different from what the camera normally would
+//               draw.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 set_camera_mask(const DrawMask &camera_mask) {
@@ -218,46 +177,6 @@ set_view_frustum(GeometricBoundingVolume *view_frustum) {
 INLINE GeometricBoundingVolume *CullTraverser::
 get_view_frustum() const {
   return _view_frustum;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::set_guard_band
-//       Access: Public
-//  Description: Specifies the bounding volume to use for detecting
-//               guard band clipping.  This is a render optimization
-//               for certain cards that support this feature; the
-//               guard band is a 2-d area than the frame buffer.
-//               If a primitive will appear entirely within the guard
-//               band after perspective transform, it may be drawn
-//               correctly with clipping disabled, for a small
-//               performance gain.
-//
-//               This is the bounding volume that corresponds to the
-//               2-d guard band.  If a primitive is entirely within
-//               this area, clipping will be disabled on the GSG.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverser::
-set_guard_band(GeometricBoundingVolume *guard_band) {
-  _guard_band = guard_band;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverser::get_guard_band
-//       Access: Public
-//  Description: Returns the bounding volume that corresponds to the
-//               guard band, or NULL if the guard band is not in
-//               use or has not been set.
-//
-//               Note that the guard band returned here is always in
-//               the coordinate space of the starting node, not the
-//               current node, even if it is sampled during a
-//               traversal.  To get the guard band in the current
-//               node's coordinate space, check in the current
-//               CullTraverserData.
-////////////////////////////////////////////////////////////////////
-INLINE GeometricBoundingVolume *CullTraverser::
-get_guard_band() const {
-  return _guard_band;
 }
 
 ////////////////////////////////////////////////////////////////////

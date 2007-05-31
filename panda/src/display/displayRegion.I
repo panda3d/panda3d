@@ -191,6 +191,19 @@ get_clear_depth_between_eyes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cull_traverser
+//       Access: Published
+//  Description: Specifies the CullTraverser that will be used to draw
+//               the contents of this DisplayRegion.  Normally the
+//               default CullTraverser is sufficient, but this may be
+//               changed to change the default cull behavior.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_cull_traverser(CullTraverser *trav) {
+  _trav = trav;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cube_map_index
 //       Access: Published
 //  Description: This is a special parameter that is only used when

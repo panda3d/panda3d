@@ -133,7 +133,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // transform.
     xform_data._net_transform = TransformState::make_identity();
     xform_data._view_frustum = trav->get_view_frustum();
-    xform_data._guard_band = trav->get_guard_band();
     xform_data.apply_transform_and_state(trav, net_transform, 
                                          RenderState::make_empty(),
                                          RenderEffects::make_empty(),

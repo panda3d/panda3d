@@ -29,7 +29,7 @@
 #include "pointerTo.h"
 #include "camera.h"
 #include "drawMask.h"
-#include "typedObject.h"
+#include "typedReferenceCount.h"
 #include "pStatCollector.h"
 
 class GraphicsStateGuardian;
@@ -48,15 +48,17 @@ class NodePath;
 //               Each renderable Geom encountered is passed along with
 //               its associated RenderState to the CullHandler object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullTraverser : public TypedObject {
-public:
-  CullTraverser(GraphicsStateGuardianBase *gsg, Thread *current_thread);
+class EXPCL_PANDA CullTraverser : public TypedReferenceCount {
+PUBLISHED:
+  CullTraverser();
   CullTraverser(const CullTraverser &copy);
 
+public:
   INLINE GraphicsStateGuardianBase *get_gsg() const;
   INLINE Thread *get_current_thread() const;
 
-  INLINE void set_scene(SceneSetup *scene_setup);
+  virtual void set_scene(SceneSetup *scene_setup,
+                         GraphicsStateGuardianBase *gsg);
   INLINE SceneSetup *get_scene() const;
   INLINE bool has_tag_state_key() const;
   INLINE const string &get_tag_state_key() const;
@@ -67,17 +69,11 @@ public:
   INLINE const TransformState *get_camera_transform() const;
   INLINE const TransformState *get_world_transform() const;
 
-  INLINE void set_initial_state(const RenderState *initial_state);
   INLINE const RenderState *get_initial_state() const;
-
-  INLINE void set_depth_offset_decals(bool flag);
   INLINE bool get_depth_offset_decals() const;
 
   INLINE void set_view_frustum(GeometricBoundingVolume *view_frustum);
   INLINE GeometricBoundingVolume *get_view_frustum() const;
-
-  INLINE void set_guard_band(GeometricBoundingVolume *guard_band);
-  INLINE GeometricBoundingVolume *get_guard_band() const;
 
   INLINE void set_cull_handler(CullHandler *cull_handler);
   INLINE CullHandler *get_cull_handler() const;
@@ -85,11 +81,20 @@ public:
   INLINE void set_portal_clipper(PortalClipper *portal_clipper);
   INLINE PortalClipper *get_portal_clipper() const;
 
-  void traverse(const NodePath &root, bool python_cull_control=false);
+  void traverse(const NodePath &root);
   void traverse(CullTraverserData &data);
-  void traverse_below(CullTraverserData &data);
+  virtual void traverse_below(CullTraverserData &data);
+
+  virtual void end_traverse();
 
   INLINE static void flush_level();
+
+  void draw_bounding_volume(const BoundingVolume *vol, 
+                            const TransformState *net_transform,
+                            const TransformState *modelview_transform);
+
+protected:
+  virtual bool is_in_view(CullTraverserData &data);
 
 public:
   // Statistics
@@ -120,7 +125,6 @@ private:
   CPT(RenderState) _initial_state;
   bool _depth_offset_decals;
   PT(GeometricBoundingVolume) _view_frustum;
-  PT(GeometricBoundingVolume) _guard_band;
   CullHandler *_cull_handler;
   PortalClipper *_portal_clipper;
   
@@ -129,9 +133,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "CullTraverser",
-                  TypedObject::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

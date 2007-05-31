@@ -386,6 +386,11 @@ private:
   static PStatCollector _volume_geom_pcollector;
   static PStatCollector _test_geom_pcollector;
 
+  static PStatCollector _occlusion_untested_pcollector;
+  static PStatCollector _occlusion_passed_pcollector;
+  static PStatCollector _occlusion_failed_pcollector;
+  static PStatCollector _occlusion_tests_pcollector;
+
   friend class WindowRenderer;
   friend class GraphicsOutput;
 };

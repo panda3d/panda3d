@@ -84,7 +84,7 @@ private:
   float _t;
 
   virtual void step();
-  static void handle_event(CPT(Event), void*);
+  static void handle_event(const Event *, void*);
 
 PUBLISHED:
   AutonomousLerp(LerpFunctor* func, float endt, LerpBlendType* blend,

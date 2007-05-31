@@ -66,7 +66,7 @@ output_screenshot(Filename &fn)
 }
 
 void
-event_W(CPT_Event, void *) {
+event_W(const Event *, void *) {
   // shift-W: open a new window on the same scene.
 
   // If we already have a window, use the same GSG.
@@ -89,13 +89,13 @@ event_W(CPT_Event, void *) {
 }
 
 void
-event_F(CPT_Event, void *) {
+event_F(const Event *, void *) {
   // shift-F: flatten the model hierarchy.
   framework.get_models().flatten_strong();
 }
 
 void
-event_Enter(CPT_Event, void *) {
+event_Enter(const Event *, void *) {
   // alt-enter: toggle between window/fullscreen in the same scene.
 
   // If we already have a window, use the same GSG.
@@ -125,7 +125,7 @@ event_Enter(CPT_Event, void *) {
 }
 
 void
-event_2(CPT_Event event, void *) {
+event_2(const Event *event, void *) {
   // 2: split the window into two display regions.
 
   EventParameter param = event->get_parameter(0);
@@ -141,7 +141,7 @@ event_2(CPT_Event event, void *) {
 }
 
 void
-event_0(CPT_Event event, void *) {
+event_0(const Event *event, void *) {
   // 0: run hacky test.
 
   BamCache *cache = BamCache::get_global_ptr();

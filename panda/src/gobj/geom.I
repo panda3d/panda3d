@@ -240,7 +240,6 @@ set_bounds(const BoundingVolume *volume) {
   } else {
     cdata->_user_bounds = volume->make_copy();
   }
-  mark_internal_bounds_stale(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,8 +282,10 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4f &mat,
                   Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  
   do_calc_tight_bounds(min_point, max_point, found_any, 
-                       vertex_data, got_mat, mat,
+                       vertex_data, got_mat, mat, cdata,
                        current_thread);
 }
 
@@ -430,6 +431,7 @@ CData() :
   _geom_rendering(0),
   _usage_hint(UH_unspecified),
   _got_usage_hint(false),
+  _nested_vertices(0),
   _internal_bounds_stale(true)
 {
 }
@@ -450,6 +452,7 @@ CData(const Geom::CData &copy) :
   _got_usage_hint(copy._got_usage_hint),
   _modified(copy._modified),
   _internal_bounds(copy._internal_bounds),
+  _nested_vertices(copy._nested_vertices),
   _internal_bounds_stale(copy._internal_bounds_stale),
   _user_bounds(copy._user_bounds)
 {
