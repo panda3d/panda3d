@@ -343,3 +343,111 @@ set_end_color_scale(const LVecBase4f &color_scale) {
   _end_color_scale = color_scale;
   _flags |= F_end_color_scale;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_texture_stage
+//       Access: Published
+//  Description: Indicates the texture stage that is adjusted by
+//               tex_offset, tex_rotate, and/or tex_scale.  If this is
+//               not set, the default is the default texture stage.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_texture_stage(TextureStage *stage) {
+  _texture_stage = stage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_start_tex_offset
+//       Access: Published
+//  Description: Indicates the initial UV offset of the lerped node.
+//               This is meaningful only if set_end_tex_offset() is also
+//               called.  This parameter is optional; if unspecified,
+//               the value will be taken from the node's actual
+//               UV offset at the time the lerp is performed.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_start_tex_offset(const LVecBase2f &tex_offset) {
+  nassertv(!tex_offset.is_nan());
+  _start_tex_offset = tex_offset;
+  _flags |= F_start_tex_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_tex_offset
+//       Access: Published
+//  Description: Indicates that the UV offset of the node should be
+//               lerped, and specifies the final UV offset of the node.
+//               This should be called before priv_initialize().  If this
+//               is not called, the node's UV offset will not be
+//               affected by the lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_tex_offset(const LVecBase2f &tex_offset) {
+  nassertv(!tex_offset.is_nan());
+  _end_tex_offset = tex_offset;
+  _flags |= F_end_tex_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_start_tex_rotate
+//       Access: Published
+//  Description: Indicates the initial UV rotate of the lerped node.
+//               This is meaningful only if set_end_tex_rotate() is also
+//               called.  This parameter is optional; if unspecified,
+//               the value will be taken from the node's actual
+//               UV rotate at the time the lerp is performed.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_start_tex_rotate(float tex_rotate) {
+  nassertv(!cnan(tex_rotate));
+  _start_tex_rotate = tex_rotate;
+  _flags |= F_start_tex_rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_tex_rotate
+//       Access: Published
+//  Description: Indicates that the UV rotate of the node should be
+//               lerped, and specifies the final UV rotate of the node.
+//               This should be called before priv_initialize().  If this
+//               is not called, the node's UV rotate will not be
+//               affected by the lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_tex_rotate(float tex_rotate) {
+  nassertv(!cnan(tex_rotate));
+  _end_tex_rotate = tex_rotate;
+  _flags |= F_end_tex_rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_start_tex_scale
+//       Access: Published
+//  Description: Indicates the initial UV scale of the lerped node.
+//               This is meaningful only if set_end_tex_scale() is also
+//               called.  This parameter is optional; if unspecified,
+//               the value will be taken from the node's actual
+//               UV scale at the time the lerp is performed.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_start_tex_scale(const LVecBase2f &tex_scale) {
+  nassertv(!tex_scale.is_nan());
+  _start_tex_scale = tex_scale;
+  _flags |= F_start_tex_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_end_tex_scale
+//       Access: Published
+//  Description: Indicates that the UV scale of the node should be
+//               lerped, and specifies the final UV scale of the node.
+//               This should be called before priv_initialize().  If this
+//               is not called, the node's UV scale will not be
+//               affected by the lerp.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_end_tex_scale(const LVecBase2f &tex_scale) {
+  nassertv(!tex_scale.is_nan());
+  _end_tex_scale = tex_scale;
+  _flags |= F_end_tex_scale;
+}

@@ -1,6 +1,16 @@
 """LerpInterval module: contains the LerpInterval class"""
 
-__all__ = ['LerpNodePathInterval', 'LerpPosInterval', 'LerpHprInterval', 'LerpQuatInterval', 'LerpScaleInterval', 'LerpShearInterval', 'LerpPosHprInterval', 'LerpPosQuatInterval', 'LerpHprScaleInterval', 'LerpQuatScaleInterval', 'LerpPosHprScaleInterval', 'LerpPosQuatScaleInterval', 'LerpPosHprScaleShearInterval', 'LerpPosQuatScaleShearInterval', 'LerpColorScaleInterval', 'LerpColorInterval', 'LerpFunctionInterval', 'LerpFunc']
+__all__ = [
+    'LerpNodePathInterval', 'LerpPosInterval', 'LerpHprInterval',
+    'LerpQuatInterval', 'LerpScaleInterval', 'LerpShearInterval',
+    'LerpPosHprInterval', 'LerpPosQuatInterval',
+    'LerpHprScaleInterval', 'LerpQuatScaleInterval',
+    'LerpPosHprScaleInterval', 'LerpPosQuatScaleInterval',
+    'LerpPosHprScaleShearInterval', 'LerpPosQuatScaleShearInterval',
+    'LerpColorInterval', 'LerpColorScaleInterval',
+    'LerpTexOffsetInterval', 'LerpTexRotateInterval', 'LerpTexScaleInterval',
+    'LerpFunctionInterval', 'LerpFunc'
+    ]
 
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
@@ -24,6 +34,12 @@ class LerpNodePathInterval(CLerpNodePathInterval):
         if name == None:
             name = '%s-%d' % (self.__class__.__name__, self.lerpNodePathNum)
             LerpNodePathInterval.lerpNodePathNum += 1
+        else:
+            # Allow the user to pass in a %d in the name and we'll go ahead
+            # and uniquify the name for them.
+            if "%d" in name:
+                name = name % LerpNodePathInterval.lerpNodePathNum
+                LerpNodePathInterval.lerpNodePathNum += 1
 
         blendType = self.stringBlendType(blendType)
         assert blendType != self.BTInvalid
@@ -571,25 +587,64 @@ class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
             self.setupParam(self.setStartShear, self.startShear)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+class LerpColorInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, color, startColor = None,
+                 other = None, blendType = 'noBlend',
+                 bakeInStart = 1, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, 0, nodePath, other)
+        self.setEndColor(color)
+        if startColor != None:
+            self.setStartColor(startColor)
+
 class LerpColorScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, colorScale, startColorScale = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 bakeInStart = 1, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, nodePath, other)
+                                      bakeInStart, 0, nodePath, other)
         self.setEndColorScale(colorScale)
         if startColorScale != None:
             self.setStartColorScale(startColorScale)
 
-class LerpColorInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, color, startColor = None,
+class LerpTexOffsetInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, texOffset, startTexOffset = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 textureStage = None,
+                 bakeInStart = 1, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
-                                      bakeInStart, fluid, nodePath, other)
-        self.setEndColor(color)
-        if startColor != None:
-            self.setStartColor(startColor)
+                                      bakeInStart, 0, nodePath, other)
+        self.setEndTexOffset(texOffset)
+        if startTexOffset != None:
+            self.setStartTexOffset(startTexOffset)
+        if textureStage != None:
+            self.setTextureStage(textureStage)
+
+class LerpTexRotateInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, texRotate, startTexRotate = None,
+                 other = None, blendType = 'noBlend',
+                 textureStage = None,
+                 bakeInStart = 1, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, 0, nodePath, other)
+        self.setEndTexRotate(texRotate)
+        if startTexRotate != None:
+            self.setStartTexRotate(startTexRotate)
+        if textureStage != None:
+            self.setTextureStage(textureStage)
+
+class LerpTexScaleInterval(LerpNodePathInterval):
+    def __init__(self, nodePath, duration, texScale, startTexScale = None,
+                 other = None, blendType = 'noBlend',
+                 textureStage = None,
+                 bakeInStart = 1, name = None):
+        LerpNodePathInterval.__init__(self, name, duration, blendType,
+                                      bakeInStart, 0, nodePath, other)
+        self.setEndTexScale(texScale)
+        if startTexScale != None:
+            self.setStartTexScale(startTexScale)
+        if textureStage != None:
+            self.setTextureStage(textureStage)
 
 
 #

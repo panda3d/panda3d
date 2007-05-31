@@ -22,6 +22,7 @@
 #include "renderState.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
+#include "texMatrixAttrib.h"
 #include "dcast.h"
 #include "config_interval.h"
 
@@ -67,6 +68,7 @@ CLerpNodePathInterval(const string &name, double duration,
   _node(node),
   _other(other),
   _flags(0),
+  _texture_stage(TextureStage::get_default()),
   _slerp(NULL)
 {
   if (bake_in_start) {
@@ -393,7 +395,7 @@ priv_step(double t) {
     _node.set_prev_transform(prev_transform);
   }
 
-  if ((_flags & (F_end_color | F_end_color_scale)) != 0) {
+  if ((_flags & (F_end_color | F_end_color_scale | F_end_tex_offset | F_end_tex_rotate | F_end_tex_scale)) != 0) {
     // We have some render state lerp.
     CPT(RenderState) state;
 
@@ -457,6 +459,69 @@ priv_step(double t) {
 
       state = state->add_attrib(ColorScaleAttrib::make(color_scale));
     }    
+
+    if ((_flags & (F_end_tex_offset | F_end_tex_rotate | F_end_tex_scale)) != 0) {
+      // We have a UV lerp.
+      CPT(TransformState) transform = TransformState::make_identity();
+
+      const RenderAttrib *attrib =
+        state->get_attrib(TexMatrixAttrib::get_class_type());
+      const TexMatrixAttrib *tma = NULL;
+      if (attrib != (const TexMatrixAttrib *)NULL) {
+        tma = DCAST(TexMatrixAttrib, attrib);
+        transform = tma->get_transform(_texture_stage);
+      }
+
+      if ((_flags & F_end_tex_offset) != 0) {
+        LVecBase2f tex_offset;
+
+        if ((_flags & F_start_tex_offset) != 0) {
+          lerp_value(tex_offset, d, _start_tex_offset, _end_tex_offset);
+        } else {
+          tex_offset = transform->get_pos2d();
+          lerp_value_from_prev(tex_offset, d, _prev_d, tex_offset, 
+                               _end_tex_offset);
+        }
+
+        transform = transform->set_pos2d(tex_offset);
+      }
+
+      if ((_flags & F_end_tex_rotate) != 0) {
+        float tex_rotate;
+
+        if ((_flags & F_start_tex_rotate) != 0) {
+          lerp_value(tex_rotate, d, _start_tex_rotate, _end_tex_rotate);
+        } else {
+          tex_rotate = transform->get_rotate2d();
+          lerp_value_from_prev(tex_rotate, d, _prev_d, tex_rotate, 
+                               _end_tex_rotate);
+        }
+
+        transform = transform->set_rotate2d(tex_rotate);
+      }
+
+      if ((_flags & F_end_tex_scale) != 0) {
+        LVecBase2f tex_scale;
+
+        if ((_flags & F_start_tex_scale) != 0) {
+          lerp_value(tex_scale, d, _start_tex_scale, _end_tex_scale);
+        } else {
+          tex_scale = transform->get_scale2d();
+          lerp_value_from_prev(tex_scale, d, _prev_d, tex_scale, 
+                               _end_tex_scale);
+        }
+
+        transform = transform->set_scale2d(tex_scale);
+      }
+
+      // Apply the modified transform back to the state.
+      if (tma != (TexMatrixAttrib *)NULL) {
+        state = state->add_attrib(tma->add_stage(_texture_stage, transform));
+      } else {
+        state = state->add_attrib(TexMatrixAttrib::make(_texture_stage, transform));
+      }
+    }    
+
 
     // Now apply the new state back to the node.
     if (_other.is_empty()) {

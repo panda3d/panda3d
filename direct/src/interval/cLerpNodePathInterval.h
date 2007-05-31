@@ -22,6 +22,7 @@
 #include "directbase.h"
 #include "cLerpInterval.h"
 #include "nodePath.h"
+#include "textureStage.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CLerpNodePathInterval
@@ -56,6 +57,13 @@ PUBLISHED:
   INLINE void set_end_color(const LVecBase4f &color);
   INLINE void set_start_color_scale(const LVecBase4f &color_scale);
   INLINE void set_end_color_scale(const LVecBase4f &color_scale);
+  INLINE void set_texture_stage(TextureStage *stage);
+  INLINE void set_start_tex_offset(const LVecBase2f &tex_offset);
+  INLINE void set_end_tex_offset(const LVecBase2f &tex_offset);
+  INLINE void set_start_tex_rotate(float tex_rotate);
+  INLINE void set_end_tex_rotate(float tex_rotate);
+  INLINE void set_start_tex_scale(const LVecBase2f &tex_scale);
+  INLINE void set_end_tex_scale(const LVecBase2f &tex_scale);
 
   virtual void priv_initialize(double t);
   virtual void priv_instant();
@@ -79,19 +87,25 @@ private:
     F_end_color          = 0x000010,
     F_end_color_scale    = 0x000020,
     F_end_shear          = 0x000040,
+    F_end_tex_offset     = 0x000080,
+    F_end_tex_rotate     = 0x000100,
+    F_end_tex_scale      = 0x000200,
 
-    F_start_pos          = 0x000080,
-    F_start_hpr          = 0x000100,
-    F_start_quat         = 0x000200,
-    F_start_scale        = 0x000400,
-    F_start_color        = 0x000800,
-    F_start_color_scale  = 0x001000,
-    F_start_shear        = 0x002000,
+    F_start_pos          = 0x010001,
+    F_start_hpr          = 0x010002,
+    F_start_quat         = 0x010004,
+    F_start_scale        = 0x010008,
+    F_start_color        = 0x010010,
+    F_start_color_scale  = 0x010020,
+    F_start_shear        = 0x010040,
+    F_start_tex_offset   = 0x010080,
+    F_start_tex_rotate   = 0x010100,
+    F_start_tex_scale    = 0x010200,
 
-    F_fluid              = 0x004000,
-    F_bake_in_start      = 0x008000,
+    F_fluid              = 0x100000,
+    F_bake_in_start      = 0x200000,
     
-    F_slerp_setup        = 0x010000,
+    F_slerp_setup        = 0x400000,
   };
   
   unsigned int _flags;
@@ -102,6 +116,10 @@ private:
   LVecBase3f _start_shear, _end_shear;
   Colorf _start_color, _end_color;
   LVecBase4f _start_color_scale, _end_color_scale;
+  PT(TextureStage) _texture_stage;
+  LVecBase2f _start_tex_offset, _end_tex_offset;
+  float _start_tex_rotate, _end_tex_rotate;
+  LVecBase2f _start_tex_scale, _end_tex_scale;
 
   double _prev_d;
   float _slerp_angle;
