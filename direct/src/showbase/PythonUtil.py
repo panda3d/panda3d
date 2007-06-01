@@ -43,7 +43,7 @@ import new
 import gc
 #if __debug__:
 import traceback
-import hotshot, hotshot.stats, profile as prof, pstats
+import profile as prof, pstats
 
 
 from direct.directutil import Verify
