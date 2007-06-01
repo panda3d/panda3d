@@ -24,6 +24,7 @@
 #include "graphicsOutput.h"
 #include "displayRegion.h"
 #include "cullHandler.h"
+#include "texture.h"
 
 class GraphicsEngine;
 class GraphicsPipe;
@@ -58,6 +59,7 @@ PUBLISHED:
   virtual void end_traverse();
 
   INLINE GraphicsOutput *get_buffer() const;
+  Texture *get_texture();
 
   INLINE void set_occlusion_mask(const DrawMask &occlusion_mask);
   INLINE const DrawMask &get_occlusion_mask() const;
@@ -88,7 +90,10 @@ private:
                     const TransformState *net_transform, 
                     const TransformState *modelview_transform);
 private:
+  bool _live;
+
   PT(GraphicsOutput) _buffer;
+  PT(Texture) _texture;
   PT(DisplayRegion) _display_region;
   DrawMask _occlusion_mask;
 

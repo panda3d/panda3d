@@ -26,6 +26,8 @@
 #include "pStatTimer.h"
 #include "cullBinManager.h"
 #include "configVariableInt.h"
+#include "config_grutil.h"
+#include "pnmImage.h"
 
 PStatCollector PipeOcclusionCullTraverser::_setup_occlusion_pcollector("Cull:Occlusion:Setup");
 PStatCollector PipeOcclusionCullTraverser::_draw_occlusion_pcollector("Cull:Occlusion:Occluders");
@@ -60,6 +62,15 @@ static ConfigVariableBool show_occlusion
 ("show-occlusion", false,
  PRC_DESC("Set this true to visualize the efforts of the occlusion test."));
 
+static ConfigVariableInt occlusion_size
+("occlusion-size", "256 256",
+ PRC_DESC("Specify the x y size of the buffer used for occlusion testing."));
+
+static ConfigVariableInt occlusion_depth_bits
+("occlusion-depth-bits", 1,
+ PRC_DESC("The minimum number of depth bits requested for the occlusion "
+          "buffer."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::Constructor
 //       Access: Published
@@ -67,13 +78,28 @@ static ConfigVariableBool show_occlusion
 ////////////////////////////////////////////////////////////////////
 PipeOcclusionCullTraverser::
 PipeOcclusionCullTraverser(GraphicsOutput *host) {
-  FrameBufferProperties fb_prop;
-  fb_prop.set_depth_bits(1);
-  WindowProperties win_prop = WindowProperties::size(256, 256);
-
+  _live = false;
   GraphicsStateGuardian *gsg = host->get_gsg();
+
+  GraphicsThreadingModel threading_model = gsg->get_threading_model();
+  nassertv(threading_model.get_cull_name() == threading_model.get_draw_name());
+  if (!gsg->get_supports_occlusion_query()) {
+    grutil_cat.info()
+      << "Occlusion queries are not supported by graphics pipe.\n";
+    return;
+  }
+
   GraphicsEngine *engine = gsg->get_engine();
   GraphicsPipe *pipe = gsg->get_pipe();
+
+  FrameBufferProperties fb_prop;
+  fb_prop.set_depth_bits(occlusion_depth_bits);
+  WindowProperties win_prop;
+  if (occlusion_size.get_num_words() < 2) {
+    win_prop.set_size(occlusion_size, occlusion_size);
+  } else {
+    win_prop.set_size(occlusion_size[0], occlusion_size[1]);
+  }
 
   bool precertify = false;
   _buffer = engine->make_output(pipe, "occlusion", 0, fb_prop, win_prop, 
@@ -90,6 +116,8 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
 
   make_sphere();
   make_solid_test_state();
+
+  _live = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,6 +140,10 @@ PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
 void PipeOcclusionCullTraverser::
 set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
   CullTraverser::set_scene(scene_setup, gsgbase);
+  if (!_live) {
+    return;
+  }
+
   PStatTimer timer(_setup_occlusion_pcollector);
 
   GraphicsStateGuardian *gsg = _buffer->get_gsg();
@@ -184,6 +216,10 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
 ////////////////////////////////////////////////////////////////////
 void PipeOcclusionCullTraverser::
 end_traverse() {
+  if (!_live) {
+    return;
+  }
+
   PStatTimer timer(_finish_occlusion_pcollector);
   GraphicsStateGuardian *gsg = _buffer->get_gsg();
   Thread *current_thread = get_current_thread();
@@ -232,6 +268,33 @@ end_traverse() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PipeOcclusionCullTraverser::get_texture
+//       Access: Published
+//  Description: Returns a Texture that can be used to visualize the
+//               efforts of the occlusion cull.
+////////////////////////////////////////////////////////////////////
+Texture *PipeOcclusionCullTraverser::
+get_texture() {
+  if (_texture != (Texture *)NULL) {
+    return _texture;
+  }
+
+  _texture = new Texture("occlusion");
+
+  if (!_live) {
+    // If we're not live, just create a default, black texture.
+    PNMImage image(1, 1);
+    _texture->load(image);
+
+  } else {
+    // Otherwise, create a render-to-texture.
+    _buffer->add_render_texture(_texture, GraphicsOutput::RTM_bind_or_copy);
+  }
+
+  return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PipeOcclusionCullTraverser::is_in_view
 //       Access: Protected, Virtual
 //  Description: 
@@ -242,6 +305,9 @@ is_in_view(CullTraverserData &data) {
 
   if (!CullTraverser::is_in_view(data)) {
     return false;
+  }
+  if (!_live) {
+    return true;
   }
 
   if (_current_query != (OcclusionQueryContext *)NULL) {
