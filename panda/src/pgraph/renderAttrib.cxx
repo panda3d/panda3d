@@ -258,6 +258,10 @@ validate_attribs() {
 CPT(RenderAttrib) RenderAttrib::
 return_new(RenderAttrib *attrib) {
   nassertr(attrib != (RenderAttrib *)NULL, attrib);
+  static ConfigVariableBool uniquify_attribs("uniquify-attribs", true);
+  if (!uniquify_attribs) {
+    return attrib;
+  }
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.

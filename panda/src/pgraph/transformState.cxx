@@ -1272,6 +1272,10 @@ init_states() {
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
+  static ConfigVariableBool uniquify_transforms("uniquify-transforms", true);
+  if (!uniquify_transforms && !state->is_identity()) {
+    return state;
+  }
 
 #ifndef NDEBUG
   if (!transform_cache) {

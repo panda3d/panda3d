@@ -1130,6 +1130,10 @@ bin_removed(int bin_index) {
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
   nassertr(state != (RenderState *)NULL, state);
+  static ConfigVariableBool uniquify_states("uniquify-states", true);
+  if (!uniquify_states && !state->is_empty()) {
+    return state;
+  }
 
 #ifndef NDEBUG
   if (!state_cache) {
