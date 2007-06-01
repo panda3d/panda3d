@@ -1126,6 +1126,15 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
   FLOATNAME(LMatrix3) m3;
   m3.set_scale_shear_mat(scale, shear, cs);
   set_upper_3(m3);
+
+  _m.m._03 = 0.0f;
+  _m.m._13 = 0.0f;
+  _m.m._23 = 0.0f;
+  _m.m._33 = 1.0f;
+
+  _m.m._30 = 0.0f;
+  _m.m._31 = 0.0f;
+  _m.m._32 = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
