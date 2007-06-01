@@ -140,11 +140,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+  _host->end_frame(FM_parasite, current_thread);
+
   if (mode == FM_refresh) {
     return;
   }
-
-  _host->end_frame(FM_parasite, current_thread);
   
   if (mode == FM_render) {
     for (int i=0; i<count_textures(); i++) {
