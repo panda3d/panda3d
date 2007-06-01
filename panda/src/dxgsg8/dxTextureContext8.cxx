@@ -662,11 +662,7 @@ create_texture(DXScreenData &scrn) {
     // REQUIRED
     pool = D3DPOOL_DEFAULT;
     if (support_render_texture && scrn._dxgsg8 -> get_supports_render_texture ( )) {
-      target_pixel_format = scrn._render_to_texture_d3d_format;
       usage |= D3DUSAGE_RENDERTARGET;
-    }
-    else {
-      target_pixel_format = scrn._framebuffer_d3d_format;
     }
   }
   else {
