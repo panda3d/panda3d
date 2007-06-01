@@ -36,6 +36,7 @@ protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 
 public:
+  AnimChannelMatrixFixed(AnimGroup *parent, const string &name, const LMatrix4f &value);
   AnimChannelMatrixFixed(const string &name, const LMatrix4f &value);
 
 

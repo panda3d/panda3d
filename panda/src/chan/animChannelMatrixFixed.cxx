@@ -44,6 +44,25 @@ AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixFixed::Constructor
 //       Access: Public
+//  Description: This flavor creates an AnimChannelMatrixFixed that
+//               *is* in a hierarchy.
+////////////////////////////////////////////////////////////////////
+AnimChannelMatrixFixed::
+AnimChannelMatrixFixed(AnimGroup *parent, const string &name, 
+                       const LMatrix4f &value)
+  : AnimChannelFixed<ACMatrixSwitchType>(parent, name, value)
+{
+  // Decompose the matrix into components in case we will be blending.
+  decompose_matrix(_value, _scale, _shear, _hpr, _pos);
+  compose_matrix(_value_no_scale_shear, LVecBase3f(1.0f, 1.0f, 1.0f),
+                 _hpr, _pos);
+
+  _quat.set_hpr(_hpr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::Constructor
+//       Access: Public
 //  Description: This flavor creates an AnimChannelMatrixFixed that is not
 //               in a hierarchy.
 ////////////////////////////////////////////////////////////////////

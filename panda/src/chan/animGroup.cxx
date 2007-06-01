@@ -254,7 +254,7 @@ make_child_fixed(const string &name, const LMatrix4f &mat) {
       if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
         AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
         AnimChannelMatrixFixed *new_mchild = 
-          new AnimChannelMatrixFixed(name, mat);
+          new AnimChannelMatrixFixed(this, name, mat);
         new_child = new_mchild;
       } 
 
@@ -289,6 +289,8 @@ make_child_fixed(const string &name, const LMatrix4f &mat) {
           }
           new_children.swap(_children);
         }
+
+        return;
       }
     }
     child->make_child_fixed(name, mat);
