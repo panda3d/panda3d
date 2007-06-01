@@ -3071,14 +3071,7 @@ end_occlusion_query() {
       << "ending occlusion query index " << index << "\n";
   }
 
-#ifndef NDEBUG
-  GLint current_id;
-  _glGetQueryiv(GL_SAMPLES_PASSED, GL_CURRENT_QUERY, &current_id);
-  nassertr(current_id == index, NULL);
-#endif  // NDEBUG
-
   _current_occlusion_query = NULL;
-
   _glEndQuery(GL_SAMPLES_PASSED);
 
   // Temporary hack to try working around an apparent driver bug on
