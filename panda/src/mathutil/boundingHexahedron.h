@@ -32,21 +32,24 @@
 //       Class : BoundingHexahedron
 // Description : This defines a bounding convex hexahedron.  It is
 //               typically used to represent a frustum, but may
-//               represent any enclosing convex hexahedron.
-//
-//               This class does not support any of the around() or
-//               extend_by() functions, but all other functionality
-//               should be well-defined.
+//               represent any enclosing convex hexahedron, including
+//               simple boxes.  However, if all you want is an
+//               axis-aligned bounding box, you may be better off with
+//               the simpler BoundingBox class.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingHexahedron : public FiniteBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingHexahedron();
+
+PUBLISHED:
   BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
                      CoordinateSystem cs = CS_default);
   BoundingHexahedron(const LPoint3f &fll, const LPoint3f &flr,
                      const LPoint3f &fur, const LPoint3f &ful,
                      const LPoint3f &nll, const LPoint3f &nlr,
                      const LPoint3f &nur, const LPoint3f &nul);
+
+public:
   ALLOC_DELETED_CHAIN(BoundingHexahedron);
   virtual BoundingVolume *make_copy() const;
 
@@ -59,6 +62,7 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
   INLINE_MATHUTIL LPoint3f get_point(int n) const;
   INLINE_MATHUTIL int get_num_planes() const;
@@ -71,21 +75,10 @@ protected:
                             const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
-
-  virtual bool extend_by_point(const LPoint3f &point);
-  virtual bool extend_by_sphere(const BoundingSphere *sphere);
-  virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
-
-  virtual bool around_points(const LPoint3f *first,
-                             const LPoint3f *last);
-  virtual bool around_spheres(const BoundingVolume **first,
-                              const BoundingVolume **last);
-  virtual bool around_hexahedrons(const BoundingVolume **first,
-                                  const BoundingVolume **last);
-
   virtual int contains_point(const LPoint3f &point) const;
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
   virtual int contains_sphere(const BoundingSphere *sphere) const;
+  virtual int contains_box(const BoundingBox *box) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
 
 private:

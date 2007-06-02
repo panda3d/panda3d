@@ -74,6 +74,8 @@ protected:
 private:
   void make_sphere();
   static Vertexf compute_sphere_point(float latitude, float longitude);
+  void make_box();
+
   void make_solid_test_state();
 
   bool get_volume_viz(const BoundingVolume *vol, 
@@ -111,6 +113,7 @@ private:
   PT(OcclusionQueryContext) _next_query;
 
   PT(Geom) _sphere_geom;
+  PT(Geom) _box_geom;
   CPT(RenderState) _solid_test_state;
 
   class PendingObject {

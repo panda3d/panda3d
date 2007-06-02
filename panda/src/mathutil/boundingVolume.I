@@ -28,7 +28,7 @@ BoundingVolume() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::is_empty
-//       Access: Public
+//       Access: Published
 //  Description: Any kind of volume might be empty.  This is a
 //               degenerate volume that contains no points; it's not
 //               the same as, for instance, a sphere with radius zero,
@@ -42,7 +42,7 @@ is_empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::is_infinite
-//       Access: Public
+//       Access: Published
 //  Description: The other side of the empty coin is an infinite
 //               volume.  This is a degenerate state of a normally
 //               finite volume that contains all points.  (Note that
@@ -63,7 +63,7 @@ is_infinite() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::set_infinite
-//       Access: Public
+//       Access: Published
 //  Description: Marks the volume as infinite, even if it is normally
 //               finite.  You can think of this as an infinite
 //               extend_by() operation.
@@ -75,7 +75,7 @@ set_infinite() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::extend_by
-//       Access: Public
+//       Access: Published
 //  Description: Increases the size of the volume to include the given
 //               volume.
 ////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ extend_by(const BoundingVolume *vol) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::contains
-//       Access: Public
+//       Access: Published
 //  Description: Returns the appropriate set of IntersectionFlags to
 //               indicate the amount of intersection with the
 //               indicated volume.

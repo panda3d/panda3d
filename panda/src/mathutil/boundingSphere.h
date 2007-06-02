@@ -40,6 +40,7 @@ public:
 
   virtual LPoint3f get_min() const;
   virtual LPoint3f get_max() const;
+  virtual float get_volume() const;
 
   virtual LPoint3f get_approx_center() const;
   virtual void xform(const LMatrix4f &mat);
@@ -60,6 +61,7 @@ protected:
 
   virtual bool extend_by_point(const LPoint3f &point);
   virtual bool extend_by_sphere(const BoundingSphere *sphere);
+  virtual bool extend_by_box(const BoundingBox *box);
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
   bool extend_by_finite(const FiniteBoundingVolume *volume);
 
@@ -67,6 +69,8 @@ protected:
                              const LPoint3f *last);
   virtual bool around_spheres(const BoundingVolume **first,
                               const BoundingVolume **last);
+  virtual bool around_boxes(const BoundingVolume **first,
+                            const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
                                   const BoundingVolume **last);
   bool around_finite(const BoundingVolume **first,
@@ -76,6 +80,7 @@ protected:
   virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
   virtual int contains_sphere(const BoundingSphere *sphere) const;
+  virtual int contains_box(const BoundingBox *box) const;
   virtual int contains_line(const BoundingLine *line) const;
   virtual int contains_plane(const BoundingPlane *plane) const;
 

@@ -13,6 +13,7 @@
   #define SOURCES  \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I  \
     boundingLine.h \
+    boundingBox.I boundingBox.h \
     boundingPlane.I boundingPlane.h \
     boundingSphere.I boundingSphere.h  \
     boundingVolume.I boundingVolume.h config_mathutil.h  \
@@ -39,6 +40,7 @@
 
   #define INCLUDED_SOURCES \
     boundingHexahedron.cxx boundingLine.cxx \
+    boundingBox.cxx \
     boundingPlane.cxx \
     boundingSphere.cxx  \
     boundingVolume.cxx config_mathutil.cxx fftCompressor.cxx  \
@@ -59,6 +61,7 @@
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
     boundingLine.h \
+    boundingBox.I boundingBox.h \
     boundingPlane.I boundingPlane.h \
     boundingSphere.I boundingSphere.h boundingVolume.I \
     boundingVolume.h config_mathutil.h fftCompressor.h \

@@ -26,7 +26,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "mutexHolder.h"
+#include "config_mathutil.h"
 
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
@@ -1074,30 +1076,32 @@ void Geom::
 compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
 
-  // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = new BoundingSphere;
-  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
-
   // Get the vertex data, after animation.
   CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer();
   vertex_data = vertex_data->animate_vertices(current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
-  // calc_tight_bounds to determine our minmax first.
-  LPoint3f points[2];
+  // calc_tight_bounds to determine our box first.
+  LPoint3f min, max;
   bool found_any = false;
-  do_calc_tight_bounds(points[0], points[1], found_any, vertex_data,
+  do_calc_tight_bounds(min, max, found_any, vertex_data,
 		       false, LMatrix4f::ident_mat(), cdata, current_thread);
+
   if (found_any) {
     // Then we put the bounding volume around both of those points.
-    // Technically, we should put it around the eight points at the
-    // corners of the rectangular solid, but we happen to know that
-    // the two diagonally opposite points is good enough to define any
-    // of our bound volume types.
+    if (bounds_type == BoundingVolume::BT_sphere) {
+      // The user specifically requested a BoundingSphere, so oblige.
+      BoundingBox box(min, max);
+      box.local_object();
 
-    const LPoint3f *points_begin = &points[0];
-    const LPoint3f *points_end = points_begin + 2;
-    gbv->around(points_begin, points_end);
+      PT(BoundingSphere) sphere = new BoundingSphere;
+      sphere->extend_by(&box);
+      cdata->_internal_bounds = sphere;
+
+    } else {
+      // The user requested a BoundingBox, or did not specify.
+      cdata->_internal_bounds = new BoundingBox(min, max);
+    }
 
     Primitives::const_iterator pi;
     for (pi = cdata->_primitives.begin(); 
@@ -1106,9 +1110,16 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
       CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
       num_vertices += prim->get_num_vertices();
     }
+
+  } else {
+    // No points; empty bounding volume.
+    if (bounds_type == BoundingVolume::BT_sphere) {
+      cdata->_internal_bounds = new BoundingSphere;
+    } else {
+      cdata->_internal_bounds = new BoundingBox;
+    }
   }
 
-  cdata->_internal_bounds = bound;
   cdata->_nested_vertices = num_vertices;
   cdata->_internal_bounds_stale = false;
 }

@@ -21,8 +21,10 @@
 #include "graphicsPipe.h"
 #include "drawCullHandler.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "geomVertexWriter.h"
 #include "geomTristrips.h"
+#include "geomTriangles.h"
 #include "pStatTimer.h"
 #include "cullBinManager.h"
 #include "configVariableInt.h"
@@ -115,6 +117,7 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
   _internal_cull_handler = NULL;
 
   make_sphere();
+  make_box();
   make_solid_test_state();
 
   _live = true;
@@ -199,8 +202,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
 
   _current_query = NULL;
   _next_query = NULL;
-
-  make_sphere();
+  
+  make_sphere();  // Temporary, so we can experiment with num vertices
 
   // Begin by rendering all the occluders into our internal scene.
   PStatTimer timer2(_draw_occlusion_pcollector);
@@ -433,7 +436,7 @@ make_sphere() {
   //  static const int num_stacks = 8;
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("occlusion", GeomVertexFormat::get_v3(), Geom::UH_static);
+    ("occlusion_sphere", GeomVertexFormat::get_v3(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
@@ -472,6 +475,57 @@ compute_sphere_point(float latitude, float longitude) {
 
   Vertexf p(s1 * c2, s1 * s2, c1);
   return p;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PipeOcclusionCullTraverser::make_box
+//       Access: Private
+//  Description: Constructs a unit box for testing visibility of
+//               bounding boxes.
+////////////////////////////////////////////////////////////////////
+void PipeOcclusionCullTraverser::
+make_box() {
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("occlusion_box", GeomVertexFormat::get_v3(), Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  
+  vertex.add_data3f(0.0f, 0.0f, 0.0f);
+  vertex.add_data3f(0.0f, 0.0f, 1.0f);
+  vertex.add_data3f(0.0f, 1.0f, 0.0f);
+  vertex.add_data3f(0.0f, 1.0f, 1.0f);
+  vertex.add_data3f(1.0f, 0.0f, 0.0f);
+  vertex.add_data3f(1.0f, 0.0f, 1.0f);
+  vertex.add_data3f(1.0f, 1.0f, 0.0f);
+  vertex.add_data3f(1.0f, 1.0f, 1.0f);
+    
+  PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+  tris->add_vertices(0, 4, 5);
+  tris->close_primitive();
+  tris->add_vertices(0, 5, 1);
+  tris->close_primitive();
+  tris->add_vertices(4, 6, 7);
+  tris->close_primitive();
+  tris->add_vertices(4, 7, 5);
+  tris->close_primitive();
+  tris->add_vertices(6, 2, 3);
+  tris->close_primitive();
+  tris->add_vertices(6, 3, 7);
+  tris->close_primitive();
+  tris->add_vertices(2, 0, 1);
+  tris->close_primitive();
+  tris->add_vertices(2, 1, 3);
+  tris->close_primitive();
+  tris->add_vertices(1, 5, 7);
+  tris->close_primitive();
+  tris->add_vertices(1, 7, 3);
+  tris->close_primitive();
+  tris->add_vertices(2, 6, 4);
+  tris->close_primitive();
+  tris->add_vertices(2, 4, 0);
+  tris->close_primitive();
+  
+  _box_geom = new Geom(vdata);
+  _box_geom->add_primitive(tris);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,7 +568,7 @@ get_volume_viz(const BoundingVolume *vol,
     return false;
   }
 
-  if (vol->is_of_type(BoundingSphere::get_class_type())) {
+  if (vol->is_exact_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
     CPT(TransformState) local_transform = 
       TransformState::make_pos_hpr_scale(sphere->get_center(),
@@ -530,13 +584,48 @@ get_volume_viz(const BoundingVolume *vol,
     // since it's intersecting the near plane.
     const LPoint3f &center = modelview_transform->get_pos();
     const LVecBase3f &radius = modelview_transform->get_scale();
-    float max_radius = max(max(radius[0], radius[1]), radius[2]);
-    if (center[1] <= max_radius) {
+    if (center[1] - radius[1] < 0.0f) {
       return false;
     }
 
     // The sphere looks good.
     geom = _sphere_geom;
+    return true;
+
+  } else if (vol->is_exact_type(BoundingBox::get_class_type())) {
+    const BoundingBox *box = DCAST(BoundingBox, vol);
+    CPT(TransformState) local_transform = 
+      TransformState::make_pos_hpr_scale(box->get_minq(),
+                                         LVecBase3f(0, 0, 0),
+                                         box->get_maxq() - box->get_minq());
+    net_transform = net_transform->compose(local_transform);
+
+    modelview_transform = _internal_trav->get_world_transform()->compose(net_transform);
+
+    // See if the bounding box is clipped by the near plane.  If it
+    // is, the occlusion test may fail, so we won't bother performing
+    // it for this object.  Anyway, it's not occluded by anything,
+    // since it's intersecting the near plane.
+    static const LPoint3f points[8] = {
+      LPoint3f(0.0f, 0.0f, 0.0f),
+      LPoint3f(0.0f, 0.0f, 1.0f),
+      LPoint3f(0.0f, 1.0f, 0.0f),
+      LPoint3f(0.0f, 1.0f, 1.0f),
+      LPoint3f(1.0f, 0.0f, 0.0f),
+      LPoint3f(1.0f, 0.0f, 1.0f),
+      LPoint3f(1.0f, 1.0f, 0.0f),
+      LPoint3f(1.0f, 1.0f, 1.0f),
+    };
+    const LMatrix4f &mat = modelview_transform->get_mat();
+    for (int i = 0; i < 8; ++i) {
+      LPoint3f p = points[i] * mat;
+      if (p[1] < 0.0f) {
+        return false;
+      }
+    }
+
+    // The box looks good.
+    geom = _box_geom;
     return true;
   }
 

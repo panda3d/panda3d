@@ -143,6 +143,7 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
+  typedef CycleDataLockedStageReader<CData> CDLockedStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:

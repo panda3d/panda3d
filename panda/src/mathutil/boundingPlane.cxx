@@ -151,3 +151,50 @@ contains_sphere(const BoundingSphere *sphere) const {
     return IF_no_intersection;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingPlane::contains_box
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingPlane::
+contains_box(const BoundingBox *box) const {
+  nassertr(!is_empty() && !is_infinite(), 0);
+  nassertr(!box->is_empty() && !box->is_infinite(), 0);
+
+  // Put the box inside a sphere for the purpose of this test.
+  const LPoint3f &min = box->get_minq();
+  const LPoint3f &max = box->get_maxq();
+  LPoint3f center = (min + max) * 0.5f;
+  float radius2 = (max - center).length_squared();
+
+  int result = IF_possible | IF_some | IF_all;
+
+  float dist = _plane.dist_to_plane(center);
+  float dist2 = dist * dist;
+
+  if (dist >= 0.0f && dist2 > radius2) {
+    // The sphere is completely in front of this plane; it's thus
+    // completely outside of the hexahedron.
+    return IF_no_intersection;
+    
+  } else if (dist < 0.0f && dist2 < radius2) {
+    // The sphere is not completely behind this plane, but some of
+    // it is.
+    
+    // Look a little closer.
+    bool all_in = true;
+    for (int i = 0; i < 8 && all_in; ++i) {
+      if (_plane.dist_to_plane(box->get_point(i)) < 0.0f) {
+        // This point is outside the plane.
+        all_in = false;
+      }
+    }
+    
+    if (!all_in) {
+      result &= ~IF_all;
+    }
+  }
+
+  return result;
+}

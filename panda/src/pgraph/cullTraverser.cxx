@@ -30,10 +30,12 @@
 #include "geomNode.h"
 #include "config_pgraph.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "boundingHexahedron.h"
 #include "portalClipper.h"
 #include "geom.h"
 #include "geomTristrips.h"
+#include "geomTriangles.h"
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
@@ -425,6 +427,50 @@ make_bounds_viz(const BoundingVolume *vol) {
     
     geom = new Geom(vdata);
     geom->add_primitive(strip);
+
+  } else if (vol->is_of_type(FiniteBoundingVolume::get_class_type())) {
+    const FiniteBoundingVolume *fvol = DCAST(FiniteBoundingVolume, vol);
+
+    BoundingBox box(fvol->get_min(), fvol->get_max());
+    box.local_object();
+
+    PT(GeomVertexData) vdata = new GeomVertexData
+      ("bounds", GeomVertexFormat::get_v3(),
+       Geom::UH_stream);
+    GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+
+    for (int i = 0; i < 8; ++i ) {
+      vertex.add_data3f(box.get_point(i));
+    }
+    
+    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_stream);
+    tris->add_vertices(0, 4, 5);
+    tris->close_primitive();
+    tris->add_vertices(0, 5, 1);
+    tris->close_primitive();
+    tris->add_vertices(4, 6, 7);
+    tris->close_primitive();
+    tris->add_vertices(4, 7, 5);
+    tris->close_primitive();
+    tris->add_vertices(6, 2, 3);
+    tris->close_primitive();
+    tris->add_vertices(6, 3, 7);
+    tris->close_primitive();
+    tris->add_vertices(2, 0, 1);
+    tris->close_primitive();
+    tris->add_vertices(2, 1, 3);
+    tris->close_primitive();
+    tris->add_vertices(1, 5, 7);
+    tris->close_primitive();
+    tris->add_vertices(1, 7, 3);
+    tris->close_primitive();
+    tris->add_vertices(2, 6, 4);
+    tris->close_primitive();
+    tris->add_vertices(2, 4, 0);
+    tris->close_primitive();
+
+    geom = new Geom(vdata);
+    geom->add_primitive(tris);
 
   } else {
     pgraph_cat.warning()

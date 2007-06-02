@@ -35,8 +35,10 @@
 //               arbitrary points on the line.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingLine : public GeometricBoundingVolume {
-PUBLISHED:
+public:
   INLINE_MATHUTIL BoundingLine();
+
+PUBLISHED:
   INLINE_MATHUTIL BoundingLine(const LPoint3f &a, const LPoint3f &b);
   ALLOC_DELETED_CHAIN(BoundingLine);
 
@@ -62,6 +64,7 @@ protected:
   virtual bool extend_by_line(const BoundingLine *line);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
+  virtual int contains_box(const BoundingBox *box) const;
 
   float sqr_dist_to_line(const LPoint3f &point) const;
 
@@ -88,6 +91,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class BoundingSphere;
+  friend class BoundingBox;
 };
 
 #include "boundingLine.I"

@@ -16,10 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingLine::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingLine::
 BoundingLine() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingLine::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingLine::
 BoundingLine(const LPoint3f &a, const LPoint3f &b) :
   _origin(a), _vector(b - a)
@@ -31,6 +42,11 @@ BoundingLine(const LPoint3f &a, const LPoint3f &b) :
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingLine::get_point_a
+//       Access: Published
+//  Description: Returns the first point that defines the line.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL const LPoint3f &BoundingLine::
 get_point_a() const {
   nassertr(!is_empty(), _origin);
@@ -38,6 +54,11 @@ get_point_a() const {
   return _origin;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingLine::get_point_b
+//       Access: Published
+//  Description: Returns the second point that defines the line.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL LPoint3f BoundingLine::
 get_point_b() const {
   nassertr(!is_empty(), _origin);

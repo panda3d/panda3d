@@ -26,7 +26,7 @@ TypeHandle BoundingVolume::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::around
-//       Access: Public
+//       Access: Published
 //  Description: Resets the volume to enclose only the volumes
 //               indicated.  Returns true if successful, false if the
 //               volume doesn't know how to do that or can't do that.
@@ -72,12 +72,33 @@ around(const BoundingVolume **first, const BoundingVolume **last) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::write
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BoundingVolume::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::string_bounds_type
+//       Access: Public, Static
+//  Description: Returns the BoundsType corresponding to the indicated
+//               string.
+////////////////////////////////////////////////////////////////////
+BoundingVolume::BoundsType BoundingVolume::
+string_bounds_type(const string &str) {
+  if (strcmp(str.c_str(), "best") == 0) {
+    return BT_best;
+
+  } else if (strcmp(str.c_str(), "sphere") == 0) {
+    return BT_sphere;
+
+  } else if (strcmp(str.c_str(), "box") == 0) {
+    return BT_box;
+  }
+
+  return BT_invalid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,6 +110,23 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 extend_by_sphere(const BoundingSphere *) {
+  mathutil_cat.warning()
+    << get_type() << "::extend_by_sphere() called\n";
+  _flags = F_infinite;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_box
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by extend_other()
+//               when the type we're extending by is known to be a
+//               box.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_box(const BoundingBox *) {
+  mathutil_cat.warning()
+    << get_type() << "::extend_by_box() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -102,6 +140,8 @@ extend_by_sphere(const BoundingSphere *) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 extend_by_hexahedron(const BoundingHexahedron *) {
+  mathutil_cat.warning()
+    << get_type() << "::extend_by_hexahedron() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -115,6 +155,8 @@ extend_by_hexahedron(const BoundingHexahedron *) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 extend_by_line(const BoundingLine *) {
+  mathutil_cat.warning()
+    << get_type() << "::extend_by_line() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -128,6 +170,8 @@ extend_by_line(const BoundingLine *) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 extend_by_plane(const BoundingPlane *) {
+  mathutil_cat.warning()
+    << get_type() << "::extend_by_plane() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -141,6 +185,23 @@ extend_by_plane(const BoundingPlane *) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 around_spheres(const BoundingVolume **, const BoundingVolume **) {
+  mathutil_cat.warning()
+    << get_type() << "::around_spheres() called\n";
+  _flags = F_infinite;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_boxes
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be a nonempty box.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_boxes(const BoundingVolume **, const BoundingVolume **) {
+  mathutil_cat.warning()
+    << get_type() << "::around_boxes() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -154,6 +215,8 @@ around_spheres(const BoundingVolume **, const BoundingVolume **) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
 around_hexahedrons(const BoundingVolume **, const BoundingVolume **) {
+  mathutil_cat.warning()
+    << get_type() << "::around_hexahedrons() called\n";
   _flags = F_infinite;
   return false;
 }
@@ -173,6 +236,9 @@ around_lines(const BoundingVolume **, const BoundingVolume **) {
     // making it infinite.  So we return true.
     return true;
   }
+
+  mathutil_cat.warning()
+    << get_type() << "::around_lines() called\n";
 
   // Otherwise, we might do better, and we require each class to
   // define a function.  If we get here, the function isn't defined,
@@ -196,6 +262,9 @@ around_planes(const BoundingVolume **, const BoundingVolume **) {
     return true;
   }
 
+  mathutil_cat.warning()
+    << get_type() << "::around_planes() called\n";
+
   // Otherwise, we might do better, and we require each class to
   // define a function.  If we get here, the function isn't defined,
   // so we return false to indicate this.
@@ -211,6 +280,22 @@ around_planes(const BoundingVolume **, const BoundingVolume **) {
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
 contains_sphere(const BoundingSphere *) const {
+  mathutil_cat.warning()
+    << get_type() << "::contains_sphere() called\n";
+  return IF_dont_understand;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_box
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a box.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_box(const BoundingBox *) const {
+  mathutil_cat.warning()
+    << get_type() << "::contains_box() called\n";
   return IF_dont_understand;
 }
 
@@ -223,6 +308,8 @@ contains_sphere(const BoundingSphere *) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
 contains_hexahedron(const BoundingHexahedron *) const {
+  mathutil_cat.warning()
+    << get_type() << "::contains_hexahedron() called\n";
   return IF_dont_understand;
 }
 
@@ -235,6 +322,8 @@ contains_hexahedron(const BoundingHexahedron *) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
 contains_line(const BoundingLine *) const {
+  mathutil_cat.warning()
+    << get_type() << "::contains_line() called\n";
   return IF_dont_understand;
 }
 
@@ -247,5 +336,42 @@ contains_line(const BoundingLine *) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
 contains_plane(const BoundingPlane *) const {
+  mathutil_cat.warning()
+    << get_type() << "::contains_plane() called\n";
   return IF_dont_understand;
 }
+
+ostream &
+operator << (ostream &out, BoundingVolume::BoundsType type) {
+  switch (type) {
+  case BoundingVolume::BT_best:
+    return out << "best";
+
+  case BoundingVolume::BT_sphere:
+    return out << "sphere";
+
+  case BoundingVolume::BT_box:
+    return out << "box";
+
+  case BoundingVolume::BT_invalid:
+    return out << "invalid";
+  }
+
+  mathutil_cat.error()
+    << "Invalid BoundingVolume::BoundsType value: " << (int)type << "\n";
+  nassertr(false, out);
+  return out;
+}
+
+istream &
+operator >> (istream &in, BoundingVolume::BoundsType &type) {
+  string word;
+  in >> word;
+  type = BoundingVolume::string_bounds_type(word);
+  if (type == BoundingVolume::BT_invalid) {
+    mathutil_cat->error()
+      << "Invalid BoundingVolume::BoundsType string: " << word << "\n";
+  }
+  return in;
+}
+

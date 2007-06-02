@@ -25,7 +25,7 @@
 #include "collisionSegment.h"
 #include "config_collide.h"
 #include "cullTraverserData.h"
-#include "boundingSphere.h"
+#include "boundingBox.h"
 #include "pointerToArray.h"
 #include "geomNode.h"
 #include "geom.h"
@@ -386,27 +386,31 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) CollisionPolygon::
 compute_internal_bounds() const {
-  // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = CollisionSolid::compute_internal_bounds();
-  nassertr(bound != (BoundingVolume*)0L, bound);
-
-  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bound);
-
-  // Now actually compute the bounding volume by putting it around all
-  // of our vertices.
-  LMatrix4f to_3d_mat;
-  rederive_to_3d_mat(to_3d_mat);
-  pvector<LPoint3f> vertices;
-  Points::const_iterator pi;
-  for (pi = _points.begin(); pi != _points.end(); ++pi) {
-    vertices.push_back(to_3d((*pi)._p, to_3d_mat));
+  if (_points.empty()) {
+    return new BoundingBox;
   }
 
-  const LPoint3f *vertices_begin = &vertices[0];
-  const LPoint3f *vertices_end = vertices_begin + vertices.size();
-  gbv->around(vertices_begin, vertices_end);
+  LMatrix4f to_3d_mat;
+  rederive_to_3d_mat(to_3d_mat);
 
-  return bound;
+  Points::const_iterator pi = _points.begin();
+  LPoint3f p = to_3d((*pi)._p, to_3d_mat);
+
+  LPoint3f x = p;
+  LPoint3f n = p;
+
+  for (++pi; pi != _points.end(); ++pi) {
+    p = to_3d((*pi)._p, to_3d_mat);
+
+    n.set(min(n[0], p[0]),
+          min(n[1], p[1]),
+          min(n[2], p[2]));
+    x.set(max(x[0], p[0]),
+          max(x[1], p[1]),
+          max(x[2], p[2]));
+  }
+
+  return new BoundingBox(n, x);
 }
 
 ////////////////////////////////////////////////////////////////////

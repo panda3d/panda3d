@@ -1,0 +1,643 @@
+// Filename: boundingBox.cxx
+// Created by:  drose (31May07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "boundingBox.h"
+#include "boundingSphere.h"
+#include "boundingHexahedron.h"
+#include "boundingLine.h"
+#include "boundingPlane.h"
+#include "config_mathutil.h"
+#include "dcast.h"
+
+#include <math.h>
+#include <algorithm>
+
+const int BoundingBox::plane_def[6][3] = {
+  { 0, 4, 5 },
+  { 4, 6, 7 },
+  { 6, 2, 3 },
+  { 2, 0, 1 },
+  { 1, 5, 7 },
+  { 2, 6, 4 },
+};
+
+TypeHandle BoundingBox::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::make_copy
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+BoundingVolume *BoundingBox::
+make_copy() const {
+  return new BoundingBox(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::get_min
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LPoint3f BoundingBox::
+get_min() const {
+  nassertr(!is_empty(), _min);
+  nassertr(!is_infinite(), _min);
+  return _min;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::get_max
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LPoint3f BoundingBox::
+get_max() const {
+  nassertr(!is_empty(), _max);
+  nassertr(!is_infinite(), _max);
+  return _max;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::get_volume
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float BoundingBox::
+get_volume() const {
+  nassertr(!is_infinite(), 0.0f);
+  if (is_empty()) {
+    return 0.0f;
+  }
+
+  // Volume of a box: width x depth x height
+  return (_max[0] - _min[0]) * (_max[1] - _min[1]) * (_max[2] - _min[2]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::get_approx_center
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LPoint3f BoundingBox::
+get_approx_center() const {
+  nassertr(!is_empty(), LPoint3f::zero());
+  nassertr(!is_infinite(), LPoint3f::zero());
+  return (_min + _max) * 0.5f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::xform
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BoundingBox::
+xform(const LMatrix4f &mat) {
+  nassertv(!mat.is_nan());
+
+  if (!is_empty() && !is_infinite()) {
+    // We need to transform the eight corners of the cube, and then
+    // determine the new box.
+    LPoint3f x = get_point(0) * mat;
+    LPoint3f n = x;
+    for (int i = 1; i < 8; ++i) {
+      LPoint3f p = get_point(i) * mat;
+      n.set(min(n[0], p[0]), min(n[1], p[1]), min(n[2], p[2]));
+      x.set(max(x[0], p[0]), max(x[1], p[1]), max(x[2], p[2]));
+    }
+    _max = x;
+    _min = n;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BoundingBox::
+output(ostream &out) const {
+  if (is_empty()) {
+    out << "bbox, empty";
+  } else if (is_infinite()) {
+    out << "bbox, infinite";
+  } else {
+    out << "bbox, (" << _min << ") to (" << _max << ")";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_other(BoundingVolume *other) const {
+  return other->extend_by_box(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_other(BoundingVolume *other,
+             const BoundingVolume **first,
+             const BoundingVolume **last) const {
+  return other->around_boxes(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_other(const BoundingVolume *other) const {
+  return other->contains_box(this);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_by_point
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_by_point(const LPoint3f &point) {
+  nassertr(!point.is_nan(), false);
+
+  if (is_empty()) {
+    _min = point;
+    _max = point;
+    _flags = 0;
+
+  } else if (!is_infinite()) {
+    _min.set(min(_min[0], point[0]), min(_min[1], point[1]), min(_min[2], point[2]));
+    _max.set(max(_max[0], point[0]), max(_max[1], point[1]), max(_max[2], point[2]));
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_by_sphere
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_by_sphere(const BoundingSphere *sphere) {
+  return extend_by_finite(sphere);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_by_box
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_by_box(const BoundingBox *box) {
+  nassertr(!box->is_empty() && !box->is_infinite(), false);
+  nassertr(!is_infinite(), false);
+
+  if (is_empty()) {
+    _min = box->_min;
+    _max = box->_max;
+    _flags = 0;
+
+  } else {
+    _min.set(min(_min[0], box->_min[0]), 
+             min(_min[1], box->_min[1]), 
+             min(_min[2], box->_min[2]));
+    _max.set(max(_max[0], box->_max[0]), 
+             max(_max[1], box->_max[1]), 
+             max(_max[2], box->_max[2]));
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_by_hexahedron
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_by_hexahedron(const BoundingHexahedron *hexahedron) {
+  return extend_by_finite(hexahedron);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::extend_by_finite
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+extend_by_finite(const FiniteBoundingVolume *volume) {
+  nassertr(!volume->is_empty(), false);
+
+  LVector3f min1 = volume->get_min();
+  LVector3f max1 = volume->get_max();
+
+  if (is_empty()) {
+    _min = min1;
+    _max = max1;
+    _flags = 0;
+
+  } else {
+    _min.set(min(_min[0], min1[0]), 
+             min(_min[1], min1[1]), 
+             min(_min[2], min1[2]));
+    _max.set(max(_max[0], max1[0]), 
+             max(_max[1], max1[1]), 
+             max(_max[2], max1[2]));
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_points
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_points(const LPoint3f *first, const LPoint3f *last) {
+  nassertr(first != last, false);
+
+  // Get the minmax of all the points to construct a bounding box.
+  const LPoint3f *p = first;
+
+#ifndef NDEBUG
+  // Skip any NaN points.
+  int skipped_nan = 0;
+  while (p != last && (*p).is_nan()) {
+    ++p;
+    ++skipped_nan;
+  }
+  if (p == last) {
+    mathutil_cat.warning()
+      << "BoundingBox around NaN\n";
+    return false;
+  }
+#endif
+
+  _min = *p;
+  _max = *p;
+  ++p;
+
+#ifndef NDEBUG
+  // Skip more NaN points.
+  while (p != last && (*p).is_nan()) {
+    ++p;
+    ++skipped_nan;
+  }
+#endif
+
+  while (p != last) {
+#ifndef NDEBUG
+    // Skip more NaN points.
+    if ((*p).is_nan()) {
+      ++skipped_nan;
+    } else
+#endif
+      {
+        _min.set(min(_min[0], (*p)[0]),
+                 min(_min[1], (*p)[1]),
+                 min(_min[2], (*p)[2]));
+        _max.set(max(_max[0], (*p)[0]),
+                 max(_max[1], (*p)[1]),
+                 max(_max[2], (*p)[2]));
+      }
+    ++p;
+  }
+
+#ifndef NDEBUG
+  if (skipped_nan != 0) {
+    mathutil_cat.warning()
+      << "BoundingBox ignored " << skipped_nan << " NaN points of "
+      << (last - first) << " total.\n";
+  }
+#endif
+
+  _flags = 0;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_spheres
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_spheres(const BoundingVolume **first,
+               const BoundingVolume **last) {
+  return around_finite(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_boxes
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_boxes(const BoundingVolume **first,
+             const BoundingVolume **last) {
+  return around_finite(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_hexahedrons
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_hexahedrons(const BoundingVolume **first,
+                   const BoundingVolume **last) {
+  return around_finite(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::around_finite
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingBox::
+around_finite(const BoundingVolume **first,
+              const BoundingVolume **last) {
+  nassertr(first != last, false);
+
+  // We're given a set of bounding volumes, at least the first one of
+  // which is guaranteed to be finite and nonempty.  Some others may
+  // not be.
+
+  // First, get the box of all the points to construct a bounding
+  // box.
+  const BoundingVolume **p = first;
+  nassertr(!(*p)->is_empty() && !(*p)->is_infinite(), false);
+  const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
+  _min = vol->get_min();
+  _max = vol->get_max();
+  
+  for (++p; p != last; ++p) {
+    nassertr(!(*p)->is_infinite(), false);
+    if (!(*p)->is_empty()) {
+      const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
+      LPoint3f min1 = vol->get_min();
+      LPoint3f max1 = vol->get_max();
+      _min.set(min(_min[0], min1[0]),
+               min(_min[1], min1[1]),
+               min(_min[2], min1[2]));
+      _max.set(max(_max[0], max1[0]),
+               max(_max[1], max1[1]),
+               max(_max[2], max1[2]));
+    }
+  }
+
+  _flags = 0;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_point
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_point(const LPoint3f &point) const {
+  nassertr(!point.is_nan(), IF_no_intersection);
+
+  if (is_empty()) {
+    return IF_no_intersection;
+
+  } else if (is_infinite()) {
+    return IF_possible | IF_some | IF_all;
+
+  } else {
+    if (point[0] >= _min[0] && point[0] <= _max[0] &&
+        point[1] >= _min[1] && point[1] <= _max[1] &&
+        point[2] >= _min[2] && point[2] <= _max[2]) {
+      return IF_possible | IF_some | IF_all;
+    } else {
+      return IF_no_intersection;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_lineseg
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
+  nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
+
+  if (a == b) {
+    return contains_point(a);
+  }
+  if (is_empty()) {
+    return IF_no_intersection;
+
+  } else if (is_infinite()) {
+    return IF_possible | IF_some | IF_all;
+
+  } else {
+    // Set a bit for each plane a and b are on the wrong side of.
+    unsigned int a_bits = 0;
+
+    if (a[0] < _min[0]) {
+      a_bits |= 0x01;
+    } else if (a[0] > _max[0]) {
+      a_bits |= 0x02;
+    }
+
+    if (a[1] < _min[1]) {
+      a_bits |= 0x04;
+    } else if (a[1] > _max[1]) {
+      a_bits |= 0x08;
+    }
+
+    if (a[2] < _min[2]) {
+      a_bits |= 0x10;
+    } else if (a[2] > _max[2]) {
+      a_bits |= 0x20;
+    }
+
+    unsigned int b_bits = 0;
+
+    if (b[0] < _min[0]) {
+      b_bits |= 0x01;
+    } else if (b[0] > _max[0]) {
+      b_bits |= 0x02;
+    }
+
+    if (b[1] < _min[1]) {
+      b_bits |= 0x04;
+    } else if (b[1] > _max[1]) {
+      b_bits |= 0x08;
+    }
+
+    if (b[2] < _min[2]) {
+      b_bits |= 0x10;
+    } else if (b[2] > _max[2]) {
+      b_bits |= 0x20;
+    }
+
+    if ((a_bits & b_bits) != 0) {
+      // If there are any bits in common, the segment is wholly
+      // outside the box (both points are on the wrong side of the
+      // same plane).
+      return IF_no_intersection;
+
+    } else if ((a_bits | b_bits) == 0) {
+      // If there are no bits at all, the segment is wholly within the
+      // box.
+      return IF_possible | IF_some | IF_all;
+
+    } else if (a_bits == 0 || b_bits == 0) {
+      // If either point is within the box, the segment is partially
+      // within the box.
+      return IF_possible | IF_some;
+
+    } else {
+      unsigned int differ = (a_bits ^ b_bits);
+      if (differ == 0x03 || differ == 0x0c || differ == 0x30) {
+        // If the line segment stretches straight across the box, the
+        // segment is partially within.
+        return IF_possible | IF_some;
+
+      } else {
+        // Otherwise, it's hard to tell whether it does or doesn't.
+        return IF_possible;
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_sphere
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a sphere.
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_sphere(const BoundingSphere *sphere) const {
+  return contains_finite(sphere);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_box
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a box.
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_box(const BoundingBox *box) const {
+  nassertr(!is_empty() && !is_infinite(), 0);
+  nassertr(!box->is_empty() && !box->is_infinite(), 0);
+
+  const LPoint3f &min1 = box->get_minq();
+  const LPoint3f &max1 = box->get_maxq();
+  
+  if (min1[0] >= _min[0] && max1[0] <= _max[0] &&
+      min1[1] >= _min[1] && max1[1] <= _max[1] &&
+      min1[2] >= _min[2] && max1[2] <= _max[2]) {
+    // The other volume is completely within this volume.
+    return IF_possible | IF_some | IF_all;
+
+  } else if (max1[0] >= _min[0] && min1[0] <= _max[0] &&
+             max1[1] >= _min[1] && min1[1] <= _max[1] &&
+             max1[2] >= _min[2] && min1[2] <= _max[2]) {
+    // The other volume is partially within this volume.
+    return IF_possible;
+
+  } else {
+    // The other volume is not within this volume.
+    return IF_no_intersection;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_hexahedron
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a hexahedron.
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_hexahedron(const BoundingHexahedron *hexahedron) const {
+  return contains_finite(hexahedron);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_line
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a line.
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_line(const BoundingLine *line) const {
+  return line->contains_box(this) & ~IF_all;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_plane
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a plane.
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_plane(const BoundingPlane *plane) const {
+  return plane->contains_box(this) & ~IF_all;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingBox::contains_finite
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingBox::
+contains_finite(const FiniteBoundingVolume *volume) const {
+  nassertr(!is_empty() && !is_infinite(), 0);
+  nassertr(!volume->is_empty() && !volume->is_infinite(), 0);
+
+  LPoint3f min1 = volume->get_min();
+  LPoint3f max1 = volume->get_max();
+  
+  if (min1[0] >= _min[0] && max1[0] <= _max[0] &&
+      min1[1] >= _min[1] && max1[1] <= _max[1] &&
+      min1[2] >= _min[2] && max1[2] <= _max[2]) {
+    // The other volume is completely within this volume.
+    return IF_possible | IF_some | IF_all;
+
+  } else if (max1[0] >= _min[0] && min1[0] <= _max[0] &&
+             max1[1] >= _min[1] && min1[1] <= _max[1] &&
+             max1[2] >= _min[2] && min1[2] <= _max[2]) {
+    // The other volume is partially within this volume.
+    return IF_possible;
+
+  } else {
+    // The other volume is not within this volume.
+    return IF_no_intersection;
+  }
+}

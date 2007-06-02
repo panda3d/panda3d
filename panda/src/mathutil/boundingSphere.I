@@ -16,10 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::Constructor
+//       Access: Published
+//  Description: Constructs an empty sphere.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingSphere::
 BoundingSphere() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::Constructor
+//       Access: Published
+//  Description: Constructs a specific sphere.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingSphere::
 BoundingSphere(const LPoint3f &center, float radius) :
   _center(center), _radius(radius)
@@ -30,6 +41,11 @@ BoundingSphere(const LPoint3f &center, float radius) :
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_center
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL const LPoint3f &BoundingSphere::
 get_center() const {
   nassertr(!is_empty(), _center);
@@ -37,6 +53,11 @@ get_center() const {
   return _center;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_radius
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL float BoundingSphere::
 get_radius() const {
   nassertr(!is_empty(), 0.0f);

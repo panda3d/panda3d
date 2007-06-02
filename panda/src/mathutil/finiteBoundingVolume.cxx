@@ -17,5 +17,28 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "finiteBoundingVolume.h"
+#include "boundingBox.h"
 
 TypeHandle FiniteBoundingVolume::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: FiniteBoundingVolume::get_volume
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float FiniteBoundingVolume::
+get_volume() const {
+  nassertr(!is_infinite(), 0.0f);
+  if (is_empty()) {
+    return 0.0f;
+  }
+
+  mathutil_cat.warning()
+    << get_type() << "::get_volume() called\n";
+
+  // We don't know how to compute the volume of this shape correctly;
+  // just calculate the volume of its containing box.
+  BoundingBox box(get_min(), get_max());
+  box.local_object();
+  return box.get_volume();
+}

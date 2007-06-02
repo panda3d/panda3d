@@ -16,26 +16,52 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingHexahedron::
 BoundingHexahedron() {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::get_num_points
+//       Access: Published
+//  Description: Returns 8: the number of vertices of a hexahedron.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL int BoundingHexahedron::
 get_num_points() const {
   return num_points;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::get_point
+//       Access: Published
+//  Description: Returns the nth vertex of the hexahedron.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL LPoint3f BoundingHexahedron::
 get_point(int n) const {
-  nassertr(n >= 0 && n < num_points, LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(n >= 0 && n < num_points, LPoint3f::zero());
   return _points[n];
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::get_num_planes
+//       Access: Published
+//  Description: Returns 6: the number of faces of a hexahedron.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL int BoundingHexahedron::
 get_num_planes() const {
   return num_planes;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::get_plane
+//       Access: Published
+//  Description: Returns the nth face of the hexahedron.
+////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL Planef BoundingHexahedron::
 get_plane(int n) const {
   nassertr(n >= 0 && n < num_planes, Planef());

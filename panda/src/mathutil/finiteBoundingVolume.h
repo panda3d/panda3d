@@ -34,7 +34,7 @@ class EXPCL_PANDA FiniteBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   virtual LPoint3f get_min() const=0;
   virtual LPoint3f get_max() const=0;
-
+  virtual float get_volume() const;
 
 public:
   static TypeHandle get_class_type() {

@@ -118,6 +118,16 @@ extend_by_sphere(const BoundingSphere *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OmniBoundingVolume::extend_by_box
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool OmniBoundingVolume::
+extend_by_box(const BoundingBox *) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::extend_by_hexahedron
 //       Access: Public, Virtual
 //  Description:
@@ -145,6 +155,17 @@ around_points(const LPoint3f *, const LPoint3f *) {
 bool OmniBoundingVolume::
 around_spheres(const BoundingVolume **,
                const BoundingVolume **) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OmniBoundingVolume::around_boxes
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool OmniBoundingVolume::
+around_boxes(const BoundingVolume **,
+             const BoundingVolume **) {
   return true;
 }
 
@@ -186,6 +207,16 @@ contains_lineseg(const LPoint3f &, const LPoint3f &) const {
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_sphere(const BoundingSphere *) const {
+  return IF_possible | IF_some | IF_all;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OmniBoundingVolume::contains_box
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+int OmniBoundingVolume::
+contains_box(const BoundingBox *) const {
   return IF_possible | IF_some | IF_all;
 }
 

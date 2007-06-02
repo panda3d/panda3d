@@ -22,6 +22,7 @@
 #include "finiteBoundingVolume.h"
 #include "omniBoundingVolume.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
 #include "boundingPlane.h"
@@ -44,9 +45,16 @@ ConfigVariableDouble fft_exponent
 ConfigVariableDouble fft_error_threshold
 ("fft-error-threshold", 0.2);
 
+ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
+("bounds-type", BoundingVolume::BT_sphere,
+ PRC_DESC("Specify the type of bounding volume that is created automatically "
+          "by Panda to enclose geometry.  Use 'sphere' or 'box', or use "
+          "'best' to let Panda decide which is most appropriate."));
+
 ConfigureFn(config_mathutil) {
   BoundingHexahedron::init_type();
   BoundingSphere::init_type();
+  BoundingBox::init_type();
   BoundingVolume::init_type();
   FiniteBoundingVolume::init_type();
   GeometricBoundingVolume::init_type();

@@ -27,7 +27,9 @@
 #include "accumulatedAttribs.h"
 #include "clipPlaneAttrib.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "pStatTimer.h"
+#include "config_mathutil.h"
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA, EXPTP_PANDA);
@@ -3413,10 +3415,17 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     pvector<CPT(BoundingVolume) > child_volumes_ref;
     pvector<const BoundingVolume *> child_volumes;
   
+    bool all_box = true;
     CPT(BoundingVolume) internal_bounds = 
       get_internal_bounds(pipeline_stage, current_thread);
-    child_volumes_ref.push_back(internal_bounds);
-    child_volumes.push_back(internal_bounds);
+
+    if (!internal_bounds->is_empty()) {
+      child_volumes_ref.push_back(internal_bounds);
+      child_volumes.push_back(internal_bounds);
+      if (!internal_bounds->is_exact_type(BoundingBox::get_class_type())) {
+        all_box = false;
+      }
+    }
 
     int num_vertices = cdata->_internal_vertices;
 
@@ -3466,8 +3475,13 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         }
             
 	off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
-	child_volumes_ref.push_back(child_cdataw->_external_bounds);
-	child_volumes.push_back(child_cdataw->_external_bounds);
+        if (!child_cdataw->_external_bounds->is_empty()) {
+          child_volumes_ref.push_back(child_cdataw->_external_bounds);
+          child_volumes.push_back(child_cdataw->_external_bounds);
+          if (!child_cdataw->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
+            all_box = false;
+          }
+        }
         num_vertices += child_cdataw->_nested_vertices;
 
       } else {
@@ -3498,8 +3512,13 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         }
 
 	off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
-	child_volumes_ref.push_back(child_cdata->_external_bounds);
-	child_volumes.push_back(child_cdata->_external_bounds);
+        if (!child_cdata->_external_bounds->is_empty()) {
+          child_volumes_ref.push_back(child_cdata->_external_bounds);
+          child_volumes.push_back(child_cdata->_external_bounds);
+          if (!child_cdata->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
+            all_box = false;
+          }
+        }
         num_vertices += child_cdata->_nested_vertices;
       }
     }
@@ -3543,21 +3562,33 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 	cdataw->_off_clip_planes = off_clip_planes;
         cdataw->_nested_vertices = num_vertices;
 
-	// Compute the bounding sphere around all of our child
-	// volumes.
-	PT(GeometricBoundingVolume) gbv = new BoundingSphere;
-	const BoundingVolume **child_begin = &child_volumes[0];
-	const BoundingVolume **child_end = child_begin + child_volumes.size();
-	((BoundingVolume *)gbv)->around(child_begin, child_end);
-  
-	// If we have a transform, apply it to the bounding volume we
-	// just computed.
 	CPT(TransformState) transform = get_transform(current_thread);
-	if (!transform->is_identity()) {
-	  gbv->xform(transform->get_mat());
-	}
+        PT(GeometricBoundingVolume) gbv;
 
-	cdataw->_external_bounds = gbv;
+        if (bounds_type == BoundingVolume::BT_box ||
+            (bounds_type != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
+          // If all of the child volumes are a BoundingBox, and we
+          // have no transform, then our volume is also a
+          // BoundingBox.
+
+          gbv = new BoundingBox;
+        } else {
+          // Otherwise, it's a sphere.
+          gbv = new BoundingSphere;
+        }
+
+        if (child_volumes.size() > 0) {
+          const BoundingVolume **child_begin = &child_volumes[0];
+          const BoundingVolume **child_end = child_begin + child_volumes.size();
+          ((BoundingVolume *)gbv)->around(child_begin, child_end);
+        }
+        
+        // If we have a transform, apply it to the bounding volume we
+        // just computed.
+        if (!transform->is_identity()) {
+          gbv->xform(transform->get_mat());
+        }
+        cdataw->_external_bounds = gbv;
 	cdataw->_last_update = next_update;
 
         if (drawmask_cat.is_debug()) {

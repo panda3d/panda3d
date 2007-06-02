@@ -1,5 +1,6 @@
 #include "boundingHexahedron.cxx"
 #include "boundingLine.cxx"
+#include "boundingBox.cxx"
 #include "boundingPlane.cxx"
 #include "boundingSphere.cxx"
 #include "boundingVolume.cxx"

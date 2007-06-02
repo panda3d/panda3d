@@ -59,6 +59,7 @@ protected:
   virtual bool extend_by_plane(const BoundingPlane *plane);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
+  virtual int contains_box(const BoundingBox *box) const;
 
 private:
   Planef _plane;
@@ -81,6 +82,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class BoundingSphere;
+  friend class BoundingBox;
 };
 
 #include "boundingPlane.I"

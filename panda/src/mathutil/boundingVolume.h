@@ -26,6 +26,7 @@
 #include "deletedChain.h"
 
 class BoundingSphere;
+class BoundingBox;
 class BoundingHexahedron;
 class BoundingLine;
 class BoundingPlane;
@@ -42,8 +43,10 @@ class BoundingPlane;
 //               sort.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingVolume : public TypedReferenceCount {
-PUBLISHED:
+public:
   INLINE_MATHUTIL BoundingVolume();
+
+PUBLISHED:
   virtual BoundingVolume *make_copy() const=0;
 
   INLINE_MATHUTIL bool is_empty() const;
@@ -96,6 +99,19 @@ PUBLISHED:
   virtual void output(ostream &out) const=0;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+  // This enum is used to control the automatic generation of bounding
+  // volumes.
+  enum BoundsType {
+    BT_best,
+    BT_sphere,
+    BT_box,
+
+    BT_invalid,    // Do not use this one
+  };
+
+public:
+  static BoundsType string_bounds_type(const string &str);
+
 protected:
   enum Flags {
     F_empty        = 0x01,
@@ -118,12 +134,15 @@ protected:
   // These functions are the second dispatch point.  They actually do
   // the work.
   virtual bool extend_by_sphere(const BoundingSphere *sphere);
+  virtual bool extend_by_box(const BoundingBox *box);
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
   virtual bool extend_by_line(const BoundingLine *line);
   virtual bool extend_by_plane(const BoundingPlane *plane);
 
   virtual bool around_spheres(const BoundingVolume **first,
                               const BoundingVolume **last);
+  virtual bool around_boxes(const BoundingVolume **first,
+                            const BoundingVolume **last);
   virtual bool around_hexahedrons(const BoundingVolume **first,
                                   const BoundingVolume **last);
   virtual bool around_lines(const BoundingVolume **first,
@@ -132,6 +151,7 @@ protected:
                             const BoundingVolume **last);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
+  virtual int contains_box(const BoundingBox *box) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
   virtual int contains_line(const BoundingLine *line) const;
   virtual int contains_plane(const BoundingPlane *plane) const;
@@ -155,6 +175,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class BoundingSphere;
+  friend class BoundingBox;
   friend class BoundingHexahedron;
   friend class BoundingLine;
   friend class BoundingPlane;
@@ -163,5 +184,8 @@ private:
 INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound);
 
 #include "boundingVolume.I"
+
+EXPCL_PANDA ostream &operator << (ostream &out, BoundingVolume::BoundsType type);
+EXPCL_PANDA istream &operator >> (istream &in, BoundingVolume::BoundsType &type);
 
 #endif

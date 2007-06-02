@@ -32,6 +32,8 @@
 #include "bamWriter.h"
 #include "clockObject.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
+#include "config_mathutil.h"
 
 TypeHandle CollisionNode::_type_handle;
 
@@ -309,41 +311,43 @@ set_from_collide_mask(CollideMask mask) {
 void CollisionNode::
 compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
                         Thread *current_thread) const {
-  // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = new BoundingSphere;
-
-  // Now actually compute the bounding volume by putting it around all
-  // of our solids' bounding volumes.
+  pvector<CPT(BoundingVolume) > child_volumes_ref;
   pvector<const BoundingVolume *> child_volumes;
-  pvector<CPT(BoundingVolume) > cpt_volumes;
+  bool all_box = true;
 
   Solids::const_iterator gi;
   for (gi = _solids.begin(); gi != _solids.end(); ++gi) {
     CPT(CollisionSolid) solid = (*gi).get_read_pointer();
     CPT(BoundingVolume) volume = solid->get_bounds();
-    cpt_volumes.push_back(volume);
-    child_volumes.push_back(volume);
-  }
 
-  const BoundingVolume **child_begin = &child_volumes[0];
-  const BoundingVolume **child_end = child_begin + child_volumes.size();
-
-  bool success =
-    bound->around(child_begin, child_end);
-
-#ifdef NOTIFY_DEBUG
-  if (!success) {
-    collide_cat.error()
-      << "Unable to generate bounding volume for " << *this << ":\n"
-      << "Cannot put " << bound->get_type() << " around:\n";
-    for (int i = 0; i < (int)child_volumes.size(); i++) {
-      collide_cat.error(false)
-        << "  " << *child_volumes[i] << "\n";
+    if (!volume->is_empty()) {
+      child_volumes_ref.push_back(volume);
+      child_volumes.push_back(volume);
+      if (!volume->is_exact_type(BoundingBox::get_class_type())) {
+        all_box = false;
+      }
     }
   }
-#endif
 
-  bdata->_internal_bounds = bound;
+  PT(GeometricBoundingVolume) gbv = new BoundingBox;
+
+  if (bounds_type == BoundingVolume::BT_box ||
+      (bounds_type != BoundingVolume::BT_sphere && all_box)) {
+    // If all of the child volumes are a BoundingBox, then our volume
+    // is also a BoundingBox.
+    gbv = new BoundingBox;
+  } else {
+    // Otherwise, it's a sphere.
+    gbv = new BoundingSphere;
+  }
+
+  if (child_volumes.size() > 0) {
+    const BoundingVolume **child_begin = &child_volumes[0];
+    const BoundingVolume **child_end = child_begin + child_volumes.size();
+    ((BoundingVolume *)gbv)->around(child_begin, child_end);
+  }
+  
+  bdata->_internal_bounds = gbv;
   bdata->_internal_vertices = 0;
   bdata->_internal_bounds_stale = false;
 }

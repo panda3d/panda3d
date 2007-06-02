@@ -33,6 +33,8 @@
 #include "pset.h"
 #include "config_pgraph.h"
 #include "graphicsStateGuardianBase.h"
+#include "boundingBox.h"
+#include "config_mathutil.h"
 
 TypeHandle GeomNode::_type_handle;
 
@@ -682,30 +684,46 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
                         Thread *current_thread) const {
   int num_vertices = 0;
 
-  // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = new BoundingSphere;
+  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
 
-  // Now actually compute the bounding volume by putting it around all
-  // of our geoms' bounding volumes.
   pvector<const BoundingVolume *> child_volumes;
-
-  CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+  bool all_box = true;
 
   GeomList::const_iterator gi;
   CPT(GeomList) geoms = cdata->get_geoms();
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
     CPT(Geom) geom = entry._geom.get_read_pointer();
-    child_volumes.push_back(geom->get_bounds());
+    const BoundingVolume *volume = geom->get_bounds();
+
+    if (!volume->is_empty()) {
+      child_volumes.push_back(volume);
+      if (!volume->is_exact_type(BoundingBox::get_class_type())) {
+        all_box = false;
+      }
+    }
     num_vertices += geom->get_nested_vertices();
   }
 
-  const BoundingVolume **child_begin = &child_volumes[0];
-  const BoundingVolume **child_end = child_begin + child_volumes.size();
+  PT(GeometricBoundingVolume) gbv;
 
-  bound->around(child_begin, child_end);
+  if (bounds_type == BoundingVolume::BT_box ||
+      (bounds_type != BoundingVolume::BT_sphere && all_box)) {
+    // If all of the child volumes are a BoundingBox, then our volume
+    // is also a BoundingBox.
+    gbv = new BoundingBox;
+  } else {
+    // Otherwise, it's a sphere.
+    gbv = new BoundingSphere;
+  }
 
-  bdata->_internal_bounds = bound;
+  if (child_volumes.size() > 0) {
+    const BoundingVolume **child_begin = &child_volumes[0];
+    const BoundingVolume **child_end = child_begin + child_volumes.size();
+    ((BoundingVolume *)gbv)->around(child_begin, child_end);
+  }
+  
+  bdata->_internal_bounds = gbv;
   bdata->_internal_vertices = num_vertices;
   bdata->_internal_bounds_stale = false;
 }

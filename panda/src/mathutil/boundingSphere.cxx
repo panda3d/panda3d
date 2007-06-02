@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
 #include "boundingPlane.h"
@@ -28,11 +29,21 @@
 
 TypeHandle BoundingSphere::_type_handle;
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::make_copy
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 BoundingVolume *BoundingSphere::
 make_copy() const {
   return new BoundingSphere(*this);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_min
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 LPoint3f BoundingSphere::
 get_min() const {
   nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -42,6 +53,11 @@ get_min() const {
                   _center[2] - _radius);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_max
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 LPoint3f BoundingSphere::
 get_max() const {
   nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -51,6 +67,27 @@ get_max() const {
                   _center[2] + _radius);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_volume
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float BoundingSphere::
+get_volume() const {
+  nassertr(!is_infinite(), 0.0f);
+  if (is_empty()) {
+    return 0.0f;
+  }
+
+  // Volume of a sphere: four-thirds pi r cubed.
+  return 4.0f / 3.0f * MathNumbers::pi_f * _radius * _radius * _radius;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::get_approx_center
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 LPoint3f BoundingSphere::
 get_approx_center() const {
   nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
@@ -58,6 +95,11 @@ get_approx_center() const {
   return get_center();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::xform
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 void BoundingSphere::
 xform(const LMatrix4f &mat) {
   nassertv(!mat.is_nan());
@@ -99,6 +141,11 @@ xform(const LMatrix4f &mat) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 void BoundingSphere::
 output(ostream &out) const {
   if (is_empty()) {
@@ -110,11 +157,21 @@ output(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 extend_other(BoundingVolume *other) const {
   return other->extend_by_sphere(this);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 around_other(BoundingVolume *other,
              const BoundingVolume **first,
@@ -122,12 +179,22 @@ around_other(BoundingVolume *other,
   return other->around_spheres(first, last);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_other
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_other(const BoundingVolume *other) const {
   return other->contains_sphere(this);
 }
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_by_point
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 extend_by_point(const LPoint3f &point) {
   nassertr(!point.is_nan(), false);
@@ -146,6 +213,11 @@ extend_by_point(const LPoint3f &point) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_by_sphere
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 extend_by_sphere(const BoundingSphere *sphere) {
   nassertr(!sphere->is_empty() && !sphere->is_infinite(), false);
@@ -163,39 +235,76 @@ extend_by_sphere(const BoundingSphere *sphere) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_by_box
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
-extend_by_hexahedron(const BoundingHexahedron *hexahedron) {
-  return extend_by_finite(hexahedron);
-}
-
-bool BoundingSphere::
-extend_by_finite(const FiniteBoundingVolume *volume) {
-  nassertr(!volume->is_empty(), false);
-
-  LVector3f min1 = volume->get_min();
-  LVector3f max1 = volume->get_max();
+extend_by_box(const BoundingBox *box) {
+  const LVector3f &min1 = box->get_minq();
+  const LVector3f &max1 = box->get_maxq();
 
   if (is_empty()) {
     _center = (min1 + max1) * 0.5f;
     _radius = length(LVector3f(max1 - _center));
     _flags = 0;
-  } else {
-    LVector3f v = max1 - _center;
-    float dist2 = dot(v, v);
 
-    if (dist2 > _radius * _radius) {
-      _radius = sqrtf(dist2);
+  } else {
+    // Find the minimum radius necessary to reach the corner.
+    float max_dist2 = -1.0;
+    for (int i = 0; i < 8; ++i) {
+      float dist2 = (box->get_point(i) - _center).length_squared();
+      if (dist2 > max_dist2) {
+        max_dist2 = dist2;
+      }
+    }
+    if (max_dist2 > _radius * _radius) {
+      _radius = csqrt(max_dist2);
     }
   }
 
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_by_hexahedron
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingSphere::
+extend_by_hexahedron(const BoundingHexahedron *hexahedron) {
+  nassertr(!hexahedron->is_empty(), false);
+
+  BoundingBox box(hexahedron->get_min(), hexahedron->get_max());
+  box.local_object();
+  return extend_by_box(&box);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::extend_by_finite
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingSphere::
+extend_by_finite(const FiniteBoundingVolume *volume) {
+  nassertr(!volume->is_empty(), false);
+
+  BoundingBox box(volume->get_min(), volume->get_max());
+  box.local_object();
+  return extend_by_box(&box);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_points
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 around_points(const LPoint3f *first, const LPoint3f *last) {
   nassertr(first != last, false);
 
-  // First, get the minmax of all the points to construct a bounding
+  // First, get the box of all the points to construct a bounding
   // box.
   const LPoint3f *p = first;
 
@@ -279,42 +388,66 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_spheres
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 around_spheres(const BoundingVolume **first,
                const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_boxes
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BoundingSphere::
+around_boxes(const BoundingVolume **first,
+             const BoundingVolume **last) {
+  return around_finite(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_hexahedrons
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 around_hexahedrons(const BoundingVolume **first,
                    const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::around_finite
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 around_finite(const BoundingVolume **first,
               const BoundingVolume **last) {
   nassertr(first != last, false);
 
-  // We're given a set of bounding volumes, at least the first one of
-  // which is guaranteed to be finite and nonempty.  Some others may
-  // not be.
+  // We're given a set of bounding volumes, all of which are finite,
+  // and at least the first one of which is guaranteed to be nonempty.
+  // Some others may not be.
 
-  // First, get the minmax of all the points to construct a bounding
+  // First, get the box of all the points to construct a bounding
   // box.
   const BoundingVolume **p = first;
   nassertr(!(*p)->is_empty() && !(*p)->is_infinite(), false);
-  nassertr((*p)->is_of_type(FiniteBoundingVolume::get_class_type()), false);
   const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
   LPoint3f min_box = vol->get_min();
   LPoint3f max_box = vol->get_max();
 
-  bool any_unknown = false;
+  bool any_spheres = vol->is_exact_type(BoundingSphere::get_class_type());
 
   for (++p; p != last; ++p) {
     nassertr(!(*p)->is_infinite(), false);
-    if (!(*p)->is_empty() &&
-        (*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
+    if (!(*p)->is_empty()) {
       const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
       LPoint3f min1 = vol->get_min();
       LPoint3f max1 = vol->get_max();
@@ -325,8 +458,8 @@ around_finite(const BoundingVolume **first,
                   max(max_box[1], max1[1]),
                   max(max_box[2], max1[2]));
 
-      if (!(*p)->is_of_type(BoundingSphere::get_class_type())) {
-        any_unknown = true;
+      if (vol->is_exact_type(BoundingSphere::get_class_type())) {
+        any_spheres = true;
       }
     }
   }
@@ -334,27 +467,39 @@ around_finite(const BoundingVolume **first,
   // Now take the center of the bounding box as the center of the sphere.
   _center = (min_box + max_box) * 0.5f;
 
-  if (any_unknown) {
-    // If we have any volumes in the list that we don't know what to
-    // do with, we'll have to make the bounding sphere large enough to
-    // enclose the bounding box.  Less than ideal, but too bad.
+  if (!any_spheres) {
+    // Since there are no spheres in the list, we have to make this
+    // sphere fully enclose all of the bounding boxes.
     _radius = length(max_box - _center);
 
   } else {
-    // Otherwise, we do understand all the volumes in the list; make
-    // the sphere as tight as we can.
+    // We might be able to go tighter, by lopping off the corners of
+    // the spheres.
     _radius = 0.0f;
     for (p = first; p != last; ++p) {
       if (!(*p)->is_empty()) {
-        if ((*p)->is_of_type(BoundingSphere::get_class_type())) {
+        if ((*p)->is_exact_type(BoundingSphere::get_class_type())) {
+          // This is a sphere; consider its corner.
           const BoundingSphere *sphere = DCAST(BoundingSphere, *p);
           float dist = length(sphere->_center - _center);
           _radius = max(_radius, dist + sphere->_radius);
+          
         } else {
-          // Shouldn't get here, unless we missed a type from above.
-          mathutil_cat.error()
-            << "Unexpected type in BoundingSphere::around_finite()\n";
-          nassertr(false, false);
+          // This is a nonsphere.  We fit around it.
+          const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
+
+          BoundingBox box(vol->get_min(), vol->get_max());
+          box.local_object();
+          
+          // Find the minimum radius necessary to reach the corner.
+          float max_dist2 = -1.0;
+          for (int i = 0; i < 8; ++i) {
+            float dist2 = (box.get_point(i) - _center).length_squared();
+            if (dist2 > max_dist2) {
+              max_dist2 = dist2;
+            }
+          }
+          _radius = max(_radius, csqrt(max_dist2));
         }
       }
     }
@@ -364,6 +509,11 @@ around_finite(const BoundingVolume **first,
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_point
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_point(const LPoint3f &point) const {
   nassertr(!point.is_nan(), IF_no_intersection);
@@ -382,6 +532,11 @@ contains_point(const LPoint3f &point) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_lineseg
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
 int BoundingSphere::
 contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
   nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
@@ -468,6 +623,18 @@ contains_sphere(const BoundingSphere *sphere) const {
     // The other sphere is partially within this sphere.
     return IF_possible | IF_some;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::contains_box
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a box.
+////////////////////////////////////////////////////////////////////
+int BoundingSphere::
+contains_box(const BoundingBox *box) const {
+  return box->contains_sphere(this) & ~IF_all;
 }
 
 ////////////////////////////////////////////////////////////////////

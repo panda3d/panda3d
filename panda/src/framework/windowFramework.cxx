@@ -450,12 +450,19 @@ center_trackball(const NodePath &object) {
   // We expect at least a geometric bounding volume around the world.
   nassertv(volume != (BoundingVolume *)NULL);
   nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
-  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, volume);
+  CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
-  // Determine the bounding sphere around the world.  The topmost
-  // BoundingVolume might itself be a sphere (it's likely), but since
-  // it might not, we'll take no chances and make our own sphere.
-  PT(BoundingSphere) sphere = new BoundingSphere;
+  if (object.has_parent()) {
+    CPT(TransformState) net_transform = object.get_parent().get_net_transform();
+    PT(GeometricBoundingVolume) new_gbv = DCAST(GeometricBoundingVolume, gbv->make_copy());
+    new_gbv->xform(net_transform->get_mat());
+    gbv = new_gbv;
+  }
+
+  // Determine the bounding sphere around the object.  The
+  // BoundingVolume might be a sphere (it's likely), but since it
+  // might not, we'll take no chances and make our own sphere.
+  PT(BoundingSphere) sphere = new BoundingSphere(gbv->get_approx_center(), 0.0f);
   if (!sphere->extend_by(gbv)) {
     framework_cat.warning()
       << "Cannot determine bounding volume of " << object << "\n";
@@ -497,7 +504,7 @@ center_trackball(const NodePath &object) {
     distance = radius / ctan(deg_2_rad(min(fov[0], fov[1]) / 2.0f));
 
     // Ensure the far plane is far enough back to see the entire object.
-    float ideal_far_plane = distance + radius;
+    float ideal_far_plane = distance + radius * 1.5;
     lens->set_far(max(lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward.
