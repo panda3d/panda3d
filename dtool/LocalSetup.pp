@@ -471,9 +471,6 @@ $[cdefine HAVE_RTTI]
 /* Do we have Posix threads? */
 $[cdefine HAVE_POSIX_THREADS]
 
-/* Do we want to build for Linux native threads? */
-$[cdefine HAVE_LINUX_NATIVE_THREADS]
-
 /* Is the code being compiled with the Tau profiler's instrumentor? */
 $[cdefine USE_TAU]
 

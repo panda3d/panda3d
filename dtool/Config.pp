@@ -668,13 +668,6 @@
 // (pthread_create(), etc.), define this true.
 #define HAVE_POSIX_THREADS $[and $[isfile /usr/include/pthread.h],$[not $[WINDOWS_PLATFORM]]]
 
-// If you're building for an i386 Linux machine, kernel version 2.6 or
-// higher, and you want to use native Linux threading operations
-// instead of Posix threads, define this.  Warning: this is highly
-// experimental code, is likely to crash, and will probably be removed
-// in the future.  Use Posix threads instead; they're much better.
-#define HAVE_LINUX_NATIVE_THREADS
-
 // Do you want to build in support for threading (multiprocessing)?
 // Building in support for threading will enable Panda to take
 // advantage of multiple CPU's if you have them (and if the OS
@@ -683,8 +676,8 @@
 // enabled by default.
 
 // You should only turn this on if you have some threading library
-// available (most people will have one).  Windows has one built-in.
-// Linux uses Posix threads, which most Linuxes provide.
+// available (you probably do).  Windows has one built-in.  Linux and
+// OSX use Posix threads.
 #define HAVE_THREADS
 #define THREADS_LIBS $[if $[not $[WINDOWS_PLATFORM]],pthread]
 

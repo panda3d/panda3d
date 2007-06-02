@@ -22,7 +22,6 @@
     memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
-    mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
     mutexSpinlockImpl.h mutexSpinlockImpl.I \
@@ -48,7 +47,6 @@
     dtoolbase.cxx \
     memoryBase.cxx \
     mutexDummyImpl.cxx \
-    mutexLinuxImpl.cxx \
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
     mutexSpinlockImpl.cxx \
@@ -72,7 +70,6 @@
     memoryBase.h \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
-    mutexLinuxImpl.h mutexLinuxImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
     mutexWin32Impl.h mutexWin32Impl.I \
     mutexSpinlockImpl.h mutexSpinlockImpl.I \

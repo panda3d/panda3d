@@ -54,11 +54,6 @@
 // In Windows, use the native threading library.
 #define THREAD_WIN32_IMPL 1
 
-#elif defined(HAVE_LINUX_NATIVE_THREADS)
-
-// In Linux, we might want to use the low-level system calls.
-#define THREAD_LINUX_IMPL 1
-
 #elif defined(HAVE_POSIX_THREADS)
 
 // Posix threads are nice.
