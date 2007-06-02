@@ -201,13 +201,17 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
           const PartSubset &subset) {
   nassertr(Thread::get_current_pipeline_stage() == 0, NULL);
 
+  // Make sure this pointer doesn't destruct during the lifetime of this
+  // method.
+  PT(AnimBundle) ptanim = anim;
+
   if ((hierarchy_match_flags & HMF_ok_wrong_root_name) == 0) {
     // Make sure the root names match.
-    if (get_name() != anim->get_name()) {
+    if (get_name() != ptanim->get_name()) {
       if (chan_cat.is_error()) {
         chan_cat.error()
           << "Root name of part (" << get_name()
-          << ") does not match that of anim (" << anim->get_name()
+          << ") does not match that of anim (" << ptanim->get_name()
           << ")\n";
       }
       return NULL;
@@ -217,10 +221,13 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
   if (!check_hierarchy(anim, NULL, hierarchy_match_flags)) {
     return NULL;
   }
-  
-  JointTransformList::iterator jti;
-  for (jti = _frozen_joints.begin(); jti != _frozen_joints.end(); ++jti) {
-    anim->make_child_fixed((*jti).name, (*jti).transform);
+
+  if (!_frozen_joints.empty()) {
+    ptanim = ptanim->copy_bundle();
+    JointTransformList::iterator jti;
+    for (jti = _frozen_joints.begin(); jti != _frozen_joints.end(); ++jti) {
+      ptanim->make_child_fixed((*jti).name, (*jti).transform);
+    }
   }
 
   plist<int> holes;
@@ -236,8 +243,8 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
   if (subset.is_include_empty()) {
     bound_joints = BitArray::all_on();
   }
-  bind_hierarchy(anim, channel_index, joint_index, subset.is_include_empty(), 
-                 bound_joints, subset);
+  bind_hierarchy(ptanim, channel_index, joint_index, 
+                 subset.is_include_empty(), bound_joints, subset);
   return new AnimControl(this, anim, channel_index, bound_joints);
 }
 
