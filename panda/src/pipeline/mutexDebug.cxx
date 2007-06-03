@@ -91,13 +91,12 @@ do_lock() {
   } else if (_locking_thread == this_thread) {
     // The mutex is already locked by this thread.  Increment the lock
     // count.
-    nassertv(_lock_count >= 0);
-    if (!_allow_recursion && _lock_count == 0) {
+    nassertv(_lock_count > 0);
+    if (!_allow_recursion) {
       ostringstream ostr;
-      ostr << *_locking_thread << " attempted to re-lock non-reentrant "
+      ostr << *_locking_thread << " attempted to double-lock non-reentrant "
            << *this;
       nassert_raise(ostr.str());
-      return;
     }
     ++_lock_count;
 
