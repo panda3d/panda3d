@@ -2392,7 +2392,9 @@ reload_ram_image() {
       gobj_cat.info()
         << "Texture " << get_name() << " reloaded from disk cache.\n";
       PT(Texture) tex = DCAST(Texture, record->extract_data());
+      bool keep_ram_image = _keep_ram_image;
       (*this) = (*tex);
+      _keep_ram_image = keep_ram_image;
       return;
     }
   }
