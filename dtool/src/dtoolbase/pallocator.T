@@ -29,14 +29,14 @@ allocate(TYPENAME pallocator_single<Type>::size_type n, TYPENAME allocator<void>
   TAU_PROFILE("pallocator_single:allocate()", " ", TAU_USER);
   // This doesn't support allocating arrays.
   assert(n == 1);
-  return DeletedChain<Type>::allocate(sizeof(Type), _type_handle);
+  return StaticDeletedChain<Type>::allocate(sizeof(Type), _type_handle);
 }
 
 template<class Type>
 INLINE void pallocator_single<Type>::
 deallocate(TYPENAME pallocator_single<Type>::pointer p, TYPENAME pallocator_single<Type>::size_type) {
   TAU_PROFILE("pallocator_single:deallocate()", " ", TAU_USER);
-  return DeletedChain<Type>::deallocate(p, _type_handle);
+  StaticDeletedChain<Type>::deallocate(p, _type_handle);
 }
 
 template<class Type>

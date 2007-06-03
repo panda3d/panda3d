@@ -17,16 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 template<class Type>
-TVOLATILE TYPENAME DeletedChain<Type>::ObjectNode * TVOLATILE DeletedChain<Type>::_deleted_chain;
-
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-template<class Type>
-MutexImpl *DeletedChain<Type>::_lock;
-#endif
+DeletedChain<Type> StaticDeletedChain<Type>::_chain;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::allocate
-//       Access: Public, Static
+//       Access: Public
 //  Description: Allocates the memory for a new object of Type.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
@@ -232,7 +227,7 @@ type_to_node(Type *ptr) {
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::init_lock
-//       Access: Private, Static
+//       Access: Private
 //  Description: Ensures the lock pointer has been allocated.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
@@ -247,7 +242,7 @@ init_lock() {
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::do_init_lock
-//       Access: Private, Static
+//       Access: Private
 //  Description: Allocates the lock pointer if necessary.  Takes some
 //               pains to protect itself from race conditions.
 //
@@ -275,3 +270,41 @@ do_init_lock(MutexImpl *&lock) {
   assert(lock != (MutexImpl *)NULL);
 }
 #endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticDeletedChain::allocate
+//       Access: Public, Static
+//  Description: Allocates the memory for a new object of Type.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE Type *StaticDeletedChain<Type>::
+allocate(size_t size, TypeHandle type_handle) {
+  return _chain.allocate(size, type_handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticDeletedChain::deallocate
+//       Access: Public
+//  Description: Frees the memory for an object of Type.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE void StaticDeletedChain<Type>::
+deallocate(Type *ptr, TypeHandle type_handle) {
+  _chain.deallocate(ptr, type_handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticDeletedChain::validate
+//       Access: Public
+//  Description: Returns true if the pointer is valid, false if it has
+//               been deleted or if it was never a valid pointer.
+//
+//               This is only meaningful in debug mode, where
+//               USE_DELETEDCHAINFLAG is defined.  If not, this
+//               trivially returns true.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE bool StaticDeletedChain<Type>::
+validate(const Type *ptr) {
+  return _chain.validate(ptr);
+}

@@ -82,10 +82,10 @@ enum DeletedChainFlag {
 template<class Type>
 class DeletedChain {
 public:
-  INLINE static Type *allocate(size_t size, TypeHandle type_handle);
-  INLINE static void deallocate(Type *ptr, TypeHandle type_handle);
+  INLINE Type *allocate(size_t size, TypeHandle type_handle);
+  INLINE void deallocate(Type *ptr, TypeHandle type_handle);
 
-  INLINE static bool validate(const Type *ptr);
+  INLINE bool validate(const Type *ptr);
 
 private:
   class ObjectNode {
@@ -105,23 +105,46 @@ private:
     TVOLATILE ObjectNode * TVOLATILE _next;
   };
 
-  INLINE static Type *node_to_type(TVOLATILE ObjectNode *node);
-  INLINE static ObjectNode *type_to_node(Type *ptr);
+  static INLINE Type *node_to_type(TVOLATILE ObjectNode *node);
+  static INLINE ObjectNode *type_to_node(Type *ptr);
 
-  // Ideally, the compiler and linker will unify all references to
-  // this static pointer for a given type, as per the C++ spec.
-  // However, if the compiler fails to do this (*cough* Microsoft), it
-  // won't be a big deal; it just means there will be multiple
-  // unrelated chains of deleted objects for a particular type.
-  static TVOLATILE ObjectNode * TVOLATILE _deleted_chain;
-
+  TVOLATILE ObjectNode * TVOLATILE _deleted_chain;
+  
 #ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   // If we don't have atomic compare-and-exchange, we need to use a
   // Mutex to protect the above linked list.
-  static INLINE void init_lock();
-  static void do_init_lock(MutexImpl *&lock);
-  static MutexImpl *_lock;
+  INLINE void init_lock();
+  void do_init_lock(MutexImpl *&lock);
+  MutexImpl *_lock;
 #endif
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : StaticDeletedChain
+// Description : This template class is used to conveniently
+//               declare a single instance of the DeletedChain
+//               template object, above, for a particular type.
+//
+//               It relies on the fact that the compiler and linker
+//               should unify all references to this static pointer
+//               for a given type, as per the C++ spec. However, this
+//               sometimes fails; and if the compiler fails to do
+//               this, it mostly won't be a big deal; it just means
+//               there will be multiple unrelated chains of deleted
+//               objects for a particular type.  This is only a
+//               problem if the code structure causes objects to be
+//               allocated from one chain and freed to another, which
+//               can lead to leaks.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+class StaticDeletedChain {
+public:
+  INLINE static Type *allocate(size_t size, TypeHandle type_handle);
+  INLINE static void deallocate(Type *ptr, TypeHandle type_handle);
+
+  INLINE static bool validate(const Type *ptr);
+
+  static DeletedChain<Type> _chain;
 };
 
 // Place this macro within a class definition to define appropriate
@@ -129,19 +152,44 @@ private:
 // DeletedChain.
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline void *operator new(size_t size) {                   \
-    return (void *)DeletedChain< Type >::allocate(size, get_type_handle(Type)); \
+    return (void *)StaticDeletedChain< Type >::allocate(size, get_type_handle(Type)); \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    DeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
+    StaticDeletedChain< Type >::deallocate((Type *)ptr, get_type_handle(Type)); \
   }                                                          \
   inline void operator delete(void *, void *) {              \
   }                                                          \
   inline static bool validate_ptr(const void *ptr) {         \
-    return DeletedChain< Type >::validate((const Type *)ptr); \
+    return StaticDeletedChain< Type >::validate((const Type *)ptr); \
   }
+
+// Use this variant of the above macro in cases in which the compiler
+// fails to unify the static template pointers properly, to prevent
+// leaks.
+#define ALLOC_DELETED_CHAIN_DECL(Type)                       \
+  inline void *operator new(size_t size) {                   \
+    return (void *)_deleted_chain.allocate(size, get_type_handle(Type)); \
+  }                                                          \
+  inline void *operator new(size_t size, void *ptr) {        \
+    return ptr;                                              \
+  }                                                          \
+  inline void operator delete(void *ptr) {                   \
+    _deleted_chain.deallocate((Type *)ptr, get_type_handle(Type)); \
+  }                                                          \
+  inline void operator delete(void *, void *) {              \
+  }                                                          \
+  inline static bool validate_ptr(const void *ptr) {         \
+    return _deleted_chain.validate((const Type *)ptr);       \
+  }                                                          \
+  static DeletedChain< Type > _deleted_chain;
+
+// When you use ALLOC_DELETED_CHAIN_DECL in a class body, you must
+// also put this line in the .cxx file defining that class body.
+#define ALLOC_DELETED_CHAIN_DEF(Type)                        \
+  DeletedChain< Type > Type::_deleted_chain;
 
 #include "deletedChain.T"
 

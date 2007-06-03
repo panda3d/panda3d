@@ -53,6 +53,8 @@ TypeHandle GeomVertexArrayData::_type_handle;
 TypeHandle GeomVertexArrayData::CData::_type_handle;
 TypeHandle GeomVertexArrayDataHandle::_type_handle;
 
+ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::Default Constructor
 //       Access: Private

@@ -252,7 +252,7 @@ PUBLISHED:
   INLINE ~GeomVertexArrayDataHandle();
 
 public:
-  ALLOC_DELETED_CHAIN(GeomVertexArrayDataHandle);
+  ALLOC_DELETED_CHAIN_DECL(GeomVertexArrayDataHandle);
 
   INLINE Thread *get_current_thread() const;
   INLINE const GeomVertexArrayData *get_object() const;
