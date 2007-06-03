@@ -132,10 +132,20 @@ get_lru() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLruPage::
 enqueue_lru(SimpleLru *lru) {
-  dequeue_lru();
+  MutexHolder holder(SimpleLru::_global_lock);
+
+  if (_lru != (SimpleLru *)NULL) {
+    remove_from_list();
+    _lru->_total_size -= _lru_size;
+    _lru = NULL;
+  }
+
   _lru = lru;
-  _lru->_total_size += _lru_size;
-  insert_before(_lru);
+
+  if (_lru != (SimpleLru *)NULL) {
+    _lru->_total_size += _lru_size;
+    insert_before(_lru);
+  }
 
   // Let's not automatically evict pages; instead, we'll evict only on
   // an explicit epoch test.
@@ -149,6 +159,8 @@ enqueue_lru(SimpleLru *lru) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLruPage::
 dequeue_lru() {
+  MutexHolder holder(SimpleLru::_global_lock);
+
   if (_lru != (SimpleLru *)NULL) {
     remove_from_list();
     _lru->_total_size -= _lru_size;
@@ -198,10 +210,11 @@ get_lru_size() const {
 //     Function: SimpleLruPage::set_lru_size
 //       Access: Published
 //  Description: Specifies the size of this page, presumably in bytes,
-//               although any units is possible.
+//               although any unit is possible.
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLruPage::
 set_lru_size(size_t lru_size) {
+  MutexHolder holder(SimpleLru::_global_lock);
   if (_lru != (SimpleLru *)NULL) {
     _lru->_total_size -= _lru_size;
     _lru->_total_size += lru_size;

@@ -40,6 +40,17 @@ dec(TVOLATILE PN_int32 &var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustDummyImpl::add
+//       Access: Public, Static
+//  Description: Atomically computes var += delta.  It is legal for
+//               delta to be negative.
+////////////////////////////////////////////////////////////////////
+INLINE void AtomicAdjustDummyImpl::
+add(TVOLATILE PN_int32 &var, PN_int32 delta) {
+  var += delta;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AtomicAdjustDummyImpl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and

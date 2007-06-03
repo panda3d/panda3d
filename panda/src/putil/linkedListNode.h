@@ -31,6 +31,10 @@
 //
 //               Typically, each node of the linked list, as well as
 //               the root of the list, will inherit from this class.
+//
+//               Note that this class is not inherently thread-safe;
+//               derived classes are responsible for protecting any
+//               calls into it within mutexes, if necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LinkedListNode {
 protected:

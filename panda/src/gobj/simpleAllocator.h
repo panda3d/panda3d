@@ -31,6 +31,10 @@ class SimpleAllocatorBlock;
 //               integers within a specified upper limit; it uses a
 //               simple first-fit algorithm to find the next available
 //               space.
+//
+//               Note that this class is not inherently thread-safe;
+//               derived classes are responsible for protecting any
+//               calls into it within mutexes, if necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SimpleAllocator : public LinkedListNode {
 PUBLISHED:

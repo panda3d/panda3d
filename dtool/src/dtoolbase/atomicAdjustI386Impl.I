@@ -67,6 +67,20 @@ dec(TVOLATILE PN_int32 &var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustI386Impl::add
+//       Access: Public, Static
+//  Description: Atomically computes var += delta.  It is legal for
+//               delta to be negative.
+////////////////////////////////////////////////////////////////////
+INLINE void AtomicAdjustI386Impl::
+add(TVOLATILE PN_int32 &var, PN_int32 delta) {
+  PN_int32 orig_value = var;
+  while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
+    orig_value = var;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AtomicAdjustI386Impl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and

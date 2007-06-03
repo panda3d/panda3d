@@ -34,6 +34,7 @@ class EXPCL_DTOOL AtomicAdjustDummyImpl {
 public:
   INLINE static void inc(TVOLATILE PN_int32 &var);
   INLINE static bool dec(TVOLATILE PN_int32 &var);
+  INLINE static void add(TVOLATILE PN_int32 &var, PN_int32 delta);
   INLINE static PN_int32 set(TVOLATILE PN_int32 &var, PN_int32 new_value);
   INLINE static PN_int32 get(const TVOLATILE PN_int32 &var);
 

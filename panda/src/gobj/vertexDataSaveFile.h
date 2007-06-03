@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "simpleAllocator.h"
 #include "filename.h"
+#include "pmutex.h"
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -60,6 +61,7 @@ private:
   Filename _filename;
   bool _is_valid;
   size_t _total_file_size;
+  Mutex _lock;
 
 #ifdef _WIN32
   HANDLE _handle;

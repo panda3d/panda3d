@@ -25,6 +25,8 @@
 #include "referenceCount.h"
 #include "pStatCollector.h"
 #include "vertexDataSaveFile.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 class VertexDataPage;
 class VertexDataBlock;
@@ -54,6 +56,7 @@ private:
   typedef pvector<VertexDataPage *> Pages;
   Pages _pages;
   size_t _next_pi;
+  Mutex _lock;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -80,13 +83,6 @@ PUBLISHED:
   };
 
   INLINE RamClass get_ram_class() const;
-  INLINE void check_resident() const;
-
-  void make_resident();
-  void make_compressed();
-  void make_disk();
-  bool save_to_disk();
-  void restore_from_disk();
 
   VertexDataBlock *alloc(size_t size);
   INLINE VertexDataBlock *get_first_block() const;
@@ -94,6 +90,9 @@ PUBLISHED:
   INLINE static size_t get_total_page_size();
   INLINE static SimpleLru *get_global_lru(RamClass rclass);
   INLINE static VertexDataSaveFile *get_save_file();
+
+  INLINE bool save_to_disk();
+  INLINE void restore_from_disk();
 
 public:
   INLINE unsigned char *get_page_data() const;
@@ -103,6 +102,15 @@ protected:
   virtual void evict_lru();
 
 private:
+  INLINE void check_resident() const;
+
+  void make_resident();
+  void make_compressed();
+  void make_disk();
+
+  bool do_save_to_disk();
+  void do_restore_from_disk();
+
   INLINE void set_ram_class(RamClass ram_class);
   static void make_save_file();
 
@@ -110,6 +118,8 @@ private:
   size_t _size, _uncompressed_size;
   RamClass _ram_class;
   PT(VertexDataSaveBlock) _saved_block;
+
+  Mutex _lock;
 
   static SimpleLru _resident_lru;
   static SimpleLru _compressed_lru;

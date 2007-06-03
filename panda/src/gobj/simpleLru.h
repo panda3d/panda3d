@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 class SimpleLruPage;
 
@@ -40,6 +42,9 @@ PUBLISHED:
 
   INLINE void consider_evict();
   INLINE void begin_epoch();
+
+public:
+  static Mutex _global_lock;
 
 private:
   void do_evict();

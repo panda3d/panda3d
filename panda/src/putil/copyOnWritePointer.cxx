@@ -19,6 +19,7 @@
 #include "copyOnWritePointer.h"
 #include "mutexHolder.h"
 #include "config_util.h"
+#include "config_pipeline.h"
 
 #ifdef HAVE_THREADS
 ////////////////////////////////////////////////////////////////////
@@ -37,12 +38,18 @@ get_read_pointer() const {
     return NULL;
   }
 
+  Thread *current_thread = Thread::get_current_thread();
+
   MutexHolder holder(_object->_lock_mutex);
   while (_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
+    if (_object->_locking_thread == current_thread) {
+      return _object;
+    }
     _object->_lock_cvar.wait();
   }
 
   _object->_lock_status = CopyOnWriteObject::LS_locked_read;
+  _object->_locking_thread = Thread::get_current_thread();
   return _object;
 }
 #endif  // HAVE_THREADS
@@ -67,15 +74,23 @@ get_write_pointer() {
     return NULL;
   }
 
+  Thread *current_thread = Thread::get_current_thread();
+
   MutexHolder holder(_object->_lock_mutex);
   while (_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
+    if (_object->_locking_thread == current_thread) {
+      return _object;
+    }
     _object->_lock_cvar.wait();
   }
 
   if (_object->_lock_status == CopyOnWriteObject::LS_locked_read) {
-    // Someone else has a read copy of this pointer; we need to make
-    // our own writable copy.
     nassertr(_object->get_ref_count() > _object->get_cache_ref_count(), NULL);
+    if (_object->_locking_thread == current_thread) {
+      _object->_lock_status = CopyOnWriteObject::LS_locked_write;
+      return _object;
+    }
+
     if (util_cat.is_debug()) {
       util_cat.debug()
         << "Making copy of " << _object->get_type()
@@ -112,6 +127,7 @@ get_write_pointer() {
     // have saved himself a reference.
   }
   _object->_lock_status = CopyOnWriteObject::LS_locked_write;
+  _object->_locking_thread = Thread::get_current_thread();
 
   return _object;
 }

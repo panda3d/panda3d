@@ -39,7 +39,8 @@ CopyOnWriteObject()
 #endif
 #ifdef HAVE_THREADS
   _lock_status = LS_unlocked;
-#endif
+  _locking_thread = NULL;
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +60,8 @@ CopyOnWriteObject(const CopyOnWriteObject &copy) :
 #endif
 #ifdef HAVE_THREADS
   _lock_status = LS_unlocked;
-#endif
+  _locking_thread = NULL;
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////

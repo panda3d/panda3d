@@ -380,7 +380,11 @@
 
 // Actually, let's *not* assume that threading implies pipelining, at
 // least not until pipelining is less of a performance hit.
-#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
+//#defer DO_PIPELINING $[<= $[OPTIMIZE], 1]
+
+// Pipelining is a little broken right now.  Turn it off altogether
+// for now.
+#defer DO_PIPELINING
 
 // Do you want to use one of the alternative malloc implementations?
 // This is almost always a good idea on Windows, where the standard

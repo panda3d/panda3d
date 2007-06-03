@@ -45,6 +45,19 @@ dec(TVOLATILE PN_int32 &var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AtomicAdjustPosixImpl::add
+//       Access: Public, Static
+//  Description: Atomically computes var += delta.  It is legal for
+//               delta to be negative.
+////////////////////////////////////////////////////////////////////
+INLINE void AtomicAdjustPosixImpl::
+add(TVOLATILE PN_int32 &var, PN_int32 delta) {
+  pthread_mutex_lock(&_mutex);
+  var += delta;
+  pthread_mutex_unlock(&_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AtomicAdjustPosixImpl::set
 //       Access: Public, Static
 //  Description: Atomically changes the indicated variable and

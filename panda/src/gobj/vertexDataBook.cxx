@@ -20,6 +20,7 @@
 #include "configVariableInt.h"
 #include "vertexDataSaveFile.h"
 #include "pStatTimer.h"
+#include "mutexHolder.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
@@ -100,6 +101,8 @@ VertexDataBook::
 ////////////////////////////////////////////////////////////////////
 VertexDataBlock *VertexDataBook::
 alloc(size_t size) {
+  MutexHolder holder(_lock);
+
   // First, try to allocate from the last page that worked; then
   // continue to the end of the list.
   size_t pi = _next_pi;
@@ -175,7 +178,7 @@ VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(pag
   _size = page_size;
   _uncompressed_size = _size;
   _total_page_size += _size;
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
+  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
   set_ram_class(RC_resident);
 }
 
@@ -187,238 +190,10 @@ VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(pag
 VertexDataPage::
 ~VertexDataPage() {
   _total_page_size -= _size;
-  get_class_type().dec_memory_usage(TypeHandle::MC_array, _size);
+  get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
 
   if (_page_data != NULL) {
     delete[] _page_data;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::make_resident
-//       Access: Published
-//  Description: Moves the page to fully resident status by
-//               expanding it or reading it from disk as necessary.
-////////////////////////////////////////////////////////////////////
-void VertexDataPage::
-make_resident() {
-  if (_ram_class == RC_resident) {
-    // If we're already resident, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_disk) {
-    restore_from_disk();
-  }
-
-  if (_ram_class == RC_compressed) {
-#ifdef HAVE_ZLIB
-    PStatTimer timer(_vdata_decompress_pcollector);
-
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Expanding page from " << _size
-        << " to " << _uncompressed_size << "\n";
-    }
-    unsigned char *new_data = new unsigned char[_uncompressed_size];
-    uLongf dest_len = _uncompressed_size;
-    int result = uncompress(new_data, &dest_len, _page_data, _size);
-    if (result != Z_OK) {
-      gobj_cat.error()
-        << "Couldn't expand: zlib error " << result << "\n";
-      nassert_raise("zlib error");
-    }
-    nassertv(dest_len == _uncompressed_size);
-
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size -= _size;
-
-    delete[] _page_data;
-    _page_data = new_data;
-    _size = _uncompressed_size;
-
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size += _size;
-  
-#endif
-    set_lru_size(_size);
-    set_ram_class(RC_resident);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::make_compressed
-//       Access: Published
-//  Description: Moves the page to compressed status by
-//               compressing it or reading it from disk as necessary.
-////////////////////////////////////////////////////////////////////
-void VertexDataPage::
-make_compressed() {
-  if (_ram_class == RC_compressed) {
-    // If we're already compressed, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_disk) {
-    restore_from_disk();
-  }
-
-  if (_ram_class == RC_resident) {
-    nassertv(_size == _uncompressed_size);
-
-#ifdef HAVE_ZLIB
-    PStatTimer timer(_vdata_compress_pcollector);
-
-    // According to the zlib manual, we need to provide this much
-    // buffer to the compress algorithm: 0.1% bigger plus twelve
-    // bytes.
-    uLongf buffer_size = _uncompressed_size + ((_uncompressed_size + 999) / 1000) + 12;
-    Bytef *buffer = (Bytef *)alloca(buffer_size);
-
-    int result = compress2(buffer, &buffer_size,
-                           _page_data, _uncompressed_size,
-                           vertex_data_compression_level);
-    if (result != Z_OK) {
-      gobj_cat.error()
-        << "Couldn't compress: zlib error " << result << "\n";
-      nassert_raise("zlib error");
-    }
-    
-    unsigned char *new_data = new unsigned char[buffer_size];
-    memcpy(new_data, buffer, buffer_size);
-
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size -= _size;
-
-    delete[] _page_data;
-    _page_data = new_data;
-    _size = buffer_size;
-
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size += _size;
-
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Compressed " << *this << " from " << _uncompressed_size
-        << " to " << _size << "\n";
-    }
-#endif
-    set_lru_size(_size);
-    set_ram_class(RC_compressed);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::make_disk
-//       Access: Published
-//  Description: Moves the page to disk status by
-//               writing it to disk as necessary.
-////////////////////////////////////////////////////////////////////
-void VertexDataPage::
-make_disk() {
-  if (_ram_class == RC_disk) {
-    // If we're already on disk, just mark the page recently used.
-    mark_used_lru();
-    return;
-  }
-
-  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
-    if (!save_to_disk()) {
-      // Can't save it to disk for some reason.
-      mark_used_lru();
-      return;
-    }
-
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size -= _size;
-
-    delete[] _page_data;
-    _page_data = NULL;
-    _size = 0;
-
-    set_ram_class(RC_disk);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::save_to_disk
-//       Access: Published
-//  Description: Writes the page to disk, but does not evict it from
-//               memory or affect its LRU status.  If it gets evicted
-//               later without having been modified, it will not need
-//               to write itself to disk again.
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool VertexDataPage::
-save_to_disk() {
-  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
-    PStatTimer timer(_vdata_save_pcollector);
-
-    if (_saved_block == (VertexDataSaveBlock *)NULL) {
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Storing page, " << _size << " bytes, to disk\n";
-      }
-
-      bool compressed = (_ram_class == RC_compressed);
-      
-      _saved_block = get_save_file()->write_data(_page_data, _size, compressed);
-      if (_saved_block == (VertexDataSaveBlock *)NULL) {
-        // Can't write it to disk.  Too bad.
-        return false;
-      }
-    } else {
-      if (gobj_cat.is_debug()) {
-        gobj_cat.debug()
-          << "Page already stored: " << _size << " bytes\n";
-      }
-    }
-  }
- 
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::restore_from_disk
-//       Access: Published
-//  Description: Restores the page from disk and makes it
-//               either compressed or resident (according to whether
-//               it was stored compressed on disk).
-////////////////////////////////////////////////////////////////////
-void VertexDataPage::
-restore_from_disk() {
-  if (_ram_class == RC_disk) {
-    nassertv(_saved_block != (VertexDataSaveBlock *)NULL);
-    nassertv(_page_data == (unsigned char *)NULL && _size == 0);
-
-    PStatTimer timer(_vdata_restore_pcollector);
-
-    size_t buffer_size = _saved_block->get_size();
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Restoring page, " << buffer_size << " bytes, from disk\n";
-    }
-
-    unsigned char *new_data = new unsigned char[buffer_size];
-    if (!get_save_file()->read_data(new_data, buffer_size, _saved_block)) {
-      nassert_raise("read error");
-    }
-
-    _page_data = new_data;
-    _size = buffer_size;
-
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
-    _total_page_size += _size;
-
-    set_lru_size(_size);
-    if (_saved_block->get_compressed()) {
-      set_ram_class(RC_compressed);
-    } else {
-      set_ram_class(RC_resident);
-    }
   }
 }
 
@@ -433,7 +208,9 @@ restore_from_disk() {
 ////////////////////////////////////////////////////////////////////
 VertexDataBlock *VertexDataPage::
 alloc(size_t size) {
+  MutexHolder holder(_lock);
   check_resident();
+  
   VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::alloc(size);
 
   if (block != (VertexDataBlock *)NULL) {
@@ -473,6 +250,8 @@ make_block(size_t start, size_t size) {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 evict_lru() {
+  MutexHolder holder(_lock);
+
   switch (_ram_class) {
   case RC_resident:
     if (_compressed_lru.get_max_size() == 0) {
@@ -493,6 +272,243 @@ evict_lru() {
 
   case RC_end_of_list:
     break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::make_resident
+//       Access: Private
+//  Description: Moves the page to fully resident status by
+//               expanding it or reading it from disk as necessary.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+make_resident() {
+  if (_ram_class == RC_resident) {
+    // If we're already resident, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_disk) {
+    do_restore_from_disk();
+  }
+
+  if (_ram_class == RC_compressed) {
+#ifdef HAVE_ZLIB
+    PStatTimer timer(_vdata_decompress_pcollector);
+
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Expanding page from " << _size
+        << " to " << _uncompressed_size << "\n";
+    }
+    unsigned char *new_data = new unsigned char[_uncompressed_size];
+    uLongf dest_len = _uncompressed_size;
+    int result = uncompress(new_data, &dest_len, _page_data, _size);
+    if (result != Z_OK) {
+      gobj_cat.error()
+        << "Couldn't expand: zlib error " << result << "\n";
+      nassert_raise("zlib error");
+    }
+    nassertv(dest_len == _uncompressed_size);
+
+    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size -= _size;
+
+    delete[] _page_data;
+    _page_data = new_data;
+    _size = _uncompressed_size;
+
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size += _size;
+  
+#endif
+    set_lru_size(_size);
+    set_ram_class(RC_resident);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::make_compressed
+//       Access: Private
+//  Description: Moves the page to compressed status by
+//               compressing it or reading it from disk as necessary.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+make_compressed() {
+  if (_ram_class == RC_compressed) {
+    // If we're already compressed, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_disk) {
+    do_restore_from_disk();
+  }
+
+  if (_ram_class == RC_resident) {
+    nassertv(_size == _uncompressed_size);
+
+#ifdef HAVE_ZLIB
+    PStatTimer timer(_vdata_compress_pcollector);
+
+    // According to the zlib manual, we need to provide this much
+    // buffer to the compress algorithm: 0.1% bigger plus twelve
+    // bytes.
+    uLongf buffer_size = _uncompressed_size + ((_uncompressed_size + 999) / 1000) + 12;
+    Bytef *buffer = (Bytef *)alloca(buffer_size);
+
+    int result = compress2(buffer, &buffer_size,
+                           _page_data, _uncompressed_size,
+                           vertex_data_compression_level);
+    if (result != Z_OK) {
+      gobj_cat.error()
+        << "Couldn't compress: zlib error " << result << "\n";
+      nassert_raise("zlib error");
+    }
+    
+    unsigned char *new_data = new unsigned char[buffer_size];
+    memcpy(new_data, buffer, buffer_size);
+
+    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size -= _size;
+
+    delete[] _page_data;
+    _page_data = new_data;
+    _size = buffer_size;
+
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size += _size;
+
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Compressed " << *this << " from " << _uncompressed_size
+        << " to " << _size << "\n";
+    }
+#endif
+    set_lru_size(_size);
+    set_ram_class(RC_compressed);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::make_disk
+//       Access: Private
+//  Description: Moves the page to disk status by writing it to disk
+//               as necessary.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+make_disk() {
+  if (_ram_class == RC_disk) {
+    // If we're already on disk, just mark the page recently used.
+    mark_used_lru();
+    return;
+  }
+
+  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
+    if (!do_save_to_disk()) {
+      // Can't save it to disk for some reason.
+      mark_used_lru();
+      return;
+    }
+
+    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size -= _size;
+
+    delete[] _page_data;
+    _page_data = NULL;
+    _size = 0;
+
+    set_ram_class(RC_disk);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::do_save_to_disk
+//       Access: Private
+//  Description: Writes the page to disk, but does not evict it from
+//               memory or affect its LRU status.  If it gets evicted
+//               later without having been modified, it will not need
+//               to write itself to disk again.
+//
+//               Returns true on success, false on failure.  Assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+bool VertexDataPage::
+do_save_to_disk() {
+  if (_ram_class == RC_resident || _ram_class == RC_compressed) {
+    PStatTimer timer(_vdata_save_pcollector);
+
+    if (_saved_block == (VertexDataSaveBlock *)NULL) {
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Storing page, " << _size << " bytes, to disk\n";
+      }
+
+      bool compressed = (_ram_class == RC_compressed);
+      
+      _saved_block = get_save_file()->write_data(_page_data, _size, compressed);
+      if (_saved_block == (VertexDataSaveBlock *)NULL) {
+        // Can't write it to disk.  Too bad.
+        return false;
+      }
+    } else {
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Page already stored: " << _size << " bytes\n";
+      }
+    }
+  }
+ 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::do_restore_from_disk
+//       Access: Private
+//  Description: Restores the page from disk and makes it
+//               either compressed or resident (according to whether
+//               it was stored compressed on disk).
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+do_restore_from_disk() {
+  if (_ram_class == RC_disk) {
+    nassertv(_saved_block != (VertexDataSaveBlock *)NULL);
+    nassertv(_page_data == (unsigned char *)NULL && _size == 0);
+
+    PStatTimer timer(_vdata_restore_pcollector);
+
+    size_t buffer_size = _saved_block->get_size();
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Restoring page, " << buffer_size << " bytes, from disk\n";
+    }
+
+    unsigned char *new_data = new unsigned char[buffer_size];
+    if (!get_save_file()->read_data(new_data, buffer_size, _saved_block)) {
+      nassert_raise("read error");
+    }
+
+    _page_data = new_data;
+    _size = buffer_size;
+
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
+    _total_page_size += _size;
+
+    set_lru_size(_size);
+    if (_saved_block->get_compressed()) {
+      set_ram_class(RC_compressed);
+    } else {
+      set_ram_class(RC_resident);
+    }
   }
 }
 

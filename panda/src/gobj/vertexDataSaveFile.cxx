@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexDataSaveFile.h"
+#include "mutexHolder.h"
 
 #ifndef _WIN32
 #include <sys/types.h>
@@ -176,6 +177,8 @@ VertexDataSaveFile::
 ////////////////////////////////////////////////////////////////////
 PT(VertexDataSaveBlock) VertexDataSaveFile::
 write_data(const unsigned char *data, size_t size, bool compressed) {
+  MutexHolder holder(_lock);
+
   if (!_is_valid) {
     return NULL;
   }
@@ -229,6 +232,8 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
 ////////////////////////////////////////////////////////////////////
 bool VertexDataSaveFile::
 read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
+  MutexHolder holder(_lock);
+
   if (!_is_valid) {
     return false;
   }

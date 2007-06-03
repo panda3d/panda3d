@@ -18,6 +18,7 @@
 
 #include "typeHandle.h"
 #include "typeRegistryNode.h"
+#include "atomicAdjust.h"
 
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
@@ -31,7 +32,7 @@ TypeHandle TypeHandle::_none;
 //               only updated if track-memory-usage is set true in
 //               your Config.prc file.
 ////////////////////////////////////////////////////////////////////
-size_t TypeHandle::
+int TypeHandle::
 get_memory_usage(MemoryClass memory_class) const {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) == TypeHandle::none()) {
@@ -39,7 +40,7 @@ get_memory_usage(MemoryClass memory_class) const {
   } else {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
-    return rnode->_memory_usage[memory_class];
+    return (size_t)AtomicAdjust::get(rnode->_memory_usage[memory_class]);
   }
 }
 #endif  // DO_MEMORY_USAGE
@@ -52,12 +53,12 @@ get_memory_usage(MemoryClass memory_class) const {
 //               allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-inc_memory_usage(MemoryClass memory_class, size_t size) {
+inc_memory_usage(MemoryClass memory_class, int size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
-    rnode->_memory_usage[memory_class] += size;
+    AtomicAdjust::add(rnode->_memory_usage[memory_class], (PN_int32)size);
   }
 }
 #endif  // DO_MEMORY_USAGE
@@ -70,12 +71,12 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
 //               the total allocated memory for objects of this type.
 ////////////////////////////////////////////////////////////////////
 void TypeHandle::
-dec_memory_usage(MemoryClass memory_class, size_t size) {
+dec_memory_usage(MemoryClass memory_class, int size) {
   assert((int)memory_class >= 0 && (int)memory_class < (int)MC_limit);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
-    rnode->_memory_usage[memory_class] -= size;
+    AtomicAdjust::add(rnode->_memory_usage[memory_class], -(PN_int32)size);
   }
 }
 #endif  // DO_MEMORY_USAGE

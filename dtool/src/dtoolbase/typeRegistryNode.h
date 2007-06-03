@@ -22,6 +22,7 @@
 #include "dtoolbase.h"
 
 #include "typeHandle.h"
+#include "numeric_types.h"
 
 #include <assert.h>
 #include <vector>
@@ -54,7 +55,7 @@ public:
   Classes _child_classes;
 
 #ifdef DO_MEMORY_USAGE
-  size_t _memory_usage[TypeHandle::MC_limit];
+  PN_int32 _memory_usage[TypeHandle::MC_limit];
 #endif
 
   static bool _paranoid_inheritance;

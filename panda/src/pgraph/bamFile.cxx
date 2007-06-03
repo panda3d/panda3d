@@ -60,8 +60,6 @@ bool BamFile::
 open_read(const Filename &bam_filename, bool report_errors) {
   close();
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
   if (!_din.open(bam_filename)) {
     return false;
   }

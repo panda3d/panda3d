@@ -64,22 +64,6 @@ get_ram_class() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::check_resident
-//       Access: Published
-//  Description: Forces the vertex data into system RAM, if it is not
-//               already there; also, marks it recently-used.
-////////////////////////////////////////////////////////////////////
-INLINE void VertexDataPage::
-check_resident() const {
-  if (get_ram_class() != RC_resident) {
-    ((VertexDataPage *)this)->make_resident();
-  } else {
-    ((VertexDataPage *)this)->mark_used_lru();
-  }
-  nassertv(_size == _uncompressed_size);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_first_block
 //       Access: Published
 //  Description: Returns a pointer to the first allocated block, or
@@ -87,6 +71,7 @@ check_resident() const {
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataBlock *VertexDataPage::
 get_first_block() const {
+  MutexHolder holder(_lock);
   check_resident();
   return (VertexDataBlock *)SimpleAllocator::get_first_block();
 }
@@ -131,14 +116,60 @@ get_save_file() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::save_to_disk
+//       Access: Published
+//  Description: Writes the page to disk, but does not evict it from
+//               memory or affect its LRU status.  If it gets evicted
+//               later without having been modified, it will not need
+//               to write itself to disk again.
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexDataPage::
+save_to_disk() {
+  MutexHolder holder(_lock);
+  return do_save_to_disk();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::restore_from_disk
+//       Access: Published
+//  Description: Restores the page from disk and makes it
+//               either compressed or resident (according to whether
+//               it was stored compressed on disk).
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataPage::
+restore_from_disk() {
+  MutexHolder holder(_lock);
+  do_restore_from_disk();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_page_data
 //       Access: Public
 //  Description: Returns a pointer to the page's data area.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataPage::
 get_page_data() const {
+  MutexHolder holder(_lock);
   check_resident();
   return _page_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::check_resident
+//       Access: Private
+//  Description: Forces the vertex data into system RAM, if it is not
+//               already there; also, marks it recently-used.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataPage::
+check_resident() const {
+  if (_ram_class != RC_resident) {
+    ((VertexDataPage *)this)->make_resident();
+  } else {
+    ((VertexDataPage *)this)->mark_used_lru();
+  }
+  nassertv(_size == _uncompressed_size);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,6 +18,7 @@
 
 #include "simpleLru.h"
 
+Mutex SimpleLru::_global_lock;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleLru::Constructor
@@ -60,6 +61,7 @@ SimpleLru::
 ////////////////////////////////////////////////////////////////////
 size_t SimpleLru::
 count_active_size() const {
+  MutexHolder holder(_global_lock);
   size_t total = 0;
 
   LinkedListNode *node = _prev;
@@ -78,6 +80,7 @@ count_active_size() const {
 ////////////////////////////////////////////////////////////////////
 void SimpleLru::
 do_evict() {
+  MutexHolder holder(_global_lock);
   // Store the current end of the list.  If pages re-enqueue
   // themselves during this traversal, we don't want to visit them
   // twice.
@@ -87,9 +90,13 @@ do_evict() {
   SimpleLruPage *node = (SimpleLruPage *)_next;
   while (_total_size > _max_size) {
     SimpleLruPage *next = (SimpleLruPage *)node->_next;
-    
+
+    // We must release the lock while we call evict_lru().
+    _global_lock.release();
     node->evict_lru();
-    if (node == end) {
+    _global_lock.lock();
+
+    if (node == end || node == _prev) {
       // If we reach the original tail of the list, stop.
       return;
     }

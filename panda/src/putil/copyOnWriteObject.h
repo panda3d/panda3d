@@ -57,6 +57,7 @@ private:
   Mutex _lock_mutex;
   ConditionVar _lock_cvar;
   LockStatus _lock_status;
+  Thread *_locking_thread;
 #endif  // HAVE_THREADS
 
 public:

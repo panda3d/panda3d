@@ -39,7 +39,7 @@ VertexDataBuffer(size_t size) :
   _resident_data(NULL),
   _size(0)
 {
-  unclean_realloc(size);
+  do_unclean_realloc(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +62,9 @@ VertexDataBuffer(const VertexDataBuffer &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 operator = (const VertexDataBuffer &copy) {
-  unclean_realloc(copy.get_size());
+  MutexHolder holder(_lock);
+
+  do_unclean_realloc(copy.get_size());
   memcpy(_resident_data, copy.get_read_pointer(), _size);
   _source_file = copy._source_file;
   _source_pos = copy._source_pos;
@@ -85,6 +87,8 @@ INLINE VertexDataBuffer::
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *VertexDataBuffer::
 get_read_pointer() const {
+  MutexHolder holder(_lock);
+
   if (_block != (VertexDataBlock *)NULL) {
     // We don't necessarily need to page the buffer all the way into
     // independent status; it's sufficient just to return the block's
@@ -93,7 +97,7 @@ get_read_pointer() const {
   }
   if (_resident_data == (unsigned char *)NULL && !_source_file.is_null()) {
     // If we need to re-read the original source, do so.
-    ((VertexDataBuffer *)this)->page_in();
+    ((VertexDataBuffer *)this)->do_page_in();
   }
 
   return _resident_data;
@@ -105,10 +109,12 @@ get_read_pointer() const {
 //  Description: Returns a writable pointer to the raw data.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataBuffer::
-get_write_pointer() {
+get_write_pointer() { 
+  MutexHolder holder(_lock);
+
   if (_block != (VertexDataBlock *)NULL || 
       _resident_data == (unsigned char *)NULL) {
-    page_in();
+    do_page_in();
   }
   _source_file.clear();
   return _resident_data;
@@ -125,6 +131,20 @@ get_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::clean_realloc
+//       Access: Public
+//  Description: Changes the size of the buffer, preserving its data
+//               (except for any data beyond the new end of the
+//               buffer, if the buffer is being reduced).  If the
+//               buffer is expanded, the new data is uninitialized.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataBuffer::
+clean_realloc(size_t size) {
+  MutexHolder holder(_lock);
+  do_clean_realloc(size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBuffer::unclean_realloc
 //       Access: Public
 //  Description: Changes the size of the buffer, without regard to
@@ -133,9 +153,8 @@ get_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 unclean_realloc(size_t size) {
-  // At the moment, this has no distinct definition, since the system
-  // realloc() call doesn't have an unclean variant.
-  clean_realloc(size);
+  MutexHolder holder(_lock);
+  do_clean_realloc(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,6 +168,22 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::page_out
+//       Access: Public
+//  Description: Moves the buffer out of independent memory and puts
+//               it on a page in the indicated book.  The buffer may
+//               still be directly accessible as long as its page
+//               remains resident.  Any subsequent attempt to rewrite
+//               the buffer will implicitly move it off of the page
+//               and back into independent memory.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataBuffer::
+page_out(VertexDataBook &book) {
+  MutexHolder holder(_lock);
+  do_page_out(book);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBuffer::swap
 //       Access: Public
 //  Description: Swaps the data buffers between this one and the other
@@ -156,6 +191,9 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 swap(VertexDataBuffer &other) {
+  MutexHolder holder(_lock);
+  MutexHolder holder2(other._lock);
+
   unsigned char *resident_data = _resident_data;
   size_t size = _size;
   PT(VertexDataBlock) block = _block;
@@ -185,6 +223,23 @@ swap(VertexDataBuffer &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 set_file(VirtualFile *source_file, streampos source_pos) {
+  MutexHolder holder(_lock);
   _source_file = source_file;
   _source_pos = source_pos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::do_unclean_realloc
+//       Access: Private
+//  Description: Changes the size of the buffer, without regard to
+//               preserving its data.  The buffer may contain random
+//               data after this call.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataBuffer::
+do_unclean_realloc(size_t size) {
+  // At the moment, this has no distinct definition, since the system
+  // realloc() call doesn't have an unclean variant.
+  do_clean_realloc(size);
 }

@@ -54,7 +54,7 @@ allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>:
   size_t alloc_size = n * sizeof(Type);
   // We also need to store the total number of bytes we allocated.
   alloc_size += sizeof(size_t);
-  _type_handle.inc_memory_usage(TypeHandle::MC_array, alloc_size);
+  _type_handle.inc_memory_usage(TypeHandle::MC_array, (int)alloc_size);
   void *ptr = (TYPENAME pallocator_array<Type>::pointer)(*global_operator_new)(alloc_size);
   *((size_t *)ptr) = alloc_size;
   return (TYPENAME pallocator_array<Type>::pointer)(((size_t *)ptr) + 1);
@@ -70,7 +70,7 @@ deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array
 #ifdef DO_MEMORY_USAGE
   // Now we need to recover the total number of bytes.
   size_t alloc_size = *(((size_t *)p) - 1);
-  _type_handle.dec_memory_usage(TypeHandle::MC_array, alloc_size);
+  _type_handle.dec_memory_usage(TypeHandle::MC_array, (int)alloc_size);
   (*global_operator_delete)(((size_t *)p) - 1);
 #else
   free(p);

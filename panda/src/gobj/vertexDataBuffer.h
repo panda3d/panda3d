@@ -24,11 +24,40 @@
 #include "pointerTo.h"
 #include "virtualFile.h"
 #include "pStatCollector.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexDataBuffer
 // Description : A block of bytes that stores the actual raw vertex
 //               data referenced by a GeomVertexArrayData object.
+//
+//               At any point, a buffer may be in any of two states:
+//
+//               independent - the buffer's memory is resident, and
+//               owned by the VertexDataBuffer object itself (in
+//               _resident_data).
+//
+//               paged - the buffer's memory is owned by a
+//               VertexDataBlock.  That block might itself be
+//               resident, compressed, or paged to disk.  If it is
+//               resident, the memory may still be accessed directly
+//               from the block.  However, this memory is considered
+//               read-only.
+//
+//               VertexDataBuffers start out in independent state.
+//               They get moved to paged state when their owning
+//               GeomVertexArrayData objects get evicted from the
+//               _independent_lru.  They can get moved back to
+//               independent state if they are modified
+//               (e.g. get_write_pointer() or realloc() is called).
+//
+//               The idea is to keep the highly dynamic and
+//               frequently-modified VertexDataBuffers resident in
+//               easy-to-access memory, while collecting the static
+//               and rarely accessed VertexDataBuffers together onto
+//               pages, where they may be written to disk as a block
+//               when necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexDataBuffer {
 public:
@@ -42,23 +71,29 @@ public:
   INLINE unsigned char *get_write_pointer();
 
   INLINE size_t get_size() const;
-  void clean_realloc(size_t size);
+  INLINE void clean_realloc(size_t size);
   INLINE void unclean_realloc(size_t size);
   INLINE void clear();
 
-  INLINE void swap(VertexDataBuffer &other);
+  INLINE void page_out(VertexDataBook &book);
 
-  void page_out(VertexDataBook &book);
-  void page_in();
+  INLINE void swap(VertexDataBuffer &other);
 
   INLINE void set_file(VirtualFile *source_file, streampos source_pos);
 
 private:
+  void do_clean_realloc(size_t size);
+  INLINE void do_unclean_realloc(size_t size);
+
+  void do_page_out(VertexDataBook &book);
+  void do_page_in();
+
   unsigned char *_resident_data;
   size_t _size;
   PT(VertexDataBlock) _block;
   PT(VirtualFile) _source_file;
   streampos _source_pos;
+  Mutex _lock;
 
   static PStatCollector _vdata_reread_pcollector;
 
