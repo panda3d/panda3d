@@ -173,27 +173,32 @@ contains_box(const BoundingBox *box) const {
   float dist = _plane.dist_to_plane(center);
   float dist2 = dist * dist;
 
-  if (dist >= 0.0f && dist2 > radius2) {
-    // The sphere is completely in front of this plane; it's thus
-    // completely outside of the hexahedron.
-    return IF_no_intersection;
-    
-  } else if (dist < 0.0f && dist2 < radius2) {
+  if (dist2 <= radius2) {
     // The sphere is not completely behind this plane, but some of
     // it is.
     
     // Look a little closer.
     bool all_in = true;
-    for (int i = 0; i < 8 && all_in; ++i) {
+    bool all_out = true;
+    for (int i = 0; i < 8 && (all_in || all_out) ; ++i) {
       if (_plane.dist_to_plane(box->get_point(i)) < 0.0f) {
+        // This point is inside the plane.
+        all_out = false;
+      } else {
         // This point is outside the plane.
         all_in = false;
       }
     }
     
-    if (!all_in) {
+    if (all_out) {
+      return IF_no_intersection;
+    } else if (!all_in) {
       result &= ~IF_all;
     }
+    
+  } else if (dist >= 0.0f) {
+    // The sphere is completely in front of this plane.
+    return IF_no_intersection;
   }
 
   return result;

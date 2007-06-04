@@ -260,14 +260,55 @@ traverse_below(CullTraverserData &data) {
       GeomNode::Geoms geoms = geom_node->get_geoms(_current_thread);
       int num_geoms = geoms.get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
+      CPT(TransformState) net_transform = data.get_net_transform(this);
+      CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
+      CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
+
       for (int i = 0; i < num_geoms; i++) {
-        CullableObject *object = new CullableObject(this, data, geoms, i);
-        if (object->_state->has_cull_callback() &&
-            !object->_state->cull_callback(this, data)) {
-          delete object;
-        } else {
-          _cull_handler->record_object(object, this);
+        const Geom *geom = geoms.get_geom(i);
+
+        CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+        if (state->has_cull_callback() && !state->cull_callback(this, data)) {
+          // Cull.
+          continue;
         }
+
+        // Cull the Geom bounding volume against the view frustum
+        // and/or the cull planes.  Don't bother unless we've got more
+        // than one Geom, since otherwise the bounding volume of the
+        // GeomNode is (probably) the same as that of the one Geom,
+        // and we've already culled against that.
+        if (num_geoms > 1) {
+          if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
+            // Cull the individual Geom against the view frustum.
+            CPT(BoundingVolume) geom_volume = geom->get_bounds();
+            const GeometricBoundingVolume *geom_gbv =
+              DCAST(GeometricBoundingVolume, geom_volume);
+
+            int result = data._view_frustum->contains(geom_gbv);
+            if (result == BoundingVolume::IF_no_intersection) {
+              // Cull this Geom.
+              continue;
+            }
+          }
+          if (!data._cull_planes->is_empty()) {
+            // Also cull the Geom against the cull planes.
+            CPT(BoundingVolume) geom_volume = geom->get_bounds();
+            const GeometricBoundingVolume *geom_gbv =
+              DCAST(GeometricBoundingVolume, geom_volume);
+            int result;
+            data._cull_planes->do_cull(result, state, geom_gbv);
+            if (result == BoundingVolume::IF_no_intersection) {
+              // Cull.
+              continue;
+            }
+          }
+        }
+
+        CullableObject *object = 
+          new CullableObject(geom, state, net_transform, 
+                             modelview_transform, internal_transform);
+        _cull_handler->record_object(object, this);
       }
     }
 
@@ -365,6 +406,8 @@ is_in_view(CullTraverserData &data) {
 void CullTraverser::
 show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
+  CPT(TransformState) net_transform = data.get_net_transform(this);
+  CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
 
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
@@ -373,16 +416,24 @@ show_bounds(CullTraverserData &data, bool tight) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                           data.get_net_transform(this),
-                           data.get_modelview_transform(this),
+                           net_transform, modelview_transform,
                            get_gsg());
       _cull_handler->record_object(outer_viz, this);
     }
     
   } else {
     draw_bounding_volume(node->get_bounds(),
-                         data.get_net_transform(this),
-                         data.get_modelview_transform(this));
+                         net_transform, modelview_transform);
+
+    if (node->is_geom_node()) {
+      // Also show the bounding volumes of included Geoms.
+      GeomNode *gnode = DCAST(GeomNode, node);
+      int num_geoms = gnode->get_num_geoms();
+      for (int i = 0; i < num_geoms; ++i) {
+        draw_bounding_volume(gnode->get_geom(i)->get_bounds(), 
+                             net_transform, modelview_transform);
+      }
+    }
   }
 }
 
@@ -673,16 +724,55 @@ start_decal(const CullTraverserData &data) {
   GeomNode::Geoms geoms = geom_node->get_geoms();
   int num_geoms = geoms.get_num_geoms();
   _geoms_pcollector.add_level(num_geoms);
+  CPT(TransformState) net_transform = data.get_net_transform(this);
+  CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
+  CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
+  
   for (int i = num_geoms - 1; i >= 0; i--) {
-    CullableObject *next_object = 
-      new CullableObject(this, data, geoms, i, object);
-    if (next_object->_state->has_cull_callback() &&
-        !next_object->_state->cull_callback(this, data)) {
-      next_object->_next = NULL;
-      delete next_object;
-    } else {
-      object = next_object;
+    const Geom *geom = geoms.get_geom(i);
+
+    CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+    if (state->has_cull_callback() && !state->cull_callback(this, data)) {
+      // Cull.
+      continue;
     }
+    
+    // Cull the Geom bounding volume against the view frustum
+    // and/or the cull planes.  Don't bother unless we've got more
+    // than one Geom, since otherwise the bounding volume of the
+    // GeomNode is (probably) the same as that of the one Geom,
+    // and we've already culled against that.
+    if (num_geoms > 1) {
+      if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
+        // Cull the individual Geom against the view frustum.
+        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        const GeometricBoundingVolume *geom_gbv =
+          DCAST(GeometricBoundingVolume, geom_volume);
+        
+        int result = data._view_frustum->contains(geom_gbv);
+        if (result == BoundingVolume::IF_no_intersection) {
+          // Cull this Geom.
+          continue;
+        }
+      }
+      if (!data._cull_planes->is_empty()) {
+        // Also cull the Geom against the cull planes.
+        CPT(BoundingVolume) geom_volume = geom->get_bounds();
+        const GeometricBoundingVolume *geom_gbv =
+          DCAST(GeometricBoundingVolume, geom_volume);
+        int result;
+        data._cull_planes->do_cull(result, state, geom_gbv);
+        if (result == BoundingVolume::IF_no_intersection) {
+          // Cull.
+          continue;
+        }
+      }
+    }
+    
+    object =
+      new CullableObject(geom, state, net_transform, 
+                         modelview_transform, internal_transform,
+                         object);
   }
 
   if (object != separator) {
@@ -743,16 +833,55 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
       GeomNode::Geoms geoms = geom_node->get_geoms();
       int num_geoms = geoms.get_num_geoms();
       _geoms_pcollector.add_level(num_geoms);
+      CPT(TransformState) net_transform = data.get_net_transform(this);
+      CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
+      CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
+
       for (int i = num_geoms - 1; i >= 0; i--) {
-        CullableObject *next_decals = 
-          new CullableObject(this, data, geoms, i, decals);
-        if (next_decals->_state->has_cull_callback() &&
-            !next_decals->_state->cull_callback(this, data)) {
-          next_decals->_next = NULL;
-          delete next_decals;
-        } else {
-          decals = next_decals;
+        const Geom *geom = geoms.get_geom(i);
+
+        CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
+        if (state->has_cull_callback() && !state->cull_callback(this, data)) {
+          // Cull.
+          continue;
         }
+
+        // Cull the Geom bounding volume against the view frustum
+        // and/or the cull planes.  Don't bother unless we've got more
+        // than one Geom, since otherwise the bounding volume of the
+        // GeomNode is (probably) the same as that of the one Geom,
+        // and we've already culled against that.
+        if (num_geoms > 1) {
+          if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
+            // Cull the individual Geom against the view frustum.
+            CPT(BoundingVolume) geom_volume = geom->get_bounds();
+            const GeometricBoundingVolume *geom_gbv =
+              DCAST(GeometricBoundingVolume, geom_volume);
+
+            int result = data._view_frustum->contains(geom_gbv);
+            if (result == BoundingVolume::IF_no_intersection) {
+              // Cull this Geom.
+              continue;
+            }
+          }
+          if (!data._cull_planes->is_empty()) {
+            // Also cull the Geom against the cull planes.
+            CPT(BoundingVolume) geom_volume = geom->get_bounds();
+            const GeometricBoundingVolume *geom_gbv =
+              DCAST(GeometricBoundingVolume, geom_volume);
+            int result;
+            data._cull_planes->do_cull(result, state, geom_gbv);
+            if (result == BoundingVolume::IF_no_intersection) {
+              // Cull.
+              continue;
+            }
+          }
+        }
+
+        decals =
+          new CullableObject(geom, state, net_transform, 
+                             modelview_transform, internal_transform,
+                             decals);
       }
     }
   }

@@ -31,26 +31,6 @@ CullableObject(CullableObject *next) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::Constructor
 //       Access: Public
-//  Description: Creates a CullableObject based on the ith Geom from
-//               the indicated GeomNode, with the render state from
-//               the indicated CullTraverserData.
-////////////////////////////////////////////////////////////////////
-INLINE CullableObject::
-CullableObject(const CullTraverser *trav, const CullTraverserData &data,
-               const GeomNode::Geoms &geoms, int i,
-               CullableObject *next) :
-  _geom(geoms.get_geom(i)),
-  _state(data._state->compose(geoms.get_geom_state(i))),
-  _net_transform(data.get_net_transform(trav)),
-  _modelview_transform(data.get_modelview_transform(trav)),
-  _internal_transform(trav->get_gsg()->get_cs_transform()->compose(_modelview_transform)),
-  _next(next)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullableObject::Constructor
-//       Access: Public
 //  Description: Creates a CullableObject based the indicated geom,
 //               with the indicated render state and transform.
 ////////////////////////////////////////////////////////////////////
@@ -65,6 +45,27 @@ CullableObject(const Geom *geom, const RenderState *state,
   _net_transform(net_transform),
   _modelview_transform(modelview_transform),
   _internal_transform(gsg->get_cs_transform()->compose(modelview_transform)),
+  _next(next)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::Constructor
+//       Access: Public
+//  Description: Creates a CullableObject based the indicated geom,
+//               with the indicated render state and transform.
+////////////////////////////////////////////////////////////////////
+INLINE CullableObject::
+CullableObject(const Geom *geom, const RenderState *state,
+               const TransformState *net_transform,
+               const TransformState *modelview_transform,
+               const TransformState *internal_transform,
+               CullableObject *next) :
+  _geom(geom),
+  _state(state),
+  _net_transform(net_transform),
+  _modelview_transform(modelview_transform),
+  _internal_transform(internal_transform),
   _next(next)
 {
 }

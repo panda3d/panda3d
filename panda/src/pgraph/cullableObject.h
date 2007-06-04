@@ -45,14 +45,15 @@ class CullTraverser;
 class EXPCL_PANDA CullableObject {
 public:
   INLINE CullableObject(CullableObject *next = NULL);
-  INLINE CullableObject(const CullTraverser *trav,
-                        const CullTraverserData &data,
-                        const GeomNode::Geoms &geoms, int i,
-                        CullableObject *next = NULL);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,
                         const GraphicsStateGuardianBase *gsg,
+                        CullableObject *next = NULL);
+  INLINE CullableObject(const Geom *geom, const RenderState *state,
+                        const TransformState *net_transform,
+                        const TransformState *modelview_transform,
+                        const TransformState *internal_transform,
                         CullableObject *next = NULL);
     
   INLINE CullableObject(const CullableObject &copy);
