@@ -62,9 +62,7 @@ is_answer_ready() const {
 ////////////////////////////////////////////////////////////////////
 void DXOcclusionQueryContext9::
 waiting_for_answer() {
-  DWORD result;
-  PStatTimer timer(DXGraphicsStateGuardian9::_wait_occlusion_pcollector);
-  HRESULT hr = _query->GetData(&result, sizeof(result), D3DGETDATA_FLUSH);
+  get_num_fragments();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,12 +87,16 @@ get_num_fragments() const {
   {
     // The answer is not ready; this call will block.
     PStatTimer timer(DXGraphicsStateGuardian9::_wait_occlusion_pcollector);
-    hr = _query->GetData(&result, sizeof(result), D3DGETDATA_FLUSH);
+    while (hr == S_FALSE) {
+      hr = _query->GetData(&result, sizeof(result), D3DGETDATA_FLUSH);
+    }
   }
 
-  if (hr != S_OK) {
+  if (FAILED(hr)) {
     // Some failure, e.g. devicelost.  Return a nonzero value as a
     // worst-case answer.
+    dxgsg9_cat.info()
+      << "occlusion query failed " << D3DERRORSTRING(hr);
     return 1;
   }
 
