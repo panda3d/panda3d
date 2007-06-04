@@ -235,69 +235,25 @@ make_child_dynamic(const string &name) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimGroup::make_child_fixed
+//     Function: AnimGroup::fix_child
 //       Access: Public
-//  Description: Finds the indicated child and replaces it with an
-//               AnimChannelMatrixFixed with the specified transform
-//               This may be called before binding the animation to a
-//               character to replace certain joints with
-//               frozen ones.
+//  Description: replaces childs animation matrix with a fixed one
 ////////////////////////////////////////////////////////////////////
 void AnimGroup::
-make_child_fixed(const string &name, const LMatrix4f &mat) {
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    AnimGroup *child = (*ci);
-    if (child->get_name() == name) {
-      AnimGroup *new_child = NULL;
-
-      if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
-        AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
-        AnimChannelMatrixFixed *new_mchild = 
-          new AnimChannelMatrixFixed(this, name, mat);
-        new_child = new_mchild;
-      } 
-
-      if (new_child != (AnimGroup *)NULL) {
-        new_child->_children.swap(child->_children);
-        nassertv(_children.back() == new_child);
-
-        // The new child was appended to the end of our children list
-        // by its constructor.  Reposition it to replace the original
-        // child.
-
-        // I would like to use these lines, but for some reason it
-        // crashes:
-        /*
-        {
-          (*ci) = new_child;
-          _children.pop_back();
-        }
-        */
-
-        // But this longer way of achieving the same result works
-        // instead:
-        {
-          Children::iterator nci;
-          Children new_children;
-          for (nci = _children.begin(); nci != _children.end(); ++nci) {
-            if ((*nci) == child) {
-              new_children.push_back(new_child);
-            } else if ((*nci) != new_child) {
-              new_children.push_back(*nci);
-            }
-          }
-          new_children.swap(_children);
-        }
-
-        return;
-      }
-    }
-    child->make_child_fixed(name, mat);
+fix_child(unsigned int index, const LMatrix4f &mat) {
+  AnimGroup *child = get_child(index);
+  AnimGroup *new_child = NULL;
+  if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
+    AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
+    AnimChannelMatrixFixed *new_mchild =  new AnimChannelMatrixFixed(this, child->get_name(), mat);
+    new_child = new_mchild;
+  }
+  if(new_child != (AnimGroup*)NULL) {
+    new_child->_children.swap(child->_children);
+    nassertv(_children.back() == new_child);
+    _children[index] = new_child;
   }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimGroup::get_value_type

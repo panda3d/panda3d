@@ -206,17 +206,3 @@ get_control_effect(AnimControl *control) const {
   CDReader cdata(_cycler);
   return do_get_control_effect(control, cdata);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::freeze_joint
-//       Access: Published
-//  Description: stores away a joint freeze for bind time
-////////////////////////////////////////////////////////////////////
-INLINE void PartBundle::
-freeze_joint(const string &jointName, const LMatrix4f &transform) {
-  JointTransform jt;
-  jt.name=jointName;
-  jt.transform=transform;
-
-  _frozen_joints.push_back(jt);
-}

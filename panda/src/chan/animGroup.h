@@ -53,7 +53,6 @@ PUBLISHED:
   AnimGroup *find_child(const string &name) const;
 
   AnimGroup *make_child_dynamic(const string &name);
-  void make_child_fixed(const string &name, const LMatrix4f &mat);
 public:
   virtual TypeHandle get_value_type() const;
 
@@ -81,6 +80,8 @@ public:
                                 BamReader *manager);
 
   static TypedWritable *make_AnimGroup(const FactoryParams &params);
+
+  void fix_child(unsigned int index, LMatrix4f const & mat);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

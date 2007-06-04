@@ -222,14 +222,6 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
     return NULL;
   }
 
-  if (!_frozen_joints.empty()) {
-    ptanim = ptanim->copy_bundle();
-    JointTransformList::iterator jti;
-    for (jti = _frozen_joints.begin(); jti != _frozen_joints.end(); ++jti) {
-      ptanim->make_child_fixed((*jti).name, (*jti).transform);
-    }
-  }
-
   plist<int> holes;
   int channel_index = 0;
   pick_channel_index(holes, channel_index);

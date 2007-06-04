@@ -44,8 +44,9 @@ PartGroup(PartGroup *parent, const string &name) :
   _children(get_class_type())
 {
   nassertv(parent != NULL);
-
+  
   parent->_children.push_back(this);
+  _frozen = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -467,6 +468,10 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 
   while (i < part_num_children && j < anim_num_children) {
     PartGroup *pc = get_child(i);
+    if (pc->_frozen) {
+      anim->fix_child(j, pc->_frozen_transform);
+    }
+
     AnimGroup *ac = anim->get_child(j);
 
     if (pc->get_name() < ac->get_name()) {
