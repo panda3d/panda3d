@@ -32,6 +32,8 @@
 #include "clipPlaneAttrib.h"
 #include "dcast.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
+#include "config_mathutil.h"
 
 #ifdef HAVE_AUDIO
 #include "audioSound.h"
@@ -301,7 +303,13 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
   int num_vertices = 0;
 
   // First, get ourselves a fresh, empty bounding volume.
-  PT(BoundingVolume) bound = new BoundingSphere;
+  PT(BoundingVolume) bound;
+
+  if (bounds_type == BoundingVolume::BT_sphere) {
+    bound = new BoundingSphere;
+  } else {
+    bound = new BoundingBox;
+  }
 
   // Now actually compute the bounding volume by putting it around all
   // of our states' bounding volumes.
@@ -321,6 +329,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
+
+  bound->around(child_begin, child_end);
 
   bdata->_internal_bounds = bound;
   bdata->_internal_vertices = num_vertices;
