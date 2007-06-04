@@ -5,7 +5,7 @@ __all__ = ['Actor']
 from pandac.PandaModules import *
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import LODNode
-import types, copy
+import types
 
 class Actor(DirectObject, NodePath):
     """
@@ -442,7 +442,6 @@ class Actor(DirectObject, NodePath):
         Actor cleanup function
         """
         self.stop(None)
-        self.__frozenJoints = {}
         self.flush()
         self.__geomNode.removeNode()
         self.__geomNode = None
@@ -1000,27 +999,6 @@ class Actor(DirectObject, NodePath):
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
 
-    def getJointTransform(self,partName, jointName, lodName='lodRoot'):
-        partBundleDict=self.__partBundleDict.get(lodName)
-        if not partBundleDict:
-            Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
-
-        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-        partDef = partBundleDict.get(subpartDef.truePartName)
-        if partDef:
-            bundle = partDef.partBundle
-        else:
-            Actor.notify.warning("no part named %s!" % (partName))
-            return None
-
-        joint = bundle.findChild(jointName)
-        if joint == None:
-            Actor.notify.warning("no joint named %s!" % (jointName))
-            return None
-        return joint.getInitialValue()
-
-
     def controlJoint(self, node, partName, jointName, lodName="lodRoot"):
         """controlJoint(self, NodePath, string, string, key="lodRoot")
 
@@ -1033,8 +1011,7 @@ class Actor(DirectObject, NodePath):
         animation has been loaded and bound to the character, it will
         be too late to add a new control during that animation.
         """
-        partBundleDict=self.__partBundleDict.get(lodName)
-
+        partBundleDict = self.__partBundleDict.get(lodName)
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
@@ -1069,14 +1046,32 @@ class Actor(DirectObject, NodePath):
 
     #This is an alternate method to control joints, which can be copied
     #This function is optimal in a non control jointed actor 
-    def freezeJoint(self, partName, jointName, pos=Vec3(0,0,0), hpr=Vec3(0,0,0), scale=Vec3(1,1,1)):
-        transform=Mat4(TransformState.makePosHprScale(pos,hpr,scale).getMat())
-        trueName = self.__subpartDict[partName].truePartName
-        for bundleDict in self.__partBundleDict.values():     
-            bundleDict[trueName].partBundle.freezeJoint(jointName,transform)
-            
-#            self.__frozenJoints[bundle.this][jointName] = transform
-            
+    def freezeJoint(self, partName, jointName, lodName="lodRoot", pos=Vec3(0,0,0), hpr=Vec3(0,0,0), scale=Vec3(1,1,1)):
+        mat=Mat4(TransformState.makePosHprScale(pos,hpr,scale).getMat())
+        
+        partBundleDict = self.__partBundleDict.get(lodName)
+        if not partBundleDict:
+            Actor.notify.warning("no lod named: %s" % (lodName))
+            return None
+
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        partDef = partBundleDict.get(subpartDef.truePartName)
+        if partDef:
+            bundle = partDef.partBundle
+        else:
+            Actor.notify.warning("no part named %s!" % (partName))
+            return None
+
+        joint = bundle.findChild(jointName)
+        if joint == None:
+            Actor.notify.warning("no joint named %s!" % (jointName))
+            return None
+
+
+        if self.__frozenJoints.has_key(bundle.this):
+            self.__frozenJoints[bundle.this][jointName] = mat
+        else:
+            self.__frozenJoints[bundle.this] = { jointName: mat }
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
@@ -1681,7 +1676,7 @@ class Actor(DirectObject, NodePath):
         # A model loaded from disk will always have just one bundle.
         assert(node.getNumBundles() == 1)
         bundle = node.getBundle(0)
-        self.__frozenJoints[bundle.this]={}
+
         if (needsDict):
             bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
             self.__partBundleDict[lodName] = bundleDict
@@ -1800,39 +1795,6 @@ class Actor(DirectObject, NodePath):
                 else:
                     self.__animControlDict[lName][partName][animName] = Actor.AnimDef(filename)
 
-    def initAnimsOnAllLODs(self,partNames):
-        
-        for lod in self.__partBundleDict.keys():
-            for part in partNames:
-                self.__animControlDict.setdefault(lod,{})
-                self.__animControlDict[lod].setdefault(part, {})
-
-        #for animName, filename in anims.items():
-        #    # make sure this lod is in anim control dict
-        #    for lod in self.__partBundleDict.keys():
-        #        # store the file path only; we will bind it (and produce
-        #        # an AnimControl) when it is played
-        #        
-        #        self.__animControlDict[lod][partName][animName] = Actor.AnimDef(filename)
-                
-    def loadAnimsOnAllLODs(self, anims,partName="modelRoot"):
-        """loadAnims(self, string:string{}, string='modelRoot',
-        string='lodRoot')
-        Actor anim loader. Takes an optional partName (defaults to
-        'modelRoot' for non-multipart actors) and lodName (defaults
-        to 'lodRoot' for non-LOD actors) and dict of corresponding
-        anims in the form animName:animPath{}
-        """
-            
-        for animName, filename in anims.items():
-            # make sure this lod is in anim control dict
-            for lod in self.__partBundleDict.keys():
-                # store the file path only; we will bind it (and produce
-                # an AnimControl) when it is played
-                
-                self.__animControlDict[lod][partName][animName]= Actor.AnimDef(filename)
-
-                
     def unloadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
         """unloadAnims(self, string:string{}, string='modelRoot',
         string='lodRoot')
@@ -1945,19 +1907,15 @@ class Actor(DirectObject, NodePath):
 
         bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
 
-        #NOTE: this is up here until we can guarantee anim bundle copying at a lower level
-        # Before we apply any control joints, we have to make a
-        # copy of the bundle hierarchy, so we don't modify other
-        # Actors that share the same bundle.
-        animBundle = animBundle.copyBundle()
-
-
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
         assert Actor.notify.debug('actor bundle %s, %s'% (bundle,bundle.this))
         controlDict = self.__controlJoints.get(bundle.this, None)
-
         if controlDict:
+            # Before we apply any control joints, we have to make a
+            # copy of the bundle hierarchy, so we don't modify other
+            # Actors that share the same bundle.
+            animBundle = animBundle.copyBundle()
             for jointName, node in controlDict.items():
                 if node:
                     joint = animBundle.makeChildDynamic(jointName)
@@ -1965,6 +1923,21 @@ class Actor(DirectObject, NodePath):
                         joint.setValueNode(node.node())
                     else:
                         Actor.notify.error("controlled joint %s is not present" % jointName)
+
+        #fix any other joints in place
+        fixDict = self.__frozenJoints.get(bundle.this, None)
+        if fixDict:
+            # Before we apply any control joints, we have to make a
+            # copy of the bundle hierarchy, so we don't modify other
+            # Actors that share the same bundle.
+
+            animBundle = animBundle.copyBundle()
+            for jointName,mat in fixDict.items():
+                joint = animBundle.makeChildDynamic(jointName)
+                if joint:
+                    joint.setValue(mat)
+                else:
+                    Actor.notify.error("controlled joint %s is not present" % jointName)
 
         # bind anim
         animControl = bundle.bindAnim(animBundle, -1, subpartDef.subset)
@@ -2008,8 +1981,8 @@ class Actor(DirectObject, NodePath):
                     assert bundleNP.node().getNumBundles() == 1
                     bundle = bundleNP.node().getBundle(0)
                     otherFixed=other.__frozenJoints.get(partDef.partBundle.this,None)
-                    if(otherFixed is not None):
-                        self.__frozenJoints[bundle.this]=copy.copy(otherFixed)
+                    if(otherFixed):
+                        self.__frozenJoints[bundle.this]=otherFixed
                     self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
