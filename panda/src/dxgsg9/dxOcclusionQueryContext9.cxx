@@ -1,5 +1,5 @@
-// Filename: glOcclusionQueryContext_src.cxx
-// Created by:  drose (27Mar06)
+// Filename: dxOcclusionQueryContext9.cxx
+// Created by:  drose (04Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,29 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "dxOcclusionQueryContext9.h"
+#include "dxGraphicsStateGuardian9.h"
 #include "pnotify.h"
 #include "dcast.h"
-#include "mutexHolder.h"
 #include "pStatTimer.h"
 
-TypeHandle CLP(OcclusionQueryContext)::_type_handle;
+TypeHandle DXOcclusionQueryContext9::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLOcclusionQueryContext::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CLP(OcclusionQueryContext)::
-~CLP(OcclusionQueryContext)() {
-  if (_index != 0) {
-    // Tell the GSG to recycle this index when it gets around to it.
-    CLP(GraphicsStateGuardian) *glgsg;
-    DCAST_INTO_V(glgsg, _gsg);
-    MutexHolder holder(glgsg->_lock);
-    glgsg->_deleted_queries.push_back(_index);
-
-    _index = 0;
-  }
+DXOcclusionQueryContext9::
+~DXOcclusionQueryContext9() {
+  _query->Release();
+  _query = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,19 +44,11 @@ CLP(OcclusionQueryContext)::
 //
 //               It is only valid to call this from the draw thread.
 ////////////////////////////////////////////////////////////////////
-bool CLP(OcclusionQueryContext)::
+bool DXOcclusionQueryContext9::
 is_answer_ready() const {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, false);
-  GLuint result;
-  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT_AVAILABLE, &result);
-
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "occlusion query " << _index << " ready = " << result << "\n";
-  }
-
-  return (result != 0);
+  DWORD result;
+  HRESULT hr = _query->GetData(&result, sizeof(result), 0);
+  return (hr != S_FALSE);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,10 +60,11 @@ is_answer_ready() const {
 //
 //               It is only valid to call this from the draw thread.
 ////////////////////////////////////////////////////////////////////
-void CLP(OcclusionQueryContext)::
+void DXOcclusionQueryContext9::
 waiting_for_answer() {
-  PStatTimer timer(GraphicsStateGuardian::_wait_occlusion_pcollector);
-  GLP(Flush)();
+  DWORD result;
+  PStatTimer timer(DXGraphicsStateGuardian9::_wait_occlusion_pcollector);
+  HRESULT hr = _query->GetData(&result, sizeof(result), D3DGETDATA_FLUSH);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,28 +77,26 @@ waiting_for_answer() {
 //
 //               It is only valid to call this from the draw thread.
 ////////////////////////////////////////////////////////////////////
-int CLP(OcclusionQueryContext)::
+int DXOcclusionQueryContext9::
 get_num_fragments() const {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, _gsg, 0);
-
-  GLuint result;
-  glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT_AVAILABLE, &result);
-  if (result) {
+  DWORD result;
+  HRESULT hr = _query->GetData(&result, sizeof(result), 0);
+  if (hr == S_OK) {
     // The answer is ready now.
-    glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
-  } else {
+    return result;
+  }
+
+  {
     // The answer is not ready; this call will block.
-    PStatTimer timer(GraphicsStateGuardian::_wait_occlusion_pcollector);
-    glgsg->_glGetQueryObjectuiv(_index, GL_QUERY_RESULT, &result);
+    PStatTimer timer(DXGraphicsStateGuardian9::_wait_occlusion_pcollector);
+    hr = _query->GetData(&result, sizeof(result), D3DGETDATA_FLUSH);
   }
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "occlusion query " << _index << " reports " << result
-      << " fragments.\n";
+  if (hr != S_OK) {
+    // Some failure, e.g. devicelost.  Return a nonzero value as a
+    // worst-case answer.
+    return 1;
   }
 
-  glgsg->report_my_gl_errors();
   return result;
 }

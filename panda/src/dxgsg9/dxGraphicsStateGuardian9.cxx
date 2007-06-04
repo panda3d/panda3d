@@ -58,6 +58,7 @@
 #include "config_gobj.h"
 #include "dxVertexBufferContext9.h"
 #include "dxIndexBufferContext9.h"
+#include "dxOcclusionQueryContext9.h"
 #include "pStatTimer.h"
 #include "pStatCollector.h"
 #include "wdxGraphicsBuffer9.h"
@@ -345,7 +346,7 @@ release_texture(TextureContext *tc) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ShaderContext *CLP(GraphicsStateGuardian)::
+ShaderContext *DXGraphicsStateGuardian9::
 prepare_shader(ShaderExpansion *se) {
 #ifdef HAVE_CG
   CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
@@ -359,7 +360,7 @@ prepare_shader(ShaderExpansion *se) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 release_shader(ShaderContext *sc) {
   CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
   delete gsc;
@@ -665,6 +666,76 @@ void DXGraphicsStateGuardian9::
 release_index_buffer(IndexBufferContext *ibc) {
   DXIndexBufferContext9 *dibc = DCAST(DXIndexBufferContext9, ibc);
   delete dibc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::begin_occlusion_query
+//       Access: Public, Virtual
+//  Description: Begins a new occlusion query.  After this call, you
+//               may call begin_draw_primitives() and
+//               draw_triangles()/draw_whatever() repeatedly.
+//               Eventually, you should call end_occlusion_query()
+//               before the end of the frame; that will return a new
+//               OcclusionQueryContext object that will tell you how
+//               many pixels represented by the bracketed geometry
+//               passed the depth test.
+//
+//               It is not valid to call begin_occlusion_query()
+//               between another begin_occlusion_query()
+//               .. end_occlusion_query() sequence.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+begin_occlusion_query() {
+  nassertv(_supports_occlusion_query);
+  nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
+
+  IDirect3DQuery9 *query;
+  HRESULT hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query);
+  if (FAILED(hr)) {
+    dxgsg9_cat.warning()
+      << "Occlusion query failed.\n";
+    return;
+  }
+  
+  PT(DXOcclusionQueryContext9) queryobj = new DXOcclusionQueryContext9(query);
+
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "beginning occlusion query " << query << "\n";
+  }
+
+  query->Issue(D3DISSUE_BEGIN);
+  _current_occlusion_query = queryobj;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::end_occlusion_query
+//       Access: Public, Virtual
+//  Description: Ends a previous call to begin_occlusion_query().
+//               This call returns the OcclusionQueryContext object
+//               that will (eventually) report the number of pixels
+//               that passed the depth test between the call to
+//               begin_occlusion_query() and end_occlusion_query().
+////////////////////////////////////////////////////////////////////
+PT(OcclusionQueryContext) DXGraphicsStateGuardian9::
+end_occlusion_query() {
+  if (_current_occlusion_query == (OcclusionQueryContext *)NULL) {
+    return NULL;
+  }
+
+  PT(OcclusionQueryContext) result = _current_occlusion_query;
+
+  IDirect3DQuery9 *query = DCAST(DXOcclusionQueryContext9, result)->_query;
+    
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "ending occlusion query " << query << "\n";
+  }
+
+  _current_occlusion_query = NULL;
+  query->Issue(D3DISSUE_END);
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2479,6 +2550,10 @@ reset() {
 
   _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
 
+  // Test for occlusion query support
+  hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, NULL);
+  _supports_occlusion_query = !FAILED(hr);
+
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
@@ -2511,6 +2586,7 @@ reset() {
       << "\nsupports_automatic_mipmap_generation = " << _screen->_supports_automatic_mipmap_generation
       << "\nsupports_stencil_wrap = " << _supports_stencil_wrap
       << "\nsupports_two_sided_stencil = " << _supports_two_sided_stencil
+      << "\nsupports_occlusion_query = " << _supports_occlusion_query
       << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
       << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
@@ -2954,7 +3030,7 @@ do_issue_alpha_test() {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 do_issue_shader() {
 
   DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: do_issue_shader\n"; DBG_E
@@ -3605,7 +3681,7 @@ do_issue_material() {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
@@ -3634,7 +3710,7 @@ do_issue_texture() {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+void DXGraphicsStateGuardian9::
 disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
   for (int i = 0; i < _num_active_texture_stages; i++) {

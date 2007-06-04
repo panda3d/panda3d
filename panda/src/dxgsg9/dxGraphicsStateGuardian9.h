@@ -102,6 +102,9 @@ public:
                           const GeomPrimitivePipelineReader *reader);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
+  virtual void begin_occlusion_query();
+  virtual PT(OcclusionQueryContext) end_occlusion_query();
+
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
@@ -384,7 +387,7 @@ private:
   friend class wdxGraphicsBuffer9;
   friend class DXVertexBufferContext9;
   friend class DXIndexBufferContext9;
-  friend class CLP(ShaderContext);
+  friend class DXShaderContext9;
 };
 
 #include "dxGraphicsStateGuardian9.I"

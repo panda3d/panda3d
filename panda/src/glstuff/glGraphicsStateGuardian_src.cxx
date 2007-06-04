@@ -64,7 +64,6 @@ PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:T
 PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
-PStatCollector CLP(GraphicsStateGuardian)::_wait_occlusion_pcollector("Wait:Occlusion");
 
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not

@@ -473,7 +473,6 @@ public:
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
   static PStatCollector _vertices_immediate_pcollector;
-  static PStatCollector _wait_occlusion_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

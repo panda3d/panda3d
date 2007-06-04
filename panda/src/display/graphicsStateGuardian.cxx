@@ -70,6 +70,9 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 
+PStatCollector GraphicsStateGuardian::_wait_occlusion_pcollector("Wait:Occlusion");
+
+
 PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
 
 TypeHandle GraphicsStateGuardian::_type_handle;

@@ -21,6 +21,7 @@
 #include "dxTextureContext9.h"
 #include "dxVertexBufferContext9.h"
 #include "dxIndexBufferContext9.h"
+#include "dxOcclusionQueryContext9.h"
 #include "dxShaderContext9.h"
 #include "dxGeomMunger9.h"
 #include "graphicsPipeSelection.h"
@@ -224,7 +225,8 @@ init_libdxgsg9() {
   DXTextureContext9::init_type();
   DXVertexBufferContext9::init_type();
   DXIndexBufferContext9::init_type();
-  CLP(ShaderContext)::init_type();
+  DXOcclusionQueryContext9::init_type();
+  DXShaderContext9::init_type();
   DXGeomMunger9::init_type();
 
   wdxGraphicsPipe9::init_type();
