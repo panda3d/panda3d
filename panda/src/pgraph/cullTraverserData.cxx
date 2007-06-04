@@ -117,9 +117,12 @@ apply_transform_and_state(CullTraverser *trav,
   }
 
   _state = _state->compose(node_state);
-  _cull_planes = _cull_planes->apply_state(trav, this, 
-                                           _state->get_clip_plane(),
-                                           DCAST(ClipPlaneAttrib, off_clip_planes));
+
+  if (clip_plane_cull) {
+    _cull_planes = _cull_planes->apply_state(trav, this, 
+                                             _state->get_clip_plane(),
+                                             DCAST(ClipPlaneAttrib, off_clip_planes));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,51 +210,6 @@ is_in_view_impl() {
 
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::test_within_clip_planes_impl
-//       Access: Private
-//  Description: The private implementation of test_within_clip_planes().
-////////////////////////////////////////////////////////////////////
-int CullTraverserData::
-test_within_clip_planes_impl(const CullTraverser *trav,
-                             const ClipPlaneAttrib *cpa) const {
-  int result = BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
-
-
-  const BoundingVolume *node_volume = _node_reader.get_bounds();
-  nassertr(node_volume->is_of_type(GeometricBoundingVolume::get_class_type()), result);
-  const GeometricBoundingVolume *node_gbv =
-    DCAST(GeometricBoundingVolume, node_volume);
-
-  CPT(TransformState) net_transform = get_net_transform(trav);
-
-  cerr << "considering " << _node_path << ", bv = " << *node_gbv << "\n";
-  cerr << "  net_transform = " << *net_transform << "\n";
-
-  int num_planes = cpa->get_num_on_planes();
-  for (int i = 0; 
-       i < num_planes && result != BoundingVolume::IF_no_intersection; 
-       ++i) {
-    NodePath plane_path = cpa->get_on_plane(i);
-    PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
-    CPT(TransformState) new_transform = 
-      net_transform->invert_compose(plane_path.get_net_transform());
-
-    Planef plane = plane_node->get_plane() * new_transform->get_mat();
-    BoundingPlane bplane(-plane);
-    cerr << "  " << bplane << " -> " << bplane.contains(node_gbv) << "\n";
-    result &= bplane.contains(node_gbv);
-  }
-
-  if (pgraph_cat.is_spam()) {
-    pgraph_cat.spam()
-      << _node_path << " test_within_clip_planes result = "
-      << hex << result << dec << "\n";
-  }
-
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

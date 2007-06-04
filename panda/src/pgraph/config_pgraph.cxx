@@ -115,6 +115,12 @@ ConfigVariableBool fake_view_frustum_cull
           "object in red wireframe, rather than actually culling it.  This "
           "helps make culling errors obvious."));
 
+ConfigVariableBool clip_plane_cull
+("clip-plane-cull", true,
+ PRC_DESC("This is normally true; set it false to disable culling of objects "
+          "that are completely behind one or more clip planes (primarily "
+          "useful for debugging)."));
+
 
 ConfigVariableBool allow_portal_cull
 ("allow-portal-cull", false,

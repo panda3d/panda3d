@@ -85,8 +85,6 @@ public:
 
 private:
   bool is_in_view_impl();
-  int test_within_clip_planes_impl(const CullTraverser *trav,
-                                   const ClipPlaneAttrib *cpa) const;
 
   static CPT(RenderState) get_fake_view_frustum_cull_state();
 };
