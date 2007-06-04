@@ -102,7 +102,7 @@ remove_gsg(GraphicsStateGuardianBase *gsg) {
   _gsgs.erase(gi);
 
   if (_default_gsg == gsg) {
-    if (_gsgs.empty()) {
+    if (!_gsgs.empty()) {
       _default_gsg = *_gsgs.begin();
     } else {
       _default_gsg = NULL;
