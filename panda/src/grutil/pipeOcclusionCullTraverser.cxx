@@ -203,8 +203,6 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
   _current_query = NULL;
   _next_query = NULL;
   
-  make_sphere();  // Temporary, so we can experiment with num vertices
-
   // Begin by rendering all the occluders into our internal scene.
   PStatTimer timer2(_draw_occlusion_pcollector);
   _internal_trav->traverse(_scene->get_scene_root());
