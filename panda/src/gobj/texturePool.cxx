@@ -332,6 +332,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   if (store_record) {
     // Store the on-disk cache record for next time.
+    nassertr(tex->has_ram_image(), tex);
     record->set_data(tex, false);
     cache->store(record);
 

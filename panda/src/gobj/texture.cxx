@@ -2392,9 +2392,15 @@ reload_ram_image() {
       gobj_cat.info()
         << "Texture " << get_name() << " reloaded from disk cache.\n";
       PT(Texture) tex = DCAST(Texture, record->extract_data());
-      bool keep_ram_image = _keep_ram_image;
-      (*this) = (*tex);
-      _keep_ram_image = keep_ram_image;
+      // We don't want to replace all the texture parameters--for
+      // instance, we don't want to change the filter type or the
+      // border color or anything--we just want to get the image and
+      // necessary associated parameters.
+      reconsider_image_properties(tex->get_x_size(), tex->get_y_size(),
+                                  tex->get_num_components(), 
+                                  tex->get_component_type(), 0);
+      set_compression(tex->get_compression());
+      _ram_images = tex->_ram_images;
       return;
     }
   }

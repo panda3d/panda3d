@@ -18,8 +18,9 @@
 
 #include "dcast.h"
 
-GeomMunger *CLP(GeomMunger)::_deleted_chain = NULL;
 TypeHandle CLP(GeomMunger)::_type_handle;
+
+ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::Constructor

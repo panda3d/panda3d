@@ -37,7 +37,7 @@ class EXPCL_GL CLP(GeomMunger) : public StandardMunger, public WeakPointerCallba
 public:
   CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~CLP(GeomMunger)();
-  ALLOC_DELETED_CHAIN(CLP(GeomMunger));
+  ALLOC_DELETED_CHAIN_DECL(CLP(GeomMunger));
 
   virtual void wp_callback(void *);
 
@@ -61,8 +61,6 @@ private:
     F_parallel_arrays      = 0x0002,
   };
   int _flags;
-
-  static GeomMunger *_deleted_chain;
 
 public:
   static TypeHandle get_class_type() {

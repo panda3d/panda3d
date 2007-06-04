@@ -6610,7 +6610,6 @@ apply_texture(TextureContext *tc) {
     gtc->mark_loaded();
   }
 
-
   report_my_gl_errors();
 }
 
@@ -6626,6 +6625,7 @@ apply_texture(TextureContext *tc) {
 bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
+
   CPTA_uchar image = tex->get_ram_image();
 
   Texture::CompressionMode image_compression;
@@ -6912,6 +6912,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
     // We need to reload a new image.
 
     if (num_ram_mipmap_levels == 0) {
+      GLCAT.info()
+        << "Synthesizing blank image for " << tex->get_name()
+        << "\n";
       int *blank_image = new int[width * height];
       int color = 0xFF808080;
       switch (z) {
@@ -6930,14 +6933,15 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
 
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
-      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
-      if (image_ptr == (const unsigned char *)NULL) {
+      CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
+      if (ptimage == (const unsigned char *)NULL) {
         GLCAT.warning()
           << "No mipmap level " << n << " defined for " << tex->get_name()
           << "\n";
         // No mipmap level n; stop here.
         break;
       }
+      const unsigned char *image_ptr = ptimage;
 
       size_t image_size = tex->get_ram_mipmap_image_size(n);
       if (one_page_only) {
@@ -7220,7 +7224,7 @@ check_nonresident_texture(BufferContextChain &chain) {
   }
   nassertv(ti == num_textures);
   GLboolean *results = (GLboolean *)alloca(num_textures * sizeof(GLboolean));
-  bool all_resident = (glAreTexturesResident(num_textures, texture_list, results) != 0);
+  bool all_resident = (GLP(AreTexturesResident)(num_textures, texture_list, results) != 0);
 
   report_my_gl_errors();
 
