@@ -6,8 +6,8 @@ from direct.showbase.PythonUtil import getBase
 class JobManager:
     """
     Similar to the taskMgr but designed for tasks that are CPU-intensive and/or
-    not time-critical. Jobs run one at a time, in order of priority, in
-    the timeslice that the JobManager is allotted each frame.
+    not time-critical. Jobs run in a fixed timeslice that the JobManager is
+    allotted each frame.
     """
     notify = directNotify.newCategory("JobManager")
 
@@ -31,7 +31,9 @@ class JobManager:
         # out CPU usage
         self._jobId2overflowTime = {}
         self._useOverflowTime = None
-        # this is a generator that we use to give high-priority jobs more timeslices
+        # this is a generator that we use to give high-priority jobs more timeslices,
+        # it yields jobIds in a sequence that includes high-priority jobIds more often
+        # than low-priority
         self._jobIdGenerator = None
         self._highestPriority = Job.Priorities.Normal
 
