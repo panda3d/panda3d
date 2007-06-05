@@ -459,25 +459,25 @@ center_trackball(const NodePath &object) {
     gbv = new_gbv;
   }
 
-  // Determine the bounding sphere around the object.  The
-  // BoundingVolume might be a sphere (it's likely), but since it
-  // might not, we'll take no chances and make our own sphere.
-  PT(BoundingSphere) sphere = new BoundingSphere(gbv->get_approx_center(), 0.0f);
-  if (!sphere->extend_by(gbv)) {
-    framework_cat.warning()
-      << "Cannot determine bounding volume of " << object << "\n";
-    return;
-  }
-
-  if (sphere->is_infinite()) {
+  // Determine the bounding sphere around the object.
+  if (gbv->is_infinite()) {
     framework_cat.warning()
       << "Infinite bounding volume for " << object << "\n";
     return;
   }
 
-  if (sphere->is_empty()) {
+  if (gbv->is_empty()) {
     framework_cat.warning()
       << "Empty bounding volume for " << object << "\n";
+    return;
+  }
+
+  // The BoundingVolume might be a sphere (it's likely), but since it
+  // might not, we'll take no chances and make our own sphere.
+  PT(BoundingSphere) sphere = new BoundingSphere(gbv->get_approx_center(), 0.0f);
+  if (!sphere->extend_by(gbv)) {
+    framework_cat.warning()
+      << "Cannot determine bounding volume of " << object << "\n";
     return;
   }
 
