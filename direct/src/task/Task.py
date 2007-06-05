@@ -329,6 +329,8 @@ class TaskManager:
 
     OsdPrefix = 'task.'
 
+    DefTaskDurationWarningThreshold = 3.
+
     def __init__(self):
         self.running = 0
         self.stepping = 0
@@ -353,6 +355,16 @@ class TaskManager:
         # handle to Panda's low-level TrueClock object for measuring
         # small intervals.
         self.trueClock = TrueClock.getGlobalPtr()
+
+        """
+        base = getBase()
+        self.warnTaskDuration = base.config.GetBool('task-duration-warnings', 1)
+        self.taskDurationWarningThreshold = base.config.GetFloat('task-duration-warning-threshold', 2)
+        """
+        # we don't have a base object at this point, so set some defaults and read the real values
+        # every frame
+        self.warnTaskDuration = 0
+        self.taskDurationWarningThreshold = 2
 
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
@@ -676,7 +688,7 @@ class TaskManager:
             # Record the dt
             dt = endTime - startTime
             task.dt = dt
-            
+
         else:
             # Run the task and check the return value
             if task.pstats:
@@ -701,6 +713,13 @@ class TaskManager:
                 task.avgDt = (task.runningTotal / task.frame)
             else:
                 task.avgDt = 0
+
+        # warn if the task took too long
+        if self.warnTaskDuration:
+            if dt >= self.taskDurationWarningThreshold:
+                TaskManager.notify.warning('task %s ran for %s seconds' % (
+                    task.name, dt))
+            
         return ret
 
     def __repeatDoMethod(self, task):
@@ -881,6 +900,13 @@ class TaskManager:
 
 
     def run(self):
+        base = getBase()
+        self.warnTaskDuration = base.config.GetBool('task-duration-warnings',
+                                                    1)
+        self.taskDurationWarningThreshold = base.config.GetFloat(
+            'task-duration-warning-threshold',
+            TaskManager.DefTaskDurationWarningThreshold)
+
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         if self.globalClock:
