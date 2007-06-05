@@ -619,8 +619,6 @@ is_renderable() const {
 void TextNode::
 compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
                         Thread *current_thread) const {
-  int num_vertices = 0;
-
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
 

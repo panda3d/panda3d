@@ -103,7 +103,6 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
     win_prop.set_size(occlusion_size[0], occlusion_size[1]);
   }
 
-  bool precertify = false;
   _buffer = engine->make_output(pipe, "occlusion", 0, fb_prop, win_prop, 
                                 GraphicsPipe::BF_refuse_window,
                                 gsg, host->get_host());
