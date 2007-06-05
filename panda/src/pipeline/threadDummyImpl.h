@@ -29,12 +29,6 @@
 
 class Thread;
 
-// The Irix system headers may define this as a macro.  Get it out of
-// the way.
-#ifdef atomic_set
-#undef atomic_set
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : ThreadDummyImpl
 // Description : A fake thread implementation for single-threaded
@@ -56,10 +50,6 @@ public:
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
-
-  INLINE int atomic_inc(int &var);
-  INLINE int atomic_dec(int &var);
-  INLINE int atomic_set(int &var, int new_value);
 };
 
 #include "threadDummyImpl.I"
