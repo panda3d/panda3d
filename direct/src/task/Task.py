@@ -717,7 +717,7 @@ class TaskManager:
         # warn if the task took too long
         if self.warnTaskDuration:
             if dt >= self.taskDurationWarningThreshold:
-                TaskManager.notify.warning('task %s ran for %s seconds' % (
+                TaskManager.notify.warning('task %s ran for %.2f seconds' % (
                     task.name, dt))
             
         return ret
