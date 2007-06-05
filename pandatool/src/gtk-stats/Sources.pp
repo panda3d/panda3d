@@ -2,6 +2,9 @@
 #define USE_PACKAGES net gtk
 
 #begin bin_target
+  // We suspect gtk will not be built universal on OSX.  Don't try.
+  #define UNIVERSAL_BINARIES
+
   // We rename TARGET to pstats-gtk on Windows, so it won't compete
   // with Windows-native pstats.
   #define TARGET $[if $[WINDOWS_PLATFORM],pstats-gtk,pstats]
