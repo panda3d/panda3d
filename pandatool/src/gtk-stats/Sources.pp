@@ -8,8 +8,10 @@
   #define LOCAL_LIBS \
     progbase pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c net:c express:c pandaexpress:m panda:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
+    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+    pandabase:c pnmimage:c event:c pstatclient:c \
+    linmath:c putil:c pipeline:c express:c pandaexpress:m panda:m \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
     pystub
 
   #define SOURCES \
