@@ -311,6 +311,7 @@ class DirectScrolledList(DirectFrame):
         #print "incButtonDown: adding ", taskName
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
+        messenger.send('wakeup')
         
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
@@ -322,7 +323,8 @@ class DirectScrolledList(DirectFrame):
         #print "decButtonDown: adding ", taskName
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
-       
+        messenger.send('wakeup')
+               
     def __buttonUp(self, event):
         assert self.notify.debugStateCall(self)
         taskName = self.taskName("scroll")
