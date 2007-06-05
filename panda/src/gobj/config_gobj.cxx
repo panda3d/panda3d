@@ -51,7 +51,6 @@
 #include "transformTable.h"
 #include "userVertexSlider.h"
 #include "userVertexTransform.h"
-#include "vertexDataBook.h"
 #include "vertexDataBuffer.h"
 #include "vertexTransform.h"
 #include "vertexSlider.h"

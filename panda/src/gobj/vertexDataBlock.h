@@ -1,5 +1,5 @@
-// Filename: vertexDataBook.h
-// Created by:  drose (16May07)
+// Filename: vertexDataBlock.h
+// Created by:  drose (04Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef VERTEXDATABOOK_H
-#define VERTEXDATABOOK_H
+#ifndef VERTEXDATABLOCK_H
+#define VERTEXDATABLOCK_H
 
 #include "pandabase.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
-#include "vertexDataPage.h"
+#include "simpleAllocator.h"
+#include "referenceCount.h"
 
+class VertexDataPage;
 class VertexDataBlock;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : VertexDataBook
-// Description : A collection of VertexDataPages, which can be used to
-//               allocate new VertexDataBlock objects.
+//       Class : VertexDataBlock
+// Description : A block of bytes that stores the actual raw vertex
+//               data referenced by a GeomVertexArrayData object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataBook {
+class EXPCL_PANDA VertexDataBlock : public SimpleAllocatorBlock, public ReferenceCount {
+protected:
+  INLINE VertexDataBlock(VertexDataPage *page,
+                         size_t start, size_t size);
+
 PUBLISHED:
-  VertexDataBook(size_t block_size);
-  ~VertexDataBook();
+  INLINE VertexDataPage *get_page() const;
+  INLINE VertexDataBlock *get_next_block() const;
 
-  VertexDataBlock *alloc(size_t size);
+public:
+  INLINE unsigned char *get_pointer() const;
 
-  INLINE int get_num_pages() const;
-  INLINE VertexDataPage *get_page(int n) const;
-
-  void save_to_disk();
-
-private:
-  INLINE VertexDataPage *create_new_page(size_t size);
-
-private:
-  size_t _block_size;
-  typedef pvector<VertexDataPage *> Pages;
-  Pages _pages;
-  size_t _next_pi;
-  Mutex _lock;
+  friend class VertexDataPage;
 };
 
-#include "vertexDataBook.I"
+#include "vertexDataBlock.I"
 
 #endif

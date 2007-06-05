@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "vertexDataBook.h"
+#include "vertexDataBlock.h"
 #include "pointerTo.h"
 #include "virtualFile.h"
 #include "pStatCollector.h"
