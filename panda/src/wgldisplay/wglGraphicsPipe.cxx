@@ -125,6 +125,14 @@ make_output(const string &name,
     DCAST_INTO_R(wglgsg, gsg, NULL);
   }
 
+  bool support_rtt;
+  support_rtt = false;
+  if (wglgsg) {
+     support_rtt = 
+      wglgsg -> get_supports_render_texture() && 
+      support_render_texture;
+  }
+
   // First thing to try: a wglGraphicsWindow
 
   if (retry == 0) {
@@ -150,7 +158,7 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
   
   if (retry == 1) {
-    if ((!support_render_texture)||
+    if ((!support_rtt)||
         (!gl_support_fbo)||
         (host==0)||
         ((flags&BF_require_parasite)!=0)||
@@ -184,7 +192,7 @@ make_output(const string &name,
   // Third thing to try: a wglGraphicsBuffer
   
   if (retry == 2) {
-    if ((!support_render_texture)||
+    if ((!support_rtt)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||

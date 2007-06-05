@@ -219,7 +219,14 @@ make_output(const string &name,
   if (gsg != 0) {
     DCAST_INTO_R(glxgsg, gsg, NULL);
   }
-  
+
+  bool support_rtt;
+  support_rtt = false;
+  if (glxgsg) {
+     support_rtt = 
+      glxgsg -> get_supports_render_texture() && 
+      support_render_texture;
+  }  
   // First thing to try: a glxGraphicsWindow
 
   if (retry == 0) {
@@ -238,8 +245,8 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
-    if ((!support_render_texture)||
-	//        (!gl_support_fbo)||
+    if ((!support_rtt)||
+  //        (!gl_support_fbo)||
         (host==0)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
@@ -273,7 +280,7 @@ make_output(const string &name,
   // Third thing to try: a glxGraphicsBuffer
   
   if (retry == 2) {
-    if ((!support_render_texture)||
+    if ((!support_rtt)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_size_track_host)!=0)||
