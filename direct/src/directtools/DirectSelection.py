@@ -260,8 +260,7 @@ class DirectBoundingBox:
     def computeTightBounds(self):
         # Compute bounding box using tighter calcTightBounds function
         # Need to clear out existing transform on node path
-        tMat = Mat4()
-        tMat.assign(self.nodePath.getMat())
+        tMat = Mat4(self.nodePath.getMat())
         self.nodePath.clearMat()
         # Get bounds
         self.min = Point3(0)
