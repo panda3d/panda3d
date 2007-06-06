@@ -43,6 +43,25 @@ import OnScreenDebug
 __builtin__.FADE_SORT_INDEX = 1000
 __builtin__.NO_FADE_SORT_INDEX = 2000
 
+####################################################
+## expermential use of  inter-frame yielding...
+## 
+##  this needs to be remove and problem cleared if we adopt this model..
+##
+####################################################
+want_fifothreads = config.GetBool("want-fifothreads", 0)
+if want_fifothreads:
+    import threading
+    
+    class HackGraphicsEngine(GraphicsEngine):    
+        def renderFrame(self):
+            if threading.currentThread().getName() == 'MainThread':
+                    GraphicsEngine.renderFrame(self)
+            else:
+                print 'renderFrame Not Main Thread %s'%    (threading.currentThread().getName())                 
+                
+    
+
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
 # *seem* to cause anyone any problems.
@@ -148,7 +167,10 @@ class ShowBase(DirectObject.DirectObject):
         self.hidden = NodePath('hidden')
 
         # We need a graphics engine to manage the actual rendering.
-        self.graphicsEngine = GraphicsEngine()
+        if want_fifothreads:
+            self.graphicsEngine = HackGraphicsEngine()
+        else:
+            self.graphicsEngine = GraphicsEngine()
 
         self.setupRender()
         self.setupRender2d()
