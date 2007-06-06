@@ -362,6 +362,7 @@ private:
   static PStatCollector _sw_sprites_pcollector;
   static PStatCollector _vertex_data_small_pcollector;
   static PStatCollector _vertex_data_independent_pcollector;
+  static PStatCollector _vertex_data_pending_pcollector;
   static PStatCollector _vertex_data_resident_pcollector;
   static PStatCollector _vertex_data_compressed_pcollector;
   static PStatCollector _vertex_data_used_disk_pcollector;

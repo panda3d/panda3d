@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE size_t SimpleLru::
 get_total_size() const {
+  MutexHolder holder(_global_lock);
   return _total_size;
 }
 
@@ -36,6 +37,7 @@ get_total_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t SimpleLru::
 get_max_size() const {
+  MutexHolder holder(_global_lock);
   return _max_size;
 }
 
@@ -49,8 +51,11 @@ get_max_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLru::
 set_max_size(size_t max_size) {
+  MutexHolder holder(_global_lock);
   _max_size = max_size;
-  consider_evict();
+  if (_total_size > _max_size) {
+    do_evict();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +65,7 @@ set_max_size(size_t max_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleLru::
 consider_evict() {
+  MutexHolder holder(_global_lock);
   if (_total_size > _max_size) {
     do_evict();
   }
@@ -121,35 +127,8 @@ operator = (const SimpleLruPage &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE SimpleLru *SimpleLruPage::
 get_lru() const {
-  return _lru;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleLruPage::enqueue_lru
-//       Access: Published
-//  Description: Adds the page to the tail of the SimpleLru.  When it
-//               reaches the head, it will be the next to be evicted.
-////////////////////////////////////////////////////////////////////
-INLINE void SimpleLruPage::
-enqueue_lru(SimpleLru *lru) {
   MutexHolder holder(SimpleLru::_global_lock);
-
-  if (_lru != (SimpleLru *)NULL) {
-    remove_from_list();
-    _lru->_total_size -= _lru_size;
-    _lru = NULL;
-  }
-
-  _lru = lru;
-
-  if (_lru != (SimpleLru *)NULL) {
-    _lru->_total_size += _lru_size;
-    insert_before(_lru);
-  }
-
-  // Let's not automatically evict pages; instead, we'll evict only on
-  // an explicit epoch test.
-  //  _lru->consider_evict();
+  return _lru;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,6 +197,8 @@ set_lru_size(size_t lru_size) {
   if (_lru != (SimpleLru *)NULL) {
     _lru->_total_size -= _lru_size;
     _lru->_total_size += lru_size;
+    _lru_size = lru_size;
+  } else {
+    _lru_size = lru_size;
   }
-  _lru_size = lru_size;
 }

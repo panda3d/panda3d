@@ -75,6 +75,7 @@ extern EXPCL_PANDA ConfigVariableFilename vertex_save_file_directory;
 extern EXPCL_PANDA ConfigVariableString vertex_save_file_prefix;
 extern EXPCL_PANDA ConfigVariableInt vertex_data_small_size;
 extern EXPCL_PANDA ConfigVariableBool vertex_data_allow_reread;
+extern EXPCL_PANDA ConfigVariableBool vertex_data_threaded_paging;
 
 #endif
 

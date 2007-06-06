@@ -65,7 +65,7 @@ operator = (const VertexDataBuffer &copy) {
   MutexHolder holder(_lock);
 
   do_unclean_realloc(copy.get_size());
-  memcpy(_resident_data, copy.get_read_pointer(), _size);
+  memcpy(_resident_data, copy.get_read_pointer(true), _size);
   _source_file = copy._source_file;
   _source_pos = copy._source_pos;
 }
@@ -83,17 +83,23 @@ INLINE VertexDataBuffer::
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBuffer::get_read_pointer
 //       Access: Public
-//  Description: Returns a read-only pointer to the raw data.
+//  Description: Returns a read-only pointer to the raw data, or NULL
+//               if the data is not currently resident.  If the data
+//               is not currently resident, this will implicitly
+//               request it to become resident soon.
+//
+//               If force is true, this method will never return NULL,
+//               but may block until the data is available.
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *VertexDataBuffer::
-get_read_pointer() const {
+get_read_pointer(bool force) const {
   MutexHolder holder(_lock);
 
   if (_block != (VertexDataBlock *)NULL) {
     // We don't necessarily need to page the buffer all the way into
     // independent status; it's sufficient just to return the block's
     // pointer, which will force its page to resident status.
-    return _block->get_pointer();
+    return _block->get_pointer(force);
   }
   if (_resident_data == (unsigned char *)NULL && !_source_file.is_null()) {
     // If we need to re-read the original source, do so.

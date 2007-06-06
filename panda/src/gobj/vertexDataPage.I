@@ -26,7 +26,37 @@
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataPage::RamClass VertexDataPage::
 get_ram_class() const {
+  MutexHolder holder(_lock);
   return _ram_class;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::get_pending_ram_class
+//       Access: Published
+//  Description: Returns the pending ram class of the array.  If this
+//               is different from get_ram_class(), this page has been
+//               queued to be processed by the thread.  Eventually the
+//               page will be set to this ram class.
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataPage::RamClass VertexDataPage::
+get_pending_ram_class() const {
+  MutexHolder holder(_lock);
+  return _pending_ram_class;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::request_resident
+//       Access: Published
+//  Description: Ensures that the page will become resident soon.
+//               Future calls to get_page_data() will eventually
+//               return non-NULL.
+////////////////////////////////////////////////////////////////////
+INLINE void VertexDataPage::
+request_resident() {
+  MutexHolder holder(_lock);
+  if (_ram_class != RC_resident) {
+    request_ram_class(RC_resident);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +68,6 @@ get_ram_class() const {
 INLINE VertexDataBlock *VertexDataPage::
 get_first_block() const {
   MutexHolder holder(_lock);
-  check_resident();
   return (VertexDataBlock *)SimpleAllocator::get_first_block();
 }
 
@@ -64,6 +93,18 @@ INLINE SimpleLru *VertexDataPage::
 get_global_lru(RamClass rclass) {
   nassertr(rclass >= 0 && rclass < RC_end_of_list, NULL);
   return _global_lru[rclass];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::get_pending_lru
+//       Access: Published, Static
+//  Description: Returns a pointer to the global LRU object that
+//               manages the VertexDataPage's that are pending
+//               processing by the thread.
+////////////////////////////////////////////////////////////////////
+INLINE SimpleLru *VertexDataPage::
+get_pending_lru() {
+  return &_pending_lru;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,55 +137,55 @@ save_to_disk() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::restore_from_disk
-//       Access: Published
-//  Description: Restores the page from disk and makes it
-//               either compressed or resident (according to whether
-//               it was stored compressed on disk).
-////////////////////////////////////////////////////////////////////
-INLINE void VertexDataPage::
-restore_from_disk() {
-  MutexHolder holder(_lock);
-  do_restore_from_disk();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_page_data
 //       Access: Public
-//  Description: Returns a pointer to the page's data area.
+//  Description: Returns a pointer to the page's data area, or NULL if
+//               the page is not currently resident.  If the page is
+//               not currently resident, this will implicitly request
+//               it to become resident soon.
+//
+//               If force is true, this method will never return NULL,
+//               but may block until the page is available.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataPage::
-get_page_data() const {
+get_page_data(bool force) {
   MutexHolder holder(_lock);
-  check_resident();
-  return _page_data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::check_resident
-//       Access: Private
-//  Description: Forces the vertex data into system RAM, if it is not
-//               already there; also, marks it recently-used.
-//
-//               Assumes the lock is already held.
-////////////////////////////////////////////////////////////////////
-INLINE void VertexDataPage::
-check_resident() const {
   if (_ram_class != RC_resident) {
-    ((VertexDataPage *)this)->make_resident();
-  } else {
-    ((VertexDataPage *)this)->mark_used_lru();
+    if (force) {
+      make_resident_now();
+    } else {
+      request_ram_class(RC_resident);
+      return NULL;
+    }
   }
-  nassertv(_size == _uncompressed_size);
+
+  mark_used_lru();
+  nassertr(_size == _uncompressed_size, _page_data);
+  return _page_data;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::set_ram_class
 //       Access: Private
-//  Description: Puts the data in a new ram class.
+//  Description: Puts the data in a new ram class.  Assumes the page
+//               lock is already held.
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataPage::
 set_ram_class(RamClass rclass) {
   _ram_class = rclass;
   mark_used_lru(_global_lru[rclass]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataPage::PageThread::
+PageThread() : 
+  Thread("VertexDataPage", "VertexDataPage"),
+  _shutdown(false),
+  _working_cvar(_tlock),
+  _pending_cvar(_tlock)
+{
 }

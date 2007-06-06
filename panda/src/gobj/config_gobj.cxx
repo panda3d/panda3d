@@ -307,9 +307,16 @@ ConfigVariableBool vertex_data_allow_reread
           "data to the page file, but it requires that bam files are not "
           "modified during program execution.  Set it false to prevent "
           "this, so that the vertex data will need to be written to a "
-          "page file when it is evicted."));
+          "page file when it is evicted.  Note that this is not fully "
+          "compatible with vertex-data-threaded-paging."));
 
-
+ConfigVariableBool vertex_data_threaded_paging
+("vertex-data-threaded-paging", true,
+ PRC_DESC("When this is true (and Panda has been compiled with thread "
+          "support) then a sub-thread will be spawned to evict vertex pages "
+          "to disk and read them back again.  When this is false, this "
+          "work will be done in the main thread, which may introduce "
+          "occasional random chugs in rendering."));
 
 ConfigureFn(config_gobj) {
   BufferContext::init_type();

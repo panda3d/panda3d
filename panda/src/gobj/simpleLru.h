@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
+#include "namable.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
 
@@ -30,9 +31,9 @@ class SimpleLruPage;
 //       Class : SimpleLru
 // Description : An implementation of a very simple LRU algorithm.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SimpleLru : public LinkedListNode {
+class EXPCL_PANDA SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
-  SimpleLru(size_t max_size);
+  SimpleLru(const string &name, size_t max_size);
   ~SimpleLru();
 
   INLINE size_t get_total_size() const;
@@ -44,10 +45,11 @@ PUBLISHED:
   INLINE void begin_epoch();
 
 public:
-  static Mutex _global_lock;
+  static Mutex &_global_lock;
 
 private:
   void do_evict();
+  bool do_validate_size();
 
   size_t _total_size;
   size_t _max_size;
@@ -72,7 +74,7 @@ PUBLISHED:
 
   INLINE SimpleLru *get_lru() const;
 
-  INLINE void enqueue_lru(SimpleLru *lru);
+  void enqueue_lru(SimpleLru *lru);
   INLINE void dequeue_lru();
 
   INLINE void mark_used_lru() const;

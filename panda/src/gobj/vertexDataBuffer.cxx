@@ -95,7 +95,7 @@ do_page_out(VertexDataBook &book) {
     // file.
     _block = book.alloc(_size);
     nassertv(_block != (VertexDataBlock *)NULL);
-    unsigned char *pointer = _block->get_pointer();
+    unsigned char *pointer = _block->get_pointer(true);
     nassertv(pointer != (unsigned char *)NULL);
     memcpy(pointer, _resident_data, _size);
   }
@@ -164,6 +164,6 @@ do_page_in() {
   nassertv(_resident_data != (unsigned char *)NULL);
   get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
 
-  memcpy(_resident_data, _block->get_pointer(), _size);
+  memcpy(_resident_data, _block->get_pointer(true), _size);
   _block = NULL;
 }

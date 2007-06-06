@@ -25,7 +25,10 @@
 #include "pStatCollector.h"
 #include "vertexDataSaveFile.h"
 #include "pmutex.h"
+#include "conditionVar.h"
+#include "thread.h"
 #include "mutexHolder.h"
+#include "pdeque.h"
 
 class VertexDataBlock;
 
@@ -53,27 +56,31 @@ PUBLISHED:
   };
 
   INLINE RamClass get_ram_class() const;
+  INLINE RamClass get_pending_ram_class() const;
+  INLINE void request_resident();
 
   VertexDataBlock *alloc(size_t size);
   INLINE VertexDataBlock *get_first_block() const;
 
   INLINE static size_t get_total_page_size();
   INLINE static SimpleLru *get_global_lru(RamClass rclass);
+  INLINE static SimpleLru *get_pending_lru();
   INLINE static VertexDataSaveFile *get_save_file();
 
   INLINE bool save_to_disk();
-  INLINE void restore_from_disk();
+  static void stop_thread();
 
 public:
-  INLINE unsigned char *get_page_data() const;
+  INLINE unsigned char *get_page_data(bool force);
 
 protected:
   virtual SimpleAllocatorBlock *make_block(size_t start, size_t size);
   virtual void evict_lru();
 
 private:
-  INLINE void check_resident() const;
+  class PageThread;
 
+  void make_resident_now();
   void make_resident();
   void make_compressed();
   void make_disk();
@@ -81,19 +88,48 @@ private:
   bool do_save_to_disk();
   void do_restore_from_disk();
 
+  PageThread *get_thread();
+  void request_ram_class(RamClass ram_class);
   INLINE void set_ram_class(RamClass ram_class);
   static void make_save_file();
+
+  typedef pdeque<VertexDataPage *> PendingPages;
+
+  class PageThread : public Thread {
+  public:
+    INLINE PageThread();
+    
+    void add_page(VertexDataPage *page, RamClass ram_class);
+    void remove_page(VertexDataPage *page);
+    void stop_thread();
+
+  protected:
+    virtual void thread_main();
+
+  private:
+    VertexDataPage *_working_page;
+    PendingPages _pending_writes;
+    PendingPages _pending_reads;
+    bool _shutdown;
+    ConditionVar _working_cvar;
+    ConditionVar _pending_cvar;
+  };
+  static PT(PageThread) _thread;
+  static Mutex _tlock;  // Protects the thread members.
 
   unsigned char *_page_data;
   size_t _size, _uncompressed_size;
   RamClass _ram_class;
   PT(VertexDataSaveBlock) _saved_block;
 
-  Mutex _lock;
+  Mutex _lock;  // Protects above members
+
+  RamClass _pending_ram_class;  // Protected by _tlock.
 
   static SimpleLru _resident_lru;
   static SimpleLru _compressed_lru;
   static SimpleLru _disk_lru;
+  static SimpleLru _pending_lru;
   static SimpleLru *_global_lru[RC_end_of_list];
 
   static size_t _total_page_size;
@@ -114,6 +150,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PageThread;
 };
 
 #include "vertexDataPage.I"

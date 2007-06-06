@@ -258,7 +258,7 @@ public:
   INLINE const GeomVertexArrayData *get_object() const;
   INLINE GeomVertexArrayData *get_object();
 
-  INLINE const unsigned char *get_read_pointer() const;
+  INLINE const unsigned char *get_read_pointer(bool force = true) const;
   unsigned char *get_write_pointer();
 
 PUBLISHED:

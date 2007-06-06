@@ -43,8 +43,8 @@ ConfigVariableInt vertex_data_page_size
           "This also controls the page size that is compressed and written "
           "to disk when vertex data pages are evicted from memory."));
 
-SimpleLru GeomVertexArrayData::_independent_lru(max_independent_vertex_data);
-SimpleLru GeomVertexArrayData::_small_lru(max_independent_vertex_data);
+SimpleLru GeomVertexArrayData::_independent_lru("independent", max_independent_vertex_data);
+SimpleLru GeomVertexArrayData::_small_lru("small", max_independent_vertex_data);
 
 VertexDataBook GeomVertexArrayData::_book(vertex_data_page_size);
 
@@ -493,7 +493,7 @@ finalize(BamReader *manager) {
   if (_endian_reversed) {
     // Now is the time to endian-reverse the data.
     VertexDataBuffer new_buffer(cdata->_buffer.get_size());
-    reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(), cdata->_buffer.get_size());
+    reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(true), cdata->_buffer.get_size());
     cdata->_buffer.swap(new_buffer);
   }
 
@@ -570,12 +570,12 @@ write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
 
   if (manager->get_file_endian() == BE_native) {
     // For native endianness, we only have to write the data directly.
-    dg.append_data(_buffer.get_read_pointer(), _buffer.get_size());
+    dg.append_data(_buffer.get_read_pointer(true), _buffer.get_size());
 
   } else {
     // Otherwise, we have to convert it.
     unsigned char *new_data = (unsigned char *)alloca(_buffer.get_size());
-    array_data->reverse_data_endianness(new_data, _buffer.get_read_pointer(), _buffer.get_size());
+    array_data->reverse_data_endianness(new_data, _buffer.get_read_pointer(true), _buffer.get_size());
     dg.append_data(new_data, _buffer.get_size());
   }
 }
@@ -628,7 +628,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
       // it immediately (and we should, to support threaded CData
       // updates).
       VertexDataBuffer new_buffer(_buffer.get_size());
-      array_data->reverse_data_endianness(new_buffer.get_write_pointer(), _buffer.get_read_pointer(), _buffer.get_size());
+      array_data->reverse_data_endianness(new_buffer.get_write_pointer(), _buffer.get_read_pointer(true), _buffer.get_size());
       _buffer.swap(new_buffer);
     }
   }
@@ -729,7 +729,7 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
 
   _cdata->_buffer.unclean_realloc(other->_cdata->_buffer.get_size());
   memcpy(_cdata->_buffer.get_write_pointer(),
-         other->_cdata->_buffer.get_read_pointer(),
+         other->_cdata->_buffer.get_read_pointer(true),
          other->_cdata->_buffer.get_size());
 
   _cdata->_modified = Geom::get_next_modified();

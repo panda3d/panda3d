@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE VertexDataBlock *get_next_block() const;
 
 public:
-  INLINE unsigned char *get_pointer() const;
+  INLINE unsigned char *get_pointer(bool force) const;
 
   friend class VertexDataPage;
 };

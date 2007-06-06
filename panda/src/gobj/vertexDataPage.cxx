@@ -54,9 +54,13 @@ ConfigVariableInt max_disk_vertex_data
           "that is allowed to be written to disk.  Set it to -1 for no "
           "limit."));
 
-SimpleLru VertexDataPage::_resident_lru(max_resident_vertex_data);
-SimpleLru VertexDataPage::_compressed_lru(max_compressed_vertex_data);
-SimpleLru VertexDataPage::_disk_lru(0);
+PT(VertexDataPage::PageThread) VertexDataPage::_thread;
+Mutex VertexDataPage::_tlock;
+
+SimpleLru VertexDataPage::_resident_lru("resident", max_resident_vertex_data);
+SimpleLru VertexDataPage::_compressed_lru("compressed", max_compressed_vertex_data);
+SimpleLru VertexDataPage::_disk_lru("disk", 0);
+SimpleLru VertexDataPage::_pending_lru("pending", 0);
 
 SimpleLru *VertexDataPage::_global_lru[RC_end_of_list] = {
   &VertexDataPage::_resident_lru,
@@ -86,6 +90,7 @@ VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(pag
   _uncompressed_size = _size;
   _total_page_size += _size;
   get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
+  _pending_ram_class = RC_resident;
   set_ram_class(RC_resident);
 }
 
@@ -116,7 +121,9 @@ VertexDataPage::
 VertexDataBlock *VertexDataPage::
 alloc(size_t size) {
   MutexHolder holder(_lock);
-  check_resident();
+  if (_ram_class != RC_resident) {
+    make_resident_now();
+  }
   
   VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::alloc(size);
 
@@ -127,6 +134,27 @@ alloc(size_t size) {
   }
 
   return block;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::stop_thread
+//       Access: Published, Static
+//  Description: Call this to stop the paging thread, if it was
+//               started.  This may block until all of the thread's
+//               pending tasks have been completed.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+stop_thread() {
+  PT(PageThread) thread;
+  {
+    MutexHolder holder(_tlock);
+    thread = _thread;
+    _thread.clear();
+  }
+
+  if (thread != (PageThread *)NULL) {
+    thread->stop_thread();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,24 +190,44 @@ evict_lru() {
   switch (_ram_class) {
   case RC_resident:
     if (_compressed_lru.get_max_size() == 0) {
-      make_disk();
+      request_ram_class(RC_disk);
     } else {
-      make_compressed();
+      request_ram_class(RC_compressed);
     }
     break;
 
   case RC_compressed:
-    make_disk();
+    request_ram_class(RC_disk);
     break;
 
   case RC_disk:
-    gobj_cat.warning()
-      << "Cannot evict array data from disk.\n";
-    break;
-
   case RC_end_of_list:
+    gobj_cat.warning()
+      << "Internal error: attempt to evict array data " << this
+      << " in inappropriate state " << _ram_class << ".\n";
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::make_resident_now
+//       Access: Private
+//  Description: Short-circuits the thread and forces the page into
+//               resident status immediately.
+//
+//               Intended to be called from the main thread.  Assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+make_resident_now() {
+  MutexHolder holder(_tlock);
+  if (_pending_ram_class != _ram_class) {
+    nassertv(_thread != (PageThread *)NULL);
+    _thread->remove_page(this);
+  }
+
+  make_resident();
+  _pending_ram_class = RC_resident;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,12 +236,12 @@ evict_lru() {
 //  Description: Moves the page to fully resident status by
 //               expanding it or reading it from disk as necessary.
 //
-//               Assumes the lock is already held.
+//               Intended to be called from the sub-thread.  Assumes
+//               the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 make_resident() {
   if (_ram_class == RC_resident) {
-    // If we're already resident, just mark the page recently used.
     mark_used_lru();
     return;
   }
@@ -321,6 +369,8 @@ make_disk() {
   if (_ram_class == RC_resident || _ram_class == RC_compressed) {
     if (!do_save_to_disk()) {
       // Can't save it to disk for some reason.
+      gobj_cat.warning() 
+        << "Couldn't save page " << this << " to disk.\n";
       mark_used_lru();
       return;
     }
@@ -331,7 +381,7 @@ make_disk() {
     delete[] _page_data;
     _page_data = NULL;
     _size = 0;
-
+    
     set_ram_class(RC_disk);
   }
 }
@@ -420,6 +470,52 @@ do_restore_from_disk() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::request_ram_class
+//       Access: Private
+//  Description: Requests the thread set the page to the indicated ram
+//               class (if we are using threading).  The page will be
+//               enqueued in the thread, which will eventually be
+//               responsible for setting the requested ram class.
+//
+//               Assumes the page's lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+request_ram_class(RamClass ram_class) {
+  if (ram_class == _ram_class) {
+    gobj_cat.warning()
+      << "Page " << this << " already has ram class " << ram_class << "\n";
+    return;
+  }
+
+  if (!vertex_data_threaded_paging || !Thread::is_threading_supported()) {
+    // No threads.  Do it immediately.
+    switch (ram_class) {
+    case RC_resident:
+      make_resident();
+      break;
+
+    case RC_compressed:
+      make_compressed();
+      break;
+
+    case RC_disk:
+      make_disk();
+      break;
+    }
+    return;
+  }
+
+  MutexHolder holder(_tlock);
+  if (_thread == (PageThread *)NULL) {
+    // Allocate and start a new global thread.
+    _thread = new PageThread;
+    _thread->start(TP_low, true);
+  }
+
+  _thread->add_page(this, ram_class);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::make_save_file
 //       Access: Private, Static
 //  Description: Creates the global VertexDataSaveFile that will be
@@ -432,4 +528,150 @@ make_save_file() {
 
   _save_file = new VertexDataSaveFile(vertex_save_file_directory,
                                       vertex_save_file_prefix, max_size);
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::add_page
+//       Access: Public
+//  Description: Enqueues the indicated page on the thread to convert
+//               it to the specified ram class.  
+//
+//               It is assumed the page's lock is already held, and
+//               the thread's tlock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThread::
+add_page(VertexDataPage *page, RamClass ram_class) {
+  if (page->_pending_ram_class == ram_class) {
+    // It's already queued.
+    nassertv(page->get_lru() == &_pending_lru);
+    return;
+  }
+  
+  if (page->_pending_ram_class != page->_ram_class) {
+    // It's already queued, but for a different ram class.  Dequeue it
+    // so we can requeue it.
+    remove_page(page);
+  }
+
+  if (page->_pending_ram_class != ram_class) {
+    // First, move the page to the "pending" LRU.  When it eventually
+    // gets its requested ram class set, it will be requeued on the
+    // appropriate live LRU.
+    page->mark_used_lru(&_pending_lru);
+
+    page->_pending_ram_class = ram_class;
+    if (ram_class == RC_resident) {
+      _pending_reads.push_back(page);
+    } else {
+      _pending_writes.push_back(page);
+    }
+    _pending_cvar.signal();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::remove_page
+//       Access: Public
+//  Description: Dequeues the indicated page and removes it from the
+//               pending task list.
+//
+//               It is assumed the page's lock is already held, and
+//               the thread's tlock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThread::
+remove_page(VertexDataPage *page) {
+  if (page == _working_page) {
+    // Oops, the thread is currently working on this one.  We'll have
+    // to wait for the thread to finish.
+    while (page == _working_page) {
+      _working_cvar.wait();
+    }
+    return;
+  }
+
+  if (page->_pending_ram_class == RC_resident) {
+    PendingPages::iterator pi = 
+      find(_pending_reads.begin(), _pending_reads.end(), page);
+    nassertv(pi != _pending_reads.end());
+    _pending_reads.erase(pi);
+  } else {
+    PendingPages::iterator pi = 
+      find(_pending_writes.begin(), _pending_writes.end(), page);
+    nassertv(pi != _pending_writes.end());
+    _pending_writes.erase(pi);
+  }
+
+  page->_pending_ram_class = page->_ram_class;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::thread_main
+//       Access: Protected, Virtual
+//  Description: The main processing loop for the sub-thread.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThread::
+thread_main() {
+  _tlock.lock();
+
+  while (true) {
+    PStatClient::thread_tick(get_sync_name());
+
+    while (_pending_reads.empty() && _pending_writes.empty()) {
+      if (_shutdown) {
+        _tlock.release();
+        return;
+      }
+      _pending_cvar.wait();
+    }
+
+    // Reads always have priority.
+    if (!_pending_reads.empty()) {
+      _working_page = _pending_reads.front();
+      _pending_reads.pop_front();
+    } else {
+      _working_page = _pending_writes.front();
+      _pending_writes.pop_front();
+    }
+
+    RamClass ram_class = _working_page->_pending_ram_class;
+    _tlock.release();
+
+    {
+      MutexHolder holder(_working_page->_lock);
+      switch (ram_class) {
+      case RC_resident:
+        _working_page->make_resident();
+        break;
+        
+      case RC_compressed:
+        _working_page->make_compressed();
+        break;
+        
+      case RC_disk:
+        _working_page->make_disk();
+        break;
+      }
+    }
+    
+    _tlock.lock();
+
+    _working_page = NULL;
+    _working_cvar.signal();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::stop_thread
+//       Access: Public
+//  Description: Signals the thread to stop and waits for it.  Does
+//               not return until the thread has finished.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThread::
+stop_thread() {
+  {
+    MutexHolder holder(_tlock);
+    _shutdown = true;
+    _pending_cvar.signal();
+  }
+  join();
 }

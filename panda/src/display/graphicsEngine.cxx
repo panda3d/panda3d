@@ -45,6 +45,7 @@
 #include "geomVertexArrayData.h"
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
+#include "vertexDataPage.h"
 #include "config_pgraph.h"
 
 #if defined(WIN32)
@@ -82,6 +83,7 @@ PStatCollector GraphicsEngine::_delete_pcollector("App:Delete");
 PStatCollector GraphicsEngine::_sw_sprites_pcollector("SW Sprites");
 PStatCollector GraphicsEngine::_vertex_data_small_pcollector("Vertex Data:Small");
 PStatCollector GraphicsEngine::_vertex_data_independent_pcollector("Vertex Data:Independent");
+PStatCollector GraphicsEngine::_vertex_data_pending_pcollector("Vertex Data:Pending");
 PStatCollector GraphicsEngine::_vertex_data_resident_pcollector("Vertex Data:Resident");
 PStatCollector GraphicsEngine::_vertex_data_compressed_pcollector("Vertex Data:Compressed");
 PStatCollector GraphicsEngine::_vertex_data_unused_disk_pcollector("Vertex Data:Disk:Unused");
@@ -501,6 +503,9 @@ remove_all_windows() {
   // any) has been flushed to disk.
   BamCache *cache = BamCache::get_global_ptr();
   cache->flush_index();
+
+  // And, hey, let's stop the vertex paging thread, if any.
+  VertexDataPage::stop_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,6 +763,7 @@ render_frame() {
     size_t independent = GeomVertexArrayData::get_independent_lru()->get_total_size();
     size_t resident = VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->get_total_size();
     size_t compressed = VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->get_total_size();
+    size_t pending = VertexDataPage::get_pending_lru()->get_total_size();
 
     VertexDataSaveFile *save_file = VertexDataPage::get_save_file();
     size_t total_disk = save_file->get_total_file_size();
@@ -765,6 +771,7 @@ render_frame() {
 
     _vertex_data_small_pcollector.set_level(small_buf);
     _vertex_data_independent_pcollector.set_level(independent);
+    _vertex_data_pending_pcollector.set_level(pending);
     _vertex_data_resident_pcollector.set_level(resident);
     _vertex_data_compressed_pcollector.set_level(compressed);
     _vertex_data_unused_disk_pcollector.set_level(total_disk - used_disk);

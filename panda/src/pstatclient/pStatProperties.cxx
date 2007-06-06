@@ -202,6 +202,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Vertex Data",                      { 1.0, 0.4, 0.0 },  "MB", 64, 1048576 },
   { 1, "Vertex Data:Small",                { 0.2, 0.3, 0.4 } },
   { 1, "Vertex Data:Independent",          { 0.9, 0.1, 0.9 } },
+  { 1, "Vertex Data:Pending",              { 0.6, 0.8, 1.0 } },
   { 1, "Vertex Data:Disk",                 { 0.6, 0.9, 0.1 } },
   { 1, "Vertex Data:Disk:Unused",          { 0.8, 0.4, 0.5 } },
   { 1, "Vertex Data:Disk:Used",            { 0.2, 0.1, 0.6 } },

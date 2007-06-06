@@ -369,12 +369,18 @@ get_object() {
 //     Function: GeomVertexArrayDataHandle::get_read_pointer
 //       Access: Public
 //  Description: Returns a readable pointer to the beginning of the
-//               actual data stream.
+//               actual data stream, or NULL if the data is not
+//               currently resident.  If the data is not currently
+//               resident, this will implicitly request it to become
+//               resident soon.
+//
+//               If force is true, this method will never return NULL,
+//               but may block until the data is available.
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomVertexArrayDataHandle::
-get_read_pointer() const {
+get_read_pointer(bool force) const {
   check_resident();
-  return _cdata->_buffer.get_read_pointer();
+  return _cdata->_buffer.get_read_pointer(force);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,7 +454,7 @@ get_modified() const {
 INLINE string GeomVertexArrayDataHandle::
 get_data() const {
   check_resident();
-  return string((const char *)_cdata->_buffer.get_read_pointer(), _cdata->_buffer.get_size());
+  return string((const char *)_cdata->_buffer.get_read_pointer(true), _cdata->_buffer.get_size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -464,7 +470,7 @@ get_subdata(size_t start, size_t size) const {
   check_resident();
   start = min(start, _cdata->_buffer.get_size());
   size = min(size, _cdata->_buffer.get_size() - start);
-  return string((const char *)_cdata->_buffer.get_read_pointer() + start, size);
+  return string((const char *)_cdata->_buffer.get_read_pointer(true) + start, size);
 }
 
 ////////////////////////////////////////////////////////////////////

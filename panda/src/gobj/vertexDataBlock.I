@@ -43,12 +43,23 @@ get_page() const {
 //     Function: VertexDataBlock::get_pointer
 //       Access: Public
 //  Description: Returns a pointer to the start of the allocated
-//               memory for this buffer.
+//               memory for this buffer, or NULL if the data is not
+//               currently resident.  If the data is not currently
+//               resident, this will implicitly request it to become
+//               resident soon.
+//
+//               If force is true, this method will never return NULL,
+//               but may block until the data is available.
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataBlock::
-get_pointer() const {
+get_pointer(bool force) const {
   nassertr(get_page() != (VertexDataPage *)NULL, NULL);
-  return get_page()->get_page_data() + get_start();
+  unsigned char *page_data = get_page()->get_page_data(force);
+  if (page_data == (unsigned char *)NULL) {
+    return NULL;
+  } else {
+    return page_data + get_start();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
