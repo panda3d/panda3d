@@ -302,6 +302,13 @@ class Transitions:
             # positioned behind it.
             self.letterbox = NodePath("letterbox")
             # Allow fade in and out of the bars
+
+            # TODO:  This texture isn't available everywhere
+            button = loader.loadModel('models/gui/toplevel_gui')
+            barImage = None
+            if button:
+                barImage = button.find('**/generic_button')
+                
             self.letterbox.setTransparency(1)
             self.letterboxTop = DirectFrame(
                 parent = self.letterbox,
@@ -312,6 +319,10 @@ class Transitions:
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
                 pos = (0, 0, 0.8),
+                image = barImage,
+                image_scale = (2.25,1,.5),
+                image_pos = (0,0,.1),
+                image_color = (0.3,0.3,0.3,1),
                 )
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
@@ -322,7 +333,12 @@ class Transitions:
                 borderWidth = (0, 0),
                 frameSize = (-1, 1, 0, 0.2),
                 pos = (0, 0, -1),
+                image = barImage,         
+                image_scale = (2.25,1,.5),
+                image_pos = (0,0,.1),
+                image_color = (0.3,0.3,0.3,1),
                 )
+            button.removeNode()
 
     def noLetterbox(self):
         """
