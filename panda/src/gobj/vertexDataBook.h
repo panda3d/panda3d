@@ -41,6 +41,11 @@ PUBLISHED:
   INLINE int get_num_pages() const;
   INLINE VertexDataPage *get_page(int n) const;
 
+  size_t count_total_page_size() const;
+  size_t count_total_page_size(VertexDataPage::RamClass ram_class) const;
+  size_t count_allocated_size() const;
+  size_t count_allocated_size(VertexDataPage::RamClass ram_class) const;
+
   void save_to_disk();
 
 private:

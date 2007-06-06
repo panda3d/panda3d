@@ -96,6 +96,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
+  INLINE bool request_resident() const;
+
   INLINE CPT(GeomVertexArrayDataHandle) get_handle(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PT(GeomVertexArrayDataHandle) modify_handle(Thread *current_thread = Thread::get_current_thread());
 
@@ -258,7 +260,7 @@ public:
   INLINE const GeomVertexArrayData *get_object() const;
   INLINE GeomVertexArrayData *get_object();
 
-  INLINE const unsigned char *get_read_pointer(bool force = true) const;
+  INLINE const unsigned char *get_read_pointer(bool force) const;
   unsigned char *get_write_pointer();
 
 PUBLISHED:
@@ -283,7 +285,7 @@ PUBLISHED:
   INLINE string get_subdata(size_t start, size_t size) const;
   void set_subdata(size_t start, size_t size, const string &data);
 
-  INLINE void check_resident() const;
+  INLINE void mark_used() const;
   
 private:
   ReMutexHolder _holder;

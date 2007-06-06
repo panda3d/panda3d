@@ -666,8 +666,8 @@ get_vertices_reader() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomPrimitivePipelineReader::
-get_read_pointer() const {
-  return _vertices_reader->get_read_pointer();
+get_read_pointer(bool force) const {
+  return _vertices_reader->get_read_pointer(force);
 }
 
 ////////////////////////////////////////////////////////////////////

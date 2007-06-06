@@ -69,6 +69,7 @@ extern ConfigVariableBool m_dual_flash;
 
 extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
+extern ConfigVariableBool allow_incomplete_render;
 
 extern EXPCL_PANDA void init_libpgraph();
 

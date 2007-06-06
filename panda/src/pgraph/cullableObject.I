@@ -131,6 +131,26 @@ draw(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::request_resident
+//       Access: Published
+//  Description: Returns true if all the data necessary to render this
+//               object is currently resident in memory.  If this
+//               returns false, the data will be brought back into
+//               memory shortly; try again later.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullableObject::
+request_resident() const {
+  bool resident = true;
+  if (!_geom->request_resident()) {
+    resident = false;
+  }
+  if (!_munged_data->request_resident()) {
+    resident = false;
+  }
+  return resident;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::flush_level
 //       Access: Public, Static
 //  Description: Flushes the PStatCollectors used during traversal.

@@ -642,7 +642,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
 unsigned char *GeomVertexArrayDataHandle::
 get_write_pointer() {
   nassertr(_writable, NULL);
-  check_resident();
+  mark_used();
   _cdata->_modified = Geom::get_next_modified();
   return _cdata->_buffer.get_write_pointer();
 }
@@ -655,7 +655,7 @@ get_write_pointer() {
 bool GeomVertexArrayDataHandle::
 set_num_rows(int n) {
   nassertr(_writable, false);
-  check_resident();
+  mark_used();
 
   int stride = _object->_array_format->get_stride();
   size_t new_size = n * stride;
@@ -689,7 +689,7 @@ set_num_rows(int n) {
 bool GeomVertexArrayDataHandle::
 unclean_set_num_rows(int n) {
   nassertr(_writable, false);
-  check_resident();
+  mark_used();
 
   int stride = _object->_array_format->get_stride();
   size_t new_size = n * stride;
@@ -719,8 +719,8 @@ unclean_set_num_rows(int n) {
 void GeomVertexArrayDataHandle::
 copy_data_from(const GeomVertexArrayDataHandle *other) {
   nassertv(_writable);
-  check_resident();
-  other->check_resident();
+  mark_used();
+  other->mark_used();
 
   _cdata->_buffer.unclean_realloc(other->_cdata->_buffer.get_size());
   memcpy(_cdata->_buffer.get_write_pointer(),
@@ -747,8 +747,8 @@ copy_subdata_from(size_t to_start, size_t to_size,
                   const GeomVertexArrayDataHandle *other,
                   size_t from_start, size_t from_size) {
   nassertv(_writable);
-  check_resident();
-  other->check_resident();
+  mark_used();
+  other->mark_used();
 
   VertexDataBuffer &to_buffer = _cdata->_buffer;
   size_t to_buffer_orig_size = to_buffer.get_size();
@@ -779,7 +779,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
 
   // Now copy the data.
   memcpy(to_buffer.get_write_pointer() + to_start, 
-         other->get_read_pointer() + from_start, 
+         other->get_read_pointer(true) + from_start, 
          from_size);
   _cdata->_modified = Geom::get_next_modified();
 
@@ -798,7 +798,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
 void GeomVertexArrayDataHandle::
 set_data(const string &data) {
   nassertv(_writable);
-  check_resident();
+  mark_used();
 
   _cdata->_buffer.unclean_realloc(data.size());
   memcpy(_cdata->_buffer.get_write_pointer(), data.data(), data.size());
@@ -823,7 +823,7 @@ set_data(const string &data) {
 void GeomVertexArrayDataHandle::
 set_subdata(size_t start, size_t size, const string &data) {
   nassertv(_writable);
-  check_resident();
+  mark_used();
 
   VertexDataBuffer &to_buffer = _cdata->_buffer;
   size_t to_buffer_orig_size = to_buffer.get_size();

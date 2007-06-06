@@ -319,6 +319,15 @@ ConfigVariableString default_model_extension
           "Panda's loader; new code should probably give the correct name "
           "for each model file they intend to load."));
 
+ConfigVariableBool allow_incomplete_render
+("allow-incomplete-render", false,
+ PRC_DESC("When this is true, the frame may be rendered even if some of the "
+          "geometry in the scene has been paged out.  The nonresident "
+          "geometry will be rendered as soon as it can be paged back in, "
+          "which may be several frames in the future.  When this is false, "
+          "geometry is always paged in when needed, holding up the frame "
+          "render if necessary."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at

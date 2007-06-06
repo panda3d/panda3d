@@ -416,6 +416,31 @@ set_slider_table(const SliderTable *table) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::request_resident
+//       Access: Published
+//  Description: Returns true if the vertex data is currently resident
+//               in memory.  If this returns false, the vertex data will
+//               be brought back into memory shortly; try again later.
+////////////////////////////////////////////////////////////////////
+bool GeomVertexData::
+request_resident() const {
+  CDReader cdata(_cycler);
+
+  bool resident = true;
+
+  Arrays::const_iterator ai;
+  for (ai = cdata->_arrays.begin();
+       ai != cdata->_arrays.end();
+       ++ai) {
+    if (!(*ai).get_read_pointer()->request_resident()) {
+      resident = false;
+    }
+  }
+
+  return resident;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::copy_from
 //       Access: Published
 //  Description: Copies all the data from the other array into the
@@ -489,7 +514,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
   for (source_i = 0; source_i < num_arrays; ++source_i) {
     CPT(GeomVertexArrayData) array_obj = source->get_array(source_i);
     CPT(GeomVertexArrayDataHandle) array_handle = array_obj->get_handle();
-    const unsigned char *array_data = array_handle->get_read_pointer();
+    const unsigned char *array_data = array_handle->get_read_pointer(true);
     const GeomVertexArrayFormat *source_array_format = source_format->get_array(source_i);
     int num_columns = source_array_format->get_num_columns();
     for (int di = 0; di < num_columns; ++di) {
@@ -660,7 +685,7 @@ copy_row_from(int dest_row, const GeomVertexData *source,
 
     CPT(GeomVertexArrayData) source_array_obj = source->get_array(i);
     CPT(GeomVertexArrayDataHandle) source_array_handle = source_array_obj->get_handle();
-    const unsigned char *source_array_data = source_array_handle->get_read_pointer();
+    const unsigned char *source_array_data = source_array_handle->get_read_pointer(true);
 
     const GeomVertexArrayFormat *array_format = source_format->get_array(i);
     int stride = array_format->get_stride();
@@ -915,9 +940,15 @@ set_color(const Colorf &color, int num_components,
 //               still return the same pointer, but with its contents
 //               modified (this is preferred, since it allows the
 //               graphics backend to update vertex buffers optimally).
+//
+//               If force is false, this method may return immediately
+//               with stale data, if the vertex data is not completely
+//               resident.  If force is true, this method will never
+//               return stale data, but may block until the data is
+//               available.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-animate_vertices(Thread *current_thread) const {
+animate_vertices(bool force, Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
 
   if (cdata->_format->get_animation().get_animation_type() != AT_panda) {
@@ -948,6 +979,16 @@ animate_vertices(Thread *current_thread) const {
     // No changes.
     return cdata->_animated_vertices;
   }
+
+  if (!force && !request_resident()) {
+    // The vertex data isn't resident.  Return the best information
+    // we've got.
+    if (cdata->_animated_vertices != (GeomVertexData *)NULL) {
+      return cdata->_animated_vertices;
+    }
+    return this;
+  }
+
   CDWriter cdataw(((GeomVertexData *)this)->_cycler, cdata, false);
   cdataw->_animated_vertices_modified = modified;
   ((GeomVertexData *)this)->update_animated_vertices(cdataw, current_thread);

@@ -30,6 +30,7 @@
 #include "mutexHolder.h"
 #include "pdeque.h"
 
+class VertexDataBook;
 class VertexDataBlock;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,8 +41,9 @@ class VertexDataBlock;
 //               cache file, if necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexDataPage : public SimpleAllocator, public SimpleLruPage {
+public:
+  VertexDataPage(VertexDataBook *book, size_t page_size);
 PUBLISHED:
-  VertexDataPage(size_t page_size);
   ~VertexDataPage();
 
   // These are used to indicate the current residency state of the
@@ -62,7 +64,8 @@ PUBLISHED:
   VertexDataBlock *alloc(size_t size);
   INLINE VertexDataBlock *get_first_block() const;
 
-  INLINE static size_t get_total_page_size();
+  INLINE VertexDataBook *get_book() const;
+
   INLINE static SimpleLru *get_global_lru(RamClass rclass);
   INLINE static SimpleLru *get_pending_lru();
   INLINE static VertexDataSaveFile *get_save_file();
@@ -126,19 +129,21 @@ private:
 
   RamClass _pending_ram_class;  // Protected by _tlock.
 
+  VertexDataBook *_book;  // never changes.
+
   static SimpleLru _resident_lru;
   static SimpleLru _compressed_lru;
   static SimpleLru _disk_lru;
   static SimpleLru _pending_lru;
   static SimpleLru *_global_lru[RC_end_of_list];
 
-  static size_t _total_page_size;
   static VertexDataSaveFile *_save_file;
 
   static PStatCollector _vdata_compress_pcollector;
   static PStatCollector _vdata_decompress_pcollector;
   static PStatCollector _vdata_save_pcollector;
   static PStatCollector _vdata_restore_pcollector;
+  static PStatCollector _thread_wait_pcollector;
 
 public:
   static TypeHandle get_class_type() {

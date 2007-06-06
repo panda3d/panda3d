@@ -19,6 +19,7 @@
 #include "vertexDataPage.h"
 #include "configVariableInt.h"
 #include "vertexDataSaveFile.h"
+#include "vertexDataBook.h"
 #include "pStatTimer.h"
 #include "mutexHolder.h"
 
@@ -68,13 +69,13 @@ SimpleLru *VertexDataPage::_global_lru[RC_end_of_list] = {
   &VertexDataPage::_disk_lru,
 };
 
-size_t VertexDataPage::_total_page_size = 0;
 VertexDataSaveFile *VertexDataPage::_save_file;
 
 PStatCollector VertexDataPage::_vdata_compress_pcollector("*:Vertex Data:Compress");
 PStatCollector VertexDataPage::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
 PStatCollector VertexDataPage::_vdata_save_pcollector("*:Vertex Data:Save");
 PStatCollector VertexDataPage::_vdata_restore_pcollector("*:Vertex Data:Restore");
+PStatCollector VertexDataPage::_thread_wait_pcollector("*:Wait:Idle");
 
 TypeHandle VertexDataPage::_type_handle;
 
@@ -84,12 +85,18 @@ TypeHandle VertexDataPage::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
-VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(page_size) {
-  _page_data = new unsigned char[get_max_size()];
+VertexDataPage(VertexDataBook *book, size_t page_size) : 
+  SimpleAllocator(page_size), 
+  SimpleLruPage(page_size),
+  _book(book)
+{
+  nassertv(page_size == get_max_size());
+
+  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)page_size);
+  _page_data = new unsigned char[page_size];
   _size = page_size;
+
   _uncompressed_size = _size;
-  _total_page_size += _size;
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
   _pending_ram_class = RC_resident;
   set_ram_class(RC_resident);
 }
@@ -101,11 +108,20 @@ VertexDataPage(size_t page_size) : SimpleAllocator(page_size), SimpleLruPage(pag
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
 ~VertexDataPage() {
-  _total_page_size -= _size;
-  get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+  MutexHolder holder(_lock);
+
+  {
+    MutexHolder holder2(_tlock);
+    if (_pending_ram_class != _ram_class) {
+      nassertv(_thread != (PageThread *)NULL);
+      _thread->remove_page(this);
+    }
+  }
 
   if (_page_data != NULL) {
+    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
     delete[] _page_data;
+    _size = 0;
   }
 }
 
@@ -121,15 +137,11 @@ VertexDataPage::
 VertexDataBlock *VertexDataPage::
 alloc(size_t size) {
   MutexHolder holder(_lock);
-  if (_ram_class != RC_resident) {
-    make_resident_now();
-  }
-  
   VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::alloc(size);
 
-  if (block != (VertexDataBlock *)NULL) {
-    // When we allocate a new block within the page, we have to clear
-    // the disk cache (since we have just invalidated it).
+  if (block != (VertexDataBlock *)NULL && _ram_class != RC_disk) {
+    // When we allocate a new block within a resident page, we have to
+    // clear the disk cache (since we have just invalidated it).
     _saved_block.clear();
   }
 
@@ -269,15 +281,11 @@ make_resident() {
     }
     nassertv(dest_len == _uncompressed_size);
 
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size -= _size;
-
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_uncompressed_size - (int)_size);
     delete[] _page_data;
     _page_data = new_data;
     _size = _uncompressed_size;
 
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size += _size;
   
 #endif
     set_lru_size(_size);
@@ -329,15 +337,10 @@ make_compressed() {
     unsigned char *new_data = new unsigned char[buffer_size];
     memcpy(new_data, buffer, buffer_size);
 
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size -= _size;
-
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)buffer_size - (int)_size);
     delete[] _page_data;
     _page_data = new_data;
     _size = buffer_size;
-
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size += _size;
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -376,8 +379,6 @@ make_disk() {
     }
 
     get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size -= _size;
-
     delete[] _page_data;
     _page_data = NULL;
     _size = 0;
@@ -454,11 +455,10 @@ do_restore_from_disk() {
       nassert_raise("read error");
     }
 
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)buffer_size);
+    nassertv(_page_data == (unsigned char *)NULL);
     _page_data = new_data;
     _size = buffer_size;
-
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
-    _total_page_size += _size;
 
     set_lru_size(_size);
     if (_saved_block->get_compressed()) {
@@ -501,7 +501,11 @@ request_ram_class(RamClass ram_class) {
     case RC_disk:
       make_disk();
       break;
+
+    case RC_end_of_list:
+      break;
     }
+    _pending_ram_class = ram_class;
     return;
   }
 
@@ -580,12 +584,15 @@ add_page(VertexDataPage *page, RamClass ram_class) {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThread::
 remove_page(VertexDataPage *page) {
+  nassertv(page != (VertexDataPage *)NULL);
   if (page == _working_page) {
     // Oops, the thread is currently working on this one.  We'll have
     // to wait for the thread to finish.
+    page->_lock.release();
     while (page == _working_page) {
       _working_cvar.wait();
     }
+    page->_lock.lock();
     return;
   }
 
@@ -621,6 +628,7 @@ thread_main() {
         _tlock.release();
         return;
       }
+      PStatTimer timer(_thread_wait_pcollector);
       _pending_cvar.wait();
     }
 
@@ -649,6 +657,9 @@ thread_main() {
         
       case RC_disk:
         _working_page->make_disk();
+        break;
+
+      case RC_end_of_list:
         break;
       }
     }

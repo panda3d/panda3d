@@ -799,6 +799,39 @@ get_num_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::request_resident
+//       Access: Published
+//  Description: Returns true if the primitive data is currently
+//               resident in memory.  If this returns false, the
+//               primitive data will be brought back into memory
+//               shortly; try again later.
+////////////////////////////////////////////////////////////////////
+bool GeomPrimitive::
+request_resident() const {
+  CDReader cdata(_cycler);
+
+  bool resident = true;
+
+  if (!cdata->_vertices.is_null() &&
+      !cdata->_vertices.get_read_pointer()->request_resident()) {
+    resident = false;
+  }
+
+  if (is_composite() && cdata->_got_minmax) {
+    if (!cdata->_mins.is_null() &&
+        !cdata->_mins.get_read_pointer()->request_resident()) {
+      resident = false;
+    }
+    if (!cdata->_maxs.is_null() &&
+        !cdata->_maxs.get_read_pointer()->request_resident()) {
+      resident = false;
+    }
+  }
+
+  return resident;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::output
 //       Access: Published, Virtual
 //  Description: 

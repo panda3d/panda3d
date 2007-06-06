@@ -50,10 +50,16 @@ TypeHandle CullableObject::_type_handle;
 //       Access: Public
 //  Description: Uses the indicated GeomMunger to transform the geom
 //               and/or its vertices.
+//
+//               If force is false, this may do nothing and return
+//               false if the vertex data is nonresident.  If force is
+//               true, this will always return true, but it may have
+//               to block while the vertex data is paged in.
 ////////////////////////////////////////////////////////////////////
-void CullableObject::
+bool CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
-           GeomMunger *munger, const CullTraverser *traverser) {
+           GeomMunger *munger, const CullTraverser *traverser,
+           bool force) {
   Thread *current_thread = traverser->get_current_thread();
   if (_geom != (Geom *)NULL) {
     _munger = munger;
@@ -65,7 +71,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     {
       GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
       data_reader.check_array_readers();
-      nassertv(geom_reader.check_valid(&data_reader));
+      nassertr(geom_reader.check_valid(&data_reader), false);
     }
 #endif  // _DEBUG
 
@@ -94,7 +100,9 @@ munge_geom(GraphicsStateGuardianBase *gsg,
           << hex << geom_rendering << ", unsupported: "
           << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
       }
-      munge_points_to_quads(traverser);
+      if (!munge_points_to_quads(traverser, force)) {
+        return false;
+      }
     }
 
     bool cpu_animated = false;
@@ -104,20 +112,24 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // the vertices in the CPU--and we have to do it before we call
       // munge_geom(), which might lose the tangent and binormal.
       CPT(GeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices(current_thread);
+        _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
         _munged_data = animated_vertices;
       }
-      munge_texcoord_light_vector(traverser);
+      if (!munge_texcoord_light_vector(traverser, force)) {
+        return false;
+      }
     }
 
     // Now invoke the munger to ensure the resulting geometry is in
     // a GSG-friendly form.
-    munger->munge_geom(_geom, _munged_data, current_thread);
+    if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
+      return false;
+    }
     
     StateMunger *state_munger;
-    DCAST_INTO_V(state_munger, munger);
+    DCAST_INTO_R(state_munger, munger, false);
     _state = state_munger->munge_state(_state);
 
     if (!cpu_animated) {
@@ -126,7 +138,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
       // animation in hardware--then we have to calculate that
       // animation now.
       CPT(GeomVertexData) animated_vertices = 
-        _munged_data->animate_vertices(current_thread);
+        _munged_data->animate_vertices(force, current_thread);
       if (animated_vertices != _munged_data) {
         cpu_animated = true;
         _munged_data = animated_vertices;
@@ -151,11 +163,13 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   if (_next != (CullableObject *)NULL) {
     if (_next->_state != (RenderState *)NULL) {
       _next->munge_geom(gsg, gsg->get_geom_munger(_next->_state, current_thread),
-                        traverser);
+                        traverser, force);
     } else {
-      _next->munge_geom(gsg, munger, traverser);
+      _next->munge_geom(gsg, munger, traverser, force);
     }
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,8 +207,12 @@ output(ostream &out) const {
 //
 //               This may replace _geom, _munged_data, and _state.
 ////////////////////////////////////////////////////////////////////
-void CullableObject::
-munge_points_to_quads(const CullTraverser *traverser) {
+bool CullableObject::
+munge_points_to_quads(const CullTraverser *traverser, bool force) {
+  if (!force && !_munged_data->request_resident()) {
+    return false;
+  }
+
   Thread *current_thread = traverser->get_current_thread();
   PStatTimer timer(_munge_sprites_pcollector, current_thread);
   _sw_sprites_pcollector.add_level(_munged_data->get_num_rows());
@@ -462,8 +480,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
       ++vi;
     }
 
-    nassertv(vi == orig_verts);
-    nassertv(new_data->get_num_rows() == new_verts);
+    nassertr(vi == orig_verts, false);
+    nassertr(new_data->get_num_rows() == new_verts, false);
   }
 
   PT(Geom) new_geom = new Geom(new_data);
@@ -508,7 +526,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
           GeomVertexReader index(primitive->get_vertices(), 0, current_thread);
           for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
             unsigned int v = index.get_data1i();
-            nassertv(v < (unsigned int)orig_verts);
+            nassertr(v < (unsigned int)orig_verts, false);
             (*vi) = v;
           }
         } else {
@@ -516,7 +534,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
           unsigned int first_vertex = primitive->get_first_vertex();
           for (int i = 0; i < num_vertices; ++i) {
             unsigned int v = i + first_vertex;
-            nassertv(v < (unsigned int)orig_verts);
+            nassertr(v < (unsigned int)orig_verts, false);
             vertices[i] = v;
           }
         }
@@ -540,7 +558,7 @@ munge_points_to_quads(const CullTraverser *traverser) {
         GeomVertexWriter index(new_index, 0);
         for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
           int new_vi = (*vi) * 4;
-          nassertv(new_vi + 3 < new_prim_verts);
+          nassertr(new_vi + 3 < new_prim_verts, false);
           index.set_data1i(new_vi);
           index.set_data1i(new_vi + 1);
           index.set_data1i(new_vi + 2);
@@ -561,6 +579,8 @@ munge_points_to_quads(const CullTraverser *traverser) {
 
   _geom = new_geom.p();
   _munged_data = new_data;
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -571,29 +591,24 @@ munge_points_to_quads(const CullTraverser *traverser) {
 //
 //               This may replace _geom, _munged_data, and _state.
 ////////////////////////////////////////////////////////////////////
-void CullableObject::
-munge_texcoord_light_vector(const CullTraverser *traverser) {
+bool CullableObject::
+munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
   Thread *current_thread = traverser->get_current_thread();
   PStatTimer timer(_munge_light_vector_pcollector, current_thread);
 
   if (_net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
-    return;
+    return true;
   }
-
-  /*
-  CPT(TransformState) net_transform =
-    traverser->get_camera_transform()->compose(_modelview_transform);
-  */
 
   if (!_munged_data->has_column(InternalName::get_vertex()) || 
       !_munged_data->has_column(InternalName::get_normal())) {
     // No vertex or normal; can't compute light vector.
-    return;
+    return true;
   }
 
   CPT(TexGenAttrib) tex_gen = _state->get_tex_gen();
-  nassertv(tex_gen != (TexGenAttrib *)NULL);
+  nassertr(tex_gen != (TexGenAttrib *)NULL, false);
 
   const TexGenAttrib::LightVectors &light_vectors = tex_gen->get_light_vectors();
   TexGenAttrib::LightVectors::const_iterator lvi;
@@ -609,19 +624,12 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
       if (attrib != (RenderAttrib *)NULL) {
         CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
         light = la->get_most_important_light();
-        /*
-        if (!light.is_empty()) {
-          // Remove that light, now that we're accounting for it in
-          // the normal map.
-          _state->set_attrib(la->remove_on_light(light));
-        }
-        */
       }
     }
     if (!light.is_empty()) {
       string source_name = tex_gen->get_source_name(stage);
       Light *light_obj = light.node()->as_light();
-      nassertv(light_obj != (Light *)NULL);
+      nassertr(light_obj != (Light *)NULL, false);
       
       // Determine the names of the tangent and binormal columns
       // associated with the stage's texcoord name.
@@ -632,6 +640,12 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
       
       if (_munged_data->has_column(tangent_name) &&
           _munged_data->has_column(binormal_name)) {
+
+        if (!force && !_munged_data->request_resident()) {
+          // The data isn't resident; give up.
+          return false;
+        }
+
         // Create a new column for the new texcoords.
         PT(GeomVertexData) new_data = _munged_data->replace_column
           (texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
@@ -668,6 +682,8 @@ munge_texcoord_light_vector(const CullTraverser *traverser) {
       }
     }
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -146,6 +146,21 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::request_resident
+//       Access: Published
+//  Description: Returns true if the vertex data is currently resident
+//               in memory.  If this returns true, the next call to
+//               get_handle()->get_read_pointer() will probably not
+//               block.  If this returns false, the vertex data will
+//               be brought back into memory shortly; try again later.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexArrayData::
+request_resident() const {
+  CPT(GeomVertexArrayDataHandle) handle = get_handle();
+  return (handle->get_read_pointer(false) != (const unsigned char *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::get_handle
 //       Access: Published
 //  Description: Returns an object that can be used to read the actual
@@ -379,7 +394,7 @@ get_object() {
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *GeomVertexArrayDataHandle::
 get_read_pointer(bool force) const {
-  check_resident();
+  mark_used();
   return _cdata->_buffer.get_read_pointer(force);
 }
 
@@ -453,7 +468,7 @@ get_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string GeomVertexArrayDataHandle::
 get_data() const {
-  check_resident();
+  mark_used();
   return string((const char *)_cdata->_buffer.get_read_pointer(true), _cdata->_buffer.get_size());
 }
 
@@ -467,20 +482,19 @@ get_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string GeomVertexArrayDataHandle::
 get_subdata(size_t start, size_t size) const {
-  check_resident();
+  mark_used();
   start = min(start, _cdata->_buffer.get_size());
   size = min(size, _cdata->_buffer.get_size() - start);
   return string((const char *)_cdata->_buffer.get_read_pointer(true) + start, size);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::check_resident
+//     Function: GeomVertexArrayDataHandle::mark_used
 //       Access: Published
-//  Description: Forces the vertex data into system RAM, if it is not
-//               already there; also, marks it recently-used.
+//  Description: Marks the array data recently-used.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayDataHandle::
-check_resident() const {
+mark_used() const {
   _object->set_lru_size(_object->get_lru_size());
 }
 

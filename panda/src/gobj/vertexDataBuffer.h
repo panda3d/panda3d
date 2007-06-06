@@ -65,7 +65,7 @@ public:
   INLINE VertexDataBuffer();
   INLINE VertexDataBuffer(size_t size);
   INLINE VertexDataBuffer(const VertexDataBuffer &copy);
-  INLINE void operator = (const VertexDataBuffer &copy);
+  void operator = (const VertexDataBuffer &copy);
   INLINE ~VertexDataBuffer();
 
   INLINE const unsigned char *get_read_pointer(bool force) const;
@@ -82,7 +82,7 @@ public:
 
 private:
   void do_clean_realloc(size_t size);
-  INLINE void do_unclean_realloc(size_t size);
+  void do_unclean_realloc(size_t size);
 
   void do_page_out(VertexDataBook &book);
   void do_page_in();

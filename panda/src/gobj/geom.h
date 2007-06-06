@@ -110,6 +110,8 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
+  bool request_resident() const;
+
   void transform_vertices(const LMatrix4f &mat);
   bool check_valid() const;
   bool check_valid(const GeomVertexData *vertex_data) const;

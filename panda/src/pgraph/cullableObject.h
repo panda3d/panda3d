@@ -61,11 +61,13 @@ public:
 
   INLINE bool has_decals() const;
 
-  void munge_geom(GraphicsStateGuardianBase *gsg,
-                  GeomMunger *munger, const CullTraverser *traverser);
+  bool munge_geom(GraphicsStateGuardianBase *gsg,
+                  GeomMunger *munger, const CullTraverser *traverser,
+                  bool force);
   INLINE void draw(GraphicsStateGuardianBase *gsg,
                    Thread *current_thread);
 
+  INLINE bool request_resident() const;
   INLINE static void flush_level();
 
 public:
@@ -85,8 +87,8 @@ public:
   CullableObject *_next;
 
 private:
-  void munge_points_to_quads(const CullTraverser *traverser);
-  void munge_texcoord_light_vector(const CullTraverser *traverser);
+  bool munge_points_to_quads(const CullTraverser *traverser, bool force);
+  bool munge_texcoord_light_vector(const CullTraverser *traverser, bool force);
 
   static CPT(RenderState) get_flash_cpu_state();
   static CPT(RenderState) get_flash_hardware_state();

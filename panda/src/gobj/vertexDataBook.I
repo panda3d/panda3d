@@ -48,5 +48,5 @@ get_page(int n) const {
 INLINE VertexDataPage *VertexDataBook::
 create_new_page(size_t size) {
   size_t page_size = ((size + _block_size - 1) / _block_size) * _block_size;
-  return new VertexDataPage(page_size);
+  return new VertexDataPage(this, page_size);
 }

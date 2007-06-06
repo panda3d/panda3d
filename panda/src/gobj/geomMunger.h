@@ -76,8 +76,8 @@ public:
   INLINE CPT(GeomVertexData) munge_data(const GeomVertexData *data) const;
   void remove_data(const GeomVertexData *data);
 
-  void munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
-                  Thread *current_thread);
+  bool munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+                  bool force, Thread *current_thread);
 
   INLINE CPT(GeomVertexFormat) premunge_format(const GeomVertexFormat *format) const;
   INLINE CPT(GeomVertexData) premunge_data(const GeomVertexData *data) const;
@@ -96,14 +96,14 @@ protected:
   virtual CPT(GeomVertexFormat) munge_format_impl(const GeomVertexFormat *orig,
                                                   const GeomVertexAnimationSpec &animation);
   virtual CPT(GeomVertexData) munge_data_impl(const GeomVertexData *data);
-  virtual bool munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
+  virtual void munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data,
                                Thread *current_thread);
 
 
   CPT(GeomVertexFormat) do_premunge_format(const GeomVertexFormat *format);
   virtual CPT(GeomVertexFormat) premunge_format_impl(const GeomVertexFormat *orig);
   virtual CPT(GeomVertexData) premunge_data_impl(const GeomVertexData *data);
-  virtual bool premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
+  virtual void premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &data);
 
   virtual int compare_to_impl(const GeomMunger *other) const;
   virtual int geom_compare_to_impl(const GeomMunger *other) const;

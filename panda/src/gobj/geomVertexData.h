@@ -130,6 +130,8 @@ PUBLISHED:
   INLINE int get_num_bytes() const;
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
 
+  bool request_resident() const;
+
   void copy_from(const GeomVertexData *source, bool keep_data_objects,
                  Thread *current_thread = Thread::get_current_thread());
   void copy_row_from(int dest_row, const GeomVertexData *source, 
@@ -146,7 +148,7 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               NumericType numeric_type, Contents contents) const;
 
-  CPT(GeomVertexData) animate_vertices(Thread *current_thread) const;
+  CPT(GeomVertexData) animate_vertices(bool force, Thread *current_thread) const;
 
   PT(GeomVertexData) 
     replace_column(InternalName *name, int num_components,

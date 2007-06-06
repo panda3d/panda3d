@@ -72,14 +72,13 @@ get_first_block() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::get_total_page_size
-//       Access: Published, Static
-//  Description: Returns the byte count allocated to all
-//               VertexDataPages currently in existance.
+//     Function: VertexDataPage::get_book
+//       Access: Published
+//  Description: Returns a pointer to the book that owns this page.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t VertexDataPage::
-get_total_page_size() {
-  return _total_page_size;
+INLINE VertexDataBook *VertexDataPage::
+get_book() const {
+  return _book;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +154,9 @@ get_page_data(bool force) {
       make_resident_now();
     } else {
       request_ram_class(RC_resident);
-      return NULL;
+      if (_ram_class != RC_resident) {
+        return NULL;
+      }
     }
   }
 

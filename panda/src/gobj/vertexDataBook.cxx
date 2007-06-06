@@ -49,21 +49,26 @@ alloc(size_t size) {
   MutexHolder holder(_lock);
 
   // First, try to allocate from the last page that worked; then
-  // continue to the end of the list.
+  // continue to the end of the list.  We consider only pages that are
+  // currently resident (or that are empty), to minimize unnecessary
+  // swapping.
   size_t pi = _next_pi;
   while (pi < _pages.size()) {
-    VertexDataBlock *block = _pages[pi]->alloc(size);
-    if (block != (VertexDataBlock *)NULL) {
-      _next_pi = pi;
-      return block;
-    }
-    if (_pages[pi]->is_empty()) {
-      // This page is empty, but must have been too small.  Create a
-      // new page in its place.
-      delete _pages[pi];
-      _pages[pi] = create_new_page(size);
+    if (_pages[pi]->get_ram_class() == VertexDataPage::RC_resident ||
+        _pages[pi]->is_empty()) {
       VertexDataBlock *block = _pages[pi]->alloc(size);
-      return block;
+      if (block != (VertexDataBlock *)NULL) {
+        _next_pi = pi;
+        return block;
+      }
+      if (_pages[pi]->is_empty()) {
+        // This page is empty, but must have been too small.  Create a
+        // new page in its place.
+        delete _pages[pi];
+        _pages[pi] = create_new_page(size);
+        VertexDataBlock *block = _pages[pi]->alloc(size);
+        return block;
+      }
     }
     ++pi;
   }
@@ -72,17 +77,20 @@ alloc(size_t size) {
   pi = 0;
   _next_pi = min(_next_pi, _pages.size());
   while (pi < _next_pi) {
-    VertexDataBlock *block = _pages[pi]->alloc(size);
-    if (block != (VertexDataBlock *)NULL) {
-      _next_pi = pi;
-      return block;
-    }
-    if (_pages[pi]->is_empty()) {
-      // This page is empty, but must have been too small.  Create a
-      // new page in its place.
-      delete _pages[pi];
-      _pages[pi] = create_new_page(size);
-      return _pages[pi]->alloc(size);
+    if (_pages[pi]->get_ram_class() == VertexDataPage::RC_resident ||
+        _pages[pi]->is_empty()) {
+      VertexDataBlock *block = _pages[pi]->alloc(size);
+      if (block != (VertexDataBlock *)NULL) {
+        _next_pi = pi;
+        return block;
+      }
+      if (_pages[pi]->is_empty()) {
+        // This page is empty, but must have been too small.  Create a
+        // new page in its place.
+        delete _pages[pi];
+        _pages[pi] = create_new_page(size);
+        return _pages[pi]->alloc(size);
+      }
     }
     ++pi;
   }
@@ -93,6 +101,76 @@ alloc(size_t size) {
   _pages.push_back(page);
   VertexDataBlock *block = page->alloc(size);
   return block;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::count_total_page_size
+//       Access: Published
+//  Description: Returns the total size of all bytes owned by all
+//               pages owned by this book.
+////////////////////////////////////////////////////////////////////
+size_t VertexDataBook::
+count_total_page_size() const {
+  size_t total = 0;
+  Pages::const_iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    total += (*pi)->get_max_size();
+  }
+  return total;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::count_total_page_size
+//       Access: Published
+//  Description: Returns the total size of all bytes owned by all
+//               pages owned by this book that have the indicated ram
+//               class.
+////////////////////////////////////////////////////////////////////
+size_t VertexDataBook::
+count_total_page_size(VertexDataPage::RamClass ram_class) const {
+  size_t total = 0;
+  Pages::const_iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    if ((*pi)->get_ram_class() == ram_class) {
+      total += (*pi)->get_max_size();
+    }
+  }
+  return total;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::count_allocated_size
+//       Access: Published
+//  Description: Returns the total size of all bytes allocated within
+//               pages owned by this book.
+////////////////////////////////////////////////////////////////////
+size_t VertexDataBook::
+count_allocated_size() const {
+  size_t total = 0;
+  Pages::const_iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    total += (*pi)->get_total_size();
+  }
+  return total;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::count_allocated_size
+//       Access: Published
+//  Description: Returns the total size of all bytes allocated within
+//               pages owned by this book that have the indicated ram
+//               class.
+////////////////////////////////////////////////////////////////////
+size_t VertexDataBook::
+count_allocated_size(VertexDataPage::RamClass ram_class) const {
+  size_t total = 0;
+  Pages::const_iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    if ((*pi)->get_ram_class() == ram_class) {
+      total += (*pi)->get_total_size();
+    }
+  }
+  return total;
 }
 
 ////////////////////////////////////////////////////////////////////

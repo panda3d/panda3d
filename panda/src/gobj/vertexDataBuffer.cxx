@@ -22,6 +22,32 @@
 TypeHandle VertexDataBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VertexDataBuffer::
+operator = (const VertexDataBuffer &copy) {
+  MutexHolder holder(_lock);
+  MutexHolder holder2(copy._lock);
+
+  if (_resident_data != (unsigned char *)NULL) {
+    nassertv(_size != 0);
+    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+    free(_resident_data);
+    _resident_data = NULL;
+  }
+  if (copy._resident_data != (unsigned char *)NULL) {
+    nassertv(copy._size != 0);
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)copy._size);
+    _resident_data = (unsigned char *)malloc(copy._size);
+    memcpy(_resident_data, copy._resident_data, copy._size);
+  }
+  _size = copy._size;
+  _block = copy._block;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBuffer::do_clean_realloc
 //       Access: Private
 //  Description: Changes the size of the buffer, preserving its data
@@ -35,32 +61,56 @@ void VertexDataBuffer::
 do_clean_realloc(size_t size) {
   if (size != _size) {
     if (size == 0) {
-      // If we're going to size 0, we don't necessarily need to page
-      // in first.  But if we're paged out, discard the page.
-      _block = NULL;
-        
-      if (_resident_data != (unsigned char *)NULL) {
-        free(_resident_data);
-        _resident_data = NULL;
-        get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-      }
-      _block = NULL;
-      
+      do_unclean_realloc(size);
+      return;
+    }      
+
+    // Page in if we're currently paged out.
+    if (_size != 0 && _resident_data == (unsigned char *)NULL) {
+      do_page_in();
+    }
+    
+    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size - (int)_size);
+    if (_size == 0) {
+      nassertv(_resident_data == (unsigned char *)NULL);
+      _resident_data = (unsigned char *)malloc(size);
     } else {
-      // Page in if we're currently paged out.
-      if (_block != (VertexDataBlock *)NULL || 
-          _resident_data == (unsigned char *)NULL) {
-        do_page_in();
-      }
-      
-      if (_resident_data == (unsigned char *)NULL) {
-        _resident_data = (unsigned char *)malloc(size);
-        get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size);
-      } else {
-        _resident_data = (unsigned char *)::realloc(_resident_data, size);
-        get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size - (int)_size);
-      }
       nassertv(_resident_data != (unsigned char *)NULL);
+      _resident_data = (unsigned char *)realloc(_resident_data, size);
+    }
+    nassertv(_resident_data != (unsigned char *)NULL);
+    _size = size;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBuffer::do_unclean_realloc
+//       Access: Private
+//  Description: Changes the size of the buffer, without regard to
+//               preserving its data.  The buffer may contain random
+//               data after this call.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void VertexDataBuffer::
+do_unclean_realloc(size_t size) {
+  if (size != _size || _resident_data == (unsigned char *)NULL) {
+    // If we're paged out, discard the page.
+    _block = NULL;
+        
+    if (_resident_data != (unsigned char *)NULL) {
+      nassertv(_size != 0);
+
+      get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
+      free(_resident_data);
+      _resident_data = NULL;
+      _size = 0;
+    }
+
+    if (size != 0) {
+      get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size);
+      nassertv(_resident_data == (unsigned char *)NULL);
+      _resident_data = (unsigned char *)malloc(size);
     }
 
     _size = size;
@@ -93,9 +143,9 @@ do_page_out(VertexDataBook &book) {
   nassertv(pointer != (unsigned char *)NULL);
   memcpy(pointer, _resident_data, _size);
 
+  get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
   free(_resident_data);
   _resident_data = NULL;
-  get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,17 +159,16 @@ do_page_out(VertexDataBook &book) {
 ////////////////////////////////////////////////////////////////////
 void VertexDataBuffer::
 do_page_in() {
-  if (_block == (VertexDataBlock *)NULL) {
+  if (_resident_data != (unsigned char *)NULL || _size == 0) {
     // We're already paged in.
     return;
   }
 
-  nassertv(_resident_data == (unsigned char *)NULL);
+  nassertv(_block != (VertexDataBlock *)NULL);
 
+  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
   _resident_data = (unsigned char *)malloc(_size);
   nassertv(_resident_data != (unsigned char *)NULL);
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, _size);
-
+  
   memcpy(_resident_data, _block->get_pointer(true), _size);
-  _block = NULL;
 }

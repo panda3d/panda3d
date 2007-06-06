@@ -98,6 +98,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   static const Colorf flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
   static const Colorf flash_dual_color(0.92f, 0.01f, 0.01f, 1.0f);
 
+  bool force = !allow_incomplete_render;
   Thread *current_thread = traverser->get_current_thread();
 
   // Check to see if there's a special transparency setting.
@@ -167,15 +168,18 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                 get_dual_transparent_state_decals() : 
                 get_dual_transparent_state();
               transparent_part->_state = state->compose(transparent_state);
-              transparent_part->munge_geom
-                (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
-                 traverser);
-              CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
-              nassertv(bin != (CullBin *)NULL);
+              if (transparent_part->munge_geom
+                  (_gsg, _gsg->get_geom_munger(transparent_part->_state, current_thread),
+                   traverser, force)) {
+                CullBin *bin = get_bin(transparent_part->_state->get_bin_index());
+                nassertv(bin != (CullBin *)NULL);
 #ifndef NDEBUG
-              check_flash_bin(transparent_part->_state, bin);
+                check_flash_bin(transparent_part->_state, bin);
 #endif
-              bin->add_object(transparent_part, current_thread);
+                if (force || transparent_part->request_resident()) {
+                  bin->add_object(transparent_part, current_thread);
+                }
+              }
             }
           
           // Now we can draw the opaque part, with decals.  This will
@@ -208,8 +212,11 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
-  object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser);
-  bin->add_object(object, current_thread);
+  if (object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser, force)) {
+    if (force || object->request_resident()) {
+      bin->add_object(object, current_thread);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -169,8 +169,9 @@ munge_data_impl(const GeomVertexData *data) {
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
-bool StandardMunger::
-munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, Thread *) {
+void StandardMunger::
+munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, 
+                Thread *) {
   int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
 
   int unsupported_bits = geom->get_geom_rendering() & ~supported_geom_rendering;
@@ -208,8 +209,6 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, Thread *) {
       vertex_data = new_geom->get_vertex_data();
     }
   }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,7 +216,7 @@ munge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data, Thread *) {
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
-bool StandardMunger::
+void StandardMunger::
 premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
   int supported_geom_rendering = get_gsg()->get_supported_geom_rendering();
 
@@ -256,8 +255,6 @@ premunge_geom_impl(CPT(Geom) &geom, CPT(GeomVertexData) &vertex_data) {
       vertex_data = new_geom->get_vertex_data();
     }
   }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

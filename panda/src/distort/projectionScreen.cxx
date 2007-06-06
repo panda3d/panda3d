@@ -542,7 +542,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   PT(GeomVertexData) modify_vdata = geom->modify_vertex_data();
 
   // Maybe the vdata has animation that we should consider.
-  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data(current_thread)->animate_vertices(current_thread);
+  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread);
 
   GeomVertexWriter texcoord(modify_vdata, _texcoord_name, current_thread);
   GeomVertexWriter color(modify_vdata, current_thread);

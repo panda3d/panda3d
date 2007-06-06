@@ -104,10 +104,15 @@ remove_data(const GeomVertexData *data) {
 //               The assumption is that for a particular geom and a
 //               particular munger, the result will always be the
 //               same; so this result may be cached.
+//
+//               If force is false, this may do nothing and return
+//               false if the vertex data is nonresident.  If force is
+//               true, this will always return true, but it may have
+//               to block while the vertex data is paged in.
 ////////////////////////////////////////////////////////////////////
-void GeomMunger::
+bool GeomMunger::
 munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
-           Thread *current_thread) {
+           bool force, Thread *current_thread) {
   CPT(GeomVertexData) source_data = data;
 
   // Look up the munger in the geom's cache--maybe we've recently
@@ -123,7 +128,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   } else {
     entry = (*ci).second;
     geom->_cache_lock.release();
-    nassertv(entry->_source == geom);
+    nassertr(entry->_source == geom, false);
     
     // Here's an element in the cache for this computation.  Record a
     // cache hit, so this element will stay in the cache a while
@@ -140,13 +145,18 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
       
       geom = cdata->_geom_result;
       data = cdata->_data_result;
-      return;
+      return true;
     }
     
     // The cache entry is stale, but we'll recompute it below.  Note
     // that there's a small race condition here; another thread might
     // recompute the cache at the same time.  No big deal, since it'll
     // compute the same result.
+  }
+
+  if (!force && (!geom->request_resident() || !data->request_resident())) {
+    // Oh dear, the data isn't resident.  We can't munge it, so give up.
+    return false;
   }
 
   // Ok, invoke the munger.
@@ -166,7 +176,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
       if (!inserted) {
         // Some other thread must have beat us to the punch.  Never
         // mind.
-        return;
+        return true;
       }
     }
   
@@ -180,6 +190,8 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   Geom::CDCacheWriter cdata(entry->_cycler, true, current_thread);
   cdata->_source = (Geom *)orig_geom.p();
   cdata->set_result(geom, data);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,11 +267,10 @@ munge_data_impl(const GeomVertexData *data) {
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
-bool GeomMunger::
+void GeomMunger::
 munge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &, Thread *) {
   // The default implementation does nothing (the work has already
   // been done in munge_format_impl() and munge_data_impl()).
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,11 +342,10 @@ premunge_data_impl(const GeomVertexData *data) {
 //       Access: Protected, Virtual
 //  Description: Converts a Geom and/or its data as necessary.
 ////////////////////////////////////////////////////////////////////
-bool GeomMunger::
+void GeomMunger::
 premunge_geom_impl(CPT(Geom) &, CPT(GeomVertexData) &) {
   // The default implementation does nothing (the work has already
   // been done in premunge_format_impl() and premunge_data_impl()).
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

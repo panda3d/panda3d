@@ -22,6 +22,7 @@
 #include "transformState.h"
 #include "renderState.h"
 #include "graphicsStateGuardianBase.h"
+#include "config_pgraph.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -35,10 +36,16 @@ void DrawCullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
+  bool force = !allow_incomplete_render;
   Thread *current_thread = traverser->get_current_thread();
-  object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser);
 
-  // And draw the object, then dispense with it.
-  draw(object, _gsg, current_thread);
+  if (object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser, force)) {
+    if (force || object->request_resident()) {
+      // Now we can immediately draw the object.
+      draw(object, _gsg, current_thread);
+    }
+  }
+
+  // Dispense with the object.
   delete object;
 }

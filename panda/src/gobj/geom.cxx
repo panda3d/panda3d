@@ -711,6 +711,35 @@ get_num_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::request_resident
+//       Access: Published
+//  Description: Returns true if all the primitive arrays are
+//               currently resident in memory.  If this returns false,
+//               the data will be brought back into memory shortly;
+//               try again later.
+//
+//               This does not also test the Geom's associated
+//               GeomVertexData.  That must be tested separately.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+request_resident() const {
+  CDReader cdata(_cycler);
+
+  bool resident = true;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi).get_read_pointer()->request_resident()) {
+      resident = false;
+    }
+  }
+
+  return resident;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::transform_vertices
 //       Access: Published
 //  Description: Applies the indicated transform to all of the
@@ -1078,7 +1107,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 
   // Get the vertex data, after animation.
   CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer();
-  vertex_data = vertex_data->animate_vertices(current_thread);
+  vertex_data = vertex_data->animate_vertices(true, current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
