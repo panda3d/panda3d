@@ -19,7 +19,6 @@
 #include "vertexDataBuffer.h"
 #include "pStatTimer.h"
 
-PStatCollector VertexDataBuffer::_vdata_reread_pcollector("*:Vertex Data:Reread");
 TypeHandle VertexDataBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

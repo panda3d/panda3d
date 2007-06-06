@@ -92,8 +92,6 @@ private:
   PT(VertexDataBlock) _block;
   Mutex _lock;
 
-  static PStatCollector _vdata_reread_pcollector;
-
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
