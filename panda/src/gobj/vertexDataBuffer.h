@@ -80,8 +80,6 @@ public:
 
   INLINE void swap(VertexDataBuffer &other);
 
-  INLINE void set_file(VirtualFile *source_file, streampos source_pos);
-
 private:
   void do_clean_realloc(size_t size);
   INLINE void do_unclean_realloc(size_t size);
@@ -92,8 +90,6 @@ private:
   unsigned char *_resident_data;
   size_t _size;
   PT(VertexDataBlock) _block;
-  PT(VirtualFile) _source_file;
-  streampos _source_pos;
   Mutex _lock;
 
   static PStatCollector _vdata_reread_pcollector;

@@ -66,8 +66,6 @@ operator = (const VertexDataBuffer &copy) {
 
   do_unclean_realloc(copy.get_size());
   memcpy(_resident_data, copy.get_read_pointer(true), _size);
-  _source_file = copy._source_file;
-  _source_pos = copy._source_pos;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,10 +99,6 @@ get_read_pointer(bool force) const {
     // pointer, which will force its page to resident status.
     return _block->get_pointer(force);
   }
-  if (_resident_data == (unsigned char *)NULL && !_source_file.is_null()) {
-    // If we need to re-read the original source, do so.
-    ((VertexDataBuffer *)this)->do_page_in();
-  }
 
   return _resident_data;
 }
@@ -122,7 +116,6 @@ get_write_pointer() {
       _resident_data == (unsigned char *)NULL) {
     do_page_in();
   }
-  _source_file.clear();
   return _resident_data;
 }
 
@@ -211,27 +204,6 @@ swap(VertexDataBuffer &other) {
   other._resident_data = resident_data;
   other._size = size;
   other._block = block;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBuffer::set_file
-//       Access: Public
-//  Description: Stores a reference to a byte location on an on-disk
-//               file from which a copy of the data can be retrieved
-//               if necessary.  
-//
-//               If this is non-NULL, the data will not be written to
-//               the page file; instead, the specified file will be
-//               re-opened and re-read if necessary.
-//
-//               If this is set to NULL, the data will be paged out
-//               and in normally.
-////////////////////////////////////////////////////////////////////
-INLINE void VertexDataBuffer::
-set_file(VirtualFile *source_file, streampos source_pos) {
-  MutexHolder holder(_lock);
-  _source_file = source_file;
-  _source_pos = source_pos;
 }
 
 ////////////////////////////////////////////////////////////////////
