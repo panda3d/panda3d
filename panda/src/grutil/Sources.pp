@@ -12,7 +12,6 @@
 
   #define SOURCES \
     pipeOcclusionCullTraverser.I pipeOcclusionCullTraverser.h \
-    pipeOcclusionCullTraverser.cxx \
     cardMaker.I cardMaker.h \
     config_grutil.h \
     ffmpegTexture.I ffmpegTexture.h \
@@ -34,6 +33,7 @@
     heightfieldTesselator.cxx \
     nodeVertexTransform.cxx \
     openCVTexture.cxx \    	 
+    pipeOcclusionCullTraverser.cxx \
     lineSegs.cxx \
     rigidBodyCombiner.cxx
     
