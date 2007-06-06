@@ -237,7 +237,7 @@ upload_data(const GeomPrimitivePipelineReader *reader) {
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, reader->get_read_pointer(), data_size);
+  memcpy(local_pointer, reader->get_read_pointer(true), data_size);
 
   _ibuffer->Unlock();
 }
