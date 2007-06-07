@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 class SimpleAllocatorBlock;
 
@@ -31,17 +33,13 @@ class SimpleAllocatorBlock;
 //               integers within a specified upper limit; it uses a
 //               simple first-fit algorithm to find the next available
 //               space.
-//
-//               Note that this class is not inherently thread-safe;
-//               derived classes are responsible for protecting any
-//               calls into it within mutexes, if necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA SimpleAllocator : public LinkedListNode {
 PUBLISHED:
-  INLINE SimpleAllocator(size_t max_size);
+  INLINE SimpleAllocator(size_t max_size, Mutex &lock);
   virtual ~SimpleAllocator();
 
-  SimpleAllocatorBlock *alloc(size_t size);
+  INLINE SimpleAllocatorBlock *alloc(size_t size);
 
   INLINE bool is_empty() const;
   INLINE size_t get_total_size() const;
@@ -55,10 +53,14 @@ PUBLISHED:
   void write(ostream &out) const;
 
 protected:
+  SimpleAllocatorBlock *do_alloc(size_t size);
+  INLINE bool do_is_empty() const;
+
   virtual SimpleAllocatorBlock *make_block(size_t start, size_t size);
   INLINE void mark_contiguous(const LinkedListNode *block);
+  virtual void changed_contiguous();
 
-private:
+protected:
   // This is implemented as a linked-list chain of allocated blocks.
   // Free blocks are implicit.  Blocks are kept in sorted order from
   // beginning to end.  Allocating a block means creating a new entry
@@ -75,6 +77,16 @@ private:
   // This guess might be larger than the actual available space, but
   // it will not be smaller.
   size_t _contiguous;
+
+  // This mutex protects all operations within this class.  The caller
+  // must pass the reference to a mutex in to the constructor, and the
+  // caller remains responsible for owning the mutex.  This allows the
+  // mutex to be shared where appropriate.
+
+  // A derived class may also use it to protect itself as well, but
+  // take care to call do_alloc() instead of alloc() etc. as
+  // necessary.
+  Mutex &_lock;
 
   friend class SimpleAllocatorBlock;
 };
@@ -105,6 +117,11 @@ PUBLISHED:
   INLINE SimpleAllocatorBlock *get_next_block() const;
 
   void output(ostream &out) const;
+
+protected:
+  INLINE void do_free();
+  INLINE size_t do_get_max_size() const;
+  INLINE bool do_realloc(size_t size);
 
 private:
   SimpleAllocator *_allocator;

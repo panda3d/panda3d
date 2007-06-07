@@ -18,6 +18,18 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::alloc
+//       Access: Published
+//  Description: Allocates and returns a new VertexDataBuffer of the
+//               requested size.
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataBlock *VertexDataBook::
+alloc(size_t size) {
+  MutexHolder holder(_lock);
+  return do_alloc(size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBook::get_num_pages
 //       Access: Published
 //  Description: Returns the number of pages created for the book.
@@ -25,17 +37,6 @@
 INLINE int VertexDataBook::
 get_num_pages() const {
   return _pages.size();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBook::get_page
-//       Access: Published
-//  Description: Returns the nth page created for the book.
-////////////////////////////////////////////////////////////////////
-INLINE VertexDataPage *VertexDataBook::
-get_page(int n) const {
-  nassertr(n >= 0 && n < (int)_pages.size(), NULL);
-  return _pages[n];
 }
 
 ////////////////////////////////////////////////////////////////////

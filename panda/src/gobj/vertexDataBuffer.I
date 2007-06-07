@@ -141,7 +141,7 @@ clean_realloc(size_t size) {
 INLINE void VertexDataBuffer::
 unclean_realloc(size_t size) {
   MutexHolder holder(_lock);
-  do_clean_realloc(size);
+  do_unclean_realloc(size);
 }
 
 ////////////////////////////////////////////////////////////////////

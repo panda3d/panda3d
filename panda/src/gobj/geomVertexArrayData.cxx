@@ -723,9 +723,11 @@ copy_data_from(const GeomVertexArrayDataHandle *other) {
   other->mark_used();
 
   _cdata->_buffer.unclean_realloc(other->_cdata->_buffer.get_size());
-  memcpy(_cdata->_buffer.get_write_pointer(),
-         other->_cdata->_buffer.get_read_pointer(true),
-         other->_cdata->_buffer.get_size());
+
+  unsigned char *dest = _cdata->_buffer.get_write_pointer();
+  const unsigned char *source = other->_cdata->_buffer.get_read_pointer(true);
+  size_t size = other->_cdata->_buffer.get_size();
+  memcpy(dest, source, size);
 
   _cdata->_modified = Geom::get_next_modified();
 

@@ -26,24 +26,60 @@
 SimpleAllocator::
 ~SimpleAllocator() {
   // We're shutting down.  Force-free everything remaining.
-  while (_next != (LinkedListNode *)this) {
-    nassertv(_next != (LinkedListNode *)NULL);
-    cerr << "force-deleting " << _next << "\n";
-    ((SimpleAllocatorBlock *)_next)->free();
+  if (_next != (LinkedListNode *)this) {
+    MutexHolder holder(_lock);
+    while (_next != (LinkedListNode *)this) {
+      nassertv(_next != (LinkedListNode *)NULL);
+      ((SimpleAllocatorBlock *)_next)->do_free();
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SimpleAllocator::alloc
+//     Function: SimpleAllocator::output
 //       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleAllocator::
+output(ostream &out) const {
+  MutexHolder holder(_lock);
+  out << "SimpleAllocator, " << _total_size << " of " << _max_size 
+      << " allocated";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleAllocator::
+write(ostream &out) const {
+  MutexHolder holder(_lock);
+  out << "SimpleAllocator, " << _total_size << " of " << _max_size 
+      << " allocated";
+
+  SimpleAllocatorBlock *block = (SimpleAllocatorBlock *)_next;
+  while (block->_next != this) {
+    SimpleAllocatorBlock *next = (SimpleAllocatorBlock *)block->_next;
+    
+    out << "  " << *block << "\n";
+    block = next;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::do_alloc
+//       Access: Protected
 //  Description: Allocates a new block.  Returns NULL if a block of the
 //               requested size cannot be allocated.
 //
 //               To free the allocated block, call block->free(), or
 //               simply delete the block pointer.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 SimpleAllocatorBlock *SimpleAllocator::
-alloc(size_t size) {
+do_alloc(size_t size) {
   if (size > _contiguous) {
     // Don't even bother.
     return NULL;
@@ -70,6 +106,14 @@ alloc(size_t size) {
 
         new_block->insert_before(next);
         _total_size += size;
+
+        if (_max_size - _total_size < _contiguous) {
+          // Since we only have (_max_size - _total_size) bytes
+          // remaining, it follows that our largest contiguous block
+          // must be no larger than this.
+          _contiguous = _max_size - _total_size;
+          changed_contiguous();
+        }
         return new_block;
       }
       if (free_size > best) {
@@ -89,6 +133,14 @@ alloc(size_t size) {
 
     new_block->insert_before(this);
     _total_size += size;
+
+    if (_max_size - _total_size < _contiguous) {
+      // Since we only have (_max_size - _total_size) bytes
+      // remaining, it follows that our largest contiguous block
+      // must be no larger than this.
+      _contiguous = _max_size - _total_size;
+      changed_contiguous();
+    }
     return new_block;
   }
 
@@ -98,55 +150,14 @@ alloc(size_t size) {
 
   // Now that we've walked through the entire list of blocks, we
   // really do know accurately what the largest contiguous block is.
-  _contiguous = best;
+  if (_contiguous != best) {
+    _contiguous = best;
+    changed_contiguous();
+  }
 
   // No room for this block.
   return NULL;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleAllocator::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void SimpleAllocator::
-output(ostream &out) const {
-  out << "SimpleAllocator, " << _total_size << " of " << _max_size 
-      << " allocated";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleAllocatorBlock::output
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void SimpleAllocatorBlock::
-output(ostream &out) const {
-  if (_allocator == (SimpleAllocator *)NULL) {
-    out << "free block\n";
-  } else {
-    out << "block of size " << _size << " at " << _start;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SimpleAllocator::write
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void SimpleAllocator::
-write(ostream &out) const {
-  out << *this << ":\n";
-
-  SimpleAllocatorBlock *block = (SimpleAllocatorBlock *)_next;
-  while (block->_next != this) {
-    SimpleAllocatorBlock *next = (SimpleAllocatorBlock *)block->_next;
-
-    out << "  " << *block << "\n";
-    block = next;
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleAllocator::make_block
@@ -159,3 +170,28 @@ make_block(size_t start, size_t size) {
   return new SimpleAllocatorBlock(this, start, size);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocator::changed_contiguous
+//       Access: Protected, Virtual
+//  Description: This callback function is made whenever the estimate
+//               of contiguous available space changes, either through
+//               an alloc or free.  The lock will be held.
+////////////////////////////////////////////////////////////////////
+void SimpleAllocator::
+changed_contiguous() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleAllocatorBlock::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleAllocatorBlock::
+output(ostream &out) const {
+  if (_allocator == (SimpleAllocator *)NULL) {
+    out << "free block\n";
+  } else {
+    MutexHolder holder(_allocator->_lock);
+    out << "block of size " << _size << " at " << _start;
+  }
+}

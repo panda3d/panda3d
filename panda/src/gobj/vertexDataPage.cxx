@@ -71,6 +71,10 @@ SimpleLru *VertexDataPage::_global_lru[RC_end_of_list] = {
 
 VertexDataSaveFile *VertexDataPage::_save_file;
 
+// This mutex is (mostly) unused.  We just need a Mutex to pass to the
+// Book Constructor, below.
+Mutex VertexDataPage::_unused_mutex;
+
 PStatCollector VertexDataPage::_vdata_compress_pcollector("*:Vertex Data:Compress");
 PStatCollector VertexDataPage::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
 PStatCollector VertexDataPage::_vdata_save_pcollector("*:Vertex Data:Save");
@@ -80,18 +84,38 @@ PStatCollector VertexDataPage::_thread_wait_pcollector("*:Wait:Idle");
 TypeHandle VertexDataPage::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::Book Constructor
+//       Access: Public
+//  Description: This constructor is used only by VertexDataBook, to
+//               create a mostly-empty object that can be used to
+//               search for a particular page size in the set.
+////////////////////////////////////////////////////////////////////
+VertexDataPage::
+VertexDataPage(size_t book_size) : 
+  SimpleAllocator(book_size, _unused_mutex), 
+  SimpleLruPage(book_size),
+  _book_size(book_size),
+  _book(NULL)
+{
+  _page_data = NULL;
+  _size = 0;
+  _uncompressed_size = 0;
+  _ram_class = RC_resident;
+  _pending_ram_class = RC_resident;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Constructor
-//       Access: Published
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
 VertexDataPage(VertexDataBook *book, size_t page_size) : 
-  SimpleAllocator(page_size), 
+  SimpleAllocator(page_size, book->_lock), 
   SimpleLruPage(page_size),
+  _book_size(page_size),
   _book(book)
 {
-  nassertv(page_size == get_max_size());
-
   get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)page_size);
   _page_data = new unsigned char[page_size];
   _size = page_size;
@@ -103,12 +127,15 @@ VertexDataPage(VertexDataBook *book, size_t page_size) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Destructor
-//       Access: Published
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
 ~VertexDataPage() {
-  MutexHolder holder(_lock);
+
+  // Since the only way to delete a page is via the
+  // changed_contiguous() method, the lock will already be held.
+  // MutexHolder holder(_lock);
 
   {
     MutexHolder holder2(_tlock);
@@ -123,29 +150,6 @@ VertexDataPage::
     delete[] _page_data;
     _size = 0;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::alloc
-//       Access: Published
-//  Description: Allocates a new block.  Returns NULL if a block of the
-//               requested size cannot be allocated.
-//
-//               To free the allocated block, call block->free(), or
-//               simply delete the block pointer.
-////////////////////////////////////////////////////////////////////
-VertexDataBlock *VertexDataPage::
-alloc(size_t size) {
-  MutexHolder holder(_lock);
-  VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::alloc(size);
-
-  if (block != (VertexDataBlock *)NULL && _ram_class != RC_disk) {
-    // When we allocate a new block within a resident page, we have to
-    // clear the disk cache (since we have just invalidated it).
-    _saved_block.clear();
-  }
-
-  return block;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,6 +184,27 @@ stop_thread() {
 SimpleAllocatorBlock *VertexDataPage::
 make_block(size_t start, size_t size) {
   return new VertexDataBlock(this, start, size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::changed_contiguous
+//       Access: Protected, Virtual
+//  Description: This callback function is made whenever the estimate
+//               of contiguous available space changes, either through
+//               an alloc or free.  The lock will be held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+changed_contiguous() {
+  if (do_is_empty()) {
+    // If the page is now empty, delete it.
+    VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
+    nassertv(pi != _book->_pages.end());
+    _book->_pages.erase(pi);
+    delete this;
+    return;
+  }
+
+  adjust_book_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +246,30 @@ evict_lru() {
       << " in inappropriate state " << _ram_class << ".\n";
     break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::do_alloc
+//       Access: Private
+//  Description: Allocates a new block.  Returns NULL if a block of the
+//               requested size cannot be allocated.
+//
+//               To free the allocated block, call block->free(), or
+//               simply delete the block pointer.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+VertexDataBlock *VertexDataPage::
+do_alloc(size_t size) {
+  VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::do_alloc(size);
+
+  if (block != (VertexDataBlock *)NULL && _ram_class != RC_disk) {
+    // When we allocate a new block within a resident page, we have to
+    // clear the disk cache (since we have just invalidated it).
+    _saved_block.clear();
+  }
+
+  return block;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,9 +336,8 @@ make_resident() {
     delete[] _page_data;
     _page_data = new_data;
     _size = _uncompressed_size;
-
-  
 #endif
+
     set_lru_size(_size);
     set_ram_class(RC_resident);
   }
@@ -472,6 +520,33 @@ do_restore_from_disk() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::adjust_book_size
+//       Access: Private
+//  Description: Called when the "book size"--the size of the page as
+//               recorded in its book's table--has changed for some
+//               reason.  Assumes the lock is held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+adjust_book_size() {
+  size_t new_size = _contiguous;
+  if (_ram_class != RC_resident) {
+    // Let's not attempt to allocate new buffers from non-resident
+    // pages.
+    new_size = 0;
+  }
+
+  if (new_size != _book_size) {
+    VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
+    nassertv(pi != _book->_pages.end());
+    _book->_pages.erase(pi);
+
+    _book_size = new_size;
+    bool inserted = _book->_pages.insert(this).second;
+    nassertv(inserted);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::request_ram_class
 //       Access: Private
 //  Description: Requests the thread set the page to the indicated ram
@@ -483,12 +558,6 @@ do_restore_from_disk() {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 request_ram_class(RamClass ram_class) {
-  if (ram_class == _ram_class) {
-    gobj_cat.warning()
-      << "Page " << this << " already has ram class " << ram_class << "\n";
-    return;
-  }
-
   if (!vertex_data_threaded_paging || !Thread::is_threading_supported()) {
     // No threads.  Do it immediately.
     switch (ram_class) {
@@ -613,6 +682,9 @@ remove_page(VertexDataPage *page) {
   }
 
   page->_pending_ram_class = page->_ram_class;
+  
+  // Put the page back on its proper LRU.
+  page->mark_used_lru(_global_lru[page->_ram_class]);
 }
 
 ////////////////////////////////////////////////////////////////////

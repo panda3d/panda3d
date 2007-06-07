@@ -23,6 +23,8 @@
 #include "pmutex.h"
 #include "mutexHolder.h"
 #include "vertexDataPage.h"
+#include "indirectLess.h"
+#include "plist.h"
 
 class VertexDataBlock;
 
@@ -36,10 +38,9 @@ PUBLISHED:
   VertexDataBook(size_t block_size);
   ~VertexDataBook();
 
-  VertexDataBlock *alloc(size_t size);
+  INLINE VertexDataBlock *alloc(size_t size);
 
   INLINE int get_num_pages() const;
-  INLINE VertexDataPage *get_page(int n) const;
 
   size_t count_total_page_size() const;
   size_t count_total_page_size(VertexDataPage::RamClass ram_class) const;
@@ -48,15 +49,21 @@ PUBLISHED:
 
   void save_to_disk();
 
+public:
+  void reorder_page(VertexDataPage *page);
+
 private:
   INLINE VertexDataPage *create_new_page(size_t size);
+  VertexDataBlock *do_alloc(size_t size);
 
 private:
   size_t _block_size;
-  typedef pvector<VertexDataPage *> Pages;
+
+  typedef pset<VertexDataPage *, IndirectLess<VertexDataPage> > Pages;
   Pages _pages;
-  size_t _next_pi;
+
   Mutex _lock;
+  friend class VertexDataPage;
 };
 
 #include "vertexDataBook.I"

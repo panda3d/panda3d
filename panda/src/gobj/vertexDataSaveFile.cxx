@@ -33,7 +33,7 @@
 VertexDataSaveFile::
 VertexDataSaveFile(const Filename &directory, const string &prefix,
                    size_t max_size) :
-  SimpleAllocator(max_size)
+  SimpleAllocator(max_size, _lock)
 {
   Filename dir;
   if (directory.empty()) {
@@ -183,7 +183,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     return NULL;
   }
 
-  PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::alloc(size);
+  PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::do_alloc(size);
   if (block != (VertexDataSaveBlock *)NULL) {
     block->set_compressed(compressed);
 

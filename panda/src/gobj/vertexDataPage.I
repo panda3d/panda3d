@@ -60,6 +60,21 @@ request_resident() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::alloc
+//       Access: Published
+//  Description: Allocates a new block.  Returns NULL if a block of the
+//               requested size cannot be allocated.
+//
+//               To free the allocated block, call block->free(), or
+//               simply delete the block pointer.
+////////////////////////////////////////////////////////////////////
+INLINE VertexDataBlock *VertexDataPage::
+alloc(size_t size) {
+  MutexHolder holder(_lock);
+  return do_alloc(size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_first_block
 //       Access: Published
 //  Description: Returns a pointer to the first allocated block, or
@@ -164,7 +179,7 @@ has_thread() {
 INLINE unsigned char *VertexDataPage::
 get_page_data(bool force) {
   MutexHolder holder(_lock);
-  if (_ram_class != RC_resident) {
+  if (_ram_class != RC_resident || _pending_ram_class != RC_resident) {
     if (force) {
       make_resident_now();
     } else {
@@ -181,6 +196,26 @@ get_page_data(bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::operator
+//       Access: Public
+//  Description: This comparison method is used to order pages within
+//               a book.
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexDataPage::
+operator < (const VertexDataPage &other) const {
+  // We sort pages so that the pages with the smallest number of
+  // available contiguous bytes come up first.  We store our best
+  // estimate of continguous bytes here.
+  if (_book_size != other._book_size) {
+    return _book_size < other._book_size;
+  }
+
+  // For pages of equal size, we sort based on pointers, to make it
+  // easy to quickly find a specific page.
+  return this < &other;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::set_ram_class
 //       Access: Private
 //  Description: Puts the data in a new ram class.  Assumes the page
@@ -190,6 +225,10 @@ INLINE void VertexDataPage::
 set_ram_class(RamClass rclass) {
   _ram_class = rclass;
   mark_used_lru(_global_lru[rclass]);
+
+  // Changing the ram class might make our effective available space 0
+  // and thereby change the placement within the book.
+  adjust_book_size();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexDataBook.h"
-#include "mutexHolder.h"
+#include "reMutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBook::Constructor
@@ -26,7 +26,6 @@
 ////////////////////////////////////////////////////////////////////
 VertexDataBook::
 VertexDataBook(size_t block_size) : _block_size(block_size) {
-  _next_pi = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,71 +38,6 @@ VertexDataBook::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataBook::alloc
-//       Access: Published
-//  Description: Allocates and returns a new VertexDataBuffer of the
-//               requested size.
-////////////////////////////////////////////////////////////////////
-VertexDataBlock *VertexDataBook::
-alloc(size_t size) {
-  MutexHolder holder(_lock);
-
-  // First, try to allocate from the last page that worked; then
-  // continue to the end of the list.  We consider only pages that are
-  // currently resident (or that are empty), to minimize unnecessary
-  // swapping.
-  size_t pi = _next_pi;
-  while (pi < _pages.size()) {
-    if (_pages[pi]->get_ram_class() == VertexDataPage::RC_resident ||
-        _pages[pi]->is_empty()) {
-      VertexDataBlock *block = _pages[pi]->alloc(size);
-      if (block != (VertexDataBlock *)NULL) {
-        _next_pi = pi;
-        return block;
-      }
-      if (_pages[pi]->is_empty()) {
-        // This page is empty, but must have been too small.  Create a
-        // new page in its place.
-        delete _pages[pi];
-        _pages[pi] = create_new_page(size);
-        VertexDataBlock *block = _pages[pi]->alloc(size);
-        return block;
-      }
-    }
-    ++pi;
-  }
-
-  // Then, go back to the beginning and try those pages.
-  pi = 0;
-  _next_pi = min(_next_pi, _pages.size());
-  while (pi < _next_pi) {
-    if (_pages[pi]->get_ram_class() == VertexDataPage::RC_resident ||
-        _pages[pi]->is_empty()) {
-      VertexDataBlock *block = _pages[pi]->alloc(size);
-      if (block != (VertexDataBlock *)NULL) {
-        _next_pi = pi;
-        return block;
-      }
-      if (_pages[pi]->is_empty()) {
-        // This page is empty, but must have been too small.  Create a
-        // new page in its place.
-        delete _pages[pi];
-        _pages[pi] = create_new_page(size);
-        return _pages[pi]->alloc(size);
-      }
-    }
-    ++pi;
-  }
-
-  // No page was good enough.  Create a new page.  Make it at least
-  // large enough to hold this requested block.
-  VertexDataPage *page = create_new_page(size);
-  _pages.push_back(page);
-  VertexDataBlock *block = page->alloc(size);
-  return block;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBook::count_total_page_size
 //       Access: Published
 //  Description: Returns the total size of all bytes owned by all
@@ -111,6 +45,8 @@ alloc(size_t size) {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_total_page_size() const {
+  MutexHolder holder(_lock);
+
   size_t total = 0;
   Pages::const_iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
@@ -128,6 +64,8 @@ count_total_page_size() const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_total_page_size(VertexDataPage::RamClass ram_class) const {
+  MutexHolder holder(_lock);
+
   size_t total = 0;
   Pages::const_iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
@@ -146,6 +84,8 @@ count_total_page_size(VertexDataPage::RamClass ram_class) const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_allocated_size() const {
+  MutexHolder holder(_lock);
+
   size_t total = 0;
   Pages::const_iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
@@ -163,6 +103,8 @@ count_allocated_size() const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_allocated_size(VertexDataPage::RamClass ram_class) const {
+  MutexHolder holder(_lock);
+
   size_t total = 0;
   Pages::const_iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
@@ -183,9 +125,61 @@ count_allocated_size(VertexDataPage::RamClass ram_class) const {
 ////////////////////////////////////////////////////////////////////
 void VertexDataBook::
 save_to_disk() {
+  MutexHolder holder(_lock);
+
   Pages::iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
     (*pi)->save_to_disk();
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataBook::do_alloc
+//       Access: Private
+//  Description: Allocates and returns a new VertexDataBuffer of the
+//               requested size.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+VertexDataBlock *VertexDataBook::
+do_alloc(size_t size) {
+  // Look for an empty page of the appropriate size.  The _pages set
+  // is sorted so that the pages with the smallest available blocks
+  // are at the front.
+  
+  // Create a dummy page to use to search the set.
+  VertexDataPage size_page(size);
+  Pages::iterator pi = _pages.lower_bound(&size_page);
+
+  // Now we can start from the first element of the set that is
+  // possibly large enough to contain this block, and work up from
+  // there.
+  while (pi != _pages.end()) {
+    Pages::iterator pnext = pi;
+    ++pnext;
+
+    VertexDataPage *page = (*pi);
+
+    // Allocating a block may change the page's available contiguous
+    // size, and thereby change its position in the set, invalidating
+    // the iterator pi.  This is why we've already computed pnext.
+    VertexDataBlock *block = page->do_alloc(size);
+
+    if (block != (VertexDataBlock *)NULL) {
+      // This page worked.
+      return block;
+    }
+
+    // Try the next page.
+    pi = pnext;
+  }
+
+  // No page was good enough.  Create a new page.  Make it at least
+  // large enough to hold this requested block.
+  VertexDataPage *page = create_new_page(size);
+  _pages.insert(page);
+
+  VertexDataBlock *block = page->do_alloc(size);
+  return block;
+}

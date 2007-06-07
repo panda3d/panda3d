@@ -42,10 +42,11 @@ class VertexDataBlock;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA VertexDataPage : public SimpleAllocator, public SimpleLruPage {
 public:
+  VertexDataPage(size_t book_size);
   VertexDataPage(VertexDataBook *book, size_t page_size);
-PUBLISHED:
   ~VertexDataPage();
 
+PUBLISHED:
   // These are used to indicate the current residency state of the
   // page, which may or may not have been temporarily evicted to
   // satisfy memory requirements.
@@ -61,7 +62,7 @@ PUBLISHED:
   INLINE RamClass get_pending_ram_class() const;
   INLINE void request_resident();
 
-  VertexDataBlock *alloc(size_t size);
+  INLINE VertexDataBlock *alloc(size_t size);
   INLINE VertexDataBlock *get_first_block() const;
 
   INLINE VertexDataBook *get_book() const;
@@ -77,13 +78,17 @@ PUBLISHED:
 
 public:
   INLINE unsigned char *get_page_data(bool force);
+  INLINE bool operator < (const VertexDataPage &other) const;
 
 protected:
   virtual SimpleAllocatorBlock *make_block(size_t start, size_t size);
+  virtual void changed_contiguous();
   virtual void evict_lru();
 
 private:
   class PageThread;
+
+  VertexDataBlock *do_alloc(size_t size);
 
   void make_resident_now();
   void make_resident();
@@ -93,7 +98,8 @@ private:
   bool do_save_to_disk();
   void do_restore_from_disk();
 
-  PageThread *get_thread();
+  void adjust_book_size();
+
   void request_ram_class(RamClass ram_class);
   INLINE void set_ram_class(RamClass ram_class);
   static void make_save_file();
@@ -126,8 +132,9 @@ private:
   size_t _size, _uncompressed_size;
   RamClass _ram_class;
   PT(VertexDataSaveBlock) _saved_block;
+  size_t _book_size;
 
-  Mutex _lock;  // Protects above members
+  //Mutex _lock;  // Inherited from SimpleAllocator.  Protects above members.
 
   RamClass _pending_ram_class;  // Protected by _tlock.
 
@@ -140,6 +147,8 @@ private:
   static SimpleLru *_global_lru[RC_end_of_list];
 
   static VertexDataSaveFile *_save_file;
+
+  static Mutex _unused_mutex;
 
   static PStatCollector _vdata_compress_pcollector;
   static PStatCollector _vdata_decompress_pcollector;
@@ -159,6 +168,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class PageThread;
+  friend class VertexDataBook;
 };
 
 #include "vertexDataPage.I"
