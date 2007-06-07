@@ -136,6 +136,21 @@ save_to_disk() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::has_thread
+//       Access: Published, Static
+//  Description: Returns true if a thread has been spawned to service
+//               vertex paging requests, or false if it has not (which
+//               may mean either that all paging requests will be
+//               handled by the main thread, or simply that no paging
+//               requests have yet been issued).
+////////////////////////////////////////////////////////////////////
+INLINE bool VertexDataPage::
+has_thread() {
+  MutexHolder holder(_tlock);
+  return !_thread.is_null();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_page_data
 //       Access: Public
 //  Description: Returns a pointer to the page's data area, or NULL if

@@ -165,6 +165,8 @@ stop_thread() {
   }
 
   if (thread != (PageThread *)NULL) {
+    gobj_cat.info()
+      << "Stopping vertex paging thread.\n";
     thread->stop_thread();
   }
 }
@@ -512,6 +514,8 @@ request_ram_class(RamClass ram_class) {
   MutexHolder holder(_tlock);
   if (_thread == (PageThread *)NULL) {
     // Allocate and start a new global thread.
+    gobj_cat.info()
+      << "Spawning vertex paging thread.\n";
     _thread = new PageThread;
     _thread->start(TP_low, true);
   }

@@ -71,6 +71,8 @@ PUBLISHED:
   INLINE static VertexDataSaveFile *get_save_file();
 
   INLINE bool save_to_disk();
+
+  INLINE static bool has_thread();
   static void stop_thread();
 
 public:
