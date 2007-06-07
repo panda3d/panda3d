@@ -94,6 +94,10 @@ double TrueClock::
 get_short_time() {
   double time;
 
+  if (_paranoid_clock) {
+    _lock.lock();
+  }
+
   if (_has_high_res) {
     // Use the high-resolution clock.  This is of questionable value,
     // since (a) on some OS's and hardware, the low 24 bits can
@@ -123,6 +127,7 @@ get_short_time() {
     // Check for rollforwards, rollbacks, and compensate for Speed
     // Gear type programs by verifying against the time of day clock.
     time = correct_time(time);
+    _lock.release();
   }
 
   return time;

@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedef.h"
 #include "pdeque.h"
+#include "mutexImpl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrueClock
@@ -100,6 +101,7 @@ protected:
     CC_speed_up,
   };
   ChaseClock _chase_clock;
+  MutexImpl _lock;
 #endif  // WIN32
 };
 
