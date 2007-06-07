@@ -1312,7 +1312,8 @@ finish_decal() {
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
-                      const GeomVertexDataPipelineReader *data_reader) {
+                      const GeomVertexDataPipelineReader *data_reader,
+                      bool) {
   _munger = munger;
   _data_reader = data_reader;
   return _data_reader->has_vertex();
@@ -1323,8 +1324,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_triangles(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_triangles(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1332,8 +1334,9 @@ draw_triangles(const GeomPrimitivePipelineReader *) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_tristrips(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1341,8 +1344,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_trifans(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_trifans(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1350,8 +1354,9 @@ draw_trifans(const GeomPrimitivePipelineReader *) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_lines(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_lines(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1359,8 +1364,9 @@ draw_lines(const GeomPrimitivePipelineReader *) {
 //       Access: Public, Virtual
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_linestrips(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_linestrips(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1368,8 +1374,9 @@ draw_linestrips(const GeomPrimitivePipelineReader *) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-draw_points(const GeomPrimitivePipelineReader *) {
+bool GraphicsStateGuardian::
+draw_points(const GeomPrimitivePipelineReader *, bool) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,8 +38,9 @@ public:
   virtual int get_geom_rendering() const;
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg,
-                    const GeomPrimitivePipelineReader *reader) const;
+  virtual bool draw(GraphicsStateGuardianBase *gsg,
+                    const GeomPrimitivePipelineReader *reader,
+                    bool force) const;
 
 protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;

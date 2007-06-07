@@ -67,12 +67,12 @@ add_object(CullableObject *object, Thread *current_thread) {
 //               order.
 ////////////////////////////////////////////////////////////////////
 void CullBinUnsorted::
-draw(Thread *current_thread) {
+draw(bool force, Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector, current_thread);
   Objects::iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi);
-    CullHandler::draw(object, _gsg, current_thread);
+    CullHandler::draw(object, _gsg, force, current_thread);
   }
 }
 

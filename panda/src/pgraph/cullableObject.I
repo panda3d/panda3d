@@ -126,8 +126,8 @@ has_decals() const {
 //               from the draw thread.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
-draw(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
-  _geom->draw(gsg, _munger, _munged_data, current_thread);
+draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
+  _geom->draw(gsg, _munger, _munged_data, force, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

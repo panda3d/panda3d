@@ -40,10 +40,8 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   Thread *current_thread = traverser->get_current_thread();
 
   if (object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser, force)) {
-    if (force || object->request_resident()) {
-      // Now we can immediately draw the object.
-      draw(object, _gsg, current_thread);
-    }
+    // Now we can immediately draw the object.
+    draw(object, _gsg, force, current_thread);
   }
 
   // Dispense with the object.

@@ -104,9 +104,10 @@ get_geom_rendering() const {
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
-void GeomTrifans::
-draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
-  gsg->draw_trifans(reader);
+bool GeomTrifans::
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader,
+     bool force) const {
+  return gsg->draw_trifans(reader, force);
 }
 
 ////////////////////////////////////////////////////////////////////

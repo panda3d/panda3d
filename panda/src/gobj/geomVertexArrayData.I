@@ -157,7 +157,7 @@ get_modified() const {
 INLINE bool GeomVertexArrayData::
 request_resident() const {
   CPT(GeomVertexArrayDataHandle) handle = get_handle();
-  return (handle->get_read_pointer(false) != (const unsigned char *)NULL);
+  return handle->request_resident();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -456,6 +456,20 @@ get_data_size_bytes() const {
 INLINE UpdateSeq GeomVertexArrayDataHandle::
 get_modified() const {
   return _cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::request_resident
+//       Access: Published
+//  Description: Returns true if the vertex data is currently resident
+//               in memory.  If this returns true, the next call to
+//               get_handle()->get_read_pointer() will probably not
+//               block.  If this returns false, the vertex data will
+//               be brought back into memory shortly; try again later.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexArrayDataHandle::
+request_resident() const {
+  return (get_read_pointer(false) != (const unsigned char *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

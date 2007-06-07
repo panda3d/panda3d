@@ -104,9 +104,10 @@ get_num_vertices_per_primitive() const {
 //  Description: Calls the appropriate method on the GSG to draw the
 //               primitive.
 ////////////////////////////////////////////////////////////////////
-void GeomTriangles::
-draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader) const {
-  gsg->draw_triangles(reader);
+bool GeomTriangles::
+draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader,
+     bool force) const {
+  return gsg->draw_triangles(reader, force);
 }
 
 ////////////////////////////////////////////////////////////////////

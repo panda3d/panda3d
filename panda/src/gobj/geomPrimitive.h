@@ -193,8 +193,9 @@ private:
   static int get_highest_index_value(NumericType index_type);
 
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg,
-                    const GeomPrimitivePipelineReader *reader) const=0;
+  virtual bool draw(GraphicsStateGuardianBase *gsg,
+                    const GeomPrimitivePipelineReader *reader,
+                    bool force) const=0;
 
   void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          bool &found_any, 

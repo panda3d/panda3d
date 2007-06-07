@@ -176,9 +176,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 #ifndef NDEBUG
                 check_flash_bin(transparent_part->_state, bin);
 #endif
-                if (force || transparent_part->request_resident()) {
-                  bin->add_object(transparent_part, current_thread);
-                }
+                bin->add_object(transparent_part, current_thread);
               }
             }
           
@@ -213,9 +211,11 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
   if (object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser, force)) {
-    if (force || object->request_resident()) {
-      bin->add_object(object, current_thread);
-    }
+    // The object may or may not now be fully resident, but this may
+    // not matter, since the GSG may have the necessary buffers
+    // already loaded.  We'll let the GSG ultimately decide whether to
+    // render it.
+    bin->add_object(object, current_thread);
   }
 }
 
@@ -255,6 +255,8 @@ finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 draw(Thread *current_thread) {
+  bool force = !allow_incomplete_render;
+
   // Ask the bin manager for the correct order to draw all the bins.
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   int num_bins = bin_manager->get_num_bins();
@@ -263,7 +265,7 @@ draw(Thread *current_thread) {
     nassertv(bin_index >= 0);
 
     if (bin_index < (int)_bins.size() && _bins[bin_index] != (CullBin *)NULL) {
-      _bins[bin_index]->draw(current_thread);
+      _bins[bin_index]->draw(force, current_thread);
     }
   }
 }

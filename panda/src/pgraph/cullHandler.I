@@ -26,11 +26,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void CullHandler::
 draw(CullableObject *object, GraphicsStateGuardianBase *gsg,
-     Thread *current_thread) {
+     bool force, Thread *current_thread) {
   if (object->_next != (CullableObject *)NULL) {
-    draw_with_decals(object, gsg, current_thread);
+    draw_with_decals(object, gsg, force, current_thread);
   } else {
     gsg->set_state_and_transform(object->_state, object->_internal_transform);
-    object->draw(gsg, current_thread);
+    object->draw(gsg, force, current_thread);
   }
 }

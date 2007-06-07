@@ -1227,9 +1227,10 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
-                      const GeomVertexDataPipelineReader *data_reader) {
+                      const GeomVertexDataPipelineReader *data_reader,
+                      bool force) {
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger,
-                                                    data_reader)) {
+                                                    data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -1458,8 +1459,8 @@ vertex_element_array -> vertex_element_type_array;
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_triangles(const GeomPrimitivePipelineReader *reader) {
+bool DXGraphicsStateGuardian9::
+draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
 
 //  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_triangles 1\n"; DBG_E
@@ -1473,7 +1474,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertv(ibc != (IndexBufferContext *)NULL);
+      nassertr(ibc != (IndexBufferContext *)NULL, false);
       apply_index_buffer(ibc, reader);
 
 //DBG_SH2 dxgsg9_cat.debug ( ) << "DrawIndexedPrimitive \n"; DBG_E
@@ -1488,14 +1489,21 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
 
 //DBG_SH2 dxgsg9_cat.debug ( ) << "draw_indexed_primitive_up \n"; DBG_E
 
+      const unsigned char *index_pointer = reader->get_read_pointer(force);
+      if (index_pointer == NULL) {
+        return false;
+      }
       D3DFORMAT index_type = get_index_type(reader->get_index_type());
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
+
       draw_indexed_primitive_up
         (D3DPT_TRIANGLELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_read_pointer(true),
-         index_type,
-         _data_reader->get_array_reader(0)->get_read_pointer(true),
+         index_pointer, index_type, vertex_pointer,
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -1513,16 +1521,20 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
       // Nonindexed, client arrays.
 
 //DBG_SH2 dxgsg9_cat.debug ( ) << "draw_primitive_up \n"; DBG_E
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
 
       draw_primitive_up(D3DPT_TRIANGLELIST, reader->get_num_primitives(),
       reader->get_first_vertex(),
-      reader->get_num_vertices(),
-      _data_reader->get_array_reader(0)->get_read_pointer(true),
+      reader->get_num_vertices(), vertex_pointer,
       _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
 
 //  DBG_SH5 dxgsg9_cat.debug ( ) << "end draw_triangles 1\n"; DBG_E
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1530,8 +1542,8 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_tristrips(const GeomPrimitivePipelineReader *reader) {
+bool DXGraphicsStateGuardian9::
+draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_tristrips\n"; DBG_E
@@ -1548,7 +1560,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, one line triangle strip.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-        nassertv(ibc != (IndexBufferContext *)NULL);
+        nassertr(ibc != (IndexBufferContext *)NULL, false);
         apply_index_buffer(ibc, reader);
 
 //dxgsg9_cat.error ( ) << "DrawIndexedPrimitive D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
@@ -1563,13 +1575,21 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 //dxgsg9_cat.error ( ) << "draw_indexed_primitive_up D3DPT_TRIANGLESTRIP VERTICES: " << reader->get_num_vertices ( ) << "\n";
 
         // Indexed, client arrays, one long triangle strip.
+        const unsigned char *index_pointer = reader->get_read_pointer(force);
+        if (index_pointer == NULL) {
+          return false;
+        }
         D3DFORMAT index_type = get_index_type(reader->get_index_type());
+        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+        if (vertex_pointer == NULL) {
+          return false;
+        }
+
         draw_indexed_primitive_up
           (D3DPT_TRIANGLESTRIP,
            min_vertex, max_vertex,
            reader->get_num_vertices() - 2,
-           reader->get_read_pointer(true), index_type,
-           _data_reader->get_array_reader(0)->get_read_pointer(true),
+           index_pointer, index_type, vertex_pointer,
            _data_reader->get_format()->get_array(0)->get_stride());
       }
     } else {
@@ -1585,11 +1605,14 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Indexed, client arrays, one long triangle strip.
+        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+        if (vertex_pointer == NULL) {
+          return false;
+        }
         draw_primitive_up(D3DPT_TRIANGLESTRIP,
         reader->get_num_vertices() - 2,
         reader->get_first_vertex(),
-        reader->get_num_vertices(),
-        _data_reader->get_array_reader(0)->get_read_pointer(true),
+        reader->get_num_vertices(), vertex_pointer,
         _data_reader->get_format()->get_array(0)->get_stride());
       }
     }
@@ -1607,13 +1630,13 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       GeomVertexReader mins(reader->get_mins(), 0);
       GeomVertexReader maxs(reader->get_maxs(), 0);
-      nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
-               reader->get_maxs()->get_num_rows() == (int)ends.size());
+      nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+               reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
       if (_active_vbuffer != NULL) {
         // Indexed, vbuffers, individual triangle strips.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-        nassertv(ibc != (IndexBufferContext *)NULL);
+        nassertr(ibc != (IndexBufferContext *)NULL, false);
         apply_index_buffer(ibc, reader);
 
         unsigned int start = 0;
@@ -1632,10 +1655,16 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Indexed, client arrays, individual triangle strips.
-        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_read_pointer(true);
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
-        const unsigned char *vertices = reader->get_read_pointer(true);
+        const unsigned char *index_pointer = reader->get_read_pointer(force);
+        if (index_pointer == NULL) {
+          return false;
+        }
         D3DFORMAT index_type = get_index_type(reader->get_index_type());
+        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+        if (vertex_pointer == NULL) {
+          return false;
+        }
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1646,8 +1675,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
             (D3DPT_TRIANGLESTRIP,
              min, max,
              ends[i] - start - 2,
-             vertices + start * index_stride, index_type,
-             array_data, stride);
+             index_pointer + start * index_stride, index_type,
+             vertex_pointer, stride);
 
           start = ends[i] + 2;
         }
@@ -1669,7 +1698,10 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       } else {
         // Nonindexed, client arrays, individual triangle strips.
-        const unsigned char *array_data = _data_reader->get_array_reader(0)->get_read_pointer(true);
+        const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+        if (vertex_pointer == NULL) {
+          return false;
+        }
         int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
         unsigned int start = 0;
@@ -1678,13 +1710,14 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
           draw_primitive_up(D3DPT_TRIANGLESTRIP, ends[i] - start - 2,
           first_vertex + start,
           ends[i] - start,
-          array_data, stride);
+          vertex_pointer, stride);
 
           start = ends[i] + 2;
         }
       }
     }
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1692,8 +1725,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_trifans(const GeomPrimitivePipelineReader *reader) {
+bool DXGraphicsStateGuardian9::
+draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "draw_trifans\n"; DBG_E
@@ -1711,13 +1744,13 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     GeomVertexReader mins(reader->get_mins(), 0);
     GeomVertexReader maxs(reader->get_maxs(), 0);
-    nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
-             reader->get_maxs()->get_num_rows() == (int)ends.size());
+    nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+             reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertv(ibc != (IndexBufferContext *)NULL);
+      nassertr(ibc != (IndexBufferContext *)NULL, false);
       apply_index_buffer(ibc, reader);
 
       unsigned int start = 0;
@@ -1735,10 +1768,16 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Indexed, client arrays.
-      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_read_pointer(true);
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
-      const unsigned char *vertices = reader->get_read_pointer(true);
+      const unsigned char *index_pointer = reader->get_read_pointer(force);
+      if (index_pointer == NULL) {
+        return false;
+      }
       D3DFORMAT index_type = get_index_type(reader->get_index_type());
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -1749,8 +1788,8 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
           (D3DPT_TRIANGLEFAN,
            min, max,
            ends[i] - start - 2,
-           vertices + start * index_stride, index_type,
-           array_data, stride);
+           index_pointer + start * index_stride, index_type,
+           vertex_pointer, stride);
 
         start = ends[i];
       }
@@ -1772,7 +1811,10 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Nonindexed, client arrays.
-      const unsigned char *array_data = _data_reader->get_array_reader(0)->get_read_pointer(true);
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
       int stride = _data_reader->get_format()->get_array(0)->get_stride();
 
       unsigned int start = 0;
@@ -1782,11 +1824,12 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
         ends[i] - start - 2,
         first_vertex,
         ends[i] - start,
-        array_data, stride);
+        vertex_pointer, stride);
         start = ends[i];
       }
     }
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1794,8 +1837,8 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_lines(const GeomPrimitivePipelineReader *reader) {
+bool DXGraphicsStateGuardian9::
+draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
@@ -1807,7 +1850,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
     if (_active_vbuffer != NULL) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertv(ibc != (IndexBufferContext *)NULL);
+      nassertr(ibc != (IndexBufferContext *)NULL, false);
       apply_index_buffer(ibc, reader);
 
       _d3d_device->DrawIndexedPrimitive
@@ -1818,15 +1861,21 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Indexed, client arrays.
+      const unsigned char *index_pointer = reader->get_read_pointer(force);
+      if (index_pointer == NULL) {
+        return false;
+      }
       D3DFORMAT index_type = get_index_type(reader->get_index_type());
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
 
       draw_indexed_primitive_up
         (D3DPT_LINELIST,
          min_vertex, max_vertex,
          reader->get_num_primitives(),
-         reader->get_read_pointer(true),
-         index_type,
-         _data_reader->get_array_reader(0)->get_read_pointer(true),
+         index_pointer, index_type, vertex_pointer,
          _data_reader->get_format()->get_array(0)->get_stride());
     }
   } else {
@@ -1839,13 +1888,17 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
 
     } else {
       // Nonindexed, client arrays.
+      const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+      if (vertex_pointer == NULL) {
+        return false;
+      }
       draw_primitive_up(D3DPT_LINELIST, reader->get_num_primitives(),
       reader->get_first_vertex(),
-      reader->get_num_vertices(),
-      _data_reader->get_array_reader(0)->get_read_pointer(true),
+      reader->get_num_vertices(), vertex_pointer,
       _data_reader->get_format()->get_array(0)->get_stride());
     }
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1853,9 +1906,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_linestrips(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector);
+bool DXGraphicsStateGuardian9::
+draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1863,15 +1916,15 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-draw_points(const GeomPrimitivePipelineReader *reader) {
+bool DXGraphicsStateGuardian9::
+draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
   // The munger should have protected us from indexed points--DirectX
   // doesn't support them.
-  nassertv(!reader->is_indexed());
+  nassertr(!reader->is_indexed(), false);
 
   if (_active_vbuffer != NULL) {
     // Nonindexed, vbuffers.
@@ -1882,12 +1935,16 @@ draw_points(const GeomPrimitivePipelineReader *reader) {
 
   } else {
     // Nonindexed, client arrays.
+    const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
+    if (vertex_pointer == NULL) {
+      return false;
+    }
     draw_primitive_up(D3DPT_POINTLIST, reader->get_num_primitives(),
                       reader->get_first_vertex(),
-                      reader->get_num_vertices(),
-                      _data_reader->get_array_reader(0)->get_read_pointer(true),
+                      reader->get_num_vertices(), vertex_pointer,
                       _data_reader->get_format()->get_array(0)->get_stride());
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

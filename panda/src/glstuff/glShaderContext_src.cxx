@@ -204,12 +204,13 @@ disable_shader_vertex_arrays(GSG *gsg) {
 //               it may unnecessarily disable arrays then immediately
 //               reenable them.  We may optimize this someday.
 ////////////////////////////////////////////////////////////////////
-void CLP(ShaderContext)::
-update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
+bool CLP(ShaderContext)::
+update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
+                            bool force) {
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CG
   if (_cg_context == 0) {
-    return;
+    return true;
   }
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -242,7 +243,10 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
       if (gsg->_data_reader->get_array_info(name,
                                             array_reader, num_values, numeric_type,
                                             start, stride)) {
-        const unsigned char *client_pointer = gsg->setup_array_data(array_reader);
+        const unsigned char *client_pointer;
+        if (!gsg->setup_array_data(client_pointer, array_reader, force)) {
+          return false;
+        }
         cgGLSetParameterPointer(p,
                                 num_values, gsg->get_numeric_type(numeric_type),
                                 stride, client_pointer + start);
@@ -253,6 +257,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg) {
     }
   }
 #endif // HAVE_CG
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

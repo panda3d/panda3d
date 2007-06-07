@@ -43,7 +43,7 @@ public:
                            const PStatCollector &draw_region_pcollector);
 
   virtual void add_object(CullableObject *object, Thread *current_thread);
-  virtual void draw(Thread *current_thread);
+  virtual void draw(bool force, Thread *current_thread);
 
 private:
   typedef pvector<CullableObject *> Objects;

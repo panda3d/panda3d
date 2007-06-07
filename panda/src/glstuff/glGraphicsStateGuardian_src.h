@@ -108,13 +108,20 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
-                                     const GeomVertexDataPipelineReader *data_reader);
-  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_lines(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_points(const GeomPrimitivePipelineReader *reader);
+                                     const GeomVertexDataPipelineReader *data_reader,
+                                     bool force);
+  virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
+                              bool force);
+  virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
+                              bool force);
+  virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
+                            bool force);
+  virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
+                          bool force);
+  virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader,
+                               bool force);
+  virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
+                           bool force);
   virtual void end_draw_primitives();
 
   INLINE bool draw_display_list(GeomContext *gc);
@@ -132,16 +139,23 @@ public:
   void record_deleted_display_list(GLuint index);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  void apply_vertex_buffer(VertexBufferContext *vbc,
-                           const GeomVertexArrayDataHandle *reader);
+  bool apply_vertex_buffer(VertexBufferContext *vbc,
+                           const GeomVertexArrayDataHandle *reader,
+                           bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
-  const unsigned char *setup_array_data(const GeomVertexArrayDataHandle *data);
+
+  bool setup_array_data(const unsigned char *&client_pointer,
+                        const GeomVertexArrayDataHandle *data,
+                        bool force);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
-  void apply_index_buffer(IndexBufferContext *ibc,
-                          const GeomPrimitivePipelineReader *reader);
+  bool apply_index_buffer(IndexBufferContext *ibc,
+                          const GeomPrimitivePipelineReader *reader,
+                          bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
-  const unsigned char *setup_primitive(const GeomPrimitivePipelineReader *reader);
+  bool setup_primitive(const unsigned char *&client_pointer,
+                       const GeomPrimitivePipelineReader *reader,
+                       bool force);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
@@ -287,7 +301,7 @@ protected:
   static GLenum get_usage(Geom::UsageHint usage_hint);
 
   void disable_standard_vertex_arrays();
-  void update_standard_vertex_arrays();
+  bool update_standard_vertex_arrays(bool force);
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 

@@ -65,7 +65,7 @@ public:
                   GeomMunger *munger, const CullTraverser *traverser,
                   bool force);
   INLINE void draw(GraphicsStateGuardianBase *gsg,
-                   Thread *current_thread);
+                   bool force, Thread *current_thread);
 
   INLINE bool request_resident() const;
   INLINE static void flush_level();

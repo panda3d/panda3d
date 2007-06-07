@@ -43,7 +43,8 @@ public:
   void unbind();
   void issue_parameters(GSG *gsg, bool all);
   void disable_shader_vertex_arrays(GSG *gsg);
-  void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
+  bool update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
+                                   bool force);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
 

@@ -1468,14 +1468,15 @@ end_frame(Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
-                      const GeomVertexDataPipelineReader *data_reader) {
+                      const GeomVertexDataPipelineReader *data_reader,
+                      bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, munger, data_reader, force)) {
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
@@ -1687,18 +1688,26 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 #endif
   if (_vertex_array_shader_context==0) {
     if (_current_shader_context==0) {
-      update_standard_vertex_arrays();
+      if (!update_standard_vertex_arrays(force)) {
+        return false;
+      }
     } else {
       disable_standard_vertex_arrays();
-      _current_shader_context->update_shader_vertex_arrays(NULL,this);
+      if (!_current_shader_context->update_shader_vertex_arrays(NULL, this, force)) {
+        return false;
+      }
     }
   } else {
     if (_current_shader_context==0) {
       _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-      update_standard_vertex_arrays();
+      if (!update_standard_vertex_arrays(force)) {
+        return false;
+      }
     } else {
-      _current_shader_context->
-        update_shader_vertex_arrays(_vertex_array_shader_context,this);
+      if (!_current_shader_context->
+          update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
+        return false;
+      }
     }
   }
   _vertex_array_shader_expansion = _current_shader_expansion;
@@ -1720,8 +1729,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 //               is about to be used - glShaderContexts are responsible
 //               for setting up their own vertex arrays.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-update_standard_vertex_arrays() {
+bool CLP(GraphicsStateGuardian)::
+update_standard_vertex_arrays(bool force) {
   const GeomVertexAnimationSpec &animation =
     _data_reader->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
@@ -1804,6 +1813,7 @@ update_standard_vertex_arrays() {
   {
     // We may use vertex arrays or buffers to render primitives.
     const GeomVertexArrayDataHandle *array_reader;
+    const unsigned char *client_pointer;
     int num_values;
     Geom::NumericType numeric_type;
     int start;
@@ -1811,7 +1821,9 @@ update_standard_vertex_arrays() {
 
     if (_data_reader->get_normal_info(array_reader, numeric_type,
                                       start, stride)) {
-      const unsigned char *client_pointer = setup_array_data(array_reader);
+      if (!setup_array_data(client_pointer, array_reader, force)) {
+        return false;
+      }
       GLP(NormalPointer)(get_numeric_type(numeric_type), stride,
                          client_pointer + start);
       GLP(EnableClientState)(GL_NORMAL_ARRAY);
@@ -1822,7 +1834,9 @@ update_standard_vertex_arrays() {
     if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
                                      start, stride) &&
         numeric_type != Geom::NT_packed_dabc) {
-      const unsigned char *client_pointer = setup_array_data(array_reader);
+      if (!setup_array_data(client_pointer, array_reader, force)) {
+        return false;
+      }
       GLP(ColorPointer)(num_values, get_numeric_type(numeric_type),
                         stride, client_pointer + start);
       GLP(EnableClientState)(GL_COLOR_ARRAY);
@@ -1855,7 +1869,9 @@ update_standard_vertex_arrays() {
         if (_data_reader->get_array_info(name, array_reader, num_values,
                                          numeric_type, start, stride)) {
           // The vertex data does have texcoords for this stage.
-          const unsigned char *client_pointer = setup_array_data(array_reader);
+          if (!setup_array_data(client_pointer, array_reader, force)) {
+            return false;
+          }
           GLP(TexCoordPointer)(num_values, get_numeric_type(numeric_type),
                                stride, client_pointer + start);
           GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
@@ -1887,7 +1903,9 @@ update_standard_vertex_arrays() {
         if (_data_reader->get_array_info(InternalName::get_transform_weight(),
                                          array_reader, num_values, numeric_type,
                                          start, stride)) {
-          const unsigned char *client_pointer = setup_array_data(array_reader);
+          if (!setup_array_data(client_pointer, array_reader, force)) {
+            return false;
+          }
           _glWeightPointerARB(num_values, get_numeric_type(numeric_type),
                               stride, client_pointer + start);
           GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
@@ -1900,7 +1918,9 @@ update_standard_vertex_arrays() {
           if (_data_reader->get_array_info(InternalName::get_transform_index(),
                                            array_reader, num_values, numeric_type,
                                            start, stride)) {
-            const unsigned char *client_pointer = setup_array_data(array_reader);
+            if (!setup_array_data(client_pointer, array_reader, force)) {
+              return false;
+            }
             _glMatrixIndexPointerARB(num_values, get_numeric_type(numeric_type),
                                      stride, client_pointer + start);
             GLP(EnableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
@@ -1921,12 +1941,15 @@ update_standard_vertex_arrays() {
     // anyway.
     if (_data_reader->get_vertex_info(array_reader, num_values, numeric_type,
                                       start, stride)) {
-      const unsigned char *client_pointer = setup_array_data(array_reader);
+      if (!setup_array_data(client_pointer, array_reader, force)) {
+        return false;
+      }
       GLP(VertexPointer)(num_values, get_numeric_type(numeric_type),
                          stride, client_pointer + start);
       GLP(EnableClientState)(GL_VERTEX_ARRAY);
     }
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1974,8 +1997,8 @@ disable_standard_vertex_arrays()
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_triangles(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 
 #ifndef NDEBUG
@@ -1996,7 +2019,10 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
     _primitive_batches_tri_pcollector.add_level(1);
 
     if (reader->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(reader);
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
 
       _glDrawRangeElements(GL_TRIANGLES,
                            reader->get_min_vertex(),
@@ -2012,6 +2038,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2019,8 +2046,8 @@ draw_triangles(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_tristrips(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 
   report_my_gl_errors();
@@ -2045,7 +2072,10 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
       _vertices_tristrip_pcollector.add_level(num_vertices);
       _primitive_batches_tristrip_pcollector.add_level(1);
       if (reader->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(reader);
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
         _glDrawRangeElements(GL_TRIANGLE_STRIP,
                              reader->get_min_vertex(),
                              reader->get_max_vertex(),
@@ -2065,12 +2095,15 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 
       _primitive_batches_tristrip_pcollector.add_level(ends.size());
       if (reader->is_indexed()) {
-        const unsigned char *client_pointer = setup_primitive(reader);
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
         int index_stride = reader->get_index_stride();
         GeomVertexReader mins(reader->get_mins(), 0);
         GeomVertexReader maxs(reader->get_maxs(), 0);
-        nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
-                 reader->get_maxs()->get_num_rows() == (int)ends.size());
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -2096,6 +2129,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2103,8 +2137,8 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_trifans(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -2124,12 +2158,15 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 
     _primitive_batches_trifan_pcollector.add_level(ends.size());
     if (reader->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(reader);
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
       int index_stride = reader->get_index_stride();
       GeomVertexReader mins(reader->get_mins(), 0);
       GeomVertexReader maxs(reader->get_maxs(), 0);
-      nassertv(reader->get_mins()->get_num_rows() == (int)ends.size() &&
-               reader->get_maxs()->get_num_rows() == (int)ends.size());
+      nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+               reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -2153,6 +2190,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2160,8 +2198,8 @@ draw_trifans(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_lines(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -2180,7 +2218,10 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
     _primitive_batches_other_pcollector.add_level(1);
 
     if (reader->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(reader);
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
       _glDrawRangeElements(GL_LINES,
                            reader->get_min_vertex(),
                            reader->get_max_vertex(),
@@ -2195,6 +2236,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2202,15 +2244,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of line strips.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_linestrips(const GeomPrimitivePipelineReader *reader) {
-  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
-#ifndef NDEBUG
-  if (GLCAT.is_spam()) {
-    GLCAT.spam() << "draw_linestrips: " << *(reader->get_object()) << "\n";
-  }
-#endif  // NDEBUG
-
+bool CLP(GraphicsStateGuardian)::
+draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2218,8 +2254,8 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader) {
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_points(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
@@ -2238,7 +2274,10 @@ draw_points(const GeomPrimitivePipelineReader *reader) {
     _primitive_batches_other_pcollector.add_level(1);
 
     if (reader->is_indexed()) {
-      const unsigned char *client_pointer = setup_primitive(reader);
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
       _glDrawRangeElements(GL_POINTS,
                            reader->get_min_vertex(),
                            reader->get_max_vertex(),
@@ -2253,6 +2292,7 @@ draw_points(const GeomPrimitivePipelineReader *reader) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2716,11 +2756,11 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //  Description: Makes the data the currently available data for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+bool CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataHandle *reader) {
-  nassertv(_supports_buffers);
-  nassertv(reader->get_modified() != UpdateSeq::initial());
+                    const GeomVertexArrayDataHandle *reader, bool force) {
+  nassertr(_supports_buffers, false);
+  nassertr(reader->get_modified() != UpdateSeq::initial(), false);
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
@@ -2743,14 +2783,17 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         << " bytes into vertex buffer " << gvbc->_index << "\n";
     }
     if (num_bytes != 0) {
+      const unsigned char *client_pointer = reader->get_read_pointer(force);
+      if (client_pointer == NULL) {
+        return false;
+      }
+
       if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
-        _glBufferData(GL_ARRAY_BUFFER, num_bytes,
-                      reader->get_read_pointer(true),
+        _glBufferData(GL_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
 
       } else {
-        _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes,
-                         reader->get_read_pointer(true));
+        _glBufferSubData(GL_ARRAY_BUFFER, 0, num_bytes, client_pointer);
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2759,6 +2802,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2809,17 +2853,24 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 //               buffer object if it should be rendered from client
 //               memory.
 //
-//               If the buffer object is bound, this function returns
-//               NULL (representing the start of the buffer object in
-//               server memory); if the buffer object is not bound,
-//               this function returns the pointer to the data array
-//               in client memory, that is, the data array passed in.
+//               If the buffer object is bound, this function sets
+//               client_pointer to NULL (representing the start of the
+//               buffer object in server memory); if the buffer object
+//               is not bound, this function sets client_pointer the
+//               pointer to the data array in client memory, that is,
+//               the data array passed in.
+//
+//               If force is not true, the function may return false
+//               indicating the data is not currently available.
 ////////////////////////////////////////////////////////////////////
-const unsigned char *CLP(GraphicsStateGuardian)::
-setup_array_data(const GeomVertexArrayDataHandle *array_reader) {
+bool CLP(GraphicsStateGuardian)::
+setup_array_data(const unsigned char *&client_pointer,
+                 const GeomVertexArrayDataHandle *array_reader,
+                 bool force) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return array_reader->get_read_pointer(true);
+    client_pointer = array_reader->get_read_pointer(force);
+    return (client_pointer != NULL);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       array_reader->get_usage_hint() == Geom::UH_client) {
@@ -2833,16 +2884,20 @@ setup_array_data(const GeomVertexArrayDataHandle *array_reader) {
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
       _current_vbuffer_index = 0;
     }
-    return array_reader->get_read_pointer(true);
+    client_pointer = array_reader->get_read_pointer(force);
+    return (client_pointer != NULL);
   }
 
   // Prepare the buffer object and bind it.
   VertexBufferContext *vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)NULL, array_reader->get_read_pointer(true));
-  apply_vertex_buffer(vbc, array_reader);
+  nassertr(vbc != (VertexBufferContext *)NULL, false);
+  if (!apply_vertex_buffer(vbc, array_reader, force)) {
+    return false;
+  }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  return NULL;
+  client_pointer = NULL;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2885,11 +2940,12 @@ prepare_index_buffer(GeomPrimitive *data) {
 //  Description: Makes the data the currently available data for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+bool CLP(GraphicsStateGuardian)::
 apply_index_buffer(IndexBufferContext *ibc,
-                   const GeomPrimitivePipelineReader *reader) {
-  nassertv(_supports_buffers);
-  nassertv(reader->get_modified() != UpdateSeq::initial());
+                   const GeomPrimitivePipelineReader *reader,
+                   bool force) {
+  nassertr(_supports_buffers, false);
+  nassertr(reader->get_modified() != UpdateSeq::initial(), false);
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
@@ -2913,14 +2969,18 @@ apply_index_buffer(IndexBufferContext *ibc,
         << " bytes into index buffer " << gibc->_index << "\n";
     }
     if (num_bytes != 0) {
+      const unsigned char *client_pointer = reader->get_read_pointer(force);
+      if (client_pointer == NULL) {
+        return false;
+      }
+
       if (gibc->changed_size(reader) || gibc->changed_usage_hint(reader)) {
-        _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes,
-                      reader->get_read_pointer(true),
+        _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
 
       } else {
         _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, num_bytes,
-                         reader->get_read_pointer(true));
+                         client_pointer);
       }
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -2928,6 +2988,7 @@ apply_index_buffer(IndexBufferContext *ibc,
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2978,17 +3039,24 @@ release_index_buffer(IndexBufferContext *ibc) {
 //               to unbind a buffer object if it should be rendered
 //               from client memory.
 //
-//               If the buffer object is bound, this function returns
-//               NULL (reprsenting the start of the buffer object in
-//               server memory); if the buffer object is not bound,
-//               this function returns the pointer to the data array
-//               in client memory, that is, the data array passed in.
+//               If the buffer object is bound, this function sets
+//               client_pointer to NULL (representing the start of the
+//               buffer object in server memory); if the buffer object
+//               is not bound, this function sets client_pointer to to
+//               the data array in client memory, that is, the data
+//               array passed in.
+//
+//               If force is not true, the function may return false
+//               indicating the data is not currently available.
 ////////////////////////////////////////////////////////////////////
-const unsigned char *CLP(GraphicsStateGuardian)::
-setup_primitive(const GeomPrimitivePipelineReader *reader) {
+bool CLP(GraphicsStateGuardian)::
+setup_primitive(const unsigned char *&client_pointer,
+                const GeomPrimitivePipelineReader *reader,
+                bool force) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return reader->get_read_pointer(true);
+    client_pointer = reader->get_read_pointer(force);
+    return (client_pointer != NULL);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       reader->get_usage_hint() == Geom::UH_client) {
@@ -3002,16 +3070,20 @@ setup_primitive(const GeomPrimitivePipelineReader *reader) {
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
       _current_ibuffer_index = 0;
     }
-    return reader->get_read_pointer(true);
+    client_pointer = reader->get_read_pointer(force);
+    return (client_pointer != NULL);
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = ((GeomPrimitive *)reader->get_object())->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, reader->get_read_pointer(true));
-  apply_index_buffer(ibc, reader);
+  nassertr(ibc != (IndexBufferContext *)NULL, false);
+  if (!apply_index_buffer(ibc, reader, force)) {
+    return false;
+  }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  return NULL;
+  client_pointer = NULL;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

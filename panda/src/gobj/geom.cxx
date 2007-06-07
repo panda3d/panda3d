@@ -1063,17 +1063,24 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 //  Description: Actually draws the Geom with the indicated GSG, using
 //               the indicated vertex data (which might have been
 //               pre-munged to support the GSG's needs).
+//
+//               Returns true if all of the primitives were drawn
+//               normally, false if there was a problem (for instance,
+//               some of the data was nonresident).  If force is
+//               passed true, it will wait for the data to become
+//               resident if necessary.
 ////////////////////////////////////////////////////////////////////
-void Geom::
+bool Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-     const GeomVertexData *vertex_data, Thread *current_thread) const {
+     const GeomVertexData *vertex_data, bool force,
+     Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
   geom_reader.check_usage_hint();
 
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
-  geom_reader.draw(gsg, munger, &data_reader);
+  return geom_reader.draw(gsg, munger, &data_reader, force);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1611,11 +1618,12 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 //       Access: Public
 //  Description: The implementation of Geom::draw().
 ////////////////////////////////////////////////////////////////////
-void GeomPipelineReader::
+bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-     const GeomVertexDataPipelineReader *data_reader) const {
+     const GeomVertexDataPipelineReader *data_reader, bool force) const {
   PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-  if (gsg->begin_draw_primitives(this, munger, data_reader)) {
+  bool all_ok = gsg->begin_draw_primitives(this, munger, data_reader, force);
+  if (all_ok) {
     Geom::Primitives::const_iterator pi;
     for (pi = _cdata->_primitives.begin(); 
          pi != _cdata->_primitives.end();
@@ -1624,10 +1632,14 @@ draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
       GeomPrimitivePipelineReader reader(primitive, _current_thread);
       if (reader.get_num_vertices() != 0) {
         reader.check_minmax();
-        nassertv(reader.check_valid(data_reader));
-        primitive->draw(gsg, &reader);
+        nassertr(reader.check_valid(data_reader), false);
+        if (!primitive->draw(gsg, &reader, force)) {
+          all_ok = false;
+        }
       }
     }
     gsg->end_draw_primitives();
   }
+
+  return all_ok;
 }

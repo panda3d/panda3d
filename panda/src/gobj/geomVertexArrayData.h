@@ -275,6 +275,8 @@ PUBLISHED:
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  INLINE bool request_resident() const;
+
   void copy_data_from(const GeomVertexArrayDataHandle *other);
   void copy_subdata_from(size_t to_start, size_t to_size,
                          const GeomVertexArrayDataHandle *other,

@@ -137,10 +137,10 @@ PUBLISHED:
                            GraphicsStateGuardianBase *gsg);
 
 public:
-  void draw(GraphicsStateGuardianBase *gsg, 
+  bool draw(GraphicsStateGuardianBase *gsg, 
             const GeomMunger *munger,
             const GeomVertexData *vertex_data,
-            Thread *current_thread) const;
+            bool force, Thread *current_thread) const;
 
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 				bool &found_any, 
@@ -396,8 +396,9 @@ public:
 
   bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
-  void draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
-            const GeomVertexDataPipelineReader *data_reader) const;
+  bool draw(GraphicsStateGuardianBase *gsg, const GeomMunger *munger,
+            const GeomVertexDataPipelineReader *data_reader,
+            bool force) const;
 
 private:
   CPT(Geom) _object;

@@ -215,13 +215,20 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomMunger *munger,
-                                     const GeomVertexDataPipelineReader *data_reader);
-  virtual void draw_triangles(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_tristrips(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_trifans(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_lines(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_linestrips(const GeomPrimitivePipelineReader *reader);
-  virtual void draw_points(const GeomPrimitivePipelineReader *reader);
+                                     const GeomVertexDataPipelineReader *data_reader,
+                                     bool force);
+  virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
+                              bool force);
+  virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
+                              bool force);
+  virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
+                            bool force);
+  virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
+                          bool force);
+  virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader,
+                               bool force);
+  virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
+                           bool force);
   virtual void end_draw_primitives();
 
   INLINE bool reset_if_new();
