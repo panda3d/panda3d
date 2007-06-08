@@ -2775,7 +2775,6 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   }
 
   if (gvbc->was_modified(reader)) {
-    PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2788,6 +2787,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         return false;
       }
 
+      PStatTimer timer(_load_vertex_buffer_pcollector, reader->get_current_thread());
       if (gvbc->changed_size(reader) || gvbc->changed_usage_hint(reader)) {
         _glBufferData(GL_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
@@ -2960,8 +2960,6 @@ apply_index_buffer(IndexBufferContext *ibc,
   }
 
   if (gibc->was_modified(reader)) {
-    PStatTimer timer(_load_index_buffer_pcollector, reader->get_current_thread());
-    
     int num_bytes = reader->get_data_size_bytes();
     if (GLCAT.is_spam()) {
       GLCAT.spam()
@@ -2974,6 +2972,7 @@ apply_index_buffer(IndexBufferContext *ibc,
         return false;
       }
 
+      PStatTimer timer(_load_index_buffer_pcollector, reader->get_current_thread());
       if (gibc->changed_size(reader) || gibc->changed_usage_hint(reader)) {
         _glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_bytes, client_pointer,
                       get_usage(reader->get_usage_hint()));
