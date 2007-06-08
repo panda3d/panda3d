@@ -73,6 +73,17 @@ ConfigVariableBool allow_collider_multiple
           "false, a one-word BitMask is always used instead, which is faster "
           "per pass, but may require more passes."));
 
+ConfigVariableBool flatten_collision_nodes
+("flatten-collision-nodes", false,
+ PRC_DESC("Set this true to allow NodePath::flatten_medium() and "
+          "flatten_strong() to combine multiple CollisionNodes "
+          "into a single CollisionNode--but only if they share the "
+          "same name and collide masks.  When false, CollisionNodes "
+          "are never combined.  This is false by default, since "
+          "collision tests rely heavily on bounding volume tests "
+          "to be efficient, and combining CollisionNodes is likely "
+          "to merge bounding volumes inappropriately."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide

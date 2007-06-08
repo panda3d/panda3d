@@ -28,6 +28,7 @@ NotifyCategoryDecl(collide, EXPCL_PANDA, EXPTP_PANDA);
 extern EXPCL_PANDA ConfigVariableBool respect_prev_transform;
 extern EXPCL_PANDA ConfigVariableBool respect_effective_normal;
 extern EXPCL_PANDA ConfigVariableBool allow_collider_multiple;
+extern EXPCL_PANDA ConfigVariableBool flatten_collision_nodes;
 
 extern EXPCL_PANDA void init_libcollide();
 
