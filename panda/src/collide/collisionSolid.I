@@ -50,7 +50,7 @@ set_tangible(bool tangible) {
 INLINE bool CollisionSolid::
 is_tangible() const {
   MutexHolder holder(_lock);
-  return (_flags & F_tangible) != 0;
+  return do_is_tangible();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ clear_effective_normal() {
 INLINE bool CollisionSolid::
 has_effective_normal() const {
   MutexHolder holder(_lock);
-  return respect_effective_normal && (_flags & F_effective_normal) != 0;
+  return do_has_effective_normal();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,8 +105,8 @@ has_effective_normal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &CollisionSolid::
 get_effective_normal() const {
-  nassertr(has_effective_normal(), LVector3f::zero());
   MutexHolder holder(_lock);
+  nassertr(do_has_effective_normal(), LVector3f::zero());
   return _effective_normal;
 }
 
@@ -141,6 +141,29 @@ INLINE bool CollisionSolid::
 get_respect_effective_normal() const {
   MutexHolder holder(_lock);
   return (_flags & F_ignore_effective_normal) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::do_is_tangible
+//       Access: Protected
+//  Description: Returns whether the solid is considered 'tangible' or
+//               not. Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionSolid::
+do_is_tangible() const {
+  return (_flags & F_tangible) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::do_has_effective_normal
+//       Access: Protected
+//  Description: Returns true if a special normal was set by
+//               set_effective_normal(), false otherwise.  Assumes the
+//               lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionSolid::
+do_has_effective_normal() const {
+  return respect_effective_normal && (_flags & F_effective_normal) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

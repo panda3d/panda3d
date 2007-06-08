@@ -95,6 +95,9 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
+  INLINE bool do_is_tangible() const;
+  INLINE bool do_has_effective_normal() const;
+
   INLINE void mark_internal_bounds_stale();
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 

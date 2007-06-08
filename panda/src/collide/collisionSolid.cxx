@@ -412,6 +412,8 @@ fill_viz_geom() {
 //               visualizations in solid.  This automatically returns
 //               the appropriate state according to the setting of
 //               _tangible.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_solid_viz_state() {
@@ -425,7 +427,7 @@ get_solid_viz_state() {
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
-  if (!is_tangible()) {
+  if (!do_is_tangible()) {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
@@ -433,7 +435,7 @@ get_solid_viz_state() {
     }
     return intangible_state;
 
-  } else if (has_effective_normal()) {
+  } else if (do_has_effective_normal()) {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
@@ -459,6 +461,8 @@ get_solid_viz_state() {
 //               visualizations in wireframe.  This automatically returns
 //               the appropriate state according to the setting of
 //               _tangible.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_wireframe_viz_state() {
@@ -472,7 +476,7 @@ get_wireframe_viz_state() {
        TransparencyAttrib::make(TransparencyAttrib::M_none));
   }
 
-  if (!is_tangible()) {
+  if (!do_is_tangible()) {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
@@ -480,7 +484,7 @@ get_wireframe_viz_state() {
     }
     return intangible_state;
 
-  } else if (has_effective_normal()) {
+  } else if (do_has_effective_normal()) {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
@@ -505,6 +509,8 @@ get_wireframe_viz_state() {
 //  Description: Returns a RenderState for rendering collision
 //               visualizations for things that are neither solid nor
 //               exactly wireframe, like rays and segments.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_other_viz_state() {
@@ -530,6 +536,8 @@ get_other_viz_state() {
 //               visualizations in solid.  This automatically returns
 //               the appropriate state according to the setting of
 //               _tangible.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_solid_bounds_viz_state() {
@@ -543,7 +551,7 @@ get_solid_bounds_viz_state() {
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
-  if (!is_tangible()) {
+  if (!do_is_tangible()) {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
@@ -551,7 +559,7 @@ get_solid_bounds_viz_state() {
     }
     return intangible_state;
 
-  } else if (has_effective_normal()) {
+  } else if (do_has_effective_normal()) {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
@@ -577,6 +585,8 @@ get_solid_bounds_viz_state() {
 //               visualizations in wireframe.  This automatically returns
 //               the appropriate state according to the setting of
 //               _tangible.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_wireframe_bounds_viz_state() {
@@ -601,6 +611,8 @@ get_wireframe_bounds_viz_state() {
 //  Description: Returns a RenderState for rendering collision
 //               visualizations for things that are neither solid nor
 //               exactly wireframe, like rays and segments.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) CollisionSolid::
 get_other_bounds_viz_state() {
