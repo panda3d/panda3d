@@ -67,6 +67,7 @@
     loaderFileTypeRegistry.h \
     loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
+    lodNodeType.h \
     materialAttrib.I materialAttrib.h \
     materialCollection.I materialCollection.h \
     modelFlattenRequest.I modelFlattenRequest.h \
@@ -175,6 +176,7 @@
     loaderFileTypeRegistry.cxx  \
     loaderOptions.cxx \
     lodNode.cxx \
+    lodNodeType.cxx \
     materialAttrib.cxx \
     materialCollection.cxx \
     modelFlattenRequest.cxx \
@@ -278,6 +280,7 @@
     loaderFileTypeRegistry.h \
     loaderOptions.I loaderOptions.h \
     lodNode.I lodNode.h \
+    lodNodeType.h \
     materialAttrib.I materialAttrib.h \
     materialCollection.I materialCollection.h \
     modelFlattenRequest.I modelFlattenRequest.h \

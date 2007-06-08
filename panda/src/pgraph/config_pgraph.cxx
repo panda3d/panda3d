@@ -328,6 +328,11 @@ ConfigVariableBool allow_incomplete_render
           "geometry is always paged in when needed, holding up the frame "
           "render if necessary."));
 
+ConfigVariableEnum<LODNodeType> default_lod_type
+("default-lod-type", LNT_pop,
+ PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
+          "LODNode that is created by LODNode::make_default_lod()."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at

@@ -36,6 +36,8 @@ class EXPCL_PANDA LODNode : public PandaNode {
 PUBLISHED:
   INLINE LODNode(const string &name);
 
+  static PT(LODNode) make_default_lod(const string &name);
+
 protected:
   INLINE LODNode(const LODNode &copy);
 public:

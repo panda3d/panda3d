@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "lodNode.h"
+#include "fadeLodNode.h"
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
 #include "config_pgraph.h"
@@ -42,6 +43,28 @@
 #include "colorAttrib.h"
 
 TypeHandle LODNode::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::make_default_lod
+//       Access: Published, Static
+//  Description: Creates a new LODNode of the type specified by the
+//               default-lod-type config variable.
+////////////////////////////////////////////////////////////////////
+PT(LODNode) LODNode::
+make_default_lod(const string &name) {
+  switch (default_lod_type) {
+  case LNT_pop:
+    return new LODNode(name);
+
+  case LNT_fade:
+    return new FadeLODNode(name);
+    
+  default:
+    pgraph_cat.error()
+      << "Invalid LODNodeType value: " << (int)default_lod_type << "\n";
+    return new LODNode(name);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LODNode::make_copy
@@ -763,6 +786,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 TypedWritable *LODNode::
 make_from_bam(const FactoryParams &params) {
   LODNode *node = new LODNode("");
+  
   DatagramIterator scan;
   BamReader *manager;
 

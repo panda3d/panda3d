@@ -10,6 +10,7 @@
 #include "loaderFileTypeRegistry.cxx"
 #include "loaderOptions.cxx"
 #include "lodNode.cxx"
+#include "lodNodeType.cxx"
 #include "materialAttrib.cxx"
 #include "materialCollection.cxx"
 #include "modelFlattenRequest.cxx"
