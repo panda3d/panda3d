@@ -85,7 +85,7 @@ class Actor(DirectObject, NodePath):
             return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
 
     def __init__(self, models=None, anims=None, other=None, copy=1,
-                 lodNode = None, flattenable = 1):
+                 lodNode = None, flattenable = 1, setFinal = 0):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -273,20 +273,22 @@ class Actor(DirectObject, NodePath):
         else:
             self.copyActor(other, True) # overwrite everything
 
-        # For now, all Actors will by default set their top bounding
-        # volume to be the "final" bounding volume: the bounding
-        # volumes below the top volume will not be tested.  If a cull
-        # test passes the top bounding volume, the whole Actor is
-        # rendered.
+        if setFinal:
+            # If setFinal is true, the Actor will set its top bounding
+            # volume to be the "final" bounding volume: the bounding
+            # volumes below the top volume will not be tested.  If a
+            # cull test passes the top bounding volume, the whole
+            # Actor is rendered.
 
-        # We do this partly because an Actor is likely to be a fairly
-        # small object relative to the scene, and is pretty much going
-        # to be all onscreen or all offscreen anyway; and partly
-        # because of the Character bug that doesn't update the
-        # bounding volume for pieces that animate away from their
-        # original position.  It's disturbing to see someone's hands
-        # disappear; better to cull the whole object or none of it.
-        self.__geomNode.node().setFinal(1)
+            # We do this partly because an Actor is likely to be a
+            # fairly small object relative to the scene, and is pretty
+            # much going to be all onscreen or all offscreen anyway;
+            # and partly because of the Character bug that doesn't
+            # update the bounding volume for pieces that animate away
+            # from their original position.  It's disturbing to see
+            # someone's hands disappear; better to cull the whole
+            # object or none of it.
+            self.__geomNode.node().setFinal(1)
 
     def delete(self):
         try:
