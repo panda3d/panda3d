@@ -441,14 +441,16 @@ create_vbuffer(DXScreenData &scrn,
 //  Description: Copies the latest data from the client store to
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
-void DXVertexBufferContext9::
-upload_data(const GeomVertexArrayDataHandle *reader) {
-  nassertv(reader->get_object() == get_data());
-  nassertv(_vbuffer != NULL);
+bool DXVertexBufferContext9::
+upload_data(const GeomVertexArrayDataHandle *reader, bool force) {
+  nassertr(reader->get_object() == get_data(), false);
+  nassertr(_vbuffer != NULL, false);
   Thread *current_thread = reader->get_current_thread();
-  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector,
-                   current_thread);
 
+  const unsigned char *data_pointer = reader->get_read_pointer(force);
+  if (data_pointer == NULL) {
+    return false;
+  }
   int data_size = reader->get_data_size_bytes();
 
   if (dxgsg9_cat.is_spam()) {
@@ -456,6 +458,8 @@ upload_data(const GeomVertexArrayDataHandle *reader) {
       << "copying " << data_size
       << " bytes into vertex buffer " << _vbuffer << "\n";
   }
+  PStatTimer timer(GraphicsStateGuardian::_load_vertex_buffer_pcollector,
+                   current_thread);
 
   HRESULT hr;
   BYTE *local_pointer;
@@ -469,11 +473,12 @@ upload_data(const GeomVertexArrayDataHandle *reader) {
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
-    return;
+    return false;
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, reader->get_read_pointer(true), data_size);
+  memcpy(local_pointer, data_pointer, data_size);
 
   _vbuffer->Unlock();
+  return true;
 }

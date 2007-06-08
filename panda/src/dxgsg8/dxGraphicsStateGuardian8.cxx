@@ -303,9 +303,9 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 //  Description: Updates the vertex buffer with the current data, and
 //               makes it the current vertex buffer for rendering.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
+bool DXGraphicsStateGuardian8::
 apply_vertex_buffer(VertexBufferContext *vbc,
-                    const GeomVertexArrayDataHandle *reader) {
+                    const GeomVertexArrayDataHandle *reader, bool force) {
   DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
 
   if (dvbc->_vbuffer == NULL) {
@@ -316,7 +316,9 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     }
 
     if (dvbc->_vbuffer != NULL) {
-      dvbc->upload_data(reader);
+      if (!dvbc->upload_data(reader, force)) {
+        return false;
+      }
 
       dvbc->mark_loaded(reader);
 
@@ -338,7 +340,9 @@ apply_vertex_buffer(VertexBufferContext *vbc,
         dvbc->create_vbuffer(*_screen, reader);
       }
 
-      dvbc->upload_data(reader);
+      if (!dvbc->upload_data(reader, force)) {
+        return false;
+      }
       dvbc->mark_loaded(reader);
       _active_vbuffer = NULL;
     }
@@ -360,6 +364,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       << ") failed" << D3DERRORSTRING(hr);
   }
 #endif
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,9 +406,9 @@ prepare_index_buffer(GeomPrimitive *data) {
 //  Description: Updates the index buffer with the current data, and
 //               makes it the current index buffer for rendering.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian8::
+bool DXGraphicsStateGuardian8::
 apply_index_buffer(IndexBufferContext *ibc,
-                   const GeomPrimitivePipelineReader *reader) {
+                   const GeomPrimitivePipelineReader *reader, bool force) {
   DXIndexBufferContext8 *dibc = DCAST(DXIndexBufferContext8, ibc);
 
   if (dibc->_ibuffer == NULL) {
@@ -411,7 +416,9 @@ apply_index_buffer(IndexBufferContext *ibc,
     dibc->create_ibuffer(*_screen, reader);
 
     if (dibc->_ibuffer != NULL) {
-      dibc->upload_data(reader);
+      if (!dibc->upload_data(reader, force)) {
+        return false;
+      }
       dibc->mark_loaded(reader);
 
       _d3d_device->SetIndices(dibc->_ibuffer, 0);
@@ -431,7 +438,9 @@ apply_index_buffer(IndexBufferContext *ibc,
         dibc->create_ibuffer(*_screen, reader);
       }
 
-      dibc->upload_data(reader);
+      if (!dibc->upload_data(reader, force)) {
+        return false;
+      }
 
       dibc->mark_loaded(reader);
       _active_ibuffer = NULL;
@@ -443,6 +452,8 @@ apply_index_buffer(IndexBufferContext *ibc,
       dibc->set_active(true);
     }
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -812,7 +823,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
-  apply_vertex_buffer(vbc, data);
+  if (!apply_vertex_buffer(vbc, data, force)) {
+    return false;
+  }
 
   const GeomVertexAnimationSpec &animation =
     data_reader->get_format()->get_animation();
@@ -917,7 +930,9 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertr(ibc != (IndexBufferContext *)NULL, false);
-      apply_index_buffer(ibc, reader);
+      if (!apply_index_buffer(ibc, reader, force)) {
+        return false;
+      }
 
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_TRIANGLELIST,
@@ -987,7 +1002,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         // Indexed, vbuffers, one line triangle strip.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertr(ibc != (IndexBufferContext *)NULL, false);
-        apply_index_buffer(ibc, reader);
+        if (!apply_index_buffer(ibc, reader, force)) {
+          return false;
+        }
 
         _d3d_device->DrawIndexedPrimitive
           (D3DPT_TRIANGLESTRIP,
@@ -1055,7 +1072,9 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
         // Indexed, vbuffers, individual triangle strips.
         IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
         nassertr(ibc != (IndexBufferContext *)NULL, false);
-        apply_index_buffer(ibc, reader);
+        if (!apply_index_buffer(ibc, reader, force)) {
+          return false;
+        }
 
         unsigned int start = 0;
         for (size_t i = 0; i < ends.size(); i++) {
@@ -1165,7 +1184,9 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertr(ibc != (IndexBufferContext *)NULL, false);
-      apply_index_buffer(ibc, reader);
+      if (!apply_index_buffer(ibc, reader, force)) {
+        return false;
+      }
 
       unsigned int start = 0;
       for (size_t i = 0; i < ends.size(); i++) {
@@ -1265,7 +1286,9 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
       // Indexed, vbuffers.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
       nassertr(ibc != (IndexBufferContext *)NULL, false);
-      apply_index_buffer(ibc, reader);
+      if (!apply_index_buffer(ibc, reader, force)) {
+        return false;
+      }
 
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_LINELIST,

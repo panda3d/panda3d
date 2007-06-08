@@ -36,7 +36,7 @@ public:
   void free_ibuffer();
   void allocate_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);
   void create_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);
-  void upload_data(const GeomPrimitivePipelineReader *reader);
+  bool upload_data(const GeomPrimitivePipelineReader *reader, bool force);
 
   IDirect3DIndexBuffer9 *_ibuffer;
   int _managed;

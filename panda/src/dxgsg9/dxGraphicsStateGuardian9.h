@@ -93,13 +93,13 @@ public:
   void release_shader(ShaderContext *sc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
-  void apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context,
-                           const GeomVertexArrayDataHandle *reader);
+  bool apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context,
+                           const GeomVertexArrayDataHandle *reader, bool force);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);
-  void apply_index_buffer(IndexBufferContext *ibc,
-                          const GeomPrimitivePipelineReader *reader);
+  bool apply_index_buffer(IndexBufferContext *ibc,
+                          const GeomPrimitivePipelineReader *reader, bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
   virtual void begin_occlusion_query();

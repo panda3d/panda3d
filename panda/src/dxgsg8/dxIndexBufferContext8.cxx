@@ -104,15 +104,17 @@ create_ibuffer(DXScreenData &scrn,
 //  Description: Copies the latest data from the client store to
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
-void DXIndexBufferContext8::
-upload_data(const GeomPrimitivePipelineReader *reader) {
-  nassertv(reader->get_object() == get_data());
+bool DXIndexBufferContext8::
+upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
+  nassertr(reader->get_object() == get_data(), false);
   Thread *current_thread = reader->get_current_thread();
 
-  nassertv(_ibuffer != NULL);
-  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector,
-                   current_thread);
+  nassertr(_ibuffer != NULL, false);
 
+  const unsigned char *data_pointer = reader->get_read_pointer(force);
+  if (data_pointer == NULL) {
+    return false;
+  }
   int data_size = reader->get_data_size_bytes();
 
   if (dxgsg8_cat.is_spam()) {
@@ -121,18 +123,22 @@ upload_data(const GeomPrimitivePipelineReader *reader) {
       << " bytes into index buffer " << _ibuffer << "\n";
   }
 
+  PStatTimer timer(GraphicsStateGuardian::_load_index_buffer_pcollector,
+                   current_thread);
+
   BYTE *local_pointer;
 //  HRESULT hr = _ibuffer->Lock(0, data_size, &local_pointer, 0);
   HRESULT hr = _ibuffer->Lock(0, data_size, &local_pointer, D3DLOCK_DISCARD);
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "IndexBuffer::Lock failed" << D3DERRORSTRING(hr);
-    return;
+    return false;
   }
 
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(data_size);
-  memcpy(local_pointer, reader->get_read_pointer(true), data_size);
+  memcpy(local_pointer, data_pointer, data_size);
 
   _ibuffer->Unlock();
+  return true;
 }
 

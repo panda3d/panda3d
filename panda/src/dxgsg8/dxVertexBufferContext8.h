@@ -35,7 +35,7 @@ public:
 
   void create_vbuffer(DXScreenData &scrn,
                       const GeomVertexArrayDataHandle *reader);
-  void upload_data(const GeomVertexArrayDataHandle *reader);
+  bool upload_data(const GeomVertexArrayDataHandle *reader, bool force);
 
   IDirect3DVertexBuffer8 *_vbuffer;
   int _fvf;
