@@ -251,10 +251,12 @@ correct_time(double time) {
   double time_delta = (time - _timestamps.back()._time) * _time_scale;
   double tod_delta = (tod - _timestamps.back()._tod);
   
-  if (time_delta < 0.0 ||
+  if (time_delta < -0.0001 ||
       fabs(time_delta - tod_delta) > paranoid_clock_jump_error) {
     // A step backward in the high-precision clock, or more than a
-    // small jump on only one of the clocks, is cause for alarm.
+    // small jump on only one of the clocks, is cause for alarm.  We
+    // allow a trivial step backward in the high-precision clock,
+    // since this does appear to happen in a threaded environment.
 
     clock_cat.debug()
       << "Clock error detected; elapsed time " << time_delta
