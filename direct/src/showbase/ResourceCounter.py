@@ -68,10 +68,10 @@ class ResourceCounter(object):
     def __init__(self):
         cls = type(self)
         cls.RESOURCE_COUNTER_INIT = True
-        assert cls.__mro__[1] == ResourceCounter, \
+        assert cls.mro()[1] == ResourceCounter, \
                (lambda: \
                 '%s cannot be subclassed.' \
-                 % cls.__mro__[list(cls.__mro__).index(ResourceCounter) - 1].__name__)()
+                 % cls.mro()[list(cls.mro()).index(ResourceCounter) - 1].__name__)()
         del cls.RESOURCE_COUNTER_INIT
         self.incrementCounter()
 
