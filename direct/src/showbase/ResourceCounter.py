@@ -17,22 +17,24 @@ class ResourceCounter(object):
 
     Usage:
         Define a subclass of ResourceCounter that defines the
-        classmethods acquire() and release().  In these two
+        @classmethods acquire() and release().  In these two
         functions, define your resource allocation and cleanup code.
 
     IMPORTANT:
         If you define your own __init__ and __del__ methods, you
-        MUST be sure to call down to the ones defined in ResourceCounter.
+        MUST be sure to call down to the ones defined in
+        ResourceCounter.
     
     Notes:
-        Until we figure out a way to wrangle a bit more functionality out
-        of Python, you MUST NOT define acquire() and release() again in
-        any subclasses of your ResourceCounter subclass in an attempt
-        to manage another resource.  In debug mode, this will raise a
-        runtime assertion. If you have more than one resource, you should
-        subclass ResourceCounter again.  See the example code at the
-        bottom of this file to see how to manage more than one resource
-        with a single instance of an object (Useful for dependent resources).
+        Until we figure out a way to wrangle a bit more functionality
+        out of Python, you MUST NOT inherit from any class that has
+        ResourceCounter as its base class. In debug mode, this will
+        raise a runtime assertion during the invalid class's call to
+        __init__(). If you have more than one resource that you want to
+        manage/access with a single object, you should subclass
+        ResourceCounter again. See the example code at the bottom of
+        this file to see how to accomplish this (This is useful for
+        dependent resources).
     """
     
     @classmethod
@@ -47,25 +49,30 @@ class ResourceCounter(object):
 
     @classmethod
     def decrementCounter(cls):
-        cls.RESOURCE_COUNTER -= 1
-        if cls.RESOURCE_COUNTER < 1:
-            cls.release()
-
+        try:
+            cls.RESOURCE_COUNTER_INIT
+            del cls.RESOURCE_COUNTER_INIT
+        except AttributeError:
+            cls.RESOURCE_COUNTER -= 1
+            if cls.RESOURCE_COUNTER < 1:
+                cls.release()
+        
     @classmethod
     def acquire(cls):
-        cls.RESOURCE_COUNTER -= 1
-        assert cls.__mro__[1] == ResourceCounter, \
-               (lambda: \
-                'acquire() should only be defined in ResourceCounter\'s immediate subclass: %s' \
-                 % cls.__mro__[list(cls.__mro__).index(ResourceCounter) - 1].__name__)()
-
-        cls.RESOURCE_COUNTER += 1
-
+        pass
+    
     @classmethod
-    def release(cls, *args, **kwargs):
+    def release(cls):
         pass
     
     def __init__(self):
+        cls = type(self)
+        cls.RESOURCE_COUNTER_INIT = True
+        assert cls.__mro__[1] == ResourceCounter, \
+               (lambda: \
+                '%s cannot be subclassed.' \
+                 % cls.__mro__[list(cls.__mro__).index(ResourceCounter) - 1].__name__)()
+        del cls.RESOURCE_COUNTER_INIT
         self.incrementCounter()
 
     def __del__(self):
@@ -79,17 +86,29 @@ if __debug__ and __name__ == '__main__':
         """
         @classmethod
         def acquire(cls):
+            # The call to the super-class's acquire() is
+            # not necessary at the moment, but may be in
+            # the future, so do it now for good measure.
             super(MouseResource, cls).acquire()
+
+            # Now acquire the resource this class is
+            # managing.
             print '-- Acquire Mouse'
         
         @classmethod
         def release(cls):
+            # First, release the resource this class is
+            # managing.
             print '-- Release Mouse'
+
+            # The call to the super-class's release() is
+            # not necessary at the moment, but may be in
+            # the future, so do it now for good measure.
             super(MouseResource, cls).release()
 
     
         def __init__(self):
-            super(MouseResource, self).__init__()            
+            super(MouseResource, self).__init__()
 
         def __del__(self):
             super(MouseResource, self).__del__()
@@ -110,14 +129,26 @@ if __debug__ and __name__ == '__main__':
         @classmethod
         def release(cls):
             print '-- Release Cursor'
+
             super(CursorResource, cls).release()
 
         def __init__(self):
+            # The required resource references should
+            # be stored on 'self' since we want to
+            # release it when the object is deleted.
             self.__mouseResource = MouseResource()
+
+            # Call the super-classes __init__()
+            # after all required resources are
+            # referenced.
             super(CursorResource, self).__init__()            
         
         def __del__(self):
+            # Free up the most dependent resource
+            # first, the one this class is managing.
             super(CursorResource, self).__del__()
+            
+            # Now unlink any required resources.
             del self.__mouseResource
 
     class InvalidResource(MouseResource):
@@ -130,7 +161,6 @@ if __debug__ and __name__ == '__main__':
         def release(cls):
             print '-- Release Invalid'
             super(InvalidResource, cls).release()
-            
             
     print '\nAllocate Mouse'
     m = MouseResource()
@@ -169,11 +199,9 @@ if __debug__ and __name__ == '__main__':
     print '\nAllocate Cursor then Mouse'
     c = CursorResource()
     m = MouseResource()
-    print 'Free up Mouse'
-    del m
     print 'Free up Cursor'
     del c
-
+    
     # example of an invalid subclass
     try:
         print '\nAllocate Invalid'
@@ -181,6 +209,10 @@ if __debug__ and __name__ == '__main__':
         print 'Free up Invalid'
     except AssertionError,e:
         print e
+    print
+
+    print 'Free up Mouse'
+    del m
 
     def demoFunc():
         print '\nAllocate Cursor within function'
@@ -189,5 +221,6 @@ if __debug__ and __name__ == '__main__':
         print 'Cursor will be freed on function exit'
         
     demoFunc()
+
 
 
