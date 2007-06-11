@@ -120,7 +120,7 @@ class EventManager:
             if self.eventQueue == EventManager.EventQueue.getGlobalEventQueue():
                 # If we are using the global event queue, then we also
                 # want to use the global event handler.
-                self.eventHandler = EventManager.EventHandler.getGlobalEventHandler(self.eventQueue)
+                self.eventHandler = EventManager.EventHandler.getGlobalEventHandler()
             else:
                 # Otherwise, we need our own event handler.
                 self.eventHandler = EventManager.EventHandler(self.eventQueue)
