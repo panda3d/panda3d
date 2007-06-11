@@ -558,7 +558,7 @@ class Actor(DirectObject, NodePath):
         If one is not supplied as an argument, make one
         """
         if (node == None):
-            node = LODNode("lod")
+            node = LODNode.makeDefaultLod("lod")
 
         if self.__LODNode:
             self.__LODNode = node
