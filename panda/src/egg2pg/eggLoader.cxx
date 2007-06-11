@@ -1652,7 +1652,7 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
 ////////////////////////////////////////////////////////////////////
 PandaNode *EggLoader::
 make_lod(EggBin *egg_bin, PandaNode *parent) {
-  LODNode *lod_node = new LODNode(egg_bin->get_name());
+  PT(LODNode) lod_node = LODNode::make_default_lod(egg_bin->get_name());
 
   pvector<LODInstance> instances;
   
