@@ -69,12 +69,8 @@ class ClientRepositoryBase(ConnectionRepository):
         class type is marked "deferrable".  Set this to 0 to indicate
         no deferring will occur."""
 
-        # Temporary condition for old Pandas.
-        if hasattr(self, 'setHandleCUpdates'):
-            self.deferInterval = deferInterval
-            self.setHandleCUpdates(self.deferInterval != 0)
-        else:
-            self.deferInterval = 0
+        self.deferInterval = deferInterval
+        self.setHandleCUpdates(self.deferInterval != 0)
 
         if self.deferredGenerates:
             taskMgr.remove('deferredGenerate')
