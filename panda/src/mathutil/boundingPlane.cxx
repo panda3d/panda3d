@@ -203,3 +203,23 @@ contains_box(const BoundingBox *box) const {
 
   return result;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingPlane::contains_line
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingPlane::
+contains_line(const BoundingLine *line) const {
+  return IF_possible;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingPlane::contains_plane
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int BoundingPlane::
+contains_plane(const BoundingPlane *plane) const {
+  return IF_possible;
+}

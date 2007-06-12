@@ -448,6 +448,10 @@ around_finite(const BoundingVolume **first,
   for (++p; p != last; ++p) {
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
+      if (!(*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
+        set_infinite();
+        return true;
+      }
       const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
       LPoint3f min1 = vol->get_min();
       LPoint3f max1 = vol->get_max();

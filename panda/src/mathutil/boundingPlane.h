@@ -60,6 +60,8 @@ protected:
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
+  virtual int contains_line(const BoundingLine *line) const;
+  virtual int contains_plane(const BoundingPlane *plane) const;
 
 private:
   Planef _plane;
