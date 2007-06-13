@@ -393,25 +393,15 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
   
   minimum_time = current_time - _time_window;
   
-  int index;
-  int last_frame_index;
-  list <CMotionTrailFrame>::iterator frame_iterator;
   CMotionTrailFrame motion_trail_frame;
   
-  index = 0;
-  last_frame_index = total_frames - 1; 
-  frame_iterator = _frame_list.end ( );
-  while (index <= last_frame_index) {
-    frame_iterator--;
-    motion_trail_frame = *frame_iterator;
+  while (!_frame_list.empty()) {
+    motion_trail_frame = _frame_list.back();
     if (motion_trail_frame._time >= minimum_time) {
       break;
     }
-    else {
-      _frame_list.pop_back ( );
-    }
     
-    index += 1;
+    _frame_list.pop_back ( );
   }
   
   // add new frame to beginning of list
@@ -440,7 +430,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
     list <CMotionTrailVertex>::iterator vertex_iterator;    
 
     // convert vertex list to vertex array
-    index = 0;
+    int index = 0;
     _vertex_array = new CMotionTrailVertex [total_vertices];
     for (vertex_iterator = _vertex_list.begin ( ); vertex_iterator != _vertex_list.end ( ); vertex_iterator++) {   
       _vertex_array [index] = *vertex_iterator;        
@@ -452,10 +442,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
 
     total_segments = total_frames - 1;
       
-    frame_iterator = _frame_list.end ( );
-    frame_iterator--;
-    last_motion_trail_frame = *frame_iterator;
-    
+    last_motion_trail_frame = _frame_list.back();
     minimum_time = last_motion_trail_frame._time;
     delta_time = current_time - minimum_time;
 
@@ -499,6 +486,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
       
       segment_index = 0;
 
+      list <CMotionTrailFrame>::iterator frame_iterator;
       frame_iterator = _frame_list.begin ( );
       while (segment_index < total_segments) {
         int vertex_segement_index;
@@ -751,6 +739,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
       CMotionTrailFrame motion_trail_frame_end;
                     
       segment_index = 0;
+      list <CMotionTrailFrame>::iterator frame_iterator;
       frame_iterator = _frame_list.begin ( );
       while (segment_index < total_segments) {
       
