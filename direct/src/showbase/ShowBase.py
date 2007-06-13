@@ -222,9 +222,9 @@ class ShowBase(DirectObject.DirectObject):
 
         # Open the default rendering window.
         if self.windowType != 'none':
-	    props = WindowProperties.getDefault()
-	    if (self.config.GetBool('read-raw-mice', 0)):
-	        props.setRawMice(1)
+            props = WindowProperties.getDefault()
+            if (self.config.GetBool('read-raw-mice', 0)):
+                props.setRawMice(1)
             self.openDefaultWindow(startDirect = False, props=props)
 
         self.loader = Loader.Loader(self)
@@ -823,6 +823,8 @@ class ShowBase(DirectObject.DirectObject):
         aspectRatio = self.getAspectRatio()
         self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
+
+        self.a2dBackground = self.aspect2d.attachNewNode("a2dBackground") 
 
         # It's important to know the bounds of the aspect2d screen.
         self.a2dTop = 1.0
