@@ -2127,7 +2127,7 @@ get_bounds(Thread *current_thread) const {
     CPT(BoundingVolume) result;
     {
       CDStageWriter cdataw = 
-	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+        ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
       result = cdataw->_external_bounds;
     }
     return result;
@@ -2160,7 +2160,7 @@ get_bounds(UpdateSeq &seq, Thread *current_thread) const {
     CPT(BoundingVolume) result;
     {
       CDStageWriter cdataw = 
-	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+        ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
       result = cdataw->_external_bounds;
       seq = cdataw->_last_update;
     }
@@ -2192,7 +2192,7 @@ get_nested_vertices(Thread *current_thread) const {
     int result;
     {
       CDStageWriter cdataw = 
-	((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
+        ((PandaNode *)this)->update_bounds(pipeline_stage, cdata); 
       result = cdataw->_nested_vertices;
     }
     return result;
@@ -2672,17 +2672,17 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
       PT(Down) stashed = cdata->modify_stashed();
       int stashed_index = do_find_child(orig_child, stashed);
       if (stashed_index >= 0) {
-	// The child has been stashed; remove it.
-	DownConnection &dc = (*stashed)[stashed_index];
-	nassertr(dc.get_child() == orig_child, false);
-	dc.set_child(new_child);
-	
+        // The child has been stashed; remove it.
+        DownConnection &dc = (*stashed)[stashed_index];
+        nassertr(dc.get_child() == orig_child, false);
+        dc.set_child(new_child);
+        
       } else {
-	// Never heard of this child.  This shouldn't be possible, because
-	// the parent was in the child's up list, above.  Must be some
-	// internal error.
-	nassertr(false, false);
-	return false;
+        // Never heard of this child.  This shouldn't be possible, because
+        // the parent was in the child's up list, above.  Must be some
+        // internal error.
+        nassertr(false, false);
+        return false;
       }
     }
     
@@ -2783,7 +2783,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
     // attachments, and no questions asked.
     PT(NodePathComponent) child = 
       new NodePathComponent(child_node, (NodePathComponent *)NULL,
-			    pipeline_stage, current_thread);
+                            pipeline_stage, current_thread);
     MutexHolder holder(child_node->_paths_lock);
     child_node->_paths.insert(child);
     return child;
@@ -2864,8 +2864,8 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
     PT(Down) down = cdata_parent->modify_down();
     for (di = down->begin(); di != down->end(); ++di) {
       if ((*di).get_child() == child_node) {
-	down->erase(di);
-	found = true;
+        down->erase(di);
+        found = true;
         break;
       }
     }
@@ -2917,7 +2917,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
        pipeline_stage_i >= 0; 
        --pipeline_stage_i) {
     if (reparent_one_stage(new_parent, child, sort, as_stashed, 
-			   pipeline_stage_i, current_thread)) {
+                           pipeline_stage_i, current_thread)) {
       any_ok = true;
     }
   }
@@ -2945,7 +2945,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child, 
-		   int sort, bool as_stashed, int pipeline_stage, 
+                   int sort, bool as_stashed, int pipeline_stage, 
                    Thread *current_thread) {
   nassertr(child != (NodePathComponent *)NULL, false);
 
@@ -2966,8 +2966,8 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
       int parent_index = child_node->do_find_parent(parent_node, cdata_child);
 
       if (parent_index >= 0) {
-	// Whoops, there's already another instance of the child there.
-	return false;
+        // Whoops, there's already another instance of the child there.
+        return false;
       }
     }
 
@@ -2989,8 +2989,8 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 #ifndef NDEBUG
       // The NodePathComponent should already be in the set.
       {
-	MutexHolder holder(child_node->_paths_lock);
-	nassertr(child_node->_paths.find(child) != child_node->_paths.end(), false);
+        MutexHolder holder(child_node->_paths_lock);
+        nassertr(child_node->_paths.find(child) != child_node->_paths.end(), false);
       }
 #endif // NDEBUG
     }
@@ -3011,7 +3011,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 ////////////////////////////////////////////////////////////////////
 PT(NodePathComponent) PandaNode::
 get_component(NodePathComponent *parent, PandaNode *child_node,
-	      int pipeline_stage, Thread *current_thread) {
+              int pipeline_stage, Thread *current_thread) {
   nassertr(parent != (NodePathComponent *)NULL, (NodePathComponent *)NULL);
   PandaNode *parent_node = parent->get_node();
 
@@ -3084,7 +3084,7 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   // return a new one.
   PT(NodePathComponent) child = 
     new NodePathComponent(child_node, (NodePathComponent *)NULL,
-			  pipeline_stage, current_thread);
+                          pipeline_stage, current_thread);
   child_node->_paths.insert(child);
 
   return child;
@@ -3107,7 +3107,7 @@ get_generic_component(bool accept_ambiguity, int pipeline_stage,
   bool ambiguity_detected = false;
   PT(NodePathComponent) result = 
     r_get_generic_component(accept_ambiguity, ambiguity_detected,
-			    pipeline_stage, current_thread);
+                            pipeline_stage, current_thread);
 
   if (!accept_ambiguity && ambiguity_detected) {
     pgraph_cat.warning()
@@ -3128,7 +3128,7 @@ get_generic_component(bool accept_ambiguity, int pipeline_stage,
 ////////////////////////////////////////////////////////////////////
 PT(NodePathComponent) PandaNode::
 r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
-			int pipeline_stage, Thread *current_thread) {
+                        int pipeline_stage, Thread *current_thread) {
   PT(PandaNode) parent_node;
 
   {
@@ -3144,7 +3144,7 @@ r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
     if (num_parents == 1) {
       // Only one parent; no ambiguity.
       PT(NodePathComponent) parent = 
-	get_parent(0)->r_get_generic_component(accept_ambiguity, ambiguity_detected, pipeline_stage, current_thread);
+        get_parent(0)->r_get_generic_component(accept_ambiguity, ambiguity_detected, pipeline_stage, current_thread);
       return get_component(parent, this, pipeline_stage, current_thread);
     }
 
@@ -3205,9 +3205,9 @@ sever_connection(PandaNode *parent_node, PandaNode *child_node,
     Paths::iterator pi;
     for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
       if (!(*pi)->is_top_node(pipeline_stage, current_thread) && 
-	  (*pi)->get_next(pipeline_stage, current_thread)->get_node() == parent_node) {
-	// Sever the component here.
-	(*pi)->set_top_node(pipeline_stage, current_thread);
+          (*pi)->get_next(pipeline_stage, current_thread)->get_node() == parent_node) {
+        // Sever the component here.
+        (*pi)->set_top_node(pipeline_stage, current_thread);
       }
     }
   }
@@ -3238,7 +3238,7 @@ new_connection(PandaNode *parent_node, PandaNode *child_node,
     Paths::iterator pi;
     for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
       if ((*pi)->is_top_node(pipeline_stage, current_thread)) {
-	(*pi)->set_next(parent_node->get_generic_component(false, pipeline_stage, current_thread), pipeline_stage, current_thread);
+        (*pi)->set_next(parent_node->get_generic_component(false, pipeline_stage, current_thread), pipeline_stage, current_thread);
       }
     }
   }
@@ -3439,10 +3439,10 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
       
       CDLockedStageReader child_cdata(child->_cycler, pipeline_stage, current_thread);
       if (child_cdata->_last_update != child_cdata->_next_update) {
-	// Child needs update.
-	CDStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
+        // Child needs update.
+        CDStageWriter child_cdataw = child->update_bounds(pipeline_stage, child_cdata);
       
-	net_collide_mask |= child_cdataw->_net_collide_mask;
+        net_collide_mask |= child_cdataw->_net_collide_mask;
 
         DrawMask child_control_mask = child_cdataw->_net_draw_control_mask;
         DrawMask child_show_mask = child_cdataw->_net_draw_show_mask;
@@ -3474,7 +3474,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
             << "\n";
         }
             
-	off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
+        off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
         if (!child_cdataw->_external_bounds->is_empty()) {
           child_volumes_ref.push_back(child_cdataw->_external_bounds);
           child_volumes.push_back(child_cdataw->_external_bounds);
@@ -3485,8 +3485,8 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         num_vertices += child_cdataw->_nested_vertices;
 
       } else {
-	// Child is good.
-	net_collide_mask |= child_cdata->_net_collide_mask;
+        // Child is good.
+        net_collide_mask |= child_cdata->_net_collide_mask;
 
         // See comments in similar block above.
         DrawMask child_control_mask = child_cdata->_net_draw_control_mask;
@@ -3511,7 +3511,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
             << "\n";
         }
 
-	off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
+        off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
         if (!child_cdata->_external_bounds->is_empty()) {
           child_volumes_ref.push_back(child_cdata->_external_bounds);
           child_volumes.push_back(child_cdata->_external_bounds);
@@ -3534,10 +3534,10 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
       // Now grab the write lock on this node.
       CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
       if (last_update == cdataw->_last_update && 
-	  next_update == cdataw->_next_update) {
-	// Great, no one has monkeyed with these while we were computing
-	// the cache.  Safe to store the computed values and return.
-	cdataw->_net_collide_mask = net_collide_mask;
+          next_update == cdataw->_next_update) {
+        // Great, no one has monkeyed with these while we were computing
+        // the cache.  Safe to store the computed values and return.
+        cdataw->_net_collide_mask = net_collide_mask;
 
         if (renderable) {
           // There are renderable nodes below, so the implicit draw
@@ -3559,10 +3559,10 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
           }
         }
 
-	cdataw->_off_clip_planes = off_clip_planes;
+        cdataw->_off_clip_planes = off_clip_planes;
         cdataw->_nested_vertices = num_vertices;
 
-	CPT(TransformState) transform = get_transform(current_thread);
+        CPT(TransformState) transform = get_transform(current_thread);
         PT(GeometricBoundingVolume) gbv;
 
         if (bounds_type == BoundingVolume::BT_box ||
@@ -3589,19 +3589,19 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
           gbv->xform(transform->get_mat());
         }
         cdataw->_external_bounds = gbv;
-	cdataw->_last_update = next_update;
+        cdataw->_last_update = next_update;
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
             << "} " << *this << "::update_bounds();\n";
         }
 
-	return cdataw;
+        return cdataw;
       }
       
       if (cdataw->_last_update == cdataw->_next_update) {
-	// Someone else has computed the cache for us.  OK.
-	return cdataw;
+        // Someone else has computed the cache for us.  OK.
+        return cdataw;
       }
     }
 
