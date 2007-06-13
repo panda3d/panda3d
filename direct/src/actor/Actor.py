@@ -38,7 +38,7 @@ class Actor(DirectObject, NodePath):
             self.partBundleNP = partBundleNP
             self.partBundle = partBundle
             self.partModel = partModel
-
+        
         def __repr__(self):
             return 'Actor.PartDef(%s, %s)' % (repr(self.partBundleNP), repr(self.partModel))
 
@@ -301,7 +301,7 @@ class Actor(DirectObject, NodePath):
     def copyActor(self, other, overwrite=False):
             # act like a copy constructor
             self.gotName = other.gotName
-
+            
             # copy the scene graph elements of other
             if (overwrite):
                 otherCopy = other.copyTo(NodePath())
@@ -325,7 +325,7 @@ class Actor(DirectObject, NodePath):
             self.__copyPartBundles(other)
             self.__copySubpartDict(other)
             self.__subpartsComplete = other.__subpartsComplete
-
+            
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
 
@@ -446,8 +446,9 @@ class Actor(DirectObject, NodePath):
         self.stop(None)
         self.__frozenJoints = {}
         self.flush()
-        self.__geomNode.removeNode()
-        self.__geomNode = None
+        if(self.__geomNode):
+            self.__geomNode.removeNode()
+            self.__geomNode = None
         if not self.isEmpty():
             self.removeNode()
 
@@ -474,7 +475,8 @@ class Actor(DirectObject, NodePath):
             self.__LODNode = None
 
         # remove all its children
-        self.__geomNode.removeChildren()
+        if(self.__geomNode):
+            self.__geomNode.removeChildren()
 
         
         self.__hasLOD = 0
@@ -1002,6 +1004,17 @@ class Actor(DirectObject, NodePath):
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
 
+    def getJoints(self, jointName):
+        joints=[]
+        for lod in self.__partBundleDict.values():
+            for part in lod.values():
+                partBundle=part.partBundle
+                joint=partBundle.findChild(jointName)
+                if(joint):
+                    joints.append(joint)
+
+        return joints
+    
     def getJointTransform(self,partName, jointName, lodName='lodRoot'):
         partBundleDict=self.__partBundleDict.get(lodName)
         if not partBundleDict:
@@ -1076,20 +1089,9 @@ class Actor(DirectObject, NodePath):
         #trueName = self.__subpartDict[partName].truePartName
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
-
         for bundleDict in self.__partBundleDict.values():     
             bundleDict[trueName].partBundle.findChild(jointName).freezeJoint(transform)
             
-#            self.__frozenJoints[bundle.this][jointName] = transform
-            
-
-    #This is an alternate method to control joints, which can be copied
-    #This function is optimal in a non control jointed actor 
-    def freezeJointMat(self, partName, jointName, mat):
-        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-        trueName = subpartDef.truePartName
-        for bundleDict in self.__partBundleDict.values():     
-            bundleDict[trueName].partBundle.findChild(jointName).freezeJoint(Mat4(mat))
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
@@ -1301,6 +1303,7 @@ class Actor(DirectObject, NodePath):
         is given then try to loop on all parts. NOTE: loops on
         all LOD's
         """
+    
         if fromFrame == None:
             for control in self.getAnimControls(animName, partName):
                 control.loop(restart)
@@ -1455,6 +1458,7 @@ class Actor(DirectObject, NodePath):
         a given anim and part. If none specified, try the first part and lod.
         Return the animControl if present, or None otherwise
         """
+    
         if not partName:
             partName = 'modelRoot'
 
@@ -1962,13 +1966,15 @@ class Actor(DirectObject, NodePath):
         # Before we apply any control joints, we have to make a
         # copy of the bundle hierarchy, so we don't modify other
         # Actors that share the same bundle.
-        animBundle = animBundle.copyBundle()
+
 
 
         # Are there any controls requested for joints in this bundle?
         # If so, apply them.
         assert Actor.notify.debug('actor bundle %s, %s'% (bundle,bundle.this))
         controlDict = self.__controlJoints.get(bundle.this, None)
+
+        animBundle = animBundle.copyBundle()
 
         if controlDict:
             for jointName, node in controlDict.items():
