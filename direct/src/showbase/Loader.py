@@ -392,7 +392,9 @@ class Loader(DirectObject):
         independently of the other group."""
         
         # showbase-created sfxManager should always be at front of list
-        return self.loadSound(base.sfxManagerList[0], *args, **kw)
+        if(self.base.sfxManagerList):
+            return self.loadSound(self.base.sfxManagerList[0], *args, **kw)
+        return None
     
     def loadMusic(self, *args, **kw):
         """Loads one or more sound files, specifically designated as a
@@ -402,9 +404,11 @@ class Loader(DirectObject):
         load the sound file, but this distinction allows the sound
         effects and/or the music files to be adjusted as a group,
         independently of the other group."""
-
-        return self.loadSound(base.musicManager, *args, **kw)
-
+        if(self.base.musicManager):
+            return self.loadSound(self.base.musicManager, *args, **kw)
+        else:
+            return None
+        
     def loadSound(self, manager, soundPath, positional = False,
                   callback = None, extraArgs = []):
 
@@ -457,7 +461,8 @@ class Loader(DirectObject):
 
     def unloadSfx (self, sfx):
         if (sfx):
-            base.sfxManagerList[0].uncacheSound (sfx.getName())
+            if(self.base.sfxManagerList):
+                self.base.sfxManagerList[0].uncacheSound (sfx.getName())
 
 ##     def makeNodeNamesUnique(self, nodePath, nodeCount):
 ##         if nodeCount == 0:
