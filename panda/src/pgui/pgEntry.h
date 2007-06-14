@@ -122,6 +122,7 @@ PUBLISHED:
 
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
+  INLINE void set_accept_enabled(bool enabled);
   bool is_wtext() const;
 
 
@@ -147,6 +148,8 @@ private:
   int _max_chars;
   float _max_width;
   int _num_lines;
+
+  bool _accept_enabled;
 
   string _candidate_active;
   string _candidate_inactive;

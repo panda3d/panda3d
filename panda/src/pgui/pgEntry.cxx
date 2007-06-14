@@ -207,7 +207,9 @@ press(const MouseWatcherParameter &param, bool background) {
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
         if (button == KeyboardButton::enter()) {
           // Enter.  Accept the entry.
-          accept(param);
+          if (_accept_enabled) {
+            accept(param);
+          }
           
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
@@ -525,6 +527,8 @@ setup(float width, int num_lines) {
   set_max_chars(0);
   set_max_width(width);
   set_num_lines(num_lines);
+
+  _accept_enabled = true;
 
   TextNode *text_node = get_text_def(S_focus);
   float line_height = text_node->get_line_height();

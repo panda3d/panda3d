@@ -448,3 +448,14 @@ INLINE const wstring &PGEntry::
 get_wtext() const {
   return _wtext;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::set_accept_enabled
+//       Access: Published
+//  Description: Sets whether the input may be accepted--use to 
+//               disable submission by the user
+////////////////////////////////////////////////////////////////////
+INLINE void PGEntry:: 
+set_accept_enabled(bool enabled) {
+  _accept_enabled = enabled;
+}
