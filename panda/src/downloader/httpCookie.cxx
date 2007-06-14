@@ -125,11 +125,14 @@ parse_set_cookie(const string &format, const URLSpec &url) {
 ////////////////////////////////////////////////////////////////////
 bool HTTPCookie::
 matches_url(const URLSpec &url) const {
+  if (_domain.empty()) {
+    return false;
+  }
   string server = url.get_server();
   if (server == _domain || 
       (server.length() > _domain.length() &&
        server.substr(server.length() - _domain.length()) == _domain &&
-       server[server.length() - _domain.length() - 1] == '.')) {
+       (_domain[0] == '.' || server[server.length() - _domain.length() - 1] == '.'))) {
     // The domain matches.
 
     string path = url.get_path();
