@@ -18,6 +18,9 @@
 
 #include "typedWritable.h"
 #include "bamWriter.h"
+#include "mutexHolder.h"
+
+Mutex TypedWritable::_bam_writers_lock;
 
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
@@ -30,10 +33,19 @@ TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
 TypedWritable::
 ~TypedWritable() {
   // Remove the object pointer from the BamWriters that reference it.
-  BamWriters::iterator wi;
-  for (wi = _bam_writers.begin(); wi != _bam_writers.end(); ++wi) {
-    BamWriter *writer = (*wi);
-    writer->object_destructs(this);
+  if (_bam_writers != (BamWriters *)NULL) {
+    BamWriters temp;
+    {
+      MutexHolder holder(_bam_writers_lock);
+      _bam_writers->swap(temp);
+      delete _bam_writers;
+      _bam_writers = NULL;
+    }
+    BamWriters::iterator wi;
+    for (wi = temp.begin(); wi != temp.end(); ++wi) {
+      BamWriter *writer = (*wi);
+      writer->object_destructs(this);
+    }
   }
 }
 

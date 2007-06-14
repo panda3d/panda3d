@@ -137,15 +137,24 @@ typedef ios::seekdir ios_seekdir;
 
 #endif  // CPPPARSER
 
+// The ReferenceCount class is defined later, within Panda, but we
+// need to pass around forward references to it here at the very low
+// level.
+class ReferenceCount;
+
 // Now redefine global operators new and delete so we can optionally
 // provide custom handlers for them.  The MemoryUsage class in Panda
 // takes advantage of this to track the size of allocated pointers.
 #ifndef USE_MEMORY_NOWRAPPERS
 EXPCL_DTOOL void *default_operator_new(size_t size);
 EXPCL_DTOOL void default_operator_delete(void *ptr);
+EXPCL_DTOOL void default_mark_pointer(void *ptr, size_t orig_size,
+                                      ReferenceCount *ref_ptr);
 
 extern EXPCL_DTOOL void *(*global_operator_new)(size_t size);
 extern EXPCL_DTOOL void (*global_operator_delete)(void *ptr);
+extern EXPCL_DTOOL void (*global_mark_pointer)(void *ptr, size_t size,
+                                               ReferenceCount *ref_ptr);
 
 #ifdef REDEFINE_GLOBAL_OPERATOR_NEW
 #ifdef GLOBAL_OPERATOR_NEW_EXCEPTIONS

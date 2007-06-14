@@ -198,6 +198,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Occlusion results",                { 0.3, 0.9, 0.8 },  "", 500.0 },
   { 1, "Main memory",                      { 0.5, 1.0, 0.5 },  "MB", 64, 1048576 },
   { 1, "Main memory:C++",                  { 0.2, 0.2, 1.0 } },
+  { 1, "Main memory:NeverFree",            { 0.2, 0.5, 0.8 } },
   { 1, "Main memory:Interpreter",          { 0.8, 0.2, 0.5 } },
   { 1, "Vertex Data",                      { 1.0, 0.4, 0.0 },  "MB", 64, 1048576 },
   { 1, "Vertex Data:Small",                { 0.2, 0.3, 0.4 } },

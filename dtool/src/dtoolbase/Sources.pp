@@ -26,6 +26,7 @@
     mutexWin32Impl.h mutexWin32Impl.I \
     mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
+    neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
     register_type.I register_type.h \
     selectThreadImpl.h \
@@ -50,6 +51,7 @@
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
     mutexSpinlockImpl.cxx \
+    neverFreeMemory.cxx \
     register_type.cxx \
     typeHandle.cxx \
     typeRegistry.cxx typeRegistryNode.cxx \
@@ -74,6 +76,7 @@
     mutexWin32Impl.h mutexWin32Impl.I \
     mutexSpinlockImpl.h mutexSpinlockImpl.I \
     nearly_zero.h \
+    neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
     register_type.I register_type.h \
     selectThreadImpl.h \

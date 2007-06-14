@@ -31,10 +31,13 @@
 #include "pStatProperties.h"
 #include "thread.h"
 #include "clockObject.h"
+#include "neverFreeMemory.h"
 
 PStatCollector PStatClient::_total_size_pcollector("Main memory");
 PStatCollector PStatClient::_cpp_size_pcollector("Main memory:C++");
 PStatCollector PStatClient::_cpp_other_size_pcollector("Main memory:C++:Other");
+PStatCollector PStatClient::_nf_unused_size_pcollector("Main memory:NeverFree:Unused");
+PStatCollector PStatClient::_nf_other_size_pcollector("Main memory:NeverFree:Other");
 PStatCollector PStatClient::_interpreter_size_pcollector("Main memory:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
@@ -216,7 +219,7 @@ main_tick() {
       _total_size_pcollector.set_level(MemoryUsage::get_total_size());
     }
     if (MemoryUsage::has_cpp_size()) {
-      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
+      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size() - NeverFreeMemory::get_total_alloc());
     }
     if (MemoryUsage::has_interpreter_size()) {
       _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
@@ -229,21 +232,32 @@ main_tick() {
       type_handle_cols.push_back(TypeHandleCollector());
     }
 
-    size_t total_usage = 0;
+    size_t cpp_total_usage = 0;
+    size_t nf_total_usage = 0;
     int i;
     for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
       for (int mi = 0; mi < (int)TypeHandle::MC_limit; ++mi) {
         TypeHandle::MemoryClass mc = (TypeHandle::MemoryClass)mi;
         size_t usage = type.get_memory_usage(mc);
-        total_usage += usage;
+
+        switch (mc) {
+        case TypeHandle::MC_deleted_chain_active:
+        case TypeHandle::MC_deleted_chain_inactive:
+          nf_total_usage += usage;
+          break;
+
+        default:
+          cpp_total_usage += usage;
+        }          
       }
     }
-    size_t min_usage = total_usage / 1024;
+    size_t min_usage = (cpp_total_usage + nf_total_usage) / 1024;
     if (!pstats_mem_other) {
       min_usage = 0;
     }
-    size_t other_usage = total_usage;
+    size_t cpp_other_usage = cpp_total_usage;
+    size_t nf_other_usage = nf_total_usage;
 
     for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
@@ -255,19 +269,41 @@ main_tick() {
           // We have some memory usage on this TypeHandle.  See if we
           // have a collector for it.
           if (!col.is_valid()) {
+            const char *category;
+            switch (mc) {
+            case TypeHandle::MC_deleted_chain_active:
+            case TypeHandle::MC_deleted_chain_inactive:
+              category = "NeverFree";
+              break;
+
+            default:
+              category = "C++";
+            }
             ostringstream strm;
-            strm << "Main memory:C++:" << type << ":" << mc;
+            strm << "Main memory:" << category << ":" << type << ":" << mc;
             col = PStatCollector(strm.str());
           }
           col.set_level(usage);
-          other_usage -= usage;
+
+          switch (mc) {
+          case TypeHandle::MC_deleted_chain_active:
+          case TypeHandle::MC_deleted_chain_inactive:
+            nf_other_usage -= usage;
+            break;
+
+          default:
+            cpp_other_usage -= usage;
+          }
         }
       }
     }
 
+    _nf_unused_size_pcollector.set_level(NeverFreeMemory::get_total_unused());
+
     // The remaining amount--all collectors smaller than 0.1% of the
     // total--go into "other".
-    _cpp_other_size_pcollector.set_level(other_usage);
+    _nf_other_size_pcollector.set_level(nf_other_usage);
+    _cpp_other_size_pcollector.set_level(cpp_other_usage);
   }
 #endif  // DO_MEMORY_USAGE
 

@@ -56,8 +56,12 @@ void default_operator_delete(void *ptr) {
   dlfree(ptr);
 }
 
+void default_mark_pointer(void *, size_t, ReferenceCount *) {
+}
+
 void *(*global_operator_new)(size_t size) = &default_operator_new;
 void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -93,8 +97,12 @@ void default_operator_delete(void *ptr) {
   dlfree(ptr);
 }
 
+void default_mark_pointer(void *, size_t, ReferenceCount *) {
+}
+
 void *(*global_operator_new)(size_t size) = &default_operator_new;
 void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -120,8 +128,12 @@ void default_operator_delete(void *ptr) {
   free(ptr);
 }
 
+void default_mark_pointer(void *, size_t, ReferenceCount *) {
+}
+
 void *(*global_operator_new)(size_t size) = &default_operator_new;
 void (*global_operator_delete)(void *ptr) = &default_operator_delete;
+void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
 
 /////////////////////////////////////////////////////////////////////
 //

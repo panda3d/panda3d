@@ -133,7 +133,7 @@ private:
   // have been prepared there.  When either destructs, it removes
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, VertexBufferContext *> Contexts;
-  Contexts _contexts;
+  Contexts *_contexts;
 
   // This is only used when reading from a bam file.  It is set true
   // to indicate the data must be endian-reversed in finalize().

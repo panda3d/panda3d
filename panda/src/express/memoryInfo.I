@@ -24,7 +24,16 @@
 //               should always be non-NULL.
 ////////////////////////////////////////////////////////////////////
 void *MemoryInfo::get_void_ptr() const {
-  return _void_ptr;
+  if (_void_ptr != (void *)NULL) {
+    return _void_ptr;
+  }
+  if (_ref_ptr == (void *)NULL) {
+    return _typed_ptr;
+  }
+  if (_typed_ptr == (void *)NULL) {
+    return _ref_ptr;
+  }
+  return ((void *)_ref_ptr < (void *)_typed_ptr) ? (void *)_ref_ptr : (void *)_typed_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

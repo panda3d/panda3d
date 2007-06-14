@@ -39,11 +39,6 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
     if (ptr == (const TypedObject *)NULL) {
       // This is allowed these days.  It used to be an error, but
       // what the heck.
-      if (express_cat->is_debug()) {
-        express_cat->debug()
-          << "Attempt to cast NULL pointer to " 
-          << want_handle << "\n";
-      }
       return true;
     }
 #if defined(_DEBUG) && defined(_WIN32)

@@ -5,3 +5,4 @@
 #include "atomicAdjustWin32Impl.cxx"
 #include "dtoolbase.cxx"
 #include "memoryBase.cxx"
+#include "mutexDummyImpl.cxx"

@@ -22,6 +22,7 @@
 #include "typedObject.h"
 #include "vector_typedWritable.h"
 #include "pvector.h"
+#include "pmutex.h"
 
 class BamReader;
 class BamWriter;
@@ -56,11 +57,12 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 private:
-  // We need to store a list of the BamWriter(s) that have a reference
-  // to this object, so that we can remove the object from those
-  // tables when it destructs.
+  // We may need to store a list of the BamWriter(s) that have a
+  // reference to this object, so that we can remove the object from
+  // those tables when it destructs.
   typedef pvector<BamWriter *> BamWriters;
-  BamWriters _bam_writers;
+  BamWriters *_bam_writers;
+  static Mutex _bam_writers_lock;
 
 PUBLISHED:
   static TypeHandle get_class_type() {

@@ -20,7 +20,7 @@
 #define DELETEDCHAIN_H
 
 #include "dtoolbase.h"
-
+#include "neverFreeMemory.h"
 #include "mutexImpl.h"
 #include "atomicAdjust.h"
 #include "numeric_types.h"
@@ -86,6 +86,9 @@ public:
   INLINE void deallocate(Type *ptr, TypeHandle type_handle);
 
   INLINE bool validate(const Type *ptr);
+
+  static INLINE ReferenceCount *make_ref_ptr(void *ptr);
+  static INLINE ReferenceCount *make_ref_ptr(ReferenceCount *ptr);
 
 private:
   class ObjectNode {

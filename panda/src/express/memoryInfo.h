@@ -62,10 +62,8 @@ private:
 
 private:
   enum Flags {
-    F_got_ref                 = 0x0001,
-    F_got_void                = 0x0002,
-    F_size_known              = 0x0004,
-    F_reconsider_dynamic_type = 0x0008,
+    F_size_known              = 0x0001,
+    F_reconsider_dynamic_type = 0x0002,
   };
   
   void *_void_ptr;

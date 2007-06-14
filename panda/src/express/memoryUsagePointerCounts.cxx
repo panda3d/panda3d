@@ -28,11 +28,11 @@
 //  Description: Adds a pointer definition to the counter.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsagePointerCounts::
-add_info(MemoryInfo &info) {
+add_info(MemoryInfo *info) {
   _count++;
 
-  if (info.is_size_known()) {
-    _size += info.get_size();
+  if (info->is_size_known()) {
+    _size += info->get_size();
   } else {
     _unknown_size_count++;
   }

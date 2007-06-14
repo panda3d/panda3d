@@ -42,19 +42,24 @@ allocate(size_t size, TypeHandle type_handle) {
   init_lock();
   _lock->lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
-#ifdef DO_MEMORY_USAGE
-    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
-    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-#endif  // DO_MEMORY_USAGE
-
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     _lock->release();
+
 #ifdef USE_DELETEDCHAINFLAG
     assert(obj->_flag == (PN_int32)DCF_deleted);
     obj->_flag = DCF_alive;
 #endif  // NDEBUG
-    return node_to_type(obj);
+
+    Type *ptr = node_to_type(obj);
+
+#ifdef DO_MEMORY_USAGE
+    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+    (*global_mark_pointer)(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
+#endif  // DO_MEMORY_USAGE
+
+    return ptr;
   }
   _lock->release();
 
@@ -84,21 +89,21 @@ allocate(size_t size, TypeHandle type_handle) {
   // If we get here, the deleted_chain is empty; we have to allocate a
   // new object from the system pool.
 
-#ifdef DO_MEMORY_USAGE
-  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-#endif  // DO_MEMORY_USAGE
-  size = max(alloc_size, sizeof(ObjectNode));
+  alloc_size = max(alloc_size, sizeof(ObjectNode));
+  obj = (ObjectNode *)NeverFreeMemory::alloc(alloc_size);
 
-#ifdef DO_MEMORY_USAGE
-  obj = (ObjectNode *)(*global_operator_new)(alloc_size);
-#else
-  obj = (ObjectNode *)malloc(alloc_size);
-#endif
 #ifdef USE_DELETEDCHAINFLAG
   obj->_flag = DCF_alive;
-#endif  // NDEBUG
+#endif  // USE_DELETEDCHAINFLAG
 
-  return node_to_type(obj);
+  Type *ptr = node_to_type(obj);
+
+#ifdef DO_MEMORY_USAGE
+  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
+  (*global_mark_pointer)(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
+#endif  // DO_MEMORY_USAGE
+
+  return ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,12 +119,16 @@ deallocate(Type *ptr, TypeHandle type_handle) {
 
 #ifdef DO_MEMORY_USAGE
   size_t alloc_size = sizeof(Type);
+
+  (*global_mark_pointer)(ptr, 0, make_ref_ptr(ptr));
+
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we also need to reserve space for _flag.
   alloc_size += sizeof(PN_int32);
 #endif  // NDEBUG
   type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
   type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+
 #endif  // DO_MEMORY_USAGE
 
   TVOLATILE ObjectNode *obj = type_to_node(ptr);
@@ -188,6 +197,40 @@ validate(const Type *ptr) {
 #else
   return true;
 #endif  // NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DeletedChain::make_ref_ptr
+//       Access: Public, Static
+//  Description: This method has two overloads: one that accepts a
+//               void *, and one that accepts a ReferenceCount *.  We
+//               rely on the C++ compiler to select the most
+//               appropriate one for a given type to return the
+//               ReferenceCount pointer that corresponds to a
+//               particular type, or NULL if the type does not inherit
+//               from ReferenceCount.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE ReferenceCount *DeletedChain<Type>::
+make_ref_ptr(void *) {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DeletedChain::make_ref_ptr
+//       Access: Public, Static
+//  Description: This method has two overloads: one that accepts a
+//               void *, and one that accepts a ReferenceCount *.  We
+//               rely on the C++ compiler to select the most
+//               appropriate one for a given type to return the
+//               ReferenceCount pointer that corresponds to a
+//               particular type, or NULL if the type does not inherit
+//               from ReferenceCount.
+////////////////////////////////////////////////////////////////////
+template<class Type>
+INLINE ReferenceCount *DeletedChain<Type>::
+make_ref_ptr(ReferenceCount *ptr) {
+  return ptr;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ get_type() {
   if (type != _static_type) {
     if (express_cat.is_spam()) {
       express_cat.spam()
-        << "Pointer " << (void *)_ref_ptr << " has static type "
+        << "Pointer " << get_void_ptr() << " has static type "
         << _static_type << " and dynamic type " << _dynamic_type << "\n";
     }
   }
@@ -127,14 +127,14 @@ determine_dynamic_type() {
         if (orig_type != _dynamic_type) {
           if (express_cat.is_spam()) {
             express_cat.spam()
-              << "Updating " << (void *)_ref_ptr << " from type "
+              << "Updating " << get_void_ptr() << " from type "
               << orig_type << " to type " << _dynamic_type << "\n";
           }
         }
 
       } else {
         express_cat.warning()
-          << "Pointer " << (void *)_ref_ptr << " previously indicated as type "
+          << "Pointer " << get_void_ptr() << " previously indicated as type "
           << orig_type << " is now type " << got_type << "!\n";
       }
     }    
@@ -155,7 +155,7 @@ bool MemoryInfo::
 update_type_handle(TypeHandle &destination, TypeHandle refined) {
   if (refined == TypeHandle::none()) {
     express_cat.error()
-      << "Attempt to update type of " << (void *)_ref_ptr
+      << "Attempt to update type of " << get_void_ptr()
       << "(type is " << get_type()
       << ") to an undefined type!\n";
 

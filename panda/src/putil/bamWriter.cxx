@@ -24,6 +24,7 @@
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
@@ -51,10 +52,12 @@ BamWriter::
   StateMap::iterator si;
   for (si = _state_map.begin(); si != _state_map.end(); ++si) {
     TypedWritable *object = (TypedWritable *)(*si).first;
+    MutexHolder holder(TypedWritable::_bam_writers_lock);
+    nassertv(object->_bam_writers != (TypedWritable::BamWriters *)NULL);
     TypedWritable::BamWriters::iterator wi = 
-      find(object->_bam_writers.begin(), object->_bam_writers.end(), this);
-    nassertv(wi != object->_bam_writers.end());
-    object->_bam_writers.erase(wi);
+      find(object->_bam_writers->begin(), object->_bam_writers->end(), this);
+    nassertv(wi != object->_bam_writers->end());
+    object->_bam_writers->erase(wi);
   }
 }
 
@@ -513,7 +516,13 @@ enqueue_object(const TypedWritable *object) {
     bool inserted =
       _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
     nassertr(inserted, false);
-    ((TypedWritable *)object)->_bam_writers.push_back(this);
+    {
+      MutexHolder holder(TypedWritable::_bam_writers_lock);
+      if (object->_bam_writers == ((TypedWritable::BamWriters *)NULL)) {
+        ((TypedWritable *)object)->_bam_writers = new TypedWritable::BamWriters;
+      }
+      object->_bam_writers->push_back(this);
+    }
     _next_object_id++;
 
   } else {

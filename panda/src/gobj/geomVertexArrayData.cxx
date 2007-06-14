@@ -63,6 +63,7 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
+  _contexts = NULL;
   _endian_reversed = false;
 
   // Can't put it in the LRU until it has been read in and made valid.
@@ -95,6 +96,7 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 
+  _contexts = NULL;
   _endian_reversed = false;
 
   set_lru_size(0);
@@ -113,6 +115,7 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   _array_format(copy._array_format),
   _cycler(copy._cycler)
 {
+  _contexts = NULL;
   _endian_reversed = false;
 
   copy.mark_used_lru();
@@ -221,9 +224,12 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexArrayData::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
+  if (_contexts == (Contexts *)NULL) {
+    return false;
+  }
   Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
+  ci = _contexts->find(prepared_objects);
+  if (ci != _contexts->end()) {
     return true;
   }
   return prepared_objects->is_vertex_buffer_queued(this);
@@ -248,15 +254,18 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 VertexBufferContext *GeomVertexArrayData::
 prepare_now(PreparedGraphicsObjects *prepared_objects, 
             GraphicsStateGuardianBase *gsg) {
+  if (_contexts == (Contexts *)NULL) {
+    _contexts = new Contexts;
+  }
   Contexts::const_iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
+  ci = _contexts->find(prepared_objects);
+  if (ci != _contexts->end()) {
     return (*ci).second;
   }
 
   VertexBufferContext *vbc = prepared_objects->prepare_vertex_buffer_now(this, gsg);
   if (vbc != (VertexBufferContext *)NULL) {
-    _contexts[prepared_objects] = vbc;
+    (*_contexts)[prepared_objects] = vbc;
   }
   return vbc;
 }
@@ -270,12 +279,14 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 ////////////////////////////////////////////////////////////////////
 bool GeomVertexArrayData::
 release(PreparedGraphicsObjects *prepared_objects) {
-  Contexts::iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    VertexBufferContext *vbc = (*ci).second;
-    prepared_objects->release_vertex_buffer(vbc);
-    return true;
+  if (_contexts != (Contexts *)NULL) {
+    Contexts::iterator ci;
+    ci = _contexts->find(prepared_objects);
+    if (ci != _contexts->end()) {
+      VertexBufferContext *vbc = (*ci).second;
+      prepared_objects->release_vertex_buffer(vbc);
+      return true;
+    }
   }
 
   // Maybe it wasn't prepared yet, but it's about to be.
@@ -291,23 +302,27 @@ release(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 int GeomVertexArrayData::
 release_all() {
-  // We have to traverse a copy of the _contexts list, because the
-  // PreparedGraphicsObjects object will call clear_prepared() in response
-  // to each release_vertex_buffer(), and we don't want to be modifying the
-  // _contexts list while we're traversing it.
-  Contexts temp = _contexts;
-  int num_freed = (int)_contexts.size();
+  int num_freed = 0;
 
-  Contexts::const_iterator ci;
-  for (ci = temp.begin(); ci != temp.end(); ++ci) {
-    PreparedGraphicsObjects *prepared_objects = (*ci).first;
-    VertexBufferContext *vbc = (*ci).second;
-    prepared_objects->release_vertex_buffer(vbc);
+  if (_contexts != (Contexts *)NULL) {
+    // We have to traverse a copy of the _contexts list, because the
+    // PreparedGraphicsObjects object will call clear_prepared() in response
+    // to each release_vertex_buffer(), and we don't want to be modifying the
+    // _contexts list while we're traversing it.
+    Contexts temp = *_contexts;
+    num_freed = (int)_contexts->size();
+    
+    Contexts::const_iterator ci;
+    for (ci = temp.begin(); ci != temp.end(); ++ci) {
+      PreparedGraphicsObjects *prepared_objects = (*ci).first;
+      VertexBufferContext *vbc = (*ci).second;
+      prepared_objects->release_vertex_buffer(vbc);
+    }
+    
+    // Now that we've called release_vertex_buffer() on every known context,
+    // the _contexts list should have completely emptied itself.
+    nassertr(_contexts == NULL, num_freed);
   }
-
-  // Now that we've called release_vertex_buffer() on every known context,
-  // the _contexts list should have completely emptied itself.
-  nassertr(_contexts.empty(), num_freed);
 
   return num_freed;
 }
@@ -360,10 +375,16 @@ evict_lru() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayData::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
+  nassertv(_contexts != (Contexts *)NULL);
+
   Contexts::iterator ci;
-  ci = _contexts.find(prepared_objects);
-  if (ci != _contexts.end()) {
-    _contexts.erase(ci);
+  ci = _contexts->find(prepared_objects);
+  if (ci != _contexts->end()) {
+    _contexts->erase(ci);
+    if (_contexts->empty()) {
+      delete _contexts;
+      _contexts = NULL;
+    }
   } else {
     // If this assertion fails, clear_prepared() was given a
     // prepared_objects which the data array didn't know about.

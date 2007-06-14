@@ -12,6 +12,7 @@ forcetype TypeHandle
 forcetype TypeRegistry
 forcetype StreamReader
 forcetype StreamWriter
+forcetype NeverFreeMemory
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress

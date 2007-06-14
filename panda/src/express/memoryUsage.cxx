@@ -59,7 +59,7 @@ double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets
 //  Description: Adds a single entry to the histogram.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::TypeHistogram::
-add_info(TypeHandle type, MemoryInfo &info) {
+add_info(TypeHandle type, MemoryInfo *info) {
   _counts[type].add_info(info);
 }
 
@@ -138,7 +138,7 @@ AgeHistogram() {
 //  Description: Adds a single entry to the histogram.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::AgeHistogram::
-add_info(double age, MemoryInfo &info) {
+add_info(double age, MemoryInfo *info) {
   int bucket = choose_bucket(age);
   nassertv(bucket >= 0 && bucket < num_buckets);
   _counts[bucket].add_info(info);
@@ -215,6 +215,14 @@ operator_new_handler(size_t size) {
     MemoryUsage *mu = get_global_ptr();
     if (mu->_track_memory_usage) {
       ptr = default_operator_new(size);
+      /*
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "Allocating pointer " << (void *)ptr
+          << " of size " << size << ".\n";
+      }
+      */
+
       get_global_ptr()->ns_record_void_pointer(ptr, size);
 
     } else {
@@ -249,12 +257,36 @@ operator_delete_handler(void *ptr) {
   } else {
     MemoryUsage *mu = get_global_ptr();
     if (mu->_track_memory_usage) {
+      /*
+      if (express_cat.is_spam()) {
+        express_cat.spam()
+          << "Removing pointer " << (void *)ptr << "\n";
+      }
+      */
       mu->ns_remove_void_pointer(ptr);
       default_operator_delete(ptr);
     } else {
       _is_cpp_operator = true;
       default_operator_delete(ptr);
       _is_cpp_operator = false;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::mark_pointer_handler
+//       Access: Public, Static
+//  Description: This special function is similar to operator_new_handler,
+//               but instead of allocating new memory it simply marks
+//               existing memory as already having been allocated.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+mark_pointer_handler(void *ptr, size_t size, 
+                     ReferenceCount *ref_ptr) {
+  if (!_recursion_protect) {
+    MemoryUsage *mu = get_global_ptr();
+    if (mu->_track_memory_usage) {
+      mu->ns_mark_pointer(ptr, size, ref_ptr);
     }
   }
 }
@@ -352,12 +384,14 @@ MemoryUsage() {
     // this class.
     global_operator_new = &operator_new_handler;
     global_operator_delete = &operator_delete_handler;
+    global_mark_pointer = &mark_pointer_handler;
   }
 
 #if defined(WIN32_VC) && defined(_DEBUG)
   if (_count_memory_usage) {
     global_operator_new = &operator_new_handler;
     global_operator_delete = &operator_delete_handler;
+    global_mark_pointer = &mark_pointer_handler;
     _CrtSetAllocHook(&win32_malloc_hook);
   }
 #endif
@@ -399,30 +433,28 @@ ns_record_pointer(ReferenceCount *ptr) {
     // calls by toggling _recursion_protect while we adjust it.
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+      _table.insert(Table::value_type((void *)ptr, NULL));
     
     // This shouldn't fail.
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      _count++;
+      (*insert_result.first).second = new MemoryInfo;
+      ++_count;
     }
 
-    MemoryInfo &info = (*insert_result.first).second;
+    MemoryInfo *info = (*insert_result.first).second;
 
-    // We shouldn't already have a ReferenceCount pointer.
-    if ((info._flags & MemoryInfo::F_got_ref) != 0) {
-      express_cat.error()
-        << "ReferenceCount pointer " << (void *)ptr << " recorded twice!\n";
-    }
+    // We might already have a ReferenceCount pointer, thanks to a
+    // previous call to mark_pointer().
+    nassertv(info->_ref_ptr == NULL || info->_ref_ptr == ptr);
 
-    info._void_ptr = (void *)ptr;
-    info._ref_ptr = ptr;
-    info._static_type = ReferenceCount::get_class_type();
-    info._dynamic_type = ReferenceCount::get_class_type();
-    info._time = TrueClock::get_global_ptr()->get_long_time();
-    info._freeze_index = _freeze_index;
-    info._flags |= (MemoryInfo::F_reconsider_dynamic_type | MemoryInfo::F_got_ref);
+    info->_ref_ptr = ptr;
+    info->_static_type = ReferenceCount::get_class_type();
+    info->_dynamic_type = ReferenceCount::get_class_type();
+    info->_time = TrueClock::get_global_ptr()->get_long_time();
+    info->_freeze_index = _freeze_index;
+    info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
 
     // We close the recursion_protect flag all the way down here, so
     // that we also protect ourselves against a possible recursive
@@ -453,9 +485,10 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
       return;
     }
 
-    MemoryInfo &info = (*ti).second;
-    info.update_type_handle(info._static_type, type);
-    info.determine_dynamic_type();
+    MemoryInfo *info = (*ti).second;
+
+    info->update_type_handle(info->_static_type, type);
+    info->determine_dynamic_type();
 
     consolidate_void_ptr(info);
   }
@@ -484,9 +517,9 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
       return;
     }
 
-    MemoryInfo &info = (*ti).second;
-    info._typed_ptr = typed_ptr;
-    info.determine_dynamic_type();
+    MemoryInfo *info = (*ti).second;
+    info->_typed_ptr = typed_ptr;
+    info->determine_dynamic_type();
 
     consolidate_void_ptr(info);
   }
@@ -512,46 +545,52 @@ ns_remove_pointer(ReferenceCount *ptr) {
       return;
     }
 
-    MemoryInfo &info = (*ti).second;
+    MemoryInfo *info = (*ti).second;
 
-    if ((info._flags & MemoryInfo::F_got_ref) == 0) {
+    if (info->_ref_ptr == NULL) {
       express_cat.error()
         << "Pointer " << (void *)ptr << " deleted twice!\n";
       return;
     }
+    nassertv(info->_ref_ptr == ptr);
 
-    info._flags &= ~MemoryInfo::F_got_ref;
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Removing ReferenceCount pointer " << (void *)ptr << "\n";
+    }
 
-    // Since the pointer has been destructed, we can't safely call its
-    // TypedObject virtual methods any more.  Better clear out the
-    // typed_ptr for good measure.
-    info._typed_ptr = (TypedObject *)NULL;
+    info->_ref_ptr = (ReferenceCount *)NULL;
+    info->_typed_ptr = (TypedObject *)NULL;
 
-    if (info._freeze_index == _freeze_index) {
+    if (info->_freeze_index == _freeze_index) {
       double now = TrueClock::get_global_ptr()->get_long_time();
 
       // We have to protect modifications to the table from recursive
       // calls by toggling _recursion_protect while we adjust it.
       _recursion_protect = true;
-      _trend_types.add_info(info.get_type(), info);
-      _trend_ages.add_info(now - info._time, info);
+      _trend_types.add_info(info->get_type(), info);
+      _trend_ages.add_info(now - info->_time, info);
       _recursion_protect = false;
     }
 
-    if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
-      // If we don't expect to call any more remove_*_pointer on this
-      // pointer, remove it from the table.
-      if (info._freeze_index == _freeze_index) {
-        _count--;
-        _current_cpp_size -= info._size;
-      }
-      _cpp_size -= info._size;
+    if (ptr != info->_void_ptr || info->_void_ptr == NULL) {
+      // Remove the entry from the table.
 
       // We have to protect modifications to the table from recursive
       // calls by toggling _recursion_protect while we adjust it.
       _recursion_protect = true;
       _table.erase(ti);
       _recursion_protect = false;
+
+      if (info->_void_ptr == NULL) {
+        // That was the last entry.  Remove it altogether.
+        _cpp_size -= info->_size;
+        if (info->_freeze_index == _freeze_index) {
+          _current_cpp_size -= info->_size;
+          _count--;
+        }
+        delete info;
+      }
     }
   }
 }
@@ -576,35 +615,36 @@ ns_record_void_pointer(void *ptr, size_t size) {
 
     _recursion_protect = true;
     pair<Table::iterator, bool> insert_result =
-      _table.insert(Table::value_type((void *)ptr, MemoryInfo()));
+      _table.insert(Table::value_type((void *)ptr, NULL));
 
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      _count++;
+      (*insert_result.first).second = new MemoryInfo;
+      ++_count;
     }
 
-    MemoryInfo &info = (*insert_result.first).second;
+    MemoryInfo *info = (*insert_result.first).second;
 
     // We shouldn't already have a void pointer.
-    if ((info._flags & MemoryInfo::F_got_void) != 0) {
+    if (info->_void_ptr != (void *)NULL) {
       express_cat.error()
         << "Void pointer " << (void *)ptr << " recorded twice!\n";
       nassertv(false);
     }
 
-    if (info._freeze_index == _freeze_index) {
-      _current_cpp_size += size - info._size;
+    if (info->_freeze_index == _freeze_index) {
+      _current_cpp_size += size - info->_size;
     } else {
       _current_cpp_size += size;
     }
-    _cpp_size += size - info._size;
+    _cpp_size += size - info->_size;
 
-    info._void_ptr = ptr;
-    info._size = size;
-    info._time = TrueClock::get_global_ptr()->get_long_time();
-    info._freeze_index = _freeze_index;
-    info._flags |= (MemoryInfo::F_got_void | MemoryInfo::F_size_known);
+    info->_void_ptr = ptr;
+    info->_size = size;
+    info->_time = TrueClock::get_global_ptr()->get_long_time();
+    info->_freeze_index = _freeze_index;
+    info->_flags |= MemoryInfo::F_size_known;
 
     // We close the recursion_protect flag all the way down here, so
     // that we also protect ourselves against a possible recursive
@@ -640,38 +680,94 @@ ns_remove_void_pointer(void *ptr) {
       return;
     }
 
-    MemoryInfo &info = (*ti).second;
+    MemoryInfo *info = (*ti).second;
 
-    if ((info._flags & MemoryInfo::F_got_void) == 0) {
+    if (info->_void_ptr == (void *)NULL) {
       express_cat.error()
         << "Pointer " << (void *)ptr << " deleted twice!\n";
       return;
     }
+    nassertv(info->_void_ptr == ptr);
 
-    if ((info._flags & MemoryInfo::F_got_ref) != 0) {
+    if (info->_ref_ptr != (ReferenceCount *)NULL) {
       express_cat.error()
         << "Pointer " << (void *)ptr
         << " did not destruct before being deleted!\n";
-    }
-
-    info._flags &= ~MemoryInfo::F_got_void;
-
-    if ((info._flags & (MemoryInfo::F_got_ref | MemoryInfo::F_got_void)) == 0) {
-      // If we don't expect to call any more remove_*_pointer on this
-      // pointer, remove it from the table.
-
-      if (info._freeze_index == _freeze_index) {
-        _count--;
-        _current_cpp_size -= info._size;
+      if (info->_ref_ptr != ptr) {
+        remove_pointer(info->_ref_ptr);
       }
-      _cpp_size -= info._size;
-
-      // We have to protect modifications to the table from recursive
-      // calls by toggling _recursion_protect while we adjust it.
-      _recursion_protect = true;
-      _table.erase(ti);
-      _recursion_protect = false;
     }
+
+    info->_void_ptr = NULL;
+
+    // Remove it from the table.
+
+    // We have to protect modifications to the table from recursive
+    // calls by toggling _recursion_protect while we adjust it.
+    _recursion_protect = true;
+    _table.erase(ti);
+    _recursion_protect = false;
+
+    _cpp_size -= info->_size;
+    if (info->_freeze_index == _freeze_index) {
+      --_count;
+      _current_cpp_size -= info->_size;
+    }
+    delete info;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::ns_mark_pointer
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+ns_mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "Marking pointer " << ptr << ", size " << size 
+      << ", ref_ptr = " << ref_ptr << "\n";
+  }
+
+  if (size != 0) {
+    // We're recording this pointer as now in use.
+    ns_record_void_pointer(ptr, size);
+
+    if (ref_ptr != (ReferenceCount *)NULL) {
+      // Make the pointer typed.  This is particularly necessary in
+      // case the ref_ptr is a different value than the base void
+      // pointer; this may be our only opportunity to associate the
+      // two pointers.
+      Table::iterator ti;
+      ti = _table.find(ptr);
+      nassertv(ti != _table.end());
+      MemoryInfo *info = (*ti).second;
+
+      info->_ref_ptr = ref_ptr;
+      info->_static_type = ReferenceCount::get_class_type();
+      info->_dynamic_type = ReferenceCount::get_class_type();
+      info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
+      
+      if (ref_ptr != ptr) {
+        _recursion_protect = true;
+        
+        pair<Table::iterator, bool> insert_result =
+          _table.insert(Table::value_type((void *)ref_ptr, info));
+        assert(insert_result.first != _table.end());
+        if (!insert_result.second) {
+          express_cat.warning()
+            << "Attempt to mark pointer " << ptr << " as ReferenceCount "
+            << ref_ptr << ", which was already allocated.\n";
+        }
+        
+        _recursion_protect = false;
+      }
+    }
+
+  } else {
+    // We're removing this pointer from use.
+    ns_remove_void_pointer(ptr);
   }
 }
 
@@ -757,11 +853,11 @@ ns_get_pointers(MemoryUsagePointers &result) {
   double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index &&
-        info._ref_ptr != (ReferenceCount *)NULL) {
-      result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(),
-                       now - info._time);
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index &&
+        info->_ref_ptr != (ReferenceCount *)NULL) {
+      result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
+                       now - info->_time);
     }
   }
 }
@@ -781,14 +877,14 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index &&
-        info._ref_ptr != (ReferenceCount *)NULL) {
-      TypeHandle info_type = info.get_type();
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index &&
+        info->_ref_ptr != (ReferenceCount *)NULL) {
+      TypeHandle info_type = info->get_type();
       if (info_type != TypeHandle::none() &&
           info_type.is_derived_from(type)) {
-        result.add_entry(info._ref_ptr, info._typed_ptr, info_type,
-                         now - info._time);
+        result.add_entry(info->_ref_ptr, info->_typed_ptr, info_type,
+                         now - info->_time);
       }
     }
   }
@@ -810,13 +906,13 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index &&
-        info._ref_ptr != (ReferenceCount *)NULL) {
-      double age = now - info._time;
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index &&
+        info->_ref_ptr != (ReferenceCount *)NULL) {
+      double age = now - info->_time;
       if ((age >= from && age <= to) ||
           (age >= to && age <= from)) {
-        result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(), age);
+        result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(), age);
       }
     }
   }
@@ -853,13 +949,13 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   double now = TrueClock::get_global_ptr()->get_long_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index && 
-        info._ref_ptr != (ReferenceCount *)NULL) {
-      if (info._ref_ptr->get_ref_count() == 0) {
-        info._ref_ptr->ref();
-        result.add_entry(info._ref_ptr, info._typed_ptr, info.get_type(),
-                         now - info._time);
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index && 
+        info->_ref_ptr != (ReferenceCount *)NULL) {
+      if (info->_ref_ptr->get_ref_count() == 0) {
+        info->_ref_ptr->ref();
+        result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
+                         now - info->_time);
       }
     }
   }
@@ -901,9 +997,9 @@ ns_show_current_types() {
   
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
-      hist.add_info(info.get_type(), info);
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index) {
+      hist.add_info(info->get_type(), info);
     }
   }
 
@@ -942,9 +1038,9 @@ ns_show_current_ages() {
 
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo &info = (*ti).second;
-    if (info._freeze_index == _freeze_index) {
-      hist.add_info(now - info._time, info);
+    MemoryInfo *info = (*ti).second;
+    if (info->_freeze_index == _freeze_index) {
+      hist.add_info(now - info->_time, info);
     }
   }
 
@@ -975,25 +1071,27 @@ ns_show_trend_ages() {
 //               before ReferenceCount, e.g. TypedReferenceCount).
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
-consolidate_void_ptr(MemoryInfo &info) {
-  if (info.is_size_known()) {
+consolidate_void_ptr(MemoryInfo *info) {
+  if (info->is_size_known()) {
     // We already know the size, so no sweat.
     return;
   }
 
-  if (info.get_typed_ptr() == (TypedObject *)NULL) {
+  if (info->_typed_ptr == (TypedObject *)NULL) {
     // We don't have a typed pointer for this thing yet.
     return;
   }
+  
+  TypedObject *typed_ptr = info->_typed_ptr;
 
-  void *typed_ptr = (void *)info.get_typed_ptr();
-
-  if (typed_ptr == (void *)info.get_ref_ptr()) {
+  if ((void *)typed_ptr == (void *)info->_ref_ptr) {
     // The TypedObject pointer is the same pointer as the
     // ReferenceCount pointer, so there's no point in looking it up
     // separately.  Actually, this really shouldn't even be possible.
     return;
   }
+
+  nassertv(info->_void_ptr == NULL);
 
   Table::iterator ti;
   ti = _table.find(typed_ptr);
@@ -1003,32 +1101,29 @@ consolidate_void_ptr(MemoryInfo &info) {
   }
 
   // We do have an entry!  Copy over the relevant pieces.
-  MemoryInfo &typed_info = (*ti).second;
+  MemoryInfo *typed_info = (*ti).second;
 
-  if (typed_info.is_size_known()) {
-    info._size = typed_info.get_size();
-    info._flags |= MemoryInfo::F_size_known;
-    if (typed_info._freeze_index == _freeze_index) {
-      _current_cpp_size += info._size;
+  nassertv(typed_info->_void_ptr == typed_ptr &&
+           typed_info->_ref_ptr == NULL);
+
+  info->_void_ptr = typed_info->_void_ptr;
+  if (typed_info->is_size_known()) {
+    info->_size = typed_info->get_size();
+    info->_flags |= MemoryInfo::F_size_known;
+    if (typed_info->_freeze_index == _freeze_index) {
+      _current_cpp_size += info->_size;
     }
   }
 
-  // The typed_ptr is clearly the more accurate pointer to the
-  // beginning of the structure.
-  info._void_ptr = typed_ptr;
-
-  // Now that we've consolidated the pointers, remove the void pointer
-  // entry.
-  if (info._freeze_index == _freeze_index) {
+  // Now that we've consolidated the pointers, remove the entry for
+  // the typed pointer.
+  if (info->_freeze_index == _freeze_index) {
     _count--;
-    _current_cpp_size -= info._size;
+    _current_cpp_size -= info->_size;
   }
-    
-  // We have to protect modifications to the table from recursive
-  // calls by toggling _recursion_protect while we adjust it.
-  _recursion_protect = true;
-  _table.erase(ti);
-  _recursion_protect = false;
+
+  delete typed_info;
+  (*ti).second = info;
 }
 
 

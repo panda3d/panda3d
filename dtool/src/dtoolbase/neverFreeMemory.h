@@ -1,0 +1,81 @@
+// Filename: neverFreeMemory.h
+// Created by:  drose (14Jun07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef NEVERFREEMEMORY_H
+#define NEVERFREEMEMORY_H
+
+#include "dtoolbase.h"
+
+#include "mutexImpl.h"
+#include <set>
+
+////////////////////////////////////////////////////////////////////
+//       Class : NeverFreeMemory
+// Description : This class is used to allocate bytes of memory from a
+//               pool that is never intended to be freed.  It is
+//               particularly useful to support DeletedChain, which
+//               allocates memory in just such a fashion.
+//
+//               When it is known that memory will not be freed, it is
+//               preferable to use this instead of the standard
+//               malloc() (or global_operator_new()) call, since this
+//               will help reduce fragmentation problems in the
+//               dynamic heap.  Also, memory allocated from here will
+//               exhibit less wasted space.
+////////////////////////////////////////////////////////////////////
+class EXPCL_DTOOL NeverFreeMemory {
+private:
+  NeverFreeMemory();
+
+public:
+  INLINE static void *alloc(size_t size);
+
+PUBLISHED:
+  INLINE static size_t get_total_alloc();
+  INLINE static size_t get_total_used();
+  INLINE static size_t get_total_unused();
+
+private:
+  void *ns_alloc(size_t size);
+  INLINE static NeverFreeMemory *get_global_ptr();
+  static void make_global_ptr();
+
+private:
+  class Page {
+  public:
+    INLINE Page(void *start, size_t size);
+    INLINE bool operator < (const Page &other) const;
+    INLINE void *alloc(size_t size);
+
+    unsigned char *_next;
+    size_t _remaining;
+  };
+
+  typedef set<Page> Pages;
+  Pages _pages;
+
+  size_t _page_size;
+  size_t _total_alloc;
+  size_t _total_used;
+  MutexImpl _lock;
+  static NeverFreeMemory * TVOLATILE _global_ptr;
+};
+
+#include "neverFreeMemory.I"
+
+#endif

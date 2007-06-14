@@ -40,7 +40,7 @@ public:
   INLINE void operator = (const MemoryUsagePointerCounts &copy);
 
   INLINE void clear();
-  void add_info(MemoryInfo &info);
+  void add_info(MemoryInfo *info);
   void output(ostream &out) const;
 
   INLINE bool is_size_unknown() const;

@@ -54,6 +54,8 @@ public:
 public:
   static void *operator_new_handler(size_t size);
   static void operator_delete_handler(void *ptr);
+  static void mark_pointer_handler(void *ptr, size_t size, 
+                                   ReferenceCount *ref_ptr);
 
 #if defined(WIN32_VC) && defined(_DEBUG)
   static int win32_malloc_hook(int alloc_type, void *ptr, 
@@ -98,6 +100,7 @@ private:
 
   void ns_record_void_pointer(void *ptr, size_t size);
   void ns_remove_void_pointer(void *ptr);
+  void ns_mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr);
 
   size_t ns_get_current_cpp_size();
   size_t ns_get_cpp_size();
@@ -117,7 +120,7 @@ private:
   void ns_show_current_ages();
   void ns_show_trend_ages();
 
-  void consolidate_void_ptr(MemoryInfo &info);
+  void consolidate_void_ptr(MemoryInfo *info);
 
   static MemoryUsage *_global_ptr;
 
@@ -125,8 +128,18 @@ private:
   // Actually, it turns out that it doesn't matter, since somehow the
   // pallocator gets used even though we specify dallocator here, so
   // we have to make special code that handles the recursion anyway.
-  typedef map<void *, MemoryInfo, less<void *>, dallocator<pair<void * const, MemoryInfo> > > Table;
+
+  // This table stores up to two entiries for each MemoryInfo object:
+  // one for the void pointer (the pointer to the beginning of the
+  // allocated memory block), and one for the ReferenceCount pointer.
+  // For a particular object, these two pointers may be the same or
+  // they may be different.  Some objects may be stored under both
+  // pointers, while others may be stored under only one pointer or
+  // the other.  We don't store an entry for an object's TypedObject
+  // pointer.
+  typedef map<void *, MemoryInfo *, less<void *>, dallocator<pair<void * const, MemoryInfo *> > > Table;
   Table _table;
+
   int _freeze_index;
   int _count;
   size_t _current_cpp_size;
@@ -136,7 +149,7 @@ private:
 
   class TypeHistogram {
   public:
-    void add_info(TypeHandle type, MemoryInfo &info);
+    void add_info(TypeHandle type, MemoryInfo *info);
     void show() const;
     void clear();
 
@@ -151,7 +164,7 @@ private:
   class AgeHistogram {
   public:
     AgeHistogram();
-    void add_info(double age, MemoryInfo &info);
+    void add_info(double age, MemoryInfo *info);
     void show() const;
     void clear();
 
