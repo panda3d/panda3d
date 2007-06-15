@@ -55,6 +55,9 @@ public:
   virtual void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
   virtual void draw(bool force, Thread *current_thread);
 
+protected:
+  virtual void fill_result_graph(ResultGraphBuilder &builder);
+
 private:
   class ObjectData {
   public:

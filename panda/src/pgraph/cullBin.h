@@ -29,6 +29,10 @@
 class CullableObject;
 class GraphicsStateGuardianBase;
 class SceneSetup;
+class TransformState;
+class RenderState;
+class PandaNode;
+class GeomNode;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullBin
@@ -60,8 +64,14 @@ public:
 
   virtual void draw(bool force, Thread *current_thread)=0;
 
+  PT(PandaNode) make_result_graph();
+
   INLINE bool has_flash_color() const;
   INLINE const Colorf &get_flash_color() const;
+
+protected:
+  class ResultGraphBuilder;
+  virtual void fill_result_graph(ResultGraphBuilder &builder)=0;
 
 private:
   void check_flash_color();
@@ -73,6 +83,23 @@ protected:
 
   bool _has_flash_color;
   Colorf _flash_color;
+
+  // Used in make_result_graph() and fill_result_graph().
+  class ResultGraphBuilder {
+  public:
+    ResultGraphBuilder(PandaNode *root_node);
+    void add_object(CullableObject *object);
+
+  private:
+    void record_one_object(GeomNode *node, CullableObject *object);
+
+  private:
+    int _object_index;
+    CPT(TransformState) _current_transform;
+    CPT(RenderState) _current_state;
+    PT(PandaNode) _root_node;
+    PT(GeomNode) _current_node;
+  };
 
   static PStatCollector _cull_bin_pcollector;
   PStatCollector _cull_this_pcollector;

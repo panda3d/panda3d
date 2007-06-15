@@ -63,6 +63,8 @@ public:
   void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
   void draw(Thread *current_thread);
 
+  PT(PandaNode) make_result_graph();
+
 public:
   static void bin_removed(int bin_index);
 

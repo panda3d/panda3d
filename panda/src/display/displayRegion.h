@@ -125,6 +125,8 @@ PUBLISHED:
     const Filename &filename, const string &image_comment = "");
   bool get_screenshot(PNMImage &image);
 
+  PT(PandaNode) make_cull_result_graph();
+
 public:
   INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
                               Thread *current_thread);

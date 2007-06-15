@@ -271,6 +271,41 @@ draw(Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullResult::make_result_graph
+//       Access: Public
+//  Description: Returns a special scene graph constructed to
+//               represent the results of the cull.  This will be a
+//               hierarchy of nodes, one node for each bin, each of
+//               which will in term be a parent of a number of
+//               GeomNodes, representing the geometry drawn in each
+//               bin.
+//
+//               This is useful mainly for high-level debugging and
+//               abstraction tools; it should not be mistaken for the
+//               low-level cull result itself.  For the low-level cull
+//               result, use draw() to efficiently draw the culled
+//               scene.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) CullResult::
+make_result_graph() {
+  PT(PandaNode) root_node = new PandaNode("cull_result");
+
+  // Ask the bin manager for the correct order to draw all the bins.
+  CullBinManager *bin_manager = CullBinManager::get_global_ptr();
+  int num_bins = bin_manager->get_num_bins();
+  for (int i = 0; i < num_bins; i++) {
+    int bin_index = bin_manager->get_bin(i);
+    nassertr(bin_index >= 0, NULL);
+
+    if (bin_index < (int)_bins.size() && _bins[bin_index] != (CullBin *)NULL) {
+      root_node->add_child(_bins[bin_index]->make_result_graph());
+    }
+  }
+
+  return root_node;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullResult::bin_removed
 //       Access: Public, Static
 //  Description: Intended to be called by

@@ -525,6 +525,36 @@ get_screenshot(PNMImage &image) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::make_cull_result_graph
+//       Access: Public
+//  Description: Returns a special scene graph constructed to
+//               represent the results of the last frame's cull
+//               operation.
+//
+//               This will be a hierarchy of nodes, one node for each
+//               bin, each of which will in term be a parent of a
+//               number of GeomNodes, representing the geometry drawn
+//               in each bin.
+//
+//               This is useful mainly for high-level debugging and
+//               abstraction tools; it should not be mistaken for the
+//               low-level cull result itself, which is constructed
+//               and maintained internally.  No such scene graph is
+//               normally constructed during the rendering of a frame;
+//               this is an artificial construct created for the
+//               purpose of making it easy to analyze the results of
+//               the cull operation.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) DisplayRegion::
+make_cull_result_graph() {
+  CullResult *cull_result = get_cull_result(Thread::get_current_thread());
+  if (cull_result == (CullResult *)NULL) {
+    return NULL;
+  }
+  return cull_result->make_result_graph();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::win_display_regions_changed
 //       Access: Private
 //  Description: Intended to be called when the active state on a

@@ -845,6 +845,7 @@ do_enable_default_keys() {
   define_key("shift-c", "toggle collision surfaces", event_C, this);
   define_key("shift-b", "report bounding volume", event_B, this);
   define_key("shift-l", "list hierarchy", event_L, this);
+  define_key("shift-a", "analyze hierarchy", event_A, this);
   define_key("h", "highlight node", event_h, this);
   define_key("arrow_up", "move highlight to parent", event_arrow_up, this);
   define_key("arrow_down", "move highlight to child", event_arrow_down, this);
@@ -1108,6 +1109,24 @@ event_L(const Event *, void *data) {
   }
 
   node.ls();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_A
+//       Access: Public, Static
+//  Description: Default handler for shift-A key: analyze the contents
+//               of the scene graph, or the highlighted node.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_A(const Event *, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  NodePath node = self->get_highlight();
+  if (node.is_empty()) {
+    node = self->get_models();
+  }
+
+  node.analyze();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -76,3 +76,17 @@ draw(bool force, Thread *current_thread) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CullBinUnsorted::fill_result_graph
+//       Access: Protected, Virtual
+//  Description: Called by CullBin::make_result_graph() to add all the
+//               geoms to the special cull result scene graph.
+////////////////////////////////////////////////////////////////////
+void CullBinUnsorted::
+fill_result_graph(CullBin::ResultGraphBuilder &builder) {
+  Objects::const_iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi);
+    builder.add_object(object);
+  }
+}

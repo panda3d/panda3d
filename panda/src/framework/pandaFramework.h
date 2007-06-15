@@ -136,6 +136,7 @@ public:
   static void event_C(const Event *, void *data);
   static void event_B(const Event *, void *data);
   static void event_L(const Event *, void *data);
+  static void event_A(const Event *, void *data);
   static void event_h(const Event *, void *data);
   static void event_arrow_up(const Event *, void *data);
   static void event_arrow_down(const Event *, void *data);
