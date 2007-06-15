@@ -32,10 +32,11 @@
 #include "geomMunger.h"
 #include "config_pgraph.h"
 
-static PStatCollector apply_vertex_collector("*:Flatten:apply:vertex");
-static PStatCollector apply_texcoord_collector("*:Flatten:apply:texcoord");
-static PStatCollector apply_set_color_collector("*:Flatten:apply:set color");
-static PStatCollector apply_scale_color_collector("*:Flatten:apply:scale color");
+PStatCollector GeomTransformer::_apply_vertex_collector("*:Flatten:apply:vertex");
+PStatCollector GeomTransformer::_apply_texcoord_collector("*:Flatten:apply:texcoord");
+PStatCollector GeomTransformer::_apply_set_color_collector("*:Flatten:apply:set color");
+PStatCollector GeomTransformer::_apply_scale_color_collector("*:Flatten:apply:scale color");
+PStatCollector GeomTransformer::_apply_set_format_collector("*:Flatten:apply:set format");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Constructor
@@ -78,7 +79,7 @@ GeomTransformer::
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_vertices(Geom *geom, const LMatrix4f &mat) {
-  PStatTimer timer(apply_vertex_collector);
+  PStatTimer timer(_apply_vertex_collector);
 
   nassertr(geom != (Geom *)NULL, false);
   SourceVertices sv;
@@ -165,7 +166,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 bool GeomTransformer::
 transform_texcoords(Geom *geom, const InternalName *from_name, 
                     InternalName *to_name, const LMatrix4f &mat) {
-  PStatTimer timer(apply_texcoord_collector);
+  PStatTimer timer(_apply_texcoord_collector);
 
   nassertr(geom != (Geom *)NULL, false);
 
@@ -252,7 +253,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 set_color(Geom *geom, const Colorf &color) {
-  PStatTimer timer(apply_set_color_collector);
+  PStatTimer timer(_apply_set_color_collector);
 
   SourceColors sc;
   sc._color = color;
@@ -311,7 +312,7 @@ set_color(GeomNode *node, const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_colors(Geom *geom, const LVecBase4f &scale) {
-  PStatTimer timer(apply_scale_color_collector);
+  PStatTimer timer(_apply_scale_color_collector);
 
   nassertr(geom != (Geom *)NULL, false);
 
@@ -385,6 +386,87 @@ apply_state(GeomNode *node, const RenderState *state) {
     CPT(RenderState) new_state = state->compose(entry._state);
     if (entry._state != new_state) {
       entry._state = new_state;
+      any_changed = true;
+    }
+  }
+
+  return any_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::set_format
+//       Access: Public
+//  Description: Changes the GeomVertexData of the indicated Geom to
+//               use the specified format.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+set_format(Geom *geom, const GeomVertexFormat *new_format) {
+  PStatTimer timer(_apply_set_format_collector);
+
+  nassertr(geom != (Geom *)NULL, false);
+
+  SourceFormat sf;
+  sf._format = new_format;
+  sf._vertex_data = geom->get_vertex_data();
+  
+  PT(GeomVertexData) &new_data = _format[sf];
+  if (new_data.is_null()) {
+    if (sf._vertex_data->get_format() == new_format) {
+      // No change.
+      return false;
+    }
+
+    // We have not yet converted this vertex data.  Do so now.
+    new_data = new GeomVertexData(*sf._vertex_data);
+    new_data->set_format(new_format);
+  }
+  
+  geom->set_vertex_data(new_data);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::remove_column
+//       Access: Public
+//  Description: Removes the named column from the vertex data in the
+//               Geom.  Returns true if the Geom was changed, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+remove_column(Geom *geom, const InternalName *column) {
+  CPT(GeomVertexFormat) format = geom->get_vertex_data()->get_format();
+  if (!format->has_column(column)) {
+    return false;
+  }
+
+  PT(GeomVertexFormat) new_format = new GeomVertexFormat(*format);
+  new_format->remove_column(column);
+  new_format->pack_columns();
+  format = GeomVertexFormat::register_format(new_format);
+
+  return set_format(geom, format);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::remove_column
+//       Access: Public
+//  Description: Removes the named column from the vertex datas within
+//               the GeomNode.  Returns true if the GeomNode was
+//               changed, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+remove_column(GeomNode *node, const InternalName *column) {
+  bool any_changed = false;
+
+  GeomNode::CDWriter cdata(node->_cycler);
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    GeomNode::GeomEntry &entry = (*gi);
+    PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
+    if (remove_column(new_geom, column)) {
+      entry._geom = new_geom;
       any_changed = true;
     }
   }

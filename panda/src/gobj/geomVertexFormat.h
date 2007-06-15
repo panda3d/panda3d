@@ -98,6 +98,7 @@ PUBLISHED:
   INLINE bool has_column(const InternalName *name) const;
 
   void remove_column(const InternalName *name);
+  void pack_columns();
 
   INLINE int get_num_points() const;
   INLINE const InternalName *get_point(int n) const;

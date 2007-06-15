@@ -520,6 +520,21 @@ remove_column(const InternalName *name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::pack_columns
+//       Access: Published
+//  Description: Removes wasted space between columns.
+////////////////////////////////////////////////////////////////////
+void GeomVertexFormat::
+pack_columns() {
+  nassertv(!_is_registered);
+  Arrays::const_iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    (*ai)->pack_columns();
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::output
 //       Access: Published
 //  Description: 

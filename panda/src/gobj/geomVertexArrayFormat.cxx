@@ -314,12 +314,37 @@ remove_column(const InternalName *name) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::
 clear_columns() {
+  nassertv(!_is_registered);
+
   _columns.clear();
   _columns_by_name.clear();
   _columns_unsorted = false;
   _stride = 0;
   _total_bytes = 0;
   _pad_to = 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::pack_columns
+//       Access: Published
+//  Description: Removes wasted space between columns.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayFormat::
+pack_columns() {
+  nassertv(!_is_registered);
+
+  Columns orig_columns;
+  orig_columns.swap(_columns);
+  clear_columns();
+
+  int last_pos = 0;
+
+  Columns::const_iterator ci;
+  for (ci = orig_columns.begin(); ci != orig_columns.end(); ++ci) {
+    GeomVertexColumn *column = (*ci);
+    add_column(column->get_name(), column->get_num_components(),
+               column->get_numeric_type(), column->get_contents());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

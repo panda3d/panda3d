@@ -87,6 +87,19 @@ operator < (const GeomTransformer::SourceColors &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::SourceFormat::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::SourceFormat::
+operator < (const GeomTransformer::SourceFormat &other) const {
+  if (_format != other._format) {
+    return _format < other._format;
+  }
+  return _vertex_data < other._vertex_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::NewCollectedKey::Ordering Operator
 //       Access: Public
 //  Description:

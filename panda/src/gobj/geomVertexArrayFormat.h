@@ -95,6 +95,7 @@ PUBLISHED:
   int add_column(const GeomVertexColumn &column);
   void remove_column(const InternalName *name);
   void clear_columns();
+  void pack_columns();
 
   INLINE int get_num_columns() const;
   INLINE const GeomVertexColumn *get_column(int i) const;

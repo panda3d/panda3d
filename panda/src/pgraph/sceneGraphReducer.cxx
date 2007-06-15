@@ -28,6 +28,7 @@
 
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
+PStatCollector SceneGraphReducer::_remove_column_collector("*:Flatten:remove column");
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
@@ -127,6 +128,19 @@ flatten(PandaNode *root, int combine_siblings_bits) {
   } while ((combine_siblings_bits & CS_recurse) != 0 && num_pass_nodes != 0);
 
   return num_total_nodes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::remove_column
+//       Access: Published
+//  Description: Removes the indicated data column from any
+//               GeomVertexDatas found at the indicated root and
+//               below.  Returns the number of GeomNodes modified.
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+remove_column(PandaNode *root, const InternalName *column) {
+  PStatTimer timer(_remove_column_collector);
+  return r_remove_column(root, column, _transformer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -676,6 +690,33 @@ choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_remove_column
+//       Access: Private
+//  Description: The recursive implementation of remove_column().
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+r_remove_column(PandaNode *node, const InternalName *column,
+                GeomTransformer &transformer) {
+  int num_changed = 0;
+
+  if (node->is_geom_node()) {
+    // When we come to a geom node, collect.
+    if (transformer.remove_column(DCAST(GeomNode, node), column)) {
+      ++num_changed;
+    }
+  }
+    
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    num_changed +=
+      r_remove_column(children.get_child(i), column, transformer);
+  }
+
+  return num_changed;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::r_collect_vertex_data
 //       Access: Private
 //  Description: The recursive implementation of
@@ -702,7 +743,7 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
     GeomTransformer new_transformer(transformer);
 
     if (node->is_geom_node()) {
-      // When we come to geom node, collect.
+      // When we come to a geom node, collect.
       if (new_transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits)) {
         ++num_created;
       }

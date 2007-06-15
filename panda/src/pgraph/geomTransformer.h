@@ -71,6 +71,10 @@ public:
 
   bool apply_state(GeomNode *node, const RenderState *state);
 
+  bool set_format(Geom *geom, const GeomVertexFormat *new_format);
+  bool remove_column(Geom *geom, const InternalName *column);
+  bool remove_column(GeomNode *node, const InternalName *column);
+
   int collect_vertex_data(Geom *geom, int collect_bits);
   int collect_vertex_data(GeomNode *node, int collect_bits);
 
@@ -116,6 +120,17 @@ private:
   // modified from the original colors (e.g. via a ColorScaleAttrib).
   NewColors _fcolors, _tcolors;
 
+  // For set_format(): record (format + vertex_data) -> vertex_data.
+  class SourceFormat {
+  public:
+    INLINE bool operator < (const SourceFormat &other) const;
+
+    CPT(GeomVertexFormat) _format;
+    CPT(GeomVertexData) _vertex_data;
+  };
+  typedef pmap<SourceFormat, PT(GeomVertexData) > NewFormat;
+  NewFormat _format;
+
   class AlreadyCollectedData {
   public:
     CPT(GeomVertexData) _data;
@@ -135,6 +150,12 @@ private:
   };
   typedef pmap< NewCollectedKey, PT(GeomVertexData) > NewCollectedData;
   NewCollectedData _new_collected_data;
+
+  static PStatCollector _apply_vertex_collector;
+  static PStatCollector _apply_texcoord_collector;
+  static PStatCollector _apply_set_color_collector;
+  static PStatCollector _apply_scale_color_collector;
+  static PStatCollector _apply_set_format_collector;
 };
 
 #include "geomTransformer.I"
