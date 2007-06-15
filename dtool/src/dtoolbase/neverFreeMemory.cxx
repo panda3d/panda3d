@@ -21,6 +21,10 @@
 
 #ifdef WIN32
 
+// Windows case.
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #else
 
 // Posix case.
@@ -53,6 +57,11 @@ NeverFreeMemory() {
 
 #ifdef WIN32
 
+  // Windows case.
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+
+  _page_size = (size_t)sysinfo.dwPageSize;
 
 #else
 
@@ -95,6 +104,26 @@ ns_alloc(size_t size) {
   void *start = NULL;
 
 #ifdef WIN32
+
+  // Windows case.
+  start = VirtualAlloc(NULL, needed_size, MEM_COMMIT | MEM_RESERVE,
+                       PAGE_READWRITE);
+  if (start == (void *)NULL) {
+    DWORD err = GetLastError();
+    cerr << "Couldn't allocate memory page of size " << needed_size
+         << ": ";
+
+    PVOID buffer;
+    DWORD length = 
+      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                    NULL, err, 0, (LPTSTR)&buffer, 0, NULL);
+    if (length != 0) {
+      cerr << (char *)buffer << "\n";
+    } else {
+      cerr << "Error code " << err << "\n";
+    }
+    LocalFree(buffer);
+  }
 
 #else
 
