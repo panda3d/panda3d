@@ -37,7 +37,7 @@ VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMODEX","NVIDIACG",
           "OPENSSL","FREETYPE","FFTW","MILES",
-          "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8",
+          "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8","MAX9",
           "FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
@@ -56,7 +56,7 @@ CXXINCLUDECACHE = {}
 THREADCOUNT=0
 DXVERSIONS=["8","9"]
 MAYAVERSIONS=["6","65","7","8","85"]
-MAXVERSIONS=["6","7","8"]
+MAXVERSIONS=["6","7","8","9"]
 ICACHEPATH="built/tmp/makepanda-dcache"
 INTERRUPT=0
 MAINTHREAD=threading.currentThread()
@@ -533,9 +533,11 @@ if (os.path.isdir("sdks")):
     MAXSDKCS["MAX6"] = "sdks/maxsdk6"
     MAXSDKCS["MAX7"] = "sdks/maxsdk7"
     MAXSDKCS["MAX8"] = "sdks/maxsdk8"
+    MAXSDKCS["MAX9"] = "sdks/maxsdk9"
     MAXSDK["MAX6"]   = "sdks/maxsdk6"
     MAXSDK["MAX7"]   = "sdks/maxsdk7"
     MAXSDK["MAX8"]   = "sdks/maxsdk8"
+    MAXSDK["MAX9"]   = "sdks/maxsdk9"
     MAYASDK["MAYA6"]  = "sdks/maya6"
     MAYASDK["MAYA65"] = "sdks/maya65"
     MAYASDK["MAYA7"]  = "sdks/maya7"
@@ -620,6 +622,7 @@ for (ver,key) in MAYAVERSIONINFO:
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0",            "installdir",    "maxsdk\\cssdk\\include"),
                   ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0",            "Installdir",    "maxsdk\\include\\CS"),
                   ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0",            "Installdir",    "maxsdk\\include\\CS"),
+                  ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0",            "Installdir",    "maxsdk\\include\\CS"),
 ]
 
 for version,key1,key2,subdir in MAXVERSIONINFO:

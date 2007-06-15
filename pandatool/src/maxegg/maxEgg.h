@@ -44,6 +44,11 @@ extern TCHAR *GetString(int id);
    a suitable interface to Max files can be connected from a standalone
    program instead of a plugin.
 */
+
+#if MAX_VERSION_MAJOR < 9
+  #define DefaultRemapDir NoRemap
+#endif
+
 class MaxEggPlugin : public HelperObject 
 {
   MaxEggExpOptions **eggList;
@@ -108,7 +113,7 @@ class MaxEggPlugin : public HelperObject
   TSTR SubAnimName(int i) { return TSTR(GetString(IDS_CLASS_NAME)); }
   
   // From ref
-  RefTargetHandle Clone(RemapDir& remap = NoRemap());
+  RefTargetHandle Clone(RemapDir& remap = DefaultRemapDir());
 
   // IO
   IOResult Save(ISave *isave);
