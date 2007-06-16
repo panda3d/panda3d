@@ -337,8 +337,6 @@ pack_columns() {
   orig_columns.swap(_columns);
   clear_columns();
 
-  int last_pos = 0;
-
   Columns::const_iterator ci;
   for (ci = orig_columns.begin(); ci != orig_columns.end(); ++ci) {
     GeomVertexColumn *column = (*ci);
