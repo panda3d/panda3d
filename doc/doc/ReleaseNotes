@@ -1,3 +1,31 @@
+------------------------  RELEASE 1.4.0  ------------------------
+
+This release incorporates lots of small, incremental improvements.
+
+* Improved OSX support: mouselook, fmod fixes, icon filename.
+* Better memory usage tracking from pstats.
+* Removed dependencies on NSPR.
+* New default-model-extension prc variable (instead of old implicit-extension behavior)
+* New arc emitter in particle system.
+* Multiple different Actors can be flattened into one node.
+* Texture compression in DX8, DX9.
+* New features to support low-memory platforms.
+* ParametricCurveDrawer etc. officially deprecated in favor of RopeNode.
+* DynamicTextFont::RenderMode allows generating geometric fonts (instead of always using texture-based fonts).
+* Some integrated support for ODE (not yet polished and ready)
+* New RigidBodyCombiner unifies independently moving bodies into a single Geom as a rendering optimization.
+* Support for depth-stencil textures.
+* Better support for fullscreen mode on Linux.
+* Panda GL/DX windows can be subordinate to other windows (Win32 only).
+* Better multithreaded protection.
+* Interrogate correctly handles "const" vs. non-const objects.
+* PlaneNode::set_clip_effect allows user-defined cull planes (in addition to clip planes).
+* Several low-level rendering optimizations.
+* Simple occlusion culling with PipeOcclusionCullTraverser.
+* Optional bounding boxes (instead of spheres): "bounds-type box", "bounds-type best"
+
+I have no doubt that there will be a few significant bugs in this release, like all X.X.0 releases. - Josh
+
 ------------------------  RELEASE 1.3.2  ------------------------
 Bugfix release. This fixes a few problems in 1.3.1
 
