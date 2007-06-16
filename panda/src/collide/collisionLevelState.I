@@ -193,7 +193,22 @@ any_in_bounds() {
     collide_cat.spam();
     indent(collide_cat.spam(false), indent_level)
       << _node_path.get_node_path() << " has " << num_active_colliders
-      << " interested colliders.\n";
+      << " interested colliders";
+    if (num_colliders != 0) {
+      collide_cat.spam(false)
+        << " (";
+      for (int c = 0; c < num_colliders; c++) {
+        if (has_collider(c)) {
+          CollisionNode *cnode = get_collider_node(c);
+          collide_cat.spam(false)
+            << " " << c << ". " << cnode->get_name();
+        }
+      }
+      collide_cat.spam(false)
+        << " )";
+    }
+    collide_cat.spam(false)
+      << "\n";
   }
 #endif  // NDEBUG
   return has_any_collider();
