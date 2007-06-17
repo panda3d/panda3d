@@ -490,11 +490,18 @@ open_buffer() {
   // Double check that we have a host
   nassertr(_host != 0, false);
 
+  // Count total color buffers.
+  int totalcolor = 1 +
+    _fb_properties.get_aux_rgba() +
+    _fb_properties.get_aux_hrgba() +
+    _fb_properties.get_aux_float();
+
   // Check for support of relevant extensions.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, _gsg, false);
   if ((!glgsg->_supports_framebuffer_object)||
-      (glgsg->_glDrawBuffers == 0)) {
+      (glgsg->_glDrawBuffers == 0)||
+      (glgsg->_max_draw_buffers < totalcolor)) {
     return false;
   }
   

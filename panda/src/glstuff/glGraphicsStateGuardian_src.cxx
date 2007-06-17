@@ -688,6 +688,12 @@ reset() {
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
+    // Bug workaround for radeons.
+    if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
+      if (has_extension("GL_ATI_draw_buffers")) {
+        _shader_caps._bug_list.insert(ShaderExpansion::SBUG_ati_draw_buffers);
+      }
+    }    
   }
 #endif
 
@@ -737,6 +743,10 @@ reset() {
   } else if (has_extension("GL_ARB_draw_buffers")) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffersARB");
+  }
+  _max_draw_buffers = 1;
+  if (_glDrawBuffers != 0) {
+    GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &_max_draw_buffers);
   }
 
   _supports_occlusion_query = false;

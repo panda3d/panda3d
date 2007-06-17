@@ -134,6 +134,10 @@ public:
     SMP_col3,
   };
 
+  enum ShaderBug {
+    SBUG_ati_draw_buffers,
+  };
+
   enum ShaderMatFunc {
     SMF_compose,
     SMF_compose_cache_first,
@@ -185,6 +189,7 @@ public:
     int _active_fprofile;
     int _ultimate_vprofile;
     int _ultimate_fprofile;
+    pset <ShaderBug> _bug_list;
 #endif
     INLINE void clear();
     INLINE bool operator == (const ShaderCaps &other) const;
@@ -229,7 +234,7 @@ public:
  private:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir  cg_parameter_dir(CGparameter p);
-  CGprogram     cg_compile_entry_point(char *entry, int active, int ultimate);
+  CGprogram     cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader);
   bool          cg_analyze_entry_point(CGprogram prog, bool fshader);
   bool          cg_analyze_shader(const ShaderCaps &caps);
   bool          cg_compile_shader(const ShaderCaps &caps);

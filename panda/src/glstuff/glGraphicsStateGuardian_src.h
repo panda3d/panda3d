@@ -461,6 +461,7 @@ public:
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
 
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
+  int _max_draw_buffers;
 
   PFNGLGENQUERIESPROC _glGenQueries;
   PFNGLBEGINQUERYPROC _glBeginQuery;

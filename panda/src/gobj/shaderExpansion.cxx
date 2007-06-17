@@ -776,14 +776,24 @@ cg_release_resources() {
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CGprogram ShaderExpansion::
-cg_compile_entry_point(char *entry, int active, int ultimate)
+cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
 {
   CGprogram prog;
   CGerror err;
+  char *compiler_args[100];
+  int nargs = 0;
+  int active = fshader ? caps._active_fprofile : caps._active_vprofile;
+  int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;
+
+  if (fshader && caps._bug_list.count(SBUG_ati_draw_buffers)) {
+    compiler_args[nargs++] = "-po";
+    compiler_args[nargs++] = "ATI_draw_buffers";
+  }
+  compiler_args[nargs] = 0;
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
-                           (CGprofile)active, entry, (const char**)NULL);
+                           (CGprofile)active, entry, (const char **)compiler_args);
     if (cgGetError() == CG_NO_ERROR) {
       return prog;
     }
@@ -793,7 +803,7 @@ cg_compile_entry_point(char *entry, int active, int ultimate)
   }
   
   prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
-                         (CGprofile)ultimate, entry, (const char**)NULL);
+                         (CGprofile)ultimate, entry, (const char **)NULL);
   err = cgGetError();
   if (err == CG_NO_ERROR) {
     return prog;
@@ -846,13 +856,8 @@ cg_compile_shader(const ShaderCaps &caps) {
     return false;
   }
   
-  _cg_vprogram = cg_compile_entry_point("vshader",
-                                        caps._active_vprofile,
-                                        caps._ultimate_vprofile);
-  
-  _cg_fprogram = cg_compile_entry_point("fshader",
-                                        caps._active_fprofile,
-                                        caps._ultimate_fprofile);
+  _cg_vprogram = cg_compile_entry_point("vshader", caps, false);
+  _cg_fprogram = cg_compile_entry_point("fshader", caps, true);
 
   if ((_cg_vprogram == 0)||(_cg_fprogram == 0)) {
     cg_release_resources();

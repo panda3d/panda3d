@@ -45,15 +45,23 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
                            _cg_parameter_map)) {
       return;
     }
-        
+    
     // Load the program.
     
     cgGLLoadProgram(_cg_vprogram);
     CGerror verror = cgGetError();
+    if (verror != CG_NO_ERROR) {
+      const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+      GLCAT.error() << "Could not load Cg vertex program:" << s->get_name() << " (" << 
+        cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
+      release_resources();
+    }
     cgGLLoadProgram(_cg_fprogram);
     CGerror ferror = cgGetError();
-    if ((verror != CG_NO_ERROR)||(ferror != CG_NO_ERROR)) {
-      GLCAT.error() << "Could not load Cg shader:" << s->get_name() << "\n";
+    if (ferror != CG_NO_ERROR) {
+      const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+      GLCAT.error() << "Could not load Cg fragment program:" << s->get_name() << " (" << 
+        cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
       release_resources();
     }
   }
