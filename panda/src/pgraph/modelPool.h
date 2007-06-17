@@ -70,8 +70,6 @@ PUBLISHED:
   INLINE static void list_contents();
   static void write(ostream &out);
 
-  static ModelPool *get_ptr();
-
 private:
   INLINE ModelPool();
 
@@ -87,6 +85,8 @@ private:
   void ns_release_all_models();
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
+
+  static ModelPool *get_ptr();
 
   static ModelPool *_global_ptr;
 
