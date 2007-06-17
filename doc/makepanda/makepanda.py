@@ -1010,9 +1010,7 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
 def CompileAllModels(dstdir, srcdir):
     for x in GetDirectoryContents(srcdir, ["*.egg", "*.flt"]):
         eggpz = os.path.basename(x[:-4] + ".egg.pz")
-        bampz = os.path.basename(x[:-4] + ".bam.pz")
         EnqueueEggPZ("", dstdir + eggpz, srcdir + x)
-        EnqueueBamPZ("", dstdir + bampz, dstdir + eggpz)
 
 def CopyAllHeaders(dir, skip=[]):
     for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
@@ -1445,14 +1443,14 @@ def EnqueueEggPZ(preconv, eggpz, src):
 # EnqueueBamPZ
 #
 ##########################################################################################
-
-def CompileBamPZ(preconv, bampz, src):
-    oscmd("built/bin/egg2bam " + preconv + " -o " + bampz[:-3] + " " + src)
-    oscmd("built/bin/pzip " + bampz[:-3])
-
-def EnqueueBamPZ(preconv, bampz, src):
-    dep = [src, "egg2bam.exe"]
-    SDependencyQueue([], [CompileBamPZ, preconv, bampz, src], [bampz], dep)
+# 
+# def CompileBamPZ(preconv, bampz, src):
+#     oscmd("built/bin/egg2bam " + preconv + " -o " + bampz[:-3] + " " + src)
+#     oscmd("built/bin/pzip " + bampz[:-3])
+# 
+# def EnqueueBamPZ(preconv, bampz, src):
+#     dep = [src, "egg2bam.exe"]
+#     SDependencyQueue([], [CompileBamPZ, preconv, bampz, src], [bampz], dep)
 
 ##########################################################################################
 #
@@ -1541,6 +1539,7 @@ MakeDirectory("built/bin")
 MakeDirectory("built/lib")
 MakeDirectory("built/etc")
 MakeDirectory("built/plugins")
+MakeDirectory("built/modelcache")
 MakeDirectory("built/include")
 MakeDirectory("built/include/parser-inc")
 MakeDirectory("built/include/parser-inc/openssl")
@@ -4468,14 +4467,6 @@ if (OMIT.count("PANDATOOL")==0):
     CompileAllModels("built/models/misc/", "dmodels/src/misc/")
     CompileAllModels("built/models/gui/",  "dmodels/src/gui/")
     CompileAllModels("built/models/",      "models/")
-
-    if (os.path.isdir("samples")):
-        for tut in os.listdir("samples"):
-            dir = "samples/"+tut+"/models/"
-            if (os.path.isdir(dir)):
-                for eggpz in GetDirectoryContents(dir, ["*.egg.pz"]):
-                    bampz = os.path.basename(eggpz[:-7] + ".bam.pz")
-                    EnqueueBamPZ("-ps keep", dir + bampz, dir + eggpz)
 
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")

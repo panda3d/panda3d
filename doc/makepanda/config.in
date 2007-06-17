@@ -68,3 +68,6 @@ audio-library-name p3fmod_audio
 
 hardware-animated-vertices 0
 
+# Enable the bam-cache
+
+model-cache-dir $THIS_PRC_DIR/../modelcache

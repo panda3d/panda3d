@@ -100,6 +100,7 @@ Section "${SMDIRECTORY}" SecCore
         File /r "${PANDA}\pandac\*.py"
         SetOutPath $INSTDIR\python
         File /r "${PANDA}\python\*"
+        CreateDirectory $INSTDIR/modelcache
 
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
