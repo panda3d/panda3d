@@ -1,15 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 //
-// This simple program merely sets up the python environment
-// variables and then runs python:
-//
-//    PYTHONPATH
-//    PATH
-//
-// Note that 'genpycode' is just a slight variant of 'ppython':
-//
-// genpycode xyz -->
-// ppython direct\\src\\ffi\\jGenPyCode.py xyz
+// This is a little wrapper to make it easy to run a python
+// program from the command line.
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -23,14 +15,17 @@
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "\\bin\\genpycode.exe"
-#define LINK_TARGET "\\python\\ppython.exe"
-#define GENPYCODE 1
+#define LINK_TARGET "\\python\\python.exe"
 #endif
 
 #ifdef BUILDING_PACKPANDA
 #define LINK_SOURCE "\\bin\\packpanda.exe"
-#define LINK_TARGET "\\python\\ppython.exe"
-#define PACKPANDA 1
+#define LINK_TARGET "\\python\\python.exe"
+#endif
+
+#ifdef BUILDING_EGGCACHER
+#define LINK_SOURCE "\\bin\\loadalleggs.exe"
+#define LINK_TARGET "\\python\\python.exe"
 #endif
 
 #include <windows.h>
@@ -73,13 +68,6 @@ int main(int argc, char **argv)
   if (f==0) pathfail();
   fclose(f);
   
-  // Set the PYTHONPATH and PATH
-  
-  char *pp = getenv("PYTHONPATH");
-  if (pp) sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s",fnbuf,fnbuf,pp);
-  else    sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin",fnbuf,fnbuf);
-  putenv(ppbuf);
-  
   // Fetch the command line and trim the first word.
 
   char *cmdline = GetCommandLine();
@@ -98,13 +86,16 @@ int main(int argc, char **argv)
   
   // Calculate MODCMD
   
-#ifdef GENPYCODE
-  sprintf(modcmd,"ppython -c \"import direct.ffi.jGenPyCode\" %s",args);
+#ifdef BUILDING_GENPYCODE
+  sprintf(modcmd,"python -c \"import direct.ffi.jGenPyCode\" %s",args);
 #endif
-#ifdef PACKPANDA
-  sprintf(modcmd,"ppython -c \"import direct.directscripts.packpanda\" %s",args);
+#ifdef BUILDING_PACKPANDA
+  sprintf(modcmd,"python -c \"import direct.directscripts.packpanda\" %s",args);
 #endif
-  
+#ifdef BUILDING_EGGCACHER
+  sprintf(modcmd,"python -c \"import direct.directscripts.eggcacher\" %s",args);
+#endif
+
   // Run it.
 
   signal(SIGINT, SIG_IGN);
@@ -128,19 +119,16 @@ int main(int argc, char **argv)
 
 #ifdef __linux__
 
-#ifdef BUILDING_PPYTHON
-#define LINK_SOURCE "/bin/ppython"
-#define PPYTHON 1
-#endif
-
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "/bin/genpycode"
-#define GENPYCODE 1
 #endif
 
 #ifdef BUILDING_PACKPANDA
 #define LINK_SOURCE "/bin/packpanda"
-#define PACKPANDA 1
+#endif
+
+#ifdef BUILDING_EGGCACHER
+#define LINK_SOURCE "/bin/eggcacher"
 #endif
 
 #include <stdlib.h>
@@ -183,29 +171,21 @@ int main(int argc, char **argv)
   if (strcmp(fnbuf + fnlen - srclen, LINK_SOURCE)) pathfail();
   fnlen -= srclen; fnbuf[fnlen] = 0;
 
-  // See if we can find the 'direct' tree locally.
-  // If not, continue anyway.  It may be possible to succeed.
-  
-  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
-  FILE *f = fopen(ppbuf,"r");
-  if (f) {
-    char *pp = getenv("PYTHONPATH");
-    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
-    else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
-    putenv(ppbuf);
-  }
-  
   // Calculate MODARGV
   
   modargc=0;
   modargv[modargc++]="python";
-#ifdef GENPYCODE
+#ifdef BUILDING_GENPYCODE
     modargv[modargc++] = "-c";
     modargv[modargc++] = "import direct.ffi.jGenPyCode";
 #endif
-#ifdef PACKPANDA
+#ifdef BUILDING_PACKPANDA
     modargv[modargc++] = "-c";
-    modargv[modargc++] = "import direct.ffi.packpanda";
+    modargv[modargc++] = "import direct.directscripts.packpanda";
+#endif
+#ifdef BUILDING_EGGCACHER
+    modargv[modargc++] = "-c";
+    modargv[modargc++] = "import direct.directscripts.eggcacher";
 #endif
   for (int i=1; i<argc; i++) modargv[modargc++] = argv[i];
   modargv[modargc] = 0;
