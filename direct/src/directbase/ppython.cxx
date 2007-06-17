@@ -24,7 +24,7 @@
 #endif
 
 #ifdef BUILDING_EGGCACHER
-#define LINK_SOURCE "\\bin\\loadalleggs.exe"
+#define LINK_SOURCE "\\bin\\eggcacher.exe"
 #define LINK_TARGET "\\python\\python.exe"
 #endif
 

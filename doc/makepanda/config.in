@@ -68,6 +68,8 @@ audio-library-name p3fmod_audio
 
 hardware-animated-vertices 0
 
-# Enable the bam-cache
+# Enable the model-cache, but only for models, not textures.
 
 model-cache-dir $THIS_PRC_DIR/../modelcache
+model-cache-textures #f
+

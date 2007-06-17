@@ -3150,6 +3150,8 @@ if (OMIT.count("PYTHON")==0):
     EnqueueLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_PACKPANDA'], src='ppython.cxx', obj='packpanda.obj')
     EnqueueLink(opts=['WINUSER'], dll='packpanda.exe', obj=['packpanda.obj'])
+    EnqueueCxx(ipath=IPATH, opts=['BUILDING_EGGCACHER'], src='ppython.cxx', obj='eggcacher.obj')
+    EnqueueLink(opts=['WINUSER'], dll='eggcacher.exe', obj=['eggcacher.obj'])
 
 
 #

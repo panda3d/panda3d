@@ -110,7 +110,7 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR\models\audio
             File /r /x CVS "${PANDA}\models\audio\*"
             SetOutPath $INSTDIR\bin
-            File /r "${PANDA}\bin\pzip.exe"
+            File /r "${PANDA}\bin\eggcacher.exe"
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
@@ -151,10 +151,10 @@ Section "${SMDIRECTORY}" SecCore
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
             WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php"
             SetOutPath $INSTDIR\samples\GreetingCard
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\python\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\pzip.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\python\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
             SetOutPath $INSTDIR
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\pzip.exe" 0 "" "" "Panda Manual"
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\pzip.exe" 0 "" "" "Panda Website"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Manual"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Website"
 
             FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:
@@ -182,8 +182,8 @@ Section "${SMDIRECTORY}" SecCore
                     Call StrRep
                     Pop $R0
                     StrCpy $TUTNAME $R0
-                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\pzip.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
-                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\pzip.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
                     FindNext $2 $3
                     goto iloop
                 idone:
@@ -201,8 +201,9 @@ Section -post
 
         !ifndef PPGAME
 
-        # Install the visual studio runtime system.
-        # ExecWait '"$INSTDIR\bin\vcredist_x86.exe" /Q:a /C:"msiexec.exe /qn /i vcredist.msi"'
+        # Preload all EGG files into the model-cache
+        ExecWait '"$INSTDIR\bin\eggcacher.exe" samples models"
+
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\python"
         Call RemoveFromPath
