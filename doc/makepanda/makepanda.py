@@ -4460,7 +4460,7 @@ if (OMIT.count("FREETYPE")==0) and (OMIT.count("PANDAAPP")==0):
 
 
 #
-# Generate the models directory
+# Generate the models directory and samples directory
 #
 
 if (OMIT.count("PANDATOOL")==0):
@@ -4468,6 +4468,14 @@ if (OMIT.count("PANDATOOL")==0):
     CompileAllModels("built/models/misc/", "dmodels/src/misc/")
     CompileAllModels("built/models/gui/",  "dmodels/src/gui/")
     CompileAllModels("built/models/",      "models/")
+
+    if (os.path.isdir("samples")):
+        for tut in os.listdir("samples"):
+            dir = "samples/"+tut+"/models/"
+            if (os.path.isdir(dir)):
+                for eggpz in GetDirectoryContents(dir, ["*.egg.pz"]):
+                    bampz = os.path.basename(eggpz[:-7] + ".bam.pz")
+                    EnqueueBamPZ("-ps keep", dir + bampz, dir + eggpz)
 
     CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
     CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
