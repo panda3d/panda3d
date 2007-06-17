@@ -55,11 +55,17 @@ BamCache() :
     ("model-cache-flush", 30,
      PRC_DESC("This is the amount of time, in seconds, between automatic "
               "flushes of the model-cache index."));
-  
+
+  ConfigVariableBool model_cache_textures
+    ("model-cache-textures", true,
+     PRC_DESC("If this is set to true, textures will also be cached in the "
+              "model cache, as txo files."));
+
   ConfigVariableInt model_cache_max_kbytes
     ("model-cache-max-kbytes", 1048576,
      PRC_DESC("This is the maximum size of the model cache, in kilobytes."));
 
+  _cache_textures = model_cache_textures;
   _flush_time = model_cache_flush;
   _max_kbytes = model_cache_max_kbytes;
 
@@ -141,6 +147,10 @@ PT(BamCacheRecord) BamCache::
 lookup(const Filename &source_filename, const string &cache_extension) {
   consider_flush_index();
 
+  if ((cache_extension == "txo")&&(!_cache_textures)) {
+    return NULL;
+  }
+  
   Filename source_pathname(source_filename);
   source_pathname.make_absolute();
 

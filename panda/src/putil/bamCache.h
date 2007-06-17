@@ -100,6 +100,7 @@ private:
   Filename _root;
   int _flush_time;
   int _max_kbytes;
+  bool _cache_textures;
   static BamCache *_global_ptr;
 
   BamCacheIndex *_index;
