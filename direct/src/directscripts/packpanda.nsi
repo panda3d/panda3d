@@ -101,7 +101,6 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR\python
         File /r "${PANDA}\python\*"
         CreateDirectory "$INSTDIR\modelcache"
-
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
 
@@ -129,6 +128,7 @@ Section "${SMDIRECTORY}" SecCore
             File /nonfatal /r "${PANDA}\plugins\*.dlo"
             File /nonfatal /r "${PANDA}\plugins\*.mll"
             File /nonfatal /r "${PANDA}\plugins\*.mel"
+            File ${PSOURCE}\doc\INSTALLING-PLUGINS.TXT
             SetOutPath $INSTDIR\pandac\input
             File /r "${PANDA}\pandac\input\*"
             SetOutPath $INSTDIR\bin
