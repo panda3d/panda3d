@@ -10,13 +10,6 @@
 ## The source tarball contains most of what is in CVS, but some of the
 ## control files (like the CVS directories themselves) are stripped out.
 ##
-## The source tarball contains an rpmbuild 'spec' file so that you can
-## easily build a binary RPM: rpmbuild -tb panda3d-version.tar.GZ
-##
-## The 'spec' file included in the tarball uses the 'makepanda' build
-## system to compile panda.
-##
-##
 ########################################################################
 
 import sys,os,time,stat,string,re,getopt,cPickle
@@ -103,7 +96,6 @@ oscmd("ln -sf ../doc          "+TARDIR+"/doc")
 oscmd("ln -sf ../makepanda    "+TARDIR+"/makepanda")
 oscmd("ln -sf ../../thirdparty/linux-libs-a "+TARDIR+"/thirdparty/linux-libs-a")
 oscmd("ln -sf ../../thirdparty/Pmw          "+TARDIR+"/thirdparty/Pmw")
-writefile(TARDIR+'/panda3d.spec',SPEC)
 oscmd("tar --exclude CVS -chzf "+TARDIR+".tar.gz "+TARDIR)
 oscmd("rm -rf "+TARDIR)
 
