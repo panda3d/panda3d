@@ -4,6 +4,8 @@ This release incorporates lots of small, incremental
 improvements.
 
 * Model-cache enabled by default in prepackaged release.
+* Now compiling with visual studio 2005. 
+* Plugin installation now slightly harder --- see instructions in plugins dir.
 * Improved OSX support: mouselook, fmod fixes, icon filename.
 * Better memory usage tracking from pstats.
 * Removed dependencies on NSPR.
