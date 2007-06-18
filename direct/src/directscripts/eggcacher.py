@@ -12,11 +12,9 @@ import os,sys
 from pandac.PandaModules import *
 
 class EggCacher:
-    def __init__(self):
-        if (len(sys.argv) != 2):
-            print "Usage: eggcacher <file-or-directory>"
-            sys.exit(1)
-
+    def __init__(self, args):
+        maindir = Filename.fromOsSpecific(os.getcwd()).getFullpath()
+        ExecutionEnvironment.setEnvironmentVariable("MAIN_DIR", maindir)
         self.bamcache = BamCache.getGlobalPtr()
         self.pandaloader = PandaLoader()
         self.loaderopts = LoaderOptions()
@@ -24,29 +22,60 @@ class EggCacher:
             print "The model cache is not currently active."
             print "You must set a model-cache-dir in your config file."
             sys.exit(1)
+        self.parseArgs(args)
+        files = self.scanPaths(self.paths)
+        self.processFiles(files)
 
-    def traversePath(self, path):
+    def parseArgs(self, args):
+        self.concise =0
+        while len(args):
+            if (args[0]=="--concise"):
+                self.concise = 1
+                args = args[1:]
+            else:
+                break
+        if (len(args) < 1):
+            print "Usage: eggcacher options file-or-directory"
+            sys.exit(1)
+        self.paths = args
+
+    def scanPath(self, eggs, path):
         if (os.path.exists(path)==0):
             print "No such file or directory: "+path
             return
         if (os.path.isdir(path)):
             for f in os.listdir(path):
-                self.traversePath(os.path.join(path,f))
+                self.scanPath(eggs, os.path.join(path,f))
             return
         if (path.endswith(".egg")) or (path.endswith(".egg.pz")):
+            size = os.path.getsize(path)
+            eggs.append((path,size))
+        
+    def scanPaths(self, paths):
+        eggs = []
+        for path in paths:
+            abs = os.path.abspath(path)
+            self.scanPath(eggs,path)
+        return eggs
+
+    def processFiles(self, files):
+        total = 0
+        for (path,size) in files:
+            total += size
+        progress = 0
+        for (path,size) in files:
             fn = Filename.fromOsSpecific(path)
             cached = self.bamcache.lookup(fn,"bam")
-            if (cached == None):
-                print "Not cacheable: "+path
-            elif (cached.hasData()):
-                print "Already Cached: "+path
-            else:
-                print "Caching "+path
+            percent = (progress * 100) / total
+            report = path
+            if (self.concise): report = os.path.basename(report)
+            print "Preprocessing Models %2d%% %s" % (percent, report)
+            sys.stdout.flush()
+            if (cached) and (cached.hasData()==0):
                 self.pandaloader.loadSync(fn, self.loaderopts)
             ModelPool.releaseAllModels()
+            progress += size
 
-cacher = EggCacher()
-for x in sys.argv[1:]:
-    cacher.traversePath(os.path.abspath(x))
 
+cacher = EggCacher(sys.argv[1:])
 

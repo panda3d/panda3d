@@ -1010,7 +1010,7 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
 def CompileAllModels(dstdir, srcdir):
     for x in GetDirectoryContents(srcdir, ["*.egg", "*.flt"]):
         eggpz = os.path.basename(x[:-4] + ".egg.pz")
-        EnqueueEggPZ("", dstdir + eggpz, srcdir + x)
+        EnqueueEggPZ(dstdir + eggpz, srcdir + x)
 
 def CopyAllHeaders(dir, skip=[]):
     for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
@@ -1427,16 +1427,16 @@ def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
 #
 ##########################################################################################
 
-def CompileEggPZ(preconv, eggpz, src):
+def CompileEggPZ(eggpz, src):
     if (src.endswith(".egg")):
         CopyFile(eggpz[:-3], src)
     elif (src.endswith(".flt")):
-        oscmd("built/bin/flt2egg " + preconv + " -o " + eggpz[:-3] + " " + src)
+        oscmd("built/bin/flt2egg -ps keep -o " + eggpz[:-3] + " " + src)
     oscmd("built/bin/pzip " + eggpz[:-3])
 
-def EnqueueEggPZ(preconv, eggpz, src):
+def EnqueueEggPZ(eggpz, src):
     dep = [src, "flt2egg.exe"]
-    SDependencyQueue([], [CompileEggPZ, preconv, eggpz, src], [eggpz], dep)
+    SDependencyQueue([], [CompileEggPZ, eggpz, src], [eggpz], dep)
 
 ##########################################################################################
 #

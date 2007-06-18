@@ -100,7 +100,7 @@ Section "${SMDIRECTORY}" SecCore
         File /r "${PANDA}\pandac\*.py"
         SetOutPath $INSTDIR\python
         File /r "${PANDA}\python\*"
-        CreateDirectory $INSTDIR/modelcache
+        CreateDirectory "$INSTDIR\modelcache"
 
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
         CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}"
@@ -114,6 +114,13 @@ Section "${SMDIRECTORY}" SecCore
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
+            # Preload all EGG files into the model-cache
+            SetOutPath $INSTDIR
+            SetDetailsPrint textonly
+            SetDetailsView show
+            nsExec::ExecToLog '"$INSTDIR\bin\eggcacher.exe" --concise game'
+            SetDetailsPrint none
+            SetDetailsView hide
 
         !else
 
@@ -146,6 +153,13 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS "${PANDA}\models\*"
             SetOutPath $INSTDIR\samples
             File /r /x CVS "${PSOURCE}\samples\*"
+            # Preload all EGG files into the model-cache
+            SetOutPath $INSTDIR
+            SetDetailsPrint both
+            SetDetailsView show
+            nsExec::ExecToLog '"$INSTDIR\bin\eggcacher.exe" --concise models samples'
+            SetDetailsPrint none
+            SetDetailsView hide
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
@@ -200,9 +214,6 @@ SectionEnd
 Section -post
 
         !ifndef PPGAME
-
-        # Preload all EGG files into the model-cache
-        ExecWait '"$INSTDIR\bin\eggcacher.exe" samples models"
 
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\python"
