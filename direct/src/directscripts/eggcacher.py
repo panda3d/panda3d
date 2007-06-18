@@ -27,10 +27,14 @@ class EggCacher:
         self.processFiles(files)
 
     def parseArgs(self, args):
-        self.concise =0
+        self.concise = 0
+        self.pzkeep = 0
         while len(args):
             if (args[0]=="--concise"):
                 self.concise = 1
+                args = args[1:]
+            elif (args[0]=="--pzkeep"):
+                self.pzkeep = 1
                 args = args[1:]
             else:
                 break
@@ -47,10 +51,15 @@ class EggCacher:
             for f in os.listdir(path):
                 self.scanPath(eggs, os.path.join(path,f))
             return
-        if (path.endswith(".egg")) or (path.endswith(".egg.pz")):
+        if (path.endswith(".egg")):
             size = os.path.getsize(path)
             eggs.append((path,size))
-        
+            return
+        if (path.endswith(".egg.pz")):
+            size = os.path.getsize(path)
+            if (self.pzkeep): eggs.append((path,size))
+            else: eggs.append((path[:-3],size))
+
     def scanPaths(self, paths):
         eggs = []
         for path in paths:
