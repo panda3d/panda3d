@@ -2,6 +2,7 @@ HOW TO INSTALL MAX PANDA PLUGINS.
 
 Step 1. Install the visual studio 2005 runtime by
 running "vcredist_x86-sp1.exe" as administrator.
+As a convenience, this installer is included with panda.
 
 Step 2. Make sure that there is only one copy of panda
 in your system PATH.  If you only have one copy of panda
@@ -9,7 +10,8 @@ installed, you can skip this step.
 
 Step 3. Copy the relevant DLLs for your version
 of max from the panda plugins directory to the
-max plugins directory.  
+max plugins directory.  For instance, if you are 
+using Max 9, copy maxegg9.dlo and maxeggimport9.dlo
 
 HOW TO INSTALL MAYA PANDA PLUGINS.
 
