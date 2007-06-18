@@ -98,10 +98,14 @@ PUBLISHED:
   void clear_primitives();
 
   INLINE PT(Geom) decompose() const;
+  INLINE PT(Geom) doubleside() const;
+  INLINE PT(Geom) reverse() const;
   INLINE PT(Geom) rotate() const;
   INLINE PT(Geom) unify(int max_indices) const;
 
   void decompose_in_place();
+  void doubleside_in_place();
+  void reverse_in_place();
   void rotate_in_place();
   void unify_in_place(int max_indices);
 

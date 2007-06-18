@@ -44,6 +44,8 @@ public:
                     bool force) const;
 
 protected:
+  virtual CPT(GeomPrimitive) doubleside_impl() const;
+  virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
 
 public:

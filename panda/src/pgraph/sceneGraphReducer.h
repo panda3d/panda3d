@@ -136,6 +136,8 @@ PUBLISHED:
   int flatten(PandaNode *root, int combine_siblings_bits);
 
   int remove_column(PandaNode *root, const InternalName *column);
+  int doubleside(PandaNode *root);
+  int reverse(PandaNode *root);
 
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
@@ -170,6 +172,8 @@ protected:
 
   int r_remove_column(PandaNode *node, const InternalName *column,
                       GeomTransformer &transformer);
+  int r_doubleside(PandaNode *node, GeomTransformer &transformer);
+  int r_reverse(PandaNode *node, GeomTransformer &transformer);
 
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer);
@@ -186,6 +190,8 @@ private:
   static PStatCollector _flatten_collector;
   static PStatCollector _apply_collector;
   static PStatCollector _remove_column_collector;
+  static PStatCollector _doubleside_collector;
+  static PStatCollector _reverse_collector;
   static PStatCollector _collect_collector;
   static PStatCollector _make_nonindexed_collector;
   static PStatCollector _unify_collector;

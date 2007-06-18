@@ -111,9 +111,87 @@ draw(GraphicsStateGuardianBase *gsg, const GeomPrimitivePipelineReader *reader,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTriangles::doubleside_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of doubleside().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomTriangles::
+doubleside_impl() const {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(GeomTriangles) reversed = new GeomTriangles(*this);
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+
+  // This is like reverse(), except we don't clear the vertices first.
+  // That way we double the vertices up.
+
+  // First, rotate the original copy, if necessary, so the
+  // flat-first/flat-last nature of the vertices is consistent
+  // throughout the primitive.
+  bool needs_rotate = false;
+  switch (from.get_shade_model()) {
+  case SM_flat_first_vertex:
+  case SM_flat_last_vertex:
+    reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
+    needs_rotate = true;
+
+  default:
+    break;
+  }
+
+  // Now append all the new vertices, in reverse order.
+  for (int i = from.get_num_vertices() - 1; i >= 0; --i) {
+    reversed->add_vertex(from.get_vertex(i));
+  }
+
+  // Finally, re-rotate the whole thing to get back to the original
+  // shade model.
+  if (needs_rotate) {
+    reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
+  }
+
+  return reversed.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTriangles::reverse_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of reverse().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomTriangles::
+reverse_impl() const {
+  Thread *current_thread = Thread::get_current_thread();
+  PT(GeomTriangles) reversed = new GeomTriangles(*this);
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+  reversed->clear_vertices();
+
+  for (int i = from.get_num_vertices() - 1; i >= 0; --i) {
+    reversed->add_vertex(from.get_vertex(i));
+  }
+
+  switch (from.get_shade_model()) {
+  case SM_flat_first_vertex:
+    reversed->set_shade_model(SM_flat_last_vertex);
+    reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
+    break;
+
+  case SM_flat_last_vertex:
+    reversed->set_shade_model(SM_flat_first_vertex);
+    reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
+    break;
+
+  default:
+    break;
+  }
+
+  return reversed.p();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTriangles::rotate_impl
 //       Access: Protected, Virtual
-//  Description: The virtual implementation of do_rotate().
+//  Description: The virtual implementation of rotate().
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexArrayData) GeomTriangles::
 rotate_impl() const {

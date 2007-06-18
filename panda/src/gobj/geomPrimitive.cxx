@@ -37,6 +37,8 @@ TypeHandle GeomPrimitive::CData::_type_handle;
 TypeHandle GeomPrimitivePipelineReader::_type_handle;
 
 PStatCollector GeomPrimitive::_decompose_pcollector("*:Munge:Decompose");
+PStatCollector GeomPrimitive::_doubleside_pcollector("*:Munge:Doubleside");
+PStatCollector GeomPrimitive::_reverse_pcollector("*:Munge:Reverse");
 PStatCollector GeomPrimitive::_rotate_pcollector("*:Munge:Rotate");
 
 ////////////////////////////////////////////////////////////////////
@@ -741,6 +743,58 @@ rotate() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::doubleside
+//       Access: Published
+//  Description: Duplicates triangles in the primitive so that each
+//               triangle is back-to-back with another triangle facing
+//               in the opposite direction.  Note that this doesn't
+//               affect vertex normals, so this operation alone won't
+//               work in the presence of lighting (but see
+//               SceneGraphReducer::doubleside()).
+//
+//               Also see CullFaceAttrib, which can enable rendering
+//               of both sides of a triangle without having to
+//               duplicate it (but which doesn't necessarily work in
+//               the presence of lighting).
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+doubleside() const {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Doublesiding " << get_type() << ": " << (void *)this << "\n";
+  }
+
+  PStatTimer timer(_doubleside_pcollector);
+  return doubleside_impl();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::reverse
+//       Access: Published
+//  Description: Reverses the winding order in the primitive so that
+//               each triangle is facing in the opposite direction it
+//               was originally.  Note that this doesn't affect vertex
+//               normals, so this operation alone won't work in the
+//               presence of lighting (but see
+//               SceneGraphReducer::reverse()).
+//
+//               Also see CullFaceAttrib, which can change the visible
+//               direction of a triangle without having to duplicate
+//               it (but which doesn't necessarily work in the
+//               presence of lighting).
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+reverse() const {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Reversing " << get_type() << ": " << (void *)this << "\n";
+  }
+
+  PStatTimer timer(_reverse_pcollector);
+  return reverse_impl();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::match_shade_model
 //       Access: Published
 //  Description: Returns a new primitive that is compatible with the
@@ -1405,6 +1459,26 @@ rotate_impl() const {
   // The default implementation doesn't even try to do anything.
   nassertr(false, NULL);
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::doubleside_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of doubleside().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+doubleside_impl() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::reverse_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of reverse().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+reverse_impl() const {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -157,6 +157,34 @@ decompose() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::doubleside
+//       Access: Published
+//  Description: Doublesides all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::doubleside().
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) Geom::
+doubleside() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->doubleside_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::reverse
+//       Access: Published
+//  Description: Reverses all of the primitives within this Geom,
+//               returning the result.  See
+//               GeomPrimitive::reverse().
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) Geom::
+reverse() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->reverse_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::rotate
 //       Access: Published
 //  Description: Rotates all of the primitives within this Geom,

@@ -924,6 +924,34 @@ set_color(const Colorf &color, int num_components,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::reverse_normals
+//       Access: Published
+//  Description: Returns a new GeomVertexData object with the normal
+//               data modified in-place, so that each lighting normal
+//               is now facing in the opposite direction.
+//
+//               If the vertex data does not include a normal column,
+//               this returns the original GeomVertexData object,
+//               unchanged.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexData) GeomVertexData::
+reverse_normals() const {
+  const GeomVertexColumn *old_column = 
+    get_format()->get_column(InternalName::get_normal());
+  if (old_column == (GeomVertexColumn *)NULL) {
+    return this;
+  }
+
+  PT(GeomVertexData) new_data = new GeomVertexData(*this);
+  GeomVertexRewriter to(new_data, InternalName::get_normal());
+  while (!to.is_at_end()) {
+    to.set_data3f(-to.get_data3f());
+  }
+
+  return new_data;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::animate_vertices
 //       Access: Published
 //  Description: Returns a GeomVertexData that represents the results

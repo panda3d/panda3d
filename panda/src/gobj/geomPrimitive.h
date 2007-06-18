@@ -130,6 +130,8 @@ PUBLISHED:
 
   CPT(GeomPrimitive) decompose() const;
   CPT(GeomPrimitive) rotate() const;
+  CPT(GeomPrimitive) doubleside() const;
+  CPT(GeomPrimitive) reverse() const;
   CPT(GeomPrimitive) match_shade_model(ShadeModel shade_model) const;
 
   int get_num_bytes() const;
@@ -206,6 +208,8 @@ public:
 protected:
   virtual CPT(GeomPrimitive) decompose_impl() const;
   virtual CPT(GeomVertexArrayData) rotate_impl() const;
+  virtual CPT(GeomPrimitive) doubleside_impl() const;
+  virtual CPT(GeomPrimitive) reverse_impl() const;
   virtual bool requires_unused_vertices() const;
   virtual void append_unused_vertices(GeomVertexArrayData *vertices, 
                                       int vertex);
@@ -280,6 +284,8 @@ private:
   
 private:
   static PStatCollector _decompose_pcollector;
+  static PStatCollector _doubleside_pcollector;
+  static PStatCollector _reverse_pcollector;
   static PStatCollector _rotate_pcollector;
 
 public:

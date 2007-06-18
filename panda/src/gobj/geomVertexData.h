@@ -148,6 +148,8 @@ PUBLISHED:
     set_color(const Colorf &color, int num_components,
               NumericType numeric_type, Contents contents) const;
 
+  CPT(GeomVertexData) reverse_normals() const;
+
   CPT(GeomVertexData) animate_vertices(bool force, Thread *current_thread) const;
 
   PT(GeomVertexData) 

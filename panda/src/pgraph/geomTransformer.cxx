@@ -475,6 +475,31 @@ remove_column(GeomNode *node, const InternalName *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::reverse_normals
+//       Access: Public
+//  Description: Reverses the lighting normals on the vertex data, if
+//               any.  Returns true if the Geom was changed, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+reverse_normals(Geom *geom) {
+  nassertr(geom != (Geom *)NULL, false);
+  CPT(GeomVertexData) orig_data = geom->get_vertex_data();
+  CPT(GeomVertexData) &new_data = _reversed_normals[orig_data];
+  if (new_data.is_null()) {
+    new_data = orig_data->reverse_normals();
+  }
+
+  if (new_data == orig_data) {
+    // No change.
+    return false;
+  }
+
+  geom->set_vertex_data(new_data);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::collect_vertex_data
 //       Access: Public
 //  Description: Collects together GeomVertexDatas from different

@@ -240,6 +240,30 @@ decompose_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTristrips::doubleside_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of doubleside().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomTristrips::
+doubleside_impl() const {
+  // TODO: implement this properly as triangle strips, without
+  // requiring a decompose operation first.
+  return decompose_impl()->doubleside();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTristrips::reverse_impl
+//       Access: Protected, Virtual
+//  Description: The virtual implementation of reverse().
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomTristrips::
+reverse_impl() const {
+  // TODO: implement this properly as triangle strips, without
+  // requiring a decompose operation first.
+  return decompose_impl()->reverse();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTristrips::rotate_impl
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of do_rotate().

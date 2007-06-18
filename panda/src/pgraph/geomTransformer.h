@@ -75,6 +75,8 @@ public:
   bool remove_column(Geom *geom, const InternalName *column);
   bool remove_column(GeomNode *node, const InternalName *column);
 
+  bool reverse_normals(Geom *geom);
+
   int collect_vertex_data(Geom *geom, int collect_bits);
   int collect_vertex_data(GeomNode *node, int collect_bits);
 
@@ -130,6 +132,9 @@ private:
   };
   typedef pmap<SourceFormat, PT(GeomVertexData) > NewFormat;
   NewFormat _format;
+
+  typedef pmap<CPT(GeomVertexData), CPT(GeomVertexData) > ReversedNormals;
+  ReversedNormals _reversed_normals;
 
   class AlreadyCollectedData {
   public:
