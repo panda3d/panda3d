@@ -746,7 +746,9 @@ reset() {
   }
   _max_draw_buffers = 1;
   if (_glDrawBuffers != 0) {
-    GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &_max_draw_buffers);
+    GLint max_draw_buffers;
+    GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
+    _max_draw_buffers = max_draw_buffers;
   }
 
   _supports_occlusion_query = false;
