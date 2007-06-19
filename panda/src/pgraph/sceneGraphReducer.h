@@ -55,7 +55,8 @@ PUBLISHED:
     TT_color_scale     = 0x004,
     TT_tex_matrix      = 0x008,
     TT_clip_plane      = 0x010,
-    TT_other           = 0x020,
+    TT_cull_face       = 0x020,
+    TT_other           = 0x040,
   };
 
   enum CombineSiblings {
@@ -129,15 +130,13 @@ PUBLISHED:
   INLINE void set_combine_radius(float combine_radius);
   INLINE float get_combine_radius() const;
 
-  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~TT_clip_plane);
+  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~(TT_clip_plane | TT_cull_face));
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
 
   int flatten(PandaNode *root, int combine_siblings_bits);
 
   int remove_column(PandaNode *root, const InternalName *column);
-  int doubleside(PandaNode *root);
-  int reverse(PandaNode *root);
 
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
@@ -172,8 +171,6 @@ protected:
 
   int r_remove_column(PandaNode *node, const InternalName *column,
                       GeomTransformer &transformer);
-  int r_doubleside(PandaNode *node, GeomTransformer &transformer);
-  int r_reverse(PandaNode *node, GeomTransformer &transformer);
 
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer);
@@ -190,8 +187,6 @@ private:
   static PStatCollector _flatten_collector;
   static PStatCollector _apply_collector;
   static PStatCollector _remove_column_collector;
-  static PStatCollector _doubleside_collector;
-  static PStatCollector _reverse_collector;
   static PStatCollector _collect_collector;
   static PStatCollector _make_nonindexed_collector;
   static PStatCollector _unify_collector;

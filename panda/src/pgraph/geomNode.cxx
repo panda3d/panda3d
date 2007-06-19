@@ -114,6 +114,27 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
 
+  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+    if (attribs._cull_face != (const RenderAttrib *)NULL) {
+      const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, attribs._cull_face);
+      CullFaceAttrib::Mode mode = cfa->get_effective_mode();
+      switch (mode) {
+      case CullFaceAttrib::M_cull_none:
+        // Doublesided polys.  Duplicate them.
+        transformer.doubleside(this);
+        break;
+        
+      case CullFaceAttrib::M_cull_counter_clockwise:
+        // Reverse winding order.
+        transformer.reverse(this);
+        break;
+        
+      default:
+        break;
+      }
+    }
+  }
+
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);

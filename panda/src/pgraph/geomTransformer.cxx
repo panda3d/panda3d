@@ -500,6 +500,81 @@ reverse_normals(Geom *geom) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::doubleside
+//       Access: Public
+//  Description: Duplicates triangles in this GeomNode so that each
+//               triangle is back-to-back with another triangle facing
+//               in the opposite direction.  If the geometry has
+//               vertex normals, this will also duplicate and reverse
+//               the normals, so that lighting will work correctly
+//               from both sides.  Note that calling this when the
+//               geometry is already doublesided (with back-to-back
+//               polygons) will result in multiple redundant coplanar
+//               polygons.
+//
+//               Also see CullFaceAttrib, which can enable rendering
+//               of both sides of a triangle without having to
+//               duplicate it (but which doesn't necessarily work in
+//               the presence of lighting).
+//
+//               Returns true if any Geoms are modified, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+doubleside(GeomNode *node) {
+  int num_geoms = node->get_num_geoms();
+  for (int i = 0; i < num_geoms; ++i) {
+    CPT(Geom) orig_geom = node->get_geom(i);
+    bool has_normals = (orig_geom->get_vertex_data()->has_column(InternalName::get_normal()));
+    if (has_normals) {
+      // If the geometry has normals, we have to duplicate it to
+      // reverse the normals on the duplicate copy.
+      PT(Geom) new_geom = orig_geom->reverse();
+      reverse_normals(new_geom);
+      node->add_geom(new_geom, node->get_geom_state(i));
+      
+    } else {
+      // If there are no normals, we can just doubleside it in
+      // place.  This is preferable because we can share vertices.
+      orig_geom.clear();
+      node->modify_geom(i)->doubleside_in_place();
+    }
+  }
+  
+  return (num_geoms != 0);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::reverse
+//       Access: Public
+//  Description: Reverses the winding order of triangles in this
+//               GeomNode so that each triangle is facing in the
+//               opposite direction.  If the geometry has vertex
+//               normals, this will also reverse the normals, so that
+//               lighting will work correctly.
+//
+//               Also see CullFaceAttrib, which can effectively change
+//               the facing of a triangle having to modify its
+//               vertices (but which doesn't necessarily work in the
+//               presence of lighting).
+//
+//               Returns true if any Geoms are modified, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+reverse(GeomNode *node) {
+  int num_geoms = node->get_num_geoms();
+  for (int i = 0; i < num_geoms; ++i) {
+    PT(Geom) geom = node->modify_geom(i);
+    geom->reverse_in_place();
+    reverse_normals(geom);
+  }
+  
+  return (num_geoms != 0);
+}
+  
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::collect_vertex_data
 //       Access: Public
 //  Description: Collects together GeomVertexDatas from different

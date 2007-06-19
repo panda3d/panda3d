@@ -29,8 +29,6 @@
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
 PStatCollector SceneGraphReducer::_remove_column_collector("*:Flatten:remove column");
-PStatCollector SceneGraphReducer::_doubleside_collector("*:Flatten:doubleside");
-PStatCollector SceneGraphReducer::_reverse_collector("*:Flatten:reverse");
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
@@ -143,52 +141,6 @@ int SceneGraphReducer::
 remove_column(PandaNode *root, const InternalName *column) {
   PStatTimer timer(_remove_column_collector);
   return r_remove_column(root, column, _transformer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::doubleside
-//       Access: Published
-//  Description: Duplicates triangles in the GeomNodes at this level
-//               and below so that each triangle is back-to-back with
-//               another triangle facing in the opposite direction.
-//               If the geometry has vertex normals, this will also
-//               duplicate and reverse the normals, so that lighting
-//               will work correctly from both sides.  Note that
-//               calling this when the geometry is already doublesided
-//               (with back-to-back polygons) will result in multiple
-//               redundant coplanar polygons.
-//
-//               Also see CullFaceAttrib, which can enable rendering
-//               of both sides of a triangle without having to
-//               duplicate it (but which doesn't necessarily work in
-//               the presence of lighting).
-//
-//               Returns the number of GeomNodes modified.
-////////////////////////////////////////////////////////////////////
-int SceneGraphReducer::
-doubleside(PandaNode *root) {
-  PStatTimer timer(_doubleside_collector);
-  return r_doubleside(root, _transformer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::reverse
-//       Access: Published
-//  Description: Reverses the winding order in the GeomNodes at this
-//               level and below so that each triangle is facing in
-//               the opposite direction it was originally.  If the
-//               geometry has vertex normals, the normals will be
-//               reversed as well.
-//
-//               Also see CullFaceAttrib, which can change the visible
-//               direction of a triangle without having to duplicate
-//               it (but which doesn't necessarily work in the
-//               presence of lighting).
-////////////////////////////////////////////////////////////////////
-int SceneGraphReducer::
-reverse(PandaNode *root) {
-  PStatTimer timer(_reverse_collector);
-  return r_reverse(root, _transformer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,84 +710,6 @@ r_remove_column(PandaNode *node, const InternalName *column,
   for (int i = 0; i < num_children; ++i) {
     num_changed +=
       r_remove_column(children.get_child(i), column, transformer);
-  }
-
-  return num_changed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_doubleside
-//       Access: Private
-//  Description: The recursive implementation of doubleside().
-////////////////////////////////////////////////////////////////////
-int SceneGraphReducer::
-r_doubleside(PandaNode *node, GeomTransformer &transformer) {
-  int num_changed = 0;
-
-  if (node->is_geom_node()) {
-    PT(GeomNode) gnode = DCAST(GeomNode, node);
-    int num_geoms = gnode->get_num_geoms();
-    for (int i = 0; i < num_geoms; ++i) {
-      CPT(Geom) orig_geom = gnode->get_geom(i);
-      bool has_normals = (orig_geom->get_vertex_data()->has_column(InternalName::get_normal()));
-      if (has_normals) {
-        // If the geometry has normals, we have to duplicate it to
-        // reverse the normals on the duplicate copy.
-        PT(Geom) new_geom = orig_geom->reverse();
-        transformer.reverse_normals(new_geom);
-        gnode->add_geom(new_geom, gnode->get_geom_state(i));
-
-      } else {
-        // If there are no normals, we can just doubleside it in
-        // place.  This is preferable because we can share vertices.
-        orig_geom.clear();
-        gnode->modify_geom(i)->doubleside_in_place();
-      }
-    }
-
-    if (num_geoms != 0) {
-      ++num_changed;
-    }
-  }
-    
-  PandaNode::Children children = node->get_children();
-  int num_children = children.get_num_children();
-  for (int i = 0; i < num_children; ++i) {
-    num_changed +=
-      r_doubleside(children.get_child(i), transformer);
-  }
-
-  return num_changed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_reverse
-//       Access: Private
-//  Description: The recursive implementation of reverse().
-////////////////////////////////////////////////////////////////////
-int SceneGraphReducer::
-r_reverse(PandaNode *node, GeomTransformer &transformer) {
-  int num_changed = 0;
-
-  if (node->is_geom_node()) {
-    PT(GeomNode) gnode = DCAST(GeomNode, node);
-    int num_geoms = gnode->get_num_geoms();
-    for (int i = 0; i < num_geoms; ++i) {
-      PT(Geom) geom = gnode->modify_geom(i);
-      geom->reverse_in_place();
-      transformer.reverse_normals(geom);
-    }
-
-    if (num_geoms != 0) {
-      ++num_changed;
-    }
-  }
-    
-  PandaNode::Children children = node->get_children();
-  int num_children = children.get_num_children();
-  for (int i = 0; i < num_children; ++i) {
-    num_changed +=
-      r_reverse(children.get_child(i), transformer);
   }
 
   return num_changed;

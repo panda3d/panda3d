@@ -24,6 +24,7 @@
 #include "texMatrixAttrib.h"
 #include "textureAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "cullFaceAttrib.h"
 #include "config_pgraph.h"
 
 
@@ -63,6 +64,13 @@ write(ostream &out, int attrib_types, int indent_level) const {
       indent(out, indent_level) << "no clip plane\n";
     } else {
       _clip_plane->write(out, indent_level);
+    }
+  }
+  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+    if (_cull_face == (const RenderAttrib *)NULL) {
+      indent(out, indent_level) << "no cull face\n";
+    } else {
+      _cull_face->write(out, indent_level);
     }
   }
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
@@ -159,6 +167,20 @@ collect(PandaNode *node, int attrib_types) {
     }
   }
 
+  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+    const RenderAttrib *node_attrib = 
+      node->get_attrib(CullFaceAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      // The node has a cull face attribute; apply it.
+      if (_cull_face == (const RenderAttrib *)NULL) {
+        _cull_face = node_attrib;
+      } else {
+        _cull_face = _cull_face->compose(node_attrib);
+      }
+      node->clear_attrib(CullFaceAttrib::get_class_type());
+    }
+  }
+
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
     // Collect everything else.
     nassertv(_other != (RenderState *)NULL);
@@ -190,6 +212,13 @@ collect(PandaNode *node, int attrib_types) {
     if (attrib != (const RenderAttrib *)NULL) {
       int override = collect_state->get_override(ClipPlaneAttrib::get_class_type());
       collect_state = collect_state->remove_attrib(ClipPlaneAttrib::get_class_type());
+      keep_state = keep_state->add_attrib(attrib, override);
+    }
+
+    attrib = collect_state->get_attrib(CullFaceAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      int override = collect_state->get_override(CullFaceAttrib::get_class_type());
+      collect_state = collect_state->remove_attrib(CullFaceAttrib::get_class_type());
       keep_state = keep_state->add_attrib(attrib, override);
     }
     
@@ -278,6 +307,19 @@ collect(const RenderState *state, int attrib_types) {
     }
   }
 
+  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+    const RenderAttrib *node_attrib = 
+      new_state->get_attrib(CullFaceAttrib::get_class_type());
+    if (node_attrib != (const RenderAttrib *)NULL) {
+      if (_cull_face == (const RenderAttrib *)NULL) {
+        _cull_face = node_attrib;
+      } else {
+        _cull_face = _cull_face->compose(node_attrib);
+      }
+      new_state = new_state->remove_attrib(CullFaceAttrib::get_class_type());
+    }
+  }
+
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
     // Collect everything else.
     nassertr(_other != (RenderState *)NULL, new_state);
@@ -354,6 +396,19 @@ apply_to_node(PandaNode *node, int attrib_types) {
         node->set_attrib(_clip_plane);
       }
       _clip_plane = (RenderAttrib *)NULL;
+    }
+  }
+
+  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+    if (_cull_face != (RenderAttrib *)NULL) {
+      const RenderAttrib *node_attrib =
+        node->get_attrib(CullFaceAttrib::get_class_type());
+      if (node_attrib != (RenderAttrib *)NULL) {
+        node->set_attrib(_cull_face->compose(node_attrib));
+      } else {
+        node->set_attrib(_cull_face);
+      }
+      _cull_face = (RenderAttrib *)NULL;
     }
   }
 

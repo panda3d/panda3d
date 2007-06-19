@@ -41,6 +41,7 @@ AccumulatedAttribs(const AccumulatedAttribs &copy) :
   _tex_matrix(copy._tex_matrix),
   _texture(copy._texture),
   _clip_plane(copy._clip_plane),
+  _cull_face(copy._cull_face),
   _other(copy._other)
 {
 }
@@ -58,5 +59,6 @@ operator = (const AccumulatedAttribs &copy) {
   _tex_matrix = copy._tex_matrix;
   _texture = copy._texture;
   _clip_plane = copy._clip_plane;
+  _cull_face = copy._cull_face;
   _other = copy._other;
 }

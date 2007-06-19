@@ -76,6 +76,8 @@ public:
   bool remove_column(GeomNode *node, const InternalName *column);
 
   bool reverse_normals(Geom *geom);
+  bool doubleside(GeomNode *node);
+  bool reverse(GeomNode *node);
 
   int collect_vertex_data(Geom *geom, int collect_bits);
   int collect_vertex_data(GeomNode *node, int collect_bits);

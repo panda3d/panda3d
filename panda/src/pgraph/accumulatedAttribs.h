@@ -52,6 +52,7 @@ public:
   CPT(RenderAttrib) _tex_matrix;
   CPT(RenderAttrib) _texture;
   CPT(RenderAttrib) _clip_plane;
+  CPT(RenderAttrib) _cull_face;
   CPT(RenderState) _other;
 };
 
