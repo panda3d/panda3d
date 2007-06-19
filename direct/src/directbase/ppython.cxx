@@ -68,6 +68,13 @@ int main(int argc, char **argv)
   if (f==0) pathfail();
   fclose(f);
   
+  // Set the PYTHONPATH
+  
+  char *pp = getenv("PYTHONPATH");
+  if (pp) sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin;%s",fnbuf,fnbuf,pp);
+  else    sprintf(ppbuf,"PYTHONPATH=%s;%s\\bin",fnbuf,fnbuf);
+  putenv(ppbuf);
+  
   // Fetch the command line and trim the first word.
 
   char *cmdline = GetCommandLine();
@@ -171,6 +178,18 @@ int main(int argc, char **argv)
   if (strcmp(fnbuf + fnlen - srclen, LINK_SOURCE)) pathfail();
   fnlen -= srclen; fnbuf[fnlen] = 0;
 
+  // See if we can find the 'direct' tree locally.
+  // If not, continue anyway.  It may be possible to succeed.
+  
+  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
+  FILE *f = fopen(ppbuf,"r");
+  if (f) {
+    char *pp = getenv("PYTHONPATH");
+    if (pp) sprintf(ppbuf,"PYTHONPATH=%s:%s/lib:%s",fnbuf,fnbuf,pp);
+    else    sprintf(ppbuf,"PYTHONPATH=%s:%s/lib",fnbuf,fnbuf);
+    putenv(ppbuf);
+  }
+  
   // Calculate MODARGV
   
   modargc=0;
