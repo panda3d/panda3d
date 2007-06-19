@@ -1900,7 +1900,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         break;
 
-
      case PM_ACTIVE:
         if (windisplay_cat.is_debug()) {
           windisplay_cat.debug()
@@ -1983,6 +1982,8 @@ process_1_event() {
 ////////////////////////////////////////////////////////////////////
 void WinGraphicsWindow::
 resend_lost_keypresses() {
+  _lost_keypresses = false;
+  return;
   nassertv(_lost_keypresses);
   if (windisplay_cat.is_debug()) {
     windisplay_cat.debug()
@@ -2046,7 +2047,11 @@ resend_lost_keypresses() {
       {
           ButtonHandle key = lookup_key(i);
           if (key != ButtonHandle::none())
-              _input_devices[0].button_down(key, message_time);
+            if (windisplay_cat.is_debug()) {
+              windisplay_cat.debug()
+                << "resending key: " << " (" << key << ")\n";
+            }
+          _input_devices[0].button_down(key, message_time);
       }
   }
 #endif  // WANT_NEW_FOCUS_MANAGMENT
