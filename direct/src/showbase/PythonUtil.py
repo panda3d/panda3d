@@ -24,7 +24,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'getNumberedTypedSortedString', 'getNumberedTypedSortedStringWithReferrers',
 'getNumberedTypedSortedStringWithReferrersGen',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
-'FrameDelayedCall', 'ArgumentEater', 'ClassTree', 'getBase',
+'FrameDelayedCall', 'SubframeCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice', ]
@@ -2492,6 +2492,22 @@ class DelayedFunctor:
         self._kwArgs = kwArgs
         self._delayedCall = DelayedCall(self._callFunctor, self._name, self._delay)
 
+class SubframeCall:
+    """Calls a callback at a specific time during the frame using the
+    task system"""
+    def __init__(self, functor, taskPriority, name=None):
+        self._functor = functor
+        self._name = name
+        taskMgr.add(self._doCallback,
+                    uniqueName('SubframeCall-%s' % self._name),
+                    priority=taskPriority)
+    def _doCallback(self, task):
+        functor = self._functor
+        del self._functor
+        functor()
+        del self._name
+        return task.done
+
 class ArgumentEater:
     def __init__(self, numToEat, func):
         self._numToEat = numToEat
@@ -3053,6 +3069,7 @@ __builtin__.printVerboseStack = printVerboseStack
 __builtin__.DelayedCall = DelayedCall
 __builtin__.DelayedFunctor = DelayedFunctor
 __builtin__.FrameDelayedCall = FrameDelayedCall
+__builtin__.SubframeCall = SubframeCall
 __builtin__.ArgumentEater = ArgumentEater
 __builtin__.ClassTree = ClassTree
 __builtin__.invertDict = invertDict
