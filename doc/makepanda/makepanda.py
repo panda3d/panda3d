@@ -1861,8 +1861,6 @@ if (sys.platform == "win32"):
     if (OMIT.count("PYTHON")==0):
         CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
         CopyTree('built/python', 'thirdparty/win-python')
-        CopyFile('built/python/ppython.exe', 'thirdparty/win-python/python.exe')
-        CopyFile('built/python/ppythonw.exe', 'thirdparty/win-python/pythonw.exe')
         ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
 
 ########################################################################
@@ -3143,9 +3141,6 @@ if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/directbase']
     OPTS=['BUILDING_DIRECT']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='directbase.cxx', obj='directbase_directbase.obj')
-    if (sys.platform != "win32"):
-        EnqueueCxx(ipath=IPATH, opts=['BUILDING_PPYTHON'], src='ppython.cxx', obj='ppython.obj')
-        EnqueueLink(opts=['WINUSER'], dll='ppython.exe', obj=['ppython.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_GENPYCODE'], src='ppython.cxx', obj='genpycode.obj')
     EnqueueLink(opts=['WINUSER'], dll='genpycode.exe', obj=['genpycode.obj'])
     EnqueueCxx(ipath=IPATH, opts=['BUILDING_PACKPANDA'], src='ppython.cxx', obj='packpanda.obj')
