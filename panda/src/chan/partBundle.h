@@ -151,6 +151,8 @@ private:
     CData(const CData &copy);
 
     virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
     virtual TypeHandle get_parent_type() const {
       return PartBundle::get_class_type();
     }
@@ -173,8 +175,11 @@ private:
 public:
   static void register_with_read_factory();
   virtual void finalize(BamReader *manager);
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
-  static TypedWritable *make_PartBundle(const FactoryParams &params);
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
 

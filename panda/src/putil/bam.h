@@ -36,7 +36,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 5 on 5/6/05 for new Geom implementation.
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
-static const unsigned short _bam_minor_ver = 9;
+static const unsigned short _bam_minor_ver = 10;
 // Bumped to minor version 1 on 3/12/06 to add Texture::_compression.
 // Bumped to minor version 2 on 3/17/06 to add PandaNode::_draw_control_mask.
 // Bumped to minor version 3 on 3/21/06 to add Texture::_ram_images.
@@ -46,6 +46,7 @@ static const unsigned short _bam_minor_ver = 9;
 // Bumped to minor version 7 on 2/15/07 to change SliderTable.
 // Bumped to minor version 8 on 5/12/07 to change GeomVertexArrayData::_data.
 // Bumped to minor version 9 on 5/15/07 to add PlaneNode::_clip_effect.
+// Bumped to minor version 10 on 6/19/07 to properly write PartBundles.
 
 
 #endif

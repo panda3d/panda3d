@@ -479,13 +479,24 @@ finalize(BamReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundle::make_PartBundle
+//     Function: PartBundle::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  PartGroup::write_datagram(manager, dg);
+  manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::make_from_bam
 //       Access: Protected
 //  Description: Factory method to generate a PartBundle object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* PartBundle::
-make_PartBundle(const FactoryParams &params)
-{
+make_from_bam(const FactoryParams &params) {
   PartBundle *me = new PartBundle;
   DatagramIterator scan;
   BamReader *manager;
@@ -497,14 +508,29 @@ make_PartBundle(const FactoryParams &params)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new PartBundle.
+////////////////////////////////////////////////////////////////////
+void PartBundle::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PartGroup::fillin(scan, manager);
+
+  if (manager->get_file_minor_ver() >= 10) {
+    manager->read_cdata(scan, _cycler);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::register_with_factory
 //       Access: Public, Static
 //  Description: Factory method to generate a PartBundle object
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-register_with_read_factory()
-{
-  BamReader::get_factory()->register_factory(get_class_type(), make_PartBundle);
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -552,6 +578,37 @@ CData(const PartBundle::CData &copy) :
 CycleData *PartBundle::CData::
 make_copy() const {
   return new CData(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::CData::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void PartBundle::CData::
+write_datagram(BamWriter *manager, Datagram &dg) const {
+  dg.add_uint8(_blend_type);
+  dg.add_bool(_anim_blend_flag);
+  dg.add_bool(_frame_blend_flag);
+  _root_xform.write_datagram(dg);
+  
+  // The remaining members are strictly dynamic.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::CData::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new PartBundle.
+////////////////////////////////////////////////////////////////////
+void PartBundle::CData::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _blend_type = (BlendType)scan.get_uint8();
+  _anim_blend_flag = scan.get_bool();
+  _frame_blend_flag = scan.get_bool();
+  _root_xform.read_datagram(scan);
 }
 
 ////////////////////////////////////////////////////////////////////
