@@ -487,7 +487,7 @@ get_column(const InternalName *name) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
 remove_column(const InternalName *name) {
-  nassertv(!is_registered());
+  nassertv(!_is_registered);
 
   // Since the format's not registered, it doesn't yet have an index
   // of columns--so we have to search all of the arrays, one at a
@@ -527,8 +527,11 @@ remove_column(const InternalName *name) {
 void GeomVertexFormat::
 pack_columns() {
   nassertv(!_is_registered);
-  Arrays::const_iterator ai;
+  Arrays::iterator ai;
   for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    if ((*ai)->is_registered()) {
+      (*ai) = new GeomVertexArrayFormat(*(*ai));
+    }
     (*ai)->pack_columns();
   }
 }
