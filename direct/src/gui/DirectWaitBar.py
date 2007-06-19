@@ -53,7 +53,7 @@ class DirectWaitBar(DirectFrame):
         self.updateBarStyle()
 
     def destroy(self):
-        del self.barStyle
+        self.barStyle = None
         DirectFrame.destroy(self)
 
     def setRange(self):
