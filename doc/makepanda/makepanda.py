@@ -4620,6 +4620,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     cmd=cmd+'/DIBITMAP="panda-install.bmp" '
     cmd=cmd+'/DUBITMAP="panda-uninstall.bmp" '
     cmd=cmd+'/DPANDA="'+panda+'" '
+    cmd=cmd+'/DPANDACONF="'+panda+'\\etc" '
     cmd=cmd+'/DPSOURCE="'+psource+'" '
     cmd=cmd+'/DPYEXTRAS="'+psource+'\\thirdparty\\win-extras" '
     cmd=cmd+'"'+psource+'\\direct\\src\\directscripts\\packpanda.nsi"'
