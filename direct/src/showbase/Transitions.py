@@ -395,7 +395,7 @@ class Transitions:
                                                           pos = Vec3(0, 0, 1),
                                                           startPos = Vec3(0, 0, 0.8)),
                                  name = self.letterboxTaskName,
-                                 )
+                                 ))
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
