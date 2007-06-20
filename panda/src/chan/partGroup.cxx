@@ -514,6 +514,8 @@ write_datagram(BamWriter *manager, Datagram &me)
 {
   int i;
   me.add_string(get_name());
+  me.add_bool(_frozen);
+  _frozen_transform.write_datagram(me);
   me.add_uint16(_children.size());
   for(i = 0; i < (int)_children.size(); i++)
   {
@@ -534,6 +536,10 @@ fillin(DatagramIterator& scan, BamReader* manager)
 {
   int i;
   set_name(scan.get_string());
+  if (manager->get_file_minor_ver() >= 11) {
+    _frozen=scan.get_bool();
+    _frozen_transform.read_datagram(scan);
+  }
   _num_children = scan.get_uint16();
   for(i = 0; i < _num_children; i++)
   {
