@@ -34,7 +34,7 @@
 
 #endif  // WIN32
 
-NeverFreeMemory *NeverFreeMemory::_global_ptr;
+NeverFreeMemory * TVOLATILE NeverFreeMemory::_global_ptr;
 
 // If a page has fewer than this many bytes remaining, never mind
 // about it.
