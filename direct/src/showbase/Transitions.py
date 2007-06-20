@@ -368,9 +368,9 @@ class Transitions:
                                           LerpPosInterval(self.letterboxTop, t,
                                                           pos = Vec3(0, 0, 0.8),
                                                           startPos = Vec3(0, 0, 1)),
-                                          LerpColorInterval(self.letterbox, t,
-                                                            color = self.alphaOn,
-                                                            startColor = self.alphaOff),
+                                          #LerpColorInterval(self.letterbox, t,
+                                          #                  color = self.alphaOn,
+                                          #                  startColor = self.alphaOff),
                                           ),
                                  name = self.letterboxTaskName,
                                  )
@@ -394,10 +394,6 @@ class Transitions:
                                           LerpPosInterval(self.letterboxTop, t,
                                                           pos = Vec3(0, 0, 1),
                                                           startPos = Vec3(0, 0, 0.8)),
-                                          LerpColorInterval(self.letterbox, t,
-                                                            color = self.alphaOff,
-                                                            startColor = self.alphaOn),
-                                          ),
                                  name = self.letterboxTaskName,
                                  )
             if finishIval:
