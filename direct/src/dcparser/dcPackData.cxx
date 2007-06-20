@@ -30,7 +30,7 @@ static const size_t extra_size = 50;
 void DCPackData::
 set_used_length(size_t size) {
   if (size > _allocated_size) {
-    _allocated_size = size * size + extra_size;
+    _allocated_size = size + size + extra_size;
     char *new_buf = new char[_allocated_size];
     if (_used_length > 0) {
       memcpy(new_buf, _buffer, _used_length);
