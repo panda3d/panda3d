@@ -54,7 +54,11 @@ PartBundle(const PartBundle &copy) :
   PartGroup(copy)
 {
   CDWriter cdata(_cycler, true);
-  cdata->_blend_type = copy.get_blend_type();
+  CDReader cdata_from(copy._cycler);
+  cdata->_blend_type = cdata_from->_blend_type;
+  cdata->_anim_blend_flag = cdata_from->_anim_blend_flag;
+  cdata->_frame_blend_flag = cdata_from->_frame_blend_flag;
+  cdata->_root_xform = cdata_from->_root_xform;
 }
 
 ////////////////////////////////////////////////////////////////////
