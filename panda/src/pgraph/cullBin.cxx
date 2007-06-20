@@ -132,8 +132,8 @@ check_flash_color() {
 ////////////////////////////////////////////////////////////////////
 CullBin::ResultGraphBuilder::
 ResultGraphBuilder(PandaNode *root_node) :
-  _root_node(root_node),
-  _object_index(0)
+  _object_index(0),
+  _root_node(root_node)
 {
 }
 
