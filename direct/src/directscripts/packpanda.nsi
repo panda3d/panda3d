@@ -18,6 +18,7 @@
 ;   UBITMAP       - name of uninstaller bitmap                  (ie, "C:\Airblade\Airblade.bmp")
 ;
 ;   PANDA         - location of panda install tree.
+;   PANDACONF     - name of panda config directory - usually $PANDA\etc 
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
 ;
@@ -90,7 +91,7 @@ Section "${SMDIRECTORY}" SecCore
         File /r "${PANDA}\bin\*.dll"
         File /r "${PANDA}\bin\Microsoft.VC80.CRT.manifest"
         SetOutPath $INSTDIR\etc
-        File /r "${PANDA}\etc\*"
+        File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\src\directscripts
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
         SetOutPath $INSTDIR\direct

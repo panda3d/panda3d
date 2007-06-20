@@ -1,4 +1,4 @@
-##############################################################################
+#############################################################################
 #
 # packpanda - this is a tool that packages up a panda game into a
 # convenient, easily-downloaded windows executable.  Packpanda relies on
@@ -21,7 +21,7 @@ OPTIONLIST = [
 ("rmdir",     2, "Delete all directories with given name"),
 ("rmext",     2, "Delete all files with given extension"),
 ("fast",      0, "Use fast compression instead of good compression"),
-("bam",       0, "Generate BAM files"),
+("bam",       0, "Generate BAM files, change default-model-extension to BAM"),
 ("pyc",       0, "Generate PYC files"),
 ]
 
@@ -164,19 +164,51 @@ def limitedCopyTree(src, dst, rmdir):
 
 
 TMPDIR=os.path.abspath("packpanda-TMP")
+TMPGAME=os.path.join(TMPDIR,"game")
+TMPETC=os.path.join(TMPDIR,"etc")
 print ""
 print "Copying the game to "+TMPDIR+"..."
 if (os.path.exists(TMPDIR)):
     try: shutil.rmtree(TMPDIR)
     except: sys.exit("Cannot delete "+TMPDIR)
 try:
+    os.mkdir(TMPDIR)
     rmdir = {}
     for x in OPTIONS["rmdir"]:
         rmdir[x] = 1
-    limitedCopyTree(DIR, TMPDIR, rmdir)
-    if not os.path.isdir( TMPDIR ):
-        os.mkdir(TMPDIR)
+    limitedCopyTree(DIR, TMPGAME, rmdir)
+    if not os.path.isdir( TMPGAME ):
+        os.mkdir(TMPGAME)
+    limitedCopyTree(os.path.join(PANDA, "etc"), TMPETC, {})
+    if not os.path.isdir( TMPETC ):
+        os.mkdir(TMPETC)
 except: sys.exit("Cannot copy game to "+TMPDIR)
+
+##############################################################################
+#
+# If --bam requested, change default-model-extension .egg to bam.
+#
+##############################################################################
+
+def ReadFile(wfile):
+    try:
+        srchandle = open(wfile, "rb")
+        data = srchandle.read()
+        srchandle.close()
+        return data
+    except: exit("Cannot read "+wfile)
+
+def WriteFile(wfile,data):
+    try:
+        dsthandle = open(wfile, "wb")
+        dsthandle.write(data)
+        dsthandle.close()
+    except: exit("Cannot write "+wfile)
+
+if OPTIONS["bam"]:
+    CONF=ReadFile(os.path.join(TMPETC,"Confauto.prc"))
+    CONF=CONF.replace("default-model-extension .egg","default-model-extension .bam")
+    WriteFile(os.path.join(TMPETC,"Confauto.prc"), CONF)
 
 ##############################################################################
 #
@@ -244,7 +276,7 @@ def DeleteFiles(file):
 
 print ""
 print "Compiling BAM and PYC files..."
-os.chdir(TMPDIR)
+os.chdir(TMPGAME)
 CompileFiles(".")
 DeleteFiles(".")
 
@@ -266,8 +298,9 @@ CMD=CMD+'/DRUNTEXT="Play '+NAME+'" '
 CMD=CMD+'/DIBITMAP="'+BITMAP+'" '
 CMD=CMD+'/DUBITMAP="'+BITMAP+'" '
 CMD=CMD+'/DPANDA="'+PANDA+'" '
+CMD=CMD+'/DPANDACONF="'+TMPETC+'" '
 CMD=CMD+'/DPSOURCE="'+PSOURCE+'" '
-CMD=CMD+'/DPPGAME="'+TMPDIR+'" '
+CMD=CMD+'/DPPGAME="'+TMPGAME+'" '
 CMD=CMD+'/DPPMAIN="'+MAIN+'" '
 CMD=CMD+'/DPPICON="'+PPICON+'" '
 CMD=CMD+'"'+PSOURCE+'\\direct\\src\\directscripts\\packpanda.nsi"'
