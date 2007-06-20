@@ -120,9 +120,14 @@ PUBLISHED:
                             int hierarchy_match_flags = 0, 
                             const PartSubset &subset = PartSubset());
 
+
+  INLINE void freeze_joint(const string &joint_name, LMatrix4f const &transform);
+
   bool update();
   bool force_update();
-
+  
+  INLINE bool get_modifies_anim_bundles();
+  INLINE void set_modifies_anim_bundles(bool value);
 public:
   // The following functions aren't really part of the public
   // interface; they're just public so we don't have to declare a
@@ -134,6 +139,10 @@ protected:
   virtual void remove_node(PartBundleNode *node);
 
 private:
+
+  bool _modifies_anim_bundles;
+
+
   class CData;
 
   void do_set_control_effect(AnimControl *control, float effect, CData *cdata);

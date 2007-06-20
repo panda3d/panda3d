@@ -206,3 +206,39 @@ get_control_effect(AnimControl *control) const {
   CDReader cdata(_cycler);
   return do_get_control_effect(control, cdata);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::get_modifies_anim_bundles
+//       Access: Published
+//  Description: getter for anim copying
+////////////////////////////////////////////////////////////////////
+INLINE bool PartBundle::
+get_modifies_anim_bundles(){
+  return _modifies_anim_bundles;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::set_modifies_anim_bundles
+//       Access: Published
+//  Description: setter for anim copying
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+set_modifies_anim_bundles(bool value){
+  _modifies_anim_bundles = value;
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::freeze
+//       Access: Published
+//  Description: stores a joint freeze for later binding
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+freeze_joint(const string &joint_name, LMatrix4f const &transform)
+{
+  PT(PartGroup) pg = find_child(joint_name);
+  pg->freeze(transform);
+  _modifies_anim_bundles = true;
+}

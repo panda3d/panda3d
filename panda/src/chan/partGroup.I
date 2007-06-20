@@ -57,7 +57,7 @@ PartGroup(const PartGroup &copy) :
 //  Description: stores a joint freeze for later binding
 ////////////////////////////////////////////////////////////////////
 INLINE void PartGroup::
-freeze_joint(LMatrix4f const &transform) 
+freeze(LMatrix4f const &transform) 
 {
   _frozen = true;
   _frozen_transform=LMatrix4f(transform);

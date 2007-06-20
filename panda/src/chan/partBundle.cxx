@@ -222,6 +222,10 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
     }
   }
 
+  if(_modifies_anim_bundles) {
+    ptanim = ptanim->copy_bundle();
+  }
+
   if (!check_hierarchy(anim, NULL, hierarchy_match_flags)) {
     return NULL;
   }
@@ -492,6 +496,7 @@ void PartBundle::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PartGroup::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
+  dg.add_bool(_modifies_anim_bundles);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -524,6 +529,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (manager->get_file_minor_ver() >= 10) {
     manager->read_cdata(scan, _cycler);
+  }
+  if (manager->get_file_minor_ver() >= 11) {  
+    _modifies_anim_bundles=scan.get_bool();
   }
 }
 

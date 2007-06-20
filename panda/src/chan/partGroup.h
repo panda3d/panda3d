@@ -79,7 +79,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
   virtual void write_with_value(ostream &out, int indent_level) const;
 
-  INLINE void freeze_joint(LMatrix4f const &transform);
+  INLINE void freeze(LMatrix4f const &transform);
 
 public:
   virtual TypeHandle get_value_type() const;
