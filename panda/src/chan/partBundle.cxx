@@ -51,7 +51,8 @@ static ConfigVariableEnum<PartBundle::BlendType> anim_blend_type
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const PartBundle &copy) :
-  PartGroup(copy)
+  PartGroup(copy),
+  _modifies_anim_bundles(copy._modifies_anim_bundles)
 {
   CDWriter cdata(_cycler, true);
   CDReader cdata_from(copy._cycler);
@@ -70,7 +71,8 @@ PartBundle(const PartBundle &copy) :
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const string &name) : 
-  PartGroup(name)
+  PartGroup(name),
+  _modifies_anim_bundles(false)
 {
 }
 

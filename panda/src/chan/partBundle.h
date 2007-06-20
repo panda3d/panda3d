@@ -140,8 +140,8 @@ protected:
 
 private:
 
+  //this is used to determine when to copy the anim bundle
   bool _modifies_anim_bundles;
-
 
   class CData;
 
