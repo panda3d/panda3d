@@ -1053,11 +1053,12 @@ class Actor(DirectObject, NodePath):
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
             return None
-
+        
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         partDef = partBundleDict.get(subpartDef.truePartName)
         if partDef:
             bundle = partDef.partBundle
+            bundle.setModifiesAnimBundles(1)
         else:
             Actor.notify.warning("no part named %s!" % (partName))
             return None
@@ -1090,7 +1091,7 @@ class Actor(DirectObject, NodePath):
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
         for bundleDict in self.__partBundleDict.values():     
-            bundleDict[trueName].partBundle.findChild(jointName).freezeJoint(transform)
+            bundleDict[trueName].partBundle.freezeJoint(jointName, transform)
             
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
