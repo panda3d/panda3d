@@ -39,7 +39,7 @@ setup_context_2(ThreadSimpleImpl *self) {
   if (setjmp(self->_jmp_context) == 0) {
     // The _jmp_context is now set up and ready to run.  Now we can
     // return.
-    return;
+    return v_self;
   }
 #endif  // HAVE_UCONTEXT_H
    
