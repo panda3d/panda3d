@@ -196,11 +196,34 @@ yield_this() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleImpl::setup_context
 //       Access: Private
-//  Description: Fills the _context with an appropriate context buffer
+//  Description: Fills the _jmp_context with an appropriate context buffer
 //               and an appropriate stack reserved for the thread.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleImpl::
 setup_context() {
+#ifdef HAVE_UCONTEXT_H
+  // Set up a unique thread context using makecontext().
+  getcontext(&_ucontext);
+
+  _ucontext.uc_stack.ss_sp = _stack;
+  _ucontext.uc_stack.ss_size = _stack_size;
+  _ucontext.uc_stack.ss_flags = 0;
+  _ucontext.uc_link = NULL;
+
+  makecontext(&_ucontext, (void (*)())setup_context_2, 1, this);
+
+#else  // HAVE_UCONTEXT_H
+  // The setjmp hack for setting up a unique thread context is a bit
+  // more complicated.  The approach is: hack our way onto the new
+  // stack pointer right now, then call setjmp() to record that stack
+  // pointer in the _jmp_context.  Then restore back to the original
+  // stack pointer.
+
+  // This requires jumping through a couple of different functions.
+  // One of these functions, setup_context_2(), is defined in a
+  // different file, so we can easily disable compiler optimizations
+  // on that one function.
+
   jmp_buf orig_stack;
   if (setjmp(orig_stack) == 0) {
     // First, switch to the new stack.  This requires temporarily saving
@@ -234,11 +257,12 @@ setup_context() {
   }
 
   // By now we are back to the original stack.
+#endif  // HAVE_UCONTEXT_H
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleImpl::setup_context_3
-//       Access: Private
+//       Access: Private, Static
 //  Description: More continuation of setup_context().  Again, making
 //               this a separate function helps defeat the compiler
 //               optimizer.

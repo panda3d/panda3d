@@ -22,6 +22,12 @@
 
 int
 main(int argc, char *argv[]) {
+
+  // If we have ucontext.h, we don't need to use setjmp, so don't
+  // bother trying to compile this program (it may not compile
+  // anyway).
+
+#ifndef HAVE_UCONTEXT_H
   jmp_buf buf1, buf2;
   char * volatile scratch;
 
@@ -39,6 +45,7 @@ main(int argc, char *argv[]) {
   }
   cerr << "scratch = " << (void *)scratch << "\n";
   cerr << "scratch end = " << (void *)(scratch + 1024) << "\n";
+#endif  // HAVE_UCONTEXT_H
     
   return 0;
 }

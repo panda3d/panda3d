@@ -35,9 +35,24 @@
 
 #endif  // HAVE_PYTHON
 
+#ifdef HAVE_UCONTEXT_H
+// We'd prefer to use getcontext() / setcontext() to portably change
+// execution contexts within C code.  That's what these library
+// functions are designed for.
+#include <ucontext.h>
+
+#else
+// Unfortunately, setcontext() is not defined everywhere (even though
+// it claims to be adopted by Posix).  So we have to fall back to
+// setjmp() / longjmp() in its absence.  This is a hackier solution.
 #include <setjmp.h>
 
-#if !defined(JB_SP) && defined(IS_OSX) && defined(__i386__)
+// Ideally, setjmp.h would have defined JB_SP, which will tell us
+// where in the context structure we can muck with the stack pointer.
+// If it didn't define this symbol, we have to guess it.
+#ifndef JB_SP
+
+#if defined(IS_OSX) && defined(__i386__)
 // We have determined this value empirically, via test_setjmp.cxx in
 // this directory.
 #define JB_SP 9
@@ -48,6 +63,10 @@
 #define JB_SP 4
 
 #endif
+
+#endif  // JB_SP
+
+#endif  // HAVE_UCONTEXT_H
 
 class Thread;
 class ThreadSimpleManager;
@@ -102,7 +121,7 @@ public:
 
 private:
   void setup_context();
-  static void setup_context_2(ThreadSimpleImpl *self);
+  static void *setup_context_2(ThreadSimpleImpl *self);
   void setup_context_3();
 
 private:
@@ -126,7 +145,12 @@ private:
   // should wake up.
   double _start_time;
 
-  jmp_buf _context;
+#ifdef HAVE_UCONTEXT_H
+  ucontext_t _ucontext;
+#else
+  jmp_buf _jmp_context;
+#endif  // HAVE_UCONTEXT_H
+
   unsigned char *_stack;
   size_t _stack_size;
 

@@ -31,24 +31,23 @@
 //               disable optimizations globally on the command line,
 //               not via pragmas).
 ////////////////////////////////////////////////////////////////////
-void ThreadSimpleImpl::
+void *ThreadSimpleImpl::
 setup_context_2(ThreadSimpleImpl *self) {
   ThreadSimpleImpl *volatile v_self = self;
-  if (setjmp(self->_context) == 0) {
-    // The _context is now set up and ready to run.  Now we can
+
+#ifndef HAVE_UCONTEXT_H
+  if (setjmp(self->_jmp_context) == 0) {
+    // The _jmp_context is now set up and ready to run.  Now we can
     // return.
     return;
   }
+#endif  // HAVE_UCONTEXT_H
    
   // Here we are executing within the thread.
   v_self->setup_context_3();
 
-  // This code will never run, but we need to have some real code
-  // here, to force the compiler to build an appropriate stack frame
-  // for the above call (otherwise it might optimize the stack frame
-  // away).
-  *v_self = 0;
   abort();
+  return v_self;
 }
 
 #endif  // THREAD_SIMPLE_IMPL

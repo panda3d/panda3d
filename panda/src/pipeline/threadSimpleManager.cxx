@@ -38,9 +38,9 @@ ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 ThreadSimpleManager::
 ThreadSimpleManager() {
+  _current_thread = NULL;
   _clock = TrueClock::get_global_ptr();
   _waiting_for_exit = NULL;
-  nassertv(_current_thread == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ ThreadSimpleManager() {
 //  Description: Adds the indicated thread to the ready queue.  The
 //               thread will be executed when its turn comes.  If the
 //               thread is not the currently executing thread, its
-//               _context should be filled appropriately.
+//               _jmp_context should be filled appropriately.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 enqueue_ready(ThreadSimpleImpl *thread) {
@@ -173,7 +173,7 @@ preempt(ThreadSimpleImpl *thread) {
 //               re-enqueued itself with a call to enqueue(), if it
 //               intends to run again.
 //
-//               This will fill in the current thread's _context
+//               This will fill in the current thread's _jmp_context
 //               member appropriately, and then change the global
 //               current_thread pointer.
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +187,29 @@ next_context() {
   PyThreadState_Swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
 
-  if (setjmp(_current_thread->_context) != 0) {
+#ifdef HAVE_UCONTEXT_H
+  // The setcontext() implementation.
+
+  volatile bool context_return = false;
+
+  getcontext(&_current_thread->_ucontext);
+  if (context_return) {
+    // We have returned from a setcontext, and are now resuming the
+    // current thread.
+#ifdef HAVE_PYTHON
+    PyThreadState_Swap(_current_thread->_python_state);
+#endif  // HAVE_PYTHON
+
+    return;
+  }
+
+  // Set this flag so that we can differentiate between getcontext()
+  // returning the first time and the second time.
+  context_return = true;
+
+#else
+  // The longjmp() implementation.
+  if (setjmp(_current_thread->_jmp_context) != 0) {
     // We have returned from a longjmp, and are now resuming the
     // current thread.
 #ifdef HAVE_PYTHON
@@ -196,6 +218,7 @@ next_context() {
 
     return;
   }
+#endif  // HAVE_UCONTEXT_H
 
   while (!_finished.empty() && _finished.front() != _current_thread) {
     ThreadSimpleImpl *finished_thread = _finished.front();
@@ -261,7 +284,12 @@ next_context() {
     thread_cat.spam()
       << "Switching to " << *_current_thread->_parent_obj << "\n";
   }
-  longjmp(_current_thread->_context, 1);
+
+#ifdef HAVE_UCONTEXT_H
+  setcontext(&_current_thread->_ucontext);
+#else
+  longjmp(_current_thread->_jmp_context, 1);
+#endif
 
   // Shouldn't get here.
   nassertv(false);
