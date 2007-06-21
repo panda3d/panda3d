@@ -7,6 +7,7 @@
 #include "conditionVarFullDirect.cxx"
 #include "conditionVarPosixImpl.cxx"
 #include "conditionVarWin32Impl.cxx"
+#include "conditionVarSimpleImpl.cxx"
 #include "conditionVarSpinlockImpl.cxx"
 #include "config_pipeline.cxx"
 #include "cycleData.cxx"

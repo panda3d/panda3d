@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.I
-// Created by:  drose (09Aug02)
+// Filename: conditionVarSimpleImpl.cxx
+// Created by:  drose (19Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,49 +16,50 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "selectThreadImpl.h"
+
+#ifdef THREAD_SIMPLE_IMPL
+
+#include "conditionVarSimpleImpl.h"
+#include "threadSimpleImpl.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-ConditionVarDummyImpl(MutexDummyImpl &) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-~ConditionVarDummyImpl() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::lock
+//     Function: ConditionVarSimpleImpl::wait
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
+void ConditionVarSimpleImpl::
 wait() {
-  Thread::force_yield();
+  _mutex.release();
+
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+  manager->enqueue_block(thread, this);
+  manager->next_context();
+
+  _mutex.lock();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal
-//       Access: Public
+//     Function: ConditionVarSimpleImpl::do_signal
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal() {
+void ConditionVarSimpleImpl::
+do_signal() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->unblock_one(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal_all
-//       Access: Public
+//     Function: ConditionVarSimpleImpl::do_signal_all
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal_all() {
+void ConditionVarSimpleImpl::
+do_signal_all() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->unblock_all(this);
 }
+
+#endif  // THREAD_SIMPLE_IMPL

@@ -40,9 +40,10 @@ public:
   INLINE ThreadWin32Impl(Thread *parent_obj);
   ~ThreadWin32Impl();
 
+  void setup_main_thread();
   bool start(ThreadPriority priority, bool joinable);
-  void interrupt();
   void join();
+  INLINE void preempt();
 
   INLINE static void prepare_for_exit();
 
@@ -50,6 +51,8 @@ public:
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
+  INLINE static void yield();
+  INLINE static void consider_yield();
 
 private:
   static DWORD WINAPI root_func(LPVOID data);

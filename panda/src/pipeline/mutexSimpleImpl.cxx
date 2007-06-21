@@ -1,5 +1,5 @@
-// Filename: mainThread.cxx
-// Created by:  drose (15Jan06)
+// Filename: mutexSimpleImpl.cxx
+// Created by:  drose (19Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,41 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mainThread.h"
+#include "selectThreadImpl.h"
 
-TypeHandle MainThread::_type_handle;
+#ifdef THREAD_SIMPLE_IMPL
+
+#include "mutexSimpleImpl.h"
+#include "threadSimpleImpl.h"
+#include "threadSimpleManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
+//     Function: MutexSimpleImpl::do_lock
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MainThread::
-MainThread() : Thread("Main", "Main") {
-  init_type();  // in case static init comes in the wrong order
-  _impl.setup_main_thread();
-  _started = true;
+void MutexSimpleImpl::
+do_lock() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+
+  while ((_flags & F_lock_count) != 0) {
+    manager->enqueue_block(thread, this);
+    manager->next_context();
+  }
+  
+  _flags |= F_lock_count;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
-//       Access: Private, Virtual
+//     Function: MutexSimpleImpl::do_release
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void MainThread::
-thread_main() {
+void MutexSimpleImpl::
+do_release() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->unblock_one(this);
 }
+
+#endif  // THREAD_SIMPLE_IMPL

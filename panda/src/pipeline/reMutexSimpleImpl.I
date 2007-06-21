@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.I
-// Created by:  drose (09Aug02)
+// Filename: reMutexSimpleImpl.I
+// Created by:  drose (20Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,47 +18,65 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Constructor
+//     Function: ReMutexSimpleImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-ConditionVarDummyImpl(MutexDummyImpl &) {
+INLINE ReMutexSimpleImpl::
+ReMutexSimpleImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Destructor
+//     Function: ReMutexSimpleImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-~ConditionVarDummyImpl() {
+INLINE ReMutexSimpleImpl::
+~ReMutexSimpleImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::lock
+//     Function: ReMutexSimpleImpl::lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-wait() {
-  Thread::force_yield();
+INLINE void ReMutexSimpleImpl::
+lock() {
+  if (!try_lock()) {
+    do_lock();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal
+//     Function: ReMutexSimpleImpl::try_lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal() {
+INLINE bool ReMutexSimpleImpl::
+try_lock() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+
+  thread->consider_yield_this();
+  if ((_flags & F_lock_count) != 0) {
+    return false;
+  }
+  ++_flags;
+  _locking_thread = thread;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal_all
+//     Function: ReMutexSimpleImpl::release
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal_all() {
+INLINE void ReMutexSimpleImpl::
+release() {
+  nassertv((_flags & F_lock_count) != 0);
+
+  --_flags;
+  if ((_flags & F_lock_count) == 0 && (_flags & F_has_waiters)) {
+    do_release();
+  }
 }

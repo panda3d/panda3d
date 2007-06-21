@@ -49,7 +49,7 @@ public:
   typedef void EventCallbackFunction(const Event *, void *);
 
 PUBLISHED:
-  EventHandler(EventQueue *queue);
+  EventHandler(EventQueue *ev_queue);
 
   void process_events();
 

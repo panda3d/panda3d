@@ -31,7 +31,7 @@ EventHandler *EventHandler::_global_event_handler = 0;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EventHandler::
-EventHandler(EventQueue *queue) : _queue(*queue) {
+EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
 }
 
 ////////////////////////////////////////////////////////////////////

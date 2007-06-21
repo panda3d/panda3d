@@ -25,5 +25,6 @@
 #define PYTHON_H
 
 class PyObject;
+class PyThreadState;
 
 #endif  // PYTHON_H

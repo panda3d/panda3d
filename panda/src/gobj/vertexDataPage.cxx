@@ -744,6 +744,8 @@ thread_main() {
 
     _working_page = NULL;
     _working_cvar.signal();
+
+    Thread::consider_yield();
   }
 }
 

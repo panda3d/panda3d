@@ -86,17 +86,13 @@ get_long_time() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_short_time, Win32 implementation
+//     Function: TrueClock::get_short_raw_time, Win32 implementation
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_short_time() {
+get_short_raw_time() {
   double time;
-
-  if (_paranoid_clock) {
-    _lock.lock();
-  }
 
   if (_has_high_res) {
     // Use the high-resolution clock.  This is of questionable value,
@@ -122,15 +118,6 @@ get_short_time() {
     int tc = GetTickCount();
     time = (double)(tc - _init_tc) * _0001;
   }
-
-  if (_paranoid_clock) {
-    // Check for rollforwards, rollbacks, and compensate for Speed
-    // Gear type programs by verifying against the time of day clock.
-    time = correct_time(time);
-    _lock.release();
-  }
-
-  return time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -545,12 +532,12 @@ get_long_time() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TrueClock::get_short_time, Posix implementation
+//     Function: TrueClock::get_short_raw_time, Posix implementation
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 double TrueClock::
-get_short_time() {
+get_short_raw_time() {
   struct timeval tv;
 
   int result;

@@ -50,7 +50,12 @@ PUBLISHED:
   // short interval.  It may tend to drift over the long haul, but it
   // should have lots of digits to measure short intervals very
   // precisely.
-  double get_short_time();
+  INLINE double get_short_time();
+
+  // get_short_raw_time() is like get_short_time(), but does not apply
+  // any corrections (e.g. paranoid-clock) to the result returned by
+  // the OS.
+  double get_short_raw_time();
 
   INLINE int get_error_count() const;
 

@@ -2276,10 +2276,14 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     // Treat strings as a special case.  We don't want to format the
     // return expression. 
     if (remap->_blocking) {
+      // With SIMPLE_THREADS, it's important that we never release the
+      // interpreter lock.
+      out << "#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)\n";
       indent(out, extra_indent_level)
         << "PyThreadState *_save;\n";
       indent(out, extra_indent_level)
         << "Py_UNBLOCK_THREADS\n";
+      out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
     }
     if (track_interpreter) {
       indent(out,extra_indent_level) << "in_interpreter = 0;\n";
@@ -2296,8 +2300,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
       indent(out,extra_indent_level) << "in_interpreter = 1;\n";
     }
     if (remap->_blocking) {
+      out << "#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)\n";
       indent(out, extra_indent_level)
         << "Py_BLOCK_THREADS\n";
+      out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
     }
     if (!extra_cleanup.empty()) {
       indent(out,extra_indent_level) <<  extra_cleanup << "\n";
@@ -2309,10 +2315,12 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 
   } else {
     if (remap->_blocking) {
+      out << "#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)\n";
       indent(out, extra_indent_level)
         << "PyThreadState *_save;\n";
       indent(out, extra_indent_level)
         << "Py_UNBLOCK_THREADS\n";
+      out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
     }
     if (track_interpreter) {
       indent(out,extra_indent_level) << "in_interpreter = 0;\n";
@@ -2324,8 +2332,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
       if (remap->_blocking) {
+        out << "#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)\n";
         indent(out, extra_indent_level)
           << "Py_BLOCK_THREADS\n";
+        out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
       }
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";
@@ -2344,8 +2354,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
       }
       if (remap->_blocking) {
+        out << "#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)\n";
         indent(out, extra_indent_level)
           << "Py_BLOCK_THREADS\n";
+        out << "#endif  // HAVE_THREADS && !SIMPLE_THREADS\n";
       }
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";

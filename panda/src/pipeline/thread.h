@@ -77,15 +77,17 @@ PUBLISHED:
   INLINE static bool is_threading_supported();
   BLOCKING INLINE static void sleep(double seconds);
 
+  BLOCKING INLINE static void force_yield();
+  BLOCKING INLINE static void consider_yield();
+
   virtual void output(ostream &out) const;
 
   INLINE bool is_started() const;
 
   bool start(ThreadPriority priority, bool joinable);
-  INLINE void interrupt();
   BLOCKING INLINE void join();
+  INLINE void preempt();
 
-public:
   INLINE static void prepare_for_exit();
 
 private:
@@ -132,6 +134,8 @@ private:
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;
   friend class ThreadPosixImpl;
+  friend class ThreadSimpleImpl;
+  friend class MainThread;
 };
 
 INLINE ostream &operator << (ostream &out, const Thread &thread);

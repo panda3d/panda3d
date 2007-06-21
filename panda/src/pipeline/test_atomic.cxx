@@ -73,13 +73,13 @@ main(int argc, char *argv[]) {
 
   PT(MyThread) thread = new MyThread("a");
   threads.push_back(thread);
-  thread->start(TP_normal, true, true);
+  thread->start(TP_normal, true);
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
     PT(MyThread) thread = new MyThread(string(1, name));
     threads.push_back(thread);
-    thread->start(TP_normal, true, true);
+    thread->start(TP_normal, true);
   }
 
   // Now join all the threads.
@@ -93,5 +93,6 @@ main(int argc, char *argv[]) {
        << "net_count = " << _net_count << "\n"
        << "num_net_count_incremented = " << _num_net_count_incremented << "\n";
 
-  exit(0);
+  Thread::prepare_for_exit();
+  return (0);
 }

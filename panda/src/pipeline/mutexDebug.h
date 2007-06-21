@@ -20,7 +20,7 @@
 #define MUTEXDEBUG_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
+#include "mutexTrueImpl.h"
 #include "conditionVarImpl.h"
 #include "thread.h"
 
@@ -59,7 +59,7 @@ private:
   void report_deadlock(Thread *this_thread);
 
 private:
-  INLINE static MutexImpl *get_global_lock();
+  INLINE static MutexTrueImpl *get_global_lock();
 
   string _name;
   bool _allow_recursion;
@@ -68,7 +68,7 @@ private:
 
   ConditionVarImpl _cvar_impl;
 
-  static MutexImpl *_global_lock;
+  static MutexTrueImpl *_global_lock;
 
   friend class ConditionVarDebug;
   friend class ConditionVarFullDebug;

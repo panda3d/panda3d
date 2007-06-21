@@ -43,6 +43,18 @@ ThreadWin32Impl::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadWin32Impl::setup_main_thread
+//       Access: Public
+//  Description: Called for the main thread only, which has been
+//               already started, to fill in the values appropriate to
+//               that thread.
+////////////////////////////////////////////////////////////////////
+void ThreadWin32Impl::
+setup_main_thread() {
+  _status = S_running;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadWin32Impl::start
 //       Access: Public
 //  Description: 
@@ -106,19 +118,6 @@ start(ThreadPriority priority, bool joinable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::interrupt
-//       Access: Public
-//  Description: Sends an interrupt message to the thread.  This will
-//               interrupt any blocking-type system calls the thread
-//               may be waiting on, such as I/O, so that the thread
-//               may continue some other processing.  The specific
-//               behavior is implementation dependent.
-////////////////////////////////////////////////////////////////////
-void ThreadWin32Impl::
-interrupt() {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ThreadWin32Impl::join
 //       Access: Public
 //  Description: Blocks the calling process until the thread
@@ -148,7 +147,7 @@ DWORD ThreadWin32Impl::
 root_func(LPVOID data) {
   TAU_REGISTER_THREAD();
   {
-    TAU_PROFILE("void ThreadPosixImpl::root_func()", " ", TAU_USER);
+    TAU_PROFILE("void ThreadWin32Impl::root_func()", " ", TAU_USER);
 
     ThreadWin32Impl *self = (ThreadWin32Impl *)data;
     BOOL result = TlsSetValue(_pt_ptr_index, self->_parent_obj);

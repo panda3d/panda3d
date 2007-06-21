@@ -11,6 +11,8 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
+    ThreadSimpleImpl_no_opt_.cxx \
+    blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \
@@ -22,6 +24,7 @@
     conditionVarImpl.h \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
+    conditionVarSimpleImpl.h conditionVarSimpleImpl.I \
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
@@ -37,6 +40,8 @@
     mutexDebug.h mutexDebug.I \
     mutexDirect.h mutexDirect.I \
     mutexHolder.h mutexHolder.I \
+    mutexSimpleImpl.h mutexSimpleImpl.I \
+    mutexTrueImpl.h \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerLinks.h pipelineCyclerLinks.I \
@@ -49,8 +54,12 @@
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
-    threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
+    reMutexSimpleImpl.h reMutexSimpleImpl.I \
+    thread.h thread.I threadImpl.h \
+    threadDummyImpl.h threadDummyImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
+    threadSimpleImpl.h threadSimpleImpl.I  \
+    threadSimpleManager.h threadSimpleManager.I  \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h
 
@@ -65,6 +74,7 @@
     conditionVarFullWin32Impl.cxx \
     conditionVarPosixImpl.cxx \
     conditionVarWin32Impl.cxx \
+    conditionVarSimpleImpl.cxx \
     conditionVarSpinlockImpl.cxx \
     config_pipeline.cxx \
     cycleData.cxx \
@@ -80,6 +90,7 @@
     mutexDebug.cxx \
     mutexDirect.cxx \
     mutexHolder.cxx \
+    mutexSimpleImpl.cxx \
     pipeline.cxx \
     pipelineCycler.cxx \
     pipelineCyclerDummyImpl.cxx \
@@ -90,11 +101,16 @@
     reMutex.cxx \
     reMutexDirect.cxx \
     reMutexHolder.cxx \
-    thread.cxx threadDummyImpl.cxx \
+    reMutexSimpleImpl.cxx \
+    thread.cxx \
+    threadDummyImpl.cxx \
     threadPosixImpl.cxx \
+    threadSimpleImpl.cxx \
+    threadSimpleManager.cxx \
     threadWin32Impl.cxx
 
   #define INSTALL_HEADERS  \
+    blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \
     conditionVarDirect.h conditionVarDirect.I \
@@ -106,6 +122,7 @@
     conditionVarImpl.h \
     conditionVarPosixImpl.h conditionVarPosixImpl.I \
     conditionVarWin32Impl.h conditionVarWin32Impl.I \
+    conditionVarSimpleImpl.h conditionVarSimpleImpl.I \
     conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I \
     config_pipeline.h \
     cycleData.h cycleData.I \
@@ -121,6 +138,8 @@
     mutexDebug.h mutexDebug.I \
     mutexDirect.h mutexDirect.I \
     mutexHolder.h mutexHolder.I \
+    mutexSimpleImpl.h mutexSimpleImpl.I \
+    mutexTrueImpl.h \
     pipeline.h pipeline.I \
     pipelineCycler.h pipelineCycler.I \
     pipelineCyclerLinks.h pipelineCyclerLinks.I \
@@ -133,8 +152,12 @@
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
-    threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
+    reMutexSimpleImpl.h reMutexSimpleImpl.I \
+    thread.h thread.I threadImpl.h \
+    threadDummyImpl.h threadDummyImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
+    threadSimpleImpl.h threadSimpleImpl.I \
+    threadSimpleManager.h threadSimpleManager.I \
     threadWin32Impl.h threadWin32Impl.I \
     threadPriority.h
 
@@ -146,7 +169,9 @@
 #begin test_bin_target
   #define TARGET test_threaddata
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_threaddata.cxx
@@ -157,7 +182,9 @@
 #begin test_bin_target
   #define TARGET test_diners
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_diners.cxx
@@ -168,7 +195,9 @@
 #begin test_bin_target
   #define TARGET test_mutex
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_mutex.cxx
@@ -179,7 +208,9 @@
 #begin test_bin_target
   #define TARGET test_concurrency
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_concurrency.cxx
@@ -190,7 +221,9 @@
 #begin test_bin_target
   #define TARGET test_delete
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_delete.cxx
@@ -201,10 +234,26 @@
 #begin test_bin_target
   #define TARGET test_atomic
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
-  #define OTHER_LIBS dtoolutil:c dtool:m dtoolconfig:m pystub
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
 
   #define SOURCES \
     test_atomic.cxx
+
+#end test_bin_target
+
+
+
+#begin test_bin_target
+  #define TARGET test_setjmp
+  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m pystub
+
+  #define SOURCES \
+    test_setjmp.cxx
 
 #end test_bin_target
 

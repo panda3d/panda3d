@@ -32,6 +32,15 @@ ThreadPosixImpl(Thread *parent_obj) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadPosixImpl::preempt
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ThreadPosixImpl::
+preempt() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadPosixImpl::prepare_for_exit
 //       Access: Public
 //  Description: 
@@ -92,4 +101,23 @@ sleep(double seconds) {
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
   nanosleep(&rqtp, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadPosixImpl::yield
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ThreadPosixImpl::
+yield() {
+  sleep(0.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadPosixImpl::consider_yield
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ThreadPosixImpl::
+consider_yield() {
 }

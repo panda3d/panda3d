@@ -22,7 +22,7 @@
 
 #ifdef DEBUG_THREADS
 
-MutexImpl *MutexDebug::_global_lock;
+MutexTrueImpl *MutexDebug::_global_lock;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::Constructor

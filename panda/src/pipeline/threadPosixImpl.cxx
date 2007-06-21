@@ -52,6 +52,18 @@ ThreadPosixImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadPosixImpl::setup_main_thread
+//       Access: Public
+//  Description: Called for the main thread only, which has been
+//               already started, to fill in the values appropriate to
+//               that thread.
+////////////////////////////////////////////////////////////////////
+void ThreadPosixImpl::
+setup_main_thread() {
+  _status = S_running;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadPosixImpl::start
 //       Access: Public
 //  Description: 
@@ -149,19 +161,6 @@ start(ThreadPriority priority, bool joinable) {
   // Thread was successfully started.
   _mutex.release();
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadPosixImpl::interrupt
-//       Access: Public
-//  Description: Sends an interrupt message to the thread.  This will
-//               interrupt any blocking-type system calls the thread
-//               may be waiting on, such as I/O, so that the thread
-//               may continue some other processing.  The specific
-//               behavior is implementation dependent.
-////////////////////////////////////////////////////////////////////
-void ThreadPosixImpl::
-interrupt() {
 }
 
 ////////////////////////////////////////////////////////////////////

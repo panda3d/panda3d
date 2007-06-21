@@ -253,8 +253,35 @@ sleep(double seconds) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::field_yield
+//       Access: Published, Static
+//  Description: Suspends the current thread for the rest of the
+//               current epoch.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+force_yield() {
+  TAU_PROFILE("void Thread::yield()", " ", TAU_USER);
+  ThreadImpl::yield();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::consider_yield
+//       Access: Published, Static
+//  Description: Possibly suspends the current thread for the rest of
+//               the current epoch, if it has run for enough this
+//               epoch.  This is especially important for the simple
+//               thread implementation, which relies on cooperative
+//               yields like this.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+consider_yield() {
+  TAU_PROFILE("void Thread::consider_yield()", " ", TAU_USER);
+  ThreadImpl::consider_yield();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::is_started
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the thread has been started, false if
 //               it has not, or if join() has already been called.
 ////////////////////////////////////////////////////////////////////
@@ -264,23 +291,8 @@ is_started() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Thread::interrupt
-//       Access: Public
-//  Description: Sends an interrupt message to the thread.  This will
-//               interrupt any blocking-type system calls the thread
-//               may be waiting on, such as I/O, so that the thread
-//               may continue some other processing.  The specific
-//               behavior is implementation dependent.
-////////////////////////////////////////////////////////////////////
-INLINE void Thread::
-interrupt() {
-  nassertv(_started);
-  _impl.interrupt();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Thread::join
-//       Access: Public
+//       Access: Published
 //  Description: Blocks the calling process until the thread
 //               terminates.  If the thread has already terminated,
 //               this returns immediately.
@@ -295,8 +307,23 @@ join() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::preempt
+//       Access: Published
+//  Description: Indicates that this thread should run as soon as
+//               possible, preemptying any other threads that may be
+//               scheduled to run.  This may not be implemented on
+//               every platform.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+preempt() {
+  if (_started) {
+    _impl.preempt();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::prepare_for_exit
-//       Access: Public
+//       Access: Published
 //  Description: Should be called by the main thread just before
 //               exiting the program, this blocks until any remaining
 //               thread cleanup has finished.

@@ -1,5 +1,5 @@
-// Filename: mainThread.cxx
-// Created by:  drose (15Jan06)
+// Filename: blockerSimple.I
+// Created by:  drose (20Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mainThread.h"
-
-TypeHandle MainThread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
-//       Access: Private
-//  Description: 
+//     Function: BlockerSimple::Constructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-MainThread::
-MainThread() : Thread("Main", "Main") {
-  init_type();  // in case static init comes in the wrong order
-  _impl.setup_main_thread();
-  _started = true;
+INLINE BlockerSimple::
+BlockerSimple() {
+  _flags = 0;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
-//       Access: Private, Virtual
-//  Description: 
+//     Function: BlockerSimple::Destructor
+//       Access: Protected
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void MainThread::
-thread_main() {
+INLINE BlockerSimple::
+~BlockerSimple() {
+  nassertv(_flags == 0);
 }

@@ -166,7 +166,11 @@ start(ThreadPriority priority, bool joinable) {
 ////////////////////////////////////////////////////////////////////
 void Thread::
 init_main_thread() {
-  if (_main_thread == (Thread *)NULL) {
+  // There is a chance of mutual recursion at startup.  The count
+  // variable here attempts to protect against that.
+  static int count = 0;
+  ++count;
+  if (count == 1 && _main_thread == (Thread *)NULL) {
     _main_thread = new MainThread;
     _main_thread->ref();
   }

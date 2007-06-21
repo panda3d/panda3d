@@ -101,14 +101,14 @@ main(int argc, char *argv[]) {
 
   PT(MyThread) thread = new MyThread("a", 0);
   threads.push_back(thread);
-  thread->start(TP_normal, true, true);
+  thread->start(TP_normal, true);
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
     Thread::sleep(delay_between_threads);
     PT(MyThread) thread = new MyThread(string(1, name), i);
     threads.push_back(thread);
-    thread->start(TP_normal, true, true);
+    thread->start(TP_normal, true);
   }
 
   // Now join all the threads.
@@ -117,5 +117,6 @@ main(int argc, char *argv[]) {
     (*ti)->join();
   }
 
-  exit(0);
+  Thread::prepare_for_exit();
+  return 0;
 }

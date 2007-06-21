@@ -678,12 +678,38 @@
 // supports kernel threads running on different CPU's), but it will
 // slightly slow down Panda for the single CPU case, so this is not
 // enabled by default.
-
-// You should only turn this on if you have some threading library
-// available (you probably do).  Windows has one built-in.  Linux and
-// OSX use Posix threads.
 #define HAVE_THREADS
 #define THREADS_LIBS $[if $[not $[WINDOWS_PLATFORM]],pthread]
+
+// If you have enabled threading support with HAVE_THREADS, the
+// default is to use OS-provided threading constructs, which usually
+// allows for full multiprogramming support (i.e. the program can take
+// advantage of multiple CPU's).  On the other hand, compiling in this
+// full OS-provided support can impose some runtime overhead, making
+// the application run slower on a single-CPU machine.  To avoid this
+// overhead, but still gain some of the basic functionality of threads
+// (such as support for asynchronous model loads), define
+// SIMPLE_THREADS true in addition to HAVE_THREADS.  This will compile
+// in a homespun cooperative threading implementation that runs
+// strictly on one CPU, adding very little overhead over plain
+// single-threaded code.  
+
+// Enabling SIMPLE_THREADS is highly experimental at the present time.
+// Since SIMPLE_THREADS requires special support from the C runtime
+// library, it may not be available on all platforms and
+// architectures.
+#define SIMPLE_THREADS
+
+// If you are using SIMPLE_THREADS, the default is to consider an
+// implicit context switch at every attempt to lock a mutex.  This
+// makes it less necessary to pepper your code with explicit calls to
+// Thread::consider_yield().  However, you may want to restrict this
+// behavior, and only allow context switches at explicit calls to
+// Thread::yield(), consider_yield(), and sleep() (as well as calls to
+// ConditionVar::wait()).  This gives you absolute control over when
+// the context switch happens, and makes mutexes unnecessary (mutexes
+// will be compiled out).  Define this true to build that way.
+#define SIMPLE_THREADS_NO_IMPLICIT_YIELD
 
 // Whether threading is defined or not, you might want to validate the
 // thread and synchronization operations.  With threading enabled,
@@ -941,6 +967,10 @@
 // (above) is set to 2, 3, or 4.
 #defer OPTFLAGS -O2
 
+// By convention, any source file that contains the string _no_opt_ in
+// its filename won't have the above compiler optimizations run for it.
+#defer no_opt $[findstring _no_opt_,$[source]]
+
 // What define variables should be passed to the compilers for each
 // value of OPTIMIZE?  We separate this so we can pass these same
 // options to interrogate, guaranteeing that the correct interfaces
@@ -957,9 +987,9 @@
 // the output of lex and yacc) without them, but with all the other
 // relevant flags.
 #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS]
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[OPTFLAGS]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[OPTFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[if $[no_opt],,$[OPTFLAGS]]
 
 // What additional flags should be passed to both compilers when
 // building shared (relocatable) sources?  Some architectures require

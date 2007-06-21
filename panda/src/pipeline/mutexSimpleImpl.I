@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.I
-// Created by:  drose (09Aug02)
+// Filename: mutexSimpleImpl.I
+// Created by:  drose (19Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,47 +18,61 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Constructor
+//     Function: MutexSimpleImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-ConditionVarDummyImpl(MutexDummyImpl &) {
+INLINE MutexSimpleImpl::
+MutexSimpleImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Destructor
+//     Function: MutexSimpleImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-~ConditionVarDummyImpl() {
+INLINE MutexSimpleImpl::
+~MutexSimpleImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::lock
+//     Function: MutexSimpleImpl::lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-wait() {
-  Thread::force_yield();
+INLINE void MutexSimpleImpl::
+lock() {
+  if (!try_lock()) {
+    do_lock();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal
+//     Function: MutexSimpleImpl::try_lock
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal() {
+INLINE bool MutexSimpleImpl::
+try_lock() {
+  ThreadSimpleImpl::consider_yield();
+  if ((_flags & F_lock_count) != 0) {
+    return false;
+  }
+  _flags |= F_lock_count;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal_all
+//     Function: MutexSimpleImpl::release
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-signal_all() {
+INLINE void MutexSimpleImpl::
+release() {
+  nassertv((_flags & F_lock_count) != 0);
+  _flags &= ~F_lock_count;
+
+  if (_flags & F_has_waiters) {
+    do_release();
+  }
 }

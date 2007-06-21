@@ -16,6 +16,49 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+#ifdef WIN32_VC
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_short_time, Win32 implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double TrueClock::
+get_short_time() {
+  bool paranoid_clock = _paranoid_clock;
+
+  if (paranoid_clock) {
+    _lock.lock();
+  }
+
+  double time = get_short_raw_time();
+
+  if (paranoid_clock) {
+    // Check for rollforwards, rollbacks, and compensate for Speed
+    // Gear type programs by verifying against the time of day clock.
+    time = correct_time(time);
+    _lock.release();
+  }
+
+  return time;
+}
+
+#else  // WIN32_VC
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::get_short_time, Posix implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double TrueClock::
+get_short_time() {
+  return get_short_raw_time();
+}
+
+#endif  // WIN32_VC
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TrueClock::get_error_count
 //       Access: Published

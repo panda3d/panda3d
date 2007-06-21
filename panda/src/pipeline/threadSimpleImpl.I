@@ -1,5 +1,5 @@
-// Filename: threadWin32Impl.I
-// Created by:  drose (07Feb06)
+// Filename: threadSimpleImpl.I
+// Created by:  drose (18Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,102 +18,91 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE ThreadWin32Impl::
-ThreadWin32Impl(Thread *parent_obj) :
-  _cv(_mutex),
-  _parent_obj(parent_obj)
-{
-  _thread = 0;
-  _joinable = false;
-  _status = S_new;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::preempt
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
-preempt() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::prepare_for_exit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
-prepare_for_exit() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::get_current_thread
+//     Function: ThreadSimpleImpl::get_current_thread
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Thread *ThreadWin32Impl::
+INLINE Thread *ThreadSimpleImpl::
 get_current_thread() {
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
-  return (Thread *)TlsGetValue(_pt_ptr_index);
+  return ThreadSimpleManager::get_global_ptr()->get_current_thread()->_parent_obj;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::bind_thread
+//     Function: ThreadSimpleImpl::bind_thread
 //       Access: Public, Static
 //  Description: Associates the indicated Thread object with the
 //               currently-executing thread.  You should not call this
 //               directly; use Thread::bind_thread() instead.
 ////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
-bind_thread(Thread *thread) {
-  if (!_got_pt_ptr_index) {
-    init_pt_ptr_index();
-  }
-  BOOL result = TlsSetValue(_pt_ptr_index, thread);
-  nassertv(result);
+INLINE void ThreadSimpleImpl::
+bind_thread(Thread *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::is_threading_supported
+//     Function: ThreadSimpleImpl::is_threading_supported
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool ThreadWin32Impl::
+INLINE bool ThreadSimpleImpl::
 is_threading_supported() {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::sleep
+//     Function: ThreadSimpleImpl::sleep
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
+INLINE void ThreadSimpleImpl::
 sleep(double seconds) {
-  Sleep((int)(seconds * 1000));
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+  thread->sleep_this(seconds);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::yield
+//     Function: ThreadSimpleImpl::yield
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
+INLINE void ThreadSimpleImpl::
 yield() {
-  sleep(0.0);
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+  thread->yield_this();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadWin32Impl::consider_yield
+//     Function: ThreadSimpleImpl::consider_yield
 //       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ThreadWin32Impl::
+INLINE void ThreadSimpleImpl::
 consider_yield() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+  thread->consider_yield_this();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::consider_yield_this
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ThreadSimpleImpl::
+consider_yield_this() {
+  double now = _manager->get_current_time();
+  if (now - _start_time > _time_per_epoch) {
+    yield_this();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::get_start_time
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE double ThreadSimpleImpl::
+get_start_time() const {
+  return _start_time;
 }

@@ -22,7 +22,7 @@
 #include "dtoolbase.h"
 #include "selectThreadImpl.h"
 
-#if defined(THREAD_DUMMY_IMPL)
+#if defined(THREAD_DUMMY_IMPL)||defined(THREAD_SIMPLE_IMPL)
 
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;

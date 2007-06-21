@@ -77,19 +77,13 @@ get_write_pointer() {
   Thread *current_thread = Thread::get_current_thread();
 
   MutexHolder holder(_object->_lock_mutex);
-  while (_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
-    if (_object->_locking_thread == current_thread) {
-      return _object;
-    }
+  while (_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
+         _object->_locking_thread != current_thread) {
     _object->_lock_cvar.wait();
   }
 
   if (_object->_lock_status == CopyOnWriteObject::LS_locked_read) {
     nassertr(_object->get_ref_count() > _object->get_cache_ref_count(), NULL);
-    if (_object->_locking_thread == current_thread) {
-      _object->_lock_status = CopyOnWriteObject::LS_locked_write;
-      return _object;
-    }
 
     if (util_cat.is_debug()) {
       util_cat.debug()

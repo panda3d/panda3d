@@ -1,5 +1,5 @@
-// Filename: mainThread.cxx
-// Created by:  drose (15Jan06)
+// Filename: reMutexSimpleImpl.cxx
+// Created by:  drose (20Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,27 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "mainThread.h"
+#include "selectThreadImpl.h"
 
-TypeHandle MainThread::_type_handle;
+#ifdef THREAD_SIMPLE_IMPL
+
+#include "reMutexSimpleImpl.h"
+#include "threadSimpleImpl.h"
+#include "threadSimpleManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::Constructor
+//     Function: ReMutexSimpleImpl::do_lock
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-MainThread::
-MainThread() : Thread("Main", "Main") {
-  init_type();  // in case static init comes in the wrong order
-  _impl.setup_main_thread();
-  _started = true;
+void ReMutexSimpleImpl::
+do_lock() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+
+  while ((_flags & F_lock_count) != 0) {
+    manager->enqueue_block(thread, this);
+    manager->next_context();
+  }
+  
+  ++_flags;
+  _locking_thread = thread;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: MainThread::thread_main
-//       Access: Private, Virtual
+//     Function: ReMutexSimpleImpl::do_release
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void MainThread::
-thread_main() {
+void ReMutexSimpleImpl::
+do_release() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->unblock_one(this);
 }
+
+#endif  // THREAD_SIMPLE_IMPL

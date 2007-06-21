@@ -28,6 +28,12 @@
 typedef ConditionVarDummyImpl ConditionVarImpl;
 typedef ConditionVarDummyImpl ConditionVarFullImpl;
 
+#elif defined(THREAD_SIMPLE_IMPL)
+
+#include "conditionVarSimpleImpl.h"
+typedef ConditionVarSimpleImpl ConditionVarImpl;
+typedef ConditionVarSimpleImpl ConditionVarFullImpl;
+
 #elif defined(MUTEX_SPINLOCK)
 
 #include "conditionVarSpinlockImpl.h"

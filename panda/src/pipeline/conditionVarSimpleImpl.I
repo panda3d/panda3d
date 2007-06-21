@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.I
-// Created by:  drose (09Aug02)
+// Filename: conditionVarSimpleImpl.I
+// Created by:  drose (19Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,47 +18,43 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Constructor
+//     Function: ConditionVarSimpleImpl::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-ConditionVarDummyImpl(MutexDummyImpl &) {
+INLINE ConditionVarSimpleImpl::
+ConditionVarSimpleImpl(MutexTrueImpl &mutex) : _mutex(mutex) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::Destructor
+//     Function: ConditionVarSimpleImpl::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ConditionVarDummyImpl::
-~ConditionVarDummyImpl() {
+INLINE ConditionVarSimpleImpl::
+~ConditionVarSimpleImpl() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::lock
+//     Function: ConditionVarSimpleImpl::signal
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
-wait() {
-  Thread::force_yield();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
+INLINE void ConditionVarSimpleImpl::
 signal() {
+  if (_flags & F_has_waiters) {
+    do_signal();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::signal_all
+//     Function: ConditionVarSimpleImpl::signal_all
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void ConditionVarDummyImpl::
+INLINE void ConditionVarSimpleImpl::
 signal_all() {
+  if (_flags & F_has_waiters) {
+    do_signal_all();
+  }
 }

@@ -40,9 +40,10 @@ public:
   INLINE ThreadDummyImpl(Thread *parent_obj);
   INLINE ~ThreadDummyImpl();
 
+  INLINE void setup_main_thread();
   INLINE bool start(ThreadPriority priority, bool joinable);
-  INLINE void interrupt();
   INLINE void join();
+  INLINE void preempt();
 
   INLINE static void prepare_for_exit();
 
@@ -50,6 +51,8 @@ public:
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static void sleep(double seconds);
+  INLINE static void yield();
+  INLINE static void consider_yield();
 };
 
 #include "threadDummyImpl.I"

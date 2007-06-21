@@ -146,6 +146,8 @@ close_framework() {
   _exit_flag = false;
 
   _recorder = NULL;
+
+  Thread::prepare_for_exit();
 }
 
 ////////////////////////////////////////////////////////////////////

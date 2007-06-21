@@ -506,6 +506,9 @@ remove_all_windows() {
 
   // And, hey, let's stop the vertex paging thread, if any.
   VertexDataPage::stop_thread();
+
+  // Well, and why not clean up all threads here?
+  Thread::prepare_for_exit();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -801,10 +804,7 @@ render_frame() {
     // Nap for a moment to yield the timeslice, to be polite to other
     // running applications.
     PStatTimer timer(_yield_pcollector, current_thread);
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    select(0, NULL, NULL, NULL, &tv);
+    Thread::force_yield();
   }
 
   // Anything that happens outside of GraphicsEngine::render_frame()

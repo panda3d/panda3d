@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.h
-// Created by:  drose (09Aug02)
+// Filename: reMutexSimpleImpl.h
+// Created by:  drose (20Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARDUMMYIMPL_H
-#define CONDITIONVARDUMMYIMPL_H
+#ifndef REMUTEXSIMPLEIMPL_H
+#define REMUTEXSIMPLEIMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
-#include "thread.h"
 
-#include "pnotify.h"
+#ifdef THREAD_SIMPLE_IMPL
 
-class MutexDummyImpl;
+#include "blockerSimple.h"
+#include "threadSimpleImpl.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarDummyImpl
-// Description : A fake condition variable implementation for
-//               single-threaded applications that don't need any
-//               synchronization control.
+//       Class : ReMutexSimpleImpl
+// Description : This is the mutex implementation for the simple,
+//               simulated threads case, for recursive mutexes.  See
+//               MutexSimpleImple.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDummyImpl {
+class EXPCL_PANDA ReMutexSimpleImpl : public BlockerSimple {
 public:
-  INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
-  INLINE ~ConditionVarDummyImpl();
+  INLINE ReMutexSimpleImpl();
+  INLINE ~ReMutexSimpleImpl();
 
-  INLINE void wait();
-  INLINE void signal();
-  INLINE void signal_all();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void release();
+
+private:
+  void do_lock();
+  void do_release();
+
+  ThreadSimpleImpl *_locking_thread;
+
+  friend class ThreadSimpleManager;
 };
 
-#include "conditionVarDummyImpl.I"
+#include "reMutexSimpleImpl.I"
+
+#endif  // THREAD_SIMPLE_IMPL
 
 #endif

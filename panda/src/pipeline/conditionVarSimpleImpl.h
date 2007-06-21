@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.h
-// Created by:  drose (09Aug02)
+// Filename: conditionVarSimpleImpl.h
+// Created by:  drose (19Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARDUMMYIMPL_H
-#define CONDITIONVARDUMMYIMPL_H
+#ifndef CONDITIONVARSIMPLEIMPL_H
+#define CONDITIONVARSIMPLEIMPL_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
-#include "thread.h"
 
-#include "pnotify.h"
+#ifdef THREAD_SIMPLE_IMPL
 
-class MutexDummyImpl;
+#include "blockerSimple.h"
+#include "mutexTrueImpl.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarDummyImpl
-// Description : A fake condition variable implementation for
-//               single-threaded applications that don't need any
-//               synchronization control.
+//       Class : ConditionVarSimpleImpl
+// Description : Implements a simple condition variable using
+//               simulated user-space threads.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDummyImpl {
+class EXPCL_PANDA ConditionVarSimpleImpl : public BlockerSimple {
 public:
-  INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
-  INLINE ~ConditionVarDummyImpl();
+  INLINE ConditionVarSimpleImpl(MutexTrueImpl &mutex);
+  INLINE ~ConditionVarSimpleImpl();
 
-  INLINE void wait();
+  void wait();
   INLINE void signal();
   INLINE void signal_all();
+
+private:
+  void do_signal();
+  void do_signal_all();
+
+  MutexTrueImpl &_mutex;
 };
 
-#include "conditionVarDummyImpl.I"
+#include "conditionVarSimpleImpl.I"
+
+#endif  // THREAD_SIMPLE_IMPL
 
 #endif

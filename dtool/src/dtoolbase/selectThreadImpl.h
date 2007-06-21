@@ -49,6 +49,12 @@
 #undef TVOLATILE
 #define TVOLATILE
 
+#elif defined(SIMPLE_THREADS)
+// Use the simulated threading library.
+#define THREAD_SIMPLE_IMPL 1
+#undef TVOLATILE
+#define TVOLATILE
+
 #elif defined(WIN32_VC)
 
 // In Windows, use the native threading library.

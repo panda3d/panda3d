@@ -132,16 +132,16 @@ handle_python_exception() {
   ostringstream strm;
   strm << "\n";
 
-  PyObject *exc_name = PyObject_GetAttrString(exc, "__name__");
-  if (exc_name == (PyObject *)NULL) {
-    PyObject *exc_str = PyObject_Str(exc);
-    strm << PyString_AsString(exc_str);
-    Py_DECREF(exc_str);
-  } else {
+  if (PyObject_HasAttrString(exc, "__name__")) {
+    PyObject *exc_name = PyObject_GetAttrString(exc, "__name__");
     PyObject *exc_str = PyObject_Str(exc_name);
     strm << PyString_AsString(exc_str);
     Py_DECREF(exc_str);
     Py_DECREF(exc_name);
+  } else {
+    PyObject *exc_str = PyObject_Str(exc);
+    strm << PyString_AsString(exc_str);
+    Py_DECREF(exc_str);
   }
   Py_DECREF(exc);
 
@@ -160,6 +160,11 @@ handle_python_exception() {
   nout << message << "\n";
 
   nassert_raise(message);
+
+  // Now attempt to force the main thread to the head of the ready
+  // queue, so it will be the one to receive the above assertion.
+  // This mainly only has an effect if SIMPLE_THREADS is in use.
+  Thread::get_main_thread()->preempt();
 }
 
 #endif  // HAVE_PYTHON

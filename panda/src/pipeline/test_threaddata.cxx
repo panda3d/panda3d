@@ -67,7 +67,7 @@ main() {
   for (int i = 0; i < 10; i++) {
     string name = string("thread_") + (char)(i + 'a');
     PT(Thread) thread = new ThreadWithData(name, i);
-    if (!thread->start(TP_low, false, false)) {
+    if (!thread->start(TP_low, true)) {
       MutexHolder holder(cout_mutex);
       cout << "Unable to start " << name << ".\n";
     } else {

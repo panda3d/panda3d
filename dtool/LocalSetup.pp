@@ -143,6 +143,15 @@
 #else
 #print Configuring Panda WITHOUT Python interfaces.
 #endif
+#if $[HAVE_THREADS]
+#if $[SIMPLE_THREADS]
+#print Compilation will include simulated threading support.
+#else
+#print Compilation will include full threading support.
+#endif
+#else
+#print Configuring Panda without threading support.
+#endif
 
 #print
 #print See dtool_config.h for more details about the specified configuration.
@@ -265,6 +274,10 @@ $[cdefine HAVE_CHROMIUM]
 
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]
+
+/* Define if we want to use fast, user-space simulated threads.  */
+$[cdefine SIMPLE_THREADS]
+$[cdefine SIMPLE_THREADS_NO_IMPLICIT_YIELD]
 
 /* Define to enable deadlock detection, mutex recursion checks, etc. */
 $[cdefine DEBUG_THREADS]

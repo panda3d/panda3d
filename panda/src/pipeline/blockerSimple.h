@@ -1,5 +1,5 @@
-// Filename: conditionVarDummyImpl.h
-// Created by:  drose (09Aug02)
+// Filename: blockerSimple.h
+// Created by:  drose (20Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONDITIONVARDUMMYIMPL_H
-#define CONDITIONVARDUMMYIMPL_H
+#ifndef BLOCKERSIMPLE_H
+#define BLOCKERSIMPLE_H
 
 #include "pandabase.h"
 #include "selectThreadImpl.h"
-#include "thread.h"
+
+#ifdef THREAD_SIMPLE_IMPL
 
 #include "pnotify.h"
 
-class MutexDummyImpl;
-
 ////////////////////////////////////////////////////////////////////
-//       Class : ConditionVarDummyImpl
-// Description : A fake condition variable implementation for
-//               single-threaded applications that don't need any
-//               synchronization control.
+//       Class : BlockerSimple
+// Description : This is a base class for MutexSimpleImpl and
+//               ConditionVarSimpleImpl.  It represents a
+//               synchronization primitive that one or more threads
+//               might be blocked on.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDummyImpl {
-public:
-  INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
-  INLINE ~ConditionVarDummyImpl();
+class EXPCL_PANDA BlockerSimple {
+protected:
+  INLINE BlockerSimple();
+  INLINE ~BlockerSimple();
 
-  INLINE void wait();
-  INLINE void signal();
-  INLINE void signal_all();
+protected:
+  enum Flags {
+    // lock_count is only used for mutexes, not condition variables.
+    F_lock_count   = 0x3fffffff,
+    F_has_waiters  = 0x40000000,
+  };
+
+  unsigned int _flags;
+
+  friend class ThreadSimpleManager;
 };
 
-#include "conditionVarDummyImpl.I"
+#include "blockerSimple.I"
+
+#endif  // THREAD_SIMPLE_IMPL
 
 #endif

@@ -27,6 +27,11 @@
 #include "threadDummyImpl.h"
 typedef ThreadDummyImpl ThreadImpl;
 
+#elif defined(THREAD_SIMPLE_IMPL)
+
+#include "threadSimpleImpl.h"
+typedef ThreadSimpleImpl ThreadImpl;
+
 #elif defined(THREAD_WIN32_IMPL)
 
 #include "threadWin32Impl.h"

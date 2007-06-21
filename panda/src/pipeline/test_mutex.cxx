@@ -60,8 +60,8 @@ main(int argc, char *argv[]) {
   MyThread *b = new MyThread("b", _m1, 0.9);
 
   cerr << "Starting threads.\n";
-  a->start(TP_normal, true, true);
-  b->start(TP_normal, true, true);
+  a->start(TP_normal, true);
+  b->start(TP_normal, true);
 
   a->join();
   b->join();

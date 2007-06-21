@@ -113,6 +113,7 @@ private:
     }
     room_mutex.lock();
     --room_occupancy;
+    cerr << "clearing philosopher " << _id << "\n";
     phils[_id] = (philosopher*)0L;
     room_condition.signal();
     room_mutex.release();
@@ -150,7 +151,7 @@ main(int argc, char *argv[]) {
   }
   for (i=0; i<N_DINERS; ++i) {
     phils[i] = new philosopher(i);
-    phils[i]->start(TP_normal, false, false);
+    phils[i]->start(TP_normal, false);
   }
   room_occupancy = N_DINERS;
 
@@ -159,10 +160,12 @@ main(int argc, char *argv[]) {
   double end_time = start_time + run_time;
 
   while (!has_run_time || clock->get_short_time() < end_time) {
-    while (room_occupancy == N_DINERS) {
+    if (room_occupancy == N_DINERS) {
       PRINTMSG(cerr << "main thread about to block " << room_occupancy
                << "\n");
-      room_condition.wait();
+      while (room_occupancy == N_DINERS) {
+        room_condition.wait();
+      }
     }
     // hmm.. someone left the room.
     room_mutex.release();
@@ -176,7 +179,7 @@ main(int argc, char *argv[]) {
         break;
     assert(i != N_DINERS);
     phils[i] = new philosopher(i);
-    phils[i]->start(TP_normal, false, false);
+    phils[i]->start(TP_normal, false);
     ++room_occupancy;
   }
 

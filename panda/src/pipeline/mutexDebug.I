@@ -151,10 +151,10 @@ debug_is_locked() const {
 //               (non-static) methods of MutexDebug may simply assume
 //               that the pointer has already been created.
 ////////////////////////////////////////////////////////////////////
-INLINE MutexImpl *MutexDebug::
+INLINE MutexTrueImpl *MutexDebug::
 get_global_lock() {
-  if (_global_lock == (MutexImpl *)NULL) {
-    _global_lock = new MutexImpl;
+  if (_global_lock == (MutexTrueImpl *)NULL) {
+    _global_lock = new MutexTrueImpl;
   }
   return _global_lock;
 }

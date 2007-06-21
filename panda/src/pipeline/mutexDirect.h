@@ -20,7 +20,7 @@
 #define MUTEXDIRECT_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
+#include "mutexTrueImpl.h"
 #include "pnotify.h"
 
 class Thread;
@@ -49,7 +49,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-  MutexImpl _impl;
+  MutexTrueImpl _impl;
 
   friend class ConditionVarDirect;
   friend class ConditionVarFullDirect;

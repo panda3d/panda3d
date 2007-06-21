@@ -30,7 +30,7 @@
 //               waiting for something to happen.  A condition
 //               variable can be used to "wake up" a thread when some
 //               arbitrary condition has changed.
-
+//
 //               The ConditionVar class does not support the full
 //               semantics of POSIX condition variables.  In
 //               particular, it does not support the broadcast or
