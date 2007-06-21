@@ -2505,8 +2505,11 @@ class SubframeCall:
         functor = self._functor
         del self._functor
         functor()
-        del self._name
+        self._name = None
         return task.done
+    def cleanup(self):
+        if (self._name):
+            taskMgr.remove(uniqueName('SubframeCall-%s' % self._name))
 
 class ArgumentEater:
     def __init__(self, numToEat, func):
