@@ -118,6 +118,8 @@ get_short_raw_time() {
     int tc = GetTickCount();
     time = (double)(tc - _init_tc) * _0001;
   }
+
+  return time;
 }
 
 ////////////////////////////////////////////////////////////////////
