@@ -182,9 +182,8 @@ next_context() {
   // Mark the current thread's resume point.
 
 #ifdef HAVE_PYTHON
-  // Query the current Python thread state.
+  // Save the current Python thread state.
   _current_thread->_python_state = PyThreadState_Swap(NULL);
-  PyThreadState_Swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_UCONTEXT_H
@@ -280,9 +279,18 @@ next_context() {
   _current_thread->_start_time = now;
 
   // All right, the thread is ready to roll.  Begin.
-  if (thread_cat.is_spam()) {
-    thread_cat.spam()
-      << "Switching to " << *_current_thread->_parent_obj << "\n";
+  if (thread_cat.is_debug()) {
+    size_t blocked_count = 0;
+    Blocked::const_iterator bi;
+    for (bi = _blocked.begin(); bi != _blocked.end(); ++bi) {
+      const FifoThreads &threads = (*bi).second;
+      blocked_count += threads.size();
+    }
+    
+    thread_cat.debug()
+      << "Switching to " << *_current_thread->_parent_obj
+      << " (" << _ready.size() << " other threads ready, " << blocked_count
+      << " blocked, " << _sleeping.size() << " sleeping)\n";
   }
 
 #ifdef HAVE_UCONTEXT_H

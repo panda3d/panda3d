@@ -46,7 +46,13 @@ setup_context_2(ThreadSimpleImpl *self) {
   // Here we are executing within the thread.
   v_self->setup_context_3();
 
+  // We shouldn't get here.
   abort();
+
+  // Even though this line should never be executed, setting it here
+  // seems to help the compiler figure out not to optimize away
+  // v_self.
+  *v_self = 0;
   return v_self;
 }
 

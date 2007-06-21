@@ -132,8 +132,8 @@ do_lock() {
 
     // Go to sleep on the condition variable until it's unlocked.
 
-    if (thread_cat.is_spam()) {
-      thread_cat.spam()
+    if (thread_cat.is_debug()) {
+      thread_cat.debug()
         << *this_thread << " blocking on " << *this << " (held by "
         << *_locking_thread << ")\n";
     }
@@ -141,8 +141,8 @@ do_lock() {
       _cvar_impl.wait();
     }
     
-    if (thread_cat.is_spam()) {
-      thread_cat.spam()
+    if (thread_cat.is_debug()) {
+      thread_cat.debug()
         << *this_thread << " awake on " << *this << "\n";
     }
 
