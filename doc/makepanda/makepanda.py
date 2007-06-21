@@ -1171,24 +1171,24 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         if (optlevel==2): cmd = cmd + ' -DNDEBUG '
         if (optlevel==3): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
         if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
-        cmd = cmd + ' -Sbuilt/include/parser-inc'
-        cmd = cmd + ' -Ithirdparty/win-python/include'
-        for pkg in PACKAGES:
-            if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
         for x in xipath: cmd = cmd + ' -I' + x
+        cmd = cmd + ' -Sbuilt/include/parser-inc'
+        cmd = cmd + ' -Sthirdparty/win-python/include'
+        for ver in DXVERSIONS:
+            if ((COMPILER=="MSVC") and PkgSelected(opts,"DX"+ver)):
+                cmd = cmd + ' -S"' + DIRECTXSDK["DX"+ver] + '/include"'
+        for ver in MAYAVERSIONS:
+            if ((COMPILER=="MSVC") and PkgSelected(opts,"MAYA"+ver)):
+                cmd = cmd + ' -S"' + MAYASDK["MAYA"+ver] + '/include"'
+        for pkg in PACKAGES:
+            if (PkgSelected(opts,pkg)):
+                cmd = cmd + " -S" + THIRDPARTYLIBS + pkg.lower() + "/include"
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
-        for ver in DXVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,"DX"+ver)):
-                cmd = cmd + ' -I"' + DIRECTXSDK["DX"+ver] + '/include"'
-        for ver in MAYAVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,"MAYA"+ver)):
-                cmd = cmd + ' -I"' + MAYASDK["MAYA"+ver] + '/include"'
         for x in files: cmd = cmd + ' ' + x
         oscmd(cmd)
         CompileCxx(obj,outc,ipath,opts)
@@ -1201,14 +1201,15 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         if (optlevel==2): cmd = cmd + ' -DNDEBUG '
         if (optlevel==3): cmd = cmd + ' -DNDEBUG '
         if (optlevel==4): cmd = cmd + ' -DNDEBUG '
-        cmd = cmd + ' -Sbuilt/include/parser-inc -S/usr/include'
-        cmd = cmd + ' -Ithirdparty/win-python/include'
-        for pkg in PACKAGES:
-            if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -I" + THIRDPARTYLIBS + pkg.lower() + "/include"
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
         for x in xipath: cmd = cmd + ' -I' + x
+        cmd = cmd + ' -Sbuilt/include/parser-inc'
+        cmd = cmd + ' -S'+PYTHONSDK
+        for pkg in PACKAGES:
+            if (PkgSelected(opts,pkg)):
+                cmd = cmd + " -S" + THIRDPARTYLIBS + pkg.lower() + "/include"
+        cmd = cmd + ' -S/usr/include'
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_"+building
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
