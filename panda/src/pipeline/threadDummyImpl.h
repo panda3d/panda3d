@@ -29,6 +29,11 @@
 
 class Thread;
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>  // For Sleep().
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ThreadDummyImpl
 // Description : A fake thread implementation for single-threaded
