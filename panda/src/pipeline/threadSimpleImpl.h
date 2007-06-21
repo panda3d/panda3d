@@ -41,6 +41,12 @@
 // We have determined this value empirically, via test_setjmp.cxx in
 // this directory.
 #define JB_SP 9
+
+#elif defined(WIN32)
+// We have determined this value empirically, via test_setjmp.cxx in
+// this directory.
+#define JB_SP 4
+
 #endif
 
 class Thread;
