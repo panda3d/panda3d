@@ -250,7 +250,8 @@ set_lru_size(size_t lru_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayData::CData::
 CData() :
-  _usage_hint(UH_unspecified)
+  _usage_hint(UH_unspecified),
+  _rw_lock("GeomVertexArrayData::CData::_wl_lock")
 {
 }
 
@@ -263,7 +264,8 @@ INLINE GeomVertexArrayData::CData::
 CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
   _buffer(copy._buffer),
-  _modified(copy._modified)
+  _modified(copy._modified),
+  _rw_lock("GeomVertexArrayData::CData::_wl_lock")
 {
 }
 

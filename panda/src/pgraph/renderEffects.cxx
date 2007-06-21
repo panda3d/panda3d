@@ -547,7 +547,7 @@ init_states() {
   // meantime, this is OK because we guarantee that this method is
   // called at static init time, presumably when there is still only
   // one thread in the world.
-  _states_lock = new ReMutex;
+  _states_lock = new ReMutex("RenderEffects::_states_lock");
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
   

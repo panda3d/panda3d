@@ -126,7 +126,7 @@ GraphicsEngine::
 GraphicsEngine(Pipeline *pipeline) :
   _pipeline(pipeline),
   _app("app"),
-  _lock("GraphicsEngine")
+  _lock("GraphicsEngine::_lock")
 {
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
@@ -1953,7 +1953,7 @@ get_window_renderer(const string &name, int pipeline_stage) {
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::WindowRenderer::
 WindowRenderer(const string &name) :
-  _wl_lock(string("GraphicsEngine::WindowRenderer ") + name)
+  _wl_lock(string("GraphicsEngine::WindowRenderer::_wl_lock ") + name)
 {
 }
 

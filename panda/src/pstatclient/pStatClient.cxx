@@ -75,7 +75,7 @@ PerThreadData() {
 ////////////////////////////////////////////////////////////////////
 PStatClient::
 PStatClient() :
-  _lock("PStatClient"),
+  _lock("PStatClient::_lock"),
   _impl(NULL)
 {
   _collectors = NULL;

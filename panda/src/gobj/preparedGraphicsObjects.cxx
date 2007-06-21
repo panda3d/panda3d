@@ -38,6 +38,7 @@ int PreparedGraphicsObjects::_name_index = 0;
 ////////////////////////////////////////////////////////////////////
 PreparedGraphicsObjects::
 PreparedGraphicsObjects() : 
+  _lock("PreparedGraphicsObjects::_lock"),
   _name(init_name()),
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),

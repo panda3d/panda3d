@@ -44,7 +44,8 @@ GraphicsWindow(GraphicsPipe *pipe,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
   GraphicsOutput(pipe, name, fb_prop, win_prop, flags, gsg, host),
-  _input_lock("GraphicsWindow::_input_lock")
+  _input_lock("GraphicsWindow::_input_lock"),
+  _properties_lock("GraphicsWindow::_properties_lock")
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
