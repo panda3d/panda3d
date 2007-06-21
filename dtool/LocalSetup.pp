@@ -478,6 +478,10 @@ $[cdefine HAVE_DIRENT_H]
    interface)? */
 $[cdefine HAVE_SYS_SOUNDCARD_H]
 
+/* Do we have <ucontext.h> (and therefore makecontext() /
+   swapcontext())? */
+$[cdefine HAVE_UCONTEXT_H]
+
 /* Do we have RTTI (and <typeinfo>)? */
 $[cdefine HAVE_RTTI]
 
