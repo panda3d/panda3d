@@ -499,7 +499,7 @@ $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 #define USE_MEMORY_MALLOC
 #define USE_MEMORY_NOWRAPPERS
 #if $[ALTERNATIVE_MALLOC]
-  #if $[HAVE_THREADS]
+  #if $[and $[HAVE_THREADS], $[not $[SIMPLE_THREADS]]]
     // A fast thread-safe alternative implementation.
     #set USE_MEMORY_PTMALLOC2 1
   #else

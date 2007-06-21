@@ -35,7 +35,7 @@ bool __tau_shutdown = false;
 
 #if defined(USE_MEMORY_DLMALLOC)
 
-#ifdef HAVE_THREADS
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
 #error Cannot use dlmalloc library with threading enabled!
 #endif
 
