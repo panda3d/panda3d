@@ -56,7 +56,11 @@ class CountedResource(object):
             cls.RESOURCE_COUNTER -= 1
             if cls.RESOURCE_COUNTER < 1:
                 cls.release()
-        
+
+    @classmethod
+    def getCount(cls):
+        return cls.RESOURCE_COUNTER
+    
     @classmethod
     def acquire(cls):
         pass
