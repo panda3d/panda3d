@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "threadSimpleManager.h"
+
+#ifdef THREAD_SIMPLE_IMPL
+
 #include "threadSimpleImpl.h"
 #include "blockerSimple.h"
 
@@ -450,3 +453,5 @@ kill_non_joinable(ThreadSimpleManager::Sleeping &threads) {
   make_heap(new_threads.begin(), new_threads.end(), CompareStartTime());
   threads.swap(new_threads);
 }
+
+#endif // THREAD_SIMPLE_IMPL
