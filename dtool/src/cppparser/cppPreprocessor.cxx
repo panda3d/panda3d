@@ -1394,20 +1394,34 @@ handle_include_directive(const string &args, int first_line,
   CPPFile::Source source = CPPFile::S_none;
 
   if (okflag) {
-    if (!angle_quotes) {
-      found_file = filename.exists();
+
+    found_file = false;
+
+    if (!angle_quotes && !found_file && filename.exists()) {
+      found_file = true;
       source = CPPFile::S_local;
     }
+      
+    if (!angle_quotes && !found_file) {
+      DSearchPath local_search_path(Filename(get_file()._filename.get_dirname()));
+      
+      // Now look for it in the same directory as the includer.
+      if (!found_file && filename.resolve_filename(local_search_path)) {
+        found_file = true;
+        source = CPPFile::S_alternate;
+      }
+    }
 
-    // Now look for it on the include path.
+    // Now look for it on the primary include path.
+    if (!angle_quotes && !found_file && filename.resolve_filename(_include_path)) {
+      found_file = true;
+      source = CPPFile::S_alternate;
+    }
+
+    // Now look for it on the system include path.
     if (!found_file && filename.resolve_filename(_system_include_path)) {
       found_file = true;
       source = CPPFile::S_system;
-    }
-
-    if (!found_file && filename.resolve_filename(_include_path)) {
-      found_file = true;
-      source = CPPFile::S_alternate;
     }
 
     if (!found_file) {
