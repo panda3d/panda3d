@@ -4672,7 +4672,7 @@ def MakeInstallerLinux():
     import compileall
     PYTHONV=os.path.basename(PYTHONSDK)
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
-    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz i386 panda3d.spec")
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz rpmarch.txt panda3d.spec")
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
     oscmd("mkdir -p linuxroot/usr/share/panda3d")
@@ -4716,13 +4716,18 @@ def MakeInstallerLinux():
         oscmd("chmod -R 755 linuxroot")
 
     if (os.path.exists("/usr/bin/rpmbuild")):
+        oscmd("rpm -E '{%_arch}' > rpmarch.txt")
+        arch=ReadFile("rpmarch.txt")
+        oscmd("rm -rf "+arch)
         txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",PANDASOURCE)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+PANDASOURCE+"' -bb panda3d.spec")
-        oscmd("mv i386/panda3d-"+VERSION+"-1.i386.rpm .")
-        
+        if (os.path.exists(arch+"/panda3d-"+VERSION+"-1."+arch+".rpm")):
+            oscmd("mv "+arch+"/panda3d-"+VERSION+"-1."+arch+".rpm .")
+        oscmd("rm -rf rpmarch.txt "+arch)
+
     oscmd("chmod -R 755 linuxroot")
-    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz i386 panda3d.spec")
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
     
         
 if (INSTALLER != 0):
