@@ -217,7 +217,7 @@ void save_thread_context(struct ThreadContext *context,
 
 void
 switch_to_thread_context(struct ThreadContext *context) {
-  longjmp(context->_jmp_context, 1)
+  longjmp(context->_jmp_context, 1);
 
   /* Shouldn't get here. */
   abort();
