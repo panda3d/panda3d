@@ -11,7 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
-    threadSimpleImpl_no_opt_.cxx \
+    contextSwitch.c contextSwitch.h \
     blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \
@@ -110,6 +110,7 @@
     threadWin32Impl.cxx
 
   #define INSTALL_HEADERS  \
+    contextSwitch.h \
     blockerSimple.h blockerSimple.I \
     conditionVar.h conditionVar.I \
     conditionVarDebug.h conditionVarDebug.I \

@@ -126,7 +126,7 @@ start(ThreadPriority priority, bool joinable) {
   PyThreadState_Swap(_python_state);
 #endif  // HAVE_PYTHON
 
-  setup_context();
+  init_thread_context(&_context, _stack, _stack_size, st_begin_thread, this);
 
   _manager->enqueue_ready(this);
   return true;
@@ -194,81 +194,25 @@ yield_this() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::setup_context
-//       Access: Private
-//  Description: Fills the _jmp_context with an appropriate context buffer
-//               and an appropriate stack reserved for the thread.
+//     Function: ThreadSimpleImpl::st_begin_thread
+//       Access: Private, Static
+//  Description: This method is called as the first introduction to a
+//               new thread.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleImpl::
-setup_context() {
-#ifdef HAVE_UCONTEXT_H
-  // Set up a unique thread context using makecontext().
-  getcontext(&_ucontext);
-
-  _ucontext.uc_stack.ss_sp = _stack;
-  _ucontext.uc_stack.ss_size = _stack_size;
-  _ucontext.uc_stack.ss_flags = 0;
-  _ucontext.uc_link = NULL;
-
-  makecontext(&_ucontext, (void (*)())setup_context_2, 1, this);
-
-#else  // HAVE_UCONTEXT_H
-  // The setjmp hack for setting up a unique thread context is a bit
-  // more complicated.  The approach is: hack our way onto the new
-  // stack pointer right now, then call setjmp() to record that stack
-  // pointer in the _jmp_context.  Then restore back to the original
-  // stack pointer.
-
-  // This requires jumping through a couple of different functions.
-  // One of these functions, setup_context_2(), is defined in a
-  // different file, so we can easily disable compiler optimizations
-  // on that one function.
-
-  jmp_buf orig_stack;
-  if (setjmp(orig_stack) == 0) {
-    // First, switch to the new stack.  This requires temporarily saving
-    // the this pointer as a static.
-    _st_this = this;
-
-    // Save the current context using setjmp().  This saves out all of
-    // the processor register values, though it doesn't muck with the
-    // stack.
-    jmp_buf temp;
-    if (setjmp(temp) == 0) {
-      // This is the initial return from setjmp.  Still the original
-      // stack.
-
-      // Now we overwrite the stack pointer value in the saved
-      // register context.  This doesn't work with all implementations
-      // of setjmp/longjmp.
-      ((void *&)temp[JB_SP]) = (_st_this->_stack + _st_this->_stack_size);
-
-      // And finally, we place ourselves on the new stack by using
-      // longjmp() to reload the saved (and modified) context.
-      longjmp(temp, 1);
-    }
-
-    // This is the second return from setjmp.  Now we're on the new
-    // stack.
-    setup_context_2(_st_this);
-    
-    // Now restore the original stack and return.
-    longjmp(orig_stack, 1);
-  }
-
-  // By now we are back to the original stack.
-#endif  // HAVE_UCONTEXT_H
+st_begin_thread(void *data) {
+  ThreadSimpleImpl *self = (ThreadSimpleImpl *)data;
+  self->begin_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::setup_context_3
-//       Access: Private, Static
-//  Description: More continuation of setup_context().  Again, making
-//               this a separate function helps defeat the compiler
-//               optimizer.
+//     Function: ThreadSimpleImpl::begin_thread
+//       Access: Private
+//  Description: This method is called as the first introduction to a
+//               new thread.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleImpl::
-setup_context_3() {
+begin_thread() {
 #ifdef HAVE_PYTHON
   PyThreadState_Swap(_python_state);
 #endif  // HAVE_PYTHON
@@ -276,7 +220,7 @@ setup_context_3() {
   // Here we are executing within the thread.  Run the thread_main
   // function defined for this thread.
   _parent_obj->thread_main();
-  
+
   // Now we have completed the thread.
   _status = S_finished;
 
@@ -291,6 +235,7 @@ setup_context_3() {
   _manager->next_context();
   
   // Shouldn't get here.
+  nassertv(false);
   abort();
 }
 

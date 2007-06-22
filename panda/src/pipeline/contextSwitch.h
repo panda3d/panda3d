@@ -1,0 +1,103 @@
+/* Filename: contextSwitch.h
+ * Created by:  drose (21Jun07)
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://etc.cmu.edu/panda3d/docs/license/ .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d-general@lists.sourceforge.net .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+#ifndef CONTEXTSWITCH_H
+#define CONTEXTSWITCH_H
+
+#include "pandabase.h"
+#include "selectThreadImpl.h"
+
+/* This file defines the code to perform fundamental context switches
+   between different threads of execution within user space code.  It
+   does this by saving and restoring the register state, including
+   transferring to a new stack. */
+
+/* The code in this file is all written in C code, rather than C++, to
+   reduce possible conflicts from longjmp implementations that attempt
+   to be smart with respect to C++ destructors and exception
+   handling. */
+
+#ifdef THREAD_SIMPLE_IMPL
+
+#ifdef HAVE_UCONTEXT_H
+/* We'd prefer to use getcontext() / setcontext() to portably change
+   execution contexts within C code.  That's what these library
+   functions are designed for. */
+#include <ucontext.h>
+
+struct ThreadContext {
+  ucontext_t _ucontext;
+};
+
+#define save_thread_context(switched, context) \
+{ \
+  volatile int context_return = 0; \
+  getcontext(&context->_ucontext); \
+  if (context_return) { \
+    (*(switched)) = 1; \
+  } \
+
+  context_return = 1; \
+  (*(switched)) = 0; \
+}
+
+#define switch_to_thread_context(context) \
+  setcontext(&(context)->_ucontext)
+
+#else  /* HAVE_UCONTEXT_H */
+/* Unfortunately, setcontext() is not defined everywhere (even though
+   it claims to be adopted by Posix).  So we have to fall back to
+   setjmp() / longjmp() in its absence.  This is a hackier solution. */
+#include <setjmp.h>
+
+struct ThreadContext {
+  jmp_buf _jmp_context;
+};
+
+#define save_thread_context(switched, context) \
+{ \
+  (*(switched)) = setjmp((context)->_jmp_context); \
+}
+
+#define switch_to_thread_context(context) \
+  longjmp((context)->_jmp_context, 1)
+
+#endif  /* HAVE_UCONTEXT_H */
+
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
+typedef void ContextFunction(void *);
+
+void init_thread_context(struct ThreadContext *context, 
+                         unsigned char *stack, size_t stack_size,
+                         ContextFunction *main_func, void *data);
+
+/* These two functions are defined as macros, above. */
+/* void save_thread_context(int *switched, struct ThreadContext *context); */
+/* void switch_to_thread_context(struct ThreadContext *context); */
+
+#ifdef __cplusplus
+}
+#endif 
+
+#endif  /* THREAD_SIMPLE_IMPL */
+
+#endif  /* CONTEXTSWITCH_H */
+

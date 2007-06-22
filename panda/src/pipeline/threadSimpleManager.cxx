@@ -66,6 +66,12 @@ enqueue_ready(ThreadSimpleImpl *thread) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 enqueue_sleep(ThreadSimpleImpl *thread, double seconds) {
+  if (thread_cat.is_debug()) {
+    thread_cat.debug()
+      << *_current_thread->_parent_obj << " sleeping for " 
+      << seconds << " seconds\n";
+  }
+
   double now = get_current_time();
   thread->_start_time = now + seconds;
   _sleeping.push_back(thread);
@@ -186,38 +192,18 @@ next_context() {
   _current_thread->_python_state = PyThreadState_Swap(NULL);
 #endif  // HAVE_PYTHON
 
-#ifdef HAVE_UCONTEXT_H
-  // The setcontext() implementation.
-
-  volatile bool context_return = false;
-
-  getcontext(&_current_thread->_ucontext);
-  if (context_return) {
-    // We have returned from a setcontext, and are now resuming the
-    // current thread.
+  int switched;
+  save_thread_context(&switched, &_current_thread->_context);
+  if (switched) {
+    // Pass 2: we have returned into the context, and are now resuming
+    // the current thread.
 #ifdef HAVE_PYTHON
     PyThreadState_Swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
-
     return;
   }
 
-  // Set this flag so that we can differentiate between getcontext()
-  // returning the first time and the second time.
-  context_return = true;
-
-#else
-  // The longjmp() implementation.
-  if (setjmp(_current_thread->_jmp_context) != 0) {
-    // We have returned from a longjmp, and are now resuming the
-    // current thread.
-#ifdef HAVE_PYTHON
-    PyThreadState_Swap(_current_thread->_python_state);
-#endif  // HAVE_PYTHON
-
-    return;
-  }
-#endif  // HAVE_UCONTEXT_H
+  // Pass 1: we have saved the context successfully.
 
   while (!_finished.empty() && _finished.front() != _current_thread) {
     ThreadSimpleImpl *finished_thread = _finished.front();
@@ -264,9 +250,9 @@ next_context() {
 
     double wait = _sleeping.front()->_start_time - now;
     if (wait > 0.0) {
-      if (thread_cat.is_spam()) {
-        thread_cat.spam()
-          << "Sleeping " << wait << " seconds\n";
+      if (thread_cat.is_debug()) {
+        thread_cat.debug()
+          << "Sleeping all threads " << wait << " seconds\n";
       }
       system_sleep(wait);
     }
@@ -293,14 +279,11 @@ next_context() {
       << " blocked, " << _sleeping.size() << " sleeping)\n";
   }
 
-#ifdef HAVE_UCONTEXT_H
-  setcontext(&_current_thread->_ucontext);
-#else
-  longjmp(_current_thread->_jmp_context, 1);
-#endif
+  switch_to_thread_context(&_current_thread->_context);
 
   // Shouldn't get here.
   nassertv(false);
+  abort();
 }
 
 ////////////////////////////////////////////////////////////////////
