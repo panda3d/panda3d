@@ -366,26 +366,6 @@ get_current_thread() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_object
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE const GeomVertexArrayData *GeomVertexArrayDataHandle::
-get_object() const {
-  return _object;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayDataHandle::get_object
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GeomVertexArrayData *GeomVertexArrayDataHandle::
-get_object() {
-  return _object;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_read_pointer
 //       Access: Public
 //  Description: Returns a readable pointer to the beginning of the
@@ -404,8 +384,28 @@ get_read_pointer(bool force) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_object
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayData *GeomVertexArrayDataHandle::
+get_object() const {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::get_object
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayData *GeomVertexArrayDataHandle::
+get_object() {
+  return _object;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_array_format
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE const GeomVertexArrayFormat *GeomVertexArrayDataHandle::
@@ -415,7 +415,7 @@ get_array_format() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayDataHandle::get_usage_hint
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataHandle::UsageHint GeomVertexArrayDataHandle::

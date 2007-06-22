@@ -293,6 +293,16 @@ set_column(const InternalName *name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::clear
+//       Access: Published
+//  Description: Resets the GeomVertexWriter to the initial state.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+clear() {
+  (*this) = GeomVertexWriter(_current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::has_column
 //       Access: Published
 //  Description: Returns true if a valid data type has been

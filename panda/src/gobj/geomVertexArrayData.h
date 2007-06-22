@@ -257,13 +257,14 @@ public:
   ALLOC_DELETED_CHAIN_DECL(GeomVertexArrayDataHandle);
 
   INLINE Thread *get_current_thread() const;
-  INLINE const GeomVertexArrayData *get_object() const;
-  INLINE GeomVertexArrayData *get_object();
 
   INLINE const unsigned char *get_read_pointer(bool force) const;
   unsigned char *get_write_pointer();
 
 PUBLISHED:
+  INLINE const GeomVertexArrayData *get_object() const;
+  INLINE GeomVertexArrayData *get_object();
+
   INLINE const GeomVertexArrayFormat *get_array_format() const;
   INLINE UsageHint get_usage_hint() const;
 

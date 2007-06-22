@@ -63,6 +63,7 @@ PUBLISHED:
   INLINE bool set_column(const InternalName *name);
   INLINE bool set_column(int array, const GeomVertexColumn *column);
 
+  INLINE void clear();
   INLINE bool has_column() const;
   INLINE int get_array() const;
   INLINE const GeomVertexColumn *get_column() const;

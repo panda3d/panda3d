@@ -249,6 +249,17 @@ set_column(int array, const GeomVertexColumn *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::clear
+//       Access: Published
+//  Description: Resets the GeomVertexRewriter to the initial state.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexRewriter::
+clear() {
+  GeomVertexWriter::clear();
+  GeomVertexReader::clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::has_column
 //       Access: Published
 //  Description: Returns true if a valid data type has been
