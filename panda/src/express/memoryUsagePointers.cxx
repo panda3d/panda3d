@@ -30,9 +30,11 @@
 
 #include "py_panda.h"  
 
+#ifndef CPPPARSER
 extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedObject;
 extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedReferenceCount;
 extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_ReferenceCount;
+#endif  // CPPPARSER
 
 #endif  // HAVE_PYTHON
 
