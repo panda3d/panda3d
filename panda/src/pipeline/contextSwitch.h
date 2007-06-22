@@ -44,21 +44,6 @@ struct ThreadContext {
   ucontext_t _ucontext;
 };
 
-#define save_thread_context(switched, context) \
-{ \
-  volatile int context_return = 0; \
-  getcontext(&context->_ucontext); \
-  if (context_return) { \
-    (*(switched)) = 1; \
-  } \
-
-  context_return = 1; \
-  (*(switched)) = 0; \
-}
-
-#define switch_to_thread_context(context) \
-  setcontext(&(context)->_ucontext)
-
 #else  /* HAVE_UCONTEXT_H */
 /* Unfortunately, setcontext() is not defined everywhere (even though
    it claims to be adopted by Posix).  So we have to fall back to
@@ -69,14 +54,6 @@ struct ThreadContext {
   jmp_buf _jmp_context;
 };
 
-#define save_thread_context(switched, context) \
-{ \
-  (*(switched)) = setjmp((context)->_jmp_context); \
-}
-
-#define switch_to_thread_context(context) \
-  longjmp((context)->_jmp_context, 1)
-
 #endif  /* HAVE_UCONTEXT_H */
 
 #ifdef __cplusplus
@@ -85,13 +62,25 @@ extern "C" {
 
 typedef void ContextFunction(void *);
 
+/* Call this to fill in the appropriate values in context.  The stack
+   must already have been allocated.  The context will be initialized
+   so that when switch_to_thread_context() is called, it will begin
+   executing thread_func(data), which should not return.  This function
+   will return normally. */
 void init_thread_context(struct ThreadContext *context, 
                          unsigned char *stack, size_t stack_size,
-                         ContextFunction *main_func, void *data);
+                         ContextFunction *thread_func, void *data);
 
-/* These two functions are defined as macros, above. */
-/* void save_thread_context(int *switched, struct ThreadContext *context); */
-/* void switch_to_thread_context(struct ThreadContext *context); */
+/* Call this to save the current thread context.  This function does
+   not return until switch_to_thread_context() is called.  Instead it
+   immediately calls next_context(data), which should not return. */
+void save_thread_context(struct ThreadContext *context,
+                         ContextFunction *next_context, void *data);
+
+/* Call this to resume executing a previously saved context.  When
+   called, it will return from save_thread_context() in the saved
+   stack (or begin executing thread_func()). */
+void switch_to_thread_context(struct ThreadContext *context);
 
 #ifdef __cplusplus
 }

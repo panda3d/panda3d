@@ -27,24 +27,58 @@
 
 /* The getcontext() / setcontext() implementation.  Easy-peasy. */
 
-static void *
-begin_context(ContextFunction *main_func, void *data) {
-  (*main_func)(data);
-  return data;
+static void
+begin_context(ContextFunction *thread_func, void *data) {
+  (*thread_func)(data);
 }
 
 void
 init_thread_context(struct ThreadContext *context, 
                     unsigned char *stack, size_t stack_size,
-                    ContextFunction *main_func, void *data) {
+                    ContextFunction *thread_func, void *data) {
   getcontext(&context->_ucontext);
 
-  _ucontext.uc_stack.ss_sp = stack;
-  _ucontext.uc_stack.ss_size = stack_size;
-  _ucontext.uc_stack.ss_flags = 0;
-  _ucontext.uc_link = NULL;
+  context->_ucontext.uc_stack.ss_sp = stack;
+  context->_ucontext.uc_stack.ss_size = stack_size;
+  context->_ucontext.uc_stack.ss_flags = 0;
+  context->_ucontext.uc_link = NULL;
 
-  makecontext(&context->_ucontext, begin_context, 2, main_func, this);
+  makecontext(&context->_ucontext, (void (*)())&begin_context, 2, thread_func, data);
+}
+
+void save_thread_context(struct ThreadContext *context,
+                         ContextFunction *next_context, void *data) {
+  /* getcontext requires us to use a volatile auto variable to
+     differentiate between pass 1 (immediate return) and pass 2
+     (return from setcontext). */
+  volatile int context_return = 0;
+
+  getcontext(&context->_ucontext);
+  if (context_return) {
+    /* We have just returned from setcontext.  In this case, return
+       from the function.  The stack is still good. */
+    return;
+  }
+
+  context_return = 1;
+
+  /* We are still in the calling thread.  In this case, we cannot
+     return from the function without damaging the stack.  Insted,
+     call next_context() and trust the caller to call
+     switch_to_thread_context() in there somewhere. */
+
+  (*next_context)(data);
+
+  /* We shouldn't get here. */
+  abort();
+}
+
+void
+switch_to_thread_context(struct ThreadContext *context) {
+  setcontext(&context->_ucontext);
+
+  /* Shouldn't get here. */
+  abort();
 }
 
 
@@ -79,7 +113,7 @@ init_thread_context(struct ThreadContext *context,
 static struct ThreadContext *st_context;
 static unsigned char *st_stack;
 static size_t st_stack_size;
-static ContextFunction *st_main_func;
+static ContextFunction *st_thread_func;
 static void *st_data;
 
 static jmp_buf orig_stack;
@@ -88,7 +122,7 @@ static void
 setup_context_2(void) {
   /* Here we are running on the new stack.  Copy the key data onto our
      new stack. */
-  ContextFunction *volatile main_func = st_main_func;
+  ContextFunction *volatile thread_func = st_thread_func;
   void *volatile data = st_data;
 
   if (setjmp(st_context->_jmp_context) == 0) {
@@ -103,9 +137,9 @@ setup_context_2(void) {
   }
 
   /* We come here the first time the thread starts. */
-  (*main_func)(data);
+  (*thread_func)(data);
 
-  /* We shouldn't get here, since we don't expect the main_func to
+  /* We shouldn't get here, since we don't expect the thread_func to
      return. */
   abort();
 }
@@ -150,17 +184,44 @@ setup_context_1(void) {
 void
 init_thread_context(struct ThreadContext *context, 
                     unsigned char *stack, size_t stack_size,
-                    ContextFunction *main_func, void *data) {
+                    ContextFunction *thread_func, void *data) {
   /* Copy all of the input parameters to static variables, then begin
      the stack-switching process. */
   st_context = context;
   st_stack = stack;
   st_stack_size = stack_size;
-  st_main_func = main_func;
+  st_thread_func = thread_func;
   st_data = data;
 
   setup_context_1();
 }  
+
+void save_thread_context(struct ThreadContext *context,
+                         ContextFunction *next_context, void *data) {
+  if (setjmp(context->_jmp_context) != 0) {
+    /* We have just returned from longjmp.  In this case, return from
+       the function.  The stack is still good. */
+    return;
+  }
+
+  /* We are still in the calling thread.  In this case, we cannot
+     return from the function without damaging the stack.  Insted,
+     call next_context() and trust the caller to call
+     switch_to_thread_context() in there somewhere. */
+
+  (*next_context)(data);
+
+  /* We shouldn't get here. */
+  abort();
+}
+
+void
+switch_to_thread_context(struct ThreadContext *context) {
+  longjmp(context->_jmp_context, 1)
+
+  /* Shouldn't get here. */
+  abort();
+}
 
 #endif  /* HAVE_UCONTEXT_H */
 #endif  /* THREAD_SIMPLE_IMPL */

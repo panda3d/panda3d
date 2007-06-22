@@ -72,6 +72,9 @@ public:
 
 private:
   static void init_pointers();
+
+  static void st_choose_next_context(void *data);
+  void choose_next_context();
   void wake_sleepers(double now);
   static void system_sleep(double seconds);
   void report_deadlock();

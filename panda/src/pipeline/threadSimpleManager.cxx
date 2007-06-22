@@ -192,19 +192,109 @@ next_context() {
   _current_thread->_python_state = PyThreadState_Swap(NULL);
 #endif  // HAVE_PYTHON
 
-  int switched;
-  save_thread_context(&switched, &_current_thread->_context);
-  if (switched) {
-    // Pass 2: we have returned into the context, and are now resuming
-    // the current thread.
+  save_thread_context(&_current_thread->_context, st_choose_next_context, this);
+  // Pass 2: we have returned into the context, and are now resuming
+  // the current thread.
 #ifdef HAVE_PYTHON
-    PyThreadState_Swap(_current_thread->_python_state);
+  PyThreadState_Swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
-    return;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::prepare_for_exit
+//       Access: Public
+//  Description: Blocks until all running threads (other than the
+//               current thread) have finished.  You should probably
+//               only call this from the main thread.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+prepare_for_exit() {
+  nassertv(_waiting_for_exit == NULL);
+  _waiting_for_exit = _current_thread;
+
+  // At this point, any non-joinable threads on any of the queues are
+  // automatically killed.
+  kill_non_joinable(_ready);
+
+  Blocked::iterator bi = _blocked.begin();
+  while (bi != _blocked.end()) {
+    Blocked::iterator bnext = bi;
+    ++bnext;
+    BlockerSimple *blocker = (*bi).first;
+    FifoThreads &threads = (*bi).second;
+    kill_non_joinable(threads);
+    if (threads.empty()) {
+      blocker->_flags &= ~BlockerSimple::F_has_waiters;
+      _blocked.erase(bi);
+    }
+    bi = bnext;
   }
 
-  // Pass 1: we have saved the context successfully.
+  kill_non_joinable(_sleeping);
 
+  next_context();
+
+  while (!_finished.empty() && _finished.front() != _current_thread) {
+    ThreadSimpleImpl *finished_thread = _finished.front();
+    _finished.pop_front();
+    unref_delete(finished_thread->_parent_obj);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::set_current_thread
+//       Access: Public
+//  Description: Sets the initial value of the current_thread pointer,
+//               i.e. the main thread.  It is valid to call this
+//               method only exactly once.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+set_current_thread(ThreadSimpleImpl *current_thread) {
+  nassertv(_current_thread == (ThreadSimpleImpl *)NULL);
+  _current_thread = current_thread;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::init_pointers
+//       Access: Private, Static
+//  Description: Should be called at startup to initialize the
+//               simple threading system.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+init_pointers() {
+  if (!_pointers_initialized) {
+    _pointers_initialized = true;
+    _global_ptr = new ThreadSimpleManager;
+    Thread::get_main_thread();
+
+#ifdef HAVE_PYTHON
+    // Ensure that the Python threading system is initialized and ready
+    // to go.
+    PyEval_InitThreads();
+#endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::st_choose_next_context
+//       Access: Private, Static
+//  Description: Select the next context to run.  Continuing the work
+//               of next_context().
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+st_choose_next_context(void *data) {
+  ThreadSimpleManager *self = (ThreadSimpleManager *)data;
+  self->choose_next_context();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::choose_next_context
+//       Access: Private
+//  Description: Select the next context to run.  Continuing the work
+//               of next_context().
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+choose_next_context() {
   while (!_finished.empty() && _finished.front() != _current_thread) {
     ThreadSimpleImpl *finished_thread = _finished.front();
     _finished.pop_front();
@@ -284,81 +374,6 @@ next_context() {
   // Shouldn't get here.
   nassertv(false);
   abort();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::prepare_for_exit
-//       Access: Public
-//  Description: Blocks until all running threads (other than the
-//               current thread) have finished.  You should probably
-//               only call this from the main thread.
-////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
-prepare_for_exit() {
-  nassertv(_waiting_for_exit == NULL);
-  _waiting_for_exit = _current_thread;
-
-  // At this point, any non-joinable threads on any of the queues are
-  // automatically killed.
-  kill_non_joinable(_ready);
-
-  Blocked::iterator bi = _blocked.begin();
-  while (bi != _blocked.end()) {
-    Blocked::iterator bnext = bi;
-    ++bnext;
-    BlockerSimple *blocker = (*bi).first;
-    FifoThreads &threads = (*bi).second;
-    kill_non_joinable(threads);
-    if (threads.empty()) {
-      blocker->_flags &= ~BlockerSimple::F_has_waiters;
-      _blocked.erase(bi);
-    }
-    bi = bnext;
-  }
-
-  kill_non_joinable(_sleeping);
-
-  next_context();
-
-  while (!_finished.empty() && _finished.front() != _current_thread) {
-    ThreadSimpleImpl *finished_thread = _finished.front();
-    _finished.pop_front();
-    unref_delete(finished_thread->_parent_obj);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::set_current_thread
-//       Access: Public
-//  Description: Sets the initial value of the current_thread pointer,
-//               i.e. the main thread.  It is valid to call this
-//               method only exactly once.
-////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
-set_current_thread(ThreadSimpleImpl *current_thread) {
-  nassertv(_current_thread == (ThreadSimpleImpl *)NULL);
-  _current_thread = current_thread;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::init_pointers
-//       Access: Private, Static
-//  Description: Should be called at startup to initialize the
-//               simple threading system.
-////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
-init_pointers() {
-  if (!_pointers_initialized) {
-    _pointers_initialized = true;
-    _global_ptr = new ThreadSimpleManager;
-    Thread::get_main_thread();
-
-#ifdef HAVE_PYTHON
-    // Ensure that the Python threading system is initialized and ready
-    // to go.
-    PyEval_InitThreads();
-#endif
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
