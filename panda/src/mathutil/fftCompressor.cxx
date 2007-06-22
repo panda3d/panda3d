@@ -34,7 +34,7 @@
 #ifdef howmany
 #undef howmany
 #endif
-#include <rfftw.h>
+#include "rfftw.h"
 
 // These FFTW support objects can only be defined if we actually have
 // the FFTW library available.
