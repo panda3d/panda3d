@@ -34,7 +34,7 @@
 
 #ifdef THREAD_SIMPLE_IMPL
 
-#ifdef HAVE_UCONTEXT_H
+#if defined(HAVE_UCONTEXT_H)
 /* We'd prefer to use getcontext() / setcontext() to portably change
    execution contexts within C code.  That's what these library
    functions are designed for. */
@@ -48,10 +48,33 @@ struct ThreadContext {
 /* Unfortunately, setcontext() is not defined everywhere (even though
    it claims to be adopted by Posix).  So we have to fall back to
    setjmp() / longjmp() in its absence.  This is a hackier solution. */
+
+#if defined(__i386__)
+/* Maybe we can implement our own setjmp/longjmp in assembly code.
+   This will be safe than the system version, since who knows what
+   that one's really doing? */
+
+typedef int cs_jmp_buf[33];
+
+#define CS_JB_SP 4
+
+#else
+
+/* Fall back to the system implmentation of setjmp/longjmp. */
 #include <setjmp.h>
 
+typedef jmp_buf cs_jmp_buf;
+#define cs_setjmp setjmp
+#define cs_longjmp(buf) longjmp(buf, 1)
+
+#ifdef JB_SP
+#define CS_JB_SP JB_SP
+#endif
+
+#endif  /* __i386__ */
+
 struct ThreadContext {
-  jmp_buf _jmp_context;
+  cs_jmp_buf _jmp_context;
 };
 
 #endif  /* HAVE_UCONTEXT_H */
