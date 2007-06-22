@@ -21,7 +21,7 @@
 #include "config_util.h"
 #include "config_pipeline.h"
 
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_read_pointer
 //       Access: Public
@@ -52,9 +52,9 @@ get_read_pointer() const {
   _object->_locking_thread = Thread::get_current_thread();
   return _object;
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_write_pointer
 //       Access: Public
@@ -125,4 +125,4 @@ get_write_pointer() {
 
   return _object;
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED

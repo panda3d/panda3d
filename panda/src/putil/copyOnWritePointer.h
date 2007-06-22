@@ -25,6 +25,15 @@
 #include "pointerTo.h"
 #include "dcast.h"
 
+// Should we implement full thread protection for CopyOnWritePointer?
+// If we can be assured that no other thread will interrupt while a
+// write pointer is held, we don't need thread protection.
+#if defined(HAVE_THREADS) && !(defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_IMPLICIT_YIELD))
+  #define COW_THREADED 1
+#else
+  #undef COW_THREADED
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CopyOnWritePointer
 // Description : This safely stores the primary, owned pointer to a
@@ -44,13 +53,13 @@ public:
   INLINE void operator = (CopyOnWriteObject *object);
   INLINE ~CopyOnWritePointer();
 
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
   CPT(CopyOnWriteObject) get_read_pointer() const;
   PT(CopyOnWriteObject) get_write_pointer();
 #else
   INLINE const CopyOnWriteObject *get_read_pointer() const;
   INLINE CopyOnWriteObject *get_write_pointer();
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
   INLINE CopyOnWriteObject *get_unsafe_pointer();
 
@@ -83,13 +92,13 @@ public:
   INLINE void operator = (const CopyOnWritePointerTo<T> &copy);
   INLINE void operator = (To *object);
 
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
   INLINE CPT(To) get_read_pointer() const;
   INLINE PT(To) get_write_pointer();
 #else
   INLINE const To *get_read_pointer() const;
   INLINE To *get_write_pointer();
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
   INLINE To *get_unsafe_pointer();
 #endif  // CPPPARSER

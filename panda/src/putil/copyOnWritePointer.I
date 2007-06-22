@@ -85,7 +85,7 @@ INLINE CopyOnWritePointer::
   }
 }
 
-#ifndef HAVE_THREADS
+#ifndef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_read_pointer
 //       Access: Public
@@ -100,9 +100,9 @@ INLINE const CopyOnWriteObject *CopyOnWritePointer::
 get_read_pointer() const {
   return _object;
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
-#ifndef HAVE_THREADS
+#ifndef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_write_pointer
 //       Access: Public
@@ -129,7 +129,7 @@ get_write_pointer() {
   }
   return _object;
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_unsafe_pointer
@@ -247,7 +247,7 @@ operator = (To *object) {
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointerTo::get_read_pointer
 //       Access: Public
@@ -258,7 +258,7 @@ INLINE CPT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_read_pointer() const {
   return (const To *)(CopyOnWritePointer::get_read_pointer().p());
 }
-#else  // HAVE_THREADS
+#else  // COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointerTo::get_read_pointer
 //       Access: Public
@@ -269,11 +269,11 @@ INLINE const TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
 get_read_pointer() const {
   return (const To *)CopyOnWritePointer::get_read_pointer();
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointerTo::get_write_pointer
 //       Access: Public
@@ -284,7 +284,7 @@ INLINE PT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_write_pointer() {
   return (To *)(CopyOnWritePointer::get_write_pointer().p());
 }
-#else  // HAVE_THREADS
+#else  // COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointerTo::get_write_pointer
 //       Access: Public
@@ -295,7 +295,7 @@ INLINE TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
 get_write_pointer() {
   return (To *)CopyOnWritePointer::get_write_pointer();
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 #endif  // CPPPARSER
 
 #ifndef CPPPARSER
