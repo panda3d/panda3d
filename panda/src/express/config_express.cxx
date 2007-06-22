@@ -31,6 +31,7 @@
 #include "virtualFileSimple.h"
 #include "pandaSystem.h"
 #include "numeric_types.h"
+#include "namable.h"
 
 #include "dconfig.h"
 
@@ -128,6 +129,7 @@ init_libexpress() {
   initialized = true;
 
   Datagram::init_type();
+  Namable::init_type();
   NodeReferenceCount::init_type();
   ReferenceCount::init_type();
   TextEncoder::init_type();
