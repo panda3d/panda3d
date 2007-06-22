@@ -115,6 +115,7 @@ private:
   ThreadContext _context;
   unsigned char *_stack;
   size_t _stack_size;
+  size_t _stack_alloc_size;
 
 #ifdef HAVE_PYTHON
   // If we might be working with Python, we have to manage the Python

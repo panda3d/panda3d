@@ -25,8 +25,18 @@
 #include "thread.h"
 
 #ifdef WIN32
+
+// Windows case (VirtualAlloc)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#else
+
+// Posix case (mmap)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+
 #endif
 
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
@@ -45,19 +55,8 @@ ThreadSimpleImpl(Thread *parent_obj) :
   _time_per_epoch = 0.0;
   _start_time = 0.0;
 
-  _stack_size = (size_t)thread_stack_size;
-
-  // We allocate the requested stack size, plus an additional tiny
-  // buffer to allow room for the code to access values on the
-  // currently executing stack frame at the time we switch the stack.
-  size_t alloc_size = _stack_size + 0x100;
-
-#ifdef WIN32
-  _stack = (unsigned char *)VirtualAlloc(NULL, alloc_size, MEM_COMMIT | MEM_RESERVE,
-                                         PAGE_EXECUTE_READWRITE);
-#else
-  _stack = (unsigned char *)malloc(alloc_size);
-#endif
+  _stack = NULL;
+  _stack_size = 0;
 
   // Save this pointer for convenience.
   _manager = ThreadSimpleManager::get_global_ptr();
@@ -80,7 +79,7 @@ ThreadSimpleImpl::
 #ifdef WIN32
     VirtualFree(_stack, 0, MEM_RELEASE);
 #else  
-    free(_stack);
+    munmap(_stack, _stack_alloc_size);
 #endif
   }
 }
@@ -112,6 +111,31 @@ start(ThreadPriority priority, bool joinable) {
   }
 
   nassertr(_status == S_new, false);
+
+  nassertr(_stack == NULL, false);
+  _stack_size = (size_t)thread_stack_size;
+
+  // We allocate the requested stack size, plus an additional tiny
+  // buffer to allow room for the code to access values on the
+  // currently executing stack frame at the time we switch the stack.
+  _stack_alloc_size = _stack_size + 0x100;
+
+#ifdef WIN32
+  // Windows case.
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+
+  size_t page_size = (size_t)sysinfo.dwPageSize;
+  _stack_alloc_size = ((_stack_alloc_size + page_size - 1) / page_size) * page_size;
+  _stack = (unsigned char *)VirtualAlloc(NULL, _stack_alloc_size, MEM_COMMIT | MEM_RESERVE,
+                                         PAGE_EXECUTE_READWRITE);
+#else
+  // Posix case.
+  size_t page_size = getpagesize();
+  _stack_alloc_size = ((_stack_alloc_size + page_size - 1) / page_size) * page_size;
+  _stack = (unsigned char *)mmap(NULL, _stack_alloc_size, PROT_READ | PROT_WRITE | PROT_EXEC, 
+                                 MAP_PRIVATE | MAP_ANON, -1, 0);
+#endif
 
   _joinable = joinable;
   _status = S_running;
