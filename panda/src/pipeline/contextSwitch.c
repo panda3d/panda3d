@@ -89,18 +89,62 @@ switch_to_thread_context(struct ThreadContext *context) {
    _jmp_context.  Then restore back to the original stack pointer. */
 
 #if defined(_M_IX86)
-/* Here is own own implementation of setjmp and longjmp for I386, via
+/* Here is our own implementation of setjmp and longjmp for I386, via
    Windows syntax. */
 
-int cs_setjmp(cs_jmp_buf env);
-void cs_longjmp(cs_jmp_buf env);
+/* warning C4731: frame pointer register 'ebp' modified by inline assembly code */
+#pragma warning(disable:4731)
+
+int
+cs_setjmp(cs_jmp_buf env) {
+  __asm {
+    pop ebp;  /* Restore the frame pointer that the compiler pushed */
+
+    pop edx;  /* edx = return address */
+    pop eax;  /* eax = &env */
+    push eax; /* keep &env on the stack; the caller will remove it */
+
+    mov [eax + 0], ebx;
+    mov [eax + 4], edi;
+    mov [eax + 8], esi;
+    mov [eax + 12], ebp;
+    mov [eax + 16], esp;
+    mov [eax + 20], edx;
+
+    fnsave [eax + 24];  /* save floating-point state */
+
+    xor eax,eax;  /* return 0: pass 1 return */
+    jmp edx;      /* this works like ret */
+  }
+}
+
+void
+cs_longjmp(cs_jmp_buf env) {
+  _asm {
+    mov eax, env;
+    
+    mov ebx, [eax + 0];
+    mov edi, [eax + 4];
+    mov esi, [eax + 8];
+    mov ebp, [eax + 12];
+    mov esp, [eax + 16];
+    mov edx, [eax + 20];
+    
+    frstor [eax + 24];  /* restore floating-point state */
+
+    mov eax, 1;   /* return 1 from setjmp: pass 2 return */
+    jmp edx;      /* return from above setjmp call */
+  }
+}
+
 
 #elif defined(__i386__)
-/* Here is own own implementation of setjmp and longjmp for I386, via
+/* Here is our own implementation of setjmp and longjmp for I386, via
    GNU syntax. */
 
 #if defined(IS_LINUX)
-/* On Linux, the underscores are not implicit. */
+/* On Linux, the leading underscores are not implicitly added for C
+   function names. */
 #define cs_setjmp _cs_setjmp
 #define cs_longjmp _cs_longjmp
 #endif
@@ -113,27 +157,33 @@ __asm__
  "popl %edx\n"
  "popl %eax\n"
  "pushl %eax\n"
- "movl %ebx,0(%eax)\n"
- "movl %edi,4(%eax)\n"
- "movl %esi,8(%eax)\n"
- "movl %ebp,12(%eax)\n"
- "movl %esp,16(%eax)\n"
- "movl %edx,20(%eax)\n"
+
+ "movl %ebx, 0(%eax)\n"
+ "movl %edi, 4(%eax)\n"
+ "movl %esi, 8(%eax)\n"
+ "movl %ebp, 12(%eax)\n"
+ "movl %esp, 16(%eax)\n"
+ "movl %edx, 20(%eax)\n"
+
  "fnsave 24(%eax)\n"
- "xorl %eax,%eax\n"
+
+ "xorl %eax, %eax\n"
  "jmp *%edx\n");
 
 __asm__
 ("_cs_longjmp:\n"
  "popl %edx\n"
  "popl %eax\n"
- "movl 0(%eax),%ebx\n"
- "movl 4(%eax),%edi\n"
- "movl 8(%eax),%esi\n"
- "movl 12(%eax),%ebp\n"
- "movl 16(%eax),%esp\n"
- "movl 20(%eax),%edx\n"
+
+ "movl 0(%eax), %ebx\n"
+ "movl 4(%eax), %edi\n"
+ "movl 8(%eax), %esi\n"
+ "movl 12(%eax), %ebp\n"
+ "movl 16(%eax), %esp\n"
+ "movl 20(%eax), %edx\n"
+
  "frstor 24(%eax)\n"
+
  "mov $1,%eax\n"
  "jmp *%edx\n");
 
@@ -148,11 +198,6 @@ __asm__
 /* We have determined this value empirically, via test_setjmp.cxx in
    this directory. */
 #define CS_JB_SP 9
-
-#elif defined(WIN32)
-/* We have determined this value empirically, via test_setjmp.cxx in
-   this directory. */
-#define CS_JB_SP 4
 
 #endif
 

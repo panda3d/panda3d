@@ -24,6 +24,11 @@
 #include "threadSimpleManager.h"
 #include "thread.h"
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +50,14 @@ ThreadSimpleImpl(Thread *parent_obj) :
   // We allocate the requested stack size, plus an additional tiny
   // buffer to allow room for the code to access values on the
   // currently executing stack frame at the time we switch the stack.
-  _stack = (unsigned char *)malloc(_stack_size + 0x100);
+  size_t alloc_size = _stack_size + 0x100;
+
+#ifdef WIN32
+  _stack = (unsigned char *)VirtualAlloc(NULL, alloc_size, MEM_COMMIT | MEM_RESERVE,
+                                         PAGE_EXECUTE_READWRITE);
+#else
+  _stack = (unsigned char *)malloc(alloc_size);
+#endif
 
   // Save this pointer for convenience.
   _manager = ThreadSimpleManager::get_global_ptr();
@@ -64,7 +76,13 @@ ThreadSimpleImpl::
   }
   nassertv(_status != S_running);
 
-  free(_stack);
+  if (_stack != (void *)NULL) {
+#ifdef WIN32
+    VirtualFree(_stack, 0, MEM_RELEASE);
+#else  
+    free(_stack);
+#endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
