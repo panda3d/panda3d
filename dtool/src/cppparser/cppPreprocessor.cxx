@@ -1412,8 +1412,10 @@ handle_include_directive(const string &args, int first_line,
       }
     }
 
-    // Now look for it on the primary include path.
-    if (!angle_quotes && !found_file && filename.resolve_filename(_include_path)) {
+    // Now look for it on the primary include path.  We have to search
+    // this path, even if the file was named with angle quotes, so
+    // that we will search parser-inc before the system path.
+    if (!found_file && filename.resolve_filename(_include_path)) {
       found_file = true;
       source = CPPFile::S_alternate;
     }
