@@ -4594,8 +4594,7 @@ if (OMIT.count("PYTHON")==0):
 # The Installers
 #
 # Under windows, we can build an 'exe' package using NSIS
-# Under linux, we can build an 'deb' package using dpkg-deb
-# Makepanda does not build RPMs. To do that, use 'rpm -tb' on the source tarball.
+# Under linux, we can build a 'deb' package or an 'rpm' package.
 #
 ##########################################################################################
 
@@ -4676,7 +4675,7 @@ def MakeInstallerLinux():
         oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
     if (os.path.exists("/usr/bin/rpmbuild")):
         oscmd("rpm -E '{%_arch}' > built/tmp/architecture.txt")
-    ARCH=ReadFile("built/tmp/architecture.txt")
+    ARCH=ReadFile("built/tmp/architecture.txt").strip()
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
