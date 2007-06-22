@@ -172,7 +172,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_threaddata.cxx
@@ -185,7 +185,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_diners.cxx
@@ -198,7 +198,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_mutex.cxx
@@ -211,7 +211,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_concurrency.cxx
@@ -224,7 +224,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_delete.cxx
@@ -237,7 +237,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_atomic.cxx
@@ -251,7 +251,7 @@
   #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
   #define OTHER_LIBS \
    interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m pystub
+   dtoolutil:c dtool:m dtoolconfig:m pystub
 
   #define SOURCES \
     test_setjmp.cxx
