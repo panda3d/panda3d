@@ -56,6 +56,14 @@ public:
     aspect_ratio(copy.aspect_ratio) {
   };
 
+  void clear() {
+    vertex.clear();
+    color.clear();
+    rotate.clear();
+    size.clear();
+    aspect_ratio.clear();
+  }
+
   GeomVertexWriter vertex;
   GeomVertexWriter color;
   GeomVertexWriter rotate;

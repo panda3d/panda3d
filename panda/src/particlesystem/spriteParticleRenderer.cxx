@@ -733,6 +733,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {
       _sprites[i][j]->clear_vertices();
+      _sprite_writer[i][j].clear();      
 
       // We have to reassign the GeomVertexData and GeomPrimitive to
       // the Geom, and the Geom to the GeomNode, in case it got
