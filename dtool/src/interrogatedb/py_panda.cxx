@@ -196,7 +196,7 @@ PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject
     // if we get this far .. just wrap the thing in the known type ??
     //    better than aborting...I guess....
     /////////////////////////////////////////////////////
-        Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
+    Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
     if(self != NULL)
     {
         self->_ptr_to_object = local_this_in;

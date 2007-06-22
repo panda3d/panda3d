@@ -1142,9 +1142,6 @@ write_module_class(ostream &out,  Object *obj) {
       }
   }
 
-  bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
-
-
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
@@ -1532,6 +1529,10 @@ write_module_class(ostream &out,  Object *obj) {
     }
 
 
+  bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
+  if (HasAGetClassTypeFunction(obj->_itype)) {
+    is_runtime_typed = true;
+  }
 
   if(is_runtime_typed)
     out << "        RegisterRuntimeClass(&Dtool_"<<ClassName<<","<< cClassName <<"::get_class_type().get_index());\n";
@@ -3029,6 +3030,45 @@ bool InterfaceMakerPythonNative::HasAGetKeyFunction(const InterrogateType &itype
   }
       return false;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//  Function : HasAGetClassTypeFunction
+//
+// does the class have a supportable GetClassType which returns a TypeHandle.
+//////////////////////////////////////////////////////////////////////////////////////////
+bool InterfaceMakerPythonNative::
+HasAGetClassTypeFunction(const InterrogateType &itype_class) {
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+  
+  int num_methods = itype_class.number_of_methods();
+  int mi;
+  for (mi = 0; mi < num_methods; mi++) {
+    FunctionIndex func_index = itype_class.get_method(mi);
+    const InterrogateFunction &ifunc = idb->get_function(func_index);
+    if (ifunc.get_name() == "get_class_type") {
+      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+        InterrogateFunction::Instances::const_iterator ii;
+        for (ii = ifunc._instances->begin();ii != ifunc._instances->end();++ii) {
+          CPPInstance *cppinst = (*ii).second;
+          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
+          
+          if (cppfunc != NULL && cppfunc->_return_type != NULL &&
+              cppfunc->_parameters != NULL) {
+            CPPType *ret_type = TypeManager::unwrap(cppfunc->_return_type);
+            if (TypeManager::is_struct(ret_type) && 
+                ret_type->get_simple_name() == "TypeHandle") {
+              if(cppfunc->_parameters->_parameters.size() == 0) {
+                return true;
+              }
+            }
+          }
+          
+        }   
+      }
+    }
+  }
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::NeedsAStrFunction
