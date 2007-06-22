@@ -28,6 +28,13 @@
 #include "referenceCount.h"
 #include "pvector.h"
 
+#ifdef HAVE_PYTHON
+
+#undef _POSIX_C_SOURCE
+#include <Python.h>
+
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
@@ -60,6 +67,10 @@ PUBLISHED:
   TypeHandle get_type(int n) const;
   string get_type_name(int n) const;
   double get_age(int n) const;
+
+#ifdef HAVE_PYTHON
+  PyObject *get_python_pointer(int n) const;
+#endif
 
   void clear();
 
