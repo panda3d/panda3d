@@ -4674,7 +4674,7 @@ def MakeInstallerLinux():
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
     if (os.path.exists("/usr/bin/rpmbuild")):
-        oscmd("rpm -E '{%_arch}' > built/tmp/architecture.txt")
+        oscmd("rpm -E '%_arch' > built/tmp/architecture.txt")
     ARCH=ReadFile("built/tmp/architecture.txt").strip()
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
     oscmd("mkdir -p linuxroot/usr/bin")
@@ -4723,8 +4723,7 @@ def MakeInstallerLinux():
         txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",PANDASOURCE)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+PANDASOURCE+"' -bb panda3d.spec")
-        if (os.path.exists(ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm")):
-            oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
+        oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
 
     oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
