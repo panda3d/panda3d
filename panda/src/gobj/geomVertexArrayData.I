@@ -251,7 +251,7 @@ set_lru_size(size_t lru_size) {
 INLINE GeomVertexArrayData::CData::
 CData() :
   _usage_hint(UH_unspecified),
-  _rw_lock("GeomVertexArrayData::CData::_wl_lock")
+  _rw_lock("GeomVertexArrayData::CData::_rw_lock")
 {
 }
 
@@ -265,7 +265,7 @@ CData(const GeomVertexArrayData::CData &copy) :
   _usage_hint(copy._usage_hint),
   _buffer(copy._buffer),
   _modified(copy._modified),
-  _rw_lock("GeomVertexArrayData::CData::_wl_lock")
+  _rw_lock("GeomVertexArrayData::CData::_rw_lock")
 {
 }
 
@@ -303,6 +303,9 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
 #ifdef DO_PIPELINING
   _cdata->ref();
 #endif  // DO_PIPELINING
+#ifdef DO_MEMORY_USAGE
+  MemoryUsage::update_type(this, get_class_type());
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
