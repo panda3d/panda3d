@@ -257,7 +257,11 @@ setup_context_1(void) {
       /* Now we overwrite the stack pointer value in the saved
          register context.  This doesn't work with all implementations
          of setjmp/longjmp. */
-      (*(void **)&temp[CS_JB_SP]) = (st_stack + st_stack_size);
+
+      /* We give ourselves a small buffer of unused space at the top
+         of the stack, to allow for the stack frame and such that this
+         code might be assuming is there. */
+      (*(void **)&temp[CS_JB_SP]) = (st_stack + st_stack_size - 0x100);
 
       /* And finally, we place ourselves on the new stack by using
          longjmp() to reload the modified context. */

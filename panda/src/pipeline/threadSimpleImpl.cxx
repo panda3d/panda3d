@@ -79,7 +79,7 @@ ThreadSimpleImpl::
 #ifdef WIN32
     VirtualFree(_stack, 0, MEM_RELEASE);
 #else  
-    munmap(_stack, _stack_alloc_size);
+    munmap(_stack, _stack_size);
 #endif
   }
 }
@@ -115,25 +115,13 @@ start(ThreadPriority priority, bool joinable) {
   nassertr(_stack == NULL, false);
   _stack_size = (size_t)thread_stack_size;
 
-  // We allocate the requested stack size, plus an additional tiny
-  // buffer to allow room for the code to access values on the
-  // currently executing stack frame at the time we switch the stack.
-  _stack_alloc_size = _stack_size + 0x100;
-
 #ifdef WIN32
   // Windows case.
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-
-  size_t page_size = (size_t)sysinfo.dwPageSize;
-  _stack_alloc_size = ((_stack_alloc_size + page_size - 1) / page_size) * page_size;
-  _stack = (unsigned char *)VirtualAlloc(NULL, _stack_alloc_size, MEM_COMMIT | MEM_RESERVE,
+  _stack = (unsigned char *)VirtualAlloc(NULL, _stack_size, MEM_COMMIT | MEM_RESERVE,
                                          PAGE_EXECUTE_READWRITE);
 #else
   // Posix case.
-  size_t page_size = getpagesize();
-  _stack_alloc_size = ((_stack_alloc_size + page_size - 1) / page_size) * page_size;
-  _stack = (unsigned char *)mmap(NULL, _stack_alloc_size, PROT_READ | PROT_WRITE | PROT_EXEC, 
+  _stack = (unsigned char *)mmap(NULL, _stack_size, PROT_READ | PROT_WRITE | PROT_EXEC, 
                                  MAP_PRIVATE | MAP_ANON, -1, 0);
 #endif
 
