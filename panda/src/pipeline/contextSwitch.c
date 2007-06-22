@@ -88,15 +88,28 @@ switch_to_thread_context(struct ThreadContext *context) {
    then call setjmp() to record that stack pointer in the
    _jmp_context.  Then restore back to the original stack pointer. */
 
-#if defined(__i386__)
+#if defined(_M_IX86)
+/* Here is own own implementation of setjmp and longjmp for I386, via
+   Windows syntax. */
+
+int cs_setjmp(cs_jmp_buf env);
+void cs_longjmp(cs_jmp_buf env);
+
+#elif defined(__i386__)
 /* Here is own own implementation of setjmp and longjmp for I386, via
    GNU syntax. */
+
+#if defined(IS_LINUX)
+/* On Linux, the underscores are not implicit. */
+#define cs_setjmp _cs_setjmp
+#define cs_longjmp _cs_longjmp
+#endif
 
 int cs_setjmp(cs_jmp_buf env);
 void cs_longjmp(cs_jmp_buf env);
 
 __asm__
-("cs_setjmp:\n"
+("_cs_setjmp:\n"
  "popl %edx\n"
  "popl %eax\n"
  "pushl %eax\n"
@@ -111,7 +124,7 @@ __asm__
  "jmp *%edx\n");
 
 __asm__
-("cs_longjmp:\n"
+("_cs_longjmp:\n"
  "popl %edx\n"
  "popl %eax\n"
  "movl 0(%eax),%ebx\n"
