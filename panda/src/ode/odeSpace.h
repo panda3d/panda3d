@@ -78,6 +78,7 @@ PUBLISHED:
   void remove(OdeSpace& space);
   void clean();
   OdeGeom get_geom(int i); // Not INLINE because of forward declaration
+  static int get_surface_type(OdeSpace * self, dGeomID o1);
 
   INLINE OdeSpace get_space() const;
 

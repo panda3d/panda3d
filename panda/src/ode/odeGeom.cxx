@@ -19,6 +19,7 @@
 #include "config_ode.h"
 #include "odeGeom.h"
 
+OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
 TypeHandle OdeGeom::_type_handle;
 
 OdeGeom::
@@ -30,7 +31,34 @@ OdeGeom(dGeomID id) :
 OdeGeom::
 ~OdeGeom() {
   odegeom_cat.debug() << "~" << get_type() << "(" << _id << ")\n";
+  GeomSurfaceMap::iterator iter = _geom_surface_map.find(this->get_id());
+  if (iter != _geom_surface_map.end()) {
+    _geom_surface_map.erase(iter);
+  }
 }
+int OdeGeom::
+get_default_surface_type() 
+{
+  return OdeGeom::get_default_surface_type(this->get_id());
+}
+
+int OdeGeom::
+get_default_surface_type(dGeomID id)
+{
+  GeomSurfaceMap::iterator iter = _geom_surface_map.find(id);
+  if (iter != _geom_surface_map.end()) {
+    // odegeom_cat.debug() << "get_default_surface_type the geomId =" << id <<" surfaceType=" << iter->second << "\n";
+    return iter->second;
+  }
+  // odegeom_cat.debug() << "get_default_surface_type not in map, returning 0" ;
+  return 0;
+}
+
+void OdeGeom::
+set_default_surface_type( int surfaceType){
+  _geom_surface_map[this->get_id()]= surfaceType;
+}
+
 
 void OdeGeom::
 destroy() {

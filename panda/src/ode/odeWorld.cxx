@@ -26,12 +26,14 @@ OdeWorld() :
   _id(dWorldCreate()) {
   odeworld_cat.debug() << get_type() << "(" << _id << ")" << "\n";
   _num_surfaces = 0;
+
 }
 
 OdeWorld::
 OdeWorld(const OdeWorld &copy) :
   _id(copy._id) {
   _num_surfaces = 0;
+
 }
 
 OdeWorld::
@@ -51,6 +53,7 @@ destroy() {
 void OdeWorld:: 
 assign_surface_body(OdeBody& body, int surface)
 {
+    // odeworld_cat.debug() << "assign_surface_body body.Id =" << body.get_id() << " surface=" << surface << "\n";
     _body_surface_map[body.get_id()].surfaceType = surface;
     _body_surface_map[body.get_id()].dampen = 0.0f;
 }
@@ -158,11 +161,13 @@ get_surface_body(dBodyID id)
     
   BodySurfaceMap::iterator iter = _body_surface_map.find(id);
   if (iter != _body_surface_map.end()) {
+    // odeworld_cat.debug() << "In map the bodyId =" << id <<" surfaceType=" << iter->second.surfaceType << "\n";
     return iter->second;
   }
   sBodyParams defaultParams;
   defaultParams.surfaceType = 0;
   defaultParams.dampen = 0.0f;
+  // odeworld_cat.debug() << "no surface for bodyId=" << id << " returning default 0" << "\n";
   return defaultParams;
 }
 

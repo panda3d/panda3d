@@ -105,6 +105,9 @@ PUBLISHED:
   INLINE LPoint3f get_offset_position() const;
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
+  int get_default_surface_type() ;
+  void set_default_surface_type( int surfaceType);
+  static int get_default_surface_type(dGeomID id);
 
   OdeSpace get_space() const;
 
@@ -131,6 +134,10 @@ public:
 
 protected:
   dGeomID _id;
+
+private:
+  typedef pmap<dGeomID, int> GeomSurfaceMap;
+  static GeomSurfaceMap _geom_surface_map;
 
 public:
   static TypeHandle get_class_type() {

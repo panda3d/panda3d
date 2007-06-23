@@ -77,10 +77,11 @@ clean() {
   dSpaceClean(_id);
 }
 
-OdeGeom OdeSpace::
+OdeGeom  OdeSpace::
 get_geom(int i) {
   return OdeGeom(dSpaceGetGeom(_id, i));
 }
+
 
 void OdeSpace::
 write(ostream &out, unsigned int indent) const {
@@ -106,7 +107,7 @@ int OdeSpace::
 autoCollide()
 {
     OdeSpace::contactCount = 0;
-    dSpaceCollide(_id, 0, &autoCallback);
+    dSpaceCollide(_id, this, &autoCallback);
     return OdeSpace::contactCount;
 }
 
@@ -120,35 +121,64 @@ get_contact_data(int data_index)
     return OdeSpace::contact_data[data_index];
 }
 
+int OdeSpace::
+get_surface_type(OdeSpace * self, dGeomID o1)
+// return the surface of the body if this geom has a body, else use the default surface type
+{
+  int retval = 0;
+  dBodyID b1 = dGeomGetBody(o1);
+    if (b1) {
+      retval = _collide_world->get_surface_body(b1).surfaceType;
+    }
+    else {
+      retval = OdeGeom::get_default_surface_type(o1);
+    }
+    // odespace_cat.debug() << "for geom " << o1 << " returning surface type " << retval << "\n";
+    return retval;
+    
+}
+
+int autoCallbackCounter = 0;
+
 void OdeSpace::
 autoCallback(void *data, dGeomID o1, dGeomID o2)
 // uses data stored on the world to resolve collisions so you don't have to use near_callbacks in python
 {
     int i;
-    
     dBodyID b1 = dGeomGetBody(o1);
     dBodyID b2 = dGeomGetBody(o2);
-    
+
     dContact contact[OdeSpace::MAX_CONTACTS];
     
+    int surface1 = get_surface_type((OdeSpace*)data, o1);
+    int surface2 = get_surface_type((OdeSpace*)data, o2);
     
+
+
     sSurfaceParams collide_params;
-    collide_params = _collide_world->get_surface(_collide_world->get_surface_body(b1).surfaceType,_collide_world->get_surface_body(b2).surfaceType);
+    // collide_params = _collide_world->get_surface(_collide_world->get_surface_body(b1).surfaceType,_collide_world->get_surface_body(b2).surfaceType);
+    collide_params = _collide_world->get_surface(surface1, surface2);
     
     for (i=0; i < OdeSpace::MAX_CONTACTS; i++)
     {
-  
         contact[i].surface.mode = collide_params.colparams.mode; 
         contact[i].surface.mu = collide_params.colparams.mu; 
         contact[i].surface.mu2 = collide_params.colparams.mu2; 
         contact[i].surface.bounce = collide_params.colparams.bounce; 
         contact[i].surface.bounce_vel = collide_params.colparams.bounce_vel; 
         contact[i].surface.soft_cfm = collide_params.colparams.soft_cfm; 
-
     }
     
-    if (int numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact)))
+    int numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
+    if (numc)
     {
+        if (odespace_cat.is_debug() && (autoCallbackCounter%30 == 0)) {
+            odespace_cat.debug() << autoCallbackCounter <<" collision between geoms " << o1 << " and " << o2 << "\n";
+            odespace_cat.debug() << "collision between body " << b1 << " and " << b2 << "\n";
+            odespace_cat.debug() << "surface1= "<< surface1 << " surface2=" << surface2 << "\n";
+        }
+        autoCallbackCounter += 1;
+
         for(i=0; i < numc; i++)
         {
             dJointID c = dJointCreateContact(_collide_world->get_id(), _collide_joint_group, contact + i);
