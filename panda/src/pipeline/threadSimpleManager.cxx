@@ -255,6 +255,48 @@ set_current_thread(ThreadSimpleImpl *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::write_status
+//       Access: Public
+//  Description: Writes a list of threads running and threads blocked.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+write_status(ostream &out) const {
+  out << "Currently running: " << *_current_thread->_parent_obj << "\n";
+
+  out << "Ready:";
+  FifoThreads::const_iterator ti;
+  for (ti = _ready.begin(); ti != _ready.end(); ++ti) {
+    out << " " << *(*ti)->_parent_obj;
+  }
+  out << "\n";
+
+  double now = get_current_time();
+  out << "Sleeping:";
+  // Copy and sort for convenience.
+  Sleeping s2 = _sleeping;
+  sort(s2.begin(), s2.end(), CompareStartTime());
+  Sleeping::const_iterator si;
+  for (si = s2.begin(); si != s2.end(); ++si) {
+    out << " " << *(*si)->_parent_obj << "(" << (*si)->_start_time - now
+        << "s)";
+  }
+  out << "\n";
+
+  Blocked::const_iterator bi;
+  for (bi = _blocked.begin(); bi != _blocked.end(); ++bi) {
+    BlockerSimple *blocker = (*bi).first;
+    const FifoThreads &threads = (*bi).second;
+    out << "On blocker " << blocker << ":\n";
+    FifoThreads::const_iterator ti;
+    for (ti = threads.begin(); ti != threads.end(); ++ti) {
+      ThreadSimpleImpl *thread = (*ti);
+      out << " " << *thread->_parent_obj;
+    }
+    out << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::init_pointers
 //       Access: Private, Static
 //  Description: Should be called at startup to initialize the

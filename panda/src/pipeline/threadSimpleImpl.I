@@ -49,6 +49,16 @@ is_threading_supported() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::is_true_threads
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ThreadSimpleImpl::
+is_true_threads() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleImpl::sleep
 //       Access: Public, Static
 //  Description: 
@@ -105,4 +115,15 @@ consider_yield_this() {
 INLINE double ThreadSimpleImpl::
 get_start_time() const {
   return _start_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::write_status
+//       Access: Public, Static
+//  Description: Writes a list of threads running and threads blocked.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleImpl::
+write_status(ostream &out) {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->write_status(out);
 }

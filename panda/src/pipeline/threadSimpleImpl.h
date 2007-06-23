@@ -77,6 +77,7 @@ public:
   INLINE static Thread *get_current_thread();
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
+  INLINE static bool is_true_threads();
   INLINE static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();
@@ -86,6 +87,8 @@ public:
   INLINE void consider_yield_this();
 
   INLINE double get_start_time() const;
+
+  INLINE static void write_status(ostream &out);
 
 private:
   static void st_begin_thread(void *data);

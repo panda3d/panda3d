@@ -55,6 +55,7 @@ public:
   static Thread *get_current_thread();
   INLINE static void bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
+  INLINE static bool is_true_threads();
   INLINE static void sleep(double seconds);
   INLINE static void yield();
   INLINE static void consider_yield();

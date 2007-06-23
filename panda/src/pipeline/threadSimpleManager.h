@@ -70,6 +70,8 @@ public:
   INLINE double get_current_time() const;
   INLINE static ThreadSimpleManager *get_global_ptr();
 
+  void write_status(ostream &out) const;
+
 private:
   static void init_pointers();
 

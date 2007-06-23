@@ -226,10 +226,9 @@ get_current_pipeline_stage() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::is_threading_supported
 //       Access: Published, Static
-//  Description: Returns true if a real threading library is available
-//               that supports threads, or false if no threading
-//               library is available (and Thread::start() will always
-//               fail).
+//  Description: Returns true if threading support has been compiled
+//               in and enabled, or false if no threading is available
+//               (and Thread::start() will always fail).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Thread::
 is_threading_supported() {
@@ -237,6 +236,22 @@ is_threading_supported() {
     return false;
   }
   return ThreadImpl::is_threading_supported();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::is_true_threads
+//       Access: Published, Static
+//  Description: Returns true if a real threading library is available
+//               that supports actual OS-implemented threads, or false
+//               if the only threading we can provide is simulated
+//               user-space threading.
+////////////////////////////////////////////////////////////////////
+INLINE bool Thread::
+is_true_threads() {
+  if (!support_threads) {
+    return false;
+  }
+  return ThreadImpl::is_true_threads();
 }
 
 ////////////////////////////////////////////////////////////////////

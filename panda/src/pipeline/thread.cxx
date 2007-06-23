@@ -118,6 +118,18 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::write_status
+//       Access: Published, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Thread::
+write_status(ostream &out) {
+#ifdef SIMPLE_THREADS
+  ThreadImpl::write_status(out);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::start
 //       Access: Public
 //  Description: Starts the thread executing.  It is only valid to
