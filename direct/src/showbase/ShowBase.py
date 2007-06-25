@@ -51,14 +51,12 @@ __builtin__.NO_FADE_SORT_INDEX = 2000
 ####################################################
 want_fifothreads = config.GetBool("want-fifothreads", 0)
 if want_fifothreads:
-    import threading
-    
     class HackGraphicsEngine(GraphicsEngine):    
         def renderFrame(self):
-            if threading.currentThread().getName() == 'MainThread':
+            if isinstance(Thread.getCurrentThread(), MainThread):
                     GraphicsEngine.renderFrame(self)
             else:
-                print 'renderFrame Not Main Thread %s'%    (threading.currentThread().getName())                 
+                print 'renderFrame Not Main Thread %s' % (repr(Thread.getCurrentThread()))
                 
     
 
