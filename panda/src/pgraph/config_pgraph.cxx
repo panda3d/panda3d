@@ -456,6 +456,7 @@ init_libpgraph() {
   DepthWriteAttrib::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
   DrawMaskAttrib::register_with_read_factory();
+  FadeLODNode::register_with_read_factory();
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();
