@@ -2970,23 +2970,9 @@ if __debug__:
     assert obj2count[1] == 1 * 3
     assert obj2count[2] == 2 * 3
     assert obj2count[3] == 3 * 3
-    assert obj2count[4] == 4 * 3
+    assert obj2count[4] == 4 * 3                  
 
-
-
-bias=-1
 def quickProfile(name="unnamed"):    
-    global bias
-    if(base.config.GetBool("use-profiler",0)):
-        if bias == -1:
-            print "Calibrating profiler"            
-            bias = prof.Profile().calibrate(100000)
-            print "Bias is: ",bias
-            prof.Profile.bias =bias
-        
-            def f8(x):
-                return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
-            pstats.f8=f8
     def profileDecorator(f):
         if(not base.config.GetBool("use-profiler",0)):
             return f
