@@ -171,7 +171,7 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
     return true;
   }
   // The timeout is a rough estimate, we may wait slightly longer.
-  const wait_ms=200;
+  const int wait_ms=200;
   int cycles=timeout_ms/wait_ms;
   while (cycles--) {
     check_for_new_clients();
@@ -198,7 +198,8 @@ DirectD::wait_for_servers(int count, int timeout_ms) {
     }
 
     // Yield the timeslice before we poll again.
-    PR_Sleep(PR_MillisecondsToInterval(wait_ms));
+    //PR_Sleep(PR_MillisecondsToInterval(wait_ms));
+    Sleep(wait_ms);
   }
   // We've waited long enough, assume they're not going to be
   // ready in the time we want them:

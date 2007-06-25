@@ -68,7 +68,7 @@ DirectDServer::read_command(string& cmd) {
     ifstream f;
     f.open("directdCommand", ios::in | ios::binary);
     stringstream ss;
-    const buf_size=512;
+    const int buf_size=512;
     char buf[buf_size];
     f.getline(buf, buf_size);
     if (f.gcount() > 0) {
@@ -95,7 +95,8 @@ DirectDServer::run_server(int port) {
     check_for_datagrams();
 
     // Yield the timeslice before we poll again.
-    PR_Sleep(PR_MillisecondsToInterval(200));
+    //PR_Sleep(PR_MillisecondsToInterval(200));
+    Sleep(200);
   }
 }
 

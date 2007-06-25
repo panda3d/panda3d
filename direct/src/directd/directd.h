@@ -17,13 +17,14 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <process.h>
-#include <Windows.h>
 #include "pandabase.h"
 #include "directsymbols.h"
 #include "queuedConnectionManager.h"
 #include "queuedConnectionReader.h"
 #include "connectionWriter.h"
 #include "queuedConnectionListener.h"
+#include <windows.h>
+
 
 #ifdef CPPPARSER //[
 // hack for interrogate
