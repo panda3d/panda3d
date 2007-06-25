@@ -30,6 +30,7 @@
 #include "configurable.h"
 #include "copyOnWriteObject.h"
 #include "datagram.h"
+#include "doubleBitMask.h"
 #include "factoryParam.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
@@ -97,6 +98,8 @@ ConfigureFn(config_util) {
   Configurable::init_type();
   CopyOnWriteObject::init_type();
   Datagram::init_type();
+  DoubleBitMaskNative::init_type();
+  QuadBitMaskNative::init_type();
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
