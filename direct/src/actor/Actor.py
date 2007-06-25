@@ -2168,3 +2168,9 @@ class Actor(DirectObject, NodePath):
         self.getGeomNode().setH(180)
     def faceTowardsViewer(self):
         self.getGeomNode().setH(0)
+
+    def renamePartBundles(self, partName, newBundleName):
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        for partBundleDict in self.__partBundleDict.values():
+            partDef=partBundleDict.get(subpartDef.truePartName)
+            partDef.partBundle.setName(newBundleName)
