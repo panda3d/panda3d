@@ -117,7 +117,7 @@ class ShowBase(DirectObject.DirectObject):
         taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
         
-        profile.Profile.bias = float(self.config.GetString("profile-bias",0))
+        profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
         
                
         def f8(x):
