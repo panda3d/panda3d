@@ -226,6 +226,13 @@ begin_geometry ( ) {
     format = GeomVertexFormat::get_v3c4 ( );
   }
 
+  // Clear the previous writers before we create a new vertex data
+  // object--this seems to work around an ordering problem in the
+  // low-level vertex data destructors.
+  _vertex_writer.clear();
+  _color_writer.clear();
+  _texture_writer.clear();
+
   _vertex_data = new GeomVertexData ("vertices", format, Geom::UH_static);
   _vertex_writer = GeomVertexWriter (_vertex_data, "vertex");
   _color_writer = GeomVertexWriter (_vertex_data, "color");
