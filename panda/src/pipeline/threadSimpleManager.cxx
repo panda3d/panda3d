@@ -42,6 +42,13 @@ ThreadSimpleManager() {
   _clock = TrueClock::get_global_ptr();
   _waiting_for_exit = NULL;
 
+#ifdef HAVE_POSIX_THREADS
+  _posix_system_thread_id = pthread_self();
+#endif
+#ifdef WIN32
+  _win32_system_thread_id = GetCurrentThreadId();
+#endif
+
   // Install these global pointers so very low-level code (code
   // defined before the pipeline directory) can yield when necessary.
   global_thread_yield = &Thread::force_yield;
@@ -199,9 +206,23 @@ next_context() {
   _current_thread->_python_state = PyThreadState_Swap(NULL);
 #endif  // HAVE_PYTHON
 
+#ifdef DO_PSTATS
+  Thread::PStatsCallback *pstats_callback = _current_thread->_parent_obj->get_pstats_callback();
+  if (pstats_callback != NULL) {
+    pstats_callback->deactivate_hook(_current_thread->_parent_obj);
+  }
+#endif  // DO_PSTATS
+
   save_thread_context(&_current_thread->_context, st_choose_next_context, this);
   // Pass 2: we have returned into the context, and are now resuming
   // the current thread.
+
+#ifdef DO_PSTATS
+  if (pstats_callback != NULL) {
+    pstats_callback->activate_hook(_current_thread->_parent_obj);
+  }
+#endif  // DO_PSTATS
+
 #ifdef HAVE_PYTHON
   PyThreadState_Swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
@@ -262,6 +283,26 @@ set_current_thread(ThreadSimpleImpl *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::system_sleep
+//       Access: Public, Static
+//  Description: Calls the appropriate system sleep function to sleep
+//               the whole process for the indicated number of
+//               seconds.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+system_sleep(double seconds) {
+#ifdef WIN32
+  Sleep((int)(seconds * 1000));
+
+#else
+  struct timespec rqtp;
+  rqtp.tv_sec = time_t(seconds);
+  rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
+  nanosleep(&rqtp, NULL);
+#endif  // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::write_status
 //       Access: Public
 //  Description: Writes a list of threads running and threads blocked.
@@ -301,6 +342,25 @@ write_status(ostream &out) const {
     }
     out << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::system_yield
+//       Access: Public, Static
+//  Description: Calls the appropriate system function to yield
+//               the whole process to any other system processes.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+system_yield() {
+#ifdef WIN32
+  Sleep(0);
+
+#else
+  struct timespec rqtp;
+  rqtp.tv_sec = 0;
+  rqtp.tv_nsec = 0;
+  nanosleep(&rqtp, NULL);
+#endif  // WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,45 +505,6 @@ wake_sleepers(double now) {
     _sleeping.pop_back();
     _ready.push_back(thread);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::system_sleep
-//       Access: Private, Static
-//  Description: Calls the appropriate system sleep function to sleep
-//               the whole process for the indicated number of
-//               seconds.
-////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
-system_sleep(double seconds) {
-#ifdef WIN32
-  Sleep((int)(seconds * 1000));
-
-#else
-  struct timespec rqtp;
-  rqtp.tv_sec = time_t(seconds);
-  rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
-  nanosleep(&rqtp, NULL);
-#endif  // WIN32
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleManager::system_yield
-//       Access: Private, Static
-//  Description: Calls the appropriate system function to yield
-//               the whole process to any other system processes.
-////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
-system_yield() {
-#ifdef WIN32
-  Sleep(0);
-
-#else
-  struct timespec rqtp;
-  rqtp.tv_sec = 0;
-  rqtp.tv_nsec = 0;
-  nanosleep(&rqtp, NULL);
-#endif  // WIN32
 }
 
 ////////////////////////////////////////////////////////////////////

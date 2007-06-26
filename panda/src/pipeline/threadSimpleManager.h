@@ -30,6 +30,14 @@
 #include "trueClock.h"
 #include <algorithm>
 
+#ifdef HAVE_POSIX_THREADS
+#include <pthread.h>  // for pthread_t, below
+#endif
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>  // for DWORD, below
+#endif
+
 class Thread;
 class ThreadSimpleImpl;
 class BlockerSimple;
@@ -66,6 +74,9 @@ public:
 
   INLINE ThreadSimpleImpl *get_current_thread();
   void set_current_thread(ThreadSimpleImpl *current_thread);
+  INLINE bool is_same_system_thread() const;
+  static void system_sleep(double seconds);
+  static void system_yield();
 
   INLINE double get_current_time() const;
   INLINE static ThreadSimpleManager *get_global_ptr();
@@ -78,8 +89,6 @@ private:
   static void st_choose_next_context(void *data);
   void choose_next_context();
   void wake_sleepers(double now);
-  static void system_sleep(double seconds);
-  static void system_yield();
   void report_deadlock();
 
   // STL function object to sort the priority queue of sleeping threads.
@@ -112,6 +121,19 @@ private:
   ThreadSimpleImpl *_waiting_for_exit;
 
   TrueClock *_clock;
+
+  // We may not mix-and-match OS threads with Panda's SIMPLE_THREADS.
+  // If we ever get a Panda context switch request from a different OS
+  // thread than the original thread, that's a serious error that may
+  // cause major consequences.  For this reason, we store the OS
+  // thread's current thread ID here when the manager is constructed,
+  // and insist that it never changes.
+#ifdef HAVE_POSIX_THREADS
+  pthread_t _posix_system_thread_id;
+#endif
+#ifdef WIN32
+  DWORD _win32_system_thread_id;
+#endif
 
   static bool _pointers_initialized;
   static ThreadSimpleManager *_global_ptr;

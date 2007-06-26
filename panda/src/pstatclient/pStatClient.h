@@ -34,6 +34,7 @@
 #include "vector_int.h"
 #include "atomicAdjust.h"
 #include "numeric_types.h"
+#include "bitArray.h"
 
 class PStatCollector;
 class PStatCollectorDef;
@@ -57,7 +58,7 @@ class PStatThread;
 //               stub class.
 ////////////////////////////////////////////////////////////////////
 #ifdef DO_PSTATS
-class EXPCL_PANDA PStatClient : public ConnectionManager {
+class EXPCL_PANDA PStatClient : public ConnectionManager, public Thread::PStatsCallback {
 public:
   PStatClient();
   ~PStatClient();
@@ -140,6 +141,9 @@ private:
   INLINE Collector *get_collector_ptr(int collector_index) const;
   INLINE InternalThread *get_thread_ptr(int thread_index) const;
 
+  virtual void deactivate_hook(Thread *thread);
+  virtual void activate_hook(Thread *thread);
+
 private:
   // This mutex protects everything in this class.
   ReMutex _lock;
@@ -207,6 +211,9 @@ private:
     bool _is_active;
     int _frame_number;
     float _next_packet;
+
+    bool _thread_active;
+    BitArray _active_collectors;
 
     // This mutex is used to protect writes to _frame_data for this
     // particular thread, as well as writes to the _per_thread data

@@ -43,6 +43,7 @@ Thread(const string &name, const string &sync_name) :
 {
   _started = false;
   _pstats_index = -1;
+  _pstats_callback = NULL;
   _pipeline_stage = 0;
 
 #ifdef DEBUG_THREADS
@@ -108,18 +109,6 @@ get_sync_name() const {
 INLINE int Thread::
 get_pstats_index() const {
   return _pstats_index;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Thread::set_pstats_index
-//       Access: Published
-//  Description: Stores a PStats index to be associated with this
-//               thread.  This is used internally by the PStatClient;
-//               you should not need to call this directly.
-////////////////////////////////////////////////////////////////////
-INLINE void Thread::
-set_pstats_index(int pstats_index) {
-  _pstats_index = pstats_index;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,6 +335,44 @@ preempt() {
 INLINE void Thread::
 prepare_for_exit() {
   ThreadImpl::prepare_for_exit();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_pstats_index
+//       Access: Public
+//  Description: Stores a PStats index to be associated with this
+//               thread.  This is used internally by the PStatClient;
+//               you should not need to call this directly.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+set_pstats_index(int pstats_index) {
+  _pstats_index = pstats_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_pstats_callback
+//       Access: Public
+//  Description: Stores a PStats callback to be associated with this
+//               thread.  This is used internally by the PStatClient;
+//               you should not need to call this directly.
+////////////////////////////////////////////////////////////////////
+INLINE void Thread::
+set_pstats_callback(Thread::PStatsCallback *pstats_callback) {
+  _pstats_callback = pstats_callback;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_pstats_callback
+//       Access: Public
+//  Description: Returns the PStats callback associated with this thread,
+//               or NULL if no callback has yet been associated with
+//               this thread.  This is used internally by the
+//               PStatClient; you should not need to call this
+//               directly.
+////////////////////////////////////////////////////////////////////
+INLINE Thread::PStatsCallback *Thread::
+get_pstats_callback() const {
+  return _pstats_callback;
 }
 
 INLINE ostream &

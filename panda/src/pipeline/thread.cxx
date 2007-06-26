@@ -201,3 +201,28 @@ init_external_thread() {
     _external_thread->ref();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::PStatsCallback::deactivate_hook
+//       Access: Public, Virtual
+//  Description: Called when the thread is deactivated (swapped for
+//               another running thread).  This is intended to provide
+//               a callback hook for PStats to assign time to
+//               individual threads properly, particularly in the
+//               SIMPLE_THREADS case.
+////////////////////////////////////////////////////////////////////
+void Thread::PStatsCallback::
+deactivate_hook(Thread *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::PStatsCallback::activate_hook
+//       Access: Public, Virtual
+//  Description: Called when the thread is activated (resumes
+//               execution).  This is intended to provide a callback
+//               hook for PStats to assign time to individual threads
+//               properly, particularly in the SIMPLE_THREADS case.
+////////////////////////////////////////////////////////////////////
+void Thread::PStatsCallback::
+activate_hook(Thread *) {
+}

@@ -66,8 +66,12 @@ is_true_threads() {
 INLINE void ThreadSimpleImpl::
 sleep(double seconds) {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
-  ThreadSimpleImpl *thread = manager->get_current_thread();
-  thread->sleep_this(seconds);
+  if (manager->is_same_system_thread()) {
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    thread->sleep_this(seconds);
+  } else {
+    manager->system_sleep(seconds);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,8 +82,12 @@ sleep(double seconds) {
 INLINE void ThreadSimpleImpl::
 yield() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
-  ThreadSimpleImpl *thread = manager->get_current_thread();
-  thread->yield_this();
+  if (manager->is_same_system_thread()) {
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    thread->yield_this();
+  } else {
+    manager->system_yield();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,8 +98,10 @@ yield() {
 INLINE void ThreadSimpleImpl::
 consider_yield() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
-  ThreadSimpleImpl *thread = manager->get_current_thread();
-  thread->consider_yield_this();
+  if (manager->is_same_system_thread()) {
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    thread->consider_yield_this();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

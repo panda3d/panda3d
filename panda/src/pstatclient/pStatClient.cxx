@@ -580,6 +580,7 @@ do_make_thread(Thread *thread) {
         // Yes, re-use this one.
         threads[index]->_thread = thread;
         thread->set_pstats_index(index);
+        thread->set_pstats_callback(this);
         return PStatThread(this, index);
       }
     }
@@ -588,6 +589,7 @@ do_make_thread(Thread *thread) {
   // Create a new PStatsThread for this thread pointer.
   int new_index = _num_threads;
   thread->set_pstats_index(new_index);
+  thread->set_pstats_callback(this);
   _threads_by_name[thread->get_name()].push_back(new_index);
   _threads_by_sync_name[thread->get_sync_name()].push_back(new_index);
         
@@ -679,7 +681,10 @@ start(int collector_index, int thread_index) {
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
-      thread->_frame_data.add_start(collector_index, get_real_time());
+      if (thread->_thread_active) {
+        thread->_frame_data.add_start(collector_index, get_real_time());
+      }
+      thread->_active_collectors.set_bit(collector_index);
     }
     collector->_per_thread[thread_index]._nested_count++;
   }
@@ -707,7 +712,10 @@ start(int collector_index, int thread_index, float as_of) {
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
-      thread->_frame_data.add_start(collector_index, as_of);
+      if (thread->_thread_active) {
+        thread->_frame_data.add_start(collector_index, as_of);
+      }
+      thread->_active_collectors.set_bit(collector_index);
     }
     collector->_per_thread[thread_index]._nested_count++;
   }
@@ -747,7 +755,10 @@ stop(int collector_index, int thread_index) {
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector has now been completely stopped; record a new
       // data point.
-      thread->_frame_data.add_stop(collector_index, get_real_time());
+      if (thread->_thread_active) {
+        thread->_frame_data.add_stop(collector_index, get_real_time());
+      }
+      thread->_active_collectors.clear_bit(collector_index);
     }
   }
 }
@@ -1026,6 +1037,81 @@ add_thread(PStatClient::InternalThread *thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::deactivate_hook
+//       Access: Public, Virtual
+//  Description: Called when the thread is deactivated (swapped for
+//               another running thread).  This is intended to provide
+//               a callback hook for PStats to assign time to
+//               individual threads properly, particularly in the
+//               SIMPLE_THREADS case.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+deactivate_hook(Thread *thread) {
+  // We shouldn't use a mutex here, because this code is only called
+  // during the SIMPLE_THREADS case, so a mutex isn't necessary; and
+  // because we are called during a context switch, so a mutex might
+  // be dangerous.
+
+  InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
+
+  if (ithread->_thread_active) {
+    // Stop all of the active collectors for this thread.
+    double now = get_real_time();
+    int off_bit = -1;
+    int on_bit = ithread->_active_collectors.get_lowest_on_bit();
+    while (off_bit != on_bit) {
+      off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
+      nassertv(off_bit != on_bit);
+      while (on_bit < off_bit) {
+        // Here's an active collector.  Record a data point indicating
+        // it stops here.
+        ithread->_frame_data.add_stop(on_bit, now);
+        ++on_bit;
+      }
+      on_bit = ithread->_active_collectors.get_next_higher_different_bit(off_bit);
+    }
+    ithread->_thread_active = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::activate_hook
+//       Access: Public, Virtual
+//  Description: Called when the thread is activated (resumes
+//               execution).  This is intended to provide a callback
+//               hook for PStats to assign time to individual threads
+//               properly, particularly in the SIMPLE_THREADS case.
+////////////////////////////////////////////////////////////////////
+void PStatClient::
+activate_hook(Thread *thread) {
+  // We shouldn't use a mutex here, because this code is only called
+  // during the SIMPLE_THREADS case, so a mutex isn't necessary; and
+  // because we are called during a context switch, so a mutex might
+  // be dangerous.
+
+  InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
+
+  if (!ithread->_thread_active) {
+    // Resume all of the active collectors for this thread.
+    double now = get_real_time();
+    int off_bit = -1;
+    int on_bit = ithread->_active_collectors.get_lowest_on_bit();
+    while (off_bit != on_bit) {
+      off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
+      nassertv(off_bit != on_bit);
+      while (on_bit < off_bit) {
+        // Here's an active collector.  Record a data point indicating
+        // it resumes here.
+        ithread->_frame_data.add_start(on_bit, now);
+        ++on_bit;
+      }
+      on_bit = ithread->_active_collectors.get_next_higher_different_bit(off_bit);
+    }
+    ithread->_thread_active = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::Collector::make_def
 //       Access: Private
 //  Description: Creates the new PStatCollectorDef for this collector.
@@ -1057,6 +1143,7 @@ InternalThread(Thread *thread) :
   _is_active(false),
   _frame_number(0),
   _next_packet(0.0),
+  _thread_active(true),
   _thread_lock(string("PStatClient::InternalThread ") + thread->get_name())
 {
 }

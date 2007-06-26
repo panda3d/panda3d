@@ -64,7 +64,6 @@ PUBLISHED:
   INLINE const string &get_sync_name() const;
 
   INLINE int get_pstats_index() const;
-  INLINE void set_pstats_index(int pstats_index);
 
   INLINE int get_pipeline_stage() const;
   void set_pipeline_stage(int pipeline_stage);
@@ -92,6 +91,19 @@ PUBLISHED:
 
   INLINE static void prepare_for_exit();
 
+public:
+  // This class allows integration with PStats, particularly in the
+  // SIMPLE_THREADS case.
+  class PStatsCallback {
+  public:
+    virtual void deactivate_hook(Thread *thread);
+    virtual void activate_hook(Thread *thread);
+  };
+
+  INLINE void set_pstats_index(int pstats_index);
+  INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
+  INLINE PStatsCallback *get_pstats_callback() const;
+
 private:
   static void init_main_thread();
   static void init_external_thread();
@@ -105,6 +117,7 @@ private:
   ThreadImpl _impl;
   int _pstats_index;
   int _pipeline_stage;
+  PStatsCallback *_pstats_callback;
 
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
