@@ -348,6 +348,94 @@ get_num_off_bits() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_lowest_on_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 1 bit in the array.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_lowest_on_bit() const {
+  int num_words = get_num_words();
+  for (int w = 0; w < num_words; ++w) {
+    int b = _array[w].get_lowest_on_bit();
+    if (b != -1) {
+      return w * num_bits_per_word + b;
+    }
+  }
+  if (_highest_bits) {
+    return num_words * num_bits_per_word;
+  } else {
+    return -1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_lowest_off_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 0 bit in the array.
+//               Returns -1 if there are no 0 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_lowest_off_bit() const {
+  int num_words = get_num_words();
+  for (int w = 0; w < num_words; ++w) {
+    int b = _array[w].get_lowest_off_bit();
+    if (b != -1) {
+      return w * num_bits_per_word + b;
+    }
+  }
+  if (!_highest_bits) {
+    return num_words * num_bits_per_word;
+  } else {
+    return -1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_highest_on_bit
+//       Access: Published
+//  Description: Returns the index of the highest 1 bit in the array.
+//               Returns -1 if there are no 1 bits or if there an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_highest_on_bit() const {
+  if (_highest_bits) {
+    return -1;
+  }
+  int num_words = get_num_words();
+  for (int w = num_words - 1; w >= 0; --w) {
+    int b = _array[w].get_highest_on_bit();
+    if (b != -1) {
+      return w * num_bits_per_word + b;
+    }
+  }
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_highest_off_bit
+//       Access: Published
+//  Description: Returns the index of the highest 0 bit in the array.
+//               Returns -1 if there are no 0 bits or if there an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_highest_off_bit() const {
+  if (!_highest_bits) {
+    return -1;
+  }
+  int num_words = get_num_words();
+  for (int w = num_words - 1; w >= 0; --w) {
+    int b = _array[w].get_highest_off_bit();
+    if (b != -1) {
+      return w * num_bits_per_word + b;
+    }
+  }
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitArray::get_next_higher_different_bit
 //       Access: Published
 //  Description: Returns the index of the next bit in the array, above
@@ -429,8 +517,8 @@ has_bits_in_common(const BitArray &other) const {
     // the other array are all ones.  We have bits in common if any of
     // our top n words are nonzero.
     Array::const_iterator ai;
-    for (ai = _array.begin() + other._array.size(); 
-         ai != _array.end(); 
+    for (ai = _array.begin() + other._array.size();
+         ai != _array.end();
          ++ai) {
       if (!(*ai).is_zero()) {
 	return true;
@@ -442,8 +530,8 @@ has_bits_in_common(const BitArray &other) const {
     // array are all ones.  We have bits in common if any of the the
     // other's top n words are nonzero.
     Array::const_iterator ai;
-    for (ai = other._array.begin() + _array.size(); 
-         ai != other._array.end(); 
+    for (ai = other._array.begin() + _array.size();
+         ai != other._array.end();
          ++ai) {
       if (!(*ai).is_zero()) {
 	return true;
@@ -584,8 +672,8 @@ operator &= (const BitArray &other) {
     // array are all ones.  "mask on" the top n words of the other
     // array.
     Array::const_iterator ai;
-    for (ai = other._array.begin() + _array.size(); 
-         ai != other._array.end(); 
+    for (ai = other._array.begin() + _array.size();
+         ai != other._array.end();
          ++ai) {
       _array.push_back(*ai);
     }
@@ -623,8 +711,8 @@ operator |= (const BitArray &other) {
     // array are all zeros.  Copy in the top n words of the other
     // array.
     Array::const_iterator ai;
-    for (ai = other._array.begin() + _array.size(); 
-         ai != other._array.end(); 
+    for (ai = other._array.begin() + _array.size();
+         ai != other._array.end();
          ++ai) {
       _array.push_back(*ai);
     }
@@ -656,8 +744,8 @@ operator ^= (const BitArray &other) {
     // the other array are all ones.  The top n words of this array
     // get inverted.
     Array::iterator ai;
-    for (ai = _array.begin() + other._array.size(); 
-         ai != _array.end(); 
+    for (ai = _array.begin() + other._array.size();
+         ai != _array.end();
          ++ai) {
       (*ai).invert_in_place();
     }
@@ -668,8 +756,8 @@ operator ^= (const BitArray &other) {
       // array are all zeros.  Copy in the top n words of the other
       // array.
       Array::const_iterator ai;
-      for (ai = other._array.begin() + _array.size(); 
-           ai != other._array.end(); 
+      for (ai = other._array.begin() + _array.size();
+           ai != other._array.end();
            ++ai) {
         _array.push_back(*ai);
       }
@@ -678,8 +766,8 @@ operator ^= (const BitArray &other) {
       // array are all ones.  Copy in the top n words of the other
       // array, inverted.
       Array::const_iterator ai;
-      for (ai = other._array.begin() + _array.size(); 
-           ai != other._array.end(); 
+      for (ai = other._array.begin() + _array.size();
+           ai != other._array.end();
            ++ai) {
         _array.push_back(~(*ai));
       }

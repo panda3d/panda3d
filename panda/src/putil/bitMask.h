@@ -78,6 +78,10 @@ PUBLISHED:
 
   INLINE int get_num_on_bits() const;
   INLINE int get_num_off_bits() const;
+  INLINE int get_lowest_on_bit() const;
+  INLINE int get_lowest_off_bit() const;
+  INLINE int get_highest_on_bit() const;
+  INLINE int get_highest_off_bit() const;
   INLINE int get_next_higher_different_bit(int low_bit) const;
 
   INLINE void invert_in_place();
@@ -138,6 +142,8 @@ private:
 
 INLINE int count_bits_in_word(PN_uint32 x);
 INLINE int count_bits_in_word(PN_uint64 x);
+INLINE PN_uint32 flood_bits_down(PN_uint32 x);
+INLINE PN_uint64 flood_bits_down(PN_uint64 x);
 
 // This table precomputes the number of on bits in each 16-bit word.
 extern EXPCL_PANDA unsigned char num_bits_on[65536];

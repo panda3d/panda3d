@@ -99,6 +99,86 @@ get_num_off_bits() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_lowest_on_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 1 bit in the array.
+//               Returns -1 if there are no 1 bits or if there are an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_lowest_on_bit() const {
+  if (_inverse) {
+    return -1;
+  }
+
+  if (_subranges.empty()) {
+    return -1;
+  }
+
+  return _subranges[0]._begin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_lowest_off_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 0 bit in the array.
+//               Returns -1 if there are no 0 bits or if there are an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_lowest_off_bit() const {
+  if (!_inverse) {
+    return -1;
+  }
+
+  if (_subranges.empty()) {
+    return -1;
+  }
+
+  return _subranges[0]._begin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_highest_on_bit
+//       Access: Published
+//  Description: Returns the index of the highest 1 bit in the array.
+//               Returns -1 if there are no 1 bits or if there an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_highest_on_bit() const {
+  if (_inverse) {
+    return -1;
+  }
+
+  if (_subranges.empty()) {
+    return -1;
+  }
+
+  return _subranges[_subranges.size() - 1]._end - 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_highest_off_bit
+//       Access: Published
+//  Description: Returns the index of the highest 0 bit in the array.
+//               Returns -1 if there are no 0 bits or if there an
+//               infinite number of 1 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_highest_off_bit() const {
+  if (!_inverse) {
+    return -1;
+  }
+
+  if (_subranges.empty()) {
+    return -1;
+  }
+
+  return _subranges[_subranges.size() - 1]._end - 1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SparseArray::get_next_higher_different_bit
 //       Access: Published
 //  Description: Returns the index of the next bit in the array, above

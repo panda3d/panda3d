@@ -85,6 +85,10 @@ PUBLISHED:
 
   int get_num_on_bits() const;
   int get_num_off_bits() const;
+  int get_lowest_on_bit() const;
+  int get_lowest_off_bit() const;
+  int get_highest_on_bit() const;
+  int get_highest_off_bit() const;
   int get_next_higher_different_bit(int low_bit) const;
 
   INLINE void invert_in_place();

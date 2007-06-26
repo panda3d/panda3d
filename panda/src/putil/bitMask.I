@@ -465,6 +465,64 @@ get_num_off_bits() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_lowest_on_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 1 bit in the mask.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_lowest_on_bit() const {
+  if (_word == 0) {
+    return -1;
+  }
+
+  WordType w = (_word & -_word);
+  return count_bits_in_word(w - 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_lowest_off_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 0 bit in the mask.
+//               Returns -1 if there are no 0 bits.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_lowest_off_bit() const {
+  return (~(*this)).get_lowest_on_bit();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_highest_on_bit
+//       Access: Published
+//  Description: Returns the index of the highest 1 bit in the mask.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_highest_on_bit() const {
+  if (_word == 0) {
+    return -1;
+  }
+
+  WordType w = flood_bits_down(_word);
+  return count_bits_in_word(w) - 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_highest_off_bit
+//       Access: Published
+//  Description: Returns the index of the highest 0 bit in the mask.
+//               Returns -1 if there are no 0 bits.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_highest_off_bit() const {
+  return (~(*this)).get_highest_on_bit();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_next_higher_different_bit
 //       Access: Published
 //  Description: Returns the index of the next bit in the mask, above
@@ -820,3 +878,33 @@ count_bits_in_word(PN_uint64 x) {
   return count_bits_in_word((PN_uint32)x) + count_bits_in_word((PN_uint32)(x >> 32));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: flood_bits_down
+//  Description: Returns a value such that every bit at or below the
+//               highest bit in x is 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint32
+flood_bits_down(PN_uint32 x) {
+  x |= (x >> 1);
+  x |= (x >> 2);
+  x |= (x >> 4);
+  x |= (x >> 8);
+  x |= (x >> 16);
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: flood_bits_down
+//  Description: Returns a value such that every bit at or below the
+//               highest bit in x is 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint64
+flood_bits_down(PN_uint64 x) {
+  x |= (x >> 1);
+  x |= (x >> 2);
+  x |= (x >> 4);
+  x |= (x >> 8);
+  x |= (x >> 16);
+  x |= (x >> 32);
+  return x;
+}
