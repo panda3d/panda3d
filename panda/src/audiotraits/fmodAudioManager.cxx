@@ -756,7 +756,11 @@ read_callback(void *handle, void *buffer, unsigned int size_bytes,
   istream *str = (istream *)handle;
   str->read((char *)buffer, size_bytes);
   (*bytes_read) = str->gcount();
-  thread_consider_yield();
+
+  // We can't yield here, since this callback is made within a
+  // sub-thread--an OS-level sub-thread spawned by FMod, not a Panda
+  // thread.
+  //thread_consider_yield();
 
   if (str->eof()) {
     if ((*bytes_read) == 0) {
