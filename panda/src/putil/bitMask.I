@@ -401,46 +401,6 @@ set_word(WordType value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BitMask::invert_in_place
-//       Access: Published
-//  Description: Inverts all the bits in the BitMask.  This is
-//               equivalent to mask = ~mask.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE void BitMask<WType, nbits>::
-invert_in_place() {
-  _word = ~_word;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::has_bits_in_common
-//       Access: Published
-//  Description: Returns true if this BitMask has any "one" bits in
-//               common with the other one, false otherwise.
-//
-//               This is equivalent to (mask & other) != 0, but may be
-//               faster.  (Actually, it should only be faster in the
-//               BitArray case, but this method is provided for the
-//               benefit of generic programming algorithms).
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
-has_bits_in_common(const BitMask<WType, nbits> &other) const {
-  return (_word & other._word) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::clear
-//       Access: Published
-//  Description: Sets all the bits in the BitMask off.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE void BitMask<WType, nbits>::
-clear() {
-  _word = 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_num_on_bits
 //       Access: Published
 //  Description: Returns the number of bits that are set to 1 in the
@@ -563,6 +523,46 @@ get_next_higher_different_bit(int low_bit) const {
     // And the answer is the number of bits in (w - 1).
     return count_bits_in_word(w - 1) + low_bit + 1;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::invert_in_place
+//       Access: Published
+//  Description: Inverts all the bits in the BitMask.  This is
+//               equivalent to mask = ~mask.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE void BitMask<WType, nbits>::
+invert_in_place() {
+  _word = ~_word;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::has_bits_in_common
+//       Access: Published
+//  Description: Returns true if this BitMask has any "one" bits in
+//               common with the other one, false otherwise.
+//
+//               This is equivalent to (mask & other) != 0, but may be
+//               faster.  (Actually, it should only be faster in the
+//               BitArray case, but this method is provided for the
+//               benefit of generic programming algorithms).
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE bool BitMask<WType, nbits>::
+has_bits_in_common(const BitMask<WType, nbits> &other) const {
+  return (_word & other._word) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::clear
+//       Access: Published
+//  Description: Sets all the bits in the BitMask off.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE void BitMask<WType, nbits>::
+clear() {
+  _word = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

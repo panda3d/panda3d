@@ -76,6 +76,14 @@ PUBLISHED:
   INLINE void clear_range(int low_bit, int size);
   INLINE void set_range_to(bool value, int low_bit, int size);
 
+  INLINE int get_num_on_bits() const;
+  INLINE int get_num_off_bits() const;
+  INLINE int get_lowest_on_bit() const;
+  INLINE int get_lowest_off_bit() const;
+  INLINE int get_highest_on_bit() const;
+  INLINE int get_highest_off_bit() const;
+  INLINE int get_next_higher_different_bit(int low_bit) const;
+
   INLINE void invert_in_place();
   INLINE bool has_bits_in_common(const DoubleBitMask<BMType> &other) const;
   INLINE void clear();

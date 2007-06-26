@@ -426,6 +426,136 @@ set_range_to(bool value, int low_bit, int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_num_on_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 1 in the
+//               mask.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_num_on_bits() const {
+  return _lo.get_num_on_bits() + _hi.get_num_on_bits();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_num_off_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 0 in the
+//               mask.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_num_off_bits() const {
+  return _lo.get_num_off_bits() + _hi.get_num_off_bits();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_lowest_on_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 1 bit in the mask.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_lowest_on_bit() const {
+  int result = _lo.get_lowest_on_bit();
+  if (result == -1) {
+    result = _hi.get_lowest_on_bit();
+    if (result != -1) {
+      result += half_bits;
+    }
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_lowest_off_bit
+//       Access: Published
+//  Description: Returns the index of the lowest 0 bit in the mask.
+//               Returns -1 if there are no 0 bits.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_lowest_off_bit() const {
+  int result = _lo.get_lowest_off_bit();
+  if (result == -1) {
+    result = _hi.get_lowest_off_bit();
+    if (result != -1) {
+      result += half_bits;
+    }
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_highest_on_bit
+//       Access: Published
+//  Description: Returns the index of the highest 1 bit in the mask.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_highest_on_bit() const {
+  int result = _hi.get_highest_on_bit();
+  if (result == -1) {
+    result = _lo.get_highest_on_bit();
+  } else {
+    result += half_bits;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_highest_off_bit
+//       Access: Published
+//  Description: Returns the index of the highest 0 bit in the mask.
+//               Returns -1 if there are no 0 bits.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_highest_off_bit() const {
+  int result = _hi.get_highest_off_bit();
+  if (result == -1) {
+    result = _lo.get_highest_off_bit();
+  } else {
+    result += half_bits;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DoubleBitMask::get_next_higher_different_bit
+//       Access: Published
+//  Description: Returns the index of the next bit in the mask, above
+//               low_bit, whose value is different that the value of
+//               low_bit.  Returns low_bit again if all bits higher
+//               than low_bit have the same value.
+//
+//               This can be used to quickly iterate through all of
+//               the bits in the mask.
+////////////////////////////////////////////////////////////////////
+template<class BMType>
+INLINE int DoubleBitMask<BMType>::
+get_next_higher_different_bit(int low_bit) const {
+  if (low_bit > half_bits) {
+    return _hi.get_next_higher_different_bit(low_bit - half_bits) + half_bits;
+  }
+  int result = _lo.get_next_higher_different_bit(low_bit);
+  if (result != low_bit) {
+    return result;
+  }
+  if (_lo.get_bit(low_bit)) {
+    result = _hi.get_lowest_off_bit();
+  } else {
+    result = _hi.get_lowest_on_bit();
+  }
+  if (result == -1) {
+    return low_bit;
+  }
+  return result + half_bits;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DoubleBitMask::invert_in_place
 //       Access: Published
 //  Description: Inverts all the bits in the DoubleBitMask.  This is
