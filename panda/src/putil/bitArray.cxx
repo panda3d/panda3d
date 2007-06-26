@@ -461,20 +461,21 @@ get_next_higher_different_bit(int low_bit) const {
   }
   // Look for the next word with anything interesting.
   MaskType skip_next = (_array[w].get_bit(b)) ? MaskType::all_on() : MaskType::all_off();
-  ++w;
-  while (w < num_words && _array[w] == skip_next) {
-    ++w;
+  int w2 = w;
+  ++w2;
+  while (w2 < num_words && _array[w2] == skip_next) {
+    ++w2;
   }
-  if (w >= num_words) {
+  if (w2 >= num_words) {
     return low_bit;
   }
-  if (_array[w].get_bit(0) != _array[w].get_bit(b)) {
-    // The first bit of word w is different.
-    return w * num_bits_per_word;
+  if (_array[w2].get_bit(0) != _array[w].get_bit(b)) {
+    // The first bit of word w2 is different.
+    return w2 * num_bits_per_word;
   }
 
-  b2 = _array[w].get_next_higher_different_bit(0);
-  return w * num_bits_per_word + b2;
+  b2 = _array[w2].get_next_higher_different_bit(0);
+  return w2 * num_bits_per_word + b2;
 }
 
 ////////////////////////////////////////////////////////////////////
