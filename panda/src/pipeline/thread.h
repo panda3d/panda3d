@@ -94,7 +94,7 @@ PUBLISHED:
 public:
   // This class allows integration with PStats, particularly in the
   // SIMPLE_THREADS case.
-  class PStatsCallback {
+  class EXPCL_PANDA PStatsCallback {
   public:
     virtual void deactivate_hook(Thread *thread);
     virtual void activate_hook(Thread *thread);
