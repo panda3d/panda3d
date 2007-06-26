@@ -306,6 +306,90 @@ clear_range(int low_bit, int size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_num_on_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 1 in the
+//               array.  Returns -1 if there are an infinite number of
+//               1 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_num_on_bits() const {
+  if (_highest_bits) {
+    return -1;
+  }
+
+  int result = 0;
+  Array::const_iterator ai;
+  for (ai = _array.begin(); ai != _array.end(); ++ai) {
+    result += (*ai).get_num_on_bits();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_num_off_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 0 in the
+//               array.  Returns -1 if there are an infinite number of
+//               0 bits.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_num_off_bits() const {
+  if (!_highest_bits) {
+    return -1;
+  }
+
+  int result = 0;
+  Array::const_iterator ai;
+  for (ai = _array.begin(); ai != _array.end(); ++ai) {
+    result += (*ai).get_num_off_bits();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitArray::get_next_higher_different_bit
+//       Access: Published
+//  Description: Returns the index of the next bit in the array, above
+//               low_bit, whose value is different that the value of
+//               low_bit.  Returns low_bit again if all bits higher
+//               than low_bit have the same value.
+//
+//               This can be used to quickly iterate through all of
+//               the bits in the array.
+////////////////////////////////////////////////////////////////////
+int BitArray::
+get_next_higher_different_bit(int low_bit) const {
+  int w = low_bit / num_bits_per_word;
+  int b = low_bit % num_bits_per_word;
+  int num_words = get_num_words();
+  if (w >= num_words) {
+    return low_bit;
+  }
+  int b2 = _array[w].get_next_higher_different_bit(b);
+  if (b2 != b) {
+    // The next higher bit is within the same word.
+    return w * num_bits_per_word + b2;
+  }
+  // Look for the next word with anything interesting.
+  MaskType skip_next = (_array[w].get_bit(b)) ? MaskType::all_on() : MaskType::all_off();
+  ++w;
+  while (w < num_words && _array[w] == skip_next) {
+    ++w;
+  }
+  if (w >= num_words) {
+    return low_bit;
+  }
+  if (_array[w].get_bit(0) != _array[w].get_bit(b)) {
+    // The first bit of word w is different.
+    return w * num_bits_per_word;
+  }
+
+  b2 = _array[w].get_next_higher_different_bit(0);
+  return w * num_bits_per_word + b2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitArray::invert_in_place
 //       Access: Published
 //  Description: Inverts all the bits in the BitArray.  This is

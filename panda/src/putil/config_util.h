@@ -61,4 +61,6 @@ extern ConfigVariableDouble max_dt;
 extern ConfigVariableDouble sleep_precision;
 extern ConfigVariableDouble average_frame_rate_interval;
 
+extern EXPCL_PANDA void init_libputil();
+
 #endif /* __CONFIG_UTIL_H__ */

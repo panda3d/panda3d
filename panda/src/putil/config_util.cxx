@@ -85,46 +85,8 @@ ConfigVariableSearchPath sound_path
  PRC_DESC("The directories to search for sound and music files to be loaded."));
 
 ConfigureFn(config_util) {
-  AnimInterface::init_type();
-  BamCacheIndex::init_type();
-  BamCacheRecord::init_type();
-  BamReaderParam::init_type();
-  BitArray::init_type();
-  BitMask32::init_type();
-  BitMask64::init_type();
-  ButtonHandle::init_type();
-  CachedTypedWritableReferenceCount::init_type();
-  ClockObject::init_type();
-  Configurable::init_type();
-  CopyOnWriteObject::init_type();
-  Datagram::init_type();
-  DoubleBitMaskNative::init_type();
-  QuadBitMaskNative::init_type();
-  FactoryParam::init_type();
-  Namable::init_type();
-  NodeCachedReferenceCount::init_type();
-  ReferenceCount::init_type();
-  SparseArray::init_type();
-  TypedObject::init_type();
-  TypedReferenceCount::init_type();
-  TypedWritable::init_type();
-  TypedWritableReferenceCount::init_type();
-  WritableConfigurable::init_type();
-  WritableParam::init_type();
-
-  KeyboardButton::init_keyboard_buttons();
-  MouseButton::init_mouse_buttons();
-
-  DeferredDeletor::register_deletor();
-  NonDeletor::register_deletor();
-  SpamDeletor::register_deletor();
-
-  register_type(BamReader::_remove_flag, "remove");
-
-  BamCacheIndex::register_with_read_factory();
-  BamCacheRecord::register_with_read_factory();
+  init_libputil();
 }
-
 
 // Set this true to enable tracking of ReferenceCount pointer
 // allocation/deallcation via the MemoryUsage object.  This is
@@ -170,3 +132,68 @@ ConfigVariableDouble sleep_precision
 
 ConfigVariableDouble average_frame_rate_interval
 ("average-frame-rate-interval", 1.0);
+
+////////////////////////////////////////////////////////////////////
+//     Function: init_libputil
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libputil() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
+  AnimInterface::init_type();
+  BamCacheIndex::init_type();
+  BamCacheRecord::init_type();
+  BamReaderParam::init_type();
+  BitArray::init_type();
+  BitMask32::init_type();
+  BitMask64::init_type();
+  ButtonHandle::init_type();
+  CachedTypedWritableReferenceCount::init_type();
+  ClockObject::init_type();
+  Configurable::init_type();
+  CopyOnWriteObject::init_type();
+  Datagram::init_type();
+  DoubleBitMaskNative::init_type();
+  QuadBitMaskNative::init_type();
+  FactoryParam::init_type();
+  Namable::init_type();
+  NodeCachedReferenceCount::init_type();
+  ReferenceCount::init_type();
+  SparseArray::init_type();
+  TypedObject::init_type();
+  TypedReferenceCount::init_type();
+  TypedWritable::init_type();
+  TypedWritableReferenceCount::init_type();
+  WritableConfigurable::init_type();
+  WritableParam::init_type();
+
+  KeyboardButton::init_keyboard_buttons();
+  MouseButton::init_mouse_buttons();
+
+  DeferredDeletor::register_deletor();
+  NonDeletor::register_deletor();
+  SpamDeletor::register_deletor();
+
+  register_type(BamReader::_remove_flag, "remove");
+
+  BamCacheIndex::register_with_read_factory();
+  BamCacheRecord::register_with_read_factory();
+
+  // Initialize the num_bits_on table, for BitMask::get_num_on_bits().
+  for (int bit = 0; bit < 16; ++bit) {
+    int w = (1 << bit);
+    for (int i = 0; i < w; ++i) {
+      num_bits_on[i + w] = num_bits_on[i] + 1;
+    }
+  }
+}
+

@@ -55,6 +55,86 @@ SparseArray(const BitArray &from) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_num_on_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 1 in the
+//               array.  Returns -1 if there are an infinite number of
+//               1 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_num_on_bits() const {
+  if (_inverse) {
+    return -1;
+  }
+
+  int result = 0;
+  Subranges::const_iterator si;
+  for (si = _subranges.begin(); si != _subranges.end(); ++si) {
+    result += (*si)._end - (*si)._begin;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_num_off_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 0 in the
+//               array.  Returns -1 if there are an infinite number of
+//               0 bits.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_num_off_bits() const {
+  if (!_inverse) {
+    return -1;
+  }
+
+  int result = 0;
+  Subranges::const_iterator si;
+  for (si = _subranges.begin(); si != _subranges.end(); ++si) {
+    result += (*si)._end - (*si)._begin;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SparseArray::get_next_higher_different_bit
+//       Access: Published
+//  Description: Returns the index of the next bit in the array, above
+//               low_bit, whose value is different that the value of
+//               low_bit.  Returns low_bit again if all bits higher
+//               than low_bit have the same value.
+//
+//               This can be used to quickly iterate through all of
+//               the bits in the array.
+////////////////////////////////////////////////////////////////////
+int SparseArray::
+get_next_higher_different_bit(int low_bit) const {
+  Subrange range(low_bit, low_bit + 1);
+  Subranges::const_iterator si = _subranges.lower_bound(range);
+  if (si == _subranges.end()) {
+    // That was the end of the array.
+    return low_bit;
+  }
+
+  if (low_bit >= (*si)._begin) {
+    return (*si)._end;
+  }
+
+  int next = (*si)._begin;
+
+  if (si != _subranges.begin()) {
+    --si;
+    if (low_bit < (*si)._end) {
+      return (*si)._end;
+    }
+  }
+
+  return next;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SparseArray::has_bits_in_common
 //       Access: Published
 //  Description: Returns true if this SparseArray has any "one" bits in

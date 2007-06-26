@@ -85,6 +85,10 @@ PUBLISHED:
   void clear_range(int low_bit, int size);
   INLINE void set_range_to(bool value, int low_bit, int size);
 
+  int get_num_on_bits() const;
+  int get_num_off_bits() const;
+  int get_next_higher_different_bit(int low_bit) const;
+
   INLINE int get_num_words() const;
   INLINE MaskType get_word(int n) const;
   INLINE void set_word(int n, MaskType value);

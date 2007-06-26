@@ -441,6 +441,73 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_num_on_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 1 in the
+//               mask.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_num_on_bits() const {
+  return count_bits_in_word(_word);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_num_off_bits
+//       Access: Published
+//  Description: Returns the number of bits that are set to 0 in the
+//               mask.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_num_off_bits() const {
+  return count_bits_in_word(~_word);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::get_next_higher_different_bit
+//       Access: Published
+//  Description: Returns the index of the next bit in the mask, above
+//               low_bit, whose value is different that the value of
+//               low_bit.  Returns low_bit again if all bits higher
+//               than low_bit have the same value.
+//
+//               This can be used to quickly iterate through all of
+//               the bits in the mask.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE int BitMask<WType, nbits>::
+get_next_higher_different_bit(int low_bit) const {
+  nassertr(low_bit >= 0 && low_bit < num_bits, low_bit);
+
+  WordType w;
+  if (_word & ((WordType)1 << low_bit)) {
+    // low_bit is 1.  Get the next higher 0 bit.  To do this, invert
+    // the word and the get the next higher 1 bit.
+    w = ~_word;
+  } else {
+    // low_bit is 0.  Get the next higher 1 bit.
+    w = _word;
+  }
+
+  // Shift out all of the low bits.
+  w >>= (low_bit + 1);
+
+  if (w == 0) {
+    // No more bits.
+    return low_bit;
+
+  } else {
+    // Now determine the lowest 1 bit in the remaining word.  This
+    // operation will clear out all bits except for the lowest 1 bit.
+    w = (w & -w);
+    
+    // And the answer is the number of bits in (w - 1).
+    return count_bits_in_word(w - 1) + low_bit + 1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::output
 //       Access: Published
 //  Description: Writes the BitMask out as a binary or a hex number,
@@ -734,3 +801,22 @@ init_type() {
   str << "BitMask" << num_bits;
   register_type(_type_handle, str.str());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: count_bits_in_word
+//  Description: Returns the number of 1 bits in the indicated word.
+////////////////////////////////////////////////////////////////////
+INLINE int
+count_bits_in_word(PN_uint32 x) {
+  return (int)num_bits_on[x & 0xffff] + (int)num_bits_on[(x >> 16) & 0xffff];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: count_bits_in_word
+//  Description: Returns the number of 1 bits in the indicated word.
+////////////////////////////////////////////////////////////////////
+INLINE int
+count_bits_in_word(PN_uint64 x) {
+  return count_bits_in_word((PN_uint32)x) + count_bits_in_word((PN_uint32)(x >> 32));
+}
+

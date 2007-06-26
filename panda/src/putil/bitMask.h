@@ -76,6 +76,10 @@ PUBLISHED:
   INLINE WordType get_word() const;
   INLINE void set_word(WordType value);
 
+  INLINE int get_num_on_bits() const;
+  INLINE int get_num_off_bits() const;
+  INLINE int get_next_higher_different_bit(int low_bit) const;
+
   INLINE void invert_in_place();
   INLINE bool has_bits_in_common(const BitMask<WType, nbits> &other) const;
   INLINE void clear();
@@ -131,6 +135,12 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE int count_bits_in_word(PN_uint32 x);
+INLINE int count_bits_in_word(PN_uint64 x);
+
+// This table precomputes the number of on bits in each 16-bit word.
+extern EXPCL_PANDA unsigned char num_bits_on[65536];
 
 #include "bitMask.I"
 

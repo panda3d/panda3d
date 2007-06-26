@@ -23,3 +23,4 @@
 #pragma implementation
 #endif
 
+unsigned char num_bits_on[65536];

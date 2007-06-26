@@ -83,6 +83,10 @@ PUBLISHED:
   INLINE void clear_range(int low_bit, int size);
   INLINE void set_range_to(bool value, int low_bit, int size);
 
+  int get_num_on_bits() const;
+  int get_num_off_bits() const;
+  int get_next_higher_different_bit(int low_bit) const;
+
   INLINE void invert_in_place();
   bool has_bits_in_common(const SparseArray &other) const;
   INLINE void clear();
