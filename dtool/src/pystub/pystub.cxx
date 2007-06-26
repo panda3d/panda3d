@@ -85,7 +85,10 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyString_FromString(...);
   EXPCL_DTOOLCONFIG int PyString_FromStringAndSize(...);
   EXPCL_DTOOLCONFIG int PyString_Type(...);
+  EXPCL_DTOOLCONFIG int PyThreadState_Clear(...);
+  EXPCL_DTOOLCONFIG int PyThreadState_Delete(...);
   EXPCL_DTOOLCONFIG int PyThreadState_Get(...);
+  EXPCL_DTOOLCONFIG int PyThreadState_New(...);
   EXPCL_DTOOLCONFIG int PyThreadState_Swap(...);
   EXPCL_DTOOLCONFIG int PyTuple_GetItem(...);
   EXPCL_DTOOLCONFIG int PyTuple_New(...);
@@ -178,7 +181,10 @@ int PyString_AsStringAndSize(...) { return 0; }
 int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
 int PyString_Type(...) { return 0; }
+int PyThreadState_Clear(...) { return 0; }
+int PyThreadState_Delete(...) { return 0; }
 int PyThreadState_Get(...) { return 0; }
+int PyThreadState_New(...) { return 0; }
 int PyThreadState_Swap(...) { return 0; }
 int PyTuple_GetItem(...) { return 0; }
 int PyTuple_New(...) { return 0; }
