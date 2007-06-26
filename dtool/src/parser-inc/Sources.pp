@@ -2,7 +2,7 @@
     algorithm deque ft2build.h hash_map hash_set iostream list map memory \
     pair pthread.h queue set stack stdcompare.h stdtypedefs.h \
     string vector windows.h winsock2.h zlib.h files.h hex.h \
-    md5.h evp.h bits/pthreadtypes.h \
+    math.h md5.h evp.h bits/pthreadtypes.h \
     openssl/md5.h openssl/evp.h openssl/rand.h openssl/ssl.h \
     openssl/x509.h openssl/err.h openssl/rsa.h openssl/crypto.h \
     openssl/pem.h \
