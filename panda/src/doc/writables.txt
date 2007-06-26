@@ -1,0 +1,92 @@
+OVERVIEW
+
+The system for writing out objects works as follows.
+
+There are 2 types of managers that control the overall process for
+reading and writing, BamWriter and BamReader.  The initial request to
+write/read an object is made to the manager.  The manager will take
+care of breaking/regenerating circular dependencies, making sure that
+type information is written/read correctly, ensuring shared memory
+references are refelected in or regenerated from the binary media,
+etc...
+
+The overall process goes as follows.
+1) BamWriter needs to be created and given an appropriate DatagramSink for it to send
+   datagrams into.
+2) Request to write an object is made to BamWriter
+3) BamWriter checks to see if that Type of object has been written before or not, if it has then 
+   the index of that type is written, otherwise the index and type name are written.
+4) BamWriter then has the Object write itself into the datagram, and passes a reference to itself
+   to the object.
+5) The object will write all information necessary to regenerate itself into the datagram, with 
+   2 exceptions. 
+	A) Any pointers to other objects needing to be written, are actually written through 
+	   requests to BamWriter.  This ensures that the object being pointed to does get 
+           written to the datagram, and that multiple references do not cause the object
+           to be written multiple times.
+	B) Any PointerToArrays are also written through requests to BamWriter.  This ensures
+           that multiple references to the same PTA are not fully written multiple times and
+	   that the information necessary to regenerate that sharing is written.  There is a
+           an interaction between the object and BamWriter that ensures this that is taken
+	   care of in an #define function called WRITE_PTA defined in BamWriter.h (with the
+           equivalent READ_PTA defined in BamReader.h)
+6) Once the object has completed writing itself, BamWriter will send the datagram to the
+   DatagramSink.
+
+
+Due to BamWriter's ability to handle pointer requests, only one write on the root of any linked
+structure will be necessary if all of the objects are correctly "writable".
+
+For reading the process goes as follows
+1) Create a BamReader with an appropriate DatagramGenerator source.
+2) Requets to read an object from BamReader
+3) BamReader will then read in the type of the object, and check that type against the current
+   dynamic index.
+4) BamReader will then make a call to the TypedWritable factory to generate an object of that
+   type.  Passing a reference to itself and the datagram defining that object as params.
+5) The make method of that type will be called
+6) The make method of that type of object will create a new object and "fillin" in itself from the
+   data in the datagram.
+7) As with Writing any Pointers to objects or PTA's will be filled through requests to BamReader.
+   Pointers will not be completed at this time, as the object may not have been read in.  BamReader
+   will register the requestor and when resolve is called, BamReader will pass all the pointers
+   requested back to the caller through the common interface complete_pointers.
+8) Finally, if the object needs to have any code run only after all pointers have been completed
+   it can register itself with BamReader to be "finalized"
+
+
+CREATING A WRITABLE CLASS
+
+There is a file called template_for_typedWritables.C that has the
+"outline" code necessary to make a class writable that is mostly
+self-explanatory.  A few clarifications are that not all of the
+functions in that file are needed by every class.  The finalize
+function is currently only needed by PartBundles so you probably won't
+need it.  And complete_pointers is only needed if the object
+writes/reads pointers to other objects.  The make functions should
+only be defined in classes that are non-abstract, that are actually
+created and used.
+
+Any class that is writable has one last step besides adding all the
+functionality into it. Every "makeable" class needs to have a call to
+it's register_with_read_factory method put into the config file for
+the package that is is apart of.
+
+For working examples see
+NodeRelation in the package graph
+PartBundle in the package chan
+Geom in the package gobj
+
+For examples of the classes that are not TypedWritable but it is useful for them to write and read
+themselves into/from datagrams see
+LVecBase(2)(3)(4) in the package linmath
+ComputedVerticesMorph in the package char
+
+
+
+
+
+
+
+
+
