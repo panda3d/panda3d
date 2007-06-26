@@ -477,7 +477,7 @@ get_lowest_on_bit() const {
     return -1;
   }
 
-  WordType w = (_word & -_word);
+  WordType w = (_word & (~_word + 1));
   return count_bits_in_word(w - 1);
 }
 
@@ -558,7 +558,7 @@ get_next_higher_different_bit(int low_bit) const {
   } else {
     // Now determine the lowest 1 bit in the remaining word.  This
     // operation will clear out all bits except for the lowest 1 bit.
-    w = (w & -w);
+    w = (w & (~w + 1));
     
     // And the answer is the number of bits in (w - 1).
     return count_bits_in_word(w - 1) + low_bit + 1;
