@@ -51,10 +51,10 @@ class ControlManager:
 
             ist.append(inputState.watchWithModifiers("forward", "w", inputSource=inputState.WASD))
             ist.append(inputState.watchWithModifiers("reverse", "s", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("turnLeft", "q", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("turnRight", "e", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.WASD))
         else:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
