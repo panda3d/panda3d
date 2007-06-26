@@ -21,7 +21,7 @@
 #ifdef HAVE_JPEG
 
 #include "config_pnmimagetypes.h"
-
+#include "thread.h"
 
 //
 // The following bit of code, for setting up jpeg_istream_src(), was
@@ -126,6 +126,7 @@ fill_input_buffer (j_decompress_ptr cinfo)
 
   src->infile->read((char *)src->buffer, INPUT_BUF_SIZE);
   nbytes = src->infile->gcount();
+  Thread::consider_yield();
 
   if (nbytes <= 0) {
     if (src->start_of_file)     /* Treat empty input file as fatal error */

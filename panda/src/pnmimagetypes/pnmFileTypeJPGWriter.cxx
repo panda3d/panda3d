@@ -24,6 +24,7 @@
 
 #include "pnmImage.h"
 #include "pnmWriter.h"
+#include "thread.h"
 
 
 //
@@ -122,6 +123,7 @@ empty_output_buffer (j_compress_ptr cinfo)
 
   dest->pub.next_output_byte = dest->buffer;
   dest->pub.free_in_buffer = OUTPUT_BUF_SIZE;
+  Thread::consider_yield();
 
   return TRUE;
 }
@@ -148,6 +150,7 @@ term_destination (j_compress_ptr cinfo)
       ERREXIT(cinfo, JERR_FILE_WRITE);
   }
   dest->outfile->flush();
+  Thread::consider_yield();
   /* Make sure we wrote the output file OK */
   if (dest->outfile->fail())
     ERREXIT(cinfo, JERR_FILE_WRITE);

@@ -26,6 +26,7 @@
 #include "config_egg.h"
 #include "eggGroupNode.h"
 #include "dcast.h"
+#include "thread.h"
 
 #include <stdlib.h>
 
@@ -325,6 +326,8 @@ do_mesh() {
 
   // Finally, do the longer strips.
   mesh_list(_strips);
+
+  Thread::consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -92,6 +92,7 @@
 #include "transformBlend.h"
 #include "sparseArray.h"
 #include "bitArray.h"
+#include "thread.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -2321,6 +2322,7 @@ make_vertex_data(const EggRenderState *render_state,
     (VertexPoolData::value_type(vpt, vertex_data)).second;
   nassertr(inserted, vertex_data);
 
+  Thread::consider_yield();
   return vertex_data;
 }
 

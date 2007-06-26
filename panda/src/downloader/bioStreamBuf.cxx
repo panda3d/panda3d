@@ -170,6 +170,7 @@ underflow() {
     // BIO_read might return -1 or -2 on eof or error, so we have to
     // allow for negative numbers.
     int read_count = BIO_read(*_source, gptr(), buffer_size);
+    thread_consider_yield();
 
     if (read_count != (int)num_bytes) {
       // Oops, we didn't read what we thought we would.
@@ -239,6 +240,7 @@ write_chars(const char *start, size_t length) {
       downloader_cat.spam()
         << "wrote " << write_count << " bytes.\n";
     }
+    thread_consider_yield();
     while (write_count != (int)(length - wrote_so_far)) {
       if (write_count <= 0) {
         _is_closed = !BIO_should_retry(*_source);
@@ -275,6 +277,7 @@ write_chars(const char *start, size_t length) {
         downloader_cat.spam()
           << "continued, wrote " << write_count << " bytes.\n";
       }
+      thread_consider_yield();
     }
   }
 

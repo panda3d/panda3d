@@ -197,6 +197,28 @@ INLINE void operator delete[](void *ptr) {
 #endif  // REDEFINE_GLOBAL_OPERATOR_NEW
 #endif  // USE_MEMORY_NOWRAPPERS
 
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+// We need another forward-reference function to allow low-level code
+// to cooperatively yield the timeslice, in SIMPLE_THREADS mode.
+extern EXPCL_DTOOL void (*global_thread_yield)();
+extern EXPCL_DTOOL void (*global_thread_consider_yield)();
+
+INLINE void thread_yield() {
+  (*global_thread_yield)();
+}
+INLINE void thread_consider_yield() {
+  (*global_thread_consider_yield)();
+}
+
+#else
+
+INLINE void thread_yield() {
+}
+INLINE void thread_consider_yield() {
+}
+
+#endif  // HAVE_THREADS && SIMPLE_THREADS
+
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 extern EXPCL_DTOOL bool __tau_shutdown;

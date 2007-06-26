@@ -284,6 +284,7 @@ read_file(istream *in, string &result) {
   in->read(buffer, buffer_size);
   size_t count = in->gcount();
   while (count != 0) {
+    thread_consider_yield();
     result_vec.insert(result_vec.end(), buffer, buffer + count);
     in->read(buffer, buffer_size);
     count = in->gcount();
@@ -309,6 +310,7 @@ read_file(istream *in, string &result, size_t max_bytes) {
   in->read(buffer, min(buffer_size, max_bytes));
   size_t count = in->gcount();
   while (count != 0) {
+    thread_consider_yield();
     nassertr(count <= max_bytes, false);
     result_vec.insert(result_vec.end(), buffer, buffer + count);
     max_bytes -= count;

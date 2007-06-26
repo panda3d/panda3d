@@ -93,7 +93,13 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 
 #else
     // Posix case.
-    _fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
+    int flags = O_RDWR | O_CREAT;
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    // In SIMPLE_THREADS mode, we use non-blocking I/O.
+    flags |= O_NONBLOCK;
+#endif
+
+    _fd = open(os_specific.c_str(), flags, 0666);
     if (_fd == -1) {
       // Couldn't open the file: permissions problem or bad directory.
       if (!_filename.exists()) {
@@ -210,11 +216,21 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
       return false;
     }
 
-    ssize_t result = ::write(_fd, data, size);
-    if (result != (ssize_t)size) {
-      gobj_cat.error()
-        << "Error writing " << size << " bytes to save file.  Disk full?\n";
-      return NULL;
+    while (size > 0) {
+      ssize_t result = ::write(_fd, data, size);
+      if (result == -1) {
+        if (errno == EAGAIN) {
+          Thread::force_yield();
+        } else {
+          gobj_cat.error()
+            << "Error writing " << size << " bytes to save file.  Disk full?\n";
+          return NULL;
+        }
+      }
+
+      Thread::consider_yield();
+      data += result;
+      size -= result;
     }
 #endif  // _WIN32
 
@@ -263,11 +279,21 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
       << "Error seeking to position " << block->get_start() << " in save file.\n";
     return false;
   }
-  ssize_t result = read(_fd, data, size);
-  if (result != (ssize_t)size) {
-    gobj_cat.error()
-      << "Error reading " << size << " bytes from save file.\n";
-    return false;
+  while (size > 0) {
+    ssize_t result = read(_fd, data, size);
+    if (result == -1) {
+      if (errno == EAGAIN) {
+        Thread::force_yield();
+      } else {
+        gobj_cat.error()
+          << "Error reading " << size << " bytes from save file.\n";
+        return false;
+      }
+    }
+
+    Thread::consider_yield();
+    data += result;
+    size -= result;
   }
 #endif  // _WIN32
 

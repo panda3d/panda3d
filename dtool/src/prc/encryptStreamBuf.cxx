@@ -186,6 +186,7 @@ open_read(istream *source, bool owns_source, const string &password) {
 
   _read_overflow_buffer = new unsigned char[_read_block_size];
   _in_read_overflow_buffer = 0;
+  thread_consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,6 +301,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   sw.append_data(iv, iv_length);
 
   _write_valid = true;
+  thread_consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,6 +320,7 @@ close_write() {
       unsigned char *write_buffer = (unsigned char *)alloca(_write_block_size);
       int bytes_written = 0;
       EVP_EncryptFinal(&_write_ctx, write_buffer, &bytes_written);
+      thread_consider_yield();
       
       _dest->write((const char *)write_buffer, bytes_written);
       
@@ -463,6 +466,7 @@ read_chars(char *start, size_t length) {
         _read_valid = false;
       }
     }
+    thread_consider_yield();
 
   } while (bytes_read == 0);
 
@@ -504,6 +508,7 @@ write_chars(const char *start, size_t length) {
       prc_cat.error() 
         << "Error encrypting stream.\n";
     }
+    thread_consider_yield();
     _dest->write((const char *)write_buffer, bytes_written);
   }
 }

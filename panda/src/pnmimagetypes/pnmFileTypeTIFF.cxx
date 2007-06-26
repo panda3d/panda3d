@@ -93,6 +93,7 @@ static tsize_t
 istream_read(thandle_t fd, tdata_t buf, tsize_t size) {
   istream *in = (istream *)fd;
   in->read((char *)buf, size);
+  Thread::consider_yield();
   return in->gcount();
 }
 
@@ -100,6 +101,7 @@ static tsize_t
 ostream_write(thandle_t fd, tdata_t buf, tsize_t size) {
   ostream *out = (ostream *)fd;
   out->write((char *)buf, size);
+  Thread::consider_yield();
   return out->fail() ? (tsize_t)0 : size;
 }
 

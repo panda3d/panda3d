@@ -102,7 +102,7 @@ ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
-#ifndef HAVE_THREADS
+#if !defined(HAVE_THREADS) || defined(SIMPLE_THREADS)
 #ifndef NDEBUG
   if (num_threads != 0) {
     net_cat.error()

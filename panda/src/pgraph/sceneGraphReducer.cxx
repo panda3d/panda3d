@@ -25,6 +25,7 @@
 #include "plist.h"
 #include "pmap.h"
 #include "geomNode.h"
+#include "thread.h"
 
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
@@ -771,7 +772,8 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
         r_collect_vertex_data(children.get_child(i), collect_bits, transformer);
     }
   }
-    
+
+  Thread::consider_yield();
   return num_created;
 }
 
@@ -840,6 +842,7 @@ r_unify(PandaNode *node, int max_indices) {
   for (int i = 0; i < num_children; ++i) {
     r_unify(children.get_child(i), max_indices);
   }
+  Thread::consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////

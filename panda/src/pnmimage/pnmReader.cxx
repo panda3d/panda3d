@@ -18,6 +18,7 @@
 
 #include "pnmReader.h"
 #include "virtualFileSystem.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMReader::Destructor
@@ -97,6 +98,7 @@ read_data(xel *array, xelval *alpha) {
     int y;
     for (y = 0; y < _y_size; ++y) {
       if (!read_row(array + y * _x_size, alpha + y * _x_size, _x_size, _y_size)) {
+        Thread::consider_yield();
         return y;
       }
     }
@@ -129,6 +131,7 @@ read_data(xel *array, xelval *alpha) {
       for (int yi = 0; yi < y_reduction; ++yi) {
         // OK, read a row.  This reads the original, full-size row.
         if (!read_row(orig_row_array, orig_row_alpha, _orig_x_size, _orig_y_size)) {
+          Thread::consider_yield();
           return y;
         }
 

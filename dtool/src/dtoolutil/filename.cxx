@@ -1556,6 +1556,7 @@ scan_directory(vector_string &contents) const {
   }
 
   do {
+    thread_consider_yield();
     string filename = find_data.cFileName;
     if (filename != "." && filename != "..") {
       contents.push_back(filename);
@@ -1588,6 +1589,7 @@ scan_directory(vector_string &contents) const {
   struct dirent *d;
   d = readdir(root);
   while (d != (struct dirent *)NULL) {
+    thread_consider_yield();
     if (d->d_name[0] != '.') {
       contents.push_back(d->d_name);
     }

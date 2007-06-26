@@ -61,11 +61,13 @@ ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
-#ifndef HAVE_THREADS
+#if !defined(HAVE_THREADS) || defined(SIMPLE_THREADS)
   // Although this code is written to use thread-locking primitives
   // regardless of the definition of HAVE_THREADS, it is not safe to
   // spawn multiple threads when HAVE_THREADS is not true, since we
-  // might be using a non-thread-safe malloc scheme.
+  // might be using a non-thread-safe malloc scheme.  Also, there is
+  // no point in using threads for this kind of I/O if SIMPLE_THREADS
+  // is defined.
 #ifndef NDEBUG
   if (num_threads != 0) {
     net_cat.error()

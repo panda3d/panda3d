@@ -24,6 +24,7 @@
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "streamReader.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::open
@@ -112,6 +113,7 @@ read_header(string &header, size_t num_bytes) {
   }
 
   header = string(buffer, num_bytes);
+  Thread::consider_yield();
   return true;
 }
 
@@ -172,6 +174,7 @@ get_datagram(Datagram &data) {
 
     data = Datagram(buffer, num_bytes);
   }
+  Thread::consider_yield();
 
   return true;
 }

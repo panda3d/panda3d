@@ -323,6 +323,7 @@ private:
   double _seconds_per_update;
   int _bytes_per_update;
   bool _nonblocking;
+  bool _wanted_nonblocking;
   string _send_extra_headers;
 
   DocumentSpec _document_spec;

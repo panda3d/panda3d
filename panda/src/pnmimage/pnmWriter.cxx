@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmWriter.h"
+#include "thread.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::Destructor
@@ -66,6 +67,7 @@ write_data(xel *array, xelval *alpha) {
   int y;
   for (y = 0; y < _y_size; y++) {
     if (!write_row(array + y * _x_size, alpha + y * _x_size)) {
+      Thread::consider_yield();
       return y;
     }
   }

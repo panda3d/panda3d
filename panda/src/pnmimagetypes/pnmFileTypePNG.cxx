@@ -24,6 +24,7 @@
 
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
+#include "thread.h"
 
 static const char * const extensions_png[] = {
   "png"
@@ -453,6 +454,7 @@ png_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
       << "Didn't read enough bytes.\n";
     // Is there no way to indicate a read failure to libpng?
   }
+  Thread::consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -774,6 +776,7 @@ write_data(xel *array, xelval *alpha_data) {
 
     nassertr(dest <= row + row_byte_length, yi);
     png_write_row(_png, row);
+    Thread::consider_yield();
   }
 
   delete[] row;
@@ -831,7 +834,7 @@ make_png_bit_depth(int bit_depth) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypePNG::Writer::png_write_data
 //       Access: Private, Static
-//  Description: A callback handler that PNG uses to write data from
+//  Description: A callback handler that PNG uses to write data to
 //               the iostream.
 ////////////////////////////////////////////////////////////////////
 void PNMFileTypePNG::Writer::
@@ -848,7 +851,7 @@ png_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypePNG::Writer::png_flush_data
 //       Access: Private, Static
-//  Description: A callback handler that PNG uses to write data from
+//  Description: A callback handler that PNG uses to write data to
 //               the iostream.
 ////////////////////////////////////////////////////////////////////
 void PNMFileTypePNG::Writer::

@@ -148,4 +148,18 @@ void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &
 
 #else
 
-#endif
+#endif  // USE_MEMORY_*
+
+
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+
+static void
+default_thread_yield() {
+}
+static void
+default_thread_consider_yield() {
+}
+void (*global_thread_yield)() = default_thread_yield;
+void (*global_thread_consider_yield)() = default_thread_consider_yield;
+
+#endif  // HAVE_THREADS && SIMPLE_THREADS

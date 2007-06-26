@@ -14,6 +14,7 @@
 #include "indent.h"
 #include "pnotify.h"
 #include "pmutex.h"
+#include "thread.h"
 
 #include <math.h>
 
@@ -188,6 +189,7 @@ input_chars(char *buffer, int &result, int max_size) {
     // End of file or I/O error.
     result = 0;
   }
+  Thread::consider_yield();
 }
 #undef YY_INPUT
 #define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)

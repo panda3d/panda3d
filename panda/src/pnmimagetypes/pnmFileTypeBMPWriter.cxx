@@ -25,6 +25,7 @@
 #include "bmp.h"
 #include "ppmcmap.h"
 #include "pnmbitio.h"
+#include "thread.h"
 
 // Much code in this file is borrowed from Netpbm, specifically ppmtobmp.c.
 /*
@@ -629,6 +630,7 @@ write_data(xel *array, xelval *) {
     BMPEncode(_file, classv, _x_size, _y_size, pixels, colors, cht,
               Red, Green, Blue);
   }
+  Thread::consider_yield();
 
   return _y_size;
 }

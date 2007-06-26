@@ -41,6 +41,11 @@ ThreadSimpleManager() {
   _current_thread = NULL;
   _clock = TrueClock::get_global_ptr();
   _waiting_for_exit = NULL;
+
+  // Install these global pointers so very low-level code (code
+  // defined before the pipeline directory) can yield when necessary.
+  global_thread_yield = &Thread::force_yield;
+  global_thread_consider_yield = &Thread::consider_yield;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +58,9 @@ ThreadSimpleManager() {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 enqueue_ready(ThreadSimpleImpl *thread) {
-  _ready.push_back(thread);
+  // We actually add it to _next_ready, so that we can tell when we
+  // have processed every thread in a given epoch.
+  _next_ready.push_back(thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,9 +360,26 @@ choose_next_context() {
 
   // Choose a new thread to execute.
   while (_ready.empty()) {
-    // No threads are ready.  They must all be sleeping.
-    if (_sleeping.empty()) {
-      // No threads at all!
+    if (!_next_ready.empty()) {
+      // We've finished an epoch.
+      _ready.swap(_next_ready);
+      system_yield();
+
+    } else if (!_sleeping.empty()) {
+      // All threads are sleeping.
+      double wait = _sleeping.front()->_start_time - now;
+      if (wait > 0.0) {
+        if (thread_cat.is_debug()) {
+          thread_cat.debug()
+            << "Sleeping all threads " << wait << " seconds\n";
+        }
+        system_sleep(wait);
+      }
+      now = get_current_time();
+      wake_sleepers(now);
+
+    } else {
+      // No threads are ready!
       if (!_blocked.empty()) {
         thread_cat.error()
           << "Deadlock!  All threads blocked.\n";
@@ -372,24 +396,13 @@ choose_next_context() {
         break;
       }
 
-      // No threads are queued anywhere.  This is kind of an error,
-      // since normally the main thread, at least, should be queued
-      // somewhere.
+      // No threads are queued anywhere.  This is some kind of
+      // internal error, since normally the main thread, at least,
+      // should be queued somewhere.
       thread_cat.error()
         << "All threads disappeared!\n";
       exit(0);
     }
-
-    double wait = _sleeping.front()->_start_time - now;
-    if (wait > 0.0) {
-      if (thread_cat.is_debug()) {
-        thread_cat.debug()
-          << "Sleeping all threads " << wait << " seconds\n";
-      }
-      system_sleep(wait);
-    }
-    now = get_current_time();
-    wake_sleepers(now);
   }
 
   _current_thread = _ready.front();
@@ -450,6 +463,25 @@ system_sleep(double seconds) {
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
+  nanosleep(&rqtp, NULL);
+#endif  // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::system_yield
+//       Access: Private, Static
+//  Description: Calls the appropriate system function to yield
+//               the whole process to any other system processes.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+system_yield() {
+#ifdef WIN32
+  Sleep(0);
+
+#else
+  struct timespec rqtp;
+  rqtp.tv_sec = 0;
+  rqtp.tv_nsec = 0;
   nanosleep(&rqtp, NULL);
 #endif  // WIN32
 }

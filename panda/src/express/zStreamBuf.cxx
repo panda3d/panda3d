@@ -86,6 +86,7 @@ open_read(istream *source, bool owns_source) {
     show_zlib_error("inflateInit", result, _z_source);
     close_read();
   }
+  thread_consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +102,7 @@ close_read() {
     if (result < 0) {
       show_zlib_error("inflateEnd", result, _z_source);
     }
+    thread_consider_yield();
 
     if (_owns_source) {
       delete _source;
@@ -130,6 +132,7 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
     show_zlib_error("deflateInit", result, _z_dest);
     close_write();
   }
+  thread_consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,6 +151,7 @@ close_write() {
     if (result < 0) {
       show_zlib_error("deflateEnd", result, _z_dest);
     }
+    thread_consider_yield();
 
     if (_owns_dest) {
       delete _dest;
@@ -260,6 +264,7 @@ read_chars(char *start, size_t length) {
       _z_source.avail_in = read_count;
     }
     int result = inflate(&_z_source, flush);
+    thread_consider_yield();
     size_t bytes_read = length - _z_source.avail_out;
 
     if (result == Z_STREAM_END) {
@@ -302,6 +307,7 @@ write_chars(const char *start, size_t length, int flush) {
   if (result < 0 && result != Z_BUF_ERROR) {
     show_zlib_error("deflate", result, _z_dest);
   }
+  thread_consider_yield();
 
   while (_z_dest.avail_in != 0) {
     if (_z_dest.avail_out != compress_buffer_size) {
@@ -313,6 +319,7 @@ write_chars(const char *start, size_t length, int flush) {
     if (result < 0) {
       show_zlib_error("deflate", result, _z_dest);
     }
+    thread_consider_yield();
   }
 
   while (_z_dest.avail_out != compress_buffer_size) {
@@ -323,6 +330,7 @@ write_chars(const char *start, size_t length, int flush) {
     if (result < 0 && result != Z_BUF_ERROR) {
       show_zlib_error("deflate", result, _z_dest);
     }
+    thread_consider_yield();
   }
 }
 

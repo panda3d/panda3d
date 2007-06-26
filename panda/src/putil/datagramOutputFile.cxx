@@ -101,6 +101,7 @@ write_header(const string &header) {
   nassertr(!_wrote_first_datagram, false);
 
   _out->write(header.data(), header.size());
+  thread_consider_yield();
   return !_out->fail();
 }
 
@@ -121,6 +122,7 @@ put_datagram(const Datagram &data) {
 
   // Now, write the datagram itself.
   _out->write((const char *)data.get_data(), data.get_length());
+  thread_consider_yield();
 
   return !_out->fail();
 }

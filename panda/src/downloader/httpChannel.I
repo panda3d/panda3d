@@ -666,7 +666,8 @@ send_extra_header(const string &key, const string &value) {
 INLINE bool HTTPChannel::
 get_document(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_get, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -683,7 +684,8 @@ get_document(const DocumentSpec &url) {
 INLINE bool HTTPChannel::
 get_subdocument(const DocumentSpec &url, size_t first_byte, size_t last_byte) {
   begin_request(HTTPEnum::M_get, url, string(), false, first_byte, last_byte);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -699,7 +701,8 @@ get_subdocument(const DocumentSpec &url, size_t first_byte, size_t last_byte) {
 INLINE bool HTTPChannel::
 get_header(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_head, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -712,7 +715,8 @@ get_header(const DocumentSpec &url) {
 INLINE bool HTTPChannel::
 post_form(const DocumentSpec &url, const string &body) {
   begin_request(HTTPEnum::M_post, url, body, false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -725,7 +729,8 @@ post_form(const DocumentSpec &url, const string &body) {
 INLINE bool HTTPChannel::
 put_document(const DocumentSpec &url, const string &body) {
   begin_request(HTTPEnum::M_put, url, body, false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -737,7 +742,8 @@ put_document(const DocumentSpec &url, const string &body) {
 INLINE bool HTTPChannel::
 delete_document(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_delete, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -751,7 +757,8 @@ delete_document(const DocumentSpec &url) {
 INLINE bool HTTPChannel::
 get_trace(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_trace, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 
@@ -770,7 +777,8 @@ get_trace(const DocumentSpec &url) {
 INLINE bool HTTPChannel::
 connect_to(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_connect, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_connection_ready();
 }
 
@@ -784,7 +792,8 @@ connect_to(const DocumentSpec &url) {
 INLINE bool HTTPChannel::
 get_options(const DocumentSpec &url) {
   begin_request(HTTPEnum::M_options, url, string(), false, 0, 0);
-  run();
+  while (run()) {
+  }
   return is_valid();
 }
 

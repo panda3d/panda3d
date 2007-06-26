@@ -756,6 +756,7 @@ read_callback(void *handle, void *buffer, unsigned int size_bytes,
   istream *str = (istream *)handle;
   str->read((char *)buffer, size_bytes);
   (*bytes_read) = str->gcount();
+  thread_consider_yield();
 
   if (str->eof()) {
     if ((*bytes_read) == 0) {

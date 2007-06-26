@@ -58,7 +58,15 @@ HTTPChannel(HTTPClient *client) :
   _seconds_per_update = downloader_frequency;
   _max_updates_per_second = 1.0f / _seconds_per_update;
   _bytes_per_update = int(_max_bytes_per_second * _seconds_per_update);
+  
+  // _nonblocking is true if the socket is actually in non-blocking mode.
   _nonblocking = false;
+
+  // _wanted_nonblocking is true if the user specifically requested
+  // one of the non-blocking interfaces.  It is false if the socket is
+  // only incidentally non-blocking (for instance, because
+  // SIMPLE_THREADS is on).
+  _wanted_nonblocking = false;
 
   _want_ssl = false;
   _proxy_serves_document = false;
@@ -353,11 +361,12 @@ run() {
   }
 
   if (_started_download) {
-    if (_nonblocking && _download_throttle) {
+    if (_wanted_nonblocking && _download_throttle) {
       double now = TrueClock::get_global_ptr()->get_short_time();
       double elapsed = now - _last_run_time;
       if (elapsed < _seconds_per_update) {
         // Come back later.
+        thread_yield();
         return true;
       }
       int num_potential_updates = (int)(elapsed / _seconds_per_update);
@@ -370,16 +379,22 @@ run() {
           << _bytes_requested << "\n";
       }
     }
+
+    bool repeat_later;
     switch (_download_dest) {
     case DD_none:
-      return false;  // We're done.
+      repeat_later = false;  // We're done.
 
     case DD_file:
-      return run_download_to_file();
+      repeat_later = run_download_to_file();
 
     case DD_ram:
-      return run_download_to_ram();
+      repeat_later = run_download_to_ram();
     }
+    if (repeat_later) {
+      thread_yield();
+    }
+    return repeat_later;
   }
 
   if (downloader_cat.is_spam()) {
@@ -399,7 +414,7 @@ run() {
     // reestablish the connection if it has been dropped.
     if (_bio.is_null() && _state != S_try_next_proxy) {
       if (_connect_count > http_max_connect_count) {
-        // Too many connection attempts, just give up.  We should
+        // Too many connection attempts; just give up.  We should
         // never trigger this failsafe, since the code in each
         // individual case has similar logic to prevent more than two
         // consecutive lost connections.
@@ -534,6 +549,7 @@ run() {
       // We've reached our terminal state.
       return reached_done_state();
     }
+    thread_consider_yield();
   } while (!repeat_later || _bio.is_null());
 
   if (downloader_cat.is_spam()) {
@@ -541,6 +557,8 @@ run() {
       << "later run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
+
+  thread_yield();
   return true;
 }
 
@@ -631,7 +649,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
 
   _download_dest = DD_file;
 
-  if (_nonblocking) {
+  if (_wanted_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
     return true;
@@ -643,7 +661,8 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
     return false;
   }
 
-  run();
+  while (run()) {
+  }
   return is_download_complete();
 }
 
@@ -687,7 +706,7 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
   _download_dest = DD_ram;
   _subdocument_resumes = (subdocument_resumes && _first_byte_delivered != 0);
 
-  if (_nonblocking) {
+  if (_wanted_nonblocking) {
     // In nonblocking mode, we can't start the download yet; that will
     // be done later as run() is called.
     return true;
@@ -699,7 +718,8 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
     return false;
   }
 
-  run();
+  while (run()) {
+  }
   return is_download_complete();
 }
 
@@ -2071,7 +2091,7 @@ bool HTTPChannel::
 run_download_to_file() {
   nassertr(_body_stream != (ISocketStream *)NULL, false);
 
-  bool do_throttle = _nonblocking && _download_throttle;
+  bool do_throttle = _wanted_nonblocking && _download_throttle;
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
@@ -2146,7 +2166,7 @@ run_download_to_ram() {
   nassertr(_body_stream != (ISocketStream *)NULL, false);
   nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
 
-  bool do_throttle = _nonblocking && _download_throttle;
+  bool do_throttle = _wanted_nonblocking && _download_throttle;
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
@@ -2211,6 +2231,13 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
               const string &body, bool nonblocking, 
               size_t first_byte, size_t last_byte) {
   reset_for_new_request();
+
+  _wanted_nonblocking = nonblocking;
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  // In the presence of SIMPLE_THREADS, we always use non-blocking
+  // I/O.  We simulate blocking by yielding the thread.
+  nonblocking = true;
+#endif
 
   // Get the set of proxies that are appropriate for this URL.
   _proxies.clear();

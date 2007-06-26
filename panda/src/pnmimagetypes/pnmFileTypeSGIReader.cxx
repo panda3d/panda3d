@@ -484,6 +484,7 @@ read_bytes(istream *ifp,
       readerr(ifp);
       memset(buf+r, 0, n-r);
     }
+    Thread::consider_yield();
 }
 
 

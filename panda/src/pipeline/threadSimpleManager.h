@@ -79,6 +79,7 @@ private:
   void choose_next_context();
   void wake_sleepers(double now);
   static void system_sleep(double seconds);
+  static void system_yield();
   void report_deadlock();
 
   // STL function object to sort the priority queue of sleeping threads.
@@ -98,6 +99,7 @@ private:
 
   // FIFO list of ready threads.
   FifoThreads _ready;
+  FifoThreads _next_ready;
 
   typedef pmap<BlockerSimple *, FifoThreads> Blocked;
   Blocked _blocked;
