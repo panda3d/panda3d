@@ -63,10 +63,13 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 
 #ifdef _WIN32
     // Windows case.
+    DWORD flags = FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_RANDOM_ACCESS;
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    // In SIMPLE_THREADS mode, we use "overlapped" I/O.
+    flags |= FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
+#endif
     _handle = CreateFile(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
-                         0, NULL, CREATE_ALWAYS, 
-                         FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE | FILE_FLAG_RANDOM_ACCESS,
-                         NULL);
+                         0, NULL, CREATE_ALWAYS, flags, NULL);
     if (_handle != INVALID_HANDLE_VALUE) {
       // The file was successfully opened and locked.
       break;
@@ -194,19 +197,23 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     block->set_compressed(compressed);
 
 #ifdef _WIN32
-    if (SetFilePointer(_handle, block->get_start(), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
-      gobj_cat.error()
-        << "Error seeking to position " << block->get_start() << " in save file.\n";
-      return false;
-    }
+    OVERLAPPED overlapped;
+    memset(&overlapped, 0, sizeof(overlapped));
+    overlapped.Offset = block->get_start();
 
+    WriteFile(_handle, data, size, NULL, &overlapped);
     DWORD bytes_written;
-    if (!WriteFile(_handle, data, size, &bytes_written, NULL) ||
-        bytes_written != size) {
-      gobj_cat.error()
-        << "Error writing " << size << " bytes to save file.  Disk full?\n";
-      return NULL;
+    while (!GetOverlappedResult(_handle, &overlapped, &bytes_written, false)) {
+      if (GetLastError() == ERROR_IO_INCOMPLETE) {
+        // Wait for more later.
+        Thread::force_yield();
+      } else {
+        gobj_cat.error()
+          << "Error writing " << size << " bytes to save file.  Disk full?\n";
+        return NULL;
+      }
     }
+    nassertr(bytes_written == size, NULL);
 
 #else
     // Posix case.
@@ -257,20 +264,23 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
   nassertr(size == block->get_size(), false);
 
 #ifdef _WIN32
-  if (SetFilePointer(_handle, block->get_start(), NULL, FILE_BEGIN) == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
-    gobj_cat.error()
-      << "Error seeking to position " << block->get_start() << " in save file.\n";
-    return false;
-  }
+  OVERLAPPED overlapped;
+  memset(&overlapped, 0, sizeof(overlapped));
+  overlapped.Offset = block->get_start();
 
+  ReadFile(_handle, data, size, NULL, &overlapped);
   DWORD bytes_read;
-  if (!ReadFile(_handle, data, size, &bytes_read, NULL) ||
-      bytes_read != size) {
-    gobj_cat.error()
-      << "Error writing " << size << " bytes to save file.  Disk full?\n";
-    delete block;
-    return NULL;
+  while (!GetOverlappedResult(_handle, &overlapped, &bytes_read, false)) {
+    if (GetLastError() == ERROR_IO_INCOMPLETE) {
+      // Wait for more later.
+      Thread::force_yield();
+    } else {
+      gobj_cat.error()
+        << "Error reading " << size << " bytes from save file.\n";
+      return NULL;
+    }
   }
+  nassertr(bytes_read == size, NULL);
   
 #else
   // Posix case.

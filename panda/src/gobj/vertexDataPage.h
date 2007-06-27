@@ -43,7 +43,7 @@ class VertexDataBlock;
 class EXPCL_PANDA VertexDataPage : public SimpleAllocator, public SimpleLruPage {
 public:
   VertexDataPage(size_t book_size);
-  VertexDataPage(VertexDataBook *book, size_t page_size);
+  VertexDataPage(VertexDataBook *book, size_t page_size, size_t block_size);
   ~VertexDataPage();
 
 PUBLISHED:
@@ -104,6 +104,10 @@ private:
   INLINE void set_ram_class(RamClass ram_class);
   static void make_save_file();
 
+  INLINE size_t round_up(size_t page_size) const;
+  unsigned char *alloc_page_data(size_t page_size) const;
+  void free_page_data(unsigned char *page_data, size_t page_size) const;
+
   typedef pdeque<VertexDataPage *> PendingPages;
 
   class PageThread : public Thread {
@@ -129,10 +133,11 @@ private:
   static Mutex _tlock;  // Protects the thread members.
 
   unsigned char *_page_data;
-  size_t _size, _uncompressed_size;
+  size_t _size, _allocated_size, _uncompressed_size;
   RamClass _ram_class;
   PT(VertexDataSaveBlock) _saved_block;
   size_t _book_size;
+  size_t _block_size;
 
   //Mutex _lock;  // Inherited from SimpleAllocator.  Protects above members.
 

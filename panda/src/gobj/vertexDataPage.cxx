@@ -27,6 +27,21 @@
 #include <zlib.h>
 #endif
 
+#ifdef WIN32
+
+// Windows case (VirtualAlloc)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#else
+
+// Posix case (mmap)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+
+#endif
+
 ConfigVariableInt max_resident_vertex_data
 ("max-resident-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
@@ -95,6 +110,7 @@ VertexDataPage(size_t book_size) :
   SimpleAllocator(book_size, _unused_mutex), 
   SimpleLruPage(book_size),
   _book_size(book_size),
+  _block_size(0),
   _book(NULL)
 {
   _page_data = NULL;
@@ -110,14 +126,15 @@ VertexDataPage(size_t book_size) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
-VertexDataPage(VertexDataBook *book, size_t page_size) : 
+VertexDataPage(VertexDataBook *book, size_t page_size, size_t block_size) : 
   SimpleAllocator(page_size, book->_lock), 
   SimpleLruPage(page_size),
   _book_size(page_size),
+  _block_size(block_size),
   _book(book)
 {
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)page_size);
-  _page_data = new unsigned char[page_size];
+  _allocated_size = round_up(page_size);
+  _page_data = alloc_page_data(_allocated_size);
   _size = page_size;
 
   _uncompressed_size = _size;
@@ -146,8 +163,7 @@ VertexDataPage::
   }
 
   if (_page_data != NULL) {
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    delete[] _page_data;
+    free_page_data(_page_data, _allocated_size);
     _size = 0;
   }
 }
@@ -322,7 +338,8 @@ make_resident() {
         << "Expanding page from " << _size
         << " to " << _uncompressed_size << "\n";
     }
-    unsigned char *new_data = new unsigned char[_uncompressed_size];
+    size_t new_allocated_size = round_up(_uncompressed_size);
+    unsigned char *new_data = alloc_page_data(new_allocated_size);
     uLongf dest_len = _uncompressed_size;
     int result = uncompress(new_data, &dest_len, _page_data, _size);
     if (result != Z_OK) {
@@ -332,10 +349,10 @@ make_resident() {
     }
     nassertv(dest_len == _uncompressed_size);
 
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_uncompressed_size - (int)_size);
-    delete[] _page_data;
+    free_page_data(_page_data, _allocated_size);
     _page_data = new_data;
     _size = _uncompressed_size;
+    _allocated_size = new_allocated_size;
 #endif
 
     set_lru_size(_size);
@@ -383,14 +400,15 @@ make_compressed() {
         << "Couldn't compress: zlib error " << result << "\n";
       nassert_raise("zlib error");
     }
-    
-    unsigned char *new_data = new unsigned char[buffer_size];
+
+    size_t new_allocated_size = round_up(buffer_size);
+    unsigned char *new_data = alloc_page_data(new_allocated_size);
     memcpy(new_data, buffer, buffer_size);
 
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)buffer_size - (int)_size);
-    delete[] _page_data;
+    free_page_data(_page_data, _allocated_size);
     _page_data = new_data;
     _size = buffer_size;
+    _allocated_size = new_allocated_size;
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -428,8 +446,7 @@ make_disk() {
       return;
     }
 
-    get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    delete[] _page_data;
+    free_page_data(_page_data, _allocated_size);
     _page_data = NULL;
     _size = 0;
     
@@ -461,7 +478,7 @@ do_save_to_disk() {
 
       bool compressed = (_ram_class == RC_compressed);
       
-      _saved_block = get_save_file()->write_data(_page_data, _size, compressed);
+      _saved_block = get_save_file()->write_data(_page_data, _allocated_size, compressed);
       if (_saved_block == (VertexDataSaveBlock *)NULL) {
         // Can't write it to disk.  Too bad.
         return false;
@@ -500,15 +517,16 @@ do_restore_from_disk() {
         << "Restoring page, " << buffer_size << " bytes, from disk\n";
     }
 
-    unsigned char *new_data = new unsigned char[buffer_size];
-    if (!get_save_file()->read_data(new_data, buffer_size, _saved_block)) {
+    size_t new_allocated_size = round_up(buffer_size);
+    unsigned char *new_data = alloc_page_data(new_allocated_size);
+    if (!get_save_file()->read_data(new_data, new_allocated_size, _saved_block)) {
       nassert_raise("read error");
     }
 
-    get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)buffer_size);
     nassertv(_page_data == (unsigned char *)NULL);
     _page_data = new_data;
     _size = buffer_size;
+    _allocated_size = new_allocated_size;
 
     set_lru_size(_size);
     if (_saved_block->get_compressed()) {
@@ -605,6 +623,46 @@ make_save_file() {
 
   _save_file = new VertexDataSaveFile(vertex_save_file_directory,
                                       vertex_save_file_prefix, max_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::alloc_page_data
+//       Access: Private
+//  Description: Allocates and returns a freshly-allocated buffer of
+//               at least the indicated size for holding vertex data.
+////////////////////////////////////////////////////////////////////
+unsigned char *VertexDataPage::
+alloc_page_data(size_t page_size) const {
+  get_class_type().inc_memory_usage(TypeHandle::MC_array, page_size);
+  
+  unsigned char *buffer;
+#ifdef WIN32
+  // Windows case.
+  buffer = (unsigned char *)VirtualAlloc(NULL, page_size, MEM_COMMIT | MEM_RESERVE,
+                                         PAGE_READWRITE);
+#else
+  // Posix case.
+  buffer = (unsigned char *)mmap(NULL, page_size, PROT_READ | PROT_WRITE, 
+                                 MAP_PRIVATE | MAP_ANON, -1, 0);
+#endif
+
+  return buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::free_page_data
+//       Access: Private
+//  Description: Releases a buffer allocated via alloc_page_data().
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+free_page_data(unsigned char *page_data, size_t page_size) const {
+  get_class_type().dec_memory_usage(TypeHandle::MC_array, page_size);
+
+#ifdef WIN32
+  VirtualFree(page_data, 0, MEM_RELEASE);
+#else  
+  munmap(page_data, page_size);
+#endif
 }
  
 ////////////////////////////////////////////////////////////////////

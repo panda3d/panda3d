@@ -232,6 +232,17 @@ set_ram_class(RamClass rclass) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::round_up
+//       Access: Private
+//  Description: Round page_size up to the next multiple of
+//               _block_size.
+////////////////////////////////////////////////////////////////////
+INLINE size_t VertexDataPage::
+round_up(size_t page_size) const {
+  return ((page_size + _block_size - 1) / _block_size) * _block_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::PageThread::Constructor
 //       Access: Public
 //  Description: 
