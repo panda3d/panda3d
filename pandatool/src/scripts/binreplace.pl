@@ -1,4 +1,4 @@
-#!/bin/perl
+#!perl
 if($#ARGV<2) {
     print "Usage: perl binreplace.pl [-i] [findstr] [replacestr] [filename]\n";
     exit(1);

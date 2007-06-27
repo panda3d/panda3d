@@ -1801,7 +1801,7 @@ Note about a bug-slash-opportunity:
 There's a bug in Text::Wrap, which affects cvs2cl.  This script
 reveals it:
 
-  #!/usr/bin/perl -w
+  #!perl -w
   
   use Text::Wrap;
   

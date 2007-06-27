@@ -1,4 +1,4 @@
-#!/bin/perl -w
+#!perl -w
 use strict;
 #use File::Copy;
 use File::Basename;
