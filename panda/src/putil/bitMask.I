@@ -503,7 +503,7 @@ get_next_higher_different_bit(int low_bit) const {
     return low_bit;
   }
 
-  bool is_on = (_word & ((WordType)1 << low_bit));
+  WordType is_on = (_word & ((WordType)1 << low_bit));
   WordType w;
   if (is_on) {
     // low_bit is 1.  Get the next higher 0 bit.  To do this, invert
