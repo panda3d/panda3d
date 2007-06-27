@@ -89,7 +89,8 @@ PUBLISHED:
   INLINE int compare_to(const OdeWorld &other) const;
 
   void init_surface_table(PN_uint8 num_surfaces);
-  void assign_surface_body(OdeBody& body, int surface);
+  //void assign_surface_body(OdeBody& body, int surface);
+  void add_body_dampening(OdeBody& body, int surface);
   void set_surface_entry(PN_uint8 pos1, PN_uint8 pos2, 
                          dReal mu, 
                          dReal bounce, 
@@ -99,7 +100,7 @@ PUBLISHED:
                          dReal slip,
                          dReal dampen);
   float apply_dampening(float dt, OdeBody& body);
-
+  
   
     
 public: 
@@ -114,8 +115,9 @@ private:
   dWorldID _id;
   sSurfaceParams *_surface_table;
   PN_uint8 _num_surfaces;
-  typedef pmap<dBodyID, sBodyParams> BodySurfaceMap;
-  BodySurfaceMap _body_surface_map;
+  typedef pmap<dBodyID, sBodyParams> BodyDampenMap;
+  BodyDampenMap _body_dampen_map;
+
 
 
 

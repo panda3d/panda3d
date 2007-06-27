@@ -24,9 +24,11 @@ TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
 const int OdeSpace::MAX_CONTACTS = 16; 
 OdeWorld* OdeSpace::_collide_world; 
+OdeSpace* OdeSpace::_collide_space; 
 dJointGroupID OdeSpace::_collide_joint_group; 
 int OdeSpace::contactCount = 0;
 double OdeSpace::contact_data[192];
+int OdeSpace::contact_ids[128];
 
 OdeSpace::
 OdeSpace(dSpaceID id) : 
@@ -94,7 +96,7 @@ write(ostream &out, unsigned int indent) const {
 void OdeSpace::
 set_auto_collide_world(OdeWorld &world)
 {
-    _collide_world = &world;
+    my_world = &world;
 }
 
 void OdeSpace::
@@ -107,6 +109,8 @@ int OdeSpace::
 autoCollide()
 {
     OdeSpace::contactCount = 0;
+    _collide_space = this;
+    _collide_world = my_world;
     dSpaceCollide(_id, this, &autoCallback);
     return OdeSpace::contactCount;
 }
@@ -121,42 +125,41 @@ get_contact_data(int data_index)
     return OdeSpace::contact_data[data_index];
 }
 
-int OdeSpace::
-get_surface_type(OdeSpace * self, dGeomID o1)
-// return the surface of the body if this geom has a body, else use the default surface type
+int OdeSpace:: 
+get_contact_id(int data_index, int first)
+// get the contact data it looks like so [x1,y1,z1,x2,y2,z2... x64,y64,z64]
+// use the return in from autoCollide to determine how much of the data is
+// valid. The data would be more straight forward but the callbacks have to be
+// static.
 {
-  int retval = 0;
-  dBodyID b1 = dGeomGetBody(o1);
-    if (b1) {
-      retval = _collide_world->get_surface_body(b1).surfaceType;
+    if (first == 0)
+    {
+        return OdeSpace::contact_ids[(data_index * 2) + 0];
     }
-    else {
-      retval = OdeGeom::get_default_surface_type(o1);
+    else
+    {
+        return OdeSpace::contact_ids[(data_index * 2) + 1];
     }
-    // odespace_cat.debug() << "for geom " << o1 << " returning surface type " << retval << "\n";
-    return retval;
-    
 }
 
-int autoCallbackCounter = 0;
+
+
 
 void OdeSpace::
 autoCallback(void *data, dGeomID o1, dGeomID o2)
 // uses data stored on the world to resolve collisions so you don't have to use near_callbacks in python
 {
     int i;
+    static int autoCallbackCounter = 0;
     dBodyID b1 = dGeomGetBody(o1);
     dBodyID b2 = dGeomGetBody(o2);
 
     dContact contact[OdeSpace::MAX_CONTACTS];
+        
+    int surface1 = _collide_space->get_surface_type(o1);
+    int surface2 = _collide_space->get_surface_type(o2);
     
-    int surface1 = get_surface_type((OdeSpace*)data, o1);
-    int surface2 = get_surface_type((OdeSpace*)data, o2);
-    
-
-
     sSurfaceParams collide_params;
-    // collide_params = _collide_world->get_surface(_collide_world->get_surface_body(b1).surfaceType,_collide_world->get_surface_body(b2).surfaceType);
     collide_params = _collide_world->get_surface(surface1, surface2);
     
     for (i=0; i < OdeSpace::MAX_CONTACTS; i++)
@@ -184,11 +187,13 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
             dJointID c = dJointCreateContact(_collide_world->get_id(), _collide_joint_group, contact + i);
             dJointAttach(c, b1, b2);
             // this creates contact position data for python. It is useful for debugging only 64 points are stored
-            if(contactCount * 3 < 192)
+            if(contactCount < 64)
             {
                 OdeSpace::contact_data[0 + (OdeSpace::contactCount * 3)] = contact[i].geom.pos[0];
                 OdeSpace::contact_data[1 + (OdeSpace::contactCount * 3)] = contact[i].geom.pos[1];
                 OdeSpace::contact_data[2 + (OdeSpace::contactCount * 3)] = contact[i].geom.pos[2];
+                OdeSpace::contact_ids[0 + (OdeSpace::contactCount * 2)] = _collide_space->get_collide_id(o1);
+                OdeSpace::contact_ids[1 + (OdeSpace::contactCount * 2)] = _collide_space->get_collide_id(o2);
                 OdeSpace::contactCount += 1;
             }
         }
@@ -215,5 +220,91 @@ convert_to_quad_tree_space() const {
   nassertr(_id != 0, OdeQuadTreeSpace((dSpaceID)0));
   nassertr(get_class() == OdeGeom::GC_quad_tree_space, OdeQuadTreeSpace((dSpaceID)0));
   return OdeQuadTreeSpace(_id);
+}
+
+
+void OdeSpace::
+set_surface_type( int surfaceType, dGeomID id){
+  _geom_surface_map[id]= surfaceType;
+}
+
+void OdeSpace::
+set_surface_type(OdeGeom& geom,  int surfaceType){
+  dGeomID id = geom.get_id();
+  set_surface_type(surfaceType, id);
+}
+
+int OdeSpace::
+get_surface_type(dGeomID id)
+{
+  GeomSurfaceMap::iterator iter = _geom_surface_map.find(id);
+  if (iter != _geom_surface_map.end()) {
+    // odespace_cat.debug() << "get_default_surface_type the geomId =" << id <<" surfaceType=" << iter->second << "\n";
+    return iter->second;
+  }
+  // odespace_cat.debug() << "get_default_surface_type not in map, returning 0" ;
+  return 0;
+}
+
+int OdeSpace::
+get_surface_type(OdeGeom& geom){
+  dGeomID id = geom.get_id();
+  return get_surface_type(id);
+}
+
+
+int OdeSpace::
+set_collide_id( int collide_id, dGeomID id){
+  _geom_collide_id_map[id]= collide_id;
+
+  //odespace_cat.debug() << "set_collide_id " << id << " " << _geom_collide_id_map[id] <<"\n";
+    
+/*
+  GeomCollideIdMap::iterator iter2 = _geom_collide_id_map.begin();
+  while (iter2 != _geom_collide_id_map.end()) {
+    odespace_cat.debug() << "set print get_collide_id the geomId =" << iter2->first <<" collide_id=" << iter2->second << "\n";
+    iter2++;    
+  }
+  
+  get_collide_id(id);
+*/
+  return _geom_collide_id_map[id];
+}
+
+int OdeSpace::
+set_collide_id( OdeGeom& geom, int collide_id)
+{
+    dGeomID id = geom.get_id();
+    return set_collide_id(collide_id, id);
+}
+
+int OdeSpace::
+get_collide_id(OdeGeom& geom)
+{
+    dGeomID id = geom.get_id();
+    return get_collide_id(id);
+}
+
+
+int OdeSpace::
+get_collide_id(dGeomID id)
+{
+
+/*
+  GeomCollideIdMap::iterator iter2 = _geom_collide_id_map.begin();
+  while (iter2 != _geom_collide_id_map.end()) {
+    odespace_cat.debug() << "get print get_collide_id the geomId =" << iter2->first <<" collide_id=" << iter2->second << "\n";
+    iter2++;    
+  }
+*/
+  
+  GeomCollideIdMap::iterator iter = _geom_collide_id_map.find(id);
+  if (iter != _geom_collide_id_map.end()) {
+    //odespace_cat.debug() << "get_collide_id the geomId =" << id <<" collide_id=" << iter->second << "\n";
+    return iter->second;
+  }
+
+  //odespace_cat.debug() << "get_collide_id not in map, returning 0 id =" << id << "\n" ;
+  return 0;
 }
 

@@ -78,7 +78,8 @@ PUBLISHED:
   void remove(OdeSpace& space);
   void clean();
   OdeGeom get_geom(int i); // Not INLINE because of forward declaration
-  static int get_surface_type(OdeSpace * self, dGeomID o1);
+  //static int get_surface_type(OdeSpace * self, dGeomID o1);
+  
 
   INLINE OdeSpace get_space() const;
 
@@ -91,19 +92,33 @@ PUBLISHED:
   int autoCollide();
   static void autoCallback(void*, dGeomID, dGeomID);
   static double get_contact_data(int data_index);
+  int get_contact_id(int data_index, int first = 0);
+  int set_collide_id( int collide_id, dGeomID id);
+  int set_collide_id(OdeGeom& geom, int collide_id);
+  void set_surface_type( int surface_type, dGeomID id);
+  void set_surface_type(OdeGeom& geom, int surface_type);
+  int get_surface_type(dGeomID o1);
+  int get_surface_type(OdeGeom& geom);
+  int get_collide_id(dGeomID o1);
+  int get_collide_id(OdeGeom& geom);
+
 
 public: 
   INLINE dSpaceID get_id() const;
   static OdeWorld* _collide_world;
+  static OdeSpace* _collide_space;
   static dJointGroupID _collide_joint_group;
   static int contactCount;
 
   static double contact_data[192]; // 64 times three
+  static int contact_ids[128]; // 64 times two
   
 
 protected:
   dSpaceID _id;
   int _g; // REMOVE ME
+  OdeWorld* my_world;
+
 
 
 public:
@@ -122,6 +137,13 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  typedef pmap<dGeomID, int> GeomSurfaceMap;
+  GeomSurfaceMap _geom_surface_map;
+
+  typedef pmap<dGeomID, int> GeomCollideIdMap;
+  GeomCollideIdMap _geom_collide_id_map;
+
 };
 
 #include "odeSpace.I"

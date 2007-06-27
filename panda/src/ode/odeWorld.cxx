@@ -50,13 +50,22 @@ destroy() {
   dWorldDestroy(_id);
 }
 
+/*
 void OdeWorld:: 
 assign_surface_body(OdeBody& body, int surface)
 {
     // odeworld_cat.debug() << "assign_surface_body body.Id =" << body.get_id() << " surface=" << surface << "\n";
-    _body_surface_map[body.get_id()].surfaceType = surface;
-    _body_surface_map[body.get_id()].dampen = 0.0f;
+    _body_dampen_map[body.get_id()].surfaceType = surface;
+    _body_dampen_map[body.get_id()].dampen = 0.0f;
 }
+*/
+
+void OdeWorld:: 
+add_body_dampening(OdeBody& body, int surface)
+{
+    _body_dampen_map[body.get_id()].dampen = 0.0f;
+}
+
 
 void OdeWorld::
 init_surface_table(PN_uint8 num_surfaces)
@@ -155,32 +164,16 @@ set_surface_entry(  PN_uint8 pos1, PN_uint8 pos2,
 
 
 
-sBodyParams OdeWorld::
-get_surface_body(dBodyID id)
-{
-    
-  BodySurfaceMap::iterator iter = _body_surface_map.find(id);
-  if (iter != _body_surface_map.end()) {
-    // odeworld_cat.debug() << "In map the bodyId =" << id <<" surfaceType=" << iter->second.surfaceType << "\n";
-    return iter->second;
-  }
-  sBodyParams defaultParams;
-  defaultParams.surfaceType = 0;
-  defaultParams.dampen = 0.0f;
-  // odeworld_cat.debug() << "no surface for bodyId=" << id << " returning default 0" << "\n";
-  return defaultParams;
-}
-
 void OdeWorld::
 set_dampen_on_bodies(dBodyID id1, dBodyID id2,dReal damp)
 {
-    if(_body_surface_map[id1].dampen < damp)
+    if(_body_dampen_map[id1].dampen < damp)
     {
-        _body_surface_map[id1].dampen = damp;
+        _body_dampen_map[id1].dampen = damp;
     }
-    if(_body_surface_map[id2].dampen < damp)
+    if(_body_dampen_map[id2].dampen < damp)
     {
-        _body_surface_map[id2].dampen = damp;
+        _body_dampen_map[id2].dampen = damp;
     }
 }
 
@@ -188,11 +181,13 @@ float OdeWorld::
 apply_dampening(float dt, OdeBody& body)
 {
     dBodyID bodyId = body.get_id();
-    dReal damp = _body_surface_map[bodyId].dampen;
+    dReal damp = _body_dampen_map[bodyId].dampen;
     float dampening = 1.00 - (damp * dt);
     body.set_angular_vel(body.get_angular_vel() * dampening);
     body.set_linear_vel(body.get_linear_vel() * dampening);
-    _body_surface_map[bodyId].dampen = 0.0;
+    _body_dampen_map[bodyId].dampen = 0.0;
     return dampening;
     
 }
+
+

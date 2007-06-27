@@ -29,6 +29,7 @@ OdeBody(dBodyID id) :
 OdeBody::
 OdeBody(OdeWorld &world) :
   _id(dBodyCreate(world.get_id())) {
+      world.add_body_dampening(*this, 0);
 }
 
 OdeBody::

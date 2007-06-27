@@ -105,9 +105,14 @@ PUBLISHED:
   INLINE LPoint3f get_offset_position() const;
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
-  int get_default_surface_type() ;
-  void set_default_surface_type( int surfaceType);
-  static int get_default_surface_type(dGeomID id);
+  
+  int get_surface_type() ;
+  int get_collide_id() ;
+  int set_collide_id( int collide_id);
+  void set_surface_type( int surface_type);
+  
+  int test_collide_id( int collide_id);
+
 
   OdeSpace get_space() const;
 
@@ -126,6 +131,8 @@ PUBLISHED:
   OdeSimpleSpace convert_to_simple_space() const;
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
+  
+  
 
 public:
   INLINE dGeomID get_id() const;
@@ -135,9 +142,6 @@ public:
 protected:
   dGeomID _id;
 
-private:
-  typedef pmap<dGeomID, int> GeomSurfaceMap;
-  static GeomSurfaceMap _geom_surface_map;
 
 public:
   static TypeHandle get_class_type() {

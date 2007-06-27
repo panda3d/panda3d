@@ -19,7 +19,8 @@
 #include "config_ode.h"
 #include "odeGeom.h"
 
-OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
+//OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
+//OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;
 TypeHandle OdeGeom::_type_handle;
 
 OdeGeom::
@@ -31,34 +32,56 @@ OdeGeom(dGeomID id) :
 OdeGeom::
 ~OdeGeom() {
   odegeom_cat.debug() << "~" << get_type() << "(" << _id << ")\n";
+  /*  
   GeomSurfaceMap::iterator iter = _geom_surface_map.find(this->get_id());
   if (iter != _geom_surface_map.end()) {
     _geom_surface_map.erase(iter);
   }
-}
-int OdeGeom::
-get_default_surface_type() 
-{
-  return OdeGeom::get_default_surface_type(this->get_id());
+      
+  GeomCollideIdMap::iterator iter2 = _geom_collide_id_map.find(this->get_id());
+  if (iter2 != _geom_collide_id_map.end()) {
+    _geom_collide_id_map.erase(iter2);
+  }
+  */
 }
 
 int OdeGeom::
-get_default_surface_type(dGeomID id)
+get_surface_type() 
 {
-  GeomSurfaceMap::iterator iter = _geom_surface_map.find(id);
-  if (iter != _geom_surface_map.end()) {
-    // odegeom_cat.debug() << "get_default_surface_type the geomId =" << id <<" surfaceType=" << iter->second << "\n";
-    return iter->second;
-  }
-  // odegeom_cat.debug() << "get_default_surface_type not in map, returning 0" ;
-  return 0;
+  return get_space().get_surface_type(this->get_id());
+}
+
+int OdeGeom::
+get_collide_id() 
+{
+  return get_space().get_collide_id(this->get_id());
 }
 
 void OdeGeom::
-set_default_surface_type( int surfaceType){
-  _geom_surface_map[this->get_id()]= surfaceType;
+set_surface_type(int surface_type) 
+{
+    get_space().set_surface_type(surface_type, this->get_id());
 }
 
+int OdeGeom::
+set_collide_id(int collide_id) 
+{
+    return get_space().set_collide_id(collide_id, this->get_id());
+}
+
+
+int OdeGeom::
+test_collide_id(int collide_id) 
+{
+    
+    odegeom_cat.debug() << "test_collide_id start" << "\n";
+    int first = get_space().set_collide_id(collide_id, this->get_id());
+    odegeom_cat.debug() << "returns" << first << "\n";
+    odegeom_cat.debug() << "test_collide_id middle" << "\n";
+    int test = get_space().get_collide_id(this->get_id());
+    odegeom_cat.debug() << "test_collide_id stop" << "\n";
+    return test;
+}
 
 void OdeGeom::
 destroy() {
