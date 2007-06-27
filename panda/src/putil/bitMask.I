@@ -496,10 +496,16 @@ get_highest_off_bit() const {
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_next_higher_different_bit(int low_bit) const {
-  nassertr(low_bit >= 0 && low_bit < num_bits, low_bit);
+  // We are allowed to call this method with low_bit == num_bits,
+  // which is the highest value this method will return.
+  nassertr(low_bit >= 0, low_bit);
+  if (low_bit >= num_bits) {
+    return low_bit;
+  }
 
+  bool is_on = (_word & ((WordType)1 << low_bit));
   WordType w;
-  if (_word & ((WordType)1 << low_bit)) {
+  if (is_on) {
     // low_bit is 1.  Get the next higher 0 bit.  To do this, invert
     // the word and the get the next higher 1 bit.
     w = ~_word;
@@ -508,20 +514,25 @@ get_next_higher_different_bit(int low_bit) const {
     w = _word;
   }
 
-  // Shift out all of the low bits.
-  w >>= (low_bit + 1);
+  // Mask out all of the bits below low_bit.  Since we already know
+  // that low_bit is 0, we can use (1 << low_bit) instead of (1 <<
+  // (low_bit + 1)), which becomes undefined when (low_bit + 1) == 32.
+  w &= ~((1 << low_bit) - 1);
 
   if (w == 0) {
-    // No more bits.
-    return low_bit;
+    // All higher bits in the word have the same value.  Since every
+    // bit after the topmost bit is 0, we either return the topmost
+    // bit + 1 to indicate the next 0 bit, or low_bit to indicate we
+    // have reached the end of the number of bits.
+    return is_on ? num_bits : low_bit;
 
   } else {
     // Now determine the lowest 1 bit in the remaining word.  This
     // operation will clear out all bits except for the lowest 1 bit.
     w = (w & (~w + 1));
-    
+
     // And the answer is the number of bits in (w - 1).
-    return count_bits_in_word(w - 1) + low_bit + 1;
+    return count_bits_in_word(w - 1);
   }
 }
 
