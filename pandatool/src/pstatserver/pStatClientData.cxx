@@ -392,7 +392,7 @@ record_new_frame(int thread_index, int frame_number,
 void PStatClientData::
 slot_collector(int collector_index) {
   // A sanity check on the index number.
-  nassertv(collector_index < 10000);
+  nassertv(collector_index < 100000);
 
   while ((int)_collectors.size() <= collector_index) {
     Collector collector;
