@@ -85,8 +85,8 @@ class Task:
         self.id = Task.count
         Task.count += 1
         self.__call__ = callback
-        self.__priority = priority
-        self.__removed = 0
+        self._priority = priority
+        self._removed = 0
         self.dt = 0.0
         if TaskManager.taskTimerVerbose:
             self.avgDt = 0.0
@@ -124,21 +124,21 @@ class Task:
 #         return self.id
 
     def remove(self):
-        if not self.__removed:
-            self.__removed = 1
+        if not self._removed:
+            self._removed = 1
             # Remove any refs to real objects
             # In case we hang around the doLaterList for a while
             del self.__call__
             del self.extraArgs
 
     def isRemoved(self):
-        return self.__removed
+        return self._removed
 
     def getPriority(self):
-        return self.__priority
+        return self._priority
 
     def setPriority(self, pri):
-        self.__priority = pri
+        self._priority = pri
 
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
@@ -149,8 +149,17 @@ class Task:
         self.time = currentTime - self.starttime
         self.frame = currentFrame - self.startframe
 
-    def setupPStats(self, name):
-        if __debug__ and TaskManager.taskTimerVerbose:
+    def setupPStats(self):
+        if __debug__ and TaskManager.taskTimerVerbose and not self.pstats:
+            # Get the PStats name for the task.  By convention,
+            # this is everything until the first hyphen; the part
+            # of the task name following the hyphen is generally
+            # used to differentiate particular tasks that do the
+            # same thing to different objects.
+            name = self.name
+            hyphen = name.find('-')
+            if hyphen >= 0:
+                name = name[0:hyphen]
             self.pstats = PStatCollector("App:Show code:" + name)
 
     def finishTask(self, verbose):
@@ -289,10 +298,10 @@ def make_loop(taskList):
 
 class TaskPriorityList(list):
     def __init__(self, priority):
-        self.__priority = priority
+        self._priority = priority
         self.__emptyIndex = 0
     def getPriority(self):
-        return self.__priority
+        return self._priority
     def add(self, task):
         if (self.__emptyIndex >= len(self)):
             self.append(task)
@@ -402,7 +411,7 @@ class TaskManager:
         # If we found some, see if any of them are still active (not removed)
         if tasks:
             for task in tasks:
-                if not task.isRemoved():
+                if not task._removed:
                     return 1
         # Didnt find any, return 0
         return 0
@@ -413,7 +422,7 @@ class TaskManager:
         tasks = self.nameDict.get(taskName, [])
         # Filter out the tasks that have been removed
         if tasks:
-            tasks = filter(lambda task: not task.isRemoved(), tasks)
+            tasks = filter(lambda task: not task._removed, tasks)
         return tasks
 
     def __doLaterFilter(self):
@@ -421,8 +430,7 @@ class TaskManager:
         # sweep garbage collector. Returns the number of tasks that have
         # been removed Warning: this creates an entirely new doLaterList.
         oldLen = len(self.__doLaterList)
-        self.__doLaterList = filter(
-            lambda task: not task.isRemoved(), self.__doLaterList)
+        self.__doLaterList = filter(lambda task: not task._removed, self.__doLaterList)
         # Re heapify to maintain ordering after filter
         heapify(self.__doLaterList)
         newLen = len(self.__doLaterList)
@@ -443,7 +451,7 @@ class TaskManager:
         while self.__doLaterList:
             # Check the first one on the list to see if it is ready
             dl = self.__doLaterList[0]
-            if dl.isRemoved():
+            if dl._removed:
                 # Get rid of this task forever
                 heappop(self.__doLaterList)
                 continue
@@ -460,12 +468,12 @@ class TaskManager:
                 dl.setStartTimeFrame(self.currentTime, self.currentFrame)
                 self.__addPendingTask(dl)
                 continue
+            
         # Every nth pass, let's clean out the list of removed tasks
         # This is basically a mark and sweep garbage collection of doLaters
         if ((task.frame % self.doLaterCleanupCounter) == 0):
             numRemoved = self.__doLaterFilter()
-            # TaskManager.notify.debug(
-            #    "filtered %s removed doLaters" % numRemoved)
+            # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
         return cont
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
@@ -553,7 +561,7 @@ class TaskManager:
 
     def __addPendingTask(self, task):
         # TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
-        pri = task.getPriority()
+        pri = task._priority
         taskPriList = self.pendingTaskDict.get(pri)
         if not taskPriList:
             taskPriList = TaskPriorityList(pri)
@@ -564,7 +572,7 @@ class TaskManager:
         # The taskList is really an ordered list of TaskPriorityLists
         # search back from the end of the list until we find a
         # taskList with a lower priority, or we hit the start of the list
-        taskPriority = task.getPriority()
+        taskPriority = task._priority
         index = len(self.taskList) - 1
         while (1):
             if (index < 0):
@@ -573,7 +581,7 @@ class TaskManager:
                 # Add the new list to the beginning of the taskList
                 self.taskList.insert(0, newList)
                 break
-            taskListPriority = self.taskList[index].getPriority()
+            taskListPriority = self.taskList[index]._priority
             if (taskListPriority == taskPriority):
                 self.taskList[index].add(task)
                 break
@@ -593,17 +601,8 @@ class TaskManager:
                 break
 
         if __debug__:
-            if self.pStatsTasks and task.name != "igLoop":
-                # Get the PStats name for the task.  By convention,
-                # this is everything until the first hyphen; the part
-                # of the task name following the hyphen is generally
-                # used to differentiate particular tasks that do the
-                # same thing to different objects.
-                name = task.name
-                hyphen = name.find('-')
-                if hyphen >= 0:
-                    name = name[0:hyphen]
-                task.setupPStats(name)
+            if self.pStatsTasks and task.name != "igLoop":                
+                task.setupPStats()
         if self.fVerbose:
             # Alert the world, a new task is born!
             messenger.send(
@@ -728,7 +727,7 @@ class TaskManager:
         it wants the task to execute again after the same or a modified
         delay (set 'delayTime' on the task object to change the delay)
         """
-        if (not task.isRemoved()):
+        if (not task._removed):
             # be sure to ask the globalClock for the current frame time
             # rather than use a cached value; globalClock's frame time may
             # have been synced since the start of this frame
@@ -751,7 +750,7 @@ class TaskManager:
             if task is None:
                 break
             # See if this task has been removed in show code
-            if task.isRemoved():
+            if task._removed:
                 # assert TaskManager.notify.debug(
                 #    '__stepThroughList: task is flagged for removal %s' % (task))
                 # If it was removed in show code, it will need finishTask run
@@ -776,7 +775,7 @@ class TaskManager:
                 # assert TaskManager.notify.debug(
                 #    '__stepThroughList: task is finished %s' % (task))
                 # Remove the task
-                if not task.isRemoved():
+                if not task._removed:
                     # assert TaskManager.notify.debug(
                     #    '__stepThroughList: task not removed %s' % (task))
                     task.remove()
@@ -804,7 +803,7 @@ class TaskManager:
         # we were when we iterated
         for taskList in self.pendingTaskDict.values():
             for task in taskList:
-                if (task and not task.isRemoved()):
+                if (task and not task._removed):
                     # assert TaskManager.notify.debug(
                     #    'step: moving %s from pending to taskList' % (task.name))
                     self.__addNewTask(task)
@@ -856,7 +855,7 @@ class TaskManager:
         priIndex = 0
         while priIndex < len(self.taskList):
             taskPriList = self.taskList[priIndex]
-            pri = taskPriList.getPriority()
+            pri = taskPriList._priority
             # assert TaskManager.notify.debug(
             #    'step: running through taskList at pri: %s, priIndex: %s' %
             #    (pri, priIndex))
@@ -872,7 +871,7 @@ class TaskManager:
                 self.__stepThroughList(pendingTasks)
                 # Add these to the real taskList
                 for task in pendingTasks:
-                    if (task and not task.isRemoved()):
+                    if (task and not task._removed):
                         # assert TaskManager.notify.debug('step: moving %s from pending to taskList' % (task.name))
                         self.__addNewTask(task)
                 # See if we generated any more for this pri level
@@ -954,7 +953,7 @@ class TaskManager:
         self.running = 0
 
     def __tryReplaceTaskMethod(self, task, oldMethod, newFunction):
-        if (task is None) or task.isRemoved():
+        if (task is None) or task._removed:
             return 0
         method = task.__call__
         if (type(method) == types.MethodType):
@@ -1009,11 +1008,11 @@ class TaskManager:
         str += '-------------------------------------------------------------------------\n'
         dtfmt = '%%%d.2f' % (dtWidth)
         for taskPriList in self.taskList:
-            priority = `taskPriList.getPriority()`
+            priority = `taskPriList._priority`
             for task in taskPriList:
                 if task is None:
                     break
-                if task.isRemoved():
+                if task._removed:
                     taskName = '(R)' + task.name
                 else:
                     taskName = task.name
@@ -1038,7 +1037,7 @@ class TaskManager:
         str += '-------------------------------------------------------------------------\n'
         for pri, taskList in self.pendingTaskDict.items():
             for task in taskList:
-                if task.isRemoved():
+                if task._removed:
                     taskName = '(PR)' + task.name
                 else:
                     taskName = '(P)' + task.name
@@ -1074,7 +1073,7 @@ class TaskManager:
         sortedDoLaterList.reverse()
         for task in sortedDoLaterList:
             remainingTime = ((task.wakeTime) - self.currentTime)
-            if task.isRemoved():
+            if task._removed:
                 taskName = '(R)' + task.name
             else:
                 taskName = task.name
@@ -1143,11 +1142,11 @@ class TaskManager:
             'priority'.rjust(priorityWidth),))
         i += 1
         for taskPriList in self.taskList:
-            priority = `taskPriList.getPriority()`
+            priority = `taskPriList._priority`
             for task in taskPriList:
                 if task is None:
                     break
-                if task.isRemoved():
+                if task._removed:
                     taskName = '(R)' + task.name
                 else:
                     taskName = task.name
