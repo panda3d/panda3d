@@ -256,7 +256,12 @@ class DirectManipulationControl(DirectObject):
         if self.constraint:
             type = self.constraint[2:]
             if type == 'post' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
-                self.xlate1D(state)
+                # [gjeon] to enable non-uniform scaling
+                if base.direct.fControl and not self.currEditTypes & EDIT_TYPE_UNSCALABLE:
+                    self.fScaling = 1
+                    self.scale1D(state)
+                else:
+                    self.xlate1D(state)
             elif type == 'disc' and not self.currEditTypes & EDIT_TYPE_UNMOVABLE:
                 self.xlate2D(state)
             elif type == 'ring' and not self.currEditTypes & EDIT_TYPE_UNROTATABLE:
@@ -490,6 +495,31 @@ class DirectManipulationControl(DirectObject):
         state.lastAngle = angle
         # Mouse motion edge to edge of display region results in one full turn
         relHpr(base.direct.widget, base.direct.camera, 0, 0, -deltaAngle)
+
+    def scale1D(self, state):
+        # [gjeon] Constrained 1D scale of the selected node based upon up down mouse motion
+        if self.fScaleInit:
+            self.fScaleInit = 0
+            self.initScaleMag = Vec3(self.objectHandles.getAxisIntersectPt(self.constraint[:1])).length()
+            # record initial scale
+            self.initScale = base.direct.widget.getScale()
+        # Reset fHitInitFlag
+        self.fHitInit = 1
+
+        # Scale factor is ratio current mag with init mag
+        if self.constraint[:1] == 'x':
+            currScale = Vec3(self.initScale.getX() * 
+                             self.objectHandles.getAxisIntersectPt('x').length() / self.initScaleMag,
+                             self.initScale.getY(), self.initScale.getZ())
+        elif self.constraint[:1] == 'y':
+            currScale = Vec3(self.initScale.getX(),
+                             self.initScale.getY() * self.objectHandles.getAxisIntersectPt('y').length() / self.initScaleMag,
+                             self.initScale.getZ())
+        elif self.constraint[:1] == 'z':
+            currScale = Vec3(self.initScale.getX(), self.initScale.getY(),
+                             self.initScale.getZ() * self.objectHandles.getAxisIntersectPt('z').length() / self.initScaleMag)
+        
+        base.direct.widget.setScale(currScale)
 
     def scale3D(self, state):
         # Scale the selected node based upon up down mouse motion
