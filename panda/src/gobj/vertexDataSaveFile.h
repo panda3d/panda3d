@@ -44,11 +44,13 @@ public:
                      size_t max_size);
   ~VertexDataSaveFile();
 
+PUBLISHED:
   INLINE bool is_valid() const;
 
   INLINE size_t get_total_file_size() const;
   INLINE size_t get_used_file_size() const;
-  
+
+public:  
   PT(VertexDataSaveBlock) write_data(const unsigned char *data, size_t size,
                                      bool compressed);
   bool read_data(unsigned char *data, size_t size,

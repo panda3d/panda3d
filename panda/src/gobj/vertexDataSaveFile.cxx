@@ -194,6 +194,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
 
   PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::do_alloc(size);
   if (block != (VertexDataSaveBlock *)NULL) {
+    _total_file_size = max(_total_file_size, block->get_start() + size);
     block->set_compressed(compressed);
 
 #ifdef _WIN32
@@ -240,8 +241,6 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
       size -= result;
     }
 #endif  // _WIN32
-
-    _total_file_size = max(_total_file_size, block->get_start() + size);
   }
 
   return block;
