@@ -908,8 +908,12 @@ reset() {
   GLint max_elements_vertices, max_elements_indices;
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
-  _max_vertices_per_array = max_elements_vertices;
-  _max_vertices_per_primitive = max_elements_indices;
+  if (max_elements_vertices > 0) {
+    _max_vertices_per_array = max_elements_vertices;
+  }
+  if (max_elements_indices > 0) {
+    _max_vertices_per_primitive = max_elements_indices;
+  }
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
