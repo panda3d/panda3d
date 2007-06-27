@@ -506,6 +506,10 @@ class DirectManipulationControl(DirectObject):
         # Reset fHitInitFlag
         self.fHitInit = 1
 
+        # reset the scale of the scaling widget so the calls to
+        # getAxisIntersectPt calculate the correct distance
+        base.direct.widget.setScale(1,1,1)
+
         # Scale factor is ratio current mag with init mag
         if self.constraint[:1] == 'x':
             currScale = Vec3(self.initScale.getX() * 
@@ -518,7 +522,7 @@ class DirectManipulationControl(DirectObject):
         elif self.constraint[:1] == 'z':
             currScale = Vec3(self.initScale.getX(), self.initScale.getY(),
                              self.initScale.getZ() * self.objectHandles.getAxisIntersectPt('z').length() / self.initScaleMag)
-        
+
         base.direct.widget.setScale(currScale)
 
     def scale3D(self, state):
