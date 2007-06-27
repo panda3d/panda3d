@@ -1397,35 +1397,40 @@ handle_include_directive(const string &args, int first_line,
 
     found_file = false;
 
+    // Search the current directory.
     if (!angle_quotes && !found_file && filename.exists()) {
       found_file = true;
       source = CPPFile::S_local;
     }
-      
+    
+    // Search the same directory as the includer.
     if (!angle_quotes && !found_file) {
-      DSearchPath local_search_path(Filename(get_file()._filename.get_dirname()));
-      
-      // Now look for it in the same directory as the includer.
-      if (!found_file && filename.resolve_filename(local_search_path)) {
+      Filename match(get_file()._filename.get_dirname(), filename);
+      if (match.exists()) {
+        filename = match;
         found_file = true;
         source = CPPFile::S_alternate;
       }
     }
 
-    // Now look for it on the primary include path.  We have to search
-    // this path, even if the file was named with angle quotes, so
-    // that we will search parser-inc before the system path.
-    if (!found_file && filename.resolve_filename(_include_path)) {
-      found_file = true;
-      source = CPPFile::S_alternate;
-    }
-
-    // Now look for it on the system include path.
-    if (!found_file && filename.resolve_filename(_system_include_path)) {
+    // Now search the angle-include-path
+    if (angle_quotes && !found_file && filename.resolve_filename(_angle_include_path)) {
       found_file = true;
       source = CPPFile::S_system;
     }
 
+    // Now search the quote-include-path
+    if (!angle_quotes && !found_file) {
+      for (int dir=0; dir<_quote_include_path.get_num_directories(); dir++) {
+        Filename match(_quote_include_path.get_directory(dir), filename);
+        if (match.exists()) {
+          filename = match;
+          found_file = true;
+          source = _quote_include_kind[dir];
+        }
+      }
+    }
+    
     if (!found_file) {
       warning("Cannot find " + filename.get_fullpath(),
               first_line, first_col, first_file);

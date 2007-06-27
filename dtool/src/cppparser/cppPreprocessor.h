@@ -75,9 +75,10 @@ public:
   typedef map<string, CPPManifest *> Manifests;
   Manifests _manifests;
 
-  DSearchPath _include_path;
-  DSearchPath _system_include_path;
-
+  pvector<CPPFile::Source> _quote_include_kind;
+  DSearchPath              _quote_include_path;
+  DSearchPath              _angle_include_path;
+  
   CPPComments _comments;
 
   typedef set<CPPFile> ParsedFiles;

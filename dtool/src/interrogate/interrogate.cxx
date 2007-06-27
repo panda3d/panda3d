@@ -327,13 +327,16 @@ main(int argc, char *argv[]) {
     case 'I':
       fn = Filename::from_os_specific(optarg);
       fn.make_absolute();
-      parser._include_path.append_directory(fn);
+      parser._quote_include_path.append_directory(fn);
+      parser._quote_include_kind.push_back(CPPFile::S_alternate);
       break;
 
     case 'S':
       fn = Filename::from_os_specific(optarg);
       fn.make_absolute();
-      parser._system_include_path.append_directory(fn);
+      parser._angle_include_path.append_directory(fn);
+      parser._quote_include_path.append_directory(fn);
+      parser._quote_include_kind.push_back(CPPFile::S_system);
       break;
 
     case 'D':

@@ -217,11 +217,14 @@ main(int argc, char *argv[]) {
   while (flag != EOF) {
     switch (flag) {
     case 'I':
-      parser._include_path.append_directory(optarg);
+      parser._quote_include_path.append_directory(optarg);
+      parser._quote_include_kind.push_back(CPPFile::S_alternate);
       break;
 
     case 'S':
-      parser._system_include_path.append_directory(optarg);
+      parser._angle_include_path.append_directory(optarg);
+      parser._quote_include_path.append_directory(optarg);
+      parser._quote_include_kind.push_back(CPPFile::S_system);
       break;
 
     case 'D':
