@@ -149,6 +149,9 @@ PUBLISHED:
   INLINE void set_directional_velocity(bool flag); 
   INLINE bool get_directional_velocity(); 
 
+  INLINE void set_default_to_standing_still(bool flag); 
+  INLINE bool get_default_to_standing_still(); 
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 
@@ -217,6 +220,7 @@ private:
   double _expected_broadcast_period;
   double _reset_velocity_age;
   bool _directional_velocity;
+  bool _default_to_standing_still;
 };
 
 #include "smoothMover.I"

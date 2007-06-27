@@ -61,6 +61,7 @@ SmoothMover() {
   _delay = 0.2;
   _accept_clock_skew = true;
   _directional_velocity = true;
+  _default_to_standing_still = true;
   _max_position_age = 0.25;
   _expected_broadcast_period = 0.2;
   _reset_velocity_age = 0.3;
@@ -413,7 +414,7 @@ compute_smooth_position(double timestamp) {
       // The points are different, so we have to do some work.
       double age = (point_a._timestamp - point_b._timestamp);
     
-      if (age > _max_position_age) {
+      if (_default_to_standing_still && (age > _max_position_age)) {
         // If the first point is too old, assume there were a lot of
         // implicit standing still messages that weren't sent.  Insert a new
         // sample point to reflect this.

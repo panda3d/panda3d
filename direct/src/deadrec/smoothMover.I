@@ -694,6 +694,32 @@ get_directional_velocity() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_default_to_standing_still
+//       Access: Published, Static
+//  Description: Sets the flag that indicates whether to assume that
+//               the node stopped moving during periods when we don't
+//               get enough position updates. If true, the object will
+//               stand still momentarily. If false, the object will
+//               continuously lerp between the position updates that
+//               we did get.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_default_to_standing_still(bool flag) {
+  _default_to_standing_still = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_default_to_standing_still
+//       Access: Published, Static
+//  Description: Returns the current state of the 'default to standing
+//               still' flag.  See set_default_to_standing_still().
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+get_default_to_standing_still() {
+  return _default_to_standing_still;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_avg_timestamp_delay
 //       Access: Private
 //  Description: Returns the average delay observed in the last n
