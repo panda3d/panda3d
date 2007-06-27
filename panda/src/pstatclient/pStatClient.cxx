@@ -1061,7 +1061,10 @@ deactivate_hook(Thread *thread) {
     int on_bit = ithread->_active_collectors.get_lowest_on_bit();
     while (off_bit != on_bit) {
       off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
-      nassertv(off_bit != on_bit);
+      nassertd(off_bit != on_bit) {
+        cerr << "Oops! off_bit = " << off_bit
+             << ", collectors = " << ithread->_active_collectors << "\n";
+      }
       while (on_bit < off_bit) {
         // Here's an active collector.  Record a data point indicating
         // it stops here.
@@ -1098,7 +1101,10 @@ activate_hook(Thread *thread) {
     int on_bit = ithread->_active_collectors.get_lowest_on_bit();
     while (off_bit != on_bit) {
       off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
-      nassertv(off_bit != on_bit);
+      nassertd(off_bit != on_bit) {
+        cerr << "Oops! off_bit = " << off_bit
+             << ", collectors = " << ithread->_active_collectors << "\n";
+      }
       while (on_bit < off_bit) {
         // Here's an active collector.  Record a data point indicating
         // it resumes here.
