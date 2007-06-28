@@ -732,12 +732,11 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 
 // Caution!  interrogate_ipath might be redefined in the
 // Global.platform.pp file.
-#defer interrogate_ipath $[install_parser_inc_dir:%=-I%] $[target_ipath:%=-I%]
-#defer interrogate_spath -S/usr/include
+#defer interrogate_ipath -S/usr/include $[install_parser_inc_dir:%=-S%] $[target_ipath:%=-I%]
 
 #defer interrogate_options \
     -DCPPPARSER -D__STDC__=1 -D__cplusplus $[SYSTEM_IGATE_FLAGS] \
-    $[interrogate_spath] $[interrogate_ipath] \
+    $[interrogate_ipath] \
     $[CDEFINES_OPT$[OPTIMIZE]:%=-D%] \
     $[filter -D%,$[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \

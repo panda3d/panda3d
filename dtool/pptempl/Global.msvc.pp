@@ -129,8 +129,7 @@
 // Additional compiler flags.
 #defer extra_cflags /EHsc /Zm500 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-#defer interrogate_ipath $[decygwin %,-I"%",$[install_parser_inc_dir]] $[decygwin %,-I"%",$[target_ipath]]
-#defer interrogate_spath 
+#defer interrogate_ipath $[decygwin %,-S"%",$[install_parser_inc_dir]] $[decygwin %,-I"%",$[target_ipath]]
 
 #defer DECYGWINED_INC_PATHLIST_ARGS $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath] $[WIN32_PLATFORMSDK_INCPATH]]
 #defer MAIN_C_COMPILE_ARGS /nologo /c $[DECYGWINED_INC_PATHLIST_ARGS] $[flags] $[extra_cflags] "$[osfilename $[source]]"

@@ -119,8 +119,7 @@
  $[if $[ne $[DONT_USE_PANDA_DLL_NAMING],], $[dll_basename], lib$[dll_basename]$[dllext]]
 #end get_dllname
 
-#defer interrogate_ipath $[decygwin %,-I"%",$[install_parser_inc_dir]] $[decygwin %,-I"%",$[target_ipath]]
-#defer interrogate_spath 
+#defer interrogate_ipath $[decygwin %,-S"%",$[install_parser_inc_dir]] $[decygwin %,-I"%",$[target_ipath]]
 
 // '#defer extra_cflags $[extra_cflags] /STUFF' will never work because extra_cflags hasnt been
 // defined yet, so this just evaluates the reference to null and removes the reference and the

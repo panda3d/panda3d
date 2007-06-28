@@ -14,5 +14,7 @@
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
     rtsp.h rtspcodes.h setjmp.h winsock2.h \
     ode/config.h ode/common.h collision_trimesh.h  \
-    netinet/tcp.h netinet/ip.h
+    netinet/tcp.h netinet/ip.h \
+    rfftw.h
+
 
