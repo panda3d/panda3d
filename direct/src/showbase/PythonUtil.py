@@ -43,8 +43,6 @@ import new
 import gc
 #if __debug__:
 import traceback
-import profile as prof, pstats
-
 
 from direct.directutil import Verify
 
@@ -2989,6 +2987,7 @@ def quickProfile(name="unnamed"):
                 s=globalClock.getRealTime()-st
                 print "Function %s.%s took %s seconds"%(f.__module__, f.__name__,s)
             else:
+                import profile as prof, pstats
                 #detailed profile, stored in base.stats under (
                 if(not hasattr(base,"stats")):
                     base.stats={}
