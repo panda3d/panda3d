@@ -2498,18 +2498,21 @@ class SubframeCall:
     def __init__(self, functor, taskPriority, name=None):
         self._functor = functor
         self._name = name
+        self._taskName = uniqueName('SubframeCall-%s' % self._name)
         taskMgr.add(self._doCallback,
-                    uniqueName('SubframeCall-%s' % self._name),
+                    self._taskName,
                     priority=taskPriority)
     def _doCallback(self, task):
         functor = self._functor
         del self._functor
         functor()
-        self._name = None
+        del self._name
+        self._taskName = None
         return task.done
     def cleanup(self):
-        if (self._name):
-            taskMgr.remove(uniqueName('SubframeCall-%s' % self._name))
+        if (self._taskName):
+            taskMgr.remove(self._taskName)
+            self._taskName = None
 
 class ArgumentEater:
     def __init__(self, numToEat, func):
