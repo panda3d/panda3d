@@ -33,12 +33,12 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
-PStatCollector PStatClient::_total_size_pcollector("Main memory");
-PStatCollector PStatClient::_cpp_size_pcollector("Main memory:C++");
-PStatCollector PStatClient::_cpp_other_size_pcollector("Main memory:C++:Other");
-PStatCollector PStatClient::_nf_unused_size_pcollector("Main memory:NeverFree:Unused");
-PStatCollector PStatClient::_nf_other_size_pcollector("Main memory:NeverFree:Other");
-PStatCollector PStatClient::_interpreter_size_pcollector("Main memory:Interpreter");
+PStatCollector PStatClient::_nf_unused_size_pcollector("Track memory 1:NeverFree:Unused");
+PStatCollector PStatClient::_nf_other_size_pcollector("Track memory 1:NeverFree:Other");
+PStatCollector PStatClient::_cpp_other_size_pcollector("Track memory 1:Heap:Other");
+PStatCollector PStatClient::_total_size_pcollector("Track memory 2");
+PStatCollector PStatClient::_cpp_size_pcollector("Track memory 2:C++");
+PStatCollector PStatClient::_interpreter_size_pcollector("Track memory 2:Interpreter");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
@@ -219,7 +219,7 @@ main_tick() {
       _total_size_pcollector.set_level(MemoryUsage::get_total_size());
     }
     if (MemoryUsage::has_cpp_size()) {
-      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size() - NeverFreeMemory::get_total_alloc());
+      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
     }
     if (MemoryUsage::has_interpreter_size()) {
       _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
@@ -277,10 +277,10 @@ main_tick() {
               break;
 
             default:
-              category = "C++";
+              category = "Heap";
             }
             ostringstream strm;
-            strm << "Main memory:" << category << ":" << type << ":" << mc;
+            strm << "Track memory 1:" << category << ":" << type << ":" << mc;
             col = PStatCollector(strm.str());
           }
           col.set_level(usage);

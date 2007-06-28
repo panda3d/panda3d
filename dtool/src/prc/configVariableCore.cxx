@@ -491,7 +491,8 @@ sort_declarations() {
   // need to be recomputed all that often.
   _unique_declarations.clear();
 
-  pset<string> already_added(TypeHandle::none());
+  init_system_type_handles();  // Make sure pset_type_handle is initted.
+  pset<string> already_added;
   for (di = _trusted_declarations.begin(); 
        di != _trusted_declarations.end(); 
        ++di) {

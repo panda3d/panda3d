@@ -57,9 +57,9 @@ class pset : public set<Key, Compare, pallocator_single<Key> > {
 public:
   typedef pallocator_single<Key> allocator;
   typedef set<Key, Compare, allocator> base_class;
-  pset(TypeHandle type_handle = pmap_type_handle) : base_class(Compare(), allocator(type_handle)) { }
+  pset(TypeHandle type_handle = pset_type_handle) : base_class(Compare(), allocator(type_handle)) { }
   pset(const pset<Key, Compare> &copy) : base_class(copy) { }
-  pset(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : base_class(comp, type_handle) { }
+  pset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : base_class(comp, type_handle) { }
 
 #ifdef USE_TAU
   std::pair<TYPENAME base_class::iterator, bool>
@@ -118,9 +118,9 @@ template<class Key, class Compare = less<Key> >
 class pmultiset : public multiset<Key, Compare, pallocator_single<Key> > {
 public:
   typedef pallocator_single<Key> allocator;
-  pmultiset(TypeHandle type_handle = pmap_type_handle) : multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
+  pmultiset(TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
   pmultiset(const pmultiset<Key, Compare> &copy) : multiset<Key, Compare, allocator>(copy) { }
-  pmultiset(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : multiset<Key, Compare, allocator>(comp, type_handle) { }
+  pmultiset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(comp, type_handle) { }
 };
 
 #ifdef HAVE_STL_HASH

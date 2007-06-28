@@ -131,7 +131,7 @@ PUBLISHED:
   void inc_memory_usage(MemoryClass memory_class, int size);
   void dec_memory_usage(MemoryClass memory_class, int size);
 #else
-  INLINE size_t get_memory_usage(MemoryClass) const { return 0; }
+  INLINE int get_memory_usage(MemoryClass) const { return 0; }
   INLINE void inc_memory_usage(MemoryClass, int) { }
   INLINE void dec_memory_usage(MemoryClass, int) { }
 #endif  // DO_MEMORY_USAGE
