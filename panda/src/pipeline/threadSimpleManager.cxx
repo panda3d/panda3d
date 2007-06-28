@@ -22,6 +22,7 @@
 
 #include "threadSimpleImpl.h"
 #include "blockerSimple.h"
+#include "mainThread.h"
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -232,11 +233,16 @@ next_context() {
 //     Function: ThreadSimpleManager::prepare_for_exit
 //       Access: Public
 //  Description: Blocks until all running threads (other than the
-//               current thread) have finished.  You should probably
-//               only call this from the main thread.
+//               current thread) have finished.  This only works when
+//               called from the main thread; if called on any other
+//               thread, nothing will happen.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 prepare_for_exit() {
+  if (!_current_thread->_parent_obj->is_exact_type(MainThread::get_class_type())) {
+    return;
+  }
+
   nassertv(_waiting_for_exit == NULL);
   _waiting_for_exit = _current_thread;
 
@@ -480,7 +486,8 @@ choose_next_context() {
     
     thread_cat.debug()
       << "Switching to " << *_current_thread->_parent_obj
-      << " (" << _ready.size() << " other threads ready, " << blocked_count
+      << " (" << _ready.size() + _next_ready.size()
+      << " other threads ready, " << blocked_count
       << " blocked, " << _sleeping.size() << " sleeping)\n";
   }
 
