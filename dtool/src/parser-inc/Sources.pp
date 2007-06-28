@@ -10,10 +10,10 @@
     hxcomm.h hxcore.h hxengin.h hxerror.h hxfiles.h hxtbuf.h \
     hxtbuff.h hxwin.h Python.h py_panda.h Cg/cg.h Cg/cgGL.h \
     cv.h cvtypes.h cxcore.h cxerror.h cxtypes.h highgui.h \
-    avcodec.h avformat.h avio.h avutil.h common.h integer.h \
+    avcodec.h avformat.h avio.h avutil.h integer.h \
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
     rtsp.h rtspcodes.h setjmp.h winsock2.h \
-    ode/config.h ode/common.h collision_trimesh.h  \
+    ode/ode.h collision_trimesh.h  \
     netinet/tcp.h netinet/ip.h \
     rfftw.h
 
