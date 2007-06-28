@@ -32,7 +32,6 @@ import EventManager
 import math,sys,os
 import Loader
 import time
-import profile, pstats
 from direct.fsm import ClassicFSM
 from direct.fsm import State
 import DirectObject
@@ -116,13 +115,14 @@ class ShowBase(DirectObject.DirectObject):
         # has to run before libpanda is even loaded).
         taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
-        
-        profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
-        
+        if(self.config.GetBool("want-dev",0)):
+            import profile, pstats        
+            profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
+            
                
-        def f8(x):
-            return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
-        pstats.f8=f8
+            def f8(x):
+                return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
+            pstats.f8=f8
 
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
