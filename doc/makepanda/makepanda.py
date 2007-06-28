@@ -1173,8 +1173,8 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in xipath: cmd = cmd + ' -I' + x
         cmd = cmd + ' -Sbuilt/include/parser-inc'
+        for x in xipath: cmd = cmd + ' -I' + x
         cmd = cmd + ' -Sthirdparty/win-python/include'
         for ver in DXVERSIONS:
             if ((COMPILER=="MSVC") and PkgSelected(opts,"DX"+ver)):
@@ -1203,8 +1203,8 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         if (optlevel==4): cmd = cmd + ' -DNDEBUG '
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        for x in xipath: cmd = cmd + ' -I' + x
         cmd = cmd + ' -Sbuilt/include/parser-inc'
+        for x in xipath: cmd = cmd + ' -I' + x
         cmd = cmd + ' -S'+PYTHONSDK
         for pkg in PACKAGES:
             if (PkgSelected(opts,pkg)):
