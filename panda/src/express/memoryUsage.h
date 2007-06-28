@@ -140,6 +140,11 @@ private:
   typedef map<void *, MemoryInfo *, less<void *>, dallocator<pair<void * const, MemoryInfo *> > > Table;
   Table _table;
 
+  // This table indexes the individual MemoryInfo objects, for unique
+  // iteration.
+  typedef set<MemoryInfo *, less<MemoryInfo *>, dallocator<MemoryInfo *> > InfoSet;
+  InfoSet _info_set;
+
   int _freeze_index;
   int _count;
   size_t _current_cpp_size;

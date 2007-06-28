@@ -439,7 +439,11 @@ ns_record_pointer(ReferenceCount *ptr) {
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      (*insert_result.first).second = new MemoryInfo;
+      MemoryInfo *info = new MemoryInfo;
+      bool inserted = _info_set.insert(info).second;
+      assert(inserted);
+
+      (*insert_result.first).second = info;
       ++_count;
     }
 
@@ -589,6 +593,10 @@ ns_remove_pointer(ReferenceCount *ptr) {
           _current_cpp_size -= info->_size;
           _count--;
         }
+
+        InfoSet::iterator si = _info_set.find(info);
+        assert(si != _info_set.end());
+        _info_set.erase(si);
         delete info;
       }
     }
@@ -620,7 +628,11 @@ ns_record_void_pointer(void *ptr, size_t size) {
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      (*insert_result.first).second = new MemoryInfo;
+      MemoryInfo *info = new MemoryInfo;
+      bool inserted = _info_set.insert(info).second;
+      assert(inserted);
+
+      (*insert_result.first).second = info;
       ++_count;
     }
 
@@ -713,6 +725,10 @@ ns_remove_void_pointer(void *ptr) {
       --_count;
       _current_cpp_size -= info->_size;
     }
+
+    InfoSet::iterator si = _info_set.find(info);
+    assert(si != _info_set.end());
+    _info_set.erase(si);
     delete info;
   }
 }
@@ -851,9 +867,9 @@ ns_get_pointers(MemoryUsagePointers &result) {
   result.clear();
 
   double now = TrueClock::get_global_ptr()->get_long_time();
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
         info->_ref_ptr != (ReferenceCount *)NULL) {
       result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
@@ -875,9 +891,9 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   result.clear();
 
   double now = TrueClock::get_global_ptr()->get_long_time();
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
         info->_ref_ptr != (ReferenceCount *)NULL) {
       TypeHandle info_type = info->get_type();
@@ -904,9 +920,9 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   result.clear();
 
   double now = TrueClock::get_global_ptr()->get_long_time();
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
         info->_ref_ptr != (ReferenceCount *)NULL) {
       double age = now - info->_time;
@@ -947,9 +963,9 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   result.clear();
 
   double now = TrueClock::get_global_ptr()->get_long_time();
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index && 
         info->_ref_ptr != (ReferenceCount *)NULL) {
       if (info->_ref_ptr->get_ref_count() == 0) {
@@ -995,9 +1011,9 @@ ns_show_current_types() {
 
   TypeHistogram hist;
   
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index) {
       hist.add_info(info->get_type(), info);
     }
@@ -1036,9 +1052,9 @@ ns_show_current_ages() {
   AgeHistogram hist;
   double now = TrueClock::get_global_ptr()->get_long_time();
 
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    MemoryInfo *info = (*ti).second;
+  InfoSet::iterator si;
+  for (si = _info_set.begin(); si != _info_set.end(); ++si) {
+    MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index) {
       hist.add_info(now - info->_time, info);
     }
@@ -1122,7 +1138,11 @@ consolidate_void_ptr(MemoryInfo *info) {
     _current_cpp_size -= info->_size;
   }
 
+  InfoSet::iterator si = _info_set.find(typed_info);
+  assert(si != _info_set.end());
+  _info_set.erase(si);
   delete typed_info;
+
   (*ti).second = info;
 }
 
