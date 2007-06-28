@@ -396,6 +396,7 @@ MemoryUsage() {
   }
 #endif
 
+  _info_set_dirty = false;
   _freeze_index = 0;
   _count = 0;
   _current_cpp_size = 0;
@@ -439,11 +440,8 @@ ns_record_pointer(ReferenceCount *ptr) {
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      MemoryInfo *info = new MemoryInfo;
-      bool inserted = _info_set.insert(info).second;
-      assert(inserted);
-
-      (*insert_result.first).second = info;
+      (*insert_result.first).second = new MemoryInfo;
+      _info_set_dirty = true;
       ++_count;
     }
 
@@ -594,9 +592,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
           _count--;
         }
 
-        InfoSet::iterator si = _info_set.find(info);
-        assert(si != _info_set.end());
-        _info_set.erase(si);
+        _info_set_dirty = true;
         delete info;
       }
     }
@@ -628,11 +624,8 @@ ns_record_void_pointer(void *ptr, size_t size) {
     assert(insert_result.first != _table.end());
 
     if (insert_result.second) {
-      MemoryInfo *info = new MemoryInfo;
-      bool inserted = _info_set.insert(info).second;
-      assert(inserted);
-
-      (*insert_result.first).second = info;
+      (*insert_result.first).second = new MemoryInfo;
+      _info_set_dirty = true;
       ++_count;
     }
 
@@ -726,9 +719,7 @@ ns_remove_void_pointer(void *ptr) {
       _current_cpp_size -= info->_size;
     }
 
-    InfoSet::iterator si = _info_set.find(info);
-    assert(si != _info_set.end());
-    _info_set.erase(si);
+    _info_set_dirty = true;
     delete info;
   }
 }
@@ -866,6 +857,10 @@ ns_get_pointers(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
+  if (_info_set_dirty) {
+    refresh_info_set();
+  }
+
   double now = TrueClock::get_global_ptr()->get_long_time();
   InfoSet::iterator si;
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
@@ -889,6 +884,10 @@ void MemoryUsage::
 ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   nassertv(_track_memory_usage);
   result.clear();
+
+  if (_info_set_dirty) {
+    refresh_info_set();
+  }
 
   double now = TrueClock::get_global_ptr()->get_long_time();
   InfoSet::iterator si;
@@ -918,6 +917,10 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
                        double from, double to) {
   nassertv(_track_memory_usage);
   result.clear();
+
+  if (_info_set_dirty) {
+    refresh_info_set();
+  }
 
   double now = TrueClock::get_global_ptr()->get_long_time();
   InfoSet::iterator si;
@@ -962,6 +965,10 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
+  if (_info_set_dirty) {
+    refresh_info_set();
+  }
+
   double now = TrueClock::get_global_ptr()->get_long_time();
   InfoSet::iterator si;
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
@@ -1005,12 +1012,13 @@ ns_freeze() {
 void MemoryUsage::
 ns_show_current_types() {
   nassertv(_track_memory_usage);
-  // We have to protect modifications to the table from recursive
-  // calls by toggling _recursion_protect while we adjust it.
-  _recursion_protect = true;
-
   TypeHistogram hist;
-  
+
+  if (_info_set_dirty) {
+    refresh_info_set();
+  }
+
+  _recursion_protect = true;
   InfoSet::iterator si;
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
@@ -1018,7 +1026,6 @@ ns_show_current_types() {
       hist.add_info(info->get_type(), info);
     }
   }
-
   hist.show();
   _recursion_protect = false;
 }
@@ -1045,13 +1052,10 @@ void MemoryUsage::
 ns_show_current_ages() {
   nassertv(_track_memory_usage);
 
-  // We have to protect modifications to the table from recursive
-  // calls by toggling _recursion_protect while we adjust it.
-  _recursion_protect = true;
-
   AgeHistogram hist;
   double now = TrueClock::get_global_ptr()->get_long_time();
 
+  _recursion_protect = true;
   InfoSet::iterator si;
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
@@ -1061,7 +1065,6 @@ ns_show_current_ages() {
   }
 
   hist.show();
-
   _recursion_protect = false;
 }
 
@@ -1138,12 +1141,38 @@ consolidate_void_ptr(MemoryInfo *info) {
     _current_cpp_size -= info->_size;
   }
 
-  InfoSet::iterator si = _info_set.find(typed_info);
-  assert(si != _info_set.end());
-  _info_set.erase(si);
+  _info_set_dirty = true;
   delete typed_info;
 
   (*ti).second = info;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::refresh_info_set
+//       Access: Private
+//  Description: Recomputes the _info_set table, if necessary.  This
+//               table stores a unique entry for each MemoryInfo
+//               object in _table.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+refresh_info_set() {
+  if (!_info_set_dirty) {
+    return;
+  }
+
+  // We have to protect modifications to the table from recursive
+  // calls by toggling _recursion_protect while we adjust it.
+  _recursion_protect = true;
+  
+  _info_set.clear();
+  Table::iterator ti;
+  for (ti = _table.begin(); ti != _table.end(); ++ti) {
+    _info_set.insert((*ti).second);
+  }
+
+  _recursion_protect = false;
+
+  _info_set_dirty = false;
 }
 
 

@@ -121,6 +121,7 @@ private:
   void ns_show_trend_ages();
 
   void consolidate_void_ptr(MemoryInfo *info);
+  void refresh_info_set();
 
   static MemoryUsage *_global_ptr;
 
@@ -144,6 +145,7 @@ private:
   // iteration.
   typedef set<MemoryInfo *, less<MemoryInfo *>, dallocator<MemoryInfo *> > InfoSet;
   InfoSet _info_set;
+  bool _info_set_dirty;
 
   int _freeze_index;
   int _count;
