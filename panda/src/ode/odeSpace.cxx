@@ -172,7 +172,9 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
         contact[i].surface.soft_cfm = collide_params.colparams.soft_cfm; 
     }
     
-    int numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
+    static int numc = 0;
+    numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
+
     if (numc)
     {
         if (odespace_cat.is_debug() && (autoCallbackCounter%30 == 0)) {
@@ -185,7 +187,10 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
         for(i=0; i < numc; i++)
         {
             dJointID c = dJointCreateContact(_collide_world->get_id(), _collide_joint_group, contact + i);
-            dJointAttach(c, b1, b2);
+            if ((_collide_space->get_collide_id(o1) >= 0) && (_collide_space->get_collide_id(o2) >= 0))
+            {
+                dJointAttach(c, b1, b2);
+            }
             // this creates contact position data for python. It is useful for debugging only 64 points are stored
             if(contactCount < 64)
             {
@@ -199,6 +204,7 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
         }
         _collide_world->set_dampen_on_bodies(b1, b2, collide_params.dampen);
     }
+
 }
 
 OdeSimpleSpace OdeSpace::
