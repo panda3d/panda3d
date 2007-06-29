@@ -87,7 +87,7 @@ class Loader(DirectObject):
         loading, the callback function will be invoked with the n
         loaded models passed as its parameter list.  It is possible
         that the callback will be invoked immediately, even before
-        loadModel() returns.  In this case, the return value will be
+        loadModel() returns.  In any case, the return value will be
         an object that may later be passed to loader.cancelRequest()
         to cancel the asynchronous request.
 
