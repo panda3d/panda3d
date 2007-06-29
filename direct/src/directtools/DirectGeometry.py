@@ -170,7 +170,7 @@ def relHpr(nodePath, base, h, p, r):
     # nodePath2base
     mNodePath2Base = nodePath.getMat(base)
     # delta scale, orientation, and position matrix
-    mBase2NewBase = Mat4()
+    mBase2NewBase = Mat4(Mat4.identMat()) # [gjeon] fixed to give required argument
     composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h, p, r), ZERO_VEC,
                   CSDefault)
     # base2nodePath

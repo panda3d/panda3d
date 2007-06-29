@@ -476,7 +476,7 @@ class DirectCameraControl(DirectObject):
         # Record undo point
         base.direct.pushUndo([base.direct.camera])
         # Transform camera z axis to render space
-        mCam2Render = Mat4()
+        mCam2Render = Mat4(Mat4.identMat()) # [gjeon] fixed to give required argument
         mCam2Render.assign(base.direct.camera.getMat(render))
         zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
         zAxis.normalize()
