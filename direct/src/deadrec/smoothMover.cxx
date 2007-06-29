@@ -743,3 +743,21 @@ record_timestamp_delay(double timestamp) {
 
   _last_heard_from = now;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::handle_wrt_reparent
+//       Access: Private
+//  Description: Node is being wrtReparented, update recorded
+//               sample positions to reflect new parent
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
+  Points::iterator pi;
+  CPT(TransformState) transform = old_parent.get_transform(new_parent);
+  const LPoint3f &old_to_new_pos = transform->get_pos();
+  const LVecBase3f &old_to_new_hpr = transform->get_hpr();
+  for (pi = _points.begin(); pi != _points.end(); pi++) {
+    (*pi)._pos += old_to_new_pos;
+    (*pi)._hpr += old_to_new_hpr;
+  }
+}

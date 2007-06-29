@@ -111,6 +111,8 @@ PUBLISHED:
   INLINE float get_smooth_rotational_velocity() const;
   INLINE const LVecBase3f &get_forward_axis() const;
 
+  void handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent);
+
   enum SmoothMode {
     SM_off,
     SM_on,
