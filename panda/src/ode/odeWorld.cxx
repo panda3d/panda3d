@@ -78,6 +78,12 @@ init_surface_table(PN_uint8 num_surfaces)
 void OdeWorld::
 set_surface(int pos1, int pos2, sSurfaceParams& entry)
 {
+    odeworld_cat.debug() << " pos1 " << pos1 << " pos2 " << pos2 << " num surfaces " << (int)_num_surfaces << " endline\n";
+    if((_num_surfaces <= pos1) || (_num_surfaces <= pos2))
+    {
+        odeworld_cat.error() << "surface position exceeds size of surface table, set num_surface in initSurfaceTable higher." << "\n";
+        return;
+    }
     int true_pos = (pos1 * _num_surfaces) + pos2;
     _surface_table[true_pos].colparams.mode = entry.colparams.mode;
     _surface_table[true_pos].colparams.mu = entry.colparams.mu;
