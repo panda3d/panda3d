@@ -51,6 +51,9 @@ class Loader(DirectObject):
 
     def destroy(self):
         self.ignore(self.hook)
+        # Temp condition for old Panda.
+        if hasattr(loader, "stopThreads"):
+            self.loader.stopThreads()
         del self.base
         del self.loader
 
