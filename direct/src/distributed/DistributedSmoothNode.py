@@ -71,6 +71,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.smoother = SmoothMover()
             self.smoothStarted = 0
             self.lastSuggestResync = 0
+            self._smoothWrtReparents = False
 
     def delete(self):
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.delete(self)
@@ -127,6 +128,10 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.forceToTruePosition()
             self.smoothStarted = 0
 
+    def setSmoothWrtReparents(self, flag):
+        self._smoothWrtReparents = flag
+    def getSmoothWrtReparents(self):
+        return self._smoothWrtReparents
 
     def forceToTruePosition(self):
         """
@@ -280,9 +285,13 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         # We override this NodePath method to force it to
         # automatically reset the smoothing position when we call it.
         if self.smoothStarted:
-            self.forceToTruePosition()
-            NodePath.wrtReparentTo(self, parent)
-            self.reloadPosition()
+            if self._smoothWrtReparents:
+                self.smoother.handleWrtReparent(self.getParent(), parent)
+                NodePath.wrtReparentTo(self, parent)
+            else:
+                self.forceToTruePosition()
+                NodePath.wrtReparentTo(self, parent)
+                self.reloadPosition()
         else:
             NodePath.wrtReparentTo(self, parent)
 
