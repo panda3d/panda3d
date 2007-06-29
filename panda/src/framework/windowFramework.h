@@ -71,7 +71,6 @@ protected:
 public:
   INLINE PandaFramework *get_panda_framework() const;
   INLINE GraphicsWindow *get_graphics_window() const;
-  INLINE DisplayRegion *get_display_region() const;
   const NodePath &get_camera_group();
 
   INLINE int get_num_cameras() const;
