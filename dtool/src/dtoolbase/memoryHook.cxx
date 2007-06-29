@@ -220,8 +220,7 @@ mmap_alloc(size_t size, bool allow_exec) {
                            allow_exec ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
   if (ptr == (void *)NULL) {
     DWORD err = GetLastError();
-    cerr << "Couldn't allocate memory page of size " << needed_size
-         << ": ";
+    cerr << "Couldn't allocate memory page of size " << size << ": ";
 
     PVOID buffer;
     DWORD length = 
