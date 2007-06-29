@@ -18,21 +18,7 @@
 
 #include "neverFreeMemory.h"
 #include "atomicAdjust.h"
-
-#ifdef WIN32
-
-// Windows case.
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-
-// Posix case.
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-
-#endif  // WIN32
+#include "memoryHook.h"
 
 NeverFreeMemory * TVOLATILE NeverFreeMemory::_global_ptr;
 
@@ -52,23 +38,6 @@ NeverFreeMemory::
 NeverFreeMemory() {
   _total_alloc = 0;
   _total_used = 0;
-
-  _page_size = 1;
-
-#ifdef WIN32
-
-  // Windows case.
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-
-  _page_size = (size_t)sysinfo.dwPageSize;
-
-#else
-
-  // Posix case.
-  _page_size = getpagesize();
-
-#endif  // WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,47 +69,8 @@ ns_alloc(size_t size) {
   // We have to allocate a new page.  Allocate at least min_page_size
   // bytes, and then round that up to the next _page_size bytes.
   size_t needed_size = max(size, min_page_size);
-  needed_size = ((needed_size + _page_size - 1) / _page_size) * _page_size;
-  void *start = NULL;
-
-#ifdef WIN32
-
-  // Windows case.
-  start = VirtualAlloc(NULL, needed_size, MEM_COMMIT | MEM_RESERVE,
-                       PAGE_READWRITE);
-  if (start == (void *)NULL) {
-    DWORD err = GetLastError();
-    cerr << "Couldn't allocate memory page of size " << needed_size
-         << ": ";
-
-    PVOID buffer;
-    DWORD length = 
-      FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                    NULL, err, 0, (LPTSTR)&buffer, 0, NULL);
-    if (length != 0) {
-      cerr << (char *)buffer << "\n";
-    } else {
-      cerr << "Error code " << err << "\n";
-    }
-    LocalFree(buffer);
-  }
-
-#else
-
-  // Posix case.
-  start = mmap(NULL, needed_size, PROT_READ | PROT_WRITE, 
-               MAP_PRIVATE | MAP_ANON, -1, 0);
-  if (start == (void *)-1) {
-    perror("mmap");
-    start = NULL;
-  }
-
-#endif  // WIN32
-
-  if (start == NULL) {
-    start = malloc(needed_size);
-  }
-
+  needed_size = memory_hook->round_up_to_page_size(needed_size);
+  void *start = memory_hook->mmap_alloc(needed_size, false);
   _total_alloc += needed_size;
 
   Page page(start, needed_size);

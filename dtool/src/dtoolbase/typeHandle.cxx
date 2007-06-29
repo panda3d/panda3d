@@ -59,6 +59,7 @@ inc_memory_usage(MemoryClass memory_class, int size) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
     AtomicAdjust::add(rnode->_memory_usage[memory_class], (PN_int32)size);
+    //    cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " << rnode->_memory_usage[memory_class] << "\n";
     assert(rnode->_memory_usage[memory_class] >= 0);
   }
 }
@@ -78,6 +79,9 @@ dec_memory_usage(MemoryClass memory_class, int size) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, NULL);
     assert(rnode != (TypeRegistryNode *)NULL);
     AtomicAdjust::add(rnode->_memory_usage[memory_class], -(PN_int32)size);
+    if (rnode->_memory_usage[memory_class] < 0) {
+      cerr << *this << ".dec(" << memory_class << ", " << size << ") -> " << rnode->_memory_usage[memory_class] << "\n";
+    }
     assert(rnode->_memory_usage[memory_class] >= 0);
   }
 }

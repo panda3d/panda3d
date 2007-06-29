@@ -21,6 +21,7 @@
 
 #include <memory>
 #include "dtoolbase.h"
+#include "memoryHook.h"
 #include "deletedChain.h"
 #include "typeHandle.h"
 
@@ -60,7 +61,7 @@ public:
   typedef TYPENAME allocator<Type>::const_reference const_reference;
   typedef TYPENAME allocator<Type>::size_type size_type;
 
-  INLINE pallocator_single(TypeHandle type_handle = TypeHandle::none()) throw();
+  INLINE pallocator_single(TypeHandle type_handle) throw();
 
   // template member functions in VC++ can only be defined in-class.
   template<class U>

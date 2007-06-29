@@ -33,12 +33,14 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
-PStatCollector PStatClient::_nf_unused_size_pcollector("Track memory 1:NeverFree:Unused");
-PStatCollector PStatClient::_nf_other_size_pcollector("Track memory 1:NeverFree:Other");
-PStatCollector PStatClient::_cpp_other_size_pcollector("Track memory 1:Heap:Other");
-PStatCollector PStatClient::_total_size_pcollector("Track memory 2");
-PStatCollector PStatClient::_cpp_size_pcollector("Track memory 2:C++");
-PStatCollector PStatClient::_interpreter_size_pcollector("Track memory 2:Interpreter");
+PStatCollector PStatClient::_t1_nf_unused_size_pcollector("Track memory 1:NeverFree:Unused");
+PStatCollector PStatClient::_t1_nf_other_size_pcollector("Track memory 1:NeverFree:Other");
+PStatCollector PStatClient::_t1_cpp_other_size_pcollector("Track memory 1:Dynamic:Other");
+PStatCollector PStatClient::_t2_total_size_pcollector("Track memory 2");
+PStatCollector PStatClient::_t2_heap_size_pcollector("Track memory 2:Heap");
+PStatCollector PStatClient::_t2_mmap_size_pcollector("Track memory 2:MMap");
+PStatCollector PStatClient::_t2_interpreter_size_pcollector("Track memory 2:Interpreter");
+PStatCollector PStatClient::_t2_external_size_pcollector("Track memory 2:External");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
@@ -215,14 +217,12 @@ main_tick() {
 
 #ifdef DO_MEMORY_USAGE
   if (is_connected()) {
-    if (MemoryUsage::has_total_size()) {
-      _total_size_pcollector.set_level(MemoryUsage::get_total_size());
-    }
-    if (MemoryUsage::has_cpp_size()) {
-      _cpp_size_pcollector.set_level(MemoryUsage::get_cpp_size());
-    }
-    if (MemoryUsage::has_interpreter_size()) {
-      _interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
+    if (MemoryUsage::is_tracking()) {
+      _t2_total_size_pcollector.set_level(MemoryUsage::get_total_size());
+      _t2_heap_size_pcollector.set_level(MemoryUsage::get_panda_heap_size());
+      _t2_mmap_size_pcollector.set_level(MemoryUsage::get_panda_mmap_size());
+      _t2_interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
+      _t2_external_size_pcollector.set_level(MemoryUsage::get_external_size());
     }
     
     TypeRegistry *type_reg = TypeRegistry::ptr();
@@ -277,7 +277,7 @@ main_tick() {
               break;
 
             default:
-              category = "Heap";
+              category = "Dynamic";
             }
             ostringstream strm;
             strm << "Track memory 1:" << category << ":" << type << ":" << mc;
@@ -298,12 +298,12 @@ main_tick() {
       }
     }
 
-    _nf_unused_size_pcollector.set_level(NeverFreeMemory::get_total_unused());
+    _t1_nf_unused_size_pcollector.set_level(NeverFreeMemory::get_total_unused());
 
     // The remaining amount--all collectors smaller than 0.1% of the
     // total--go into "other".
-    _nf_other_size_pcollector.set_level(nf_other_usage);
-    _cpp_other_size_pcollector.set_level(cpp_other_usage);
+    _t1_nf_other_size_pcollector.set_level(nf_other_usage);
+    _t1_cpp_other_size_pcollector.set_level(cpp_other_usage);
   }
 #endif  // DO_MEMORY_USAGE
 

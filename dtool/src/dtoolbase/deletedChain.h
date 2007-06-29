@@ -28,15 +28,12 @@
 #include "typeHandle.h"
 #include <assert.h>
 
-#ifdef HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR
-// Actually, there appears to be a (maybe fatal) flaw in our
-// implementation of DeletedChain via the atomic exchange operation.
-// Specifically, a pointer may be removed from the head of the chain,
-// then the same pointer reinserted in the chain, while another thread
-// is waiting; and that thread will not detect the change.  For now,
-// then, let's not use this implementation, and fall back to the mutex.
-//#define DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-#endif
+// Though it's tempting, it doesn't seem to be possible to implement
+// DeletedChain via the atomic exchange operation.  Specifically, a
+// pointer may be removed from the head of the chain, then the same
+// pointer reinserted in the chain, while another thread is waiting;
+// and that thread will not detect the change.  So instead, we always
+// use a mutex.
 
 #ifndef NDEBUG
 // In development mode, we define USE_DELETEDCHAINFLAG, which
@@ -105,21 +102,17 @@ private:
     // pointer returned (unlike _flag, above).  It's only used when
     // the object is deleted, so there's no harm in sharing space with
     // the undeleted object.
-    TVOLATILE ObjectNode * TVOLATILE _next;
+    ObjectNode *_next;
   };
 
-  static INLINE Type *node_to_type(TVOLATILE ObjectNode *node);
+  static INLINE Type *node_to_type(ObjectNode *node);
   static INLINE ObjectNode *type_to_node(Type *ptr);
 
-  TVOLATILE ObjectNode * TVOLATILE _deleted_chain;
+  ObjectNode *_deleted_chain;
   
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-  // If we don't have atomic compare-and-exchange, we need to use a
-  // Mutex to protect the above linked list.
   INLINE void init_lock();
   void do_init_lock(MutexImpl *&lock);
   MutexImpl *_lock;
-#endif
 };
 
 ////////////////////////////////////////////////////////////////////

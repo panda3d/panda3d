@@ -17,139 +17,43 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dtoolbase.h"
+#include "memoryHook.h"
 
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 bool __tau_shutdown = false;
 #endif
 
+MemoryHook *memory_hook;
 
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//     Function: init_memory_hook
+//  Description: Any code that might need to use PANDA_MALLOC or
+//               PANDA_FREE, or any methods of the global memory_hook
+//               object, at static init time, should ensure that it
+//               calls init_memory_hook() first to ensure that the
+//               pointer has been properly initialized.  There is no
+//               harm in calling this function more than once.
 //
-// Memory manager: DLMALLOC
-//
-// This is Doug Lea's memory manager.  It is very fast,
-// but it is not thread-safe.
-//
-/////////////////////////////////////////////////////////////////////
-
-#if defined(USE_MEMORY_DLMALLOC)
-
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-#error Cannot use dlmalloc library with threading enabled!
-#endif
-
-#define USE_DL_PREFIX 1
-#define NO_MALLINFO 1
-#include "dlmalloc.h"
-
-void *default_operator_new(size_t size) {
-  void *ptr = dlmalloc(size);
-  if (ptr == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
+//               There is no need to call this function other than at
+//               static init time.
+////////////////////////////////////////////////////////////////////
+void
+init_memory_hook() {
+  if (memory_hook == NULL) {
+    memory_hook = new MemoryHook;
   }
-  return ptr;
 }
 
-void default_operator_delete(void *ptr) {
-  dlfree(ptr);
-}
-
-void default_mark_pointer(void *, size_t, ReferenceCount *) {
-}
-
-void *(*global_operator_new)(size_t size) = &default_operator_new;
-void (*global_operator_delete)(void *ptr) = &default_operator_delete;
-void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
-
-/////////////////////////////////////////////////////////////////////
-//
-// Memory manager: PTMALLOC2
-//
-// Ptmalloc2 is a derivative of Doug Lea's memory manager that was 
-// made thread-safe by Wolfram Gloger, then was ported to windows by
-// Niall Douglas.  It is not quite as fast as dlmalloc (because the
-// thread-safety constructs take a certain amount of CPU time), but
-// it's still much faster than the windows allocator.
-//
-/////////////////////////////////////////////////////////////////////
-
-#elif defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
-// This doesn't appear to work in Linux; perhaps it is clashing with
-// the system library.  On Linux, fall through to the next case
-// instead.
-
-#define USE_DL_PREFIX 1
-#define NO_MALLINFO 1
-#include "ptmalloc2_smp.c"
-
-void *default_operator_new(size_t size) {
-  void *ptr = dlmalloc(size);
-  if (ptr == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
+// Here's a quick way to ensure the above function is called at least
+// once at static init time.
+class InitMemoryHook {
+public:
+  InitMemoryHook() {
+    init_memory_hook();
   }
-  return ptr;
-}
-
-void default_operator_delete(void *ptr) {
-  dlfree(ptr);
-}
-
-void default_mark_pointer(void *, size_t, ReferenceCount *) {
-}
-
-void *(*global_operator_new)(size_t size) = &default_operator_new;
-void (*global_operator_delete)(void *ptr) = &default_operator_delete;
-void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
-
-/////////////////////////////////////////////////////////////////////
-//
-// Memory manager: MALLOC
-//
-// This option uses the built-in system allocator.  This is a good
-// choice on linux, but it's a terrible choice on windows.
-//
-/////////////////////////////////////////////////////////////////////
-
-#elif defined(USE_MEMORY_MALLOC) || defined(USE_MEMORY_PTMALLOC2)
-
-void *default_operator_new(size_t size) {
-  void *ptr = malloc(size);
-  if (ptr == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
-  }
-  return ptr;
-}
-
-void default_operator_delete(void *ptr) {
-  free(ptr);
-}
-
-void default_mark_pointer(void *, size_t, ReferenceCount *) {
-}
-
-void *(*global_operator_new)(size_t size) = &default_operator_new;
-void (*global_operator_delete)(void *ptr) = &default_operator_delete;
-void (*global_mark_pointer)(void *ptr, size_t size, ReferenceCount *ref_ptr) = &default_mark_pointer;
-
-/////////////////////////////////////////////////////////////////////
-//
-// Memory manager: NOWRAPPERS
-//
-// Not only do we use the built-in system definitions for new and
-// delete, but we don't even wrap them.  This removes a tiny bit of
-// extra overhead from the above option, but prevents Panda's
-// MemoryUsage class from being able to track memory allocations.
-//
-/////////////////////////////////////////////////////////////////////
-
-#else
-
-#endif  // USE_MEMORY_*
-
+};
+static InitMemoryHook _imh_object;
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
 

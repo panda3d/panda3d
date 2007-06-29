@@ -109,61 +109,46 @@ is_counting() {
 //     Function: MemoryUsage::get_current_cpp_size
 //       Access: Public, Static
 //  Description: Returns the total number of bytes of allocated memory
-//               via the C++ operators new and delete as counted,
-//               not including the memory previously frozen.
+//               consumed by C++ objects, not including the memory
+//               previously frozen.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_current_cpp_size() {
-  return get_global_ptr()->ns_get_current_cpp_size();
+  return get_global_ptr()->_current_cpp_size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::has_cpp_size
-//       Access: Public, Static
-//  Description: Returns true if the value returned by
-//               get_cpp_size() is meaningful on this particular
-//               system with this particular configuration, false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool MemoryUsage::
-has_cpp_size() {
-#if defined(WIN32_VC) && defined(_DEBUG)
-  // Windows in debug mode can count C++ size without having to do a
-  // full track.
-  return is_counting();
-#else
-  // Other systems require the full hammer.
-  return is_tracking();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::get_cpp_size
+//     Function: MemoryUsage::get_total_cpp_size
 //       Access: Public, Static
 //  Description: Returns the total number of bytes of allocated memory
-//               via the C++ operators new and delete as counted,
-//               including the memory previously frozen.
+//               consumed by C++ objects, including the memory
+//               previously frozen.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
-get_cpp_size() {
-  return get_global_ptr()->ns_get_cpp_size();
+get_total_cpp_size() {
+  return get_global_ptr()->_total_cpp_size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::has_interpreter_size
+//     Function: MemoryUsage::get_panda_heap_size
 //       Access: Public, Static
-//  Description: Returns true if the value returned by
-//               get_interpreter_size() is meaningful on this particular
-//               system with this particular configuration, false
-//               otherwise.
+//  Description: Returns the total number of bytes allocated from the
+//               heap from code within Panda.
 ////////////////////////////////////////////////////////////////////
-INLINE bool MemoryUsage::
-has_interpreter_size() {
-#ifdef TRACK_IN_INTERPRETER
-  return is_counting();
-#else
-  return false;
-#endif
+INLINE size_t MemoryUsage::
+get_panda_heap_size() {
+  return get_global_ptr()->_total_heap_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_panda_mmap_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes allocated from the
+//               virtual memory pool from code within Panda.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_panda_mmap_size() {
+  return get_global_ptr()->_total_mmap_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,43 +159,51 @@ has_interpreter_size() {
 //               number is only meaningful if both Panda and the
 //               high-level language are single-threaded, and running
 //               in the same thread.
+//
+//               This number is only available if Panda is able to
+//               hook into the actual heap callback.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_interpreter_size() {
-  return get_global_ptr()->ns_get_interpreter_size();
+  return get_global_ptr()->_interpreter_size;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::has_total_size
+//     Function: MemoryUsage::get_external_size
 //       Access: Public, Static
-//  Description: Returns true if the value returned by
-//               get_total_size() is meaningful on this particular
-//               system with this particular configuration, false
-//               otherwise.
+//  Description: Returns the total number of bytes of allocated memory
+//               in the heap that Panda didn't seem to be responsible
+//               for.  This includes a few bytes for very low-level
+//               objects (like ConfigVariables) that cannot use Panda
+//               memory tracking because they are so very low-level.
+//
+//               This number is only available if Panda is able to
+//               hook into the actual heap callback.
 ////////////////////////////////////////////////////////////////////
-INLINE bool MemoryUsage::
-has_total_size() {
-#if defined(WIN32_VC) && defined(_DEBUG)
-  // Windows in debug mode can count total size without having to do a
-  // full track.
-  return is_counting();
-#else
-  // Other systems require the full hammer.
-  return is_tracking();
-#endif
+INLINE size_t MemoryUsage::
+get_external_size() {
+  MemoryUsage *mu = get_global_ptr();
+  if (mu->_count_memory_usage) {
+    return mu->_total_size - mu->_total_heap_size;
+  } else {
+    return 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::get_total_size
 //       Access: Public, Static
-//  Description: Returns the total size of the dynamic heap, as nearly
-//               as can be determined, including all allocated memory
-//               if possible, in addition to that tracked by
-//               get_cpp_size().
+//  Description: Returns the total size of allocated memory consumed
+//               by the process, as nearly as can be determined.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
 get_total_size() {
-  return get_global_ptr()->ns_get_total_size();
+  MemoryUsage *mu = get_global_ptr();
+  if (mu->_count_memory_usage) {
+    return mu->_total_size;
+  } else {
+    return mu->_total_heap_size;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

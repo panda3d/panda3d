@@ -22,24 +22,10 @@
 #include "vertexDataBook.h"
 #include "pStatTimer.h"
 #include "mutexHolder.h"
+#include "memoryHook.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
-#endif
-
-#ifdef WIN32
-
-// Windows case (VirtualAlloc)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-
-// Posix case (mmap)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-
 #endif
 
 ConfigVariableInt max_resident_vertex_data
@@ -634,19 +620,7 @@ make_save_file() {
 unsigned char *VertexDataPage::
 alloc_page_data(size_t page_size) const {
   get_class_type().inc_memory_usage(TypeHandle::MC_array, page_size);
-  
-  unsigned char *buffer;
-#ifdef WIN32
-  // Windows case.
-  buffer = (unsigned char *)VirtualAlloc(NULL, page_size, MEM_COMMIT | MEM_RESERVE,
-                                         PAGE_READWRITE);
-#else
-  // Posix case.
-  buffer = (unsigned char *)mmap(NULL, page_size, PROT_READ | PROT_WRITE, 
-                                 MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
-
-  return buffer;
+  return (unsigned char *)memory_hook->mmap_alloc(page_size, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -657,12 +631,7 @@ alloc_page_data(size_t page_size) const {
 void VertexDataPage::
 free_page_data(unsigned char *page_data, size_t page_size) const {
   get_class_type().dec_memory_usage(TypeHandle::MC_array, page_size);
-
-#ifdef WIN32
-  VirtualFree(page_data, 0, MEM_RELEASE);
-#else  
-  munmap(page_data, page_size);
-#endif
+  memory_hook->mmap_free(page_data, page_size);
 }
  
 ////////////////////////////////////////////////////////////////////

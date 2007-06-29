@@ -149,9 +149,6 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
-// Must global operator new and delete functions throw exceptions?
-#define GLOBAL_OPERATOR_NEW_EXCEPTIONS
-
 // MSVC7 does support the latest STL allocator definitions.
 #define USE_STL_ALLOCATOR 1
 

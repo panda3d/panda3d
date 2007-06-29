@@ -20,7 +20,6 @@
 #define NOTIFY_H
 
 #include "dtoolbase.h"
-
 #include "notifySeverity.h"
 #include <map>
 

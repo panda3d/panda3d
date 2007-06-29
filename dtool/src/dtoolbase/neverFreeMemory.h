@@ -69,7 +69,6 @@ private:
   typedef set<Page> Pages;
   Pages _pages;
 
-  size_t _page_size;
   size_t _total_alloc;
   size_t _total_used;
   MutexImpl _lock;

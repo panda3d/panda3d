@@ -20,6 +20,7 @@
 #define MEMORYBASE_H
 
 #include "dtoolbase.h"
+#include "memoryHook.h"
 
 // Place this macro within a class definition to define appropriate
 // operator new and delete methods that hook into the MemoryInfo class
@@ -31,24 +32,24 @@
 
 #define ALLOC_MEMORY_BASE                                    \
   inline void *operator new(size_t size) {                   \
-    return (*global_operator_new)(size);                     \
+    return PANDA_MALLOC(size);                     \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    (*global_operator_delete)(ptr);                          \
+    PANDA_FREE(ptr);                          \
   }                                                          \
   inline void operator delete(void *ptr, void *) {           \
   }                                                          \
   inline void *operator new[](size_t size) {                 \
-    return (*global_operator_new)(size);                     \
+    return PANDA_MALLOC(size);                     \
   }                                                          \
   inline void *operator new[](size_t size, void *ptr) {      \
     return ptr;                                              \
   }                                                          \
   inline void operator delete[](void *ptr) {                 \
-    (*global_operator_delete)(ptr);                          \
+    PANDA_FREE(ptr);                          \
   }                                                          \
   inline void operator delete[](void *, void *) {            \
   }

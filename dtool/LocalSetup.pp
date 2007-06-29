@@ -309,7 +309,6 @@ $[cdefine TRACK_IN_INTERPRETER]
 
 /* Define if we want to enable track-memory-usage.  */
 $[cdefine DO_MEMORY_USAGE]
-$[cdefine REDEFINE_GLOBAL_OPERATOR_NEW]
 
 /* Define if we want to enable min-lag and max-lag.  */
 $[cdefine SIMULATE_NETWORK_DELAY]
@@ -493,9 +492,6 @@ $[cdefine USE_TAU]
 
 /* Define if needed to have 64-bit file i/o */
 $[cdefine __USE_LARGEFILE64]
-
-/* Must global operator new and delete functions throw exceptions? */
-$[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
 /* Which memory allocation scheme should we use? */
 #define USE_MEMORY_DLMALLOC

@@ -14,12 +14,12 @@
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     cmath.I cmath.h \
-    dallocator.T dallocator.h \
     deletedChain.h deletedChain.T \
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h \
     fakestringstream.h \
     indent.I indent.h indent.cxx \
     memoryBase.h \
+    memoryHook.h memoryHook.I \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \
@@ -47,6 +47,7 @@
     atomicAdjustWin32Impl.cxx \
     dtoolbase.cxx \
     memoryBase.cxx \
+    memoryHook.cxx \
     mutexDummyImpl.cxx \
     mutexPosixImpl.cxx \
     mutexWin32Impl.cxx \
@@ -65,11 +66,11 @@
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I \
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I \
     cmath.I cmath.h \
-    dallocator.T dallocator.h \
     deletedChain.h deletedChain.T \
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h fakestringstream.h \
     indent.I indent.h \
     memoryBase.h \
+    memoryHook.h memoryHook.I \
     mutexImpl.h \
     mutexDummyImpl.h mutexDummyImpl.I \
     mutexPosixImpl.h mutexPosixImpl.I \

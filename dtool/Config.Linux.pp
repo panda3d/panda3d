@@ -154,9 +154,6 @@
 // We need 64-bit file i/o
 #define __USE_LARGEFILE64 1
 
-// Must global operator new and delete functions throw exceptions?
-#define GLOBAL_OPERATOR_NEW_EXCEPTIONS 1
-
 // Modern versions of gcc do support the latest STL allocator
 // definitions.
 #define USE_STL_ALLOCATOR 1

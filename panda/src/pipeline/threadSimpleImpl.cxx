@@ -24,21 +24,6 @@
 #include "threadSimpleManager.h"
 #include "thread.h"
 
-#ifdef WIN32
-
-// Windows case (VirtualAlloc)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-
-// Posix case (mmap)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-
-#endif
-
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
 ////////////////////////////////////////////////////////////////////
@@ -76,11 +61,7 @@ ThreadSimpleImpl::
   nassertv(_status != S_running);
 
   if (_stack != (void *)NULL) {
-#ifdef WIN32
-    VirtualFree(_stack, 0, MEM_RELEASE);
-#else  
-    munmap(_stack, _stack_size);
-#endif
+    memory_hook->mmap_free(_stack, _stack_size);
   }
 }
 
@@ -113,17 +94,8 @@ start(ThreadPriority priority, bool joinable) {
   nassertr(_status == S_new, false);
 
   nassertr(_stack == NULL, false);
-  _stack_size = (size_t)thread_stack_size;
-
-#ifdef WIN32
-  // Windows case.
-  _stack = (unsigned char *)VirtualAlloc(NULL, _stack_size, MEM_COMMIT | MEM_RESERVE,
-                                         PAGE_EXECUTE_READWRITE);
-#else
-  // Posix case.
-  _stack = (unsigned char *)mmap(NULL, _stack_size, PROT_READ | PROT_WRITE | PROT_EXEC, 
-                                 MAP_PRIVATE | MAP_ANON, -1, 0);
-#endif
+  _stack_size = memory_hook->round_up_to_page_size((size_t)thread_stack_size);
+  _stack = (unsigned char *)memory_hook->mmap_alloc(_stack_size, true);
 
   _joinable = joinable;
   _status = S_running;

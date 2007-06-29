@@ -24,6 +24,7 @@
 #include "notifySeverity.h"
 #include "configVariableEnum.h"
 #include "configFlags.h"
+#include "memoryBase.h"
 
 #include <vector>
 
@@ -36,7 +37,7 @@
 //               created within a package if a finer grain of control
 //               is required.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG NotifyCategory : public ConfigFlags {
+class EXPCL_DTOOLCONFIG NotifyCategory : public MemoryBase, public ConfigFlags {
 private:
   NotifyCategory(const string &fullname, const string &basename,
                  NotifyCategory *parent);

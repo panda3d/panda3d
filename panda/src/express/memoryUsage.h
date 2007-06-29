@@ -27,7 +27,7 @@
 #include "memoryInfo.h"
 #include "memoryUsagePointerCounts.h"
 #include "pmap.h"
-#include "dallocator.h"
+#include "memoryHook.h"
 
 class ReferenceCount;
 class MemoryUsagePointers;
@@ -42,7 +42,7 @@ class MemoryUsagePointers;
 //               When compiled with NDEBUG set, this entire class does
 //               nothing and compiles to nothing.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS MemoryUsage {
+class EXPCL_PANDAEXPRESS MemoryUsage : public MemoryHook {
 public:
   INLINE static bool get_track_memory_usage();
 
@@ -52,10 +52,9 @@ public:
   INLINE static void remove_pointer(ReferenceCount *ptr);
 
 public:
-  static void *operator_new_handler(size_t size);
-  static void operator_delete_handler(void *ptr);
-  static void mark_pointer_handler(void *ptr, size_t size, 
-                                   ReferenceCount *ref_ptr);
+  virtual void *heap_alloc(size_t size);
+  virtual void heap_free(void *ptr);
+  virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
 #if defined(WIN32_VC) && defined(_DEBUG)
   static int win32_malloc_hook(int alloc_type, void *ptr, 
@@ -67,11 +66,12 @@ PUBLISHED:
   INLINE static bool is_tracking();
   INLINE static bool is_counting();
   INLINE static size_t get_current_cpp_size();
-  INLINE static bool has_cpp_size();
-  INLINE static size_t get_cpp_size();
-  INLINE static bool has_interpreter_size();
+  INLINE static size_t get_total_cpp_size();
+
+  INLINE static size_t get_panda_heap_size();
+  INLINE static size_t get_panda_mmap_size();
   INLINE static size_t get_interpreter_size();
-  INLINE static bool has_total_size();
+  INLINE static size_t get_external_size();
   INLINE static size_t get_total_size();
 
   INLINE static int get_num_pointers();
@@ -90,7 +90,7 @@ PUBLISHED:
   INLINE static void show_trend_ages();
 
 private:
-  MemoryUsage();
+  MemoryUsage(const MemoryHook &copy);
   static MemoryUsage *get_global_ptr();
 
   void ns_record_pointer(ReferenceCount *ptr);
@@ -100,11 +100,7 @@ private:
 
   void ns_record_void_pointer(void *ptr, size_t size);
   void ns_remove_void_pointer(void *ptr);
-  void ns_mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr);
 
-  size_t ns_get_current_cpp_size();
-  size_t ns_get_cpp_size();
-  size_t ns_get_interpreter_size();
   size_t ns_get_total_size();
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
@@ -127,8 +123,8 @@ private:
 
   // We shouldn't use a pmap, since that would be recursive!
   // Actually, it turns out that it doesn't matter, since somehow the
-  // pallocator gets used even though we specify dallocator here, so
-  // we have to make special code that handles the recursion anyway.
+  // pallocator gets used even though we don't specify it here, so we
+  // have to make special code that handles the recursion anyway.
 
   // This table stores up to two entiries for each MemoryInfo object:
   // one for the void pointer (the pointer to the beginning of the
@@ -138,19 +134,19 @@ private:
   // pointers, while others may be stored under only one pointer or
   // the other.  We don't store an entry for an object's TypedObject
   // pointer.
-  typedef map<void *, MemoryInfo *, less<void *>, dallocator<pair<void * const, MemoryInfo *> > > Table;
+  typedef map<void *, MemoryInfo *> Table;
   Table _table;
 
   // This table indexes the individual MemoryInfo objects, for unique
   // iteration.
-  typedef set<MemoryInfo *, less<MemoryInfo *>, dallocator<MemoryInfo *> > InfoSet;
+  typedef set<MemoryInfo *> InfoSet;
   InfoSet _info_set;
   bool _info_set_dirty;
 
   int _freeze_index;
   int _count;
   size_t _current_cpp_size;
-  size_t _cpp_size;
+  size_t _total_cpp_size;
   size_t _interpreter_size;
   size_t _total_size;
 
@@ -162,8 +158,7 @@ private:
 
   private:
     // Cannot use a pmap, since that would be recursive!
-    typedef map<TypeHandle, MemoryUsagePointerCounts, 
-                less<TypeHandle>, dallocator<pair<const TypeHandle, MemoryUsagePointerCounts> > > Counts;
+    typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;
@@ -188,7 +183,6 @@ private:
   bool _track_memory_usage;
   bool _count_memory_usage;
 
-  static bool _is_cpp_operator;
   static bool _recursion_protect;
 };
 

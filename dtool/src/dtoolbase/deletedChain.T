@@ -36,9 +36,8 @@ allocate(size_t size, TypeHandle type_handle) {
   alloc_size += sizeof(PN_int32);
 #endif  // NDEBUG
 
-  TVOLATILE ObjectNode *obj;
+  ObjectNode *obj;
 
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   init_lock();
   _lock->lock();
   if (_deleted_chain != (ObjectNode *)NULL) {
@@ -56,35 +55,12 @@ allocate(size_t size, TypeHandle type_handle) {
 #ifdef DO_MEMORY_USAGE
     type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
     type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-    (*global_mark_pointer)(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
+    memory_hook->mark_pointer(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
 #endif  // DO_MEMORY_USAGE
 
     return ptr;
   }
   _lock->release();
-
-#else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-  obj = _deleted_chain;
-  while (obj != (ObjectNode *)NULL) {
-    TVOLATILE ObjectNode *next = obj->_next;
-    TVOLATILE ObjectNode *result = (ObjectNode *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_deleted_chain, (void *)obj, (void *)next);
-    if (result == obj) {
-      // We got it.
-#ifdef DO_MEMORY_USAGE
-      type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
-      type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-#endif  // DO_MEMORY_USAGE
-#ifdef USE_DELETEDCHAINFLAG
-      PN_int32 orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_deleted, DCF_alive);
-      assert(orig_flag == (PN_int32)DCF_deleted);
-#endif  // NDEBUG
-      return node_to_type(obj);
-    }
-    // Someone else grabbed the top link first.  Try again.
-    obj = _deleted_chain;
-  }
-
-#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
   // If we get here, the deleted_chain is empty; we have to allocate a
   // new object from the system pool.
@@ -100,7 +76,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
 #ifdef DO_MEMORY_USAGE
   type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-  (*global_mark_pointer)(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
+  memory_hook->mark_pointer(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
 #endif  // DO_MEMORY_USAGE
 
   return ptr;
@@ -120,7 +96,7 @@ deallocate(Type *ptr, TypeHandle type_handle) {
 #ifdef DO_MEMORY_USAGE
   size_t alloc_size = sizeof(Type);
 
-  (*global_mark_pointer)(ptr, 0, make_ref_ptr(ptr));
+  memory_hook->mark_pointer(ptr, 0, make_ref_ptr(ptr));
 
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we also need to reserve space for _flag.
@@ -131,7 +107,7 @@ deallocate(Type *ptr, TypeHandle type_handle) {
 
 #endif  // DO_MEMORY_USAGE
 
-  TVOLATILE ObjectNode *obj = type_to_node(ptr);
+  ObjectNode *obj = type_to_node(ptr);
 
 #ifdef USE_DELETEDCHAINFLAG
   PN_int32 orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
@@ -144,7 +120,6 @@ deallocate(Type *ptr, TypeHandle type_handle) {
   assert(orig_flag == (PN_int32)DCF_alive);
 #endif  // NDEBUG
 
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
   // We have to test the lock again, even though we must have
   // allocated this object at some point, because Windows might make
   // multiple different DeletedChain instances for a particular Type,
@@ -157,20 +132,6 @@ deallocate(Type *ptr, TypeHandle type_handle) {
   _deleted_chain = obj;
 
   _lock->release();
-
-#else  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
-
-  TVOLATILE ObjectNode *result;
-  TVOLATILE ObjectNode *next;
-
-  do {
-    next = _deleted_chain;
-    obj->_next = next;
-    result = type_to_node(AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_deleted_chain, (void *)next, (void *)obj));
-    // Keep trying until no one else got to _deleted_chain first.
-  } while (result != next);
-
-#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +153,7 @@ validate(const Type *ptr) {
   }
 
 #ifdef USE_DELETEDCHAINFLAG
-  TVOLATILE const ObjectNode *obj = type_to_node((Type *)ptr);
+  const ObjectNode *obj = type_to_node((Type *)ptr);
   return AtomicAdjust::get(obj->_flag) == DCF_alive;
 #else
   return true;
@@ -240,7 +201,7 @@ make_ref_ptr(ReferenceCount *ptr) {
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 INLINE Type *DeletedChain<Type>::
-node_to_type(TVOLATILE TYPENAME DeletedChain<Type>::ObjectNode *node) {
+node_to_type(TYPENAME DeletedChain<Type>::ObjectNode *node) {
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we increment the pointer so that the
   // returned data does not overlap our _flags member.
@@ -267,7 +228,6 @@ type_to_node(Type *ptr) {
 #endif  // NDEBUG
 }
 
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::init_lock
 //       Access: Private
@@ -280,9 +240,7 @@ init_lock() {
     do_init_lock(_lock);
   }
 }
-#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
-#ifndef DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedChain::do_init_lock
 //       Access: Private
@@ -299,10 +257,6 @@ void DeletedChain<Type>::
 do_init_lock(MutexImpl *&lock) {
   MutexImpl *new_lock = new MutexImpl;
 
-  // Even though DELETED_CHAIN_USE_ATOMIC_EXCHANGE is not true, we
-  // will take advantage of the atomic exchange operation here, at
-  // startup.  We have to rely on something, after all, before we have
-  // created the first mutex.
   MutexImpl *result;
   result = (MutexImpl *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)lock, (void *)NULL, (void *)new_lock);
   
@@ -312,7 +266,6 @@ do_init_lock(MutexImpl *&lock) {
   
   assert(lock != (MutexImpl *)NULL);
 }
-#endif  // DELETED_CHAIN_USE_ATOMIC_EXCHANGE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StaticDeletedChain::allocate

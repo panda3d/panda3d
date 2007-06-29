@@ -33,11 +33,7 @@
 #include "config_express.h"
 #include <algorithm>
 
-MemoryUsage *MemoryUsage::_global_ptr = (MemoryUsage *)NULL;
-
-// This flag is set true in is_counting() mode to indicate that the
-// malloc operation is coming from C++ operator new or delete.
-bool MemoryUsage::_is_cpp_operator = false;
+MemoryUsage *MemoryUsage::_global_ptr;
 
 // This flag is used to protect the operator new/delete handlers
 // against recursive entry.
@@ -90,7 +86,7 @@ void MemoryUsage::TypeHistogram::
 show() const {
   // First, copy the relevant information to a vector so we can sort
   // by counts.  Don't use a pvector.
-  typedef vector<TypeHistogramCountSorter, dallocator<TypeHistogramCountSorter> > CountSorter;
+  typedef vector<TypeHistogramCountSorter> CountSorter;
   CountSorter count_sorter;
   Counts::const_iterator ci;
   for (ci = _counts.begin(); ci != _counts.end(); ++ci) {
@@ -191,20 +187,18 @@ choose_bucket(double age) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::operator_new_handler
-//       Access: Public, Static
-//  Description: This is set up as a global handler function (by
-//               redefining a function pointer in Dtool) for the
-//               operator new function.  If track-memory-usage is
-//               enabled, this function will be called whenever any
-//               new operator within the Panda source is invoked.
+//     Function: MemoryUsage::heap_alloc
+//       Access: Public, Virtual
+//  Description: Allocates a block of memory from the heap, similar to
+//               malloc().  This will never return NULL; it will abort
+//               instead if memory is not available.
 ////////////////////////////////////////////////////////////////////
 void *MemoryUsage::
-operator_new_handler(size_t size) {
+heap_alloc(size_t size) {
   void *ptr;
 
   if (_recursion_protect) {
-    ptr = default_operator_new(size);
+    ptr = MemoryHook::heap_alloc(size);
     if (express_cat.is_spam()) {
       express_cat.spam()
         << "Allocating pointer " << (void *)ptr
@@ -212,9 +206,8 @@ operator_new_handler(size_t size) {
     }
 
   } else {
-    MemoryUsage *mu = get_global_ptr();
-    if (mu->_track_memory_usage) {
-      ptr = default_operator_new(size);
+    if (_track_memory_usage) {
+      ptr = MemoryHook::heap_alloc(size);
       /*
       if (express_cat.is_spam()) {
         express_cat.spam()
@@ -226,9 +219,7 @@ operator_new_handler(size_t size) {
       get_global_ptr()->ns_record_void_pointer(ptr, size);
 
     } else {
-      _is_cpp_operator = true;
-      ptr = default_operator_new(size);
-      _is_cpp_operator = false;
+      ptr = MemoryHook::heap_alloc(size);
     }
   }
 
@@ -236,58 +227,98 @@ operator_new_handler(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::operator_delete_handler
-//       Access: Public, Static
-//  Description: This is set up as a global handler function (by
-//               redefining a function pointer in Dtool) for the
-//               operator delete function.  If track-memory-usage is
-//               enabled, this function will be called whenever any
-//               delete operator within the Panda source is invoked.
+//     Function: MemoryUsage::heap_free
+//       Access: Public, Virtual
+//  Description: Releases a block of memory previously allocated via
+//               heap_alloc.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
-operator_delete_handler(void *ptr) {
+heap_free(void *ptr) {
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
         << "Deleting pointer " << (void *)ptr
         << " during recursion protect.\n";
     }
-    default_operator_delete(ptr);
+    MemoryHook::heap_free(ptr);
 
   } else {
-    MemoryUsage *mu = get_global_ptr();
-    if (mu->_track_memory_usage) {
+    if (_track_memory_usage) {
       /*
       if (express_cat.is_spam()) {
         express_cat.spam()
           << "Removing pointer " << (void *)ptr << "\n";
       }
       */
-      mu->ns_remove_void_pointer(ptr);
-      default_operator_delete(ptr);
+      ns_remove_void_pointer(ptr);
+      MemoryHook::heap_free(ptr);
     } else {
-      _is_cpp_operator = true;
-      default_operator_delete(ptr);
-      _is_cpp_operator = false;
+      MemoryHook::heap_free(ptr);
     }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::mark_pointer_handler
-//       Access: Public, Static
-//  Description: This special function is similar to operator_new_handler,
-//               but instead of allocating new memory it simply marks
-//               existing memory as already having been allocated.
+//     Function: MemoryUsage::mark_pointer
+//       Access: Public, Virtual
+//  Description: This special method exists only to provide a callback
+//               hook into MemoryUsage.  It indicates that the
+//               indicated pointer, allocated from somewhere other
+//               than a call to heap_alloc(), now contains a pointer
+//               to the indicated ReferenceCount object.  If orig_size
+//               is 0, it indicates that the ReferenceCount object has
+//               been destroyed.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
-mark_pointer_handler(void *ptr, size_t size, 
-                     ReferenceCount *ref_ptr) {
-  if (!_recursion_protect) {
-    MemoryUsage *mu = get_global_ptr();
-    if (mu->_track_memory_usage) {
-      mu->ns_mark_pointer(ptr, size, ref_ptr);
+mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
+  if (_recursion_protect || !_track_memory_usage) {
+    return;
+  }
+
+  if (express_cat.is_spam()) {
+    express_cat.spam()
+      << "Marking pointer " << ptr << ", size " << size 
+      << ", ref_ptr = " << ref_ptr << "\n";
+  }
+
+  if (size != 0) {
+    // We're recording this pointer as now in use.
+    ns_record_void_pointer(ptr, size);
+
+    if (ref_ptr != (ReferenceCount *)NULL) {
+      // Make the pointer typed.  This is particularly necessary in
+      // case the ref_ptr is a different value than the base void
+      // pointer; this may be our only opportunity to associate the
+      // two pointers.
+      Table::iterator ti;
+      ti = _table.find(ptr);
+      nassertv(ti != _table.end());
+      MemoryInfo *info = (*ti).second;
+
+      info->_ref_ptr = ref_ptr;
+      info->_static_type = ReferenceCount::get_class_type();
+      info->_dynamic_type = ReferenceCount::get_class_type();
+      info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
+      
+      if (ref_ptr != ptr) {
+        _recursion_protect = true;
+        
+        pair<Table::iterator, bool> insert_result =
+          _table.insert(Table::value_type((void *)ref_ptr, info));
+        assert(insert_result.first != _table.end());
+        if (!insert_result.second) {
+          express_cat.warning()
+            << "Attempt to mark pointer " << ptr << " as ReferenceCount "
+            << ref_ptr << ", which was already allocated.\n";
+        }
+        
+        _recursion_protect = false;
+      }
     }
+
+  } else {
+    // We're removing this pointer from use.
+    ns_remove_void_pointer(ptr);
   }
 }
 
@@ -324,13 +355,6 @@ win32_malloc_hook(int alloc_type, void *ptr,
       
       mu->_total_size += increment;
 
-      /*
-        This isn't working reliably right now.
-      if (_is_cpp_operator) {
-        mu->_cpp_size += increment;
-      }
-      */
-
 #ifdef TRACK_IN_INTERPRETER
       if (in_interpreter) {
         mu->_interpreter_size += increment;
@@ -351,7 +375,7 @@ win32_malloc_hook(int alloc_type, void *ptr,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsage::
-MemoryUsage() {
+MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   // We must get these variables here instead of in
   // config_express.cxx, because we need to know it at static init
   // time, and who knows when the code in config_express will be
@@ -378,20 +402,8 @@ MemoryUsage() {
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
-  if (_track_memory_usage) {
-    // Redefine the global pointers for operator new and operator
-    // delete (these pointers are defined up in DTOOL) to vector into
-    // this class.
-    global_operator_new = &operator_new_handler;
-    global_operator_delete = &operator_delete_handler;
-    global_mark_pointer = &mark_pointer_handler;
-  }
-
 #if defined(WIN32_VC) && defined(_DEBUG)
   if (_count_memory_usage) {
-    global_operator_new = &operator_new_handler;
-    global_operator_delete = &operator_delete_handler;
-    global_mark_pointer = &mark_pointer_handler;
     _CrtSetAllocHook(&win32_malloc_hook);
   }
 #endif
@@ -400,7 +412,7 @@ MemoryUsage() {
   _freeze_index = 0;
   _count = 0;
   _current_cpp_size = 0;
-  _cpp_size = 0;
+  _total_cpp_size = 0;
   _interpreter_size = 0;
   _total_size = 0;
 }
@@ -414,7 +426,9 @@ MemoryUsage() {
 MemoryUsage *MemoryUsage::
 get_global_ptr() {
   if (_global_ptr == (MemoryUsage *)NULL) {
-    _global_ptr = new MemoryUsage;
+    init_memory_hook();
+    _global_ptr = new MemoryUsage(*memory_hook);
+    memory_hook = _global_ptr;
   }
 
   return _global_ptr;
@@ -586,7 +600,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
       if (info->_void_ptr == NULL) {
         // That was the last entry.  Remove it altogether.
-        _cpp_size -= info->_size;
+        _total_cpp_size -= info->_size;
         if (info->_freeze_index == _freeze_index) {
           _current_cpp_size -= info->_size;
           _count--;
@@ -643,7 +657,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     } else {
       _current_cpp_size += size;
     }
-    _cpp_size += size - info->_size;
+    _total_cpp_size += size - info->_size;
 
     info->_void_ptr = ptr;
     info->_size = size;
@@ -713,7 +727,7 @@ ns_remove_void_pointer(void *ptr) {
     _table.erase(ti);
     _recursion_protect = false;
 
-    _cpp_size -= info->_size;
+    _total_cpp_size -= info->_size;
     if (info->_freeze_index == _freeze_index) {
       --_count;
       _current_cpp_size -= info->_size;
@@ -722,117 +736,6 @@ ns_remove_void_pointer(void *ptr) {
     _info_set_dirty = true;
     delete info;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_mark_pointer
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void MemoryUsage::
-ns_mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
-  if (express_cat.is_spam()) {
-    express_cat.spam()
-      << "Marking pointer " << ptr << ", size " << size 
-      << ", ref_ptr = " << ref_ptr << "\n";
-  }
-
-  if (size != 0) {
-    // We're recording this pointer as now in use.
-    ns_record_void_pointer(ptr, size);
-
-    if (ref_ptr != (ReferenceCount *)NULL) {
-      // Make the pointer typed.  This is particularly necessary in
-      // case the ref_ptr is a different value than the base void
-      // pointer; this may be our only opportunity to associate the
-      // two pointers.
-      Table::iterator ti;
-      ti = _table.find(ptr);
-      nassertv(ti != _table.end());
-      MemoryInfo *info = (*ti).second;
-
-      info->_ref_ptr = ref_ptr;
-      info->_static_type = ReferenceCount::get_class_type();
-      info->_dynamic_type = ReferenceCount::get_class_type();
-      info->_flags |= MemoryInfo::F_reconsider_dynamic_type;
-      
-      if (ref_ptr != ptr) {
-        _recursion_protect = true;
-        
-        pair<Table::iterator, bool> insert_result =
-          _table.insert(Table::value_type((void *)ref_ptr, info));
-        assert(insert_result.first != _table.end());
-        if (!insert_result.second) {
-          express_cat.warning()
-            << "Attempt to mark pointer " << ptr << " as ReferenceCount "
-            << ref_ptr << ", which was already allocated.\n";
-        }
-        
-        _recursion_protect = false;
-      }
-    }
-
-  } else {
-    // We're removing this pointer from use.
-    ns_remove_void_pointer(ptr);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_current_cpp_size
-//       Access: Private
-//  Description: Returns the total number of bytes of allocated memory
-//               via the C++ operators new and delete as counted,
-//               not including the memory previously frozen.
-////////////////////////////////////////////////////////////////////
-size_t MemoryUsage::
-ns_get_current_cpp_size() {
-  return _current_cpp_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_cpp_size
-//       Access: Private
-//  Description: Returns the total number of bytes of allocated memory
-//               via the C++ operators new and delete as counted,
-//               including the memory previously frozen.
-////////////////////////////////////////////////////////////////////
-size_t MemoryUsage::
-ns_get_cpp_size() {
-  return _cpp_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_interpreter_size
-//       Access: Private
-//  Description: Returns the total number of bytes of allocated memory
-//               while the high-level languange code is running.  This
-//               number is only meaningful if both Panda and the
-//               high-level language are single-threaded, and running
-//               in the same thread.
-////////////////////////////////////////////////////////////////////
-size_t MemoryUsage::
-ns_get_interpreter_size() {
-  return _interpreter_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::ns_get_total_size
-//       Access: Private
-//  Description: Returns the total size of the dynamic heap, as nearly
-//               as can be determined, including all allocated memory
-//               if possible, in addition to that tracked by
-//               get_cpp_size().
-////////////////////////////////////////////////////////////////////
-size_t MemoryUsage::
-ns_get_total_size() {
-#if defined(WIN32_VC) && defined(_DEBUG)
-  return _total_size;
-#else
-  // If we aren't tracking _total_size, report _cpp_size as the next
-  // best thing.
-  return _cpp_size;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

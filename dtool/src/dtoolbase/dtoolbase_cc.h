@@ -142,59 +142,21 @@ typedef ios::seekdir ios_seekdir;
 // level.
 class ReferenceCount;
 
-// Now redefine global operators new and delete so we can optionally
-// provide custom handlers for them.  The MemoryUsage class in Panda
-// takes advantage of this to track the size of allocated pointers.
+// We need a pointer to a global MemoryHook object, to manage all
+// malloc and free requests from Panda.  See the comments in
+// MemoryHook itself.
+class MemoryHook;
+EXPCL_DTOOL extern MemoryHook *memory_hook;
+EXPCL_DTOOL void init_memory_hook();
+
+// Now redefine some handy macros to hook into the above MemoryHook
+// object.
 #ifndef USE_MEMORY_NOWRAPPERS
-EXPCL_DTOOL void *default_operator_new(size_t size);
-EXPCL_DTOOL void default_operator_delete(void *ptr);
-EXPCL_DTOOL void default_mark_pointer(void *ptr, size_t orig_size,
-                                      ReferenceCount *ref_ptr);
-
-extern EXPCL_DTOOL void *(*global_operator_new)(size_t size);
-extern EXPCL_DTOOL void (*global_operator_delete)(void *ptr);
-extern EXPCL_DTOOL void (*global_mark_pointer)(void *ptr, size_t size,
-                                               ReferenceCount *ref_ptr);
-
-#ifdef REDEFINE_GLOBAL_OPERATOR_NEW
-#ifdef GLOBAL_OPERATOR_NEW_EXCEPTIONS
-
-// Redefinitions of operator new/delete, for O1 - O3 builds (!NDEBUG)
-// only.  These flavors are for modern compilers that expect these
-// function prototypes to handle exceptions.
-INLINE void *operator new(size_t size) throw (std::bad_alloc) {
-  return (*global_operator_new)(size);
-}
-INLINE void *operator new[](size_t size) throw (std::bad_alloc) {
-  return (*global_operator_new)(size);
-}
-
-INLINE void operator delete(void *ptr) throw() {
-  (*global_operator_delete)(ptr);
-}
-INLINE void operator delete[](void *ptr) throw() {
-  (*global_operator_delete)(ptr);
-}
-#else   // GLOBAL_OPERATOR_NEW_EXCEPTIONS
-
-// The same definitions as above, for compilers that don't expect
-// exception handing in global operator new/delete functions.
-INLINE void *operator new(size_t size) {
-  return (*global_operator_new)(size);
-}
-INLINE void *operator new[](size_t size) {
-  return (*global_operator_new)(size);
-}
-
-INLINE void operator delete(void *ptr) {
-  (*global_operator_delete)(ptr);
-}
-INLINE void operator delete[](void *ptr) {
-  (*global_operator_delete)(ptr);
-}
-
-#endif  // GLOBAL_OPERATOR_NEW_EXCEPTIONS
-#endif  // REDEFINE_GLOBAL_OPERATOR_NEW
+#define PANDA_MALLOC(size) (memory_hook->heap_alloc(size))
+#define PANDA_FREE(ptr) memory_hook->heap_free(ptr)
+#else
+#define PANDA_MALLOC(size) malloc(size)
+#define PANDA_FREE(ptr) free(ptr)
 #endif  // USE_MEMORY_NOWRAPPERS
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)

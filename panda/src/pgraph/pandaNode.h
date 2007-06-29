@@ -665,6 +665,8 @@ public:
                   TypedWritable::get_class_type(),
                   ReferenceCount::get_class_type());
     CData::init_type();
+    Down::init_type();
+    Up::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
