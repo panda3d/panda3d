@@ -455,7 +455,7 @@ get_next_higher_different_bit(int low_bit) const {
     return low_bit;
   }
   int b2 = _array[w].get_next_higher_different_bit(b);
-  if (b2 != b) {
+  if (b2 != b && b2 < num_bits_per_word) {
     // The next higher bit is within the same word.
     return w * num_bits_per_word + b2;
   }
@@ -467,13 +467,15 @@ get_next_higher_different_bit(int low_bit) const {
     ++w2;
   }
   if (w2 >= num_words) {
-    return low_bit;
+    // All bits higher are the same value.
+    int is_on = _array[w].get_bit(b);
+    return is_on ? (num_words * num_bits_per_word) : low_bit;
   }
   if (_array[w2].get_bit(0) != _array[w].get_bit(b)) {
     // The first bit of word w2 is different.
     return w2 * num_bits_per_word;
   }
-
+  
   b2 = _array[w2].get_next_higher_different_bit(0);
   return w2 * num_bits_per_word + b2;
 }
