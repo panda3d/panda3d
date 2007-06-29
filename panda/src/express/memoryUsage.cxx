@@ -336,30 +336,28 @@ win32_malloc_hook(int alloc_type, void *ptr,
                   size_t size, int block_use, long request, 
                   const unsigned char *filename, int line) {
   MemoryUsage *mu = get_global_ptr();
-  if (mu->_count_memory_usage) {
-    int increment = 0;
-    switch (alloc_type) {
-    case _HOOK_ALLOC:
-      increment = size;
-      break;
-      
-    case _HOOK_REALLOC:
-      increment = size - _msize(ptr);
-      break;
-      
-    case _HOOK_FREE:
-      increment = - ((int)_msize(ptr));
-      break;
-    }
+  int increment = 0;
+  switch (alloc_type) {
+  case _HOOK_ALLOC:
+    increment = size;
+    break;
     
-    mu->_total_size += increment;
+  case _HOOK_REALLOC:
+    increment = size - _msize(ptr);
+    break;
+    
+  case _HOOK_FREE:
+    increment = - ((int)_msize(ptr));
+    break;
+  }
+  
+  mu->_total_size += increment;
 
 #ifdef TRACK_IN_INTERPRETER
-    if (in_interpreter) {
-      mu->_interpreter_size += increment;
-    }
-#endif
+  if (in_interpreter) {
+    mu->_interpreter_size += increment;
   }
+#endif
 
   return true;
 }
@@ -384,26 +382,18 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
      PRC_DESC("Set this to true to enable full-force tracking of C++ allocations "
               "and recordkeeping by type.  It's quite expensive."));
 
-#if defined(WIN32_VC) && defined(_DEBUG)
-  _count_memory_usage = ConfigVariableBool
-    ("count-memory-usage", _track_memory_usage,
-     PRC_DESC("This is a much lighter-weight version of track-memory-usage, and it "
-              "only tracks the total memory allocation.  However, it only exists in "
-              "certain build environments (in particular, only in an Opt1 or "
-              "Opt2 build on Windows."));
-     
-#else
   _count_memory_usage = false;
-#endif
 
 #ifdef USE_MEMORY_NOWRAPPERS
 #error Cannot compile MemoryUsage without malloc wrappers!
 #endif
 
 #if defined(WIN32_VC) && defined(_DEBUG)
-  if (_count_memory_usage) {
-    _CrtSetAllocHook(&win32_malloc_hook);
-  }
+  // On a debug Windows build, we can set this malloc hook which
+  // allows tracking every malloc call, even from subordinate
+  // libraries.
+  _CrtSetAllocHook(&win32_malloc_hook);
+  _count_memory_usage = true;
 #endif
 
   _info_set_dirty = false;

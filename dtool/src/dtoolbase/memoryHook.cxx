@@ -295,13 +295,25 @@ heap_free_array(void *ptr) {
 ////////////////////////////////////////////////////////////////////
 bool MemoryHook::
 heap_trim(size_t pad) {
+  bool trimmed = false;
+
 #if defined(USE_MEMORY_DLMALLOC) || (defined(USE_MEMORY_PTMALLOC2) && !defined(linux))
-  return (dlmalloc_trim(pad) != 0);
-#else
   // Since malloc_trim() isn't standard C, we can't be sure it exists
-  // on a given platform.
-  return 0;
+  // on a given platform.  But if we're using ALTERNATIVE_MALLOC, we
+  // know we have dlmalloc_trim.
+  if (dlmalloc_trim(pad)) {
+    trimmed = true;
+  }
 #endif
+
+#ifdef WIN32
+  // Also, on Windows we have _heapmin().
+  if (_heapmin() == 0) {
+    trimmed = true;
+  }
+#endif
+
+  return trimmed;
 }
 
 ////////////////////////////////////////////////////////////////////

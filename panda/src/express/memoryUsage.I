@@ -97,8 +97,8 @@ is_tracking() {
 //     Function: MemoryUsage::is_counting
 //       Access: Public, Static
 //  Description: Returns true if the MemoryUsage object is currently
-//               at least counting memory (e.g. count-memory-usage is
-//               configured #t), even if it's not fully tracking it.
+//               at least counting memory (e.g. this is a Windows
+//               debug build), even if it's not fully tracking it.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MemoryUsage::
 is_counting() {
@@ -213,10 +213,18 @@ INLINE size_t MemoryUsage::
 get_external_size() {
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
+    // We can only possibly know this with memory counting, which
+    // tracks every malloc call.
+
 #if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
-    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size - mu->_interpreter_size;
-#else
+    // With alternative malloc, none of the Panda allocated memory
+    // shows up in total_size, so anything there is either interpreter
+    // or external.
     return mu->_total_size - mu->_interpreter_size;
+#else
+    // Without alternative malloc, the Panda allocated memory is also
+    // included in total_size, so we have to subtract it out.
+    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size - mu->_interpreter_size;
 #endif
   } else {
     return 0;
