@@ -53,16 +53,55 @@ AsyncTaskManager(const string &name, int num_threads) :
 ////////////////////////////////////////////////////////////////////
 AsyncTaskManager::
 ~AsyncTaskManager() {
+  stop_threads();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::stop_threads
+//       Access: Published
+//  Description: Stops any threads that are currently running.  If any
+//               tasks are still pending and have not yet been picked
+//               up by a thread, they will not be serviced unless
+//               poll() or start_threads() is later called.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+stop_threads() {
   if (_state == S_started) {
     // Clean up all of the threads.
     MutexHolder holder(_lock);
-    _state = S_shutdown;
-    _cvar.signal_all();
+    if (_state == S_started) {
+      _state = S_shutdown;
+      _cvar.signal_all();
 
-    Threads::iterator ti;
-    for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-      (*ti)->join();
+      Threads wait_threads;
+      wait_threads.swap(_threads);
+      
+      // We have to release the lock while we join, so the threads can
+      // wake up and see that we're shutting down.
+      _lock.release();
+      Threads::iterator ti;
+      for (ti = wait_threads.begin(); ti != wait_threads.end(); ++ti) {
+        (*ti)->join();
+      }
+      _lock.lock();
+
+      _state = S_initial;
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::start_threads
+//       Access: Published
+//  Description: Starts any requested threads to service the tasks on
+//               the queue.  This is normally not necessary, since
+//               adding a task will start the threads automatically.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+start_threads() {
+  if (_state == S_initial) {
+    MutexHolder holder(_lock);
+    do_start_threads();
   }
 }
 
@@ -81,19 +120,7 @@ add(AsyncTask *task) {
            task->_state == AsyncTask::S_inactive);
   nassertv(find_task(task) == -1);
 
-  // Attempt to start the threads, if we haven't already.
-  if (_state == S_initial) {
-    _state = S_started;
-    if (Thread::is_threading_supported()) {
-      _threads.reserve(_num_threads);
-      for (int i = 0; i < _num_threads; ++i) {
-        PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
-        if (thread->start(TP_low, true)) {
-          _threads.push_back(thread);
-        }
-      }
-    }
-  }
+  do_start_threads();
 
   task->_manager = this;
   task->_state = AsyncTask::S_active;
@@ -118,7 +145,7 @@ add(AsyncTask *task) {
 //               execute the task before returning in the non-threaded
 //               case.  In the threaded case, this method behaves
 //               exactly the same as add().
-
+//
 //               The return value is true if the task has been added
 //               and is still pending, false if it has completed.
 ////////////////////////////////////////////////////////////////////
@@ -130,19 +157,7 @@ add_and_do(AsyncTask *task) {
            task->_state == AsyncTask::S_inactive, false);
   nassertr(find_task(task) == -1, false);
 
-  // Attempt to start the threads, if we haven't already.
-  if (_state == S_initial) {
-    _state = S_started;
-    if (Thread::is_threading_supported()) {
-      _threads.reserve(_num_threads);
-      for (int i = 0; i < _num_threads; ++i) {
-        PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
-        if (thread->start(TP_low, true)) {
-          _threads.push_back(thread);
-        }
-      }
-    }
-  }
+  do_start_threads();
 
   task->_manager = this;
   task->_state = AsyncTask::S_active;
@@ -232,7 +247,7 @@ has_task(AsyncTask *task) const {
 void AsyncTaskManager::
 poll() {
   MutexHolder holder(_lock);
-  if (_threads.empty()) {
+  if (!_threads.empty()) {
     return;
   }
 
@@ -386,6 +401,28 @@ task_done(AsyncTask *task) {
     PT_Event event = new Event(task->_done_event);
     event->add_parameter(EventParameter(task));
     throw_event(event);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::do_start_threads
+//       Access: Protected
+//  Description: The private implementation of start_threads; assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+do_start_threads() {
+  if (_state == S_initial) {
+    _state = S_started;
+    if (Thread::is_threading_supported()) {
+      _threads.reserve(_num_threads);
+      for (int i = 0; i < _num_threads; ++i) {
+        PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
+        if (thread->start(TP_low, true)) {
+          _threads.push_back(thread);
+        }
+      }
+    }
   }
 }
 

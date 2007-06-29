@@ -53,6 +53,9 @@ PUBLISHED:
   virtual ~AsyncTaskManager();
 
   INLINE int get_num_threads() const;
+  BLOCKING void stop_threads();
+  void start_threads();
+  INLINE bool is_started() const;
 
   void add(AsyncTask *task);
   bool add_and_do(AsyncTask *task);
@@ -72,7 +75,9 @@ protected:
   int find_task(AsyncTask *task) const;
   void service_one_task(AsyncTaskManagerThread *thread);
   void task_done(AsyncTask *task);
+  void do_start_threads();
 
+protected:
   class AsyncTaskManagerThread : public Thread {
   public:
     AsyncTaskManagerThread(AsyncTaskManager *manager);
