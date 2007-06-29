@@ -106,12 +106,12 @@ PUBLISHED:
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
   
-  int get_surface_type() ;
-  int get_collide_id() ;
-  int set_collide_id( int collide_id);
-  void set_surface_type( int surface_type);
+  //int get_surface_type() ;
+  //int get_collide_id() ;
+  //int set_collide_id( int collide_id);
+  //void set_surface_type( int surface_type);
   
-  int test_collide_id( int collide_id);
+  //int test_collide_id( int collide_id);
 
 
   OdeSpace get_space() const;

@@ -45,6 +45,7 @@ OdeGeom::
   */
 }
 
+/*
 int OdeGeom::
 get_surface_type() 
 {
@@ -82,6 +83,7 @@ test_collide_id(int collide_id)
     odegeom_cat.debug() << "test_collide_id stop" << "\n";
     return test;
 }
+*/
 
 void OdeGeom::
 destroy() {
