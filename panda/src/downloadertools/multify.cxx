@@ -622,7 +622,7 @@ main(int argc, char *argv[]) {
   // first argument if there is not one already.
   if (argc >= 2) {
     if (*argv[1] != '-' && *argv[1] != '\0') {
-      char *new_arg = new char[strlen(argv[1]) + 2];
+      char *new_arg = (char *)PANDA_MALLOC_ARRAY(strlen(argv[1]) + 2);
       new_arg[0] = '-';
       strcpy(new_arg + 1, argv[1]);
       argv[1] = new_arg;

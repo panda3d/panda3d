@@ -26,7 +26,7 @@
 Buffer::
 Buffer(int size) {
   _length = size;
-  _buffer = new char[_length];
+  _buffer = (char *)PANDA_MALLOC_ARRAY(_length);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,6 +36,6 @@ Buffer(int size) {
 ////////////////////////////////////////////////////////////////////
 Buffer::
 ~Buffer() {
-  delete _buffer;
+  PANDA_FREE_ARRAY(_buffer);
 }
 

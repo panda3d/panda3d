@@ -160,6 +160,7 @@ private:
   static PStatCollector _vdata_save_pcollector;
   static PStatCollector _vdata_restore_pcollector;
   static PStatCollector _thread_wait_pcollector;
+  static PStatCollector _alloc_pages_pcollector;
 
 public:
   static TypeHandle get_class_type() {

@@ -57,6 +57,8 @@ PUBLISHED:
   void set_system_tag(const string &system, const string &tag,
                       const string &value);
 
+  bool heap_trim(size_t pad);
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 

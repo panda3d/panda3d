@@ -66,7 +66,7 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
   _size = _max-_min+1; // +1 because min and max are inclusive.
   nassertv(_size != 0); // size must be > 0.
 
-  _table = new PN_uint32[_size];
+  _table = (PN_uint32 *)PANDA_MALLOC_ARRAY(_size * sizeof(PN_uint32));
   nassertv(_table); // This should be redundant if new throws an exception.
 
   for (PN_uint32 i = 0; i < _size; ++i) {
@@ -86,7 +86,7 @@ UniqueIdAllocator(PN_uint32 min, PN_uint32 max)
 UniqueIdAllocator::
 ~UniqueIdAllocator() {
   uniqueIdAllocator_debug("~UniqueIdAllocator()");
-  delete [] _table;
+  PANDA_FREE_ARRAY(_table);
 }
 
 

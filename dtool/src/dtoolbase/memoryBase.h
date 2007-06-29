@@ -32,24 +32,24 @@
 
 #define ALLOC_MEMORY_BASE                                    \
   inline void *operator new(size_t size) {                   \
-    return PANDA_MALLOC(size);                     \
+    return PANDA_MALLOC_SINGLE(size);                     \
   }                                                          \
   inline void *operator new(size_t size, void *ptr) {        \
     return ptr;                                              \
   }                                                          \
   inline void operator delete(void *ptr) {                   \
-    PANDA_FREE(ptr);                          \
+    PANDA_FREE_SINGLE(ptr);                          \
   }                                                          \
   inline void operator delete(void *ptr, void *) {           \
   }                                                          \
   inline void *operator new[](size_t size) {                 \
-    return PANDA_MALLOC(size);                     \
+    return PANDA_MALLOC_ARRAY(size);                     \
   }                                                          \
   inline void *operator new[](size_t size, void *ptr) {      \
     return ptr;                                              \
   }                                                          \
   inline void operator delete[](void *ptr) {                 \
-    PANDA_FREE(ptr);                          \
+    PANDA_FREE_ARRAY(ptr);                          \
   }                                                          \
   inline void operator delete[](void *, void *) {            \
   }

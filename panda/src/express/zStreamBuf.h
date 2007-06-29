@@ -62,6 +62,8 @@ private:
   z_stream _z_source;
   z_stream _z_dest;
 
+  char *_buffer;
+
   // We need to store the decompression buffer on the class object,
   // because zlib might not consume all of the input characters at
   // each call to inflate().  This isn't a problem on output because

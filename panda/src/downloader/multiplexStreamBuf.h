@@ -21,10 +21,6 @@
 
 #include "pandabase.h"
 
-#ifdef OLD_HAVE_IPC
-#include <ipc_mutex.h>
-#endif
-
 #include "pvector.h"
 #include <stdio.h>
 
@@ -81,10 +77,6 @@ private:
   Outputs _outputs;
 
   string _line_buffer;
-
-#ifdef OLD_HAVE_IPC
-  mutex _lock;
-#endif
 };
 
 #include "multiplexStreamBuf.I"

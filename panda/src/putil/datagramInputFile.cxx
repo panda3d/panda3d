@@ -149,18 +149,18 @@ get_datagram(Datagram &data) {
   // temporary buffer from the heap.  Otherwise, we can get away with
   // allocating it on the stack, via alloca().
   if (num_bytes > 65536) {
-    char *buffer = new char[num_bytes];
+    char *buffer = (char *)PANDA_MALLOC_ARRAY(num_bytes);
     nassertr(buffer != (char *)NULL, false);
 
     _in->read(buffer, num_bytes);
     if (_in->fail() || _in->eof()) {
       _error = true;
-      delete[] buffer;
+      PANDA_FREE_ARRAY(buffer);
       return false;
     }
 
     data = Datagram(buffer, num_bytes);
-    delete[] buffer;
+    PANDA_FREE_ARRAY(buffer);
 
   } else {
     char *buffer = (char *)alloca(num_bytes);

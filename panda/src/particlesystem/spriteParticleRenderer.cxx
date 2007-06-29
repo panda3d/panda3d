@@ -473,7 +473,7 @@ init_geoms() {
   
   // Reset render() data structures
   for (i = 0; i < (int)_ttl_count.size(); ++i) {
-    delete [] _ttl_count[i];
+    PANDA_FREE_ARRAY(_ttl_count[i]);
   }
   _anim_size.resize(anim_count);
   _ttl_count.clear();
@@ -500,7 +500,7 @@ init_geoms() {
 
     // For each frame of the animation...
     for (j = 0; j < _anim_size[i]; ++j) {
-      _ttl_count[i] = new int[_anim_size[i]];
+      _ttl_count[i] = (int *)PANDA_MALLOC_ARRAY(_anim_size[i] * sizeof(int));
       _vdata[i].push_back(new GeomVertexData("particles", format, Geom::UH_dynamic));
       PT(Geom) geom = new Geom(_vdata[i][j]);
       _sprite_primitive[i].push_back((Geom*)geom);

@@ -136,7 +136,7 @@ create_cg_image(const PNMImage &pnm_image) {
 
   // Now convert the pixel data to a format friendly to
   // CGImageCreate().
-  char *char_array = new char[num_bytes];
+  char *char_array = (char *)PANDA_MALLOC_ARRAY(num_bytes);
 
   xelval *dp = (xelval *)char_array;
   for (size_t yi = 0; yi < height; ++yi) {
@@ -180,7 +180,7 @@ create_cg_image(const PNMImage &pnm_image) {
 void osxGraphicsPipe::
 release_data(void *info, const void *data, size_t size) {
   char *char_array = (char *)data;
-  delete[] char_array;
+  PANDA_FREE_ARRAY(char_array);
 }
 
 ////////////////////////////////////////////////////////////////////

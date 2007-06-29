@@ -98,7 +98,7 @@ PNMFileTypeSGI::Writer::
     // Rewrite the table with the correct values in it.
     _file->seekp(table_start);
     write_table();
-    delete[] table;
+    PANDA_FREE_ARRAY(table);
   }
 }
 
@@ -163,7 +163,7 @@ write_header() {
   }
 
   if( sgi_storage_type != STORAGE_VERBATIM ) {
-    table = new TabEntry[_num_channels * _y_size];
+    table = (TabEntry *)PANDA_MALLOC_ARRAY(_num_channels * _y_size * sizeof(TabEntry));
     memset(table, 0, _num_channels * _y_size * sizeof(TabEntry));
   }
 
@@ -209,7 +209,7 @@ write_row(xel *row_data, xelval *alpha_data) {
     write_channels(channel, put_big_short);
 
   for (int i = 0; i < _num_channels; i++) {
-    delete[] channel[i].data;
+    PANDA_FREE_ARRAY(channel[i].data);
   }
 
   current_row--;
@@ -278,7 +278,7 @@ build_scanline(ScanLine output[], xel *row_data, xelval *alpha_data) {
   if( sgi_storage_type != STORAGE_VERBATIM ) {
     rletemp = (ScanElem *)alloca(WORSTCOMPR(_x_size) * sizeof(ScanElem));
   }
-  temp = new ScanElem[_x_size];
+  temp = (ScanElem *)PANDA_MALLOC_ARRAY(_x_size * sizeof(ScanElem));
 
   if( _num_channels <= 2 ) {
     for( col = 0; col < _x_size; col++ )
@@ -314,7 +314,7 @@ build_scanline(ScanLine output[], xel *row_data, xelval *alpha_data) {
     }
   }
 
-  delete[] temp;
+  PANDA_FREE_ARRAY(temp);
 }
 
 
@@ -326,12 +326,12 @@ compress(ScanElem *temp, ScanLine &output) {
         case STORAGE_VERBATIM:
             output.length = _x_size;
             output.data = temp;
-            temp = new ScanElem[_x_size];
+            temp = (ScanElem *)PANDA_MALLOC_ARRAY(_x_size * sizeof(ScanElem));
             break;
         case STORAGE_RLE:
             len = rle_compress(temp, _x_size);    /* writes result into rletemp */
             output.length = len;
-            output.data = new ScanElem[len];
+            output.data = (ScanElem *)PANDA_MALLOC_ARRAY(len * sizeof(ScanElem));
             memcpy(output.data, rletemp, len * sizeof(ScanElem));
             break;
         default:

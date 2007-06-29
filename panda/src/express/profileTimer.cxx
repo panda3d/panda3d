@@ -64,7 +64,7 @@ ProfileTimer(const ProfileTimer& other) {
 
 ProfileTimer::
 ~ProfileTimer() {
-  delete [] _entries;
+  PANDA_FREE_ARRAY(_entries);
   // Remove this from the list:
   if (_head==this) {
     _head=_next;
@@ -86,7 +86,7 @@ void ProfileTimer::
 init(const char* name, int maxEntries) {
   _name=name;
   _maxEntries=maxEntries;
-  _entries=new TimerEntry[_maxEntries];
+  _entries = (TimerEntry *)PANDA_MALLOC_ARRAY(_maxEntries * sizeof(TimerEntry));
   _entryCount=0;
   _elapsedTime=0.0;
   _on=0.0;

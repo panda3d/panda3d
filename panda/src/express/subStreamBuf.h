@@ -48,6 +48,7 @@ private:
   streampos _end;
   streampos _cur;
   size_t _unused;
+  char *_buffer;
   MutexImpl _lock;
 };
 

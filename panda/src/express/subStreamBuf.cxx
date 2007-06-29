@@ -57,9 +57,9 @@ SubStreamBuf() {
 
 #ifdef HAVE_IOSTREAM
   // The new-style iostream library doesn't seem to support allocate().
-  char *buf = new char[4096];
-  char *ebuf = buf + 4096;
-  setg(buf, ebuf, ebuf);
+  _buffer = (char *)PANDA_MALLOC_ARRAY(4096);
+  char *ebuf = _buffer + 4096;
+  setg(_buffer, ebuf, ebuf);
 
 #else
   allocate();
@@ -75,6 +75,9 @@ SubStreamBuf() {
 SubStreamBuf::
 ~SubStreamBuf() {
   close();
+#ifdef HAVE_IOSTREAM
+  PANDA_FREE_ARRAY(_buffer);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

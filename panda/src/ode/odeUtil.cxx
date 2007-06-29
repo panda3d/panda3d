@@ -29,15 +29,15 @@ OdeJointCollection OdeUtil::
 get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
   const int max_possible_joints = min(body1.get_num_joints(), body1.get_num_joints());
 
-  dJointID *joint_list = new dJointID[max_possible_joints];
+  dJointID *joint_list = (dJointID *)PANDA_MALLOC_ARRAY(max_possible_joints * sizeof(dJointID));
   int num_joints = dConnectingJointList(body1.get_id(), body2.get_id(),
 					joint_list);
   OdeJointCollection joints;
   for (int i = 0; i < num_joints; i++) {
     joints.add_joint(OdeJoint(joint_list[i]));
   }
-  
-  delete[] joint_list;
+
+  PANDA_FREE_ARRAY(joint_list);
   return joints;
 }
 

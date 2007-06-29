@@ -144,7 +144,7 @@ init(PT(Buffer) buffer) {
 Patchfile::
 ~Patchfile() {
   if (_hash_table != (PN_uint32 *)NULL) {
-    delete[] _hash_table;
+    PANDA_FREE_ARRAY(_hash_table);
   }
 
   if (true == _initiated)
@@ -993,7 +993,7 @@ compute_file_patches(ostream &write_stream,
       << "Allocating " << source_file_length << " bytes to read orig\n";
   }
 
-  char *buffer_orig = new char[source_file_length];
+  char *buffer_orig = (char *)PANDA_MALLOC_ARRAY(source_file_length);
   stream_orig.seekg(0, ios::beg);
   stream_orig.read(buffer_orig, source_file_length);
 
@@ -1006,7 +1006,7 @@ compute_file_patches(ostream &write_stream,
       << "Allocating " << result_file_length << " bytes to read new\n";
   }
 
-  char *buffer_new = new char[result_file_length];
+  char *buffer_new = (char *)PANDA_MALLOC_ARRAY(result_file_length);
   stream_new.seekg(0, ios::beg);
   stream_new.read(buffer_new, result_file_length);
 
@@ -1024,7 +1024,7 @@ compute_file_patches(ostream &write_stream,
       << "Allocating linktable of size " << source_file_length << " * 4\n";
   }
 
-  PN_uint32* link_table = new PN_uint32[source_file_length];
+  PN_uint32 *link_table = (PN_uint32 *)PANDA_MALLOC_ARRAY(source_file_length * sizeof(PN_uint32));
 
   // build hash and link tables for original file
   build_hash_link_tables(buffer_orig, source_file_length, _hash_table, link_table);
@@ -1082,10 +1082,10 @@ compute_file_patches(ostream &write_stream,
     start_pos += remaining_bytes;
   }
 
-  delete[] link_table;
+  PANDA_FREE_ARRAY(link_table);
 
-  delete[] buffer_orig;
-  delete[] buffer_new;
+  PANDA_FREE_ARRAY(buffer_orig);
+  PANDA_FREE_ARRAY(buffer_new);
 
   return true;
 }
@@ -1148,11 +1148,11 @@ compute_mf_patches(ostream &write_stream,
 
       streampos new_start = mf_new.get_subfile_internal_start(ni);
       size_t new_size = mf_new.get_subfile_internal_length(ni);
-      char *buffer_new = new char[new_size];
+      char *buffer_new = (char *)PANDA_MALLOC_ARRAY(new_size);
       stream_new.seekg(new_start, ios::beg);
       stream_new.read(buffer_new, new_size);
       cache_add_and_copy(write_stream, new_size, buffer_new, 0, 0);
-      delete[] buffer_new;
+      PANDA_FREE_ARRAY(buffer_new);
 
     } else {
       // This subfile exists in both the original and the new files.
@@ -1283,11 +1283,11 @@ compute_tar_patches(ostream &write_stream,
 
       streampos new_start = sf_new._header_start;
       size_t new_size = sf_new._end - sf_new._header_start;
-      char *buffer_new = new char[new_size];
+      char *buffer_new = (char *)PANDA_MALLOC_ARRAY(new_size);
       stream_new.seekg(new_start, ios::beg);
       stream_new.read(buffer_new, new_size);
       cache_add_and_copy(write_stream, new_size, buffer_new, 0, 0);
-      delete[] buffer_new;
+      PANDA_FREE_ARRAY(buffer_new);
 
     } else {
       // This subfile exists in both the original and the new files.
@@ -1486,7 +1486,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
       // Read the first n bytes of both files for the Multifile magic
       // number.
       string magic_number = Multifile::get_magic_number();
-      char *buffer = new char[magic_number.size()];
+      char *buffer = (char *)PANDA_MALLOC_ARRAY(magic_number.size());
       stream_orig.seekg(0, ios::beg);
       stream_orig.read(buffer, magic_number.size());
       
@@ -1499,7 +1499,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
           is_multifile = true;
         }
       }
-      delete[] buffer;
+      PANDA_FREE_ARRAY(buffer);
     }
 #ifdef HAVE_TAR
     if (strstr(file_orig.get_basename().c_str(), ".tar") != NULL ||

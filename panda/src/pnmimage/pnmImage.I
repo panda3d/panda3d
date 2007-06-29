@@ -839,7 +839,7 @@ gaussian_filter(double radius) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 allocate_array() {
-  _array = new xel[_x_size * _y_size];
+  _array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -850,7 +850,7 @@ allocate_array() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 allocate_alpha() {
-  _alpha = new xelval[_x_size * _y_size];
+  _alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
 }
 
 ////////////////////////////////////////////////////////////////////

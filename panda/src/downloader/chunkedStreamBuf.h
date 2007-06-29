@@ -60,6 +60,7 @@ private:
 
   PT(HTTPChannel) _doc;
   int _read_index;
+  char *_buffer;
 
   friend class IChunkedStream;
 };

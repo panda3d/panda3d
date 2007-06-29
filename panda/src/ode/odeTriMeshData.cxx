@@ -74,7 +74,7 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
   _id(dGeomTriMeshDataCreate()),
   _vertices(0),
   _faces(0),
-  _normals(false),
+  _normals(0),
   _num_vertices(0),
   _num_faces(0) {
   odetrimeshdata_cat.debug() << get_type() << "(" << _id << ")" << "\n";
@@ -105,16 +105,19 @@ OdeTriMeshData::
   odetrimeshdata_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
   destroy();
   if (_vertices != 0) {
-    delete[] _vertices;
+    PANDA_FREE_ARRAY(_vertices);
     _vertices = 0;
     _num_vertices = 0;
   }
   if (_faces != 0) {
-    delete[] _faces;
+    PANDA_FREE_ARRAY(_faces);
     _faces = 0;
   }
   if (_normals != 0) {
-    delete[] _normals;
+    // This is never allocated?  Until we use _normals, assert that we
+    // don't accidentally free it here through some mistake.
+    nassertv(false);
+    PANDA_FREE_ARRAY(_normals);
   }
 }
 
@@ -151,8 +154,8 @@ process_model(const NodePath& model, bool &use_normals) {
   odetrimeshdata_cat.debug() << "Found " << _num_vertices << " vertices.\n";
   odetrimeshdata_cat.debug() << "Found " << _num_faces << " faces.\n";
   
-  _vertices = new StridedVertex[_num_vertices];
-  _faces = new StridedTri[_num_faces];
+  _vertices = (StridedVertex *)PANDA_MALLOC_ARRAY(_num_vertices * sizeof(StridedVertex));
+  _faces = (StridedTri *)PANDA_MALLOC_ARRAY(_num_faces * sizeof(StridedTri));
   
   _num_vertices = 0, _num_faces = 0;
 

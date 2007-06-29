@@ -3473,6 +3473,7 @@ new_heap(size, top_pad) size_t size, top_pad;
   h = (heap_info *)p2;
   h->size = size;
   THREAD_STAT(stat_n_heaps++);
+  memory_hook->inc_heap(size);
   return h;
 }
 
@@ -3491,12 +3492,14 @@ grow_heap(h, diff) heap_info *h; long diff;
 
   if(diff >= 0) {
     diff = (diff + page_mask) & ~page_mask;
+    memory_hook->inc_heap(diff);
     new_size = (long)h->size + diff;
     if(new_size > HEAP_MAX_SIZE)
       return -1;
     if(mprotect((char *)h + h->size, diff, PROT_READ|PROT_WRITE) != 0)
       return -2;
   } else {
+    memory_hook->dec_heap(-diff);
     new_size = (long)h->size + diff;
     if(new_size < (long)sizeof(*h))
       return -1;
@@ -3513,7 +3516,10 @@ grow_heap(h, diff) heap_info *h; long diff;
 
 /* Delete a heap. */
 
-#define delete_heap(heap) munmap((char*)(heap), HEAP_MAX_SIZE)
+#define delete_heap(heap) { \
+  munmap((char*)(heap), HEAP_MAX_SIZE); \
+  memory_hook->dec_heap(heap->size); \
+}
 
 static int
 internal_function
@@ -4307,6 +4313,7 @@ top_check()
   /* Call the `morecore' hook if necessary.  */
   if (__after_morecore_hook)
     (*__after_morecore_hook) ();
+  memory_hook->inc_heap(sbrk_size);
   main_arena.system_mem = (new_brk - mp_.sbrk_base) + sbrk_size;
 
   top(&main_arena) = (mchunkptr)(brk + front_misalign);
@@ -4920,6 +4927,7 @@ static Void_t* sYSMALLOc(nb, av) INTERNAL_SIZE_T nb; mstate av;
     /* Call the `morecore' hook if necessary.  */
     if (__after_morecore_hook)
       (*__after_morecore_hook) ();
+    memory_hook->inc_heap(size);
   } else {
   /*
     If have mmap, try using it as a backup when MORECORE fails or
@@ -5087,10 +5095,12 @@ static Void_t* sYSMALLOc(nb, av) INTERNAL_SIZE_T nb; mstate av;
           snd_brk = brk + size;
           correction = 0;
           set_noncontiguous(av);
-        } else
+        } else {
           /* Call the `morecore' hook if necessary.  */
           if (__after_morecore_hook)
             (*__after_morecore_hook) ();
+          memory_hook->inc_heap(correction);
+        }
       }
 
       /* handle non-contiguous cases */
@@ -5240,6 +5250,7 @@ static int sYSTRIm(pad, av) size_t pad; mstate av;
       /* Call the `morecore' hook if necessary.  */
       if (__after_morecore_hook)
         (*__after_morecore_hook) ();
+      memory_hook->dec_heap(extra);
       new_brk = (char*)(MORECORE(0));
       
       if (new_brk != (char*)MORECORE_FAILURE) {
@@ -5282,6 +5293,7 @@ munmap_chunk(p) mchunkptr p;
   mp_.mmapped_mem -= (size + p->prev_size);
 
   ret = munmap((char *)p - p->prev_size, size + p->prev_size);
+  memory_hook->dec_heap(size + p->prev_size);
 
   /* munmap returns non-zero on failure */
   assert(ret == 0);

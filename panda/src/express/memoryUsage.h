@@ -52,8 +52,8 @@ public:
   INLINE static void remove_pointer(ReferenceCount *ptr);
 
 public:
-  virtual void *heap_alloc(size_t size);
-  virtual void heap_free(void *ptr);
+  virtual void *heap_alloc_single(size_t size);
+  virtual void heap_free_single(void *ptr);
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
 #if defined(WIN32_VC) && defined(_DEBUG)
@@ -68,7 +68,9 @@ PUBLISHED:
   INLINE static size_t get_current_cpp_size();
   INLINE static size_t get_total_cpp_size();
 
-  INLINE static size_t get_panda_heap_size();
+  INLINE static size_t get_panda_heap_single_size();
+  INLINE static size_t get_panda_heap_array_size();
+  INLINE static size_t get_panda_heap_overhead();
   INLINE static size_t get_panda_mmap_size();
   INLINE static size_t get_interpreter_size();
   INLINE static size_t get_external_size();

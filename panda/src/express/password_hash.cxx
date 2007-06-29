@@ -62,7 +62,7 @@ string
 password_hash(const string &password, const string &salt,
               int iters, int keylen) {
   nassertr(iters > 0 && keylen > 0, string());
-  unsigned char *dk = new unsigned char[keylen];
+  unsigned char *dk = (unsigned char *)PANDA_MALLOC_ARRAY(keylen);
   int result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
                            (unsigned char *)salt.data(), salt.length(),
@@ -70,7 +70,7 @@ password_hash(const string &password, const string &salt,
   nassertr(result > 0, string());
 
   string hash((char *)dk, keylen);
-  delete[] dk;
+  PANDA_FREE_ARRAY(dk);
   return hash;
 }
 

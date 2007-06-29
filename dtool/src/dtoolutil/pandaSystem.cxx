@@ -298,6 +298,28 @@ set_system_tag(const string &system, const string &tag,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::heap_trim
+//       Access: Published
+//  Description: Attempts to release memory back to the system, if
+//               possible.  The pad argument is the minimum amount of
+//               unused memory to keep in the heap (against future
+//               allocations).  Any memory above that may be released
+//               to the system, reducing the memory size of this
+//               process.  There is no guarantee that any memory may
+//               be released.
+//
+//               Returns true if any memory was actually released,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PandaSystem::
+heap_trim(size_t pad) {
+  // This actually just vectors into _memory_hook, which isn't
+  // published.  This method only exists on PandaSystem for the
+  // convenience of Python programmers.
+  return memory_hook->heap_trim(pad);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::output
 //       Access: Published
 //  Description: 

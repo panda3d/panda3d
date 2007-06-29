@@ -33,19 +33,19 @@ FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
   // adjusted xel data from our first pass.
 
   typedef StoreType *StoreTypeP;
-  StoreType **matrix = new StoreTypeP[dest.ASIZE()];
+  StoreType **matrix = (StoreType **)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType *));
 
   int a, b;
 
   for (a=0; a<dest.ASIZE(); a++) {
-    matrix[a] = new StoreType[source.BSIZE()];
+    matrix[a] = (StoreType *)PANDA_MALLOC_ARRAY(source.BSIZE() * sizeof(StoreType));
   }
 
   // Now, scale the image in the A direction.
   double scale = (double)dest.ASIZE() / (double)source.ASIZE();
 
-  StoreType *temp_source = new StoreType[source.ASIZE()];
-  StoreType *temp_dest = new StoreType[dest.ASIZE()];
+  StoreType *temp_source = (StoreType *)PANDA_MALLOC_ARRAY(source.ASIZE() * sizeof(StoreType));
+  StoreType *temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType));
 
   WorkType *filter;
   double filter_width;
@@ -67,14 +67,14 @@ FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
     }
   }
 
-  delete[] temp_source;
-  delete[] temp_dest;
-  delete[] filter;
+  PANDA_FREE_ARRAY(temp_source);
+  PANDA_FREE_ARRAY(temp_dest);
+  PANDA_FREE_ARRAY(filter);
 
   // Now, scale the image in the B direction.
   scale = (double)dest.BSIZE() / (double)source.BSIZE();
 
-  temp_dest = new StoreType[dest.BSIZE()];
+  temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
   make_filter(scale, width, filter, filter_width);
 
@@ -90,14 +90,14 @@ FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
     }
   }
 
-  delete[] temp_dest;
-  delete[] filter;
+  PANDA_FREE_ARRAY(temp_dest);
+  PANDA_FREE_ARRAY(filter);
 
   // Now, clean up our temp matrix and go home!
 
   for (a=0; a<dest.ASIZE(); a++) {
-    delete[] matrix[a];
+    PANDA_FREE_ARRAY(matrix[a]);
   }
-  delete[] matrix;
+  PANDA_FREE_ARRAY(matrix);
 }
 

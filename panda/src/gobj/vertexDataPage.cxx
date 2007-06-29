@@ -81,6 +81,7 @@ PStatCollector VertexDataPage::_vdata_decompress_pcollector("*:Vertex Data:Decom
 PStatCollector VertexDataPage::_vdata_save_pcollector("*:Vertex Data:Save");
 PStatCollector VertexDataPage::_vdata_restore_pcollector("*:Vertex Data:Restore");
 PStatCollector VertexDataPage::_thread_wait_pcollector("*:Wait:Idle");
+PStatCollector VertexDataPage::_alloc_pages_pcollector("System memory:MMap:Vertex data");
 
 TypeHandle VertexDataPage::_type_handle;
 
@@ -619,7 +620,7 @@ make_save_file() {
 ////////////////////////////////////////////////////////////////////
 unsigned char *VertexDataPage::
 alloc_page_data(size_t page_size) const {
-  get_class_type().inc_memory_usage(TypeHandle::MC_array, page_size);
+  _alloc_pages_pcollector.add_level_now(page_size);
   return (unsigned char *)memory_hook->mmap_alloc(page_size, false);
 }
 
@@ -630,7 +631,7 @@ alloc_page_data(size_t page_size) const {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 free_page_data(unsigned char *page_data, size_t page_size) const {
-  get_class_type().dec_memory_usage(TypeHandle::MC_array, page_size);
+  _alloc_pages_pcollector.sub_level_now(page_size);
   memory_hook->mmap_free(page_data, page_size);
 }
  

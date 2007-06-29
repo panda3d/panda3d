@@ -145,30 +145,6 @@ init_pnm() {
     _did_init_pnm = true;
 
     // No reason to do anything here nowadays.
-    /*
-      
-    // Make an argc/argv style copy of the ExecutionEnvironment's
-    // args.  We do this because pm_init() might attempt to change
-    // this (for instance, to remove arguments it finds).
-
-    int argc = ExecutionEnvironment::get_num_args() + 1;
-    char **argv = new char *[argc + 1];
-    argv[0] = strdup(ExecutionEnvironment::get_binary_name().c_str());
-    int i;
-    for (i = 1; i < argc; i++) {
-      argv[i] = strdup(ExecutionEnvironment::get_arg(i - 1).c_str());
-    }
-    argv[argc] = (char *)NULL;
-
-    pm_init(&argc, argv);
-
-    // We can delete the argv array itself, but we cannot free the
-    // results of the strdup() calls we just made, since the pnm
-    // library might keep pointers to it.  But this is a one-time
-    // leak.
-    delete[] argv;
-
-    */
   }
 }
 

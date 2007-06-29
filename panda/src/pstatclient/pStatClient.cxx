@@ -33,14 +33,19 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
-PStatCollector PStatClient::_t1_nf_unused_size_pcollector("Track memory 1:NeverFree:Unused");
-PStatCollector PStatClient::_t1_nf_other_size_pcollector("Track memory 1:NeverFree:Other");
-PStatCollector PStatClient::_t1_cpp_other_size_pcollector("Track memory 1:Dynamic:Other");
-PStatCollector PStatClient::_t2_total_size_pcollector("Track memory 2");
-PStatCollector PStatClient::_t2_heap_size_pcollector("Track memory 2:Heap");
-PStatCollector PStatClient::_t2_mmap_size_pcollector("Track memory 2:MMap");
-PStatCollector PStatClient::_t2_interpreter_size_pcollector("Track memory 2:Interpreter");
-PStatCollector PStatClient::_t2_external_size_pcollector("Track memory 2:External");
+PStatCollector PStatClient::_heap_total_size_pcollector("System memory:Heap");
+PStatCollector PStatClient::_heap_overhead_size_pcollector("System memory:Heap:Overhead");
+PStatCollector PStatClient::_heap_single_size_pcollector("System memory:Heap:Single");
+PStatCollector PStatClient::_heap_single_other_size_pcollector("System memory:Heap:Single:Other");
+PStatCollector PStatClient::_heap_array_size_pcollector("System memory:Heap:Array");
+PStatCollector PStatClient::_heap_array_other_size_pcollector("System memory:Heap:Array:Other");
+PStatCollector PStatClient::_heap_interpreter_size_pcollector("System memory:Heap:Interpreter");
+PStatCollector PStatClient::_heap_external_size_pcollector("System memory:Heap:External");
+PStatCollector PStatClient::_mmap_size_pcollector("System memory:MMap");
+
+PStatCollector PStatClient::_mmap_nf_unused_size_pcollector("System memory:MMap:NeverFree:Unused");
+PStatCollector PStatClient::_mmap_dc_active_other_size_pcollector("System memory:MMap:NeverFree:Active:Other");
+PStatCollector PStatClient::_mmap_dc_inactive_other_size_pcollector("System memory:MMap:NeverFree:Inactive:Other");
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
@@ -217,13 +222,15 @@ main_tick() {
 
 #ifdef DO_MEMORY_USAGE
   if (is_connected()) {
-    if (MemoryUsage::is_tracking()) {
-      _t2_total_size_pcollector.set_level(MemoryUsage::get_total_size());
-      _t2_heap_size_pcollector.set_level(MemoryUsage::get_panda_heap_size());
-      _t2_mmap_size_pcollector.set_level(MemoryUsage::get_panda_mmap_size());
-      _t2_interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
-      _t2_external_size_pcollector.set_level(MemoryUsage::get_external_size());
-    }
+    _heap_total_size_pcollector.set_level(MemoryUsage::get_total_size());
+    _heap_overhead_size_pcollector.set_level(MemoryUsage::get_panda_heap_overhead());
+    _heap_single_size_pcollector.set_level(MemoryUsage::get_panda_heap_single_size());
+    _heap_array_size_pcollector.set_level(MemoryUsage::get_panda_heap_array_size());
+    _heap_interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
+    _heap_external_size_pcollector.set_level(MemoryUsage::get_external_size());
+
+
+    _mmap_size_pcollector.set_level(MemoryUsage::get_panda_mmap_size());
     
     TypeRegistry *type_reg = TypeRegistry::ptr();
     int num_typehandles = type_reg->get_num_typehandles();
@@ -232,8 +239,10 @@ main_tick() {
       type_handle_cols.push_back(TypeHandleCollector());
     }
 
-    size_t cpp_total_usage = 0;
-    size_t nf_total_usage = 0;
+    size_t single_total_usage = 0;
+    size_t array_total_usage = 0;
+    size_t dc_active_total_usage = 0;
+    size_t dc_inactive_total_usage = 0;
     int i;
     for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
@@ -242,22 +251,32 @@ main_tick() {
         size_t usage = type.get_memory_usage(mc);
 
         switch (mc) {
-        case TypeHandle::MC_deleted_chain_active:
-        case TypeHandle::MC_deleted_chain_inactive:
-          nf_total_usage += usage;
+        case TypeHandle::MC_singleton:
+          single_total_usage += usage;
           break;
 
-        default:
-          cpp_total_usage += usage;
+        case TypeHandle::MC_array:
+          array_total_usage += usage;
+          break;
+
+        case TypeHandle::MC_deleted_chain_active:
+          dc_active_total_usage += usage;
+          break;
+
+        case TypeHandle::MC_deleted_chain_inactive:
+          dc_inactive_total_usage += usage;
+          break;
         }          
       }
     }
-    size_t min_usage = (cpp_total_usage + nf_total_usage) / 1024;
+    size_t min_usage = (single_total_usage + array_total_usage + dc_active_total_usage + dc_inactive_total_usage) / 1024;
     if (!pstats_mem_other) {
       min_usage = 0;
     }
-    size_t cpp_other_usage = cpp_total_usage;
-    size_t nf_other_usage = nf_total_usage;
+    size_t single_other_usage = single_total_usage;
+    size_t array_other_usage = array_total_usage;
+    size_t dc_active_other_usage = dc_active_total_usage;
+    size_t dc_inactive_other_usage = dc_inactive_total_usage;
 
     for (i = 0; i < num_typehandles; ++i) {
       TypeHandle type = type_reg->get_typehandle(i);
@@ -271,39 +290,57 @@ main_tick() {
           if (!col.is_valid()) {
             const char *category;
             switch (mc) {
-            case TypeHandle::MC_deleted_chain_active:
-            case TypeHandle::MC_deleted_chain_inactive:
-              category = "NeverFree";
+            case TypeHandle::MC_singleton:
+              category = "Heap:Single";
+              break;
+              
+            case TypeHandle::MC_array:
+              category = "Heap:Array";
               break;
 
-            default:
-              category = "Dynamic";
+            case TypeHandle::MC_deleted_chain_active:
+              category = "MMap:NeverFree:Active";
+              break;
+
+            case TypeHandle::MC_deleted_chain_inactive:
+              category = "MMap:NeverFree:Inactive";
+              break;
             }
             ostringstream strm;
-            strm << "Track memory 1:" << category << ":" << type << ":" << mc;
+            strm << "System memory:" << category << ":" << type;
             col = PStatCollector(strm.str());
           }
           col.set_level(usage);
 
           switch (mc) {
+          case TypeHandle::MC_singleton:
+            single_other_usage -= usage;
+            break;
+            
+          case TypeHandle::MC_array:
+            array_other_usage -= usage;
+            break;
+            
           case TypeHandle::MC_deleted_chain_active:
-          case TypeHandle::MC_deleted_chain_inactive:
-            nf_other_usage -= usage;
+            dc_active_other_usage -= usage;
             break;
 
-          default:
-            cpp_other_usage -= usage;
+          case TypeHandle::MC_deleted_chain_inactive:
+            dc_inactive_other_usage -= usage;
+            break;
           }
         }
       }
     }
 
-    _t1_nf_unused_size_pcollector.set_level(NeverFreeMemory::get_total_unused());
+    _mmap_nf_unused_size_pcollector.set_level(NeverFreeMemory::get_total_unused());
 
     // The remaining amount--all collectors smaller than 0.1% of the
     // total--go into "other".
-    _t1_nf_other_size_pcollector.set_level(nf_other_usage);
-    _t1_cpp_other_size_pcollector.set_level(cpp_other_usage);
+    _heap_single_other_size_pcollector.set_level(single_other_usage);
+    _heap_array_other_size_pcollector.set_level(array_other_usage);
+    _mmap_dc_active_other_size_pcollector.set_level(dc_active_other_usage);
+    _mmap_dc_inactive_other_size_pcollector.set_level(dc_inactive_other_usage);
   }
 #endif  // DO_MEMORY_USAGE
 

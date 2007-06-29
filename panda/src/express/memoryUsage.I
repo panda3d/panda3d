@@ -130,14 +130,43 @@ get_total_cpp_size() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::get_panda_heap_size
+//     Function: MemoryUsage::get_panda_heap_single_size
 //       Access: Public, Static
 //  Description: Returns the total number of bytes allocated from the
-//               heap from code within Panda.
+//               heap from code within Panda, for individual objects.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryUsage::
-get_panda_heap_size() {
-  return get_global_ptr()->_total_heap_size;
+get_panda_heap_single_size() {
+  return get_global_ptr()->_total_heap_single_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_panda_heap_array_size
+//       Access: Public, Static
+//  Description: Returns the total number of bytes allocated from the
+//               heap from code within Panda, for arrays.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_panda_heap_array_size() {
+  return get_global_ptr()->_total_heap_array_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::get_panda_heap_overhead
+//       Access: Public, Static
+//  Description: Returns the extra bytes allocated from the system
+//               that are not immediately used for holding allocated
+//               objects.  This can only be determined if
+//               ALTERNATIVE_MALLOC is enabled.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryUsage::
+get_panda_heap_overhead() {
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+  MemoryUsage *mu = get_global_ptr();
+  return mu->_requested_heap_size - mu->_total_heap_single_size - mu->_total_heap_array_size;
+#else
+  return 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +213,11 @@ INLINE size_t MemoryUsage::
 get_external_size() {
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
-    return mu->_total_size - mu->_total_heap_size;
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size - mu->_interpreter_size;
+#else
+    return mu->_total_size - mu->_interpreter_size;
+#endif
   } else {
     return 0;
   }
@@ -200,9 +233,13 @@ INLINE size_t MemoryUsage::
 get_total_size() {
   MemoryUsage *mu = get_global_ptr();
   if (mu->_count_memory_usage) {
-    return mu->_total_size;
+    return mu->_total_size + mu->_requested_heap_size;
   } else {
-    return mu->_total_heap_size;
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
+    return mu->_requested_heap_size;
+#else
+    return mu->_total_heap_single_size + mu->_total_heap_array_size;
+#endif
   }
 }
 

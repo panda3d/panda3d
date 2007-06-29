@@ -52,8 +52,10 @@
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #include "dlmalloc.h"
+#include "dlmalloc_src.cxx"
 
 #define call_malloc dlmalloc
+#define call_realloc dlrealloc
 #define call_free dlfree
 
 #elif defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
@@ -75,9 +77,10 @@
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
-#include "ptmalloc2_smp.c"
+#include "ptmalloc2_smp_src.cxx"
 
 #define call_malloc dlmalloc
+#define call_realloc dlrealloc
 #define call_free dlfree
 
 #else
@@ -92,6 +95,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #define call_malloc malloc
+#define call_realloc realloc
 #define call_free free
 
 #endif  // USE_MEMORY_*
@@ -120,7 +124,9 @@ MemoryHook() {
 #endif  // WIN32
 
 #ifdef DO_MEMORY_USAGE
-  _total_heap_size = 0;
+  _total_heap_single_size = 0;
+  _total_heap_array_size = 0;
+  _requested_heap_size = 0;
   _total_mmap_size = 0;
 #endif
 }
@@ -135,7 +141,9 @@ MemoryHook(const MemoryHook &copy) :
   _page_size(copy._page_size)
 {
 #ifdef DO_MEMORY_USAGE
-  _total_heap_size = copy._total_heap_size;
+  _total_heap_single_size = copy._total_heap_single_size;
+  _total_heap_array_size = copy._total_heap_array_size;
+  _requested_heap_size = copy._requested_heap_size;
   _total_mmap_size = copy._total_mmap_size;
 #endif
 }
@@ -152,52 +160,148 @@ MemoryHook::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_alloc
+//     Function: MemoryHook::heap_alloc_single
 //       Access: Public, Virtual
 //  Description: Allocates a block of memory from the heap, similar to
 //               malloc().  This will never return NULL; it will abort
 //               instead if memory is not available.
+//
+//               This particular function should be used to allocate
+//               memory for a single object, as opposed to an array.
+//               The only difference is in the bookkeeping.
 ////////////////////////////////////////////////////////////////////
 void *MemoryHook::
-heap_alloc(size_t size) {
-  void *ptr;
-
+heap_alloc_single(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
-  _total_heap_size += size;
-  ptr = alloc_to_ptr(call_malloc(size + sizeof(size)), size);
-#else
-  ptr = call_malloc(size);
+  AtomicAdjust::add(_total_heap_single_size, (PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
-  if (ptr == (void *)NULL) {
+  void *alloc = call_malloc(inflate_size(size));
+  if (alloc == (void *)NULL) {
     cerr << "Out of memory!\n";
     abort();
   }
-  return ptr;
+
+  return alloc_to_ptr(alloc, size);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryHook::heap_free
+//     Function: MemoryHook::heap_free_single
 //       Access: Public, Virtual
 //  Description: Releases a block of memory previously allocated via
-//               heap_alloc.
+//               heap_alloc_single.
 ////////////////////////////////////////////////////////////////////
 void MemoryHook::
-heap_free(void *ptr) {
+heap_free_single(void *ptr) {
+  size_t size;
+  void *alloc = ptr_to_alloc(ptr, size);
 
+#ifdef DO_MEMORY_USAGE
+  assert(size <= _total_heap_single_size);
+  AtomicAdjust::add(_total_heap_single_size, -(PN_int32)size);
+#endif  // DO_MEMORY_USAGE
+
+  call_free(alloc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::heap_alloc_array
+//       Access: Public, Virtual
+//  Description: Allocates a block of memory from the heap, similar to
+//               malloc().  This will never return NULL; it will abort
+//               instead if memory is not available.
+//
+//               This particular function should be used to allocate
+//               memory for an array of objects, as opposed to a
+//               single object.  The only difference is in the
+//               bookkeeping.
+////////////////////////////////////////////////////////////////////
+void *MemoryHook::
+heap_alloc_array(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
-  size_t size;
-  ptr = ptr_to_alloc(ptr, size);
-  assert(size <= _total_heap_size);
-  _total_heap_size -= size;
-
+  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
-  call_free(ptr);
+  void *alloc = call_malloc(inflate_size(size));
+  if (alloc == (void *)NULL) {
+    cerr << "Out of memory!\n";
+    abort();
+  }
+
+  return alloc_to_ptr(alloc, size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::heap_realloc_array
+//       Access: Public, Virtual
+//  Description: Resizes a block of memory previously returned from
+//               heap_alloc_array.
+////////////////////////////////////////////////////////////////////
+void *MemoryHook::
+heap_realloc_array(void *ptr, size_t size) {
+  size_t orig_size;
+  void *alloc = ptr_to_alloc(ptr, orig_size);
+
+#ifdef DO_MEMORY_USAGE
+  assert(orig_size <= _total_heap_array_size);
+  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size-(PN_int32)orig_size);
+#endif  // DO_MEMORY_USAGE
+
+  alloc = call_realloc(alloc, inflate_size(size));
+  if (alloc == (void *)NULL) {
+    cerr << "Out of memory!\n";
+    abort();
+  }
+
+  return alloc_to_ptr(alloc, size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::heap_free_array
+//       Access: Public, Virtual
+//  Description: Releases a block of memory previously allocated via
+//               heap_alloc_array.
+////////////////////////////////////////////////////////////////////
+void MemoryHook::
+heap_free_array(void *ptr) {
+  size_t size;
+  void *alloc = ptr_to_alloc(ptr, size);
+
+#ifdef DO_MEMORY_USAGE
+  assert(size <= _total_heap_array_size);
+  AtomicAdjust::add(_total_heap_array_size, -(PN_int32)size);
+#endif  // DO_MEMORY_USAGE
+
+  call_free(alloc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::heap_trim
+//       Access: Public
+//  Description: Attempts to release memory back to the system, if
+//               possible.  The pad argument is the minimum amount of
+//               unused memory to keep in the heap (against future
+//               allocations).  Any memory above that may be released
+//               to the system, reducing the memory size of this
+//               process.  There is no guarantee that any memory may
+//               be released.
+//
+//               Returns true if any memory was actually released,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MemoryHook::
+heap_trim(size_t pad) {
+#if defined(USE_MEMORY_DLMALLOC) || (defined(USE_MEMORY_PTMALLOC2) && !defined(linux))
+  return dlmalloc_trim(pad);
+#else
+  // Since malloc_trim() isn't standard C, we can't be sure it exists
+  // on a given platform.
+  return 0;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

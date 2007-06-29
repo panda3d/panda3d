@@ -351,11 +351,11 @@ read_data(xel *array, xelval *alpha_data) {
   // 2-d array format, mainly because we keep array and alpha data
   // separately, and there doesn't appear to be good support to get
   // this stuff out row-at-a-time for interlaced files.
-  png_bytep *rows = new png_bytep[num_rows];
+  png_bytep *rows = (png_bytep *)PANDA_MALLOC_ARRAY(num_rows * sizeof(png_bytep));
   int yi;
 
   for (yi = 0; yi < num_rows; yi++) {
-    rows[yi] = new png_byte[row_byte_length];
+    rows[yi] = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte));
   }
 
   png_read_image(_png, rows);
@@ -415,10 +415,10 @@ read_data(xel *array, xelval *alpha_data) {
     }
 
     nassertr(source <= rows[yi] + row_byte_length, yi);
-    delete[] rows[yi];
+    PANDA_FREE_ARRAY(rows[yi]);
   }
 
-  delete[] rows;
+  PANDA_FREE_ARRAY(rows);
 
   png_read_end(_png, NULL);
 
@@ -705,7 +705,7 @@ write_data(xel *array, xelval *alpha_data) {
   // If we were writing an interlaced file, we'd have to copy the
   // whole image first.
 
-  png_bytep row = new png_byte[row_byte_length];
+  png_bytep row = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte));
 
   bool save_color = !is_grayscale();
   bool save_alpha = has_alpha();
@@ -779,7 +779,7 @@ write_data(xel *array, xelval *alpha_data) {
     Thread::consider_yield();
   }
 
-  delete[] row;
+  PANDA_FREE_ARRAY(row);
 
   png_write_end(_png, NULL);
 

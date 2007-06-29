@@ -49,11 +49,11 @@ PNMImage(const Filename &filename, PNMFileType *type) {
 void PNMImage::
 clear() {
   if (_array != (xel *)NULL) {
-    delete[] _array;
+    PANDA_FREE_ARRAY(_array);
     _array = (xel *)NULL;
   }
   if (_alpha != (xelval *)NULL) {
-    delete[] _alpha;
+    PANDA_FREE_ARRAY(_alpha);
     _alpha = (xelval *)NULL;
   }
   _x_size = 0;
@@ -433,7 +433,7 @@ set_color_type(PNMImage::ColorType color_type) {
   if (has_alpha() && !has_alpha(color_type)) {
     // discard the alpha channel
     if (_alpha!=NULL) {
-      delete[] _alpha;
+      PANDA_FREE_ARRAY(_alpha);
       _alpha = NULL;
     }
 

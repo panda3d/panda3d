@@ -55,7 +55,7 @@ allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>:
   // We also need to store the total number of bytes we allocated.
   alloc_size += sizeof(size_t);
   _type_handle.inc_memory_usage(TypeHandle::MC_array, (int)alloc_size);
-  void *ptr = (TYPENAME pallocator_array<Type>::pointer)PANDA_MALLOC(alloc_size);
+  void *ptr = (TYPENAME pallocator_array<Type>::pointer)PANDA_MALLOC_ARRAY(alloc_size);
   *((size_t *)ptr) = alloc_size;
   return (TYPENAME pallocator_array<Type>::pointer)(((size_t *)ptr) + 1);
 #else
@@ -71,7 +71,7 @@ deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array
   // Now we need to recover the total number of bytes.
   size_t alloc_size = *(((size_t *)p) - 1);
   _type_handle.dec_memory_usage(TypeHandle::MC_array, (int)alloc_size);
-  PANDA_FREE(((size_t *)p) - 1);
+  PANDA_FREE_ARRAY(((size_t *)p) - 1);
 #else
   free(p);
 #endif  // DO_MEMORY_USAGE

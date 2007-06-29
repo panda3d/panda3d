@@ -44,10 +44,10 @@ BioStreamBuf() {
   _is_closed = false;
 
 #ifdef HAVE_IOSTREAM
-  char *buf = new char[8192];
-  char *ebuf = buf + 8192;
-  char *mbuf = buf + 4096;
-  setg(buf, mbuf, mbuf);
+  _buffer = (char *)PANDA_MALLOC_ARRAY(8192);
+  char *ebuf = _buffer + 8192;
+  char *mbuf = _buffer + 4096;
+  setg(_buffer, mbuf, mbuf);
   setp(mbuf, ebuf);
 
 #else
@@ -70,6 +70,9 @@ BioStreamBuf() {
 BioStreamBuf::
 ~BioStreamBuf() {
   close();
+#ifdef HAVE_IOSTREAM
+  PANDA_FREE_ARRAY(_buffer);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

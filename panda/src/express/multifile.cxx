@@ -1611,13 +1611,13 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   }
 
   // And finally, get the rest of the name.
-  char *name_buffer = new char[name_length];
+  char *name_buffer = (char *)PANDA_MALLOC_ARRAY(name_length);
   nassertr(name_buffer != (char *)NULL, next_index);
   for (size_t ni = 0; ni < name_length; ni++) {
     name_buffer[ni] = read.get() ^ 0xff;
   }
   _name = string(name_buffer, name_length);
-  delete[] name_buffer;
+  PANDA_FREE_ARRAY(name_buffer);
 
   if (read.eof() || read.fail()) {
     _flags |= SF_index_invalid;

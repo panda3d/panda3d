@@ -227,14 +227,19 @@ private:
 
   PStatClientImpl *_impl;
 
-  static PStatCollector _t1_nf_unused_size_pcollector;
-  static PStatCollector _t1_nf_other_size_pcollector;
-  static PStatCollector _t1_cpp_other_size_pcollector;
-  static PStatCollector _t2_total_size_pcollector;
-  static PStatCollector _t2_heap_size_pcollector;
-  static PStatCollector _t2_mmap_size_pcollector;
-  static PStatCollector _t2_interpreter_size_pcollector;
-  static PStatCollector _t2_external_size_pcollector;
+  static PStatCollector _heap_total_size_pcollector;
+  static PStatCollector _heap_overhead_size_pcollector;
+  static PStatCollector _heap_single_size_pcollector;
+  static PStatCollector _heap_single_other_size_pcollector;
+  static PStatCollector _heap_array_size_pcollector;
+  static PStatCollector _heap_array_other_size_pcollector;
+  static PStatCollector _heap_interpreter_size_pcollector;
+  static PStatCollector _heap_external_size_pcollector;
+  static PStatCollector _mmap_size_pcollector;
+
+  static PStatCollector _mmap_nf_unused_size_pcollector;
+  static PStatCollector _mmap_dc_active_other_size_pcollector;
+  static PStatCollector _mmap_dc_inactive_other_size_pcollector;
   static PStatCollector _pstats_pcollector;
   static PStatCollector _clock_wait_pcollector;
   static PStatCollector _clock_busy_wait_pcollector;

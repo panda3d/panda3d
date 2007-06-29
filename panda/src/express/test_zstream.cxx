@@ -59,7 +59,7 @@ zlib_decompress(istream &source) {
   size_t source_len = data.length();
   // Take a stab on the appropriate size of the output buffer.
   size_t dest_len = source_len * 4;
-  char *dest = new char[dest_len];
+  char *dest = (char *)PANDA_MALLOC_ARRAY(dest_len);
 
   uLongf actual_dest_len = dest_len;
   int result = uncompress((Bytef *)dest, &actual_dest_len, 
@@ -71,8 +71,7 @@ zlib_decompress(istream &source) {
   while (result == Z_BUF_ERROR) {
     dest_len *= 2;
     cerr << "Increasing buffer size to " << dest_len << "\n";
-    delete[] dest;
-    dest = new char[dest_len];
+    dest = PANDA_REALLOC_ARRAY(dest, dest_len);
 
     actual_dest_len = dest_len;
     result = uncompress((Bytef *)dest, &actual_dest_len, 
@@ -99,7 +98,7 @@ zlib_compress(istream &source) {
   // Now call zlib to compress the buffer directly.
   size_t source_len = data.length();
   size_t dest_len = (size_t)(source_len * 1.1) + 12;
-  char *dest = new char[dest_len];
+  char *dest = (char *)PANDA_MALLOC_ARRAY(dest_len);
 
   uLongf actual_dest_len = dest_len;
   int result = compress((Bytef *)dest, &actual_dest_len, 

@@ -526,7 +526,7 @@ reset() {
 
     GLint num_compressed_formats;
     GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
-    GLint *formats = new GLint[num_compressed_formats];
+    GLint *formats = (GLint *)PANDA_MALLOC_ARRAY(num_compressed_formats * sizeof(GLint));
     GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
     for (int i = 0; i < num_compressed_formats; ++i) {
       switch (formats[i]) {
@@ -552,7 +552,7 @@ reset() {
         break;
       }
     }
-    delete[] formats;
+    PANDA_FREE_ARRAY(formats);
   }
 
   _supports_bgr =
@@ -956,7 +956,7 @@ reset() {
       } else {
         GLCAT.debug()
           << "Supported compressed texture formats:\n";
-        GLint *formats = new GLint[num_compressed_formats];
+        GLint *formats = (GLint *)PANDA_MALLOC_ARRAY(num_compressed_formats * sizeof(GLint));
         GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
           switch (formats[i]) {
@@ -990,7 +990,7 @@ reset() {
               << dec << "\n";
           }
         }
-        delete[] formats;
+        PANDA_FREE_ARRAY(formats);
       }
     }
   }

@@ -111,7 +111,7 @@ pm_bitstomaxval(int bits) {
 ////////////////////////////////////////////////////////////////////
 char *
 pm_allocrow(int cols, int size) {
-  return new char[cols * size];
+  return (char *)PANDA_MALLOC_ARRAY(cols * size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ pm_allocrow(int cols, int size) {
 ////////////////////////////////////////////////////////////////////
 void
 pm_freerow(char *itrow) {
-  delete[] itrow;
+  PANDA_FREE_ARRAY(itrow);
 }
 
 

@@ -3458,6 +3458,7 @@ static void* sys_alloc(mstate m, size_t nb) {
   }
 
   if (tbase != CMFAIL) {
+    memory_hook->inc_heap(tsize);
 
     if ((m->footprint += tsize) > m->max_footprint)
       m->max_footprint = m->footprint;
@@ -3564,6 +3565,7 @@ static size_t release_unused_segments(mstate m) {
     pred = sp;
     sp = next;
   }
+  memory_hook->dec_heap(released);
   return released;
 }
 

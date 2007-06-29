@@ -34,13 +34,13 @@ operator = (const VertexDataBuffer &copy) {
   if (_resident_data != (unsigned char *)NULL) {
     nassertv(_size != 0);
     get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-    free(_resident_data);
+    PANDA_FREE_ARRAY(_resident_data);
     _resident_data = NULL;
   }
   if (copy._resident_data != (unsigned char *)NULL) {
     nassertv(copy._size != 0);
     get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)copy._size);
-    _resident_data = (unsigned char *)malloc(copy._size);
+    _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(copy._size);
     memcpy(_resident_data, copy._resident_data, copy._size);
   }
   _size = copy._size;
@@ -73,10 +73,10 @@ do_clean_realloc(size_t size) {
     get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size - (int)_size);
     if (_size == 0) {
       nassertv(_resident_data == (unsigned char *)NULL);
-      _resident_data = (unsigned char *)malloc(size);
+      _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(size);
     } else {
       nassertv(_resident_data != (unsigned char *)NULL);
-      _resident_data = (unsigned char *)realloc(_resident_data, size);
+      _resident_data = (unsigned char *)PANDA_REALLOC_ARRAY(_resident_data, size);
     }
     nassertv(_resident_data != (unsigned char *)NULL);
     _size = size;
@@ -102,7 +102,7 @@ do_unclean_realloc(size_t size) {
       nassertv(_size != 0);
 
       get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-      free(_resident_data);
+      PANDA_FREE_ARRAY(_resident_data);
       _resident_data = NULL;
       _size = 0;
     }
@@ -110,7 +110,7 @@ do_unclean_realloc(size_t size) {
     if (size != 0) {
       get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)size);
       nassertv(_resident_data == (unsigned char *)NULL);
-      _resident_data = (unsigned char *)malloc(size);
+      _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(size);
     }
 
     _size = size;
@@ -144,7 +144,7 @@ do_page_out(VertexDataBook &book) {
   memcpy(pointer, _resident_data, _size);
 
   get_class_type().dec_memory_usage(TypeHandle::MC_array, (int)_size);
-  free(_resident_data);
+  PANDA_FREE_ARRAY(_resident_data);
   _resident_data = NULL;
 }
 
@@ -167,7 +167,7 @@ do_page_in() {
   nassertv(_block != (VertexDataBlock *)NULL);
 
   get_class_type().inc_memory_usage(TypeHandle::MC_array, (int)_size);
-  _resident_data = (unsigned char *)malloc(_size);
+  _resident_data = (unsigned char *)PANDA_MALLOC_ARRAY(_size);
   nassertv(_resident_data != (unsigned char *)NULL);
   
   memcpy(_resident_data, _block->get_pointer(true), _size);

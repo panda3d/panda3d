@@ -37,7 +37,8 @@
     typedObject.I typedObject.h \
     pallocator.T pallocator.h \
     pdeque.h plist.h pmap.h pset.h pvector.h \
-    dlmalloc.c lookup3.h lookup3.c
+    lookup3.h lookup3.c \
+    dlmalloc_src.cxx ptmalloc2_smp_src.cxx
 
  #define INCLUDED_SOURCES  \
     addHash.cxx \

@@ -199,7 +199,7 @@ box_filter_impl(double scale, double width,
   filter_width = width;
   int actual_width = (int)cceil((filter_width+1) * fscale);
 
-  filter = new WorkType[actual_width];
+  filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
 
   for (int i=0; i<actual_width; i++) {
     filter[i] = (i<=filter_width*fscale) ? filter_max : 0;
@@ -232,7 +232,7 @@ gaussian_filter_impl(double scale, double width,
   // be normalized; and we're only computing a 1-dimensional function,
   // so we can ignore the y^2.)
 
-  filter = new WorkType[actual_width];
+  filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
   double div = 2*sigma*sigma;
 
   for (int i=0; i<actual_width; i++) {

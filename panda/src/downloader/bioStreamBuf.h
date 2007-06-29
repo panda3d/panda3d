@@ -52,6 +52,7 @@ private:
 
   PT(BioPtr) _source;
   bool _is_closed;
+  char *_buffer;
 
   friend class IBioStream;
   friend class OBioStream;

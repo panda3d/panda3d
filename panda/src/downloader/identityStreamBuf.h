@@ -55,6 +55,7 @@ private:
   bool _has_content_length;
   size_t _bytes_remaining;
   ISocketStream::ReadState _read_state;
+  char *_buffer;
 
   friend class IIdentityStream;
 };

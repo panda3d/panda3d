@@ -20,14 +20,25 @@
 #define MEMORYHOOK_H
 
 #include "dtoolbase.h"
+#include "numeric_types.h"
+#include "atomicAdjust.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryHook
-// Description : This class is provided to allow the MemoryUsage class
-//               in Panda to insert callback hooks to track the size
-//               of allocated pointers.  Every low-level alloc and
-//               free operation (except in production builds) should
-//               vector through this class to facilitate that.
+// Description : This class provides a wrapper around the various
+//               possible malloc schemes Panda might employ.  It also
+//               exists to allow the MemoryUsage class in Panda to
+//               insert callback hooks to track the size of allocated
+//               pointers.
+//
+//               The PANDA_MALLOC_* and PANDA_FREE_* macros are
+//               defined to vector through through this class (except
+//               in production builds) to facilitate that.  Every
+//               memory allocation call in Panda should therefore use
+//               these macros instead of direct calls to malloc or
+//               free.  (C++ new and delete operators may be employed
+//               for classes which inherit from MemoryBase; otherwise,
+//               use the PANDA_MALLOC macros.)
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL MemoryHook {
 public:
@@ -35,8 +46,17 @@ public:
   MemoryHook(const MemoryHook &copy);
   virtual ~MemoryHook();
 
-  virtual void *heap_alloc(size_t size);
-  virtual void heap_free(void *ptr);
+  virtual void *heap_alloc_single(size_t size);
+  virtual void heap_free_single(void *ptr);
+
+  virtual void *heap_alloc_array(size_t size);
+  virtual void *heap_realloc_array(void *ptr, size_t size);
+  virtual void heap_free_array(void *ptr);
+
+  INLINE void inc_heap(size_t size);
+  INLINE void dec_heap(size_t size);
+
+  bool heap_trim(size_t pad);
 
   virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);
@@ -48,13 +68,16 @@ public:
 private:
   size_t _page_size;
 
-#ifdef DO_MEMORY_USAGE
+  INLINE static size_t inflate_size(size_t size);
   INLINE static void *alloc_to_ptr(void *alloc, size_t size);
   INLINE static void *ptr_to_alloc(void *ptr, size_t &size);
 
+#ifdef DO_MEMORY_USAGE
 protected:
-  size_t _total_heap_size;
-  size_t _total_mmap_size;
+  TVOLATILE PN_int32 _total_heap_single_size;
+  TVOLATILE PN_int32 _total_heap_array_size;
+  TVOLATILE PN_int32 _requested_heap_size;
+  TVOLATILE PN_int32 _total_mmap_size;
 #endif
 };
 

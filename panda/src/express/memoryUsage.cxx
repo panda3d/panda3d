@@ -187,18 +187,18 @@ choose_bucket(double age) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_alloc
+//     Function: MemoryUsage::heap_alloc_single
 //       Access: Public, Virtual
 //  Description: Allocates a block of memory from the heap, similar to
 //               malloc().  This will never return NULL; it will abort
 //               instead if memory is not available.
 ////////////////////////////////////////////////////////////////////
 void *MemoryUsage::
-heap_alloc(size_t size) {
+heap_alloc_single(size_t size) {
   void *ptr;
 
   if (_recursion_protect) {
-    ptr = MemoryHook::heap_alloc(size);
+    ptr = MemoryHook::heap_alloc_single(size);
     if (express_cat.is_spam()) {
       express_cat.spam()
         << "Allocating pointer " << (void *)ptr
@@ -207,7 +207,7 @@ heap_alloc(size_t size) {
 
   } else {
     if (_track_memory_usage) {
-      ptr = MemoryHook::heap_alloc(size);
+      ptr = MemoryHook::heap_alloc_single(size);
       /*
       if (express_cat.is_spam()) {
         express_cat.spam()
@@ -219,7 +219,7 @@ heap_alloc(size_t size) {
       get_global_ptr()->ns_record_void_pointer(ptr, size);
 
     } else {
-      ptr = MemoryHook::heap_alloc(size);
+      ptr = MemoryHook::heap_alloc_single(size);
     }
   }
 
@@ -227,20 +227,20 @@ heap_alloc(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::heap_free
+//     Function: MemoryUsage::heap_free_single
 //       Access: Public, Virtual
 //  Description: Releases a block of memory previously allocated via
-//               heap_alloc.
+//               heap_alloc_single.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
-heap_free(void *ptr) {
+heap_free_single(void *ptr) {
   if (_recursion_protect) {
     if (express_cat.is_spam()) {
       express_cat.spam()
         << "Deleting pointer " << (void *)ptr
         << " during recursion protect.\n";
     }
-    MemoryHook::heap_free(ptr);
+    MemoryHook::heap_free_single(ptr);
 
   } else {
     if (_track_memory_usage) {
@@ -251,9 +251,9 @@ heap_free(void *ptr) {
       }
       */
       ns_remove_void_pointer(ptr);
-      MemoryHook::heap_free(ptr);
+      MemoryHook::heap_free_single(ptr);
     } else {
-      MemoryHook::heap_free(ptr);
+      MemoryHook::heap_free_single(ptr);
     }
   }
 }
