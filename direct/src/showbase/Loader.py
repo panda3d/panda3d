@@ -82,14 +82,14 @@ class Loader(DirectObject):
 
         If callback is not None, then the model load will be performed
         asynchronously.  In this case, loadModel() will initiate a
-        background load and return immediately, with no return value.
-        At some later point, when the requested model(s) have finished
+        background load and return immediately.  The return value will
+        be an object that may later be passed to
+        loader.cancelRequest() to cancel the asynchronous request.  At
+        some later point, when the requested model(s) have finished
         loading, the callback function will be invoked with the n
         loaded models passed as its parameter list.  It is possible
         that the callback will be invoked immediately, even before
-        loadModel() returns.  In any case, the return value will be
-        an object that may later be passed to loader.cancelRequest()
-        to cancel the asynchronous request.
+        loadModel() returns.
 
         True asynchronous model loading requires Panda to have been
         compiled with threading support enabled (you can test
