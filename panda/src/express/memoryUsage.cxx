@@ -335,32 +335,30 @@ int MemoryUsage::
 win32_malloc_hook(int alloc_type, void *ptr, 
                   size_t size, int block_use, long request, 
                   const unsigned char *filename, int line) {
-  if (!_recursion_protect) {
-    MemoryUsage *mu = get_global_ptr();
-    if (mu->_count_memory_usage) {
-      int increment = 0;
-      switch (alloc_type) {
-      case _HOOK_ALLOC:
-        increment = size;
-        break;
-        
-      case _HOOK_REALLOC:
-        increment = size - _msize(ptr);
-        break;
-        
-      case _HOOK_FREE:
-        increment = - ((int)_msize(ptr));
-        break;
-      }
+  MemoryUsage *mu = get_global_ptr();
+  if (mu->_count_memory_usage) {
+    int increment = 0;
+    switch (alloc_type) {
+    case _HOOK_ALLOC:
+      increment = size;
+      break;
       
-      mu->_total_size += increment;
+    case _HOOK_REALLOC:
+      increment = size - _msize(ptr);
+      break;
+      
+    case _HOOK_FREE:
+      increment = - ((int)_msize(ptr));
+      break;
+    }
+    
+    mu->_total_size += increment;
 
 #ifdef TRACK_IN_INTERPRETER
-      if (in_interpreter) {
-        mu->_interpreter_size += increment;
-      }
-#endif
+    if (in_interpreter) {
+      mu->_interpreter_size += increment;
     }
+#endif
   }
 
   return true;
