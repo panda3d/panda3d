@@ -199,7 +199,7 @@ heap_free_single(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert(size <= _total_heap_single_size);
+  assert((int)size <= _total_heap_single_size);
   AtomicAdjust::add(_total_heap_single_size, -(PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
@@ -247,7 +247,7 @@ heap_realloc_array(void *ptr, size_t size) {
   void *alloc = ptr_to_alloc(ptr, orig_size);
 
 #ifdef DO_MEMORY_USAGE
-  assert(orig_size <= _total_heap_array_size);
+  assert((PN_int32)orig_size <= _total_heap_array_size);
   AtomicAdjust::add(_total_heap_array_size, (PN_int32)size-(PN_int32)orig_size);
 #endif  // DO_MEMORY_USAGE
 
@@ -272,7 +272,7 @@ heap_free_array(void *ptr) {
   void *alloc = ptr_to_alloc(ptr, size);
 
 #ifdef DO_MEMORY_USAGE
-  assert(size <= _total_heap_array_size);
+  assert((int)size <= _total_heap_array_size);
   AtomicAdjust::add(_total_heap_array_size, -(PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
@@ -381,7 +381,7 @@ mmap_free(void *ptr, size_t size) {
   assert((size % _page_size) == 0);
 
 #ifdef DO_MEMORY_USAGE
-  assert(size <= _total_mmap_size);
+  assert((int)size <= _total_mmap_size);
   _total_mmap_size -= size;
 #endif
 
