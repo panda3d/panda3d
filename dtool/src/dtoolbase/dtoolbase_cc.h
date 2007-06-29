@@ -158,11 +158,11 @@ EXPCL_DTOOL void init_memory_hook();
 #define PANDA_REALLOC_ARRAY(ptr, size) (memory_hook->heap_realloc_array(ptr, size))
 #define PANDA_FREE_ARRAY(ptr) memory_hook->heap_free_array(ptr)
 #else
-#define PANDA_MALLOC_SINGLE(size) malloc(size)
-#define PANDA_FREE_SINGLE(ptr) free(ptr)
-#define PANDA_MALLOC_ARRAY(size) malloc(size)
-#define PANDA_REALLOC_ARRAY(ptr, size) realloc(ptr, size)
-#define PANDA_FREE_ARRAY(ptr) free(ptr)
+#define PANDA_MALLOC_SINGLE(size) ::malloc(size)
+#define PANDA_FREE_SINGLE(ptr) ::free(ptr)
+#define PANDA_MALLOC_ARRAY(size) ::malloc(size)
+#define PANDA_REALLOC_ARRAY(ptr, size) ::realloc(ptr, size)
+#define PANDA_FREE_ARRAY(ptr) ::free(ptr)
 #endif  // USE_MEMORY_NOWRAPPERS
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
