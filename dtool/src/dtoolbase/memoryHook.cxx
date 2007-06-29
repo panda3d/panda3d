@@ -296,7 +296,7 @@ heap_free_array(void *ptr) {
 bool MemoryHook::
 heap_trim(size_t pad) {
 #if defined(USE_MEMORY_DLMALLOC) || (defined(USE_MEMORY_PTMALLOC2) && !defined(linux))
-  return dlmalloc_trim(pad);
+  return (dlmalloc_trim(pad) != 0);
 #else
   // Since malloc_trim() isn't standard C, we can't be sure it exists
   // on a given platform.
