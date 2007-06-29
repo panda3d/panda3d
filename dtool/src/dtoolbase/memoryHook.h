@@ -33,6 +33,7 @@ class EXPCL_DTOOL MemoryHook {
 public:
   MemoryHook();
   MemoryHook(const MemoryHook &copy);
+  virtual ~MemoryHook();
 
   virtual void *heap_alloc(size_t size);
   virtual void heap_free(void *ptr);

@@ -141,6 +141,17 @@ MemoryHook(const MemoryHook &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MemoryHook::
+~MemoryHook() {
+  // Really, we only have this destructor to shut up gcc about the
+  // virtual functions warning.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::heap_alloc
 //       Access: Public, Virtual
 //  Description: Allocates a block of memory from the heap, similar to
