@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE void set_scale(double scale);
   INLINE void set_scale(double sx, double sy);
   INLINE void set_scale(const LVecBase2f &scale);
-  void set_scale(const LVecBase2d &scale);
+  INLINE void set_scale(const LVecBase2d &scale);
 
   INLINE double noise(double x, double y) const;
   INLINE float noise(const LVecBase2f &value) const;
