@@ -53,6 +53,7 @@ class DistributedSmoothNodeBase:
             BT.XYH:  self.cnode.broadcastPosHprXyh,
             BT.XY:  self.cnode.broadcastPosHprXy,
             }
+        # this comment is here so it will show up in a grep for 'def d_broadcastPosHpr'
         self.d_broadcastPosHpr = broadcastFuncs[self.broadcastType]
         
         # Set stagger to non-zero to randomly delay the initial task execution
