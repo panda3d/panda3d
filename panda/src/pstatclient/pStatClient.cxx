@@ -1088,12 +1088,14 @@ deactivate_hook(Thread *thread) {
   // during the SIMPLE_THREADS case, so a mutex isn't necessary; and
   // because we are called during a context switch, so a mutex might
   // be dangerous.
-
+  if (_impl == NULL) {
+    return;
+  }
   InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
 
   if (ithread->_thread_active) {
     // Stop all of the active collectors for this thread.
-    double now = get_real_time();
+    double now = _impl->get_real_time();
     int off_bit = -1;
     int on_bit = ithread->_active_collectors.get_lowest_on_bit();
     while (off_bit != on_bit) {
@@ -1128,12 +1130,15 @@ activate_hook(Thread *thread) {
   // during the SIMPLE_THREADS case, so a mutex isn't necessary; and
   // because we are called during a context switch, so a mutex might
   // be dangerous.
+  if (_impl == NULL) {
+    return;
+  }
 
   InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
 
   if (!ithread->_thread_active) {
     // Resume all of the active collectors for this thread.
-    double now = get_real_time();
+    double now = _impl->get_real_time();
     int off_bit = -1;
     int on_bit = ithread->_active_collectors.get_lowest_on_bit();
     while (off_bit != on_bit) {
