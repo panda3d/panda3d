@@ -49,6 +49,7 @@ PStatCollector PStatClient::_mmap_dc_inactive_other_size_pcollector("System memo
 PStatCollector PStatClient::_pstats_pcollector("*:PStats");
 PStatCollector PStatClient::_clock_wait_pcollector("Wait:Clock Wait:Sleep");
 PStatCollector PStatClient::_clock_busy_wait_pcollector("Wait:Clock Wait:Spin");
+PStatCollector PStatClient::_thread_block_pcollector("Wait:Thread block");
 
 PStatClient *PStatClient::_global_pstats = NULL;
 
@@ -721,7 +722,6 @@ start(int collector_index, int thread_index) {
       if (thread->_thread_active) {
         thread->_frame_data.add_start(collector_index, get_real_time());
       }
-      thread->_active_collectors.set_bit(collector_index);
     }
     collector->_per_thread[thread_index]._nested_count++;
   }
@@ -752,7 +752,6 @@ start(int collector_index, int thread_index, float as_of) {
       if (thread->_thread_active) {
         thread->_frame_data.add_start(collector_index, as_of);
       }
-      thread->_active_collectors.set_bit(collector_index);
     }
     collector->_per_thread[thread_index]._nested_count++;
   }
@@ -795,7 +794,6 @@ stop(int collector_index, int thread_index) {
       if (thread->_thread_active) {
         thread->_frame_data.add_stop(collector_index, get_real_time());
       }
-      thread->_active_collectors.clear_bit(collector_index);
     }
   }
 }
@@ -1091,27 +1089,14 @@ deactivate_hook(Thread *thread) {
   if (_impl == NULL) {
     return;
   }
-  InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
+  int thread_index = thread->get_pstats_index();
+  InternalThread *ithread = get_thread_ptr(thread_index);
 
   if (ithread->_thread_active) {
-    // Stop all of the active collectors for this thread.
+    // Start _thread_block_pcollector, by hand, being careful not to
+    // grab any mutexes while we do it.
     double now = _impl->get_real_time();
-    int off_bit = -1;
-    int on_bit = ithread->_active_collectors.get_lowest_on_bit();
-    while (off_bit != on_bit) {
-      off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
-      nassertd(off_bit != on_bit) {
-        cerr << "Oops! off_bit = " << off_bit
-             << ", collectors = " << ithread->_active_collectors << "\n";
-      }
-      while (on_bit < off_bit) {
-        // Here's an active collector.  Record a data point indicating
-        // it stops here.
-        ithread->_frame_data.add_stop(on_bit, now);
-        ++on_bit;
-      }
-      on_bit = ithread->_active_collectors.get_next_higher_different_bit(off_bit);
-    }
+    ithread->_frame_data.add_start(_thread_block_pcollector.get_index(), now);
     ithread->_thread_active = false;
   }
 }
@@ -1137,24 +1122,8 @@ activate_hook(Thread *thread) {
   InternalThread *ithread = get_thread_ptr(thread->get_pstats_index());
 
   if (!ithread->_thread_active) {
-    // Resume all of the active collectors for this thread.
     double now = _impl->get_real_time();
-    int off_bit = -1;
-    int on_bit = ithread->_active_collectors.get_lowest_on_bit();
-    while (off_bit != on_bit) {
-      off_bit = ithread->_active_collectors.get_next_higher_different_bit(on_bit);
-      nassertd(off_bit != on_bit) {
-        cerr << "Oops! off_bit = " << off_bit
-             << ", collectors = " << ithread->_active_collectors << "\n";
-      }
-      while (on_bit < off_bit) {
-        // Here's an active collector.  Record a data point indicating
-        // it resumes here.
-        ithread->_frame_data.add_start(on_bit, now);
-        ++on_bit;
-      }
-      on_bit = ithread->_active_collectors.get_next_higher_different_bit(off_bit);
-    }
+    ithread->_frame_data.add_stop(_thread_block_pcollector.get_index(), now);
     ithread->_thread_active = true;
   }
 }

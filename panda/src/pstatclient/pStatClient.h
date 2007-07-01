@@ -213,7 +213,7 @@ private:
     float _next_packet;
 
     bool _thread_active;
-    BitArray _active_collectors;
+    BitArray _active_collectors;  // no longer used.
 
     // This mutex is used to protect writes to _frame_data for this
     // particular thread, as well as writes to the _per_thread data
@@ -243,6 +243,7 @@ private:
   static PStatCollector _pstats_pcollector;
   static PStatCollector _clock_wait_pcollector;
   static PStatCollector _clock_busy_wait_pcollector;
+  static PStatCollector _thread_block_pcollector;
 
   static PStatClient *_global_pstats;
 

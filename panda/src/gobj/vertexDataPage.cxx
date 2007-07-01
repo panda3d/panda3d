@@ -80,7 +80,7 @@ PStatCollector VertexDataPage::_vdata_compress_pcollector("*:Vertex Data:Compres
 PStatCollector VertexDataPage::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
 PStatCollector VertexDataPage::_vdata_save_pcollector("*:Vertex Data:Save");
 PStatCollector VertexDataPage::_vdata_restore_pcollector("*:Vertex Data:Restore");
-PStatCollector VertexDataPage::_thread_wait_pcollector("*:Wait:Idle");
+PStatCollector VertexDataPage::_thread_wait_pcollector("Wait:Idle");
 PStatCollector VertexDataPage::_alloc_pages_pcollector("System memory:MMap:Vertex data");
 
 TypeHandle VertexDataPage::_type_handle;
