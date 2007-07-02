@@ -1324,9 +1324,14 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 #define DIRECT_MMAP(s)       CALL_MMAP(s)
 #else /* WIN32 */
 
+static size_t win32_total_mmap = 0;
+
 /* Win32 MMAP via VirtualAlloc */
 static void* win32mmap(size_t size) {
   void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+  if (ptr != 0) {
+    win32_total_mmap += size;
+  }
   return (ptr != 0)? ptr: MFAIL;
 }
 
@@ -1334,6 +1339,9 @@ static void* win32mmap(size_t size) {
 static void* win32direct_mmap(size_t size) {
   void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN,
                            PAGE_READWRITE);
+  if (ptr != 0) {
+    win32_total_mmap += size;
+  }
   return (ptr != 0)? ptr: MFAIL;
 }
 
@@ -1351,6 +1359,7 @@ static int win32munmap(void* ptr, size_t size) {
       return -1;
     cptr += minfo.RegionSize;
     size -= minfo.RegionSize;
+    win32_total_mmap -= minfo.RegionSize;
   }
   return 0;
 }
@@ -3134,6 +3143,7 @@ static void* mmap_alloc(mstate m, size_t nb) {
   if (mmsize > nb) {     /* Check for wrap around 0 */
     char* mm = (char*)(DIRECT_MMAP(mmsize));
     if (mm != CMFAIL) {
+      memory_hook->inc_heap(mmsize);
       size_t offset = align_offset(chunk2mem(mm));
       size_t psize = mmsize - offset - MMAP_FOOT_PAD;
       mchunkptr p = (mchunkptr)(mm + offset);
@@ -3172,6 +3182,8 @@ static mchunkptr mmap_resize(mstate m, mchunkptr oldp, size_t nb) {
     char* cp = (char*)CALL_MREMAP((char*)oldp - offset,
                                   oldmmsize, newmmsize, 1);
     if (cp != CMFAIL) {
+      memory_hook->dec_heap(oldsize);
+      memory_hook->inc_heap(nb);
       mchunkptr newp = (mchunkptr)(cp + offset);
       size_t psize = newmmsize - offset - MMAP_FOOT_PAD;
       newp->head = (psize|CINUSE_BIT);
@@ -3628,6 +3640,8 @@ static int sys_trim(mstate m, size_t pad) {
     if (released == 0)
       m->trim_check = MAX_SIZE_T;
   }
+
+  memory_hook->dec_heap(released);
 
   return (released != 0)? 1 : 0;
 }
@@ -4210,8 +4224,10 @@ void dlfree(void* mem) {
           if ((prevsize & IS_MMAPPED_BIT) != 0) {
             prevsize &= ~IS_MMAPPED_BIT;
             psize += prevsize + MMAP_FOOT_PAD;
-            if (CALL_MUNMAP((char*)p - prevsize, psize) == 0)
+            if (CALL_MUNMAP((char*)p - prevsize, psize) == 0) {
               fm->footprint -= psize;
+              memory_hook->dec_heap(psize);
+            }
             goto postaction;
           }
           else {
