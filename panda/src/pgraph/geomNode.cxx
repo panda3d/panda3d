@@ -105,7 +105,8 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if (pgraph_cat.is_debug()) {
     pgraph_cat.debug()
-      << "Transforming geometry.\n";
+      << "Transforming geometry:\n";
+    attribs.write(pgraph_cat.debug(false), attrib_types, 2);
   }
 
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
@@ -114,34 +115,19 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
 
-  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
-    if (attribs._cull_face != (const RenderAttrib *)NULL) {
-      const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, attribs._cull_face);
-      CullFaceAttrib::Mode mode = cfa->get_effective_mode();
-      switch (mode) {
-      case CullFaceAttrib::M_cull_none:
-        // Doublesided polys.  Duplicate them.
-        transformer.doubleside(this);
-        break;
-        
-      case CullFaceAttrib::M_cull_counter_clockwise:
-        // Reverse winding order.
-        transformer.reverse(this);
-        break;
-        
-      default:
-        break;
-      }
-    }
-  }
-
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     GeomList::iterator gi;
     PT(GeomList) geoms = cdata->modify_geoms();
-    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
-      GeomEntry &entry = (*gi);
+
+    // Iterate based on the number of geoms, not using STL iterators.
+    // This allows us to append to the list in the code below (which
+    // we might do when doublesiding polys) without visiting those new
+    // nodes during the traversal.
+    size_t num_geoms = geoms->size();
+    for (size_t i = 0; i < num_geoms; ++i) {
+      GeomEntry &entry = (*geoms)[i];
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       
       AccumulatedAttribs geom_attribs = attribs;
@@ -218,12 +204,54 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
       }
 
-      if (any_changed) {
-        entry._geom = new_geom;
-      }
-      
       if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
         entry._state = geom_attribs._other->compose(entry._state);
+      }
+
+      // We handle cull_face last, since that might involve
+      // duplicating the geom, and we'd also like to duplicate all of
+      // the changes we may have applied in the above.
+
+      if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
+        if (geom_attribs._cull_face != (const RenderAttrib *)NULL) {
+          const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, geom_attribs._cull_face);
+          CullFaceAttrib::Mode mode = cfa->get_effective_mode();
+          switch (mode) {
+          case CullFaceAttrib::M_cull_none:
+            // Doublesided polys.  Duplicate them.
+            {
+              bool has_normals = (new_geom->get_vertex_data()->has_column(InternalName::get_normal()));
+              if (has_normals) {
+                // If the geometry has normals, we have to duplicate
+                // it to reverse the normals on the duplicate copy.
+                PT(Geom) dup_geom = new_geom->reverse();
+                transformer.reverse_normals(dup_geom);
+                geoms->push_back(GeomEntry(dup_geom, entry._state));
+                
+              } else {
+                // If there are no normals, we can just doubleside it in
+                // place.  This is preferable because we can share vertices.
+                new_geom->doubleside_in_place();
+                any_changed = true;
+              }
+            }
+            break;
+        
+          case CullFaceAttrib::M_cull_counter_clockwise:
+            // Reverse winding order.
+            new_geom->reverse_in_place();
+            transformer.reverse_normals(new_geom);
+            any_changed = true;
+            break;
+            
+          default:
+            break;
+          }
+        }
+      }
+
+      if (any_changed) {
+        entry._geom = new_geom;
       }
     }
   }
