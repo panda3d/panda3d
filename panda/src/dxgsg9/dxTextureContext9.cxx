@@ -162,13 +162,12 @@ create_texture(DXScreenData &scrn) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
     case Texture::TT_cube_map:
-        // no compression for render target textures, or very small
-        // textures
-        if (!get_texture()->get_render_to_texture() &&
-            orig_width >= 4 && orig_height >= 4) {
-          if (texture_wants_compressed){
-            compress_texture = true;
-          }
+      // no compression for render target textures, or very small
+      // textures
+      if (!get_texture()->get_render_to_texture() &&
+          orig_width >= 4 && orig_height >= 4) {
+        if (texture_wants_compressed){
+          compress_texture = true;
         }
       }
       break;
@@ -904,6 +903,9 @@ if (get_texture()->get_render_to_texture ( )) {
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "D3D create_texture failed!" << D3DERRORSTRING(hr);
+    dxgsg9_cat.error()
+      << "  width = " << target_width << " height = " << target_height << " target_pixel_format = " << target_pixel_format << "\n";
+
     goto error_exit;
   }
 
