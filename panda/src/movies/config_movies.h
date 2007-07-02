@@ -1,5 +1,5 @@
 // Filename: config_movies.h
-// Created by:  cary (04Jan00)
+// Created by:  jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -25,9 +25,9 @@
 #include "configVariableDouble.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_movies, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(movies, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_movies, EXPCL_PANDASKEL, EXPTP_PANDASKEL);
+NotifyCategoryDecl(movies, EXPCL_PANDASKEL, EXPTP_PANDASKEL);
 
-extern EXPCL_PANDA void init_libmovies();
+extern EXPCL_PANDASKEL void init_libmovies();
 
 #endif /* __CONFIG_MOVIES_H__ */

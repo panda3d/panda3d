@@ -27,21 +27,37 @@
 //       Class : MovieVideo
 // Description : A stream that generates a series of images.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MovieVideo : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDASKEL MovieVideo : public TypedWritableReferenceCount, public Namable {
 protected:
   MovieVideo();
 
-PUBLISHED:
+ PUBLISHED:
+  INLINE int size_x() const;
+  INLINE int size_y() const;
+  INLINE double frame_start() const;
+  INLINE double frame_end() const;
+  INLINE double approx_time_remaining() const;
+  virtual void load_image(Texture *t);
+  virtual void next_frame();
+  
+ public:
   virtual ~MovieVideo();
-
+  
+ private:
+  int _size_x;
+  int _size_y;
+  double _frame_start;
+  double _frame_end;
+  double _approx_time_remaining;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GraphicsOutput::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "MovieVideo",
-                  MovieVideo::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -16,3 +16,65 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::size_x
+//       Access: Published
+//  Description: Get the horizontal size of the movie.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieVideo::
+size_x() const {
+  return _size_x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::size_y
+//       Access: Published
+//  Description: Get the vertical size of the movie.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieVideo::
+size_y() const {
+  return _size_y;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::frame_start
+//       Access: Published
+//  Description: MovieVideo streams have variable frame rates.  Each
+//               frame will specify how long it is to be displayed.
+//               These lengths may not be equal from frame to frame.
+//
+//               The frame_start function returns the time at which
+//               the current frame should start being displayed.  This
+//               time is relative to the start of the stream.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieVideo::
+frame_start() const {
+  return _frame_start;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::frame_end
+//       Access: Published
+//  Description: Return the time at which this frame should stop
+//               being displayed.  This time is relative to the start
+//               of the stream.
+//
+//               The frame_end function returns the time at which
+//               the current frame should stop being displayed.  This
+//               time is relative to the start of the stream.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieVideo::
+frame_end() const {
+  return _frame_end;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::approx_time_remaining
+//       Access: Published
+//  Description: Get the vertical size of the movie.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieVideo::
+approx_time_remaining() const {
+  return _approx_time_remaining;
+}
+

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "movieVideo.h"
+#include "config_movies.h"
 
 TypeHandle MovieVideo::_type_handle;
 
@@ -41,3 +42,22 @@ MovieVideo::
 ~MovieVideo() {
 }
  
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::load_image
+//       Access: Published, Virtual
+//  Description: Copy the current frame into a texture's ram image.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+load_image(Texture *t) {
+  movies_cat.error() << "load_image: this virtual method must be overridden.";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::next_frame
+//       Access: Published, Virtual
+//  Description: Advances to the next frame.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+next_frame() {
+  movies_cat.error() << "next_frame: this virtual method must be overridden.";
+}

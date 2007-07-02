@@ -16,3 +16,49 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::rate
+//       Access: Public
+//  Description: Returns the audio sample rate, in samples per sec.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieAudio::
+rate() const {
+  return _rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::channels
+//       Access: Public
+//  Description: Returns the number of audio channels.  Ie, 1 for
+//               mono, 2 for stereo.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieAudio::
+channels() const {
+  return _channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::samples_read
+//       Access: Public
+//  Description: Returns the number of audio samples you have read
+//               from the audio stream so far.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieAudio::
+samples_read() const {
+  return _samples_read;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::approx_time_remaining
+//       Access: Public
+//  Description: Returns a "best guess" amount of time left on the
+//               stream. For ffmpeg streams, this is usually a
+//               pretty close approximation --- ie, off by a few
+//               hundred samples.  For infinite streams, always
+//               returns the constant value 1.0E10.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieAudio::
+approx_time_remaining() const {
+  return _approx_time_remaining;
+}
+

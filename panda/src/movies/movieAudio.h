@@ -16,10 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MOVIEVIDEO_H
-#define MOVIEVIDEO_H
+#ifndef MOVIEAUDIO_H
+#define MOVIEAUDIO_H
 
 #include "pandabase.h"
+#include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
 
@@ -27,21 +28,35 @@
 //       Class : MovieAudio
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MovieAudio : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDASKEL MovieAudio : public TypedWritableReferenceCount, public Namable {
 protected:
-  MovieAudio();
+  MovieAudio(const string &name);
 
 PUBLISHED:
+  INLINE int rate() const;
+  INLINE int channels() const;
+  INLINE int samples_read() const;
+  INLINE double approx_time_remaining() const;
+  virtual int skip_samples(int n);
+  
+public:
+  virtual int read_samples(int n, PN_int16 *data);
   virtual ~MovieAudio();
 
+private:
+  int _rate;
+  int _channels;
+  int _samples_read;
+  double _approx_time_remaining;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GraphicsOutput::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "MovieAudio",
-                  MovieAudio::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

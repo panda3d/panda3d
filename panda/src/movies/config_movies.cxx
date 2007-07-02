@@ -1,5 +1,5 @@
 // Filename: config_movies.cxx
-// Created by:  cary (04Jan00)
+// Created by:  jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -21,6 +21,10 @@
 
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
+
+ConfigureFn(config_movies) {
+  init_libmovies();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmovies
