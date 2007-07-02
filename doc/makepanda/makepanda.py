@@ -3259,7 +3259,7 @@ if (OMIT.count("PYTHON")==0):
     IPATH=['direct/src/dcparse', 'direct/src/dcparser']
     OPTS=['WITHINPANDA', 'ADVAPI']
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='dcparse.cxx', obj='dcparse_dcparse.obj')
-    EnqueueLink(dll='dcparse.exe', opts=OPTS, obj=[
+    EnqueueLink(dll='p3dcparse.exe', opts=OPTS, obj=[
                  'dcparse_dcparse.obj',
                  'libp3direct.dll',
                  'libpandaexpress.dll',
