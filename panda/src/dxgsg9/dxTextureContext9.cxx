@@ -147,8 +147,10 @@ create_texture(DXScreenData &scrn) {
   // check for texture compression
   Texture::CompressionMode compression_mode = Texture::CompressionMode::CM_off;
   bool texture_stored_compressed = false;
+  bool texture_wants_compressed = false;
   
   if (get_texture()->get_compression() != Texture::CompressionMode::CM_off) {
+    texture_wants_compressed = true;
     compression_mode = get_texture()->get_ram_image_compression();
     // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
     nassertr(((Texture::CompressionMode::CM_dxt1+1)==Texture::CompressionMode::CM_dxt2)&&((Texture::CompressionMode::CM_dxt2+1)==Texture::CompressionMode::CM_dxt3)&&((Texture::CompressionMode::CM_dxt3+1)==Texture::CompressionMode::CM_dxt4)&&((Texture::CompressionMode::CM_dxt4+1)==Texture::CompressionMode::CM_dxt5),false);
@@ -160,12 +162,14 @@ create_texture(DXScreenData &scrn) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
     case Texture::TT_cube_map:
-        // no compression for render target textures
-        if (get_texture()->get_render_to_texture() == false) {
-          // check config setting and stored format
-          if (compressed_textures || texture_stored_compressed){
+        // no compression for render target textures, or very small
+        // textures
+        if (!get_texture()->get_render_to_texture() &&
+            orig_width >= 4 && orig_height >= 4) {
+          if (texture_wants_compressed){
             compress_texture = true;
           }
+        }
       }
       break;
     case Texture::TT_3d_texture:
