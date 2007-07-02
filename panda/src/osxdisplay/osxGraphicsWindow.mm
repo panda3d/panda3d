@@ -1039,6 +1039,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			NSWindow*	childWindow			=	[[NSWindow alloc] initWithWindowRef:_osx_window];
 			
 			[childWindow setFrameOrigin:origin];
+			[childWindow setAcceptsMouseMovedEvents:YES];
+			[childWindow setBackgroundColor:[NSColor blackColor]];
 			[parentWindow addChildWindow:childWindow ordered:NSWindowAbove];
 			[childWindow orderFront:nil];
 			
