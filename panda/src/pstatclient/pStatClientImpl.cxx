@@ -247,10 +247,15 @@ transmit_frame_data(int thread_index) {
 
       datagram.add_uint16(thread_index);
       datagram.add_uint32(thread->_frame_number);
-      thread->_frame_data.write_datagram(datagram);
 
       bool sent;
-      if (_writer.is_valid_for_udp(datagram)) {
+
+      if (!thread->_frame_data.write_datagram(datagram, _client)) {
+        // Too many events to fit in a single datagram.  Maybe it was
+        // a long frame load or something.  Just drop the datagram.
+        sent = false;
+
+      } else if (_writer.is_valid_for_udp(datagram)) {
         if (_udp_count * _udp_count_factor < _tcp_count * _tcp_count_factor) {
           // Send this one as a UDP packet.
           nassertv(_got_udp_port);

@@ -18,6 +18,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatClientVersion.h"
+#include "config_pstats.h"
 
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -39,11 +40,19 @@ sort_time() {
 //     Function: PStatFrameData::write_datagram
 //       Access: Public
 //  Description: Writes the definition of the FrameData to the
-//               datagram.
+//               datagram.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-void PStatFrameData::
-write_datagram(Datagram &destination) const {
+bool PStatFrameData::
+write_datagram(Datagram &destination, PStatClient *client) const {
   Data::const_iterator di;
+  if (_time_data.size() >= 65536 || _level_data.size() >= 65536) {
+    pstats_cat.info()
+      << "Dropping frame with " << _time_data.size()
+      << " time measurements and " << _level_data.size()
+      << " level measurements.\n";
+    return false;
+  }
+
   destination.add_uint16(_time_data.size());
   for (di = _time_data.begin(); di != _time_data.end(); ++di) {
     destination.add_uint16((*di)._index);
@@ -54,6 +63,8 @@ write_datagram(Datagram &destination) const {
     destination.add_uint16((*di)._index);
     destination.add_float32((*di)._value);
   }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
