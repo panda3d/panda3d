@@ -19,19 +19,6 @@
 #include "vertexDataBook.h"
 #include "reMutexHolder.h"
 
-#ifdef WIN32
-
-// Windows case.
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#else
-
-// Posix case.
-#include <unistd.h>
-
-#endif  // WIN32
-
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBook::Constructor
 //       Access: Published
@@ -41,19 +28,7 @@ VertexDataBook::
 VertexDataBook(size_t block_size) {
   // Make sure the block_size is an integer multiple of the system's
   // page size.
-  size_t system_page_size;
-#ifdef WIN32
-  // Windows case.
-  SYSTEM_INFO sysinfo;
-  GetSystemInfo(&sysinfo);
-
-  system_page_size = (size_t)sysinfo.dwPageSize;
-#else
-  // Posix case.
-  system_page_size = getpagesize();
-#endif  // WIN32
-
-  _block_size = ((block_size + system_page_size - 1) / system_page_size) * system_page_size;
+  _block_size = memory_hook->round_up_to_page_size(block_size);
 }
 
 ////////////////////////////////////////////////////////////////////
