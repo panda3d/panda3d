@@ -64,6 +64,7 @@ public:
 
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle(int i) const;
+  void merge_bundles(Character *other, int this_i, int other_i);
 
   CharacterJoint *find_joint(const string &name) const;
   CharacterSlider *find_slider(const string &name) const;
@@ -87,11 +88,16 @@ private:
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
                                Thread *current_thread);
   void fill_joint_map(JointMap &joint_map, PartGroup *copy, PartGroup *orig);
+  void r_merge_bundles(Character::JointMap &joint_map, 
+                       PartGroup *old_group, PartGroup *new_group);
   void r_copy_char(PandaNode *dest, const PandaNode *source,
                    const Character *from, NodeMap &node_map,
                    const JointMap &joint_map, GeomVertexMap &gvmap,
                    GeomJointMap &gjmap, GeomSliderMap &gsmap);
-  PT(Geom) copy_geom(const Geom *source, const Character *from,
+  void r_update_geom(PandaNode *node,
+                     const JointMap &joint_map, GeomVertexMap &gvmap,
+                     GeomJointMap &gjmap, GeomSliderMap &gsmap);
+  PT(Geom) copy_geom(const Geom *source, 
                      const JointMap &joint_map, GeomVertexMap &gvmap,
                      GeomJointMap &gjmap, GeomSliderMap &gsmap);
   void copy_node_pointers(const Character::NodeMap &node_map,

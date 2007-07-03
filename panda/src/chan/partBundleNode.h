@@ -54,7 +54,7 @@ protected:
   void add_bundle(PartBundle *bundle);
   void steal_bundles(PartBundleNode *other);
 
-private:
+protected:
   typedef pvector< PT(PartBundle) > Bundles;
   Bundles _bundles;
 

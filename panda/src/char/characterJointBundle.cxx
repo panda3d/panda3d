@@ -34,6 +34,15 @@ CharacterJointBundle(const string &name) : PartBundle(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterJointBundle::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CharacterJointBundle::
+~CharacterJointBundle() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterJointBundle::make_copy
 //       Access: Protected, Virtual
 //  Description: Allocates and returns a new copy of the node.

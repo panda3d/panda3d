@@ -221,6 +221,52 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::merge_bundles
+//       Access: Published
+//  Description: Merges the other_ith bundle into the this_ith within
+//               this node.  At the end of this call, this node and
+//               the other node will share the same bundle pointer at
+//               their corresponding positions (usually zero).
+//
+//               Normally, this is called when the two bundles have
+//               the same, or nearly the same, hierarchies.  In this
+//               case, the indicated bundle will simply be assigned to
+//               the this_ith bundle position.  However, if any joints
+//               are present in one bundle or the other, the new
+//               bundle will contain the union of all joints.
+//               
+//               The geometry below this node is also updated to
+//               reference the indicated bundle, instead of the
+//               original bundle.
+//
+//               This method is intended to unify two different models
+//               that share a common skeleton, for instance, different
+//               LOD's of the same model.
+////////////////////////////////////////////////////////////////////
+void Character::
+merge_bundles(Character *other, int this_i, int other_i) {
+  nassertv(this_i >= 0 && this_i < (int)_bundles.size());
+  nassertv(other_i >= 0 && other_i < (int)other->_bundles.size());
+  CharacterJointBundle *old_bundle = DCAST(CharacterJointBundle, _bundles[this_i]);
+  CharacterJointBundle *new_bundle = DCAST(CharacterJointBundle, other->_bundles[other_i]);
+  if (old_bundle == new_bundle) {
+    // Trivially return.
+    return;
+  }
+
+  // First, merge the bundles themselves.
+  JointMap joint_map;
+  r_merge_bundles(joint_map, old_bundle, new_bundle);
+  _bundles[this_i] = new_bundle;
+
+  // Now convert the geometry to use the new bundle.
+  GeomVertexMap gvmap;
+  GeomJointMap gjmap;
+  GeomSliderMap gsmap;
+  r_update_geom(this, joint_map, gvmap, gjmap, gsmap);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::find_joint
 //       Access: Published
 //  Description: Returns a pointer to the joint with the given name,
@@ -452,6 +498,119 @@ fill_joint_map(Character::JointMap &joint_map,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Character::r_merge_bundles
+//       Access: Private
+//  Description: Recursively checks the two bundles for a matching
+//               hierarchy, and adds nodes as necessary to "new_group"
+//               where they are not already present.  Also fills
+//               joint_map in the same manner as fill_joint_map().
+////////////////////////////////////////////////////////////////////
+void Character::
+r_merge_bundles(Character::JointMap &joint_map, 
+                PartGroup *old_group, PartGroup *new_group) {
+  joint_map[old_group] = new_group;
+
+  if (new_group->is_of_type(CharacterJoint::get_class_type())) {
+    CharacterJoint *new_joint;
+    DCAST_INTO_V(new_joint, new_group);
+
+    // Make sure the new_joint references this as its new character.
+    new_joint->_character = this;
+
+    if (old_group != new_group &&
+        old_group->is_of_type(CharacterJoint::get_class_type())) {
+      CharacterJoint *old_joint;
+      DCAST_INTO_V(old_joint, old_group);
+
+      // Since the old_joint will be getting dropped, reset its
+      // character reference.
+      old_joint->_character = NULL;
+
+      // Copy any _net_transform and _local_transform operations to the
+      // new joint.
+      CharacterJoint::NodeList::iterator ni;
+      for (ni = old_joint->_net_transform_nodes.begin();
+           ni != old_joint->_net_transform_nodes.end();
+           ++ni) {
+        new_joint->_net_transform_nodes.insert(*ni);
+      }
+      for (ni = old_joint->_local_transform_nodes.begin();
+           ni != old_joint->_local_transform_nodes.end();
+           ++ni) {
+        new_joint->_local_transform_nodes.insert(*ni);
+      }
+    }
+  }
+
+  if (old_group == new_group) {
+    return;
+  }
+    
+  int i = 0, j = 0;
+  int old_num_children = old_group->get_num_children();
+  int new_num_children = new_group->get_num_children();
+
+  PartGroup::Children new_children;
+  new_children.reserve(max(old_num_children, new_num_children));
+
+  while (i < old_num_children && j < new_num_children) {
+    PartGroup *pc = old_group->get_child(i);
+    PartGroup *ac = new_group->get_child(j);
+
+    if (pc->get_name() < ac->get_name()) {
+      // Here is a group that exists in old_group, but not in
+      // new_group.  Duplicate it.
+      PartGroup *new_pc = pc->make_copy();
+      new_children.push_back(new_pc);
+
+      r_merge_bundles(joint_map, pc, new_pc);
+      i++;
+
+    } else if (ac->get_name() < pc->get_name()) {
+      // Here is a group that exists in new_group, but not in
+      // old_group.  Preserve it.
+      new_children.push_back(ac);
+
+      r_merge_bundles(joint_map, ac, ac);
+      j++;
+
+    } else {
+      // Here is a group that exists in both.  Preserve it.
+      new_children.push_back(ac);
+
+      r_merge_bundles(joint_map, pc, ac);
+      i++;
+      j++;
+    }
+  }
+
+  while (i < old_num_children) {
+    PartGroup *pc = old_group->get_child(i);
+
+    // Here is a group that exists in old_group, but not in
+    // new_group.  Duplicate it.
+    PartGroup *new_pc = pc->make_copy();
+    new_children.push_back(new_pc);
+    
+    r_merge_bundles(joint_map, pc, new_pc);
+    i++;
+  }
+
+  while (j < new_num_children) {
+    PartGroup *ac = new_group->get_child(j);
+
+    // Here is a group that exists in new_group, but not in
+    // old_group.  Preserve it.
+    new_children.push_back(ac);
+
+    r_merge_bundles(joint_map, ac, ac);
+    j++;
+  }
+
+  new_group->_children.swap(new_children);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::r_copy_char
@@ -479,7 +638,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
     for (int i = 0; i < num_geoms; i++) {
       const Geom *geom = source_gnode->get_geom(i);
       const RenderState *state = source_gnode->get_geom_state(i);
-      dest_gnode->add_geom(copy_geom(geom, from, joint_map, gvmap, gjmap, gsmap), state);
+      dest_gnode->add_geom(copy_geom(geom, joint_map, gvmap, gjmap, gsmap), state);
     }
   }
 
@@ -511,6 +670,38 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::r_update_geom
+//       Access: Private
+//  Description: Walks the hierarchy, updating any GeomNodes in-place
+//               to reference the new animation tables within this
+//               Character.
+////////////////////////////////////////////////////////////////////
+void Character::
+r_update_geom(PandaNode *node, const Character::JointMap &joint_map,
+              Character::GeomVertexMap &gvmap,
+              Character::GeomJointMap &gjmap, 
+              Character::GeomSliderMap &gsmap) {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(Geom) geom = gnode->get_geom(i);
+      PT(Geom) new_geom = copy_geom(geom, joint_map, gvmap, gjmap, gsmap);
+      gnode->set_geom(i, new_geom);
+    }
+  }
+
+  int num_children = node->get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+
+    r_update_geom(child, joint_map, gvmap, gjmap, gsmap);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::copy_geom
 //       Access: Private
 //  Description: Makes a new copy of the Geom with the dynamic vertex
@@ -519,10 +710,9 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 //               returns the same Geom.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) Character::
-copy_geom(const Geom *source, const Character *from,
-          const Character::JointMap &joint_map,
-          Character::GeomVertexMap &gvmap,
-          Character::GeomJointMap &gjmap, Character::GeomSliderMap &gsmap) {
+copy_geom(const Geom *source, const Character::JointMap &joint_map,
+          Character::GeomVertexMap &gvmap, Character::GeomJointMap &gjmap, 
+          Character::GeomSliderMap &gsmap) {
   CPT(GeomVertexFormat) format = source->get_vertex_data()->get_format();
   if (format->get_animation().get_animation_type() == Geom::AT_none) {
     // Not animated, so never mind.
@@ -800,8 +990,13 @@ r_clear_joint_characters(PartGroup *part) {
   if (part->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
 
-    nassertv(joint->get_character() == this || joint->get_character() == NULL);
-    joint->set_character(NULL);
+    // It is possible for the joint to reference a different Character
+    // here--after merge_bundles() has been called, a particular joint
+    // will be listed within more than one Character node, but it can
+    // only point back to one of them.
+    if (joint->get_character() == this) {
+      joint->set_character(NULL);
+    }
   }
 
   int num_children = part->get_num_children();

@@ -38,6 +38,7 @@ protected:
 
 public:
   CharacterJointBundle(const string &name = "");
+  virtual ~CharacterJointBundle();
 
 PUBLISHED:
   INLINE Character *get_node(int n) const;
