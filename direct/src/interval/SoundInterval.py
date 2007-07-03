@@ -123,6 +123,8 @@ class SoundInterval(Interval.Interval):
         # let the audio subsystem loop it
         if (self._seamlessLoop and self._soundPlaying and self.getLoop()
             and not hasattr(self, '_inFinish')):
+            base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
+                                          self.listenerNode)
             return
         elif self.sound != None:
             self.sound.stop()
