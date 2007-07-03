@@ -1082,7 +1082,7 @@ class Actor(DirectObject, NodePath):
         is not intended to be animated during the lifetime of the
         Actor. """
         # Temporary condition for old Pandas.
-        if not hasattr(PartBundle, 'freezeJoint'):
+        if not hasattr(PartBundle, 'controlJoint'):
             return
         
         if transform == None:
