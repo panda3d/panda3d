@@ -136,7 +136,9 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
   // See if any of the channel values have changed since last time.
 
   if (_forced_channel != (AnimChannelBase *)NULL) {
-    needs_update = _forced_channel->has_changed(0.0, 0.0);
+    if (!needs_update) {
+      needs_update = _forced_channel->has_changed(0.0, 0.0);
+    }
 
   } else {
     const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;

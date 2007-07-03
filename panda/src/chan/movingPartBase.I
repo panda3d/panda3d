@@ -25,9 +25,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MovingPartBase::
 MovingPartBase(const MovingPartBase &copy) :
-  PartGroup(copy)
+  PartGroup(copy),
+  _forced_channel(copy._forced_channel)
 {
-  // We don't copy the bound channels.
+  // We don't copy the bound channels.  We do copy the forced_channel,
+  // though this is just a pointerwise copy.
 }
 
 ////////////////////////////////////////////////////////////////////

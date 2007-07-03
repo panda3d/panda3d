@@ -264,6 +264,9 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
     return false;
   }
 
+  CDWriter cdata(_cycler, false);
+  cdata->_anim_changed = true;
+
   return child->apply_freeze(transform);
 }
 
@@ -287,6 +290,9 @@ control_joint(const string &joint_name, PandaNode *node) {
     return false;
   }
 
+  CDWriter cdata(_cycler, false);
+  cdata->_anim_changed = true;
+
   return child->apply_control(node);
 }
 
@@ -308,6 +314,9 @@ release_joint(const string &joint_name) {
   if (child == (PartGroup *)NULL) {
     return false;
   }
+
+  CDWriter cdata(_cycler, false);
+  cdata->_anim_changed = true;
 
   return child->clear_forced_channel();
 }
