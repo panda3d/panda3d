@@ -82,6 +82,7 @@ PUBLISHED:
     CST_sphere               = 0x00040000,
     CST_tube                 = 0x00050000,
     CST_inv_sphere           = 0x00060000,
+    CST_floor_mesh           = 0x00080000,
   };
   enum CollideFlags {
     // The bits here must correspond to those in Flags, below, and
