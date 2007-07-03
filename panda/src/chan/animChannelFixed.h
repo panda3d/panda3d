@@ -42,7 +42,6 @@ protected:
   INLINE AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy);
 
 public:
-  INLINE AnimChannelFixed(AnimGroup *parent, const string &name, const ValueType &value);
   INLINE AnimChannelFixed(const string &name, const ValueType &value);
 
   virtual bool has_changed(double last_frame, double this_frame);

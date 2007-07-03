@@ -18,6 +18,7 @@
 
 
 #include "movingPartScalar.h"
+#include "animChannelScalarDynamic.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -48,6 +49,15 @@ MovingPartScalar::
 ////////////////////////////////////////////////////////////////////
 void MovingPartScalar::
 get_blend_value(const PartBundle *root) {
+  // If a forced channel is set on this particular scalar, we always
+  // return that value instead of performing the blend.  Furthermore,
+  // the frame number is always 0 for the forced channel.
+  if (_forced_channel != (AnimChannelBase *)NULL) {
+    ChannelType *channel = DCAST(ChannelType, _forced_channel);
+    channel->get_value(0, _value);
+    return;
+  }
+
   PartBundle::CDReader cdata(root->_cycler);
 
   if (cdata->_blend.empty()) {
@@ -112,13 +122,42 @@ get_blend_value(const PartBundle *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPartScalar::apply_freeze
+//       Access: Public, Virtual
+//  Description: Freezes this particular joint so that it will always
+//               hold the specified transform.  Returns true if this
+//               is a joint that can be so frozen, false otherwise.
+//               This is called internally by
+//               PartBundle::freeze_joint().
+////////////////////////////////////////////////////////////////////
+bool MovingPartScalar::
+apply_freeze(const TransformState *transform) {
+  _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), transform->get_pos()[0]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartScalar::apply_control
+//       Access: Public, Virtual
+//  Description: Specifies a node to influence this particular joint
+//               so that it will always hold the node's transform.
+//               Returns true if this is a joint that can be so
+//               controlled, false otherwise.  This is called
+//               internally by PartBundle::control_joint().
+////////////////////////////////////////////////////////////////////
+bool MovingPartScalar::
+apply_control(PandaNode *node) {
+  AnimChannelScalarDynamic *chan = new AnimChannelScalarDynamic(get_name());
+  chan->set_value_node(node);
+  _forced_channel = chan;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPartScalar::make_MovingPartScalar
 //       Access: Protected
 //  Description: Factory method to generate a MovingPartScalar object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* MovingPartScalar::
-make_MovingPartScalar(const FactoryParams &params)
-{
+make_MovingPartScalar(const FactoryParams &params) {
   MovingPartScalar *me = new MovingPartScalar;
   DatagramIterator scan;
   BamReader *manager;
@@ -134,8 +173,7 @@ make_MovingPartScalar(const FactoryParams &params)
 //  Description: Factory method to generate a MovingPartScalar object
 ////////////////////////////////////////////////////////////////////
 void MovingPartScalar::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartScalar);
 }
 

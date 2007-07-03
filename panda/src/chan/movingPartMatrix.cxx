@@ -18,6 +18,7 @@
 
 
 #include "movingPartMatrix.h"
+#include "animChannelMatrixDynamic.h"
 #include "animChannelMatrixFixed.h"
 #include "compose_matrix.h"
 #include "datagram.h"
@@ -51,7 +52,7 @@ MovingPartMatrix::
 ////////////////////////////////////////////////////////////////////
 AnimChannelBase *MovingPartMatrix::
 make_initial_channel() const {
-  return new AnimChannelMatrixFixed(get_name(), _initial_value);
+  return new AnimChannelMatrixFixed(get_name(), TransformState::make_mat(_initial_value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +64,15 @@ make_initial_channel() const {
 ////////////////////////////////////////////////////////////////////
 void MovingPartMatrix::
 get_blend_value(const PartBundle *root) {
+  // If a forced channel is set on this particular joint, we always
+  // return that value instead of performing the blend.  Furthermore,
+  // the frame number is always 0 for the forced channel.
+  if (_forced_channel != (AnimChannelBase *)NULL) {
+    ChannelType *channel = DCAST(ChannelType, _forced_channel);
+    channel->get_value(0, _value);
+    return;
+  }
+
   PartBundle::CDReader cdata(root->_cycler);
 
   if (cdata->_blend.empty()) {
@@ -361,13 +371,42 @@ get_blend_value(const PartBundle *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovingPartMatrix::apply_freeze
+//       Access: Public, Virtual
+//  Description: Freezes this particular joint so that it will always
+//               hold the specified transform.  Returns true if this
+//               is a joint that can be so frozen, false otherwise.
+//               This is called internally by
+//               PartBundle::freeze_joint().
+////////////////////////////////////////////////////////////////////
+bool MovingPartMatrix::
+apply_freeze(const TransformState *transform) {
+  _forced_channel = new AnimChannelMatrixFixed(get_name(), transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartMatrix::apply_control
+//       Access: Public, Virtual
+//  Description: Specifies a node to influence this particular joint
+//               so that it will always hold the node's transform.
+//               Returns true if this is a joint that can be so
+//               controlled, false otherwise.  This is called
+//               internally by PartBundle::control_joint().
+////////////////////////////////////////////////////////////////////
+bool MovingPartMatrix::
+apply_control(PandaNode *node) {
+  AnimChannelMatrixDynamic *chan = new AnimChannelMatrixDynamic(get_name());
+  chan->set_value_node(node);
+  _forced_channel = chan;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovingPartMatrix::make_MovingPartMatrix
 //       Access: Protected
 //  Description: Factory method to generate a MovingPartMatrix object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* MovingPartMatrix::
-make_MovingPartMatrix(const FactoryParams &params)
-{
+make_MovingPartMatrix(const FactoryParams &params) {
   MovingPartMatrix *me = new MovingPartMatrix;
   DatagramIterator scan;
   BamReader *manager;
@@ -383,7 +422,6 @@ make_MovingPartMatrix(const FactoryParams &params)
 //  Description: Factory method to generate a MovingPartMatrix object
 ////////////////////////////////////////////////////////////////////
 void MovingPartMatrix::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_MovingPartMatrix);
 }

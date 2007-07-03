@@ -27,8 +27,7 @@
 INLINE PartGroup::
 PartGroup(const string &name) :
   Namable(name),
-  _children(get_class_type()),
-  _frozen(0)
+  _children(get_class_type())
 {
 }
 
@@ -42,23 +41,8 @@ PartGroup(const string &name) :
 INLINE PartGroup::
 PartGroup(const PartGroup &copy) :
   Namable(copy),
-  _children(get_class_type()),
-  _frozen(copy._frozen),
-  _frozen_transform(copy._frozen_transform)
+  _children(get_class_type())
 {
   // We don't copy children in the copy constructor.  However,
   // copy_subgraph() will do this.
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PartGroup::freeze
-//       Access: Published
-//  Description: stores a joint freeze for later binding
-////////////////////////////////////////////////////////////////////
-INLINE void PartGroup::
-freeze(LMatrix4f const &transform) 
-{
-  _frozen = true;
-  _frozen_transform=LMatrix4f(transform);
 }

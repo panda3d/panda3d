@@ -19,8 +19,6 @@
 
 #include "animGroup.h"
 #include "animBundle.h"
-#include "animChannelMatrixDynamic.h"
-#include "animChannelScalarDynamic.h"
 #include "config_chan.h"
 
 #include "indent.h"
@@ -143,116 +141,6 @@ find_child(const string &name) const {
   }
 
   return (AnimGroup *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimGroup::make_child_dynamic
-//       Access: Public
-//  Description: Finds the indicated child and replaces it with an
-//               AnimChannelMatrixDynamic or AnimChannelScalarDynamic,
-//               as appropriate, and returns the new channel.
-//
-//               This may be called before binding the animation to a
-//               character to replace certain joints with
-//               dynamically-controlled ones.
-//
-//               Returns NULL if the named child cannot be found.
-////////////////////////////////////////////////////////////////////
-AnimGroup *AnimGroup::
-make_child_dynamic(const string &name) {
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    AnimGroup *child = (*ci);
-    if (child->get_name() == name) {
-      AnimGroup *new_child = NULL;
-
-      if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
-        AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
-        AnimChannelMatrixDynamic *new_mchild = 
-          new AnimChannelMatrixDynamic(this, name);
-        new_child = new_mchild;
-
-        // Copy in the original value from frame 0.
-        LMatrix4f orig_value;
-        mchild->get_value(0, orig_value);
-        new_mchild->set_value(orig_value);
-
-      } else if (child->is_of_type(AnimChannelScalar::get_class_type())) {
-        AnimChannelScalar *schild = DCAST(AnimChannelScalar, child);
-        AnimChannelScalarDynamic *new_schild = 
-          new AnimChannelScalarDynamic(this, name);
-        new_child = new_schild;
-
-        // Copy in the original value from frame 0.
-        float orig_value;
-        schild->get_value(0, orig_value);
-        new_schild->set_value(orig_value);
-      }
-
-      if (new_child != (AnimGroup *)NULL) {
-        new_child->_children.swap(child->_children);
-        nassertr(_children.back() == new_child, NULL);
-
-        // The new child was appended to the end of our children list
-        // by its constructor.  Reposition it to replace the original
-        // child.
-
-        // I would like to use these lines, but for some reason it
-        // crashes:
-        /*
-        {
-          (*ci) = new_child;
-          _children.pop_back();
-        }
-        */
-
-        // But this longer way of achieving the same result works
-        // instead:
-        {
-          Children::iterator nci;
-          Children new_children;
-          for (nci = _children.begin(); nci != _children.end(); ++nci) {
-            if ((*nci) == child) {
-              new_children.push_back(new_child);
-            } else if ((*nci) != new_child) {
-              new_children.push_back(*nci);
-            }
-          }
-          new_children.swap(_children);
-        }
-
-        return new_child;
-      }
-    }
-    AnimGroup *result = child->make_child_dynamic(name);
-    if (result != (AnimGroup *)NULL) {
-      return result;
-    }
-  }
-
-  return (AnimGroup *)NULL;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimGroup::fix_child
-//       Access: Public
-//  Description: replaces childs animation matrix with a fixed one
-////////////////////////////////////////////////////////////////////
-void AnimGroup::
-fix_child(unsigned int index, const LMatrix4f &mat) {
-  AnimGroup *child = get_child(index);
-  AnimGroup *new_child = NULL;
-  if (child->is_of_type(AnimChannelMatrix::get_class_type())) {
-    AnimChannelMatrix *mchild = DCAST(AnimChannelMatrix, child);
-    AnimChannelMatrixFixed *new_mchild =  new AnimChannelMatrixFixed(this, child->get_name(), mat);
-    new_child = new_mchild;
-  }
-  if(new_child != (AnimGroup*)NULL) {
-    new_child->_children.swap(child->_children);
-    nassertv(_children.back() == new_child);
-    _children[index] = new_child;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

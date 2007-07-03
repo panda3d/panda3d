@@ -31,53 +31,43 @@ TypeHandle AnimChannelMatrixFixed::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixFixed::
 AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) : 
-  AnimChannelFixed<ACMatrixSwitchType>(parent, copy),
-  _value_no_scale_shear(copy._value_no_scale_shear),
-  _scale(copy._scale),
-  _hpr(copy._hpr),
-  _quat(copy._quat),
-  _pos(copy._pos),
-  _shear(copy._shear)
+  AnimChannel<ACMatrixSwitchType>(parent, copy),
+  _transform(copy._transform)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixFixed::Constructor
 //       Access: Public
-//  Description: This flavor creates an AnimChannelMatrixFixed that
-//               *is* in a hierarchy.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(AnimGroup *parent, const string &name, 
-                       const LMatrix4f &value)
-  : AnimChannelFixed<ACMatrixSwitchType>(parent, name, value)
+AnimChannelMatrixFixed(const string &name, const TransformState *transform) :
+  AnimChannel<ACMatrixSwitchType>(name),
+  _transform(transform)
 {
-  // Decompose the matrix into components in case we will be blending.
-  decompose_matrix(_value, _scale, _shear, _hpr, _pos);
-  compose_matrix(_value_no_scale_shear, LVecBase3f(1.0f, 1.0f, 1.0f),
-                 _hpr, _pos);
-
-  _quat.set_hpr(_hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelMatrixFixed::Constructor
-//       Access: Public
-//  Description: This flavor creates an AnimChannelMatrixFixed that is not
-//               in a hierarchy.
+//     Function: AnimChannelFixed::has_changed
+//       Access: Public, Virtual
+//  Description:
 ////////////////////////////////////////////////////////////////////
-AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(const string &name, const LMatrix4f &value)
-  : AnimChannelFixed<ACMatrixSwitchType>(name, value)
-{
-  // Decompose the matrix into components in case we will be blending.
-  decompose_matrix(_value, _scale, _shear, _hpr, _pos);
-  compose_matrix(_value_no_scale_shear, LVecBase3f(1.0f, 1.0f, 1.0f),
-                 _hpr, _pos);
-
-  _quat.set_hpr(_hpr);
+bool AnimChannelMatrixFixed::
+has_changed(double, double) {
+  return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelFixed::get_value
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixFixed::
+get_value(int, LMatrix4f &value) {
+  value = _transform->get_mat();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixFixed::get_value_no_scale_shear
@@ -87,7 +77,12 @@ AnimChannelMatrixFixed(const string &name, const LMatrix4f &value)
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_value_no_scale_shear(int frame, LMatrix4f &mat) {
-  mat = _value_no_scale_shear;
+  if (_transform->has_scale() || _transform->has_shear()) {
+    compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f),
+                   _transform->get_hpr(), _transform->get_pos());
+  } else {
+    mat = _transform->get_mat();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +92,7 @@ get_value_no_scale_shear(int frame, LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_scale(int, LVecBase3f &scale) {
-  scale = _scale;
+  scale = _transform->get_scale();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +104,7 @@ get_scale(int, LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_hpr(int, LVecBase3f &hpr) {
-  hpr = _hpr;
+  hpr = _transform->get_hpr();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,7 +116,7 @@ get_hpr(int, LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_quat(int, LQuaternionf &quat) {
-  quat = _quat;
+  quat = _transform->get_quat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +128,7 @@ get_quat(int, LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_pos(int, LVecBase3f &pos) {
-  pos = _pos;
+  pos = _transform->get_pos();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,5 +140,16 @@ get_pos(int, LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_shear(int, LVecBase3f &shear) {
-  shear = _shear;
+  shear = _transform->get_shear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelFixed::output
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixFixed::
+output(ostream &out) const {
+  AnimChannel<ACMatrixSwitchType>::output(out);
+  out << " = " << *_transform;
 }

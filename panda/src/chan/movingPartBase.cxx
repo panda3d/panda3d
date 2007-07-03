@@ -43,7 +43,36 @@ MovingPartBase(PartGroup *parent, const string &name)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MovingPartBase::
-MovingPartBase(){
+MovingPartBase() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::clear_forced_channel
+//       Access: Published, Virtual
+//  Description: Undoes the effect of a previous call to
+//               apply_freeze() or apply_control().  Returns true if
+//               the joint was modified, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MovingPartBase::
+clear_forced_channel() {
+  if (_forced_channel != (AnimChannelBase *)NULL) {
+    _forced_channel.clear();
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::get_forced_channel
+//       Access: Published, Virtual
+//  Description: Returns the AnimChannelBase that has been forced to
+//               this joint by a previous call to apply_freeze() or
+//               apply_control(), or NULL if no such channel has been
+//               applied.
+////////////////////////////////////////////////////////////////////
+AnimChannelBase *MovingPartBase::
+get_forced_channel() const {
+  return _forced_channel;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,7 +135,10 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
 
   // See if any of the channel values have changed since last time.
 
-  {
+  if (_forced_channel != (AnimChannelBase *)NULL) {
+    needs_update = _forced_channel->has_changed(0.0, 0.0);
+
+  } else {
     const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
     PartBundle::ChannelBlend::const_iterator bci;
     for (bci = cdata->_blend.begin();

@@ -46,7 +46,6 @@ PartGroup(PartGroup *parent, const string &name) :
   nassertv(parent != NULL);
   
   parent->_children.push_back(this);
-  _frozen = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,6 +139,68 @@ find_child(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::apply_freeze
+//       Access: Published, Virtual
+//  Description: Freezes this particular joint so that it will always
+//               hold the specified transform.  Returns true if this
+//               is a joint that can be so frozen, false otherwise.
+//
+//               This is normally only called internally by
+//               PartBundle::freeze_joint(), but you may also call it
+//               directly.
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+apply_freeze(const TransformState *transform) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::apply_control
+//       Access: Published, Virtual
+//  Description: Specifies a node to influence this particular joint
+//               so that it will always hold the node's transform.
+//               Returns true if this is a joint that can be so
+//               controlled, false otherwise.
+//
+//               This is normally only called internally by
+//               PartBundle::control_joint(), but you may also call it
+//               directly.
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+apply_control(PandaNode *node) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::clear_forced_channel
+//       Access: Published, Virtual
+//  Description: Undoes the effect of a previous call to
+//               apply_freeze() or apply_control().  Returns true if
+//               the joint was modified, false otherwise.
+//
+//               This is normally only called internally by
+//               PartBundle::release_joint(), but you may also call it
+//               directly.
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+clear_forced_channel() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::get_forced_channel
+//       Access: Published, Virtual
+//  Description: Returns the AnimChannelBase that has been forced to
+//               this joint by a previous call to apply_freeze() or
+//               apply_control(), or NULL if no such channel has been
+//               applied.
+////////////////////////////////////////////////////////////////////
+AnimChannelBase *PartGroup::
+get_forced_channel() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::get_value_type
 //       Access: Public, Virtual
 //  Description: Returns the TypeHandle associated with the ValueType
@@ -192,9 +253,6 @@ sort_descendants() {
 //               PartGroup::HierarchyMatchFlags values indicating
 //               conditions that will be tolerated (but warnings will
 //               still be issued).
-//
-//               If there is a discrepancy, it is reported to the
-//               indicated output stream, if it is non-null.
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
 check_hierarchy(const AnimGroup *anim, const PartGroup *,
@@ -426,9 +484,6 @@ write_descendants_with_value(ostream &out, int indent_level) const {
   }
 }
 
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::pick_channel_index
 //       Access: Protected, Virtual
@@ -468,10 +523,6 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 
   while (i < part_num_children && j < anim_num_children) {
     PartGroup *pc = get_child(i);
-    if (pc->_frozen) {
-      anim->fix_child(j, pc->_frozen_transform);
-    }
-
     AnimGroup *ac = anim->get_child(j);
 
     if (pc->get_name() < ac->get_name()) {
@@ -510,15 +561,10 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-write_datagram(BamWriter *manager, Datagram &me)
-{
-  int i;
+write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
-  me.add_bool(_frozen);
-  _frozen_transform.write_datagram(me);
   me.add_uint16(_children.size());
-  for(i = 0; i < (int)_children.size(); i++)
-  {
+  for (size_t i = 0; i < _children.size(); i++) {
     manager->write_pointer(me, _children[i]);
   }
 }
@@ -532,46 +578,41 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
-  int i;
+fillin(DatagramIterator &scan, BamReader *manager) {
   set_name(scan.get_string());
-  if (manager->get_file_minor_ver() >= 11) {
-    _frozen=scan.get_bool();
-    _frozen_transform.read_datagram(scan);
+
+  if (manager->get_file_minor_ver() == 11) {
+    // Skip over the old freeze-joint information, no longer stored here
+    scan.get_bool();
+    LMatrix4f mat;
+    mat.read_datagram(scan);
   }
-  _num_children = scan.get_uint16();
-  for(i = 0; i < _num_children; i++)
-  {
+
+  int num_children = scan.get_uint16();
+  _children.reserve(num_children);
+  for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
+    _children.push_back(NULL);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::complete_pointers
 //       Access: Public
-//  Description: Takes in a vector of pointes to TypedWritable
+//  Description: Takes in a vector of pointers to TypedWritable
 //               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::
-complete_pointers(TypedWritable **p_list, BamReader*)
-{
-  int i;
-  for(i = 0; i < _num_children; i++)
-  {
-    if (p_list[i] == TypedWritable::Null)
-    {
-      chan_cat->warning() << get_type().get_name()
-                          << " Ignoring null PartGroup" << endl;
-    }
-    else
-    {
-      _children.push_back(DCAST(PartGroup, p_list[i]));
-    }
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = TypedWritableReferenceCount::complete_pointers(p_list, manager);
+  
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci) = DCAST(PartGroup, p_list[pi++]);
   }
 
-  return _num_children;
+  return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -580,8 +621,7 @@ complete_pointers(TypedWritable **p_list, BamReader*)
 //  Description: Factory method to generate a PartGroup object
 ////////////////////////////////////////////////////////////////////
 TypedWritable* PartGroup::
-make_PartGroup(const FactoryParams &params)
-{
+make_PartGroup(const FactoryParams &params) {
   PartGroup *me = new PartGroup;
   DatagramIterator scan;
   BamReader *manager;
@@ -597,8 +637,7 @@ make_PartGroup(const FactoryParams &params)
 //  Description: Factory method to generate a PartGroup object
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-register_with_read_factory()
-{
+register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_PartGroup);
 }
 

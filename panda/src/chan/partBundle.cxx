@@ -51,8 +51,7 @@ static ConfigVariableEnum<PartBundle::BlendType> anim_blend_type
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const PartBundle &copy) :
-  PartGroup(copy),
-  _modifies_anim_bundles(copy._modifies_anim_bundles)
+  PartGroup(copy)
 {
   CDWriter cdata(_cycler, true);
   CDReader cdata_from(copy._cycler);
@@ -71,8 +70,7 @@ PartBundle(const PartBundle &copy) :
 ////////////////////////////////////////////////////////////////////
 PartBundle::
 PartBundle(const string &name) : 
-  PartGroup(name),
-  _modifies_anim_bundles(false)
+  PartGroup(name)
 {
 }
 
@@ -224,10 +222,6 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
     }
   }
 
-  if(_modifies_anim_bundles) {
-    ptanim = ptanim->copy_bundle();
-  }
-
   if (!check_hierarchy(anim, NULL, hierarchy_match_flags)) {
     return NULL;
   }
@@ -248,6 +242,74 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
   bind_hierarchy(ptanim, channel_index, joint_index, 
                  subset.is_include_empty(), bound_joints, subset);
   return new AnimControl(this, anim, channel_index, bound_joints);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::freeze_joint
+//       Access: Published
+//  Description: Specifies that the joint with the indicated name
+//               should be frozen with the specified transform.  It
+//               will henceforth always hold this fixed transform,
+//               regardless of any animations that may subsequently be
+//               bound to the joint.
+//
+//               Returns true if the joint is successfully frozen, or
+//               false if the named child is not a joint (or slider)
+//               or does not exist.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+freeze_joint(const string &joint_name, const TransformState *transform) {
+  PartGroup *child = find_child(joint_name);
+  if (child == (PartGroup *)NULL) {
+    return false;
+  }
+
+  return child->apply_freeze(transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::control_joint
+//       Access: Published
+//  Description: Specifies that the joint with the indicated name
+//               should be animated with the transform on the
+//               indicated node.  It will henceforth always follow the
+//               node's transform, regardless of any animations that
+//               may subsequently be bound to the joint.
+//
+//               Returns true if the joint is successfully controlled,
+//               or false if the named child is not a joint (or
+//               slider) or does not exist.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+control_joint(const string &joint_name, PandaNode *node) {
+  PartGroup *child = find_child(joint_name);
+  if (child == (PartGroup *)NULL) {
+    return false;
+  }
+
+  return child->apply_control(node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::release_joint
+//       Access: Published
+//  Description: Releases the named joint from the effects of a
+//               previous call to freeze_joint() or control_joint().
+//               It will henceforth once again follow whatever
+//               transforms are dictated by the animation.
+//
+//               Returns true if the joint is released, or false if
+//               the named child was not previously controlled or
+//               frozen, or it does not exist.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+release_joint(const string &joint_name) {
+  PartGroup *child = find_child(joint_name);
+  if (child == (PartGroup *)NULL) {
+    return false;
+  }
+
+  return child->clear_forced_channel();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -498,7 +560,6 @@ void PartBundle::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PartGroup::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
-  dg.add_bool(_modifies_anim_bundles);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -532,8 +593,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() >= 10) {
     manager->read_cdata(scan, _cycler);
   }
-  if (manager->get_file_minor_ver() >= 11) {  
-    _modifies_anim_bundles=scan.get_bool();
+  if (manager->get_file_minor_ver() == 11) {  
+    // No longer need the _modifies_anim_bundles flag
+    scan.get_bool();
   }
 }
 

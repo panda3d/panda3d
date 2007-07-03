@@ -37,6 +37,9 @@ class BamReader;
 class FactoryParams;
 class BitArray;
 class CycleData;
+class TransformState;
+class PandaNode;
+class AnimChannelBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartGroup
@@ -76,10 +79,13 @@ PUBLISHED:
   PartGroup *get_child(int n) const;
   PartGroup *find_child(const string &name) const;
 
+  virtual bool apply_freeze(const TransformState *transform);
+  virtual bool apply_control(PandaNode *node);
+  virtual bool clear_forced_channel();
+  virtual AnimChannelBase *get_forced_channel() const;
+
   virtual void write(ostream &out, int indent_level) const;
   virtual void write_with_value(ostream &out, int indent_level) const;
-
-  INLINE void freeze(LMatrix4f const &transform);
 
 public:
   virtual TypeHandle get_value_type() const;
@@ -118,14 +124,7 @@ public:
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
-private:
-  int _num_children;
-
-  bool _frozen;
-  LMatrix4f _frozen_transform;
-
 public:
-
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
@@ -141,13 +140,12 @@ public:
                   TypedWritableReferenceCount::get_class_type());
   }
 
-
 private:
   static TypeHandle _type_handle;
 
   friend class Character;
   friend class CharacterJointBundle;
-
+  friend class PartBundle;
 };
 
 #include "partGroup.I"

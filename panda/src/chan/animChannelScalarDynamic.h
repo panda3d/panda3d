@@ -44,7 +44,7 @@ protected:
   AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy);
 
 public:
-  AnimChannelScalarDynamic(AnimGroup *parent, const string &name);
+  AnimChannelScalarDynamic(const string &name);
 
   virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, float &value);

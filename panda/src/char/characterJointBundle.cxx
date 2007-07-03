@@ -89,6 +89,12 @@ remove_node(PartBundleNode *node) {
 ////////////////////////////////////////////////////////////////////
 void CharacterJointBundle::
 r_set_character(PartGroup *group, Character *character) {
+  if (group == (PartGroup *)NULL) {
+    // This might happen if we are in the middle of reading the
+    // Character's hierarchy from the bam file.
+    return;
+  }
+
   if (group->is_of_type(CharacterJoint::get_class_type())) {
     DCAST(CharacterJoint, group)->set_character(character);
   }

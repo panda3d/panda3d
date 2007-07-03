@@ -38,23 +38,7 @@ AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelFixed::Constructor
 //       Access: Public
-//  Description: This is the flavor of AnimChannelFixed that puts it
-//               in a hierarchy.
-////////////////////////////////////////////////////////////////////
-template<class SwitchType>
-INLINE AnimChannelFixed<SwitchType>::
-AnimChannelFixed(AnimGroup *parent, const string &name,
-                 const ValueType &value)
-  : AnimChannel<SwitchType>(parent, name),
-    _value(value) {
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::Constructor
-//       Access: Public
-//  Description: This flavor creates an AnimChannelFixed that is not
-//               in a hierarchy.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 INLINE AnimChannelFixed<SwitchType>::

@@ -44,7 +44,7 @@ protected:
   AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy);
 
 public:
-  AnimChannelMatrixDynamic(AnimGroup *parent, const string &name);
+  AnimChannelMatrixDynamic(const string &name);
 
   virtual bool has_changed(double last_frame, double this_frame);
   virtual void get_value(int frame, LMatrix4f &mat);

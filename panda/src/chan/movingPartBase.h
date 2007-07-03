@@ -51,6 +51,9 @@ public:
   virtual AnimChannelBase *make_initial_channel() const=0;
 
 PUBLISHED:
+  virtual bool clear_forced_channel();
+  virtual AnimChannelBase *get_forced_channel() const;
+
   virtual void write(ostream &out, int indent_level) const;
   virtual void write_with_value(ostream &out, int indent_level) const;
   virtual void output_value(ostream &out) const=0;
@@ -76,9 +79,9 @@ protected:
 
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
+  PT(AnimChannelBase) _forced_channel;
 
 public:
-
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

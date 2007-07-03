@@ -52,7 +52,6 @@ PUBLISHED:
   AnimGroup *get_child(int n) const;
   AnimGroup *find_child(const string &name) const;
 
-  AnimGroup *make_child_dynamic(const string &name);
 public:
   virtual TypeHandle get_value_type() const;
 
@@ -80,8 +79,6 @@ public:
                                 BamReader *manager);
 
   static TypedWritable *make_AnimGroup(const FactoryParams &params);
-
-  void fix_child(unsigned int index, LMatrix4f const & mat);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

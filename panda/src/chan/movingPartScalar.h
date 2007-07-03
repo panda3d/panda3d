@@ -43,6 +43,9 @@ public:
 
   virtual void get_blend_value(const PartBundle *root);
 
+  virtual bool apply_freeze(const TransformState *transform);
+  virtual bool apply_control(PandaNode *node);
+
 protected:
   INLINE MovingPartScalar();
 
