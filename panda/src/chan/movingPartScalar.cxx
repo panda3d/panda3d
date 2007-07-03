@@ -133,6 +133,7 @@ get_blend_value(const PartBundle *root) {
 bool MovingPartScalar::
 apply_freeze(const TransformState *transform) {
   _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), transform->get_pos()[0]);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,6 +150,7 @@ apply_control(PandaNode *node) {
   AnimChannelScalarDynamic *chan = new AnimChannelScalarDynamic(get_name());
   chan->set_value_node(node);
   _forced_channel = chan;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

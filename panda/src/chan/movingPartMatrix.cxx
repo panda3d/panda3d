@@ -382,6 +382,7 @@ get_blend_value(const PartBundle *root) {
 bool MovingPartMatrix::
 apply_freeze(const TransformState *transform) {
   _forced_channel = new AnimChannelMatrixFixed(get_name(), transform);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,6 +399,7 @@ apply_control(PandaNode *node) {
   AnimChannelMatrixDynamic *chan = new AnimChannelMatrixDynamic(get_name());
   chan->set_value_node(node);
   _forced_channel = chan;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
