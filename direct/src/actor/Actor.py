@@ -158,8 +158,6 @@ class Actor(DirectObject, NodePath):
         self.__subpartDict = {}
         self.__sortedLODNames = []
         self.__animControlDict = {}
-        self.__controlJoints = {}
-        self.__frozenJoints = {}        
 
         self.__subpartsComplete = False
 
@@ -444,7 +442,7 @@ class Actor(DirectObject, NodePath):
         Actor cleanup function
         """
         self.stop(None)
-        self.__frozenJoints = {}
+        self.clearPythonData()
         self.flush()
         if(self.__geomNode):
             self.__geomNode.removeNode()
@@ -462,7 +460,6 @@ class Actor(DirectObject, NodePath):
         self.__subpartDict = {}
         self.__sortedLODNames = []
         self.__animControlDict = {}
-        self.__controlJoints = {}
         
     def flush(self):
         """
@@ -1037,62 +1034,78 @@ class Actor(DirectObject, NodePath):
 
 
     def controlJoint(self, node, partName, jointName, lodName="lodRoot"):
-        """controlJoint(self, NodePath, string, string, key="lodRoot")
-
-        The converse of exposeJoint: this associates the joint with
+        """The converse of exposeJoint: this associates the joint with
         the indicated node, so that the joint transform will be copied
         from the node to the joint each frame.  This can be used for
         programmer animation of a particular joint at runtime.
 
-        This must be called before any animations are played.  Once an
-        animation has been loaded and bound to the character, it will
-        be too late to add a new control during that animation.
-        """
-        partBundleDict=self.__partBundleDict.get(lodName)
+        The parameter node should be the NodePath for the node whose
+        transform will animate the joint.  If node is None, a new node
+        will automatically be created and loaded with the joint's
+        initial transform.  In either case, the node used will be
+        returned.
 
-        if not partBundleDict:
-            Actor.notify.warning("no lod named: %s" % (lodName))
-            return None
+        It used to be necessary to call this before any animations
+        have been loaded and bound, but that is no longer so.
+        """
+        # Temporary condition for old Pandas.
+        if not hasattr(PartBundle, 'controlJoint'):
+            if node == None:
+                node = self.attachNewNode(jointName)
+            return node
         
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-        partDef = partBundleDict.get(subpartDef.truePartName)
-        if partDef:
-            bundle = partDef.partBundle
-            bundle.setModifiesAnimBundles(1)
-        else:
-            Actor.notify.warning("no part named %s!" % (partName))
-            return None
+        trueName = subpartDef.truePartName
+        anyGood = False
+        for bundleDict in self.__partBundleDict.values():     
+            bundle = bundleDict[trueName].partBundle
+            if node == None:
+                node = self.attachNewNode(jointName)
+                joint = bundle.findChild(jointName)
+                if joint and joint.getType().isDerivedFrom(MovingPartMatrix.getClassType()):
+                    node.setMat(joint.getInitialValue())
 
-        joint = bundle.findChild(jointName)
-        if joint == None:
-            Actor.notify.warning("no joint named %s!" % (jointName))
-            return None
+            if bundle.controlJoint(jointName, node.node()):
+                anyGood = True
 
-        if node == None:
-            node = self.attachNewNode(jointName)
-            if joint.getType().isDerivedFrom(MovingPartMatrix.getClassType()):
-                node.setMat(joint.getInitialValue())
-
-        # Store a dictionary of jointName: node to list the controls
-        # requested for joints.  The controls will actually be applied
-        # later, when we load up the animations in bindAnim().
-        if self.__controlJoints.has_key(bundle.this):
-            self.__controlJoints[bundle.this][jointName] = node
-        else:
-            self.__controlJoints[bundle.this] = { jointName: node }
+        if not anyGood:
+            self.notify.warning("Cannot control joint %s" % (jointName))
 
         return node
 
-    #This is an alternate method to control joints, which can be copied
-    #This function is optimal in a non control jointed actor 
-    def freezeJoint(self, partName, jointName, pos=Vec3(0,0,0), hpr=Vec3(0,0,0), scale=Vec3(1,1,1)):
-        transform=Mat4(TransformState.makePosHprScale(pos,hpr,scale).getMat())
-        #trueName = self.__subpartDict[partName].truePartName
+    def freezeJoint(self, partName, jointName, transform = None,
+                    pos=Vec3(0,0,0), hpr=Vec3(0,0,0), scale=Vec3(1,1,1)):
+        """Similar to controlJoint, but the transform assigned is
+        static, and may not be animated at runtime (without another
+        subsequent call to freezeJoint).  This is slightly more
+        optimal than controlJoint() for cases in which the transform
+        is not intended to be animated during the lifetime of the
+        Actor. """
+        # Temporary condition for old Pandas.
+        if not hasattr(PartBundle, 'freezeJoint'):
+            return
+        
+        if transform == None:
+            transform = TransformState.makePosHprScale(pos, hpr, scale)
+
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+        trueName = subpartDef.truePartName
+        anyGood = False
+        for bundleDict in self.__partBundleDict.values():     
+            if bundleDict[trueName].partBundle.freezeJoint(jointName, transform):
+                anyGood = True
+
+        if not anyGood:
+            self.notify.warning("Cannot freeze joint %s" % (jointName))
+                
+    def releaseJoint(self, partName, jointName):
+        """Undoes a previous call to controlJoint() or freezeJoint()
+        and restores the named joint to its normal animation. """
+
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
         for bundleDict in self.__partBundleDict.values():     
-            bundleDict[trueName].partBundle.freezeJoint(jointName, transform)
-            
+            bundleDict[trueName].partBundle.releaseJoint(jointName)
 
     def instance(self, path, partName, jointName, lodName="lodRoot"):
         """instance(self, NodePath, string, string, key="lodRoot")
@@ -1699,7 +1712,6 @@ class Actor(DirectObject, NodePath):
         # A model loaded from disk will always have just one bundle.
         assert(node.getNumBundles() == 1)
         bundle = node.getBundle(0)
-        self.__frozenJoints[bundle.this]={}
         if (needsDict):
             bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
             self.__partBundleDict[lodName] = bundleDict
@@ -1919,6 +1931,36 @@ class Actor(DirectObject, NodePath):
                 ac = self.__bindAnimToPart(animName, thisPart, thisLod)
 
 
+    def bindAllAnims(self):
+        """Loads and binds all animations that have been defined for
+        the Actor. """
+
+        for lodName, partDict in self.__animControlDict.items():
+            # Now, build the list of partNames and the corresponding
+            # animDicts.
+            for thisPart, animDict in partDict.items():
+                if animDict == None:
+                    # Maybe it's a subpart that hasn't been bound yet.
+                    subpartDef = self.__subpartDict.get(pName)
+                    if subpartDef:
+                        animDict = {}
+                        partDict[pName] = animDict
+
+                for animName, anim in animDict.items():
+                    if anim == None and partName != None:
+                        for pName in partNameList:
+                            # Maybe it's a subpart that hasn't been bound yet.
+                            subpartDef = self.__subpartDict.get(pName)
+                            if subpartDef:
+                                truePartName = subpartDef.truePartName
+                                anim = partDict[truePartName].get(animName)
+                                if anim:
+                                    anim = anim.makeCopy()
+                                    animDict[animName] = anim
+
+                    if anim.animControl == None:
+                        self.__bindAnimToPart(animName, thisPart, lodName)
+
     def __bindAnimToPart(self, animName, partName, lodName):
         """
         for internal use only!
@@ -1947,6 +1989,8 @@ class Actor(DirectObject, NodePath):
         if anim.animControl:
             return anim.animControl
 
+        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
+
         # fetch a copy from the modelPool, or if we weren't careful
         # enough to preload, fetch from disk
         animPath = anim.filename
@@ -1955,36 +1999,12 @@ class Actor(DirectObject, NodePath):
             # If copy = 0, then we should always hit the disk.
             loaderOptions = LoaderOptions(loaderOptions)
             loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
-            
+
         animNode = loader.loadModel(animPath, loaderOptions = loaderOptions)
         if animNode == None:
             return None
         animBundle = (animNode.find("**/+AnimBundleNode").node()).getBundle()
-
-        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
-
-        #NOTE: this is up here until we can guarantee anim bundle copying at a lower level
-        # Before we apply any control joints, we have to make a
-        # copy of the bundle hierarchy, so we don't modify other
-        # Actors that share the same bundle.
-
-
-
-        # Are there any controls requested for joints in this bundle?
-        # If so, apply them.
-        assert Actor.notify.debug('actor bundle %s, %s'% (bundle,bundle.this))
-        controlDict = self.__controlJoints.get(bundle.this, None)
-
-        animBundle = animBundle.copyBundle()
-
-        if controlDict:
-            for jointName, node in controlDict.items():
-                if node:
-                    joint = animBundle.makeChildDynamic(jointName)
-                    if joint:
-                        joint.setValueNode(node.node())
-                    else:
-                        Actor.notify.error("controlled joint %s is not present" % jointName)
+        animModel = animNode.node()
 
         # bind anim
         animControl = bundle.bindAnim(animBundle, -1, subpartDef.subset)
@@ -1994,7 +2014,7 @@ class Actor(DirectObject, NodePath):
         else:
             # store the animControl
             anim.animControl = animControl
-            anim.animModel = animNode.node()
+            anim.animModel = animModel
             assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
                                       (animName, partName, lodName))
         return animControl
@@ -2027,9 +2047,6 @@ class Actor(DirectObject, NodePath):
                     # store the part bundle
                     assert bundleNP.node().getNumBundles() == 1
                     bundle = bundleNP.node().getBundle(0)
-                    otherFixed=other.__frozenJoints.get(partDef.partBundle.this,None)
-                    if(otherFixed is not None):
-                        self.__frozenJoints[bundle.this]=copy.copy(otherFixed)
                     self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
