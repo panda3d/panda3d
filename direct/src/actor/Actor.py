@@ -21,7 +21,6 @@ class Actor(DirectObject, NodePath):
     animLoaderOptions =  LoaderOptions(LoaderOptions.LFSearch |
                                        LoaderOptions.LFReportErrors |
                                        LoaderOptions.LFConvertAnim)
-
     class PartDef:
 
         """Instances of this class are stored within the
@@ -85,7 +84,8 @@ class Actor(DirectObject, NodePath):
             return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
 
     def __init__(self, models=None, anims=None, other=None, copy=1,
-                 lodNode = None, flattenable = 1, setFinal = 0):
+                 lodNode = None, flattenable = 1, setFinal = 0,
+                 mergeLODBundles = None):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -153,7 +153,27 @@ class Actor(DirectObject, NodePath):
 
         self.__autoCopy = copy
 
+        # Set the mergeLODBundles flag.  If this is true, all
+        # different LOD's will be merged into a single common bundle
+        # (joint hierarchy).  All LOD's will thereafter share the same
+        # skeleton, even though they may have been loaded from
+        # different egg files.  If this is false, LOD's will be kept
+        # completely isolated, and each LOD will have its own
+        # skeleton.
+
+        # When this flag is true, __animControlDict has only one key,
+        # ['common']; when it is false, __animControlDict has one key
+        # per each LOD name.
+        
+        if mergeLODBundles == None:
+            # If this isn't specified, it comes from the Config.prc
+            # file.
+            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', 0)
+        else:
+            self.mergeLODBundles = mergeLODBundles
+
         # create data structures
+        self.__commonBundles = {}
         self.__partBundleDict = {}
         self.__subpartDict = {}
         self.__sortedLODNames = []
@@ -391,8 +411,7 @@ class Actor(DirectObject, NodePath):
         Useful for iterating over details of an actor.
         """
         lodInfo = []
-        for lodName in self.__animControlDict.keys():
-            partDict = self.__animControlDict[lodName]
+        for lodName, partDict in self.__animControlDict.items():
             partInfo = []
             for partName in partDict.keys():
                 subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
@@ -456,6 +475,7 @@ class Actor(DirectObject, NodePath):
         NodePath.removeNode(self)
 
     def clearPythonData(self):
+        self.__commonBundles = {}
         self.__partBundleDict = {}
         self.__subpartDict = {}
         self.__sortedLODNames = []
@@ -878,6 +898,8 @@ class Actor(DirectObject, NodePath):
             del(partBundleDict[partName])
 
         # find the corresponding anim control dict
+        if self.mergeLODBundles:
+            lodName = 'common'
         partDict = self.__animControlDict.get(lodName)
         if not partDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
@@ -1455,7 +1477,9 @@ class Actor(DirectObject, NodePath):
         getAnimFilename(self, animName)
         return the animFilename given the animName
         """
-        if self.switches:
+        if self.mergeLODBundles:
+            lodName = 'common'
+        elif self.switches:
             lodName = str(self.switches.keys()[0])
         else:
             lodName = 'lodRoot'
@@ -1476,7 +1500,9 @@ class Actor(DirectObject, NodePath):
         if not partName:
             partName = 'modelRoot'
 
-        if not lodName:
+        if self.mergeLODBundles:
+            lodName = 'common'
+        elif not lodName:
             if self.switches:
                 lodName = str(self.switches.keys()[0])
             else:
@@ -1525,7 +1551,7 @@ class Actor(DirectObject, NodePath):
         controls = []
         # build list of lodNames and corresponding animControlDicts
         # requested.
-        if lodName == None:
+        if lodName == None or self.mergeLODBundles:
             # Get all LOD's
             animControlDictItems = self.__animControlDict.items()
         else:
@@ -1641,10 +1667,10 @@ class Actor(DirectObject, NodePath):
         if (model == None):
             raise StandardError, "Could not load Actor model %s" % (modelPath)
 
-        if (model.node().isOfType(PartBundleNode.getClassType())):
+        if (model.node().isOfType(Character.getClassType())):
             bundleNP = model
         else:
-            bundleNP = model.find("**/+PartBundleNode")
+            bundleNP = model.find("**/+Character")
             
         if (bundleNP.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
@@ -1657,7 +1683,7 @@ class Actor(DirectObject, NodePath):
             autoBind(model.node(), acc, ~0)
             numAnims = acc.getNumAnims()
 
-            # Now extract out the PartBundleNode and integrate it with
+            # Now extract out the Character and integrate it with
             # the Actor.
             self.__prepareBundle(bundleNP, model, partName, lodName)
 
@@ -1667,6 +1693,8 @@ class Actor(DirectObject, NodePath):
                 Actor.notify.info("model contains %s animations." % (numAnims))
 
                 # make sure this lod is in anim control dict
+                if self.mergeLODBundles:
+                    lodName = 'common'
                 self.__animControlDict.setdefault(lodName, {})
                 self.__animControlDict[lodName].setdefault(partName, {})
 
@@ -1695,12 +1723,12 @@ class Actor(DirectObject, NodePath):
         # we rename this node to make Actor copying easier
         bundleNP.node().setName("%s%s"%(Actor.partPrefix,partName))
 
-        if (self.__partBundleDict.has_key(lodName) == 0):
+        bundleDict = self.__partBundleDict.get(lodName, None)
+        if bundleDict == None:
             # make a dictionary to store these parts in
-            needsDict = 1
             bundleDict = {}
-        else:
-            needsDict = 0
+            self.__partBundleDict[lodName] = bundleDict
+            self.__updateSortedLODNames()
 
         if (lodName!="lodRoot"):
             # parent to appropriate node under LOD switch
@@ -1712,12 +1740,19 @@ class Actor(DirectObject, NodePath):
         # A model loaded from disk will always have just one bundle.
         assert(node.getNumBundles() == 1)
         bundle = node.getBundle(0)
-        if (needsDict):
-            bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
-            self.__partBundleDict[lodName] = bundleDict
-            self.__updateSortedLODNames()
-        else:
-            self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model.node())
+
+        if self.mergeLODBundles:
+            loadedBundle = self.__commonBundles.get(partName, None)
+            if loadedBundle:
+                # We've already got a bundle for this part; merge it.
+                node.mergeBundles(bundle, loadedBundle)
+                bundle = loadedBundle
+            else:
+                # We haven't already got a bundle for this part; store it.
+                self.__commonBundles[partName] = bundle
+
+        bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
+
 
     def makeSubpart(self, partName, includeJoints, excludeJoints = [],
                     parent="modelRoot"):
@@ -1796,7 +1831,9 @@ class Actor(DirectObject, NodePath):
         anims in the form animName:animPath{}
         """
         reload = True
-        if (lodName == 'all'):
+        if self.mergeLODBundles:
+            lodNames = ['common']
+        elif lodName == 'all':
             reload = False
             lodNames = self.switches.keys()
             lodNames.sort()
@@ -1831,8 +1868,12 @@ class Actor(DirectObject, NodePath):
                     self.__animControlDict[lName][partName][animName] = Actor.AnimDef(filename)
 
     def initAnimsOnAllLODs(self,partNames):
+        if self.mergeLODBundles:
+            lodNames = ['common']
+        else:
+            lodNames = self.__partBundleDict.keys()
         
-        for lod in self.__partBundleDict.keys():
+        for lod in lodNames:
             for part in partNames:
                 self.__animControlDict.setdefault(lod,{})
                 self.__animControlDict[lod].setdefault(part, {})
@@ -1853,10 +1894,14 @@ class Actor(DirectObject, NodePath):
         to 'lodRoot' for non-LOD actors) and dict of corresponding
         anims in the form animName:animPath{}
         """
-            
+        if self.mergeLODBundles:
+            lodNames = ['common']
+        else:
+            lodNames = self.__partBundleDict.keys()
+        
         for animName, filename in anims.items():
             # make sure this lod is in anim control dict
-            for lod in self.__partBundleDict.keys():
+            for lod in lodNames:
                 # store the file path only; we will bind it (and produce
                 # an AnimControl) when it is played
                 
@@ -1875,7 +1920,7 @@ class Actor(DirectObject, NodePath):
         assert Actor.notify.debug("in unloadAnims: %s, part: %s, lod: %s" %
                                   (anims, partName, lodName))
 
-        if (lodName == None):
+        if lodName == None or self.mergeLODBundles:
             lodNames = self.__animControlDict.keys()
         else:
             lodNames = [lodName]
@@ -1915,7 +1960,7 @@ class Actor(DirectObject, NodePath):
         """bindAnim(self, string, string='modelRoot', string='lodRoot')
         Bind the named animation to the named part and lod
         """
-        if lodName == None:
+        if lodName == None or self.mergeLODBundles:
             lodNames = self.__animControlDict.keys()
         else:
             lodNames = [lodName]
@@ -1989,7 +2034,10 @@ class Actor(DirectObject, NodePath):
         if anim.animControl:
             return anim.animControl
 
-        bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
+        if self.mergeLODBundles:
+            bundle = self.__commonBundles[subpartDef.truePartName]
+        else:
+            bundle = self.__partBundleDict[lodName][subpartDef.truePartName].partBundle
 
         # fetch a copy from the modelPool, or if we weren't careful
         # enough to preload, fetch from disk
@@ -2071,6 +2119,9 @@ class Actor(DirectObject, NodePath):
         dictionary of another actor. Bind these anim's to the part
         bundles in our part bundle dict that have matching names, and
         store the resulting anim controls in our own part bundle dict"""
+
+        assert(other.mergeLODBundles == self.mergeLODBundles)
+
         for lodName in other.__animControlDict.keys():
             self.__animControlDict[lodName] = {}
             for partName in other.__animControlDict[lodName].keys():
