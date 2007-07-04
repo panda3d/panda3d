@@ -27,7 +27,7 @@
 //       Class : MovieVideo
 // Description : A stream that generates a series of images.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL MovieVideo : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA MovieVideo : public TypedWritableReferenceCount, public Namable {
 
  PUBLISHED:
   MovieVideo(const string &name, double len);

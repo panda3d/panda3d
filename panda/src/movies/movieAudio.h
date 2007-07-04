@@ -28,7 +28,7 @@
 //       Class : MovieAudio
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL MovieAudio : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA MovieAudio : public TypedWritableReferenceCount, public Namable {
 
 PUBLISHED:
   MovieAudio(const string &name, double len);

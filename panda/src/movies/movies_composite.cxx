@@ -1,4 +1,1 @@
-#include "movieVideo.cxx"
-#include "movieAudio.cxx"
-#include "movie.cxx"
-#include "config_movies.cxx"
+#include "movies_composite1.cxx"
