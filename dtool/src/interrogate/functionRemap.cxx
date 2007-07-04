@@ -575,6 +575,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   
   // Should we manage a reference count?
   CPPType *return_type = _return_type->get_new_type();
+  return_type = TypeManager::resolve_type(return_type, _cppscope);
   CPPType *return_meat_type = TypeManager::unwrap_pointer(return_type);
   
   if (manage_reference_counts &&
