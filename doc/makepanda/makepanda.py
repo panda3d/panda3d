@@ -1945,7 +1945,6 @@ CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
 CopyAllHeaders('panda/src/vrpn')
-CopyAllHeaders('panda/src/helix')
 CopyAllHeaders('panda/src/glgsg')
 CopyAllHeaders('panda/src/wgldisplay')
 CopyAllHeaders('panda/src/physics')
@@ -2678,7 +2677,6 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpanda_module.obj',
             module='panda', library='libpanda', files=INFILES)
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='panda.cxx', obj='panda_panda.obj')
 EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
-        'dtool_have_helix.dat',
         'dtool_have_vrpn.dat',
         'dtool_have_nspr.dat',
         'dtool_have_freetype.dat',
@@ -2694,11 +2692,29 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='skel_composite.cxx', obj='skel_composite
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
              src='panda/src/skel',  module='pandaskel', library='libskel',
              skip=[], also=["skel_composite.cxx"])
+
+#
+# DIRECTORY: panda/src/movies/
+#
+
+IPATH=['panda/src/movies']
+OPTS=['BUILDING_PANDASKEL']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite.cxx', obj='movies_composite.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
+            src='panda/src/movies',  module='pandaskel', library='libmovies',
+            skip=[], also=["movies_composite.cxx"])
+
+#
+# DIRECTORY: panda/metalibs/panda
+#
+
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaskel_module.obj',
-            module='pandaskel', library='libpandaskel', files=["libskel.in"])
+            module='pandaskel', library='libpandaskel', files=["libskel.in","libmovies.in"])
 EnqueueLink(dll='libpandaskel.dll', opts=['ADVAPI'], obj=[
     'skel_composite.obj',
     'libskel_igate.obj',
+    'movies_composite.obj',
+    'libmovies_igate.obj',
     'libpandaskel_module.obj',
     'libpanda.dll',
     'libpandaexpress.dll',
@@ -2978,7 +2994,6 @@ OBJFILES=[
           'pnmimage_composite.obj',
           'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll']
 EnqueueLink(opts=OPTS, dll='libpandastripped.dll', obj=OBJFILES, xdep=[
-        'dtool_have_helix.dat',
         'dtool_have_vrpn.dat',
         'dtool_have_freetype.dat',
 ])
