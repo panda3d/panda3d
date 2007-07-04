@@ -34,6 +34,7 @@
 #include "bitArray.h"
 #include "clockObject.h"
 #include "pvector.h"
+#include "displayRegion.h"
 
 class MouseWatcherParameter;
 class DisplayRegion;
