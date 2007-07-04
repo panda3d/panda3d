@@ -23,14 +23,27 @@ TypeHandle MovieVideo::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::Constructor
-//       Access: Protected
-//  Description: Normally, the MovieVideo constructor is not
-//               called directly; these are created by calling
-//               the MoviePool::load functions.  Furthermore,
-//               MovieVideo itself is just an abstract base class.
+//       Access: Published
+//  Description: This constructor returns a null video stream --- a
+//               stream of plain blue frames that last 1 second each.
+//               To get more interesting video, you need to construct
+//               a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieVideo::
-MovieVideo() {
+MovieVideo(const string &name, double len) :
+  Namable(name),
+  _size_x(1),
+  _size_y(1),
+  _approx_len(len),
+  _frame_start(0.0),
+  _frame_end(1.0)
+{
+  if (len <= 0.0) {
+    _approx_len = 1.0;
+  }
+  if (_frame_end > _approx_len) {
+    _frame_end = _approx_len;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +62,21 @@ MovieVideo::
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
 load_image(Texture *t) {
-  movies_cat.error() << "load_image: this virtual method must be overridden.";
+
+  // The following is the implementation of the null video
+  // stream --- a stream of solid blue frames.  Normally,
+  // this method will be overridden by the subclass.
+  
+  if (_ram_image==0) {
+    _ram_image = PTA_uchar::empty_array(4);
+    _ram_image.set_element(0,128);
+    _ram_image.set_element(1,128);
+    _ram_image.set_element(2,255);
+    _ram_image.set_element(3,255);
+  }
+  t->setup_texture(Texture::TT_2d_texture, 1, 1, 1,
+                   Texture::T_unsigned_byte, Texture::F_rgba);
+  t->set_ram_image(_ram_image);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,5 +86,14 @@ load_image(Texture *t) {
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
 next_frame() {
-  movies_cat.error() << "next_frame: this virtual method must be overridden.";
+
+  // The following is the implementation of the null video
+  // stream --- a stream of solid blue frames.  Normally,
+  // this method will be overridden by the subclass.
+
+  _frame_start = _frame_end;
+  _frame_end = _frame_end + 1.0;
+  if (_frame_end > _approx_len) {
+    _frame_end = _approx_len;
+  }
 }

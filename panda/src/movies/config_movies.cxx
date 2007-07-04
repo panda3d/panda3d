@@ -44,5 +44,6 @@ init_libmovies() {
 
   MovieVideo::init_type();
   MovieAudio::init_type();
+  Movie::init_type();
 }
 

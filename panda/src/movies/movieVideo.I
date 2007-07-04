@@ -69,12 +69,12 @@ frame_end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::approx_time_remaining
+//     Function: MovieVideo::approx_len
 //       Access: Published
 //  Description: Get the vertical size of the movie.
 ////////////////////////////////////////////////////////////////////
 INLINE double MovieVideo::
-approx_time_remaining() const {
-  return _approx_time_remaining;
+approx_len() const {
+  return _approx_len;
 }
 

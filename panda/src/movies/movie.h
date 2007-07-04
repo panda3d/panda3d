@@ -1,4 +1,4 @@
-// Filename: movieAudio.h
+// Filename: movie.h
 // Created by: jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,37 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MOVIEAUDIO_H
-#define MOVIEAUDIO_H
+#ifndef MOVIE_H
+#define MOVIE_H
 
 #include "pandabase.h"
-#include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "movieVideo.h"
+#include "movieAudio.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MovieAudio
-// Description : A stream that generates a sequence of audio samples.
+//       Class : Movie
+// Description : A "movie" is actually any source that provides
+//               an audio and a video stream.  So that could include
+//               an AVI file, or an internet TV station.  It could
+//               also be an MP3 file paired with a dummy video stream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL MovieAudio : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDASKEL Movie : public TypedWritableReferenceCount, public Namable{
 
 PUBLISHED:
-  MovieAudio(const string &name, double len);
-  INLINE int rate() const;
-  INLINE int channels() const;
-  INLINE int samples_read() const;
-  INLINE double approx_len() const;
-  INLINE int skip_samples(int n);
+  Movie(const string &name, double len);
+  INLINE bool ignores_offset() const;
+  INLINE bool dummy_video() const;
+  INLINE bool dummy_audio() const;
+  virtual PT(MovieVideo) get_video(double offset=0.0);
+  virtual PT(MovieAudio) get_audio(double offset=0.0);
   
 public:
-  virtual int read_samples(int n, PN_int16 *data);
-  virtual ~MovieAudio();
-
+  virtual ~Movie();
+  
 private:
-  int _rate;
-  int _channels;
-  int _samples_read;
-  double _approx_len;
+  bool _ignores_offset;
+  bool _dummy_video;
+  bool _dummy_audio;
+  double _dummy_len;
   
 public:
   static TypeHandle get_class_type() {
@@ -54,7 +57,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "MovieAudio",
+    register_type(_type_handle, "Movie",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -66,6 +69,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "movieAudio.I"
+#include "movie.I"
 
 #endif

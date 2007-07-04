@@ -28,15 +28,14 @@
 // Description : A stream that generates a series of images.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDASKEL MovieVideo : public TypedWritableReferenceCount, public Namable {
-protected:
-  MovieVideo();
 
  PUBLISHED:
+  MovieVideo(const string &name, double len);
   INLINE int size_x() const;
   INLINE int size_y() const;
   INLINE double frame_start() const;
   INLINE double frame_end() const;
-  INLINE double approx_time_remaining() const;
+  INLINE double approx_len() const;
   virtual void load_image(Texture *t);
   virtual void next_frame();
   
@@ -48,7 +47,8 @@ protected:
   int _size_y;
   double _frame_start;
   double _frame_end;
-  double _approx_time_remaining;
+  double _approx_len;
+  PTA_uchar _ram_image;
   
 public:
   static TypeHandle get_class_type() {

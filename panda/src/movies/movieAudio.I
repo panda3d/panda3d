@@ -49,16 +49,33 @@ samples_read() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::approx_time_remaining
+//     Function: MovieAudio::skip_samples
+//       Access: Published
+//  Description: Skip audio samples from the stream.  This is mostly
+//               for debugging purposes.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieAudio::
+skip_samples(int n) {
+  return read_samples(n, 0);
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::approx_len
 //       Access: Public
-//  Description: Returns a "best guess" amount of time left on the
-//               stream. For ffmpeg streams, this is usually a
-//               pretty close approximation --- ie, off by a few
-//               hundred samples.  For infinite streams, always
-//               returns the constant value 1.0E10.
+//  Description: Returns a "best guess" amount of the stream length.
+//               For ffmpeg streams, this is usually a pretty close
+//               approximation --- ie, off by a few hundred samples.
+//               For infinite streams, always returns the constant
+//               value 1.0E10.  Caution: it is legal for a stream to
+//               periodically update its estimate of the length!
+//
+//               Stream lengths cannot be determined with accuracy,
+//               because the lengths encoded in AVI files are
+//               generally inaccurate, and some streams (ie, streaming
+//               internet audio) have no knowable length.
 ////////////////////////////////////////////////////////////////////
 INLINE double MovieAudio::
-approx_time_remaining() const {
-  return _approx_time_remaining;
+approx_len() const {
+  return _approx_len;
 }
 
