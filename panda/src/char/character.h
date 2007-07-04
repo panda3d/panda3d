@@ -64,7 +64,7 @@ public:
 
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle(int i) const;
-  void merge_bundles(Character *other, int this_i, int other_i);
+  void merge_bundles(PartBundle *old_bundle, PartBundle *other_bundle);
 
   CharacterJoint *find_joint(const string &name) const;
   CharacterSlider *find_slider(const string &name) const;

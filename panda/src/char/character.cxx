@@ -223,32 +223,40 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::merge_bundles
 //       Access: Published
-//  Description: Merges the other_ith bundle into the this_ith within
-//               this node.  At the end of this call, this node and
-//               the other node will share the same bundle pointer at
-//               their corresponding positions (usually zero).
+//  Description: Merges old_bundle with new_bundle.  old_bundle
+//               must be one of the PartBundles within this node.  At
+//               the end of this call, the old_bundle pointer within
+//               this node will be replaced with the new_bundle
+//               pointer, and all geometry within this node will be
+//               updated to reference new_bundle.
 //
 //               Normally, this is called when the two bundles have
 //               the same, or nearly the same, hierarchies.  In this
-//               case, the indicated bundle will simply be assigned to
-//               the this_ith bundle position.  However, if any joints
-//               are present in one bundle or the other, the new
-//               bundle will contain the union of all joints.
+//               case, new_bundle will simply be assigned over the
+//               old_bundle position.  However, if any joints are
+//               present in one bundle or the other, new_bundle will
+//               be modified to contain the union of all joints.
 //               
 //               The geometry below this node is also updated to
-//               reference the indicated bundle, instead of the
-//               original bundle.
+//               reference new_bundle, instead of the original
+//               old_bundle.
 //
 //               This method is intended to unify two different models
 //               that share a common skeleton, for instance, different
 //               LOD's of the same model.
 ////////////////////////////////////////////////////////////////////
 void Character::
-merge_bundles(Character *other, int this_i, int other_i) {
-  nassertv(this_i >= 0 && this_i < (int)_bundles.size());
-  nassertv(other_i >= 0 && other_i < (int)other->_bundles.size());
-  CharacterJointBundle *old_bundle = DCAST(CharacterJointBundle, _bundles[this_i]);
-  CharacterJointBundle *new_bundle = DCAST(CharacterJointBundle, other->_bundles[other_i]);
+merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
+  // Find the index number of old_bundle.
+  size_t index = 0;
+  while (index < _bundles.size()) {
+    if (_bundles[index] == old_bundle) {
+      break;
+    }
+    ++index;
+  }
+  nassertv_always(index < (int)_bundles.size());
+
   if (old_bundle == new_bundle) {
     // Trivially return.
     return;
@@ -257,7 +265,7 @@ merge_bundles(Character *other, int this_i, int other_i) {
   // First, merge the bundles themselves.
   JointMap joint_map;
   r_merge_bundles(joint_map, old_bundle, new_bundle);
-  _bundles[this_i] = new_bundle;
+  _bundles[index] = new_bundle;
 
   // Now convert the geometry to use the new bundle.
   GeomVertexMap gvmap;
