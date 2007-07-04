@@ -405,11 +405,6 @@ class ShipPilot(PhysicsWalker):
             self.__slideSpeed*=4.0
             self.__rotationSpeed*=1.25
             maxSpeed = self.ship.maxSpeed * 4.0
-            
-        self.__speed*=4.0
-        self.__slideSpeed*=4.0
-        self.__rotationSpeed*=1.25
-        maxSpeed = self.ship.maxSpeed * 4.0
                 
         #*#
         self.currentTurning += self.__rotationSpeed
@@ -455,12 +450,13 @@ class ShipPilot(PhysicsWalker):
                 or self.__speed
                 or self.__slideSpeed
                 or self.__rotationSpeed):
-            distance = dt * self.__speed
+            # don't factor in dt, the physics system will do that
+            distance = self.__speed #dt * self.__speed
             goForward = True
             if (distance < 0):
                 goForward = False
-            slideDistance = dt * self.__slideSpeed
-            rotation = dt * self.__rotationSpeed
+            slideDistance = self.__slideSpeed
+            rotation = self.__rotationSpeed
 
             # update pos:
             # Take a step in the direction of our previous heading.
@@ -504,7 +500,8 @@ class ShipPilot(PhysicsWalker):
             # update hpr:
             o=physObject.getOrientation()
             r=LRotationf()
-            r.setHpr(Vec3(rotation, 0.0, 0.0))
+            # factor in dt since we're directly setting the rotation here
+            r.setHpr(Vec3(rotation * dt, 0.0, 0.0))
             physObject.setOrientation(o*r)
 
             # sync the change:
