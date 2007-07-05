@@ -655,7 +655,7 @@ class Actor(DirectObject, NodePath):
         specific geometry to. Returns 'None' if not found
         """
         if self.__LODNode:
-            lod = self.__LODNode.find("**/%s"%lodName)
+            lod = self.__LODNode.find(str(lodName))
             if lod.isEmpty():
                 return None
             else:
@@ -1205,7 +1205,7 @@ class Actor(DirectObject, NodePath):
         # check to see if we are working within an lod
         if lodName != None:
             # find the named lod node
-            lodRoot = self.find("**/" + str(lodName))
+            lodRoot = self.__LODNode.find(str(lodName))
             if root == None:
                 # no need to look further
                 root = lodRoot
@@ -1685,7 +1685,16 @@ class Actor(DirectObject, NodePath):
 
             # Now extract out the Character and integrate it with
             # the Actor.
-            self.__prepareBundle(bundleNP, model, partName, lodName)
+
+            if (lodName!="lodRoot"):
+                # parent to appropriate node under LOD switch
+                bundleNP.reparentTo(self.__LODNode.find(str(lodName)))
+            else:
+                bundleNP.reparentTo(self.__geomNode)
+            self.__prepareBundle(bundleNP, model.node(), partName, lodName)
+
+            # we rename this node to make Actor copying easier
+            bundleNP.node().setName("%s%s"%(Actor.partPrefix,partName))
 
             if numAnims != 0:
                 # If the model had some animations, store them in the
@@ -1709,7 +1718,7 @@ class Actor(DirectObject, NodePath):
                     animDef.animControl = animControl
                     self.__animControlDict[lodName][partName][animName] = animDef
 
-    def __prepareBundle(self, bundleNP, model,
+    def __prepareBundle(self, bundleNP, partModel,
                         partName="modelRoot", lodName="lodRoot"):
         assert partName not in self.__subpartDict
 
@@ -1720,21 +1729,12 @@ class Actor(DirectObject, NodePath):
             self.node().setName(bundleNP.node().getName())
             self.gotName = 1
 
-        # we rename this node to make Actor copying easier
-        bundleNP.node().setName("%s%s"%(Actor.partPrefix,partName))
-
         bundleDict = self.__partBundleDict.get(lodName, None)
         if bundleDict == None:
             # make a dictionary to store these parts in
             bundleDict = {}
             self.__partBundleDict[lodName] = bundleDict
             self.__updateSortedLODNames()
-
-        if (lodName!="lodRoot"):
-            # parent to appropriate node under LOD switch
-            bundleNP.reparentTo(self.__LODNode.find("**/%s"%lodName))
-        else:
-            bundleNP.reparentTo(self.__geomNode)
 
         node = bundleNP.node()
         # A model loaded from disk will always have just one bundle.
@@ -1751,7 +1751,7 @@ class Actor(DirectObject, NodePath):
                 # We haven't already got a bundle for this part; store it.
                 self.__commonBundles[partName] = bundle
 
-        bundleDict[partName] = Actor.PartDef(bundleNP, bundle, model.node())
+        bundleDict[partName] = Actor.PartDef(bundleNP, bundle, partModel)
 
 
     def makeSubpart(self, partName, includeJoints, excludeJoints = [],
@@ -2073,19 +2073,15 @@ class Actor(DirectObject, NodePath):
         instance's own. NOTE: this method does not actually copy geometry
         """
         for lodName in other.__partBundleDict.keys():
-            self.__partBundleDict[lodName] = {}
-            self.__updateSortedLODNames()
             # find the lod Asad
             if lodName == 'lodRoot':
                 partLod = self
             else:
-                partLod = self.find("**/%s"%lodName)
+                partLod = self.__LODNode.find(str(lodName))
             if partLod.isEmpty():
                 Actor.notify.warning("no lod named: %s" % (lodName))
                 return None
             for partName, partDef in other.__partBundleDict[lodName].items():
-                model = partDef.partModel.copySubgraph()
-
                 # We can really only copy from a non-flattened avatar.
                 assert partDef.partBundleNP.node().getNumBundles() == 1
                 
@@ -2093,9 +2089,8 @@ class Actor(DirectObject, NodePath):
                 bundleNP = partLod.find("**/%s%s"%(Actor.partPrefix,partName))
                 if (bundleNP != None):
                     # store the part bundle
-                    assert bundleNP.node().getNumBundles() == 1
-                    bundle = bundleNP.node().getBundle(0)
-                    self.__partBundleDict[lodName][partName] = Actor.PartDef(bundleNP, bundle, model)
+                    self.__prepareBundle(bundleNP, partDef.partModel,
+                                         partName, lodName)
                 else:
                     Actor.notify.error("lod: %s has no matching part: %s" %
                                        (lodName, partName))
