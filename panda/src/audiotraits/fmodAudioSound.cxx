@@ -272,7 +272,6 @@ unsigned long FmodAudioSound::
 get_loop_count() const {
   FMOD_RESULT result;
   int loop_count;
-  unsigned long returnedNumber;
 
   result = _sound->getLoopCount( &loop_count );
   fmod_audio_errcheck("_sound->getLoopCount()", result);

@@ -28,6 +28,7 @@
 #include "pset.h"
 #include "pmap.h"
 #include "pdeque.h"
+#include "pvector.h"
 
 class MilesAudioSound;
 
@@ -75,7 +76,7 @@ private:
     string _basename;
     HAUDIO _audio;
     S32 _file_type;
-    string _raw_data;
+    pvector<unsigned char> _raw_data;
     bool _has_length;
     float _length;  // in seconds.
   };

@@ -26,6 +26,7 @@
 #include "dSearchPath.h"
 #include "pointerTo.h"
 #include "config_express.h"
+#include "pvector.h"
 
 class Multifile;
 class VirtualFileMount;
@@ -88,6 +89,7 @@ PUBLISHED:
 
 public:
   INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
+  INLINE bool read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const;
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 

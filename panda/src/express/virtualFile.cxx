@@ -243,6 +243,29 @@ bool VirtualFile::
 read_file(string &result, bool auto_unwrap) const {
   result = string();
 
+  pvector<unsigned char> pv;
+  if (!read_file(pv, auto_unwrap)) {
+    return false;
+  }
+
+  if (!pv.empty()) {
+    result.append((const char *)&pv[0], pv.size());
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::read_file
+//       Access: Public
+//  Description: Fills up the indicated pvector with the contents of
+//               the file, if it is a regular file.  Returns true on
+//               success, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+  result.clear();
+
   istream *in = open_read_file(auto_unwrap);
   if (in == (istream *)NULL) {
     express_cat.info()
@@ -264,18 +287,13 @@ read_file(string &result, bool auto_unwrap) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::read_file
 //       Access: Public, Static
-//  Description: Fills up the indicated string with the contents of
+//  Description: Fills up the indicated pvector with the contents of
 //               the just-opened file.  Returns true on success, false
-//               otherwise.  If the string was not empty on entry, the
-//               data read from the file will be concatenated onto it.
+//               otherwise.  If the pvector was not empty on entry, the
+//               data read from the file will be appended onto it.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
-read_file(istream *in, string &result) {
-  // Repeatedly appending into a string seems to be prohibitively
-  // expensive on MSVC7's implementation of string, but the vector
-  // implementation works much better.  Even still, it seems to be
-  // better to add the data in large chunks, rather than one byte at a
-  // time.
+read_file(istream *in, pvector<unsigned char> &result) {
   pvector<char> result_vec;
 
   static const size_t buffer_size = 1024;
@@ -285,11 +303,10 @@ read_file(istream *in, string &result) {
   size_t count = in->gcount();
   while (count != 0) {
     thread_consider_yield();
-    result_vec.insert(result_vec.end(), buffer, buffer + count);
+    result.insert(result.end(), buffer, buffer + count);
     in->read(buffer, buffer_size);
     count = in->gcount();
   }
-  result.append(&result_vec[0], result_vec.size());
 
   return (!in->fail() || in->eof());
 }
@@ -301,9 +318,7 @@ read_file(istream *in, string &result) {
 //               only reads up to max_bytes bytes from the file.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFile::
-read_file(istream *in, string &result, size_t max_bytes) {
-  pvector<char> result_vec;
-
+read_file(istream *in, pvector<unsigned char> &result, size_t max_bytes) {
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
@@ -312,12 +327,11 @@ read_file(istream *in, string &result, size_t max_bytes) {
   while (count != 0) {
     thread_consider_yield();
     nassertr(count <= max_bytes, false);
-    result_vec.insert(result_vec.end(), buffer, buffer + count);
+    result.insert(result.end(), buffer, buffer + count);
     max_bytes -= count;
     in->read(buffer, min(buffer_size, max_bytes));
     count = in->gcount();
   }
-  result.append(&result_vec[0], result_vec.size());
 
   return (!in->fail() || in->eof());
 }

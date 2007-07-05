@@ -156,3 +156,22 @@ read_file(const Filename &filename, string &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename);
   return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::read_file
+//       Access: Public
+//  Description: Convenience function; fills the pvector up with the
+//               data from the indicated file, if it exists and can be
+//               read.  Returns true on success, false otherwise.
+//
+//               If auto_unwrap is true, an explicitly-named .pz file
+//               is automatically decompressed and the decompressed
+//               contents are returned.  This is different than
+//               vfs-implicit-pz, which will automatically decompress
+//               a file if the extension .pz is *not* given.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFileSystem::
+read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
+  PT(VirtualFile) file = get_file(filename);
+  return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
+}

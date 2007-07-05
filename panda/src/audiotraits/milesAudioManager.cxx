@@ -257,10 +257,15 @@ load(Filename file_name) {
       << "Unable to read " << file_name << "\n";
     return NULL;
   }
+  if (sd->_raw_data.empty()) {
+    milesAudio_cat.warning()
+      << "File " << file_name << " is empty\n";
+    return NULL;
+  }
 
   sd->_basename = file_name.get_basename();
   sd->_file_type = 
-    AIL_file_type(sd->_raw_data.data(), sd->_raw_data.size());
+    AIL_file_type(&sd->_raw_data[0], sd->_raw_data.size());
 
   bool expand_to_wav = false;
   
@@ -279,24 +284,28 @@ load(Filename file_name) {
     // variable bit-rate MP3 encoding.
     void *wav_data;
     U32 wav_data_size;
-    if (AIL_decompress_ASI(sd->_raw_data.data(), sd->_raw_data.size(),
+    if (AIL_decompress_ASI(&sd->_raw_data[0], sd->_raw_data.size(),
                            sd->_basename.c_str(), &wav_data, &wav_data_size,
                            NULL)) {
       audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
                   << " bytes to " << wav_data_size << " bytes.");
 
-      // Now copy the memory into our own buffers, and free the
-      // Miles-allocated memory.
-      sd->_raw_data.assign((char *)wav_data, wav_data_size);
+      if (wav_data_size != 0) {
+        // Now copy the memory into our own buffers, and free the
+        // Miles-allocated memory.
+        sd->_raw_data.clear();
+        sd->_raw_data.insert(sd->_raw_data.end(),
+                             (unsigned char *)wav_data, (unsigned char *)wav_data + wav_data_size);
+        sd->_file_type = AILFILETYPE_PCM_WAV;
+      }
       AIL_mem_free_lock(wav_data);
-      sd->_file_type = AILFILETYPE_PCM_WAV;
 
     } else {
       audio_debug("unable to expand " << sd->_basename);
     }
   }
 
-  sd->_audio = AIL_quick_load_mem(sd->_raw_data.data(), sd->_raw_data.size());
+  sd->_audio = AIL_quick_load_mem(&sd->_raw_data[0], sd->_raw_data.size());
 
   if (!sd->_audio) {
     audio_error("  MilesAudioManager::load failed "<< AIL_last_error());
@@ -759,6 +768,7 @@ cleanup() {
 MilesAudioManager::SoundData::
 SoundData() :
   _audio(0),
+  _raw_data(MilesAudioManager::get_class_type()),
   _has_length(false)
 {
 }
@@ -789,7 +799,8 @@ get_length() {
     // Time to determine the length of the file.
 
     if (_file_type == AILFILETYPE_MPEG_L3_AUDIO &&
-        (int)_raw_data.size() < miles_audio_calc_mp3_threshold) {
+        (int)_raw_data.size() < miles_audio_calc_mp3_threshold &&
+        !_raw_data.empty()) {
       // If it's an mp3 file, we may not trust Miles to compute its
       // length correctly (Miles doesn't correctly compute the length
       // of VBR MP3 files).  So in that case, decompress the whole
@@ -798,7 +809,7 @@ get_length() {
 
       void *wav_data;
       U32 wav_data_size;
-      if (AIL_decompress_ASI(_raw_data.data(), _raw_data.size(),
+      if (AIL_decompress_ASI(&_raw_data[0], _raw_data.size(),
                              _basename.c_str(), &wav_data, &wav_data_size,
                              NULL)) {
         AILSOUNDINFO info;
