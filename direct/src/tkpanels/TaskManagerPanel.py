@@ -145,8 +145,11 @@ class TaskManagerWidget(DirectObject):
         return "break"
 
     def setCurrentTask(self, event = None):
-        index = int(self.taskListBox.curselection()[0])
-        self.currentTask = self.__taskDict[index]
+        if len(self.taskListBox.curselection()) > 0: # [gjeon] to avoid crash when nothing is selected
+            index = int(self.taskListBox.curselection()[0])
+            self.currentTask = self.__taskDict[index]
+        else:
+            self.currentTask = None
 
     def updateTaskListBox(self):
         # Get a list of task names
@@ -164,7 +167,7 @@ class TaskManagerWidget(DirectObject):
             # And set current index (so keypresses will start with index 0)
             self.taskListBox.component('listbox').activate(0)
             # Select first item
-            self.taskListBox.select_set(0)
+            #self.taskListBox.select_set(0) # [gjeon] commented out to avoid focus problem with other lists
             self.setCurrentTask()
 
     def toggleTaskMgrVerbose(self):
