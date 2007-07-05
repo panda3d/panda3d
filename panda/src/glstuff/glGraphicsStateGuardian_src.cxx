@@ -6998,24 +6998,31 @@ upload_texture_image(CLP(TextureContext) *gtc,
     // We need to reload a new image.
 
     if (num_ram_mipmap_levels == 0) {
-      GLCAT.info()
-        << "Synthesizing blank image for " << tex->get_name()
-        << "\n";
-      int *blank_image = new int[width * height];
-      int color = 0xFF808080;
-      switch (z) {
-      case 0: color = 0xFF0000FF; break;
-      case 1: color = 0xFF00FF00; break;
-      case 2: color = 0xFFFF0000; break;
-      case 3: color = 0xFF00FFFF; break;
-      case 4: color = 0xFFFFFF00; break;
-      case 5: color = 0xFFFF00FF; break;
+      //GLCAT.info()
+      //<< "Synthesizing blank image for " << tex->get_name()
+      //<< "\n";
+      //int *blank_image = new int[width * height];
+      //int color = 0xFF808080;
+      //switch (z) {
+	//case 0: color = 0xFF0000FF; break;
+	//case 1: color = 0xFF00FF00; break;
+	//case 2: color = 0xFFFF0000; break;
+	//case 3: color = 0xFF00FFFF; break;
+	//case 4: color = 0xFFFFFF00; break;
+	//case 5: color = 0xFFFF00FF; break;
+	//}
+      //for (int i=0; i<width * height; i++) blank_image[i]=color;
+      if (external_format == GL_DEPTH_STENCIL_EXT) {
+	GLP(TexImage2D)(page_target, 0, internal_format,
+			width, height, 0,
+			external_format, GL_UNSIGNED_INT_24_8_EXT, NULL);
       }
-      for (int i=0; i<width * height; i++) blank_image[i]=color;
-      GLP(TexImage2D)(page_target, 0, internal_format,
-                      width, height, 0,
-                      external_format, GL_UNSIGNED_BYTE, blank_image);
-      delete blank_image;
+      else {
+	GLP(TexImage2D)(page_target, 0, internal_format,
+			width, height, 0,
+			external_format, GL_UNSIGNED_BYTE, NULL);//blank_image);
+      }
+      //delete blank_image;
     }
 
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
