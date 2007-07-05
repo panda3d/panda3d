@@ -205,6 +205,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class PartBundleNode;
+  friend class Character;
   friend class MovingPartBase;
   friend class MovingPartMatrix;
   friend class MovingPartScalar;

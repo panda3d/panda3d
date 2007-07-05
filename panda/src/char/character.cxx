@@ -265,7 +265,9 @@ merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
   // First, merge the bundles themselves.
   JointMap joint_map;
   r_merge_bundles(joint_map, old_bundle, new_bundle);
+  old_bundle->remove_node(this);
   _bundles[index] = new_bundle;
+  new_bundle->add_node(this);
 
   // Now convert the geometry to use the new bundle.
   GeomVertexMap gvmap;
