@@ -23,11 +23,6 @@
 #include "pnotify.h"
 #include "config_express.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ZStreamBuf::Constructor
 //       Access: Public
