@@ -36,12 +36,9 @@ PUBLISHED:
   INLINE void clear_data();
   INLINE size_t get_data_size();
 
-  void read(string &data, size_t max_length);
-  INLINE void read(string &data);
-  INLINE string read(size_t max_length);
-  INLINE string read();
-
-  INLINE void write(const string &data);
+  INLINE string get_data();
+  INLINE void set_data(const string &data);
+  INLINE void swap_data(pvector<unsigned char> &data);
 
 private:
   StringStreamBuf _buf;

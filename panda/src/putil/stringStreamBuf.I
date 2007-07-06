@@ -18,13 +18,24 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StringStreamBuf::get_data_size
+//     Function: StringStreamBuf::swap_data
 //       Access: Public
-//  Description: Returns the number of characters remaining in the
-//               internal data buffer, not counting data which might
-//               still be in the iostream buffer.
+//  Description: Swaps the indicated buffer for the contents of the
+//               internal buffer.  Does not affect the ppos or gpos,
+//               or the iostream buffer.
 ////////////////////////////////////////////////////////////////////
-INLINE size_t StringStreamBuf::
-get_data_size() const {
-  return _data.size() - _gpos;
+INLINE void StringStreamBuf::
+swap_data(pvector<unsigned char> &data) {
+  _data.swap(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringStreamBuf::get_data
+//       Access: Public
+//  Description: Returns a reference to the contents of the internal
+//               buffer, without any of the iostream buffer.
+////////////////////////////////////////////////////////////////////
+INLINE const pvector<unsigned char> &StringStreamBuf::
+get_data() const {
+  return _data;
 }

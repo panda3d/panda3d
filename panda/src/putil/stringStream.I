@@ -34,7 +34,7 @@ StringStream() : iostream(&_buf) {
 ////////////////////////////////////////////////////////////////////
 INLINE StringStream::
 StringStream(const string &source) : iostream(&_buf) {
-  write(source);
+  set_data(source);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,52 +56,48 @@ clear_data() {
 INLINE size_t StringStream::
 get_data_size() {
   flush();
-  return _buf.get_data_size();
+  return _buf.get_data().size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StringStream::read
+//     Function: StringStream::get_data
 //       Access: Published
-//  Description: Extracts all the remaining characters from the data
-//               stream and stores them in the indicated string.
-////////////////////////////////////////////////////////////////////
-INLINE void StringStream::
-read(string &data) {
-  read(data, get_data_size());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::read
-//       Access: Published
-//  Description: Extracts up to max_length characters from the data
-//               stream and returns them as a string.
+//  Description: Returns the contents of the data stream as a string.
 ////////////////////////////////////////////////////////////////////
 INLINE string StringStream::
-read(size_t max_length) {
-  string data;
-  read(data, max_length);
-  return data;
+get_data() {
+  flush();
+  const pvector<unsigned char> &data = _buf.get_data();
+  if (!data.empty()) {
+    return string((char *)&data[0], data.size());
+  }
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StringStream::read
+//     Function: StringStream::set_data
 //       Access: Published
-//  Description: Extracts all the remaining characters from the data
-//               stream and returns them as a string.
-////////////////////////////////////////////////////////////////////
-INLINE string StringStream::
-read() {
-  string data;
-  read(data);
-  return data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::write
-//       Access: Published
-//  Description: Appends the indicated data to the data stream.
+//  Description: Replaces the contents of the data stream.  This
+//               implicitly reseeks to 0.
 ////////////////////////////////////////////////////////////////////
 INLINE void StringStream::
-write(const string &data) {
-  _buf.write_chars(data.data(), data.size());
+set_data(const string &data) {
+  _buf.clear();
+  if (!data.empty()) {
+    pvector<unsigned char> pv;
+    pv.insert(pv.end(), (const unsigned char *)&data[0], (const unsigned char *)&data[0] + data.size());
+    _buf.swap_data(pv);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StringStream::swap_data
+//       Access: Published
+//  Description: Swaps the indicated buffer for the contents of the
+//               internal buffer.
+////////////////////////////////////////////////////////////////////
+INLINE void StringStream::
+swap_data(pvector<unsigned char> &data) {
+  flush();
+  _buf.swap_data(data);
 }

@@ -291,7 +291,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   nassertv(result > 0);
 
   // Now write the header information to the stream.
-  StreamWriter sw(_dest);
+  StreamWriter sw(_dest, false);
   nassertv((PN_uint16)nid == nid);
   sw.add_uint16(nid);
   nassertv((PN_uint16)key_length == key_length);

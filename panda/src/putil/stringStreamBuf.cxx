@@ -125,10 +125,15 @@ write_chars(const char *start, size_t length) {
       _ppos += overwrite_length;
       start += overwrite_length;
     }
+
+    if (_data.size() < _ppos) {
+      // We need to append some zeroes.
+      _data.insert(_data.end(), _ppos - _data.size(), (unsigned char)0);
+    }
      
     if (length != 0) {
       // We are appending some data.
-      _data.insert(_data.begin() + _ppos, start, start + length);
+      _data.insert(_data.begin() + _ppos, (const unsigned char *)start, (const unsigned char *)start + length);
       _ppos += length;
     }
   }

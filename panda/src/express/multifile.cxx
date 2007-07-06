@@ -595,7 +595,7 @@ flush() {
       // And update the forward link from the last_index to point to
       // this new index location.
       _write->seekp(_last_index);
-      StreamWriter writer(_write);
+      StreamWriter writer(_write, false);
       writer.add_uint32(streampos_to_word(_next_index));
     }
 
@@ -615,7 +615,7 @@ flush() {
     
     // Now we're at the end of the index.  Write a 0 here to mark the
     // end.
-    StreamWriter writer(_write);
+    StreamWriter writer(_write, false);
     writer.add_uint32(0);
     _next_index += 4;
     nassertr(_next_index == _write->tellp(), false);
@@ -1579,7 +1579,7 @@ write_header() {
   nassertr(_write != (ostream *)NULL, false);
   nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header, _header_size);
-  StreamWriter writer(_write);
+  StreamWriter writer(_write, false);
   writer.add_int16(_current_major_ver);
   writer.add_int16(_current_minor_ver);
   writer.add_uint32(_scale_factor);

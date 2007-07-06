@@ -63,6 +63,9 @@ StreamReader(const StreamReader &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamReader::
 operator = (const StreamReader &copy) {
+  if (_owns_stream) {
+    delete _in;
+  }
   _in = copy._in;
   _owns_stream = false;
 }

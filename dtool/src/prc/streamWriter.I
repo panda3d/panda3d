@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
 StreamWriter(ostream &out) : 
-  _out(&out)
+  _out(&out),
+  _owns_stream(false)
 {
 }
 
@@ -34,30 +35,38 @@ StreamWriter(ostream &out) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
-StreamWriter(ostream *out) : 
-  _out(out)
+StreamWriter(ostream *out, bool owns_stream) : 
+  _out(out),
+  _owns_stream(owns_stream)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Copy Constructor
 //       Access: Public
-//  Description:
+//  Description: The copy constructor does not copy ownership of the
+//               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
 StreamWriter(const StreamWriter &copy) :
-  _out(copy._out)
+  _out(copy._out),
+  _owns_stream(false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Copy Assignment Operator
 //       Access: Public
-//  Description:
+//  Description: The copy constructor does not copy ownership of the
+//               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
 operator = (const StreamWriter &copy) {
+  if (_owns_stream) {
+    delete _out;
+  }
   _out = copy._out;
+  _owns_stream = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +76,9 @@ operator = (const StreamWriter &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
 ~StreamWriter() {
+  if (_owns_stream) {
+    delete _out;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -136,7 +136,7 @@ pm_readbigshort(istream *in, short *sP) {
 
 int
 pm_writebigshort(ostream *out, short s) {
-  StreamWriter writer(out);
+  StreamWriter writer(out, false);
   writer.add_be_int16(s);
   return (!out->fail()) ? 0 : -1;
 }
@@ -150,7 +150,7 @@ pm_readbiglong(istream *in, long *lP) {
 
 int
 pm_writebiglong(ostream *out, long l) {
-  StreamWriter writer(out);
+  StreamWriter writer(out, false);
   writer.add_be_int32(l);
   return (!out->fail()) ? 0 : -1;
 }
@@ -164,7 +164,7 @@ pm_readlittleshort(istream *in, short *sP) {
 
 int
 pm_writelittleshort(ostream *out, short s) {
-  StreamWriter writer(out);
+  StreamWriter writer(out, false);
   writer.add_int16(s);
   return (!out->fail()) ? 0 : -1;
 }
@@ -178,7 +178,7 @@ pm_readlittlelong(istream *in, long *lP) {
 
 int
 pm_writelittlelong(ostream *out, long l) {
-  StreamWriter writer(out);
+  StreamWriter writer(out, false);
   writer.add_int32(l);
   return (!out->fail()) ? 0 : -1;
 }

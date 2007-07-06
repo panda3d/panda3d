@@ -36,7 +36,9 @@ public:
 
   void clear();
 
-  INLINE size_t get_data_size() const;
+  INLINE void swap_data(pvector<unsigned char> &data);
+  INLINE const pvector<unsigned char> &get_data() const;
+
   size_t read_chars(char *start, size_t length);
   void write_chars(const char *start, size_t length);
 
@@ -49,7 +51,7 @@ protected:
   virtual int underflow();
 
 private:
-  pvector<char> _data;
+  pvector<unsigned char> _data;
   char *_buffer;
   size_t _ppos;
   size_t _gpos;

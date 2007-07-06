@@ -38,7 +38,7 @@ class EXPCL_DTOOLCONFIG StreamWriter {
 public:
   INLINE StreamWriter(ostream &out);
 PUBLISHED:
-  INLINE StreamWriter(ostream *out);
+  INLINE StreamWriter(ostream *out, bool owns_stream);
   INLINE StreamWriter(const StreamWriter &copy);
   INLINE void operator = (const StreamWriter &copy);
   INLINE ~StreamWriter();
@@ -80,6 +80,7 @@ PUBLISHED:
 
 private:
   ostream *_out;
+  bool _owns_stream;
 };
 
 #include "streamWriter.I"

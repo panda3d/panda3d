@@ -17,18 +17,3 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "stringStream.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: StringStream::read
-//       Access: Published
-//  Description: Extracts up to max_length characters from the data
-//               stream and stores them in the indicated string.
-////////////////////////////////////////////////////////////////////
-void StringStream::
-read(string &data, size_t max_length) {
-  flush();
-  char *buffer = (char *)PANDA_MALLOC_ARRAY(max_length);
-  size_t length = _buf.read_chars(buffer, max_length);
-  data.append(buffer, length);
-  PANDA_FREE_ARRAY(buffer);
-}

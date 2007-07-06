@@ -117,7 +117,7 @@ put_datagram(const Datagram &data) {
   _wrote_first_datagram = true;
 
   // First, write the size of the upcoming datagram.
-  StreamWriter writer(_out);
+  StreamWriter writer(_out, false);
   writer.add_uint32(data.get_length());
 
   // Now, write the datagram itself.

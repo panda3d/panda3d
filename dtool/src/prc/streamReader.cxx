@@ -29,14 +29,12 @@ get_string() {
   nassertr(!_in->eof() && !_in->fail(), string());
 
   // First, get the length of the string
-  size_t s_len = get_uint16();
+  size_t size = get_uint16();
 
-  string result;
-  result.reserve(s_len);
-  for (size_t p = 0; !_in->eof() && !_in->fail() && p < s_len; p++) {
-    result += _in->get();
-  }
-  return result;
+  char *buffer = (char *)alloca(size);
+  _in->read(buffer, size);
+  size_t read_bytes = _in->gcount();
+  return string(buffer, read_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,13 +48,13 @@ get_string32() {
   nassertr(!_in->eof() && !_in->fail(), string());
 
   // First, get the length of the string
-  size_t s_len = get_uint32();
+  size_t size = get_uint32();
 
-  string result;
-  result.reserve(s_len);
-  for (size_t p = 0; !_in->eof() && !_in->fail() && p < s_len; p++) {
-    result += _in->get();
-  }
+  char *buffer = (char *)PANDA_MALLOC_ARRAY(size);
+  _in->read(buffer, size);
+  size_t read_bytes = _in->gcount();
+  string result(buffer, read_bytes);
+  PANDA_FREE_ARRAY(buffer);
   return result;
 }
 
@@ -74,6 +72,7 @@ get_z_string() {
   int ch = _in->get();
   while (!_in->eof() && !_in->fail() && ch != '\0') {
     result += ch;
+    ch = _in->get();
   }
 
   return result;
@@ -90,11 +89,10 @@ string StreamReader::
 get_fixed_string(size_t size) {
   nassertr(!_in->eof() && !_in->fail(), string());
 
-  string result;
-  result.reserve(size);
-  for (size_t p = 0; !_in->eof() && !_in->fail() && p < size; p++) {
-    result += _in->get();
-  }
+  char *buffer = (char *)alloca(size);
+  _in->read(buffer, size);
+  size_t read_bytes = _in->gcount();
+  string result(buffer, read_bytes);
 
   size_t zero_byte = result.find('\0');
   return result.substr(0, zero_byte);
@@ -127,13 +125,10 @@ string StreamReader::
 extract_bytes(size_t size) {
   nassertr(!_in->eof() && !_in->fail(), string());
 
-  string result;
-  result.reserve(size);
-  for (size_t p = 0; !_in->eof() && !_in->fail() && p < size; p++) {
-    result += _in->get();
-  }
-
-  return result;
+  char *buffer = (char *)alloca(size);
+  _in->read(buffer, size);
+  size_t read_bytes = _in->gcount();
+  return string(buffer, read_bytes);
 }
 
 
