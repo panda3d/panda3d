@@ -2613,6 +2613,17 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='librecorder.in', obj='librecorder_iga
             skip=[], also=["recorder_composite.cxx"])
 
 #
+# DIRECTORY: panda/src/movies/
+#
+
+IPATH=['panda/src/movies']
+OPTS=['BUILDING_PANDA']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
+            src='panda/src/movies',  module='panda', library='libmovies',
+            skip=[], also=["movies_composite.cxx"])
+
+#
 # DIRECTORY: panda/src/vrpn/
 #
 
@@ -2635,12 +2646,13 @@ INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libcha
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
          'libpnmimage.in', 'libtext.in', 'libtform.in', 'liblerp.in', 'libputil.in', 'libaudio.in',
-         'libnativenet.in', 'libnet.in', 'libpgui.in']
+         'libnativenet.in', 'libnet.in', 'libpgui.in', 'libmovies.in']
 OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'recorder_composite.obj', 'librecorder_igate.obj',
           'pgraph_nodePath.obj', 
           'pgraph_composite1.obj', 'pgraph_composite2.obj', 'pgraph_composite3.obj', 'pgraph_composite4.obj', 'libpgraph_igate.obj',
           'cull_composite.obj',
+	  'movies_composite1.obj', 'libmovies_igate.obj',
           'grutil_multitexReducer.obj', 'grutil_composite.obj', 'libgrutil_igate.obj',
           'chan_composite.obj', 'libchan_igate.obj',
           'pstatclient_composite.obj', 'libpstatclient_igate.obj',
@@ -2693,17 +2705,6 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='skel_composite.cxx', obj='skel_composite
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
              src='panda/src/skel',  module='pandaskel', library='libskel',
              skip=[], also=["skel_composite.cxx"])
-
-#
-# DIRECTORY: panda/src/movies/
-#
-
-IPATH=['panda/src/movies']
-OPTS=['BUILDING_PANDASKEL']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite.cxx', obj='movies_composite.obj')
-EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
-            src='panda/src/movies',  module='pandaskel', library='libmovies',
-            skip=[], also=["movies_composite.cxx"])
 
 #
 # DIRECTORY: panda/metalibs/panda
