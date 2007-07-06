@@ -154,14 +154,14 @@ remove_column(PandaNode *root, const InternalName *column) {
 //               GeomNode::unify().
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-unify(PandaNode *root) {
+unify(PandaNode *root, bool preserve_order) {
   PStatTimer timer(_unify_collector);
 
   int max_indices = max_collect_indices;
   if (_gsg != (GraphicsStateGuardianBase *)NULL) {
     max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
-  r_unify(root, max_indices);
+  r_unify(root, max_indices, preserve_order);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,16 +831,16 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
 //  Description: The recursive implementation of unify().
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
-r_unify(PandaNode *node, int max_indices) {
+r_unify(PandaNode *node, int max_indices, bool preserve_order) {
   if (node->is_geom_node()) {
     GeomNode *geom_node = DCAST(GeomNode, node);
-    geom_node->unify(max_indices);
+    geom_node->unify(max_indices, preserve_order);
   }
 
   PandaNode::Children children = node->get_children();
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
-    r_unify(children.get_child(i), max_indices);
+    r_unify(children.get_child(i), max_indices, preserve_order);
   }
   Thread::consider_yield();
 }

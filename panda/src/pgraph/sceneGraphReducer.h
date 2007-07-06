@@ -140,7 +140,7 @@ PUBLISHED:
 
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
-  void unify(PandaNode *root);
+  void unify(PandaNode *root, bool preserve_order);
 
   INLINE void premunge(PandaNode *root, const RenderState *initial_state);
 
@@ -175,7 +175,7 @@ protected:
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer);
   int r_make_nonindexed(PandaNode *node, int collect_bits);
-  void r_unify(PandaNode *node, int max_indices);
+  void r_unify(PandaNode *node, int max_indices, bool preserve_order);
 
   void r_premunge(PandaNode *node, const RenderState *state);
 

@@ -101,13 +101,13 @@ PUBLISHED:
   INLINE PT(Geom) doubleside() const;
   INLINE PT(Geom) reverse() const;
   INLINE PT(Geom) rotate() const;
-  INLINE PT(Geom) unify(int max_indices) const;
+  INLINE PT(Geom) unify(int max_indices, bool preserve_order) const;
 
   void decompose_in_place();
   void doubleside_in_place();
   void reverse_in_place();
   void rotate_in_place();
-  void unify_in_place(int max_indices);
+  void unify_in_place(int max_indices, bool preserve_order);
 
   virtual bool copy_primitives_from(const Geom *other);
 

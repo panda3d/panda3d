@@ -209,12 +209,15 @@ rotate() const {
 //               triangle fans.
 //
 //               max_indices represents the maximum number of indices
-//               that will be put in any one GeomPrimitive.
+//               that will be put in any one GeomPrimitive.  If
+//               preserve_order is true, then the primitives will not
+//               be reordered during the operation, even if this
+//               results in a suboptimal result.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(Geom) Geom::
-unify(int max_indices) const {
+unify(int max_indices, bool preserve_order) const {
   PT(Geom) new_geom = make_copy();
-  new_geom->unify_in_place(max_indices);
+  new_geom->unify_in_place(max_indices, preserve_order);
   return new_geom;
 }
 

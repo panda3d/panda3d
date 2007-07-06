@@ -5779,7 +5779,7 @@ analyze() const {
 //       Access: Published
 //  Description: Lightly flattens out the hierarchy below this node by
 //               applying transforms, colors, and texture matrices
-//               from the arcs onto the vertices, but does not remove
+//               from the nodes onto the vertices, but does not remove
 //               any nodes.
 //
 //               This can result in improved rendering performance
@@ -5787,16 +5787,16 @@ analyze() const {
 //               resulting scene graph, but the number of nodes will
 //               remain the same.
 //
-//               Particularly, any NodePaths that reference nodes
+//               In particular, any NodePaths that reference nodes
 //               within this hierarchy will not be damaged.  However,
 //               since this operation will remove transforms from the
-//               scene graph, it may be dangerous to apply to arcs
+//               scene graph, it may be dangerous to apply to nodes
 //               where you expect to dynamically modify the transform,
 //               or where you expect the geometry to remain in a
 //               particular local coordinate system.
 //
 //               The return value is always 0, since flatten_light
-//               does not remove any arcs.
+//               does not remove any nodes.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 flatten_light() {
@@ -5812,24 +5812,16 @@ flatten_light() {
 //       Access: Published
 //  Description: A more thorough flattening than flatten_light(), this
 //               first applies all the transforms, colors, and texture
-//               matrices from the arcs onto the vertices, and then
+//               matrices from the nodes onto the vertices, and then
 //               removes unneeded grouping nodes--nodes that have
 //               exactly one child, for instance, but have no special
 //               properties in themselves.
 //
-//               This results in improved perforamance over
+//               This results in improved performance over
 //               flatten_light() because the number of nodes in the
 //               scene graph is reduced.
 //
-//               If max_children is specified, it represents the
-//               maximum number of children a node is allowed to have
-//               and still be flattened.  Normally, this is 1; we
-//               don't typically want to flatten a node that has
-//               multiple children.  However, sometimes this may be
-//               desirable; set this parameter to control the limit.
-//               If this is set to -1, there is no limit.
-//
-//               The return value is the number of arcs removed.
+//               The return value is the number of nodes removed.
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 flatten_medium() {
@@ -5839,7 +5831,7 @@ flatten_medium() {
   int num_removed = gr.flatten(node(), 0);
 
   gr.collect_vertex_data(node());
-  gr.unify(node());
+  gr.unify(node(), true);
 
   return num_removed;
 }
@@ -5869,7 +5861,7 @@ flatten_strong() {
   int num_removed = gr.flatten(node(), ~0);
 
   gr.collect_vertex_data(node(), ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name | SceneGraphReducer::CVD_animation_type));
-  gr.unify(node());
+  gr.unify(node(), false);
 
   return num_removed;
 }

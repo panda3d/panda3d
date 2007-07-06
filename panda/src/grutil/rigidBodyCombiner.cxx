@@ -109,7 +109,7 @@ collect() {
   SceneGraphReducer gr;
   gr.apply_attribs(_internal_root);
   gr.collect_vertex_data(_internal_root, ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name | SceneGraphReducer::CVD_animation_type));
-  gr.unify(_internal_root);
+  gr.unify(_internal_root, false);
 }
 
 ////////////////////////////////////////////////////////////////////

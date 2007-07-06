@@ -612,14 +612,17 @@ rotate_in_place() {
 //               triangle fans.
 //
 //               max_indices represents the maximum number of indices
-//               that will be put in any one GeomPrimitive.
+//               that will be put in any one GeomPrimitive.  If
+//               preserve_order is true, then the primitives will not
+//               be reordered during the operation, even if this
+//               results in a suboptimal result.
 //
 //               Don't call this in a downstream thread unless you
 //               don't mind it blowing away other changes you might
 //               have recently made in an upstream thread.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-unify_in_place(int max_indices) {
+unify_in_place(int max_indices, bool preserve_order) {
   Thread *current_thread = Thread::get_current_thread();
   if (get_num_primitives() <= 1) {
     // If we don't have more than one primitive to start with, no need
@@ -633,10 +636,36 @@ unify_in_place(int max_indices) {
 
   NewPrims new_prims;
 
+  bool keep_different_types = preserve_triangle_strips && !preserve_order;
+
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
     CPT(GeomPrimitive) primitive = (*pi).get_read_pointer();
     NewPrims::iterator npi = new_prims.find(primitive->get_type());
+    if (npi == new_prims.end()) {
+      // This is the first primitive of this type.
+      if (!keep_different_types && !new_prims.empty()) {
+        // Actually, since we aren't trying to keep the different
+        // types of primitives, we should try to combine this type and
+        // the other type by decomposing them both (into triangles,
+        // segments, or whatever).
+
+        // First, decompose the incoming one.
+        primitive = primitive->decompose();
+        npi = new_prims.find(primitive->get_type());
+        if (npi == new_prims.end()) {
+          // That didn't help, so decompose the one already in the
+          // table.
+          nassertv(new_prims.size() == 1);
+          npi = new_prims.begin();
+          CPT(GeomPrimitive) np = (*npi).second->decompose();
+          new_prims.clear();
+          new_prims.insert(NewPrims::value_type(np->get_type(), np->make_copy()));
+          npi = new_prims.find(primitive->get_type());
+        }
+      }
+    }
+
     if (npi == new_prims.end()) {
       // This is the first primitive of this type.  Just store it.
       new_prims.insert(NewPrims::value_type(primitive->get_type(), primitive->make_copy()));
@@ -649,23 +678,14 @@ unify_in_place(int max_indices) {
   }
 
   // Now, we have one or more primitives, but only one of each type.
-  if (!preserve_triangle_strips && new_prims.size() > 1) {
-    // More than one different type.  Recombine them into a single
-    // primitive by decomposing.
-    PT(GeomPrimitive) new_prim;
-    NewPrims::iterator npi;
-    for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
-      CPT(GeomPrimitive) prim = (*npi).second->decompose();
-      if (new_prim.is_null()) {
-        new_prim = prim->make_copy();
-      } else {
-        combine_primitives(new_prim, prim, current_thread);
-      }
-    }
-
-    new_prims.clear();
-    new_prims.insert(NewPrims::value_type(new_prim->get_type(), new_prim));
+#ifndef NDEBUG
+  if (!keep_different_types && new_prims.size() > 1) {
+    // This shouldn't be possible, because we decompose as we go, in
+    // the loop above.  (We have to decompose as we go to preserve the
+    // ordering of the primitives.)
+    nassertv(false);
   }
+#endif
 
   // Finally, iterate through the remaining primitives, and copy them
   // to the output list.

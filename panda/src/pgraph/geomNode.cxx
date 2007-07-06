@@ -527,7 +527,10 @@ check_valid() const {
 //               into triangles.  See also Geom::unify().
 //
 //               max_indices represents the maximum number of indices
-//               that will be put in any one GeomPrimitive.
+//               that will be put in any one GeomPrimitive.  If
+//               preserve_order is true, then the primitives will not
+//               be reordered during the operation, even if this
+//               results in a suboptimal result.
 //
 //               In order for this to be successful, the primitives
 //               must reference the same GeomVertexData, have the same
@@ -535,7 +538,7 @@ check_valid() const {
 //               models.
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
-unify(int max_indices) {
+unify(int max_indices, bool preserve_order) {
   bool any_changed = false;
 
   Thread *current_thread = Thread::get_current_thread();
@@ -553,8 +556,10 @@ unify(int max_indices) {
       const GeomEntry &old_entry = (*gi);
       
       bool unified = false;
-      GeomList::iterator gj;
-      for (gj = new_geoms->begin(); gj != new_geoms->end() && !unified; ++gj) {
+
+      // Go from back to front, to minimize damage to the primitive ordering.
+      GeomList::reverse_iterator gj;
+      for (gj = new_geoms->rbegin(); gj != new_geoms->rend() && !unified; ++gj) {
         GeomEntry &new_entry = (*gj);
         if (old_entry._state == new_entry._state) {
           // Both states match, so try to combine the primitives.
@@ -565,6 +570,12 @@ unify(int max_indices) {
             unified = true;
             any_changed = true;
           }
+        }
+
+        if (preserve_order) {
+          // If we're insisting on preserving the order, we can only
+          // attempt to merge with the tail of the list.
+          break;
         }
       }
       
@@ -584,7 +595,7 @@ unify(int max_indices) {
       GeomEntry &entry = (*wgi);
       nassertv(entry._geom.test_ref_count_integrity());
       PT(Geom) geom = entry._geom.get_write_pointer();
-      geom->unify_in_place(max_indices);
+      geom->unify_in_place(max_indices, preserve_order);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);

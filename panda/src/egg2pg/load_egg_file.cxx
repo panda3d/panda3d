@@ -52,7 +52,7 @@ load_from_loader(EggLoader &loader) {
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
     if (egg_unify) {
       gr.collect_vertex_data(loader._root);
-      gr.unify(loader._root);
+      gr.unify(loader._root, true);
       if (egg2pg_cat.is_debug()) {
         egg2pg_cat.debug() << "Unified.\n";
       }
