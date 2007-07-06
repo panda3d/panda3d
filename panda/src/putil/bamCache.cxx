@@ -39,7 +39,8 @@ BamCache::
 BamCache() :
   _active(true),
   _index(new BamCacheIndex),
-  _index_stale_since(0)
+  _index_stale_since(0),
+  _read_only(false)
 {
   ConfigVariableFilename model_cache_dir
     ("model-cache-dir", Filename(), 
@@ -182,6 +183,10 @@ store(BamCacheRecord *record) {
   nassertr(!record->_cache_pathname.empty(), false);
   nassertr(record->has_data(), false);
 
+  if (_read_only) {
+    return false;
+  }
+  
   consider_flush_index();
 
 #ifndef NDEBUG
@@ -206,6 +211,7 @@ store(BamCacheRecord *record) {
   if (!temp_pathname.open_write(temp_file)) {
     util_cat.error()
       << "Could not open cache file: " << temp_pathname << "\n";
+    emergency_read_only();
     return false;
   }
 
@@ -214,9 +220,10 @@ store(BamCacheRecord *record) {
     util_cat.error()
       << "Could not write cache file: " << temp_pathname << "\n";
     temp_pathname.unlink();
+    emergency_read_only();
     return false;
   }
-
+  
   if (!dout.write_header(_bam_header)) {
     util_cat.error()
       << "Unable to write to " << temp_pathname << "\n";
@@ -271,6 +278,22 @@ store(BamCacheRecord *record) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCache::emergency_read_only
+//       Access: Private
+//  Description: Called when an attempt to write to the cache dir
+//               has failed, usually for lack of disk space or 
+//               because of incorrect file permissions.  Outputs
+//               an error and puts the BamCache into read-only
+//               mode.
+////////////////////////////////////////////////////////////////////
+void BamCache::
+emergency_read_only() {
+  util_cat.error() <<
+    "Could not write to the Bam Cache.  Disabling future attempts.\n";
+  _read_only = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCache::consider_flush_index
 //       Access: Published
 //  Description: Flushes the index if enough time has elapsed since
@@ -299,9 +322,14 @@ flush_index() {
   }
 
   while (true) {
+    if (_read_only) {
+      return;
+    }
+
     Filename temp_pathname = Filename::temporary(_root, "index-", ".boo");
-    
+
     if (!do_write_index(temp_pathname, _index)) {
+      emergency_read_only();
       return;
     }
     
@@ -689,12 +717,13 @@ bool BamCache::
 do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
   index_pathname.set_binary();
   ofstream index_file;
+  
   if (!index_pathname.open_write(index_file)) {
     util_cat.error()
       << "Could not open index file: " << index_pathname << "\n";
     return false;
   }
-
+  
   DatagramOutputFile dout;
   if (!dout.open(index_file)) {
     util_cat.error()

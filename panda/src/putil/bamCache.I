@@ -110,6 +110,34 @@ get_cache_max_kbytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCache::set_read_only
+//       Access: Published
+//  Description: Can be used to put the cache in read-only mode,
+//               or take it out of read-only mode.  Note that if you
+//               put it into read-write mode, and it discovers that
+//               it does not have write access, it will put itself
+//               right back into read-only mode.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+set_read_only(bool ro) {
+  _read_only = ro;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::get_read_only
+//       Access: Published
+//  Description: Returns true if the cache is in read-only mode.
+//               Normally, the cache starts in read-write mode.  It
+//               can put itself into read-only mode automatically if
+//               it discovers that it does not have write access to
+//               the cache.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCache::
+get_read_only() const {
+  return _read_only;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCache::get_global_ptr
 //       Access: Published, Static
 //  Description: Returns a pointer to the global BamCache object,

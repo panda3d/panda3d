@@ -61,13 +61,16 @@ PUBLISHED:
   INLINE void set_cache_max_kbytes(int max_kbytes);
   INLINE int get_cache_max_kbytes() const;
 
+  INLINE void set_read_only(bool ro);
+  INLINE bool get_read_only() const;
+
   PT(BamCacheRecord) lookup(const Filename &source_filename, 
                             const string &cache_extension);
   bool store(BamCacheRecord *record);
 
   void consider_flush_index();
   void flush_index();
-
+  
   INLINE static BamCache *get_global_ptr();
 
 private:
@@ -83,6 +86,8 @@ private:
 
   void check_cache_size();
 
+  void emergency_read_only();
+  
   static BamCacheIndex *do_read_index(Filename &index_pathname);
   static bool do_write_index(Filename &index_pathname, const BamCacheIndex *index);
 
@@ -97,6 +102,7 @@ private:
   static void make_global();
 
   bool _active;
+  bool _read_only;
   Filename _root;
   int _flush_time;
   int _max_kbytes;
