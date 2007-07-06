@@ -28,6 +28,7 @@ improvements.
 * Simple occlusion culling with PipeOcclusionCullTraverser.
 * Optional bounding boxes (instead of spheres): "bounds-type box", "bounds-type best"
 * Addition of eggcacher utility to preload model-cache.
+* In source tree, added 'skel' directory to make it easier for newcomers to extend panda.
 
 I have no doubt that there will be a few significant bugs in this release, like all X.X.0 releases. - Josh
 
