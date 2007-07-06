@@ -412,6 +412,9 @@ class Actor(DirectObject, NodePath):
         """
         lodInfo = []
         for lodName, partDict in self.__animControlDict.items():
+            if self.mergeLODBundles:
+                lodName = self.__sortedLODNames[0]
+                
             partInfo = []
             for partName in partDict.keys():
                 subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
