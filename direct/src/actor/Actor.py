@@ -168,7 +168,7 @@ class Actor(DirectObject, NodePath):
         if mergeLODBundles == None:
             # If this isn't specified, it comes from the Config.prc
             # file.
-            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', 0)
+            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', 1)
         else:
             self.mergeLODBundles = mergeLODBundles
 
