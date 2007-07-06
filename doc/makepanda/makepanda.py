@@ -2715,8 +2715,6 @@ EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaskel_module.obj',
 EnqueueLink(dll='libpandaskel.dll', opts=['ADVAPI'], obj=[
     'skel_composite.obj',
     'libskel_igate.obj',
-    'movies_composite.obj',
-    'libmovies_igate.obj',
     'libpandaskel_module.obj',
     'libpanda.dll',
     'libpandaexpress.dll',
