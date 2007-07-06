@@ -28,7 +28,7 @@
 //               data to an internal buffer, which can be appended to
 //               or read from as a string.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS StringStream : public iostream {
+class EXPCL_PANDA StringStream : public iostream {
 PUBLISHED:
   INLINE StringStream();
   INLINE StringStream(const string &source);
