@@ -1338,6 +1338,7 @@ def CompileLink(dll, obj, opts, ldef):
         if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
         if (opts.count("WINKERNEL")):   cmd = cmd + " kernel32.lib"
         if (opts.count("WINOLDNAMES")): cmd = cmd + " oldnames.lib"
+        if (opts.count("WINSHELL")):    cmd = cmd + " shell32.lib"
         if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
         if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
         if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
@@ -2044,7 +2045,7 @@ sys.stdout.flush()
 #
 
 IPATH=['dtool/src/dtoolbase']
-OPTS=['BUILDING_DTOOL',  'OPT3']
+OPTS=['BUILDING_DTOOL']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite1.cxx', obj='dtoolbase_composite1.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite2.cxx', obj='dtoolbase_composite2.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='lookup3.c',                obj='dtoolbase_lookup3.obj')
@@ -2060,7 +2061,7 @@ else:
 #
 
 IPATH=['dtool/src/dtoolutil']
-OPTS=['BUILDING_DTOOL',  'OPT3']
+OPTS=['BUILDING_DTOOL']
 CopyFile('built/include/','dtool/src/dtoolutil/vector_src.cxx')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt.c',             obj='dtoolutil_gnu_getopt.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='gnu_getopt1.c',            obj='dtoolutil_gnu_getopt1.obj')
@@ -2071,9 +2072,9 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolutil_composite.cxx',  obj='dtooluti
 #
 
 IPATH=['dtool/metalibs/dtool']
-OPTS=['BUILDING_DTOOL',  'OPT3']
+OPTS=['BUILDING_DTOOL']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtool.cxx', obj='dtool_dtool.obj')
-EnqueueLink(opts=['ADVAPI',  'OPT3'], dll='libp3dtool.dll', obj=[
+EnqueueLink(opts=['ADVAPI','WINSHELL'], dll='libp3dtool.dll', obj=[
              'dtool_dtool.obj',
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
@@ -2090,7 +2091,7 @@ EnqueueLink(opts=['ADVAPI',  'OPT3'], dll='libp3dtool.dll', obj=[
 #
 
 IPATH=['dtool/src/cppparser']
-OPTS=['OPT3']
+OPTS=[]
 CreateStubHeader("built/include/cppBison.h")
 EnqueueBison(ipath=IPATH, opts=OPTS, pre='cppyy', src='cppBison.yxx', dsth='cppBison.h', obj='cppParser_cppBison.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='cppParser_composite.cxx', obj='cppParser_composite.obj')
@@ -2104,7 +2105,7 @@ EnqueueLib(lib='libcppParser.ilb', obj=[
 #
 
 IPATH=['dtool/src/prc']
-OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL',  'OPT3']
+OPTS=['BUILDING_DTOOLCONFIG', 'OPENSSL']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite.cxx', obj='prc_composite.obj')
 
 #
@@ -2112,7 +2113,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='prc_composite.cxx', obj='prc_composite.o
 #
 
 IPATH=['dtool/src/dconfig']
-OPTS=['BUILDING_DTOOLCONFIG',  'OPT3']
+OPTS=['BUILDING_DTOOLCONFIG']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite.cxx', obj='dconfig_composite.obj')
 
 #
@@ -2120,7 +2121,7 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dconfig_composite.cxx', obj='dconfig_com
 #
 
 IPATH=['dtool/src/interrogatedb']
-OPTS=['BUILDING_DTOOLCONFIG',  'OPT3']
+OPTS=['BUILDING_DTOOLCONFIG']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite.cxx', obj='interrogatedb_composite.obj')
 
 #
@@ -2128,12 +2129,12 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogatedb_composite.cxx', obj='inter
 #
 
 IPATH=['dtool/metalibs/dtoolconfig']
-OPTS=['BUILDING_DTOOLCONFIG',  'OPT3']
+OPTS=['BUILDING_DTOOLCONFIG']
 SRCFILE="pydtool.cxx"
 if (OMIT.count("PYTHON")): SRCFILE="null.cxx"
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolconfig.cxx', obj='dtoolconfig_dtoolconfig.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src=SRCFILE, obj='dtoolconfig_pydtool.obj', xdep=["dtool_have_python.dat"])
-EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='libp3dtoolconfig.dll', obj=[
+EnqueueLink(opts=['ADVAPI',  'OPENSSL'], dll='libp3dtoolconfig.dll', obj=[
              'dtoolconfig_dtoolconfig.obj',
              'dtoolconfig_pydtool.obj',
              'interrogatedb_composite.obj',
@@ -2147,9 +2148,9 @@ EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='libp3dtoolconfig.dll', obj
 #
 
 IPATH=['dtool/src/pystub']
-OPTS=['BUILDING_DTOOLCONFIG',  'OPT3']
+OPTS=['BUILDING_DTOOLCONFIG']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pystub.cxx', obj='pystub_pystub.obj')
-EnqueueLink(opts=['ADVAPI',  'OPT3'], dll='libp3pystub.dll', obj=[
+EnqueueLink(opts=['ADVAPI'], dll='libp3pystub.dll', obj=[
              'pystub_pystub.obj',
              'libp3dtool.dll',
 ])
@@ -2159,9 +2160,9 @@ EnqueueLink(opts=['ADVAPI',  'OPT3'], dll='libp3pystub.dll', obj=[
 #
 
 IPATH=['dtool/src/interrogate', 'dtool/src/cppparser', 'dtool/src/interrogatedb']
-OPTS=[ 'OPT3']
+OPTS=[]
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_composite.cxx', obj='interrogate_composite.obj')
-EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='interrogate.exe', obj=[
+EnqueueLink(opts=['ADVAPI',  'OPENSSL'], dll='interrogate.exe', obj=[
              'interrogate_composite.obj',
              'libcppParser.ilb',
              'libp3pystub.dll',
@@ -2170,7 +2171,7 @@ EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='interrogate.exe', obj=[
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='interrogate_module.cxx', obj='interrogate_module_interrogate_module.obj')
-EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='interrogate_module.exe', obj=[
+EnqueueLink(opts=['ADVAPI',  'OPENSSL'], dll='interrogate_module.exe', obj=[
              'interrogate_module_interrogate_module.obj',
              'libcppParser.ilb',
              'libp3pystub.dll',
@@ -2179,7 +2180,7 @@ EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='interrogate_module.exe', o
 ])
 
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='parse_file.cxx', obj='parse_file_parse_file.obj')
-EnqueueLink(opts=['ADVAPI',  'OPENSSL', 'OPT3'], dll='parse_file.exe', obj=[
+EnqueueLink(opts=['ADVAPI',  'OPENSSL'], dll='parse_file.exe', obj=[
              'parse_file_parse_file.obj',
              'libcppParser.ilb',
              'libp3pystub.dll',
