@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : StringStream
 // Description : A bi-directional stream object that reads and writes
-//               data to an internal buffer, which can be appended to
-//               or read from as a string.
+//               data to an internal buffer, which can be retrieved
+//               and/or set as a string.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StringStream : public iostream {
 PUBLISHED:
