@@ -48,6 +48,35 @@ read_header(const Filename &filename, PNMFileType *type,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImageHeader::read_header
+//       Access: Published
+//  Description: Reads the image header information only from the
+//               indicated stream.
+//
+//               The filename is advisory only, and may be used
+//               to suggest a type if it has a known extension.
+//
+//               If type is non-NULL, it is a suggestion for the type
+//               of file it is (and a non-NULL type will override any
+//               magic number test or filename extension lookup).
+//
+//               Returns true if successful, false on error.
+////////////////////////////////////////////////////////////////////
+bool PNMImageHeader::
+read_header(istream &data, const string &filename, PNMFileType *type,
+            bool report_unknown_type) {
+  PNMReader *reader = PNMImageHeader::make_reader
+    (&data, false, filename, string(), type, report_unknown_type);
+  if (reader != (PNMReader *)NULL) {
+    (*this) = (*reader);
+    delete reader;
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_reader
 //       Access: Published
 //  Description: Returns a newly-allocated PNMReader of the suitable

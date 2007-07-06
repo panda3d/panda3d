@@ -31,6 +31,8 @@ forcetype ConfigVariableManager
 forcetype ConfigVariableSearchPath
 forcetype ConfigVariableString
 
+forcetype ios_base
+forcetype ios
 forcetype istream
 forcetype ostream
 forcetype iostream

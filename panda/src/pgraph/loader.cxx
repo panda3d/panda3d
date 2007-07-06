@@ -31,6 +31,7 @@
 #include "bamCacheRecord.h"
 #include "sceneGraphReducer.h"
 #include "renderState.h"
+#include "bamFile.h"
 
 bool Loader::_file_types_loaded = false;
 TypeHandle Loader::_type_handle;
@@ -60,6 +61,22 @@ Loader(const string &name, int num_threads) :
 
     _num_threads = loader_num_threads;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::load_bam_stream
+//       Access: Published
+//  Description: Attempts to read a bam file from the indicated stream
+//               and return the scene graph defined there.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) Loader::
+load_bam_stream(istream &in) {
+  BamFile bam_file;
+  if (!bam_file.open_read(in)) {
+    return NULL;
+  }
+
+  return bam_file.read_node();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -835,6 +835,7 @@ PUBLISHED:
   INLINE string get_name() const;
 
   BLOCKING bool write_bam_file(const string &filename) const;
+  BLOCKING bool write_bam_stream(ostream &out) const;
 
 private:
   static NodePathComponent *

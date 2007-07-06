@@ -177,6 +177,29 @@ open_read(const Filename &multifile_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read
+//       Access: Public
+//  Description: Opens an anonymous Multifile for reading using an
+//               istream.  There must be seek functionality via
+//               seekg() and tellg() on the istream.
+//
+//               The Multifile does *not* close or delete the istream
+//               when Multifile.close() is called.  It is the caller's
+//               responsibility to ensure that the istream pointer
+//               does not destruct during the lifetime of the
+//               Multifile.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_read(istream *multifile_stream) {
+  close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
+  _read = multifile_stream;
+  _read->seekg(0, ios::beg);
+  return read_index();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::open_write
 //       Access: Published
 //  Description: Opens the named Multifile on disk for writing.  If
@@ -201,6 +224,29 @@ open_write(const Filename &multifile_name) {
   _timestamp_dirty = true;
   _write = &_write_file;
   _multifile_name = multifile_name;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_write
+//       Access: Public
+//  Description: Opens an anonymous Multifile for writing using an
+//               ostream.  There must be seek functionality via
+//               seekp() and tellp() on the pstream.
+//
+//               The Multifile does *not* close or delete the ostream
+//               when Multifile.close() is called.  It is the caller's
+//               responsibility to ensure that the ostream pointer
+//               does not destruct during the lifetime of the
+//               Multifile.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_write(ostream *multifile_stream) {
+  close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
+  _write = multifile_stream;
+  _write->seekp(0, ios::beg);
   return true;
 }
 
@@ -241,6 +287,42 @@ open_read_write(const Filename &multifile_name) {
   } else {
     return true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read_write
+//       Access: Public
+//  Description: Opens an anonymous Multifile for reading and writing
+//               using an iostream.  There must be seek functionality
+//               via seekg()/seekp() and tellg()/tellp() on the
+//               iostream.
+//
+//               The Multifile does *not* close or delete the iostream
+//               when Multifile.close() is called.  It is the caller's
+//               responsibility to ensure that the iostream pointer
+//               does not destruct during the lifetime of the
+//               Multifile.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+open_read_write(iostream *multifile_stream) {
+  close();
+  _timestamp = time(NULL);
+  _timestamp_dirty = true;
+  _read = multifile_stream;
+  _write = multifile_stream;
+  _write->seekp(0, ios::beg);
+
+  // Check whether the read stream is empty.
+  _read->seekg(0, ios::end);
+  if (_read->tellg() == (streampos)0) {
+    // The read stream is empty, which is always valid.
+    return true;
+  }
+
+  // The read stream is not empty, so we'd better have a valid
+  // Multifile.
+  _read->seekg(0, ios::beg);
+  return read_index();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -357,6 +439,42 @@ add_subfile(const string &subfile_name, const Filename &filename,
 
   _timestamp = time(NULL);
   _timestamp_dirty = true;
+
+  return name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_subfile
+//       Access: Public
+//  Description: Adds a file from a stream as a subfile to the Multifile.
+//               The indicated istream will be read and its contents
+//               added to the Multifile at the next call to flush().
+//
+//               Note that the istream must remain untouched and
+//               unused by any other code until flush() is called.  At
+//               that time, the Multifile will read the entire
+//               contents of the istream from the current file
+//               position to the end of the file.  Subsequently, the
+//               Multifile will *not* close or delete the istream.  It
+//               is the caller's responsibility to ensure that the
+//               istream pointer does not destruct during the lifetime
+//               of the Multifile.
+//
+//               Returns the subfile name on success (it might have
+//               been modified slightly), or empty string on failure.
+////////////////////////////////////////////////////////////////////
+string Multifile::
+add_subfile(const string &subfile_name, istream *subfile_data,
+            int compression_level) {
+  nassertr(is_write_valid(), string());
+
+  string name = standardize_subfile_name(subfile_name);
+  if (!name.empty()) {
+    Subfile *subfile = new Subfile;
+    subfile->_name = name;
+    subfile->_source = subfile_data;
+    add_new_subfile(subfile, compression_level);
+  }
 
   return name;
 }
@@ -1029,6 +1147,34 @@ extract_subfile(int index, const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::extract_subfile_to
+//       Access: Public
+//  Description: Extracts the nth subfile to the indicated ostream.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+extract_subfile_to(int index, ostream &out) {
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+
+  istream *in = open_read_subfile(index);
+  if (in == (istream *)NULL) {
+    return false;
+  }
+
+  int byte = in->get();
+  while (!in->fail() && !in->eof()) {
+    out.put(byte);
+    byte = in->get();
+  }
+
+  bool failed = (in->fail() && !in->eof());
+  delete in;
+  nassertr(!failed, false);
+
+  return (!out.fail());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::compare_subfile
 //       Access: Published
 //  Description: Performs a byte-for-byte comparison of the indicated
@@ -1117,6 +1263,7 @@ ls(ostream &out) const {
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::read_subfile
 //       Access: Public
@@ -1125,151 +1272,53 @@ ls(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 read_subfile(int index, string &result) {
-  nassertr(is_read_valid(), false);
-  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   result = string();
 
-  istream *in = open_read_subfile(index);
-  if (in == (istream *)NULL) {
+  pvector<unsigned char> pv;
+  if (!read_subfile(index, pv)) {
     return false;
   }
 
-  int byte = in->get();
-  while (!in->eof() && !in->fail()) {
-    result += (char)byte;
-    byte = in->get();
+  if (!pv.empty()) {
+    result.append((const char *)&pv[0], pv.size());
   }
-  bool failed = in->fail();
-  delete in;
-  nassertr(!failed, false);
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read
+//     Function: Multifile::read_subfile
 //       Access: Public
-//  Description: Opens an anonymous Multifile for reading using an
-//               istream.  There must be seek functionality via
-//               seekg() and tellg() on the istream.
-//
-//               This version of open_read() does not close the
-//               istream when Multifile.close() is called.
+//  Description: Fills a pvector with the entire contents of
+//               the indicated subfile.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read(istream *multifile_stream) {
-  close();
-  _timestamp = time(NULL);
-  _timestamp_dirty = true;
-  _read = multifile_stream;
-  _read->seekg(0, ios::beg);
-  return read_index();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_write
-//       Access: Public
-//  Description: Opens an anonymous Multifile for writing using an
-//               ostream.  There must be seek functionality via
-//               seekp() and tellp() on the pstream.
-//
-//               This version of open_write() does not close the
-//               ostream when Multifile.close() is called.
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-open_write(ostream *multifile_stream) {
-  close();
-  _timestamp = time(NULL);
-  _timestamp_dirty = true;
-  _write = multifile_stream;
-  _write->seekp(0, ios::beg);
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_write
-//       Access: Public
-//  Description: Opens an anonymous Multifile for reading and writing
-//               using an iostream.  There must be seek functionality
-//               via seekg()/seekp() and tellg()/tellp() on the
-//               iostream.
-//
-//               This version of open_read_write() does not close the
-//               iostream when Multifile.close() is called.
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-open_read_write(iostream *multifile_stream) {
-  close();
-  _timestamp = time(NULL);
-  _timestamp_dirty = true;
-  _read = multifile_stream;
-  _write = multifile_stream;
-  _write->seekp(0, ios::beg);
-
-  // Check whether the read stream is empty.
-  _read->seekg(0, ios::end);
-  if (_read->tellg() == (streampos)0) {
-    // The read stream is empty, which is always valid.
-    return true;
-  }
-
-  // The read stream is not empty, so we'd better have a valid
-  // Multifile.
-  _read->seekg(0, ios::beg);
-  return read_index();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::add_subfile
-//       Access: Public
-//  Description: Adds a file from a stream as a subfile to the Multifile.
-//               The indicated istream will be read and its contents
-//               added to the Multifile at the next call to flush().
-//
-//               Returns the subfile name on success (it might have
-//               been modified slightly), or empty string on failure.
-////////////////////////////////////////////////////////////////////
-string Multifile::
-add_subfile(const string &subfile_name, istream *subfile_data,
-            int compression_level) {
-  nassertr(is_write_valid(), string());
-
-  string name = standardize_subfile_name(subfile_name);
-  if (!name.empty()) {
-    Subfile *subfile = new Subfile;
-    subfile->_name = name;
-    subfile->_source = subfile_data;
-    add_new_subfile(subfile, compression_level);
-  }
-
-  return name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::extract_subfile_to
-//       Access: Public
-//  Description: Extracts the nth subfile to the indicated ostream.
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-extract_subfile_to(int index, ostream &out) {
+read_subfile(int index, pvector<unsigned char> &result) {
   nassertr(is_read_valid(), false);
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
+  result.clear();
 
   istream *in = open_read_subfile(index);
   if (in == (istream *)NULL) {
     return false;
   }
 
-  int byte = in->get();
-  while (!in->fail() && !in->eof()) {
-    out.put(byte);
-    byte = in->get();
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  in->read(buffer, buffer_size);
+  size_t count = in->gcount();
+  while (count != 0) {
+    thread_consider_yield();
+    result.insert(result.end(), buffer, buffer + count);
+    in->read(buffer, buffer_size);
+    count = in->gcount();
   }
 
-  bool failed = (in->fail() && !in->eof());
+  bool failed = in->fail() && !in->eof();
   delete in;
   nassertr(!failed, false);
-
-  return (!out.fail());
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

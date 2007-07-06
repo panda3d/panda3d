@@ -59,6 +59,8 @@
     spamDeletor.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
+    stringStreamBuf.I stringStreamBuf.h \
+    stringStream.I stringStream.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
@@ -104,7 +106,10 @@
     pta_int.cxx pta_ushort.cxx \
     spamDeletor.cxx \
     sparseArray.cxx \
-    string_utils.cxx timedCycle.cxx typedWritable.cxx \
+    string_utils.cxx \
+    stringStreamBuf.cxx \
+    stringStream.cxx \
+    timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
     vector_double.cxx vector_float.cxx \
@@ -161,8 +166,10 @@
     pta_float.h pta_int.h pta_ushort.h \
     spamDeletor.h \
     sparseArray.I sparseArray.h \
-    string_utils.I \
-    string_utils.h timedCycle.I timedCycle.h typedWritable.I \
+    string_utils.I string_utils.h \
+    stringStreamBuf.I stringStreamBuf.h \
+    stringStream.I stringStream.h \
+    timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \

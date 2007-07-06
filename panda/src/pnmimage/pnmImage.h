@@ -97,17 +97,17 @@ PUBLISHED:
   INLINE int get_read_x_size() const;
   INLINE int get_read_y_size() const;
 
-  bool read(const Filename &filename, PNMFileType *type = NULL,
-            bool report_unknown_type = true);
-  bool read(istream &data, const string &filename = string(), 
-            PNMFileType *type = NULL,
-            bool report_unknown_type = true);
-  bool read(PNMReader *reader);
+  BLOCKING bool read(const Filename &filename, PNMFileType *type = NULL,
+                     bool report_unknown_type = true);
+  BLOCKING bool read(istream &data, const string &filename = string(), 
+                     PNMFileType *type = NULL,
+                     bool report_unknown_type = true);
+  BLOCKING bool read(PNMReader *reader);
 
-  bool write(const Filename &filename, PNMFileType *type = NULL) const;
-  bool write(ostream &data, const string &filename = string(),
-             PNMFileType *type = NULL) const;
-  bool write(PNMWriter *writer) const;
+  BLOCKING bool write(const Filename &filename, PNMFileType *type = NULL) const;
+  BLOCKING bool write(ostream &data, const string &filename = string(),
+                      PNMFileType *type = NULL) const;
+  BLOCKING bool write(PNMWriter *writer) const;
 
   INLINE bool is_valid() const;
 

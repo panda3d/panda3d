@@ -84,6 +84,8 @@ PUBLISHED:
 
   INLINE void load_async(AsyncTask *request);
 
+  BLOCKING PT(PandaNode) load_bam_stream(istream &in);
+
   virtual void output(ostream &out) const;
 
 private:

@@ -5941,6 +5941,29 @@ write_bam_file(const string &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::write_bam_stream
+//       Access: Published
+//  Description: Writes the contents of this node and below out to the
+//               indicated stream.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+write_bam_stream(ostream &out) const {
+  nassertr_always(!is_empty(), false);
+
+  BamFile bam_file;
+
+  bool okflag = false;
+
+  if (bam_file.open_write(out)) {
+    if (bam_file.write_object(node())) {
+      okflag = true;
+    }
+    bam_file.close();
+  }
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_common_ancestor
 //       Access: Private, Static
 //  Description: Walks up from both NodePaths to find the first node

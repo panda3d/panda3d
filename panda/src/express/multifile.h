@@ -44,8 +44,11 @@ private:
 
 PUBLISHED:
   BLOCKING bool open_read(const Filename &multifile_name);
+  BLOCKING bool open_read(istream *multifile_stream);
   BLOCKING bool open_write(const Filename &multifile_name);
+  BLOCKING bool open_write(ostream *multifile_stream);
   BLOCKING bool open_read_write(const Filename &multifile_name);
+  BLOCKING bool open_read_write(iostream *multifile_stream);
   BLOCKING void close();
 
   INLINE const Filename &get_multifile_name() const;
@@ -68,6 +71,8 @@ PUBLISHED:
   INLINE const string &get_encryption_password() const;
 
   string add_subfile(const string &subfile_name, const Filename &filename,
+                     int compression_level);
+  string add_subfile(const string &subfile_name, istream *subfile_data,
                      int compression_level);
   string update_subfile(const string &subfile_name, const Filename &filename,
                         int compression_level);
@@ -93,6 +98,7 @@ PUBLISHED:
   BLOCKING INLINE string read_subfile(int index);
   BLOCKING istream *open_read_subfile(int index);
   BLOCKING bool extract_subfile(int index, const Filename &filename);
+  BLOCKING bool extract_subfile_to(int index, ostream &out);
   BLOCKING bool compare_subfile(int index, const Filename &filename);
 
   void output(ostream &out) const;
@@ -102,15 +108,7 @@ PUBLISHED:
 
 public:
   bool read_subfile(int index, string &result);
-
-  // Special interfaces to work with iostreams, not necessarily files.
-  bool open_read(istream *multifile_stream);
-  bool open_write(ostream *multifile_stream);
-  bool open_read_write(iostream *multifile_stream);
-  string add_subfile(const string &subfile_name, istream *subfile_data,
-                     int compression_level);
-
-  bool extract_subfile_to(int index, ostream &out);
+  bool read_subfile(int index, pvector<unsigned char> &result);
 
 private:
   enum SubfileFlags {

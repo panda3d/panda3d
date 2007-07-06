@@ -82,8 +82,10 @@ PUBLISHED:
   INLINE PNMFileType *get_type() const;
   INLINE void set_type(PNMFileType *type);
 
-  bool read_header(const Filename &filename, PNMFileType *type = NULL,
-                   bool report_unknown_type = true);
+  BLOCKING bool read_header(const Filename &filename, PNMFileType *type = NULL,
+                            bool report_unknown_type = true);
+  BLOCKING bool read_header(istream &data, const string &filename = string(),
+                            PNMFileType *type = NULL, bool report_unknown_type = true);
 
   PNMReader *make_reader(const Filename &filename,
                          PNMFileType *type = NULL,
