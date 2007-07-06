@@ -5889,9 +5889,9 @@ set_state_and_transform(const RenderState *target,
     _state._tex_matrix = _target._tex_matrix;
   }
 
-  if (_target._tex_gen != _state._tex_gen) {
+  if (_effective_tex_gen != _state._tex_gen) {
     do_issue_tex_gen();
-    _state._tex_gen = _target._tex_gen;
+    _state._tex_gen = _effective_tex_gen;
   }
   
   if (_target._material != _state._material) {
