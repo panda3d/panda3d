@@ -36,6 +36,7 @@ NotifyCategoryDecl(pnmimage_soft, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_bmp, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_jpg, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_png, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pnmimage_pnm, EXPCL_PANDA, EXPTP_PANDA);
 
 enum SGIStorageType {
   SST_rle = STORAGE_RLE,

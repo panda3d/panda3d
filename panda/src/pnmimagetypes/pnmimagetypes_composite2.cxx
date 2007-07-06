@@ -1,4 +1,5 @@
-
+#include "pnmFileTypePNG.cxx"
+#include "pnmFileTypePNM.cxx"
 #include "pnmFileTypeSGI.cxx"
 #include "pnmFileTypeSGIReader.cxx"
 #include "pnmFileTypeSGIWriter.cxx"

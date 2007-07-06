@@ -1,4 +1,3 @@
-
 #include "config_pnmimagetypes.cxx"
 #include "pnmFileTypeAlias.cxx"
 #include "pnmFileTypeBMPReader.cxx"

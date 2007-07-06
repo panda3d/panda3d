@@ -13,7 +13,8 @@
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h  \
-     pnmFileTypePNG.cxx pnmFileTypePNG.h \
+     pnmFileTypePNG.h \
+     pnmFileTypePNM.h \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h \
      pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h \
@@ -25,6 +26,8 @@
      pnmFileTypeBMP.cxx \
      pnmFileTypeIMG.cxx \
      pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx \
+     pnmFileTypePNG.cxx \
+     pnmFileTypePNM.cxx \
      pnmFileTypeSGI.cxx \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \

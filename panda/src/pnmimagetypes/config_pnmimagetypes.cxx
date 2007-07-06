@@ -25,6 +25,7 @@
 #include "pnmFileTypeBMP.h"
 #include "pnmFileTypeJPG.h"
 #include "pnmFileTypePNG.h"
+#include "pnmFileTypePNM.h"
 #include "pnmFileTypeTIFF.h"
 #include "sgi.h"
 
@@ -43,6 +44,7 @@ NotifyCategoryDefName(pnmimage_soft, "soft", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_bmp, "bmp", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_png, "png", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_pnm, "pnm", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
 
 ConfigVariableEnum<SGIStorageType> sgi_storage_type
@@ -187,6 +189,7 @@ init_libpnmimagetypes() {
   PNMFileTypeIMG::init_type();
   PNMFileTypeSoftImage::init_type();
   PNMFileTypeBMP::init_type();
+  PNMFileTypePNM::init_type();
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::init_type();
 #endif
@@ -206,6 +209,7 @@ init_libpnmimagetypes() {
   tr->register_type(new PNMFileTypeIMG);
   tr->register_type(new PNMFileTypeSoftImage);
   tr->register_type(new PNMFileTypeBMP);
+  tr->register_type(new PNMFileTypePNM);
 #ifdef HAVE_JPEG
   tr->register_type(new PNMFileTypeJPG);
 #endif
@@ -223,6 +227,7 @@ init_libpnmimagetypes() {
   PNMFileTypeIMG::register_with_read_factory();
   PNMFileTypeSoftImage::register_with_read_factory();
   PNMFileTypeBMP::register_with_read_factory();
+  PNMFileTypePNM::register_with_read_factory();
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::register_with_read_factory();
 #endif
