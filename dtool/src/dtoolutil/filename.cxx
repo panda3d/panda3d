@@ -65,6 +65,7 @@ TypeHandle Filename::_type_handle;
 #ifdef WIN32_VC
 #include <direct.h>
 #include <windows.h>
+#include <shlobj.h>
 #endif
 
 // The MSVC 6.0 Win32 SDK lacks the following definitions, so we define them
