@@ -186,6 +186,18 @@ ns_get_environment_variable(const string &var) const {
   if (evi != _variables.end()) {
     return (*evi).second;
   }
+
+  // Some special case variables.  We virtually stuff these values
+  // into the Panda environment, shadowing whatever values they have
+  // the true environment, so they can be used in config files.
+  if (var == "TEMP") {
+    return Filename::get_temp_directory().to_os_specific();
+  } else if (var == "USER_APPDATA") {
+    return Filename::get_user_appdata_directory().to_os_specific();
+  } else if (var == "COMMON_APPDATA") {
+    return Filename::get_common_appdata_directory().to_os_specific();
+  }
+
 #ifdef PREREAD_ENVIRONMENT
   return string();
 #else

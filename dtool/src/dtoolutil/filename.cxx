@@ -53,6 +53,10 @@
 
 bool Filename::_got_temp_directory;
 Filename Filename::_temp_directory;
+bool Filename::_got_user_appdata_directory;
+Filename Filename::_user_appdata_directory;
+bool Filename::_got_common_appdata_directory;
+Filename Filename::_common_appdata_directory;
 TypeHandle Filename::_type_handle;
 
 #ifdef WIN32
@@ -459,21 +463,104 @@ get_temp_directory() {
       }
     }
 
-    if (!_got_temp_directory) {
-      // if $TMP or $TEMP contain bogus strings, GetTempPath() may
-      // return a bogus string.
-      _temp_directory = ExecutionEnvironment::get_cwd();
-      _got_temp_directory = true;
-    }
-
 #else
     // Posix case.
     _temp_directory = "/tmp";
     _got_temp_directory = true;
 #endif  // WIN32
+
+    if (!_got_temp_directory) {
+      // Fallback case.
+      _temp_directory = ExecutionEnvironment::get_cwd();
+      _got_temp_directory = true;
+    }
   }
 
   return _temp_directory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_user_appdata_directory
+//       Access: Published
+//  Description: Returns a path to a system-defined directory
+//               appropriate for creating a subdirectory for storing
+//               application-specific data, specific to the current
+//               user.
+////////////////////////////////////////////////////////////////////
+const Filename &Filename::
+get_user_appdata_directory() {
+  if (!_got_user_appdata_directory) {
+#ifdef WIN32
+    char buffer[MAX_PATH];
+
+    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
+      _user_appdata_directory = from_os_specific(buffer);
+      if (_user_appdata_directory.is_directory()) {
+        if (_user_appdata_directory.make_canonical()) {
+          _got_user_appdata_directory = true;
+        }
+      }
+    }
+
+#else
+    // Posix case.
+    char *home = getenv("HOME");
+    if (home != (char *)NULL) {
+      _user_appdata_directory = from_os_specific(home);
+      if (_user_appdata_directory.is_directory()) {
+        if (_user_appdata_directory.make_canonical()) {
+          _got_user_appdata_directory = true;
+        }
+      }
+    }
+#endif  // WIN32
+
+    if (!_got_user_appdata_directory) {
+      // Fallback case.
+      _user_appdata_directory = ExecutionEnvironment::get_cwd();
+      _got_user_appdata_directory = true;
+    }
+  }
+
+  return _user_appdata_directory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_common_appdata_directory
+//       Access: Published
+//  Description: Returns a path to a system-defined directory
+//               appropriate for creating a subdirectory for storing
+//               application-specific data, common to all users.
+////////////////////////////////////////////////////////////////////
+const Filename &Filename::
+get_common_appdata_directory() {
+  if (!_got_common_appdata_directory) {
+#ifdef WIN32
+    char buffer[MAX_PATH];
+
+    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_COMMON_APPDATA, true)) {
+      _common_appdata_directory = from_os_specific(buffer);
+      if (_common_appdata_directory.is_directory()) {
+        if (_common_appdata_directory.make_canonical()) {
+          _got_common_appdata_directory = true;
+        }
+      }
+    }
+
+#else
+    // Posix case.
+    _common_appdata_directory = "/var";
+    _got_common_appdata_directory = true;
+#endif  // WIN32
+
+    if (!_got_common_appdata_directory) {
+      // Fallback case.
+      _common_appdata_directory = ExecutionEnvironment::get_cwd();
+      _got_common_appdata_directory = true;
+    }
+  }
+
+  return _common_appdata_directory;
 }
 
 ////////////////////////////////////////////////////////////////////

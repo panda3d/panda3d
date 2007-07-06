@@ -88,6 +88,8 @@ PUBLISHED:
                             Type type = T_general);
 
   static const Filename &get_temp_directory();
+  static const Filename &get_user_appdata_directory();
+  static const Filename &get_common_appdata_directory();
 
   // Assignment is via the = operator.
   INLINE Filename &operator = (const string &filename);
@@ -222,6 +224,10 @@ protected:
 
   static bool _got_temp_directory;
   static Filename _temp_directory;
+  static bool _got_user_appdata_directory;
+  static Filename _user_appdata_directory;
+  static bool _got_common_appdata_directory;
+  static Filename _common_appdata_directory;
 
 public:
   static TypeHandle get_class_type() {
