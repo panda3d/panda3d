@@ -26,21 +26,9 @@
 #include "register_type.h"
 
 #ifndef USE_STL_ALLOCATOR
-// If we're not using custom allocators, we still need to use make a
-// custom class definition, so we can discard the type_handle
-// parameter.
-template<class Type>
-class pvector : public vector<Type> {
-public:
-  typedef vector<Type> base_class;
-  typedef TYPENAME base_class::size_type size_type;
-
-  pvector(TypeHandle type_handle = pvector_type_handle) : base_class() { }
-  pvector(const pvector<Type> &copy) : base_class(copy) { }
-  pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type()) { }
-  pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value) { }
-  pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end) { }
-};
+// If we're not using custom allocators, just use the standard class
+// definition.
+#define pvector vector
 
 #else
 
