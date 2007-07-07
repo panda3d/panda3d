@@ -64,7 +64,6 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
 GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
   _contexts = NULL;
-  _endian_reversed = false;
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -97,7 +96,6 @@ GeomVertexArrayData(const GeomVertexArrayFormat *array_format,
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 
   _contexts = NULL;
-  _endian_reversed = false;
 
   set_lru_size(0);
   nassertv(_array_format->is_registered());
@@ -116,7 +114,6 @@ GeomVertexArrayData(const GeomVertexArrayData &copy) :
   _cycler(copy._cycler)
 {
   _contexts = NULL;
-  _endian_reversed = false;
 
   copy.mark_used_lru();
 
@@ -511,11 +508,14 @@ finalize(BamReader *manager) {
   manager->change_pointer(_array_format, new_array_format);
   _array_format = new_array_format;
 
-  if (_endian_reversed) {
-    // Now is the time to endian-reverse the data.
-    VertexDataBuffer new_buffer(cdata->_buffer.get_size());
-    reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(true), cdata->_buffer.get_size());
-    cdata->_buffer.swap(new_buffer);
+  PT(BamAuxData) aux_data = (BamAuxData *)manager->get_aux_data(this, "");
+  if (aux_data != (BamAuxData *)NULL) {
+    if (aux_data->_endian_reversed) {
+      // Now is the time to endian-reverse the data.
+      VertexDataBuffer new_buffer(cdata->_buffer.get_size());
+      reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(true), cdata->_buffer.get_size());
+      cdata->_buffer.swap(new_buffer);
+    }
   }
 
   set_lru_size(cdata->_buffer.get_size());
@@ -632,13 +632,15 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
     scan.skip_bytes(size);
   }
 
+  bool endian_reversed = false;
+
   if (manager->get_file_endian() != BE_native) {
     // For non-native endian files, we have to convert the data.  
 
     if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {
       // But we can't do that until we've completed the _array_format
       // pointer, which tells us how to convert it.
-      array_data->_endian_reversed = true;
+      endian_reversed = true;
     } else {
       // Since we have the _array_format pointer now, we can reverse
       // it immediately (and we should, to support threaded CData
@@ -647,6 +649,12 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
       array_data->reverse_data_endianness(new_buffer.get_write_pointer(), _buffer.get_read_pointer(true), _buffer.get_size());
       _buffer.swap(new_buffer);
     }
+  }
+
+  if (endian_reversed) {
+    PT(BamAuxData) aux_data = new BamAuxData;
+    aux_data->_endian_reversed = endian_reversed;
+    manager->set_aux_data(array_data, "", aux_data);
   }
 
   array_data->set_lru_size(_buffer.get_size());

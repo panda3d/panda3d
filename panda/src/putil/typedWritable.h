@@ -50,6 +50,7 @@ public:
   virtual void write_datagram(BamWriter *, Datagram &);
 
   virtual int complete_pointers(TypedWritable **p_list, BamReader *manager);
+  virtual bool require_fully_complete() const;
 
   virtual void finalize(BamReader *manager);
 

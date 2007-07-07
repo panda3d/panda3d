@@ -85,7 +85,21 @@ int TypedWritable::
 complete_pointers(TypedWritable **, BamReader *) {
   return 0;
 }
-          
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool TypedWritable::
+require_fully_complete() const {
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedWritable::finalize

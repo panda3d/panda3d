@@ -25,6 +25,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "config_pgraph.h"
+#include "attribNodeRegistry.h"
 
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
@@ -937,7 +938,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (fi = _off_planes.begin(); fi != _off_planes.end(); ++fi) {
     NodePath plane = (*fi);
 
-    // Whoops, we don't have a way to write out a NodePath right now.
+    // Since we can't write out a NodePath, we write out just the
+    // plain PandaNode.  The user can use the AttribNodeRegistry on
+    // re-read if there is any ambiguity that needs to be resolved.
     manager->write_pointer(dg, plane.node());
   }
 
@@ -961,26 +964,44 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int ClipPlaneAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
+  AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
   Planes::iterator ci = _off_planes.begin();
   while (ci != _off_planes.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
     NodePath np(node);
-    (*ci) = np;
+    (*ci) = areg->lookup_node(np);
     ++ci;
   }
+  _off_planes.sort();
 
   ci = _on_planes.begin();
   while (ci != _on_planes.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
     NodePath np(node);
-    (*ci) = np;
+    (*ci) = areg->lookup_node(np);
     ++ci;
   }
+  _on_planes.sort();
 
   return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool ClipPlaneAttrib::
+require_fully_complete() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1026,19 +1047,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   int num_off_planes = scan.get_uint16();
     
-  // Push back a NULL pointer for each off Plane for now, until
-  // we get the actual list of pointers later in complete_pointers().
+  // Push back an empty NodePath for each off Plane for now, until we
+  // get the actual list of pointers later in complete_pointers().
   _off_planes.reserve(num_off_planes);
   int i;
   for (i = 0; i < num_off_planes; i++) {
     manager->read_pointer(scan);
-    _off_planes.push_back(NULL);
+    _off_planes.push_back(NodePath());
   }
     
   int num_on_planes = scan.get_uint16();
   _on_planes.reserve(num_on_planes);
   for (i = 0; i < num_on_planes; i++) {
     manager->read_pointer(scan);
-    _on_planes.push_back(NULL);
+    _on_planes.push_back(NodePath());
   }
 }

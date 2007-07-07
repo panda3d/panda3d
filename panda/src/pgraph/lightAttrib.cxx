@@ -27,6 +27,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "config_pgraph.h"
+#include "attribNodeRegistry.h"
 
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;
@@ -916,7 +917,9 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
     NodePath light = (*fi);
 
-    // Whoops, we don't have a way to write out a NodePath right now.
+    // Since we can't write out a NodePath, we write out just the
+    // plain PandaNode.  The user can use the AttribNodeRegistry on
+    // re-read if there is any ambiguity that needs to be resolved.
     manager->write_pointer(dg, light.node());
   }
 
@@ -940,26 +943,44 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int LightAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
+  AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
   Lights::iterator ci = _off_lights.begin();
   while (ci != _off_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
     NodePath np(node);
-    (*ci) = np;
+    (*ci) = areg->lookup_node(np);
     ++ci;
   }
+  _off_lights.sort();
 
   ci = _on_lights.begin();
   while (ci != _on_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
     NodePath np(node);
-    (*ci) = np;
+    (*ci) = areg->lookup_node(np);
     ++ci;
   }
+  _on_lights.sort();
 
   return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool LightAttrib::
+require_fully_complete() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1005,19 +1026,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   int num_off_lights = scan.get_uint16();
     
-  // Push back a NULL pointer for each off Light for now, until
-  // we get the actual list of pointers later in complete_pointers().
+  // Push back an empty NodePath for each off Light for now, until we
+  // get the actual list of pointers later in complete_pointers().
   _off_lights.reserve(num_off_lights);
   int i;
   for (i = 0; i < num_off_lights; i++) {
     manager->read_pointer(scan);
-    _off_lights.push_back(NULL);
+    _off_lights.push_back(NodePath());
   }
     
   int num_on_lights = scan.get_uint16();
   _on_lights.reserve(num_on_lights);
   for (i = 0; i < num_on_lights; i++) {
     manager->read_pointer(scan);
-    _on_lights.push_back(NULL);
+    _on_lights.push_back(NodePath());
   }
 }

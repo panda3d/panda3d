@@ -135,20 +135,44 @@ init() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::set_aux_data
 //       Access: Public
-//  Description: Associates an arbitrary pointer to the bam reader
-//               with the indicated name.  The name is an arbitrary
-//               user-defined key to access the data later.  This data
-//               is typically queried by objects reading themselves
-//               from the bam file; this is intended to provide some
-//               context information to objects in the bam file.  Set
-//               the aux data to NULL to remove it.
+//  Description: Associates an arbitrary block of data with the
+//               indicated object (or NULL), and the indicated name.
+//
+//               This is intended to provide a place for temporary
+//               storage for objects reading themselves from the bam
+//               file.  To use it, inherit from BamReader::AuxData and
+//               store whatever data you like there.  Then associate
+//               your AuxData with the object as it is being read with
+//               set_aux_data().  You may later set the aux data to
+//               NULL to remove it; or it will automatically be
+//               removed (and deleted) after finalize() is called for
+//               the object in question.
+//
+//               If the TypedWritable pointer is NULL, the the aux
+//               data is stored globally for the BamReader in general.
+//               This pointer is available to any bam objects, and
+//               will not be automatically removed until the BamReader
+//               itself destructs.
+//
+//               In either case, the name is just an arbitrary
+//               user-defined key.  If there is already a data pointer
+//               stored for the obj/name pair, that data pointer will
+//               be replaced (and deleted).
 ////////////////////////////////////////////////////////////////////
 void BamReader::
-set_aux_data(const string &name, void *data) {
+set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
   if (data == (void *)NULL) {
-    _aux_data.erase(name);
+    AuxDataTable::iterator ti = _aux_data.find(obj);
+    if (ti != _aux_data.end()) {
+      AuxDataNames &names = (*ti).second;
+      names.erase(name);
+      if (names.empty()) {
+        _aux_data.erase(ti);
+      }
+    }
+
   } else {
-    _aux_data[name] = data;
+    _aux_data[obj][name] = data;
   }
 }
 
@@ -157,15 +181,19 @@ set_aux_data(const string &name, void *data) {
 //       Access: Public
 //  Description: Returns the pointer previously associated with the
 //               bam reader by a previous call to set_aux_data(), or
-//               NULL if the data with the indicated key has not been
-//               set.
+//               NULL if data with the indicated key has not been set.
 ////////////////////////////////////////////////////////////////////
-void *BamReader::
-get_aux_data(const string &name) const {
-  AuxData::const_iterator di = _aux_data.find(name);
-  if (di != _aux_data.end()) {
-    return (*di).second;
+BamReader::AuxData *BamReader::
+get_aux_data(TypedWritable *obj, const string &name) const {
+  AuxDataTable::const_iterator ti = _aux_data.find(obj);
+  if (ti != _aux_data.end()) {
+    const AuxDataNames &names = (*ti).second;
+    AuxDataNames::const_iterator ni = names.find(name);
+    if (ni != names.end()) {
+      return (*ni).second;
+    }
   }
+
   return NULL;
 }
 
@@ -272,8 +300,31 @@ resolve() {
   do {
     all_completed = true;
     any_completed_this_pass = false;
-
-    // Walk through all the objects that still have outstanding pointers.
+    
+    // First do the PipelineCycler objects.    
+    CyclerPointers::iterator ci;
+    ci = _cycler_pointers.begin();
+    while (ci != _cycler_pointers.end()) {
+      PipelineCyclerBase *cycler = (*ci).first;
+      const vector_int &pointer_ids = (*ci).second;
+      
+      if (resolve_cycler_pointers(cycler, pointer_ids)) {
+        // Now remove this cycler from the list of things that need
+        // completion.  We have to be a bit careful when deleting things
+        // from the STL container while we are traversing it.
+        CyclerPointers::iterator old = ci;
+        ++ci;
+        _cycler_pointers.erase(old);
+        any_completed_this_pass = true;
+        
+      } else {
+        // Couldn't complete this cycler yet; it'll wait for next time.
+        ++ci;
+        all_completed = false;
+      }
+    }
+    
+    // Now do the main objects.
     ObjectPointers::iterator oi;
     oi = _object_pointers.begin();
     while (oi != _object_pointers.end()) {
@@ -320,31 +371,8 @@ resolve() {
         all_completed = false;
       }
     }
+
   } while (!all_completed && any_completed_this_pass);
-
-  // Also do the PipelineCycler objects.  We only need to try these
-  // once, since they don't depend on each other.
-
-  CyclerPointers::iterator ci;
-  ci = _cycler_pointers.begin();
-  while (ci != _cycler_pointers.end()) {
-    PipelineCyclerBase *cycler = (*ci).first;
-    const vector_int &pointer_ids = (*ci).second;
-    
-    if (resolve_cycler_pointers(cycler, pointer_ids)) {
-      // Now remove this cycler from the list of things that need
-      // completion.  We have to be a bit careful when deleting things
-      // from the STL container while we are traversing it.
-      CyclerPointers::iterator old = ci;
-      ++ci;
-      _cycler_pointers.erase(old);
-      
-    } else {
-      // Couldn't complete this cycler yet; it'll wait for next time.
-      ++ci;
-      all_completed = false;
-    }
-  }
 
   if (all_completed) {
     finalize();
@@ -394,6 +422,12 @@ change_pointer(const TypedWritable *orig_pointer, const TypedWritable *new_point
   if (ci == _created_objs_by_pointer.end()) {
     // No record of this object.
     return false;
+  }
+
+  if (bam_cat.is_spam()) {
+    bam_cat.spam()
+      << "change_pointer(" << (void *)orig_pointer << ", " 
+      << (void *)new_pointer << ") (" << new_pointer->get_type() << ")\n";
   }
 
   const vector_int &old_refs = (*ci).second;
@@ -638,10 +672,14 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 register_finalize(TypedWritable *whom) {
-  if (whom == TypedWritable::Null) {
-    bam_cat.error() << "Can't register a null pointer to finalize!" << endl;
-    return;
+  nassertv(whom != (TypedWritable *)NULL);
+
+  if (bam_cat.is_spam()) {
+    bam_cat.spam()
+      << "register_finalize(" << (void *)whom << ") (" << whom->get_type()
+      << ")\n";
   }
+
   _finalize_list.insert(whom);
 }
 
@@ -698,6 +736,11 @@ finalize_now(TypedWritable *whom) {
   Finalize::iterator fi = _finalize_list.find(whom);
   if (fi != _finalize_list.end()) {
     _finalize_list.erase(fi);
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+        << "finalizing " << (void *)whom << " (" << whom->get_type()
+        << ")\n";
+    }
     whom->finalize(this);
   }
 }
@@ -994,7 +1037,7 @@ p_read_object() {
     } else {
       if (bam_cat.is_spam()) {
         bam_cat.spam()
-          << "Read a " << object->get_type() << "\n";
+          << "Read a " << object->get_type() << ": " << (void *)object << "\n";
       }
     }
   }
@@ -1018,12 +1061,17 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
   // given object until we have *all* outstanding pointers for
   // that object.
   bool is_complete = true;
+
+  // Some objects further require all of their nested objects to have
+  // been completed (i.e. complete_pointers has been called on each
+  // nested object) before they can themselves be completed.
+  bool require_fully_complete = object->require_fully_complete();
+
   vector_typedWritable references;
-  
+
   vector_int::const_iterator pi;
   for (pi = pointer_ids.begin(); pi != pointer_ids.end() && is_complete; ++pi) {
     int child_id = (*pi);
-    
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
       references.push_back((TypedWritable *)NULL);
@@ -1042,8 +1090,15 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
           is_complete = false;
 
         } else {
-          // Yes, it's ready.
-          references.push_back(child_obj._ptr);
+          if (require_fully_complete && 
+              _object_pointers.find(child_id) != _object_pointers.end()) {
+            // It's not yet complete itself.
+            is_complete = false;
+            
+          } else {
+            // Yes, it's ready.
+            references.push_back(child_obj._ptr);
+          }
         }
       }
     }
@@ -1051,6 +1106,14 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
       
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
+    nassertr(references.size() == pointer_ids.size(), false);
+
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+        << "complete_pointers for " << (void *)object
+        << " (" << object->get_type() << "), " << references.size()
+        << " pointers.\n";
+    }
     int num_completed = object->complete_pointers(&references[0], this);
     if (num_completed != (int)references.size()) {
       bam_cat.warning()
@@ -1058,6 +1121,13 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
         << " of " << references.size() << " pointers.\n";
     }
     return true;
+
+  } else {
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+        << "not ready: complete_pointers for " << (void *)object
+        << " (" << object->get_type() << ")\n";
+    }
   }
 
   return false;
@@ -1115,6 +1185,11 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
     CycleData *cdata = cycler->write(Thread::get_current_thread());
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+        << "complete_pointers for CycleData object " << (void *)cdata
+        << "\n";
+    }
     int num_completed = cdata->complete_pointers(&references[0], this);
     cycler->release_write(cdata);
     if (num_completed != (int)references.size()) {
@@ -1147,8 +1222,42 @@ finalize() {
     TypedWritable *object = (*fi);
     nassertv(object != (TypedWritable *)NULL);
     _finalize_list.erase(fi);
+    if (bam_cat.is_spam()) {
+      bam_cat.spam()
+        << "finalizing " << (void *)object << " (" << object->get_type()
+        << ")\n";
+    }
     object->finalize(this);
-
+    _aux_data.erase(object);
     fi = _finalize_list.begin();
   }
+
+  // Now clear the aux data of all objects, except the NULL object.
+  if (!_aux_data.empty()) {
+    AuxDataTable::iterator ti = _aux_data.find((TypedWritable *)NULL);
+
+    if (ti != _aux_data.end()) {
+      if (_aux_data.size() > 1) {
+        // Move the NULL data to the new table; remove the rest.
+        AuxDataTable new_aux_data;
+        AuxDataTable::iterator nti = 
+          new_aux_data.insert(AuxDataTable::value_type(NULL, AuxDataNames())).first;
+        (*nti).second.swap((*ti).second);
+        _aux_data.swap(new_aux_data);
+      }
+    } else {
+      // There's no NULL data; clear the whole table.
+      _aux_data.clear();
+    }
+  }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::AuxData::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+BamReader::AuxData::
+~AuxData() {
+}
+

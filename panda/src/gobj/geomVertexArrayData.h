@@ -36,6 +36,7 @@
 #include "simpleLru.h"
 #include "vertexDataBuffer.h"
 #include "config_gobj.h"
+#include "bamReader.h"
 
 class PreparedGraphicsObjects;
 class VertexBufferContext;
@@ -135,9 +136,13 @@ private:
   typedef pmap<PreparedGraphicsObjects *, VertexBufferContext *> Contexts;
   Contexts *_contexts;
 
-  // This is only used when reading from a bam file.  It is set true
-  // to indicate the data must be endian-reversed in finalize().
-  bool _endian_reversed;
+  // This data is only needed when reading from a bam file.
+  class BamAuxData : public BamReader::AuxData {
+  public:
+    // set true to indicate the data must be endian-reversed in
+    // finalize().
+    bool _endian_reversed;
+  };
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {

@@ -174,6 +174,15 @@ get_datagram(Datagram &datagram) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::AuxData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BamReader::AuxData::
+AuxData() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: parse_params
 //       Access: Private, Static
 //  Description: Takes in a FactoryParams, passed from a WritableFactory

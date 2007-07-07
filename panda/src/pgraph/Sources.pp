@@ -17,6 +17,7 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
+    attribNodeRegistry.I attribNodeRegistry.h \
     attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
@@ -127,6 +128,7 @@
     alphaTestAttrib.cxx \  
     ambientLight.cxx \
     antialiasAttrib.cxx \
+    attribNodeRegistry.cxx \
     attribSlots.cxx \
     audioVolumeAttrib.cxx \
     auxSceneData.cxx \
@@ -232,6 +234,7 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
+    attribNodeRegistry.I attribNodeRegistry.h \
     attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \

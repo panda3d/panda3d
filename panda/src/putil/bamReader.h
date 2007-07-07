@@ -98,8 +98,10 @@ public:
 
   bool init();
 
-  void set_aux_data(const string &name, void *data);
-  void *get_aux_data(const string &name) const;
+  class AuxData;
+  void set_aux_data(TypedWritable *obj, const string &name, AuxData *data);
+  AuxData *get_aux_data(TypedWritable *obj, const string &name) const;
+
   INLINE const Filename &get_filename() const;
   
   TypedWritable *read_object();
@@ -114,10 +116,6 @@ public:
 
   INLINE int get_current_major_ver() const;
   INLINE int get_current_minor_ver() const;
-
-  // This special TypeHandle is written to the bam file to indicate an
-  // object id is no longer needed.
-  static TypeHandle _remove_flag;
 
 public:
   // Functions to support classes that read themselves from the Bam.
@@ -160,6 +158,20 @@ private:
   void finalize();
 
   INLINE bool get_datagram(Datagram &datagram);
+
+public:
+  // This special TypeHandle is written to the bam file to indicate an
+  // object id is no longer needed.
+  static TypeHandle _remove_flag;
+
+  // Inherit from this class to piggyback additional temporary data on
+  // the bamReader (via set_aux_data() and get_aux_data()) for any
+  // particular objects during the bam reading process.
+  class AuxData : public ReferenceCount {
+  public:
+    INLINE AuxData();
+    virtual ~AuxData();
+  };
 
 private:
   static WritableFactory *_factory;
@@ -234,8 +246,9 @@ private:
   static NewTypes _new_types;
 
   // This is used in support of set_aux_data() and get_aux_data().
-  typedef phash_map<string, void *, string_hash> AuxData;
-  AuxData _aux_data;
+  typedef pmap<string, PT(AuxData)> AuxDataNames;
+  typedef phash_map<TypedWritable *, AuxDataNames, pointer_hash> AuxDataTable;
+  AuxDataTable _aux_data;
 
   int _file_major, _file_minor;
   BamEndian _file_endian;
