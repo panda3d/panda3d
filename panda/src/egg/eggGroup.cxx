@@ -880,6 +880,8 @@ string_cs_type(const string &strval) {
     return CST_inv_sphere;
   } else if (cmp_nocase_uh(strval, "tube") == 0) {
     return CST_tube;
+  } else if (cmp_nocase_uh(strval, "floor-mesh") == 0) {    
+    return CST_floor_mesh;
   } else {
     return CST_none;
   }
