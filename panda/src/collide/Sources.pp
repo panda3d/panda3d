@@ -27,6 +27,7 @@
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h  \
     collisionPolygon.I collisionPolygon.h \
+    collisionFloorMesh.I collisionFloorMesh.h \
     collisionRay.I collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h  \
@@ -55,6 +56,7 @@
     collisionNode.cxx \
     collisionPlane.cxx  \
     collisionPolygon.cxx \
+    collisionFloorMesh.cxx \
     collisionRay.cxx \
     collisionRecorder.cxx \
     collisionSegment.cxx  \
@@ -83,6 +85,7 @@
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h \
     collisionPolygon.I collisionPolygon.h \
+    collisionFloorMesh.I collisionFloorMesh.h \
     collisionRay.I collisionRay.h \
     collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h \

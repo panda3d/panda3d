@@ -79,6 +79,7 @@
 #include "collisionTube.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
+#include "collisionFloorMesh.h"
 #include "parametricCurve.h"
 #include "nurbsCurve.h"
 #include "nurbsCurveInterface.h"
@@ -2593,6 +2594,10 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
   case EggGroup::CST_tube:
     make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
     break;
+
+  case EggGroup::CST_floor_mesh:
+    make_collision_floor_mesh(egg_group, cnode, start_group->get_collide_flags());
+    break;
   }
 
   if ((start_group->get_collide_flags() & EggGroup::CF_descend) != 0) {
@@ -2639,6 +2644,28 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
   }
 }
 
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::make_collision_floor_mesh
+//       Access: Private
+//  Description: Creates a single CollisionPolygon corresponding
+//               to the first polygon associated with this group.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
+                       EggGroup::CollideFlags flags) {
+
+  printf("making floor mesh\n");
+  std::cout << *egg_group;
+  EggGroup *geom_group = find_collision_geometry(egg_group, flags);
+  
+
+  if (geom_group != (EggGroup *)NULL) {
+    create_collision_floor_mesh(cnode, geom_group,flags);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_collision_polygon
 //       Access: Private
@@ -2667,6 +2694,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
     }
   }
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_collision_polyset
@@ -3110,6 +3138,85 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       }        
     }
   }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::create_collision_floor_mesh
+//       Access: Private
+//  Description: Creates a CollisionFloorMesh from the
+//               indicated EggPolygons, and adds it to the indicated
+//               CollisionNode.
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+create_collision_floor_mesh(CollisionNode *cnode, 
+                          EggGroup *parent_group,
+                          EggGroup::CollideFlags flags) {
+
+  PT(EggGroup) group = new EggGroup;
+  EggVertexPool pool("floorMesh");
+  pool.local_object();
+  EggGroup::const_iterator egi;
+  for (egi = parent_group->begin(); egi != parent_group->end(); ++egi) {
+    if ((*egi)->is_of_type(EggPolygon::get_class_type())) {
+      EggPolygon * poly = DCAST(EggPolygon, *egi);
+      if (!poly->triangulate_into(group, false)) {
+        egg2pg_cat.info()
+          << "Ignoring degenerate collision polygon in "
+          << parent_group->get_name()
+          << "\n";
+        return;
+      }
+      
+    } 
+  }
+  if(group->size() == 0) {
+    egg2pg_cat.info()
+      << "empty collision solid\n";
+    return;
+  }
+  PT(CollisionFloorMesh) cm = new CollisionFloorMesh;
+  pvector<CollisionFloorMesh::TriangleIndices> triangles;
+
+  EggGroup::iterator ci;
+  for (ci = group->begin(); ci != group->end(); ++ci) {
+    EggPolygon *poly = DCAST(EggPolygon, *ci);
+    printf("num verts = %d\n",poly->get_num_vertices());
+    if (poly->get_num_vertices() == 3) {
+      printf("found tri\n");
+      EggPolygon::const_iterator vi;
+      EggVertex p1,p2,p3;
+      vi = poly->begin();
+      CollisionFloorMesh::TriangleIndices tri;
+      
+      //generate a shared vertex triangle from the vertex pool
+      tri.p1=pool.create_unique_vertex(*poly->get_vertex(0))->get_index();
+      ++vi;
+      tri.p2=pool.create_unique_vertex(*poly->get_vertex(1))->get_index();
+      ++vi;
+      tri.p3=pool.create_unique_vertex(*poly->get_vertex(2))->get_index();
+      
+      triangles.push_back(tri);
+    }
+  }
+  
+  //Now we have a set of triangles, and a pool
+  PT(CollisionFloorMesh) csfloor = new CollisionFloorMesh;
+
+
+  EggVertexPool::const_iterator vi;
+  for (vi = pool.begin(); vi != pool.end(); vi++) {
+    csfloor->add_vertex((*vi)->get_pos3());
+  }
+
+  pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;
+
+  for (ti = triangles.begin(); ti != triangles.end(); ti++) {
+    CollisionFloorMesh::TriangleIndices triangle = *ti;
+    csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
+  }
+  printf ("cfloor %d, %d\n", csfloor->get_num_vertices(), csfloor->get_num_triangles());
+  cnode->add_solid(csfloor);
 }
 
 

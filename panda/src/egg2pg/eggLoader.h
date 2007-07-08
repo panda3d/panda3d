@@ -61,6 +61,7 @@ class PolylightNode;
 class EggRenderState;
 class CharacterMaker;
 
+
 ////////////////////////////////////////////////////////////////////
 //       Class : EggLoader
 // Description : Converts an egg data structure, possibly read from an
@@ -177,6 +178,8 @@ private:
                                  EggGroup::CollideFlags flags);
   void make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
                            EggGroup::CollideFlags flags);
+  void make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
+                           EggGroup::CollideFlags flags);
   void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group, 
@@ -184,6 +187,10 @@ private:
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
                                          EggGroup *parent_group);
   void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
+                                 EggGroup *parent_group,
+                                 EggGroup::CollideFlags flags);
+
+  void create_collision_floor_mesh(CollisionNode *cnode, 
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 

@@ -1,6 +1,7 @@
 #include "collisionNode.cxx"
 #include "collisionPlane.cxx"
 #include "collisionPolygon.cxx"
+#include "collisionFloorMesh.cxx"
 #include "collisionRay.cxx"
 #include "collisionRecorder.cxx"
 #include "collisionSegment.cxx"
