@@ -5866,10 +5866,13 @@ set_state_and_transform(const RenderState *target,
     determine_effective_texture();
     int prev_active = _num_active_texture_stages;
     do_issue_texture();
-    if (prev_active != _num_active_texture_stages) {
-      _state._tex_gen = 0;
-      _state._tex_matrix = 0;
-    }
+
+    // Since the TexGen and TexMatrix states depend partly on the
+    // particular set of textures in use, we should force both of
+    // those to be reissued every time we change the texture state.
+    _state._tex_gen = 0;
+    _state._tex_matrix = 0;
+
     _state._texture = _target._texture;
   }
   
