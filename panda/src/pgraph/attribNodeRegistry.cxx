@@ -43,12 +43,20 @@ AttribNodeRegistry() {
 //               files that reference an attribute node of the same
 //               type and the same name are loaded, they will quietly
 //               be redirected to reference this NodePath.
+//
+//               If there is already a node matching the indicated
+//               name and type, it will be replaced.
 ////////////////////////////////////////////////////////////////////
 void AttribNodeRegistry::
 add_node(const NodePath &attrib_node) {
   nassertv(!attrib_node.is_empty());
   MutexHolder holder(_lock);
-  _entries.insert(Entry(attrib_node));
+
+  pair<Entries::iterator, bool> result = _entries.insert(Entry(attrib_node));
+  if (!result.second) {
+    // Replace an existing node.
+    (*result.first)._node = attrib_node;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
