@@ -325,6 +325,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual bool require_fully_complete() const;
 
   virtual void finalize(BamReader *manager);
 

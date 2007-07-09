@@ -301,35 +301,11 @@ resolve() {
     all_completed = true;
     any_completed_this_pass = false;
     
-    // First do the PipelineCycler objects.    
-    CyclerPointers::iterator ci;
-    ci = _cycler_pointers.begin();
-    while (ci != _cycler_pointers.end()) {
-      PipelineCyclerBase *cycler = (*ci).first;
-      const vector_int &pointer_ids = (*ci).second;
-      
-      if (resolve_cycler_pointers(cycler, pointer_ids)) {
-        // Now remove this cycler from the list of things that need
-        // completion.  We have to be a bit careful when deleting things
-        // from the STL container while we are traversing it.
-        CyclerPointers::iterator old = ci;
-        ++ci;
-        _cycler_pointers.erase(old);
-        any_completed_this_pass = true;
-        
-      } else {
-        // Couldn't complete this cycler yet; it'll wait for next time.
-        ++ci;
-        all_completed = false;
-      }
-    }
-    
-    // Now do the main objects.
     ObjectPointers::iterator oi;
     oi = _object_pointers.begin();
     while (oi != _object_pointers.end()) {
       int object_id = (*oi).first;
-      const vector_int &pointer_ids = (*oi).second;
+      PointerReference &pref = (*oi).second;
 
       CreatedObjs::iterator ci = _created_objs.find(object_id);
       nassertr(ci != _created_objs.end(), false);
@@ -338,7 +314,7 @@ resolve() {
       
       TypedWritable *object_ptr = created_obj._ptr;
 
-      if (resolve_object_pointers(object_ptr, pointer_ids)) {
+      if (resolve_object_pointers(object_ptr, pref)) {
         // Now remove this object from the list of things that need
         // completion.  We have to be a bit careful when deleting things
         // from the STL container while we are traversing it.
@@ -574,12 +550,13 @@ read_pointer(DatagramIterator &scan) {
   // Read the object ID, and associate it with the requesting object.
   int object_id = read_object_id(scan);
 
+  PointerReference &pref = _object_pointers[requestor_id];
   if (_reading_cycler == (PipelineCyclerBase *)NULL) {
     // This is not being read within a read_cdata() call.
-    _object_pointers[requestor_id].push_back(object_id);
+    pref._objects.push_back(object_id);
   } else {
     // This *is* being read within a read_cdata() call.
-    _cycler_pointers[_reading_cycler].push_back(object_id);
+    pref._cycler_pointers[_reading_cycler].push_back(object_id);
   }
 
   // If the object ID is zero (which indicates a NULL pointer), we
@@ -1054,7 +1031,39 @@ p_read_object() {
 //               and returns true; otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
 bool BamReader::
-resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
+resolve_object_pointers(TypedWritable *object, 
+                        BamReader::PointerReference &pref) {
+  // Some objects further require all of their nested objects to have
+  // been completed (i.e. complete_pointers has been called on each
+  // nested object) before they can themselves be completed.
+  bool require_fully_complete = object->require_fully_complete();
+
+  // First do the PipelineCycler objects.    
+  CyclerPointers::iterator ci;
+  ci = pref._cycler_pointers.begin();
+  while (ci != pref._cycler_pointers.end()) {
+    PipelineCyclerBase *cycler = (*ci).first;
+    const vector_int &pointer_ids = (*ci).second;
+      
+    if (resolve_cycler_pointers(cycler, pointer_ids, require_fully_complete)) {
+      // Now remove this cycler from the list of things that need
+      // completion.  We have to be a bit careful when deleting things
+      // from the STL container while we are traversing it.
+      CyclerPointers::iterator old = ci;
+      ++ci;
+      pref._cycler_pointers.erase(old);
+      
+    } else {
+      // Couldn't complete this cycler yet; it'll wait for next time.
+      ++ci;
+    }
+  }
+
+  if (!pref._cycler_pointers.empty()) {
+    // If we didn't get all the cyclers, we have to wait.
+    return false;
+  }
+  
   // Now make sure we have all of the pointers this object is
   // waiting for.  If any of the pointers has not yet been read
   // in, we can't resolve this object--we can't do anything for a
@@ -1062,15 +1071,12 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
   // that object.
   bool is_complete = true;
 
-  // Some objects further require all of their nested objects to have
-  // been completed (i.e. complete_pointers has been called on each
-  // nested object) before they can themselves be completed.
-  bool require_fully_complete = object->require_fully_complete();
-
   vector_typedWritable references;
 
   vector_int::const_iterator pi;
-  for (pi = pointer_ids.begin(); pi != pointer_ids.end() && is_complete; ++pi) {
+  for (pi = pref._objects.begin(); 
+       pi != pref._objects.end() && is_complete; 
+       ++pi) {
     int child_id = (*pi);
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
@@ -1106,7 +1112,7 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
       
   if (is_complete) {
     // Okay, here's the complete list of pointers for you!
-    nassertr(references.size() == pointer_ids.size(), false);
+    nassertr(references.size() == pref._objects.size(), false);
 
     if (bam_cat.is_spam()) {
       bam_cat.spam()
@@ -1143,7 +1149,8 @@ resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids) {
 ////////////////////////////////////////////////////////////////////
 bool BamReader::
 resolve_cycler_pointers(PipelineCyclerBase *cycler,
-                        const vector_int &pointer_ids) {
+                        const vector_int &pointer_ids,
+                        bool require_fully_complete) {
   // Now make sure we have all of the pointers this cycler is
   // waiting for.  If any of the pointers has not yet been read
   // in, we can't resolve this cycler--we can't do anything for a
@@ -1175,8 +1182,15 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
           is_complete = false;
 
         } else {
-          // Yes, it's ready.
-          references.push_back(child_obj._ptr);
+          if (require_fully_complete && 
+              _object_pointers.find(child_id) != _object_pointers.end()) {
+            // It's not yet complete itself.
+            is_complete = false;
+            
+          } else {
+            // Yes, it's ready.
+            references.push_back(child_obj._ptr);
+          }
         }
       }
     }

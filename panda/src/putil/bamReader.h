@@ -149,12 +149,15 @@ private:
   INLINE static void create_factory();
 
 private:
+  class PointerReference;
+
   void free_object_ids(DatagramIterator &scan);
   int read_object_id(DatagramIterator &scan);
   int read_pta_id(DatagramIterator &scan);
   int p_read_object();
-  bool resolve_object_pointers(TypedWritable *object, const vector_int &pointer_ids);
-  bool resolve_cycler_pointers(PipelineCyclerBase *cycler, const vector_int &pointer_ids);
+  bool resolve_object_pointers(TypedWritable *object, PointerReference &pref);
+  bool resolve_cycler_pointers(PipelineCyclerBase *cycler, const vector_int &pointer_ids,
+                               bool require_fully_complete);
   void finalize();
 
   INLINE bool get_datagram(Datagram &datagram);
@@ -215,12 +218,14 @@ private:
   // completed, along with the object ID's of the pointers they need,
   // in the order in which read_pointer() was called, so that we may
   // call the appropriate complete_pointers() later.
-  typedef phash_map<int, vector_int, int_hash> ObjectPointers;
-  ObjectPointers _object_pointers;
-
-  // Ditto, for the PiplineCycler objects.
   typedef phash_map<PipelineCyclerBase *, vector_int, pointer_hash> CyclerPointers;
-  CyclerPointers _cycler_pointers;
+  class PointerReference {
+  public:
+    vector_int _objects;
+    CyclerPointers _cycler_pointers;
+  };
+  typedef phash_map<int, PointerReference, int_hash> ObjectPointers;
+  ObjectPointers _object_pointers;
 
   // This is the number of extra objects that must still be read (and
   // saved in the _created_objs map) before returning from

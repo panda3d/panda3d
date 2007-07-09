@@ -623,7 +623,6 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   } else {
     // Now, the array data is just stored directly.
     size_t size = scan.get_uint32();
-
     _buffer.unclean_realloc(size);
 
     const unsigned char *source_data = 

@@ -1537,6 +1537,21 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool GeomVertexData::
+require_fully_complete() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::finalize
 //       Access: Public, Virtual
 //  Description: Called by the BamReader to perform any final actions
@@ -1703,7 +1718,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // a SparseArray for each of them that reflects the complete
     // number of rows in the data.
     SparseArray all_rows;
-    all_rows.set_range(0, _arrays[0].get_read_pointer()->get_num_rows());
+    CPT(GeomVertexArrayData) adata = _arrays[0].get_read_pointer();
+    all_rows.set_range(0, adata->get_num_rows());
 
     if (_slider_table != (SliderTable *)NULL) {
       int num_sliders = _slider_table->get_num_sliders();
