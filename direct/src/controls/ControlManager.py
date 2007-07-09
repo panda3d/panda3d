@@ -41,6 +41,9 @@ class ControlManager:
         ist.append(inputState.watchWithModifiers("reverse", "mouse4", inputSource=inputState.Mouse))
         
         if self.wantWASD:
+
+            
+            
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
             ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
@@ -51,10 +54,11 @@ class ControlManager:
 
             ist.append(inputState.watchWithModifiers("forward", "w", inputSource=inputState.WASD))
             ist.append(inputState.watchWithModifiers("reverse", "s", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.WASD))
-            ist.append(inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.WASD))
+
+            # Used to switch between strafe and turn. We will default to turn
+            self.WASDTurnTokens = ()
+            self.setWASDTurn(1)
+
         else:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
@@ -170,6 +174,10 @@ class ControlManager:
         for token in self.inputStateTokens:
             token.release()
 
+        if self.wantWASD:
+            for token in self.WASDTurnTokens:
+                token.release()
+
         #self.monitorTask.remove()
 
     def getSpeeds(self):
@@ -252,3 +260,35 @@ class ControlManager:
             onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
 
+
+    def setWASDTurn(self, turn):
+        turnLeftSet = inputState.isSet("turnLeft")
+        turnRightSet = inputState.isSet("turnRight")
+        slideLeftSet = inputState.isSet("slideLeft")
+        slideRightSet = inputState.isSet("slideRight")
+
+        for token in self.WASDTurnTokens:
+            token.release()
+        if turn:
+            self.WASDTurnTokens = (
+                inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.WASD),
+                )
+        else:
+            self.WASDTurnTokens = (
+                inputState.watchWithModifiers("turnLeft", "q", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("turnRight", "e", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD),
+                inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD),
+                )
+
+        """
+        inputState.set("turnLeft", turnLeftSet, inputSource=inputState.WASD)
+        inputState.set("turnRight", turnRightSet, inputSource=inputState.WASD)
+        inputState.set("slideLeft", slideLeftSet, inputSource=inputState.WASD)
+        inputState.set("slideRight", slideRightSet, inputSource=inputState.WASD)
+        """
+        
+                
