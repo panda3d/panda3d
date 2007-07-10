@@ -2656,8 +2656,6 @@ void EggLoader::
 make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
 
-  printf("making floor mesh\n");
-  std::cout << *egg_group;
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   
 
@@ -3181,9 +3179,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
   EggGroup::iterator ci;
   for (ci = group->begin(); ci != group->end(); ++ci) {
     EggPolygon *poly = DCAST(EggPolygon, *ci);
-    printf("num verts = %d\n",poly->get_num_vertices());
     if (poly->get_num_vertices() == 3) {
-      printf("found tri\n");
       EggPolygon::const_iterator vi;
       EggVertex p1,p2,p3;
       vi = poly->begin();
@@ -3215,7 +3211,6 @@ create_collision_floor_mesh(CollisionNode *cnode,
     CollisionFloorMesh::TriangleIndices triangle = *ti;
     csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
   }
-  printf ("cfloor %d, %d\n", csfloor->get_num_vertices(), csfloor->get_num_triangles());
   cnode->add_solid(csfloor);
 }
 
