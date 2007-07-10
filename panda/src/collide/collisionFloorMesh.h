@@ -47,13 +47,13 @@ PUBLISHED:
 
   INLINE CollisionFloorMesh();
   
-  INLINE void add_vertex(const LPoint3d &vert);
+  INLINE void add_vertex(const LPoint3f &vert);
   void add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC);
 
   INLINE const unsigned int get_num_vertices() const;
   INLINE const unsigned int get_num_triangles() const;
   INLINE const LPoint3d get_triangle(unsigned int index) const;
-  INLINE const LPoint3d get_vertex(unsigned int index) const;
+  INLINE const LPoint3f get_vertex(unsigned int index) const;
   
   virtual LPoint3f get_collision_origin() const;
 
@@ -81,7 +81,7 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  typedef pvector< LPoint3d > Vertices;
+  typedef pvector< LPoint3f > Vertices;
 
   typedef pvector< TriangleIndices > Triangles;
 

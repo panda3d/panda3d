@@ -34,7 +34,7 @@
 #include "bamWriter.h"
 #include "boundingPlane.h"
 #include "geom.h"
-#include "geomTrifans.h"
+#include "geomTriangles.h"
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 #include <algorithm>
@@ -59,6 +59,13 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 void CollisionFloorMesh::
 xform(const LMatrix4f &mat) {
+
+  pvector<LPoint3f>::iterator vi;
+  for (vi=_vertices.begin();vi!=_vertices.end();++vi) {
+    LPoint3f pt = (*vi) * mat;
+    (*vi).set(pt[0],pt[1],pt[2]);
+  }
+
   CollisionSolid::xform(mat);
 }
 
@@ -118,9 +125,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   bool collided = false;
   for (ti=_triangles.begin();ti< _triangles.end();++ti) {
     TriangleIndices tri = *ti;
-    LPoint3d p0=_vertices[tri.p1];
-    LPoint3d p1=_vertices[tri.p2];
-    LPoint3d p2=_vertices[tri.p3];
+    LPoint3f p0=_vertices[tri.p1];
+    LPoint3f p1=_vertices[tri.p2];
+    LPoint3f p2=_vertices[tri.p3];
     double p0x = p0[0];
     double p1x = p1[0];
     double p2x = p2[0];
@@ -180,7 +187,36 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionFloorMesh::
 fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  PT(GeomVertexData) vdata = new GeomVertexData
+    ("collision", GeomVertexFormat::get_v3(),
+     Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
+  PT(GeomTriangles) mesh = new GeomTriangles(Geom::UH_static);
+  pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;
+  pvector<LPoint3f>::iterator vi;
+  for (vi = _vertices.begin(); vi != _vertices.end(); vi++) {
+    LPoint3f vert = *vi;
+    vertex.add_data3f(vert);
+  }
+  for (ti = _triangles.begin(); ti != _triangles.end(); ++ti) {    
+    CollisionFloorMesh::TriangleIndices tri = *ti;
+    mesh->add_vertex(tri.p1);
+    mesh->add_vertex(tri.p2);
+    mesh->add_vertex(tri.p3);
+    mesh->close_primitive();
+  }
+  
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(mesh);
+  
+  _viz_geom->add_geom(geom, get_solid_viz_state());
+  _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -243,7 +279,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
   CollisionSolid::fillin(scan, manager);
   unsigned int num_verts = scan.get_uint16();
   for (size_t i = 0; i < num_verts; i++) {
-    LPoint3d vert;
+    LPoint3f vert;
     vert.read_datagram(scan);
 
     _vertices.push_back(vert);
