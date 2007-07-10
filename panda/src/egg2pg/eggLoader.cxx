@@ -3202,7 +3202,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
 
   EggVertexPool::const_iterator vi;
   for (vi = pool.begin(); vi != pool.end(); vi++) {
-    csfloor->add_vertex((*vi)->get_pos3());
+    csfloor->add_vertex(LCAST(float,(*vi)->get_pos3()));
   }
 
   pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;
