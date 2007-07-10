@@ -51,8 +51,8 @@ protected:
 PUBLISHED:
   virtual ~GraphicsWindow();
 
-  WindowProperties get_properties() const;
-  WindowProperties get_requested_properties() const;
+  const WindowProperties get_properties() const;
+  const WindowProperties get_requested_properties() const;
   void clear_rejected_properties();
   WindowProperties get_rejected_properties() const;
   void request_properties(const WindowProperties &requested_properties);

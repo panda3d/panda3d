@@ -87,7 +87,7 @@ GraphicsWindow::
 //       Access: Published
 //  Description: Returns the current properties of the window.
 ////////////////////////////////////////////////////////////////////
-WindowProperties GraphicsWindow::
+const WindowProperties GraphicsWindow::
 get_properties() const {
   WindowProperties result;
   {
@@ -105,7 +105,7 @@ get_properties() const {
 //               applied to the window (if valid) at the next
 //               execution of process_events().
 ////////////////////////////////////////////////////////////////////
-WindowProperties GraphicsWindow::
+const WindowProperties GraphicsWindow::
 get_requested_properties() const {
   WindowProperties result;
   {
