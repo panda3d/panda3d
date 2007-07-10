@@ -217,6 +217,16 @@ void CollisionFloorMesh::
 write_datagram(BamWriter *manager, Datagram &me)
 {
   CollisionSolid::write_datagram(manager, me);
+  me.add_uint16(_vertices.size());
+  for (size_t i = 0; i < _vertices.size(); i++) {
+    _vertices[i].write_datagram(me);
+  }
+  me.add_uint16(_triangles.size());
+  for (size_t i = 0; i < _triangles.size(); i++) {
+    me.add_uint16(_triangles[i].p1);
+    me.add_uint16(_triangles[i].p2);
+    me.add_uint16(_triangles[i].p3);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -231,6 +241,24 @@ void CollisionFloorMesh::
 fillin(DatagramIterator& scan, BamReader* manager)
 {
   CollisionSolid::fillin(scan, manager);
+
+  unsigned int num_verts = scan.get_uint16();
+  for (size_t i = 0; i < num_verts; i++) {
+    LPoint3d vert;
+    vert.read_datagram(scan);
+
+    _vertices.push_back(vert);
+  }
+  unsigned int num_tris = scan.get_uint16();
+  for (size_t i = 0; i < num_tris; i++) {
+    CollisionFloorMesh::TriangleIndices tri;
+
+    tri.p1 = scan.get_uint32();
+    tri.p2 = scan.get_uint32();
+    tri.p3 = scan.get_uint32();
+    
+    _triangles.push_back(tri);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
