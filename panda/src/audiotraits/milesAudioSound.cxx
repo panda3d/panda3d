@@ -203,6 +203,7 @@ MilesAudioSound(MilesAudioManager* manager,
   _audio=AIL_quick_copy(sd->_audio);
   _play_rate = 1.0f;
   _original_playback_rate = Get_playback_rate(_audio);
+  audio_debug("MilesAudioSound: original_playback_rate " << _original_playback_rate);
 }
 
 ////////////////////////////////////////////////////////////////////
