@@ -102,7 +102,29 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) CollisionFloorMesh::
 compute_internal_bounds() const {
-  return new BoundingBox(LPoint3f(0,0,0), LPoint3f(1,1,1));
+  if (_vertices.empty()) {
+    return new BoundingBox;
+  }
+
+
+  pvector<LPoint3f>::const_iterator pi = _vertices.begin();
+  LPoint3f p = (*pi);
+
+  LPoint3f x = p;
+  LPoint3f n = p;
+
+  for (++pi; pi != _vertices.end(); ++pi) {
+    p = *pi;
+
+    n.set(min(n[0], p[0]),
+          min(n[1], p[1]),
+          min(n[2], p[2]));
+    x.set(max(x[0], p[0]),
+          max(x[1], p[1]),
+          max(x[2], p[2]));
+  }
+
+  return new BoundingBox(n, x);
 }
 
 ////////////////////////////////////////////////////////////////////
