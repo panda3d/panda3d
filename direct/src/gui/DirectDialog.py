@@ -318,7 +318,7 @@ class DirectDialog(DirectFrame):
 
     def buttonCommand(self, value, event = None):
         if self['command']:
-            self['command'](value)
+            self['command'](value, *self['extraArgs'])
 
     def setMessage(self, message):
         self['text'] = message
