@@ -1058,8 +1058,8 @@ def CompileCxx(obj,src,ipath,opts):
         if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
-        if (optlevel==2): cmd = cmd + " /MD /Zi /DNDEBUG "
-        if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING /DNDEBUG "
+        if (optlevel==2): cmd = cmd + " /MD /Zi "
+        if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
         if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
         cmd = cmd + " /Fd" + wobj[:-4] + ".pdb"
         building = getbuilding(opts)
@@ -1080,8 +1080,8 @@ def CompileCxx(obj,src,ipath,opts):
         if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " -g"
-        if (optlevel==2): cmd = cmd + " -O1 -DNDEBUG"
-        if (optlevel==3): cmd = cmd + " -O2 -DNDEBUG"
+        if (optlevel==2): cmd = cmd + " -O1"
+        if (optlevel==3): cmd = cmd + " -O2"
         if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
         building = getbuilding(opts)
         if (building): cmd = cmd + " -DBUILDING_" + building
@@ -1168,8 +1168,8 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
         optlevel=getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' -DNDEBUG '
-        if (optlevel==3): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
+        if (optlevel==2): cmd = cmd + ' '
+        if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
         if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
@@ -1198,8 +1198,8 @@ def CompileIgate(ipath,opts,outd,obj,src,module,library,files):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' -DNDEBUG '
-        if (optlevel==3): cmd = cmd + ' -DNDEBUG '
+        if (optlevel==2): cmd = cmd + ' '
+        if (optlevel==3): cmd = cmd + ' '
         if (optlevel==4): cmd = cmd + ' -DNDEBUG '
         cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
         cmd = cmd + ' -fnames -string -refcount -assert -python-native'
@@ -1590,6 +1590,7 @@ DEFAULT_SETTINGS=[
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
+    ("SUPPORT_IMMEDIATE_MODE",         '1',                      '1'),
     ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
     ("DO_MEMORY_USAGE",                'UNDEF',                  'UNDEF'),
     ("DO_PIPELINING",                  'UNDEF',                  'UNDEF'),
@@ -2050,11 +2051,6 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite1.cxx', obj='dtoolbas
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='dtoolbase_composite2.cxx', obj='dtoolbase_composite2.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='lookup3.c',                obj='dtoolbase_lookup3.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='indent.cxx',               obj='dtoolbase_indent.obj')
-if (sys.platform == "win32"):
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='dlmalloc.c', obj='dtoolbase_allocator.obj')
-else:
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='null.cxx', obj='dtoolbase_allocator.obj')
-
 
 #
 # DIRECTORY: dtool/src/dtoolutil/
@@ -2079,7 +2075,6 @@ EnqueueLink(opts=['ADVAPI','WINSHELL'], dll='libp3dtool.dll', obj=[
              'dtoolutil_gnu_getopt.obj',
              'dtoolutil_gnu_getopt1.obj',
              'dtoolutil_composite.obj',
-             'dtoolbase_allocator.obj',
              'dtoolbase_composite1.obj',
              'dtoolbase_composite2.obj',
              'dtoolbase_indent.obj',
@@ -2597,7 +2592,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgui.in', obj='libpgui_igate.obj',
 
 IPATH=['panda/src/pnmimagetypes', 'panda/src/pnmimage']
 OPTS=['BUILDING_PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB',  'JPEG', 'TIFF']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypePNG.cxx', obj='pnmimagetypes_pnmFileTypePNG.obj')
+#EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypePNG.cxx', obj='pnmimagetypes_pnmFileTypePNG.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypeTIFF.cxx', obj='pnmimagetypes_pnmFileTypeTIFF.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite.cxx', obj='pnmimagetypes_composite.obj')
 
@@ -2668,7 +2663,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'linmath_composite.obj', 'liblinmath_igate.obj',
           'mathutil_composite.obj', 'libmathutil_igate.obj',
           'parametrics_composite.obj', 'libparametrics_igate.obj',
-          'pnmimagetypes_composite.obj', 'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj',
+          'pnmimagetypes_composite.obj',
           'pnmimage_composite.obj', 'libpnmimage_igate.obj',
           'text_composite.obj', 'libtext_igate.obj',
           'tform_composite.obj', 'libtform_igate.obj',
@@ -2990,7 +2985,7 @@ OBJFILES=[
           'linmath_composite.obj',
           'mathutil_composite.obj',
           'putil_composite1.obj', 'putil_composite2.obj',
-          'pnmimagetypes_composite.obj', 'pnmimagetypes_pnmFileTypePNG.obj', 'pnmimagetypes_pnmFileTypeTIFF.obj',
+          'pnmimagetypes_composite.obj',
           'pnmimage_composite.obj',
           'pandabase_pandabase.obj', 'libpandaexpress.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll']
 EnqueueLink(opts=OPTS, dll='libpandastripped.dll', obj=OBJFILES, xdep=[
