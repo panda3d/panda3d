@@ -17,7 +17,7 @@
      pnmFileTypePNM.h \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h \
-     pnmFileTypeTIFF.cxx pnmFileTypeTIFF.h \
+     pnmFileTypeTIFF.h \
      pnmFileTypeJPG.h
 
   #define INCLUDED_SOURCES  \
@@ -31,7 +31,8 @@
      pnmFileTypeSGI.cxx \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \
-     pnmFileTypeTGA.cxx \
+     pnmFileTypeTIFF.cxx \
+     pnmFileTypeTGA.cxx
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h
