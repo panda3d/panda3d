@@ -49,6 +49,7 @@
 #include "mutexHolder.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
+#include "load_prc_file.h"
 
 #ifdef HAVE_CG
 #include "Cg/cgGL.h"
@@ -4334,7 +4335,9 @@ query_gl_version() {
     GLCAT.debug()
       << "Unable to query GL_VERSION\n";
   } else {
-    string input((const char *)text);
+    string version((const char *)text);
+
+    string input = version;
     size_t space = input.find(' ');
     if (space != string::npos) {
       input = input.substr(0, space);
@@ -4354,9 +4357,21 @@ query_gl_version() {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "GL_VERSION = " << (const char *)text << ", decoded to "
+        << "GL_VERSION = " << version << ", decoded to "
         << _gl_version_major << "." << _gl_version_minor
         << "." << _gl_version_release << "\n";
+    }
+
+    if (version == "1.2 (1.5 Mesa 6.4.2)") {
+      // We suspect this particular version of Mesa, which appears to
+      // be installed by default on every Linux implementation, has
+      // real problems rendering with vertex arrays.  Therefore,
+      // disable vertex arrays by default.
+      GLCAT.debug()
+        << "Buggy Mesa version detected; vertex array support is doubted.\n";
+      if (!vertex_arrays.has_value()) {
+        load_prc_file_data("mesa-hack", "vertex-arrays 0");
+      }
     }
   }
 }
