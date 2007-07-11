@@ -19,11 +19,20 @@ win-size 800 600
 
 fullscreen #f
 
-# If you don't object to running OpenGL in software leave the keyword
-# "software" in the following line, otherwise remove it to force
-# hardware only.
+# The framebuffer-hardware flag forces it to use an accelerated driver.
+# The framebuffer-software flag forces it to use a software renderer.
+# If you don't set either, it will use whatever's available.
 
-framebuffer-mode rgba double-buffer depth hardware
+framebuffer-hardware #t
+framebuffer-software #f
+
+# These set the minimum requirements for the framebuffer.
+
+depth-bits 16
+color-bits 16
+alpha-bits 0
+stencil-bits 0
+multisamples 0
 
 # These control the amount of output Panda gives for some various
 # categories.  The severity levels, in order, are "spam", "debug",

@@ -145,13 +145,18 @@ def NeedsBuild(files,others):
 ##
 ## The following routine scans a CXX file and returns a list of
 ## the include-directives inside that file.  It's not recursive:
-## it just returns the includes that are immediately inside the file.
+## it just returns the includes that are textually inside the 
+## file.  If you need recursive dependencies, you need the higher-level
+## routine CxxCalcDependencies, defined elsewhere.
 ##
 ## Since scanning a CXX file is slow, we cache the result.  It records
 ## the date of the source file and the list of includes that it
 ## contains.  It assumes that if the file date hasn't changed, that
 ## the list of include-statements inside the file has not changed
-## either.
+## either.  Once again, this particular routine does not return
+## recursive dependencies --- it only returns an explicit list of
+## include statements that are textually inside the file.  That
+## is what the cache stores, as well.
 ##
 ########################################################################
 
@@ -2592,8 +2597,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libpgui.in', obj='libpgui_igate.obj',
 
 IPATH=['panda/src/pnmimagetypes', 'panda/src/pnmimage']
 OPTS=['BUILDING_PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB',  'JPEG', 'TIFF']
-#EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypePNG.cxx', obj='pnmimagetypes_pnmFileTypePNG.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmFileTypeTIFF.cxx', obj='pnmimagetypes_pnmFileTypeTIFF.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='pnmimagetypes_composite.cxx', obj='pnmimagetypes_composite.obj')
 
 #
