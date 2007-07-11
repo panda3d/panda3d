@@ -233,9 +233,9 @@ ConfigVariableString window_title
 ("window-title", "Panda");
 
 ConfigVariableString framebuffer_mode
-("framebuffer-mode", "rgb double-buffer",
- PRC_DESC("A space-separated list of keywords that describe the default "
-          "framebuffer properties requested for a window."));
+("framebuffer-mode", "",
+ PRC_DESC("No longer has any effect.  Do not use."));
+
 ConfigVariableBool framebuffer_hardware
 ("framebuffer-hardware", true,
  PRC_DESC("True if FM_hardware should be added to the default framebuffer "
@@ -269,25 +269,20 @@ ConfigVariableBool framebuffer_stereo
           "supported by the graphics driver."));
 
 ConfigVariableInt depth_bits
-("depth-bits", 1,
- PRC_DESC("The minimum number of depth bits requested if the depth keyword "
-          "is present in framebuffer-mode."));
+("depth-bits", 0,
+ PRC_DESC("The minimum number of depth buffer bits requested."));
 ConfigVariableInt color_bits
-("color-bits", 1,
- PRC_DESC("The minimum number of color bits requested in the default "
-          "framebuffer properties (sum of all three color channels)."));
+("color-bits", 0,
+ PRC_DESC("The minimum number of color buffer bits requested."));
 ConfigVariableInt alpha_bits
-("alpha-bits", 1,
- PRC_DESC("The minimum number of alpha bits requested if the alpha or rgba "
-          "keyword is present in framebuffer-mode."));
+("alpha-bits", 0,
+ PRC_DESC("The minimum number of alpha buffer bits requested."));
 ConfigVariableInt stencil_bits
-("stencil-bits", 1,
- PRC_DESC("The minimum number of stencil bits requested if the stencil keyword "
-          "is present in framebuffer-mode."));
+("stencil-bits", 0,
+ PRC_DESC("The minimum number of stencil buffer bits requested."));
 ConfigVariableInt multisamples
-("multisamples", 1,
- PRC_DESC("The minimum number of samples requested if the multisample keyword "
-          "is present in framebuffer-mode."));
+("multisamples", 0,
+ PRC_DESC("The minimum number of samples requested."));
 
 ConfigVariableDouble background_color
 ("background-color", "0.41 0.41 0.41",

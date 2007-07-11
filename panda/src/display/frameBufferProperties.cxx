@@ -80,65 +80,23 @@ get_default() {
   default_props._property[FBP_rgb_color] = 1;
   
   int num_words = framebuffer_mode.get_num_words();
-  for (int i = 0; i < num_words; i++) {
-    string word = framebuffer_mode.get_word(i);
-    if (cmp_nocase_uh(word, "rgb") == 0) {
-      default_props._property[FBP_indexed_color] = 0;
-      default_props._property[FBP_color_bits] = color_bits;
-      default_props._property[FBP_rgb_color] = 1;
-
-    } else if (cmp_nocase_uh(word, "index") == 0) {
-      default_props._property[FBP_indexed_color] = 1;
-      default_props._property[FBP_rgb_color] = 0;
-
-    } else if (cmp_nocase_uh(word, "single") == 0 ||
-               cmp_nocase_uh(word, "single-buffer") == 0) {
-      default_props._property[FBP_back_buffers] = 0;
-
-    } else if (cmp_nocase_uh(word, "double") == 0 ||
-               cmp_nocase_uh(word, "double-buffer") == 0) {
-      default_props._property[FBP_back_buffers] = 1;
-
-    } else if (cmp_nocase_uh(word, "triple") == 0 ||
-               cmp_nocase_uh(word, "triple-buffer") == 0) {
-      default_props._property[FBP_back_buffers] = 2;
-
-    } else if (cmp_nocase_uh(word, "accum") == 0) {
-      default_props._property[FBP_accum_bits] = 1;
-
-    } else if (cmp_nocase_uh(word, "alpha") == 0) {
-      default_props._property[FBP_indexed_color] = 0;
-      default_props._property[FBP_rgb_color] = 1;
-      default_props._property[FBP_alpha_bits] = alpha_bits;
-      
-    } else if (cmp_nocase_uh(word, "rgba") == 0) {
-      default_props._property[FBP_indexed_color] = 0;
-      default_props._property[FBP_rgb_color] = 1;
-      default_props._property[FBP_color_bits] = color_bits;
-      default_props._property[FBP_alpha_bits] = alpha_bits;
-      
-    } else if (cmp_nocase_uh(word, "depth") == 0) {
-      default_props._property[FBP_depth_bits] = depth_bits;
-
-    } else if (cmp_nocase_uh(word, "stencil") == 0) {
-      default_props._property[FBP_stencil_bits] = stencil_bits;
-
-    } else if (cmp_nocase_uh(word, "multisample") == 0) {
-      default_props._property[FBP_multisamples] = multisamples;
-
-    } else if (cmp_nocase_uh(word, "stereo") == 0) {
-      default_props._property[FBP_stereo] = 1;
-
-    } else if (cmp_nocase_uh(word, "software") == 0) {
-      default_props._property[FBP_force_software] = 1;
-
-    } else if (cmp_nocase_uh(word, "hardware") == 0) {
-      default_props._property[FBP_force_hardware] = 1;
-
-    } else {
-      display_cat.warning()
-        << "Unknown framebuffer keyword: " << word << "\n";
-    }
+  if (num_words > 0) {
+    display_cat.error()
+      << "The config-variable 'framebuffer-mode' no longer functions.\n";
+    display_cat.error()
+      << "Instead, use one or more of these:\n";
+    display_cat.error() << "  framebuffer-hardware #t\n";
+    display_cat.error() << "  framebuffer-software #t\n";
+    display_cat.error() << "  framebuffer-depth #t\n";
+    display_cat.error() << "  framebuffer-alpha #t\n";
+    display_cat.error() << "  framebuffer-stencil #t\n";
+    display_cat.error() << "  framebuffer-multisample #t\n";
+    display_cat.error() << "  framebuffer-stereo #t\n";
+    display_cat.error() << "  depth-bits N\n";
+    display_cat.error() << "  color-bits N\n";
+    display_cat.error() << "  alpha-bits N\n";
+    display_cat.error() << "  stencil-bits N\n";
+    display_cat.error() << "  multisamples N\n";
   }
 
   if (framebuffer_hardware) {
@@ -147,20 +105,35 @@ get_default() {
   if (framebuffer_software) {
     default_props.set_force_software(1);
   }
+  if (framebuffer_depth) {
+    default_props.set_depth_bits(1);
+  }
+  if (framebuffer_alpha) {
+    default_props.set_alpha_bits(1);
+  }
+  if (framebuffer_stencil) {
+    default_props.set_stencil_bits(1);
+  }
   if (framebuffer_multisample) {
     default_props.set_multisamples(1);
   }
-  if (framebuffer_depth) {
-    default_props.set_depth_bits(depth_bits);
-  }
-  if (framebuffer_alpha) {
-    default_props.set_alpha_bits(alpha_bits);
-  }
-  if (framebuffer_stencil) {
-    default_props.set_stencil_bits(stencil_bits);
-  }
   if (framebuffer_stereo) {
     default_props.set_stereo(1);
+  }
+  if (depth_bits > 0) {
+    default_props.set_depth_bits(depth_bits);
+  }
+  if (color_bits > 0) {
+    default_props.set_color_bits(color_bits);
+  }
+  if (alpha_bits > 0) {
+    default_props.set_alpha_bits(alpha_bits);
+  }
+  if (stencil_bits > 0) {
+    default_props.set_depth_bits(stencil_bits);
+  }
+  if (multisamples > 0) {
+    default_props.set_multisamples(multisamples);
   }
   
   if ((default_props._property[FBP_force_software])&&
@@ -558,7 +531,7 @@ verify_hardware_software(const FrameBufferProperties &props, const string &rende
     display_cat.error()
       << "if you actually *want* to use a software renderer, then\n";
     display_cat.error()
-      << "change the word 'hardware' to 'software' in the Config.prc file.\n";
+      << "alter the hardware/software configuration in your Config.prc file.\n";
     return false;
   }
 
@@ -568,9 +541,9 @@ verify_hardware_software(const FrameBufferProperties &props, const string &rende
     display_cat.error()
       << "driver, " << renderer << ", is probably hardware-accelerated.\n";
     display_cat.error()
-      << "If you want to allow hardware acceleration, then change the word\n";
+      << "If you want to allow hardware acceleration, then alter the\n";
     display_cat.error()
-      << "'software' to 'hardware' in the Config.prc file.\n";
+      << "hardware/software configuration in your Config.prc file.\n";
     return false;
   }
   
