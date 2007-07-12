@@ -44,13 +44,6 @@ ConfigVariableBool do_vidmemsize_check
  PRC_DESC("if true, use ddraw's GetAvailVidMem to fail if driver says "
           "it has too little video mem"));
 
-ConfigVariableBool ime_composition_w
-("ime-composition-w", true,
- PRC_DESC("For now, set this true to use the IME correctly on Win2000, or "
-          "false on Win98.  This is temporary; once we have been able to "
-          "verify that this distinction is actually necessary, we can replace "
-          "this config variable with an actual OS detection."));
-
 ConfigVariableBool ime_aware
 ("ime-aware", false,
  PRC_DESC("Set this true to show ime texts on the chat panel and hide the "

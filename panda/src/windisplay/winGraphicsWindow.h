@@ -125,7 +125,6 @@ private:
   HWND _ime_hWnd;
   bool _ime_open;
   bool _ime_active;
-  bool _ime_composition_w;
   bool _tracking_mouse_leaving;
   bool _maximized;
   bool _bCursor_in_WindowClientArea;

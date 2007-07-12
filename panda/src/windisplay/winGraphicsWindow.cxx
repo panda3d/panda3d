@@ -99,7 +99,6 @@ WinGraphicsWindow(GraphicsPipe *pipe,
   _hWnd = (HWND)0;
   _ime_open = false;
   _ime_active = false;
-  _ime_composition_w = false;
   _tracking_mouse_leaving = false;
   _maximized = false;
   _cursor = 0;
@@ -426,41 +425,6 @@ open_window() {
     _ime_open = (ImmGetOpenStatus(hIMC) != 0);
     ImmReleaseContext(_hWnd, hIMC);
   }
-
-  // Check the version of the OS we are running.  If we are running
-  // win2000, we must use ImmGetCompositionStringW() to report the
-  // characters returned by the IME, since WM_CHAR and
-  // ImmGetCompositionStringA() both just return question marks.
-  // However, this function doesn't work for Win98; on this OS, we
-  // have to use ImmGetCompositionStringA() instead, which returns an
-  // encoded string in shift-jis (which we then have to decode).
-
-  // For now, this is user-configurable, to allow testing of this code
-  // on both OS's.  After we verify that truth of the above claim, we
-  // should base this decision on GetVersionEx() or maybe
-  // VerifyVersionInfo().
-  _ime_composition_w = ime_composition_w;
-  
-  // need to re-evaluate above in light of this, it seems that
-  // ImmGetCompositionStringW should work on both:
-  //     The Input Method Editor and Unicode Windows 98/Me, Windows
-  //     NT/2000/XP: Windows supports a Unicode interface for the
-  //     IME, in addition to the ANSI interface originally supported.
-  //     Windows 98/Me supports all the Unicode functions except
-  //     ImmIsUIMessage.  Also, all the messages in Windows 98/Me are
-  //     ANSI based.  Since Windows 98/Me does not support Unicode
-  //     messages, applications can use ImmGetCompositionString to
-  //     receive Unicode characters from a Unicode based IME on
-  //     Windows 98/Me.  There are two issues involved with Unicode
-  //     handling and the IME.  One is that the Unicode versions of
-  //     IME routines return the size of a buffer in bytes rather
-  //     than 16-bit Unicode characters,and the other is the IME
-  //     normally returns Unicode characters (rather than DBCS) in
-  //     the WM_CHAR and WM_IME_CHAR messages.  Use RegisterClassW
-  //     to cause the WM_CHAR and WM_IME_CHAR messages to return
-  //     Unicode characters in the wParam parameter rather than DBCS
-  //     characters.  This is only available under Windows NT; it is
-  //     stubbed out in Windows 95/98/Me.
 
   // Registers to receive the WM_INPUT messages
   if ((pRegisterRawInputDevices)&&(_input_devices.size() > 1)) {
@@ -1382,31 +1346,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
           ImmReleaseContext(hwnd, hIMC);
         }
-        /*
-        else if (_ime_open && (wparam == IMN_OPENCANDIDATE)) {
-          HIMC hIMC = ImmGetContext(hwnd);
-          nassertr(hIMC != 0, 0);
-          DWORD need_byte;
-          LPCANDIDATELIST pCanList;
-          char pBuff[1024];
-          need_byte = ImmGetCandidateListW(hIMC, 0, NULL, 0);
-          windisplay_cat.debug() << "need byte " << need_byte << endl;
-          need_byte = ImmGetCandidateListW(hIMC, 0, (LPCANDIDATELIST)pBuff, need_byte);
-          pCanList = (LPCANDIDATELIST)pBuff;
-          windisplay_cat.debug() << "need byte " << need_byte << " ,size " << pCanList->dwSize 
-                                 << " ,count " << pCanList->dwCount
-                                 << " ,selected " << pCanList->dwSelection << endl;
-          wstring candidate_str;
-          for (DWORD i=0; i<pCanList->dwCount; ++i) {
-            // lets append all the candidate strings together
-            windisplay_cat.debug() << "string offset " << pCanList->dwOffset[i] << endl;
-            candidate_str.append((wchar_t*)((char*)pCanList + pCanList->dwOffset[i]));
-          }
-          windisplay_cat.debug() << "concatenated string " << (wchar_t*)candidate_str.c_str() << endl;
-          //_input_devices[0].candidate(candidate_str, 0, 0);
-          ImmReleaseContext(hwnd, hIMC);
-        }
-        */
         break;
         
       case WM_IME_STARTCOMPOSITION:
@@ -1433,106 +1372,42 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           // we don't want to send the current composition string in that
           // case.  But we do need to return 0 to tell windows not to try
           // to send the composition string through WM_CHAR messages.
-          if (!_ime_active)
+          if (!_ime_active) {
             return 0;
+          }
 
           HIMC hIMC = ImmGetContext(hwnd);
           nassertr(hIMC != 0, 0);
           
-          static const int max_ime_result = 128;
-          static char ime_result[max_ime_result];
-          
           DWORD result_size = 0;
-          const int max_t = 256;
-          wchar_t can_t[max_t];
+          static const int ime_buffer_size = 256;
+          static const int ime_buffer_size_bytes = ime_buffer_size / sizeof(wchar_t);
+          wchar_t ime_buffer[ime_buffer_size];
           size_t cursor_pos, delta_start;
           
-          if (_ime_composition_w) {
-            // Since ImmGetCompositionStringA() doesn't seem to work
-            // for Win2000 (it always returns question mark
-            // characters), we have to use ImmGetCompositionStringW()
-            // on this OS.  This is actually the easier of the two
-            // functions to use.
-            
-            if (lparam & GCS_RESULTSTR) {
-              windisplay_cat.debug() << "GCS_RESULTSTR\n";
-              result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                                     ime_result, max_ime_result);
-              
-              // Add this string into the text buffer of the application.
-              
-              // ImmGetCompositionStringW() returns a string, but it's
-              // filled in with wstring data: every two characters defines a
-              // 16-bit unicode char.  The docs aren't clear on the
-              // endianness of this.  I guess it's safe to assume all Win32
-              // machines are little-endian.
-              for (DWORD i = 0; i < result_size; i += 2) {
-                int result =
-                  ((int)(unsigned char)ime_result[i + 1] << 8) |
-                  (unsigned char)ime_result[i];
-                _input_devices[0].keystroke(result);
-              }
-            }
-            if (lparam & GCS_COMPSTR) {
-              windisplay_cat.debug() << "GCS_COMPSTR\n";
-              /*
-                result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
-                windisplay_cat.debug() << "got readstr of size " << result_size << endl;
-              */
-              
-              result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, can_t, max_t);
-              cursor_pos = result_size&0xffff;
-              windisplay_cat.debug() << "got cursorpos at " << cursor_pos  << endl;
-              
-              result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, can_t, max_t);
-              delta_start = result_size&0xffff;
-              windisplay_cat.debug() << "got deltastart at " << delta_start << endl;
-              
-              /*
-                result_size = ImmGetCompositionStringW(hIMC, GCS_COMPATTR, can_t, max_t);
-                windisplay_cat.debug() << "got compatr of size " << result_size << endl;
-                
-                result_size = ImmGetCompositionStringW(hIMC, GCS_COMPREADSTR, can_t, max_t);
-                windisplay_cat.debug() << "got compreadstr of size " << result_size << endl;
-                
-                result_size = ImmGetCompositionStringW(hIMC, GCS_COMPCLAUSE, can_t, max_t);
-                windisplay_cat.debug() << "got compclause of size " << result_size << endl;
-              */
-              
-              result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, can_t, max_t);
-              windisplay_cat.debug() << "got compstr of size " << result_size << endl;
-              
-              can_t[result_size/sizeof(wchar_t)] = '\0';
-              
-              _input_devices[0].candidate(can_t, min(cursor_pos, delta_start), max(cursor_pos, delta_start), cursor_pos);
-            }
-          } else {
-            if (lparam & GCS_RESULTSTR) {
-              // On the other hand, ImmGetCompositionStringW() doesn't
-              // work on Win95 or Win98; for these OS's we must use
-              // ImmGetCompositionStringA().
-              result_size = ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
-                                                     ime_result, max_ime_result);
-              
-              // ImmGetCompositionStringA() returns an encoded ANSI
-              // string, which we now have to map to wide-character
-              // Unicode.
-              static const int max_wide_result = 128;
-              static wchar_t wide_result[max_wide_result];
-              
-              int wide_size =
-                MultiByteToWideChar(CP_ACP, 0,
-                                    ime_result, result_size,
-                                    wide_result, max_wide_result);
-              if (wide_size == 0) {
-                show_error_message();
-              }
-              for (int i = 0; i < wide_size; i++) {
-                _input_devices[0].keystroke(wide_result[i]);
-              }
+          if (lparam & GCS_RESULTSTR) {
+            result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                                   ime_buffer, ime_buffer_size_bytes);
+            size_t num_chars = result_size / sizeof(wchar_t);
+            for (size_t i = 0; i < num_chars; ++i) {
+              _input_devices[0].keystroke(ime_buffer[i]);
             }
           }
-          
+
+          if (lparam & GCS_COMPSTR) {
+            result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, NULL, 0);
+            cursor_pos = result_size & 0xffff;
+              
+            result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, NULL, 0);
+            delta_start = result_size & 0xffff;
+            result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
+            size_t num_chars = result_size / sizeof(wchar_t);
+              
+            _input_devices[0].candidate(wstring(ime_buffer, num_chars), 
+                                        min(cursor_pos, delta_start), 
+                                        max(cursor_pos, delta_start), 
+                                        cursor_pos);
+          }
           ImmReleaseContext(hwnd, hIMC);
         }
         break;
@@ -1547,20 +1422,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           _input_devices[0].keystroke(wparam);
         }
         break;
-        /*
-     case WM_PAINT:
-       // draw ime window on top
-       PAINTSTRUCT ps; 
-       HDC hdc; 
-       //RECT rc; 
-       hdc = BeginPaint(hwnd, &ps); 
-       EndPaint(hwnd, &ps); 
-       if (_ime_active) {
-         hdc = BeginPaint(_ime_hWnd, &ps);
-         EndPaint(_ime_hWnd, &ps);
-       }
-       break;       
-        */
     
       case WM_SYSKEYDOWN: 
         if (_lost_keypresses) {

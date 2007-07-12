@@ -745,17 +745,16 @@ update_cursor() {
     update_text();
 
     _cursor_position = min(_cursor_position, _text.get_num_characters());
-    _candidate_cursor_pos = min(_candidate_cursor_pos, _candidate_wtext.length());
 
     // Determine the row and column of the cursor.
     int row, column;
     float xpos, ypos;
     if (_obscure_mode) {
-      _obscure_text.calc_r_c(row, column, _cursor_position + _candidate_cursor_pos);
+      _obscure_text.calc_r_c(row, column, _cursor_position);
       xpos = _obscure_text.get_xpos(row, column);
       ypos = _obscure_text.get_ypos(row, column);
     } else {
-      _text.calc_r_c(row, column, _cursor_position + _candidate_cursor_pos);
+      _text.calc_r_c(row, column, _cursor_position);
       xpos = _text.get_xpos(row, column);
       ypos = _text.get_ypos(row, column);
     }
@@ -765,7 +764,7 @@ update_cursor() {
   }
 
   // Should the cursor be visible?
-  if (!get_focus()) {
+  if (!get_focus() || !_candidate_wtext.empty()) {
     show_hide_cursor(false);
   } else {
     double elapsed_time = 
