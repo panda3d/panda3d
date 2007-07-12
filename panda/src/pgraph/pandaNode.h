@@ -256,6 +256,7 @@ PUBLISHED:
 
   void mark_bounds_stale(Thread *current_thread = Thread::get_current_thread()) const;
   void mark_internal_bounds_stale(Thread *current_thread = Thread::get_current_thread());
+  INLINE bool is_bounds_stale() const;
 
   INLINE void set_final(bool flag);
   INLINE bool is_final(Thread *current_thread = Thread::get_current_thread()) const;

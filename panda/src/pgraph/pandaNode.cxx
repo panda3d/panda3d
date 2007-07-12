@@ -3415,21 +3415,30 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     // release the lock.
     _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
 
+    int num_children = children.get_num_children();
+
     // We need to keep references to the bounding volumes, since in a
     // threaded environment the pointers might go away while we're
     // working (since we're not holding a lock on our set of children
     // right now).  But we also need the regular pointers, to pass to
     // BoundingVolume::around().
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     pvector<CPT(BoundingVolume) > child_volumes_ref;
-    pvector<const BoundingVolume *> child_volumes;
+    child_volumes_ref.reserve(num_children + 1);
+#endif
+    const BoundingVolume **child_volumes = (const BoundingVolume **)alloca(sizeof(BoundingVolume *) * (num_children + 1));
+    int child_volumes_i = 0;
   
     bool all_box = true;
     CPT(BoundingVolume) internal_bounds = 
       get_internal_bounds(pipeline_stage, current_thread);
 
     if (!internal_bounds->is_empty()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
       child_volumes_ref.push_back(internal_bounds);
-      child_volumes.push_back(internal_bounds);
+#endif
+      nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
+      child_volumes[child_volumes_i++] = internal_bounds;
       if (!internal_bounds->is_exact_type(BoundingBox::get_class_type())) {
         all_box = false;
       }
@@ -3438,7 +3447,6 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     int num_vertices = cdata->_internal_vertices;
 
     // Now expand those contents to include all of our children.
-    int num_children = children.get_num_children();
 
     for (int i = 0; i < num_children; ++i) {
       PandaNode *child = children.get_child(i);
@@ -3484,8 +3492,11 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
             
         off_clip_planes = orig_cp->compose_off(child_cdataw->_off_clip_planes);
         if (!child_cdataw->_external_bounds->is_empty()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
           child_volumes_ref.push_back(child_cdataw->_external_bounds);
-          child_volumes.push_back(child_cdataw->_external_bounds);
+#endif
+          nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
+          child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
           if (!child_cdataw->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
             all_box = false;
           }
@@ -3521,8 +3532,11 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 
         off_clip_planes = orig_cp->compose_off(child_cdata->_off_clip_planes);
         if (!child_cdata->_external_bounds->is_empty()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
           child_volumes_ref.push_back(child_cdata->_external_bounds);
-          child_volumes.push_back(child_cdata->_external_bounds);
+#endif
+          nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
+          child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
           if (!child_cdata->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
             all_box = false;
           }
@@ -3578,16 +3592,16 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
           // If all of the child volumes are a BoundingBox, and we
           // have no transform, then our volume is also a
           // BoundingBox.
-
+          
           gbv = new BoundingBox;
         } else {
           // Otherwise, it's a sphere.
           gbv = new BoundingSphere;
         }
-
-        if (child_volumes.size() > 0) {
+        
+        if (child_volumes_i > 0) {
           const BoundingVolume **child_begin = &child_volumes[0];
-          const BoundingVolume **child_end = child_begin + child_volumes.size();
+          const BoundingVolume **child_end = child_begin + child_volumes_i;
           ((BoundingVolume *)gbv)->around(child_begin, child_end);
         }
         
@@ -3596,6 +3610,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         if (!transform->is_identity()) {
           gbv->xform(transform->get_mat());
         }
+
         cdataw->_external_bounds = gbv;
         cdataw->_last_update = next_update;
 

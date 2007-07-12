@@ -596,6 +596,20 @@ get_internal_vertices(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_bounds_stale
+//       Access: Published
+//  Description: Returns true if the bounding volume of this node is
+//                stale and will be implicitly recomputed at the next
+//                call to get_bounds(), or false if it is fresh and
+//                need not be recomputed.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_bounds_stale() const {
+  CDReader cdata(_cycler);
+  return (cdata->_last_update != cdata->_next_update);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_final
 //       Access: Published
 //  Description: Sets the "final" flag on this PandaNode.  If
