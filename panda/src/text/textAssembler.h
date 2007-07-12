@@ -55,7 +55,7 @@ PUBLISHED:
   INLINE void set_usage_hint(Geom::UsageHint usage_hint);
   INLINE Geom::UsageHint get_usage_hint() const;
 
-  INLINE bool set_max_rows(int max_rows);
+  INLINE void set_max_rows(int max_rows);
   INLINE int get_max_rows() const;
 
   INLINE void set_properties(const TextProperties &properties);

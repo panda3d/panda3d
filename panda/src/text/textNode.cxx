@@ -64,11 +64,12 @@ static PStatCollector text_generate_collector("*:Generate Text");
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TextNode::
-TextNode(const string &name) : PandaNode(name), _assembler(this) {
+TextNode(const string &name) : PandaNode(name) {
   set_cull_callback();
 
   _flags = 0;
   _max_rows = 0;
+  _usage_hint = GeomEnums::UH_static;
 
   if (text_small_caps) {
     set_small_caps(true);
@@ -100,8 +101,7 @@ TextNode(const string &name) : PandaNode(name), _assembler(this) {
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name, const TextProperties &copy) : 
-  PandaNode(name), TextProperties(copy),
-  _assembler(this) 
+  PandaNode(name), TextProperties(copy) 
 {
   _flags = 0;
   _max_rows = 0;
@@ -148,8 +148,7 @@ TextNode(const TextNode &copy) :
   _transform(copy._transform),
   _coordinate_system(copy._coordinate_system),
   _ul3d(copy._ul3d),
-  _lr3d(copy._lr3d),
-  _assembler(this) 
+  _lr3d(copy._lr3d)
 {
   invalidate_with_measure();
 }
@@ -190,7 +189,7 @@ calc_width(int character) const {
     return 0.0f;
   }
 
-  return _assembler.calc_width(character, *this);
+  return TextAssembler::calc_width(character, *this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,8 +301,11 @@ generate() {
   wstring wtext = get_wtext();
 
   // Assemble the text.
-  _assembler.set_properties(*this);
-  bool all_set = _assembler.set_wtext(wtext);
+  TextAssembler assembler(this);
+  assembler.set_properties(*this);
+  assembler.set_max_rows(_max_rows);
+  assembler.set_usage_hint(_usage_hint);
+  bool all_set = assembler.set_wtext(wtext);
   if (all_set) {
     // No overflow.
     _flags &= ~F_has_overflow;
@@ -312,7 +314,11 @@ generate() {
     _flags |= F_has_overflow;
   }
 
-  PT(PandaNode) text_root = _assembler.assemble_text();
+  PT(PandaNode) text_root = assembler.assemble_text();
+  _text_ul = assembler.get_ul();
+  _text_lr = assembler.get_lr();
+  _num_rows = assembler.get_num_rows();
+  _wordwrapped_wtext = assembler.get_wordwrapped_wtext();
 
   // Parent the text in.
   PT(PandaNode) text = new PandaNode("text");
@@ -321,8 +327,8 @@ generate() {
 
   // Save the bounding-box information about the text in a form
   // friendly to the user.
-  const LVector2f &ul = _assembler.get_ul();
-  const LVector2f &lr = _assembler.get_lr();
+  const LVector2f &ul = assembler.get_ul();
+  const LVector2f &lr = assembler.get_lr();
   _ul3d.set(ul[0], 0.0f, ul[1]);
   _lr3d.set(lr[0], 0.0f, lr[1]);
 

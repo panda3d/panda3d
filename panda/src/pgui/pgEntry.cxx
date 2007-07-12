@@ -715,6 +715,7 @@ update_text() {
 
     _current_text = 
       _text_render_root.attach_new_node(assembled);
+    _current_text.set_mat(node->get_transform());
     _text_geom_stale = false;
     _text_geom_flattened = false;
     _cursor_stale = true;

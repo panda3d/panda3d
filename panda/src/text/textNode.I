@@ -47,7 +47,6 @@ get_line_height() const {
 INLINE void TextNode::
 set_max_rows(int max_rows) {
   _max_rows = max_rows;
-  _assembler.set_max_rows(_max_rows);
   invalidate_with_measure();
 }
 
@@ -60,7 +59,6 @@ set_max_rows(int max_rows) {
 INLINE void TextNode::
 clear_max_rows() {
   _max_rows = 0;
-  _assembler.set_max_rows(_max_rows);
   invalidate_with_measure();
 }
 
@@ -383,18 +381,14 @@ INLINE LVecBase4f TextNode::
 get_frame_actual() const {
   if (!has_frame()) {
     check_measure();
-    const LVector2f &ul = _assembler.get_ul();
-    const LVector2f &lr = _assembler.get_lr();
-    return LVecBase4f(ul[0], lr[0], lr[1], ul[1]);
+    return LVecBase4f(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
 
   } else if (is_frame_as_margin()) {
     check_measure();
-    const LVector2f &ul = _assembler.get_ul();
-    const LVector2f &lr = _assembler.get_lr();
-    return LVecBase4f(ul[0] - _frame_ul[0],
-                      lr[0] + _frame_lr[0],
-                      lr[1] - _frame_lr[1],
-                      ul[1] + _frame_ul[1]);
+    return LVecBase4f(_text_ul[0] - _frame_ul[0],
+                      _text_lr[0] + _frame_lr[0],
+                      _text_lr[1] - _frame_lr[1],
+                      _text_ul[1] + _frame_ul[1]);
   } else {
     return get_frame_as_set();
   }
@@ -588,18 +582,14 @@ INLINE LVecBase4f TextNode::
 get_card_actual() const {
   if (!has_card()) {
     check_measure();
-    const LVector2f &ul = _assembler.get_ul();
-    const LVector2f &lr = _assembler.get_lr();
-    return LVecBase4f(ul[0], lr[0], lr[1], ul[1]);
+    return LVecBase4f(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
 
   } else if (is_card_as_margin()) {
     check_measure();
-    const LVector2f &ul = _assembler.get_ul();
-    const LVector2f &lr = _assembler.get_lr();
-    return LVecBase4f(ul[0] - _card_ul[0],
-                      lr[0] + _card_lr[0],
-                      lr[1] - _card_lr[1],
-                      ul[1] + _card_ul[1]);
+    return LVecBase4f(_text_ul[0] - _card_ul[0],
+                      _text_lr[0] + _card_lr[0],
+                      _text_lr[1] - _card_lr[1],
+                      _text_ul[1] + _card_ul[1]);
   } else {
     return get_card_as_set();
   }
@@ -679,7 +669,7 @@ get_coordinate_system() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 set_usage_hint(Geom::UsageHint usage_hint) {
-  _assembler.set_usage_hint(usage_hint);
+  _usage_hint = usage_hint;
   invalidate_no_measure();
 }
 
@@ -691,7 +681,7 @@ set_usage_hint(Geom::UsageHint usage_hint) {
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::UsageHint TextNode::
 get_usage_hint() const {
-  return _assembler.get_usage_hint();
+  return _usage_hint;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1246,7 +1236,7 @@ append_wtext(const wstring &wtext) {
 INLINE wstring TextNode::
 get_wordwrapped_wtext() const {
   check_measure();
-  return _assembler.get_wordwrapped_wtext();
+  return _wordwrapped_wtext;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1259,7 +1249,7 @@ get_wordwrapped_wtext() const {
 INLINE float TextNode::
 get_left() const {
   check_measure();
-  return _assembler.get_ul()[0];
+  return _text_ul[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1272,7 +1262,7 @@ get_left() const {
 INLINE float TextNode::
 get_right() const {
   check_measure();
-  return _assembler.get_lr()[0];
+  return _text_lr[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1285,7 +1275,7 @@ get_right() const {
 INLINE float TextNode::
 get_bottom() const {
   check_measure();
-  return _assembler.get_lr()[1];
+  return _text_lr[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1298,7 +1288,7 @@ get_bottom() const {
 INLINE float TextNode::
 get_top() const {
   check_measure();
-  return _assembler.get_ul()[1];
+  return _text_ul[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1310,7 +1300,7 @@ get_top() const {
 INLINE float TextNode::
 get_height() const {
   check_measure();
-  return _assembler.get_ul()[1] - _assembler.get_lr()[1];
+  return _text_ul[1] - _text_lr[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1322,7 +1312,7 @@ get_height() const {
 INLINE float TextNode::
 get_width() const {
   check_measure();
-  return _assembler.get_lr()[0] - _assembler.get_ul()[0];
+  return _text_lr[0] - _text_ul[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1361,7 +1351,7 @@ get_lower_right_3d() const {
 INLINE int TextNode::
 get_num_rows() const {
   check_measure();
-  return _assembler.get_num_rows();
+  return _num_rows;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -50,13 +50,13 @@ get_usage_hint() const {
 //               max_rows will be accepted.  Text beyond that will be
 //               truncated.
 //
-//               The return value is true if all the text is accepted,
-//               or false if some was truncated.
+//               Setting this will not truncate text immediately.  You
+//               must follow this up with a call to set_wtext() to
+//               truncate the existing text.
 ////////////////////////////////////////////////////////////////////
-INLINE bool TextAssembler::
+INLINE void TextAssembler::
 set_max_rows(int max_rows) {
   _max_rows = max_rows;
-  return wordwrap_text();
 }
 
 ////////////////////////////////////////////////////////////////////

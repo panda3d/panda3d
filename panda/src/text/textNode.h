@@ -284,6 +284,7 @@ private:
 
   int _flags;
   int _max_rows;
+  GeomEnums::UsageHint _usage_hint;
   float _frame_width;
   float _card_border_size;
   float _card_border_uv_portion;
@@ -296,7 +297,10 @@ private:
 
   LPoint3f _ul3d, _lr3d;
 
-  TextAssembler _assembler;
+  // Returned from TextAssembler:
+  LVector2f _text_ul, _text_lr;
+  int _num_rows;
+  wstring _wordwrapped_wtext;
 
 public:
   static TypeHandle get_class_type() {
