@@ -40,6 +40,10 @@ public:
     unsigned int p1;
     unsigned int p2;
     unsigned int p3;
+    float min_x;
+    float max_x;
+    float min_y;
+    float max_y;
   } TriangleIndices;
 
 
