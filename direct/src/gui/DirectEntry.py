@@ -81,7 +81,6 @@ class DirectEntry(DirectFrame):
             # Pass in empty text to avoid extra work, since its really
             # The PGEntry which will use the TextNode to generate geometry
             text = '',
-            # PGEntry assumes left alignment
             align = TextNode.ALeft,
             font = font,
             scale = 1,
@@ -159,46 +158,49 @@ class DirectEntry(DirectFrame):
             apply(self['focusOutCommand'], self['focusOutExtraArgs'])
 
     def set(self, text):
+        """ Changes the text currently showing in the typable region;
+        does not change the current cursor position.  Also see
+        enterText(). """
+        
         self.unicodeText = isinstance(text, types.UnicodeType)
         if self.unicodeText:
             self.guiItem.setWtext(text)
         else:
             self.guiItem.setText(text)
 
-    def get(self):
+    def get(self, plain = False):
+        """ Returns the text currently showing in the typable region.
+        If plain is True, the returned text will not include any
+        formatting characters like nested color-change codes. """
+
+        wantWide = self.unicodeText or self.guiItem.isWtext()
         if not self.directWtext.getValue():
             # If the user has configured wide-text off, then always
             # return an 8-bit string.  This will be encoded if
             # necessary, according to Panda's default encoding.
-            return self.guiItem.getText()
+            wantWide = False
 
-        if self.unicodeText:
-            return self.guiItem.getWtext()
-        else:
-            # Although we weren't expecting a wide character, the user
-            # might give us one.  If this happens, we have to return a
-            # wide string.
-            wtext = self.guiItem.getWtext()
-            text = self.guiItem.getText()
-            try:
-                matches = (wtext == unicode(text))
-            except:
-                return wtext
-            if matches:
-                return text
+        if plain:
+            if wantWide:
+                return self.guiItem.getPlainWtext()
             else:
-                return wtext
+                return self.guiItem.getPlainText()
+        else:
+            if wantWide:
+                return self.guiItem.getWtext()
+            else:
+                return self.guiItem.getText()
 
     def setCursorPosition(self, pos):
         if (pos < 0):
-            self.guiItem.setCursorPosition(len(self.get()) + pos)
+            self.guiItem.setCursorPosition(self.guiItem.getNumCharacters() + pos)
         else:
             self.guiItem.setCursorPosition(pos)
 
     def enterText(self, text):
         """ sets the entry's text, and moves the cursor to the end """
         self.set(text)
-        self.setCursorPosition(len(self.get()))
+        self.setCursorPosition(self.guiItem.getNumCharacters())
 
     def getBounds(self, state = 0):
         # Compute the width and height for the entry itself, ignoring
