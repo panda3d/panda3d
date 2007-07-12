@@ -103,6 +103,16 @@ get_gl_renderer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_gl_version
+//       Access: Public
+//  Description: Returns the GL version string reported by the driver.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CLP(GraphicsStateGuardian)::
+get_gl_version() const {
+  return _gl_version;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_gl_version_major
 //       Access: Public
 //  Description: Returns the major part of the reported GL version

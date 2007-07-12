@@ -571,6 +571,17 @@ reset() {
 
   _supports_multitexture = false;
 
+  _supports_vertex_arrays = true;
+  if (_gl_version == "1.2 (1.5 Mesa 6.4.2)") {
+    // We suspect this particular version of Mesa, which appears to
+    // be installed by default on every Linux implementation, has
+    // real problems rendering with vertex arrays.  Therefore,
+    // disable vertex arrays by default.
+    GLCAT.debug()
+      << "Buggy Mesa version detected; vertex array support is doubted.\n";
+    _supports_vertex_arrays = false;
+  }
+
   _supports_tex_non_pow2 =
     has_extension("GL_ARB_texture_non_power_of_two");
 
@@ -1702,6 +1713,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // extra vertex arrays used by the previous rendering mode.
 #ifdef SUPPORT_IMMEDIATE_MODE
   _use_sender = !vertex_arrays;
+  if (!_supports_vertex_arrays) {
+    _use_sender = true;
+  }
 #endif
   if (_vertex_array_shader_context==0) {
     if (_current_shader_context==0) {
@@ -4325,6 +4339,7 @@ void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
   _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
+  _gl_version = show_gl_string("GL_VERSION", GL_VERSION);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
@@ -4360,18 +4375,6 @@ query_gl_version() {
         << "GL_VERSION = " << version << ", decoded to "
         << _gl_version_major << "." << _gl_version_minor
         << "." << _gl_version_release << "\n";
-    }
-
-    if (version == "1.2 (1.5 Mesa 6.4.2)") {
-      // We suspect this particular version of Mesa, which appears to
-      // be installed by default on every Linux implementation, has
-      // real problems rendering with vertex arrays.  Therefore,
-      // disable vertex arrays by default.
-      GLCAT.debug()
-        << "Buggy Mesa version detected; vertex array support is doubted.\n";
-      if (!vertex_arrays.has_value()) {
-        load_prc_file_data("mesa-hack", "vertex-arrays 0");
-      }
     }
   }
 }

@@ -195,6 +195,7 @@ public:
 
   INLINE const string &get_gl_vendor() const;
   INLINE const string &get_gl_renderer() const;
+  INLINE const string &get_gl_version() const;
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
   INLINE int get_gl_version_release() const;
@@ -386,6 +387,7 @@ protected:
 
   string _gl_vendor;
   string _gl_renderer;
+  string _gl_version;
   int _gl_version_major, _gl_version_minor, _gl_version_release;
   pset<string> _extensions;
 
@@ -421,7 +423,8 @@ public:
 
   bool _supports_bgr;
   bool _supports_rescale_normal;
-
+  bool _supports_vertex_arrays;
+  
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
