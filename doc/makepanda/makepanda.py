@@ -4322,7 +4322,7 @@ if (OMIT.count("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/win-stats/
 #
 
-if (OMIT.count("PANDATOOL")==0):
+if (OMIT.count("PANDATOOL")==0) and (sys.platform == "win32"):
     IPATH=['pandatool/src/win-stats']
     OPTS=[]
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='winstats_composite1.cxx', obj='pstats_composite1.obj')
