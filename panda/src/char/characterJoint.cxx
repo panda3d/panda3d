@@ -572,11 +572,13 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
 
   int i;
   for (i = 0; i < _num_net_nodes; i++) {
-    add_net_transform(DCAST(PandaNode, p_list[pi++]));
+    PandaNode *node = DCAST(PandaNode, p_list[pi++]);
+    _net_transform_nodes.insert(node);
   }
 
   for (i = 0; i < _num_local_nodes; i++) {
-    add_local_transform(DCAST(PandaNode, p_list[pi++]));
+    PandaNode *node = DCAST(PandaNode, p_list[pi++]);
+    _local_transform_nodes.insert(node);
   }
 
   return pi;
