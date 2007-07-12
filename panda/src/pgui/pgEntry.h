@@ -27,6 +27,7 @@
 #include "pointerTo.h"
 #include "pvector.h"
 #include "clockObject.h"
+#include "textAssembler.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGEntry
@@ -74,7 +75,13 @@ PUBLISHED:
   void setup(float width, int num_lines);
 
   INLINE void set_text(const string &text);
+  INLINE string get_plain_text() const;
   INLINE string get_text() const;
+
+  INLINE int get_num_characters() const;
+  INLINE wchar_t get_character(int n) const;
+  INLINE const TextGraphic *get_graphic(int n) const;
+  INLINE const TextProperties &get_properties(int n) const;
 
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
@@ -121,21 +128,21 @@ PUBLISHED:
   INLINE string get_erase_event() const;
 
   INLINE void set_wtext(const wstring &wtext);
-  INLINE const wstring &get_wtext() const;
+  INLINE wstring get_plain_wtext() const;
+  INLINE wstring get_wtext() const;
   INLINE void set_accept_enabled(bool enabled);
   bool is_wtext() const;
 
 
 private:
-  const wstring &get_display_wtext();
   void slot_text_def(int state);
   void update_text();
   void update_cursor();
   void show_hide_cursor(bool visible);
   void update_state();
 
-  wstring _wtext;
-  wstring _obscured_wtext;
+  TextAssembler _text;
+  TextAssembler _obscure_text;
   int _cursor_position;
   bool _cursor_stale;
   bool _cursor_visible;
@@ -165,17 +172,6 @@ private:
   NodePath _current_text;
   TextNode *_last_text_def;
   bool _text_geom_stale;
-
-  // This is a list of each row of text in the entry, after it has
-  // been wordwrapped by update_text().  It's used by update_cursor()
-  // to compute the correct cursor position.
-  class WWLine {
-  public:
-    wstring _str;
-    float _left;
-  };
-  typedef pvector<WWLine> WWLines;
-  WWLines _ww_lines;
 
   // This is the node that represents the cursor geometry.  It is also
   // attached to the above node, and is transformed around and/or

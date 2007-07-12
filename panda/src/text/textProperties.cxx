@@ -92,6 +92,71 @@ operator = (const TextProperties &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::operator ==
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool TextProperties::
+operator == (const TextProperties &other) const {
+  if (_specified != other._specified) {
+    return false;
+  }
+
+  if ((_specified & F_has_font) && _font != other._font) {
+    return false;
+  }
+  if ((_specified & F_has_small_caps) && _small_caps != other._small_caps) {
+    return false;
+  }
+  if ((_specified & F_has_small_caps_scale) && _small_caps_scale != other._small_caps_scale) {
+    return false;
+  }
+  if ((_specified & F_has_slant) && _slant != other._slant) {
+    return false;
+  }
+  if ((_specified & F_has_align) && _align != other._align) {
+    return false;
+  }
+  if ((_specified & F_has_indent) && _indent_width != other._indent_width) {
+    return false;
+  }
+  if ((_specified & F_has_wordwrap) && _wordwrap_width != other._wordwrap_width) {
+    return false;
+  }
+  if ((_specified & F_has_preserve_trailing_whitespace) && _preserve_trailing_whitespace != other._preserve_trailing_whitespace) {
+    return false;
+  }
+  if ((_specified & F_has_text_color) && _text_color != other._text_color) {
+    return false;
+  }
+  if ((_specified & F_has_text_color) && _text_color != other._text_color) {
+    return false;
+  }
+  if ((_specified & F_has_shadow_color) && _shadow_color != other._shadow_color) {
+    return false;
+  }
+  if ((_specified & F_has_shadow) && _shadow_offset != other._shadow_offset) {
+    return false;
+  }
+  if ((_specified & F_has_bin) && _bin != other._bin) {
+    return false;
+  }
+  if ((_specified & F_has_draw_order) && _draw_order != other._draw_order) {
+    return false;
+  }
+  if ((_specified & F_has_tab_width) && _tab_width != other._tab_width) {
+    return false;
+  }
+  if ((_specified & F_has_glyph_scale) && _glyph_scale != other._glyph_scale) {
+    return false;
+  }
+  if ((_specified & F_has_glyph_shift) && _glyph_shift != other._glyph_shift) {
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextProperties::clear
 //       Access: Published
 //  Description: Unsets all properties that have been specified so

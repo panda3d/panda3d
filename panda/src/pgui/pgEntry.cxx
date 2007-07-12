@@ -41,7 +41,9 @@ TypeHandle PGEntry::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PGEntry::
 PGEntry(const string &name) : 
-  PGItem(name)
+  PGItem(name),
+  _text(get_text_node()),
+  _obscure_text(get_text_node())
 {
   set_cull_callback();
 
@@ -53,6 +55,7 @@ PGEntry(const string &name) :
   _max_chars = 0;
   _max_width = 0.0f;
   _num_lines = 1;
+  _accept_enabled = true;
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
   _blink_start = 0.0f;
@@ -93,8 +96,8 @@ PGEntry::
 PGEntry::
 PGEntry(const PGEntry &copy) :
   PGItem(copy),
-  _wtext(copy._wtext),
-  _obscured_wtext(copy._obscured_wtext),
+  _text(copy._text),
+  _obscure_text(copy._obscure_text),
   _cursor_position(copy._cursor_position),
   _max_chars(copy._max_chars),
   _max_width(copy._max_width),
@@ -203,7 +206,7 @@ press(const MouseWatcherParameter &param, bool background) {
           _text_geom_stale = true;
         }
 
-        _cursor_position = min(_cursor_position, (int)_wtext.length());
+        _cursor_position = min(_cursor_position, _text.get_num_characters());
         _blink_start = ClockObject::get_global_clock()->get_frame_time();
         if (button == KeyboardButton::enter()) {
           // Enter.  Accept the entry.
@@ -214,10 +217,7 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
           if (_cursor_position > 0) {
-            if (_obscure_mode && _obscured_wtext.length() == _wtext.length()) {
-              _obscured_wtext.erase(_obscured_wtext.begin() + _obscured_wtext.length() - 1);
-            }
-            _wtext.erase(_wtext.begin() + _cursor_position - 1);
+            _text.set_wsubstr(wstring(), _cursor_position - 1, 1);
             _cursor_position--;
             _cursor_stale = true;
             _text_geom_stale = true;
@@ -226,11 +226,8 @@ press(const MouseWatcherParameter &param, bool background) {
           
         } else if (button == KeyboardButton::del()) {
           // Delete.  Remove the character to the right of the cursor.
-          if (_cursor_position < (int)_wtext.length()) {
-            if (_obscure_mode && _obscured_wtext.length() == _wtext.length()) {
-              _obscured_wtext.erase(_obscured_wtext.begin() + _obscured_wtext.length() - 1);
-            }
-            _wtext.erase(_wtext.begin() + _cursor_position);
+          if (_cursor_position < _text.get_num_characters()) {
+            _text.set_wsubstr(wstring(), _cursor_position, 1);
             _text_geom_stale = true;
             erase(param);
           }
@@ -245,7 +242,7 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::right()) {
           if (_cursor_keys_active) {
             // Right arrow.  Move the cursor position to the right.
-            _cursor_position = min(_cursor_position + 1, (int)_wtext.length());
+            _cursor_position = min(_cursor_position + 1, _text.get_num_characters());
             _cursor_stale = true;
           }
           
@@ -259,7 +256,7 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::end()) {
           if (_cursor_keys_active) {
             // End.  Move the cursor position to the end.
-            _cursor_position = _wtext.length();
+            _cursor_position = _text.get_num_characters();
             _cursor_stale = true;
           }
         }          
@@ -290,114 +287,61 @@ keystroke(const MouseWatcherParameter &param, bool background) {
         }
         wstring new_char(1, (wchar_t)keycode);
 
-        if (get_max_chars() > 0 && (int)_wtext.length() >= get_max_chars()) {
+        if (get_max_chars() > 0 && _text.get_num_characters() >= get_max_chars()) {
           // In max_chars mode, we consider it an overflow after we
           // have exceeded a fixed number of characters, irrespective
           // of the formatted width of those characters.
           overflow(param);
 
         } else {
-          _cursor_position = min(_cursor_position, (int)_wtext.length());
-          wstring new_text = 
-            _wtext.substr(0, _cursor_position) + new_char +
-            _wtext.substr(_cursor_position);
-            
-          // Get the new string to measure its length.  In normal
-          // mode, we measure the text itself.  In obscure mode, we
-          // measure a string of n asterisks.
-          wstring measure_text;
+          _cursor_position = min(_cursor_position, _text.get_num_characters());
+          bool too_long = !_text.set_wsubstr(new_char, _cursor_position, 0);
           if (_obscure_mode) {
-            measure_text = get_display_wtext() + (wchar_t)'*';
+            too_long = !_obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
           } else {
-            measure_text = new_text;
-          }
-
-          // Now check the length.
-          bool too_long = false;
-          if (_max_width > 0.0f) {
-            TextNode *text_node = get_text_def(S_focus);
-            text_node->set_wtext(measure_text);
-            text_node->set_wordwrap(_max_width);
-            text_node->set_preserve_trailing_whitespace(true);
-            text_node->set_max_rows(_num_lines);
-              
-            too_long = text_node->has_overflow();
-              
-            if (!too_long && (text_node->get_num_rows() == _num_lines)) {
+            if (!too_long && (_text.get_num_rows() == _num_lines)) {
               // If we've filled up all of the available lines, we
               // must also ensure that the last line is not too long
               // (it might be, because of additional whitespace on
               // the end).
-              wstring ww_text = text_node->get_wordwrapped_wtext();
-              size_t last_line_start = ww_text.rfind('\n');
-              if (last_line_start == string::npos) {
-                last_line_start = 0;
-              }
-              wstring last_line = ww_text.substr(last_line_start);
-              float last_line_width = text_node->calc_width(last_line);
-              
+              int r = _num_lines - 1;
+              int c = _text.get_num_cols(r);
+              float last_line_width = 
+                _text.get_xpos(r, c) - _text.get_xpos(r, 0);
               too_long = (last_line_width > _max_width);
             }
-
+            
             if (!too_long && keycode == ' ') {
               // Even if we haven't filled up all of the available
               // lines, we should reject a space that's typed at the
               // end of the current line if it would make that line
               // exceed the maximum width, just so we don't allow an
               // infinite number of spaces to accumulate.
-
-              // First, we need to figure out our current position
-              // within the wordwrapped text, by skipping past the
-              // newlines.
-              wstring ww_text = text_node->get_wordwrapped_wtext();
-              int i = 0;
-              int current_pos = 0;
-              while (i < _cursor_position) {
-                nassertv(current_pos < (int)ww_text.length());
-                if (ww_text[current_pos] != '\n') {
-                  i++;
-                }
-                current_pos++;
-              }
-
-              // Is the user typing at the end of the line?  Scan for
-              // the next character that's not a space following the
-              // current position.
-              int p = current_pos + 1;
-              while (p < (int)ww_text.length() && ww_text[p] == ' ') {
-                p++;
-              }
-
-              if (p >= (int)ww_text.length() || ww_text[p] == '\n') {
+              int r, c;
+              _text.calc_r_c(r, c, _cursor_position);
+              if (_text.get_num_cols(r) == c + 1) {
                 // The user is typing at the end of the line.  But we
                 // must allow at least one space at the end of the
                 // line, so we only make any of the following checks
                 // if there are already multiple spaces at the end of
                 // the line.
-                if (p - 2 >= 0 && ww_text[p - 2] == ' ') {
+                if (c - 1 >= 0 && _text.get_character(r, c - 1) == ' ') {
                   // Ok, the user is putting multiple spaces on the
                   // end of a line; we need to make sure the line does
-                  // not grow too wide.  Get the beginning of the line
-                  // and measure its width.
-                  int q = current_pos;
-                  while (q >= 0 && ww_text[q] != '\n') {
-                    q--;
-                  }
-
-                  wstring current_line = ww_text.substr(q + 1, p - (q + 1));
-                  float current_line_width = text_node->calc_width(current_line);
-
+                  // not grow too wide.  Measure the line's width.
+                  float current_line_width = 
+                    _text.get_xpos(r, c + 1) - _text.get_xpos(r, 0);
                   if (current_line_width > _max_width) {
                     // We have to reject the space, but we don't treat
                     // it as an overflow condition.  
-
+                    _text.set_wsubstr(wstring(), _cursor_position, 1);
                     // If the user is typing over existing space
                     // characters, we act as if the right-arrow key
                     // were pressed instead, and advance the cursor to
                     // the next position.  Otherwise, we just quietly
                     // eat the space character.
-                    if (_cursor_position < (int)_wtext.length() && 
-                        _wtext[_cursor_position] == ' ') {
+                    if (_cursor_position < _text.get_num_characters() && 
+                        _text.get_character(_cursor_position) == ' ') {
                       _cursor_position++;
                       _cursor_stale = true;
                     }
@@ -409,14 +353,10 @@ keystroke(const MouseWatcherParameter &param, bool background) {
           }
           
           if (too_long) {
+            _text.set_wsubstr(wstring(), _cursor_position, 1);
             overflow(param);
               
           } else {
-            _wtext = new_text;
-            if (_obscure_mode) {
-              _obscured_wtext = measure_text;
-            }
-              
             _cursor_position += new_char.length();
             _cursor_stale = true;
             _text_geom_stale = true;
@@ -445,8 +385,9 @@ candidate(const MouseWatcherParameter &param, bool background) {
       _candidate_highlight_end = param.get_highlight_end();
       _candidate_cursor_pos = param.get_cursor_pos();
       _text_geom_stale = true;
-      if (!_candidate_wtext.empty())
+      if (!_candidate_wtext.empty()) {
         type(param);
+      }
     }
   }
   PGItem::candidate(param, background);
@@ -678,42 +619,14 @@ set_focus(bool focus) {
 ////////////////////////////////////////////////////////////////////
 bool PGEntry:: 
 is_wtext() const {
-  wstring::const_iterator ti;
-  for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
-    if (((*ti) & ~0x7f) != 0) {
+  for (int i = 0; i < _text.get_num_characters(); ++i) {
+    wchar_t ch = _text.get_character(i);
+    if ((ch & ~0x7f) != 0) {
       return true;
     }
   }
 
   return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::get_display_wtext
-//       Access: Private
-//  Description: Returns the string that should be displayed within
-//               the entry.  This is normally _wtext, but it may be
-//               _obscured_wtext.
-////////////////////////////////////////////////////////////////////
-const wstring &PGEntry::
-get_display_wtext() {
-  if (_obscure_mode) {
-    // If obscure mode is enabled, we should just display a bunch of
-    // asterisks.
-    if (_obscured_wtext.length() != _wtext.length()) {
-      _obscured_wtext = wstring();
-      wstring::const_iterator ti;
-      for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
-        _obscured_wtext += (wchar_t)'*';
-      }
-    }
-
-    return _obscured_wtext;
-
-  } else {
-    // In normal, non-obscure mode, we display the actual text
-    return _wtext;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -741,89 +654,56 @@ update_text() {
   nassertv(node != (TextNode *)NULL);
 
   if (_text_geom_stale || node != _last_text_def) {
-    wstring display_wtext;
+    TextProperties props = *node;
+    props.set_wordwrap(_max_width);
+    props.set_preserve_trailing_whitespace(true);
+    _text.set_properties(props);
+    _text.set_max_rows(_num_lines);
 
-    if (_candidate_wtext.empty() || _obscure_mode) {
+    if (node != _last_text_def) {
+      // Make sure the default properties are applied to all the
+      // characters in the text.
+      _text.set_wtext(_text.get_wtext());
+      _last_text_def = node;
+    }
+
+    PT(PandaNode) assembled;
+    if (_obscure_mode) {
+      _obscure_text.set_properties(props);
+      _obscure_text.set_max_rows(_num_lines);
+      _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
+      assembled = _obscure_text.assemble_text();
+
+    } else if (_candidate_wtext.empty()) {
       // If we're not trying to display a candidate string, it's easy:
       // just display the current text contents.
-      display_wtext = get_display_wtext();
+      assembled = _text.assemble_text();
 
     } else {
-      // Insert the complex sequence of characters required to show
-      // the candidate string in a different color.  This gets
-      // inserted at the current cursor position.
-      wstring source_wtext = get_display_wtext();
+      TextPropertiesManager *tp_mgr = TextPropertiesManager::get_global_ptr();
+      TextProperties inactive = tp_mgr->get_properties(_candidate_inactive);
+      TextProperties active = tp_mgr->get_properties(_candidate_active);
 
-      display_wtext = source_wtext.substr(0, _cursor_position);
-      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
-      display_wtext += node->decode_text(_candidate_inactive);
-      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
-      display_wtext += _candidate_wtext.substr(0, _candidate_highlight_start);
-      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
-      display_wtext += node->decode_text(_candidate_active);
-      display_wtext += wstring(1, (wchar_t)text_push_properties_key);
-      display_wtext += _candidate_wtext.substr(_candidate_highlight_start,
-                                               _candidate_highlight_end - _candidate_highlight_start);
-      display_wtext += wstring(1, (wchar_t)text_pop_properties_key);
-      display_wtext += _candidate_wtext.substr(_candidate_highlight_end);
-      display_wtext += wstring(1, (wchar_t)text_pop_properties_key);
+      // Create a special TextAssembler to insert the candidate string
+      // in its own special colors.
 
-      display_wtext += source_wtext.substr(_cursor_position);
-    }
-
-    // We need to regenerate.
-    _last_text_def = node;
-    _last_text_def->set_wtext(display_wtext);
-    _last_text_def->set_wordwrap(_max_width);
-    _last_text_def->set_preserve_trailing_whitespace(true);
-    _last_text_def->set_max_rows(_num_lines);
-
-    // Check for multiple lines.
-    wstring ww_text = _last_text_def->get_wordwrapped_wtext();
-
-    // And chop the lines up into pieces.
-    _ww_lines.clear();
-    size_t p = 0;
-    size_t q = ww_text.find((wchar_t)'\n');
-    while (q != string::npos) {
-      _ww_lines.push_back(WWLine());
-      WWLine &line = _ww_lines.back();
-      line._str = ww_text.substr(p, q - p);
-      
-      // Get the left edge of the text at this line.
-      line._left = 0.0f;
-      if (_last_text_def->get_align() != TextNode::A_left) {
-        // Temporarily set this line's text in the TextNode, just so
-        // we can measure the left margin.  (If align is A_left, we
-        // know that the left margin is 0.0, so we don't need to do
-        // this.)
-        _last_text_def->set_wtext(line._str);
-        line._left = _last_text_def->get_left();
-      }
-      
-      p = q + 1;
-      q = ww_text.find('\n', p);
-    }
-    _ww_lines.push_back(WWLine());
-    WWLine &line = _ww_lines.back();
-    line._str = ww_text.substr(p);
-    
-    // Get the left edge of the text at this line.
-    line._left = 0.0f;
-    if (_last_text_def->get_align() != TextNode::A_left) {
-      _last_text_def->set_wtext(line._str);
-      line._left = _last_text_def->get_left();
+      TextAssembler ctext(_text);
+      ctext.set_wsubstr(_candidate_wtext.substr(_candidate_highlight_end),
+                        _cursor_position, 0, inactive);
+      ctext.set_wsubstr(_candidate_wtext.substr(_candidate_highlight_start,
+                                                _candidate_highlight_end - _candidate_highlight_start),
+                        _cursor_position, 0, active);
+      ctext.set_wsubstr(_candidate_wtext.substr(0, _candidate_highlight_start),
+                        _cursor_position, 0, inactive);
+      assembled = ctext.assemble_text();
     }
 
     if (!_current_text.is_empty()) {
       _current_text.remove_node();
     }
 
-    // We need to reset the text, since we might have changed it
-    // temporarily in the above when align is not A_left.
-    _last_text_def->set_wtext(display_wtext);
     _current_text = 
-      _text_render_root.attach_new_node(_last_text_def->generate());
+      _text_render_root.attach_new_node(assembled);
     _text_geom_stale = false;
     _cursor_stale = true;
   }
@@ -844,32 +724,23 @@ update_cursor() {
   if (_cursor_stale || node != _last_text_def) {
     update_text();
 
-    _cursor_position = min(_cursor_position, (int)_wtext.length());
+    _cursor_position = min(_cursor_position, _text.get_num_characters());
     _candidate_cursor_pos = min(_candidate_cursor_pos, _candidate_wtext.length());
 
     // Determine the row and column of the cursor.
-    int row = 0;
-    int column = _cursor_position + _candidate_cursor_pos;
-    while (row + 1 < (int)_ww_lines.size() &&
-           column > (int)_ww_lines[row]._str.length()) {
-      column -= _ww_lines[row]._str.length();
-      row++;
+    int row, column;
+    float xpos, ypos;
+    if (_obscure_mode) {
+      _obscure_text.calc_r_c(row, column, _cursor_position + _candidate_cursor_pos);
+      xpos = _obscure_text.get_xpos(row, column);
+      ypos = _obscure_text.get_ypos(row, column);
+    } else {
+      _text.calc_r_c(row, column, _cursor_position + _candidate_cursor_pos);
+      xpos = _text.get_xpos(row, column);
+      ypos = _text.get_ypos(row, column);
     }
 
-    nassertv(row >= 0 && row < (int)_ww_lines.size());
-
-    // It is possible for this to become untrue legitimately, if due
-    // to a candidate string we have wordwrapped down the last part of
-    // the line containing the cursor.
-    //nassertv(column >= 0 && column <= (int)_ww_lines[row]._str.length());
-
-    float width = 
-      _last_text_def->calc_width(_ww_lines[row]._str.substr(0, column));
-    float line_height = _last_text_def->get_line_height();
-
-    LVecBase3f trans(_ww_lines[row]._left + width, 0.0f, -line_height * row);
-    _cursor_def.set_pos(trans);
-
+    _cursor_def.set_pos(xpos, 0.0f, ypos);
     _cursor_stale = false;
   }
 

@@ -59,6 +59,9 @@ PUBLISHED:
   TextProperties(const TextProperties &copy);
   void operator = (const TextProperties &copy);
 
+  bool operator == (const TextProperties &other) const;
+  INLINE bool operator != (const TextProperties &other) const;
+
   void clear();
   INLINE bool is_any_specified() const;
 

@@ -33,6 +33,23 @@ set_text(const string &text) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_plain_text
+//       Access: Published
+//  Description: Returns the text currently displayed within the
+//               entry, without any embedded properties characters.
+//
+//               This uses the Unicode encoding currently specified
+//               for the "focus" TextNode; therefore, the TextNode
+//               must exist before calling get_text().
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry:: 
+get_plain_text() const {
+  TextNode *text_node = get_text_def(S_focus);
+  nassertr(text_node != (TextNode *)NULL, string());
+  return text_node->encode_wtext(get_plain_wtext());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_text
 //       Access: Published
 //  Description: Returns the text currently displayed within the
@@ -45,6 +62,61 @@ get_text() const {
   TextNode *text_node = get_text_def(S_focus);
   nassertr(text_node != (TextNode *)NULL, string());
   return text_node->encode_wtext(get_wtext());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_num_characters
+//       Access: Published
+//  Description: Returns the number of characters of text in the
+//               entry.  This is the actual number of visible
+//               characters, not counting implicit newlines due to
+//               wordwrapping, or formatted characters for text
+//               properties changes.  If there is an embedded
+//               TextGraphic object, it counts as one character.
+//
+//               This is also the length of the string returned by
+//               get_plain_text().
+////////////////////////////////////////////////////////////////////
+INLINE int PGEntry::
+get_num_characters() const {
+  return _text.get_num_characters();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_character
+//       Access: Published
+//  Description: Returns the character at the indicated position in
+//               the entry.  If the object at this position is a
+//               graphic object instead of a character, returns 0.
+////////////////////////////////////////////////////////////////////
+INLINE wchar_t PGEntry::
+get_character(int n) const {
+  return _text.get_character(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_graphic
+//       Access: Published
+//  Description: Returns the graphic object at the indicated position
+//               in the pre-wordwrapped string.  If the object at this
+//               position is a character instead of a graphic object,
+//               returns NULL.
+////////////////////////////////////////////////////////////////////
+INLINE const TextGraphic *PGEntry::
+get_graphic(int n) const {
+  return _text.get_graphic(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_properties
+//       Access: Published
+//  Description: Returns the TextProperties in effect for the object
+//               at the indicated position in the pre-wordwrapped
+//               string.
+////////////////////////////////////////////////////////////////////
+INLINE const TextProperties &PGEntry::
+get_properties(int n) const {
+  return _text.get_properties(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -431,11 +503,25 @@ get_erase_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_wtext(const wstring &wtext) {
-  _wtext = wtext;
+  _text.set_wtext(wtext);
+  if (_obscure_mode) {
+    _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
+  }
   _text_geom_stale = true;
   _cursor_stale = true;
   _blink_start = ClockObject::get_global_clock()->get_frame_time();
-  set_cursor_position(_wtext.size());
+  set_cursor_position(_text.get_num_characters());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_plain_wtext
+//       Access: Published
+//  Description: Returns the text currently displayed within the
+//               entry, without any embedded properties characters.
+////////////////////////////////////////////////////////////////////
+INLINE wstring PGEntry:: 
+get_plain_wtext() const {
+  return _text.get_plain_wtext();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,9 +530,9 @@ set_wtext(const wstring &wtext) {
 //  Description: Returns the text currently displayed within the
 //               entry.
 ////////////////////////////////////////////////////////////////////
-INLINE const wstring &PGEntry:: 
+INLINE wstring PGEntry:: 
 get_wtext() const {
-  return _wtext;
+  return _text.get_wtext();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -302,7 +302,8 @@ generate() {
   wstring wtext = get_wtext();
 
   // Assemble the text.
-  bool all_set = _assembler.set_wtext(wtext, *this, _max_rows);
+  _assembler.set_properties(*this);
+  bool all_set = _assembler.set_wtext(wtext);
   if (all_set) {
     // No overflow.
     _flags &= ~F_has_overflow;

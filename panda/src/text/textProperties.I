@@ -18,6 +18,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::operator !=
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TextProperties::
+operator != (const TextProperties &other) const {
+  return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextProperties::is_any_specified
 //       Access: Published
 //  Description: Returns true if any properties have been specified,

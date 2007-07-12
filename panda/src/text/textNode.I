@@ -47,6 +47,7 @@ get_line_height() const {
 INLINE void TextNode::
 set_max_rows(int max_rows) {
   _max_rows = max_rows;
+  _assembler.set_max_rows(_max_rows);
   invalidate_with_measure();
 }
 
@@ -59,6 +60,7 @@ set_max_rows(int max_rows) {
 INLINE void TextNode::
 clear_max_rows() {
   _max_rows = 0;
+  _assembler.set_max_rows(_max_rows);
   invalidate_with_measure();
 }
 
@@ -1183,8 +1185,10 @@ append_unicode_char(int character) {
 //       Access: Public
 //  Description: Returns a string that represents the contents of the
 //               text, as it has been formatted by wordwrap rules.
-//               This will not contain any embedded special characters
-//               like \1 or \3.
+//
+//               In earlier versions, this did not contain any
+//               embedded special characters like \1 or \3; now it
+//               does.
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
 get_wordwrapped_text() const {
@@ -1234,8 +1238,10 @@ append_wtext(const wstring &wtext) {
 //       Access: Published
 //  Description: Returns a wstring that represents the contents of the
 //               text, as it has been formatted by wordwrap rules.
-//               This will not contain any embedded special characters
-//               like \1 or \3.
+//
+//               In earlier versions, this did not contain any
+//               embedded special characters like \1 or \3; now it
+//               does.
 ////////////////////////////////////////////////////////////////////
 INLINE wstring TextNode::
 get_wordwrapped_wtext() const {

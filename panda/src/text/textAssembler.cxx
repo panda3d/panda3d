@@ -29,10 +29,6 @@
 
 #include <ctype.h>
   
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
-
-
-
 // This is the factor by which CT_small scales the character down.
 static const float small_accent_scale = 0.6f;
 
@@ -78,74 +74,100 @@ isbreakpoint(unsigned int ch) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::Constructor
-//       Access: Public
-//  Description: Places all of the indicated text according to the
-//               associated TextProperties.
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 TextAssembler::
 TextAssembler(TextEncoder *encoder) : 
   _encoder(encoder),
-  _usage_hint(Geom::UH_static)
+  _usage_hint(Geom::UH_static),
+  _max_rows(0)
 {
+  _initial_cprops = new ComputedProperties(TextProperties());
   clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+TextAssembler::
+TextAssembler(const TextAssembler &copy) :
+  _initial_cprops(copy._initial_cprops),
+  _text_string(copy._text_string),
+  _text_block(copy._text_block),
+  _ul(copy._ul),
+  _lr(copy._lr),
+  _next_row_ypos(copy._next_row_ypos),
+  _encoder(copy._encoder),
+  _usage_hint(copy._usage_hint),
+  _max_rows(copy._max_rows)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::Copy Assignment Operator
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void TextAssembler::
+operator = (const TextAssembler &copy) {
+  _initial_cprops = copy._initial_cprops;
+  _text_string = copy._text_string;
+  _text_block = copy._text_block;
+  _ul = copy._ul;
+  _lr = copy._lr;
+  _next_row_ypos = copy._next_row_ypos;
+  _encoder = copy._encoder;
+  _usage_hint = copy._usage_hint;
+  _max_rows = copy._max_rows;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::Destructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 TextAssembler::
 ~TextAssembler() {
-  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::clear
-//       Access: Public
+//       Access: Published
 //  Description: Reinitializes the contents of the TextAssembler.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
 clear() {
-  _num_rows = 0;
   _ul.set(0.0f, 0.0f);
   _lr.set(0.0f, 0.0f);
+  _next_row_ypos = 0.0f;
 
-  _wordwrapped_string.clear();
-
-  PropertiesList::iterator li;
-  for (li = _properties_list.begin(); li != _properties_list.end(); ++li) {
-    delete (*li);
-  }
-  _properties_list.clear();
+  _text_string.clear();
+  _text_block.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::set_wtext
-//       Access: Public
+//       Access: Published
 //  Description: Accepts a new text string and associated properties
 //               structure, and precomputes the wordwrapping layout
 //               appropriately.  After this call,
 //               get_wordwrapped_wtext() and get_num_rows() can be
 //               called.
 //
-//               If max_rows is greater than zero, no more than
-//               max_rows will be accepted.  Text beyond that will be
-//               truncated.
-//
 //               The return value is true if all the text is accepted,
-//               or false if some was truncated.
+//               or false if some was truncated (see set_max_rows()).
 ////////////////////////////////////////////////////////////////////
 bool TextAssembler::
-set_wtext(const wstring &wtext, const TextProperties &properties,
-          int max_rows) {
+set_wtext(const wstring &wtext) {
   clear();
 
   // First, expand all of the embedded TextProperties references
   // within the string.
-  TextString text_string;
   wstring::const_iterator si = wtext.begin();
-  scan_wtext(si, wtext.end(), &properties, text_string);
+  scan_wtext(_text_string, si, wtext.end(), _initial_cprops);
 
   while (si != wtext.end()) {
     // If we returned without consuming the whole string, it means
@@ -154,31 +176,127 @@ set_wtext(const wstring &wtext, const TextProperties &properties,
     // the rest of the string.
     text_cat.warning()
       << "pop_properties encountered without preceding push_properties.\n";
-    scan_wtext(si, wtext.end(), &properties, text_string);
+    scan_wtext(_text_string, si, wtext.end(), _initial_cprops);
   }
 
   // Then apply any wordwrap requirements.
-  return wordwrap_text(text_string, _wordwrapped_string, max_rows);
+  return wordwrap_text();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextAssembler::get_wordwrapped_wtext
-//       Access: Public
+//     Function: TextAssembler::set_wsubstr
+//       Access: Published
+//  Description: Replaces the 'count' characters from 'start' of the
+//               current text with the indicated replacement text.  If
+//               the replacement text does not have count characters,
+//               the length of the string will be changed accordingly.
+//
+//               The substring may include nested formatting
+//               characters, but they must be self-contained and
+//               self-closed.  The indicated TextProperties specifies
+//               the default TextProperties to apply to the substring;
+//               it layers on top of the default TextProperties for
+//               the overall string specified via set_properties().
+//
+//               The return value is true if all the text is accepted,
+//               or false if some was truncated (see set_max_rows()).
+////////////////////////////////////////////////////////////////////
+bool TextAssembler::
+set_wsubstr(const wstring &wtext, int start, int count, 
+            const TextProperties &properties) {
+  nassertr(start >= 0 && start <= (int)_text_string.size(), false);
+  nassertr(count >= 0 && start + count <= (int)_text_string.size(), false);
+
+  PT(ComputedProperties) substr_cprops = _initial_cprops;
+  if (properties.is_any_specified()) {
+    TextProperties new_properties = get_properties();
+    new_properties.add_properties(properties);
+    if (substr_cprops->_properties != new_properties) {
+      substr_cprops = new ComputedProperties(new_properties);
+    }
+  }
+
+  // Use scan_wtext to unroll the substring we wish to insert, as in
+  // set_wtext(), above.
+  TextString substr;
+  wstring::const_iterator si = wtext.begin();
+  scan_wtext(substr, si, wtext.end(), substr_cprops);
+  while (si != wtext.end()) {
+    text_cat.warning()
+      << "pop_properties encountered without preceding push_properties.\n";
+    scan_wtext(substr, si, wtext.end(), substr_cprops);
+  }
+
+  _text_string.erase(_text_string.begin() + start, _text_string.begin() + start + count);
+  _text_string.insert(_text_string.begin() + start, substr.begin(), substr.end());
+
+  return wordwrap_text();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_plain_wtext
+//       Access: Published
 //  Description: Returns a wstring that represents the contents of the
-//               text, as it has been formatted by wordwrap rules.
-//               This will not contain any embedded special characters
-//               like \1 or \3.
+//               text, without any embedded properties characters.  If
+//               there is an embedded graphic object, a zero value is
+//               inserted in that position.
+//
+//               This string has the same length as
+//               get_num_characters(), and the characters in this
+//               string correspond one-to-one with the characters
+//               returned by get_character(n).
 ////////////////////////////////////////////////////////////////////
 wstring TextAssembler::
-get_wordwrapped_wtext() const {
+get_plain_wtext() const {
   wstring wtext;
 
-  TextString::const_iterator ti;
-  for (ti = _wordwrapped_string.begin(); 
-       ti != _wordwrapped_string.end(); 
-       ++ti) {
-    if ((*ti)._graphic == (TextGraphic *)NULL) {
-      wtext += (*ti)._character;
+  TextString::const_iterator si;
+  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
+    const TextCharacter &tch = (*si);
+    if (tch._graphic == (TextGraphic *)NULL) {
+      wtext += tch._character;
+    } else {
+      wtext.push_back(0);
+    }
+  }
+  
+  return wtext;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_wordwrapped_plain_wtext
+//       Access: Published
+//  Description: Returns a wstring that represents the contents of the
+//               text, with newlines inserted according to the
+//               wordwrapping.  The string will contain no embedded
+//               properties characters.  If there is an embedded
+//               graphic object, a zero value is inserted in that
+//               position.
+//
+//               This string has the same number of newline characters
+//               as get_num_rows(), and the characters in this string
+//               correspond one-to-one with the characters returned by
+//               get_character(r, c).
+////////////////////////////////////////////////////////////////////
+wstring TextAssembler::
+get_wordwrapped_plain_wtext() const {
+  wstring wtext;
+
+  TextBlock::const_iterator bi;
+  for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
+    const TextRow &row = (*bi);
+    if (bi != _text_block.begin()) {
+      wtext += '\n';
+    }
+      
+    TextString::const_iterator si;
+    for (si = row._string.begin(); si != row._string.end(); ++si) {
+      const TextCharacter &tch = (*si);
+      if (tch._graphic == (TextGraphic *)NULL) {
+        wtext += tch._character;
+      } else {
+        wtext.push_back(0);
+      }
     }
   }
 
@@ -186,8 +304,230 @@ get_wordwrapped_wtext() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_wtext
+//       Access: Published
+//  Description: Returns a wstring that represents the contents of the
+//               text.
+//
+//               The string will contain embedded properties
+//               characters, which may not exactly match the embedded
+//               properties characters of the original string, but it
+//               will encode the same way.
+////////////////////////////////////////////////////////////////////
+wstring TextAssembler::
+get_wtext() const {
+  wstring wtext;
+  PT(ComputedProperties) current_cprops = _initial_cprops;
+
+  TextString::const_iterator si;
+  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
+    const TextCharacter &tch = (*si);
+    current_cprops->append_delta(wtext, tch._cprops);
+    if (tch._graphic == (TextGraphic *)NULL) {
+      wtext += tch._character;
+    } else {
+      wtext.push_back(text_embed_graphic_key);
+      wtext += tch._graphic_wname;
+      wtext.push_back(text_embed_graphic_key);
+    }
+    current_cprops = tch._cprops;
+  }
+  current_cprops->append_delta(wtext, _initial_cprops);
+
+  return wtext;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_wordwrapped_wtext
+//       Access: Published
+//  Description: Returns a wstring that represents the contents of the
+//               text, with newlines inserted according to the
+//               wordwrapping.
+//
+//               The string will contain embedded properties
+//               characters, which may not exactly match the embedded
+//               properties characters of the original string, but it
+//               will encode the same way.
+////////////////////////////////////////////////////////////////////
+wstring TextAssembler::
+get_wordwrapped_wtext() const {
+  wstring wtext;
+
+  PT(ComputedProperties) current_cprops = _initial_cprops;
+  
+  TextBlock::const_iterator bi;
+  for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
+    const TextRow &row = (*bi);
+    if (bi != _text_block.begin()) {
+      wtext += '\n';
+    }
+    
+    TextString::const_iterator si;
+    for (si = row._string.begin(); si != row._string.end(); ++si) {
+      const TextCharacter &tch = (*si);
+      current_cprops->append_delta(wtext, tch._cprops);
+      if (tch._graphic == (TextGraphic *)NULL) {
+        wtext += tch._character;
+      } else {
+        wtext.push_back(text_embed_graphic_key);
+        wtext += tch._graphic_wname;
+        wtext.push_back(text_embed_graphic_key);
+      }
+      current_cprops = tch._cprops;
+    }
+  }
+  current_cprops->append_delta(wtext, _initial_cprops);
+
+  return wtext;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::calc_r_c
+//       Access: Published
+//  Description: Computes the row and column index of the nth
+//               character or graphic object in the text.  Fills r and
+//               c accordingly.
+//
+//               Returns true if the nth character is valid and has a
+//               corresponding r and c position, false otherwise (for
+//               instance, a soft-hyphen character, or a newline
+//               character, may not have a corresponding position).
+//               In either case, r and c will be filled in sensibly.
+////////////////////////////////////////////////////////////////////
+bool TextAssembler::
+calc_r_c(int &r, int &c, int n) const {
+  nassertr(n >= 0 && n <= (int)_text_string.size(), false);
+
+  if (n == _text_string.size()) {
+    // A special case for one past the last character.
+    if (_text_string.empty()) {
+      r = 0;
+      c = 0;
+    } else {
+      r = _text_block.size() - 1;
+      c = _text_block[r]._string.size();
+    }
+    return true;
+  }
+
+  r = 0;
+  while (r + 1 < (int)_text_block.size() &&
+         _text_block[r + 1]._row_start < n) {
+    r += 1;
+  }
+
+  const TextRow &row = _text_block[r];
+  bool is_real_char = true;
+
+  if (row._got_soft_hyphens) {
+    // If there are any soft hyphen or soft break keys in the source
+    // text, we have to scan past them to get c precisely.
+    c = 0;
+    int i = row._row_start;
+    while (i < n - 1) {
+      if (_text_string[i]._character != text_soft_hyphen_key && 
+          _text_string[i]._character != text_soft_break_key) {
+        ++c;
+      }
+      ++i;
+    }
+    if (_text_string[n - 1]._character != text_soft_hyphen_key && 
+        _text_string[n - 1]._character != text_soft_break_key) {
+      ++c;
+      if (_text_string[n - 1]._character == '\n') {
+        is_real_char = false;
+      }
+    } else {
+      is_real_char = false;
+    }
+
+  } else {
+    // If there are no soft characters, then the string maps
+    // one-to-one.
+    c = min(n - row._row_start, (int)row._string.size());
+    if (_text_string[n - 1]._character == '\n') {
+      is_real_char = false;
+    }
+  }
+
+  return is_real_char;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::calc_index
+//       Access: Published
+//  Description: Computes the character index of the character at the
+//               rth row and cth column position.  This is the inverse
+//               of calc_r_c().
+//
+//               It is legal for c to exceed the index number of the
+//               last column by 1, and it is legal for r to exceed the
+//               index number of the last row by 1, if c is 0.
+////////////////////////////////////////////////////////////////////
+int TextAssembler::
+calc_index(int r, int c) const {
+  nassertr(r >= 0 && r <= (int)_text_block.size(), 0);
+  if (r == _text_block.size()) {
+    nassertr(c == 0, 0);
+    return _text_string.size();
+
+  } else {
+    nassertr(c >= 0 && c <= (int)_text_block[r]._string.size(), 0);
+    const TextRow &row = _text_block[r];
+
+    if (row._got_soft_hyphens) {
+      // If there are any soft hyphen or soft break keys in the source
+      // text, we have to scan past them to get n precisely.
+      int n = row._row_start;
+      while (c > 0) {
+        if (_text_string[n]._character != text_soft_hyphen_key && 
+            _text_string[n]._character != text_soft_break_key) {
+          --c;
+        }
+        ++n;
+      }
+      return n;
+
+    } else {
+      // If there are no soft characters, then the string maps
+      // one-to-one.
+      return row._row_start + c;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_xpos
+//       Access: Published
+//  Description: Returns the x position of the origin of the character
+//               or graphic object at the indicated position in the
+//               indicated row.
+//
+//               It is legal for c to exceed the index number of the
+//               last column by 1, and it is legal for r to exceed the
+//               index number of the last row by 1, if c is 0.
+////////////////////////////////////////////////////////////////////
+float TextAssembler::
+get_xpos(int r, int c) const {
+  nassertr(r >= 0 && r <= (int)_text_block.size(), 0.0f);
+  if (r == _text_block.size()) {
+    nassertr(c == 0, 0.0f);
+    return 0.0f;
+
+  } else {
+    nassertr(c >= 0 && c <= (int)_text_block[r]._string.size(), 0.0f);
+    const TextRow &row = _text_block[r];
+    float xpos = row._xpos;
+    for (int i = 0; i < c; ++i) {
+      xpos += calc_width(row._string[i]);
+    }
+    return xpos;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::assemble_text
-//       Access: Public
+//       Access: Published
 //  Description: Actually assembles all of the text into a GeomNode,
 //               and returns the node (or possibly a parent of the
 //               node, to keep the shadow separate).  Once this has
@@ -198,8 +538,7 @@ PT(PandaNode) TextAssembler::
 assemble_text() {
   // Now assemble the text into glyphs.
   PlacedGlyphs placed_glyphs;
-  assemble_paragraph(_wordwrapped_string.begin(), _wordwrapped_string.end(), 
-                     placed_glyphs);
+  assemble_paragraph(placed_glyphs);
 
   // Now that we have a bunch of GlyphPlacements, pull out the Geoms
   // and put them under a common node.
@@ -336,27 +675,19 @@ calc_width(const TextGraphic *graphic, const TextProperties &properties) {
   return (frame[1] - frame[0]) * properties.get_glyph_scale();
 }
 
+#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::scan_wtext
 //       Access: Private
 //  Description: Scans through the text string, decoding embedded
-//               references to TextProperties.  The string is copied
-//               character-by-character into the indicated TextString
-//               output.
-//
-//               As new TextProperties are discovered, TextProperties
-//               structures are allocated and pushed into the
-//               _properties_list list; these pointers are
-//               referenced by the text_string.  When the text_string
-//               is no longer need, the TextProperties structures in
-//               _properties_list should be deleted to free up
-//               memory.
+//               references to TextProperties.  The decoded string is
+//               copied character-by-character into _text_string.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
-scan_wtext(wstring::const_iterator &si, 
+scan_wtext(TextAssembler::TextString &output_string,
+           wstring::const_iterator &si, 
            const wstring::const_iterator &send,
-           const TextProperties *current_properties,
-           TextAssembler::TextString &text_string) {
+           TextAssembler::ComputedProperties *current_cprops) {
   while (si != send) {
     if ((*si) == text_push_properties_key) {
       // This indicates a nested properties structure.  Pull off the
@@ -378,27 +709,13 @@ scan_wtext(wstring::const_iterator &si,
       }
 
       ++si;
-
-      // Now we have to encode the wstring into a string, for lookup
-      // in the TextPropertiesManager.
-      string name = _encoder->encode_wtext(wname);
-      
-      TextPropertiesManager *manager = 
-        TextPropertiesManager::get_global_ptr();
       
       // Define the new properties by extending the current properties.
-      TextProperties *new_properties = new TextProperties(*current_properties);
-      const TextProperties *named_props = manager->get_properties_ptr(name);
-      if (named_props != (TextProperties *)NULL) {
-        new_properties->add_properties(*named_props);
-      } else {
-        text_cat.warning()
-          << "Unknown TextProperties: " << name << "\n";
-      }
-      _properties_list.push_back(new_properties);
+      PT(ComputedProperties) new_cprops = 
+        new ComputedProperties(current_cprops, wname, _encoder);
       
       // And recursively scan with the nested properties.
-      scan_wtext(si, send, new_properties, text_string);
+      scan_wtext(output_string, si, send, new_cprops);
 
       if (text_cat.is_debug()) {
         if (si == send) {
@@ -421,10 +738,10 @@ scan_wtext(wstring::const_iterator &si,
       // TextGraphic structure, which is everything until the next
       // text_embed_graphic_key.
 
-      wstring wname;
+      wstring graphic_wname;
       ++si;
       while (si != send && (*si) != text_embed_graphic_key) {
-        wname += (*si);
+        graphic_wname += (*si);
         ++si;
       }
 
@@ -440,78 +757,79 @@ scan_wtext(wstring::const_iterator &si,
 
       // Now we have to encode the wstring into a string, for lookup
       // in the TextPropertiesManager.
-      string name = _encoder->encode_wtext(wname);
+      string graphic_name = _encoder->encode_wtext(graphic_wname);
       
       TextPropertiesManager *manager = 
         TextPropertiesManager::get_global_ptr();
       
       // Get the graphic image.
-      const TextGraphic *named_graphic = manager->get_graphic_ptr(name);
+      const TextGraphic *named_graphic = manager->get_graphic_ptr(graphic_name);
       if (named_graphic != (TextGraphic *)NULL) {
-        text_string.push_back(TextCharacter(named_graphic, current_properties));
+        output_string.push_back(TextCharacter(named_graphic, graphic_wname, current_cprops));
 
       } else {
         text_cat.warning()
-          << "Unknown TextGraphic: " << name << "\n";
+          << "Unknown TextGraphic: " << graphic_name << "\n";
       }
 
     } else {
       // A normal character.  Apply it.
-      text_string.push_back(TextCharacter(*si, current_properties));
+      output_string.push_back(TextCharacter(*si, current_cprops));
       ++si;
     }
   }
 }
+#endif  // CPPPARSER
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::wordwrap_text
 //       Access: Private
-//  Description: Inserts newlines into the given text at the
+//  Description: Inserts newlines into the _text_string at the
 //               appropriate places in order to make each line be the
 //               longest possible line that is not longer than
 //               wordwrap_width (and does not break any words, if
-//               possible).
+//               possible).  Stores the result in _text_block.
 //
-//               If max_rows is greater than zero, no more than
-//               max_rows will be accepted.  Text beyond that will be
+//               If _max_rows is greater than zero, no more than
+//               _max_rows will be accepted.  Text beyond that will be
 //               truncated.
 //
 //               The return value is true if all the text is accepted,
 //               or false if some was truncated.
 ////////////////////////////////////////////////////////////////////
 bool TextAssembler::
-wordwrap_text(const TextAssembler::TextString &text,
-              TextAssembler::TextString &output_text,
-              int max_rows) {
-  if (text.empty()) {
+wordwrap_text() {
+  _text_block.clear();
+
+  if (_text_string.empty()) {
     // A special case: empty text means no rows.
-    _num_rows = 0;
     return true;
   }
 
   size_t p = 0;
-  _num_rows = 1;
+
+  _text_block.push_back(TextRow(p));
 
   // Preserve any initial whitespace and newlines.
   float initial_width = 0.0f;
-  while (p < text.size() && isspacew(text[p]._character)) {
-    if (text[p]._character == '\n') {
+  while (p < _text_string.size() && isspacew(_text_string[p]._character)) {
+    if (_text_string[p]._character == '\n') {
       initial_width = 0.0f;
-      if (max_rows > 0 && _num_rows >= max_rows) {
+      if (_max_rows > 0 && (int)_text_block.size() >= _max_rows) {
         // Truncate.
         return false;
       }
-      _num_rows++;
+      _text_block.push_back(TextRow(p + 1));
     } else {
-      initial_width += calc_width(text[p]);
+      initial_width += calc_width(_text_string[p]);
+      _text_block.back()._string.push_back(_text_string[p]);
     }
-    output_text.push_back(text[p]);
     p++;
   }
   bool needs_newline = false;
 
-  while (p < text.size()) {
-    nassertr(!isspacew(text[p]._character), false);
+  while (p < _text_string.size()) {
+    nassertr(!isspacew(_text_string[p]._character), false);
 
     // Scan the next n characters, until the end of the string or an
     // embedded newline character, or we exceed wordwrap_width.
@@ -530,15 +848,15 @@ wordwrap_text(const TextAssembler::TextString &text,
 
     bool last_was_space = false;
     float width = initial_width;
-    while (q < text.size() && text[q]._character != '\n') {
-      if (text[q]._properties->has_wordwrap()) {
-        wordwrap_width = text[q]._properties->get_wordwrap();
+    while (q < _text_string.size() && _text_string[q]._character != '\n') {
+      if (_text_string[q]._cprops->_properties.has_wordwrap()) {
+        wordwrap_width = _text_string[q]._cprops->_properties.get_wordwrap();
       } else {
         wordwrap_width = -1.0f;
       }
 
-      if (isspacew(text[q]._character) || 
-          text[q]._character == text_soft_break_key) {
+      if (isspacew(_text_string[q]._character) || 
+          _text_string[q]._character == text_soft_break_key) {
         if (!last_was_space) {
           any_spaces = true;
           // We only care about logging whether there is a soft-hyphen
@@ -555,20 +873,20 @@ wordwrap_text(const TextAssembler::TextString &text,
 
       // A soft hyphen character is not printed, but marks a point
       // at which we might hyphenate a word if we need to.
-      if (text[q]._character == text_soft_hyphen_key && 
-          wordwrap_width > 0.0f) {
-        // We only consider this as a possible hyphenation point if
-        // (a) it is not the very first character, and (b) there is
-        // enough room for a hyphen character to be printed following
-        // it.
-        if (q != p && width + calc_hyphen_width(text[q]) <= wordwrap_width) {
-          any_hyphens = true;
-          last_hyphen = q;
+      if (_text_string[q]._character == text_soft_hyphen_key) {
+        if (wordwrap_width > 0.0f) {
+          // We only consider this as a possible hyphenation point if
+          // (a) it is not the very first character, and (b) there is
+          // enough room for a hyphen character to be printed following
+          // it.
+          if (q != p && width + calc_hyphen_width(_text_string[q]) <= wordwrap_width) {
+            any_hyphens = true;
+            last_hyphen = q;
+          }
         }
-
-      } else if (text[q]._character != text_soft_break_key) {
+      } else {
         // Some normal, printable character.
-        width += calc_width(text[q]);
+        width += calc_width(_text_string[q]);
       }
 
       q++;
@@ -608,7 +926,7 @@ wordwrap_text(const TextAssembler::TextString &text,
         // of our forbidden characters.
         size_t i = 0;
         while ((int)i < text_max_never_break && q - i > p && 
-               get_text_never_break_before().find(text[q - i]._character) != wstring::npos) {
+               get_text_never_break_before().find(_text_string[q - i]._character) != wstring::npos) {
           i++;
         }
         if ((int)i < text_max_never_break) {
@@ -619,13 +937,13 @@ wordwrap_text(const TextAssembler::TextString &text,
 
     // Skip additional whitespace between the lines.
     size_t next_start = q;
-    while (next_start < text.size() && 
-           isbreakpoint(text[next_start]._character)) {
+    while (next_start < _text_string.size() && 
+           isbreakpoint(_text_string[next_start]._character)) {
       next_start++;
     }
 
     // Trim off any more blanks on the end.
-    while (q > p && isspacew(text[q - 1]._character)) {
+    while (q > p && isspacew(_text_string[q - 1]._character)) {
       q--;
     }
 
@@ -640,31 +958,32 @@ wordwrap_text(const TextAssembler::TextString &text,
         // anyway; what else can we do?
         q++;
         next_start++;
-        while (next_start < text.size() && 
-               isbreakpoint(text[next_start]._character)) {
+        while (next_start < _text_string.size() && 
+               isbreakpoint(_text_string[next_start]._character)) {
           next_start++;
         }
       }
     }
     
     if (needs_newline) {
-      if (max_rows > 0 && _num_rows >= max_rows) {
+      if (_max_rows > 0 && (int)_text_block.size() >= _max_rows) {
         // Truncate.
         return false;
       }
-      _num_rows++;
-      output_text.push_back(TextCharacter('\n', text[next_start - 1]._properties));
+      _text_block.push_back(TextRow(p));
     }
     needs_newline = true;
 
-    if (text[next_start - 1]._properties->get_preserve_trailing_whitespace()) {
+    if (_text_string[next_start - 1]._cprops->_properties.get_preserve_trailing_whitespace()) {
       q = next_start;
     }
 
     for (size_t pi = p; pi < q; pi++) {
-      if (text[pi]._character != text_soft_hyphen_key && 
-          text[pi]._character != text_soft_break_key) {
-        output_text.push_back(text[pi]);
+      if (_text_string[pi]._character != text_soft_hyphen_key && 
+          _text_string[pi]._character != text_soft_break_key) {
+        _text_block.back()._string.push_back(_text_string[pi]);
+      } else {
+        _text_block.back()._got_soft_hyphens = true;
       }
     }
     if (output_hyphen) {
@@ -673,39 +992,38 @@ wordwrap_text(const TextAssembler::TextString &text,
       for (wi = text_soft_hyphen_output.begin();
            wi != text_soft_hyphen_output.end();
            ++wi) {
-        output_text.push_back(TextCharacter(*wi, text[last_hyphen]._properties));
+        _text_block.back()._string.push_back(TextCharacter(*wi, _text_string[last_hyphen]._cprops));
       }
     }
 
     // Now prepare to wrap the next line.
 
-    if (next_start < text.size() && text[next_start]._character == '\n') {
+    if (next_start < _text_string.size() && _text_string[next_start]._character == '\n') {
       // Preserve a single embedded newline.
-      if (max_rows > 0 && _num_rows >= max_rows) {
+      if (_max_rows > 0 && (int)_text_block.size() >= _max_rows) {
         // Truncate.
         return false;
       }
-      _num_rows++;
-      output_text.push_back(text[next_start]);
       next_start++;
+      _text_block.push_back(TextRow(next_start));
       needs_newline = false;
     }
     p = next_start;
 
     // Preserve any initial whitespace and newlines.
     initial_width = 0.0f;
-    while (p < text.size() && isspacew(text[p]._character)) {
-      if (text[p]._character == '\n') {
+    while (p < _text_string.size() && isspacew(_text_string[p]._character)) {
+      if (_text_string[p]._character == '\n') {
         initial_width = 0.0f;
-        if (max_rows > 0 && _num_rows >= max_rows) {
+        if (_max_rows > 0 && (int)_text_block.size() >= _max_rows) {
           // Truncate.
           return false;
         }
-        _num_rows++;
+        _text_block.push_back(TextRow(p + 1));
       } else {
-        initial_width += calc_width(text[p]);
+        initial_width += calc_width(_text_string[p]);
+        _text_block.back()._string.push_back(_text_string[p]);
       }
-      output_text.push_back(text[p]);
       p++;
     }
   }
@@ -722,7 +1040,7 @@ wordwrap_text(const TextAssembler::TextString &text,
 ////////////////////////////////////////////////////////////////////
 float TextAssembler::
 calc_hyphen_width(const TextCharacter &tch) {
-  TextFont *font = tch._properties->get_font();
+  TextFont *font = tch._cprops->_properties.get_font();
   nassertr(font != (TextFont *)NULL, 0.0f);
 
   float hyphen_width = 0.0f;
@@ -731,7 +1049,7 @@ calc_hyphen_width(const TextCharacter &tch) {
   for (wi = text_soft_hyphen_output.begin();
        wi != text_soft_hyphen_output.end();
        ++wi) {
-    hyphen_width += calc_width(*wi, *tch._properties);
+    hyphen_width += calc_width(*wi, tch._cprops->_properties);
   }
   
   return hyphen_width;
@@ -740,24 +1058,27 @@ calc_hyphen_width(const TextCharacter &tch) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::assemble_paragraph
 //       Access: Private
-//  Description: Fills up _placed_glyphs, _ul, _lr, and _num_rows with
-//               the contents of the indicated text.
+//  Description: Fills up placed_glyphs, _ul, _lr with
+//               the contents of _text_block.  Also updates _xpos and
+//               _ypos within the _text_block structure.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
-assemble_paragraph(TextAssembler::TextString::const_iterator si, 
-                   const TextAssembler::TextString::const_iterator &send,
-                   TextAssembler::PlacedGlyphs &placed_glyphs) {
+assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
   _ul.set(0.0f, 0.0f);
   _lr.set(0.0f, 0.0f);
   int num_rows = 0;
 
-  float posy = 0.0f;
-  while (si != send) {
+  float ypos = 0.0f;
+  _next_row_ypos = 0.0f;
+  TextBlock::iterator bi;
+  for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
+    TextRow &row = (*bi);
+
     // First, assemble all the glyphs of this row.
     PlacedGlyphs row_placed_glyphs;
     float row_width, line_height;
     TextProperties::Alignment align;
-    assemble_row(si, send, row_placed_glyphs,
+    assemble_row(row, row_placed_glyphs,
                  row_width, line_height, align);
 
     // Now move the row to its appropriate position.  This might
@@ -771,31 +1092,33 @@ assemble_paragraph(TextAssembler::TextString::const_iterator si,
     } else {
       // If it is not the first row, shift the text downward by
       // line_height from the previous row.
-      posy -= line_height;
+      ypos -= line_height;
     }
-    _lr[1] = posy - 0.2f * line_height;
+    _lr[1] = ypos - 0.2f * line_height;
 
     // Apply the requested horizontal alignment to the row.
+    float xpos;
     switch (align) {
     case TextProperties::A_left:
-      mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
+      xpos = 0.0f;
       _lr[0] = max(_lr[0], row_width);
       break;
 
     case TextProperties::A_right:
-      mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
-      _ul[0] = min(_ul[0], -row_width);
+      xpos = -row_width;
+      _ul[0] = min(_ul[0], xpos);
       break;
 
     case TextProperties::A_center:
-      {
-        float half_row_width = 0.5f * row_width;
-        mat.set_row(3, LVector3f(-half_row_width, 0.0f, posy));
-        _lr[0] = max(_lr[0], half_row_width);
-        _ul[0] = min(_ul[0], -half_row_width);
-      }
+      xpos = -0.5f * row_width;
+      _ul[0] = min(_ul[0], xpos);
+      _lr[0] = max(_lr[0], -xpos);
       break;
     }
+
+    mat.set_row(3, LVector3f(xpos, 0.0f, ypos));
+    row._xpos = xpos;
+    row._ypos = ypos;
 
     // Now store the geoms we assembled.
     PlacedGlyphs::iterator pi;
@@ -806,10 +1129,11 @@ assemble_paragraph(TextAssembler::TextString::const_iterator si,
 
     // Advance to the next line.
     num_rows++;
+    _next_row_ypos = ypos - line_height;
   }
 
-  // num_rows may be smaller than _num_rows, if there are trailing
-  // newlines on the string.
+  // num_rows may be smaller than _text_block.size(), if there are
+  // trailing newlines on the string.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -823,8 +1147,7 @@ assemble_paragraph(TextAssembler::TextString::const_iterator si,
 //               source pointer is moved to the terminating character.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
-assemble_row(TextAssembler::TextString::const_iterator &si, 
-             const TextAssembler::TextString::const_iterator &send, 
+assemble_row(TextAssembler::TextRow &row,
              TextAssembler::PlacedGlyphs &row_placed_glyphs,
              float &row_width, float &line_height, 
              TextProperties::Alignment &align) {
@@ -834,10 +1157,12 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
   float xpos = 0.0f;
   align = TextProperties::A_left;
 
-  while (si != send) {
-    wchar_t character = (*si)._character;
-    const TextGraphic *graphic = (*si)._graphic;
-    const TextProperties *properties = (*si)._properties;
+  TextString::const_iterator si;
+  for (si = row._string.begin(); si != row._string.end(); ++si) {
+    const TextCharacter &tch = (*si);
+    wchar_t character = tch._character;
+    const TextGraphic *graphic = tch._graphic;
+    const TextProperties *properties = &(tch._cprops->_properties);
 
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
@@ -853,13 +1178,6 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
       line_height = max(line_height, font->get_line_height());
-    }
-
-    if (character == '\n') {
-      // The newline character marks the end of the row.
-      row_width = xpos;
-      ++si;
-      return;
     }
 
     if (character == ' ') {
@@ -1013,7 +1331,6 @@ assemble_row(TextAssembler::TextString::const_iterator &si,
 
       xpos += advance * glyph_scale;
     }
-    ++si;
   }
 
   row_width = xpos;
@@ -1528,6 +1845,45 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::ComputedProperties::append_delta
+//       Access: Public
+//  Description: Appends to wtext the control sequences necessary to
+//               change from this ComputedProperties to the indicated
+//               ComputedProperties.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::ComputedProperties::
+append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
+  if (this != other) {
+    if (_depth > other->_depth) {
+      // Back up a level from this properties.
+      nassertv(_based_on != NULL);
+
+      wtext.push_back(text_pop_properties_key);
+      _based_on->append_delta(wtext, other);
+      
+    } else if (other->_depth > _depth) {
+      // Back up a level from the other properties.
+      nassertv(other->_based_on != NULL);
+
+      append_delta(wtext, other->_based_on);
+      wtext.push_back(text_push_properties_key);
+      wtext += other->_wname;
+      wtext.push_back(text_push_properties_key);
+      
+    } else if (_depth != 0) {
+      // Back up a level from both properties.
+      nassertv(_based_on != NULL && other->_based_on != NULL);
+      
+      wtext.push_back(text_pop_properties_key);
+      _based_on->append_delta(wtext, other->_based_on);
+      wtext.push_back(text_push_properties_key);
+      wtext += other->_wname;
+      wtext.push_back(text_push_properties_key);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::GlyphPlacement::calc_tight_bounds
 //       Access: Private
 //  Description: Expands min_point and max_point to include all of the
@@ -1604,6 +1960,4 @@ copy_graphic_to(PandaNode *node, const RenderState *state,
     intermediate_node->add_child(_graphic_model->copy_subgraph());
   }
 }
-
-#endif  // CPPPARSER
 

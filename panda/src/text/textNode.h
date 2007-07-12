@@ -296,9 +296,7 @@ private:
 
   LPoint3f _ul3d, _lr3d;
 
-#ifndef CPPPARSER
   TextAssembler _assembler;
-#endif
 
 public:
   static TypeHandle get_class_type() {

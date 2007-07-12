@@ -19,8 +19,6 @@
 #ifndef TEXTASSEMBLER_H
 #define TEXTASSEMBLER_H
 
-#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring iterators.
-
 #include "pandabase.h"
 
 #include "textProperties.h"
@@ -29,23 +27,27 @@
 #include "geomNode.h"
 #include "pointerTo.h"
 #include "geom.h"
+#include "textPropertiesManager.h"
+#include "textEncoder.h"
 
 class TextEncoder;
 class TextGraphic;
+class TextAssembler;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextAssembler
-// Description : This class is not intended to be used directly by
-//               user code, but is used by the TextNode to lay out a
-//               block of text and convert it into rows of Geoms
-//               according to the TextProperties.
-//
-//               It is not exported from the DLL since it is not
-//               intended to be used outside of this module.
+// Description : This class is not normally used directly by user
+//               code, but is used by the TextNode to lay out a block
+//               of text and convert it into rows of Geoms according
+//               to the TextProperties.  However, user code may take
+//               advantage of it, if desired, for very low-level text
+//               operations.
 ////////////////////////////////////////////////////////////////////
-class TextAssembler {
-public:
+class EXPCL_PANDA TextAssembler {
+PUBLISHED:
   TextAssembler(TextEncoder *encoder);
+  TextAssembler(const TextAssembler &copy);
+  void operator = (const TextAssembler &copy);
   ~TextAssembler();
 
   void clear();
@@ -53,10 +55,40 @@ public:
   INLINE void set_usage_hint(Geom::UsageHint usage_hint);
   INLINE Geom::UsageHint get_usage_hint() const;
 
-  bool set_wtext(const wstring &wtext, const TextProperties &properties,
-                 int max_rows = 0);
-  INLINE int get_num_rows() const;
+  INLINE bool set_max_rows(int max_rows);
+  INLINE int get_max_rows() const;
+
+  INLINE void set_properties(const TextProperties &properties);
+  INLINE const TextProperties &get_properties() const;
+
+  bool set_wtext(const wstring &wtext);
+  bool set_wsubstr(const wstring &wtext, int start, int count,
+                   const TextProperties &properties = TextProperties());
+
+  wstring get_plain_wtext() const;
+  wstring get_wordwrapped_plain_wtext() const;
+  wstring get_wtext() const;
   wstring get_wordwrapped_wtext() const;
+
+  bool calc_r_c(int &r, int &c, int n) const;
+  INLINE int calc_r(int n) const;
+  INLINE int calc_c(int n) const;
+  int calc_index(int r, int c) const;
+
+  INLINE int get_num_characters() const;
+  INLINE wchar_t get_character(int n) const;
+  INLINE const TextGraphic *get_graphic(int n) const;
+  INLINE const TextProperties &get_properties(int n) const;
+  INLINE float get_width(int n) const;
+
+  INLINE int get_num_rows() const;
+  INLINE int get_num_cols(int r) const;
+  INLINE wchar_t get_character(int r, int c) const;
+  INLINE const TextGraphic *get_graphic(int r, int c) const;
+  INLINE const TextProperties &get_properties(int r, int c) const;
+  INLINE float get_width(int r, int c) const;
+  float get_xpos(int r, int c) const;
+  INLINE float get_ypos(int r, int c) const;
 
   PT(PandaNode) assemble_text();
 
@@ -67,33 +99,69 @@ public:
   static float calc_width(const TextGraphic *graphic, const TextProperties &properties);
 
 private:
+  class ComputedProperties : public ReferenceCount {
+  public:
+    INLINE ComputedProperties(const TextProperties &orig_properties);
+    INLINE ComputedProperties(ComputedProperties *based_on, 
+                              const wstring &wname, TextEncoder *encoder);
+    void append_delta(wstring &wtext, ComputedProperties *other);
+
+    PT(ComputedProperties) _based_on;
+    int _depth;
+    wstring _wname;
+    TextProperties _properties;
+  };
+
   // These structures are built up and operated on by scan_wtext() and
   // wordwrap_text().  It represents the unrolling of the embedded \1
   // .. \2 sequences embedded in the string into a TextProperties
   // pointer associated with each character.
-  typedef pvector<TextProperties *> PropertiesList;
-
   class TextCharacter {
   public:
-    INLINE TextCharacter(wchar_t character, const TextProperties *properties);
-    INLINE TextCharacter(const TextGraphic *graphic, const TextProperties *properties);
+    INLINE TextCharacter(wchar_t character, ComputedProperties *cprops);
+    INLINE TextCharacter(const TextGraphic *graphic, 
+                         const wstring &graphic_wname,
+                         ComputedProperties *cprops);
+    INLINE TextCharacter(const TextCharacter &copy);
+    INLINE void operator = (const TextCharacter &copy);
+
     wchar_t _character;
     const TextGraphic *_graphic;
-    const TextProperties *_properties;
+    wstring _graphic_wname;
+    PT(ComputedProperties) _cprops;
   };
   typedef pvector<TextCharacter> TextString;
 
-  PropertiesList _properties_list;
-  TextString _wordwrapped_string;
-  int _num_rows;
+  class TextRow {
+  public:
+    INLINE TextRow(int row_start);
+    INLINE TextRow(const TextRow &copy);
+    INLINE void operator = (const TextRow &copy);
 
-  void scan_wtext(wstring::const_iterator &si, 
+    TextString _string;
+    int _row_start;
+    bool _got_soft_hyphens;
+    float _xpos;
+    float _ypos;
+  };
+  typedef pvector<TextRow> TextBlock;
+
+  PT(ComputedProperties) _initial_cprops;
+
+  // This is the string, unwordwrapped.
+  TextString _text_string;
+
+  // And here it is, wordwrapped.
+  TextBlock _text_block;
+
+#ifndef CPPPARSER  // interrogate has a bit of trouble with wstring iterators.
+  void scan_wtext(TextString &output_string,
+                  wstring::const_iterator &si, 
                   const wstring::const_iterator &send,
-                  const TextProperties *current_properties,
-                  TextString &text_string);
-  bool wordwrap_text(const TextAssembler::TextString &text,
-                     TextAssembler::TextString &output_text,
-                     int max_rows);
+                  ComputedProperties *current_cprops);
+#endif  // CPPPARSER
+
+  bool wordwrap_text();
 
   INLINE static float calc_width(const TextCharacter &tch);
   static float calc_hyphen_width(const TextCharacter &tch);
@@ -127,11 +195,8 @@ private:
   };
   typedef pvector<GlyphPlacement *> PlacedGlyphs;
 
-  void assemble_paragraph(TextString::const_iterator si, 
-                          const TextString::const_iterator &send,
-                          PlacedGlyphs &placed_glyphs);
-  void assemble_row(TextString::const_iterator &si, 
-                    const TextString::const_iterator &send,
+  void assemble_paragraph(PlacedGlyphs &placed_glyphs);
+  void assemble_row(TextRow &row,
                     PlacedGlyphs &row_placed_glyphs,
                     float &row_width, float &line_height, 
                     TextProperties::Alignment &align);
@@ -188,14 +253,14 @@ private:
   // These are filled in by assemble_paragraph().
   LVector2f _ul;
   LVector2f _lr;
+  float _next_row_ypos;
 
   TextEncoder *_encoder;
   Geom::UsageHint _usage_hint;
+  int _max_rows;
 };
 
 #include "textAssembler.I"
-
-#endif  // CPPPARSER
 
 #endif
 
