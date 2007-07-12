@@ -585,6 +585,7 @@ private:
   static DrawMask _overall_bit;
 
   static PStatCollector _reset_prev_pcollector;
+  static PStatCollector _update_bounds_pcollector;
 
 public:
   // This class is returned from get_children().  Use it to walk
