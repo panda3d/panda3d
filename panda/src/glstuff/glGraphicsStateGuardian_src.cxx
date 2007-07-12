@@ -572,14 +572,16 @@ reset() {
   _supports_multitexture = false;
 
   _supports_vertex_arrays = true;
-  if (_gl_version.find(" Mesa 6.",0) >= 0) {
-    // We suspect this particular version of Mesa, which appears to
-    // be installed by default on every Linux implementation, has
-    // real problems rendering with vertex arrays.  Therefore,
-    // disable vertex arrays by default.
-    GLCAT.debug()
-      << "Buggy Mesa version detected; vertex array support is doubted.\n";
-    _supports_vertex_arrays = false;
+  if (_gl_version.find("1.2 (1.5 Mesa 6.",0) >= 0) {
+    if (_gl_renderer.find(" Mesa ") >= 0) {
+      // We suspect this particular version of Mesa, which appears to
+      // be installed by default on every Linux implementation, has
+      // real problems rendering with vertex arrays.  Therefore,
+      // disable vertex arrays by default.
+      GLCAT.debug()
+        << "Buggy Mesa version detected; vertex array support is doubted.\n";
+      _supports_vertex_arrays = false;
+    }
   }
 
   _supports_tex_non_pow2 =
