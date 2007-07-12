@@ -58,6 +58,7 @@ PGEntry(const string &name) :
   _accept_enabled = true;
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
+  _text_geom_flattened = true;
   _blink_start = 0.0f;
   _blink_rate = 1.0f;
 
@@ -110,6 +111,7 @@ PGEntry(const PGEntry &copy) :
   _cursor_stale = true;
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
+  _text_geom_flattened = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -684,17 +686,26 @@ update_text() {
       TextProperties inactive = tp_mgr->get_properties(_candidate_inactive);
       TextProperties active = tp_mgr->get_properties(_candidate_active);
 
-      // Create a special TextAssembler to insert the candidate string
-      // in its own special colors.
+      // Insert the complex sequence of characters required to show
+      // the candidate string in a different color.  This gets
+      // inserted at the current cursor position.
+      wstring cseq;
+      cseq += wstring(1, (wchar_t)text_push_properties_key);
+      cseq += node->decode_text(_candidate_inactive);
+      cseq += wstring(1, (wchar_t)text_push_properties_key);
+      cseq += _candidate_wtext.substr(0, _candidate_highlight_start);
+      cseq += wstring(1, (wchar_t)text_push_properties_key);
+      cseq += node->decode_text(_candidate_active);
+      cseq += wstring(1, (wchar_t)text_push_properties_key);
+      cseq += _candidate_wtext.substr(_candidate_highlight_start,
+                                       _candidate_highlight_end - _candidate_highlight_start);
+      cseq += wstring(1, (wchar_t)text_pop_properties_key);
+      cseq += _candidate_wtext.substr(_candidate_highlight_end);
+      cseq += wstring(1, (wchar_t)text_pop_properties_key);
 
+      // Create a special TextAssembler to insert the candidate string.
       TextAssembler ctext(_text);
-      ctext.set_wsubstr(_candidate_wtext.substr(_candidate_highlight_end),
-                        _cursor_position, 0, inactive);
-      ctext.set_wsubstr(_candidate_wtext.substr(_candidate_highlight_start,
-                                                _candidate_highlight_end - _candidate_highlight_start),
-                        _cursor_position, 0, active);
-      ctext.set_wsubstr(_candidate_wtext.substr(0, _candidate_highlight_start),
-                        _cursor_position, 0, inactive);
+      ctext.set_wsubstr(cseq, _cursor_position, 0);
       assembled = ctext.assemble_text();
     }
 
@@ -705,7 +716,15 @@ update_text() {
     _current_text = 
       _text_render_root.attach_new_node(assembled);
     _text_geom_stale = false;
+    _text_geom_flattened = false;
     _cursor_stale = true;
+  }
+
+  // We'll flatten the text geometry only if we don't have focus.
+  // Otherwise, we assume the user may be changing it frequently.
+  if (!get_focus() && !_text_geom_flattened) {
+    _current_text.flatten_strong();
+    _text_geom_flattened = true;
   }
 }
 

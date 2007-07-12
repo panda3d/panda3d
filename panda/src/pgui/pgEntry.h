@@ -172,6 +172,7 @@ private:
   NodePath _current_text;
   TextNode *_last_text_def;
   bool _text_geom_stale;
+  bool _text_geom_flattened;
 
   // This is the node that represents the cursor geometry.  It is also
   // attached to the above node, and is transformed around and/or

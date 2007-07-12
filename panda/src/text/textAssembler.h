@@ -62,8 +62,7 @@ PUBLISHED:
   INLINE const TextProperties &get_properties() const;
 
   bool set_wtext(const wstring &wtext);
-  bool set_wsubstr(const wstring &wtext, int start, int count,
-                   const TextProperties &properties = TextProperties());
+  bool set_wsubstr(const wstring &wtext, int start, int count);
 
   wstring get_plain_wtext() const;
   wstring get_wordwrapped_plain_wtext() const;

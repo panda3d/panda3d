@@ -193,38 +193,27 @@ set_wtext(const wstring &wtext) {
 //
 //               The substring may include nested formatting
 //               characters, but they must be self-contained and
-//               self-closed.  The indicated TextProperties specifies
-//               the default TextProperties to apply to the substring;
-//               it layers on top of the default TextProperties for
-//               the overall string specified via set_properties().
+//               self-closed.  The formatting characters are not
+//               literally saved in the internal string; they are
+//               parsed at the time of the set_wsubstr() call.
 //
 //               The return value is true if all the text is accepted,
 //               or false if some was truncated (see set_max_rows()).
 ////////////////////////////////////////////////////////////////////
 bool TextAssembler::
-set_wsubstr(const wstring &wtext, int start, int count, 
-            const TextProperties &properties) {
+set_wsubstr(const wstring &wtext, int start, int count) {
   nassertr(start >= 0 && start <= (int)_text_string.size(), false);
   nassertr(count >= 0 && start + count <= (int)_text_string.size(), false);
-
-  PT(ComputedProperties) substr_cprops = _initial_cprops;
-  if (properties.is_any_specified()) {
-    TextProperties new_properties = get_properties();
-    new_properties.add_properties(properties);
-    if (substr_cprops->_properties != new_properties) {
-      substr_cprops = new ComputedProperties(new_properties);
-    }
-  }
 
   // Use scan_wtext to unroll the substring we wish to insert, as in
   // set_wtext(), above.
   TextString substr;
   wstring::const_iterator si = wtext.begin();
-  scan_wtext(substr, si, wtext.end(), substr_cprops);
+  scan_wtext(substr, si, wtext.end(), _initial_cprops);
   while (si != wtext.end()) {
     text_cat.warning()
       << "pop_properties encountered without preceding push_properties.\n";
-    scan_wtext(substr, si, wtext.end(), substr_cprops);
+    scan_wtext(substr, si, wtext.end(), _initial_cprops);
   }
 
   _text_string.erase(_text_string.begin() + start, _text_string.begin() + start + count);
