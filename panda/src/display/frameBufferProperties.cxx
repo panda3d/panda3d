@@ -77,7 +77,8 @@ get_default() {
     return default_props;
   }
 
-  default_props._property[FBP_rgb_color] = 1;
+  default_props.set_rgb_color(1);
+  default_props.set_back_buffers(1);
   
   int num_words = framebuffer_mode.get_num_words();
   if (num_words > 0) {
@@ -97,6 +98,7 @@ get_default() {
     display_cat.error() << "  alpha-bits N\n";
     display_cat.error() << "  stencil-bits N\n";
     display_cat.error() << "  multisamples N\n";
+    display_cat.error() << "  back-buffers N\n";
   }
 
   if (framebuffer_hardware) {
@@ -135,7 +137,7 @@ get_default() {
   if (multisamples > 0) {
     default_props.set_multisamples(multisamples);
   }
-  
+
   if ((default_props._property[FBP_force_software])&&
       (default_props._property[FBP_force_hardware])) {
     default_props._property[FBP_force_software] = 0;
