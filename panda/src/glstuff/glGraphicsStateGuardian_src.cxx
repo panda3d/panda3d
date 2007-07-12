@@ -572,8 +572,8 @@ reset() {
   _supports_multitexture = false;
 
   _supports_vertex_arrays = true;
-  if (_gl_version.find("1.2 (1.5 Mesa 6.",0) >= 0) {
-    if (_gl_renderer.find(" Mesa ") >= 0) {
+  if (_gl_version.find("1.2 (1.5 Mesa 6.",0) != string::npos) {
+    if (_gl_renderer.find(" Mesa ") != string::npos) {
       // We suspect this particular version of Mesa, which appears to
       // be installed by default on every Linux implementation, has
       // real problems rendering with vertex arrays.  Therefore,
