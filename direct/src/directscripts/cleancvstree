@@ -1,0 +1,44 @@
+##############################################################################
+#
+# cleancvstree
+#
+# Cleancvstree searches a CVS tree for files that are not in CVS, and
+# deletes them.  Be careful using it --- it's very aggressive.
+#
+##############################################################################
+
+import sys,os
+
+def cleanCvsTree(dir):
+    try:
+        sub = os.listdir(dir)
+    except:
+	print "Could not read directory: "+dir
+	return
+    valid = {}
+    try:
+	readentries = 0
+        cvsent = open(dir + "/CVS/Entries")
+        for line in cvsent:
+            words = line.split("/")
+            if (len(words) > 1):
+                valid[words[1]] = 1
+        cvsent.close()
+	readentries = 1
+    except:
+	print "Could not read "+dir+"/CVS/Entries"
+    if (readentries):
+	for file in sub:
+	    if (os.path.isfile(dir+"/"+file)):
+                if (valid.has_key(file)==0):
+		    os.unlink(dir+"/"+file)
+    for file in sub:
+	if (file != "CVS"):
+            if (os.path.isdir(dir+"/"+file)):
+                cleanCvsTree(dir+"/"+file)
+
+if (os.path.isdir(sys.argv[1])==0):
+    print "Not a directory: "+sys.argv[1]
+    os.exit(1)
+
+cleanCvsTree(sys.argv[1])
