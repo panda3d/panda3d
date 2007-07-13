@@ -4696,7 +4696,7 @@ def MakeInstallerLinux():
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
     oscmd("mkdir -p linuxroot/etc/ld.so.conf.d")
-    oscmd("sed -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > linuxroot/etc/Config.prc")
+    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > linuxroot/etc/Config.prc")
     oscmd("cp built/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
     oscmd("cp --recursive built/include linuxroot/usr/include/panda3d")
     oscmd("cp --recursive direct        linuxroot/usr/share/panda3d/direct")
