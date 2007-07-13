@@ -42,3 +42,47 @@ get_volume() const {
   box.local_object();
   return box.get_volume();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FiniteBoundingVolume::as_finite_bounding_volume
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const FiniteBoundingVolume *FiniteBoundingVolume::
+as_finite_bounding_volume() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FiniteBoundingVolume::around_lines
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be a nonempty line.
+////////////////////////////////////////////////////////////////////
+bool FiniteBoundingVolume::
+around_lines(const BoundingVolume **, const BoundingVolume **) {
+  _flags = F_infinite;
+
+  // Since it's a FiniteBoundingVolume, we can't do any better than
+  // making it infinite.  So we return true.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FiniteBoundingVolume::around_planes
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be a nonempty plane.
+////////////////////////////////////////////////////////////////////
+bool FiniteBoundingVolume::
+around_planes(const BoundingVolume **, const BoundingVolume **) {
+  _flags = F_infinite;
+
+  // Since it's a FiniteBoundingVolume, we can't do any better than
+  // making it infinite.  So we return true.
+  return true;
+}

@@ -205,6 +205,18 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingHexahedron::as_bounding_hexahedron
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingHexahedron *BoundingHexahedron::
+as_bounding_hexahedron() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingHexahedron::extend_other
 //       Access: Protected, Virtual
 //  Description: 

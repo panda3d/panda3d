@@ -81,6 +81,90 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_geometric_bounding_volume
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const GeometricBoundingVolume *BoundingVolume::
+as_geometric_bounding_volume() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_finite_bounding_volume
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const FiniteBoundingVolume *BoundingVolume::
+as_finite_bounding_volume() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_bounding_sphere
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingSphere *BoundingVolume::
+as_bounding_sphere() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_bounding_box
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingBox *BoundingVolume::
+as_bounding_box() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_bounding_hexahedron
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingHexahedron *BoundingVolume::
+as_bounding_hexahedron() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_bounding_line
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingLine *BoundingVolume::
+as_bounding_line() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::as_bounding_plane
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingPlane *BoundingVolume::
+as_bounding_plane() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingVolume::string_bounds_type
 //       Access: Public, Static
 //  Description: Returns the BoundsType corresponding to the indicated
@@ -231,18 +315,12 @@ around_hexahedrons(const BoundingVolume **, const BoundingVolume **) {
 bool BoundingVolume::
 around_lines(const BoundingVolume **, const BoundingVolume **) {
   _flags = F_infinite;
-  if (is_of_type(FiniteBoundingVolume::get_class_type())) {
-    // If it's a FiniteBoundingVolume, we can't do any better than
-    // making it infinite.  So we return true.
-    return true;
-  }
 
   mathutil_cat.warning()
     << get_type() << "::around_lines() called\n";
 
-  // Otherwise, we might do better, and we require each class to
-  // define a function.  If we get here, the function isn't defined,
-  // so we return false to indicate this.
+  // If we get here, the function isn't defined by a subclass, so we
+  // return false to indicate this.
   return false;
 }
 
@@ -256,18 +334,12 @@ around_lines(const BoundingVolume **, const BoundingVolume **) {
 bool BoundingVolume::
 around_planes(const BoundingVolume **, const BoundingVolume **) {
   _flags = F_infinite;
-  if (is_of_type(FiniteBoundingVolume::get_class_type())) {
-    // If it's a FiniteBoundingVolume, we can't do any better than
-    // making it infinite.  So we return true.
-    return true;
-  }
 
   mathutil_cat.warning()
     << get_type() << "::around_planes() called\n";
 
-  // Otherwise, we might do better, and we require each class to
-  // define a function.  If we get here, the function isn't defined,
-  // so we return false to indicate this.
+  // If we get here, the function isn't defined by a subclass, so we
+  // return false to indicate this.
   return false;
 }
 

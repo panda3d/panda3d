@@ -3439,7 +3439,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 #endif
       nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
       child_volumes[child_volumes_i++] = internal_bounds;
-      if (!internal_bounds->is_exact_type(BoundingBox::get_class_type())) {
+      if (internal_bounds->as_bounding_box() == NULL) {
         all_box = false;
       }
     }
@@ -3497,7 +3497,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 #endif
           nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
           child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
-          if (!child_cdataw->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
+          if (child_cdataw->_external_bounds->as_bounding_box() == NULL) {
             all_box = false;
           }
         }
@@ -3537,7 +3537,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
 #endif
           nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
           child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
-          if (!child_cdata->_external_bounds->is_exact_type(BoundingBox::get_class_type())) {
+          if (child_cdata->_external_bounds->as_bounding_box() == NULL) {
             all_box = false;
           }
         }

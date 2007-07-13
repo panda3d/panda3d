@@ -68,6 +68,9 @@ PUBLISHED:
   INLINE_MATHUTIL int get_num_planes() const;
   INLINE_MATHUTIL Planef get_plane(int n) const;
 
+public:
+  virtual const BoundingHexahedron *as_bounding_hexahedron() const;
+
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,

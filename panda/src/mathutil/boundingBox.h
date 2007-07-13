@@ -61,6 +61,9 @@ public:
   INLINE_MATHUTIL const LPoint3f &get_minq() const;
   INLINE_MATHUTIL const LPoint3f &get_maxq() const;
 
+public:
+  virtual const BoundingBox *as_bounding_box() const;
+
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,

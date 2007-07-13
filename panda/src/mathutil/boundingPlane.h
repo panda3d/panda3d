@@ -49,6 +49,9 @@ public:
 PUBLISHED:
   INLINE_MATHUTIL const Planef &get_plane() const;
 
+public:
+  virtual const BoundingPlane *as_bounding_plane() const;
+
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,

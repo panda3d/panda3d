@@ -83,6 +83,18 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingLine::as_bounding_line
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingLine *BoundingLine::
+as_bounding_line() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingLine::extend_other
 //       Access: Protected, Virtual
 //  Description: 

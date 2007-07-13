@@ -75,6 +75,18 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingPlane::as_bounding_plane
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingPlane *BoundingPlane::
+as_bounding_plane() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingPlane::extend_other
 //       Access: Public, Virtual
 //  Description: 

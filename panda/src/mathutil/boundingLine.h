@@ -54,6 +54,9 @@ PUBLISHED:
   INLINE_MATHUTIL const LPoint3f &get_point_a() const;
   INLINE_MATHUTIL LPoint3f get_point_b() const;
 
+public:
+  virtual const BoundingLine *as_bounding_line() const;
+
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,

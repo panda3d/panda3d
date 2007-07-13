@@ -55,6 +55,9 @@ PUBLISHED:
   virtual LPoint3f get_approx_center() const=0;
   virtual void xform(const LMatrix4f &mat)=0;
 
+public:
+  virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const;
+
 protected:
   // Some virtual functions to implement fundamental bounding
   // operations on points in 3-d space.

@@ -37,6 +37,15 @@ PUBLISHED:
   virtual float get_volume() const;
 
 public:
+  virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;
+
+protected:
+  virtual bool around_lines(const BoundingVolume **first,
+                            const BoundingVolume **last);
+  virtual bool around_planes(const BoundingVolume **first,
+                            const BoundingVolume **last);
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

@@ -51,6 +51,9 @@ PUBLISHED:
   INLINE_MATHUTIL const LPoint3f &get_center() const;
   INLINE_MATHUTIL float get_radius() const;
 
+public:
+  virtual const BoundingSphere *as_bounding_sphere() const;
+
 protected:
   virtual bool extend_other(BoundingVolume *other) const;
   virtual bool around_other(BoundingVolume *other,

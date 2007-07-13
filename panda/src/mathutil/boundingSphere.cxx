@@ -158,6 +158,18 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BoundingSphere::as_bounding_sphere
+//       Access: Public, Virtual
+//  Description: Virtual downcast method.  Returns this object as a
+//               pointer of the indicated type, if it is in fact that
+//               type.  Returns NULL if it is not that type.
+////////////////////////////////////////////////////////////////////
+const BoundingSphere *BoundingSphere::
+as_bounding_sphere() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BoundingSphere::extend_other
 //       Access: Protected, Virtual
 //  Description: 
@@ -439,20 +451,21 @@ around_finite(const BoundingVolume **first,
   // box.
   const BoundingVolume **p = first;
   nassertr(!(*p)->is_empty() && !(*p)->is_infinite(), false);
-  const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
+  const FiniteBoundingVolume *vol = (*p)->as_finite_bounding_volume();
+  nassertr(vol != (FiniteBoundingVolume *)NULL, false);
   LPoint3f min_box = vol->get_min();
   LPoint3f max_box = vol->get_max();
 
-  bool any_spheres = vol->is_exact_type(BoundingSphere::get_class_type());
+  bool any_spheres = (vol->as_bounding_sphere() != NULL);
 
   for (++p; p != last; ++p) {
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
-      if (!(*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
+      vol = (*p)->as_finite_bounding_volume();
+      if (vol == (FiniteBoundingVolume *)NULL) {
         set_infinite();
         return true;
       }
-      const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
       LPoint3f min1 = vol->get_min();
       LPoint3f max1 = vol->get_max();
       min_box.set(min(min_box[0], min1[0]),
@@ -462,7 +475,7 @@ around_finite(const BoundingVolume **first,
                   max(max_box[1], max1[1]),
                   max(max_box[2], max1[2]));
 
-      if (vol->is_exact_type(BoundingSphere::get_class_type())) {
+      if (vol->as_bounding_sphere() != NULL) {
         any_spheres = true;
       }
     }
@@ -482,15 +495,16 @@ around_finite(const BoundingVolume **first,
     _radius = 0.0f;
     for (p = first; p != last; ++p) {
       if (!(*p)->is_empty()) {
-        if ((*p)->is_exact_type(BoundingSphere::get_class_type())) {
+        const BoundingSphere *sphere = (*p)->as_bounding_sphere();
+        if (sphere != (BoundingSphere *)NULL) {
           // This is a sphere; consider its corner.
-          const BoundingSphere *sphere = DCAST(BoundingSphere, *p);
           float dist = length(sphere->_center - _center);
           _radius = max(_radius, dist + sphere->_radius);
           
         } else {
           // This is a nonsphere.  We fit around it.
-          const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
+          const FiniteBoundingVolume *vol = (*p)->as_finite_bounding_volume();
+          nassertr(vol != (FiniteBoundingVolume *)NULL, false);
 
           BoundingBox box(vol->get_min(), vol->get_max());
           box.local_object();

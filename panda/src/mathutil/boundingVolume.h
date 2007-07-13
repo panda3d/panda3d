@@ -25,6 +25,8 @@
 #include "typedReferenceCount.h"
 #include "deletedChain.h"
 
+class GeometricBoundingVolume;
+class FiniteBoundingVolume;
 class BoundingSphere;
 class BoundingBox;
 class BoundingHexahedron;
@@ -110,6 +112,14 @@ PUBLISHED:
   };
 
 public:
+  virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const;
+  virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;
+  virtual const BoundingSphere *as_bounding_sphere() const;
+  virtual const BoundingBox *as_bounding_box() const;
+  virtual const BoundingHexahedron *as_bounding_hexahedron() const;
+  virtual const BoundingLine *as_bounding_line() const;
+  virtual const BoundingPlane *as_bounding_plane() const;
+
   static BoundsType string_bounds_type(const string &str);
 
 protected:
