@@ -31,10 +31,17 @@ ConfigVariableString pstats_name
 ("pstats-name", "Panda Stats");
 
 ConfigVariableDouble pstats_max_rate
-("pstats-max-rate", 1000.0);
+("pstats-max-rate", 1000.0,
+ PRC_DESC("The maximum number of packets per second, per thread, to send "
+          "to the remote PStats server.  A packet is defined as a single "
+          "UDP packet, or each 1024 bytes of a TCP message."));
 
 ConfigVariableBool pstats_threaded_write
-("pstats-threaded-write", false);
+("pstats-threaded-write", true,
+ PRC_DESC("Set this true to write to the PStats channel in a sub-thread, if "
+          "threading is available.  Can't think of any reason why you "
+          "wouldn't want this set true, unless you suspect something is "
+          "broken with the threaded network interfaces."));
 
 ConfigVariableDouble pstats_tcp_ratio
 ("pstats-tcp-ratio", 0.01,
@@ -51,7 +58,10 @@ ConfigVariableInt pstats_port
 ("pstats-port", 5185);
 
 ConfigVariableDouble pstats_target_frame_rate
-("pstats-target-frame-rate", 30.0);
+("pstats-target-frame-rate", 30.0,
+ PRC_DESC("Specify the target frame rate to highlight on the PStats graph.  "
+          "This frame rate is marked with a different-colored line; "
+          "otherwise, this setting has no effect."));
 
 // The rest are different in that they directly control the server,
 // not the client.

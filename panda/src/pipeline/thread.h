@@ -96,6 +96,7 @@ public:
   // SIMPLE_THREADS case.
   class EXPCL_PANDA PStatsCallback {
   public:
+    virtual ~PStatsCallback();
     virtual void deactivate_hook(Thread *thread);
     virtual void activate_hook(Thread *thread);
   };

@@ -172,6 +172,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     case ios::end:
       new_pos = (size_t)((int)_data.size() + off);
       break;
+
+    default:
+      // Shouldn't get here.
+      break;
     }
 
     _gpos = new_pos;
@@ -196,6 +200,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
       
     case ios::end:
       new_pos = (size_t)((int)_data.size() + off);
+      break;
+
+    default:
+      // Shouldn't get here.
       break;
     }
 

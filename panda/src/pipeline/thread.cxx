@@ -203,6 +203,17 @@ init_external_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::PStatsCallback::Destructor
+//       Access: Public, Virtual
+//  Description: Since this class is just an interface definition,
+//               there is no need to have a destructor.  However, we
+//               must have one anyway to stop gcc's annoying warning.
+////////////////////////////////////////////////////////////////////
+Thread::PStatsCallback::
+~PStatsCallback() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::PStatsCallback::deactivate_hook
 //       Access: Public, Virtual
 //  Description: Called when the thread is deactivated (swapped for

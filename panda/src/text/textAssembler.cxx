@@ -387,7 +387,7 @@ bool TextAssembler::
 calc_r_c(int &r, int &c, int n) const {
   nassertr(n >= 0 && n <= (int)_text_string.size(), false);
 
-  if (n == _text_string.size()) {
+  if (n == (int)_text_string.size()) {
     // A special case for one past the last character.
     if (_text_string.empty()) {
       r = 0;
@@ -456,7 +456,7 @@ calc_r_c(int &r, int &c, int n) const {
 int TextAssembler::
 calc_index(int r, int c) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0);
-  if (r == _text_block.size()) {
+  if (r == (int)_text_block.size()) {
     nassertr(c == 0, 0);
     return _text_string.size();
 
@@ -499,7 +499,7 @@ calc_index(int r, int c) const {
 float TextAssembler::
 get_xpos(int r, int c) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0.0f);
-  if (r == _text_block.size()) {
+  if (r == (int)_text_block.size()) {
     nassertr(c == 0, 0.0f);
     return 0.0f;
 

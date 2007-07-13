@@ -45,6 +45,12 @@ get_read_pointer() const {
     if (_object->_locking_thread == current_thread) {
       return _object;
     }
+    if (util_cat.is_debug()) {
+      util_cat.debug() 
+        << *current_thread << " waiting on " << _object->get_type()
+        << " " << _object << ", held by " << *_object->_locking_thread
+        << "\n";
+    }
     _object->_lock_cvar.wait();
   }
 
@@ -79,6 +85,12 @@ get_write_pointer() {
   MutexHolder holder(_object->_lock_mutex);
   while (_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
          _object->_locking_thread != current_thread) {
+    if (util_cat.is_debug()) {
+      util_cat.debug() 
+        << *current_thread << " waiting on " << _object->get_type()
+        << " " << _object << ", held by " << *_object->_locking_thread
+        << "\n";
+    }
     _object->_lock_cvar.wait();
   }
 

@@ -255,7 +255,7 @@ merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
     }
     ++index;
   }
-  nassertv_always(index < (int)_bundles.size());
+  nassertv_always(index < _bundles.size());
 
   if (old_bundle == new_bundle) {
     // Trivially return.

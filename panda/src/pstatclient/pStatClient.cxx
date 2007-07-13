@@ -267,6 +267,10 @@ main_tick() {
         case TypeHandle::MC_deleted_chain_inactive:
           dc_inactive_total_usage += usage;
           break;
+
+        case TypeHandle::MC_limit:
+          // Not used.
+          break;
         }          
       }
     }
@@ -306,6 +310,10 @@ main_tick() {
             case TypeHandle::MC_deleted_chain_inactive:
               category = "MMap:NeverFree:Inactive";
               break;
+
+            case TypeHandle::MC_limit:
+              // Not used.
+              break;
             }
             ostringstream strm;
             strm << "System memory:" << category << ":" << type;
@@ -328,6 +336,10 @@ main_tick() {
 
           case TypeHandle::MC_deleted_chain_inactive:
             dc_inactive_other_usage -= usage;
+            break;
+
+          case TypeHandle::MC_limit:
+            // Not used.
             break;
           }
         }

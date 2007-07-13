@@ -38,9 +38,9 @@ BamCache *BamCache::_global_ptr = NULL;
 BamCache::
 BamCache() :
   _active(true),
+  _read_only(false),
   _index(new BamCacheIndex),
-  _index_stale_since(0),
-  _read_only(false)
+  _index_stale_since(0)
 {
   ConfigVariableFilename model_cache_dir
     ("model-cache-dir", Filename(), 
