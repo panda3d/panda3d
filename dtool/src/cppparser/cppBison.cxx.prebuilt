@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 1.875b.  */
+/* A Bison parser, made by GNU Bison 2.0.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,8 +45,7 @@
 /* Using locations.  */
 #define YYLSP_NEEDED 1
 
-/* If NAME_PREFIX is specified substitute the variables and functions
-   names.  */
+/* Substitute the variable and function names.  */
 #define yyparse cppyyparse
 #define yylex   cppyylex
 #define yyerror cppyyerror
@@ -492,23 +491,26 @@ typedef struct YYLTYPE
 /* Copy the second part of user declarations.  */
 
 
-/* Line 214 of yacc.c.  */
-#line 497 "y.tab.c"
+/* Line 213 of yacc.c.  */
+#line 496 "y.tab.c"
 
 #if ! defined (yyoverflow) || YYERROR_VERBOSE
 
+# ifndef YYFREE
+#  define YYFREE free
+# endif
+# ifndef YYMALLOC
+#  define YYMALLOC malloc
+# endif
+
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
-# if YYSTACK_USE_ALLOCA
-#  define YYSTACK_ALLOC alloca
-# else
-#  ifndef YYSTACK_USE_ALLOCA
-#   if defined (alloca) || defined (_ALLOCA_H)
-#    define YYSTACK_ALLOC alloca
+# ifdef YYSTACK_USE_ALLOCA
+#  if YYSTACK_USE_ALLOCA
+#   ifdef __GNUC__
+#    define YYSTACK_ALLOC __builtin_alloca
 #   else
-#    ifdef __GNUC__
-#     define YYSTACK_ALLOC __builtin_alloca
-#    endif
+#    define YYSTACK_ALLOC alloca
 #   endif
 #  endif
 # endif
@@ -521,20 +523,21 @@ typedef struct YYLTYPE
 #   include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
 #   define YYSIZE_T size_t
 #  endif
-#  define YYSTACK_ALLOC malloc
-#  define YYSTACK_FREE free
+#  define YYSTACK_ALLOC YYMALLOC
+#  define YYSTACK_FREE YYFREE
 # endif
 #endif /* ! defined (yyoverflow) || YYERROR_VERBOSE */
 
 
 #if (! defined (yyoverflow) \
      && (! defined (__cplusplus) \
-	 || (YYLTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+	 || (defined (YYLTYPE_IS_TRIVIAL) && YYLTYPE_IS_TRIVIAL \
+             && defined (YYSTYPE_IS_TRIVIAL) && YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  short yyss;
+  short int yyss;
   YYSTYPE yyvs;
     YYLTYPE yyls;
 };
@@ -545,13 +548,13 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (short) + sizeof (YYSTYPE) + sizeof (YYLTYPE))	\
+     ((N) * (sizeof (short int) + sizeof (YYSTYPE) + sizeof (YYLTYPE))	\
       + 2 * YYSTACK_GAP_MAXIMUM)
 
 /* Copy COUNT objects from FROM to TO.  The source and destination do
    not overlap.  */
 # ifndef YYCOPY
-#  if 1 < __GNUC__
+#  if defined (__GNUC__) && 1 < __GNUC__
 #   define YYCOPY(To, From, Count) \
       __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
 #  else
@@ -587,7 +590,7 @@ union yyalloc
 #if defined (__STDC__) || defined (__cplusplus)
    typedef signed char yysigned_char;
 #else
-   typedef short yysigned_char;
+   typedef short int yysigned_char;
 #endif
 
 /* YYFINAL -- State number of the termination state. */
@@ -655,7 +658,7 @@ static const unsigned char yytranslate[] =
 #if YYDEBUG
 /* YYPRHS[YYN] -- Index of the first RHS symbol of rule number YYN in
    YYRHS.  */
-static const unsigned short yyprhs[] =
+static const unsigned short int yyprhs[] =
 {
        0,     0,     3,     6,     9,    12,    14,    17,    20,    22,
       26,    31,    32,    38,    40,    42,    44,    46,    48,    50,
@@ -713,7 +716,7 @@ static const unsigned short yyprhs[] =
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS. */
-static const short yyrhs[] =
+static const short int yyrhs[] =
 {
      127,     0,    -1,    99,   128,    -1,   100,   212,    -1,   101,
      181,    -1,   219,    -1,   128,   104,    -1,   128,   133,    -1,
@@ -880,61 +883,61 @@ static const short yyrhs[] =
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const unsigned short yyrline[] =
+static const unsigned short int yyrline[] =
 {
        0,   379,   379,   380,   384,   391,   392,   393,   397,   398,
      402,   415,   414,   426,   427,   428,   429,   430,   431,   432,
-     433,   446,   455,   459,   463,   467,   475,   474,   489,   493,
-     497,   508,   512,   516,   520,   524,   528,   532,   536,   543,
-     547,   556,   568,   567,   583,   582,   600,   608,   619,   628,
-     642,   641,   657,   656,   667,   681,   689,   700,   709,   724,
-     723,   746,   745,   770,   769,   800,   799,   815,   814,   832,
-     831,   863,   862,   888,   901,   905,   909,   913,   920,   924,
-     928,   932,   936,   940,   944,   948,   952,   956,   960,   964,
-     968,   972,   976,   980,   984,   988,   992,   996,  1000,  1004,
-    1008,  1012,  1016,  1020,  1024,  1028,  1032,  1036,  1040,  1044,
-    1048,  1052,  1056,  1060,  1064,  1068,  1072,  1079,  1080,  1085,
-    1084,  1095,  1096,  1100,  1106,  1115,  1119,  1123,  1129,  1139,
-    1143,  1148,  1153,  1161,  1165,  1179,  1184,  1189,  1194,  1199,
-    1204,  1209,  1215,  1214,  1236,  1240,  1245,  1249,  1254,  1262,
-    1267,  1275,  1279,  1286,  1290,  1297,  1301,  1305,  1309,  1313,
-    1320,  1321,  1322,  1326,  1329,  1330,  1331,  1335,  1340,  1348,
-    1354,  1364,  1368,  1372,  1376,  1381,  1386,  1391,  1396,  1404,
-    1408,  1412,  1416,  1421,  1426,  1431,  1436,  1441,  1447,  1455,
-    1459,  1464,  1469,  1474,  1479,  1484,  1493,  1497,  1502,  1506,
-    1510,  1514,  1518,  1522,  1538,  1557,  1561,  1566,  1570,  1574,
-    1578,  1582,  1586,  1602,  1621,  1625,  1630,  1634,  1650,  1669,
-    1675,  1686,  1685,  1710,  1709,  1739,  1740,  1744,  1745,  1749,
-    1753,  1757,  1761,  1765,  1769,  1773,  1777,  1781,  1789,  1788,
-    1801,  1800,  1812,  1813,  1814,  1818,  1823,  1828,  1833,  1841,
-    1848,  1852,  1856,  1864,  1863,  1885,  1889,  1895,  1904,  1905,
-    1906,  1910,  1914,  1918,  1922,  1927,  1932,  1937,  1942,  1947,
-    1951,  1956,  1965,  1970,  1978,  1982,  1987,  1991,  1996,  2004,
-    2014,  2014,  2024,  2025,  2029,  2032,  2035,  2038,  2041,  2044,
-    2047,  2050,  2053,  2053,  2053,  2054,  2054,  2054,  2054,  2055,
-    2055,  2055,  2055,  2055,  2056,  2056,  2056,  2057,  2057,  2057,
-    2057,  2057,  2058,  2058,  2058,  2058,  2058,  2059,  2059,  2059,
-    2059,  2059,  2059,  2060,  2060,  2060,  2060,  2060,  2061,  2061,
-    2061,  2062,  2062,  2062,  2062,  2063,  2063,  2063,  2064,  2064,
-    2064,  2064,  2064,  2065,  2065,  2065,  2065,  2066,  2066,  2066,
-    2066,  2066,  2067,  2067,  2067,  2067,  2067,  2067,  2068,  2068,
-    2068,  2068,  2068,  2069,  2069,  2070,  2073,  2073,  2073,  2073,
-    2073,  2073,  2073,  2073,  2073,  2073,  2073,  2074,  2074,  2074,
-    2074,  2074,  2074,  2074,  2074,  2074,  2074,  2075,  2075,  2079,
-    2083,  2090,  2094,  2101,  2105,  2112,  2116,  2120,  2124,  2128,
-    2132,  2136,  2140,  2152,  2156,  2160,  2164,  2168,  2172,  2176,
-    2180,  2184,  2188,  2192,  2196,  2200,  2204,  2208,  2212,  2216,
-    2220,  2224,  2228,  2232,  2236,  2240,  2244,  2252,  2256,  2260,
-    2264,  2268,  2275,  2281,  2287,  2293,  2299,  2306,  2313,  2320,
-    2327,  2333,  2339,  2343,  2347,  2351,  2355,  2359,  2371,  2375,
-    2379,  2383,  2387,  2391,  2395,  2399,  2403,  2407,  2411,  2415,
-    2419,  2423,  2427,  2431,  2435,  2439,  2443,  2447,  2451,  2455,
-    2459,  2463,  2467,  2471,  2478,  2482,  2486,  2490,  2494,  2498,
-    2502,  2516,  2520,  2524,  2528,  2532,  2536,  2540,  2544,  2548,
-    2552,  2564,  2568,  2572,  2576,  2580,  2584,  2588,  2592,  2596,
-    2600,  2604,  2608,  2612,  2616,  2620,  2624,  2628,  2632,  2636,
-    2640,  2644,  2648,  2652,  2656,  2660,  2667,  2671,  2675,  2679,
-    2683,  2687,  2694,  2702,  2710,  2733,  2737,  2744,  2748,  2754
+     433,   446,   455,   459,   467,   471,   479,   478,   493,   497,
+     501,   512,   516,   520,   524,   528,   532,   536,   540,   547,
+     551,   560,   572,   571,   587,   586,   604,   612,   623,   632,
+     646,   645,   661,   660,   671,   685,   693,   704,   713,   728,
+     727,   750,   749,   774,   773,   804,   803,   819,   818,   836,
+     835,   867,   866,   892,   905,   909,   913,   917,   924,   928,
+     932,   936,   940,   944,   948,   952,   956,   960,   964,   968,
+     972,   976,   980,   984,   988,   992,   996,  1000,  1004,  1008,
+    1012,  1016,  1020,  1024,  1028,  1032,  1036,  1040,  1044,  1048,
+    1052,  1056,  1060,  1064,  1068,  1072,  1076,  1083,  1084,  1089,
+    1088,  1099,  1100,  1104,  1110,  1119,  1123,  1127,  1133,  1143,
+    1147,  1152,  1157,  1165,  1169,  1183,  1188,  1193,  1198,  1203,
+    1208,  1213,  1219,  1218,  1240,  1244,  1249,  1253,  1258,  1266,
+    1271,  1279,  1283,  1290,  1294,  1301,  1305,  1309,  1313,  1317,
+    1324,  1325,  1326,  1330,  1333,  1334,  1335,  1339,  1344,  1352,
+    1358,  1368,  1372,  1376,  1380,  1385,  1390,  1395,  1400,  1408,
+    1412,  1416,  1420,  1425,  1430,  1435,  1440,  1445,  1451,  1459,
+    1463,  1468,  1473,  1478,  1483,  1488,  1497,  1501,  1506,  1510,
+    1514,  1518,  1522,  1526,  1542,  1561,  1565,  1570,  1574,  1578,
+    1582,  1586,  1590,  1606,  1625,  1629,  1634,  1638,  1654,  1673,
+    1679,  1690,  1689,  1714,  1713,  1743,  1744,  1748,  1749,  1753,
+    1757,  1761,  1765,  1769,  1773,  1777,  1781,  1785,  1793,  1792,
+    1805,  1804,  1816,  1817,  1818,  1822,  1827,  1832,  1837,  1845,
+    1852,  1856,  1860,  1868,  1867,  1889,  1893,  1899,  1908,  1909,
+    1910,  1914,  1918,  1922,  1926,  1931,  1936,  1941,  1946,  1951,
+    1955,  1960,  1969,  1974,  1982,  1986,  1991,  1995,  2000,  2008,
+    2018,  2018,  2028,  2029,  2033,  2036,  2039,  2042,  2045,  2048,
+    2051,  2054,  2057,  2057,  2057,  2058,  2058,  2058,  2058,  2059,
+    2059,  2059,  2059,  2059,  2060,  2060,  2060,  2061,  2061,  2061,
+    2061,  2061,  2062,  2062,  2062,  2062,  2062,  2063,  2063,  2063,
+    2063,  2063,  2063,  2064,  2064,  2064,  2064,  2064,  2065,  2065,
+    2065,  2066,  2066,  2066,  2066,  2067,  2067,  2067,  2068,  2068,
+    2068,  2068,  2068,  2069,  2069,  2069,  2069,  2070,  2070,  2070,
+    2070,  2070,  2071,  2071,  2071,  2071,  2071,  2071,  2072,  2072,
+    2072,  2072,  2072,  2073,  2073,  2074,  2077,  2077,  2077,  2077,
+    2077,  2077,  2077,  2077,  2077,  2077,  2077,  2078,  2078,  2078,
+    2078,  2078,  2078,  2078,  2078,  2078,  2078,  2079,  2079,  2083,
+    2087,  2094,  2098,  2105,  2109,  2116,  2120,  2124,  2128,  2132,
+    2136,  2140,  2144,  2156,  2160,  2164,  2168,  2172,  2176,  2180,
+    2184,  2188,  2192,  2196,  2200,  2204,  2208,  2212,  2216,  2220,
+    2224,  2228,  2232,  2236,  2240,  2244,  2248,  2256,  2260,  2264,
+    2268,  2272,  2279,  2285,  2291,  2297,  2303,  2310,  2317,  2324,
+    2331,  2337,  2343,  2347,  2351,  2355,  2359,  2363,  2375,  2379,
+    2383,  2387,  2391,  2395,  2399,  2403,  2407,  2411,  2415,  2419,
+    2423,  2427,  2431,  2435,  2439,  2443,  2447,  2451,  2455,  2459,
+    2463,  2467,  2471,  2475,  2482,  2486,  2490,  2494,  2498,  2502,
+    2506,  2520,  2524,  2528,  2532,  2536,  2540,  2544,  2548,  2552,
+    2556,  2568,  2572,  2576,  2580,  2584,  2588,  2592,  2596,  2600,
+    2604,  2608,  2612,  2616,  2620,  2624,  2628,  2632,  2636,  2640,
+    2644,  2648,  2652,  2656,  2660,  2664,  2671,  2675,  2679,  2683,
+    2687,  2691,  2698,  2706,  2714,  2737,  2741,  2748,  2752,  2758
 };
 #endif
 
@@ -943,55 +946,55 @@ static const unsigned short yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals. */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "REAL", "INTEGER", "CHAR_TOK", "STRING", 
-  "SIMPLE_IDENTIFIER", "IDENTIFIER", "TYPENAME_IDENTIFIER", "SCOPING", 
-  "TYPEDEFNAME", "ELLIPSIS", "OROR", "ANDAND", "EQCOMPARE", "NECOMPARE", 
-  "LECOMPARE", "GECOMPARE", "LSHIFT", "RSHIFT", "POINTSAT_STAR", 
-  "DOT_STAR", "UNARY", "UNARY_NOT", "UNARY_NEGATE", "UNARY_MINUS", 
-  "UNARY_STAR", "UNARY_REF", "POINTSAT", "SCOPE", "PLUSPLUS", 
-  "MINUSMINUS", "TIMESEQUAL", "DIVIDEEQUAL", "MODEQUAL", "PLUSEQUAL", 
-  "MINUSEQUAL", "OREQUAL", "ANDEQUAL", "XOREQUAL", "LSHIFTEQUAL", 
-  "RSHIFTEQUAL", "TOKENPASTE", "KW_BEGIN_PUBLISH", "KW_BLOCKING", 
-  "KW_BOOL", "KW_CATCH", "KW_CHAR", "KW_WCHAR_T", "KW_CLASS", "KW_CONST", 
-  "KW_DELETE", "KW_DOUBLE", "KW_DYNAMIC_CAST", "KW_ELSE", 
-  "KW_END_PUBLISH", "KW_ENUM", "KW_EXTERN", "KW_EXPLICIT", "KW_PUBLISHED", 
-  "KW_FALSE", "KW_FLOAT", "KW_FRIEND", "KW_FOR", "KW_GOTO", "KW_IF", 
-  "KW_INLINE", "KW_INT", "KW_LONG", "KW_LONGLONG", "KW_MUTABLE", 
-  "KW_NAMESPACE", "KW_NEW", "KW_OPERATOR", "KW_PRIVATE", "KW_PROTECTED", 
-  "KW_PUBLIC", "KW_REGISTER", "KW_RETURN", "KW_SHORT", "KW_SIGNED", 
-  "KW_SIZEOF", "KW_STATIC", "KW_STATIC_CAST", "KW_STRUCT", "KW_TEMPLATE", 
-  "KW_THROW", "KW_TRUE", "KW_TRY", "KW_TYPEDEF", "KW_TYPENAME", 
-  "KW_UNION", "KW_UNSIGNED", "KW_USING", "KW_VIRTUAL", "KW_VOID", 
-  "KW_VOLATILE", "KW_WHILE", "START_CPP", "START_CONST_EXPR", 
-  "START_TYPE", "'{'", "','", "';'", "':'", "'='", "'?'", "'|'", "'^'", 
-  "'&'", "'<'", "'>'", "'+'", "'-'", "'*'", "'/'", "'%'", "'~'", "'.'", 
-  "'('", "'['", "')'", "'}'", "'!'", "']'", "$accept", "grammar", "cpp", 
-  "constructor_inits", "constructor_init", "extern_c", "@1", 
-  "declaration", "friend_declaration", "@2", "storage_class", 
-  "type_like_declaration", "multiple_var_declaration", "@3", "@4", 
-  "multiple_instance_identifiers", "multiple_const_instance_identifiers", 
-  "typedef_declaration", "@5", "@6", "typedef_instance_identifiers", 
-  "typedef_const_instance_identifiers", "function_prototype", "@7", "@8", 
-  "@9", "@10", "@11", "@12", "@13", "function_post", "function_operator", 
-  "more_template_declaration", "template_declaration", "@14", 
-  "template_formal_parameters", "template_nonempty_formal_parameters", 
-  "template_formal_parameter", "template_formal_parameter_type", 
-  "instance_identifier", "@15", "formal_parameter_list", 
-  "formal_parameters", "template_parameter_maybe_initialize", 
-  "maybe_initialize", "maybe_initialize_or_function_body", 
-  "structure_init", "structure_init_body", "formal_parameter", 
-  "not_paren_formal_parameter_identifier", "formal_parameter_identifier", 
-  "empty_instance_identifier", "type", "type_decl", "predefined_type", 
-  "full_type", "anonymous_struct", "@16", "named_struct", "@17", 
-  "maybe_class_derivation", "class_derivation", "base_specification", 
-  "anonymous_enum", "@18", "named_enum", "@19", "enum_body", 
-  "enum_body_no_trailing_comma", "enum_keyword", "struct_keyword", 
-  "namespace_declaration", "@20", "using_declaration", "simple_type", 
-  "simple_int_type", "simple_float_type", "simple_void_type", "code", 
-  "@21", "code_block", "element", "optional_const_expr", 
-  "optional_const_expr_comma", "const_expr_comma", 
-  "no_angle_bracket_const_expr", "const_expr", "const_operand", 
-  "formal_const_expr", "formal_const_operand", "class_derivation_name", 
+  "$end", "error", "$undefined", "REAL", "INTEGER", "CHAR_TOK", "STRING",
+  "SIMPLE_IDENTIFIER", "IDENTIFIER", "TYPENAME_IDENTIFIER", "SCOPING",
+  "TYPEDEFNAME", "ELLIPSIS", "OROR", "ANDAND", "EQCOMPARE", "NECOMPARE",
+  "LECOMPARE", "GECOMPARE", "LSHIFT", "RSHIFT", "POINTSAT_STAR",
+  "DOT_STAR", "UNARY", "UNARY_NOT", "UNARY_NEGATE", "UNARY_MINUS",
+  "UNARY_STAR", "UNARY_REF", "POINTSAT", "SCOPE", "PLUSPLUS", "MINUSMINUS",
+  "TIMESEQUAL", "DIVIDEEQUAL", "MODEQUAL", "PLUSEQUAL", "MINUSEQUAL",
+  "OREQUAL", "ANDEQUAL", "XOREQUAL", "LSHIFTEQUAL", "RSHIFTEQUAL",
+  "TOKENPASTE", "KW_BEGIN_PUBLISH", "KW_BLOCKING", "KW_BOOL", "KW_CATCH",
+  "KW_CHAR", "KW_WCHAR_T", "KW_CLASS", "KW_CONST", "KW_DELETE",
+  "KW_DOUBLE", "KW_DYNAMIC_CAST", "KW_ELSE", "KW_END_PUBLISH", "KW_ENUM",
+  "KW_EXTERN", "KW_EXPLICIT", "KW_PUBLISHED", "KW_FALSE", "KW_FLOAT",
+  "KW_FRIEND", "KW_FOR", "KW_GOTO", "KW_IF", "KW_INLINE", "KW_INT",
+  "KW_LONG", "KW_LONGLONG", "KW_MUTABLE", "KW_NAMESPACE", "KW_NEW",
+  "KW_OPERATOR", "KW_PRIVATE", "KW_PROTECTED", "KW_PUBLIC", "KW_REGISTER",
+  "KW_RETURN", "KW_SHORT", "KW_SIGNED", "KW_SIZEOF", "KW_STATIC",
+  "KW_STATIC_CAST", "KW_STRUCT", "KW_TEMPLATE", "KW_THROW", "KW_TRUE",
+  "KW_TRY", "KW_TYPEDEF", "KW_TYPENAME", "KW_UNION", "KW_UNSIGNED",
+  "KW_USING", "KW_VIRTUAL", "KW_VOID", "KW_VOLATILE", "KW_WHILE",
+  "START_CPP", "START_CONST_EXPR", "START_TYPE", "'{'", "','", "';'",
+  "':'", "'='", "'?'", "'|'", "'^'", "'&'", "'<'", "'>'", "'+'", "'-'",
+  "'*'", "'/'", "'%'", "'~'", "'.'", "'('", "'['", "')'", "'}'", "'!'",
+  "']'", "$accept", "grammar", "cpp", "constructor_inits",
+  "constructor_init", "extern_c", "@1", "declaration",
+  "friend_declaration", "@2", "storage_class", "type_like_declaration",
+  "multiple_var_declaration", "@3", "@4", "multiple_instance_identifiers",
+  "multiple_const_instance_identifiers", "typedef_declaration", "@5", "@6",
+  "typedef_instance_identifiers", "typedef_const_instance_identifiers",
+  "function_prototype", "@7", "@8", "@9", "@10", "@11", "@12", "@13",
+  "function_post", "function_operator", "more_template_declaration",
+  "template_declaration", "@14", "template_formal_parameters",
+  "template_nonempty_formal_parameters", "template_formal_parameter",
+  "template_formal_parameter_type", "instance_identifier", "@15",
+  "formal_parameter_list", "formal_parameters",
+  "template_parameter_maybe_initialize", "maybe_initialize",
+  "maybe_initialize_or_function_body", "structure_init",
+  "structure_init_body", "formal_parameter",
+  "not_paren_formal_parameter_identifier", "formal_parameter_identifier",
+  "empty_instance_identifier", "type", "type_decl", "predefined_type",
+  "full_type", "anonymous_struct", "@16", "named_struct", "@17",
+  "maybe_class_derivation", "class_derivation", "base_specification",
+  "anonymous_enum", "@18", "named_enum", "@19", "enum_body",
+  "enum_body_no_trailing_comma", "enum_keyword", "struct_keyword",
+  "namespace_declaration", "@20", "using_declaration", "simple_type",
+  "simple_int_type", "simple_float_type", "simple_void_type", "code",
+  "@21", "code_block", "element", "optional_const_expr",
+  "optional_const_expr_comma", "const_expr_comma",
+  "no_angle_bracket_const_expr", "const_expr", "const_operand",
+  "formal_const_expr", "formal_const_operand", "class_derivation_name",
   "name", "string", "empty", 0
 };
 #endif
@@ -999,7 +1002,7 @@ static const char *const yytname[] =
 # ifdef YYPRINT
 /* YYTOKNUM[YYLEX-NUM] -- Internal token number corresponding to
    token YYLEX-NUM.  */
-static const unsigned short yytoknum[] =
+static const unsigned short int yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
@@ -1136,7 +1139,7 @@ static const unsigned char yyr2[] =
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
    STATE-NUM when YYTABLE doesn't specify something else to do.  Zero
    means the default is an error.  */
-static const unsigned short yydefact[] =
+static const unsigned short int yydefact[] =
 {
        0,   529,     0,     0,     0,   529,     5,   478,   474,   477,
      527,   480,     0,     0,     0,     0,     0,     0,   476,     0,
@@ -1236,7 +1239,7 @@ static const unsigned short yydefact[] =
 };
 
 /* YYDEFGOTO[NTERM-NUM]. */
-static const short yydefgoto[] =
+static const short int yydefgoto[] =
 {
       -1,     4,     5,   367,   368,    82,   287,    83,    84,   178,
       85,    86,    87,   295,   353,   378,   445,   186,   348,   414,
@@ -1253,7 +1256,7 @@ static const short yydefgoto[] =
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
 #define YYPACT_NINF -488
-static const short yypact[] =
+static const short int yypact[] =
 {
      -11,  -488,  1989,  3039,    29,  2877,  -488,  -488,  -488,  -488,
     -488,  -488,   -87,   -77,   -69,   -52,   -41,   -28,  -488,   -23,
@@ -1353,7 +1356,7 @@ static const short yypact[] =
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const short yypgoto[] =
+static const short int yypgoto[] =
 {
     -488,  -488,  -164,  -488,   135,  -488,  -488,   421,  -488,  -488,
      -62,   200,  -488,  -488,  -488,  -126,  -199,  -488,  -488,  -488,
@@ -1372,7 +1375,7 @@ static const short yypgoto[] =
    number is the opposite.  If zero, do what YYDEFACT says.
    If YYTABLE_NINF, syntax error.  */
 #define YYTABLE_NINF -224
-static const short yytable[] =
+static const short int yytable[] =
 {
        6,   104,   128,   719,    91,   217,   218,   219,   220,   106,
      222,   223,   224,   444,   559,   273,   574,   185,   608,   229,
@@ -1717,7 +1720,7 @@ static const short yytable[] =
        0,     0,     0,     0,   743
 };
 
-static const short yycheck[] =
+static const short int yycheck[] =
 {
        1,    22,    33,   462,     5,    93,    94,    95,    96,    22,
       98,    99,   100,   352,   416,   179,    12,    79,   453,   107,
@@ -2186,13 +2189,7 @@ static const unsigned char yystos[] =
 
 #define YYACCEPT	goto yyacceptlab
 #define YYABORT		goto yyabortlab
-#define YYERROR		do				\
-			  {				\
-			    yylerrsp = yylsp;		\
-			    *++yylerrsp = yyloc;	\
-			    goto yyerrlab1;		\
-			  }				\
-			while (0)
+#define YYERROR		goto yyerrorlab
 
 
 /* Like YYERROR except do call yyerror.  This remains here temporarily
@@ -2220,19 +2217,52 @@ do								\
     }								\
 while (0)
 
+
 #define YYTERROR	1
 #define YYERRCODE	256
 
-/* YYLLOC_DEFAULT -- Compute the default location (before the actions
-   are run).  */
 
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
 #ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)         \
-  Current.first_line   = Rhs[1].first_line;      \
-  Current.first_column = Rhs[1].first_column;    \
-  Current.last_line    = Rhs[N].last_line;       \
-  Current.last_column  = Rhs[N].last_column;
+# define YYLLOC_DEFAULT(Current, Rhs, N)				\
+    do									\
+      if (N)								\
+	{								\
+	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
+	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
+	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
+	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
+	}								\
+      else								\
+	{								\
+	  (Current).first_line   = (Current).last_line   =		\
+	    YYRHSLOC (Rhs, 0).last_line;				\
+	  (Current).first_column = (Current).last_column =		\
+	    YYRHSLOC (Rhs, 0).last_column;				\
+	}								\
+    while (0)
 #endif
+
+
+/* YY_LOCATION_PRINT -- Print the location on the stream.
+   This macro was not mandated originally: define only if we know
+   we won't break user code: when these are the locations we know.  */
+
+#ifndef YY_LOCATION_PRINT
+# if YYLTYPE_IS_TRIVIAL
+#  define YY_LOCATION_PRINT(File, Loc)			\
+     fprintf (File, "%d.%d-%d.%d",			\
+              (Loc).first_line, (Loc).first_column,	\
+              (Loc).last_line,  (Loc).last_column)
+# else
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
+#endif
+
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
 
@@ -2256,36 +2286,30 @@ do {						\
     YYFPRINTF Args;				\
 } while (0)
 
-# define YYDSYMPRINT(Args)			\
-do {						\
-  if (yydebug)					\
-    yysymprint Args;				\
-} while (0)
-
-# define YYDSYMPRINTF(Title, Token, Value, Location)		\
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)		\
 do {								\
   if (yydebug)							\
     {								\
       YYFPRINTF (stderr, "%s ", Title);				\
       yysymprint (stderr, 					\
-                  Token, Value, Location);	\
+                  Type, Value, Location);	\
       YYFPRINTF (stderr, "\n");					\
     }								\
 } while (0)
 
 /*------------------------------------------------------------------.
 | yy_stack_print -- Print the state stack from its BOTTOM up to its |
-| TOP (cinluded).                                                   |
+| TOP (included).                                                   |
 `------------------------------------------------------------------*/
 
 #if defined (__STDC__) || defined (__cplusplus)
 static void
-yy_stack_print (short *bottom, short *top)
+yy_stack_print (short int *bottom, short int *top)
 #else
 static void
 yy_stack_print (bottom, top)
-    short *bottom;
-    short *top;
+    short int *bottom;
+    short int *top;
 #endif
 {
   YYFPRINTF (stderr, "Stack now");
@@ -2335,8 +2359,7 @@ do {					\
 int yydebug;
 #else /* !YYDEBUG */
 # define YYDPRINTF(Args)
-# define YYDSYMPRINT(Args)
-# define YYDSYMPRINTF(Title, Token, Value, Location)
+# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -2353,10 +2376,6 @@ int yydebug;
    Do not make this value too large; the results are undefined if
    SIZE_MAX < YYSTACK_BYTES (YYMAXDEPTH)
    evaluated with infinite-precision integer arithmetic.  */
-
-#if YYMAXDEPTH == 0
-# undef YYMAXDEPTH
-#endif
 
 #ifndef YYMAXDEPTH
 # define YYMAXDEPTH 10000
@@ -2441,15 +2460,17 @@ yysymprint (yyoutput, yytype, yyvaluep, yylocationp)
   (void) yylocationp;
 
   if (yytype < YYNTOKENS)
-    {
-      YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
-# ifdef YYPRINT
-      YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
-# endif
-    }
+    YYFPRINTF (yyoutput, "token %s (", yytname[yytype]);
   else
     YYFPRINTF (yyoutput, "nterm %s (", yytname[yytype]);
 
+  YY_LOCATION_PRINT (yyoutput, *yylocationp);
+  fprintf (yyoutput, ": ");
+
+# ifdef YYPRINT
+  if (yytype < YYNTOKENS)
+    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+# endif
   switch (yytype)
     {
       default:
@@ -2465,10 +2486,11 @@ yysymprint (yyoutput, yytype, yyvaluep, yylocationp)
 
 #if defined (__STDC__) || defined (__cplusplus)
 static void
-yydestruct (int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocationp)
+yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocationp)
 #else
 static void
-yydestruct (yytype, yyvaluep, yylocationp)
+yydestruct (yymsg, yytype, yyvaluep, yylocationp)
+    const char *yymsg;
     int yytype;
     YYSTYPE *yyvaluep;
     YYLTYPE *yylocationp;
@@ -2477,6 +2499,10 @@ yydestruct (yytype, yyvaluep, yylocationp)
   /* Pacify ``unused variable'' warnings.  */
   (void) yyvaluep;
   (void) yylocationp;
+
+  if (!yymsg)
+    yymsg = "Deleting";
+  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
 
   switch (yytype)
     {
@@ -2530,15 +2556,15 @@ yyparse ()
 #endif
 #endif
 {
-  /* The lookahead symbol.  */
+  /* The look-ahead symbol.  */
 int yychar;
 
-/* The semantic value of the lookahead symbol.  */
+/* The semantic value of the look-ahead symbol.  */
 YYSTYPE yylval;
 
 /* Number of syntax errors so far.  */
 int yynerrs;
-/* Location data for the lookahead symbol.  */
+/* Location data for the look-ahead symbol.  */
 YYLTYPE yylloc;
 
   register int yystate;
@@ -2546,7 +2572,7 @@ YYLTYPE yylloc;
   int yyresult;
   /* Number of tokens to shift before error messages enabled.  */
   int yyerrstatus;
-  /* Lookahead token as an internal (translated) token number.  */
+  /* Look-ahead token as an internal (translated) token number.  */
   int yytoken = 0;
 
   /* Three stacks and their tools:
@@ -2558,9 +2584,9 @@ YYLTYPE yylloc;
      to reallocate them elsewhere.  */
 
   /* The state stack.  */
-  short	yyssa[YYINITDEPTH];
-  short *yyss = yyssa;
-  register short *yyssp;
+  short int yyssa[YYINITDEPTH];
+  short int *yyss = yyssa;
+  register short int *yyssp;
 
   /* The semantic value stack.  */
   YYSTYPE yyvsa[YYINITDEPTH];
@@ -2571,7 +2597,8 @@ YYLTYPE yylloc;
   YYLTYPE yylsa[YYINITDEPTH];
   YYLTYPE *yyls = yylsa;
   YYLTYPE *yylsp;
-  YYLTYPE *yylerrsp;
+  /* The locations where the error started and ended. */
+  YYLTYPE yyerror_range[2];
 
 #define YYPOPSTACK   (yyvsp--, yyssp--, yylsp--)
 
@@ -2601,6 +2628,16 @@ YYLTYPE yylloc;
   yyssp = yyss;
   yyvsp = yyvs;
   yylsp = yyls;
+#if YYLTYPE_IS_TRIVIAL
+  /* Initialize the default location before parsing starts.  */
+  yylloc.first_line   = yylloc.last_line   = 1;
+  yylloc.first_column = yylloc.last_column = 0;
+#endif
+
+
+  yyvsp[0] = yylval;
+    yylsp[0] = yylloc;
+
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -2626,7 +2663,7 @@ YYLTYPE yylloc;
 	   these so that the &'s don't force the real ones into
 	   memory.  */
 	YYSTYPE *yyvs1 = yyvs;
-	short *yyss1 = yyss;
+	short int *yyss1 = yyss;
 	YYLTYPE *yyls1 = yyls;
 
 	/* Each stack pointer address is followed by the size of the
@@ -2654,7 +2691,7 @@ YYLTYPE yylloc;
 	yystacksize = YYMAXDEPTH;
 
       {
-	short *yyss1 = yyss;
+	short int *yyss1 = yyss;
 	union yyalloc *yyptr =
 	  (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
 	if (! yyptr)
@@ -2690,18 +2727,18 @@ YYLTYPE yylloc;
 yybackup:
 
 /* Do appropriate processing given the current state.  */
-/* Read a lookahead token if we need one and don't already have one.  */
+/* Read a look-ahead token if we need one and don't already have one.  */
 /* yyresume: */
 
-  /* First try to decide what to do without reference to lookahead token.  */
+  /* First try to decide what to do without reference to look-ahead token.  */
 
   yyn = yypact[yystate];
   if (yyn == YYPACT_NINF)
     goto yydefault;
 
-  /* Not known => get a lookahead token if don't already have one.  */
+  /* Not known => get a look-ahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either YYEMPTY or YYEOF or a valid look-ahead symbol.  */
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token: "));
@@ -2716,7 +2753,7 @@ yybackup:
   else
     {
       yytoken = YYTRANSLATE (yychar);
-      YYDSYMPRINTF ("Next token is", yytoken, &yylval, &yylloc);
+      YY_SYMBOL_PRINT ("Next token is", yytoken, &yylval, &yylloc);
     }
 
   /* If the proper action on seeing token YYTOKEN is to reduce or to
@@ -2736,8 +2773,8 @@ yybackup:
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  /* Shift the lookahead token.  */
-  YYDPRINTF ((stderr, "Shifting token %s, ", yytname[yytoken]));
+  /* Shift the look-ahead token.  */
+  YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
 
   /* Discard the token being shifted unless it is eof.  */
   if (yychar != YYEOF)
@@ -2783,28 +2820,28 @@ yyreduce:
   yyval = yyvsp[1-yylen];
 
   /* Default location. */
-  YYLLOC_DEFAULT (yyloc, (yylsp - yylen), yylen);
+  YYLLOC_DEFAULT (yyloc, yylsp - yylen, yylen);
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
         case 3:
 #line 381 "cppBison.yxx"
     {
-  current_expr = yyvsp[0].u.expr;
+  current_expr = (yyvsp[0].u.expr);
 }
     break;
 
   case 4:
 #line 385 "cppBison.yxx"
     {
-  current_type = yyvsp[0].u.type;
+  current_type = (yyvsp[0].u.type);
 }
     break;
 
   case 10:
 #line 403 "cppBison.yxx"
     {
-  delete yyvsp[-1].u.expr;
+  delete (yyvsp[-1].u.expr);
 }
     break;
 
@@ -2812,7 +2849,7 @@ yyreduce:
 #line 415 "cppBison.yxx"
     {
   push_storage_class((current_storage_class & ~CPPInstance::SC_c_binding) | 
-                     (yyvsp[-1].u.integer & CPPInstance::SC_c_binding));
+                     ((yyvsp[-1].u.integer) & CPPInstance::SC_c_binding));
 }
     break;
 
@@ -2833,7 +2870,7 @@ yyreduce:
   }
 
   publish_previous = current_scope->get_current_vis();
-  publish_loc = yylsp[0];
+  publish_loc = (yylsp[0]);
   publish_nest_level++;
   current_scope->set_current_vis(V_published);
 }
@@ -2843,7 +2880,7 @@ yyreduce:
 #line 447 "cppBison.yxx"
     {
   if (publish_nest_level != 1) {
-    yyerror("Unmatched __end_publish", yylsp[0]);
+    yyerror("Unmatched __end_publish", (yylsp[0]));
   } else {
     current_scope->set_current_vis(publish_previous);
   }
@@ -2861,26 +2898,30 @@ yyreduce:
   case 23:
 #line 460 "cppBison.yxx"
     {
-  current_scope->set_current_vis(V_public);
+  if (publish_nest_level > 0) {
+    current_scope->set_current_vis(V_published);
+  } else {
+    current_scope->set_current_vis(V_public);
+  }
 }
     break;
 
   case 24:
-#line 464 "cppBison.yxx"
+#line 468 "cppBison.yxx"
     {
   current_scope->set_current_vis(V_protected);
 }
     break;
 
   case 25:
-#line 468 "cppBison.yxx"
+#line 472 "cppBison.yxx"
     {
   current_scope->set_current_vis(V_private);
 }
     break;
 
   case 26:
-#line 475 "cppBison.yxx"
+#line 479 "cppBison.yxx"
     {
   CPPScope *new_scope = new CPPScope(current_scope, CPPNameComponent("temp"),
                                      V_public);
@@ -2889,7 +2930,7 @@ yyreduce:
     break;
 
   case 27:
-#line 481 "cppBison.yxx"
+#line 485 "cppBison.yxx"
     {
   delete current_scope;
   pop_scope();
@@ -2897,314 +2938,314 @@ yyreduce:
     break;
 
   case 28:
-#line 490 "cppBison.yxx"
+#line 494 "cppBison.yxx"
     {
-  yyval.u.integer = 0;
+  (yyval.u.integer) = 0;
 }
     break;
 
   case 29:
-#line 494 "cppBison.yxx"
+#line 498 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_extern;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_extern;
 }
     break;
 
   case 30:
-#line 498 "cppBison.yxx"
+#line 502 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-2].u.integer | (int)CPPInstance::SC_extern;
-  if (yyvsp[0].str == "C") {
-    yyval.u.integer |= (int)CPPInstance::SC_c_binding;
-  } else if (yyvsp[0].str == "C++") {
-    yyval.u.integer &= ~(int)CPPInstance::SC_c_binding;
+  (yyval.u.integer) = (yyvsp[-2].u.integer) | (int)CPPInstance::SC_extern;
+  if ((yyvsp[0].str) == "C") {
+    (yyval.u.integer) |= (int)CPPInstance::SC_c_binding;
+  } else if ((yyvsp[0].str) == "C++") {
+    (yyval.u.integer) &= ~(int)CPPInstance::SC_c_binding;
   } else {
-    yywarning("Ignoring unknown linkage type \"" + yyvsp[0].str + "\"", yylsp[0]);
+    yywarning("Ignoring unknown linkage type \"" + (yyvsp[0].str) + "\"", (yylsp[0]));
   }
 }
     break;
 
   case 31:
-#line 509 "cppBison.yxx"
+#line 513 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_static;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_static;
 }
     break;
 
   case 32:
-#line 513 "cppBison.yxx"
+#line 517 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_inline;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_inline;
 }
     break;
 
   case 33:
-#line 517 "cppBison.yxx"
+#line 521 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_virtual;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_virtual;
 }
     break;
 
   case 34:
-#line 521 "cppBison.yxx"
+#line 525 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_explicit;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_explicit;
 }
     break;
 
   case 35:
-#line 525 "cppBison.yxx"
+#line 529 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_volatile;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_volatile;
 }
     break;
 
   case 36:
-#line 529 "cppBison.yxx"
+#line 533 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_mutable;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_mutable;
 }
     break;
 
   case 37:
-#line 533 "cppBison.yxx"
+#line 537 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_register;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_register;
 }
     break;
 
   case 38:
-#line 537 "cppBison.yxx"
+#line 541 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-1].u.integer | (int)CPPInstance::SC_blocking;
+  (yyval.u.integer) = (yyvsp[-1].u.integer) | (int)CPPInstance::SC_blocking;
 }
     break;
 
   case 39:
-#line 544 "cppBison.yxx"
+#line 548 "cppBison.yxx"
     {
   /* multiple_var_declaration adds itself to the scope. */
 }
     break;
 
   case 40:
-#line 548 "cppBison.yxx"
+#line 552 "cppBison.yxx"
     {
   // We don't really care about the storage class here.  In fact, it's
   // not actually legal to define a class or struct using a particular
   // storage class, but we require it just to help yacc out in its
   // parsing.
 
-  current_scope->add_declaration(yyvsp[-1].u.decl, global_scope, current_lexer, yylsp[-1]);
+  current_scope->add_declaration((yyvsp[-1].u.decl), global_scope, current_lexer, (yylsp[-1]));
 }
     break;
 
   case 41:
-#line 557 "cppBison.yxx"
+#line 561 "cppBison.yxx"
     {
-  if (yyvsp[-1].u.instance != (CPPInstance *)NULL) {
-    yyvsp[-1].u.instance->_storage_class |= (current_storage_class | yyvsp[-2].u.integer);
-    current_scope->add_declaration(yyvsp[-1].u.instance, global_scope, current_lexer, yylsp[-1]);
-    yyvsp[-1].u.instance->set_initializer(yyvsp[0].u.expr);
+  if ((yyvsp[-1].u.instance) != (CPPInstance *)NULL) {
+    (yyvsp[-1].u.instance)->_storage_class |= (current_storage_class | (yyvsp[-2].u.integer));
+    current_scope->add_declaration((yyvsp[-1].u.instance), global_scope, current_lexer, (yylsp[-1]));
+    (yyvsp[-1].u.instance)->set_initializer((yyvsp[0].u.expr));
   }
 }
     break;
 
   case 42:
-#line 568 "cppBison.yxx"
+#line 572 "cppBison.yxx"
     {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  if (yyvsp[0].u.decl->as_type_declaration()) {
-    current_type = yyvsp[0].u.decl->as_type_declaration()->_type;
+  if ((yyvsp[0].u.decl)->as_type_declaration()) {
+    current_type = (yyvsp[0].u.decl)->as_type_declaration()->_type;
   } else {
-    current_type = yyvsp[0].u.decl->as_type();
+    current_type = (yyvsp[0].u.decl)->as_type();
   }
-  push_storage_class(yyvsp[-1].u.integer);
+  push_storage_class((yyvsp[-1].u.integer));
 }
     break;
 
   case 43:
-#line 579 "cppBison.yxx"
+#line 583 "cppBison.yxx"
     {
   pop_storage_class();
 }
     break;
 
   case 44:
-#line 583 "cppBison.yxx"
+#line 587 "cppBison.yxx"
     {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = yyvsp[0].u.type;
-  push_storage_class(yyvsp[-2].u.integer);
+  current_type = (yyvsp[0].u.type);
+  push_storage_class((yyvsp[-2].u.integer));
 }
     break;
 
   case 45:
-#line 590 "cppBison.yxx"
+#line 594 "cppBison.yxx"
     {
   pop_storage_class();
 }
     break;
 
   case 46:
-#line 601 "cppBison.yxx"
+#line 605 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-1].u.inst_ident,
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-1].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  current_scope->add_declaration(inst, global_scope, current_lexer, yylsp[-1]);
+                                      (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  current_scope->add_declaration(inst, global_scope, current_lexer, (yylsp[-1]));
 }
     break;
 
   case 47:
-#line 609 "cppBison.yxx"
+#line 613 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-3].u.inst_ident,
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-3].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-3].file);
-  inst->set_initializer(yyvsp[-2].u.expr);
-  current_scope->add_declaration(inst, global_scope, current_lexer, yylsp[-3]);
+                                      (yylsp[-3]).file);
+  inst->set_initializer((yyvsp[-2].u.expr));
+  current_scope->add_declaration(inst, global_scope, current_lexer, (yylsp[-3]));
 }
     break;
 
   case 48:
-#line 620 "cppBison.yxx"
+#line 624 "cppBison.yxx"
     {
-  yyvsp[-1].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-1].u.inst_ident,
+  (yyvsp[-1].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-1].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  current_scope->add_declaration(inst, global_scope, current_lexer, yylsp[-1]);
+                                      (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  current_scope->add_declaration(inst, global_scope, current_lexer, (yylsp[-1]));
 }
     break;
 
   case 49:
-#line 629 "cppBison.yxx"
+#line 633 "cppBison.yxx"
     {
-  yyvsp[-3].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-3].u.inst_ident,
+  (yyvsp[-3].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-3].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-3].file);
-  inst->set_initializer(yyvsp[-2].u.expr);
-  current_scope->add_declaration(inst, global_scope, current_lexer, yylsp[-3]);
+                                      (yylsp[-3]).file);
+  inst->set_initializer((yyvsp[-2].u.expr));
+  current_scope->add_declaration(inst, global_scope, current_lexer, (yylsp[-3]));
 }
     break;
 
   case 50:
-#line 642 "cppBison.yxx"
+#line 646 "cppBison.yxx"
     {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  if (yyvsp[0].u.decl->as_type_declaration()) {
-    current_type = yyvsp[0].u.decl->as_type_declaration()->_type;
+  if ((yyvsp[0].u.decl)->as_type_declaration()) {
+    current_type = (yyvsp[0].u.decl)->as_type_declaration()->_type;
   } else {
-    current_type = yyvsp[0].u.decl->as_type();
+    current_type = (yyvsp[0].u.decl)->as_type();
   }
-  push_storage_class(yyvsp[-1].u.integer);
+  push_storage_class((yyvsp[-1].u.integer));
 }
     break;
 
   case 51:
-#line 653 "cppBison.yxx"
+#line 657 "cppBison.yxx"
     {
   pop_storage_class();
 }
     break;
 
   case 52:
-#line 657 "cppBison.yxx"
+#line 661 "cppBison.yxx"
     {
   // We don't need to push/pop type, because we can't nest
   // multiple_var_declarations.
-  current_type = yyvsp[0].u.type;
-  push_storage_class(yyvsp[-2].u.integer);
+  current_type = (yyvsp[0].u.type);
+  push_storage_class((yyvsp[-2].u.integer));
 }
     break;
 
   case 53:
-#line 664 "cppBison.yxx"
+#line 668 "cppBison.yxx"
     {
   pop_storage_class();
 }
     break;
 
   case 54:
-#line 668 "cppBison.yxx"
+#line 672 "cppBison.yxx"
     {
-  if (yyvsp[-1].u.instance != (CPPDeclaration *)NULL) {
-    CPPInstance *inst = yyvsp[-1].u.instance->as_instance();
+  if ((yyvsp[-1].u.instance) != (CPPDeclaration *)NULL) {
+    CPPInstance *inst = (yyvsp[-1].u.instance)->as_instance();
     if (inst != (CPPInstance *)NULL) {
-      inst->_storage_class |= (current_storage_class | yyvsp[-2].u.integer);
-      current_scope->add_declaration(inst, global_scope, current_lexer, yylsp[-1]);
-      current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, yylsp[-1]);
+      inst->_storage_class |= (current_storage_class | (yyvsp[-2].u.integer));
+      current_scope->add_declaration(inst, global_scope, current_lexer, (yylsp[-1]));
+      current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, (yylsp[-1]));
     }
   }
 }
     break;
 
   case 55:
-#line 682 "cppBison.yxx"
+#line 686 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-1].u.inst_ident,
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-1].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, yylsp[-1]);
+                                      (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, (yylsp[-1]));
 }
     break;
 
   case 56:
-#line 690 "cppBison.yxx"
+#line 694 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-3].u.inst_ident,
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-3].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-3].file);
-  inst->set_initializer(yyvsp[-2].u.expr);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, yylsp[-3]);
+                                      (yylsp[-3]).file);
+  inst->set_initializer((yyvsp[-2].u.expr));
+  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, (yylsp[-3]));
 }
     break;
 
   case 57:
-#line 701 "cppBison.yxx"
+#line 705 "cppBison.yxx"
     {
-  yyvsp[-1].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-1].u.inst_ident,
+  (yyvsp[-1].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-1].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, yylsp[-1]);
+                                      (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, (yylsp[-1]));
 }
     break;
 
   case 58:
-#line 710 "cppBison.yxx"
+#line 714 "cppBison.yxx"
     {
-  yyvsp[-3].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(current_type, yyvsp[-3].u.inst_ident,
+  (yyvsp[-3].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance(current_type, (yyvsp[-3].u.inst_ident),
                                       current_storage_class,
-                                      yylsp[-3].file);
-  inst->set_initializer(yyvsp[-2].u.expr);
-  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, yylsp[-3]);
+                                      (yylsp[-3]).file);
+  inst->set_initializer((yyvsp[-2].u.expr));
+  current_scope->add_declaration(new CPPTypedef(inst, current_scope == global_scope), global_scope, current_lexer, (yylsp[-3]));
 }
     break;
 
   case 59:
-#line 724 "cppBison.yxx"
+#line 728 "cppBison.yxx"
     {
-  push_scope(yyvsp[-1].u.identifier->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-1].u.identifier)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 60:
-#line 728 "cppBison.yxx"
+#line 732 "cppBison.yxx"
     {
   pop_scope();
   CPPType *type;
-  if (yyvsp[-5].u.identifier->get_simple_name() == current_scope->get_simple_name()) {
+  if ((yyvsp[-5].u.identifier)->get_simple_name() == current_scope->get_simple_name()) {
     // This is a constructor, and has no return.
     type = new CPPSimpleType(CPPSimpleType::T_void);
   } else {
@@ -3213,26 +3254,26 @@ yyreduce:
     type = new CPPSimpleType(CPPSimpleType::T_int);
   }
 
-  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier(yyvsp[-5].u.identifier);
-  ii->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier((yyvsp[-5].u.identifier));
+  ii->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 
-  yyval.u.instance = new CPPInstance(type, ii, 0, yylsp[-5].file);
+  (yyval.u.instance) = new CPPInstance(type, ii, 0, (yylsp[-5]).file);
 }
     break;
 
   case 61:
-#line 746 "cppBison.yxx"
+#line 750 "cppBison.yxx"
     {
-  push_scope(yyvsp[-1].u.identifier->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-1].u.identifier)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 62:
-#line 750 "cppBison.yxx"
+#line 754 "cppBison.yxx"
     {
   pop_scope();
   CPPType *type;
-  if (yyvsp[-5].u.identifier->get_simple_name() == current_scope->get_simple_name()) {
+  if ((yyvsp[-5].u.identifier)->get_simple_name() == current_scope->get_simple_name()) {
     // This is a constructor, and has no return.
     type = new CPPSimpleType(CPPSimpleType::T_void);
   } else {
@@ -3241,97 +3282,97 @@ yyreduce:
     type = new CPPSimpleType(CPPSimpleType::T_int);
   }
 
-  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier(yyvsp[-5].u.identifier);
-  ii->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  CPPInstanceIdentifier *ii = new CPPInstanceIdentifier((yyvsp[-5].u.identifier));
+  ii->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 
-  yyval.u.instance = new CPPInstance(type, ii, 0, yylsp[-5].file);
+  (yyval.u.instance) = new CPPInstance(type, ii, 0, (yylsp[-5]).file);
 }
     break;
 
   case 63:
-#line 770 "cppBison.yxx"
+#line 774 "cppBison.yxx"
     {
-  push_scope(yyvsp[-1].u.identifier->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-1].u.identifier)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 64:
-#line 774 "cppBison.yxx"
+#line 778 "cppBison.yxx"
     {
   pop_scope();
-  if (yyvsp[-5].u.identifier->is_scoped()) {
-    yyerror("Invalid destructor name: ~" + yyvsp[-5].u.identifier->get_fully_scoped_name(), yylsp[-5]);
+  if ((yyvsp[-5].u.identifier)->is_scoped()) {
+    yyerror("Invalid destructor name: ~" + (yyvsp[-5].u.identifier)->get_fully_scoped_name(), (yylsp[-5]));
   } else {
     CPPIdentifier *ident = 
-      new CPPIdentifier("~" + yyvsp[-5].u.identifier->get_simple_name(), yylsp[-5].file);
-    delete yyvsp[-5].u.identifier;
+      new CPPIdentifier("~" + (yyvsp[-5].u.identifier)->get_simple_name(), (yylsp[-5]).file);
+    delete (yyvsp[-5].u.identifier);
 
     CPPType *type;
     type = new CPPSimpleType(CPPSimpleType::T_void);
     
     CPPInstanceIdentifier *ii = new CPPInstanceIdentifier(ident);
-    ii->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+    ii->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 
-    yyval.u.instance = new CPPInstance(type, ii, 0, yylsp[-5].file);
+    (yyval.u.instance) = new CPPInstance(type, ii, 0, (yylsp[-5]).file);
   }
 }
     break;
 
   case 65:
-#line 800 "cppBison.yxx"
+#line 804 "cppBison.yxx"
     {
-  push_scope(yyvsp[-2].u.inst_ident->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-2].u.inst_ident)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 66:
-#line 804 "cppBison.yxx"
+#line 808 "cppBison.yxx"
     {
   pop_scope();
-  CPPType *type = yyvsp[-9].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[-9].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   assert(type != NULL);
 
-  CPPInstanceIdentifier *ii = yyvsp[-6].u.inst_ident;
+  CPPInstanceIdentifier *ii = (yyvsp[-6].u.inst_ident);
   ii->add_modifier(IIT_pointer);
-  ii->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
-  yyval.u.instance = new CPPInstance(type, ii, 0, yylsp[-9].file);
+  ii->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
+  (yyval.u.instance) = new CPPInstance(type, ii, 0, (yylsp[-9]).file);
 }
     break;
 
   case 67:
-#line 815 "cppBison.yxx"
+#line 819 "cppBison.yxx"
     {
-  push_scope(yyvsp[-2].u.inst_ident->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-2].u.inst_ident)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 68:
-#line 819 "cppBison.yxx"
+#line 823 "cppBison.yxx"
     {
   pop_scope();
-  CPPType *type = yyvsp[-10].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[-10].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   assert(type != NULL);
 
-  CPPInstanceIdentifier *ii = yyvsp[-6].u.inst_ident;
-  ii->add_scoped_pointer_modifier(yyvsp[-8].u.identifier);
-  ii->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
-  yyval.u.instance = new CPPInstance(type, ii, 0, yylsp[-10].file);
+  CPPInstanceIdentifier *ii = (yyvsp[-6].u.inst_ident);
+  ii->add_scoped_pointer_modifier((yyvsp[-8].u.identifier));
+  ii->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
+  (yyval.u.instance) = new CPPInstance(type, ii, 0, (yylsp[-10]).file);
 }
     break;
 
   case 69:
-#line 832 "cppBison.yxx"
+#line 836 "cppBison.yxx"
     {
-  if (yyvsp[-3].u.identifier != NULL) {
-    push_scope(yyvsp[-3].u.identifier->get_scope(current_scope, global_scope));
+  if ((yyvsp[-3].u.identifier) != NULL) {
+    push_scope((yyvsp[-3].u.identifier)->get_scope(current_scope, global_scope));
   }
 }
     break;
 
   case 70:
-#line 838 "cppBison.yxx"
+#line 842 "cppBison.yxx"
     {
-  if (yyvsp[-7].u.identifier != NULL) {
+  if ((yyvsp[-7].u.identifier) != NULL) {
     pop_scope();
   }
 
@@ -3345,1179 +3386,1179 @@ yyreduce:
   // Only their return type will differentiate them.  (Naturally, this
   // violates actual C++ rules, but we're not an actual C++ compiler
   // so we don't care.  And this is the easiest way to do it.)
-  CPPIdentifier *ident = yyvsp[-7].u.identifier;
+  CPPIdentifier *ident = (yyvsp[-7].u.identifier);
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator typecast", yylsp[-7].file);
+    ident = new CPPIdentifier("operator typecast", (yylsp[-7]).file);
   } else {
     ident->add_name("operator typecast");
   }
-  yyval.u.instance = CPPInstance::make_typecast_function
-    (new CPPInstance(yyvsp[-6].u.type, yyvsp[-5].u.inst_ident, 0, yylsp[-5].file), ident, yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  (yyval.u.instance) = CPPInstance::make_typecast_function
+    (new CPPInstance((yyvsp[-6].u.type), (yyvsp[-5].u.inst_ident), 0, (yylsp[-5]).file), ident, (yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 }
     break;
 
   case 71:
-#line 863 "cppBison.yxx"
+#line 867 "cppBison.yxx"
     {
-  if (yyvsp[-4].u.identifier != NULL) {
-    push_scope(yyvsp[-4].u.identifier->get_scope(current_scope, global_scope));
+  if ((yyvsp[-4].u.identifier) != NULL) {
+    push_scope((yyvsp[-4].u.identifier)->get_scope(current_scope, global_scope));
   }
 }
     break;
 
   case 72:
-#line 869 "cppBison.yxx"
+#line 873 "cppBison.yxx"
     {
-  if (yyvsp[-8].u.identifier != NULL) {
+  if ((yyvsp[-8].u.identifier) != NULL) {
     pop_scope();
   }
 
-  CPPIdentifier *ident = yyvsp[-8].u.identifier;
+  CPPIdentifier *ident = (yyvsp[-8].u.identifier);
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator typecast", yylsp[-8].file);
+    ident = new CPPIdentifier("operator typecast", (yylsp[-8]).file);
   } else {
     ident->add_name("operator typecast");
   }
-  yyvsp[-5].u.inst_ident->add_modifier(IIT_const);
-  yyval.u.instance = CPPInstance::make_typecast_function
-    (new CPPInstance(yyvsp[-6].u.type, yyvsp[-5].u.inst_ident, 0, yylsp[-5].file), ident, yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  (yyvsp[-5].u.inst_ident)->add_modifier(IIT_const);
+  (yyval.u.instance) = CPPInstance::make_typecast_function
+    (new CPPInstance((yyvsp[-6].u.type), (yyvsp[-5].u.inst_ident), 0, (yylsp[-5]).file), ident, (yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 }
     break;
 
   case 73:
-#line 889 "cppBison.yxx"
+#line 893 "cppBison.yxx"
     {
   CPPDeclaration *decl = 
-    yyvsp[0].u.identifier->find_symbol(current_scope, global_scope, current_lexer);
+    (yyvsp[0].u.identifier)->find_symbol(current_scope, global_scope, current_lexer);
   if (decl != (CPPDeclaration *)NULL) {
-    yyval.u.instance = decl->as_instance();
+    (yyval.u.instance) = decl->as_instance();
   } else {
-    yyval.u.instance = (CPPInstance *)NULL;
+    (yyval.u.instance) = (CPPInstance *)NULL;
   }
 }
     break;
 
   case 74:
-#line 902 "cppBison.yxx"
+#line 906 "cppBison.yxx"
     {
-  yyval.u.integer = 0;
+  (yyval.u.integer) = 0;
 }
     break;
 
   case 75:
-#line 906 "cppBison.yxx"
+#line 910 "cppBison.yxx"
     {
-  yyval.u.integer = (int)CPPFunctionType::F_const_method;
+  (yyval.u.integer) = (int)CPPFunctionType::F_const_method;
 }
     break;
 
   case 76:
-#line 910 "cppBison.yxx"
+#line 914 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-3].u.integer;
+  (yyval.u.integer) = (yyvsp[-3].u.integer);
 }
     break;
 
   case 77:
-#line 914 "cppBison.yxx"
+#line 918 "cppBison.yxx"
     {
-  yyval.u.integer = yyvsp[-4].u.integer;
+  (yyval.u.integer) = (yyvsp[-4].u.integer);
 }
     break;
 
   case 78:
-#line 921 "cppBison.yxx"
+#line 925 "cppBison.yxx"
     {
-  yyval.str = "!";
+  (yyval.str) = "!";
 }
     break;
 
   case 79:
-#line 925 "cppBison.yxx"
+#line 929 "cppBison.yxx"
     {
-  yyval.str = "~";
+  (yyval.str) = "~";
 }
     break;
 
   case 80:
-#line 929 "cppBison.yxx"
+#line 933 "cppBison.yxx"
     {
-  yyval.str = "*";
+  (yyval.str) = "*";
 }
     break;
 
   case 81:
-#line 933 "cppBison.yxx"
+#line 937 "cppBison.yxx"
     {
-  yyval.str = "/";
+  (yyval.str) = "/";
 }
     break;
 
   case 82:
-#line 937 "cppBison.yxx"
+#line 941 "cppBison.yxx"
     {
-  yyval.str = "%";
+  (yyval.str) = "%";
 }
     break;
 
   case 83:
-#line 941 "cppBison.yxx"
+#line 945 "cppBison.yxx"
     {
-  yyval.str = "+";
+  (yyval.str) = "+";
 }
     break;
 
   case 84:
-#line 945 "cppBison.yxx"
+#line 949 "cppBison.yxx"
     {
-  yyval.str = "-";
+  (yyval.str) = "-";
 }
     break;
 
   case 85:
-#line 949 "cppBison.yxx"
+#line 953 "cppBison.yxx"
     {
-  yyval.str = "|";
+  (yyval.str) = "|";
 }
     break;
 
   case 86:
-#line 953 "cppBison.yxx"
+#line 957 "cppBison.yxx"
     {
-  yyval.str = "&";
+  (yyval.str) = "&";
 }
     break;
 
   case 87:
-#line 957 "cppBison.yxx"
+#line 961 "cppBison.yxx"
     {
-  yyval.str = "^";
+  (yyval.str) = "^";
 }
     break;
 
   case 88:
-#line 961 "cppBison.yxx"
+#line 965 "cppBison.yxx"
     {
-  yyval.str = "||";
+  (yyval.str) = "||";
 }
     break;
 
   case 89:
-#line 965 "cppBison.yxx"
+#line 969 "cppBison.yxx"
     {
-  yyval.str = "&&";
+  (yyval.str) = "&&";
 }
     break;
 
   case 90:
-#line 969 "cppBison.yxx"
+#line 973 "cppBison.yxx"
     {
-  yyval.str = "==";
+  (yyval.str) = "==";
 }
     break;
 
   case 91:
-#line 973 "cppBison.yxx"
+#line 977 "cppBison.yxx"
     {
-  yyval.str = "!=";
+  (yyval.str) = "!=";
 }
     break;
 
   case 92:
-#line 977 "cppBison.yxx"
+#line 981 "cppBison.yxx"
     {
-  yyval.str = "<=";
+  (yyval.str) = "<=";
 }
     break;
 
   case 93:
-#line 981 "cppBison.yxx"
+#line 985 "cppBison.yxx"
     {
-  yyval.str = ">=";
+  (yyval.str) = ">=";
 }
     break;
 
   case 94:
-#line 985 "cppBison.yxx"
+#line 989 "cppBison.yxx"
     {
-  yyval.str = "<";
+  (yyval.str) = "<";
 }
     break;
 
   case 95:
-#line 989 "cppBison.yxx"
+#line 993 "cppBison.yxx"
     {
-  yyval.str = ">";
+  (yyval.str) = ">";
 }
     break;
 
   case 96:
-#line 993 "cppBison.yxx"
+#line 997 "cppBison.yxx"
     {
-  yyval.str = "<<";
+  (yyval.str) = "<<";
 }
     break;
 
   case 97:
-#line 997 "cppBison.yxx"
+#line 1001 "cppBison.yxx"
     {
-  yyval.str = ">>";
+  (yyval.str) = ">>";
 }
     break;
 
   case 98:
-#line 1001 "cppBison.yxx"
+#line 1005 "cppBison.yxx"
     {
-  yyval.str = "=";
+  (yyval.str) = "=";
 }
     break;
 
   case 99:
-#line 1005 "cppBison.yxx"
+#line 1009 "cppBison.yxx"
     {
-  yyval.str = ",";
+  (yyval.str) = ",";
 }
     break;
 
   case 100:
-#line 1009 "cppBison.yxx"
+#line 1013 "cppBison.yxx"
     {
-  yyval.str = "++";
+  (yyval.str) = "++";
 }
     break;
 
   case 101:
-#line 1013 "cppBison.yxx"
+#line 1017 "cppBison.yxx"
     {
-  yyval.str = "--";
+  (yyval.str) = "--";
 }
     break;
 
   case 102:
-#line 1017 "cppBison.yxx"
+#line 1021 "cppBison.yxx"
     {
-  yyval.str = "*=";
+  (yyval.str) = "*=";
 }
     break;
 
   case 103:
-#line 1021 "cppBison.yxx"
+#line 1025 "cppBison.yxx"
     {
-  yyval.str = "/=";
+  (yyval.str) = "/=";
 }
     break;
 
   case 104:
-#line 1025 "cppBison.yxx"
+#line 1029 "cppBison.yxx"
     {
-  yyval.str = "%=";
+  (yyval.str) = "%=";
 }
     break;
 
   case 105:
-#line 1029 "cppBison.yxx"
+#line 1033 "cppBison.yxx"
     {
-  yyval.str = "+=";
+  (yyval.str) = "+=";
 }
     break;
 
   case 106:
-#line 1033 "cppBison.yxx"
+#line 1037 "cppBison.yxx"
     {
-  yyval.str = "-=";
+  (yyval.str) = "-=";
 }
     break;
 
   case 107:
-#line 1037 "cppBison.yxx"
+#line 1041 "cppBison.yxx"
     {
-  yyval.str = "|=";
+  (yyval.str) = "|=";
 }
     break;
 
   case 108:
-#line 1041 "cppBison.yxx"
+#line 1045 "cppBison.yxx"
     {
-  yyval.str = "&=";
+  (yyval.str) = "&=";
 }
     break;
 
   case 109:
-#line 1045 "cppBison.yxx"
+#line 1049 "cppBison.yxx"
     {
-  yyval.str = "^=";
+  (yyval.str) = "^=";
 }
     break;
 
   case 110:
-#line 1049 "cppBison.yxx"
+#line 1053 "cppBison.yxx"
     {
-  yyval.str = "<<=";
+  (yyval.str) = "<<=";
 }
     break;
 
   case 111:
-#line 1053 "cppBison.yxx"
+#line 1057 "cppBison.yxx"
     {
-  yyval.str = ">>=";
+  (yyval.str) = ">>=";
 }
     break;
 
   case 112:
-#line 1057 "cppBison.yxx"
+#line 1061 "cppBison.yxx"
     {
-  yyval.str = "->";
+  (yyval.str) = "->";
 }
     break;
 
   case 113:
-#line 1061 "cppBison.yxx"
+#line 1065 "cppBison.yxx"
     {
-  yyval.str = "[]";
+  (yyval.str) = "[]";
 }
     break;
 
   case 114:
-#line 1065 "cppBison.yxx"
+#line 1069 "cppBison.yxx"
     {
-  yyval.str = "()";
+  (yyval.str) = "()";
 }
     break;
 
   case 115:
-#line 1069 "cppBison.yxx"
+#line 1073 "cppBison.yxx"
     {
-  yyval.str = "new";
+  (yyval.str) = "new";
 }
     break;
 
   case 116:
-#line 1073 "cppBison.yxx"
+#line 1077 "cppBison.yxx"
     {
-  yyval.str = "delete";
+  (yyval.str) = "delete";
 }
     break;
 
   case 119:
-#line 1085 "cppBison.yxx"
+#line 1089 "cppBison.yxx"
     {
   push_scope(new CPPTemplateScope(current_scope));
 }
     break;
 
   case 120:
-#line 1089 "cppBison.yxx"
+#line 1093 "cppBison.yxx"
     {
   pop_scope();
 }
     break;
 
   case 123:
-#line 1101 "cppBison.yxx"
+#line 1105 "cppBison.yxx"
     {
   CPPTemplateScope *ts = current_scope->as_template_scope();
   assert(ts != NULL);
-  ts->add_template_parameter(yyvsp[0].u.decl);
+  ts->add_template_parameter((yyvsp[0].u.decl));
 }
     break;
 
   case 124:
-#line 1107 "cppBison.yxx"
+#line 1111 "cppBison.yxx"
     {
   CPPTemplateScope *ts = current_scope->as_template_scope();
   assert(ts != NULL);
-  ts->add_template_parameter(yyvsp[0].u.decl);
+  ts->add_template_parameter((yyvsp[0].u.decl));
 }
     break;
 
   case 125:
-#line 1116 "cppBison.yxx"
+#line 1120 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(new CPPClassTemplateParameter(yyvsp[0].u.identifier));
+  (yyval.u.decl) = CPPType::new_type(new CPPClassTemplateParameter((yyvsp[0].u.identifier)));
 }
     break;
 
   case 126:
-#line 1120 "cppBison.yxx"
+#line 1124 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(new CPPClassTemplateParameter(yyvsp[-2].u.identifier, yyvsp[0].u.type));
+  (yyval.u.decl) = CPPType::new_type(new CPPClassTemplateParameter((yyvsp[-2].u.identifier), (yyvsp[0].u.type)));
 }
     break;
 
   case 127:
-#line 1124 "cppBison.yxx"
+#line 1128 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(yyvsp[-2].u.type, yyvsp[-1].u.inst_ident, 0, yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  yyval.u.decl = inst;
+  CPPInstance *inst = new CPPInstance((yyvsp[-2].u.type), (yyvsp[-1].u.inst_ident), 0, (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  (yyval.u.decl) = inst;
 }
     break;
 
   case 128:
-#line 1130 "cppBison.yxx"
+#line 1134 "cppBison.yxx"
     {
-  yyvsp[-1].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(yyvsp[-2].u.type, yyvsp[-1].u.inst_ident, 0, yylsp[-1].file);
-  inst->set_initializer(yyvsp[0].u.expr);
-  yyval.u.decl = inst;
+  (yyvsp[-1].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance((yyvsp[-2].u.type), (yyvsp[-1].u.inst_ident), 0, (yylsp[-1]).file);
+  inst->set_initializer((yyvsp[0].u.expr));
+  (yyval.u.decl) = inst;
 }
     break;
 
   case 129:
-#line 1140 "cppBison.yxx"
+#line 1144 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.simple_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.simple_type));
 }
     break;
 
   case 130:
-#line 1144 "cppBison.yxx"
+#line 1148 "cppBison.yxx"
     {
-  yywarning("Not a type: " + yyvsp[0].u.identifier->get_fully_scoped_name(), yylsp[0]);
-  yyval.u.type = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
+  yywarning("Not a type: " + (yyvsp[0].u.identifier)->get_fully_scoped_name(), (yylsp[0]));
+  (yyval.u.type) = CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
 }
     break;
 
   case 131:
-#line 1149 "cppBison.yxx"
+#line 1153 "cppBison.yxx"
     {
-  yyval.u.type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
-  assert(yyval.u.type != NULL);
+  (yyval.u.type) = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
+  assert((yyval.u.type) != NULL);
 }
     break;
 
   case 132:
-#line 1154 "cppBison.yxx"
+#line 1158 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+  (yyval.u.type) = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
 }
     break;
 
   case 133:
-#line 1162 "cppBison.yxx"
+#line 1166 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier(yyvsp[0].u.identifier);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((yyvsp[0].u.identifier));
 }
     break;
 
   case 134:
-#line 1166 "cppBison.yxx"
+#line 1170 "cppBison.yxx"
     {
   // For an operator function.  We implement this simply by building a
   // ficticious name for the function; in other respects it's just
   // like a regular function.
-  CPPIdentifier *ident = yyvsp[-1].u.identifier;
+  CPPIdentifier *ident = (yyvsp[-1].u.identifier);
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator "+yyvsp[0].str, yylsp[0].file);
+    ident = new CPPIdentifier("operator "+(yyvsp[0].str), (yylsp[0]).file);
   } else {
-    ident->_names.push_back("operator "+yyvsp[0].str);
+    ident->_names.push_back("operator "+(yyvsp[0].str));
   }
 
-  yyval.u.inst_ident = new CPPInstanceIdentifier(ident);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier(ident);
 }
     break;
 
   case 135:
-#line 1180 "cppBison.yxx"
+#line 1184 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_const);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_const);
 }
     break;
 
   case 136:
-#line 1185 "cppBison.yxx"
+#line 1189 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_pointer);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_pointer);
 }
     break;
 
   case 137:
-#line 1190 "cppBison.yxx"
+#line 1194 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_reference);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_reference);
 }
     break;
 
   case 138:
-#line 1195 "cppBison.yxx"
+#line 1199 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_scoped_pointer_modifier(yyvsp[-2].u.identifier);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_scoped_pointer_modifier((yyvsp[-2].u.identifier));
 }
     break;
 
   case 139:
-#line 1200 "cppBison.yxx"
+#line 1204 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-3].u.inst_ident;
-  yyval.u.inst_ident->add_array_modifier(yyvsp[-1].u.expr);
+  (yyval.u.inst_ident) = (yyvsp[-3].u.inst_ident);
+  (yyval.u.inst_ident)->add_array_modifier((yyvsp[-1].u.expr));
 }
     break;
 
   case 140:
-#line 1205 "cppBison.yxx"
+#line 1209 "cppBison.yxx"
     {
   // bitfield definition.  We ignore the bitfield for now.
-  yyval.u.inst_ident = yyvsp[-2].u.inst_ident;
+  (yyval.u.inst_ident) = (yyvsp[-2].u.inst_ident);
 }
     break;
 
   case 141:
-#line 1210 "cppBison.yxx"
+#line 1214 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-1].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_paren);
+  (yyval.u.inst_ident) = (yyvsp[-1].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_paren);
 }
     break;
 
   case 142:
-#line 1215 "cppBison.yxx"
+#line 1219 "cppBison.yxx"
     {
-  push_scope(yyvsp[-1].u.inst_ident->get_scope(current_scope, global_scope));
+  push_scope((yyvsp[-1].u.inst_ident)->get_scope(current_scope, global_scope));
 }
     break;
 
   case 143:
-#line 1219 "cppBison.yxx"
+#line 1223 "cppBison.yxx"
     {
   pop_scope();
-  yyval.u.inst_ident = yyvsp[-5].u.inst_ident;
-  if (yyvsp[-2].u.param_list->is_parameter_expr() && yyvsp[0].u.integer == 0) {
+  (yyval.u.inst_ident) = (yyvsp[-5].u.inst_ident);
+  if ((yyvsp[-2].u.param_list)->is_parameter_expr() && (yyvsp[0].u.integer) == 0) {
     // Oops, this must have been an instance declaration with a
     // parameter list, not a function prototype.
-    yyval.u.inst_ident->add_initializer_modifier(yyvsp[-2].u.param_list);
+    (yyval.u.inst_ident)->add_initializer_modifier((yyvsp[-2].u.param_list));
 
   } else {
     // This was (probably) a function prototype.
-    yyval.u.inst_ident->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+    (yyval.u.inst_ident)->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
   }
 }
     break;
 
   case 144:
-#line 1237 "cppBison.yxx"
+#line 1241 "cppBison.yxx"
     {
-  yyval.u.param_list = new CPPParameterList;
+  (yyval.u.param_list) = new CPPParameterList;
 }
     break;
 
   case 145:
-#line 1241 "cppBison.yxx"
+#line 1245 "cppBison.yxx"
     {
-  yyval.u.param_list = new CPPParameterList;
-  yyval.u.param_list->_includes_ellipsis = true;
+  (yyval.u.param_list) = new CPPParameterList;
+  (yyval.u.param_list)->_includes_ellipsis = true;
 }
     break;
 
   case 146:
-#line 1246 "cppBison.yxx"
+#line 1250 "cppBison.yxx"
     {
-  yyval.u.param_list = yyvsp[0].u.param_list;
+  (yyval.u.param_list) = (yyvsp[0].u.param_list);
 }
     break;
 
   case 147:
-#line 1250 "cppBison.yxx"
+#line 1254 "cppBison.yxx"
     {
-  yyval.u.param_list = yyvsp[-2].u.param_list;
-  yyval.u.param_list->_includes_ellipsis = true;
+  (yyval.u.param_list) = (yyvsp[-2].u.param_list);
+  (yyval.u.param_list)->_includes_ellipsis = true;
 }
     break;
 
   case 148:
-#line 1255 "cppBison.yxx"
+#line 1259 "cppBison.yxx"
     {
-  yyval.u.param_list = yyvsp[-1].u.param_list;
-  yyval.u.param_list->_includes_ellipsis = true;
+  (yyval.u.param_list) = (yyvsp[-1].u.param_list);
+  (yyval.u.param_list)->_includes_ellipsis = true;
 }
     break;
 
   case 149:
-#line 1263 "cppBison.yxx"
+#line 1267 "cppBison.yxx"
     {
-  yyval.u.param_list = new CPPParameterList;
-  yyval.u.param_list->_parameters.push_back(yyvsp[0].u.instance);
+  (yyval.u.param_list) = new CPPParameterList;
+  (yyval.u.param_list)->_parameters.push_back((yyvsp[0].u.instance));
 }
     break;
 
   case 150:
-#line 1268 "cppBison.yxx"
+#line 1272 "cppBison.yxx"
     {
-  yyval.u.param_list = yyvsp[-2].u.param_list;
-  yyval.u.param_list->_parameters.push_back(yyvsp[0].u.instance);
+  (yyval.u.param_list) = (yyvsp[-2].u.param_list);
+  (yyval.u.param_list)->_parameters.push_back((yyvsp[0].u.instance));
 }
     break;
 
   case 151:
-#line 1276 "cppBison.yxx"
+#line 1280 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 152:
-#line 1280 "cppBison.yxx"
+#line 1284 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 153:
-#line 1287 "cppBison.yxx"
+#line 1291 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 154:
-#line 1291 "cppBison.yxx"
+#line 1295 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 155:
-#line 1298 "cppBison.yxx"
+#line 1302 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 156:
-#line 1302 "cppBison.yxx"
+#line 1306 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 157:
-#line 1306 "cppBison.yxx"
+#line 1310 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 158:
-#line 1310 "cppBison.yxx"
+#line 1314 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[-1].u.expr;
+  (yyval.u.expr) = (yyvsp[-1].u.expr);
 }
     break;
 
   case 159:
-#line 1314 "cppBison.yxx"
+#line 1318 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 163:
-#line 1327 "cppBison.yxx"
+#line 1331 "cppBison.yxx"
     {
 }
     break;
 
   case 167:
-#line 1336 "cppBison.yxx"
+#line 1340 "cppBison.yxx"
     {
-  yyval.u.instance = new CPPInstance(yyvsp[-2].u.type, yyvsp[-1].u.inst_ident, 0, yylsp[-1].file);
-  yyval.u.instance->set_initializer(yyvsp[0].u.expr);
+  (yyval.u.instance) = new CPPInstance((yyvsp[-2].u.type), (yyvsp[-1].u.inst_ident), 0, (yylsp[-1]).file);
+  (yyval.u.instance)->set_initializer((yyvsp[0].u.expr));
 }
     break;
 
   case 168:
-#line 1341 "cppBison.yxx"
+#line 1345 "cppBison.yxx"
     {
-  yywarning("Not a type: " + yyvsp[-2].u.identifier->get_fully_scoped_name(), yylsp[-2]);
+  yywarning("Not a type: " + (yyvsp[-2].u.identifier)->get_fully_scoped_name(), (yylsp[-2]));
   CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_unknown));
-  yyval.u.instance = new CPPInstance(type, yyvsp[-1].u.inst_ident, 0, yylsp[-1].file);
-  yyval.u.instance->set_initializer(yyvsp[0].u.expr);
+  (yyval.u.instance) = new CPPInstance(type, (yyvsp[-1].u.inst_ident), 0, (yylsp[-1]).file);
+  (yyval.u.instance)->set_initializer((yyvsp[0].u.expr));
 }
     break;
 
   case 169:
-#line 1349 "cppBison.yxx"
+#line 1353 "cppBison.yxx"
     {
-  yyvsp[-1].u.inst_ident->add_modifier(IIT_const);
-  yyval.u.instance = new CPPInstance(yyvsp[-2].u.type, yyvsp[-1].u.inst_ident, 0, yylsp[-1].file);
-  yyval.u.instance->set_initializer(yyvsp[0].u.expr);
+  (yyvsp[-1].u.inst_ident)->add_modifier(IIT_const);
+  (yyval.u.instance) = new CPPInstance((yyvsp[-2].u.type), (yyvsp[-1].u.inst_ident), 0, (yylsp[-1]).file);
+  (yyval.u.instance)->set_initializer((yyvsp[0].u.expr));
 }
     break;
 
   case 170:
-#line 1355 "cppBison.yxx"
+#line 1359 "cppBison.yxx"
     {
   CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_parameter));
-  yyval.u.instance = new CPPInstance(type, "expr");
-  yyval.u.instance->set_initializer(yyvsp[0].u.expr);
+  (yyval.u.instance) = new CPPInstance(type, "expr");
+  (yyval.u.instance)->set_initializer((yyvsp[0].u.expr));
 }
     break;
 
   case 171:
-#line 1365 "cppBison.yxx"
+#line 1369 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
 }
     break;
 
   case 172:
-#line 1369 "cppBison.yxx"
+#line 1373 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier(yyvsp[0].u.identifier);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((yyvsp[0].u.identifier));
 }
     break;
 
   case 173:
-#line 1373 "cppBison.yxx"
+#line 1377 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier(yyvsp[0].u.identifier);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((yyvsp[0].u.identifier));
 }
     break;
 
   case 174:
-#line 1377 "cppBison.yxx"
+#line 1381 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_const);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_const);
 }
     break;
 
   case 175:
-#line 1382 "cppBison.yxx"
+#line 1386 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_pointer);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_pointer);
 }
     break;
 
   case 176:
-#line 1387 "cppBison.yxx"
+#line 1391 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_reference);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_reference);
 }
     break;
 
   case 177:
-#line 1392 "cppBison.yxx"
+#line 1396 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_scoped_pointer_modifier(yyvsp[-2].u.identifier);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_scoped_pointer_modifier((yyvsp[-2].u.identifier));
 }
     break;
 
   case 178:
-#line 1397 "cppBison.yxx"
+#line 1401 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-3].u.inst_ident;
-  yyval.u.inst_ident->add_array_modifier(yyvsp[-1].u.expr);
+  (yyval.u.inst_ident) = (yyvsp[-3].u.inst_ident);
+  (yyval.u.inst_ident)->add_array_modifier((yyvsp[-1].u.expr));
 }
     break;
 
   case 179:
-#line 1405 "cppBison.yxx"
+#line 1409 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
 }
     break;
 
   case 180:
-#line 1409 "cppBison.yxx"
+#line 1413 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier(yyvsp[0].u.identifier);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((yyvsp[0].u.identifier));
 }
     break;
 
   case 181:
-#line 1413 "cppBison.yxx"
+#line 1417 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier(yyvsp[0].u.identifier);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((yyvsp[0].u.identifier));
 }
     break;
 
   case 182:
-#line 1417 "cppBison.yxx"
+#line 1421 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_const);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_const);
 }
     break;
 
   case 183:
-#line 1422 "cppBison.yxx"
+#line 1426 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_pointer);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_pointer);
 }
     break;
 
   case 184:
-#line 1427 "cppBison.yxx"
+#line 1431 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_reference);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_reference);
 }
     break;
 
   case 185:
-#line 1432 "cppBison.yxx"
+#line 1436 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_scoped_pointer_modifier(yyvsp[-2].u.identifier);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_scoped_pointer_modifier((yyvsp[-2].u.identifier));
 }
     break;
 
   case 186:
-#line 1437 "cppBison.yxx"
+#line 1441 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-3].u.inst_ident;
-  yyval.u.inst_ident->add_array_modifier(yyvsp[-1].u.expr);
+  (yyval.u.inst_ident) = (yyvsp[-3].u.inst_ident);
+  (yyval.u.inst_ident)->add_array_modifier((yyvsp[-1].u.expr));
 }
     break;
 
   case 187:
-#line 1442 "cppBison.yxx"
+#line 1446 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-5].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_paren);
-  yyval.u.inst_ident->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  (yyval.u.inst_ident) = (yyvsp[-5].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_paren);
+  (yyval.u.inst_ident)->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 }
     break;
 
   case 188:
-#line 1448 "cppBison.yxx"
+#line 1452 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-1].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_paren);
+  (yyval.u.inst_ident) = (yyvsp[-1].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_paren);
 }
     break;
 
   case 189:
-#line 1456 "cppBison.yxx"
+#line 1460 "cppBison.yxx"
     {
-  yyval.u.inst_ident = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  (yyval.u.inst_ident) = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
 }
     break;
 
   case 190:
-#line 1460 "cppBison.yxx"
+#line 1464 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_const);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_const);
 }
     break;
 
   case 191:
-#line 1465 "cppBison.yxx"
+#line 1469 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_pointer);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_pointer);
 }
     break;
 
   case 192:
-#line 1470 "cppBison.yxx"
+#line 1474 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_reference);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_reference);
 }
     break;
 
   case 193:
-#line 1475 "cppBison.yxx"
+#line 1479 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[0].u.inst_ident;
-  yyval.u.inst_ident->add_scoped_pointer_modifier(yyvsp[-2].u.identifier);
+  (yyval.u.inst_ident) = (yyvsp[0].u.inst_ident);
+  (yyval.u.inst_ident)->add_scoped_pointer_modifier((yyvsp[-2].u.identifier));
 }
     break;
 
   case 194:
-#line 1480 "cppBison.yxx"
+#line 1484 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-3].u.inst_ident;
-  yyval.u.inst_ident->add_array_modifier(yyvsp[-1].u.expr);
+  (yyval.u.inst_ident) = (yyvsp[-3].u.inst_ident);
+  (yyval.u.inst_ident)->add_array_modifier((yyvsp[-1].u.expr));
 }
     break;
 
   case 195:
-#line 1485 "cppBison.yxx"
+#line 1489 "cppBison.yxx"
     {
-  yyval.u.inst_ident = yyvsp[-5].u.inst_ident;
-  yyval.u.inst_ident->add_modifier(IIT_paren);
-  yyval.u.inst_ident->add_func_modifier(yyvsp[-2].u.param_list, yyvsp[0].u.integer);
+  (yyval.u.inst_ident) = (yyvsp[-5].u.inst_ident);
+  (yyval.u.inst_ident)->add_modifier(IIT_paren);
+  (yyval.u.inst_ident)->add_func_modifier((yyvsp[-2].u.param_list), (yyvsp[0].u.integer));
 }
     break;
 
   case 196:
-#line 1494 "cppBison.yxx"
+#line 1498 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.simple_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.simple_type));
 }
     break;
 
   case 197:
-#line 1498 "cppBison.yxx"
+#line 1502 "cppBison.yxx"
     {
-  yyval.u.type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
-  assert(yyval.u.type != NULL);
+  (yyval.u.type) = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
+  assert((yyval.u.type) != NULL);
 }
     break;
 
   case 198:
-#line 1503 "cppBison.yxx"
+#line 1507 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+  (yyval.u.type) = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
 }
     break;
 
   case 199:
-#line 1507 "cppBison.yxx"
+#line 1511 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.struct_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.struct_type));
 }
     break;
 
   case 200:
-#line 1511 "cppBison.yxx"
+#line 1515 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.struct_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.struct_type));
 }
     break;
 
   case 201:
-#line 1515 "cppBison.yxx"
+#line 1519 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.enum_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.enum_type));
 }
     break;
 
   case 202:
-#line 1519 "cppBison.yxx"
+#line 1523 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.enum_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.enum_type));
 }
     break;
 
   case 203:
-#line 1523 "cppBison.yxx"
+#line 1527 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.type = type;
+    (yyval.u.type) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.type = et;
+    (yyval.u.type) = et;
   }
 }
     break;
 
   case 204:
-#line 1539 "cppBison.yxx"
+#line 1543 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.type = type;
+    (yyval.u.type) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.type = et;
+    (yyval.u.type) = et;
   }
 }
     break;
 
   case 205:
-#line 1558 "cppBison.yxx"
+#line 1562 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(yyvsp[0].u.simple_type);
+  (yyval.u.decl) = CPPType::new_type((yyvsp[0].u.simple_type));
 }
     break;
 
   case 206:
-#line 1562 "cppBison.yxx"
+#line 1566 "cppBison.yxx"
     {
-  yyval.u.decl = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
-  assert(yyval.u.decl != NULL);
+  (yyval.u.decl) = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
+  assert((yyval.u.decl) != NULL);
 }
     break;
 
   case 207:
-#line 1567 "cppBison.yxx"
+#line 1571 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+  (yyval.u.decl) = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
 }
     break;
 
   case 208:
-#line 1571 "cppBison.yxx"
+#line 1575 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(yyvsp[0].u.struct_type);
+  (yyval.u.decl) = CPPType::new_type((yyvsp[0].u.struct_type));
 }
     break;
 
   case 209:
-#line 1575 "cppBison.yxx"
+#line 1579 "cppBison.yxx"
     {
-  yyval.u.decl = new CPPTypeDeclaration(CPPType::new_type(yyvsp[0].u.struct_type));
+  (yyval.u.decl) = new CPPTypeDeclaration(CPPType::new_type((yyvsp[0].u.struct_type)));
 }
     break;
 
   case 210:
-#line 1579 "cppBison.yxx"
+#line 1583 "cppBison.yxx"
     {
-  yyval.u.decl = CPPType::new_type(yyvsp[0].u.enum_type);
+  (yyval.u.decl) = CPPType::new_type((yyvsp[0].u.enum_type));
 }
     break;
 
   case 211:
-#line 1583 "cppBison.yxx"
+#line 1587 "cppBison.yxx"
     {
-  yyval.u.decl = new CPPTypeDeclaration(CPPType::new_type(yyvsp[0].u.enum_type));
+  (yyval.u.decl) = new CPPTypeDeclaration(CPPType::new_type((yyvsp[0].u.enum_type)));
 }
     break;
 
   case 212:
-#line 1587 "cppBison.yxx"
+#line 1591 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.decl = type;
+    (yyval.u.decl) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.decl = et;
+    (yyval.u.decl) = et;
   }
 }
     break;
 
   case 213:
-#line 1603 "cppBison.yxx"
+#line 1607 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.decl = type;
+    (yyval.u.decl) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.decl = et;
+    (yyval.u.decl) = et;
   }
 }
     break;
 
   case 214:
-#line 1622 "cppBison.yxx"
+#line 1626 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(yyvsp[0].u.simple_type);
+  (yyval.u.type) = CPPType::new_type((yyvsp[0].u.simple_type));
 }
     break;
 
   case 215:
-#line 1626 "cppBison.yxx"
+#line 1630 "cppBison.yxx"
     {
-  yyval.u.type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
-  assert(yyval.u.type != NULL);
+  (yyval.u.type) = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
+  assert((yyval.u.type) != NULL);
 }
     break;
 
   case 216:
-#line 1631 "cppBison.yxx"
+#line 1635 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+  (yyval.u.type) = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
 }
     break;
 
   case 217:
-#line 1635 "cppBison.yxx"
+#line 1639 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.type = type;
+    (yyval.u.type) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.type = et;
+    (yyval.u.type) = et;
   }
 }
     break;
 
   case 218:
-#line 1651 "cppBison.yxx"
+#line 1655 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   if (type != NULL) {
-    yyval.u.type = type;
+    (yyval.u.type) = type;
   } else {
     CPPExtensionType *et = 
-      CPPType::new_type(new CPPExtensionType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope, yylsp[-1].file))
+      CPPType::new_type(new CPPExtensionType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope, (yylsp[-1]).file))
       ->as_extension_type();
-    CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope);
+    CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope);
     if (scope != NULL) {
       scope->define_extension_type(et);
     }
-    yyval.u.type = et;
+    (yyval.u.type) = et;
   }
 }
     break;
 
   case 219:
-#line 1670 "cppBison.yxx"
+#line 1674 "cppBison.yxx"
     {
-  CPPInstance *inst = new CPPInstance(yyvsp[-1].u.type, yyvsp[0].u.inst_ident, 0, yylsp[-1].file);
-  yyval.u.type = inst->_type;
+  CPPInstance *inst = new CPPInstance((yyvsp[-1].u.type), (yyvsp[0].u.inst_ident), 0, (yylsp[-1]).file);
+  (yyval.u.type) = inst->_type;
   delete inst;
 }
     break;
 
   case 220:
-#line 1676 "cppBison.yxx"
+#line 1680 "cppBison.yxx"
     {
-  yyvsp[0].u.inst_ident->add_modifier(IIT_const);
-  CPPInstance *inst = new CPPInstance(yyvsp[-1].u.type, yyvsp[0].u.inst_ident, 0, yylsp[-2].file);
-  yyval.u.type = inst->_type;
+  (yyvsp[0].u.inst_ident)->add_modifier(IIT_const);
+  CPPInstance *inst = new CPPInstance((yyvsp[-1].u.type), (yyvsp[0].u.inst_ident), 0, (yylsp[-2]).file);
+  (yyval.u.type) = inst->_type;
   delete inst;
 }
     break;
 
   case 221:
-#line 1686 "cppBison.yxx"
+#line 1690 "cppBison.yxx"
     {
   CPPVisibility starting_vis = 
-  (yyvsp[-1].u.extension_enum == CPPExtensionType::T_class) ? V_private : V_public;
+  ((yyvsp[-1].u.extension_enum) == CPPExtensionType::T_class) ? V_private : V_public;
   
   CPPScope *new_scope = new CPPScope(current_scope, CPPNameComponent("anon"),
                                      starting_vis);
-  CPPStructType *st = new CPPStructType(yyvsp[-1].u.extension_enum, NULL, current_scope,
-                                        new_scope, yylsp[-1].file);
+  CPPStructType *st = new CPPStructType((yyvsp[-1].u.extension_enum), NULL, current_scope,
+                                        new_scope, (yylsp[-1]).file);
   new_scope->set_struct_type(st);
 
   push_scope(new_scope);
@@ -4526,9 +4567,9 @@ yyreduce:
     break;
 
   case 222:
-#line 1700 "cppBison.yxx"
+#line 1704 "cppBison.yxx"
     {
-  yyval.u.struct_type = current_struct;
+  (yyval.u.struct_type) = current_struct;
   current_struct->_incomplete = false;
   pop_struct();
   pop_scope();
@@ -4536,20 +4577,20 @@ yyreduce:
     break;
 
   case 223:
-#line 1710 "cppBison.yxx"
+#line 1714 "cppBison.yxx"
     {
   CPPVisibility starting_vis = 
-  (yyvsp[-1].u.extension_enum == CPPExtensionType::T_class) ? V_private : V_public;
+  ((yyvsp[-1].u.extension_enum) == CPPExtensionType::T_class) ? V_private : V_public;
 
-  CPPScope *scope = yyvsp[0].u.identifier->get_scope(current_scope, global_scope, current_lexer);
+  CPPScope *scope = (yyvsp[0].u.identifier)->get_scope(current_scope, global_scope, current_lexer);
   if (scope == NULL) {
     scope = current_scope;
   }
-  CPPScope *new_scope = new CPPScope(scope, yyvsp[0].u.identifier->_names.back(),
+  CPPScope *new_scope = new CPPScope(scope, (yyvsp[0].u.identifier)->_names.back(),
                                      starting_vis);
 
-  CPPStructType *st = new CPPStructType(yyvsp[-1].u.extension_enum, yyvsp[0].u.identifier, current_scope,
-                                        new_scope, yylsp[-1].file);
+  CPPStructType *st = new CPPStructType((yyvsp[-1].u.extension_enum), (yyvsp[0].u.identifier), current_scope,
+                                        new_scope, (yylsp[-1]).file);
   new_scope->set_struct_type(st);
   current_scope->define_extension_type(st);
   
@@ -4559,9 +4600,9 @@ yyreduce:
     break;
 
   case 224:
-#line 1730 "cppBison.yxx"
+#line 1734 "cppBison.yxx"
     {
-  yyval.u.struct_type = current_struct;
+  (yyval.u.struct_type) = current_struct;
   current_struct->_incomplete = false;
   pop_struct();
   pop_scope();
@@ -4569,1465 +4610,1465 @@ yyreduce:
     break;
 
   case 229:
-#line 1750 "cppBison.yxx"
+#line 1754 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_public, false);
+  current_struct->append_derivation((yyvsp[0].u.type), V_public, false);
 }
     break;
 
   case 230:
-#line 1754 "cppBison.yxx"
+#line 1758 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_protected, false);
+  current_struct->append_derivation((yyvsp[0].u.type), V_protected, false);
 }
     break;
 
   case 231:
-#line 1758 "cppBison.yxx"
+#line 1762 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_private, false);
+  current_struct->append_derivation((yyvsp[0].u.type), V_private, false);
 }
     break;
 
   case 232:
-#line 1762 "cppBison.yxx"
+#line 1766 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_public, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_public, true);
 }
     break;
 
   case 233:
-#line 1766 "cppBison.yxx"
+#line 1770 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_protected, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_protected, true);
 }
     break;
 
   case 234:
-#line 1770 "cppBison.yxx"
+#line 1774 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_private, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_private, true);
 }
     break;
 
   case 235:
-#line 1774 "cppBison.yxx"
+#line 1778 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_public, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_public, true);
 }
     break;
 
   case 236:
-#line 1778 "cppBison.yxx"
+#line 1782 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_protected, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_protected, true);
 }
     break;
 
   case 237:
-#line 1782 "cppBison.yxx"
+#line 1786 "cppBison.yxx"
     {
-  current_struct->append_derivation(yyvsp[0].u.type, V_private, true);
+  current_struct->append_derivation((yyvsp[0].u.type), V_private, true);
 }
     break;
 
   case 238:
-#line 1789 "cppBison.yxx"
+#line 1793 "cppBison.yxx"
     {
-  current_enum = new CPPEnumType(NULL, current_scope, yylsp[-1].file);
+  current_enum = new CPPEnumType(NULL, current_scope, (yylsp[-1]).file);
 }
     break;
 
   case 239:
-#line 1793 "cppBison.yxx"
+#line 1797 "cppBison.yxx"
     {
-  yyval.u.enum_type = current_enum;
+  (yyval.u.enum_type) = current_enum;
   current_enum = NULL;
 }
     break;
 
   case 240:
-#line 1801 "cppBison.yxx"
+#line 1805 "cppBison.yxx"
     {
-  current_enum = new CPPEnumType(yyvsp[-1].u.identifier, current_scope, yylsp[-2].file);
+  current_enum = new CPPEnumType((yyvsp[-1].u.identifier), current_scope, (yylsp[-2]).file);
 }
     break;
 
   case 241:
-#line 1805 "cppBison.yxx"
+#line 1809 "cppBison.yxx"
     {
-  yyval.u.enum_type = current_enum;
+  (yyval.u.enum_type) = current_enum;
   current_enum = NULL;
 }
     break;
 
   case 245:
-#line 1819 "cppBison.yxx"
+#line 1823 "cppBison.yxx"
     {
   assert(current_enum != NULL);
-  current_enum->add_element(yyvsp[0].u.identifier->get_simple_name(), current_scope);
+  current_enum->add_element((yyvsp[0].u.identifier)->get_simple_name(), current_scope);
 }
     break;
 
   case 246:
-#line 1824 "cppBison.yxx"
+#line 1828 "cppBison.yxx"
     {
   assert(current_enum != NULL);
-  current_enum->add_element(yyvsp[-2].u.identifier->get_simple_name(), current_scope, yyvsp[0].u.expr);
+  current_enum->add_element((yyvsp[-2].u.identifier)->get_simple_name(), current_scope, (yyvsp[0].u.expr));
 }
     break;
 
   case 247:
-#line 1829 "cppBison.yxx"
+#line 1833 "cppBison.yxx"
     {
   assert(current_enum != NULL);
-  current_enum->add_element(yyvsp[0].u.identifier->get_simple_name(), current_scope);
+  current_enum->add_element((yyvsp[0].u.identifier)->get_simple_name(), current_scope);
 }
     break;
 
   case 248:
-#line 1834 "cppBison.yxx"
+#line 1838 "cppBison.yxx"
     {
   assert(current_enum != NULL);
-  current_enum->add_element(yyvsp[-2].u.identifier->get_simple_name(), current_scope, yyvsp[0].u.expr);
+  current_enum->add_element((yyvsp[-2].u.identifier)->get_simple_name(), current_scope, (yyvsp[0].u.expr));
 }
     break;
 
   case 249:
-#line 1842 "cppBison.yxx"
+#line 1846 "cppBison.yxx"
     {
-  yyval.u.extension_enum = CPPExtensionType::T_enum;
+  (yyval.u.extension_enum) = CPPExtensionType::T_enum;
 }
     break;
 
   case 250:
-#line 1849 "cppBison.yxx"
+#line 1853 "cppBison.yxx"
     {
-  yyval.u.extension_enum = CPPExtensionType::T_class;
+  (yyval.u.extension_enum) = CPPExtensionType::T_class;
 }
     break;
 
   case 251:
-#line 1853 "cppBison.yxx"
+#line 1857 "cppBison.yxx"
     {
-  yyval.u.extension_enum = CPPExtensionType::T_struct;
+  (yyval.u.extension_enum) = CPPExtensionType::T_struct;
 }
     break;
 
   case 252:
-#line 1857 "cppBison.yxx"
+#line 1861 "cppBison.yxx"
     {
-  yyval.u.extension_enum = CPPExtensionType::T_union;
+  (yyval.u.extension_enum) = CPPExtensionType::T_union;
 }
     break;
 
   case 253:
-#line 1864 "cppBison.yxx"
+#line 1868 "cppBison.yxx"
     {
-  CPPScope *scope = yyvsp[-1].u.identifier->find_scope(current_scope, global_scope, current_lexer);
+  CPPScope *scope = (yyvsp[-1].u.identifier)->find_scope(current_scope, global_scope, current_lexer);
   if (scope == NULL) {
     // This must be a new namespace declaration.
     CPPScope *parent_scope = 
-      yyvsp[-1].u.identifier->get_scope(current_scope, global_scope, current_lexer);
+      (yyvsp[-1].u.identifier)->get_scope(current_scope, global_scope, current_lexer);
     if (parent_scope == NULL) {
       parent_scope = current_scope;
     }
-    scope = new CPPScope(parent_scope, yyvsp[-1].u.identifier->_names.back(), V_public);
+    scope = new CPPScope(parent_scope, (yyvsp[-1].u.identifier)->_names.back(), V_public);
   }
 
-  CPPNamespace *nspace = new CPPNamespace(yyvsp[-1].u.identifier, scope, yylsp[-2].file);
-  current_scope->add_declaration(nspace, global_scope, current_lexer, yylsp[-2]);
+  CPPNamespace *nspace = new CPPNamespace((yyvsp[-1].u.identifier), scope, (yylsp[-2]).file);
+  current_scope->add_declaration(nspace, global_scope, current_lexer, (yylsp[-2]));
   current_scope->define_namespace(nspace);
   push_scope(scope);
 }
     break;
 
   case 254:
-#line 1882 "cppBison.yxx"
+#line 1886 "cppBison.yxx"
     {
   pop_scope();
 }
     break;
 
   case 256:
-#line 1890 "cppBison.yxx"
+#line 1894 "cppBison.yxx"
     {
-  CPPUsing *using_decl = new CPPUsing(yyvsp[0].u.identifier, false, yylsp[-1].file);
-  current_scope->add_declaration(using_decl, global_scope, current_lexer, yylsp[-1]);
+  CPPUsing *using_decl = new CPPUsing((yyvsp[0].u.identifier), false, (yylsp[-1]).file);
+  current_scope->add_declaration(using_decl, global_scope, current_lexer, (yylsp[-1]));
   current_scope->add_using(using_decl, global_scope, current_lexer);
 }
     break;
 
   case 257:
-#line 1896 "cppBison.yxx"
+#line 1900 "cppBison.yxx"
     {
-  CPPUsing *using_decl = new CPPUsing(yyvsp[0].u.identifier, true, yylsp[-2].file);
-  current_scope->add_declaration(using_decl, global_scope, current_lexer, yylsp[-2]);
+  CPPUsing *using_decl = new CPPUsing((yyvsp[0].u.identifier), true, (yylsp[-2]).file);
+  current_scope->add_declaration(using_decl, global_scope, current_lexer, (yylsp[-2]));
   current_scope->add_using(using_decl, global_scope, current_lexer);
 }
     break;
 
   case 261:
-#line 1911 "cppBison.yxx"
+#line 1915 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_bool);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_bool);
 }
     break;
 
   case 262:
-#line 1915 "cppBison.yxx"
+#line 1919 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_char);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_char);
 }
     break;
 
   case 263:
-#line 1919 "cppBison.yxx"
+#line 1923 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_wchar_t);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_wchar_t);
 }
     break;
 
   case 264:
-#line 1923 "cppBison.yxx"
+#line 1927 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int,
                          CPPSimpleType::F_short);
 }
     break;
 
   case 265:
-#line 1928 "cppBison.yxx"
+#line 1932 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int,
                          CPPSimpleType::F_long);
 }
     break;
 
   case 266:
-#line 1933 "cppBison.yxx"
+#line 1937 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int,
                          CPPSimpleType::F_longlong);
 }
     break;
 
   case 267:
-#line 1938 "cppBison.yxx"
+#line 1942 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int,
                          CPPSimpleType::F_unsigned);
 }
     break;
 
   case 268:
-#line 1943 "cppBison.yxx"
+#line 1947 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int,
                          CPPSimpleType::F_signed);
 }
     break;
 
   case 269:
-#line 1948 "cppBison.yxx"
+#line 1952 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_int);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_int);
 }
     break;
 
   case 270:
-#line 1952 "cppBison.yxx"
+#line 1956 "cppBison.yxx"
     {
-  yyval.u.simple_type = yyvsp[0].u.simple_type;
-  yyval.u.simple_type->_flags |= CPPSimpleType::F_short;
+  (yyval.u.simple_type) = (yyvsp[0].u.simple_type);
+  (yyval.u.simple_type)->_flags |= CPPSimpleType::F_short;
 }
     break;
 
   case 271:
-#line 1957 "cppBison.yxx"
+#line 1961 "cppBison.yxx"
     {
-  yyval.u.simple_type = yyvsp[0].u.simple_type;
-  if (yyval.u.simple_type->_flags & CPPSimpleType::F_long) {
-    yyval.u.simple_type->_flags |= CPPSimpleType::F_longlong;
+  (yyval.u.simple_type) = (yyvsp[0].u.simple_type);
+  if ((yyval.u.simple_type)->_flags & CPPSimpleType::F_long) {
+    (yyval.u.simple_type)->_flags |= CPPSimpleType::F_longlong;
   } else {
-    yyval.u.simple_type->_flags |= CPPSimpleType::F_long;
+    (yyval.u.simple_type)->_flags |= CPPSimpleType::F_long;
   }
 }
     break;
 
   case 272:
-#line 1966 "cppBison.yxx"
+#line 1970 "cppBison.yxx"
     {
-  yyval.u.simple_type = yyvsp[0].u.simple_type;
-  yyval.u.simple_type->_flags |= CPPSimpleType::F_unsigned;
+  (yyval.u.simple_type) = (yyvsp[0].u.simple_type);
+  (yyval.u.simple_type)->_flags |= CPPSimpleType::F_unsigned;
 }
     break;
 
   case 273:
-#line 1971 "cppBison.yxx"
+#line 1975 "cppBison.yxx"
     {
-  yyval.u.simple_type = yyvsp[0].u.simple_type;
-  yyval.u.simple_type->_flags |= CPPSimpleType::F_signed;
+  (yyval.u.simple_type) = (yyvsp[0].u.simple_type);
+  (yyval.u.simple_type)->_flags |= CPPSimpleType::F_signed;
 }
     break;
 
   case 274:
-#line 1979 "cppBison.yxx"
+#line 1983 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_float);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_float);
 }
     break;
 
   case 275:
-#line 1983 "cppBison.yxx"
+#line 1987 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_float,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_float,
                          CPPSimpleType::F_long);
 }
     break;
 
   case 276:
-#line 1988 "cppBison.yxx"
+#line 1992 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_double);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_double);
 }
     break;
 
   case 277:
-#line 1992 "cppBison.yxx"
+#line 1996 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_float,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_float,
                          CPPSimpleType::F_longlong);
 }
     break;
 
   case 278:
-#line 1997 "cppBison.yxx"
+#line 2001 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_double,
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_double,
                          CPPSimpleType::F_long);
 }
     break;
 
   case 279:
-#line 2005 "cppBison.yxx"
+#line 2009 "cppBison.yxx"
     {
-  yyval.u.simple_type = new CPPSimpleType(CPPSimpleType::T_void);
+  (yyval.u.simple_type) = new CPPSimpleType(CPPSimpleType::T_void);
 }
     break;
 
   case 280:
-#line 2014 "cppBison.yxx"
+#line 2018 "cppBison.yxx"
     {
   current_lexer->_resolve_identifiers = false;
 }
     break;
 
   case 281:
-#line 2018 "cppBison.yxx"
+#line 2022 "cppBison.yxx"
     {
   current_lexer->_resolve_identifiers = true;
 }
     break;
 
   case 284:
-#line 2030 "cppBison.yxx"
+#line 2034 "cppBison.yxx"
     {
 }
     break;
 
   case 285:
-#line 2033 "cppBison.yxx"
+#line 2037 "cppBison.yxx"
     {
 }
     break;
 
   case 286:
-#line 2036 "cppBison.yxx"
+#line 2040 "cppBison.yxx"
     {
 }
     break;
 
   case 287:
-#line 2039 "cppBison.yxx"
+#line 2043 "cppBison.yxx"
     {
 }
     break;
 
   case 288:
-#line 2042 "cppBison.yxx"
+#line 2046 "cppBison.yxx"
     {
 }
     break;
 
   case 289:
-#line 2045 "cppBison.yxx"
+#line 2049 "cppBison.yxx"
     {
 }
     break;
 
   case 290:
-#line 2048 "cppBison.yxx"
+#line 2052 "cppBison.yxx"
     {
 }
     break;
 
   case 291:
-#line 2051 "cppBison.yxx"
+#line 2055 "cppBison.yxx"
     {
 }
     break;
 
   case 365:
-#line 2071 "cppBison.yxx"
+#line 2075 "cppBison.yxx"
     {
 }
     break;
 
   case 389:
-#line 2080 "cppBison.yxx"
+#line 2084 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 390:
-#line 2084 "cppBison.yxx"
+#line 2088 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 391:
-#line 2091 "cppBison.yxx"
+#line 2095 "cppBison.yxx"
     {
-  yyval.u.expr = (CPPExpression *)NULL;
+  (yyval.u.expr) = (CPPExpression *)NULL;
 }
     break;
 
   case 392:
-#line 2095 "cppBison.yxx"
+#line 2099 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 393:
-#line 2102 "cppBison.yxx"
+#line 2106 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 394:
-#line 2106 "cppBison.yxx"
+#line 2110 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(',', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(',', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 395:
-#line 2113 "cppBison.yxx"
+#line 2117 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 396:
-#line 2117 "cppBison.yxx"
+#line 2121 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-2].u.type, yyvsp[0].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-2].u.type), (yyvsp[0].u.expr)));
 }
     break;
 
   case 397:
-#line 2121 "cppBison.yxx"
+#line 2125 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 398:
-#line 2125 "cppBison.yxx"
+#line 2129 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 399:
-#line 2129 "cppBison.yxx"
+#line 2133 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::sizeof_func(yyvsp[-1].u.type));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::sizeof_func((yyvsp[-1].u.type)));
 }
     break;
 
   case 400:
-#line 2133 "cppBison.yxx"
+#line 2137 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NOT, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NOT, (yyvsp[0].u.expr));
 }
     break;
 
   case 401:
-#line 2137 "cppBison.yxx"
+#line 2141 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NEGATE, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NEGATE, (yyvsp[0].u.expr));
 }
     break;
 
   case 402:
-#line 2141 "cppBison.yxx"
+#line 2145 "cppBison.yxx"
     {
-  if (yyvsp[0].u.expr->_type == CPPExpression::T_integer) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._integer = -yyval.u.expr->_u._integer;
-  } else if (yyvsp[0].u.expr->_type == CPPExpression::T_real) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._real = -yyval.u.expr->_u._real;
+  if ((yyvsp[0].u.expr)->_type == CPPExpression::T_integer) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._integer = -(yyval.u.expr)->_u._integer;
+  } else if ((yyvsp[0].u.expr)->_type == CPPExpression::T_real) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._real = -(yyval.u.expr)->_u._real;
   } else {
-    yyval.u.expr = new CPPExpression(UNARY_MINUS, yyvsp[0].u.expr);
+    (yyval.u.expr) = new CPPExpression(UNARY_MINUS, (yyvsp[0].u.expr));
   }
 }
     break;
 
   case 403:
-#line 2153 "cppBison.yxx"
+#line 2157 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_STAR, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_STAR, (yyvsp[0].u.expr));
 }
     break;
 
   case 404:
-#line 2157 "cppBison.yxx"
+#line 2161 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_REF, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_REF, (yyvsp[0].u.expr));
 }
     break;
 
   case 405:
-#line 2161 "cppBison.yxx"
+#line 2165 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('*', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('*', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 406:
-#line 2165 "cppBison.yxx"
+#line 2169 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('/', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('/', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 407:
-#line 2169 "cppBison.yxx"
+#line 2173 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('%', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('%', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 408:
-#line 2173 "cppBison.yxx"
+#line 2177 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('+', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('+', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 409:
-#line 2177 "cppBison.yxx"
+#line 2181 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('-', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('-', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 410:
-#line 2181 "cppBison.yxx"
+#line 2185 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('|', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('|', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 411:
-#line 2185 "cppBison.yxx"
+#line 2189 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('&', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('&', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 412:
-#line 2189 "cppBison.yxx"
+#line 2193 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(OROR, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(OROR, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 413:
-#line 2193 "cppBison.yxx"
+#line 2197 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(ANDAND, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(ANDAND, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 414:
-#line 2197 "cppBison.yxx"
+#line 2201 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(EQCOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(EQCOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 415:
-#line 2201 "cppBison.yxx"
+#line 2205 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(NECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(NECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 416:
-#line 2205 "cppBison.yxx"
+#line 2209 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 417:
-#line 2209 "cppBison.yxx"
+#line 2213 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(GECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(GECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 418:
-#line 2213 "cppBison.yxx"
+#line 2217 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 419:
-#line 2217 "cppBison.yxx"
+#line 2221 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(RSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(RSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 420:
-#line 2221 "cppBison.yxx"
+#line 2225 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('?', yyvsp[-4].u.expr, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('?', (yyvsp[-4].u.expr), (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 421:
-#line 2225 "cppBison.yxx"
+#line 2229 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('[', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('[', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 422:
-#line 2229 "cppBison.yxx"
+#line 2233 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 423:
-#line 2233 "cppBison.yxx"
+#line 2237 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-2].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-2].u.expr));
 }
     break;
 
   case 424:
-#line 2237 "cppBison.yxx"
+#line 2241 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('.', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('.', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 425:
-#line 2241 "cppBison.yxx"
+#line 2245 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(POINTSAT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(POINTSAT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 426:
-#line 2245 "cppBison.yxx"
+#line 2249 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[-1].u.expr;
+  (yyval.u.expr) = (yyvsp[-1].u.expr);
 }
     break;
 
   case 427:
-#line 2253 "cppBison.yxx"
+#line 2257 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 428:
-#line 2257 "cppBison.yxx"
+#line 2261 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-2].u.type, yyvsp[0].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-2].u.type), (yyvsp[0].u.expr)));
 }
     break;
 
   case 429:
-#line 2261 "cppBison.yxx"
+#line 2265 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 430:
-#line 2265 "cppBison.yxx"
+#line 2269 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 431:
-#line 2269 "cppBison.yxx"
+#line 2273 "cppBison.yxx"
     {
   // A constructor call.
-  CPPType *type = yyvsp[-3].u.identifier->find_type(current_scope, global_scope, false, current_lexer);
+  CPPType *type = (yyvsp[-3].u.identifier)->find_type(current_scope, global_scope, false, current_lexer);
   assert(type != NULL);
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 432:
-#line 2276 "cppBison.yxx"
+#line 2280 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 433:
-#line 2282 "cppBison.yxx"
+#line 2286 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 434:
-#line 2288 "cppBison.yxx"
+#line 2292 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_wchar_t));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 435:
-#line 2294 "cppBison.yxx"
+#line 2298 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_bool));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 436:
-#line 2300 "cppBison.yxx"
+#line 2304 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_short));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 437:
-#line 2307 "cppBison.yxx"
+#line 2311 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_long));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 438:
-#line 2314 "cppBison.yxx"
+#line 2318 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_unsigned));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 439:
-#line 2321 "cppBison.yxx"
+#line 2325 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_signed));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 440:
-#line 2328 "cppBison.yxx"
+#line 2332 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_float));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 441:
-#line 2334 "cppBison.yxx"
+#line 2338 "cppBison.yxx"
     {
   CPPType *type = 
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_double));
-  yyval.u.expr = new CPPExpression(CPPExpression::construct_op(type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::construct_op(type, (yyvsp[-1].u.expr)));
 }
     break;
 
   case 442:
-#line 2340 "cppBison.yxx"
+#line 2344 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::sizeof_func(yyvsp[-1].u.type));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::sizeof_func((yyvsp[-1].u.type)));
 }
     break;
 
   case 443:
-#line 2344 "cppBison.yxx"
+#line 2348 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::new_op(yyvsp[0].u.type));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::new_op((yyvsp[0].u.type)));
 }
     break;
 
   case 444:
-#line 2348 "cppBison.yxx"
+#line 2352 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::new_op(yyvsp[-3].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::new_op((yyvsp[-3].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 445:
-#line 2352 "cppBison.yxx"
+#line 2356 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NOT, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NOT, (yyvsp[0].u.expr));
 }
     break;
 
   case 446:
-#line 2356 "cppBison.yxx"
+#line 2360 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NEGATE, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NEGATE, (yyvsp[0].u.expr));
 }
     break;
 
   case 447:
-#line 2360 "cppBison.yxx"
+#line 2364 "cppBison.yxx"
     {
-  if (yyvsp[0].u.expr->_type == CPPExpression::T_integer) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._integer = -yyval.u.expr->_u._integer;
-  } else if (yyvsp[0].u.expr->_type == CPPExpression::T_real) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._real = -yyval.u.expr->_u._real;
+  if ((yyvsp[0].u.expr)->_type == CPPExpression::T_integer) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._integer = -(yyval.u.expr)->_u._integer;
+  } else if ((yyvsp[0].u.expr)->_type == CPPExpression::T_real) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._real = -(yyval.u.expr)->_u._real;
   } else {
-    yyval.u.expr = new CPPExpression(UNARY_MINUS, yyvsp[0].u.expr);
+    (yyval.u.expr) = new CPPExpression(UNARY_MINUS, (yyvsp[0].u.expr));
   }
 }
     break;
 
   case 448:
-#line 2372 "cppBison.yxx"
+#line 2376 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_STAR, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_STAR, (yyvsp[0].u.expr));
 }
     break;
 
   case 449:
-#line 2376 "cppBison.yxx"
+#line 2380 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_REF, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_REF, (yyvsp[0].u.expr));
 }
     break;
 
   case 450:
-#line 2380 "cppBison.yxx"
+#line 2384 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('*', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('*', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 451:
-#line 2384 "cppBison.yxx"
+#line 2388 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('/', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('/', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 452:
-#line 2388 "cppBison.yxx"
+#line 2392 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('%', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('%', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 453:
-#line 2392 "cppBison.yxx"
+#line 2396 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('+', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('+', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 454:
-#line 2396 "cppBison.yxx"
+#line 2400 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('-', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('-', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 455:
-#line 2400 "cppBison.yxx"
+#line 2404 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('|', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('|', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 456:
-#line 2404 "cppBison.yxx"
+#line 2408 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('&', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('&', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 457:
-#line 2408 "cppBison.yxx"
+#line 2412 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(OROR, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(OROR, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 458:
-#line 2412 "cppBison.yxx"
+#line 2416 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(ANDAND, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(ANDAND, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 459:
-#line 2416 "cppBison.yxx"
+#line 2420 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(EQCOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(EQCOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 460:
-#line 2420 "cppBison.yxx"
+#line 2424 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(NECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(NECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 461:
-#line 2424 "cppBison.yxx"
+#line 2428 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 462:
-#line 2428 "cppBison.yxx"
+#line 2432 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(GECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(GECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 463:
-#line 2432 "cppBison.yxx"
+#line 2436 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('<', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('<', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 464:
-#line 2436 "cppBison.yxx"
+#line 2440 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('>', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('>', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 465:
-#line 2440 "cppBison.yxx"
+#line 2444 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 466:
-#line 2444 "cppBison.yxx"
+#line 2448 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(RSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(RSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 467:
-#line 2448 "cppBison.yxx"
+#line 2452 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('?', yyvsp[-4].u.expr, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('?', (yyvsp[-4].u.expr), (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 468:
-#line 2452 "cppBison.yxx"
+#line 2456 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('[', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('[', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 469:
-#line 2456 "cppBison.yxx"
+#line 2460 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 470:
-#line 2460 "cppBison.yxx"
+#line 2464 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-2].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-2].u.expr));
 }
     break;
 
   case 471:
-#line 2464 "cppBison.yxx"
+#line 2468 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('.', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('.', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 472:
-#line 2468 "cppBison.yxx"
+#line 2472 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(POINTSAT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(POINTSAT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 473:
-#line 2472 "cppBison.yxx"
+#line 2476 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[-1].u.expr;
+  (yyval.u.expr) = (yyvsp[-1].u.expr);
 }
     break;
 
   case 474:
-#line 2479 "cppBison.yxx"
+#line 2483 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.integer);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.integer));
 }
     break;
 
   case 475:
-#line 2483 "cppBison.yxx"
+#line 2487 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(true);
+  (yyval.u.expr) = new CPPExpression(true);
 }
     break;
 
   case 476:
-#line 2487 "cppBison.yxx"
+#line 2491 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(false);
+  (yyval.u.expr) = new CPPExpression(false);
 }
     break;
 
   case 477:
-#line 2491 "cppBison.yxx"
+#line 2495 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.integer);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.integer));
 }
     break;
 
   case 478:
-#line 2495 "cppBison.yxx"
+#line 2499 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.real);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.real));
 }
     break;
 
   case 479:
-#line 2499 "cppBison.yxx"
+#line 2503 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].str);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].str));
 }
     break;
 
   case 480:
-#line 2503 "cppBison.yxx"
+#line 2507 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.identifier, current_scope, global_scope, current_lexer);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.identifier), current_scope, global_scope, current_lexer);
 }
     break;
 
   case 481:
-#line 2517 "cppBison.yxx"
+#line 2521 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[0].u.expr;
+  (yyval.u.expr) = (yyvsp[0].u.expr);
 }
     break;
 
   case 482:
-#line 2521 "cppBison.yxx"
+#line 2525 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-2].u.type, yyvsp[0].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-2].u.type), (yyvsp[0].u.expr)));
 }
     break;
 
   case 483:
-#line 2525 "cppBison.yxx"
+#line 2529 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 484:
-#line 2529 "cppBison.yxx"
+#line 2533 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::typecast_op(yyvsp[-4].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::typecast_op((yyvsp[-4].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 485:
-#line 2533 "cppBison.yxx"
+#line 2537 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::sizeof_func(yyvsp[-1].u.type));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::sizeof_func((yyvsp[-1].u.type)));
 }
     break;
 
   case 486:
-#line 2537 "cppBison.yxx"
+#line 2541 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::new_op(yyvsp[0].u.type));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::new_op((yyvsp[0].u.type)));
 }
     break;
 
   case 487:
-#line 2541 "cppBison.yxx"
+#line 2545 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(CPPExpression::new_op(yyvsp[-3].u.type, yyvsp[-1].u.expr));
+  (yyval.u.expr) = new CPPExpression(CPPExpression::new_op((yyvsp[-3].u.type), (yyvsp[-1].u.expr)));
 }
     break;
 
   case 488:
-#line 2545 "cppBison.yxx"
+#line 2549 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NOT, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NOT, (yyvsp[0].u.expr));
 }
     break;
 
   case 489:
-#line 2549 "cppBison.yxx"
+#line 2553 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_NEGATE, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_NEGATE, (yyvsp[0].u.expr));
 }
     break;
 
   case 490:
-#line 2553 "cppBison.yxx"
+#line 2557 "cppBison.yxx"
     {
-  if (yyvsp[0].u.expr->_type == CPPExpression::T_integer) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._integer = -yyval.u.expr->_u._integer;
-  } else if (yyvsp[0].u.expr->_type == CPPExpression::T_real) {
-    yyval.u.expr = yyvsp[0].u.expr;
-    yyval.u.expr->_u._real = -yyval.u.expr->_u._real;
+  if ((yyvsp[0].u.expr)->_type == CPPExpression::T_integer) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._integer = -(yyval.u.expr)->_u._integer;
+  } else if ((yyvsp[0].u.expr)->_type == CPPExpression::T_real) {
+    (yyval.u.expr) = (yyvsp[0].u.expr);
+    (yyval.u.expr)->_u._real = -(yyval.u.expr)->_u._real;
   } else {
-    yyval.u.expr = new CPPExpression(UNARY_MINUS, yyvsp[0].u.expr);
+    (yyval.u.expr) = new CPPExpression(UNARY_MINUS, (yyvsp[0].u.expr));
   }
 }
     break;
 
   case 491:
-#line 2565 "cppBison.yxx"
+#line 2569 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(UNARY_REF, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(UNARY_REF, (yyvsp[0].u.expr));
 }
     break;
 
   case 492:
-#line 2569 "cppBison.yxx"
+#line 2573 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('*', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('*', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 493:
-#line 2573 "cppBison.yxx"
+#line 2577 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('/', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('/', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 494:
-#line 2577 "cppBison.yxx"
+#line 2581 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('%', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('%', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 495:
-#line 2581 "cppBison.yxx"
+#line 2585 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('+', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('+', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 496:
-#line 2585 "cppBison.yxx"
+#line 2589 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('-', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('-', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 497:
-#line 2589 "cppBison.yxx"
+#line 2593 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('|', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('|', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 498:
-#line 2593 "cppBison.yxx"
+#line 2597 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('&', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('&', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 499:
-#line 2597 "cppBison.yxx"
+#line 2601 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(OROR, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(OROR, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 500:
-#line 2601 "cppBison.yxx"
+#line 2605 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(ANDAND, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(ANDAND, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 501:
-#line 2605 "cppBison.yxx"
+#line 2609 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(EQCOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(EQCOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 502:
-#line 2609 "cppBison.yxx"
+#line 2613 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(NECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(NECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 503:
-#line 2613 "cppBison.yxx"
+#line 2617 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 504:
-#line 2617 "cppBison.yxx"
+#line 2621 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(GECOMPARE, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(GECOMPARE, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 505:
-#line 2621 "cppBison.yxx"
+#line 2625 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('<', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('<', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 506:
-#line 2625 "cppBison.yxx"
+#line 2629 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('>', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('>', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 507:
-#line 2629 "cppBison.yxx"
+#line 2633 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(LSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(LSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 508:
-#line 2633 "cppBison.yxx"
+#line 2637 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(RSHIFT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(RSHIFT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 509:
-#line 2637 "cppBison.yxx"
+#line 2641 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('?', yyvsp[-4].u.expr, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('?', (yyvsp[-4].u.expr), (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 510:
-#line 2641 "cppBison.yxx"
+#line 2645 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('[', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('[', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 511:
-#line 2645 "cppBison.yxx"
+#line 2649 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-3].u.expr, yyvsp[-1].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-3].u.expr), (yyvsp[-1].u.expr));
 }
     break;
 
   case 512:
-#line 2649 "cppBison.yxx"
+#line 2653 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('f', yyvsp[-2].u.expr);
+  (yyval.u.expr) = new CPPExpression('f', (yyvsp[-2].u.expr));
 }
     break;
 
   case 513:
-#line 2653 "cppBison.yxx"
+#line 2657 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression('.', yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression('.', (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 514:
-#line 2657 "cppBison.yxx"
+#line 2661 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(POINTSAT, yyvsp[-2].u.expr, yyvsp[0].u.expr);
+  (yyval.u.expr) = new CPPExpression(POINTSAT, (yyvsp[-2].u.expr), (yyvsp[0].u.expr));
 }
     break;
 
   case 515:
-#line 2661 "cppBison.yxx"
+#line 2665 "cppBison.yxx"
     {
-  yyval.u.expr = yyvsp[-1].u.expr;
+  (yyval.u.expr) = (yyvsp[-1].u.expr);
 }
     break;
 
   case 516:
-#line 2668 "cppBison.yxx"
+#line 2672 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.integer);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.integer));
 }
     break;
 
   case 517:
-#line 2672 "cppBison.yxx"
+#line 2676 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(true);
+  (yyval.u.expr) = new CPPExpression(true);
 }
     break;
 
   case 518:
-#line 2676 "cppBison.yxx"
+#line 2680 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(false);
+  (yyval.u.expr) = new CPPExpression(false);
 }
     break;
 
   case 519:
-#line 2680 "cppBison.yxx"
+#line 2684 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.integer);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.integer));
 }
     break;
 
   case 520:
-#line 2684 "cppBison.yxx"
+#line 2688 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].u.real);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].u.real));
 }
     break;
 
   case 521:
-#line 2688 "cppBison.yxx"
+#line 2692 "cppBison.yxx"
     {
-  yyval.u.expr = new CPPExpression(yyvsp[0].str);
+  (yyval.u.expr) = new CPPExpression((yyvsp[0].str));
 }
     break;
 
   case 522:
-#line 2695 "cppBison.yxx"
+#line 2699 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, true);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, true);
   if (type == NULL) {
-    type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+    type = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
   }
-  yyval.u.type = type;
+  (yyval.u.type) = type;
 }
     break;
 
   case 523:
-#line 2703 "cppBison.yxx"
+#line 2707 "cppBison.yxx"
     {
-  CPPType *type = yyvsp[0].u.identifier->find_type(current_scope, global_scope, true, current_lexer);
+  CPPType *type = (yyvsp[0].u.identifier)->find_type(current_scope, global_scope, true, current_lexer);
   if (type == NULL) {
-    type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+    type = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
   }
-  yyval.u.type = type;
+  (yyval.u.type) = type;
 }
     break;
 
   case 524:
-#line 2711 "cppBison.yxx"
+#line 2715 "cppBison.yxx"
     {
-  yyval.u.type = CPPType::new_type(new CPPTBDType(yyvsp[0].u.identifier));
+  (yyval.u.type) = CPPType::new_type(new CPPTBDType((yyvsp[0].u.identifier)));
 }
     break;
 
   case 525:
-#line 2734 "cppBison.yxx"
+#line 2738 "cppBison.yxx"
     {
-  yyval.u.identifier = yyvsp[0].u.identifier;
+  (yyval.u.identifier) = (yyvsp[0].u.identifier);
 }
     break;
 
   case 526:
-#line 2738 "cppBison.yxx"
+#line 2742 "cppBison.yxx"
     {
-  yyval.u.identifier = yyvsp[0].u.identifier;
+  (yyval.u.identifier) = (yyvsp[0].u.identifier);
 }
     break;
 
   case 527:
-#line 2745 "cppBison.yxx"
+#line 2749 "cppBison.yxx"
     {
-  yyval.str = yyvsp[0].str;
+  (yyval.str) = (yyvsp[0].str);
 }
     break;
 
   case 528:
-#line 2749 "cppBison.yxx"
+#line 2753 "cppBison.yxx"
     {
-  yyval.str = yyvsp[-1].str + yyvsp[0].str;
+  (yyval.str) = (yyvsp[-1].str) + (yyvsp[0].str);
 }
     break;
 
 
     }
 
-/* Line 999 of yacc.c.  */
-#line 6031 "y.tab.c"
+/* Line 1037 of yacc.c.  */
+#line 6072 "y.tab.c"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -6123,42 +6164,63 @@ yyerrlab:
 	yyerror ("syntax error");
     }
 
-  yylerrsp = yylsp;
+  yyerror_range[0] = yylloc;
 
   if (yyerrstatus == 3)
     {
-      /* If just tried and failed to reuse lookahead token after an
+      /* If just tried and failed to reuse look-ahead token after an
 	 error, discard it.  */
 
-      /* Return failure if at end of input.  */
-      if (yychar == YYEOF)
+      if (yychar <= YYEOF)
         {
-	  /* Pop the error token.  */
-          YYPOPSTACK;
-	  /* Pop the rest of the stack.  */
-	  while (yyss < yyssp)
-	    {
-	      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-	      yydestruct (yystos[*yyssp], yyvsp, yylsp);
-	      YYPOPSTACK;
-	    }
-	  YYABORT;
+          /* If at end of input, pop the error token,
+	     then the rest of the stack, then return failure.  */
+	  if (yychar == YYEOF)
+	     for (;;)
+	       {
+                 yyerror_range[0] = *yylsp;
+		 YYPOPSTACK;
+		 if (yyssp == yyss)
+		   YYABORT;
+		 yydestruct ("Error: popping",
+                             yystos[*yyssp], yyvsp, yylsp);
+	       }
         }
-
-      YYDSYMPRINTF ("Error: discarding", yytoken, &yylval, &yylloc);
-      yydestruct (yytoken, &yylval, &yylloc);
-      yychar = YYEMPTY;
-      *++yylerrsp = yylloc;
+      else
+	{
+	  yydestruct ("Error: discarding", yytoken, &yylval, &yylloc);
+	  yychar = YYEMPTY;
+	}
     }
 
-  /* Else will try to reuse lookahead token after shifting the error
+  /* Else will try to reuse look-ahead token after shifting the error
      token.  */
   goto yyerrlab1;
 
 
-/*----------------------------------------------------.
-| yyerrlab1 -- error raised explicitly by an action.  |
-`----------------------------------------------------*/
+/*---------------------------------------------------.
+| yyerrorlab -- error raised explicitly by YYERROR.  |
+`---------------------------------------------------*/
+yyerrorlab:
+
+#ifdef __GNUC__
+  /* Pacify GCC when the user code never invokes YYERROR and the label
+     yyerrorlab therefore never appears in user code.  */
+  if (0)
+     goto yyerrorlab;
+#endif
+
+  yyerror_range[0] = yylsp[1-yylen];
+  yylsp -= yylen;
+  yyvsp -= yylen;
+  yyssp -= yylen;
+  yystate = *yyssp;
+  goto yyerrlab1;
+
+
+/*-------------------------------------------------------------.
+| yyerrlab1 -- common code for both syntax error and YYERROR.  |
+`-------------------------------------------------------------*/
 yyerrlab1:
   yyerrstatus = 3;	/* Each real token shifted decrements this.  */
 
@@ -6180,22 +6242,26 @@ yyerrlab1:
       if (yyssp == yyss)
 	YYABORT;
 
-      YYDSYMPRINTF ("Error: popping", yystos[*yyssp], yyvsp, yylsp);
-      yydestruct (yystos[yystate], yyvsp, yylsp);
-      yyvsp--;
-      yystate = *--yyssp;
-      yylsp--;
+      yyerror_range[0] = *yylsp;
+      yydestruct ("Error: popping", yystos[yystate], yyvsp, yylsp);
+      YYPOPSTACK;
+      yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
     }
 
   if (yyn == YYFINAL)
     YYACCEPT;
 
-  YYDPRINTF ((stderr, "Shifting error token, "));
-
   *++yyvsp = yylval;
-  YYLLOC_DEFAULT (yyloc, yylsp, (yylerrsp - yylsp));
+
+  yyerror_range[1] = yylloc;
+  /* Using YYLLOC is tempting, but would change the location of
+     the look-ahead.  YYLOC is available though. */
+  YYLLOC_DEFAULT (yyloc, yyerror_range - 1, 2);
   *++yylsp = yyloc;
+
+  /* Shift the error token. */
+  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -6212,6 +6278,9 @@ yyacceptlab:
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
 yyabortlab:
+  yydestruct ("Error: discarding lookahead",
+              yytoken, &yylval, &yylloc);
+  yychar = YYEMPTY;
   yyresult = 1;
   goto yyreturn;
 

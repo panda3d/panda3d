@@ -458,7 +458,11 @@ declaration:
 }
         | KW_PUBLIC ':'
 {
-  current_scope->set_current_vis(V_public);
+  if (publish_nest_level > 0) {
+    current_scope->set_current_vis(V_published);
+  } else {
+    current_scope->set_current_vis(V_public);
+  }
 }
         | KW_PROTECTED ':'
 {
