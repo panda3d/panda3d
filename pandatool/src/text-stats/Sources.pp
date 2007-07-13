@@ -13,7 +13,8 @@
     interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
-    textMonitor.cxx textMonitor.h textStats.cxx textStats.h
+    textMonitor.cxx textMonitor.h textMonitor.I \
+    textStats.cxx textStats.h
 
   #define INSTALL_HEADERS 
 

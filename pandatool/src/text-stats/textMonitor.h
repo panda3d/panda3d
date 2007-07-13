@@ -32,7 +32,8 @@ class TextStats;
 class TextMonitor : public PStatMonitor {
 public:
   TextMonitor(TextStats *server);
-
+  TextStats *get_server();
+ 
   virtual string get_monitor_name();
 
   virtual void got_hello();
@@ -45,5 +46,7 @@ public:
   void show_ms(const PStatViewLevel *level, int indent_level);
   void show_level(const PStatViewLevel *level, int indent_level);
 };
+
+#include "textMonitor.I"
 
 #endif

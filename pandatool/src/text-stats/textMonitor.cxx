@@ -19,8 +19,9 @@
 #include "textMonitor.h"
 #include "textStats.h"
 #include "pStatCollectorDef.h"
-
+#include "pStatFrameData.h"
 #include "indent.h"
+#include <stdio.h>  // sprintf
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::Constructor
@@ -29,6 +30,16 @@
 ////////////////////////////////////////////////////////////////////
 TextMonitor::
 TextMonitor(TextStats *server) : PStatMonitor(server) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextMonitor::get_server
+//       Access: Public
+//  Description: Returns the server that owns this monitor.
+////////////////////////////////////////////////////////////////////
+TextStats *TextMonitor::
+get_server() {
+  return (TextStats *)PStatMonitor::get_server();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,6 +114,28 @@ new_data(int thread_index, int frame_number) {
            << " frame " << frame_number << ", "
            << view.get_net_value() * 1000.0 << " ms ("
            << thread_data->get_frame_rate() << " Hz):\n";
+
+      if (get_server()->_show_raw_data) {
+        const PStatFrameData &frame_data = thread_data->get_frame(frame_number);
+        nout << "raw data:\n";
+        int num_events = frame_data.get_num_events();
+        for (int i = 0; i < num_events; ++i) {
+          // The iomanipulators are much too clumsy.
+          char formatted[32];
+          sprintf(formatted, "%15.06lf", frame_data.get_time(i));
+          nout << formatted;
+
+          if (frame_data.is_start(i)) {
+            nout << " start ";
+          } else {
+            nout << " stop  ";
+          }
+          
+          int collector_index = frame_data.get_time_collector(i);
+          nout << client_data->get_collector_fullname(collector_index) << "\n";
+        }
+      }
+
       const PStatViewLevel *level = view.get_top_level();
       int num_children = level->get_num_children();
       for (int i = 0; i < num_children; i++) {

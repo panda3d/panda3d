@@ -38,6 +38,7 @@ public:
   void run();
 
   int _port;
+  bool _show_raw_data;
 };
 
 #endif

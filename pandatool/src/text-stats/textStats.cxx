@@ -51,6 +51,12 @@ TextStats() {
      "is taken from the pstats-host Config variable.",
      &TextStats::dispatch_int, NULL, &_port);
 
+  add_option
+    ("r", "", 0,
+     "Show the raw frame data, in addition to boiling it down to a total "
+     "time per collector.",
+     &TextStats::dispatch_none, &_show_raw_data, NULL);
+
   _port = pstats_port;
 }
 
