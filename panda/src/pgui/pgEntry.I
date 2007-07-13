@@ -508,9 +508,7 @@ set_wtext(const wstring &wtext) {
     _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
   }
   _text_geom_stale = true;
-  _cursor_stale = true;
-  _blink_start = ClockObject::get_global_clock()->get_frame_time();
-  set_cursor_position(_text.get_num_characters());
+  set_cursor_position(min(_cursor_position, _text.get_num_characters()));
 }
 
 ////////////////////////////////////////////////////////////////////
