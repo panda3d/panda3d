@@ -55,6 +55,9 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("forward", "w", inputSource=inputState.WASD))
             ist.append(inputState.watchWithModifiers("reverse", "s", inputSource=inputState.WASD))
 
+            ist.append(inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.WASD))
+            ist.append(inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.WASD))
+
             # Used to switch between strafe and turn. We will default to turn
             self.WASDTurnTokens = ()
             self.setWASDTurn(1)
@@ -273,13 +276,9 @@ class ControlManager:
             self.WASDTurnTokens = (
                 inputState.watchWithModifiers("turnLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD),
-                inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.WASD),
-                inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.WASD),
                 )
         else:
             self.WASDTurnTokens = (
-                inputState.watchWithModifiers("turnLeft", "q", inputSource=inputState.WASD),
-                inputState.watchWithModifiers("turnRight", "e", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD),
                 )
