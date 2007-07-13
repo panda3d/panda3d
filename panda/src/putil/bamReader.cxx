@@ -1120,7 +1120,10 @@ resolve_object_pointers(TypedWritable *object,
         << " (" << object->get_type() << "), " << references.size()
         << " pointers.\n";
     }
-    int num_completed = object->complete_pointers(&references[0], this);
+    int num_completed = 0;
+    if (!references.empty()) {
+      object->complete_pointers(&references[0], this);
+    }
     if (num_completed != (int)references.size()) {
       bam_cat.warning()
         << object->get_type() << " completed " << num_completed
