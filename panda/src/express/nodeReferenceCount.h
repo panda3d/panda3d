@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "referenceCount.h"
-#include "objectDeletor.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeReferenceCount

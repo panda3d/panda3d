@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "typedWritableReferenceCount.h"
-#include "objectDeletor.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CachedTypedWritableReferenceCount

@@ -39,7 +39,6 @@
 #include "thread.h"
 #include "pipeline.h"
 #include "throw_event.h"
-#include "objectDeletor.h"
 #include "bamCache.h"
 #include "cullableObject.h"
 #include "geomVertexArrayData.h"

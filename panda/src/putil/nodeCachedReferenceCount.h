@@ -23,7 +23,6 @@
 
 #include "cachedTypedWritableReferenceCount.h"
 #include "nodeReferenceCount.h" // for node_unref_delete()
-#include "objectDeletor.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeCachedReferenceCount
