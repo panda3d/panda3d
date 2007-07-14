@@ -1072,6 +1072,7 @@ resolve_object_pointers(TypedWritable *object,
   bool is_complete = true;
 
   vector_typedWritable references;
+  references.reserve(pref._objects.size());
 
   vector_int::const_iterator pi;
   for (pi = pref._objects.begin(); 
@@ -1122,7 +1123,7 @@ resolve_object_pointers(TypedWritable *object,
     }
     int num_completed = 0;
     if (!references.empty()) {
-      object->complete_pointers(&references[0], this);
+      num_completed = object->complete_pointers(&references[0], this);
     }
     if (num_completed != (int)references.size()) {
       bam_cat.warning()
