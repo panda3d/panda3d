@@ -614,7 +614,7 @@ render_frame() {
     do_resort_windows();
   }
 
-  if (_flip_state != FS_flip) {
+  if (sync_flip && _flip_state != FS_flip) {
     do_flip_frame(current_thread);
   }
 
@@ -1037,6 +1037,17 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist,
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      if (win->flip_ready()) {
+        {
+          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
+          win->begin_flip();
+        }
+        {
+          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
+          win->end_flip();
+        }
+      }
+
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);
       
@@ -1233,6 +1244,17 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     if (win->is_active() && win->get_gsg()->is_active()) {
+      if (win->flip_ready()) {
+        {
+          PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
+          win->begin_flip();
+        }
+        {
+          PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
+          win->end_flip();
+        }
+      }
+
       PStatTimer timer(win->get_draw_window_pcollector(), current_thread);
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
         win->clear(current_thread);

@@ -80,6 +80,14 @@ ConfigVariableBool auto_flip
           "time, while setting it false can get a better frame rate as more "
           "is achieved in parallel with the graphics card."));
 
+ConfigVariableBool sync_flip
+("sync-flip", false,
+ PRC_DESC("Set this true to attempt to flip all windows at the same time, "
+          "or false to flip each window as late as possible.  Setting this "
+          "false can improve parallelization.  This is a temporary "
+          "variable; it will later be replaced with a more explicit control "
+          "over synchronizing window flip."));
+
 ConfigVariableBool yield_timeslice
 ("yield-timeslice", false,
  PRC_DESC("Set this true to yield the timeslice at the end of the frame to be "
