@@ -37,6 +37,7 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
+  virtual PreferredWindowThread get_preferred_window_thread() const;
 
   static CGImageRef create_cg_image(const PNMImage &pnm_image);
 

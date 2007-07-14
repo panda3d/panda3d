@@ -69,6 +69,19 @@ pipe_constructor() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsPipe::get_preferred_window_thread
+//       Access: Public, Virtual
+//  Description: Returns an indication of the thread in which this
+//               GraphicsPipe requires its window processing to be
+//               performed: typically either the app thread (e.g. X)
+//               or the draw thread (Windows).
+////////////////////////////////////////////////////////////////////
+GraphicsPipe::PreferredWindowThread 
+osxGraphicsPipe::get_preferred_window_thread() const {
+  return PWT_app;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsPipe::create_cg_image
 //       Access: Public, Static
 //  Description: Creates a new Quartz bitmap image with the data in
@@ -119,6 +132,11 @@ create_cg_image(const PNMImage &pnm_image) {
     color_space_name = kCGColorSpaceGenericRGB;
     has_alpha = true;
     is_grayscale = false;
+    break;
+
+  case PNMImage::CT_invalid:
+    // Shouldn't get here.
+    nassertr(false, NULL);
     break;
   }
   nassertr(color_space_name != NULL, NULL);
