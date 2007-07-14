@@ -296,7 +296,6 @@ PUBLISHED:
   INLINE void mark_used() const;
   
 private:
-  ReMutexHolder _holder;
   PT(GeomVertexArrayData) _object;
   Thread *_current_thread;
   GeomVertexArrayData::CData *_cdata;

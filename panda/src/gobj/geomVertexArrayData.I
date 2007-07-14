@@ -291,7 +291,6 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
                           Thread *current_thread,
                           const GeomVertexArrayData::CData *cdata,
                           bool writable) :
-  _holder(((GeomVertexArrayData::CData *)cdata)->_rw_lock),
   _object((GeomVertexArrayData *)object),
   _current_thread(current_thread),
   _cdata((GeomVertexArrayData::CData *)cdata),
@@ -303,6 +302,9 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
 #ifdef DO_PIPELINING
   _cdata->ref();
 #endif  // DO_PIPELINING
+  // We must grab the lock *after* we have incremented the reference
+  // count, above.
+  _cdata->_rw_lock.lock();
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif
@@ -314,9 +316,7 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
 //  Description: Don't attempt to copy these objects.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy) :
-  _holder(copy._cdata->_rw_lock)
-{
+GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy) {
   nassertv(false);
 }
 
@@ -344,6 +344,10 @@ INLINE GeomVertexArrayDataHandle::
   if (_writable) {
     _object->_cycler.release_write(_cdata);
   }
+
+  // We must release the lock *before* we decrement the reference
+  // count, below.
+  _cdata->_rw_lock.release();
 
 #ifdef DO_PIPELINING
   unref_delete((CycleData *)_cdata);
