@@ -592,6 +592,7 @@ setup_resume_until(double end_t) {
 ////////////////////////////////////////////////////////////////////
 bool CInterval::
 step_play() {
+  PStatTimer timer(_ival_pcollector);
   double now = ClockObject::get_global_clock()->get_frame_time();
 
   if (_play_rate >= 0.0) {
