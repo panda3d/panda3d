@@ -89,6 +89,8 @@ PUBLISHED:
 
   const RenderEffect *get_effect(TypeHandle type) const;
 
+  bool unref() const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -115,6 +117,8 @@ public:
 
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
+  void release_new();
+
   void determine_decal();
   void determine_show_bounds();
   void determine_cull_callback();
@@ -174,6 +178,7 @@ public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual bool require_fully_complete() const;
   static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
   virtual void finalize(BamReader *manager);
 

@@ -102,13 +102,10 @@ TransformState::
   }
 
   ReMutexHolder holder(*_states_lock);
-  if (_saved_entry != _states->end()) {
-    nassertv(_states->find(this) == _saved_entry);
-    _states->erase(_saved_entry);
-    _saved_entry = _states->end();
-  }
-   
-  remove_cache_pointers();
+
+  // unref() should have cleared these.
+  nassertv(_saved_entry == _states->end());
+  nassertv(_composition_cache.empty() && _invert_composition_cache.empty());
 
   // If this was true at the beginning of the destructor, but is no
   // longer true now, probably we've been double-deleted.
@@ -765,48 +762,46 @@ invert_compose(const TransformState *other) const {
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 unref() const {
-  // Most of the time, we won't need to grab the lock.  We first check
-  // whether we think we will need to grab it.  Then, after we have
-  // successfully acquired the lock, we check that the condition is
-  // still valid.
+  // We always have to grab the lock, since we will definitely need to
+  // be holding it if we happen to drop the reference count to 0.
+  ReMutexHolder holder(*_states_lock);
 
-  // It is possible that, due to some race condition, this condition
-  // is never seen as true on any one thread.  In that case, the cycle
-  // will not automatically be detected and broken.  But since (a)
-  // that will be a relatively rare situation, (b) it will be
-  // expensive to protect against it, and (c) the damage is minimal,
-  // the race condition is allowed to remain.
-  if (get_cache_ref_count() > 0 &&
-      get_ref_count() == get_cache_ref_count() + 1) {
-
-    if (auto_break_cycles) {
-      ReMutexHolder holder(*_states_lock);
+  if (auto_break_cycles) {
+    if (get_cache_ref_count() > 0 &&
+        get_ref_count() == get_cache_ref_count() + 1) {
+      // If we are about to remove the one reference that is not in the
+      // cache, leaving only references in the cache, then we need to
+      // check for a cycle involving this TransformState and break it if
+      // it exists.
       
-      if (get_cache_ref_count() > 0 &&
-          get_ref_count() == get_cache_ref_count() + 1) {
-        // If we are about to remove the one reference that is not in the
-        // cache, leaving only references in the cache, then we need to
-        // check for a cycle involving this TransformState and break it if
-        // it exists.
-
-        PStatTimer timer(_transform_break_cycles_pcollector);
+      PStatTimer timer(_transform_break_cycles_pcollector);
         
-        ++_last_cycle_detect;
-        if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
-          // Ok, we have a cycle.  This will be a leak unless we break the
-          // cycle by freeing the cache on this object.
-          if (pgraph_cat.is_debug()) {
-            pgraph_cat.debug()
-              << "Breaking cycle involving " << (*this) << "\n";
-          }
-          
-          ((TransformState *)this)->remove_cache_pointers();
+      ++_last_cycle_detect;
+      if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+        // Ok, we have a cycle.  This will be a leak unless we break the
+        // cycle by freeing the cache on this object.
+        if (pgraph_cat.is_debug()) {
+          pgraph_cat.debug()
+            << "Breaking cycle involving " << (*this) << "\n";
         }
+        
+        ((TransformState *)this)->remove_cache_pointers();
       }
     }
   }
 
-  return ReferenceCount::unref();
+  if (ReferenceCount::unref()) {
+    // The reference count is still nonzero.
+    return true;
+  }
+
+  // The reference count has just reached zero.  Make sure the object
+  // is removed from the global object pool, before anyone else finds
+  // it and tries to ref it.
+  ((TransformState *)this)->release_new();
+  ((TransformState *)this)->remove_cache_pointers();
+  
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1592,6 +1587,27 @@ r_detect_cycles(const TransformState *start_state,
   return false;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::release_new
+//       Access: Private
+//  Description: This inverse of return_new, this releases this object
+//               from the global TransformState table.
+//
+//               You must already be holding _states_lock before you
+//               call this method.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+release_new() {
+  nassertv(_states_lock->debug_is_locked());
+   
+  if (_saved_entry != _states->end()) {
+    nassertv(_states->find(this) == _saved_entry);
+    _states->erase(_saved_entry);
+    _saved_entry = _states->end();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::remove_cache_pointers
 //       Access: Private
@@ -1606,7 +1622,7 @@ r_detect_cycles(const TransformState *start_state,
 void TransformState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
-
+   
   // Fortunately, since we added CompositionCache records in pairs, we
   // know exactly the set of TransformState objects that have us in their
   // cache: it's the same set of TransformState objects that we have in

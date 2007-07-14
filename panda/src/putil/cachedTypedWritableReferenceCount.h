@@ -56,6 +56,7 @@ PUBLISHED:
   INLINE bool test_ref_count_integrity() const;
 
 protected:
+  INLINE void cache_unref_only() const;
   bool do_test_ref_count_integrity() const;
 
 private:

@@ -175,6 +175,15 @@ GraphicsEngine::
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_threading_model(const GraphicsThreadingModel &threading_model) {
+  if (!Thread::is_threading_supported()) {
+    if (!threading_model.is_single_threaded()) {
+      display_cat.warning()
+        << "Threading model " << threading_model
+        << " requested but threading is not available.  Ignoring.\n";
+      return;
+    }
+  }
+    
 #ifndef THREADED_PIPELINE
   if (!threading_model.is_single_threaded()) {
     display_cat.warning()
@@ -687,14 +696,6 @@ render_frame() {
 #endif  // DEBUG_THREADS
 
 #endif  // THREADED_PIPELINE && DO_PSTATS
-
-  // If there is an object deletor, tell it to flush now, while we're
-  // between frames.
-  ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
-  if (deletor != (ObjectDeletor *)NULL) {
-    PStatTimer timer(_delete_pcollector, current_thread);
-    deletor->flush();
-  }
 
   GeomCacheManager::flush_level();
   CullTraverser::flush_level();
@@ -1960,7 +1961,8 @@ get_window_renderer(const string &name, int pipeline_stage) {
   thread->set_min_pipeline_stage(pipeline_stage);
   _pipeline->set_min_stages(pipeline_stage + 1);
 
-  thread->start(TP_normal, true);
+  bool started = thread->start(TP_normal, true);
+  nassertr(started, thread.p());
   _threads[name] = thread;
 
   nassertr(thread->get_pipeline_stage() < _pipeline->get_num_stages(), thread.p());

@@ -32,7 +32,6 @@
     config_util.N config_util.h configurable.h \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
-    deferredDeletor.h \
     doubleBitMask.I doubleBitMask.h \
     drawMask.h \
     factoryBase.I factoryBase.h \
@@ -52,11 +51,9 @@
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
-    nonDeletor.h \
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h \
-    spamDeletor.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
     stringStreamBuf.I stringStreamBuf.h \
@@ -88,7 +85,6 @@
     copyOnWritePointer.cxx \
     config_util.cxx configurable.cxx \
     datagramInputFile.cxx datagramOutputFile.cxx \
-    deferredDeletor.cxx \
     doubleBitMask.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx \
@@ -101,10 +97,8 @@
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
-    nonDeletor.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
-    spamDeletor.cxx \
     sparseArray.cxx \
     string_utils.cxx \
     stringStreamBuf.cxx \
@@ -140,7 +134,6 @@
     config_util.h configurable.h factory.I factory.h \
     datagramInputFile.I datagramInputFile.h \
     datagramOutputFile.I datagramOutputFile.h \
-    deferredDeletor.h \
     doubleBitMask.I doubleBitMask.h \
     drawMask.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
@@ -160,11 +153,9 @@
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
-    nonDeletor.h \
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
-    spamDeletor.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.h \
     stringStreamBuf.I stringStreamBuf.h \

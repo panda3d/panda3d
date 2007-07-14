@@ -195,6 +195,9 @@ public:
   INLINE static void flush_level();
 
 private:
+  INLINE bool do_cache_unref() const;
+  INLINE bool do_node_unref() const;
+
   class CompositionCycleDescEntry {
   public:
     INLINE CompositionCycleDescEntry(const TransformState *obj,
@@ -215,6 +218,7 @@ private:
                               int length, UpdateSeq this_seq,
                               CompositionCycleDesc *cycle_desc);
 
+  void release_new();
   void remove_cache_pointers();
 
 private:

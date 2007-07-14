@@ -349,41 +349,6 @@ weak_unref(WeakPointerToVoid *ptv) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DeleteWrapper::do_delete
-//       Access: Public, Static
-//  Description: This helper function encapsulates calling the
-//               destructor and delete operator for the given pointer.
-//               A pointer to this function is passed to the global
-//               ObjectDeletor, when there is one.
-////////////////////////////////////////////////////////////////////
-template<class ObjectType>
-void DeleteWrapper<ObjectType>::
-do_delete(void *ptr) {
-  TAU_PROFILE("void DeleteWrapper::do_delete(void *)", " ", TAU_USER);
-  delete ((ObjectType *)ptr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RefCountDeleteWrapper::do_delete
-//       Access: Public, Static
-//  Description: This is similar to DeleteWrapper::do_delete(), above,
-//               except it is specialized for an object that inherits
-//               from ReferenceCount, and it will check that some
-//               other pointer hasn't incremented the reference count
-//               in the interim before the pointer is actually
-//               deleted.
-////////////////////////////////////////////////////////////////////
-template<class RefCountType>
-void RefCountDeleteWrapper<RefCountType>::
-do_delete(void *ptr) {
-  TAU_PROFILE("void RefCountDeleteWrapper::do_delete(void *)", " ", TAU_USER);
-  if (!((RefCountType *)ptr)->unref()) {
-    // The reference count has reached 0; time to delete the pointer.
-    delete ((RefCountType *)ptr);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: unref_delete
 //  Description: This global helper function will unref the given
 //               ReferenceCount object, and if the reference count
@@ -404,58 +369,10 @@ unref_delete(RefCountType *ptr) {
   // overloading of the unref() method.
 
   if (!ptr->unref()) {
-    // The reference count has reached 0; time to delete the pointer.
-
-    // Is there a deletor in effect?  If so, pass it to that object.
-    ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
-    if (deletor != (ObjectDeletor *)NULL) {
-      // Re-ref the pointer before adding it to the deletor.  The
-      // deletor will de-ref it again before deleting it.
-      ptr->ref();
-      deletor->delete_object(RefCountDeleteWrapper<RefCountType>::do_delete, (void *)ptr);
-      return;
-    }
-
-    // If there's no deletor, just delete the pointer now.
+    // If the reference count has gone to zero, delete the object.
     delete ptr;
-  }
+  } 
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: defer_delete
-//  Description: This global helper function is designed to be called
-//               in lieu of the delete operator on any type of object
-//               (except for an object that inherits from
-//               ReferenceCount, of course, since you should never
-//               call delete explicitly on a reference-counted
-//               object).
-//
-//               This function will ultimately have the same effect as
-//               calling delete on the object.  If a ObjectDeletor
-//               is currently in effect, the delete will happen at
-//               some later time; but if a ObjectDeletor is not in
-//               effect, the delete will happen immediately.
-//
-//               You should not attempt to replace an array-delete
-//               call, e.g. delete[] array, with a call to
-//               defer_delete().  This only replaces single-object
-//               deletes, e.g. delete object.
-////////////////////////////////////////////////////////////////////
-template<class ObjectType>
-INLINE void
-defer_delete(ObjectType *ptr) {
-  TAU_PROFILE("void defer_delete(ObjectType *)", " ", TAU_USER);
-
-  ObjectDeletor *deletor = ObjectDeletor::get_global_ptr();
-  if (deletor != (ObjectDeletor *)NULL) {
-    deletor->delete_object(DeleteWrapper<ObjectType>::do_delete, (void *)ptr);
-    return;
-  }
-
-  // If there's no deletor, just delete the pointer now.
-  delete ptr;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::Constructor

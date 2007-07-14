@@ -32,7 +32,6 @@
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
     nodeReferenceCount.h nodeReferenceCount.I \
-    objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \
@@ -84,7 +83,6 @@
     nodePointerToBase.cxx \
     nodePointerTo.cxx \
     nodeReferenceCount.cxx \
-    objectDeletor.cxx \
     ordered_vector.cxx \
     password_hash.cxx \
     patchfile.cxx \
@@ -142,7 +140,6 @@
     nodePointerToBase.h nodePointerToBase.I \
     nodePointerTo.h nodePointerTo.I \
     nodeReferenceCount.h nodeReferenceCount.I \
-    objectDeletor.h objectDeletor.I \
     ordered_vector.h ordered_vector.I ordered_vector.T \
     password_hash.h \
     patchfile.I patchfile.h \

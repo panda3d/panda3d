@@ -66,11 +66,44 @@ InternalName(InternalName *parent, const string &basename) :
 ////////////////////////////////////////////////////////////////////
 InternalName::
 ~InternalName() {
-  if (_parent != (const InternalName *)NULL) {
+#ifndef NDEBUG
+  {
+    // unref() should have removed us from our parent's table already.
+    MutexHolder holder(_parent->_name_table_lock);
     NameTable::iterator ni = _parent->_name_table.find(_basename);
-    nassertv(ni != _parent->_name_table.end());
-    _parent->_name_table.erase(ni);
+    nassertv(ni == _parent->_name_table.end());
   }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::unref
+//       Access: Published
+//  Description: This method overrides ReferenceCount::unref() to
+//               clear the pointer from its parent's table when
+//               its reference count goes to zero.
+////////////////////////////////////////////////////////////////////
+bool InternalName::
+unref() const {
+  if (_parent == (const InternalName *)NULL) {
+    // No parent; no problem.  This is the root InternalName.
+    // Actually, this probably shouldn't be destructing, but I guess
+    // it might at application shutdown.
+    return TypedWritableReferenceCount::unref();
+  }
+
+  MutexHolder holder(_parent->_name_table_lock);
+
+  if (ReferenceCount::unref()) {
+    return true;
+  }
+
+  // The reference count has just reached zero.
+  NameTable::iterator ni = _parent->_name_table.find(_basename);
+  nassertr(ni != _parent->_name_table.end(), false);
+  _parent->_name_table.erase(ni);
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,12 +127,14 @@ append(const string &name) {
     return append(name.substr(0, dot))->append(name.substr(dot + 1));
   }
 
+  MutexHolder holder(_name_table_lock);
+
   NameTable::iterator ni = _name_table.find(name);
   if (ni != _name_table.end()) {
     return (*ni).second;
   }
 
-  PT(InternalName) internal_name = new InternalName(this, name);
+  InternalName *internal_name = new InternalName(this, name);
   _name_table[name] = internal_name;
   return internal_name;
 }

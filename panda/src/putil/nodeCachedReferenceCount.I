@@ -166,42 +166,16 @@ node_ref() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeCachedReferenceCount::node_unref
 //       Access: Published
-//  Description: Explicitly decrements the reference count.  Note that
-//               the object will not be implicitly deleted by unref()
-//               simply because the reference count drops to zero.
-//               (Having a member function delete itself is
-//               problematic; plus, we don't have a virtual destructor
-//               anyway.) However, see the helper function
-//               unref_delete().
-//
-//               User code should avoid using ref() and unref()
-//               directly, which can result in missed reference
-//               counts.  Instead, let a PointerTo object manage the
-//               reference counting automatically.
-//
-//               This function is const, even though it changes the
-//               object, because generally fiddling with an object's
-//               reference count isn't considered part of fiddling
-//               with the object.  An object might be const in other
-//               ways, but we still need to accurately count the
-//               number of references to it.
+//  Description: Explicitly decrements the node reference count and
+//               the normal reference count simultaneously.
 //
 //               The return value is true if the new reference count
 //               is nonzero, false if it is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodeCachedReferenceCount::
 node_unref() const {
-#ifdef _DEBUG
-  nassertr(test_ref_count_integrity(), 0);
-#endif
-
-  // If this assertion fails, you tried to unref an object with a
-  // zero reference count.  Are you using ref() and unref()
-  // directly?  Are you sure you can't use PointerTo's?
-  nassertr(_node_ref_count > 0, 0);
-
-  unref();
-  return AtomicAdjust::dec(((NodeCachedReferenceCount *)this)->_node_ref_count);
+  node_unref_only();
+  return unref();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,4 +215,26 @@ get_referenced_bits() const {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeCachedReferenceCount::node_unref_only
+//       Access: Protected
+//  Description: Decrements the node reference count without affecting
+//               the normal reference count.  Intended to be called by
+//               derived classes only, presumably to reimplement
+//               node_unref().
+////////////////////////////////////////////////////////////////////
+INLINE void NodeCachedReferenceCount::
+node_unref_only() const {
+#ifdef _DEBUG
+  nassertv(test_ref_count_integrity());
+#endif
+
+  // If this assertion fails, you tried to unref an object with a
+  // zero reference count.  Are you using ref() and unref()
+  // directly?  Are you sure you can't use PointerTo's?
+  nassertv(_node_ref_count > 0);
+
+  AtomicAdjust::dec(((NodeCachedReferenceCount *)this)->_node_ref_count);
 }

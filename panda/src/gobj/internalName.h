@@ -24,6 +24,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "pmap.h"
+#include "pmutex.h"
 
 class FactoryParams;
 
@@ -48,6 +49,8 @@ private:
 
 PUBLISHED:
   virtual ~InternalName();
+  bool unref() const;
+
   INLINE static PT(InternalName) make(const string &name);
   PT(InternalName) append(const string &basename);
 
@@ -93,6 +96,7 @@ private:
 
   typedef phash_map<string, InternalName *, string_hash> NameTable;
   NameTable _name_table;
+  Mutex _name_table_lock;
 
   static PT(InternalName) _root;
   static PT(InternalName) _error;

@@ -21,7 +21,9 @@
 #include "bamReader.h"
 #include "indent.h"
 #include "config_pgraph.h"
+#include "reMutexHolder.h"
 
+ReMutex *RenderAttrib::_attribs_lock = NULL;
 RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
 TypeHandle RenderAttrib::_type_handle;
 
@@ -33,12 +35,7 @@ TypeHandle RenderAttrib::_type_handle;
 RenderAttrib::
 RenderAttrib() {
   if (_attribs == (Attribs *)NULL) {
-    // Make sure the global _attribs map is allocated.  This only has
-    // to be done once.  We could make this map static, but then we
-    // run into problems if anyone creates a RenderState object at
-    // static init time; it also seems to cause problems when the
-    // Panda shared library is unloaded at application exit time.
-    _attribs = new Attribs;
+    init_attribs();
   }
   _saved_entry = _attribs->end();
 
@@ -73,24 +70,10 @@ operator = (const RenderAttrib &) {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib::
 ~RenderAttrib() {
-  if (_saved_entry != _attribs->end()) {
-    // We cannot make this assertion, because the RenderAttrib has
-    // already partially destructed--this means we cannot look up the
-    // object in the map.  In fact, the map is temporarily invalid
-    // until we finish destructing, since we screwed up the ordering
-    // when we changed the return value of get_type().
-    //    nassertv(_attribs->find(this) == _saved_entry);
+  ReMutexHolder holder(*_attribs_lock);
 
-    // Note: this isn't thread-safe, because once the derived class
-    // destructor exits and before this destructor completes, the map
-    // is invalid, and other threads may inadvertently attempt to read
-    // the invalid map.  To make it thread-safe, we need to move this
-    // functionality to a separate method, that is to be called from
-    // *each* derived class's destructor (and then we can put the
-    // above assert back in).
-    _attribs->erase(_saved_entry);
-    _saved_entry = _attribs->end();
-  }
+  // unref() should have cleared this.
+  nassertv(_saved_entry == _attribs->end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,6 +141,32 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::unref
+//       Access: Published
+//  Description: This method overrides ReferenceCount::unref() to
+//               clear the pointer from the global object pool when
+//               its reference count goes to zero.
+////////////////////////////////////////////////////////////////////
+bool RenderAttrib::
+unref() const {
+  // We always have to grab the lock, since we will definitely need to
+  // be holding it if we happen to drop the reference count to 0.
+  ReMutexHolder holder(*_attribs_lock);
+
+  if (ReferenceCount::unref()) {
+    // The reference count is still nonzero.
+    return true;
+  }
+
+  // The reference count has just reached zero.  Make sure the object
+  // is removed from the global object pool, before anyone else finds
+  // it and tries to ref it.
+  ((RenderAttrib *)this)->release_new();
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::output
 //       Access: Published, Virtual
 //  Description: 
@@ -186,6 +195,8 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 int RenderAttrib::
 get_num_attribs() {
+  ReMutexHolder holder(*_attribs_lock);
+
   if (_attribs == (Attribs *)NULL) {
     return 0;
   }
@@ -201,6 +212,8 @@ get_num_attribs() {
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
 list_attribs(ostream &out) {
+  ReMutexHolder holder(*_attribs_lock);
+
   out << _attribs->size() << " attribs:\n";
   Attribs::const_iterator si;
   for (si = _attribs->begin(); si != _attribs->end(); ++si) {
@@ -219,6 +232,8 @@ list_attribs(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool RenderAttrib::
 validate_attribs() {
+  ReMutexHolder holder(*_attribs_lock);
+
   if (_attribs->empty()) {
     return true;
   }
@@ -262,6 +277,8 @@ return_new(RenderAttrib *attrib) {
   if (!uniquify_attribs) {
     return attrib;
   }
+
+  ReMutexHolder holder(*_attribs_lock);
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
@@ -400,6 +417,26 @@ output_comparefunc(ostream &out, PandaCompareFunc fn) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::release_new
+//       Access: Private
+//  Description: This inverse of return_new, this releases this object
+//               from the global RenderAttrib table.
+//
+//               You must already be holding _attribs_lock before you
+//               call this method.
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+release_new() {
+  nassertv(_attribs_lock->debug_is_locked());
+
+  if (_saved_entry != _attribs->end()) {
+    nassertv(_attribs->find(this) == _saved_entry);
+    _attribs->erase(_saved_entry);
+    _saved_entry = _attribs->end();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::make_default_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived RenderAttrib
@@ -413,6 +450,29 @@ output_comparefunc(ostream &out, PandaCompareFunc fn) const {
 RenderAttrib *RenderAttrib::
 make_default_impl() const {
   return (RenderAttrib *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::init_attribs
+//       Access: Public, Static
+//  Description: Make sure the global _attribs map is allocated.  This
+//               only has to be done once.  We could make this map
+//               static, but then we run into problems if anyone
+//               creates a RenderAttrib object at static init time;
+//               it also seems to cause problems when the Panda shared
+//               library is unloaded at application exit time.
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+init_attribs() {
+  _attribs = new Attribs;
+
+  // TODO: we should have a global Panda mutex to allow us to safely
+  // create _attribs_lock without a startup race condition.  For the
+  // meantime, this is OK because we guarantee that this method is
+  // called at static init time, presumably when there is still only
+  // one thread in the world.
+  _attribs_lock = new ReMutex("RenderAttrib::_attribs_lock");
+  nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
 
 ////////////////////////////////////////////////////////////////////

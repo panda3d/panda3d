@@ -84,6 +84,7 @@ PUBLISHED:
   INLINE int get_referenced_bits() const;
 
 protected:
+  INLINE void node_unref_only() const;
   bool do_test_ref_count_integrity() const;
   
 private:

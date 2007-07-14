@@ -24,6 +24,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "pset.h"
+#include "reMutex.h"
 
 class AttribSlots;
 class GraphicsStateGuardianBase;
@@ -80,6 +81,9 @@ public:
 
 PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;
+
+  bool unref() const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
@@ -179,10 +183,18 @@ protected:
   virtual RenderAttrib *make_default_impl() const=0;
   void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
 
+private:
+  void release_new();
+
 protected:
   bool _always_reissue;
 
+public:
+  static void init_attribs();
+
 private:
+  // This mutex protects _attribs.
+  static ReMutex *_attribs_lock;
   typedef pset<const RenderAttrib *, indirect_compare_to<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 

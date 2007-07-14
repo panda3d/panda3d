@@ -44,9 +44,6 @@
 #include "writableParam.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "deferredDeletor.h"
-#include "nonDeletor.h"
-#include "spamDeletor.h"
 
 #include "dconfig.h"
 
@@ -178,10 +175,6 @@ init_libputil() {
 
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
-
-  DeferredDeletor::register_deletor();
-  NonDeletor::register_deletor();
-  SpamDeletor::register_deletor();
 
   register_type(BamReader::_remove_flag, "remove");
 

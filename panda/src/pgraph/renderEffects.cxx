@@ -83,10 +83,9 @@ RenderEffects::
 ~RenderEffects() {
   // Remove the deleted RenderEffects object from the global pool.
   ReMutexHolder holder(*_states_lock);
-  if (_saved_entry != _states->end()) {
-    _states->erase(_saved_entry);
-    _saved_entry = _states->end();
-  }
+
+  // unref() should have cleared this.
+  nassertv(_saved_entry == _states->end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -386,6 +385,40 @@ get_effect(TypeHandle type) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::unref
+//       Access: Published
+//  Description: This method overrides ReferenceCount::unref() to
+//               check whether the remaining reference count is
+//               entirely in the cache, and if so, it checks for and
+//               breaks a cycle in the cache involving this object.
+//               This is designed to prevent leaks from cyclical
+//               references within the cache.
+//
+//               Note that this is not a virtual method, and cannot be
+//               because ReferenceCount itself declares no virtual
+//               methods (it avoids the overhead of a virtual function
+//               pointer).  But this doesn't matter, because
+//               PT(TransformState) is a template class, and will call
+//               the appropriate method even though it is non-virtual.
+////////////////////////////////////////////////////////////////////
+bool RenderEffects::
+unref() const {
+  ReMutexHolder holder(*_states_lock);
+
+  if (ReferenceCount::unref()) {
+    // The reference count is still nonzero.
+    return true;
+  }
+
+  // The reference count has just reached zero.  Make sure the object
+  // is removed from the global object pool, before anyone else finds
+  // it and tries to ref it.
+  ((RenderEffects *)this)->release_new();
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::output
 //       Access: Published, Virtual
 //  Description: 
@@ -604,6 +637,26 @@ return_new(RenderEffects *state) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::release_new
+//       Access: Private
+//  Description: This inverse of return_new, this releases this object
+//               from the global RenderEffects table.
+//
+//               You must already be holding _states_lock before you
+//               call this method.
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+release_new() {
+  nassertv(_states_lock->debug_is_locked());
+
+  if (_saved_entry != _states->end()) {
+    nassertv(_states->find(this) == _saved_entry);
+    _states->erase(_saved_entry);
+    _saved_entry = _states->end();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::determine_decal
 //       Access: Private
 //  Description: This is the private implementation of has_decal().
@@ -757,6 +810,28 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _effects.sort();
 
   return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::require_fully_complete
+//       Access: Public, Virtual
+//  Description: Some objects require all of their nested pointers to
+//               have been completed before the objects themselves can
+//               be completed.  If this is the case, override this
+//               method to return true, and be careful with circular
+//               references (which would make the object unreadable
+//               from a bam file).
+////////////////////////////////////////////////////////////////////
+bool RenderEffects::
+require_fully_complete() const {
+  // Since we sort _states based on each RenderEffects' operator <
+  // method, which in turn compares based on each nested RenderEffect
+  // object's compare_to() method, some of which depend on the
+  // RenderEffect's pointers having already been completed
+  // (e.g. CharacterJointEffect), we therefore require each of out our
+  // nested RenderEffect objects to have been completed before we can
+  // be completed.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

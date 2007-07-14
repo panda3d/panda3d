@@ -26,6 +26,7 @@
 #include "indirectCompareTo.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "pmutex.h"
 
 class GeomVertexFormat;
 class GeomVertexData;
@@ -79,6 +80,8 @@ PUBLISHED:
                         NumericType numeric_type3, Contents contents3);
   void operator = (const GeomVertexArrayFormat &copy);
   ~GeomVertexArrayFormat();
+
+  bool unref() const;
 
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexArrayFormat) register_format(const GeomVertexArrayFormat *format);
@@ -147,6 +150,7 @@ private:
     void unregister_format(GeomVertexArrayFormat *format);
 
     ArrayFormats _formats;
+    Mutex _lock;
   };
 
   static Registry *_registry;

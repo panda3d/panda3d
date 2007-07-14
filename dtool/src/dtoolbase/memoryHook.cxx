@@ -51,6 +51,9 @@
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
+#ifdef _DEBUG
+  #define DEBUG
+#endif
 #include "dlmalloc.h"
 #include "dlmalloc_src.cxx"
 
@@ -77,6 +80,9 @@
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
+#ifdef _DEBUG
+  #define MALLOC_DEBUG 2
+#endif
 #include "ptmalloc2_smp_src.cxx"
 
 #define call_malloc dlmalloc

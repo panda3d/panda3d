@@ -19,7 +19,7 @@
 #include "geomVertexFormat.h"
 #include "geomVertexData.h"
 #include "geomMunger.h"
-#include "mutexHolder.h"
+#include "reMutexHolder.h"
 #include "indent.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -86,9 +86,31 @@ operator = (const GeomVertexFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::
 ~GeomVertexFormat() {
-  if (is_registered()) {
-    get_registry()->unregister_format(this);
+  // unref() should have unregistered us.
+  nassertv(!is_registered());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::unref
+//       Access: Published
+//  Description: This method overrides ReferenceCount::unref() to
+//               unregister the object when its reference count goes
+//               to zero.
+////////////////////////////////////////////////////////////////////
+bool GeomVertexFormat::
+unref() const {
+  Registry *registry = get_registry();
+  ReMutexHolder holder(registry->_lock);
+
+  if (ReferenceCount::unref()) {
+    return true;
   }
+
+  if (is_registered()) {
+    registry->unregister_format((GeomVertexFormat *)this);
+  }
+
+  return false;
 }
 
 
@@ -669,6 +691,7 @@ void GeomVertexFormat::
 make_registry() {
   if (_registry == (Registry *)NULL) {
     _registry = new Registry;
+    _registry->make_standard_formats();
   }
 }
  
@@ -897,6 +920,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 GeomVertexFormat::Registry::
 Registry() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::Registry::make_standard_formats
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomVertexFormat::Registry::
+make_standard_formats() {
   _v3 = register_format(new GeomVertexArrayFormat
                         (InternalName::get_vertex(), 3, 
                          NT_float32, C_point));
@@ -1016,11 +1048,14 @@ register_format(GeomVertexFormat *format) {
   // will be automatically deleted when this function returns.
   PT(GeomVertexFormat) pt_format = format;
 
-  Formats::iterator fi = _formats.insert(format).first;
-
-  GeomVertexFormat *new_format = (*fi);
-  if (!new_format->is_registered()) {
-    new_format->do_register();
+  GeomVertexFormat *new_format;
+  {
+    ReMutexHolder holder(_lock);
+    Formats::iterator fi = _formats.insert(format).first;
+    new_format = (*fi);
+    if (!new_format->is_registered()) {
+      new_format->do_register();
+    }
   }
 
   return new_format;
@@ -1032,6 +1067,8 @@ register_format(GeomVertexFormat *format) {
 //  Description: Removes the indicated format from the registry.
 //               Normally this should not be done until the format is
 //               destructing.
+//
+//               The lock should be held prior to calling this method.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::Registry::
 unregister_format(GeomVertexFormat *format) {

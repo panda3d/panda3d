@@ -31,7 +31,7 @@
 #include "pset.h"
 #include "pvector.h"
 #include "indirectCompareTo.h"
-#include "pmutex.h"
+#include "reMutex.h"
 
 class FactoryParams;
 class GeomVertexData;
@@ -69,6 +69,8 @@ PUBLISHED:
   GeomVertexFormat(const GeomVertexFormat &copy);
   void operator = (const GeomVertexFormat &copy);
   virtual ~GeomVertexFormat();
+
+  bool unref() const;
 
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexFormat *format);
@@ -213,11 +215,14 @@ private:
   class EXPCL_PANDA Registry {
   public:
     Registry();
+    void make_standard_formats();
+
     CPT(GeomVertexFormat) register_format(GeomVertexFormat *format);
     INLINE CPT(GeomVertexFormat) register_format(GeomVertexArrayFormat *format);
     void unregister_format(GeomVertexFormat *format);
 
     Formats _formats;
+    ReMutex _lock;
 
     CPT(GeomVertexFormat) _v3;
     CPT(GeomVertexFormat) _v3n3;

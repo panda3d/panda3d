@@ -103,11 +103,11 @@ INLINE bool RenderState::
 cache_unref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  bool result = NodeCachedReferenceCount::cache_unref();
+  bool result = do_cache_unref();
   consider_update_pstats(old_referenced_bits);
   return result;
 #else  // DO_PSTATS
-  return NodeCachedReferenceCount::cache_unref();
+  return do_cache_unref();
 #endif  // DO_PSTATS
 }
 
@@ -136,11 +136,11 @@ INLINE bool RenderState::
 node_unref() const {
 #ifdef DO_PSTATS
   int old_referenced_bits = get_referenced_bits();
-  bool result = NodeCachedReferenceCount::node_unref();
+  bool result = do_node_unref();
   consider_update_pstats(old_referenced_bits);
   return result;
 #else  // DO_PSTATS
-  return NodeCachedReferenceCount::node_unref();
+  return do_node_unref();
 #endif  // DO_PSTATS
 }
 
@@ -630,6 +630,31 @@ INLINE void RenderState::
 flush_level() {
   _node_counter.flush_level();
   _cache_counter.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::do_node_unref
+//       Access: Private
+//  Description: Reimplements NodeReferenceCount::node_unref().  We do
+//               this because we have a non-virtual unref() method.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+do_node_unref() const {
+  node_unref_only();
+  return unref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::do_cache_unref
+//       Access: Private
+//  Description: Reimplements
+//               CachedTypedWritableReferenceCount::cache_unref().  We
+//               do this because we have a non-virtual unref() method.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderState::
+do_cache_unref() const {
+  cache_unref_only();
+  return unref();
 }
 
 ////////////////////////////////////////////////////////////////////

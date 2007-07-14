@@ -24,6 +24,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indirectLess.h"
+#include "mutexHolder.h"
 
 GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = NULL;
 TypeHandle GeomVertexArrayFormat::_type_handle;
@@ -186,13 +187,36 @@ operator = (const GeomVertexArrayFormat &copy) {
 ////////////////////////////////////////////////////////////////////
 GeomVertexArrayFormat::
 ~GeomVertexArrayFormat() {
-  if (is_registered()) {
-    get_registry()->unregister_format(this);
-  }
+  // unref() should have unregistered us.
+  nassertv(!is_registered());
+
   Columns::iterator ci;
   for (ci = _columns.begin(); ci != _columns.end(); ++ci) {
     delete (*ci);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::unref
+//       Access: Published
+//  Description: This method overrides ReferenceCount::unref() to
+//               unregister the object when its reference count goes
+//               to zero.
+////////////////////////////////////////////////////////////////////
+bool GeomVertexArrayFormat::
+unref() const {
+  Registry *registry = get_registry();
+  MutexHolder holder(registry->_lock);
+
+  if (ReferenceCount::unref()) {
+    return true;
+  }
+
+  if (is_registered()) {
+    registry->unregister_format((GeomVertexArrayFormat *)this);
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -759,12 +783,15 @@ register_format(GeomVertexArrayFormat *format) {
   // a zero reference count and is not added into the map below, it
   // will be automatically deleted when this function returns.
   PT(GeomVertexArrayFormat) pt_format = format;
-
-  ArrayFormats::iterator fi = _formats.insert(format).first;
-
-  GeomVertexArrayFormat *new_format = (*fi);
-  if (!new_format->is_registered()) {
-    new_format->do_register();
+  
+  GeomVertexArrayFormat *new_format;
+  {
+    MutexHolder holder(_lock);
+    ArrayFormats::iterator fi = _formats.insert(format).first;
+    new_format = (*fi);
+    if (!new_format->is_registered()) {
+      new_format->do_register();
+    }
   }
 
   return new_format;
@@ -776,6 +803,8 @@ register_format(GeomVertexArrayFormat *format) {
 //  Description: Removes the indicated format from the registry.
 //               Normally this should not be done until the format is
 //               destructing.
+//
+//               The lock should be held prior to calling this method.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexArrayFormat::Registry::
 unregister_format(GeomVertexArrayFormat *format) {
