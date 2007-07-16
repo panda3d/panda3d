@@ -67,8 +67,10 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
     // defined, and SIMPLE_THREADS is not).
 #ifndef NDEBUG
     if (num_threads != 0) {
-      net_cat.error()
-        << "Threading support is not available.\n";
+      if (net_cat.is_debug()) {
+        net_cat.debug()
+          << "Threading support is not available.\n";
+      }
     }
 #endif  // NDEBUG
     num_threads = 0;
