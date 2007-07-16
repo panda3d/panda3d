@@ -1244,6 +1244,10 @@ class ParamObj:
 
         # insert stub funcs for param setters, to handle locked params
         for param in self.ParamSet.getParams():
+
+            # set the default value on the object
+            setattr(self, param, self.ParamSet.getDefaultValue(param))
+            
             setterName = getSetterName(param)
             getterName = getSetterName(param, 'get')
 
