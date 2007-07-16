@@ -61,21 +61,18 @@ ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
-#if !defined(HAVE_THREADS) || defined(SIMPLE_THREADS)
-  // Although this code is written to use thread-locking primitives
-  // regardless of the definition of HAVE_THREADS, it is not safe to
-  // spawn multiple threads when HAVE_THREADS is not true, since we
-  // might be using a non-thread-safe malloc scheme.  Also, there is
-  // no point in using threads for this kind of I/O if SIMPLE_THREADS
-  // is defined.
+  if (!Thread::is_true_threads()) {
+    // There is no point in using threads for this kind of I/O unless
+    // we actually have real threads available (i.e. HAVE_THREADS is
+    // defined, and SIMPLE_THREADS is not).
 #ifndef NDEBUG
-  if (num_threads != 0) {
-    net_cat.error()
-      << "Threading support is not available.\n";
-  }
+    if (num_threads != 0) {
+      net_cat.error()
+        << "Threading support is not available.\n";
+    }
 #endif  // NDEBUG
-  num_threads = 0;
-#endif  // HAVE_THREADS
+    num_threads = 0;
+  }
 
   _raw_mode = false;
   _tcp_header_size = datagram_tcp16_header_size;
