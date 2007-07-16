@@ -25,7 +25,7 @@
 #include "config_express.h" // for collect_tcp
 #include "trueClock.h"
 #include "pnotify.h"
-#include "mutexHolder.h"
+#include "reMutexHolder.h"
 #include "socket_ip.h"
 #include "socket_tcp.h"
 #include "socket_udp.h"
@@ -177,7 +177,7 @@ get_collect_tcp_interval() const {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 consider_flush() {
-  MutexHolder holder(_write_mutex);
+  ReMutexHolder holder(_write_mutex);
 
   if (!_collect_tcp) {
     return do_flush();
@@ -204,7 +204,7 @@ consider_flush() {
 ////////////////////////////////////////////////////////////////////
 bool Connection::
 flush() {
-  MutexHolder holder(_write_mutex);
+  ReMutexHolder holder(_write_mutex);
   return do_flush();
 }
 
@@ -352,7 +352,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
     Socket_UDP *udp;
     DCAST_INTO_R(udp, _socket, false);
 
-    MutexHolder holder(_write_mutex);
+    ReMutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
     string data;
     data += header.get_header();
@@ -386,7 +386,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
   DatagramTCPHeader header(datagram, tcp_header_size);
 
-  MutexHolder holder(_write_mutex);
+  ReMutexHolder holder(_write_mutex);
   _queued_data += header.get_header();
   _queued_data += datagram.get_message();
   _queued_count++;
@@ -421,7 +421,7 @@ send_raw_datagram(const NetDatagram &datagram) {
 
     string data = datagram.get_message();
 
-    MutexHolder holder(_write_mutex);
+    ReMutexHolder holder(_write_mutex);
     bool okflag = udp->SendTo(data, datagram.get_address().get_addr());
     
     if (net_cat.is_spam()) {
@@ -435,7 +435,7 @@ send_raw_datagram(const NetDatagram &datagram) {
   }
 
   // We might queue up TCP packets for later sending.
-  MutexHolder holder(_write_mutex);
+  ReMutexHolder holder(_write_mutex);
   _queued_data += datagram.get_message();
   _queued_count++;
 

@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "netAddress.h"
-#include "pmutex.h"
+#include "reMutex.h"
 
 class Socket_IP;
 class ConnectionManager;
@@ -71,7 +71,7 @@ private:
 
   ConnectionManager *_manager;
   Socket_IP *_socket;
-  Mutex _write_mutex;
+  ReMutex _write_mutex;
 
   bool _collect_tcp;
   double _collect_tcp_interval;
