@@ -1221,6 +1221,17 @@ validate_states() {
       (*snext)->write(pgraph_cat.error(false), 2);
       return false;
     }
+    if ((*(*snext) < *(*si))) {
+      pgraph_cat.error()
+        << "TransformState::operator < not defined properly!\n";
+      pgraph_cat.error(false)
+        << "a < b: " << (*(*si) < *(*snext)) << "\n";
+      pgraph_cat.error(false)
+        << "b < a: " << (*(*snext) < *(*si)) << "\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
     si = snext;
     ++snext;
     nassertr((*si)->get_ref_count() > 0, false);

@@ -292,7 +292,7 @@ compare_to_impl(const RenderEffect *other) const {
     }
   }
 
-  if (bi != _stages.end()) {
+  if (bi != ta->_stages.end()) {
     // a ran out first; b was longer.
     return -1;
   }

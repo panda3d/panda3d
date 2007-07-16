@@ -510,7 +510,18 @@ validate_states() {
   while (snext != _states->end()) {
     if (!(*(*si) < *(*snext))) {
       pgraph_cat.error()
-        << "RenderEffectss out of order!\n";
+        << "RenderEffects out of order!\n";
+      (*si)->write(pgraph_cat.error(false), 2);
+      (*snext)->write(pgraph_cat.error(false), 2);
+      return false;
+    }
+    if ((*(*snext) < *(*si))) {
+      pgraph_cat.error()
+        << "RenderEffects::operator < not defined properly!\n";
+      pgraph_cat.error(false)
+        << "a < b: " << (*(*si) < *(*snext)) << "\n";
+      pgraph_cat.error(false)
+        << "b < a: " << (*(*snext) < *(*si)) << "\n";
       (*si)->write(pgraph_cat.error(false), 2);
       (*snext)->write(pgraph_cat.error(false), 2);
       return false;
@@ -650,6 +661,31 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != _states->end()) {
+    /*
+    if (_states->find(this) != _saved_entry) {
+      nassertv(*_saved_entry == this);
+      cerr << "States wrong!\n";
+      cerr << "validate = " << validate_states() << "\n";
+
+      if (!_states->empty()) {
+        States::iterator si;
+        si = _states->begin();
+        cerr << (*si) << ": " << *(*si) << "\n";
+        States::iterator ni = si;
+        ++ni;
+        while (ni != _states->end()) {
+          if (*(*si) < *(*ni)) {
+            cerr << "  ok, " << (*(*ni) < *(*si)) << "\n";
+          } else {
+            cerr << "  **wrong! " << (*(*ni) < *(*si)) << "\n";
+          }
+          si = ni;
+          cerr << (*si) << ": " << *(*si) << "\n";
+          ++ni;
+        }
+      }
+    }
+    */
     nassertv(_states->find(this) == _saved_entry);
     _states->erase(_saved_entry);
     _saved_entry = _states->end();
