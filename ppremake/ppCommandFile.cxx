@@ -462,7 +462,7 @@ read_line(string line) {
         }
       }
 
-      if (!_in_for && !failed_if()) {
+      if (!_in_for && !failed_if() && line.length() > p+1) {
         if(line[p+1]==COMMAND_PREFIX) {
           // double prefix at start of line indicates echo single prefix, like '\\' in C
           line.erase(0,1);
