@@ -147,7 +147,11 @@
 #if $[SIMPLE_THREADS]
 #print Compilation will include simulated threading support.
 #else
-#print Compilation will include full threading support.
+#if $[DO_PIPELINING]
+#print Compilation will include nonpipelined threading support.
+#else
+#print Compilation will include full, pipelined threading support.
+#endif
 #endif
 #else
 #print Configuring Panda without threading support.
