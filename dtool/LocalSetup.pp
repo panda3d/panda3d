@@ -148,9 +148,9 @@
 #print Compilation will include simulated threading support.
 #else
 #if $[DO_PIPELINING]
-#print Compilation will include nonpipelined threading support.
-#else
 #print Compilation will include full, pipelined threading support.
+#else
+#print Compilation will include nonpipelined threading support.
 #endif
 #endif
 #else
