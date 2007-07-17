@@ -2603,8 +2603,10 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
     
     Parameters::
     types : A subset list of ['timeStamp', 'frameCount', 'avLocation']
-            This allows you to specify certain common bits of info.
+            This allows you to specify certain useful bits of info.
 
+            module:     Prints the module that this report statement
+                        can be found in.
             args:       Prints the arguments as they were passed to
                         this function.
             timeStamp:  Adds the current frame time to the output.
@@ -2621,10 +2623,12 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
     prefix: Optional string to prepend to output, just before the function.
             Allows for easy grepping and is useful when merging AI/Client
             reports into a single file.
+            
     notifyFunc: A notify function such as info, debug, warning, etc.
                 By default the report will be printed to stdout. This 
                 will allow you send the report to a designated 'notify'
                 output.
+                
     dConfigParam: A list of Config.prc string variables.
                   By default the report will always print.  If you
                   specify this param, it will only print if one of the
@@ -2683,7 +2687,10 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
                 outStr = '%s %s' % (prefix, outStr)
 
             preStr = ''
-            
+
+            if 'module' in types:
+                outStr = '%s {M:%s}' % (outStr, f.__module__.split('.')[-1])
+                
             if 'frameCount' in types:
                 outStr = '%8d : %s' % (globalClock.getFrameCount(), outStr)
                 
