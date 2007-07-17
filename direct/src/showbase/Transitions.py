@@ -302,14 +302,17 @@ class Transitions:
             # positioned behind it.
             self.letterbox = NodePath("letterbox")
             # Allow fade in and out of the bars
+            self.letterbox.setTransparency(1)
 
+            # Allow DirectLabels to be parented to the letterbox sensibly
+            self.letterbox.setBin('unsorted', 0)
+            
             # TODO:  This texture isn't available everywhere
             button = loader.loadModel('models/gui/toplevel_gui')
             barImage = None
             if button:
                 barImage = button.find('**/generic_button')
                 
-            self.letterbox.setTransparency(1)
             self.letterboxTop = DirectFrame(
                 parent = self.letterbox,
                 guiId = 'letterboxTop',
