@@ -949,8 +949,17 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _off_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    NodePath np(node);
-    (*ci) = areg->lookup_node(np);
+    
+    // We go through some effort to look up the node in the registry
+    // without creating a NodePath around it first (which would up,
+    // and then down, the reference count, possibly deleting the
+    // node).
+    int ni = areg->find_node(node->get_type(), node->get_name());
+    if (ni != -1) {
+      (*ci) = areg->get_node(ni);
+    } else {
+      (*ci) = NodePath(node);
+    }
     ++ci;
   }
   _off_lights.sort();
@@ -959,8 +968,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   while (ci != _on_lights.end()) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    NodePath np(node);
-    (*ci) = areg->lookup_node(np);
+
+    int ni = areg->find_node(node->get_type(), node->get_name());
+    if (ni != -1) {
+      (*ci) = areg->get_node(ni);
+    } else {
+      (*ci) = NodePath(node);
+    }
     ++ci;
   }
   _on_lights.sort();
