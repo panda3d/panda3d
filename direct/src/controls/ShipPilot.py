@@ -60,8 +60,8 @@ class ShipPilot(PhysicsWalker):
         self.wallBitmask = self.wallBitmask &~ oldMask
         self.wallBitmask |= newMask
 
-        if self.cSphereNodePath and not self.cSphereNodePath.isEmpty():
-            self.cSphereNodePath.node().setFromCollideMask(self.wallBitmask)
+        if self.cNodePath and not self.cNodePath.isEmpty():
+            self.cNodePath.node().setFromCollideMask(self.wallBitmask)
         
     def setFloorBitMask(self, bitMask):
         self.floorBitmask = bitMask
@@ -73,8 +73,8 @@ class ShipPilot(PhysicsWalker):
         if ship is None:
             base.controlForce.clearPhysicsObject()
             self.takedownPhysics()
-            self.ship = None
             self.setCollisionsActive(0)
+            self.ship = ship
         else:
             base.controlForce.setPhysicsObject(ship.node().getPhysicsObject())
             self.ship = ship
@@ -110,38 +110,34 @@ class ShipPilot(PhysicsWalker):
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
 
-        cSphereNode = CollisionNode('SP.cSphereNode')
+        cNode = CollisionNode('SP.cNode')
 
+        """
         # Front sphere:
         sRadius = abs((self.portPos - self.starboardPos)[0] / 2.0)
         cBowSphere = CollisionSphere(
             0.0, self.bowPos[1]+sRadius, 0.0, sRadius)
-        cSphereNode.addSolid(cBowSphere)
-        # cBowSphereNode = CollisionNode('SP.cBowSphereNode')
-        # cBowSphereNode.addSolid(cBowSphere)
-        # self.cBowSphereNodePath = self.ship.getInteractCollisionRoot().attachNewNode(
-        #     cBowSphereNode)
-        
-        # self.pusher.addCollider(
-        #     self.cBowSphereNodePath, self.shipNodePath)
         
         # Back sphere:
         cSternSphere = CollisionSphere(
             0.0, self.sternPos[1]-sRadius, 0.0, sRadius)
         cSternSphereNode = CollisionNode('SP.cSternSphereNode')
-        cSphereNode.addSolid(cSternSphere)
-        # cSternSphereNode.addSolid(cSternSphere)
-        # self.cSternSphereNodePath = self.ship.getInteractCollisionRoot().attachNewNode(
-        #     cSternSphereNode)
+        """
 
-        # self.pusher.addCollider(
-        #     self.cSternSphereNodePath, self.shipNodePath)
+        # Scaled sphere
+        cObj = CollisionSphere(
+            0.0, (self.sternPos[1]+self.bowPos[1])/2.0, 0.0, sRadius)
 
-        
-        self.cSphereNodePath = self.ship.getInteractCollisionRoot().attachNewNode(
-            cSphereNode)
+        ## Combine them all
+        # cNode.addSolid(cBowSphere)
+        # cNode.addSolid(cSternSphere)
+        cNode.addSolid(cObj)
+        shipIColRoot = self.ship.getInteractCollisionRoot()
+        self.cNodePath = shipIColRoot.attachNewNode(cNode)
+        shipLen = abs(self.sternPos[1]-self.bowPos[1])
+        self.cNodePath.setScale(1,(shipLen/2.0)/sRadius,1)
         self.pusher.addCollider(
-            self.cSphereNodePath, self.shipNodePath)
+            self.cNodePath, self.shipNodePath)
         self.pusher.setHorizontal(True)
         # hide other things on my ship that these spheres might collide
         # with and which I dont need anyways...
@@ -158,20 +154,12 @@ class ShipPilot(PhysicsWalker):
             self.collisionsActive = active
             shipCollWall = self.shipNodePath.find("**/collision_hull;+s")
             if active:
-                # self.cBowSphereNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
-                # self.cBowSphereNodePath.node().setIntoCollideMask(BitMask32.allOff())
-                # self.cSternSphereNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
-                # self.cSternSphereNodePath.node().setIntoCollideMask(BitMask32.allOff())
-                self.cSphereNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
-                self.cSphereNodePath.node().setIntoCollideMask(BitMask32.allOff())
-                # self.cTrav.addCollider(self.cBowSphereNodePath, self.pusher)
-                # self.cTrav.addCollider(self.cSternSphereNodePath, self.pusher)
-                self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
+                self.cNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
+                self.cNodePath.node().setIntoCollideMask(BitMask32.allOff())
+                self.cTrav.addCollider(self.cNodePath, self.pusher)
                 shipCollWall.stash()
             else:
-                # self.cTrav.removeCollider(self.cBowSphereNodePath)
-                # self.cTrav.removeCollider(self.cSternSphereNodePath)
-                self.cTrav.removeCollider(self.cSphereNodePath)
+                self.cTrav.removeCollider(self.cNodePath)
                 shipCollWall.unstash()
                 # Now that we have disabled collisions, make one more pass
                 # right now to ensure we aren't standing in a wall.
@@ -190,9 +178,9 @@ class ShipPilot(PhysicsWalker):
             self.cSternSphereNodePath.removeNode()
             del self.cSternSphereNodePath
         """
-        if hasattr(self, "cSphereNodePath"):
-            self.cSphereNodePath.removeNode()
-            del self.cSphereNodePath
+        if hasattr(self, "cNodePath"):
+            self.cNodePath.removeNode()
+            del self.cNodePath
 
             del self.pusher
 
@@ -212,16 +200,14 @@ class ShipPilot(PhysicsWalker):
         assert self.debugPrint("takedownPhysics()")
 
     def setTag(self, key, value):
-        # self.cSternSphereNodePath.setTag(key, value)
-        # self.cBowSphereNodePath.setTag(key, value)
-        self.cSphereNodePath.setTag(key, value)
+        self.cNodePath.setTag(key, value)
 
     def setAvatarPhysicsIndicator(self, indicator):
         """
         indicator is a NodePath
         """
         assert self.debugPrint("setAvatarPhysicsIndicator()")
-        self.cSphereNodePath.show()
+        self.cNodePath.show()
         if indicator:
             # Indicator Node:
             change=render.attachNewNode("change")
