@@ -199,8 +199,8 @@ class DoCollectionManager:
                 "handleObjectLocation: doId: %s parentId: %s zoneId: %s"%
                 (doId, parentId, zoneId))
             # Let the object finish the job
-            obj.setLocation(parentId, zoneId)
-            #self.storeObjectLocation(doId, parentId, zoneId)
+            # calls storeObjectLocation()
+            obj.setLocation(parentId, zoneId) 
         else:
             self.notify.warning(
                 "handleObjectLocation: Asked to update non-existent obj: %s" % (doId))
