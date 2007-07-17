@@ -67,7 +67,7 @@ InternalName(InternalName *parent, const string &basename) :
 InternalName::
 ~InternalName() {
 #ifndef NDEBUG
-  {
+  if (_parent != (const InternalName *)NULL) {
     // unref() should have removed us from our parent's table already.
     MutexHolder holder(_parent->_name_table_lock);
     NameTable::iterator ni = _parent->_name_table.find(_basename);
