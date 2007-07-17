@@ -76,7 +76,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     def getCenterPos(self):
         return self.centerPos
 
-    @report(types = ['frameCount', 'avLocation'], dConfigParam = 'want-connector-report')
+    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['want-connector-report','want-shipboard-report'])
     def startProcessVisibility(self, avatar):
         if not self._onOffState:
             # if we've been told that we're OFF, don't try
@@ -89,16 +89,19 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 'startProcessVisibility(%s): tried to open a new interest during logout'
                 % self.doId)
             return
-        self.stopProcessVisibility()
+        taskMgr.remove(self.taskName("processVisibility"))
+        # self.stopProcessVisibility()
         self.acceptOnce(self.cr.StopVisibilityEvent, self.stopProcessVisibility)
         self.visAvatar = avatar
         self.visZone = None
-        self.gridVisContext = self.cr.addInterest(
-            self.getDoId(), 0, self.uniqueName("visibility"))
+        self.visDirty = True
+        if not self.gridVisContext:
+            self.gridVisContext = self.cr.addInterest(
+                self.getDoId(), 0, self.uniqueName("visibility"))
         taskMgr.add(
             self.processVisibility, self.taskName("processVisibility"))
 
-    @report(types = ['frameCount', 'avLocation'], dConfigParam = 'want-connector-report')
+    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['want-connector-report','want-shipboard-report'])
     def stopProcessVisibility(self, clearAll=False, event=None):
         self.ignore(self.cr.StopVisibilityEvent)
         taskMgr.remove(self.taskName("processVisibility"))
@@ -164,6 +167,9 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         if (zoneId == self.visZone):
             assert self.notify.debug(
                 "processVisibility: %s: interest did not change" % (self.doId))
+            if self.visDirty:
+                messenger.send(self.uniqueName("visibility"))
+                self.visDirty = False
             return Task.cont
         else:
             assert self.notify.debug(
@@ -172,13 +178,20 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             if not self.gridVisContext:
                 self.gridVisContext = self.cr.addInterest(
                     self.getDoId(), self.visZone,
-                    self.uniqueName("visibility"))
+                    self.uniqueName("visibility"),
+                    event = self.uniqueName("visibility"))
             else:
                 assert self.notify.debug(
                     "processVisibility: %s: altering interest to zoneId: %s" %
                     (self.doId, zoneId))
+                
+                event = None
+                if self.visDirty:
+                    event = self.uniqueName("visibility")                    
                 self.cr.alterInterest(
-                    self.gridVisContext, self.getDoId(), self.visZone)
+                    self.gridVisContext, self.getDoId(), self.visZone,
+                    event = event)
+                
                 # If the visAvatar is parented to this grid, also do a
                 # setLocation
                 parentId = self.visAvatar.parentId
@@ -191,6 +204,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                         "processVisibility: %s: changing location" %
                         (self.doId))
                     self.handleAvatarZoneChange(self.visAvatar, zoneId)
+            self.visDirty = False
             return Task.cont
 
     # Update our location based on our avatar's position on the grid
@@ -226,7 +240,6 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
 
         # Set the location on the server
         av.b_setLocation(self.doId, zoneId)
-
 
     def turnOff(self):
         self._onOffState = False
