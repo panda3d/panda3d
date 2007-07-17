@@ -125,8 +125,9 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     def updateSelection(self, searchKey):
         # [gjeon] update SGE selection with directSession
         sceneGraphItem = self._node.find(searchKey)
-        sceneGraphItem.reveal()
-        sceneGraphItem.select()
+        if sceneGraphItem:
+            sceneGraphItem.reveal()
+            sceneGraphItem.select()
 
 class SceneGraphExplorerItem(TreeItem):
 
