@@ -132,7 +132,7 @@ get_default() {
     default_props.set_alpha_bits(alpha_bits);
   }
   if (stencil_bits > 0) {
-    default_props.set_depth_bits(stencil_bits);
+    default_props.set_stencil_bits(stencil_bits);
   }
   if (multisamples > 0) {
     default_props.set_multisamples(multisamples);
