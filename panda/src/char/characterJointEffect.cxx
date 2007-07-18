@@ -63,6 +63,7 @@ make(Character *character) {
   // itself on whether its pointer is valid or not.
 
   if (!new_effect->_character.is_valid_pointer()) {
+    nassertr(new_effect->_character.get_orig() == character, new_effect_raw);
     ((CharacterJointEffect *)new_effect)->_character = character;
   }
 
@@ -205,8 +206,8 @@ compare_to_impl(const RenderEffect *other) const {
   const CharacterJointEffect *ta;
   DCAST_INTO_R(ta, other, 0);
 
-  if (_character != ta->_character) {
-    return _character < ta->_character ? -1 : 1;
+  if (_character.get_orig() != ta->_character.get_orig()) {
+    return _character.get_orig() < ta->_character.get_orig() ? -1 : 1;
   }
 
   // As tempting as it is to include the sense of whether the
