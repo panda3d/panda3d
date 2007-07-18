@@ -110,11 +110,12 @@ class ShipPilot(PhysicsWalker):
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
 
+        sRadius = abs((self.portPos - self.starboardPos)[0] / 2.0)
+
         cNode = CollisionNode('SP.cNode')
 
         """
         # Front sphere:
-        sRadius = abs((self.portPos - self.starboardPos)[0] / 2.0)
         cBowSphere = CollisionSphere(
             0.0, self.bowPos[1]+sRadius, 0.0, sRadius)
         
