@@ -307,8 +307,17 @@ class Transitions:
             # Allow DirectLabels to be parented to the letterbox sensibly
             self.letterbox.setBin('unsorted', 0)
             
-            # TODO:  This texture isn't available everywhere
-            button = loader.loadModel('models/gui/toplevel_gui')
+            # Allow a custom look to the letterbox graphic.
+
+            # TODO: This model isn't available everywhere.  We should
+            # pass it in as a parameter.  In the meantime, at least
+            # set the LoaderOptions so there will be no error message
+            # if it fails to load.
+            options = LoaderOptions()
+            options.setFlags(options.getFlags() & ~options.LFReportErrors)
+            button = loader.loadModel('models/gui/toplevel_gui',
+                                      loaderOptions = options)
+            
             barImage = None
             if button:
                 barImage = button.find('**/generic_button')
@@ -341,7 +350,6 @@ class Transitions:
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
                 )
-            button.removeNode()
 
     def noLetterbox(self):
         """
@@ -397,8 +405,9 @@ class Transitions:
                                           LerpPosInterval(self.letterboxTop, t,
                                                           pos = Vec3(0, 0, 1),
                                                           startPos = Vec3(0, 0, 0.8)),
+                                          ),
                                  name = self.letterboxTaskName,
-                                 ))
+                                 )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
