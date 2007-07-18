@@ -28,6 +28,7 @@
 #include "indirectCompareTo.h"
 #include "pStatCollector.h"
 #include "pmutex.h"
+#include "reMutex.h"
 #include "pointerTo.h"
 #include "pmap.h"
 #include "pset.h"
@@ -144,7 +145,7 @@ private:
     void unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg);
 
     Mungers _mungers;
-    Mutex _registry_lock;
+    ReMutex _registry_lock;
   };
 
   // We store the iterator into the above registry, while we are
