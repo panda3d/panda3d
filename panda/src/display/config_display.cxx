@@ -81,7 +81,7 @@ ConfigVariableBool auto_flip
           "is achieved in parallel with the graphics card."));
 
 ConfigVariableBool sync_flip
-("sync-flip", false,
+("sync-flip", true,
  PRC_DESC("Set this true to attempt to flip all windows at the same time, "
           "or false to flip each window as late as possible.  Setting this "
           "false can improve parallelization.  This is a temporary "
