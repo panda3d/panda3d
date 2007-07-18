@@ -56,7 +56,7 @@ RenderEffects() : _lock("RenderEffects") {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::Copy Constructor
 //       Access: Private
-//  Description: RenderEffectss are not meant to be copied.
+//  Description: RenderEffects are not meant to be copied.
 ////////////////////////////////////////////////////////////////////
 RenderEffects::
 RenderEffects(const RenderEffects &) {
@@ -66,7 +66,7 @@ RenderEffects(const RenderEffects &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::Copy Assignment Operator
 //       Access: Private
-//  Description: RenderEffectss are not meant to be copied.
+//  Description: RenderEffects are not meant to be copied.
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 operator = (const RenderEffects &) {
@@ -181,7 +181,7 @@ xform(const LMatrix4f &mat) const {
 //     Function: RenderEffects::operator <
 //       Access: Published
 //  Description: Provides an arbitrary ordering among all unique
-//               RenderEffectss, so we can store the essentially
+//               RenderEffects, so we can store the essentially
 //               different ones in a big set and throw away the rest.
 //
 //               This method is not needed outside of the RenderEffects
@@ -193,9 +193,32 @@ bool RenderEffects::
 operator < (const RenderEffects &other) const {
   // We must compare all the properties of the effects, not just
   // the type; thus, we compare them one at a time using compare_to().
-  return lexicographical_compare(_effects.begin(), _effects.end(),
-                                 other._effects.begin(), other._effects.end(),
-                                 CompareTo<Effect>());
+
+  // We could use STL's lexicographical_compare() function here, but
+  // it seems to generate aberrant behavior on OSX and Linux.  We
+  // suspect a compiler bug in gcc.  Instead, we implement the
+  // comparison by hand.
+  Effects::const_iterator ai = _effects.begin();
+  Effects::const_iterator bi = other._effects.begin();
+  while (ai != _effects.end() && bi != other._effects.end()) {
+    int compare = (*ai).compare_to(*bi);
+    if (compare != 0) {
+      return compare < 0;
+    }
+    ++ai;
+    ++bi;
+  }
+  if (ai != _effects.end()) {
+    // bi ran out first..
+    return false;
+  }
+  if (bi != other._effects.end()) {
+    // ai ran out first.
+    return true;
+  }
+
+  // Lists are equivalent.
+  return false;
 }
 
 
@@ -475,7 +498,7 @@ get_num_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::list_states
 //       Access: Published, Static
-//  Description: Lists all of the RenderEffectss in the cache to the
+//  Description: Lists all of the RenderEffects in the cache to the
 //               output stream, one per line.  This can be quite a lot
 //               of output if the cache is large, so be prepared.
 ////////////////////////////////////////////////////////////////////
@@ -639,8 +662,12 @@ return_new(RenderEffects *state) {
     // The state was inserted; save the iterator and return the
     // input state.
     state->_saved_entry = result.first;
+    //    nassertr(validate_states(), pt_state);
+    nassertr(_states->find(state) == state->_saved_entry, pt_state);
     return pt_state;
   }
+
+  //  nassertr(validate_states(), *(result.first));
 
   // The state was not inserted; there must be an equivalent one
   // already in the set.  Return that one.
@@ -666,6 +693,13 @@ release_new() {
       nassertv(*_saved_entry == this);
       cerr << "States wrong!\n";
       cerr << "validate = " << validate_states() << "\n";
+      cerr << "this = " << this << ": " << *this << "\n";
+      States::iterator fi = _states->find(this);
+      if (fi == _states->end()) {
+        cerr << "  not found\n";
+      } else {
+        cerr <<"   found: " << (*fi) << ": " << *(*fi) << "\n";
+      }
 
       if (!_states->empty()) {
         States::iterator si;
@@ -673,6 +707,10 @@ release_new() {
         cerr << (*si) << ": " << *(*si) << "\n";
         States::iterator ni = si;
         ++ni;
+        if ((*si) == this) {
+          _states->erase(si);
+          si = ni;
+        }
         while (ni != _states->end()) {
           if (*(*si) < *(*ni)) {
             cerr << "  ok, " << (*(*ni) < *(*si)) << "\n";
@@ -682,13 +720,24 @@ release_new() {
           si = ni;
           cerr << (*si) << ": " << *(*si) << "\n";
           ++ni;
+          if ((*si) == this) {
+            _states->erase(si);
+            si = ni;
+          }
         }
       }
     }
     */
     nassertv(_states->find(this) == _saved_entry);
+    //    nassertv(validate_states());
     _states->erase(_saved_entry);
     _saved_entry = _states->end();
+
+    /*
+    nassertd(validate_states()) {
+      cerr << "Removed " << this << ": " << *this << "\n";
+    }
+    */
   }
 }
 
@@ -837,7 +886,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     nassertr(effect._effect != (RenderEffect *)NULL, pi);
     effect._type = effect._effect->get_type();
   }
-  ReMutexHolder holder(*_states_lock);
 
   // Now make sure the array is properly sorted.  (It won't
   // necessarily preserve its correct sort after being read from bam,
@@ -845,6 +893,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   // from session to session.)
   _effects.sort();
 
+  nassertr(_saved_entry == _states->end(), pi);
   return pi;
 }
 
@@ -963,4 +1012,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
     _effects.push_back(Effect());
   }
+
+  nassertv(_saved_entry == _states->end());
 }

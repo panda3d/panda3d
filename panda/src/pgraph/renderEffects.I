@@ -96,7 +96,7 @@ operator < (const Effect &other) const {
 //       Access: Public
 //  Description: Provides an indication of whether a particular
 //               effect is equivalent to another one, for purposes
-//               of generating unique RenderEffectss.  This should
+//               of generating unique RenderEffects.  This should
 //               compare all properties of the Effect, but it is
 //               important that the type is compared first, to be
 //               consistent with the ordering defined by operator <.

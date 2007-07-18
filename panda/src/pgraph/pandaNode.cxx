@@ -30,6 +30,7 @@
 #include "boundingBox.h"
 #include "pStatTimer.h"
 #include "config_mathutil.h"
+#include "reMutexHolder.h"
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA, EXPTP_PANDA);
@@ -1768,8 +1769,8 @@ replace_node(PandaNode *other) {
 
   // Fix up the NodePaths.
   {
-    MutexHolder holder1(other->_paths_lock);
-    MutexHolder holder2(_paths_lock);
+    ReMutexHolder holder1(other->_paths_lock);
+    ReMutexHolder holder2(_paths_lock);
     Paths::iterator pi;
     for (pi = other->_paths.begin(); pi != other->_paths.end(); ++pi) {
       (*pi)->_node = this;
@@ -2792,7 +2793,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
     PT(NodePathComponent) child = 
       new NodePathComponent(child_node, (NodePathComponent *)NULL,
                             pipeline_stage, current_thread);
-    MutexHolder holder(child_node->_paths_lock);
+    ReMutexHolder holder(child_node->_paths_lock);
     child_node->_paths.insert(child);
     return child;
   }
@@ -2997,7 +2998,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 #ifndef NDEBUG
       // The NodePathComponent should already be in the set.
       {
-        MutexHolder holder(child_node->_paths_lock);
+        ReMutexHolder holder(child_node->_paths_lock);
         nassertr(child_node->_paths.find(child) != child_node->_paths.end(), false);
       }
 #endif // NDEBUG
@@ -3023,7 +3024,7 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
   nassertr(parent != (NodePathComponent *)NULL, (NodePathComponent *)NULL);
   PandaNode *parent_node = parent->get_node();
 
-  MutexHolder holder(child_node->_paths_lock);
+  ReMutexHolder holder(child_node->_paths_lock);
 
   // First, walk through the list of NodePathComponents we already
   // have on the child, looking for one that already exists,
@@ -3070,7 +3071,7 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
 PT(NodePathComponent) PandaNode::
 get_top_component(PandaNode *child_node, bool force, int pipeline_stage, 
                   Thread *current_thread) {
-  MutexHolder holder(child_node->_paths_lock);
+  ReMutexHolder holder(child_node->_paths_lock);
 
   // Walk through the list of NodePathComponents we already have on
   // the child, looking for one that already exists as a top node.
@@ -3182,7 +3183,7 @@ r_get_generic_component(bool accept_ambiguity, bool &ambiguity_detected,
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 delete_component(NodePathComponent *component) {
-  MutexHolder holder(_paths_lock);
+  ReMutexHolder holder(_paths_lock);
   int num_erased = _paths.erase(component);
   nassertv(num_erased == 1);
 }
@@ -3209,7 +3210,7 @@ void PandaNode::
 sever_connection(PandaNode *parent_node, PandaNode *child_node,
                  int pipeline_stage, Thread *current_thread) {
   {
-    MutexHolder holder(child_node->_paths_lock);
+    ReMutexHolder holder(child_node->_paths_lock);
     Paths::iterator pi;
     for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
       if (!(*pi)->is_top_node(pipeline_stage, current_thread) && 
@@ -3242,7 +3243,7 @@ void PandaNode::
 new_connection(PandaNode *parent_node, PandaNode *child_node,
                int pipeline_stage, Thread *current_thread) {
   {
-    MutexHolder holder(child_node->_paths_lock);
+    ReMutexHolder holder(child_node->_paths_lock);
     Paths::iterator pi;
     for (pi = child_node->_paths.begin(); pi != child_node->_paths.end(); ++pi) {
       if ((*pi)->is_top_node(pipeline_stage, current_thread)) {
@@ -3267,7 +3268,7 @@ new_connection(PandaNode *parent_node, PandaNode *child_node,
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 fix_path_lengths(int pipeline_stage, Thread *current_thread) {
-  MutexHolder holder(_paths_lock);
+  ReMutexHolder holder(_paths_lock);
 
   bool any_wrong = false;
 

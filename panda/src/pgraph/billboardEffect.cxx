@@ -234,10 +234,10 @@ compare_to_impl(const RenderEffect *other) const {
   DCAST_INTO_R(ta, other, 0);
 
   if (_axial_rotate != ta->_axial_rotate) {
-    return _axial_rotate - ta->_axial_rotate;
+    return (int)_axial_rotate - (int)ta->_axial_rotate;
   }
   if (_eye_relative != ta->_eye_relative) {
-    return _eye_relative - ta->_eye_relative;
+    return (int)_eye_relative - (int)ta->_eye_relative;
   }
   if (_offset != ta->_offset) {
     return _offset < ta->_offset ? -1 : 1;
