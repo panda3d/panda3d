@@ -442,6 +442,7 @@ public:
   static PStatCollector _transform_state_pcollector;
   static PStatCollector _texture_state_pcollector;
   static PStatCollector _draw_primitive_pcollector;
+  static PStatCollector _draw_set_state_pcollector;
   static PStatCollector _clear_pcollector;
   static PStatCollector _flush_pcollector;
   static PStatCollector _wait_occlusion_pcollector;

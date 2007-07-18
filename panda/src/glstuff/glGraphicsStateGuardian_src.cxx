@@ -5787,6 +5787,7 @@ set_state_and_transform(const RenderState *target,
 #endif
 
   _state_pcollector.add_level(1);
+  PStatTimer timer(_draw_set_state_pcollector);
 
   if (transform != _internal_transform) {
     _state_pcollector.add_level(1);
