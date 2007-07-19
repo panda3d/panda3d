@@ -76,6 +76,7 @@ PUBLISHED:
   INLINE bool get_respect_effective_normal() const;
 
   CPT(BoundingVolume) get_bounds() const;
+  void set_bounds(const BoundingVolume &bounding_volume);
   
 public:
   virtual PT(CollisionEntry)

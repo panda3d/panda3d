@@ -102,6 +102,17 @@ get_bounds() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::set_bounds
+//       Access: Protected
+//  Description: Returns the solid's bounding volume.
+////////////////////////////////////////////////////////////////////
+void CollisionSolid::
+set_bounds(const BoundingVolume &bounding_volume) {
+  MutexHolder holder(_lock);
+  ((CollisionSolid *)this)->_internal_bounds = bounding_volume.make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection
 //       Access: Public, Virtual
 //  Description: Tests for a collision between this object (which is
