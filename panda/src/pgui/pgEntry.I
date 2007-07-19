@@ -414,6 +414,18 @@ get_accept_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_accept_failed_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the accept
+//               failed event for all PGEntries.  This event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_accept_failed_prefix() {
+  return "acceptfailed-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_overflow_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the overflow
@@ -458,6 +470,17 @@ get_erase_prefix() {
 INLINE string PGEntry::
 get_accept_event(const ButtonHandle &button) const {
   return "accept-" + button.get_name() + "-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_accept_failed_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               entry cannot accept an input
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_accept_failed_event(const ButtonHandle &button) const {
+  return "acceptfailed-" + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

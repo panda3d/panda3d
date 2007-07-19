@@ -215,6 +215,9 @@ press(const MouseWatcherParameter &param, bool background) {
           if (_accept_enabled) {
             accept(param);
           }
+          else {
+            accept_failed(param);
+          }
           
         } else if (button == KeyboardButton::backspace()) {
           // Backspace.  Remove the character to the left of the cursor.
@@ -408,6 +411,21 @@ accept(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
   set_focus(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::accept_failed
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               user presses Enter but we can't accept the input.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+accept_failed(const MouseWatcherParameter &param) {
+  PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+  string event = get_accept_failed_event(param.get_button());
+  play_sound(event);
+  throw_event(event, EventParameter(ep));
+  //set_focus(false);
 }
 
 ////////////////////////////////////////////////////////////////////

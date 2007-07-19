@@ -61,6 +61,7 @@ public:
   virtual void candidate(const MouseWatcherParameter &param, bool background);
 
   virtual void accept(const MouseWatcherParameter &param);
+  virtual void accept_failed(const MouseWatcherParameter &param);
   virtual void overflow(const MouseWatcherParameter &param);
   virtual void type(const MouseWatcherParameter &param);
   virtual void erase(const MouseWatcherParameter &param);
@@ -118,11 +119,13 @@ PUBLISHED:
   virtual void set_focus(bool focus);
 
   INLINE static string get_accept_prefix();
+  INLINE static string get_accept_failed_prefix();
   INLINE static string get_overflow_prefix();
   INLINE static string get_type_prefix();
   INLINE static string get_erase_prefix();
 
   INLINE string get_accept_event(const ButtonHandle &button) const;
+  INLINE string get_accept_failed_event(const ButtonHandle &button) const;
   INLINE string get_overflow_event() const;
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
