@@ -53,6 +53,9 @@ class DirectEntry(DirectFrame):
             # Command to be called on hitting Enter
             ('command',        None,              None),
             ('extraArgs',      [],                None),
+            # Command to be called when enter is hit but we fail to submit
+            ('failedCommand',  None,              None),
+            ('failedExtraArgs',[],                None),
             # commands to be called when focus is gained or lost
             ('focusInCommand', None,              None),
             ('focusInExtraArgs', [],              None),
@@ -94,6 +97,7 @@ class DirectEntry(DirectFrame):
 
         # Bind command function
         self.bind(DGG.ACCEPT, self.commandFunc)
+        self.bind(DGG.ACCEPTFAILED, self.failedCommandFunc)
 
         self.accept(self.guiItem.getFocusInEvent(), self.focusInCommandFunc)
         self.accept(self.guiItem.getFocusOutEvent(), self.focusOutCommandFunc)
@@ -148,6 +152,11 @@ class DirectEntry(DirectFrame):
         if self['command']:
             # Pass any extra args to command
             apply(self['command'], [self.get()] + self['extraArgs'])
+
+    def failedCommandFunc(self, event):
+        if self['failedCommand']:
+            # Pass any extra args
+            apply(self['failedCommand'], [self.get()] + self['failedExtraArgs'])
 
     def focusInCommandFunc(self):
         if self['focusInCommand']:

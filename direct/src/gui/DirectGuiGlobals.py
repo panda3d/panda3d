@@ -70,6 +70,7 @@ B3RELEASE = PGButton.getReleasePrefix() + MouseButton.three().getName() + '-'
 # For DirectEntry widgets
 OVERFLOW = PGEntry.getOverflowPrefix()
 ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
+ACCEPTFAILED = PGEntry.getAcceptFailedPrefix() + KeyboardButton.enter().getName() + '-'
 TYPE = PGEntry.getTypePrefix()
 ERASE = PGEntry.getErasePrefix()
 # For DirectSlider and DirectScrollBar widgets
