@@ -18,29 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::LightInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsStateGuardian::LightInfo::
-LightInfo() {
-  _enabled = false;
-  _next_enabled = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::ClipPlaneInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsStateGuardian::ClipPlaneInfo::
-ClipPlaneInfo() {
-  _enabled = false;
-  _next_enabled = false;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::release_all
 //       Access: Public
 //  Description: Releases all prepared objects.
@@ -757,30 +734,6 @@ get_current_lens() const {
 INLINE const TransformState *GraphicsStateGuardian::
 get_inv_cs_transform() const {
   return _inv_cs_transform;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_light
-//       Access: Protected
-//  Description: Returns the Light object that is bound to the
-//               indicated id, or empty NodePath if no Light is bound.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath GraphicsStateGuardian::
-get_light(int light_id) const {
-  nassertr(light_id >= 0 && light_id < (int)_light_info.size(), NodePath::fail());
-  return _light_info[light_id]._light;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_clip_plane
-//       Access: Protected
-//  Description: Returns the PlaneNode object that is bound to the
-//               indicated id, or NULL if no PlaneNode is bound.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath GraphicsStateGuardian::
-get_clip_plane(int plane_id) const {
-  nassertr(plane_id >= 0 && plane_id < (int)_clip_plane_info.size(), NodePath::fail());
-  return _clip_plane_info[plane_id]._plane;
 }
 
 ////////////////////////////////////////////////////////////////////

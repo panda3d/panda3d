@@ -142,6 +142,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "*:Animation",                      { 1.0, 0.0, 1.0 } },
   { 0, "*:Flatten",                        { 0.0, 0.7, 0.4 } },
   { 0, "*:State Cache",                    { 0.4, 0.7, 0.7 } },
+  { 0, "*:NodePath",                       { 0.1, 0.6, 0.8 } },
   { 1, "Draw",                             { 0.83, 0.02, 0.01 },  1.0 / 30.0 },
   { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
   { 1, "Draw:Copy texture",                { 0.2, 0.6, 0.4 } },

@@ -179,11 +179,7 @@ public:
 
   void print_gfx_visual();
 
-  //For those interested in what the guardian thinks is the current
-  //enabled/disable GL State compared to what GL says it is
-  void dump_state();
-
-  const float *get_light_color(Light *light) const;
+  float *get_light_color(float light_color[4], Light *light) const;
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   void draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode);

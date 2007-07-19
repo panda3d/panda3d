@@ -193,32 +193,9 @@ bool RenderEffects::
 operator < (const RenderEffects &other) const {
   // We must compare all the properties of the effects, not just
   // the type; thus, we compare them one at a time using compare_to().
-
-  // We could use STL's lexicographical_compare() function here, but
-  // it seems to generate aberrant behavior on OSX and Linux.  We
-  // suspect a compiler bug in gcc.  Instead, we implement the
-  // comparison by hand.
-  Effects::const_iterator ai = _effects.begin();
-  Effects::const_iterator bi = other._effects.begin();
-  while (ai != _effects.end() && bi != other._effects.end()) {
-    int compare = (*ai).compare_to(*bi);
-    if (compare != 0) {
-      return compare < 0;
-    }
-    ++ai;
-    ++bi;
-  }
-  if (ai != _effects.end()) {
-    // bi ran out first..
-    return false;
-  }
-  if (bi != other._effects.end()) {
-    // ai ran out first.
-    return true;
-  }
-
-  // Lists are equivalent.
-  return false;
+  return lexicographical_compare(_effects.begin(), _effects.end(),
+                                 other._effects.begin(), other._effects.end(),
+                                 CompareTo<Effect>());
 }
 
 

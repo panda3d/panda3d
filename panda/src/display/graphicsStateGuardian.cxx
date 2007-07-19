@@ -74,6 +74,29 @@ PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_wait_occlusion_pcollector("Wait:Occlusion");
 
 
+PStatCollector GraphicsStateGuardian::_draw_set_state_transform_pcollector("Draw:Set State:Transform");
+PStatCollector GraphicsStateGuardian::_draw_set_state_alpha_test_pcollector("Draw:Set State:Alpha test");
+PStatCollector GraphicsStateGuardian::_draw_set_state_antialias_pcollector("Draw:Set State:Antialias");
+PStatCollector GraphicsStateGuardian::_draw_set_state_clip_plane_pcollector("Draw:Set State:Clip plane");
+PStatCollector GraphicsStateGuardian::_draw_set_state_color_pcollector("Draw:Set State:Color");
+PStatCollector GraphicsStateGuardian::_draw_set_state_cull_face_pcollector("Draw:Set State:Cull face");
+PStatCollector GraphicsStateGuardian::_draw_set_state_depth_offset_pcollector("Draw:Set State:Depth offset");
+PStatCollector GraphicsStateGuardian::_draw_set_state_depth_test_pcollector("Draw:Set State:Depth test");
+PStatCollector GraphicsStateGuardian::_draw_set_state_depth_write_pcollector("Draw:Set State:Depth write");
+PStatCollector GraphicsStateGuardian::_draw_set_state_render_mode_pcollector("Draw:Set State:Render mode");
+PStatCollector GraphicsStateGuardian::_draw_set_state_rescale_normal_pcollector("Draw:Set State:Rescale normal");
+PStatCollector GraphicsStateGuardian::_draw_set_state_shade_model_pcollector("Draw:Set State:Shade model");
+PStatCollector GraphicsStateGuardian::_draw_set_state_blending_pcollector("Draw:Set State:Blending");
+PStatCollector GraphicsStateGuardian::_draw_set_state_shader_pcollector("Draw:Set State:Shader");
+PStatCollector GraphicsStateGuardian::_draw_set_state_texture_pcollector("Draw:Set State:Texture");
+PStatCollector GraphicsStateGuardian::_draw_set_state_tex_matrix_pcollector("Draw:Set State:Tex matrix");
+PStatCollector GraphicsStateGuardian::_draw_set_state_tex_gen_pcollector("Draw:Set State:Tex gen");
+PStatCollector GraphicsStateGuardian::_draw_set_state_material_pcollector("Draw:Set State:Material");
+PStatCollector GraphicsStateGuardian::_draw_set_state_light_pcollector("Draw:Set State:Light");
+PStatCollector GraphicsStateGuardian::_draw_set_state_stencil_pcollector("Draw:Set State:Stencil");
+PStatCollector GraphicsStateGuardian::_draw_set_state_fog_pcollector("Draw:Set State:Fog");
+
+
 PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
 
 TypeHandle GraphicsStateGuardian::_type_handle;
@@ -315,10 +338,8 @@ reset() {
   _texture_involves_color_scale = false;
   _vertex_colors_enabled = true;
   _lighting_enabled = false;
-  _lighting_enabled_this_frame = false;
-
-  _clip_planes_enabled = false;
-  _clip_planes_enabled_this_frame = false;
+  _num_lights_enabled = 0;
+  _num_clip_planes_enabled = 0;
 
   _color_scale_enabled = false;
   _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1132,37 +1153,17 @@ end_scene() {
   // Undo any lighting we had enabled last scene, to force the lights
   // to be reissued, in case their parameters or positions have
   // changed between scenes.
-  if (_lighting_enabled_this_frame) {
-    for (int i = 0; i < (int)_light_info.size(); i++) {
-      if (_light_info[i]._enabled) {
-        enable_light(i, false);
-        _light_info[i]._enabled = false;
-      }
-      _light_info[i]._light = NodePath();
-    }
-
-    // Also force the lighting state to unlit, so that issue_light()
-    // will be guaranteed to be called next frame even if we have the
-    // same set of light pointers we had this frame.
-    //    modify_state(get_unlit_state());
-
-    _lighting_enabled_this_frame = false;
+  int i;
+  for (i = 0; i < _num_lights_enabled; ++i) {
+    enable_light(i, false);
   }
+  _num_lights_enabled = 0;
 
   // Ditto for the clipping planes.
-  if (_clip_planes_enabled_this_frame) {
-    for (int i = 0; i < (int)_clip_plane_info.size(); i++) {
-      if (_clip_plane_info[i]._enabled) {
-        enable_clip_plane(i, false);
-        _clip_plane_info[i]._enabled = false;
-      }
-      _clip_plane_info[i]._plane = (PlaneNode *)NULL;
-    }
-
-    //    modify_state(get_unclipped_state());
-
-    _clip_planes_enabled_this_frame = false;
+  for (i = 0; i < _num_clip_planes_enabled; ++i) {
+    enable_clip_plane(i, false);
   }
+  _num_clip_planes_enabled = 0;
 
   // Put the state into the 'unknown' state, forcing a reload.
   _state_rs = 0;
@@ -1417,114 +1418,49 @@ get_cs_transform() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 do_issue_clip_plane() {
-  const ClipPlaneAttrib *attrib = _target._clip_plane;
-  int i;
-  int cur_max_planes = (int)_clip_plane_info.size();
-  for (i = 0; i < cur_max_planes; i++) {
-    _clip_plane_info[i]._next_enabled = false;
-  }
-
-  CPT(ClipPlaneAttrib) new_attrib = attrib->filter_to_max(_max_clip_planes);
-
-  bool any_bound = false;
-
   int num_enabled = 0;
-  int num_on_planes = new_attrib->get_num_on_planes();
-  for (int li = 0; li < num_on_planes; li++) {
-    NodePath plane = new_attrib->get_on_plane(li);
-    nassertv(!plane.is_empty() && plane.node()->is_of_type(PlaneNode::get_class_type()));
-    PlaneNode *plane_node = (PlaneNode *)plane.node();
-    if ((plane_node->get_clip_effect() & PlaneNode::CE_visible) != 0) {
-      num_enabled++;
+  int num_on_planes = 0;
 
-      // Clipping should be enabled before we apply any planes.
-      enable_clip_planes(true);
-      _clip_planes_enabled = true;
-      _clip_planes_enabled_this_frame = true;
-      
-      // Check to see if this plane has already been bound to an id
-      int cur_plane_id = -1;
-      for (i = 0; i < cur_max_planes; i++) {
-        if (_clip_plane_info[i]._plane == plane) {
-          // Plane has already been bound to an id, we only need to
-          // enable the plane, not reapply it.
-          cur_plane_id = -2;
-          enable_clip_plane(i, true);
-          _clip_plane_info[i]._enabled = true;
-          _clip_plane_info[i]._next_enabled = true;
-          break;
+  if (_target._clip_plane != (ClipPlaneAttrib *)NULL) {
+    CPT(ClipPlaneAttrib) new_plane = _target._clip_plane->filter_to_max(_max_clip_planes);
+
+    num_on_planes = new_plane->get_num_on_planes();
+    for (int li = 0; li < num_on_planes; li++) {
+      NodePath plane = new_plane->get_on_plane(li);
+      nassertv(!plane.is_empty());
+      PlaneNode *plane_node;
+      DCAST_INTO_V(plane_node, plane.node());
+      if ((plane_node->get_clip_effect() & PlaneNode::CE_visible) != 0) {
+        // Clipping should be enabled before we apply any planes.
+        if (!_clip_planes_enabled) {
+          enable_clip_planes(true);
+          _clip_planes_enabled = true;
         }
-      }
-      
-      // See if there are any unbound plane ids
-      if (cur_plane_id == -1) {
-        for (i = 0; i < cur_max_planes; i++) {
-          if (_clip_plane_info[i]._plane.is_empty()) {
-            _clip_plane_info[i]._plane = plane;
-            cur_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      // If there were no unbound plane ids, see if we can replace
-      // a currently unused but previously bound id
-      if (cur_plane_id == -1) {
-        for (i = 0; i < cur_max_planes; i++) {
-          if (!new_attrib->has_on_plane(_clip_plane_info[i]._plane)) {
-            _clip_plane_info[i]._plane = plane;
-            cur_plane_id = i;
-            break;
-          }
-        }
-      }
-      
-      // If we *still* don't have a plane id, slot a new one.
-      if (cur_plane_id == -1) {
-        if (_max_clip_planes < 0 || cur_max_planes < _max_clip_planes) {
-          cur_plane_id = cur_max_planes;
-          _clip_plane_info.push_back(ClipPlaneInfo());
-          cur_max_planes++;
-          nassertv(cur_max_planes == (int)_clip_plane_info.size());
-        }
-      }
-      
-      if (cur_plane_id >= 0) {
-        enable_clip_plane(cur_plane_id, true);
-        _clip_plane_info[cur_plane_id]._enabled = true;
-        _clip_plane_info[cur_plane_id]._next_enabled = true;
         
-        if (!any_bound) {
+        enable_clip_plane(num_enabled, true);
+        if (num_enabled == 0) {
           begin_bind_clip_planes();
-          any_bound = true;
         }
         
-        // This is the first time this frame that this plane has been
-        // bound to this particular id.
-        bind_clip_plane(plane, cur_plane_id);
-        
-      } else if (cur_plane_id == -1) {
-        gsg_cat.warning()
-          << "Failed to bind " << plane << " to id.\n";
+        bind_clip_plane(plane, num_enabled);
+        num_enabled++;
       }
     }
   }
 
-  // Disable all unused planes
-  for (i = 0; i < cur_max_planes; i++) {
-    if (!_clip_plane_info[i]._next_enabled) {
-      enable_clip_plane(i, false);
-      _clip_plane_info[i]._enabled = false;
-    }
+  int i;
+  for (i = num_enabled; i < _num_clip_planes_enabled; ++i) {
+    enable_clip_plane(i, false);
   }
+  _num_clip_planes_enabled = num_enabled;
 
-  // If no planes were enabled, disable clip planes in general.
+  // If no planes were set, disable clipping
   if (num_enabled == 0) {
-    enable_clip_planes(false);
-    _clip_planes_enabled = false;
-  }
-
-  if (any_bound) {
+    if (_clip_planes_enabled) {
+      enable_clip_planes(false);
+      _clip_planes_enabled = false;
+    }
+  } else {
     end_bind_clip_planes();
   }
 }
@@ -1649,29 +1585,32 @@ do_issue_light() {
   // light list
   Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
   int i;
-  int cur_max_lights = (int)_light_info.size();
-  for (i = 0; i < cur_max_lights; i++) {
-    _light_info[i]._next_enabled = false;
-  }
-
-  bool any_bound = false;
 
   int num_enabled = 0;
+  int num_on_lights = 0;
+
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "do_issue_light: " << _target._light << "\n";
+  }
   if (_target._light != (LightAttrib *)NULL) {
     CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
+    if (display_cat.is_debug()) {
+      new_light->write(display_cat.debug(false), 2);
+    }
 
-    int num_on_lights = new_light->get_num_on_lights();
+    num_on_lights = new_light->get_num_on_lights();
     for (int li = 0; li < num_on_lights; li++) {
       NodePath light = new_light->get_on_light(li);
-      nassertv(!light.is_empty() && light.node()->as_light() != (Light *)NULL);
+      nassertv(!light.is_empty());
       Light *light_obj = light.node()->as_light();
-
-      num_enabled++;
+      nassertv(light_obj != (Light *)NULL);
 
       // Lighting should be enabled before we apply any lights.
-      enable_lighting(true);
-      _lighting_enabled = true;
-      _lighting_enabled_this_frame = true;
+      if (!_lighting_enabled) {
+        enable_lighting(true);
+        _lighting_enabled = true;
+      }
 
       if (light_obj->get_type() == AmbientLight::get_class_type()) {
         // Ambient lights don't require specific light ids; simply add
@@ -1679,108 +1618,45 @@ do_issue_light() {
         cur_ambient_light += light_obj->get_color();
 
       } else {
-        // Check to see if this light has already been bound to an id
-        int cur_light_id = -1;
-        for (i = 0; i < cur_max_lights; i++) {
-          if (_light_info[i]._light == light) {
-            // Light has already been bound to an id; reuse the same id.
-            cur_light_id = -2;
-            enable_light(i, true);
-            _light_info[i]._enabled = true;
-            _light_info[i]._next_enabled = true;
-
-            if (!any_bound) {
-              begin_bind_lights();
-              any_bound = true;
-            }
-            light_obj->bind(this, light, i);
-            break;
-          }
+        enable_light(num_enabled, true);
+        if (num_enabled == 0) {
+          begin_bind_lights();
         }
 
-        // See if there are any unbound light ids
-        if (cur_light_id == -1) {
-          for (i = 0; i < cur_max_lights; i++) {
-            if (_light_info[i]._light.is_empty()) {
-              _light_info[i]._light = light;
-              cur_light_id = i;
-              break;
-            }
-          }
-        }
-
-        // If there were no unbound light ids, see if we can replace
-        // a currently unused but previously bound id
-        if (cur_light_id == -1) {
-          for (i = 0; i < cur_max_lights; i++) {
-            if (!new_light->has_on_light(_light_info[i]._light)) {
-              _light_info[i]._light = light;
-              cur_light_id = i;
-              break;
-            }
-          }
-        }
-
-        // If we *still* don't have a light id, slot a new one.
-        if (cur_light_id == -1) {
-          if (_max_lights < 0 || cur_max_lights < _max_lights) {
-            cur_light_id = cur_max_lights;
-            _light_info.push_back(LightInfo());
-            cur_max_lights++;
-            nassertv(cur_max_lights == (int)_light_info.size());
-          }
-        }
-
-        if (cur_light_id >= 0) {
-          enable_light(cur_light_id, true);
-          _light_info[cur_light_id]._enabled = true;
-          _light_info[cur_light_id]._next_enabled = true;
-
-          if (!any_bound) {
-            begin_bind_lights();
-            any_bound = true;
-          }
-
-          // This is the first time this frame that this light has been
-          // bound to this particular id.
-          light_obj->bind(this, light, cur_light_id);
-
-        } else if (cur_light_id == -1) {
-          gsg_cat.warning()
-            << "Failed to bind " << light << " to id.\n";
-        }
+        light_obj->bind(this, light, num_enabled);
+        num_enabled++;
       }
     }
   }
 
-  // Disable all unused lights
-  for (i = 0; i < cur_max_lights; i++) {
-    if (!_light_info[i]._next_enabled) {
-      enable_light(i, false);
-      _light_info[i]._enabled = false;
-    }
+  for (i = num_enabled; i < _num_lights_enabled; ++i) {
+    enable_light(i, false);
   }
+  _num_lights_enabled = num_enabled;
 
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
+  // If no lights were set, disable lighting
+  if (num_on_lights == 0) {
     if (_color_scale_via_lighting && (_has_material_force_color || _light_color_scale != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f))) {
       // Unless we need lighting anyway to apply a color or color
       // scale.
-      enable_lighting(true);
-      _lighting_enabled = true;
-      _lighting_enabled_this_frame = true;
+      if (!_lighting_enabled) {
+        enable_lighting(true);
+        _lighting_enabled = true;
+      }
       set_ambient_light(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
 
     } else {
-      enable_lighting(false);
-      _lighting_enabled = false;
+      if (_lighting_enabled) {
+        enable_lighting(false);
+        _lighting_enabled = false;
+      }
     }
 
   } else {
     set_ambient_light(cur_ambient_light);
   }
 
-  if (any_bound) {
+  if (num_enabled != 0) {
     end_bind_lights();
   }
 }

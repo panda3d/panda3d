@@ -4036,10 +4036,14 @@ do_issue_blending() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
+  static PStatCollector _draw_set_state_light_bind_point_pcollector("Draw:Set State:Light:Bind:Point");
+  PStatTimer timer(_draw_set_state_light_bind_point_pcollector);
+  
+  float light_color[4];
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
@@ -4076,10 +4080,14 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
+  static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
+  PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
+
+  float light_color[4];
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w.
@@ -4117,13 +4125,17 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
+  static PStatCollector _draw_set_state_light_bind_spotlight_pcollector("Draw:Set State:Light:Bind:Spotlight");
+  PStatTimer timer(_draw_set_state_light_bind_spotlight_pcollector);
+  
   Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
 
+  float light_color[4];
   GLenum id = get_light_id(light_id);
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
   GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_obj));
+  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
   GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
 
   // Position needs to specify x, y, z, and w
@@ -5564,20 +5576,22 @@ print_gfx_visual() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
 //       Access: Public
-//  Description: Returns the array of four floats that should be
-//               issued as the light's color, as scaled by the current
-//               value of _light_color_scale, in the case of
-//               color_scale_via_lighting.
+//  Description: Fills the array of four floats with the values that
+//               that should be issued as the light's color, as scaled
+//               by the current value of _light_color_scale, in the
+//               case of color_scale_via_lighting.  Returns
+//               light_color.
 ////////////////////////////////////////////////////////////////////
-const float *CLP(GraphicsStateGuardian)::
-get_light_color(Light *light) const {
-  static Colorf c;
-  c = light->get_color();
-  c.set(c[0] * _light_color_scale[0],
-        c[1] * _light_color_scale[1],
-        c[2] * _light_color_scale[2],
-        c[3] * _light_color_scale[3]);
-  return c.get_data();
+float *CLP(GraphicsStateGuardian)::
+get_light_color(float light_color[4], Light *light) const {
+  const Colorf &c = light->get_color();
+
+  light_color[0] = c[0] * _light_color_scale[0];
+  light_color[1] = c[1] * _light_color_scale[1];
+  light_color[2] = c[2] * _light_color_scale[2];
+  light_color[3] = c[3] * _light_color_scale[3];
+
+  return light_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5590,6 +5604,9 @@ get_light_color(Light *light) const {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 enable_lighting(bool enable) {
+  static PStatCollector _draw_set_state_light_enable_lighting_pcollector("Draw:Set State:Light:Enable lighting");
+  PStatTimer timer(_draw_set_state_light_enable_lighting_pcollector);
+  
   if (enable) {
     GLP(Enable)(GL_LIGHTING);
   } else {
@@ -5607,6 +5624,9 @@ enable_lighting(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_ambient_light(const Colorf &color) {
+  static PStatCollector _draw_set_state_light_ambient_pcollector("Draw:Set State:Light:Ambient");
+  PStatTimer timer(_draw_set_state_light_ambient_pcollector);
+  
   Colorf c = color;
   c.set(c[0] * _light_color_scale[0],
         c[1] * _light_color_scale[1],
@@ -5624,6 +5644,9 @@ set_ambient_light(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 enable_light(int light_id, bool enable) {
+  static PStatCollector _draw_set_state_light_enable_light_pcollector("Draw:Set State:Light:Enable light");
+  PStatTimer timer(_draw_set_state_light_enable_light_pcollector);
+  
   if (enable) {
     GLP(Enable)(get_light_id(light_id));
   } else {
@@ -5645,6 +5668,9 @@ enable_light(int light_id, bool enable) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 begin_bind_lights() {
+  static PStatCollector _draw_set_state_light_begin_bind_pcollector("Draw:Set State:Light:Begin bind");
+  PStatTimer timer(_draw_set_state_light_begin_bind_pcollector);
+  
   // We need to temporarily load a new matrix so we can define the
   // light in a known coordinate system.  We pick the transform of the
   // root.  (Alternatively, we could leave the current transform where
@@ -5671,6 +5697,9 @@ begin_bind_lights() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_bind_lights() {
+  static PStatCollector _draw_set_state_light_end_bind_pcollector("Draw:Set State:Light:End bind");
+  PStatTimer timer(_draw_set_state_light_end_bind_pcollector);
+  
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PopMatrix)();
 }
@@ -5787,9 +5816,10 @@ set_state_and_transform(const RenderState *target,
 #endif
 
   _state_pcollector.add_level(1);
-  PStatTimer timer(_draw_set_state_pcollector);
+  PStatTimer timer1(_draw_set_state_pcollector);
 
   if (transform != _internal_transform) {
+    PStatTimer timer(_draw_set_state_transform_pcollector);
     _state_pcollector.add_level(1);
     _internal_transform = transform;
     do_issue_transform();
@@ -5804,22 +5834,26 @@ set_state_and_transform(const RenderState *target,
   _state_rs = 0;
   
   if (_target._alpha_test != _state._alpha_test) {
+    PStatTimer timer(_draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
   }
 
   if (_target._antialias != _state._antialias) {
+    PStatTimer timer(_draw_set_state_antialias_pcollector);
     do_issue_antialias();
     _state._antialias = _target._antialias;
   }
 
   if (_target._clip_plane != _state._clip_plane) {
+    PStatTimer timer(_draw_set_state_clip_plane_pcollector);
     do_issue_clip_plane();
     _state._clip_plane = _target._clip_plane;
   }
 
   if (_target._color != _state._color ||
       _target._color_scale != _state._color_scale) {
+    PStatTimer timer(_draw_set_state_color_pcollector);
     do_issue_color();
     do_issue_color_scale();
     _state._color = _target._color;
@@ -5827,36 +5861,43 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (_target._cull_face != _state._cull_face) {
+    PStatTimer timer(_draw_set_state_cull_face_pcollector);
     do_issue_cull_face();
     _state._cull_face = _target._cull_face;
   }
 
   if (_target._depth_offset != _state._depth_offset) {
+    PStatTimer timer(_draw_set_state_depth_offset_pcollector);
     do_issue_depth_offset();
     _state._depth_offset = _target._depth_offset;
   }
 
   if (_target._depth_test != _state._depth_test) {
+    PStatTimer timer(_draw_set_state_depth_test_pcollector);
     do_issue_depth_test();
     _state._depth_test = _target._depth_test;
   }
 
   if (_target._depth_write != _state._depth_write) {
+    PStatTimer timer(_draw_set_state_depth_write_pcollector);
     do_issue_depth_write();
     _state._depth_write = _target._depth_write;
   }
 
   if (_target._render_mode != _state._render_mode) {
+    PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
     _state._render_mode = _target._render_mode;
   }
   
   if (_target._rescale_normal != _state._rescale_normal) {
+    PStatTimer timer(_draw_set_state_rescale_normal_pcollector);
     do_issue_rescale_normal();
     _state._rescale_normal = _target._rescale_normal;
   }
 
   if (_target._shade_model != _state._shade_model) {
+    PStatTimer timer(_draw_set_state_shade_model_pcollector);
     do_issue_shade_model();
     _state._shade_model = _target._shade_model;
   }
@@ -5864,6 +5905,7 @@ set_state_and_transform(const RenderState *target,
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
+    PStatTimer timer(_draw_set_state_blending_pcollector);
     do_issue_blending();
     _state._transparency = _target._transparency;
     _state._color_write = _target._color_write;
@@ -5871,12 +5913,14 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (_target._shader != _state._shader) {
+    PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state._shader = _target._shader;
     _state._texture = 0;
   }
 
   if (_target._texture != _state._texture) {
+    PStatTimer timer(_draw_set_state_texture_pcollector);
     determine_effective_texture();
     int prev_active = _num_active_texture_stages;
     do_issue_texture();
@@ -5902,32 +5946,38 @@ set_state_and_transform(const RenderState *target,
   }
   
   if (_target._tex_matrix != _state._tex_matrix) {
+    PStatTimer timer(_draw_set_state_tex_matrix_pcollector);
     do_issue_tex_matrix();
     _state._tex_matrix = _target._tex_matrix;
   }
 
   if (_effective_tex_gen != _state._tex_gen) {
+    PStatTimer timer(_draw_set_state_tex_gen_pcollector);
     do_issue_tex_gen();
     _state._tex_gen = _effective_tex_gen;
   }
   
   if (_target._material != _state._material) {
+    PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state._material = _target._material;
   }
 
   if (_target._light != _state._light) {
+    PStatTimer timer(_draw_set_state_light_pcollector);
     do_issue_light();
     _state._light = _target._light;
   }
 
   if (_target._stencil != _state._stencil) {
+    PStatTimer timer(_draw_set_state_stencil_pcollector);
     do_issue_stencil();
     _state._stencil = _target._stencil;
   }
      
   if (_current_shader_context == 0) {
     if (_target._fog != _state._fog) {
+      PStatTimer timer(_draw_set_state_fog_pcollector);
       do_issue_fog();
       _state._fog = _target._fog;
     }

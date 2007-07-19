@@ -66,6 +66,8 @@
 #include "bamFile.h"
 #include "preparedGraphicsObjects.h"
 #include "dcast.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -706,6 +708,8 @@ get_transform(Thread *current_thread) const {
 CPT(TransformState) NodePath::
 get_transform(const NodePath &other, Thread *current_thread) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+  static PStatCollector _get_transform_pcollector("*:NodePath:get_transform");
+  PStatTimer timer(_get_transform_pcollector);
 
   if (other.is_empty()) {
     return get_net_transform(current_thread);
@@ -713,7 +717,7 @@ get_transform(const NodePath &other, Thread *current_thread) const {
   if (is_empty()) {
     return other.get_net_transform(current_thread)->invert_compose(TransformState::make_identity());
   }
-    
+
   nassertr(verify_complete(current_thread), TransformState::make_identity());
   nassertr(other.verify_complete(current_thread), TransformState::make_identity());
 
@@ -744,6 +748,7 @@ get_transform(const NodePath &other, Thread *current_thread) const {
     a_transform = r_get_net_transform(_head, current_thread);
     b_transform = r_get_net_transform(other._head, current_thread);
   }
+
   return b_transform->invert_compose(a_transform);
 }
 
@@ -5523,7 +5528,7 @@ verify_complete(Thread *current_thread) const {
   }
 
 #ifdef HAVE_THREADS
-  if (Thread::is_threading_supported()) {
+  if (Thread::is_true_threads()) {
     // In a threaded environment, we can't reliably test this, since a
     // sub-thread may be mucking with the NodePath's ancestry as we
     // try to validate it.  NodePaths are inherently not thread-safe,
@@ -5531,6 +5536,9 @@ verify_complete(Thread *current_thread) const {
     return true;
   }
 #endif  // HAVE_THREADS
+
+  static PStatCollector _verify_complete_pcollector("*:NodePath:verify_complete");
+  PStatTimer timer(_verify_complete_pcollector);
 
   const NodePathComponent *comp = _head;
   nassertr(comp != (const NodePathComponent *)NULL, false);

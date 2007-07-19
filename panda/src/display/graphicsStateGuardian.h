@@ -267,14 +267,12 @@ public:
 #endif
 
 protected:
-  INLINE NodePath get_light(int light_id) const;
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
 
-  INLINE NodePath get_clip_plane(int plane_id) const;
   virtual void enable_clip_planes(bool enable);
   virtual void enable_clip_plane(int plane_id, bool enable);
   virtual void begin_bind_clip_planes();
@@ -447,28 +445,33 @@ public:
   static PStatCollector _flush_pcollector;
   static PStatCollector _wait_occlusion_pcollector;
 
+  // A whole slew of collectors to measure the cost of individual
+  // state changes.  These are disabled by default.
+  static PStatCollector _draw_set_state_transform_pcollector;
+  static PStatCollector _draw_set_state_alpha_test_pcollector;
+  static PStatCollector _draw_set_state_antialias_pcollector;
+  static PStatCollector _draw_set_state_clip_plane_pcollector;
+  static PStatCollector _draw_set_state_color_pcollector;
+  static PStatCollector _draw_set_state_cull_face_pcollector;
+  static PStatCollector _draw_set_state_depth_offset_pcollector;
+  static PStatCollector _draw_set_state_depth_test_pcollector;
+  static PStatCollector _draw_set_state_depth_write_pcollector;
+  static PStatCollector _draw_set_state_render_mode_pcollector;
+  static PStatCollector _draw_set_state_rescale_normal_pcollector;
+  static PStatCollector _draw_set_state_shade_model_pcollector;
+  static PStatCollector _draw_set_state_blending_pcollector;
+  static PStatCollector _draw_set_state_shader_pcollector;
+  static PStatCollector _draw_set_state_texture_pcollector;
+  static PStatCollector _draw_set_state_tex_matrix_pcollector;
+  static PStatCollector _draw_set_state_tex_gen_pcollector;
+  static PStatCollector _draw_set_state_material_pcollector;
+  static PStatCollector _draw_set_state_light_pcollector;
+  static PStatCollector _draw_set_state_stencil_pcollector;
+  static PStatCollector _draw_set_state_fog_pcollector;
+
 private:
-  class LightInfo {
-  public:
-    INLINE LightInfo();
-    NodePath _light;
-    bool _enabled;
-    bool _next_enabled;
-  };
-
-  pvector<LightInfo> _light_info;
-  bool _lighting_enabled_this_frame;
-
-  class ClipPlaneInfo {
-  public:
-    INLINE ClipPlaneInfo();
-    NodePath _plane;
-    bool _enabled;
-    bool _next_enabled;
-  };
-
-  pvector<ClipPlaneInfo> _clip_plane_info;
-  bool _clip_planes_enabled_this_frame;
+  int _num_lights_enabled;
+  int _num_clip_planes_enabled;
 
   PT(GraphicsPipe) _pipe;
   GraphicsEngine *_engine;
