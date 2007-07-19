@@ -662,12 +662,9 @@ return_new(RenderEffects *state) {
     // The state was inserted; save the iterator and return the
     // input state.
     state->_saved_entry = result.first;
-    //    nassertr(validate_states(), pt_state);
     nassertr(_states->find(state) == state->_saved_entry, pt_state);
     return pt_state;
   }
-
-  //  nassertr(validate_states(), *(result.first));
 
   // The state was not inserted; there must be an equivalent one
   // already in the set.  Return that one.
@@ -688,56 +685,9 @@ release_new() {
   nassertv(_states_lock->debug_is_locked());
 
   if (_saved_entry != _states->end()) {
-    /*
-    if (_states->find(this) != _saved_entry) {
-      nassertv(*_saved_entry == this);
-      cerr << "States wrong!\n";
-      cerr << "validate = " << validate_states() << "\n";
-      cerr << "this = " << this << ": " << *this << "\n";
-      States::iterator fi = _states->find(this);
-      if (fi == _states->end()) {
-        cerr << "  not found\n";
-      } else {
-        cerr <<"   found: " << (*fi) << ": " << *(*fi) << "\n";
-      }
-
-      if (!_states->empty()) {
-        States::iterator si;
-        si = _states->begin();
-        cerr << (*si) << ": " << *(*si) << "\n";
-        States::iterator ni = si;
-        ++ni;
-        if ((*si) == this) {
-          _states->erase(si);
-          si = ni;
-        }
-        while (ni != _states->end()) {
-          if (*(*si) < *(*ni)) {
-            cerr << "  ok, " << (*(*ni) < *(*si)) << "\n";
-          } else {
-            cerr << "  **wrong! " << (*(*ni) < *(*si)) << "\n";
-          }
-          si = ni;
-          cerr << (*si) << ": " << *(*si) << "\n";
-          ++ni;
-          if ((*si) == this) {
-            _states->erase(si);
-            si = ni;
-          }
-        }
-      }
-    }
-    */
     nassertv(_states->find(this) == _saved_entry);
-    //    nassertv(validate_states());
     _states->erase(_saved_entry);
     _saved_entry = _states->end();
-
-    /*
-    nassertd(validate_states()) {
-      cerr << "Removed " << this << ": " << *this << "\n";
-    }
-    */
   }
 }
 

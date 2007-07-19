@@ -106,7 +106,10 @@ compare_to(const Effect &other) const {
   if (_type != other._type) {
     return _type.get_index() - other._type.get_index();
   }
-  return _effect - other._effect;
+  if (_effect != other._effect) {
+    return _effect < other._effect ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
