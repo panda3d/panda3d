@@ -110,6 +110,7 @@ void CollisionSolid::
 set_bounds(const BoundingVolume &bounding_volume) {
   MutexHolder holder(_lock);
   ((CollisionSolid *)this)->_internal_bounds = bounding_volume.make_copy();
+  ((CollisionSolid *)this)->_flags &= ~F_internal_bounds_stale;
 }
 
 ////////////////////////////////////////////////////////////////////
