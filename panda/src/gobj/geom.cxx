@@ -1500,7 +1500,9 @@ finalize(BamReader *manager) {
   // in the data getting finalized multiple times, but it doesn't mind
   // that.
   if (!cdata->_data.is_null()) {
-    cdata->_data.get_write_pointer()->finalize(manager);
+    // We shouldn't call get_write_pointer(), which might replicate
+    // the GeomVertexData unnecessarily.
+    cdata->_data.get_unsafe_pointer()->finalize(manager);
   }
 
   reset_geom_rendering(cdata);
