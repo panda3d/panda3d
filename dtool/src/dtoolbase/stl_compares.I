@@ -51,6 +51,17 @@ operator () (const Key &a, const Key &b) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: compare_to::is_equal
+//       Access: Public
+//  Description: Returns true if a is equivalent to b, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+INLINE bool compare_to<Key>::
+is_equal(const Key &a, const Key &b) const {
+  return (a.compare_to(b) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: indirect_less::operator ()
 //       Access: Public
 //  Description: Returns true if a sorts before b, false otherwise.
@@ -73,6 +84,17 @@ operator () (const Key &a, const Key &b) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: indirect_compare_to::is_equal
+//       Access: Public
+//  Description: Returns true if a is equivalent to b, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+INLINE bool indirect_compare_to<Key>::
+is_equal(const Key &a, const Key &b) const {
+  return (a == b || (*a).compare_to(*b) == 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: indirect_compare_names::operator ()
 //       Access: Public
 //  Description: Returns true if a sorts before b, false otherwise.
@@ -81,6 +103,17 @@ template<class Key>
 INLINE bool indirect_compare_names<Key>::
 operator () (const Key &a, const Key &b) const {
   return (a != b && (*a).get_name() < (*b).get_name());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: indirect_compare_names::is_equal
+//       Access: Public
+//  Description: Returns true if a is equivalent to b, false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class Key>
+INLINE bool indirect_compare_names<Key>::
+is_equal(const Key &a, const Key &b) const {
+  return (a == b || (*a).get_name() == (*b).get_name());
 }
 
 ////////////////////////////////////////////////////////////////////

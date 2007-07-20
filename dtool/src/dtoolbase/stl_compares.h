@@ -29,18 +29,33 @@
 #ifdef HAVE_STL_HASH
 #include <hash_map>  // for hash_compare
 
-#define stl_hash_compare stdext::hash_compare
+template<class Key, class Compare = less<Key> >
+class stl_hash_compare : public stdext::hash_compare<Key, Compare> {
+public:
+  INLINE bool is_equal(const Key &a, const Key &b) const {
+    return !operator()(a, b) && !operator()(b, a);
+  }
+};
+
 
 #else
 
 #include <map>  // for less
 
 // This is declared for the cases in which we don't have STL_HASH
-// available--it's just a name to inherit from, but there's no need to
-// provide much functionality in the base class (since it won't
-// actually be used for hashing, just for comparing).
+// available.
 template<class Key, class Compare = less<Key> >
 class stl_hash_compare : public Compare {
+public:
+  INLINE size_t operator () (const Key &key) const {
+    return (size_t)key;
+  }
+  INLINE bool operator () (const Key &a, const Key &b) const {
+    return Compare::operator ()(a, b);
+  }
+  INLINE bool is_equal(const Key &a, const Key &b) const {
+    return !operator()(a, b) && !operator()(b, a);
+  }
 };
 
 #endif  // HAVE_STL_HASH
@@ -69,6 +84,7 @@ template<class Key>
 class compare_to {
 public:
   INLINE bool operator () (const Key &a, const Key &b) const;
+  INLINE bool is_equal(const Key &a, const Key &b) const;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -95,6 +111,7 @@ template<class Key>
 class indirect_compare_to {
 public:
   INLINE bool operator () (const Key &a, const Key &b) const;
+  INLINE bool is_equal(const Key &a, const Key &b) const;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -110,6 +127,7 @@ template<class Key>
 class indirect_compare_names {
 public:
   INLINE bool operator () (const Key &a, const Key &b) const;
+  INLINE bool is_equal(const Key &a, const Key &b) const;
 };
 
 ////////////////////////////////////////////////////////////////////

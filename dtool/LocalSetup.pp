@@ -503,11 +503,15 @@ $[cdefine __USE_LARGEFILE64]
 #define USE_MEMORY_MALLOC
 #define USE_MEMORY_NOWRAPPERS
 #if $[ALTERNATIVE_MALLOC]
-  #if $[and $[HAVE_THREADS], $[not $[SIMPLE_THREADS]]]
-    // A fast thread-safe alternative implementation.
+  #if $[and $[WIN32_PLATFORM], $[HAVE_THREADS], $[not $[SIMPLE_THREADS]]]
+    // A fast thread-safe alternative implementation, but which only
+    // seems to be a good choice on Windows.  (It crashes on Linux and
+    // isn't thread-safe on OSX).
     #set USE_MEMORY_PTMALLOC2 1
   #else
     // A faster, but non-thread-safe, alternative implementation.
+    // When threading support is compiled in, we use a global mutex to
+    // protect it.
     #set USE_MEMORY_DLMALLOC 1
   #endif
 #else

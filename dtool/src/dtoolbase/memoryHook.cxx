@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "memoryHook.h"
+#include "deletedBufferChain.h"
 
 #ifdef WIN32
 
@@ -40,19 +41,15 @@
 //
 // Memory manager: DLMALLOC
 //
-// This is Doug Lea's memory manager.  It is very fast,
-// but it is not thread-safe.
+// This is Doug Lea's memory manager.  It is very fast, but it is not
+// thread-safe.  However, we provide thread locking within MemoryHook.
 //
 /////////////////////////////////////////////////////////////////////
-
-#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-#error Cannot use dlmalloc library with threading enabled!
-#endif
 
 #define USE_DL_PREFIX 1
 #define NO_MALLINFO 1
 #ifdef _DEBUG
-  #define DEBUG
+  #define DEBUG 1
 #endif
 #include "dlmalloc.h"
 #include "dlmalloc_src.cxx"
@@ -60,17 +57,18 @@
 #define call_malloc dlmalloc
 #define call_realloc dlrealloc
 #define call_free dlfree
+#define MEMORY_HOOK_MALLOC_LOCK 1
 
-#elif defined(USE_MEMORY_PTMALLOC2) && !defined(linux)
+#elif defined(USE_MEMORY_PTMALLOC2)
 // This doesn't appear to work in Linux; perhaps it is clashing with
-// the system library.  On Linux, fall through to the next case
-// instead.
+// the system library.  It also doesn't appear to be thread-safe on
+// OSX.
 
 /////////////////////////////////////////////////////////////////////
 //
 // Memory manager: PTMALLOC2
 //
-// Ptmalloc2 is a derivative of Doug Lea's memory manager that was 
+// Ptmalloc2 is a derivative of Doug Lea's memory manager that was
 // made thread-safe by Wolfram Gloger, then was ported to windows by
 // Niall Douglas.  It is not quite as fast as dlmalloc (because the
 // thread-safety constructs take a certain amount of CPU time), but
@@ -88,6 +86,7 @@
 #define call_malloc dlmalloc
 #define call_realloc dlrealloc
 #define call_free dlfree
+#undef MEMORY_HOOK_MALLOC_LOCK
 
 #else
 
@@ -103,6 +102,7 @@
 #define call_malloc malloc
 #define call_realloc realloc
 #define call_free free
+#undef MEMORY_HOOK_MALLOC_LOCK
 
 #endif  // USE_MEMORY_*
 
@@ -152,6 +152,10 @@ MemoryHook(const MemoryHook &copy) :
   _requested_heap_size = copy._requested_heap_size;
   _total_mmap_size = copy._total_mmap_size;
 #endif
+
+  ((MutexImpl &)copy._lock).lock();
+  _deleted_chains = copy._deleted_chains;
+  ((MutexImpl &)copy._lock).release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +188,14 @@ heap_alloc_single(size_t size) {
   AtomicAdjust::add(_total_heap_single_size, (PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+  _lock.lock();
   void *alloc = call_malloc(inflate_size(size));
+  _lock.release();
+#else
+  void *alloc = call_malloc(inflate_size(size));
+#endif
+
   if (alloc == (void *)NULL) {
     cerr << "Out of memory!\n";
     abort();
@@ -209,7 +220,13 @@ heap_free_single(void *ptr) {
   AtomicAdjust::add(_total_heap_single_size, -(PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+  _lock.lock();
   call_free(alloc);
+  _lock.release();
+#else
+  call_free(alloc);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +249,14 @@ heap_alloc_array(size_t size) {
   AtomicAdjust::add(_total_heap_array_size, (PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+  _lock.lock();
   void *alloc = call_malloc(inflate_size(size));
+  _lock.release();
+#else
+  void *alloc = call_malloc(inflate_size(size));
+#endif
+
   if (alloc == (void *)NULL) {
     cerr << "Out of memory!\n";
     abort();
@@ -257,7 +281,14 @@ heap_realloc_array(void *ptr, size_t size) {
   AtomicAdjust::add(_total_heap_array_size, (PN_int32)size-(PN_int32)orig_size);
 #endif  // DO_MEMORY_USAGE
 
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+  _lock.lock();
   alloc = call_realloc(alloc, inflate_size(size));
+  _lock.release();
+#else
+  alloc = call_realloc(alloc, inflate_size(size));
+#endif
+
   if (alloc == (void *)NULL) {
     cerr << "Out of memory!\n";
     abort();
@@ -282,7 +313,13 @@ heap_free_array(void *ptr) {
   AtomicAdjust::add(_total_heap_array_size, -(PN_int32)size);
 #endif  // DO_MEMORY_USAGE
 
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+  _lock.lock();
   call_free(alloc);
+  _lock.release();
+#else
+  call_free(alloc);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,13 +340,15 @@ bool MemoryHook::
 heap_trim(size_t pad) {
   bool trimmed = false;
 
-#if defined(USE_MEMORY_DLMALLOC) || (defined(USE_MEMORY_PTMALLOC2) && !defined(linux))
+#if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
   // Since malloc_trim() isn't standard C, we can't be sure it exists
-  // on a given platform.  But if we're using ALTERNATIVE_MALLOC, we
-  // know we have dlmalloc_trim.
+  // on a given platform.  But if we're using dlmalloc, we know we
+  // have dlmalloc_trim.
+  _lock.lock();
   if (dlmalloc_trim(pad)) {
     trimmed = true;
   }
+  _lock.release();
 #endif
 
 #ifdef WIN32
@@ -423,4 +462,30 @@ mmap_free(void *ptr, size_t size) {
 ////////////////////////////////////////////////////////////////////
 void MemoryHook::
 mark_pointer(void *, size_t, ReferenceCount *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::get_deleted_chain
+//       Access: Public
+//  Description: Returns a pointer to a global DeletedBufferChain
+//               object suitable for allocating arrays of the
+//               indicated size.  There is one unique
+//               DeletedBufferChain object for every different size.
+////////////////////////////////////////////////////////////////////
+DeletedBufferChain *MemoryHook::
+get_deleted_chain(size_t buffer_size) {
+  DeletedBufferChain *chain;
+
+  _lock.lock();
+  DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
+  if (dci != _deleted_chains.end()) {
+    chain = (*dci).second;
+  } else {
+    // Once allocated, this DeletedBufferChain object is never deleted.
+    chain = new DeletedBufferChain(buffer_size);
+    _deleted_chains.insert(DeletedChains::value_type(buffer_size, chain));
+  }
+  
+  _lock.release();
+  return chain;
 }

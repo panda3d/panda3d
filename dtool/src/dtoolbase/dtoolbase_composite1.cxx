@@ -3,6 +3,7 @@
 #include "atomicAdjustI386Impl.cxx"
 #include "atomicAdjustPosixImpl.cxx"
 #include "atomicAdjustWin32Impl.cxx"
+#include "deletedBufferChain.cxx"
 #include "dtoolbase.cxx"
 #include "memoryBase.cxx"
 #include "memoryHook.cxx"

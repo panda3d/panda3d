@@ -28,58 +28,14 @@ template<class Type>
 INLINE Type *DeletedChain<Type>::
 allocate(size_t size, TypeHandle type_handle) {
   TAU_PROFILE("Type *DeletedChain<Type>::allocate(size_t, TypeHandle)", " ", TAU_USER);
-  assert(size <= sizeof(Type));
-
-  size_t alloc_size = sizeof(Type);
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we also need to reserve space for _flag.
-  alloc_size += sizeof(PN_int32);
-#endif  // NDEBUG
-
-  ObjectNode *obj;
-
-  init_lock();
-  _lock->lock();
-  if (_deleted_chain != (ObjectNode *)NULL) {
-    obj = _deleted_chain;
-    _deleted_chain = _deleted_chain->_next;
-    _lock->release();
-
-#ifdef USE_DELETEDCHAINFLAG
-    assert(obj->_flag == (PN_int32)DCF_deleted);
-    obj->_flag = DCF_alive;
-#endif  // NDEBUG
-
-    Type *ptr = node_to_type(obj);
+  init_deleted_chain();
+  void *ptr = _chain->allocate(size, type_handle);
 
 #ifdef DO_MEMORY_USAGE
-    type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
-    type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-    memory_hook->mark_pointer(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
+  memory_hook->mark_pointer(ptr, _chain->get_buffer_size(), make_ref_ptr(ptr));
 #endif  // DO_MEMORY_USAGE
 
-    return ptr;
-  }
-  _lock->release();
-
-  // If we get here, the deleted_chain is empty; we have to allocate a
-  // new object from the system pool.
-
-  alloc_size = max(alloc_size, sizeof(ObjectNode));
-  obj = (ObjectNode *)NeverFreeMemory::alloc(alloc_size);
-
-#ifdef USE_DELETEDCHAINFLAG
-  obj->_flag = DCF_alive;
-#endif  // USE_DELETEDCHAINFLAG
-
-  Type *ptr = node_to_type(obj);
-
-#ifdef DO_MEMORY_USAGE
-  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-  memory_hook->mark_pointer(ptr, max(size, sizeof(ObjectNode)), make_ref_ptr(ptr));
-#endif  // DO_MEMORY_USAGE
-
-  return ptr;
+  return (Type *)ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,47 +47,18 @@ template<class Type>
 INLINE void DeletedChain<Type>::
 deallocate(Type *ptr, TypeHandle type_handle) {
   TAU_PROFILE("void DeletedChain<Type>::deallocate(Type *, TypeHandle)", " ", TAU_USER);
-  assert(ptr != (Type *)NULL);
 
 #ifdef DO_MEMORY_USAGE
-  size_t alloc_size = sizeof(Type);
-
   memory_hook->mark_pointer(ptr, 0, make_ref_ptr(ptr));
+#endif
 
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we also need to reserve space for _flag.
-  alloc_size += sizeof(PN_int32);
-#endif  // NDEBUG
-  type_handle.dec_memory_usage(TypeHandle::MC_deleted_chain_active, alloc_size);
-  type_handle.inc_memory_usage(TypeHandle::MC_deleted_chain_inactive, alloc_size);
+  // We have to call this again, even though it must have been called
+  // in allocate(), because with template resolution across dll's it
+  // is possible that this DeletedChain object is not the same one
+  // that allocated the object.
+  init_deleted_chain();
 
-#endif  // DO_MEMORY_USAGE
-
-  ObjectNode *obj = type_to_node(ptr);
-
-#ifdef USE_DELETEDCHAINFLAG
-  PN_int32 orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
-
-  // If this assertion is triggered, you double-deleted an object.
-  assert(orig_flag != (PN_int32)DCF_deleted);
-
-  // If this assertion is triggered, you tried to delete an object
-  // that was never allocated, or you have heap corruption.
-  assert(orig_flag == (PN_int32)DCF_alive);
-#endif  // NDEBUG
-
-  // We have to test the lock again, even though we must have
-  // allocated this object at some point, because Windows might make
-  // multiple different DeletedChain instances for a particular Type,
-  // and there's no guarantee this one is the same one we used to
-  // allocate this object.
-  init_lock();
-  _lock->lock();
-
-  obj->_next = _deleted_chain;
-  _deleted_chain = obj;
-
-  _lock->release();
+  _chain->deallocate(ptr, type_handle);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,16 +75,13 @@ template<class Type>
 INLINE bool DeletedChain<Type>::
 validate(const Type *ptr) {
   TAU_PROFILE("bool DeletedChain<Type>::validate(Type *)", " ", TAU_USER);
-  if (ptr == (Type *)NULL) {
-    return false;
-  }
 
 #ifdef USE_DELETEDCHAINFLAG
-  const ObjectNode *obj = type_to_node((Type *)ptr);
-  return AtomicAdjust::get(obj->_flag) == DCF_alive;
+  init_deleted_chain();
+  return _chain->validate((void *)ptr);
 #else
   return true;
-#endif  // NDEBUG
+#endif  // USE_DELETEDCHAINFLAG
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,76 +119,20 @@ make_ref_ptr(ReferenceCount *ptr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::node_to_type
-//       Access: Private, Static
-//  Description: Casts an ObjectNode* to a Type*.
-////////////////////////////////////////////////////////////////////
-template<class Type>
-INLINE Type *DeletedChain<Type>::
-node_to_type(TYPENAME DeletedChain<Type>::ObjectNode *node) {
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we increment the pointer so that the
-  // returned data does not overlap our _flags member.
-  return (Type *)(((PN_int32 *)node) + 1);
-#else
-  return (Type *)node;
-#endif  // NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::type_to_node
-//       Access: Private, Static
-//  Description: Casts a Type* to an ObjectNode* .
-////////////////////////////////////////////////////////////////////
-template<class Type>
-INLINE TYPENAME DeletedChain<Type>::ObjectNode *DeletedChain<Type>::
-type_to_node(Type *ptr) {
-#ifdef USE_DELETEDCHAINFLAG
-  // In development mode, we decrement the pointer to undo the
-  // increment we did above.
-  return (ObjectNode *)(((PN_int32 *)ptr) - 1);
-#else
-  return (ObjectNode *)ptr;
-#endif  // NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::init_lock
+//     Function: DeletedChain::init_deleted_chain
 //       Access: Private
-//  Description: Ensures the lock pointer has been allocated.
-////////////////////////////////////////////////////////////////////
-template<class Type>
-INLINE void DeletedChain<Type>::
-init_lock() {
-  if (_lock == (MutexImpl *)NULL) {
-    do_init_lock(_lock);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DeletedChain::do_init_lock
-//       Access: Private
-//  Description: Allocates the lock pointer if necessary.  Takes some
-//               pains to protect itself from race conditions.
-//
-//               We have to receive the MutexImpl object as a
-//               parameter, because this is a non-inline function, and
-//               the template pointer might get evaluated differently
-//               for inline vs. non-inline functions.
+//  Description: Assigns the _chain pointer if it is not already
+//               assigned.  This can't be done by a constructor, since
+//               often the DeletedChain instance is used before its
+//               static construct has had a chance to be called.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
 void DeletedChain<Type>::
-do_init_lock(MutexImpl *&lock) {
-  MutexImpl *new_lock = new MutexImpl;
-
-  MutexImpl *result;
-  result = (MutexImpl *)AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)lock, (void *)NULL, (void *)new_lock);
-  
-  if (result != NULL) {
-    delete new_lock;
+init_deleted_chain() {
+  if (_chain == (DeletedBufferChain *)NULL) {
+    init_memory_hook();
+    _chain = memory_hook->get_deleted_chain(sizeof(Type));
   }
-  
-  assert(lock != (MutexImpl *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

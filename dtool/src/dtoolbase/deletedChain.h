@@ -20,35 +20,8 @@
 #define DELETEDCHAIN_H
 
 #include "dtoolbase.h"
-#include "neverFreeMemory.h"
-#include "mutexImpl.h"
-#include "atomicAdjust.h"
-#include "numeric_types.h"
-#include "register_type.h"
-#include "typeHandle.h"
+#include "deletedBufferChain.h"
 #include <assert.h>
-
-// Though it's tempting, it doesn't seem to be possible to implement
-// DeletedChain via the atomic exchange operation.  Specifically, a
-// pointer may be removed from the head of the chain, then the same
-// pointer reinserted in the chain, while another thread is waiting;
-// and that thread will not detect the change.  So instead, we always
-// use a mutex.
-
-#ifndef NDEBUG
-// In development mode, we define USE_DELETEDCHAINFLAG, which
-// triggers the piggyback of an additional word of data on every
-// allocated block, so we can ensure that an object is not
-// double-deleted and that the deleted chain remains intact.
-#define USE_DELETEDCHAINFLAG 1
-#endif // NDEBUG
-
-#ifdef USE_DELETEDCHAINFLAG
-enum DeletedChainFlag {
-  DCF_deleted = 0xfeedba0f,
-  DCF_alive = 0x12487654,
-};
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DeletedChain
@@ -59,13 +32,10 @@ enum DeletedChainFlag {
 //               allocated that matches that type, the same space is
 //               just reused.
 //
-//               This is particularly important to do in the case of a
-//               multithreaded pipeline, so we minimize contention
-//               between the parallel threads.  If we didn't do this,
-//               the threads might compete overmuch on the system
-//               mutex protecting the malloc() call.  This way, there
-//               can be a different mutex for each type of object; or on
-//               some systems (e.g. i386), no mutex at all.
+//               This class is actually a layer on top of
+//               DeletedBufferChain, which handles the actual
+//               allocation.  This class just provides the
+//               typecasting.
 //
 //               Of course, this trick of maintaining the deleted
 //               object chain won't work in the presence of
@@ -88,31 +58,9 @@ public:
   static INLINE ReferenceCount *make_ref_ptr(ReferenceCount *ptr);
 
 private:
-  class ObjectNode {
-  public:
-#ifdef USE_DELETEDCHAINFLAG
-    // In development mode, we piggyback this extra data.  This is
-    // maintained out-of-band from the actual pointer returned, so we
-    // can safely use this flag to indicate the difference between
-    // allocated and freed pointers.
-    TVOLATILE PN_int32 _flag;
-#endif
+  INLINE void init_deleted_chain();
 
-    // This pointer sits in the same space referenced by the actual
-    // pointer returned (unlike _flag, above).  It's only used when
-    // the object is deleted, so there's no harm in sharing space with
-    // the undeleted object.
-    ObjectNode *_next;
-  };
-
-  static INLINE Type *node_to_type(ObjectNode *node);
-  static INLINE ObjectNode *type_to_node(Type *ptr);
-
-  ObjectNode *_deleted_chain;
-  
-  INLINE void init_lock();
-  void do_init_lock(MutexImpl *&lock);
-  MutexImpl *_lock;
+  DeletedBufferChain *_chain;
 };
 
 ////////////////////////////////////////////////////////////////////

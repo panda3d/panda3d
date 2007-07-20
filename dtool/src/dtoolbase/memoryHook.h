@@ -22,6 +22,10 @@
 #include "dtoolbase.h"
 #include "numeric_types.h"
 #include "atomicAdjust.h"
+#include "mutexImpl.h"
+#include <map>
+
+class DeletedBufferChain;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryHook
@@ -65,9 +69,9 @@ public:
 
   virtual void mark_pointer(void *ptr, size_t orig_size, ReferenceCount *ref_ptr);
 
-private:
-  size_t _page_size;
+  DeletedBufferChain *get_deleted_chain(size_t buffer_size);
 
+private:
   INLINE static size_t inflate_size(size_t size);
   INLINE static void *alloc_to_ptr(void *alloc, size_t size);
   INLINE static void *ptr_to_alloc(void *ptr, size_t &size);
@@ -79,6 +83,14 @@ protected:
   TVOLATILE PN_int32 _requested_heap_size;
   TVOLATILE PN_int32 _total_mmap_size;
 #endif
+
+private:
+  size_t _page_size;
+
+  typedef map<size_t, DeletedBufferChain *> DeletedChains;
+  DeletedChains _deleted_chains;
+
+  MutexImpl _lock;
 };
 
 #include "memoryHook.I"
