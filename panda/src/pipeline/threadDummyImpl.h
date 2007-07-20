@@ -40,7 +40,7 @@ class Thread;
 //               applications.  This simply fails whenever you try to
 //               start a thread.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ThreadDummyImpl {
+class EXPCL_PANDA_PIPELINE ThreadDummyImpl {
 public:
   INLINE ThreadDummyImpl(Thread *parent_obj);
   INLINE ~ThreadDummyImpl();

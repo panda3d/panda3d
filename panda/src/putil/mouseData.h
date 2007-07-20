@@ -29,7 +29,7 @@
 //               pointer input device, such as the mouse in the
 //               GraphicsWindow.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseData {
+class EXPCL_PANDA_PUTIL MouseData {
 PUBLISHED:
   INLINE MouseData();
   INLINE MouseData(const MouseData &copy);

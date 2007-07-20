@@ -28,7 +28,7 @@
 // Description : A light originating from a single point in space, and
 //               shining in all directions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PointLight : public LightNode {
+class EXPCL_PANDA_PGRAPH PointLight : public LightNode {
 PUBLISHED:
   PointLight(const string &name);
 
@@ -62,7 +62,7 @@ public:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

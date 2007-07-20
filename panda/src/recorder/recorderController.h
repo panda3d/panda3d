@@ -36,7 +36,7 @@ class RecorderFrame;
 //               user's runtime inputs to a bam file so that the
 //               session can be recreated later.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RecorderController : public TypedReferenceCount {
+class EXPCL_PANDA_RECORDER RecorderController : public TypedReferenceCount {
 PUBLISHED:
   RecorderController();
   ~RecorderController();

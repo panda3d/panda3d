@@ -82,7 +82,7 @@ private:
 
 // And now we instantiate a few useful types.
 
-class EXPCL_PANDA ACMatrixSwitchType {
+class EXPCL_PANDA_CHAN ACMatrixSwitchType {
 public:
   typedef LMatrix4f ValueType;
   static const char *get_channel_type_name() { return "AnimChannelMatrix"; }
@@ -100,11 +100,11 @@ public:
   }
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, AnimChannel<ACMatrixSwitchType>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, AnimChannel<ACMatrixSwitchType>);
 typedef AnimChannel<ACMatrixSwitchType> AnimChannelMatrix;
 
 
-class EXPCL_PANDA ACScalarSwitchType {
+class EXPCL_PANDA_CHAN ACScalarSwitchType {
 public:
   typedef float ValueType;
   static const char *get_channel_type_name() { return "AnimChannelScalar"; }
@@ -123,7 +123,7 @@ public:
   }
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, AnimChannel<ACScalarSwitchType>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, AnimChannel<ACScalarSwitchType>);
 typedef AnimChannel<ACScalarSwitchType> AnimChannelScalar;
 
 

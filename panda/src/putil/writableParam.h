@@ -33,7 +33,7 @@
 //               object.  Simply contains a Datagram for the object
 //               to construct itself from.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WritableParam : public FactoryParam {
+class EXPCL_PANDA_PUTIL WritableParam : public FactoryParam {
 public:
   INLINE const Datagram &get_datagram();
 

@@ -32,7 +32,7 @@
 //               etc. using the AnimInterface controls, similar to an
 //               animated character.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VideoTexture : public Texture, public AnimInterface {
+class EXPCL_PANDA_GOBJ VideoTexture : public Texture, public AnimInterface {
 protected:
   VideoTexture(const string &name);
   VideoTexture(const VideoTexture &copy);

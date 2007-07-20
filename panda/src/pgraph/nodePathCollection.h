@@ -30,7 +30,7 @@
 //               multiple NodePaths (for instance,
 //               NodePaths::get_children).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodePathCollection {
+class EXPCL_PANDA_PGRAPH NodePathCollection {
 PUBLISHED:
   NodePathCollection();
   NodePathCollection(const NodePathCollection &copy);

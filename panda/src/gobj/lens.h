@@ -42,7 +42,7 @@ class BoundingVolume;
 //               also used in other contexts, however; for instance, a
 //               Spotlight is also defined using a lens.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Lens : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ Lens : public TypedWritableReferenceCount {
 public:
   Lens();
   Lens(const Lens &copy);
@@ -299,7 +299,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA INLINE ostream &operator << (ostream &out, const Lens &lens);
+EXPCL_PANDA_GOBJ INLINE ostream &operator << (ostream &out, const Lens &lens);
 
 #include "lens.I"
 

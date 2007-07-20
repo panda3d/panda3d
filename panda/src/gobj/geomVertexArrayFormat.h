@@ -54,7 +54,7 @@ class BamReader;
 //               data may be piggybacked into the data record simply
 //               by choosing a unique name.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayFormat : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexArrayFormat : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexArrayFormat();
   GeomVertexArrayFormat(const GeomVertexArrayFormat &copy);
@@ -143,7 +143,7 @@ private:
 
   // This is the global registry of all currently-in-use array formats.
   typedef pset<GeomVertexArrayFormat *, IndirectCompareTo<GeomVertexArrayFormat> > ArrayFormats;
-  class EXPCL_PANDA Registry {
+  class EXPCL_PANDA_GOBJ Registry {
   public:
     Registry();
     CPT(GeomVertexArrayFormat) register_format(GeomVertexArrayFormat *format);

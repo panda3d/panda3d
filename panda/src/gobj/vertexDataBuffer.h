@@ -60,7 +60,7 @@
 //               pages, where they may be written to disk as a block
 //               when necessary.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataBuffer {
+class EXPCL_PANDA_GOBJ VertexDataBuffer {
 public:
   INLINE VertexDataBuffer();
   INLINE VertexDataBuffer(size_t size);

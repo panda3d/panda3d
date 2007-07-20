@@ -44,7 +44,7 @@ class TransformState;
 //               defines the hierarchy of moving parts that make up an
 //               animatable object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartBundle : public PartGroup {
+class EXPCL_PANDA_CHAN PartBundle : public PartGroup {
 public:
 
   // This is passed down through the MovingParts during the

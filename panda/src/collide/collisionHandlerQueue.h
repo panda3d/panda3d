@@ -33,7 +33,7 @@
 //               useful when a simple intersection test is being made,
 //               e.g. for picking from the window.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandlerQueue : public CollisionHandler {
+class EXPCL_PANDA_COLLIDE CollisionHandlerQueue : public CollisionHandler {
 PUBLISHED:
   CollisionHandlerQueue();
 

@@ -32,7 +32,7 @@ class PNMFileType;
 // Description : This class maintains the set of all known
 //               PNMFileTypes in the universe.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeRegistry {
+class EXPCL_PANDA_PNMIMAGE PNMFileTypeRegistry {
 protected:
   PNMFileTypeRegistry();
 

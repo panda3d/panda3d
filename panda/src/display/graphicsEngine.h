@@ -56,7 +56,7 @@ class Texture;
 //               simply calls engine->render_frame() and considers it
 //               done.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsEngine {
+class EXPCL_PANDA_DISPLAY GraphicsEngine {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
   ~GraphicsEngine();

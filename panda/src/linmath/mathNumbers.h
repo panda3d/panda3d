@@ -20,7 +20,7 @@
 
 #include "pandabase.h"
 
-class EXPCL_PANDA MathNumbers {
+class EXPCL_PANDA_LINMATH MathNumbers {
 PUBLISHED:
   static const float pi_f;
   static const float rad_2_deg_f;

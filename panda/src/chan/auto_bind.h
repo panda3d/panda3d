@@ -36,7 +36,7 @@ BEGIN_PUBLISH
 //               The list of all resulting AnimControls created is
 //               filled into controls.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA void
+EXPCL_PANDA_CHAN void
 auto_bind(PandaNode *root_node, AnimControlCollection &controls,
           int hierarchy_match_flags = 0);
 END_PUBLISH

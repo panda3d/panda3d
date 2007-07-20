@@ -31,7 +31,7 @@
 //               instead of flat ends.  It looks more like a Contac
 //               pill.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionTube : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionTube : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionTube(const LPoint3f &a, const LPoint3f &db,
                        float radius);

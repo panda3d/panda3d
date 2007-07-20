@@ -43,7 +43,7 @@ class DatagramIterator;
 //               contain an infinite number of bits.  You can use it
 //               very much as you would use a BitMask.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BitArray {
+class EXPCL_PANDA_PUTIL BitArray {
 public:
   typedef BitMaskNative MaskType;
   typedef MaskType::WordType WordType;

@@ -45,7 +45,7 @@ class DatagramIterator;
 //               without it, it will fall back on lossless output of
 //               the original data.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FFTCompressor {
+class EXPCL_PANDA_MATHUTIL FFTCompressor {
 public:
   FFTCompressor();
 

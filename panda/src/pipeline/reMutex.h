@@ -35,9 +35,9 @@
 //               definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
 #ifdef DEBUG_THREADS
-class EXPCL_PANDA ReMutex : public MutexDebug
+class EXPCL_PANDA_PIPELINE ReMutex : public MutexDebug
 #else
-class EXPCL_PANDA ReMutex : public ReMutexDirect
+class EXPCL_PANDA_PIPELINE ReMutex : public ReMutexDirect
 #endif  // DEBUG_THREADS
 {
 PUBLISHED:

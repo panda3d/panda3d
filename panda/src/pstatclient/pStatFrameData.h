@@ -37,7 +37,7 @@ class PStatClient;
 //               well as a table of level values, associated with a
 //               number of collectors within a single frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatFrameData {
+class EXPCL_PANDA_PSTATCLIENT PStatFrameData {
 public:
   INLINE bool is_time_empty() const;
   INLINE bool is_level_empty() const;

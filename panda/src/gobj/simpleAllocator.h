@@ -34,7 +34,7 @@ class SimpleAllocatorBlock;
 //               simple first-fit algorithm to find the next available
 //               space.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SimpleAllocator : public LinkedListNode {
+class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleAllocator(size_t max_size, Mutex &lock);
   virtual ~SimpleAllocator();
@@ -96,7 +96,7 @@ protected:
 // Description : A single block as returned from
 //               SimpleAllocator::alloc().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SimpleAllocatorBlock : public LinkedListNode {
+class EXPCL_PANDA_GOBJ SimpleAllocatorBlock : public LinkedListNode {
 protected:
   INLINE SimpleAllocatorBlock(SimpleAllocator *alloc,
                               size_t start, size_t size);

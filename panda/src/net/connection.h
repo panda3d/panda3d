@@ -33,7 +33,7 @@ class NetDatagram;
 // Description : Represents a single TCP or UDP socket for input or
 //               output.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Connection : public ReferenceCount {
+class EXPCL_PANDA_NET Connection : public ReferenceCount {
 PUBLISHED:
   Connection(ConnectionManager *manager, Socket_IP *socket);
   ~Connection();

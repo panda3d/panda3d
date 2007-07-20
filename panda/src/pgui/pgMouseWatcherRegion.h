@@ -32,7 +32,7 @@ class PGItem;
 //               system.  Each PGItem corresponds to exactly one
 //               PGMouseWatcherRegion.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherRegion : public MouseWatcherRegion {
+class EXPCL_PANDA_PGUI PGMouseWatcherRegion : public MouseWatcherRegion {
 public:
   PGMouseWatcherRegion(PGItem *item);
   virtual ~PGMouseWatcherRegion();

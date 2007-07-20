@@ -38,7 +38,7 @@
 //               texture and store it here.  The texture stores all of
 //               these handles internally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureContext : public BufferContext {
+class EXPCL_PANDA_GOBJ TextureContext : public BufferContext {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
 

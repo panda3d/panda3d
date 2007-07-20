@@ -36,7 +36,7 @@ class TexturePoolFilter;
 //               the same textures don't waste texture memory
 //               unnecessarily.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TexturePool {
+class EXPCL_PANDA_GOBJ TexturePool {
 PUBLISHED:
   // These functions take string parameters instead of Filenames
   // because that's somewhat more convenient to the scripting

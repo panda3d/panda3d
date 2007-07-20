@@ -40,7 +40,7 @@
 //               In the case of OpenGL, for example, a GeomContext
 //               corresponds to a display list identifier.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomContext : public SavedContext {
+class EXPCL_PANDA_GOBJ GeomContext : public SavedContext {
 public:
   INLINE GeomContext(Geom *geom);
 

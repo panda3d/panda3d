@@ -53,7 +53,7 @@
 //               you may use however you like.  Each time you call
 //               generate() a new node is returned.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextNode : public PandaNode, public TextEncoder, public TextProperties {
+class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
   TextNode(const string &name);
   TextNode(const string &name, const TextProperties &copy);

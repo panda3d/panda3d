@@ -33,7 +33,7 @@
 // Description : This represents a collection of MouseWatcherRegions
 //               that may be managed as a group.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseWatcherGroup : virtual public ReferenceCount {
+class EXPCL_PANDA_TFORM MouseWatcherGroup : virtual public ReferenceCount {
 public:
   MouseWatcherGroup();
   virtual ~MouseWatcherGroup();

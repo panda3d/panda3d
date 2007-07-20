@@ -32,7 +32,7 @@
 // Description : Implements a simple condition variable using
 //               simulated user-space threads.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarSimpleImpl : public BlockerSimple {
+class EXPCL_PANDA_PIPELINE ConditionVarSimpleImpl : public BlockerSimple {
 public:
   INLINE ConditionVarSimpleImpl(MutexTrueImpl &mutex);
   INLINE ~ConditionVarSimpleImpl();

@@ -28,7 +28,7 @@
 //       Class : PerspectiveLens
 // Description : A perspective-type lens: a normal camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PerspectiveLens : public Lens {
+class EXPCL_PANDA_GOBJ PerspectiveLens : public Lens {
 PUBLISHED:
   INLINE PerspectiveLens();
 

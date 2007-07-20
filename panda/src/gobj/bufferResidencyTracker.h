@@ -37,7 +37,7 @@ class BufferContext;
 //               The primary purpose of this class is to facilitate
 //               PStats reporting of video card memory usage.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BufferResidencyTracker {
+class EXPCL_PANDA_GOBJ BufferResidencyTracker {
 public:
   BufferResidencyTracker(const string &pgo_name, const string &type_name);
 

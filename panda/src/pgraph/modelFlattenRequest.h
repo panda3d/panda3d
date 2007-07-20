@@ -34,7 +34,7 @@
 //               original model; and when the result is done it may be
 //               retrieved from this object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModelFlattenRequest : public AsyncTask {
+class EXPCL_PANDA_PGRAPH ModelFlattenRequest : public AsyncTask {
 PUBLISHED:
   INLINE ModelFlattenRequest(PandaNode *orig);
   

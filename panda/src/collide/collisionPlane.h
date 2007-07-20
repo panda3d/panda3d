@@ -30,7 +30,7 @@
 //       Class : CollisionPlane
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionPlane : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionPlane : public CollisionSolid {
 protected:
   INLINE CollisionPlane();
 

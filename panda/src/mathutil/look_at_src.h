@@ -31,11 +31,11 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDA void
+EXPCL_PANDA_MATHUTIL void
 heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
          const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
          CoordinateSystem cs = CS_default);
-EXPCL_PANDA void
+EXPCL_PANDA_MATHUTIL void
 look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
         const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
         CoordinateSystem cs = CS_default);

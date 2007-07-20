@@ -29,7 +29,7 @@
 //               center and a radius.  It is always a sphere, and
 //               never an ellipsoid or other quadric.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingSphere : public FiniteBoundingVolume {
+class EXPCL_PANDA_MATHUTIL BoundingSphere : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingSphere();
   INLINE_MATHUTIL BoundingSphere(const LPoint3f &center, float radius);

@@ -27,7 +27,7 @@
 //       Class : InternalNameCollection
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA InternalNameCollection {
+class EXPCL_PANDA_PGRAPH InternalNameCollection {
 PUBLISHED:
   InternalNameCollection();
   InternalNameCollection(const InternalNameCollection &copy);

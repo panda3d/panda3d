@@ -28,7 +28,7 @@
 //               data to an internal buffer, which can be retrieved
 //               and/or set as a string.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StringStream : public iostream {
+class EXPCL_PANDA_PUTIL StringStream : public iostream {
 PUBLISHED:
   INLINE StringStream();
   INLINE StringStream(const string &source);

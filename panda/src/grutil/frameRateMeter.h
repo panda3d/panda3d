@@ -42,7 +42,7 @@ class ClockObject;
 //               done, it creates a DisplayRegion for itself and renders
 //               itself in the upper-right-hand corner.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FrameRateMeter : public TextNode {
+class EXPCL_PANDA_GRUTIL FrameRateMeter : public TextNode {
 PUBLISHED:
   FrameRateMeter(const string &name);
   virtual ~FrameRateMeter();

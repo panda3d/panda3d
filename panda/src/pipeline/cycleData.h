@@ -44,14 +44,14 @@ class DatagramIterator;
 // since we want to make a distinction between references within the
 // cycler, and references outside the cycler
 // (e.g. GeomPipelineReader), we make it a NodeReferenceCount.
-class EXPCL_PANDA CycleData : public NodeReferenceCount 
+class EXPCL_PANDA_PIPELINE CycleData : public NodeReferenceCount 
 
 #else  // !DO_PIPELINING
 
 // If we are *not* compiling in pipelining support, the CycleData
 // object is stored directly within its containing classes, and hence
 // should not be a ReferenceCount object.
-class EXPCL_PANDA CycleData
+class EXPCL_PANDA_PIPELINE CycleData
 
 #endif  // DO_PIPELINING
 {

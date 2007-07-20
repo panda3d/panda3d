@@ -31,7 +31,7 @@ class Datagram;
 //               client on the TCP socket to establish critical
 //               control information.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatServerControlMessage {
+class EXPCL_PANDA_PSTATCLIENT PStatServerControlMessage {
 public:
   PStatServerControlMessage();
 

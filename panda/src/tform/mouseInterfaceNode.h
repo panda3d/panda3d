@@ -35,7 +35,7 @@ class ButtonEventList;
 //               It collects together some common interface; in
 //               particular, the require_button() and related methods.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseInterfaceNode : public DataNode {
+class EXPCL_PANDA_TFORM MouseInterfaceNode : public DataNode {
 public:
   MouseInterfaceNode(const string &name);
   virtual ~MouseInterfaceNode();

@@ -38,7 +38,7 @@
 //               It may be parented anywhere in the scene graph where
 //               it will be rendered to achieve this.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionVisualizer : public PandaNode, public CollisionRecorder {
+class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
 PUBLISHED:
   CollisionVisualizer(const string &name);
   virtual ~CollisionVisualizer();

@@ -64,7 +64,7 @@
 
 #include "pandabase.h"
 
-class EXPCL_PANDA Mersenne {
+class EXPCL_PANDA_MATHUTIL Mersenne {
 PUBLISHED:
   Mersenne(unsigned long seed);
   unsigned long get_uint31();

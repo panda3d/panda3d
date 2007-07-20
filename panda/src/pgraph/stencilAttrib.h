@@ -33,7 +33,7 @@ class FactoryParams;
 //               supported, call the function GraphicsStateGuardian::
 //               get_supports_two_sided_stencil.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StencilAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH StencilAttrib : public RenderAttrib {
 
 private:
   StencilAttrib();

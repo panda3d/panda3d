@@ -29,7 +29,7 @@
 //               this records the number of fragments (pixels) that
 //               passed the depth test between the bracketing calls.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA OcclusionQueryContext : public QueryContext {
+class EXPCL_PANDA_GOBJ OcclusionQueryContext : public QueryContext {
 public:
   INLINE OcclusionQueryContext();
 

@@ -56,7 +56,7 @@ class Socket_IP;
 //               it to accept connections on a rendezvous socket
 //               rather than read datagrams.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConnectionReader {
+class EXPCL_PANDA_NET ConnectionReader {
 PUBLISHED:
   // The implementation here used to involve NSPR's multi-wait
   // interface, but that got too complicated to manage.  It turns out

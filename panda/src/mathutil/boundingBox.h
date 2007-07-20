@@ -32,7 +32,7 @@
 //               This box is always axis-aligned.  If you need a more
 //               general bounding box, try BoundingHexahedron.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingBox : public FiniteBoundingVolume {
+class EXPCL_PANDA_MATHUTIL BoundingBox : public FiniteBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingBox();
   INLINE_MATHUTIL BoundingBox(const LPoint3f &min, const LPoint3f &max);

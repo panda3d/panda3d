@@ -31,7 +31,7 @@ typedef unsigned int StencilType;
 //               each render state. The "set_stencil_render_state"
 //               function can be used in an immediate-mode fashion.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StencilRenderStates {
+class EXPCL_PANDA_DISPLAY StencilRenderStates {
 
 PUBLISHED:
   enum StencilRenderState

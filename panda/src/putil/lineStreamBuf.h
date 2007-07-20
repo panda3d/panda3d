@@ -30,7 +30,7 @@
 //               continuously extracted as a sequence of lines of
 //               text.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LineStreamBuf : public streambuf {
+class EXPCL_PANDA_PUTIL LineStreamBuf : public streambuf {
 public:
   LineStreamBuf();
   virtual ~LineStreamBuf();

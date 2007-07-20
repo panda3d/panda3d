@@ -31,7 +31,7 @@ class FactoryParams;
 //               bins must be created separately via the
 //               CullBinManager interface.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH CullBinAttrib : public RenderAttrib {
 private:
   INLINE CullBinAttrib();
 

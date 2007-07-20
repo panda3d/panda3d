@@ -42,7 +42,7 @@ class EventQueue;
 //               language, e.g. via Scheme hooks or the messenger
 //               in Python.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventHandler : public TypedObject {
+class EXPCL_PANDA_EVENT EventHandler : public TypedObject {
 public:
   // Define a function type suitable for receiving events.
   typedef void EventFunction(const Event *);

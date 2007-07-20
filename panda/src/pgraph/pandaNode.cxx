@@ -33,7 +33,7 @@
 #include "reMutexHolder.h"
 
 // This category is just temporary for debugging convenience.
-NotifyCategoryDecl(drawmask, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDef(drawmask, "");
 
 PandaNodeChain PandaNode::_dirty_prev_transforms;
@@ -568,7 +568,8 @@ is_renderable() const {
 //               will impede normal use of the PandaNode.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PandaNode::
-copy_subgraph(Thread *current_thread) const {
+copy_subgraph(Thread *current_thread) const 
+{
   InstanceMap inst_map;
   return r_copy_subgraph(inst_map, current_thread);
 }

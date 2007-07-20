@@ -37,7 +37,7 @@
 //               makes it available as a transformation on the data
 //               graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TrackerNode : public DataNode {
+class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
   TrackerNode(ClientBase *client, const string &device_name);
   virtual ~TrackerNode();

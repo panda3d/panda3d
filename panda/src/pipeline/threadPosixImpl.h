@@ -36,7 +36,7 @@ class Thread;
 //       Class : ThreadPosixImpl
 // Description : Uses Posix threads to implement a thread.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ThreadPosixImpl {
+class EXPCL_PANDA_PIPELINE ThreadPosixImpl {
 public:
   INLINE ThreadPosixImpl(Thread *parent_obj);
   ~ThreadPosixImpl();

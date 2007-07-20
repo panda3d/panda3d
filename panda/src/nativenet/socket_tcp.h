@@ -12,7 +12,7 @@
 //               platform differences from machine to machine
 //
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_TCP : public Socket_IP
+class EXPCL_PANDA_NATIVENET Socket_TCP : public Socket_IP
 {
 public:    
 PUBLISHED:

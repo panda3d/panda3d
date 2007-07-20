@@ -30,7 +30,7 @@ class PGButton;
 //               notify messages when a slider bar moves or otherwise
 //               is reconfigured.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGButtonNotify : public PGItemNotify {
+class EXPCL_PANDA_PGUI PGButtonNotify : public PGItemNotify {
 public:
   INLINE PGButtonNotify();
 

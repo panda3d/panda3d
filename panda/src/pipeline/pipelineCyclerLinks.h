@@ -36,7 +36,7 @@
 //               so the Pipeline object itself can be the root of the
 //               linked list.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PipelineCyclerLinks {
+class EXPCL_PANDA_PIPELINE PipelineCyclerLinks {
 protected:
 #ifdef THREADED_PIPELINE
   INLINE PipelineCyclerLinks();

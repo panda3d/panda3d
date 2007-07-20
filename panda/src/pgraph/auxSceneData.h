@@ -36,7 +36,7 @@
 //               what point it is in the fade, separately for each
 //               instance and for each camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AuxSceneData : public TypedReferenceCount {
+class EXPCL_PANDA_PGRAPH AuxSceneData : public TypedReferenceCount {
 protected:
   INLINE AuxSceneData(double duration = 0.0);
 

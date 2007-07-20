@@ -40,7 +40,7 @@ class GeomVertexWriter;
 //               This class is particularly suited for converting cube
 //               maps to sphere maps.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FisheyeMaker : public Namable {
+class EXPCL_PANDA_GRUTIL FisheyeMaker : public Namable {
 PUBLISHED:
   INLINE FisheyeMaker(const string &name);
   INLINE ~FisheyeMaker();

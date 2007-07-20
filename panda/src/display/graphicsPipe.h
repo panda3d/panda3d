@@ -57,7 +57,7 @@ class Texture;
 //               will be used to handle multiple windows from same device.
 //
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsPipe : public TypedReferenceCount {
+class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();
 private:

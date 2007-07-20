@@ -34,7 +34,7 @@ class PandaNode;
 //               encountered on each node that might eventually be
 //               applied to the vertices at the leaves.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AccumulatedAttribs {
+class EXPCL_PANDA_PGRAPH AccumulatedAttribs {
 public:
   INLINE AccumulatedAttribs();
   INLINE AccumulatedAttribs(const AccumulatedAttribs &copy);

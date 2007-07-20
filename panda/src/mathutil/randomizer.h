@@ -26,7 +26,7 @@
 //       Class : Randomizer
 // Description : A handy class to return random numbers.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Randomizer {
+class EXPCL_PANDA_MATHUTIL Randomizer {
 public:
   INLINE Randomizer(unsigned long seed = 0);
   INLINE Randomizer(const Randomizer &copy);

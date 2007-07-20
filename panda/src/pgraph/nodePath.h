@@ -151,7 +151,7 @@ class ShaderInput;
 //               the NodePath will automatically be updated to reflect
 //               the changes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodePath {
+class EXPCL_PANDA_PGRAPH NodePath {
 PUBLISHED:
   // This enumeration is returned by get_error_type() for an empty
   // NodePath to report the reason it's empty.

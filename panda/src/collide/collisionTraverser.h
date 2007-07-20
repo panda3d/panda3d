@@ -50,7 +50,7 @@ class CollisionEntry;
 //               indicated root, calling the appropriate
 //               CollisionHandler for each detected collision.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionTraverser : public Namable {
+class EXPCL_PANDA_COLLIDE CollisionTraverser : public Namable {
 PUBLISHED:
   CollisionTraverser(const string &name = "ctrav");
   ~CollisionTraverser();

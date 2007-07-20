@@ -45,7 +45,7 @@ struct bitstream
  * Returns 0 on error.
  */
 
-EXPCL_PANDA struct bitstream *
+EXPCL_PANDA_PNMIMAGE struct bitstream *
 pm_bitinit(istream *f, char *mode)
 {
         struct bitstream *ans = (struct bitstream *)0;
@@ -65,7 +65,7 @@ pm_bitinit(istream *f, char *mode)
         return ans;
 }
 
-EXPCL_PANDA struct bitstream *
+EXPCL_PANDA_PNMIMAGE struct bitstream *
 pm_bitinit(ostream *f, char *mode)
 {
         struct bitstream *ans = (struct bitstream *)0;
@@ -95,7 +95,7 @@ pm_bitinit(ostream *f, char *mode)
  * Returns the number of bytes written, -1 on error.
  */
 
-EXPCL_PANDA int
+EXPCL_PANDA_PNMIMAGE int
 pm_bitfini(struct bitstream *b)
 {
         int             nbyte = 0;
@@ -142,7 +142,7 @@ pm_bitfini(struct bitstream *b)
  * Returns the number of bytes read, -1 on error.
  */
 
-EXPCL_PANDA int
+EXPCL_PANDA_PNMIMAGE int
 pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
 {
         int             nbyte = 0;
@@ -178,7 +178,7 @@ pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
  * Returns the number of bytes written, -1 on error.
  */
 
-EXPCL_PANDA int
+EXPCL_PANDA_PNMIMAGE int
 pm_bitwrite(struct bitstream *b, unsigned long nbits, unsigned long val)
 {
         int             nbyte = 0;

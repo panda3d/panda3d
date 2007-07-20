@@ -32,7 +32,7 @@ class Filename;
 // Description : This class maintains the set of all known
 //               LoaderFileTypes in the universe.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LoaderFileTypeRegistry {
+class EXPCL_PANDA_PGRAPH LoaderFileTypeRegistry {
 protected:
   LoaderFileTypeRegistry();
 

@@ -57,7 +57,7 @@
 //               a GeomVertexRewriter if you are going to create both
 //               of them anyway.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexReader : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexReader : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexReader(Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexReader(const GeomVertexData *vertex_data,

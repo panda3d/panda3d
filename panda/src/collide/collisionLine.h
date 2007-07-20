@@ -29,7 +29,7 @@
 //               that it extends in both directions.  It is, however,
 //               directional.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionLine : public CollisionRay {
+class EXPCL_PANDA_COLLIDE CollisionLine : public CollisionRay {
 PUBLISHED:
   INLINE CollisionLine();
   INLINE CollisionLine(const LPoint3f &origin, const LVector3f &direction);

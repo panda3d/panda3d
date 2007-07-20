@@ -69,7 +69,7 @@ PageTypeStatistics;
 
 typedef bool (*LruPageTypeFunction) (LruPage *lru_page);
 
-class EXPCL_PANDA LruPage
+class EXPCL_PANDA_DISPLAY LruPage
 {
 
 protected:
@@ -150,7 +150,7 @@ public:
 // is not enough memory available, then the lowest priority pages
 // will be paged out first until there is enough memory available.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Lru
+class EXPCL_PANDA_DISPLAY Lru
 {
 public:
 

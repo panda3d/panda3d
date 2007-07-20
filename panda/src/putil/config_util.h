@@ -30,29 +30,29 @@
 
 class DSearchPath;
 
-ConfigureDecl(config_util, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(util, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_util, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
+NotifyCategoryDecl(util, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
+NotifyCategoryDecl(bam, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 
 // Actually, we can't determine this config variable the normal way,
 // because we must be able to access it at static init time.  Instead
 // of declaring it a global constant, we'll make it a member of
 // MemoryUsage.
-//extern EXPCL_PANDA const bool track_memory_usage;
+//extern EXPCL_PANDA_PUTIL const bool track_memory_usage;
 
-extern EXPCL_PANDA ConfigVariableEnum<BamEndian> bam_endian;
-extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
+extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEndian> bam_endian;
+extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 
-extern EXPCL_PANDA ConfigVariableSearchPath model_path;
-extern EXPCL_PANDA ConfigVariableSearchPath texture_path;
-extern EXPCL_PANDA ConfigVariableSearchPath sound_path;
+extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath model_path;
+extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath texture_path;
+extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath sound_path;
 
 // The above variables are also shadowed by these functions, so that
 // they can easily be accessed in the interpreter (e.g. Python).
 BEGIN_PUBLISH
-EXPCL_PANDA ConfigVariableSearchPath &get_model_path();
-EXPCL_PANDA ConfigVariableSearchPath &get_texture_path();
-EXPCL_PANDA ConfigVariableSearchPath &get_sound_path();
+EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_model_path();
+EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_texture_path();
+EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_sound_path();
 END_PUBLISH
 
 extern ConfigVariableDouble clock_frame_rate;
@@ -61,6 +61,6 @@ extern ConfigVariableDouble max_dt;
 extern ConfigVariableDouble sleep_precision;
 extern ConfigVariableDouble average_frame_rate_interval;
 
-extern EXPCL_PANDA void init_libputil();
+extern EXPCL_PANDA_PUTIL void init_libputil();
 
 #endif /* __CONFIG_UTIL_H__ */

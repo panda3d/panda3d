@@ -52,7 +52,7 @@
 //               way to render to a texture on API's that do not
 //               support offscreen rendering.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ParasiteBuffer : public GraphicsOutput {
+class EXPCL_PANDA_DISPLAY ParasiteBuffer : public GraphicsOutput {
 public:
   ParasiteBuffer(GraphicsOutput *host, const string &name,
                  int x_size, int y_size, int flags);

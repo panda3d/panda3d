@@ -65,7 +65,7 @@ class DataNodeTransmit;
 //               PipelineCycler.  The data graph is intended to be
 //               used only within a single thread.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataNode : public PandaNode {
+class EXPCL_PANDA_DGRAPH DataNode : public PandaNode {
 PUBLISHED:
   INLINE DataNode(const string &name);
 

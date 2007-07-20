@@ -30,7 +30,7 @@
 //               consists of an arbitrary header followed by a number
 //               of datagrams.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DatagramOutputFile : public DatagramSink {
+class EXPCL_PANDA_PUTIL DatagramOutputFile : public DatagramSink {
 public:
   INLINE DatagramOutputFile();
 

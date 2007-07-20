@@ -34,7 +34,7 @@
 //               other general setup information for rendering a
 //               particular scene.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SceneSetup : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH SceneSetup : public ReferenceCount {
 public:
   INLINE SceneSetup();
 

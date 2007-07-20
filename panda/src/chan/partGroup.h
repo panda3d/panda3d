@@ -46,7 +46,7 @@ class AnimChannelBase;
 // Description : This is the base class for PartRoot and
 //               MovingPart.  It defines a hierarchy of MovingParts.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartGroup : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_CHAN PartGroup : public TypedWritableReferenceCount, public Namable {
 public:
   // This enum defines bits which may be passed into check_hierarchy()
   // and PartBundle::bind_anim() to allow an inexact match of channel

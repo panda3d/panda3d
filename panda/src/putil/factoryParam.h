@@ -35,7 +35,7 @@
 //               parameters of various types that derive from
 //               FactoryParam (and do contain data).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FactoryParam : public TypedReferenceCount {
+class EXPCL_PANDA_PUTIL FactoryParam : public TypedReferenceCount {
 public:
   INLINE FactoryParam();
   INLINE FactoryParam(const FactoryParam &other);

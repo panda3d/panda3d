@@ -45,7 +45,7 @@
 //               MutexTrueImpl, for code after pipeline to use--which
 //               maps to this class, MutexSimpleImpl).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexSimpleImpl : public BlockerSimple {
+class EXPCL_PANDA_PIPELINE MutexSimpleImpl : public BlockerSimple {
 public:
   INLINE MutexSimpleImpl();
   INLINE ~MutexSimpleImpl();

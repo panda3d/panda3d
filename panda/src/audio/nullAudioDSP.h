@@ -27,7 +27,7 @@
 class AudioManager;
 
 
-class EXPCL_PANDA nullAudioDSP : public TypedReferenceCount {
+class EXPCL_PANDA_AUDIO nullAudioDSP : public TypedReferenceCount {
 	PUBLISHED:
 	    virtual void reset();
 	    virtual void remove();

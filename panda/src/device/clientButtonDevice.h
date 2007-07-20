@@ -38,7 +38,7 @@
 //               class to a sequence of ButtonHandles specified by the
 //               user.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientButtonDevice : public ClientDevice {
+class EXPCL_PANDA_DEVICE ClientButtonDevice : public ClientDevice {
 protected:
   ClientButtonDevice(ClientBase *client, const string &device_name);
 

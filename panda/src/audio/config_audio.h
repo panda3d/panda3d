@@ -31,31 +31,31 @@
 #pragma warning (disable : 4231)
 #endif
 
-NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(audio, EXPCL_PANDA_AUDIO, EXPTP_PANDA_AUDIO);
 
-extern EXPCL_PANDA ConfigVariableBool audio_active;
-extern EXPCL_PANDA ConfigVariableInt audio_cache_limit;
-extern EXPCL_PANDA ConfigVariableDouble audio_volume;
-extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_active;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_cache_limit;
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_volume;
+extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
 
 //We Need This one.
-extern EXPCL_PANDA ConfigVariableString audio_library_name;
+extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 
 // Config vars for Fmod:
 
-extern EXPCL_PANDA ConfigVariableInt fmod_number_of_sound_channels;
-extern EXPCL_PANDA ConfigVariableBool fmod_use_surround_sound;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 
 // Config vars for Miles:
 
-extern EXPCL_PANDA ConfigVariableBool audio_software_midi;
-extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
-extern EXPCL_PANDA ConfigVariableBool audio_play_midi;
-extern EXPCL_PANDA ConfigVariableBool audio_play_wave;
-extern EXPCL_PANDA ConfigVariableBool audio_play_mp3;
-extern EXPCL_PANDA ConfigVariableInt audio_output_rate;
-extern EXPCL_PANDA ConfigVariableInt audio_output_bits;
-extern EXPCL_PANDA ConfigVariableInt audio_output_channels;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_software_midi;
+extern EXPCL_PANDA_AUDIO ConfigVariableFilename audio_dls_file;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_midi;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_wave;
+extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_play_mp3;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_rate;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_bits;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_channels;
 
 
 

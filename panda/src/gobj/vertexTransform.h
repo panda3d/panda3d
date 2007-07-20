@@ -40,7 +40,7 @@ class TransformTable;
 //               vertices.  Derived classes will define how the
 //               transform is actually computed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexTransform : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ VertexTransform : public TypedWritableReferenceCount {
 PUBLISHED:
   VertexTransform();
   virtual ~VertexTransform();
@@ -65,7 +65,7 @@ private:
   Palettes _tables;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

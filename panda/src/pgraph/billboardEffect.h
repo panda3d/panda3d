@@ -31,7 +31,7 @@
 //               automatically rotate to face the camera, or any other
 //               arbitrary node.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BillboardEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH BillboardEffect : public RenderEffect {
 private:
   INLINE BillboardEffect();
 

@@ -26,7 +26,7 @@
 // This class intentionally does next to nothing.
 // It's used as a placeholder when you don't want a sound
 // system.
-class EXPCL_PANDA NullAudioSound : public AudioSound {
+class EXPCL_PANDA_AUDIO NullAudioSound : public AudioSound {
   // All of these methods are stubbed out to some degree.
   // If you're looking for a starting place for a new AudioManager,
   // please consider looking at the milesAudioManager.

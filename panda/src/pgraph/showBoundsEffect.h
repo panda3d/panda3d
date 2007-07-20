@@ -32,7 +32,7 @@ class FactoryParams;
 //               used only during development to help identify
 //               bounding volume issues.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ShowBoundsEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH ShowBoundsEffect : public RenderEffect {
 private:
   INLINE ShowBoundsEffect();
 

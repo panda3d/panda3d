@@ -44,7 +44,7 @@ static const int maximum_udp_datagram = 1024;
 //               only in that it knows which Connection and/or
 //               NetAddress it is to be sent to or was received from.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NetDatagram : public Datagram {
+class EXPCL_PANDA_NET NetDatagram : public Datagram {
 PUBLISHED:
   NetDatagram();
   NetDatagram(const void *data, size_t size);

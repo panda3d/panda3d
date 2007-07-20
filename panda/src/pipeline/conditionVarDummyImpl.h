@@ -33,7 +33,7 @@ class MutexDummyImpl;
 //               single-threaded applications that don't need any
 //               synchronization control.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDummyImpl {
+class EXPCL_PANDA_PIPELINE ConditionVarDummyImpl {
 public:
   INLINE ConditionVarDummyImpl(MutexDummyImpl &mutex);
   INLINE ~ConditionVarDummyImpl();

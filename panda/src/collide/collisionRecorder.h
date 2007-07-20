@@ -35,7 +35,7 @@ class CollisionEntry;
 //               class that just provides an interface for recording
 //               collisions tested and detected each frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionRecorder : public TypedObject {
+class EXPCL_PANDA_COLLIDE CollisionRecorder : public TypedObject {
 protected:
   CollisionRecorder();
 public:

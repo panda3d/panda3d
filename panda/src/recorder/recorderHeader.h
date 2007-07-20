@@ -34,7 +34,7 @@ class FactoryParams;
 // Description : This object contains the header information written
 //               out at the beginning of a recorded session file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RecorderHeader : public TypedWritable {
+class EXPCL_PANDA_RECORDER RecorderHeader : public TypedWritable {
 public:
   INLINE RecorderHeader();
   INLINE RecorderHeader(const RecorderHeader &copy);

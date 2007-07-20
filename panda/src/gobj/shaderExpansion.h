@@ -44,7 +44,7 @@ typedef struct _CGparameter *CGparameter;
 //               objects.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA ShaderExpansion: public TypedReferenceCount {
+class EXPCL_PANDA_GOBJ ShaderExpansion: public TypedReferenceCount {
 
 PUBLISHED:
   

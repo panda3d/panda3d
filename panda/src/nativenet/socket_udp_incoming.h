@@ -11,7 +11,7 @@
 //
 //
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_UDP_Incoming : public Socket_IP
+class EXPCL_PANDA_NATIVENET Socket_UDP_Incoming : public Socket_IP
 {
 PUBLISHED:
     inline Socket_UDP_Incoming() { }

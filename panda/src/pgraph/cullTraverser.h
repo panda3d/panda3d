@@ -48,7 +48,7 @@ class NodePath;
 //               Each renderable Geom encountered is passed along with
 //               its associated RenderState to the CullHandler object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullTraverser : public TypedReferenceCount {
+class EXPCL_PANDA_PGRAPH CullTraverser : public TypedReferenceCount {
 PUBLISHED:
   CullTraverser();
   CullTraverser(const CullTraverser &copy);

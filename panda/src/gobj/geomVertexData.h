@@ -76,7 +76,7 @@ class GeomVertexColumn;
 //               GeomVertexWriter, and GeomVertexRewriter objects to
 //               read and write vertex data at a high level.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexData : public CopyOnWriteObject, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexData : public CopyOnWriteObject, public GeomEnums {
 private:
   GeomVertexData();
 protected:
@@ -264,7 +264,7 @@ public:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
@@ -365,7 +365,7 @@ private:
 //               GeomVertexDataPipelineReader and
 //               GeomVertexDataPipelineWriter.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexDataPipelineBase : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexDataPipelineBase : public GeomEnums {
 protected:
   INLINE GeomVertexDataPipelineBase(GeomVertexData *object, 
                                     Thread *current_thread,
@@ -400,7 +400,7 @@ protected:
 // Description : Encapsulates the data from a GeomVertexData,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
+class EXPCL_PANDA_GOBJ GeomVertexDataPipelineReader : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineReader(const GeomVertexData *object, Thread *current_thread);
 private:
@@ -463,7 +463,7 @@ private:
 // Description : Encapsulates the data from a GeomVertexData,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
+class EXPCL_PANDA_GOBJ GeomVertexDataPipelineWriter : public GeomVertexDataPipelineBase {
 public:
   INLINE GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
                                       Thread *current_thread);

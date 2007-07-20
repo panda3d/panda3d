@@ -33,7 +33,7 @@
 //               simulated threads case, for recursive mutexes.  See
 //               MutexSimpleImple.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ReMutexSimpleImpl : public BlockerSimple {
+class EXPCL_PANDA_PIPELINE ReMutexSimpleImpl : public BlockerSimple {
 public:
   INLINE ReMutexSimpleImpl();
   INLINE ~ReMutexSimpleImpl();

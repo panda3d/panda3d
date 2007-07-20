@@ -39,7 +39,7 @@ class NetDatagram;
 //               DatagramUDPHeader, except it does not include a
 //               checksum, since this is unnecessary on UDP.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DatagramTCPHeader {
+class EXPCL_PANDA_NET DatagramTCPHeader {
 public:
   DatagramTCPHeader(const NetDatagram &datagram, int header_size);
   DatagramTCPHeader(const void *data, int header_size);

@@ -44,7 +44,7 @@ class BamCacheIndex;
 //               low-level os-provided file locks (which work poorly
 //               with C++ iostreams).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamCache {
+class EXPCL_PANDA_PUTIL BamCache {
 PUBLISHED:
   BamCache();
   ~BamCache();

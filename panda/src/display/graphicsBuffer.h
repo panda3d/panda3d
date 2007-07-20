@@ -31,7 +31,7 @@
 //               similar in function to a GraphicsWindow, except that
 //               the output is not visible to the user.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsBuffer : public GraphicsOutput {
+class EXPCL_PANDA_DISPLAY GraphicsBuffer : public GraphicsOutput {
 protected:
   GraphicsBuffer(GraphicsPipe *pipe, 
                  const string &name,

@@ -36,7 +36,7 @@
 //               there will be exactly one of these associated with
 //               each window, but other variants are possible.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindowInputDevice {
+class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice {
 private:
   GraphicsWindowInputDevice(const string &name, int flags);
 
@@ -95,8 +95,8 @@ private:
 
 #include "graphicsWindowInputDevice.I"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_DISPLAY
+#define EXPTP EXPTP_PANDA_DISPLAY
 #define TYPE GraphicsWindowInputDevice
 #define NAME vector_GraphicsWindowInputDevice
 

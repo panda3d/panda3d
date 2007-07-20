@@ -58,7 +58,7 @@ class PStatThread;
 //               stub class.
 ////////////////////////////////////////////////////////////////////
 #ifdef DO_PSTATS
-class EXPCL_PANDA PStatClient : public ConnectionManager, public Thread::PStatsCallback {
+class EXPCL_PANDA_PSTATCLIENT PStatClient : public ConnectionManager, public Thread::PStatsCallback {
 public:
   PStatClient();
   ~PStatClient();
@@ -257,7 +257,7 @@ private:
 
 #else  // DO_PSTATS
 
-class EXPCL_PANDA PStatClient {
+class EXPCL_PANDA_PSTATCLIENT PStatClient {
 public:
   PStatClient() { }
   ~PStatClient() { }

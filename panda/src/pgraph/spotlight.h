@@ -39,7 +39,7 @@ class Texture;
 //               SpotLight, because "spotlight" is a single English
 //               word, instead of two words.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Spotlight : public LightLensNode {
+class EXPCL_PANDA_PGRAPH Spotlight : public LightLensNode {
 PUBLISHED:
   Spotlight(const string &name);
 
@@ -82,7 +82,7 @@ private:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

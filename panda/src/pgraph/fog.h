@@ -47,7 +47,7 @@ class TransformState;
 //               generate traditonal camera-relative fog, as if it
 //               were parented to the camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Fog : public PandaNode {
+class EXPCL_PANDA_PGRAPH Fog : public PandaNode {
 PUBLISHED:
   Fog(const string &name);
 
@@ -136,7 +136,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, Fog::Mode mode);
+EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, Fog::Mode mode);
 
 INLINE ostream &operator << (ostream &out, const Fog &fog) {
   fog.output(out);

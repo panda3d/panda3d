@@ -33,7 +33,7 @@
 //               that PGItems can know how to register their regions
 //               with the current MouseWatcherGroup.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGCullTraverser : public CullTraverser {
+class EXPCL_PANDA_PGUI PGCullTraverser : public CullTraverser {
 public:
   INLINE PGCullTraverser(PGTop *top, CullTraverser *trav);
 

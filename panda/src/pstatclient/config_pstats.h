@@ -30,24 +30,24 @@
 
 // Configure variables for pstats package.
 
-ConfigureDecl(config_pstats, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(pstats, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_pstats, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
+NotifyCategoryDecl(pstats, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
 
-extern EXPCL_PANDA ConfigVariableString pstats_name;
-extern EXPCL_PANDA ConfigVariableDouble pstats_max_rate;
-extern EXPCL_PANDA ConfigVariableBool pstats_threaded_write;
-extern EXPCL_PANDA ConfigVariableDouble pstats_tcp_ratio;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_name;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_max_rate;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_threaded_write;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_tcp_ratio;
 
-extern EXPCL_PANDA ConfigVariableString pstats_host;
-extern EXPCL_PANDA ConfigVariableInt pstats_port;
-extern EXPCL_PANDA ConfigVariableDouble pstats_target_frame_rate;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_host;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableInt pstats_port;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_target_frame_rate;
 
-extern EXPCL_PANDA ConfigVariableBool pstats_scroll_mode;
-extern EXPCL_PANDA ConfigVariableDouble pstats_history;
-extern EXPCL_PANDA ConfigVariableDouble pstats_average_time;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_scroll_mode;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_history;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_average_time;
 
-extern EXPCL_PANDA ConfigVariableBool pstats_mem_other;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_mem_other;
 
-extern EXPCL_PANDA void init_libpstatclient();
+extern EXPCL_PANDA_PSTATCLIENT void init_libpstatclient();
 
 #endif

@@ -30,7 +30,7 @@
 //               before the pstats module may access the
 //               PStatCollector.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatCollectorForward : public PStatCollectorForwardBase {
+class EXPCL_PANDA_PSTATCLIENT PStatCollectorForward : public PStatCollectorForwardBase {
 PUBLISHED:
   INLINE PStatCollectorForward(const PStatCollector &col);
 

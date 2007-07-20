@@ -50,7 +50,7 @@ class DatagramIterator;
 //               Also, unlike BitArray, the SparseArray can store
 //               negative integers.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SparseArray {
+class EXPCL_PANDA_PUTIL SparseArray {
 PUBLISHED:
   INLINE SparseArray();
   INLINE SparseArray(const SparseArray &copy);

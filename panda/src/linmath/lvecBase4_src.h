@@ -21,7 +21,7 @@
 // Description : This is the base class for all three-component
 //               vectors and points.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase4) {
 PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;

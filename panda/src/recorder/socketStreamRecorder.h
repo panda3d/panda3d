@@ -46,7 +46,7 @@ class DatagramIterator;
 //               straight through to the socket if it is connected, or
 //               silently ignored if it is not.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SocketStreamRecorder : public RecorderBase {
+class EXPCL_PANDA_RECORDER SocketStreamRecorder : public RecorderBase {
 PUBLISHED:
   INLINE SocketStreamRecorder();
   INLINE SocketStreamRecorder(SocketStream *stream, bool owns_stream);

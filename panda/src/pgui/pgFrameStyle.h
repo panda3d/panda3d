@@ -32,7 +32,7 @@ class NodePath;
 //       Class : PGFrameStyle
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGFrameStyle {
+class EXPCL_PANDA_PGUI PGFrameStyle {
 PUBLISHED:
   INLINE PGFrameStyle();
   INLINE PGFrameStyle(const PGFrameStyle &copy);

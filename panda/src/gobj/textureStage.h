@@ -39,7 +39,7 @@ class FactoryParams;
 //               and then issuing the appropriate rendering calls to
 //               activate them.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureStage : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
   TextureStage(const string &name);
   INLINE TextureStage(TextureStage &copy);
@@ -238,10 +238,10 @@ private:
 
 INLINE ostream &operator << (ostream &out, const TextureStage &ts);
 
-EXPCL_PANDA ostream &operator << (ostream &out, TextureStage::Mode mode);
-EXPCL_PANDA ostream &operator << (ostream &out, TextureStage::CombineMode cm);
-EXPCL_PANDA ostream &operator << (ostream &out, TextureStage::CombineSource cs);
-EXPCL_PANDA ostream &operator << (ostream &out, TextureStage::CombineOperand co);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::Mode mode);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineMode cm);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineSource cs);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineOperand co);
 
 
 #include "textureStage.I"

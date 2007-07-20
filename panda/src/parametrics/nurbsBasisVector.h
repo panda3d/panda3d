@@ -38,7 +38,7 @@ class NurbsVertex;
 //               of NURBS curves, and will probably eventually replace
 //               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsBasisVector {
+class EXPCL_PANDA_PARAMETRICS NurbsBasisVector {
 public:
   INLINE NurbsBasisVector();
   INLINE ~NurbsBasisVector();

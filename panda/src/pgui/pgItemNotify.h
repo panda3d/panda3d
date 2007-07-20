@@ -31,7 +31,7 @@ class MouseWatcherParameter;
 //               specialized messages when PGItems change in certain
 //               ways.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGItemNotify {
+class EXPCL_PANDA_PGUI PGItemNotify {
 public:
   INLINE PGItemNotify();
   virtual ~PGItemNotify();

@@ -56,7 +56,7 @@
 //               render attributes, one per attrib type.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA AttribSlots
+class EXPCL_PANDA_PGRAPH AttribSlots
 {
  public:
   CPT(AlphaTestAttrib)       _alpha_test;

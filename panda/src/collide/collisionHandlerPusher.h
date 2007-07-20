@@ -30,7 +30,7 @@
 //               walls.  This is the simplest kind of "real-world"
 //               collisions you can have.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandlerPusher : public CollisionHandlerPhysical {
+class EXPCL_PANDA_COLLIDE CollisionHandlerPusher : public CollisionHandlerPhysical {
 PUBLISHED:
   CollisionHandlerPusher();
   virtual ~CollisionHandlerPusher();

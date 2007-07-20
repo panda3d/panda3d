@@ -31,7 +31,7 @@ class PStatClientVersion;
 // Description : Defines the details about the Collectors: the name,
 //               the suggested color, etc.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatCollectorDef {
+class EXPCL_PANDA_PSTATCLIENT PStatCollectorDef {
 public:
   PStatCollectorDef();
   PStatCollectorDef(int index, const string &name);

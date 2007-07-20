@@ -38,7 +38,7 @@
 //               For the most part, this class is used only by the
 //               BamCache class.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamCacheIndex : public TypedWritable, public LinkedListNode {
+class EXPCL_PANDA_PUTIL BamCacheIndex : public TypedWritable, public LinkedListNode {
 private:
   INLINE BamCacheIndex();
   ~BamCacheIndex();

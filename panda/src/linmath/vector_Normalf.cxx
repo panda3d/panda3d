@@ -18,8 +18,8 @@
 
 #include "vector_Normalf.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_LINMATH
+#define EXPTP EXPTP_PANDA_LINMATH
 #define TYPE Normalf
 #define NAME vector_Normalf
 

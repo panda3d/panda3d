@@ -29,7 +29,7 @@
 //               an event should inherit from this class; each event
 //               may be sent with an optional EventReceiver pointer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventReceiver {
+class EXPCL_PANDA_EVENT EventReceiver {
 
 public:
   static TypeHandle get_class_type() {

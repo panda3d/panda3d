@@ -43,7 +43,7 @@
 //               encoding method is specified by the associated
 //               TextNode.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGEntry : public PGItem {
+class EXPCL_PANDA_PGUI PGEntry : public PGItem {
 PUBLISHED:
   PGEntry(const string &name);
   virtual ~PGEntry();

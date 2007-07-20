@@ -30,7 +30,7 @@
 //               a slow process gradually completing, like a
 //               traditional "wait, loading" bar.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGWaitBar : public PGItem {
+class EXPCL_PANDA_PGUI PGWaitBar : public PGItem {
 PUBLISHED:
   PGWaitBar(const string &name = "");
   virtual ~PGWaitBar();

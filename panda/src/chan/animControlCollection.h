@@ -38,7 +38,7 @@
 //               previous control's reference count (and possibly
 //               delete it, unbinding its animation).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimControlCollection {
+class EXPCL_PANDA_CHAN AnimControlCollection {
 PUBLISHED:
   AnimControlCollection();
   ~AnimControlCollection();

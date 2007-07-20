@@ -41,7 +41,7 @@
 //                     now. It also holds a PT(PandaNode) Cell that 
 //                     this portal is connected to
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PortalNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);
   PortalNode(const string &name, LPoint3f pos, float scale=10.0);

@@ -34,7 +34,7 @@ class PNMImage;
 //               destruct during the lifetime of the PNMPainter
 //               object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMPainter {
+class EXPCL_PANDA_PNMIMAGE PNMPainter {
 PUBLISHED:
   PNMPainter(PNMImage &image, int xo = 0, int yo = 0);
   INLINE ~PNMPainter();

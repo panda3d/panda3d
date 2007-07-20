@@ -61,7 +61,7 @@ class AudioVolumeAttrib;
 //               instead of modifying a RenderState object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderState : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH RenderState : public NodeCachedReferenceCount {
 protected:
   RenderState();
 

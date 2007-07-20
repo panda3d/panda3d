@@ -35,7 +35,7 @@ class BufferContext;
 //               The primary purpose of this class is to facilitate
 //               PStats reporting of graphics memory usage.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BufferContextChain : private LinkedListNode {
+class EXPCL_PANDA_GOBJ BufferContextChain : private LinkedListNode {
 public:
   INLINE BufferContextChain();
   INLINE ~BufferContextChain();

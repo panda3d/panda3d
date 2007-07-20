@@ -49,7 +49,7 @@ class SceneSetup;
 //               cull traversal around to make next frame's traversal
 //               of the same scene a little easier.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullResult : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH CullResult : public ReferenceCount {
 public:
   INLINE CullResult(GraphicsStateGuardianBase *gsg,
                     const PStatCollector &draw_region_pcollector);

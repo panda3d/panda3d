@@ -25,12 +25,12 @@
 
 // CPPParser can't handle token-pasting to a keyword.
 #ifndef CPPPARSER
-NotifyCategoryDecl(char, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(char, EXPCL_PANDA_CHAR, EXPTP_PANDA_CHAR);
 #endif
 
 // Configure variables for char package.
-extern EXPCL_PANDA ConfigVariableBool even_animation;
+extern EXPCL_PANDA_CHAR ConfigVariableBool even_animation;
 
-extern EXPCL_PANDA void init_libchar();
+extern EXPCL_PANDA_CHAR void init_libchar();
 
 #endif

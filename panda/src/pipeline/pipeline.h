@@ -42,7 +42,7 @@ struct PipelineCyclerTrueImpl;
 //               pipeline.  Other specialty pipelines may be created
 //               as needed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Pipeline : public PipelineCyclerLinks, public Namable {
+class EXPCL_PANDA_PIPELINE Pipeline : public PipelineCyclerLinks, public Namable {
 public:
   Pipeline(const string &name, int num_stages);
   ~Pipeline();

@@ -41,7 +41,7 @@
 //               reference count: calling cache_ref() and
 //               cache_unref() automatically calls ref() and unref().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CachedTypedWritableReferenceCount : public TypedWritableReferenceCount {
+class EXPCL_PANDA_PUTIL CachedTypedWritableReferenceCount : public TypedWritableReferenceCount {
 protected:
   INLINE CachedTypedWritableReferenceCount();
   INLINE CachedTypedWritableReferenceCount(const CachedTypedWritableReferenceCount &copy);

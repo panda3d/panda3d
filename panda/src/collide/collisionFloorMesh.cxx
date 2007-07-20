@@ -147,8 +147,7 @@ PT(CollisionEntry) CollisionFloorMesh::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
-  LPoint3f from_origin = ray->get_origin() * wrt_mat;
+  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
   
   double fx=from_origin[0];
   double fy=from_origin[1];

@@ -51,7 +51,7 @@ class TransformState;
 //               that handles the traditional scrolling canvas, with
 //               scroll bars.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGVirtualFrame : public PGItem {
+class EXPCL_PANDA_PGUI PGVirtualFrame : public PGItem {
 PUBLISHED:
   PGVirtualFrame(const string &name = "");
   virtual ~PGVirtualFrame();

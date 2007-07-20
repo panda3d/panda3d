@@ -36,7 +36,7 @@
 //               details are in the subclasses.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA ShaderContext: public SavedContext {
+class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
   INLINE ShaderContext(ShaderExpansion *se);
 

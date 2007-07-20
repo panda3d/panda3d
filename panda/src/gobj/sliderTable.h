@@ -43,7 +43,7 @@
 //               CPU, since GPU's don't support morphs at this point
 //               in time.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SliderTable : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ SliderTable : public TypedWritableReferenceCount {
 PUBLISHED:
   SliderTable();
   SliderTable(const SliderTable &copy);
@@ -92,7 +92,7 @@ private:
   static SparseArray _empty_array;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

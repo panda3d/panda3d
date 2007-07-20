@@ -253,6 +253,7 @@ public:
   bool _error;
 
   friend class EggRenderState;
+  friend class PandaNode;
 };
 
 #include "eggLoader.I"

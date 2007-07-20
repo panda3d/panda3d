@@ -44,7 +44,7 @@ class BoundingPlane;
 //               is simply an abstract interface for bounds of any
 //               sort.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingVolume : public TypedReferenceCount {
+class EXPCL_PANDA_MATHUTIL BoundingVolume : public TypedReferenceCount {
 public:
   INLINE_MATHUTIL BoundingVolume();
 
@@ -195,7 +195,7 @@ INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound)
 
 #include "boundingVolume.I"
 
-EXPCL_PANDA ostream &operator << (ostream &out, BoundingVolume::BoundsType type);
-EXPCL_PANDA istream &operator >> (istream &in, BoundingVolume::BoundsType &type);
+EXPCL_PANDA_MATHUTIL ostream &operator << (ostream &out, BoundingVolume::BoundsType type);
+EXPCL_PANDA_MATHUTIL istream &operator >> (istream &in, BoundingVolume::BoundsType &type);
 
 #endif

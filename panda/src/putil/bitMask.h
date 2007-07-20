@@ -146,7 +146,7 @@ INLINE PN_uint32 flood_bits_down(PN_uint32 x);
 INLINE PN_uint64 flood_bits_down(PN_uint64 x);
 
 // This table precomputes the number of on bits in each 16-bit word.
-extern EXPCL_PANDA unsigned char num_bits_on[65536];
+extern EXPCL_PANDA_PUTIL unsigned char num_bits_on[65536];
 
 #include "bitMask.I"
 
@@ -159,7 +159,7 @@ INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask)
 // We need to define this temporary macro so we can pass a parameter
 // containing a comma through the macro.
 #define BITMASK32_DEF BitMask<PN_uint32, 32>
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, BITMASK32_DEF);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, BITMASK32_DEF);
 
 typedef BitMask<PN_uint32, 32> BitMask32;
 typedef BitMask<PN_uint64, 64> BitMask64;

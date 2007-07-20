@@ -31,7 +31,7 @@
 //               length of each curve segment in parametric space is
 //               definable.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PiecewiseCurve : public ParametricCurve {
+class EXPCL_PANDA_PARAMETRICS PiecewiseCurve : public ParametricCurve {
 PUBLISHED:
   PiecewiseCurve();
   ~PiecewiseCurve();

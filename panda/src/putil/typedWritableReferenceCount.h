@@ -36,7 +36,7 @@
 //               
 //               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
+class EXPCL_PANDA_PUTIL TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
 public:
   INLINE TypedWritableReferenceCount();
   INLINE TypedWritableReferenceCount(const TypedWritableReferenceCount &copy);

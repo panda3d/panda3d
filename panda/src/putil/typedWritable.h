@@ -37,7 +37,7 @@ class DatagramIterator;
 //               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA TypedWritable : public TypedObject {
+class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
 public:
   static TypedWritable* const Null;
 

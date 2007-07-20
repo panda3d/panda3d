@@ -28,7 +28,7 @@
 //               instance of these in the world, and it is returned by
 //               Thread::get_external_thread().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ExternalThread : public Thread {
+class EXPCL_PANDA_PIPELINE ExternalThread : public Thread {
 private:
   ExternalThread();
   ExternalThread(const string &name, const string &sync_name);

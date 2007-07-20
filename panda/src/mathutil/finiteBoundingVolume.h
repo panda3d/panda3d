@@ -30,7 +30,7 @@
 //               known to be finite.  It is possible to query this
 //               kind of volume for its minimum and maximum extents.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FiniteBoundingVolume : public GeometricBoundingVolume {
+class EXPCL_PANDA_MATHUTIL FiniteBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   virtual LPoint3f get_min() const=0;
   virtual LPoint3f get_max() const=0;

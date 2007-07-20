@@ -48,7 +48,7 @@ class Pipeline;
 //               object, so that the inherited struct's data is likely
 //               to be placed by the compiler at the "this" pointer.
 ////////////////////////////////////////////////////////////////////
-struct EXPCL_PANDA PipelineCyclerTrivialImpl {
+struct EXPCL_PANDA_PIPELINE PipelineCyclerTrivialImpl {
 public:
   INLINE PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
 private:

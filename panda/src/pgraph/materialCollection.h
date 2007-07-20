@@ -27,7 +27,7 @@
 //       Class : MaterialCollection
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MaterialCollection {
+class EXPCL_PANDA_PGRAPH MaterialCollection {
 PUBLISHED:
   MaterialCollection();
   MaterialCollection(const MaterialCollection &copy);

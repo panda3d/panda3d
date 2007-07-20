@@ -29,7 +29,7 @@
 //               Socket_UDP_Outgoing, to avoid the problems of
 //               multiple inheritance.
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_UDP : public Socket_UDP_Incoming
+class EXPCL_PANDA_NATIVENET Socket_UDP : public Socket_UDP_Incoming
 {
 public:
 PUBLISHED:

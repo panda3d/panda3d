@@ -37,7 +37,7 @@
 //               mutex, and several condition variables may share the
 //               same mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDebug {
+class EXPCL_PANDA_PIPELINE ConditionVarDebug {
 public:
   ConditionVarDebug(MutexDebug &mutex);
   virtual ~ConditionVarDebug();

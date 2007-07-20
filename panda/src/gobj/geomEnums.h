@@ -28,7 +28,7 @@
 //               GeomVertexData, GeomVertexArrayData, GeomPrimitive,
 //               and other related classes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomEnums {
+class EXPCL_PANDA_GOBJ GeomEnums {
 PUBLISHED:
 
   // The usage hint describes to the rendering backend how often the
@@ -211,8 +211,8 @@ PUBLISHED:
   };
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);
-EXPCL_PANDA ostream &operator << (ostream &out, GeomEnums::Contents contents);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::Contents contents);
 
 #endif
 

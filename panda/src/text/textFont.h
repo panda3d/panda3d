@@ -38,7 +38,7 @@ class TextGlyph;
 //               StaticTextFont or DynamicTextFont for an actual
 //               implementation.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextFont : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA_TEXT TextFont : public TypedReferenceCount, public Namable {
 public:
   TextFont();
 
@@ -112,10 +112,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, TextFont::RenderMode rm);
-EXPCL_PANDA istream &operator >> (istream &in, TextFont::RenderMode &rm);
-EXPCL_PANDA ostream &operator << (ostream &out, TextFont::WindingOrder wo);
-EXPCL_PANDA istream &operator >> (istream &in, TextFont::WindingOrder &wo);
+EXPCL_PANDA_TEXT ostream &operator << (ostream &out, TextFont::RenderMode rm);
+EXPCL_PANDA_TEXT istream &operator >> (istream &in, TextFont::RenderMode &rm);
+EXPCL_PANDA_TEXT ostream &operator << (ostream &out, TextFont::WindingOrder wo);
+EXPCL_PANDA_TEXT istream &operator >> (istream &in, TextFont::WindingOrder &wo);
 
 #include "textFont.I"
 

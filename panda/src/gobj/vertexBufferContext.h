@@ -36,7 +36,7 @@
 //               allocate a vertex buffer for the array.  OpenGL can
 //               create a buffer object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexBufferContext : public BufferContext {
+class EXPCL_PANDA_GOBJ VertexBufferContext : public BufferContext {
 public:
   INLINE VertexBufferContext(PreparedGraphicsObjects *pgo,
                              GeomVertexArrayData *data);

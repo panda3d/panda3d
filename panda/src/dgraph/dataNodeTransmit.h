@@ -36,7 +36,7 @@ class BamWriter;
 //               array of EventParameters, one for each registered
 //               input or output wire.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataNodeTransmit : public TypedWritable {
+class EXPCL_PANDA_DGRAPH DataNodeTransmit : public TypedWritable {
 public:
   INLINE DataNodeTransmit();
   INLINE DataNodeTransmit(const DataNodeTransmit &copy);

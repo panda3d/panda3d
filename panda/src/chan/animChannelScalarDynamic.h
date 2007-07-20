@@ -38,7 +38,7 @@ class TransformState;
 //               the node whose X component will be copied to the
 //               scalar each frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelScalarDynamic : public AnimChannelScalar {
+class EXPCL_PANDA_CHAN AnimChannelScalarDynamic : public AnimChannelScalar {
 protected:
   AnimChannelScalarDynamic();
   AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy);

@@ -33,7 +33,7 @@
 //               PartBundle.  Like AnimBundleNode, it exists solely to
 //               make it easy to store PartBundles in the scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartBundleNode : public PandaNode {
+class EXPCL_PANDA_CHAN PartBundleNode : public PandaNode {
 public:
   INLINE PartBundleNode(const string &name, PartBundle *bundle);
 

@@ -33,7 +33,7 @@ class VertexDataBlock;
 // Description : A collection of VertexDataPages, which can be used to
 //               allocate new VertexDataBlock objects.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataBook {
+class EXPCL_PANDA_GOBJ VertexDataBook {
 PUBLISHED:
   VertexDataBook(size_t block_size);
   ~VertexDataBook();

@@ -35,7 +35,7 @@
 //               actual usage count on a dynamic glyph (and thus know
 //               when it is safe to recycle the glyph).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTextGlyph : public Geom {
+class EXPCL_PANDA_TEXT GeomTextGlyph : public Geom {
 public:
   GeomTextGlyph(DynamicTextGlyph *glyph,
                 const GeomVertexData *data);

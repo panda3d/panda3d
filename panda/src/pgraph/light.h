@@ -43,7 +43,7 @@ class GraphicsStateGuardianBase;
 //               arbitrary point to define the coordinate system of
 //               effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Light : virtual public ReferenceCount {
+class EXPCL_PANDA_PGRAPH Light : virtual public ReferenceCount {
   // We inherit from ReferenceCount instead of TypedReferenceCount so
   // that LightNode does not inherit from TypedObject twice.  Note
   // that we also inherit virtually from ReferenceCount for the same
@@ -100,7 +100,7 @@ private:
   static UpdateSeq _sort_seq;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

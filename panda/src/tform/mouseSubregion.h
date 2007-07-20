@@ -38,7 +38,7 @@
 //               end up with a virtual mouse within your
 //               DisplayRegion.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseSubregion : public MouseInterfaceNode {
+class EXPCL_PANDA_TFORM MouseSubregion : public MouseInterfaceNode {
 PUBLISHED:
   MouseSubregion(const string &name);
   ~MouseSubregion();

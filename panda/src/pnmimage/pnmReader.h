@@ -32,7 +32,7 @@
 //               define a class that inherits from PNMReader to read
 //               it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMReader : public PNMImageHeader {
+class EXPCL_PANDA_PNMIMAGE PNMReader : public PNMImageHeader {
 protected:
   INLINE PNMReader(PNMFileType *type, istream *file, bool owns_file);
 

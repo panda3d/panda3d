@@ -40,7 +40,7 @@
 //               throws a corresponding event based on the button name
 //               via the throw_event() call.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonThrower : public DataNode {
+class EXPCL_PANDA_TFORM ButtonThrower : public DataNode {
 PUBLISHED:
   ButtonThrower(const string &name);
   ~ButtonThrower();

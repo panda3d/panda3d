@@ -58,7 +58,7 @@ class CullTraverserData;
 //               wish to change its properties; instead, create a new
 //               one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderAttrib : public TypedWritableReferenceCount {
+class EXPCL_PANDA_PGRAPH RenderAttrib : public TypedWritableReferenceCount {
 protected:
   RenderAttrib();
 private:

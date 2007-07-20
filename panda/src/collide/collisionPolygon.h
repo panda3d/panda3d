@@ -33,7 +33,7 @@ class GeomNode;
 //       Class : CollisionPolygon
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionPolygon : public CollisionPlane {
+class EXPCL_PANDA_COLLIDE CollisionPolygon : public CollisionPlane {
 PUBLISHED:
   INLINE CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
                           const LVecBase3f &c);

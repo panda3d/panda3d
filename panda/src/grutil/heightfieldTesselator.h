@@ -69,7 +69,7 @@
 //               
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA HeightfieldTesselator : public Namable {
+class EXPCL_PANDA_GRUTIL HeightfieldTesselator : public Namable {
 PUBLISHED:
   INLINE HeightfieldTesselator(const string &name);
   INLINE ~HeightfieldTesselator();

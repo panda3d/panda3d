@@ -32,7 +32,7 @@
 //               generated for a region to indicate the mouse and
 //               button state for the event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseWatcherParameter {
+class EXPCL_PANDA_TFORM MouseWatcherParameter {
 public:
   INLINE MouseWatcherParameter();
   INLINE MouseWatcherParameter(const MouseWatcherParameter &other);

@@ -228,7 +228,7 @@ ConfigVariableEnum<AutoTextureScale> textures_square
           "a square aspect ratio when they are loaded from disk.  Set this "
           "to 'none', 'down', or 'up'.  See textures-power-2."));
 
-extern EXPCL_PANDA ConfigVariableBool textures_header_only;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
 ConfigVariableBool textures_header_only
 ("textures-header-only", false,
  PRC_DESC("If this is true, texture images will not actually be loaded from "

@@ -44,7 +44,7 @@
 //               frame.  We can cache the configuration info by
 //               by using the "dirty" flag.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WritableConfigurable : public TypedWritable {
+class EXPCL_PANDA_PUTIL WritableConfigurable : public TypedWritable {
 
 public:
   WritableConfigurable( void ) { make_dirty(); }

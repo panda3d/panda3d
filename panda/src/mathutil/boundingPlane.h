@@ -32,7 +32,7 @@
 //               the part in front of the normal, which is "outside"
 //               the bounding volume.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingPlane : public GeometricBoundingVolume {
+class EXPCL_PANDA_MATHUTIL BoundingPlane : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingPlane();
   INLINE_MATHUTIL BoundingPlane(const Planef &plane);

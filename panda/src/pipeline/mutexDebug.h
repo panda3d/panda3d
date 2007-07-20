@@ -32,7 +32,7 @@
 //               by doing everything by hand.  This does allow fancy
 //               things like deadlock detection, however.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexDebug {
+class EXPCL_PANDA_PIPELINE MutexDebug {
 protected:
   MutexDebug(const string &name, bool allow_recursion);
   virtual ~MutexDebug();

@@ -31,7 +31,7 @@ class Thread;
 //               of execution to PStats.  It corresponds one-to-one
 //               with Panda's Thread instance.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatThread {
+class EXPCL_PANDA_PSTATCLIENT PStatThread {
 private:
   INLINE PStatThread();
   INLINE PStatThread(PStatClient *client, int index);

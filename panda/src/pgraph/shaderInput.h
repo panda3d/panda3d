@@ -33,7 +33,7 @@
 //               to a shader.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA ShaderInput: public TypedWritableReferenceCount {
+class EXPCL_PANDA_PGRAPH ShaderInput: public TypedWritableReferenceCount {
 public:
   INLINE ~ShaderInput();
 

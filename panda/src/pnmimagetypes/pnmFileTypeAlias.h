@@ -29,7 +29,7 @@
 //       Class : PNMFileTypeAlias
 // Description : For reading and Alias native image files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeAlias : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAlias : public PNMFileType {
 public:
   PNMFileTypeAlias();
 

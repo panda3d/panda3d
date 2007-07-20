@@ -49,7 +49,7 @@
 //               to allow the nodes to keep these up to date as the
 //               scene graph is manipulated.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodePathComponent : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH NodePathComponent : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
 		    int pipeline_stage, Thread *current_thread);
@@ -84,7 +84,7 @@ private:
   int _key;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     CData(const CData &copy);

@@ -59,7 +59,7 @@ class PreparedGraphicsObjects;
 //               and all of them must be rendered at the same time, in
 //               the same graphics state.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Geom : public CopyOnWriteObject, public GeomEnums {
+class EXPCL_PANDA_GOBJ Geom : public CopyOnWriteObject, public GeomEnums {
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
@@ -273,7 +273,7 @@ public:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
@@ -372,7 +372,7 @@ private:
 // Description : Encapsulates the data from a Geom,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomPipelineReader : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomPipelineReader : public GeomEnums {
 public:
   INLINE GeomPipelineReader(const Geom *object, Thread *current_thread);
 private:

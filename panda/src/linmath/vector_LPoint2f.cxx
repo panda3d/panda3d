@@ -18,8 +18,8 @@
 
 #include "vector_LPoint2f.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_LINMATH
+#define EXPTP EXPTP_PANDA_LINMATH
 #define TYPE LPoint2f
 #define NAME vector_LPoint2f
 

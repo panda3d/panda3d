@@ -45,7 +45,7 @@ class PandaNode;
 //               abstract out some of the cull behavior (like
 //               view-frustum culling).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullTraverserData {
+class EXPCL_PANDA_PGRAPH CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,
                            const TransformState *net_transform,

@@ -56,7 +56,7 @@ class BlockerSimple;
 //               Generally, you shouldn't be calling these methods
 //               directly.  Call the interfaces on Thread instead.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ThreadSimpleManager {
+class EXPCL_PANDA_PIPELINE ThreadSimpleManager {
 private:
   ThreadSimpleManager();
 

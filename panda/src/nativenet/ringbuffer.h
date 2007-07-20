@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 #include "membuffer.h"
-class EXPCL_PANDA  RingBuffer   : protected MemBuffer
+class EXPCL_PANDA_NATIVENET  RingBuffer   : protected MemBuffer
 {
 protected:
 	size_t			_StartPos;

@@ -54,7 +54,7 @@ class DatagramIterator;
 //               while keystroke events are defined across the entire
 //               Unicode character set.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonEvent {
+class EXPCL_PANDA_EVENT ButtonEvent {
 public:
   enum Type {
     // T_down and T_up represent a button changing state

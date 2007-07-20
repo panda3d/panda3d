@@ -30,7 +30,7 @@
 //               of two spheres (potentially a lens) and two half-spaces
 //               (planes).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionDSSolid: public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionDSSolid: public CollisionSolid {
 PUBLISHED:
   INLINE CollisionDSSolid(
     const LPoint3f &center_a, float radius_a,

@@ -31,7 +31,7 @@ class FactoryParams;
 //               of this GeomNode are coplanar and should be drawn as
 //               decals (eliminating Z-fighting).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DecalEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH DecalEffect : public RenderEffect {
 private:
   INLINE DecalEffect();
 

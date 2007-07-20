@@ -26,7 +26,7 @@
 //       Class : GeomLinestrips
 // Description : Defines a series of line strips.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomLinestrips : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomLinestrips : public GeomPrimitive {
 PUBLISHED:
   GeomLinestrips(UsageHint usage_hint);
   GeomLinestrips(const GeomLinestrips &copy);

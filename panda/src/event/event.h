@@ -37,7 +37,7 @@ class EventReceiver;
 //               makes it too expensive to get its name the Python
 //               code.  Now it just copies the Namable interface in.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Event : public TypedReferenceCount {
+class EXPCL_PANDA_EVENT Event : public TypedReferenceCount {
 PUBLISHED:
   Event(const string &event_name, EventReceiver *receiver = NULL);
   Event(const Event &copy);

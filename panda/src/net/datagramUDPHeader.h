@@ -38,7 +38,7 @@ class NetDatagram;
 //               automatically handles converting its data to and from
 //               the network byte ordering.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DatagramUDPHeader {
+class EXPCL_PANDA_NET DatagramUDPHeader {
 public:
   DatagramUDPHeader(const NetDatagram &datagram);
   DatagramUDPHeader(const void *data);

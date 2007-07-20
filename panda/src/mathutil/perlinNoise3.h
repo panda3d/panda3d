@@ -29,7 +29,7 @@
 //               reference implementation at
 //               http://mrl.nyu.edu/~perlin/noise/ .
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PerlinNoise3 : public PerlinNoise {
+class EXPCL_PANDA_MATHUTIL PerlinNoise3 : public PerlinNoise {
 PUBLISHED:
   INLINE PerlinNoise3();
   INLINE PerlinNoise3(double sx, double sy, double sz,

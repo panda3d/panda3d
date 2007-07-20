@@ -33,7 +33,7 @@
 //               be extracted out again by an EventHandler and
 //               processed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventQueue {
+class EXPCL_PANDA_EVENT EventQueue {
 PUBLISHED:
   EventQueue();
   ~EventQueue();

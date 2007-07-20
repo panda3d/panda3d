@@ -35,7 +35,7 @@ class GraphicsStateGuardianBase;
 //               than separating out draw and cull, if state sorting
 //               and multiprocessing are not required.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DrawCullHandler : public CullHandler {
+class EXPCL_PANDA_CULL DrawCullHandler : public CullHandler {
 public:
   INLINE DrawCullHandler(GraphicsStateGuardianBase *gsg);
 

@@ -56,7 +56,7 @@ class PStatThread;
 //               This class doesn't exist at all unless DO_PSTATS is
 //               defined.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatClientImpl : public ConnectionManager {
+class EXPCL_PANDA_PSTATCLIENT PStatClientImpl : public ConnectionManager {
 public:
   PStatClientImpl(PStatClient *client);
   ~PStatClientImpl();

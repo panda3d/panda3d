@@ -37,7 +37,7 @@
 //               frame.  We can cache the configuration info by
 //               by using the "dirty" flag.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Configurable : public TypedObject {
+class EXPCL_PANDA_PUTIL Configurable : public TypedObject {
 public:
 
   Configurable( void ) { make_dirty(); }

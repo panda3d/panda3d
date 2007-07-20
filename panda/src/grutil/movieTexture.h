@@ -34,7 +34,7 @@
 //               with its source taken from an .avi file or from a
 //               camera input.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FFMpegTexture : public VideoTexture {
+class EXPCL_PANDA_GRUTIL FFMpegTexture : public VideoTexture {
 PUBLISHED:
   FFMpegTexture(const string &name = string());
 protected:

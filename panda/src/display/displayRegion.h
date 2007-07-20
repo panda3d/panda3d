@@ -58,7 +58,7 @@ class CullTraverser;
 //               glass, usually for layering 2-d interfaces on top of
 //               a 3-d scene.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DisplayRegion : public ReferenceCount, public DrawableRegion {
+class EXPCL_PANDA_DISPLAY DisplayRegion : public ReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window);
   DisplayRegion(GraphicsOutput *window,
@@ -155,7 +155,7 @@ private:
   // needs to be cycled every frame, but represents the parameters as
   // specified by the user, and which probably will not change that
   // often.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_DISPLAY CData : public CycleData {
   public:
     CData();
     CData(const CData &copy);
@@ -198,7 +198,7 @@ private:
   // own cycler because it will certainly change every frame, so we
   // don't need to lump all the heavy data above in with this
   // lightweight cycler.
-  class EXPCL_PANDA CDataCull : public CycleData {
+  class EXPCL_PANDA_DISPLAY CDataCull : public CycleData {
   public:
     CDataCull();
     CDataCull(const CDataCull &copy);
@@ -240,7 +240,7 @@ private:
 // Description : Encapsulates the data from a DisplayRegion,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DisplayRegionPipelineReader {
+class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);
 private:

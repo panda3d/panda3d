@@ -49,7 +49,7 @@ class Pipeline;
 //               mainly to be consistent with
 //               PipelineCyclerTrivialImpl.
 ////////////////////////////////////////////////////////////////////
-struct EXPCL_PANDA PipelineCyclerTrueImpl : public PipelineCyclerLinks {
+struct EXPCL_PANDA_PIPELINE PipelineCyclerTrueImpl : public PipelineCyclerLinks {
 private:
   PipelineCyclerTrueImpl();
 public:

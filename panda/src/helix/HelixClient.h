@@ -44,7 +44,7 @@
 //          loading the Helix Client Engine, creating players on
 //          the Helix engine, and initializing the media playback.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA HelixClient {
+class EXPCL_PANDA_HELIX HelixClient {
 public: 
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -40,7 +40,7 @@ class VertexDataBlock;
 //               in the form of in-memory compression or to an on-disk
 //               cache file, if necessary.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataPage : public SimpleAllocator, public SimpleLruPage {
+class EXPCL_PANDA_GOBJ VertexDataPage : public SimpleAllocator, public SimpleLruPage {
 public:
   VertexDataPage(size_t book_size);
   VertexDataPage(VertexDataBook *book, size_t page_size, size_t block_size);

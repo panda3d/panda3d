@@ -75,23 +75,23 @@ typedef gray xelval;
 
 // pnm defines these functions, and it's easier to emulate them than
 // to rewrite the code that calls them.
-EXPCL_PANDA void pm_message(const char *format, ...);
-EXPCL_PANDA void pm_error(const char *format, ...);  // doesn't return.
+EXPCL_PANDA_PNMIMAGE void pm_message(const char *format, ...);
+EXPCL_PANDA_PNMIMAGE void pm_error(const char *format, ...);  // doesn't return.
 
-EXPCL_PANDA int pm_maxvaltobits(int maxval);
-EXPCL_PANDA int pm_bitstomaxval(int bits);
+EXPCL_PANDA_PNMIMAGE int pm_maxvaltobits(int maxval);
+EXPCL_PANDA_PNMIMAGE int pm_bitstomaxval(int bits);
 
-EXPCL_PANDA char *pm_allocrow(int cols, int size);
-EXPCL_PANDA void pm_freerow(char *itrow);
+EXPCL_PANDA_PNMIMAGE char *pm_allocrow(int cols, int size);
+EXPCL_PANDA_PNMIMAGE void pm_freerow(char *itrow);
 
-EXPCL_PANDA int pm_readbigshort(istream *in, short *sP);
-EXPCL_PANDA int pm_writebigshort(ostream *out, short s);
-EXPCL_PANDA int pm_readbiglong(istream *in, long *lP);
-EXPCL_PANDA int pm_writebiglong(ostream *out, long l);
-EXPCL_PANDA int pm_readlittleshort(istream *in, short *sP);
-EXPCL_PANDA int pm_writelittleshort(ostream *out, short s);
-EXPCL_PANDA int pm_readlittlelong(istream *in, long *lP);
-EXPCL_PANDA int pm_writelittlelong(ostream *out, long l);
+EXPCL_PANDA_PNMIMAGE int pm_readbigshort(istream *in, short *sP);
+EXPCL_PANDA_PNMIMAGE int pm_writebigshort(ostream *out, short s);
+EXPCL_PANDA_PNMIMAGE int pm_readbiglong(istream *in, long *lP);
+EXPCL_PANDA_PNMIMAGE int pm_writebiglong(ostream *out, long l);
+EXPCL_PANDA_PNMIMAGE int pm_readlittleshort(istream *in, short *sP);
+EXPCL_PANDA_PNMIMAGE int pm_writelittleshort(ostream *out, short s);
+EXPCL_PANDA_PNMIMAGE int pm_readlittlelong(istream *in, long *lP);
+EXPCL_PANDA_PNMIMAGE int pm_writelittlelong(ostream *out, long l);
 
 
 // These ratios are used to compute the brightness of a colored pixel; they

@@ -46,7 +46,7 @@ class GeomMunger;
 //               amounts will still share the same arrays as each
 //               other (but different from the original arrays).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTransformer {
+class EXPCL_PANDA_PGRAPH GeomTransformer {
 public:
   GeomTransformer();
   GeomTransformer(const GeomTransformer &copy);

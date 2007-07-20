@@ -53,7 +53,7 @@ class NodePath;
 //               RenderEffects such as Billboards are not supported
 //               below this node.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RigidBodyCombiner : public PandaNode {
+class EXPCL_PANDA_GRUTIL RigidBodyCombiner : public PandaNode {
 PUBLISHED:
   RigidBodyCombiner(const string &name);
 protected:

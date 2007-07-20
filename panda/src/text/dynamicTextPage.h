@@ -37,7 +37,7 @@ class DynamicTextFont;
 //               rendering.  The font starts out with one page, and
 //               will add more as it needs them.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DynamicTextPage : public Texture {
+class EXPCL_PANDA_TEXT DynamicTextPage : public Texture {
 public:
   DynamicTextPage(DynamicTextFont *font, int page_number);
 

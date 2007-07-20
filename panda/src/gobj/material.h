@@ -33,7 +33,7 @@ class FactoryParams;
 //               lighting.  A material is only necessary if lighting
 //               is to be enabled; otherwise, the material isn't used.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Material : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   INLINE Material(const string &name = "");
   INLINE Material(const Material &copy);

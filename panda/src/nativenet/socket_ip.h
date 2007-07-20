@@ -31,7 +31,7 @@ class Socket_UDP_Outgoing;
 // socket_fdset
 //
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_IP : public TypedObject {
+class EXPCL_PANDA_NATIVENET Socket_IP : public TypedObject {
 public:
 PUBLISHED:
 

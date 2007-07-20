@@ -45,7 +45,7 @@ class GeomNode;
 //               CullBinStateSorted and CullBinBackToFront provide the
 //               actual implementation.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBin : public TypedReferenceCount, public CullBinEnums {
+class EXPCL_PANDA_PGRAPH CullBin : public TypedReferenceCount, public CullBinEnums {
 protected:
   INLINE CullBin(const CullBin &copy);
 public:

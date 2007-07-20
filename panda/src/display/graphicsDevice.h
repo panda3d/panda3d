@@ -34,7 +34,7 @@ class GraphicsPipe;
 //               than one adapters in the machine).   
 //
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsDevice : public TypedReferenceCount {
+class EXPCL_PANDA_DISPLAY GraphicsDevice : public TypedReferenceCount {
 public:
   GraphicsDevice(GraphicsPipe *pipe);
 

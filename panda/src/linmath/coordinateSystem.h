@@ -43,17 +43,17 @@ enum CoordinateSystem {
   CS_invalid,
 };
 
-EXPCL_PANDA CoordinateSystem get_default_coordinate_system();
+EXPCL_PANDA_LINMATH CoordinateSystem get_default_coordinate_system();
 
 END_PUBLISH
 
-EXPCL_PANDA CoordinateSystem parse_coordinate_system_string(const string &str);
-EXPCL_PANDA bool is_right_handed(CoordinateSystem cs = CS_default);
+EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const string &str);
+EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 
 #define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
 
-EXPCL_PANDA ostream &operator << (ostream &out, CoordinateSystem cs);
-EXPCL_PANDA istream &operator >> (istream &in, CoordinateSystem &cs);
+EXPCL_PANDA_LINMATH ostream &operator << (ostream &out, CoordinateSystem cs);
+EXPCL_PANDA_LINMATH istream &operator >> (istream &in, CoordinateSystem &cs);
 
 
 #endif

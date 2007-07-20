@@ -28,7 +28,7 @@
 // Description : Represents a network address to which UDP packets may
 //               be sent or to which a TCP socket may be bound.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NetAddress {
+class EXPCL_PANDA_NET NetAddress {
 PUBLISHED:
   NetAddress();
   NetAddress(const Socket_Address &addr);

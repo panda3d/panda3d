@@ -25,14 +25,14 @@
 #include "animChannel.h"
 #include "animChannelFixed.h"
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MovingPart<ACScalarSwitchType>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, MovingPart<ACScalarSwitchType>);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovingPartScalar
 // Description : This is a particular kind of MovingPart that accepts
 //               a scalar each frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MovingPartScalar : public MovingPart<ACScalarSwitchType> {
+class EXPCL_PANDA_CHAN MovingPartScalar : public MovingPart<ACScalarSwitchType> {
 protected:
   INLINE MovingPartScalar(const MovingPartScalar &copy);
 

@@ -43,7 +43,7 @@ class MutexDebug;
 //               will automatically be destructed if no other pointers
 //               are referencing it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Thread : public TypedReferenceCount {
+class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount {
 protected:
   INLINE Thread(const string &name, const string &sync_name);
 
@@ -94,7 +94,7 @@ PUBLISHED:
 public:
   // This class allows integration with PStats, particularly in the
   // SIMPLE_THREADS case.
-  class EXPCL_PANDA PStatsCallback {
+  class EXPCL_PANDA_PIPELINE PStatsCallback {
   public:
     virtual ~PStatsCallback();
     virtual void deactivate_hook(Thread *thread);

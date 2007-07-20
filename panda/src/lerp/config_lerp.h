@@ -23,6 +23,6 @@
 #include "dconfig.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(lerp, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(lerp, EXPCL_PANDA_LERP, EXPTP_PANDA_LERP);
 
 #endif /* __CONFIG_LERP_H__ */

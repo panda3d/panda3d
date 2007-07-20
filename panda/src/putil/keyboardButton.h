@@ -29,7 +29,7 @@
 //               grouping all of these handy functions that return
 //               buttons which map to standard keyboard keys.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA KeyboardButton {
+class EXPCL_PANDA_PUTIL KeyboardButton {
 PUBLISHED:
   static ButtonHandle ascii_key(char ascii_equivalent);
   static ButtonHandle ascii_key(const string &ascii_equivalent);

@@ -57,7 +57,7 @@ class NodePath;
 //               Each renderable Geom encountered is passed along with
 //               its associated RenderState to the CullHandler object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PortalClipper : public TypedObject {
+class EXPCL_PANDA_PGRAPH PortalClipper : public TypedObject {
 public:
   PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup);
   ~PortalClipper();

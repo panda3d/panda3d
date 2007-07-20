@@ -31,7 +31,7 @@
 //               must define a class that inherits from PNMWriter to
 //               write it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMWriter : public PNMImageHeader {
+class EXPCL_PANDA_PNMIMAGE PNMWriter : public PNMImageHeader {
 protected:
   INLINE PNMWriter(PNMFileType *type, ostream *file, bool owns_file);
 

@@ -110,7 +110,7 @@ class Lens;
 //               TypedWritableReferenceCount instead of
 //               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsStateGuardianBase : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GSGBASE GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 PUBLISHED:
   virtual bool prefers_triangle_strips() const=0;
   virtual int get_max_vertices_per_array() const=0;

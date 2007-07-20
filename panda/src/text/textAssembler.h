@@ -43,7 +43,7 @@ class TextAssembler;
 //               advantage of it, if desired, for very low-level text
 //               operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextAssembler {
+class EXPCL_PANDA_TEXT TextAssembler {
 PUBLISHED:
   TextAssembler(TextEncoder *encoder);
   TextAssembler(const TextAssembler &copy);

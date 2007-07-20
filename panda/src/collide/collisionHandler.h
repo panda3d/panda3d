@@ -33,7 +33,7 @@ class CollisionEntry;
 //               that is processing collisions in order to specify how
 //               to dispatch detected collisions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandler : public TypedReferenceCount {
+class EXPCL_PANDA_COLLIDE CollisionHandler : public TypedReferenceCount {
 public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);

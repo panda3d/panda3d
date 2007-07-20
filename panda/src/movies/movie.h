@@ -32,7 +32,7 @@
 //               an AVI file, or an internet TV station.  It could
 //               also be an MP3 file paired with a dummy video stream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Movie : public TypedWritableReferenceCount, public Namable{
+class EXPCL_PANDA_MOVIES Movie : public TypedWritableReferenceCount, public Namable{
 
 PUBLISHED:
   Movie(const string &name, double len);

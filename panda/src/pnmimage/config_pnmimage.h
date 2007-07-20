@@ -22,8 +22,8 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(pnmimage, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pnmimage, EXPCL_PANDA_PNMIMAGE, EXPTP_PANDA_PNMIMAGE);
 
-extern EXPCL_PANDA void init_libpnmimage();
+extern EXPCL_PANDA_PNMIMAGE void init_libpnmimage();
 
 #endif

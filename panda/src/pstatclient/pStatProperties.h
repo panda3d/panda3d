@@ -25,8 +25,8 @@
 class PStatClient;
 class PStatCollectorDef;
 
-EXPCL_PANDA int get_current_pstat_major_version();
-EXPCL_PANDA int get_current_pstat_minor_version();
+EXPCL_PANDA_PSTATCLIENT int get_current_pstat_major_version();
+EXPCL_PANDA_PSTATCLIENT int get_current_pstat_minor_version();
 
 #ifdef DO_PSTATS
 void initialize_collector_def(const PStatClient *client, PStatCollectorDef *def);

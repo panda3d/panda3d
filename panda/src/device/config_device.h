@@ -23,10 +23,10 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(device, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(device, EXPCL_PANDA_DEVICE, EXPTP_PANDA_DEVICE);
 
 extern ConfigVariableBool asynchronous_clients;
 
-extern EXPCL_PANDA void init_libdevice();
+extern EXPCL_PANDA_DEVICE void init_libdevice();
 
 #endif

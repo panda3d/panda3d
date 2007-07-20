@@ -47,7 +47,7 @@ class ConnectionWriter;
 //               events (or derive your own class to handle these
 //               events properly).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConnectionManager {
+class EXPCL_PANDA_NET ConnectionManager {
 PUBLISHED:
   ConnectionManager();
   virtual ~ConnectionManager();

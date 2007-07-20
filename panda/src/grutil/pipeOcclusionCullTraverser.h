@@ -48,7 +48,7 @@ class GraphicsStateGuardian;
 //               other classes in display.  So we put it in grutil
 //               instead, for lack of any better ideas.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PipeOcclusionCullTraverser : public CullTraverser,
+class EXPCL_PANDA_GRUTIL PipeOcclusionCullTraverser : public CullTraverser,
                                                public CullHandler {
 PUBLISHED:
   PipeOcclusionCullTraverser(GraphicsOutput *host);

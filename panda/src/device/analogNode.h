@@ -46,7 +46,7 @@
 //               position data.  In this way, an AnalogNode may be
 //               used in place of a mouse.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnalogNode : public DataNode {
+class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
   AnalogNode(ClientBase *client, const string &device_name);
   virtual ~AnalogNode();

@@ -47,7 +47,7 @@
 //               is up to the handler to determine what information is
 //               known and to do the right thing with it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionEntry : public TypedWritableReferenceCount {
+class EXPCL_PANDA_COLLIDE CollisionEntry : public TypedWritableReferenceCount {
 public:
   INLINE CollisionEntry();
   CollisionEntry(const CollisionEntry &copy);

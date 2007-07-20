@@ -34,7 +34,7 @@
 //               a table read from an egg file (but possibly computed
 //               or generated in any other way).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelBase : public AnimGroup {
+class EXPCL_PANDA_CHAN AnimChannelBase : public AnimGroup {
 protected:
   // The default constructor is protected: don't try to create an
   // AnimChannel without a parent.  To create an AnimChannel hierarchy,

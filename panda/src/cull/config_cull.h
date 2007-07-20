@@ -28,9 +28,9 @@
 
 class DSearchPath;
 
-ConfigureDecl(config_cull, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(cull, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_cull, EXPCL_PANDA_CULL, EXPTP_PANDA_CULL);
+NotifyCategoryDecl(cull, EXPCL_PANDA_CULL, EXPTP_PANDA_CULL);
 
-extern EXPCL_PANDA void init_libcull();
+extern EXPCL_PANDA_CULL void init_libcull();
 
 #endif

@@ -32,7 +32,7 @@
 //               TypedWritableReferenceCount so we can attach this thing to an
 //               event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
+class EXPCL_PANDA_PGUI PGMouseWatcherParameter : public TypedWritableReferenceCount, public MouseWatcherParameter {
   // For now, this must inherit from TypedWritableReferenceCount on
   // the left, because MSVC++ wants to make that base class be the one
   // at the front of the structure, not MouseWatcherParameter for some

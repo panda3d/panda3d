@@ -38,7 +38,7 @@
 //               node will automatically force the indicated character
 //               to be updated first.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CharacterJointEffect : public RenderEffect {
+class EXPCL_PANDA_CHAR CharacterJointEffect : public RenderEffect {
 private:
   INLINE CharacterJointEffect();
 

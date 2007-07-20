@@ -36,7 +36,7 @@
 //               derived classes are responsible for protecting any
 //               calls into it within mutexes, if necessary.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LinkedListNode {
+class EXPCL_PANDA_PUTIL LinkedListNode {
 protected:
   INLINE LinkedListNode();
   INLINE LinkedListNode(bool);

@@ -35,7 +35,7 @@
 //               their moving bodies: they need to update the nodes'
 //               positions based on the effects of the collision.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandlerPhysical : public CollisionHandlerEvent {
+class EXPCL_PANDA_COLLIDE CollisionHandlerPhysical : public CollisionHandlerEvent {
 public:
   CollisionHandlerPhysical();
   virtual ~CollisionHandlerPhysical();

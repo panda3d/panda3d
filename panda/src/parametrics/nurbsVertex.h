@@ -37,7 +37,7 @@
 //               of NURBS curves, and will probably eventually replace
 //               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsVertex {
+class EXPCL_PANDA_PARAMETRICS NurbsVertex {
 public:
   INLINE NurbsVertex();
   INLINE NurbsVertex(const NurbsVertex &copy);

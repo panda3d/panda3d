@@ -38,7 +38,7 @@ class GraphicsStateGuardianBase;
 //               the scene graph; almost all visible objects will be
 //               contained in a GeomNode somewhere.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
   GeomNode(const string &name);
 
@@ -119,7 +119,7 @@ private:
   INLINE int get_name_count(const NameCount &name_count, const InternalName *name);
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     CData(const CData &copy);
@@ -151,7 +151,7 @@ public:
   // PandaNode::get_children(); use this to walk through the list of
   // geoms faster than walking through the geoms directly from the
   // node.
-  class EXPCL_PANDA Geoms {
+  class EXPCL_PANDA_PGRAPH Geoms {
   public:
     INLINE Geoms();
     INLINE Geoms(const CData *cdata);

@@ -42,7 +42,7 @@ class ParametricCurveDrawer;
 //               return a single transformation matrix for a given
 //               unit of time.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ParametricCurveCollection : public ReferenceCount {
+class EXPCL_PANDA_PARAMETRICS ParametricCurveCollection : public ReferenceCount {
 PUBLISHED:
   ParametricCurveCollection();
   INLINE ~ParametricCurveCollection();

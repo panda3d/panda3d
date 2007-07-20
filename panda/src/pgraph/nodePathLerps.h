@@ -28,7 +28,7 @@
 //       Class : PosLerpFunctor
 // Description : Class for Lerping between positions in space
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PosLerpFunctor : public LPoint3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH PosLerpFunctor : public LPoint3fLerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
@@ -82,7 +82,7 @@ private:
 //       Class : HprLerpFunctor
 // Description : Class for Lerping between orientations in space
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA HprLerpFunctor : public LVecBase3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH HprLerpFunctor : public LVecBase3fLerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
@@ -136,7 +136,7 @@ private:
 //       Class : ScaleLerpFunctor
 // Description : Class for Lerping between scales
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ScaleLerpFunctor : public LVecBase3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ScaleLerpFunctor : public LVecBase3fLerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
@@ -188,7 +188,7 @@ private:
 //       Class : ColorLerpFunctor
 // Description : Class for Lerping between colors
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ColorLerpFunctor : public LVecBase4fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ColorLerpFunctor : public LVecBase4fLerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
@@ -240,7 +240,7 @@ private:
 // Description : Class for Lerping between positions and orientations
 //               in space
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PosHprLerpFunctor : public LerpFunctor {
+class EXPCL_PANDA_PGRAPH PosHprLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
   LPoint3f _pstart;
@@ -312,7 +312,7 @@ private:
 // Description : Class for Lerping between orientation
 //               and scale
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA HprScaleLerpFunctor : public LerpFunctor {
+class EXPCL_PANDA_PGRAPH HprScaleLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
   LVecBase3f _hstart;
@@ -389,7 +389,7 @@ private:
 // Description : Class for Lerping between position, orientation,
 //               and scale
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PosHprScaleLerpFunctor : public LerpFunctor {
+class EXPCL_PANDA_PGRAPH PosHprScaleLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
   LPoint3f _pstart;
@@ -473,7 +473,7 @@ private:
 //       Class : ColorScaleLerpFunctor
 // Description : Class for Lerping between color scales
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ColorScaleLerpFunctor : public LVecBase4fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ColorScaleLerpFunctor : public LVecBase4fLerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;

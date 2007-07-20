@@ -47,7 +47,7 @@
 //               be replaced at the end of the queue to go around
 //               again.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AsyncTaskManager : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
   AsyncTaskManager(const string &name, int num_threads);
   virtual ~AsyncTaskManager();

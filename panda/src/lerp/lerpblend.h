@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "typedReferenceCount.h"
 
-class EXPCL_PANDA LerpBlendType : public TypedReferenceCount {
+class EXPCL_PANDA_LERP LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
   LerpBlendType() {}
   virtual ~LerpBlendType();
@@ -52,7 +52,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA EaseInBlendType : public LerpBlendType {
+class EXPCL_PANDA_LERP EaseInBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInBlendType() {}
   virtual ~EaseInBlendType();
@@ -82,7 +82,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA EaseOutBlendType : public LerpBlendType {
+class EXPCL_PANDA_LERP EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseOutBlendType() {}
   virtual ~EaseOutBlendType();
@@ -112,7 +112,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA EaseInOutBlendType : public LerpBlendType {
+class EXPCL_PANDA_LERP EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInOutBlendType() {}
   virtual ~EaseInOutBlendType();
@@ -141,7 +141,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA NoBlendType : public LerpBlendType {
+class EXPCL_PANDA_LERP NoBlendType : public LerpBlendType {
 PUBLISHED:
   NoBlendType() {}
   virtual ~NoBlendType();

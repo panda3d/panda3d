@@ -21,7 +21,7 @@
 // Description : An abstract mathematical description of a plane.  A
 //               plane is defined by the equation Ax + By + Cz + D = 0.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_MATHUTIL FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)();
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy);

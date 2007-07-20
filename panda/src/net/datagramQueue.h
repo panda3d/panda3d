@@ -32,7 +32,7 @@
 //               by ConnectionWriter for queuing up datagrams for
 //               its various threads to write to sockets.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DatagramQueue {
+class EXPCL_PANDA_NET DatagramQueue {
 public:
   DatagramQueue();
   ~DatagramQueue();

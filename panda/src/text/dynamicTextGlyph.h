@@ -34,7 +34,7 @@ class DynamicTextPage;
 //               additional information, such as where the glyph
 //               appears on a texture map.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DynamicTextGlyph : public TextGlyph {
+class EXPCL_PANDA_TEXT DynamicTextGlyph : public TextGlyph {
 public:
   INLINE DynamicTextGlyph(int character, DynamicTextPage *page,
                           int x, int y, int x_size, int y_size, 

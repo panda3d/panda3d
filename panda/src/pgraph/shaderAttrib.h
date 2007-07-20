@@ -30,7 +30,7 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA ShaderAttrib: public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ShaderAttrib: public RenderAttrib {
 
 private:
   INLINE ShaderAttrib();

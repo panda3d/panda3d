@@ -29,7 +29,7 @@
 //       Class : PNMFileTypeIMG
 // Description : For reading and writing headerless R,G,B files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeIMG : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeIMG : public PNMFileType {
 public:
   PNMFileTypeIMG();
 

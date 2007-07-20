@@ -30,7 +30,7 @@
 //               just quietly listens for keypresses and sends them to
 //               all the PGItems with background focus.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherBackground : public MouseWatcherRegion {
+class EXPCL_PANDA_PGUI PGMouseWatcherBackground : public MouseWatcherRegion {
 PUBLISHED:
   PGMouseWatcherBackground();
   virtual ~PGMouseWatcherBackground();

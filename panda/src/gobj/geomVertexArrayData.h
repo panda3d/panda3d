@@ -64,7 +64,7 @@ class SimpleAllocatorBlock;
 //               GeomVertexReader/Writer/Rewriter for high-level tools
 //               to manipulate the actual vertex data.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayData : public CopyOnWriteObject, public SimpleLruPage, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexArrayData : public CopyOnWriteObject, public SimpleLruPage, public GeomEnums {
 private:
   GeomVertexArrayData();
 
@@ -145,7 +145,7 @@ private:
   };
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
@@ -246,7 +246,7 @@ private:
 //               GeomVertexArrayDataPipelineReader and
 //               GeomVertexArrayDataPipelineWriter classes
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexArrayDataHandle : public ReferenceCount, public GeomEnums {
 private:
   INLINE GeomVertexArrayDataHandle(const GeomVertexArrayData *object, 
                                    Thread *current_thread,

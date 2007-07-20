@@ -46,7 +46,7 @@
 //               return a new NodePath representing the complete
 //               generated chain.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WorkingNodePath {
+class EXPCL_PANDA_PGRAPH WorkingNodePath {
 public:
   INLINE WorkingNodePath(const NodePath &start);
   INLINE WorkingNodePath(const WorkingNodePath &copy);

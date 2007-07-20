@@ -32,7 +32,7 @@
 //               rectangular polygons, particularly useful for showing
 //               textures etc. in the 2-d scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CardMaker : public Namable {
+class EXPCL_PANDA_GRUTIL CardMaker : public Namable {
 PUBLISHED:
   INLINE CardMaker(const string &name);
   INLINE ~CardMaker();

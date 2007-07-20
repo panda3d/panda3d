@@ -33,7 +33,7 @@
 //       Class : PNMFileTypePNG
 // Description : For reading and writing PNG files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypePNG : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNG : public PNMFileType {
 public:
   PNMFileTypePNG();
 

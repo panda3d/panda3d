@@ -61,7 +61,7 @@ class NurbsCurveInterface;
 //               This encapsulates all curves in 3-d space defined
 //               for a single parameter t in the range [0,get_max_t()].
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ParametricCurve : public PandaNode {
+class EXPCL_PANDA_PARAMETRICS ParametricCurve : public PandaNode {
 PUBLISHED:
   ParametricCurve();
   virtual ~ParametricCurve();

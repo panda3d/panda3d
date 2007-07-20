@@ -28,7 +28,7 @@
 // Description : This is a special kind of GeometricBoundingVolume
 //               that fills all of space.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA OmniBoundingVolume : public GeometricBoundingVolume {
+class EXPCL_PANDA_MATHUTIL OmniBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL OmniBoundingVolume();
 

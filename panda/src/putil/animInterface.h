@@ -40,7 +40,7 @@ class DatagramIterator;
 //               base class for AnimControl and other, similar
 //               classes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimInterface {
+class EXPCL_PANDA_PUTIL AnimInterface {
 protected:
   AnimInterface();
   AnimInterface(const AnimInterface &copy);
@@ -89,7 +89,7 @@ private:
   int _num_frames;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PUTIL CData : public CycleData {
   public:
     CData();
     CData(const CData &copy);

@@ -25,11 +25,11 @@
 #include "configVariableInt.h"
 
 // Configure variables for chan package.
-NotifyCategoryDecl(chan, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(chan, EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN);
 
-EXPCL_PANDA extern ConfigVariableBool compress_channels;
-EXPCL_PANDA extern ConfigVariableInt compress_chan_quality;
-EXPCL_PANDA extern ConfigVariableBool read_compressed_channels;
-EXPCL_PANDA extern ConfigVariableBool interpolate_frames;
+EXPCL_PANDA_CHAN extern ConfigVariableBool compress_channels;
+EXPCL_PANDA_CHAN extern ConfigVariableInt compress_chan_quality;
+EXPCL_PANDA_CHAN extern ConfigVariableBool read_compressed_channels;
+EXPCL_PANDA_CHAN extern ConfigVariableBool interpolate_frames;
 
 #endif

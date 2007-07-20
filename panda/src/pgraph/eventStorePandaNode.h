@@ -28,7 +28,7 @@
 // Description : A class object for storing specifically objects of
 //               type PandaNode.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventStorePandaNode : public EventStoreValueBase {
+class EXPCL_PANDA_PGRAPH EventStorePandaNode : public EventStoreValueBase {
 PUBLISHED:
   INLINE EventStorePandaNode(const PandaNode *value);
   virtual ~EventStorePandaNode();

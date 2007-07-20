@@ -37,7 +37,7 @@ class BamCacheRecord;
 //               loader that's available should define a corresponding
 //               LoaderFileType object and register itself.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LoaderFileType : public TypedObject {
+class EXPCL_PANDA_PGRAPH LoaderFileType : public TypedObject {
 protected:
   LoaderFileType();
 

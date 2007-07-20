@@ -41,7 +41,7 @@ class GeomVertexWriter;
 //               GeomVertexArrayFormat class maintains a list of these
 //               to completely define a particular array structure.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexColumn : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexColumn : public GeomEnums {
 PUBLISHED:
 private:
   INLINE GeomVertexColumn();

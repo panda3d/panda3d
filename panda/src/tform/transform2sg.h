@@ -31,7 +31,7 @@
 //               output: none, but applies the matrix as the transform
 //               transition for a given arc of the scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Transform2SG : public DataNode {
+class EXPCL_PANDA_TFORM Transform2SG : public DataNode {
 PUBLISHED:
   Transform2SG(const string &name);
 

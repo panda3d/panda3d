@@ -31,7 +31,7 @@
 //               drawing).  This is the kind of CullHandler to use for
 //               most normal rendering needs.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BinCullHandler : public CullHandler {
+class EXPCL_PANDA_CULL BinCullHandler : public CullHandler {
 public:
   INLINE BinCullHandler(CullResult *cull_result);
 

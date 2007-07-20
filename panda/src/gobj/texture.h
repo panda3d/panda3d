@@ -57,7 +57,7 @@ class BamCacheRecord;
 //               memory (actually, to the graphics API), and the
 //               system RAM image is automatically freed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Texture : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_GOBJ Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
   enum TextureType {
     TT_1d_texture,
@@ -570,17 +570,17 @@ private:
   friend class TexturePool;
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::TextureType tt);
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::ComponentType ct);
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::Format f);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::TextureType tt);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::ComponentType ct);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::Format f);
 
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::FilterType ft);
-EXPCL_PANDA istream &operator >> (istream &in, Texture::FilterType &ft);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::FilterType ft);
+EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::FilterType &ft);
 
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::WrapMode wm);
-EXPCL_PANDA istream &operator >> (istream &in, Texture::WrapMode &wm);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::WrapMode wm);
+EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::WrapMode &wm);
 
-EXPCL_PANDA ostream &operator << (ostream &out, Texture::CompressionMode cm);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::CompressionMode cm);
 
 #include "texture.I"
 

@@ -32,7 +32,7 @@
 //               AnimBundle.  Like AnimBundleNode, it exists solely to
 //               make it easy to store AnimBundles in the scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimBundleNode : public PandaNode {
+class EXPCL_PANDA_CHAN AnimBundleNode : public PandaNode {
 public:
   INLINE AnimBundleNode(const string &name, AnimBundle *bundle);
 

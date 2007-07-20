@@ -21,7 +21,7 @@
 //       Class : LMatrix4
 // Description : This is a 4-by-4 transform matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(LMatrix4) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix4) {
 public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;

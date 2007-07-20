@@ -30,7 +30,7 @@
 //               individual buttons and tracks whether each button is
 //               known to be down or up.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModifierButtons {
+class EXPCL_PANDA_PUTIL ModifierButtons {
 PUBLISHED:
   ModifierButtons();
   ModifierButtons(const ModifierButtons &copy);

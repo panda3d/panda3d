@@ -26,7 +26,7 @@
 //       Class : TrackerData
 // Description : Stores the kinds of data that a tracker might output.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TrackerData {
+class EXPCL_PANDA_DEVICE TrackerData {
 public:
   INLINE TrackerData();
   INLINE TrackerData(const TrackerData &copy);

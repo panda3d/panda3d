@@ -36,7 +36,7 @@ class FactoryParams;
 //               created and destructed in recording and playback,
 //               respectively.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RecorderFrame : public TypedWritable {
+class EXPCL_PANDA_RECORDER RecorderFrame : public TypedWritable {
 public:
   INLINE RecorderFrame();
   INLINE RecorderFrame(double timestamp, int frame,

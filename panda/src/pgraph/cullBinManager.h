@@ -36,7 +36,7 @@ class GraphicsStateGuardianBase;
 // Description : This is a global object that maintains the collection
 //               of named CullBins in the world.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinManager : public CullBinEnums {
+class EXPCL_PANDA_PGRAPH CullBinManager : public CullBinEnums {
 protected:
   CullBinManager();
   ~CullBinManager();
@@ -91,7 +91,7 @@ private:
   void setup_initial_bins();
   static BinType parse_bin_type(const string &bin_type);
 
-  class EXPCL_PANDA BinDefinition {
+  class EXPCL_PANDA_PGRAPH BinDefinition {
   public:
     bool _in_use;
     string _name;
@@ -124,7 +124,7 @@ private:
   friend class SortBins;
 };
 
-EXPCL_PANDA ostream &
+EXPCL_PANDA_PGRAPH ostream &
 operator << (ostream &out, CullBinManager::BinType bin_type);
 
 #include "cullBinManager.I"

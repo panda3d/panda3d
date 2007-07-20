@@ -30,7 +30,7 @@
 //               it.  This also serves to hold the current properties
 //               for a window after it has been opened.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WindowProperties {
+class EXPCL_PANDA_DISPLAY WindowProperties {
 PUBLISHED:
 
 
@@ -197,14 +197,14 @@ private:
   size_t _parent_window;  // a HWND or WindowRef or .. what ever it is on X win...
 };
 
-EXPCL_PANDA ostream &
+EXPCL_PANDA_DISPLAY ostream &
 operator << (ostream &out, WindowProperties::ZOrder z_order);
-EXPCL_PANDA istream &
+EXPCL_PANDA_DISPLAY istream &
 operator >> (istream &in, WindowProperties::ZOrder &z_order);
 
-EXPCL_PANDA ostream &
+EXPCL_PANDA_DISPLAY ostream &
 operator << (ostream &out, WindowProperties::MouseMode mode);
-EXPCL_PANDA istream &
+EXPCL_PANDA_DISPLAY istream &
 operator >> (istream &in, WindowProperties::MouseMode &mode);
 
 

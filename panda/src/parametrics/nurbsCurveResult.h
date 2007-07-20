@@ -39,7 +39,7 @@ class NurbsVertex;
 //               of NURBS curves, and will probably eventually replace
 //               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsCurveResult : public ReferenceCount {
+class EXPCL_PANDA_PARAMETRICS NurbsCurveResult : public ReferenceCount {
 public:
   NurbsCurveResult(const NurbsBasisVector &basis, 
                    const LVecBase4f vecs[], const NurbsVertex *verts,

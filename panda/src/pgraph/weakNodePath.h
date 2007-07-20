@@ -38,7 +38,7 @@
 //               is, get_node_path() will return the associated
 //               NodePath.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA WeakNodePath {
+class EXPCL_PANDA_PGRAPH WeakNodePath {
 public:
   INLINE WeakNodePath(const NodePath &node_path);
   INLINE WeakNodePath(const WeakNodePath &copy);

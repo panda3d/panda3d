@@ -42,7 +42,7 @@ class PNMImage;
 //               over the border; when it is used to fill the
 //               interior, it is tiled through the interior.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMBrush : public ReferenceCount {
+class EXPCL_PANDA_PNMIMAGE PNMBrush : public ReferenceCount {
 protected:
   INLINE PNMBrush(double xc, double yc);
 

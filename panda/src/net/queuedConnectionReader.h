@@ -27,7 +27,7 @@
 #include "pmutex.h"
 #include "pdeque.h"
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<NetDatagram>);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedConnectionReader
@@ -38,7 +38,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 //               threading and is willing to poll for datagrams at its
 //               convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QueuedConnectionReader : public ConnectionReader,
+class EXPCL_PANDA_NET QueuedConnectionReader : public ConnectionReader,
                                public QueuedReturn<NetDatagram> {
 PUBLISHED:
   QueuedConnectionReader(ConnectionManager *manager, int num_threads);

@@ -37,7 +37,7 @@
 //               combination of VertexTransform pointers and blend
 //               amounts.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformBlend {
+class EXPCL_PANDA_GOBJ TransformBlend {
 PUBLISHED:
   INLINE TransformBlend();
   INLINE TransformBlend(const VertexTransform *transform0, float weight0);
@@ -100,7 +100,7 @@ private:
 
   // This is the data that must be cycled between pipeline stages; it
   // is just a local cache.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

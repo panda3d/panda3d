@@ -24,9 +24,9 @@
 
 // Configure variables for nativenet package.
 
-NotifyCategoryDecl(nativenet, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(nativenet, EXPCL_PANDA_NATIVENET, EXPTP_PANDA_NATIVENET);
 
-extern EXPCL_PANDA void init_libnativenet();
+extern EXPCL_PANDA_NATIVENET void init_libnativenet();
 
 #endif
 

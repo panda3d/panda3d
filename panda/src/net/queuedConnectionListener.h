@@ -28,7 +28,7 @@
 #include "pdeque.h"
 
 
-class EXPCL_PANDA ConnectionListenerData {
+class EXPCL_PANDA_NET ConnectionListenerData {
 public:
   // We need these methods to make VC++ happy when we try to
   // instantiate the template, below.  They don't do anything useful.
@@ -41,7 +41,7 @@ public:
   PT(Connection) _new_connection;
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<ConnectionListenerData>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<ConnectionListenerData>);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedConnectionListener
@@ -49,7 +49,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<ConnectionListenerD
 //               of the TCP connections it established for later
 //               detection by the client code.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QueuedConnectionListener : public ConnectionListener,
+class EXPCL_PANDA_NET QueuedConnectionListener : public ConnectionListener,
                                  public QueuedReturn<ConnectionListenerData> {
 PUBLISHED:
   QueuedConnectionListener(ConnectionManager *manager, int num_threads);

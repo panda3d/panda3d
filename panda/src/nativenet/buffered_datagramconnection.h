@@ -28,7 +28,7 @@
 //      3. Socket is open and  writable.. ( Fully powered up )...
 //
 ///////////////////////////////////////////////////////////////
-class EXPCL_PANDA Buffered_DatagramConnection : public Socket_TCP
+class EXPCL_PANDA_NATIVENET Buffered_DatagramConnection : public Socket_TCP
 {
 private:
   struct AddressQueue : private pvector<Socket_Address> // this is used to do a round robin for addres to connect to ..

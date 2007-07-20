@@ -32,7 +32,7 @@ class CharacterVertexSlider;
 //               generally between 0 and 1, that controls the effects
 //               of one or more morphs within the character.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CharacterSlider : public MovingPartScalar {
+class EXPCL_PANDA_CHAR CharacterSlider : public MovingPartScalar {
 protected:
   CharacterSlider();
   CharacterSlider(const CharacterSlider &copy);

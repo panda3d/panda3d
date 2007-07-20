@@ -25,7 +25,7 @@
 #include "queuedReturn.h"
 #include "pdeque.h"
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn< PT(Connection) >);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : QueuedConnectionManager
@@ -40,7 +40,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 //               close_connection() on that connection to free up its
 //               resources.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QueuedConnectionManager : public ConnectionManager,
+class EXPCL_PANDA_NET QueuedConnectionManager : public ConnectionManager,
                                 public QueuedReturn< PT(Connection) > {
 PUBLISHED:
   QueuedConnectionManager();

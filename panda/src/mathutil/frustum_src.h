@@ -20,7 +20,7 @@
 //       Class : Frustum
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(Frustum) {
+class EXPCL_PANDA_MATHUTIL FLOATNAME(Frustum) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Frustum)();
 

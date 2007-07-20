@@ -32,7 +32,7 @@
 //               TexturePool in that it unifies references to the same
 //               filename.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ShaderPool {
+class EXPCL_PANDA_PGRAPH ShaderPool {
 PUBLISHED:
   // These functions take string parameters instead of Filenames
   // because that's somewhat more convenient to the scripting

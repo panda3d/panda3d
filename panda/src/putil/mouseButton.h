@@ -29,7 +29,7 @@
 //               grouping all of these handy functions that return
 //               buttons which map to standard mouse buttons.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseButton {
+class EXPCL_PANDA_PUTIL MouseButton {
 PUBLISHED:
   static ButtonHandle button(int button_number);
   static ButtonHandle one();

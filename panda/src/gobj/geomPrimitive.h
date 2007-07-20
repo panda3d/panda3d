@@ -64,7 +64,7 @@ class GeomPrimitivePipelineReader;
 //               renders a strip of (n - 2) connected triangles from
 //               each sequence of n vertices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomPrimitive : public CopyOnWriteObject, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomPrimitive : public CopyOnWriteObject, public GeomEnums {
 protected:
   GeomPrimitive();
   virtual PT(CopyOnWriteObject) make_cow_copy();
@@ -233,7 +233,7 @@ private:
   Contexts _contexts;
     
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
@@ -324,7 +324,7 @@ private:
 // Description : Encapsulates the data from a GeomPrimitive,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomPrimitivePipelineReader : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
   INLINE GeomPrimitivePipelineReader(const GeomPrimitive *object, Thread *current_thread);
 private:

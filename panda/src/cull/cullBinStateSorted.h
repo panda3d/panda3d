@@ -40,7 +40,7 @@
 //               Z-buffer algorithms which can early-out when an
 //               object appears behind another one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinStateSorted : public CullBin {
+class EXPCL_PANDA_CULL CullBinStateSorted : public CullBin {
 public:
   INLINE CullBinStateSorted(const string &name, 
                             GraphicsStateGuardianBase *gsg,

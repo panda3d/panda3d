@@ -30,7 +30,7 @@
 // Description : For reading and writing basic PNM files--*.pbm,
 //               *.ppm, *.pnm.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypePNM : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypePNM : public PNMFileType {
 public:
   PNMFileTypePNM();
 

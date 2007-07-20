@@ -37,7 +37,7 @@ class GraphicsWindow;
 //               default interactive GraphicsPipe, and possibly other
 //               types available as well.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsPipeSelection {
+class EXPCL_PANDA_DISPLAY GraphicsPipeSelection {
 protected:
   GraphicsPipeSelection();
   ~GraphicsPipeSelection();

@@ -34,7 +34,7 @@ class FactoryParams;
 // Description : Applies a transform matrix to UV's before they are
 //               rendered.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TexMatrixAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH TexMatrixAttrib : public RenderAttrib {
 protected:
   INLINE TexMatrixAttrib();
   INLINE TexMatrixAttrib(const TexMatrixAttrib &copy);

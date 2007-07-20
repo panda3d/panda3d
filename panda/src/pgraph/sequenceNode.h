@@ -30,7 +30,7 @@
 // Description : A node that automatically cycles through rendering
 //               each one of its children according to its frame rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SequenceNode : public SelectiveChildNode, public AnimInterface {
+class EXPCL_PANDA_PGRAPH SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
   INLINE SequenceNode(const string &name);
 

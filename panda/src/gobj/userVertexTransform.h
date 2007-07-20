@@ -35,7 +35,7 @@ class FactoryParams;
 //               matrix he likes.  This is rarely used except for
 //               testing.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA UserVertexTransform : public VertexTransform {
+class EXPCL_PANDA_GOBJ UserVertexTransform : public VertexTransform {
 PUBLISHED:
   UserVertexTransform(const string &name);
 
@@ -50,7 +50,7 @@ private:
   string _name;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

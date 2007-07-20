@@ -51,7 +51,7 @@ class CullTraverserData;
 //               function calls handle the subset of the N*N
 //               intersection tests that we care about.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSolid : public CopyOnWriteObject {
+class EXPCL_PANDA_COLLIDE CollisionSolid : public CopyOnWriteObject {
 public:
   CollisionSolid();
   CollisionSolid(const CollisionSolid &copy);

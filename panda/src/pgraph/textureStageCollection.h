@@ -27,7 +27,7 @@
 //       Class : TextureStageCollection
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureStageCollection {
+class EXPCL_PANDA_PGRAPH TextureStageCollection {
 PUBLISHED:
   TextureStageCollection();
   TextureStageCollection(const TextureStageCollection &copy);

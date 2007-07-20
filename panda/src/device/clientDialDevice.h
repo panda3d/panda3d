@@ -36,7 +36,7 @@
 //               Therefore it does not have a specific position at any
 //               given time, unlike an AnalogDevice.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientDialDevice : public ClientDevice {
+class EXPCL_PANDA_DEVICE ClientDialDevice : public ClientDevice {
 protected:
   INLINE ClientDialDevice(ClientBase *client, const string &device_name);
 

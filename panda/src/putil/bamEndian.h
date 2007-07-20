@@ -36,7 +36,7 @@ enum BamEndian {
 #endif
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, BamEndian be);
-EXPCL_PANDA istream &operator >> (istream &in, BamEndian &be);
+EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEndian be);
+EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamEndian &be);
 
 #endif

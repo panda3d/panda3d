@@ -36,7 +36,7 @@ class DatagramIterator;
 //               constructed; it's just a convenient place to scope
 //               these static methods which should be called directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA IoPtaDatagramInt {
+class EXPCL_PANDA_PUTIL IoPtaDatagramInt {
 public:
   static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_int array);
   static PTA_int read_datagram(BamReader *manager, DatagramIterator &source);

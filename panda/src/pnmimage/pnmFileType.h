@@ -36,7 +36,7 @@ class FactoryParams;
 //               represent particular image file types that PNMImage
 //               supports.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileType : public TypedWritable {
+class EXPCL_PANDA_PNMIMAGE PNMFileType : public TypedWritable {
 protected:
   PNMFileType();
 

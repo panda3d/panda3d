@@ -31,7 +31,7 @@
 //               the same order it was encountered, which will be in
 //               scene-graph order.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinUnsorted : public CullBin {
+class EXPCL_PANDA_CULL CullBinUnsorted : public CullBin {
 public:
   INLINE CullBinUnsorted(const string &name, 
                          GraphicsStateGuardianBase *gsg,

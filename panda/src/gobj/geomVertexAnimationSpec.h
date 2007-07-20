@@ -43,7 +43,7 @@ class DatagramIterator;
 //               way the animation is actually performed; this just
 //               specifies how the vertices are set up to be animated.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexAnimationSpec : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexAnimationSpec : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexAnimationSpec();
   INLINE GeomVertexAnimationSpec(const GeomVertexAnimationSpec &other);

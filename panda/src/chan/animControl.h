@@ -39,7 +39,7 @@ class AnimChannelBase;
 //               animation: whether started, stopped, or looping, and
 //               the current frame number and play rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimControl : public ReferenceCount, public AnimInterface {
+class EXPCL_PANDA_CHAN AnimControl : public ReferenceCount, public AnimInterface {
 public:
   AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
               const BitArray &bound_joints);

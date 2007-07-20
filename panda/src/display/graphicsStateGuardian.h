@@ -62,7 +62,7 @@ class GraphicsEngine;
 //               There will be one of these objects for each different
 //               graphics context active in the system.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
+class EXPCL_PANDA_DISPLAY GraphicsStateGuardian : public GraphicsStateGuardianBase {
   //
   // Interfaces all GSGs should have
   //

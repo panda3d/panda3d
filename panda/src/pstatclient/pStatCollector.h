@@ -50,7 +50,7 @@ class Thread;
 //               to add_level().  It may also be completely removed
 //               via clear_level().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatCollector {
+class EXPCL_PANDA_PSTATCLIENT PStatCollector {
 #ifdef DO_PSTATS
 
 private:

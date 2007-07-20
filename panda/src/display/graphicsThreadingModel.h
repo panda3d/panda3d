@@ -26,7 +26,7 @@
 // Description : This represents the user's specification of how a
 //               particular frame is handled by the various threads.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsThreadingModel {
+class EXPCL_PANDA_DISPLAY GraphicsThreadingModel {
 PUBLISHED:
   GraphicsThreadingModel(const string &model = string());
   INLINE GraphicsThreadingModel(const GraphicsThreadingModel &copy);

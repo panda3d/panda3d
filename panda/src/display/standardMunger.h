@@ -35,7 +35,7 @@
 //               ColorScaleAttrib to the vertices, and checks for
 //               hardware-accelerated animation capabilities.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StandardMunger : public StateMunger {
+class EXPCL_PANDA_DISPLAY StandardMunger : public StateMunger {
 public:
   StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                  int num_components, NumericType numeric_type,

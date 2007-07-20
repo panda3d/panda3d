@@ -35,7 +35,7 @@
 //               to 1, reflecting the current position of the control
 //               within its total range of motion.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientAnalogDevice : public ClientDevice {
+class EXPCL_PANDA_DEVICE ClientAnalogDevice : public ClientDevice {
 protected:
   INLINE ClientAnalogDevice(ClientBase *client, const string &device_name);
 

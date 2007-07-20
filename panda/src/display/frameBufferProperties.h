@@ -28,7 +28,7 @@
 //               might ask to have on a graphics frameBuffer before we
 //               create a GSG.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FrameBufferProperties {
+class EXPCL_PANDA_DISPLAY FrameBufferProperties {
 
 private:
   enum FrameBufferProperty {

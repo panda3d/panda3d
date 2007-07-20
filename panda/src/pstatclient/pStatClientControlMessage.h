@@ -34,7 +34,7 @@ class PStatClientVersion;
 //               server on the TCP socket to establish critical
 //               control information.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatClientControlMessage {
+class EXPCL_PANDA_PSTATCLIENT PStatClientControlMessage {
 public:
   PStatClientControlMessage();
 

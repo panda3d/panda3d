@@ -31,7 +31,7 @@ class GraphicsStateGuardian;
 //               GraphicsStateGuardian pointer, along with a bitmask
 //               of the layers we're interested in.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderBuffer {
+class EXPCL_PANDA_DISPLAY RenderBuffer {
 public:
   enum Type {
     T_aux_rgba_0       = 0x00000001,

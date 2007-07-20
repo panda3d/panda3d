@@ -95,6 +95,7 @@
 #include "bitArray.h"
 #include "thread.h"
 
+
 #include <ctype.h>
 #include <algorithm>
 
@@ -135,6 +136,20 @@ LODInstance(EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 EggLoader::
 EggLoader() {
+  printf ("testing out scenegraph stuff\n");
+  PT(PandaNode) a = new PandaNode("a");
+  PT(PandaNode) b = new PandaNode("b");
+  PT(PandaNode) c = new PandaNode("c");
+  PT(PandaNode) d = new PandaNode("d");
+  NodePath npa(a), npb(b), npc(c),npd(d);
+  npb.reparent_to(npa);
+  npc.reparent_to(npa);  
+  npd.reparent_to(npa);
+  Thread *current_thread = Thread::get_current_thread();
+  pmap<PandaNode *, PandaNode *> inst_map;
+  PT(PandaNode) e=a->r_copy_subgraph(inst_map, current_thread);
+  printf ("abcd copied, num children = %d\n",e->get_num_children());
+  
   // We need to enforce whatever coordinate system the user asked for.
   _data = new EggData;
   _data->set_coordinate_system(egg_coordinate_system);

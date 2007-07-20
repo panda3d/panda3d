@@ -35,7 +35,7 @@ class Thread;
 //               of scope (for instance, at the end of the function),
 //               it will automatically stop the Collector.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PStatTimer {
+class EXPCL_PANDA_PSTATCLIENT PStatTimer {
 public:
 #ifdef DO_PSTATS
   INLINE PStatTimer(PStatCollector &collector);

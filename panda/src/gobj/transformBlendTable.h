@@ -51,7 +51,7 @@ class FactoryParams;
 //               TransformTable for one set up to compute its
 //               dynamic vertices on the graphics card.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformBlendTable : public CopyOnWriteObject {
+class EXPCL_PANDA_GOBJ TransformBlendTable : public CopyOnWriteObject {
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
@@ -110,7 +110,7 @@ private:
   // Even though we don't store the actual blend table data in a
   // CycleData structure, we do need to keep a local cache of the
   // relevant modified stamps there, so it can be updated per-thread.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

@@ -33,63 +33,63 @@
 
 #include "pvector.h"
 
-ConfigureDecl(config_display, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(display, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(gsg, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_display, EXPCL_PANDA_DISPLAY, EXPTP_PANDA_DISPLAY);
+NotifyCategoryDecl(display, EXPCL_PANDA_DISPLAY, EXPTP_PANDA_DISPLAY);
+NotifyCategoryDecl(gsg, EXPCL_PANDA_DISPLAY, EXPTP_PANDA_DISPLAY);
 
-extern EXPCL_PANDA ConfigVariableBool view_frustum_cull;
-extern EXPCL_PANDA ConfigVariableBool pstats_unused_states;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool view_frustum_cull;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool pstats_unused_states;
 
-extern EXPCL_PANDA ConfigVariableString threading_model;
-extern EXPCL_PANDA ConfigVariableBool allow_nonpipeline_threads;
-extern EXPCL_PANDA ConfigVariableBool auto_flip;
-extern EXPCL_PANDA ConfigVariableBool sync_flip;
-extern EXPCL_PANDA ConfigVariableBool yield_timeslice;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString threading_model;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool allow_nonpipeline_threads;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool auto_flip;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_flip;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool yield_timeslice;
 
-extern EXPCL_PANDA ConfigVariableString screenshot_filename;
-extern EXPCL_PANDA ConfigVariableString screenshot_extension;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString screenshot_filename;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString screenshot_extension;
 
-extern EXPCL_PANDA ConfigVariableBool prefer_texture_buffer;
-extern EXPCL_PANDA ConfigVariableBool prefer_parasite_buffer;
-extern EXPCL_PANDA ConfigVariableBool prefer_single_buffer;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_texture_buffer;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_parasite_buffer;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_single_buffer;
 
-extern EXPCL_PANDA ConfigVariableBool support_render_texture;
-extern EXPCL_PANDA ConfigVariableBool support_rescale_normal;
-extern EXPCL_PANDA ConfigVariableBool copy_texture_inverted;
-extern EXPCL_PANDA ConfigVariableBool window_inverted;
-extern EXPCL_PANDA ConfigVariableBool red_blue_stereo;
-extern EXPCL_PANDA ConfigVariableString red_blue_stereo_colors;
-extern EXPCL_PANDA ConfigVariableBool auto_generate_mipmaps;
-extern EXPCL_PANDA ConfigVariableBool color_scale_via_lighting;
-extern EXPCL_PANDA ConfigVariableBool alpha_scale_via_texture;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_render_texture;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_rescale_normal;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool copy_texture_inverted;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool window_inverted;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool red_blue_stereo;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString red_blue_stereo_colors;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool auto_generate_mipmaps;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool color_scale_via_lighting;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool alpha_scale_via_texture;
 
-extern EXPCL_PANDA ConfigVariableInt win_size;
-extern EXPCL_PANDA ConfigVariableInt win_origin;
-extern EXPCL_PANDA ConfigVariableBool fullscreen;
-extern EXPCL_PANDA ConfigVariableBool undecorated;
-extern EXPCL_PANDA ConfigVariableBool cursor_hidden;
-extern EXPCL_PANDA ConfigVariableFilename icon_filename;
-extern EXPCL_PANDA ConfigVariableFilename cursor_filename;
-extern EXPCL_PANDA ConfigVariableEnum<WindowProperties::ZOrder> z_order;
-extern EXPCL_PANDA ConfigVariableString window_title;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_size;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt win_origin;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool fullscreen;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool undecorated;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool cursor_hidden;
+extern EXPCL_PANDA_DISPLAY ConfigVariableFilename icon_filename;
+extern EXPCL_PANDA_DISPLAY ConfigVariableFilename cursor_filename;
+extern EXPCL_PANDA_DISPLAY ConfigVariableEnum<WindowProperties::ZOrder> z_order;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString window_title;
 
-extern EXPCL_PANDA ConfigVariableString framebuffer_mode;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_hardware;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_software;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_multisample;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_depth;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_alpha;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_stencil;
-extern EXPCL_PANDA ConfigVariableBool framebuffer_stereo;
-extern EXPCL_PANDA ConfigVariableInt depth_bits;
-extern EXPCL_PANDA ConfigVariableInt color_bits;
-extern EXPCL_PANDA ConfigVariableInt alpha_bits;
-extern EXPCL_PANDA ConfigVariableInt stencil_bits;
-extern EXPCL_PANDA ConfigVariableInt multisamples;
+extern EXPCL_PANDA_DISPLAY ConfigVariableString framebuffer_mode;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_hardware;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_software;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_multisample;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_depth;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_alpha;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stencil;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stereo;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt depth_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt color_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt alpha_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 
-extern EXPCL_PANDA ConfigVariableDouble background_color;
-extern EXPCL_PANDA ConfigVariableBool sync_video;
+extern EXPCL_PANDA_DISPLAY ConfigVariableDouble background_color;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
 
-extern EXPCL_PANDA void init_libdisplay();
+extern EXPCL_PANDA_DISPLAY void init_libdisplay();
 
 #endif /* CONFIG_DISPLAY_H */

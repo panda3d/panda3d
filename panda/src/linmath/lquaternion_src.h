@@ -20,7 +20,7 @@
 //       Class : FLOATNAME(LQuaternion)
 // Description : This is the base quaternion class
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();
   INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy);

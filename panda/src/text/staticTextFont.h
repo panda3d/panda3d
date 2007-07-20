@@ -41,7 +41,7 @@ class GeomPoint;
 //               use.  It doesn't require linking with any external
 //               libraries like FreeType.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StaticTextFont : public TextFont {
+class EXPCL_PANDA_TEXT StaticTextFont : public TextFont {
 PUBLISHED:
   StaticTextFont(PandaNode *font_def);
 

@@ -32,7 +32,7 @@
 //               with unique vertex pool names, or for file converters
 //               to file formats that require unique node names, etc.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NameUniquifier {
+class EXPCL_PANDA_PUTIL NameUniquifier {
 public:
   NameUniquifier(const string &separator = string(),
                  const string &empty = string());

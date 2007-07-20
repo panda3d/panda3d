@@ -37,7 +37,7 @@
 //               event will be a pointer to the CollisionEntry that
 //               triggered it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandlerEvent : public CollisionHandler {
+class EXPCL_PANDA_COLLIDE CollisionHandlerEvent : public CollisionHandler {
 PUBLISHED:
   CollisionHandlerEvent();
 

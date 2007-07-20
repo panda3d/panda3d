@@ -53,7 +53,7 @@ class ClipPlaneAttrib;
 //               somewhere beneath a PGTop node in order for this
 //               behavior to work.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGItem : public PandaNode {
+class EXPCL_PANDA_PGUI PGItem : public PandaNode {
 PUBLISHED:
   PGItem(const string &name);
   virtual ~PGItem();

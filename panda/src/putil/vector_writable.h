@@ -34,8 +34,8 @@ class Writable;
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_PUTIL
+#define EXPTP EXPTP_PANDA_PUTIL
 #define TYPE Writable *
 #define NAME vector_writable
 

@@ -30,7 +30,7 @@ class FactoryParams;
 // Description : Specifies whether flat shading (per-polygon) or
 //               smooth shading (per-vertex) is in effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ShadeModelAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ShadeModelAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_flat,

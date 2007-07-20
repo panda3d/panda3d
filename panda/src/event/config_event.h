@@ -23,6 +23,6 @@
 
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(event, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(event, EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT);
 
 #endif

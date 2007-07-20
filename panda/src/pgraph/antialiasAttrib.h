@@ -30,7 +30,7 @@ class FactoryParams;
 // Description : Specifies whether or how to enable antialiasing, if
 //               supported by the backend renderer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AntialiasAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH AntialiasAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_none        = 0x0000,

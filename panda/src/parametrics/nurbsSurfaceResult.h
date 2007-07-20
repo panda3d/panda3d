@@ -32,7 +32,7 @@ class NurbsVertex;
 //               It can return the point and/or normal to the surface
 //               at any point.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsSurfaceResult : public ReferenceCount {
+class EXPCL_PANDA_PARAMETRICS NurbsSurfaceResult : public ReferenceCount {
 public:
   NurbsSurfaceResult(const NurbsBasisVector &u_basis, 
                      const NurbsBasisVector &v_basis, 

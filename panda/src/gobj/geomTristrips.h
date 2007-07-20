@@ -26,7 +26,7 @@
 //       Class : GeomTristrips
 // Description : Defines a series of triangle strips.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTristrips : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomTristrips : public GeomPrimitive {
 PUBLISHED:
   GeomTristrips(UsageHint usage_hint);
   GeomTristrips(const GeomTristrips &copy);

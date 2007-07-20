@@ -35,7 +35,7 @@
 //               can either add planes or remove planes from the total
 //               set of clipping planes in effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClipPlaneAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ClipPlaneAttrib : public RenderAttrib {
 private:
   INLINE ClipPlaneAttrib();
   INLINE ClipPlaneAttrib(const ClipPlaneAttrib &copy);

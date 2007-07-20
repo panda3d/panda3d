@@ -62,7 +62,7 @@
 //               NodePointerTo<> class to maintain the node_ref
 //               counters automatically.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodeCachedReferenceCount : public CachedTypedWritableReferenceCount {
+class EXPCL_PANDA_PUTIL NodeCachedReferenceCount : public CachedTypedWritableReferenceCount {
 protected:
   INLINE NodeCachedReferenceCount();
   INLINE NodeCachedReferenceCount(const NodeCachedReferenceCount &copy);

@@ -35,7 +35,7 @@
 //               rendering transparent and semi-transparent geometry
 //               that must be sorted from back to front.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinBackToFront : public CullBin {
+class EXPCL_PANDA_CULL CullBinBackToFront : public CullBin {
 public:
   INLINE CullBinBackToFront(const string &name, 
                             GraphicsStateGuardianBase *gsg,

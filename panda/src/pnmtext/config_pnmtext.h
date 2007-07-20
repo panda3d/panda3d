@@ -26,13 +26,13 @@
 
 class DSearchPath;
 
-NotifyCategoryDecl(pnmtext, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pnmtext, EXPCL_PANDA_PNMTEXT, EXPTP_PANDA_PNMTEXT);
 
 extern ConfigVariableDouble text_point_size;
 extern ConfigVariableDouble text_pixels_per_unit;
 extern ConfigVariableDouble text_scale_factor;
 extern ConfigVariableBool text_native_antialias;
 
-extern EXPCL_PANDA void init_libpnmtext();
+extern EXPCL_PANDA_PNMTEXT void init_libpnmtext();
 
 #endif

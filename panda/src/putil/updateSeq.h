@@ -44,7 +44,7 @@
 //               than any other sequence number.  All other sequences
 //               are numeric and are monotonically increasing.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA UpdateSeq {
+class EXPCL_PANDA_PUTIL UpdateSeq {
 PUBLISHED:
   INLINE UpdateSeq();
   INLINE static UpdateSeq initial();

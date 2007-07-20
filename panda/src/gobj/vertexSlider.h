@@ -42,7 +42,7 @@ class SliderTable;
 //               4x4 transform matrix, but the VertexSlider only keeps
 //               a single float value.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexSlider : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ VertexSlider : public TypedWritableReferenceCount {
 PUBLISHED:
   VertexSlider(const InternalName *name);
   virtual ~VertexSlider();
@@ -66,7 +66,7 @@ private:
   Tables _tables;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

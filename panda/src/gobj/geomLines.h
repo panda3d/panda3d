@@ -26,7 +26,7 @@
 //       Class : GeomLines
 // Description : Defines a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomLines : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomLines : public GeomPrimitive {
 PUBLISHED:
   GeomLines(UsageHint usage_hint);
   GeomLines(const GeomLines &copy);

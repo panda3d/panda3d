@@ -32,7 +32,7 @@
 //               of varying height by casting a ray down from the
 //               avatar's head.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionHandlerGravity : public CollisionHandlerPhysical {
+class EXPCL_PANDA_COLLIDE CollisionHandlerGravity : public CollisionHandlerPhysical {
 PUBLISHED:
   CollisionHandlerGravity();
   virtual ~CollisionHandlerGravity();

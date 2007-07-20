@@ -40,7 +40,7 @@
 //               purposes as well; whenever a plane is needed to be
 //               defined in some coordinate space in the world.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PlaneNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH PlaneNode : public PandaNode {
 PUBLISHED:
   PlaneNode(const string &name, const Planef &plane = Planef());
 
@@ -89,7 +89,7 @@ private:
   static UpdateSeq _sort_seq;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

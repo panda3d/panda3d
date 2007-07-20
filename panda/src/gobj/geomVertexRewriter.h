@@ -40,7 +40,7 @@
 //               accidentally dereferencing either array while
 //               recopying.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexRewriter : public GeomVertexWriter, public GeomVertexReader {
+class EXPCL_PANDA_GOBJ GeomVertexRewriter : public GeomVertexWriter, public GeomVertexReader {
 PUBLISHED:
   INLINE GeomVertexRewriter(Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexRewriter(GeomVertexData *vertex_data, Thread *current_thread = Thread::get_current_thread());

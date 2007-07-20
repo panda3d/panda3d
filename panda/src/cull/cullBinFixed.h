@@ -38,7 +38,7 @@
 //               draw_order, they are drawn in scene-graph order (as
 //               with CullBinUnsorted).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinFixed : public CullBin {
+class EXPCL_PANDA_CULL CullBinFixed : public CullBin {
 public:
   INLINE CullBinFixed(const string &name, 
                       GraphicsStateGuardianBase *gsg,

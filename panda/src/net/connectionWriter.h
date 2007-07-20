@@ -39,7 +39,7 @@ class NetAddress;
 //               sockets.  The number of threads is specified at
 //               construction time and cannot be changed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConnectionWriter {
+class EXPCL_PANDA_NET ConnectionWriter {
 PUBLISHED:
   ConnectionWriter(ConnectionManager *manager, int num_threads);
   ~ConnectionWriter();

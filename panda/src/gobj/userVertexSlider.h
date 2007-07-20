@@ -35,7 +35,7 @@ class FactoryParams;
 //               valie he likes.  This is rarely used except for
 //               testing.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA UserVertexSlider : public VertexSlider {
+class EXPCL_PANDA_GOBJ UserVertexSlider : public VertexSlider {
 PUBLISHED:
   UserVertexSlider(const string &name);
   UserVertexSlider(const InternalName *name);
@@ -45,7 +45,7 @@ PUBLISHED:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

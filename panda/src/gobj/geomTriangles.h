@@ -26,7 +26,7 @@
 //       Class : GeomTriangles
 // Description : Defines a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTriangles : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomTriangles : public GeomPrimitive {
 PUBLISHED:
   GeomTriangles(UsageHint usage_hint);
   GeomTriangles(const GeomTriangles &copy);

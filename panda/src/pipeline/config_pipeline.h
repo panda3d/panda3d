@@ -25,14 +25,14 @@
 #include "configVariableInt.h"
 #include "configVariableBool.h"
 
-ConfigureDecl(config_pipeline, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(pipeline, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(thread, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_pipeline, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
+NotifyCategoryDecl(pipeline, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
+NotifyCategoryDecl(thread, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
 
 extern ConfigVariableBool support_threads;
 extern ConfigVariableInt thread_stack_size;
 
-extern EXPCL_PANDA void init_libpipeline();
+extern EXPCL_PANDA_PIPELINE void init_libpipeline();
 
 #endif  // CONFIG_PIPELINE_H
 

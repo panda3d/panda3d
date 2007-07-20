@@ -38,7 +38,7 @@ class DatagramIterator;
 //               but it may be used anywhere a list of ButtonEvents
 //               is desired.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonEventList : public EventStoreValueBase {
+class EXPCL_PANDA_EVENT ButtonEventList : public EventStoreValueBase {
 public:
   INLINE ButtonEventList();
   INLINE ButtonEventList(const ButtonEventList &copy);

@@ -70,7 +70,7 @@
 //               a GeomVertexRewriter if you are going to create both
 //               of them anyway.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexWriter : public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexWriter : public GeomEnums {
 PUBLISHED:
   INLINE GeomVertexWriter(Thread *current_thread = Thread::get_current_thread());
   INLINE GeomVertexWriter(GeomVertexData *vertex_data,

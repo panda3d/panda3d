@@ -48,7 +48,7 @@
 //               TrackerNode etc. to put these devices in the data
 //               graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientBase : public TypedReferenceCount {
+class EXPCL_PANDA_DEVICE ClientBase : public TypedReferenceCount {
 protected:
   ClientBase();
 

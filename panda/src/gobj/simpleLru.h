@@ -31,7 +31,7 @@ class SimpleLruPage;
 //       Class : SimpleLru
 // Description : An implementation of a very simple LRU algorithm.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SimpleLru : public LinkedListNode, public Namable {
+class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
   SimpleLru(const string &name, size_t max_size);
   ~SimpleLru();
@@ -64,7 +64,7 @@ private:
 //               chain.  To use this class, inherit from it and
 //               override evict_lru().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SimpleLruPage : public LinkedListNode {
+class EXPCL_PANDA_GOBJ SimpleLruPage : public LinkedListNode {
 PUBLISHED:
   INLINE SimpleLruPage(size_t lru_size);
   INLINE SimpleLruPage(const SimpleLruPage &copy);

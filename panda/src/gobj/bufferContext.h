@@ -42,7 +42,7 @@ class PreparedGraphicsObjects;
 //               memory utilization, as well as residency of each
 //               object, via PStats.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BufferContext : public SavedContext, private LinkedListNode {
+class EXPCL_PANDA_GOBJ BufferContext : public SavedContext, private LinkedListNode {
 public:
   BufferContext(BufferResidencyTracker *residency);
   virtual ~BufferContext();

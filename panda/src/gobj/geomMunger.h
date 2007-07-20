@@ -58,7 +58,7 @@ class Geom;
 //               perform the same operation will have the same
 //               pointer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomMunger : public TypedReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomMunger : public TypedReferenceCount, public GeomEnums {
 public:
   GeomMunger(GraphicsStateGuardianBase *gsg);
   GeomMunger(const GeomMunger &copy);
@@ -137,7 +137,7 @@ private:
 
   bool _is_registered;
   typedef pset<GeomMunger *, IndirectCompareTo<GeomMunger> > Mungers;
-  class EXPCL_PANDA Registry {
+  class EXPCL_PANDA_GOBJ Registry {
   public:
     Registry();
     PT(GeomMunger) register_munger(GeomMunger *munger, Thread *current_thread);

@@ -29,7 +29,7 @@
 //               Only those part names within the subset will be
 //               included in the bind.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PartSubset {
+class EXPCL_PANDA_CHAN PartSubset {
 PUBLISHED:
   PartSubset();
   PartSubset(const PartSubset &copy);

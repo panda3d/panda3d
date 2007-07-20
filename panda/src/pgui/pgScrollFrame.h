@@ -40,7 +40,7 @@
 //               bars, and restricts the virtual transform to
 //               translate only (no scale or rotate).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
+class EXPCL_PANDA_PGUI PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
 PUBLISHED:
   PGScrollFrame(const string &name = "");
   virtual ~PGScrollFrame();

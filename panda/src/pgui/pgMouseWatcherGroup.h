@@ -34,7 +34,7 @@ class PGTop;
 //               MouseWatcherGroup, but this causes problems with
 //               circular reference counts.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherGroup : public MouseWatcherGroup {
+class EXPCL_PANDA_PGUI PGMouseWatcherGroup : public MouseWatcherGroup {
 public:
   INLINE PGMouseWatcherGroup(PGTop *top);
   virtual ~PGMouseWatcherGroup();

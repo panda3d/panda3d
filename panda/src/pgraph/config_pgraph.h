@@ -30,10 +30,10 @@
 
 class DSearchPath;
 
-ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(portal, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_pgraph, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
+NotifyCategoryDecl(pgraph, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
+NotifyCategoryDecl(loader, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
+NotifyCategoryDecl(portal, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 
 extern ConfigVariableBool fake_view_frustum_cull;
 extern ConfigVariableBool clip_plane_cull;
@@ -70,10 +70,10 @@ extern ConfigVariableBool m_dual_flash;
 
 extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
-extern EXPCL_PANDA ConfigVariableBool allow_incomplete_render;
+extern EXPCL_PANDA_PGRAPH ConfigVariableBool allow_incomplete_render;
 
 extern ConfigVariableEnum<LODNodeType> default_lod_type;
 
-extern EXPCL_PANDA void init_libpgraph();
+extern EXPCL_PANDA_PGRAPH void init_libpgraph();
 
 #endif

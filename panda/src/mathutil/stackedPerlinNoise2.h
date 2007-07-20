@@ -29,7 +29,7 @@
 //               more high-frequency noise functions added to a
 //               lower-frequency base noise function.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StackedPerlinNoise2 {
+class EXPCL_PANDA_MATHUTIL StackedPerlinNoise2 {
 PUBLISHED:
   INLINE StackedPerlinNoise2();
   StackedPerlinNoise2(double sx, double sy, int num_levels = 2,

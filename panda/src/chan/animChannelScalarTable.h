@@ -32,7 +32,7 @@
 //               read from a table such as might have been read from
 //               an egg file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelScalarTable : public AnimChannelScalar {
+class EXPCL_PANDA_CHAN AnimChannelScalarTable : public AnimChannelScalar {
 protected:
   AnimChannelScalarTable();
   AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy);

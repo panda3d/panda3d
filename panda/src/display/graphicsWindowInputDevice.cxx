@@ -21,8 +21,8 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_DISPLAY
+#define EXPTP EXPTP_PANDA_DISPLAY
 #define TYPE GraphicsWindowInputDevice
 #define NAME vector_GraphicsWindowInputDevice
 

@@ -38,7 +38,7 @@
 //               defined by a NodePath), as well as an optional knot
 //               vector.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsSurfaceEvaluator : public ReferenceCount {
+class EXPCL_PANDA_PARAMETRICS NurbsSurfaceEvaluator : public ReferenceCount {
 PUBLISHED:
   NurbsSurfaceEvaluator();
   ~NurbsSurfaceEvaluator();

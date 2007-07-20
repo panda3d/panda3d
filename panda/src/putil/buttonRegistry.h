@@ -33,9 +33,9 @@
 //               one ButtonRegistry class during the lifetime of the
 //               application.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonRegistry {
+class EXPCL_PANDA_PUTIL ButtonRegistry {
 protected:
-  class EXPCL_PANDA RegistryNode {
+  class EXPCL_PANDA_PUTIL RegistryNode {
   public:
     INLINE RegistryNode(ButtonHandle handle, ButtonHandle alias,
                         const string &name);

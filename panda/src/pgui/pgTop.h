@@ -44,7 +44,7 @@ class PGMouseWatcherGroup;
 //               depth-first, left-to-right order, appropriate for 2-d
 //               objects.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGTop : public PandaNode {
+class EXPCL_PANDA_PGUI PGTop : public PandaNode {
 PUBLISHED:
   PGTop(const string &name);
   virtual ~PGTop();

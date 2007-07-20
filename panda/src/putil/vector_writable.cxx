@@ -18,8 +18,8 @@
 
 #include "vector_writable.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_PUTIL
+#define EXPTP EXPTP_PANDA_PUTIL
 #define TYPE Writable *
 #define NAME vector_writable
 

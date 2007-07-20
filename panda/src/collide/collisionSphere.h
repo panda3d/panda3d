@@ -27,7 +27,7 @@
 //       Class : CollisionSphere
 // Description : A spherical collision volume or object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSphere : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionSphere : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSphere(const LPoint3f &center, float radius);
   INLINE CollisionSphere(float cx, float cy, float cz, float radius);

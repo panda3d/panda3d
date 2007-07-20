@@ -36,7 +36,7 @@ class ClientBase;
 //               This is an abstract interface; the actual
 //               implementations are in ClientTrackerDevice, etc.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientDevice : public TypedReferenceCount {
+class EXPCL_PANDA_DEVICE ClientDevice : public TypedReferenceCount {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,
                const string &device_name);

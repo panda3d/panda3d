@@ -37,7 +37,7 @@ class DatagramIterator;
 //               seconds.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA TimedCycle
+class EXPCL_PANDA_PUTIL TimedCycle
 {
 public:
   INLINE TimedCycle();

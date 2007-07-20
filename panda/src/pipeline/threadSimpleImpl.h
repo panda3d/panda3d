@@ -62,7 +62,7 @@ class MutexSimpleImpl;
 //               Thread::consider_yield() occasionally, or it will
 //               starve the rest of the running threads.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ThreadSimpleImpl {
+class EXPCL_PANDA_PIPELINE ThreadSimpleImpl {
 public:
   ThreadSimpleImpl(Thread *parent_obj);
   ~ThreadSimpleImpl();

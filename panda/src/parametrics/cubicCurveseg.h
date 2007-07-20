@@ -59,7 +59,7 @@
 //               basis vectors are not retained; this might be handled
 //               in a subclass (for instance, HermiteCurve).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CubicCurveseg : public ParametricCurve {
+class EXPCL_PANDA_PARAMETRICS CubicCurveseg : public ParametricCurve {
 PUBLISHED:
   virtual bool get_point(float t, LVecBase3f &point) const;
   virtual bool get_tangent(float t, LVecBase3f &tangent) const;

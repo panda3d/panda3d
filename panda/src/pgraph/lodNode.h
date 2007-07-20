@@ -32,7 +32,7 @@
 //               from the camera and the table indicated in the
 //               associated LOD object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LODNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH LODNode : public PandaNode {
 PUBLISHED:
   INLINE LODNode(const string &name);
 
@@ -151,7 +151,7 @@ protected:
   typedef pvector<Switch> SwitchVector;
 
 private:
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PGRAPH CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

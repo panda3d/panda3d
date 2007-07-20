@@ -29,7 +29,7 @@
 //       Class : PNMFileTypeSGI
 // Description : For reading and writing SGI RGB files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeSGI : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSGI : public PNMFileType {
 public:
   PNMFileTypeSGI();
 

@@ -23,11 +23,11 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(linmath, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(linmath, EXPCL_PANDA_LINMATH, EXPTP_PANDA_LINMATH);
 
-extern EXPCL_PANDA ConfigVariableBool paranoid_hpr_quat;
-extern EXPCL_PANDA ConfigVariableBool temp_hpr_fix;
+extern EXPCL_PANDA_LINMATH ConfigVariableBool paranoid_hpr_quat;
+extern EXPCL_PANDA_LINMATH ConfigVariableBool temp_hpr_fix;
 
-extern EXPCL_PANDA void init_liblinmath();
+extern EXPCL_PANDA_LINMATH void init_liblinmath();
 
 #endif

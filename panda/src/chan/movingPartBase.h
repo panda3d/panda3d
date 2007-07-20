@@ -35,7 +35,7 @@
 //               MovingPartBase does not have a particular value type.
 //               See the derived template class, MovingPart, for this.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MovingPartBase : public PartGroup {
+class EXPCL_PANDA_CHAN MovingPartBase : public PartGroup {
 protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
 

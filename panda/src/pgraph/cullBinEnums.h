@@ -26,7 +26,7 @@
 // Description : Provides scoping for the enumerated type shared by
 //               CullBin and CullBinManager.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinEnums {
+class EXPCL_PANDA_PGRAPH CullBinEnums {
 PUBLISHED:
   enum BinType {
     BT_invalid,

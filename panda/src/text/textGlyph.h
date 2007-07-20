@@ -32,7 +32,7 @@
 //               font.  This is a piece of renderable geometry of some
 //               kind.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextGlyph : public ReferenceCount {
+class EXPCL_PANDA_TEXT TextGlyph : public ReferenceCount {
 public:
   INLINE TextGlyph(int character);
   INLINE TextGlyph(int character, const Geom *geom, 

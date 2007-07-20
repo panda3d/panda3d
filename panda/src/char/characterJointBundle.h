@@ -32,7 +32,7 @@ class Character;
 // Description : The collection of all the joints and sliders in the
 //               character.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CharacterJointBundle : public PartBundle {
+class EXPCL_PANDA_CHAR CharacterJointBundle : public PartBundle {
 protected:
   INLINE CharacterJointBundle(const CharacterJointBundle &copy);
 

@@ -35,7 +35,7 @@ class MutexPosixImpl;
 //       Class : ConditionVarPosixImpl
 // Description : Uses Posix threads to implement a conditionVar.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarPosixImpl {
+class EXPCL_PANDA_PIPELINE ConditionVarPosixImpl {
 public:
   INLINE ConditionVarPosixImpl(MutexPosixImpl &mutex);
   INLINE ~ConditionVarPosixImpl();

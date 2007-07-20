@@ -33,7 +33,7 @@ class Thread;
 //               direct calls to the underlying implementation layer.
 //               It doesn't perform any debugging operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MutexDirect {
+class EXPCL_PANDA_PIPELINE MutexDirect {
 protected:
   INLINE MutexDirect();
   INLINE ~MutexDirect();

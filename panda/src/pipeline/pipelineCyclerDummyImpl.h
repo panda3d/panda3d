@@ -45,7 +45,7 @@
 //               mainly to be consistent with
 //               PipelineCyclerTrivialImpl.
 ////////////////////////////////////////////////////////////////////
-struct EXPCL_PANDA PipelineCyclerDummyImpl {
+struct EXPCL_PANDA_PIPELINE PipelineCyclerDummyImpl {
 public:
   INLINE PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
   INLINE PipelineCyclerDummyImpl(const PipelineCyclerDummyImpl &copy);

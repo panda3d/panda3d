@@ -30,7 +30,7 @@ enum BamTextureMode {
   BTM_basename,
   BTM_rawdata
 };
-EXPCL_PANDA ostream &operator << (ostream &out, BamTextureMode btm);
-EXPCL_PANDA istream &operator >> (istream &in, BamTextureMode &btm);
+EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamTextureMode btm);
+EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamTextureMode &btm);
 
 #endif

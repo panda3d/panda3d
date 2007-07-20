@@ -26,7 +26,7 @@
 // Description : Specifies parameters that may be passed to the
 //               loader.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LoaderOptions {
+class EXPCL_PANDA_PGRAPH LoaderOptions {
 PUBLISHED:
   // At the moment, we only have this one set of flags.  Maybe one day
   // there will be more options.

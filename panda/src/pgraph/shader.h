@@ -32,7 +32,7 @@ class RenderState;
 // Description :
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA Shader: public TypedWritableReferenceCount {
+class EXPCL_PANDA_PGRAPH Shader: public TypedWritableReferenceCount {
 PUBLISHED:
   static CPT(Shader) load(const Filename &file, int preprocessor=0);
   static CPT(Shader) load(const string &file,   int preprocessor=0);

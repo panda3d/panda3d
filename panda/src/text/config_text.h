@@ -31,7 +31,7 @@
 
 class DSearchPath;
 
-NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(text, EXPCL_PANDA_TEXT, EXPTP_PANDA_TEXT);
 
 extern ConfigVariableBool text_flatten;
 extern ConfigVariableInt text_anisotropic_degree;
@@ -57,6 +57,6 @@ extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
 extern ConfigVariableEnum<Texture::WrapMode> text_wrap_mode;
 extern ConfigVariableEnum<TextFont::RenderMode> text_render_mode;
 
-extern EXPCL_PANDA void init_libtext();
+extern EXPCL_PANDA_TEXT void init_libtext();
 
 #endif

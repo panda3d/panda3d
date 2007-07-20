@@ -28,7 +28,7 @@
 //               instance of these in the world, and it is returned by
 //               Thread::get_main_thread().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MainThread : public Thread {
+class EXPCL_PANDA_PIPELINE MainThread : public Thread {
 private:
   MainThread();
   virtual void thread_main();

@@ -29,7 +29,7 @@ class FactoryParams;
 //       Class : DepthTestAttrib
 // Description : Enables or disables writing to the depth buffer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DepthTestAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthTestAttrib : public RenderAttrib {
 private:
   INLINE DepthTestAttrib(PandaCompareFunc mode = M_less);
 

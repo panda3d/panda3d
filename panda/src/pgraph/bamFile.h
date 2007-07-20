@@ -46,7 +46,7 @@ class Filename;
 //               ending in ".boo" to differentiate them from the more
 //               common scene graph files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamFile {
+class EXPCL_PANDA_PGRAPH BamFile {
 PUBLISHED:
   BamFile();
   ~BamFile();

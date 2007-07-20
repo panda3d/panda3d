@@ -37,7 +37,7 @@
 //               axis-aligned bounding box, you may be better off with
 //               the simpler BoundingBox class.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingHexahedron : public FiniteBoundingVolume {
+class EXPCL_PANDA_MATHUTIL BoundingHexahedron : public FiniteBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingHexahedron();
 

@@ -43,9 +43,9 @@
 //               definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
 #ifdef DEBUG_THREADS
-class EXPCL_PANDA Mutex : public MutexDebug
+class EXPCL_PANDA_PIPELINE Mutex : public MutexDebug
 #else
-class EXPCL_PANDA Mutex : public MutexDirect
+class EXPCL_PANDA_PIPELINE Mutex : public MutexDirect
 #endif  // DEBUG_THREADS
 {
 PUBLISHED:

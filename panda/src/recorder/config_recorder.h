@@ -23,7 +23,7 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_recorder, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(recorder, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_recorder, EXPCL_PANDA_RECORDER, EXPTP_PANDA_RECORDER);
+NotifyCategoryDecl(recorder, EXPCL_PANDA_RECORDER, EXPTP_PANDA_RECORDER);
 
 #endif // CONFIG_RECORDER_H

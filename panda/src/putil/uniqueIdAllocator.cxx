@@ -23,7 +23,7 @@
 
 #include "uniqueIdAllocator.h"
 
-NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDef(uniqueIdAllocator, "");
 
 const PN_uint32 UniqueIdAllocator::IndexEnd = (PN_uint32)-1;

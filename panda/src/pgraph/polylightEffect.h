@@ -40,7 +40,7 @@
 //               PolylightNode is a cheap way to get lighting effects
 //               specially for night scenes
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PolylightEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH PolylightEffect : public RenderEffect {
 PUBLISHED:
   enum ContribType {
     CT_proximal,

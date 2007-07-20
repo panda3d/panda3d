@@ -24,14 +24,14 @@
 #include "animChannel.h"
 #include "luse.h"
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, AnimChannel<ACMatrixSwitchType>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_CHAN, EXPTP_PANDA_CHAN, AnimChannel<ACMatrixSwitchType>);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelMatrixFixed
 // Description : A specialization on AnimChannel to add all the
 //               special matrix component operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelMatrixFixed : public AnimChannel<ACMatrixSwitchType> {
+class EXPCL_PANDA_CHAN AnimChannelMatrixFixed : public AnimChannel<ACMatrixSwitchType> {
 protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 

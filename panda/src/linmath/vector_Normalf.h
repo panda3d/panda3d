@@ -32,8 +32,8 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_LINMATH
+#define EXPTP EXPTP_PANDA_LINMATH
 #define TYPE Normalf
 #define NAME vector_Normalf
 

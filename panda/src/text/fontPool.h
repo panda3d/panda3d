@@ -34,7 +34,7 @@
 //               TexturePool in that it unifies references to the same
 //               filename.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FontPool {
+class EXPCL_PANDA_TEXT FontPool {
 PUBLISHED:
   // These functions take string parameters instead of Filenames
   // because that's somewhat more convenient to the scripting

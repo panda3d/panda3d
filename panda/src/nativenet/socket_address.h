@@ -12,7 +12,7 @@
 //    communication layer
 //
 //////////////////////////////
-class EXPCL_PANDA Socket_Address
+class EXPCL_PANDA_NATIVENET Socket_Address
 {
 public:
     typedef struct sockaddr_in AddressType;

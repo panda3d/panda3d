@@ -32,7 +32,7 @@ class CullTraverser;
 //               By itself, it's not a particularly useful class; to
 //               use it, derive from it and redefine record_object().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullHandler {
+class EXPCL_PANDA_PGRAPH CullHandler {
 public:
   virtual ~CullHandler();
 

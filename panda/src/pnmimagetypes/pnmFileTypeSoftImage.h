@@ -29,7 +29,7 @@
 //       Class : PNMFileTypeSoftImage
 // Description : For reading and SoftImage native image files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMFileTypeSoftImage : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeSoftImage : public PNMFileType {
 public:
   PNMFileTypeSoftImage();
 

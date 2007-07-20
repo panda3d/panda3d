@@ -41,7 +41,7 @@
 //               it to actually transform objects (or cameras) in the
 //               world.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Trackball : public MouseInterfaceNode {
+class EXPCL_PANDA_TFORM Trackball : public MouseInterfaceNode {
 PUBLISHED:
   Trackball(const string &name);
   ~Trackball();

@@ -36,7 +36,7 @@ DisplayMode;
 // Description : This class contains various display information.
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA DisplayInformation {
+class EXPCL_PANDA_DISPLAY DisplayInformation {
 
 PUBLISHED:
 

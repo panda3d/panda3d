@@ -31,7 +31,7 @@ class FactoryParams;
 // Description : Applies a scale to colors in the scene graph and on
 //               vertices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ColorScaleAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ColorScaleAttrib : public RenderAttrib {
 protected:
   ColorScaleAttrib(bool off, const LVecBase4f &scale);
   INLINE ColorScaleAttrib(const ColorScaleAttrib &copy);

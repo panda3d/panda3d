@@ -46,9 +46,9 @@
 //               the definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
 #ifdef DEBUG_THREADS
-class EXPCL_PANDA ConditionVar : public ConditionVarDebug
+class EXPCL_PANDA_PIPELINE ConditionVar : public ConditionVarDebug
 #else
-class EXPCL_PANDA ConditionVar : public ConditionVarDirect
+class EXPCL_PANDA_PIPELINE ConditionVar : public ConditionVarDirect
 #endif  // DEBUG_THREADS
 {
 PUBLISHED:

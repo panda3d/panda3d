@@ -45,7 +45,7 @@
 //               you would like to kick around other implementation
 //               ideas, please contact Schuyler.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA UniqueIdAllocator {
+class EXPCL_PANDA_PUTIL UniqueIdAllocator {
 PUBLISHED:
   UniqueIdAllocator(PN_uint32 min=0, PN_uint32 max=20);
   ~UniqueIdAllocator();

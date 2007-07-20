@@ -29,7 +29,7 @@
 //               PipelineCyclerBase object.  This is similar to a
 //               MutexHolder.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CyclerHolder {
+class EXPCL_PANDA_PIPELINE CyclerHolder {
 public:
   INLINE CyclerHolder(PipelineCyclerBase &cycler);
   INLINE ~CyclerHolder();

@@ -32,7 +32,7 @@
 //               explicit projection matrix, but not mess around with
 //               fov's or focal lengths or any of that nonsense.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MatrixLens : public Lens {
+class EXPCL_PANDA_GOBJ MatrixLens : public Lens {
 PUBLISHED:
   INLINE MatrixLens();
 

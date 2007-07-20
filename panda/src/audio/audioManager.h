@@ -27,7 +27,7 @@
 typedef PT(AudioManager) Create_AudioManager_proc();
 
 
-class EXPCL_PANDA AudioManager : public TypedReferenceCount {
+class EXPCL_PANDA_AUDIO AudioManager : public TypedReferenceCount {
 PUBLISHED:
 
 

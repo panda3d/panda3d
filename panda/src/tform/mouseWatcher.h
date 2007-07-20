@@ -57,7 +57,7 @@ class DisplayRegion;
 //               scene graph.  It will move the geometry around
 //               according to the mouse's known position.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseWatcher : public DataNode, public MouseWatcherGroup {
+class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherGroup {
 PUBLISHED:
   MouseWatcher(const string &name = "");
   ~MouseWatcher();

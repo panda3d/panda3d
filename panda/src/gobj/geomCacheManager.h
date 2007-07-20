@@ -44,7 +44,7 @@ class GeomCacheEntry;
 //               GeomMunger) are reference-counted here in the cache;
 //               most are not.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomCacheManager {
+class EXPCL_PANDA_GOBJ GeomCacheManager {
 protected:
   GeomCacheManager();
   ~GeomCacheManager();

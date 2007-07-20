@@ -33,7 +33,7 @@
 //               It keeps track of its own state, and handles mouse
 //               events sensibly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGButton : public PGItem {
+class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
   PGButton(const string &name);
   virtual ~PGButton();

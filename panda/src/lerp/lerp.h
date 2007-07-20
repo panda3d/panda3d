@@ -27,7 +27,7 @@
 #include "typedReferenceCount.h"
 #include "eventHandler.h"
 
-class EXPCL_PANDA Lerp : public TypedReferenceCount {
+class EXPCL_PANDA_LERP Lerp : public TypedReferenceCount {
 private:
   PT(LerpBlendType) _blend;
   PT(LerpFunctor) _func;
@@ -73,7 +73,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA AutonomousLerp : public TypedReferenceCount {
+class EXPCL_PANDA_LERP AutonomousLerp : public TypedReferenceCount {
 private:
   PT(LerpBlendType) _blend;
   PT(LerpFunctor) _func;

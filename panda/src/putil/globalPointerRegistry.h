@@ -63,7 +63,7 @@
 //               foo<int> to guarantee that they share the same static
 //               data.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GlobalPointerRegistry {
+class EXPCL_PANDA_PUTIL GlobalPointerRegistry {
 public:
   INLINE static void *get_pointer(TypeHandle type);
   INLINE static void store_pointer(TypeHandle type, void *ptr);

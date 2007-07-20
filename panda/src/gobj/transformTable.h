@@ -43,7 +43,7 @@ class FactoryParams;
 //               See TransformBlendTable for one set up to compute
 //               its dynamic vertices on the CPU.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransformTable : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ TransformTable : public TypedWritableReferenceCount {
 PUBLISHED:
   TransformTable();
   TransformTable(const TransformTable &copy);
@@ -75,7 +75,7 @@ private:
   Transforms _transforms;
 
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

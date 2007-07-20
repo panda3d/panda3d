@@ -39,7 +39,7 @@
 //               node type), the identified node is used instead of
 //               the node referenced within the bam file itself.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AttribNodeRegistry {
+class EXPCL_PANDA_PGRAPH AttribNodeRegistry {
 protected:
   AttribNodeRegistry();
 

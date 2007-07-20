@@ -90,7 +90,7 @@ load_prc_file(const string &filename) {
 //               is meaningful to you.  The name is only used when the
 //               set of loaded prc files is listed.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA ConfigPage *
+EXPCL_PANDA_PUTIL ConfigPage *
 load_prc_file_data(const string &name, const string &data) {
   istringstream strm(data);
 

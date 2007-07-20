@@ -23,6 +23,6 @@
 
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(dgraph, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(dgraph, EXPCL_PANDA_DGRAPH, EXPTP_PANDA_DGRAPH);
 
 #endif

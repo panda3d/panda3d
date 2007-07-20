@@ -34,7 +34,7 @@
 //               constructor.  These are not endpoints, they are two
 //               arbitrary points on the line.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BoundingLine : public GeometricBoundingVolume {
+class EXPCL_PANDA_MATHUTIL BoundingLine : public GeometricBoundingVolume {
 public:
   INLINE_MATHUTIL BoundingLine();
 

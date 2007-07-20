@@ -18,8 +18,8 @@
 
 #include "vector_PartGroupStar.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDA_CHAN
+#define EXPTP EXPTP_PANDA_CHAN
 #define TYPE PartGroup *
 #define NAME vector_PartGroupStar
 

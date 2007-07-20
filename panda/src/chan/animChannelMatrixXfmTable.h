@@ -35,7 +35,7 @@
 //               sub-tables, each representing one component of the
 //               transform: scale, rotate, translate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelMatrixXfmTable : public AnimChannelMatrix {
+class EXPCL_PANDA_CHAN AnimChannelMatrixXfmTable : public AnimChannelMatrix {
 protected:
   AnimChannelMatrixXfmTable();
   AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy);

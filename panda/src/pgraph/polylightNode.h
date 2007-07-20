@@ -32,7 +32,7 @@
 //       Class : PolylightNode
 // Description : A PolylightNode
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PolylightNode : public PandaNode{
+class EXPCL_PANDA_PGRAPH PolylightNode : public PandaNode{
 //private:
 
 

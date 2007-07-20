@@ -34,7 +34,7 @@
 //               and add it to the loader via load_async(), to begin
 //               an asynchronous load.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModelLoadRequest : public AsyncTask {
+class EXPCL_PANDA_PGRAPH ModelLoadRequest : public AsyncTask {
 PUBLISHED:
   INLINE ModelLoadRequest(const Filename &filename, 
                           const LoaderOptions &options);

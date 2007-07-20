@@ -56,7 +56,7 @@
 //               may need to explicitly set a large (or infinite)
 //               bounding volume on the effect node.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CompassEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH CompassEffect : public RenderEffect {
 private:
   INLINE CompassEffect();
 

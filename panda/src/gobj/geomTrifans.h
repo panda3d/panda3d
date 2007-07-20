@@ -26,7 +26,7 @@
 //       Class : GeomTrifans
 // Description : Defines a series of triangle fans.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomTrifans : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomTrifans : public GeomPrimitive {
 PUBLISHED:
   GeomTrifans(UsageHint usage_hint);
   GeomTrifans(const GeomTrifans &copy);

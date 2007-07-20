@@ -22,6 +22,6 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(vrpn, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(vrpn, EXPCL_PANDA_VRPN, EXPTP_PANDA_VRPN);
 
 #endif

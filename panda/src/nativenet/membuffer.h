@@ -14,7 +14,7 @@
 //
 //
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MemBuffer
+class EXPCL_PANDA_NATIVENET MemBuffer
 {
 public:
 	inline		MemBuffer(void);

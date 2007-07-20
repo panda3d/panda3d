@@ -46,7 +46,7 @@
 //               that filters for which this might be a problem should
 //               call tex->set_keep_ram_image(true).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TexturePoolFilter : public TypedObject {
+class EXPCL_PANDA_GOBJ TexturePoolFilter : public TypedObject {
 public:
   virtual ~TexturePoolFilter();
 

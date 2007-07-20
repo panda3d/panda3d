@@ -35,7 +35,7 @@
 //               ModelNodes are created in response to a <Model> { 1 }
 //               flag within an egg file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModelNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH ModelNode : public PandaNode {
 PUBLISHED:
   INLINE ModelNode(const string &name);
 

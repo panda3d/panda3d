@@ -54,7 +54,7 @@ class FactoryParams;
 //               probably not exceed 16 or drop below 0 for maximum
 //               portability.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DepthOffsetAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DepthOffsetAttrib : public RenderAttrib {
 private:
   INLINE DepthOffsetAttrib(int offset);
 

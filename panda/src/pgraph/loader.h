@@ -48,7 +48,7 @@ class LoaderFileType;
 //               loading interface may be used, but it loads
 //               synchronously.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Loader : public AsyncTaskManager {
+class EXPCL_PANDA_PGRAPH Loader : public AsyncTaskManager {
 private:
   class ConsiderFile {
   public:
@@ -57,7 +57,7 @@ private:
   };
 
 PUBLISHED:
-  class EXPCL_PANDA Results {
+  class EXPCL_PANDA_PGRAPH Results {
   PUBLISHED:
     INLINE Results();
     INLINE Results(const Results &copy);

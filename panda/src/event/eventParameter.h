@@ -39,7 +39,7 @@
 //               use the EventStoreValue template class, defined
 //               below.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventParameter {
+class EXPCL_PANDA_EVENT EventParameter {
 PUBLISHED:
   INLINE EventParameter();
   INLINE EventParameter(const TypedWritableReferenceCount *ptr);
@@ -87,7 +87,7 @@ INLINE ostream &operator << (ostream &out, const EventParameter &param);
 //               which serves mainly to define the placeholder for the
 //               virtual output function.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventStoreValueBase : public TypedWritableReferenceCount {
+class EXPCL_PANDA_EVENT EventStoreValueBase : public TypedWritableReferenceCount {
 public:
   INLINE EventStoreValueBase();
 
@@ -119,7 +119,7 @@ private:
 //               type TypedReferenceCount, which is different than
 //               TypedWritableReferenceCount.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA EventStoreTypedRefCount : public EventStoreValueBase {
+class EXPCL_PANDA_EVENT EventStoreTypedRefCount : public EventStoreValueBase {
 PUBLISHED:
   INLINE EventStoreTypedRefCount(const TypedReferenceCount *value);
   virtual ~EventStoreTypedRefCount();
@@ -204,10 +204,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<int>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<double>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<std::string>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<std::wstring>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<int>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<double>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<std::string>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT, EventStoreValue<std::wstring>);
 
 typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;

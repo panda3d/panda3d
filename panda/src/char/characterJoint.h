@@ -33,7 +33,7 @@ class Character;
 // Description : This represents one joint of the character's
 //               animation, containing an animating transform matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CharacterJoint : public MovingPartMatrix {
+class EXPCL_PANDA_CHAR CharacterJoint : public MovingPartMatrix {
 protected:
   CharacterJoint();
   CharacterJoint(const CharacterJoint &copy);

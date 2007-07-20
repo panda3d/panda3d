@@ -34,7 +34,7 @@
 //               to deal with the whole window at once, particularly
 //               for issuing clear commands and capturing screenshots.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DrawableRegion {
+class EXPCL_PANDA_DISPLAY DrawableRegion {
 public:
   INLINE DrawableRegion();
   INLINE DrawableRegion(const DrawableRegion &copy);

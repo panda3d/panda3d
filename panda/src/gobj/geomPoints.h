@@ -26,7 +26,7 @@
 //       Class : GeomPoints
 // Description : Defines a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomPoints : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomPoints : public GeomPrimitive {
 PUBLISHED:
   GeomPoints(UsageHint usage_hint);
   GeomPoints(const GeomPoints &copy);

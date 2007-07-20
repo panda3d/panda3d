@@ -45,7 +45,7 @@
 //               which all refer to the same shared object.  They will
 //               negotiate with each other properly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CopyOnWritePointer {
+class EXPCL_PANDA_PUTIL CopyOnWritePointer {
 public:
   INLINE CopyOnWritePointer(CopyOnWriteObject *object = NULL);
   INLINE CopyOnWritePointer(const CopyOnWritePointer &copy);

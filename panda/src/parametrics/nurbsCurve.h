@@ -48,7 +48,7 @@
 //               performs most of the NURBS curve functions.  This
 //               class then becomes vestigial.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsCurve : public PiecewiseCurve, public NurbsCurveInterface {
+class EXPCL_PANDA_PARAMETRICS NurbsCurve : public PiecewiseCurve, public NurbsCurveInterface {
 PUBLISHED:
   NurbsCurve();
   NurbsCurve(const ParametricCurve &pc);

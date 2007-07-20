@@ -42,7 +42,7 @@ class ComputedVertices;
 // Description : An animated character, with skeleton-morph animation
 //               and either soft-skinned or hard-skinned vertices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Character : public PartBundleNode {
+class EXPCL_PANDA_CHAR Character : public PartBundleNode {
 protected:
   Character(const Character &copy, bool copy_bundles);
 

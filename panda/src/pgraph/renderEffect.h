@@ -57,7 +57,7 @@ class PandaNode;
 //               wish to change its properties; instead, create a new
 //               one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderEffect : public TypedWritableReferenceCount {
+class EXPCL_PANDA_PGRAPH RenderEffect : public TypedWritableReferenceCount {
 protected:
   RenderEffect();
 private:

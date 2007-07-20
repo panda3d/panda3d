@@ -47,7 +47,7 @@
 //               TextProperties structure modifies the appearance of
 //               subsequent text within the block.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextProperties {
+class EXPCL_PANDA_TEXT TextProperties {
 PUBLISHED:
   enum Alignment {
     A_left,

@@ -43,7 +43,7 @@ class PNMWriter;
 //               the sort of information you typically read from the
 //               image file's header.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMImageHeader {
+class EXPCL_PANDA_PNMIMAGE PNMImageHeader {
 PUBLISHED:
   INLINE PNMImageHeader();
   INLINE PNMImageHeader(const PNMImageHeader &copy);

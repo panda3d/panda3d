@@ -33,7 +33,7 @@ class LensNode;
 //               Useful for picking from a window, or for gravity
 //               effects.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionRay : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionRay : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionRay();
   INLINE CollisionRay(const LPoint3f &origin, const LVector3f &direction);

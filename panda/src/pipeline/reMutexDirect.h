@@ -31,7 +31,7 @@ class Thread;
 //               direct calls to the underlying implementation layer.
 //               It doesn't perform any debugging operations.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ReMutexDirect {
+class EXPCL_PANDA_PIPELINE ReMutexDirect {
 protected:
   INLINE ReMutexDirect();
   INLINE ~ReMutexDirect();

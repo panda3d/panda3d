@@ -43,7 +43,7 @@ class FactoryParams;
 //               one or more other names, or by giving it a source
 //               string directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA InternalName : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ InternalName : public TypedWritableReferenceCount {
 private:
   InternalName(InternalName *parent, const string &basename);
 

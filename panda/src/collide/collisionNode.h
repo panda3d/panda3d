@@ -34,7 +34,7 @@
 //               with, or an animated object twirling around in the
 //               world and running into things.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionNode : public PandaNode {
+class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
   CollisionNode(const string &name);
 

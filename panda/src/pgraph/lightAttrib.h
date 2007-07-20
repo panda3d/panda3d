@@ -34,7 +34,7 @@
 //               A LightAttrib can either add lights or remove lights
 //               from the total set of "on" lights.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LightAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH LightAttrib : public RenderAttrib {
 protected:
   INLINE LightAttrib();
   INLINE LightAttrib(const LightAttrib &copy);

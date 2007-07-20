@@ -60,7 +60,7 @@ class PNMImage;
 //               TypedWritableReferenceCount instead of
 //               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
+class EXPCL_PANDA_DISPLAY GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsPipe *pipe, 
                  const string &name,
@@ -342,7 +342,7 @@ private:
   friend class DisplayRegion;
 };
 
-EXPCL_PANDA ostream &operator << (ostream &out, GraphicsOutput::FrameMode mode);
+EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsOutput::FrameMode mode);
 
 #include "graphicsOutput.I"
 

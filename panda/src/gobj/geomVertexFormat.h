@@ -62,7 +62,7 @@ class GeomMunger;
 //               standard and/or user-defined columns in your custom
 //               GeomVertexFormat constructions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomVertexFormat : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);
@@ -212,7 +212,7 @@ private:
 
   // This is the global registry of all currently-in-use formats.
   typedef pset<GeomVertexFormat *, IndirectCompareTo<GeomVertexFormat> > Formats;
-  class EXPCL_PANDA Registry {
+  class EXPCL_PANDA_GOBJ Registry {
   public:
     Registry();
     void make_standard_formats();

@@ -43,7 +43,7 @@ BEGIN_PUBLISH
 //               defined in express), and the model path (which is in
 //               putil).
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA ConfigPage *
+EXPCL_PANDA_PUTIL ConfigPage *
 load_prc_file(const string &filename);
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ load_prc_file(const string &filename);
 //               is meaningful to you.  The name is only used when the
 //               set of loaded prc files is listed.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA ConfigPage *
+EXPCL_PANDA_PUTIL ConfigPage *
 load_prc_file_data(const string &name, const string &data);
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ load_prc_file_data(const string &name, const string &data);
 //               pointer is no longer valid and should not be used
 //               again.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA bool
+EXPCL_PANDA_PUTIL bool
 unload_prc_file(ConfigPage *page);
 
 #ifdef HAVE_OPENSSL
@@ -83,7 +83,7 @@ unload_prc_file(ConfigPage *page);
 //               state as reported by
 //               ConfigVariableManager::write_prc_variables().
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDA void
+EXPCL_PANDA_PUTIL void
 hash_prc_variables(HashVal &hash);
 
 #endif  // HAVE_OPENSSL

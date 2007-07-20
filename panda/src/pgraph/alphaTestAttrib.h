@@ -29,7 +29,7 @@ class FactoryParams;
 // Description : Enables or disables writing of pixel to framebuffer
 //               based on its alpha value relative to a reference alpha value
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AlphaTestAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH AlphaTestAttrib : public RenderAttrib {
 private:
   INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,
                          float reference_alpha = 1.0f);

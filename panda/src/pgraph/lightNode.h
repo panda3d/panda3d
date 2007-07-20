@@ -30,7 +30,7 @@
 //               Light except Spotlight (which must inherit from
 //               LensNode instead) inherit from this class.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LightNode : public Light, public PandaNode {
+class EXPCL_PANDA_PGRAPH LightNode : public Light, public PandaNode {
 PUBLISHED:
   LightNode(const string &name);
 

@@ -36,7 +36,7 @@ class LensNode;
 //               intersecting a solid, the reported intersection point
 //               is generally the closest on the segment to point A.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSegment : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionSegment : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSegment();
   INLINE CollisionSegment(const LPoint3f &a, const LPoint3f &db);

@@ -36,7 +36,7 @@ class FactoryParams;
 //               use to the bam file.  Do not attempt to use it
 //               directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RecorderTable : public TypedWritable {
+class EXPCL_PANDA_RECORDER RecorderTable : public TypedWritable {
 public:
   INLINE RecorderTable();
   INLINE RecorderTable(const RecorderTable &copy);

@@ -26,14 +26,14 @@
 
 // Configure variables for net package.
 
-NotifyCategoryDecl(net, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(net, EXPCL_PANDA_NET, EXPTP_PANDA_NET);
 
 extern int get_net_max_write_queue();
 extern int get_net_max_response_queue();
 extern bool get_net_error_abort();
 extern double get_max_poll_cycle();
 
-extern EXPCL_PANDA void init_libnet();
+extern EXPCL_PANDA_NET void init_libnet();
 
 #endif
 

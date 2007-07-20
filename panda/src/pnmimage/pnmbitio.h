@@ -30,8 +30,8 @@ typedef struct bitstream *BITSTREAM;
  * Returns 0 on error.
  */
 
-extern EXPCL_PANDA BITSTREAM pm_bitinit(istream *f, char *mode);
-extern EXPCL_PANDA BITSTREAM pm_bitinit(ostream *f, char *mode);
+extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(istream *f, char *mode);
+extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(ostream *f, char *mode);
 
 /*
  * pm_bitfini() - deallocate the given BITSTREAM.
@@ -43,7 +43,7 @@ extern EXPCL_PANDA BITSTREAM pm_bitinit(ostream *f, char *mode);
  * Returns the number of bytes written, -1 on error.
  */
 
-extern EXPCL_PANDA int pm_bitfini(BITSTREAM b);
+extern EXPCL_PANDA_PNMIMAGE int pm_bitfini(BITSTREAM b);
 
 /*
  * pm_bitread() - read the next nbits into *val from the given file.
@@ -51,7 +51,7 @@ extern EXPCL_PANDA int pm_bitfini(BITSTREAM b);
  * Returns the number of bytes read, -1 on error.
  */
 
-extern EXPCL_PANDA int pm_bitread(BITSTREAM b, unsigned long nbits, unsigned long *val);
+extern EXPCL_PANDA_PNMIMAGE int pm_bitread(BITSTREAM b, unsigned long nbits, unsigned long *val);
 
 /*
  * pm_bitwrite() - write the low nbits of val to the given file.
@@ -61,6 +61,6 @@ extern EXPCL_PANDA int pm_bitread(BITSTREAM b, unsigned long nbits, unsigned lon
  * Returns the number of bytes written, -1 on error.
  */
 
-extern EXPCL_PANDA int pm_bitwrite(BITSTREAM b, unsigned long nbits, unsigned long val);
+extern EXPCL_PANDA_PNMIMAGE int pm_bitwrite(BITSTREAM b, unsigned long nbits, unsigned long val);
 
 #endif /* _BITIO_H_ */

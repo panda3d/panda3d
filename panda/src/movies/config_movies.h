@@ -25,9 +25,9 @@
 #include "configVariableDouble.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_movies, EXPCL_PANDA, EXPTP_PANDA);
-NotifyCategoryDecl(movies, EXPCL_PANDA, EXPTP_PANDA);
+ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
+NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 
-extern EXPCL_PANDA void init_libmovies();
+extern EXPCL_PANDA_MOVIES void init_libmovies();
 
 #endif /* __CONFIG_MOVIES_H__ */

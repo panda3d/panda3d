@@ -37,7 +37,7 @@
 //               the mouse wherever he/she wants, and to insert
 //               keypresses on demand.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VirtualMouse : public DataNode {
+class EXPCL_PANDA_DEVICE VirtualMouse : public DataNode {
 PUBLISHED:
   VirtualMouse(const string &name);
 

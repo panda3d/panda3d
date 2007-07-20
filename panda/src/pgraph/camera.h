@@ -38,7 +38,7 @@ class DisplayRegion;
 //               graph to represent a point of view for rendering a
 //               scene.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Camera : public LensNode {
+class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
   Camera(const string &name);
   Camera(const Camera &copy);

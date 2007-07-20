@@ -32,7 +32,7 @@ class PandaNode;
 //               _prev_transform is different from their _transform
 //               (in pipeline stage 0).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PandaNodeChain : private LinkedListNode {
+class EXPCL_PANDA_PGRAPH PandaNodeChain : private LinkedListNode {
 public:
   INLINE PandaNodeChain();
   INLINE ~PandaNodeChain();

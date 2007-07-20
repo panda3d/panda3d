@@ -39,7 +39,7 @@ class MutexSpinlockImpl;
 //               machine, and you are confident that you have at least
 //               as many CPU's as you have threads.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarSpinlockImpl {
+class EXPCL_PANDA_PIPELINE ConditionVarSpinlockImpl {
 public:
   INLINE ConditionVarSpinlockImpl(MutexSpinlockImpl &mutex);
   INLINE ~ConditionVarSpinlockImpl();

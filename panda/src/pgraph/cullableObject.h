@@ -42,7 +42,7 @@ class CullTraverser;
 //               a number of Geoms to be drawn together, with a number
 //               of Geoms decalled onto them.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullableObject {
+class EXPCL_PANDA_PGRAPH CullableObject {
 public:
   INLINE CullableObject(CullableObject *next = NULL);
   INLINE CullableObject(const Geom *geom, const RenderState *state,

@@ -38,7 +38,7 @@
 //               graphics device sends its output for interactive
 //               display.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GraphicsWindow : public GraphicsOutput {
+class EXPCL_PANDA_DISPLAY GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsPipe *pipe, 
                  const string &name,

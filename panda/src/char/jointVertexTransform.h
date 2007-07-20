@@ -38,7 +38,7 @@
 //               are used to implement soft-skinned vertices for an
 //               animated character.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA JointVertexTransform : public VertexTransform {
+class EXPCL_PANDA_CHAR JointVertexTransform : public VertexTransform {
 private:
   JointVertexTransform();
 

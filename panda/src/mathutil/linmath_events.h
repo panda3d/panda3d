@@ -36,9 +36,9 @@
 ////////////////////////////////////////////////////////////////////
 
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<LVecBase2f>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<LVecBase3f>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, EventStoreValue<LMatrix4f>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase2f>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase3f>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LMatrix4f>);
 
 typedef EventStoreValue<LVecBase2f> EventStoreVec2;
 typedef EventStoreValue<LVecBase3f> EventStoreVec3;

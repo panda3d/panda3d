@@ -30,7 +30,7 @@
 #include "pipelineCycler.h"
 #include "thread.h"
 
-class EXPCL_PANDA TimeVal {
+class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:
   INLINE TimeVal();
   INLINE ulong get_sec() const;
@@ -63,7 +63,7 @@ PUBLISHED:
 //               up to tick every frame so that its get_frame_time()
 //               will return the time for the current frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClockObject {
+class EXPCL_PANDA_PUTIL ClockObject {
 PUBLISHED:
   enum Mode {
     M_normal,
@@ -142,7 +142,7 @@ private:
   Ticks _ticks;
 
   // This is the data that needs to be cycled each frame.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PUTIL CData : public CycleData {
   public:
     CData();
     INLINE CData(const CData &copy);
@@ -177,9 +177,9 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA ostream &
+EXPCL_PANDA_PUTIL ostream &
 operator << (ostream &out, ClockObject::Mode mode);
-EXPCL_PANDA istream &
+EXPCL_PANDA_PUTIL istream &
 operator >> (istream &in, ClockObject::Mode &mode);
 
 #include "clockObject.I"

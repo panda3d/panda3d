@@ -58,7 +58,7 @@ class GraphicsStateGuardianBase;
 //               in a separate object rather than as a part of the
 //               GraphicsStateGuardian.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PreparedGraphicsObjects : public ReferenceCount {
+class EXPCL_PANDA_GOBJ PreparedGraphicsObjects : public ReferenceCount {
 public:
   PreparedGraphicsObjects();
   ~PreparedGraphicsObjects();

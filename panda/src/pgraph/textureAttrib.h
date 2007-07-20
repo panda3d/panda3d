@@ -35,7 +35,7 @@
 //               primary texture.  Also see TextureAttrib2 for the
 //               secondary texture.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextureAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH TextureAttrib : public RenderAttrib {
 protected:
   INLINE TextureAttrib();
   INLINE TextureAttrib(const TextureAttrib &copy);

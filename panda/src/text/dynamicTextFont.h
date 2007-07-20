@@ -44,7 +44,7 @@ class NurbsCurveResult;
 //               FreeType 2.0 library (or any higher,
 //               backward-compatible version).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DynamicTextFont : public TextFont, public FreetypeFont {
+class EXPCL_PANDA_TEXT DynamicTextFont : public TextFont, public FreetypeFont {
 PUBLISHED:
   DynamicTextFont(const Filename &font_filename, int face_index = 0);
   DynamicTextFont(const char *font_data, int data_length, int face_index);

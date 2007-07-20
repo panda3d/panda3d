@@ -36,7 +36,7 @@ class PandaNode;
 //               input devices, etc.  See the overview of the data
 //               graph in dataNode.h.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataGraphTraverser {
+class EXPCL_PANDA_DGRAPH DataGraphTraverser {
 PUBLISHED:
   DataGraphTraverser(Thread *current_thread = Thread::get_current_thread());
   ~DataGraphTraverser();

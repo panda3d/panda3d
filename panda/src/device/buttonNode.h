@@ -42,7 +42,7 @@
 //               down events on the data graph for each button state
 //               change.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ButtonNode : public DataNode {
+class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
   ButtonNode(ClientBase *client, const string &device_name);
   virtual ~ButtonNode();

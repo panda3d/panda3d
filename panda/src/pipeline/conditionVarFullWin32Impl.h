@@ -49,7 +49,7 @@ class MutexWin32Impl;
 //               was called.  But we figure it's good enough for our
 //               purposes.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarFullWin32Impl {
+class EXPCL_PANDA_PIPELINE ConditionVarFullWin32Impl {
 public:
   INLINE ConditionVarFullWin32Impl(MutexWin32Impl &mutex);
   INLINE ~ConditionVarFullWin32Impl();

@@ -60,7 +60,7 @@ class LensNode;
 //               texture onto the walls, for instance to apply a
 //               flashlight effect or an image-based shadow.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TexProjectorEffect : public RenderEffect {
+class EXPCL_PANDA_PGRAPH TexProjectorEffect : public RenderEffect {
 protected:
   INLINE TexProjectorEffect();
   INLINE TexProjectorEffect(const TexProjectorEffect &copy);

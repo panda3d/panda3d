@@ -32,7 +32,7 @@
 //               implementation.  The base class just collects the
 //               common functionality.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PerlinNoise {
+class EXPCL_PANDA_MATHUTIL PerlinNoise {
 protected:
   PerlinNoise(int table_size, unsigned long seed);
   PerlinNoise(const PerlinNoise &copy);

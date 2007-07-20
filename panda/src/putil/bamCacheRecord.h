@@ -39,7 +39,7 @@ class BamCacheRecord;
 //               contains information needed to test the validity of
 //               the cache.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamCacheRecord : public TypedWritableReferenceCount,
+class EXPCL_PANDA_PUTIL BamCacheRecord : public TypedWritableReferenceCount,
                                    public LinkedListNode {
 private:
   BamCacheRecord();

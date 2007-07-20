@@ -30,7 +30,7 @@
 //               be part of the scene graph, since it has no meaningful
 //               position.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AmbientLight : public LightNode {
+class EXPCL_PANDA_PGRAPH AmbientLight : public LightNode {
 PUBLISHED:
   AmbientLight(const string &name);
 

@@ -44,7 +44,7 @@
 //               The bounding volumes in this object are transformed
 //               for each level of the scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullPlanes : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH CullPlanes : public ReferenceCount {
 protected:
   INLINE CullPlanes();
   INLINE CullPlanes(const CullPlanes &copy);

@@ -39,7 +39,7 @@ class PreparedGraphicsObjects;
 //               QueryContext as long as you are interested in the
 //               answer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QueryContext : public TypedReferenceCount {
+class EXPCL_PANDA_GOBJ QueryContext : public TypedReferenceCount {
 public:
   INLINE QueryContext();
   virtual ~QueryContext();

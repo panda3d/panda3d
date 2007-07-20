@@ -35,7 +35,7 @@
 //               This is used as an implementation for both
 //               DirectSlider and for DirectScrollBar.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGSliderBar : public PGItem, public PGButtonNotify {
+class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
   PGSliderBar(const string &name = "");
   virtual ~PGSliderBar();

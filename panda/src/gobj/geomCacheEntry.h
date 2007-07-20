@@ -35,7 +35,7 @@ class GeomPrimitive;
 //               GeomCacheManager.  This is actually the base class of
 //               any number of individual cache types.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA GeomCacheEntry : public ReferenceCount {
+class EXPCL_PANDA_GOBJ GeomCacheEntry : public ReferenceCount {
 public:
   INLINE GeomCacheEntry();
   virtual ~GeomCacheEntry();

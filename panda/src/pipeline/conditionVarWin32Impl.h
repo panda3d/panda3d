@@ -43,7 +43,7 @@ class MutexWin32Impl;
 //               simpler than that full implementation, so we can
 //               avoid the overhead required to support broadcast.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarWin32Impl {
+class EXPCL_PANDA_PIPELINE ConditionVarWin32Impl {
 public:
   INLINE ConditionVarWin32Impl(MutexWin32Impl &mutex);
   INLINE ~ConditionVarWin32Impl();

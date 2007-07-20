@@ -37,7 +37,7 @@
 //               as well as other special effects such as projective
 //               texturing.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TexGenAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH TexGenAttrib : public RenderAttrib {
 PUBLISHED:
   // We inherit the definition of our Mode enumerated type from
   // RenderAttrib.  Normally, Mode would be defined here, but we

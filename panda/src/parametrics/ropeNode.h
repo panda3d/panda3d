@@ -39,7 +39,7 @@ class GeomVertexData;
 //               of NURBS curves, and will probably eventually replace
 //               the whole ParametricCurve class hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RopeNode : public PandaNode {
+class EXPCL_PANDA_PARAMETRICS RopeNode : public PandaNode {
 PUBLISHED:
   RopeNode(const string &name);
 
@@ -197,7 +197,7 @@ private:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA CData : public CycleData {
+  class EXPCL_PANDA_PARAMETRICS CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

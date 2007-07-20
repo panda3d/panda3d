@@ -25,7 +25,7 @@
 #include "configVariableString.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl(grutil, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(grutil, EXPCL_PANDA_GRUTIL, EXPTP_PANDA_GRUTIL);
 
 extern ConfigVariableDouble frame_rate_meter_update_interval;
 extern ConfigVariableString frame_rate_meter_text_pattern;
@@ -33,7 +33,7 @@ extern ConfigVariableInt frame_rate_meter_layer_sort;
 extern ConfigVariableDouble frame_rate_meter_scale;
 extern ConfigVariableDouble frame_rate_meter_side_margins;
 
-extern EXPCL_PANDA void init_libgrutil();
+extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
 #endif
 

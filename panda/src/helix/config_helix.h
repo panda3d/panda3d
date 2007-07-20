@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(helix, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(helix, EXPCL_PANDA_HELIX, EXPTP_PANDA_HELIX);
 
 
 #endif

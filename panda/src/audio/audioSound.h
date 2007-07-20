@@ -29,7 +29,7 @@
 class AudioManager;
 
 
-class EXPCL_PANDA AudioSound : public TypedReferenceCount {
+class EXPCL_PANDA_AUDIO AudioSound : public TypedReferenceCount {
 	PUBLISHED:
 		virtual ~AudioSound();
 		  

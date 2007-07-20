@@ -37,7 +37,7 @@
 //               mutex, and several condition variables may share the
 //               same mutex.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConditionVarDirect {
+class EXPCL_PANDA_PIPELINE ConditionVarDirect {
 public:
   INLINE ConditionVarDirect(MutexDirect &mutex);
   INLINE ~ConditionVarDirect();

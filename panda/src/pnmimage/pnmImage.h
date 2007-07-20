@@ -57,7 +57,7 @@ class PNMFileType;
 //               Files can be specified by filename, or by an iostream
 //               pointer.  The filename "-" refers to stdin or stdout.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PNMImage : public PNMImageHeader {
+class EXPCL_PANDA_PNMIMAGE PNMImage : public PNMImageHeader {
 PUBLISHED:
   INLINE PNMImage();
   PNMImage(const Filename &filename, PNMFileType *type = NULL);

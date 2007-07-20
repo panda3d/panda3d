@@ -36,7 +36,7 @@
 //               This is useful for rendering opaque geometry, taking
 //               optimal advantage of a hierarchical Z-buffer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullBinFrontToBack : public CullBin {
+class EXPCL_PANDA_CULL CullBinFrontToBack : public CullBin {
 public:
   INLINE CullBinFrontToBack(const string &name, 
                             GraphicsStateGuardianBase *gsg,

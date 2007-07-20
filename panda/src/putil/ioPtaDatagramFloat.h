@@ -37,7 +37,7 @@ class DatagramIterator;
 //               place to scope these static methods which should be
 //               called directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA IoPtaDatagramFloat {
+class EXPCL_PANDA_PUTIL IoPtaDatagramFloat {
 public:
   static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_float array);
   static PTA_float read_datagram(BamReader *manager, DatagramIterator &source);

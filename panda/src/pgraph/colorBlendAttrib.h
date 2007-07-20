@@ -31,7 +31,7 @@ class FactoryParams;
 //               buffer, for special effects.  This overrides
 //               transparency if transparency is also specified.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ColorBlendAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH ColorBlendAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_none,             // Blending is disabled

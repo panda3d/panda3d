@@ -43,7 +43,7 @@ class AsyncTaskManager;
 //               class, and override do_task(), to define the
 //               functionality you wish to have the task perform.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AsyncTask : public TypedReferenceCount, public Namable {
+class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount, public Namable {
 public:
   INLINE AsyncTask(const string &name);
   virtual ~AsyncTask();

@@ -43,7 +43,7 @@
 //               supplied; in either case, it will have the same
 //               value.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MaterialPool {
+class EXPCL_PANDA_GOBJ MaterialPool {
 PUBLISHED:
   INLINE static Material *get_material(Material *temp);
   INLINE static int garbage_collect();

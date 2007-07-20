@@ -35,7 +35,7 @@
 //               projection onto its imaginary film of the specified
 //               size, hanging in space.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA OrthographicLens : public Lens {
+class EXPCL_PANDA_GOBJ OrthographicLens : public Lens {
 PUBLISHED:
   INLINE OrthographicLens();
 

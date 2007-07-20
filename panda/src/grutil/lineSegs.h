@@ -37,7 +37,7 @@
 //               smartest it could possibly be; it's intended
 //               primarily as a visualization and editing tool.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LineSegs : public Namable {
+class EXPCL_PANDA_GRUTIL LineSegs : public Namable {
 PUBLISHED:
   LineSegs(const string &name = "lines");
   ~LineSegs();

@@ -51,7 +51,7 @@ class TypedWritable;
 //               write_datagram(), or they may choose to write
 //               something slightly different.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RecorderBase : virtual public ReferenceCount {
+class EXPCL_PANDA_RECORDER RecorderBase : virtual public ReferenceCount {
 protected:
   RecorderBase();
 

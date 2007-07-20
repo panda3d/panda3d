@@ -40,7 +40,7 @@
 //               Therefore it does not have a specific position at any
 //               given time, unlike an AnalogDevice.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DialNode : public DataNode {
+class EXPCL_PANDA_DEVICE DialNode : public DataNode {
 PUBLISHED:
   DialNode(ClientBase *client, const string &device_name);
   virtual ~DialNode();

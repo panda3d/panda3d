@@ -37,7 +37,7 @@
 //               More text can still be written to it and continuously
 //               extracted.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LineStream : public ostream {
+class EXPCL_PANDA_PUTIL LineStream : public ostream {
 PUBLISHED:
   INLINE LineStream();
 

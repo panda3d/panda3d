@@ -75,7 +75,7 @@
 //               See also BamFile, which defines a higher-level
 //               interface to read and write Bam files on disk.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BamWriter {
+class EXPCL_PANDA_PUTIL BamWriter {
 public:
   BamWriter(DatagramSink *sink, const Filename &name = "");
   ~BamWriter();

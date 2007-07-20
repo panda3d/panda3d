@@ -44,7 +44,7 @@
 //               to fit within this rectangle, but if it does not, it
 //               may visually overlap with nearby text.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextGraphic {
+class EXPCL_PANDA_TEXT TextGraphic {
 PUBLISHED:
   INLINE TextGraphic();
   INLINE TextGraphic(const NodePath &model, const LVecBase4f &frame);

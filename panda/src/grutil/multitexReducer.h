@@ -53,7 +53,7 @@ class TransformState;
 //               flattened.  It is, however, useful for "baking in" a
 //               particular multitexture effect.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MultitexReducer {
+class EXPCL_PANDA_GRUTIL MultitexReducer {
 PUBLISHED:
   MultitexReducer();
   ~MultitexReducer();

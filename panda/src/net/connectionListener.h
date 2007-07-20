@@ -36,7 +36,7 @@ class NetAddress;
 //               what to do with the established connection.  See
 //               QueuedConnectionListener.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ConnectionListener : public ConnectionReader {
+class EXPCL_PANDA_NET ConnectionListener : public ConnectionReader {
 PUBLISHED:
   ConnectionListener(ConnectionManager *manager, int num_threads);
 

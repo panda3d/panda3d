@@ -41,7 +41,7 @@ class FactoryParams;
 //               determine from examining the static hierarchy of the
 //               graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DrawMaskAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH DrawMaskAttrib : public RenderAttrib {
 protected:
   INLINE DrawMaskAttrib(DrawMask new_mask, DrawMask bits_to_change);
   INLINE DrawMaskAttrib(const DrawMaskAttrib &copy);

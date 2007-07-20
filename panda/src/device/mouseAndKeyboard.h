@@ -47,7 +47,7 @@
 //               EventThrower to the MouseAndKeyboard object;
 //               otherwise, the events will be discarded.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseAndKeyboard : public DataNode {
+class EXPCL_PANDA_DEVICE MouseAndKeyboard : public DataNode {
 PUBLISHED:
   MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
   void set_source(GraphicsWindow *window, int device);

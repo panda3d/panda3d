@@ -47,7 +47,7 @@ class FactoryParams;
 //               instead of modifying a RenderEffects object, create a
 //               new one.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA RenderEffects : public TypedWritableReferenceCount {
+class EXPCL_PANDA_PGRAPH RenderEffects : public TypedWritableReferenceCount {
 protected:
   RenderEffects();
 

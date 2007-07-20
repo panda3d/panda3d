@@ -33,7 +33,7 @@ class FactoryParams;
 //               NodeVertexTransforms that represent a list of
 //               composed matrices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NodeVertexTransform : public VertexTransform {
+class EXPCL_PANDA_GRUTIL NodeVertexTransform : public VertexTransform {
 PUBLISHED:
   NodeVertexTransform(const PandaNode *node, 
                       const VertexTransform *prev = NULL);

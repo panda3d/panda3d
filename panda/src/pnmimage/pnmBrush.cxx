@@ -21,7 +21,7 @@
 #include "cmath.h"
 
 // A PNMTransparentBrush doesn't draw or fill anything.
-class EXPCL_PANDA PNMTransparentBrush : public PNMBrush {
+class EXPCL_PANDA_PNMIMAGE PNMTransparentBrush : public PNMBrush {
 public:
   PNMTransparentBrush() : 
     PNMBrush(0.0, 0.0) { }
@@ -34,7 +34,7 @@ public:
 };
 
 // A PNMPixelBrush is a family of brushes that draw one pixel at a time.
-class EXPCL_PANDA PNMPixelBrush : public PNMBrush {
+class EXPCL_PANDA_PNMIMAGE PNMPixelBrush : public PNMBrush {
 protected:
   PNMPixelBrush(const Colord &color) : 
     PNMBrush(0.5, 0.5), _rgb(color[0], color[1], color[2]), _a(color[3]) { }
@@ -44,7 +44,7 @@ protected:
 };
 
 // Arbitrarily sets the pixel to a particular color, with no antialiasing.
-class EXPCL_PANDA PNMSetPixelBrush : public PNMPixelBrush {
+class EXPCL_PANDA_PNMIMAGE PNMSetPixelBrush : public PNMPixelBrush {
 public:
   PNMSetPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
 
@@ -77,7 +77,7 @@ public:
 };
 
 // Blends the pixel in to the existing background.
-class EXPCL_PANDA PNMBlendPixelBrush : public PNMPixelBrush {
+class EXPCL_PANDA_PNMIMAGE PNMBlendPixelBrush : public PNMPixelBrush {
 public:
   PNMBlendPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
 
@@ -101,7 +101,7 @@ public:
 };
 
 // Darkens the pixel in the existing background.
-class EXPCL_PANDA PNMDarkenPixelBrush : public PNMPixelBrush {
+class EXPCL_PANDA_PNMIMAGE PNMDarkenPixelBrush : public PNMPixelBrush {
 public:
   PNMDarkenPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
 
@@ -146,7 +146,7 @@ public:
 };
 
 // Lightens the pixel in the existing background.
-class EXPCL_PANDA PNMLightenPixelBrush : public PNMPixelBrush {
+class EXPCL_PANDA_PNMIMAGE PNMLightenPixelBrush : public PNMPixelBrush {
 public:
   PNMLightenPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
 
@@ -191,7 +191,7 @@ public:
 };
 
 // A PNMImageBrush is a family of brushes that draw an image at a time.
-class EXPCL_PANDA PNMImageBrush : public PNMBrush {
+class EXPCL_PANDA_PNMIMAGE PNMImageBrush : public PNMBrush {
 protected:
   PNMImageBrush(const PNMImage &image, double xc, double yc) : 
     PNMBrush(xc, yc),
@@ -227,7 +227,7 @@ protected:
 };
 
 // Sets the pixels from the rectangular image, with no antialiasing.
-class EXPCL_PANDA PNMSetImageBrush : public PNMImageBrush {
+class EXPCL_PANDA_PNMIMAGE PNMSetImageBrush : public PNMImageBrush {
 public:
   PNMSetImageBrush(const PNMImage &image, double xc, double yc) : 
     PNMImageBrush(image, xc, yc) { }
@@ -245,7 +245,7 @@ public:
 };
 
 // Blends the pixels in using alpha.
-class EXPCL_PANDA PNMBlendImageBrush : public PNMImageBrush {
+class EXPCL_PANDA_PNMIMAGE PNMBlendImageBrush : public PNMImageBrush {
 public:
   PNMBlendImageBrush(const PNMImage &image, double xc, double yc) : 
     PNMImageBrush(image, xc, yc) { }
@@ -261,7 +261,7 @@ public:
 };
 
 // Darkens the pixels
-class EXPCL_PANDA PNMDarkenImageBrush : public PNMImageBrush {
+class EXPCL_PANDA_PNMIMAGE PNMDarkenImageBrush : public PNMImageBrush {
 public:
   PNMDarkenImageBrush(const PNMImage &image, double xc, double yc) : 
     PNMImageBrush(image, xc, yc) { }
@@ -277,7 +277,7 @@ public:
 };
 
 // Lightens the pixels
-class EXPCL_PANDA PNMLightenImageBrush : public PNMImageBrush {
+class EXPCL_PANDA_PNMIMAGE PNMLightenImageBrush : public PNMImageBrush {
 public:
   PNMLightenImageBrush(const PNMImage &image, double xc, double yc) : 
     PNMImageBrush(image, xc, yc) { }

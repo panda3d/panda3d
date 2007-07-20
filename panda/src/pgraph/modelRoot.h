@@ -32,7 +32,7 @@
 //               special information, but can be used as a flag to
 //               indicate the presence of a loaded model file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModelRoot : public ModelNode {
+class EXPCL_PANDA_PGRAPH ModelRoot : public ModelNode {
 PUBLISHED:
   INLINE ModelRoot(const string &name);
 

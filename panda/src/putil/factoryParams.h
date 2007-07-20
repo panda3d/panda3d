@@ -41,7 +41,7 @@
 //               will be up to the individual CreateFuncs to interpret
 //               this meaningfully.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FactoryParams {
+class EXPCL_PANDA_PUTIL FactoryParams {
 public:
   FactoryParams();
   ~FactoryParams();

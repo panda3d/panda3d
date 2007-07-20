@@ -8,7 +8,7 @@
 //
 //
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_UDP_Outgoing : public Socket_IP
+class EXPCL_PANDA_NATIVENET Socket_UDP_Outgoing : public Socket_IP
 {
 public:
 PUBLISHED:

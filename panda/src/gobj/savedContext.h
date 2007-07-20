@@ -32,7 +32,7 @@
 //               common to all of these objects, but there might be
 //               one day.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA SavedContext : public TypedObject {
+class EXPCL_PANDA_GOBJ SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
 

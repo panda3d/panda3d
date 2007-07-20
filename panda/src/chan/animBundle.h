@@ -32,7 +32,7 @@ class FactoryParams;
 //               knows the frame rate and number of frames of all the
 //               channels in the hierarchy (which must all match).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimBundle : public AnimGroup {
+class EXPCL_PANDA_CHAN AnimBundle : public AnimGroup {
 protected:
   AnimBundle(AnimGroup *parent, const AnimBundle &copy);
 

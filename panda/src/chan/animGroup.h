@@ -37,7 +37,7 @@ class FactoryParams;
 //               AnimChannels.  The root of the hierarchy must be an
 //               AnimBundle.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimGroup : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_CHAN AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
   AnimGroup(const string &name = "");
   AnimGroup(AnimGroup *parent, const AnimGroup &copy);

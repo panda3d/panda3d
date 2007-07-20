@@ -39,7 +39,7 @@ class BamWriter;
 //               It also serves as a pass-through, so that additional
 //               child nodes may be parented directly to it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseRecorder : public DataNode, public RecorderBase {
+class EXPCL_PANDA_RECORDER MouseRecorder : public DataNode, public RecorderBase {
 PUBLISHED:
   MouseRecorder(const string &name);
   virtual ~MouseRecorder();

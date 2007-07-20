@@ -39,7 +39,7 @@
 //               convert your polygon into a plane if you have 3-d
 //               points.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Triangulator {
+class EXPCL_PANDA_MATHUTIL Triangulator {
 PUBLISHED:
   Triangulator();
 

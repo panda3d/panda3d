@@ -34,7 +34,7 @@ class GeomNode;
 // Description : This object represents a solid made entirely of triangles, which
 //               will only be tested again z axis aligned rays
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionFloorMesh : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionFloorMesh : public CollisionSolid {
 public:
   typedef struct {
     unsigned int p1;

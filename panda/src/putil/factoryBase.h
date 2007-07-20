@@ -42,7 +42,7 @@
 //               FactoryBase is the main definition of the thin
 //               template class Factory.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FactoryBase {
+class EXPCL_PANDA_PUTIL FactoryBase {
 public:
   typedef TypedObject *BaseCreateFunc(const FactoryParams &params);
 

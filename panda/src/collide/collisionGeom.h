@@ -34,7 +34,7 @@
 //               directly; it is created only by the
 //               CollisionTraverser, as needed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionGeom : public CollisionPolygon {
+class EXPCL_PANDA_COLLIDE CollisionGeom : public CollisionPolygon {
 private:
   INLINE CollisionGeom(const LVecBase3f &a, const LVecBase3f &b,
                        const LVecBase3f &c);

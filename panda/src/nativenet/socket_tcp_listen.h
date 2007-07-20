@@ -8,7 +8,7 @@
 // Class : Socket_TCP_Listen
 // Description : Base functionality for a TCP rendezvous socket
 /////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Socket_TCP_Listen : public Socket_IP
+class EXPCL_PANDA_NATIVENET Socket_TCP_Listen : public Socket_IP
 {
 public:
 PUBLISHED:

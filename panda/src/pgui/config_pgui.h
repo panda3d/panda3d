@@ -23,12 +23,12 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableDouble.h"
 
-NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(pgui, EXPCL_PANDA_PGUI, EXPTP_PANDA_PGUI);
 
 // Configure variables for pgui package.
 extern ConfigVariableDouble scroll_initial_delay;
 extern ConfigVariableDouble scroll_continued_delay;
 
-extern EXPCL_PANDA void init_libpgui();
+extern EXPCL_PANDA_PGUI void init_libpgui();
 
 #endif

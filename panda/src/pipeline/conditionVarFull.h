@@ -52,9 +52,9 @@
 //               depending on the definition of DEBUG_THREADS.
 ////////////////////////////////////////////////////////////////////
 #ifdef DEBUG_THREADS
-class EXPCL_PANDA ConditionVarFull : public ConditionVarFullDebug
+class EXPCL_PANDA_PIPELINE ConditionVarFull : public ConditionVarFullDebug
 #else
-class EXPCL_PANDA ConditionVarFull : public ConditionVarFullDirect
+class EXPCL_PANDA_PIPELINE ConditionVarFull : public ConditionVarFullDirect
 #endif  // DEBUG_THREADS
 {
 PUBLISHED:

@@ -71,7 +71,7 @@ class GeomTransformer;
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PandaNode : public TypedWritable, public Namable, 
+class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable, 
                               public LinkedListNode,
                               virtual public ReferenceCount {
 PUBLISHED:
@@ -309,7 +309,7 @@ protected:
   // This is a base class of CData, defined below.  It contains just
   // the protected (not private) part of CData that will be needed by
   // derived classes to implement compute_internal_bounds().
-  class EXPCL_PANDA BoundsData : public CycleData {
+  class EXPCL_PANDA_PGRAPH BoundsData : public CycleData {
   protected:
     INLINE BoundsData();
     INLINE BoundsData(const BoundsData &copy);
@@ -377,7 +377,7 @@ private:
 public:
   // This must be declared public so that VC6 will allow the nested
   // CData class to access it.
-  class EXPCL_PANDA DownConnection {
+  class EXPCL_PANDA_PGRAPH DownConnection {
   public:
     INLINE DownConnection(PandaNode *child, int sort);
     INLINE bool operator < (const DownConnection &other) const;
@@ -396,7 +396,7 @@ public:
 private:
   typedef CopyOnWriteObj1< ov_multiset<DownConnection>, TypeHandle > Down;
 
-  class EXPCL_PANDA UpConnection {
+  class EXPCL_PANDA_PGRAPH UpConnection {
   public:
     INLINE UpConnection(PandaNode *child);
     INLINE bool operator < (const UpConnection &other) const;
@@ -435,7 +435,7 @@ private:
   
   // This is the data that must be cycled between pipeline stages. 
 
-  class EXPCL_PANDA CData : public BoundsData {
+  class EXPCL_PANDA_PGRAPH CData : public BoundsData {
   public:
     CData();
     CData(const CData &copy);
@@ -597,7 +597,7 @@ public:
   // saved out ahead of time, rather than having to reacquire the lock
   // with each iteration, or to keep the lock held for the entire
   // pass.
-  class EXPCL_PANDA Children {
+  class EXPCL_PANDA_PGRAPH Children {
   public:
     INLINE Children();
     INLINE Children(const CData *cdata);
@@ -613,7 +613,7 @@ public:
   };
 
   // Similarly for stashed children.
-  class EXPCL_PANDA Stashed {
+  class EXPCL_PANDA_PGRAPH Stashed {
   public:
     INLINE Stashed();
     INLINE Stashed(const CData *cdata);
@@ -629,7 +629,7 @@ public:
   };
 
   // This class is returned from get_parents().
-  class EXPCL_PANDA Parents {
+  class EXPCL_PANDA_PGRAPH Parents {
   public:
     INLINE Parents();
     INLINE Parents(const CData *cdata);
@@ -687,6 +687,7 @@ private:
   friend class NodePathComponent;
   friend class WorkingNodePath;
   friend class PandaNodePipelineReader;
+  friend class EggLoader;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -694,7 +695,7 @@ private:
 // Description : Encapsulates the data from a PandaNode,
 //               pre-fetched for one stage of the pipeline.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PandaNodePipelineReader {
+class EXPCL_PANDA_PGRAPH PandaNodePipelineReader {
 public:
   INLINE PandaNodePipelineReader(const PandaNode *object, Thread *current_thread);
   INLINE PandaNodePipelineReader(const PandaNodePipelineReader &copy);
@@ -764,6 +765,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
 };
 
 INLINE ostream &operator << (ostream &out, const PandaNode &node) {

@@ -33,7 +33,7 @@
 //               synchronization primitive that one or more threads
 //               might be blocked on.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA BlockerSimple {
+class EXPCL_PANDA_PIPELINE BlockerSimple {
 protected:
   INLINE BlockerSimple();
   INLINE ~BlockerSimple();

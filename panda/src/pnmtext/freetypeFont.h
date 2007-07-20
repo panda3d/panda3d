@@ -41,7 +41,7 @@
 //               fonts; this class abstracts out that common wrapper
 //               around FreeType.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FreetypeFont : public Namable {
+class EXPCL_PANDA_PNMTEXT FreetypeFont : public Namable {
 protected:
   FreetypeFont();
 

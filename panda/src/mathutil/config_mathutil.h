@@ -25,13 +25,13 @@
 #include "configVariableEnum.h"
 #include "boundingVolume.h"
 
-NotifyCategoryDecl(mathutil, EXPCL_PANDA, EXPTP_PANDA);
+NotifyCategoryDecl(mathutil, EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL);
 
 extern ConfigVariableDouble fft_offset;
 extern ConfigVariableDouble fft_factor;
 extern ConfigVariableDouble fft_exponent;
 extern ConfigVariableDouble fft_error_threshold;
-extern EXPCL_PANDA ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type;
+extern EXPCL_PANDA_MATHUTIL ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type;
 
 #endif
 

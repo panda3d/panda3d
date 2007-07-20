@@ -49,7 +49,7 @@
 //               loading, and can automatically consult the ModelPool,
 //               according to the supplied LoaderOptions.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ModelPool {
+class EXPCL_PANDA_PGRAPH ModelPool {
 PUBLISHED:
   INLINE static bool has_model(const string &filename);
   INLINE static bool verify_model(const string &filename);

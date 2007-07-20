@@ -30,7 +30,7 @@
 //               TrackerNode, that records the data from a single
 //               tracker device.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA ClientTrackerDevice : public ClientDevice {
+class EXPCL_PANDA_DEVICE ClientTrackerDevice : public ClientDevice {
 protected:
   INLINE ClientTrackerDevice(ClientBase *client, const string &device_name);
 

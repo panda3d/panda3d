@@ -32,7 +32,7 @@
 //               but also can be used with a CopyOnWritePointer to
 //               provide get_read_pointer() and get_write_pointer().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CopyOnWriteObject : public CachedTypedWritableReferenceCount {
+class EXPCL_PANDA_PUTIL CopyOnWriteObject : public CachedTypedWritableReferenceCount {
 public:
   INLINE CopyOnWriteObject();
   INLINE CopyOnWriteObject(const CopyOnWriteObject &copy);

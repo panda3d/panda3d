@@ -35,7 +35,7 @@
 //               and add it to the loader via load_async(), to begin
 //               an asynchronous load.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AudioLoadRequest : public AsyncTask {
+class EXPCL_PANDA_AUDIO AudioLoadRequest : public AsyncTask {
 PUBLISHED:
   INLINE AudioLoadRequest(AudioManager *audio_manager, const string &filename, 
                           bool positional);

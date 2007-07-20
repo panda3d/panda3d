@@ -54,7 +54,7 @@
 //               set_graphic() call.  Then "\5name\5" will embed the
 //               named graphic.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TextPropertiesManager {
+class EXPCL_PANDA_TEXT TextPropertiesManager {
 protected:
   TextPropertiesManager();
   ~TextPropertiesManager();

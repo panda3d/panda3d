@@ -32,7 +32,7 @@
 //               kinds of nodes also contain a lens (for instance, a
 //               Spotlight).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LensNode : public PandaNode {
+class EXPCL_PANDA_PGRAPH LensNode : public PandaNode {
 PUBLISHED:
   LensNode(const string &name);
 

@@ -31,7 +31,7 @@
 //               can't be declared in the base class, since it doesn't
 //               really know about RenderState.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA StateMunger : public GeomMunger {
+class EXPCL_PANDA_PGRAPH StateMunger : public GeomMunger {
 public:
   INLINE StateMunger(GraphicsStateGuardianBase *gsg);
   virtual ~StateMunger();

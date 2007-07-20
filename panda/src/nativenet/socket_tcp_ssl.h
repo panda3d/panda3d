@@ -21,7 +21,7 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-extern EXPCL_PANDA SSL_CTX *global_ssl_ctx;
+extern EXPCL_PANDA_NATIVENET SSL_CTX *global_ssl_ctx;
 
 
 struct SSlStartup
@@ -47,7 +47,7 @@ struct SSlStartup
 };
 
 
-class EXPCL_PANDA Socket_TCP_SSL : public Socket_IP
+class EXPCL_PANDA_NATIVENET Socket_TCP_SSL : public Socket_IP
 {
 public:
     

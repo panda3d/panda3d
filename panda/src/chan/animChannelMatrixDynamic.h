@@ -38,7 +38,7 @@
 //               the node whose transform will be copied to the joint
 //               each frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA AnimChannelMatrixDynamic : public AnimChannelMatrix {
+class EXPCL_PANDA_CHAN AnimChannelMatrixDynamic : public AnimChannelMatrix {
 protected:
   AnimChannelMatrixDynamic();
   AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy);

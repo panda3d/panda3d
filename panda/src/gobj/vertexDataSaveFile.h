@@ -38,7 +38,7 @@ class VertexDataSaveBlock;
 //               vertex data arrays are written into one large flat
 //               file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataSaveFile : public SimpleAllocator {
+class EXPCL_PANDA_GOBJ VertexDataSaveFile : public SimpleAllocator {
 public:
   VertexDataSaveFile(const Filename &directory, const string &prefix,
                      size_t max_size);
@@ -76,7 +76,7 @@ private:
 //       Class : VertexDataSaveBlock
 // Description : A block of bytes on the save file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataSaveBlock : public SimpleAllocatorBlock, public ReferenceCount {
+class EXPCL_PANDA_GOBJ VertexDataSaveBlock : public SimpleAllocatorBlock, public ReferenceCount {
 protected:
   INLINE VertexDataSaveBlock(VertexDataSaveFile *file,
                              size_t start, size_t size);

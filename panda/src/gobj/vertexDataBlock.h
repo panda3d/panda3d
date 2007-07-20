@@ -31,7 +31,7 @@ class VertexDataBlock;
 // Description : A block of bytes that stores the actual raw vertex
 //               data referenced by a GeomVertexArrayData object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA VertexDataBlock : public SimpleAllocatorBlock, public ReferenceCount {
+class EXPCL_PANDA_GOBJ VertexDataBlock : public SimpleAllocatorBlock, public ReferenceCount {
 protected:
   INLINE VertexDataBlock(VertexDataPage *page,
                          size_t start, size_t size);
