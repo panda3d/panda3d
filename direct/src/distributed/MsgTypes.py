@@ -83,6 +83,8 @@ MsgName2Id = {
 
     'CLIENT_GET_FRIEND_LIST_EXTENDED':               115,
     'CLIENT_GET_FRIEND_LIST_EXTENDED_RESP':          116,
+
+    'CLIENT_SET_FIELD_SENDABLE':                     120,
     }
 
 # create id->name table for debugging
