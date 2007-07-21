@@ -40,7 +40,7 @@
 //               entry is stored per each different key pointer.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class EXPCL_PANDA_PUTIL SimpleHashMap {
+class SimpleHashMap {
 public:
 #ifndef CPPPARSER
   INLINE SimpleHashMap(const Compare &comp = Compare());
