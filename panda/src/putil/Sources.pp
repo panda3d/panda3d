@@ -54,6 +54,7 @@
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h \
+    simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
     stringStreamBuf.I stringStreamBuf.h \
@@ -99,6 +100,7 @@
     nodeCachedReferenceCount.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
+    simpleHashMap.cxx \
     sparseArray.cxx \
     string_utils.cxx \
     stringStreamBuf.cxx \
@@ -156,6 +158,7 @@
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
+    simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.h \
     stringStreamBuf.I stringStreamBuf.h \

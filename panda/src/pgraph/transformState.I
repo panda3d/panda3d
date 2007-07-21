@@ -775,6 +775,36 @@ node_unref() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of entries in the composition
+//               cache for this TransformState.  This is the number of
+//               other TransformStates whose composition with this one
+//               has been cached.  This number is not useful for any
+//               practical reason other than performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+get_composition_cache_size() const {
+  ReMutexHolder holder(*_states_lock);
+  return _composition_cache.get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_invert_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of entries in the
+//               invert_composition cache for this TransformState.
+//               This is similar to the composition cache, but it
+//               records cache entries for the invert_compose()
+//               operation.  See get_composition_cache_size().
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+get_invert_composition_cache_size() const {
+  ReMutexHolder holder(*_states_lock);
+  return _invert_composition_cache.get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::flush_level
 //       Access: Public, Static
 //  Description: Flushes the PStatCollectors used during traversal.

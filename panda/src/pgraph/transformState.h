@@ -33,6 +33,7 @@
 #include "pmutex.h"
 #include "config_pgraph.h"
 #include "deletedChain.h"
+#include "simpleHashMap.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -179,6 +180,9 @@ PUBLISHED:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
+  INLINE int get_composition_cache_size() const;
+  INLINE int get_invert_composition_cache_size() const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
 
@@ -240,6 +244,11 @@ private:
   // remove the entry if *either* of the input TransformStates destructs.
   // To implement this, we always record Composition entries in pairs,
   // one in each of the two involved TransformState objects.
+    
+  // The first element of the map is the object we compose with.  This
+  // is not reference counted within this map; instead we store a
+  // companion pointer in the other object, and remove the references
+  // explicitly when either object destructs.
   class Composition {
   public:
     INLINE Composition();
@@ -249,12 +258,8 @@ private:
     // pointer as this.
     const TransformState *_result;
   };
-    
-  // The first element of the map is the object we compose with.  This
-  // is not reference counted within this map; instead we store a
-  // companion pointer in the other object, and remove the references
-  // explicitly when either object destructs.
-  typedef phash_map<const TransformState *, Composition, pointer_hash> CompositionCache;
+
+  typedef SimpleHashMap<const TransformState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
 
