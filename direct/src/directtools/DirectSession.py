@@ -38,6 +38,7 @@ class DirectSession(DirectObject):
         self.font = TextNode.getDefaultFont()
         self.fEnabled = 0
         self.fEnabledLight = 0
+        self.fScaleWidgetByCam = 0 # [gjeon] flag for scaling widget by distance from the camera
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
@@ -197,6 +198,7 @@ class DirectSession(DirectObject):
         else:
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
+
 
     def enable(self):
         # don't enable DIRECT if someone has posted DIRECTdisablePost
@@ -469,6 +471,9 @@ class DirectSession(DirectObject):
     def gotAlt(self, modifiers):
         return modifiers & DIRECT_ALT_MOD
 
+    def setFScaleWidgetByCam(self, flag):
+        self.fScaleWidgetByCam = flag
+
     def select(self, nodePath, fMultiSelect = 0,
                fSelectTag = 1, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiSelect, fSelectTag)
@@ -494,7 +499,14 @@ class DirectSession(DirectObject):
             # Adjust widgets size
             # This uses the additional scaling factor used to grow and
             # shrink the widget
-            self.widget.setScalingFactor(dnp.getRadius())
+            if self.fScaleWidgetByCam: # [gjeon] for scaling widget by distance from camera
+                nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
+                sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
+                sf = max(1.0,sf)
+                self.widget.setScalingFactor(sf)
+            else:
+                self.widget.setScalingFactor(dnp.getRadius())
+            
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)
