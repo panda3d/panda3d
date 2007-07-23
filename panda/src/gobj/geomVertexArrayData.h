@@ -79,6 +79,8 @@ PUBLISHED:
   virtual ~GeomVertexArrayData();
   ALLOC_DELETED_CHAIN(GeomVertexArrayData);
 
+  int compare_to(const GeomVertexArrayData &other) const;
+
   INLINE const GeomVertexArrayFormat *get_array_format() const;
 
   INLINE UsageHint get_usage_hint() const;

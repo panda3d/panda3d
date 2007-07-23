@@ -85,6 +85,36 @@ INLINE CopyOnWritePointer::
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointer::operator == 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool CopyOnWritePointer::
+operator == (const CopyOnWritePointer &other) const {
+  return _object == other._object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointer::operator != 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool CopyOnWritePointer::
+operator != (const CopyOnWritePointer &other) const {
+  return _object != other._object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CopyOnWritePointer::operator < 
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool CopyOnWritePointer::
+operator < (const CopyOnWritePointer &other) const {
+  return _object < other._object;
+}
+
 #ifndef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWritePointer::get_read_pointer

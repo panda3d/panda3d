@@ -199,6 +199,46 @@ GeomVertexData::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::compare_to
+//       Access: Published
+//  Description: Returns 0 if the two objects are equivalent, even if
+//               they are not the same pointer.
+////////////////////////////////////////////////////////////////////
+int GeomVertexData::
+compare_to(const GeomVertexData &other) const {
+  Thread *current_thread = Thread::get_current_thread();
+
+  CDReader cdata(_cycler);
+  CDReader other_cdata(other._cycler);
+
+  if (cdata->_usage_hint != other_cdata->_usage_hint) {
+    return (int)cdata->_usage_hint - (int)other_cdata->_usage_hint;
+  }
+  if (cdata->_format != other_cdata->_format) {
+    return cdata->_format < other_cdata->_format ? -1 : 1;
+  }
+  if (cdata->_transform_table != other_cdata->_transform_table) {
+    return cdata->_transform_table < other_cdata->_transform_table ? -1 : 1;
+  }
+  if (cdata->_transform_blend_table != other_cdata->_transform_blend_table) {
+    return cdata->_transform_blend_table < other_cdata->_transform_blend_table ? -1 : 1;
+  }
+  if (cdata->_slider_table != other_cdata->_slider_table) {
+    return cdata->_slider_table < other_cdata->_slider_table ? -1 : 1;
+  }
+  if (cdata->_arrays.size() != other_cdata->_arrays.size()) {
+    return (int)cdata->_arrays.size() - (int)other_cdata->_arrays.size();
+  }
+  for (size_t i = 0; i < cdata->_arrays.size(); ++i) {
+    if (cdata->_arrays[i] != other_cdata->_arrays[i]) {
+      return cdata->_arrays[i] < other_cdata->_arrays[i] ? -1 : 1;
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::set_name
 //       Access: Published
 //  Description: Changes the name of the vertex data.  This name is

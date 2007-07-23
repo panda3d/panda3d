@@ -66,6 +66,8 @@ clear() {
   _nodes.clear();
   _vdatas.clear();
   _vadatas.clear();
+  _unique_vdatas.clear();
+  _unique_vadatas.clear();
   _textures.clear();
 
   _num_nodes = 0;
@@ -152,6 +154,43 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "vertices occupy " << (_vertex_data_size + 1023) / 1024 
     << "K memory.\n";
+
+  int unreferenced_vertices = 0;
+  VDatas::const_iterator vdi;
+  for (vdi = _vdatas.begin(); vdi != _vdatas.end(); ++vdi) {
+    CPT(GeomVertexData) vdata = (*vdi).first;
+    const VDataTracker &tracker = (*vdi).second;
+    int num_unreferenced = vdata->get_num_rows() - tracker._referenced_vertices.get_num_on_bits();
+    nassertv(num_unreferenced >= 0);
+    unreferenced_vertices += num_unreferenced;
+  }
+  if (unreferenced_vertices != 0) {
+    indent(out, indent_level)
+      << unreferenced_vertices << " vertices are unreferenced by any GeomPrimitives.\n";
+  }
+  if (_unique_vdatas.size() != _vdatas.size()) {
+    indent(out, indent_level)
+      << _vdatas.size() - _unique_vdatas.size()
+      << " GeomVertexDatas are redundantly duplicated\n";
+  }
+  if (_unique_vadatas.size() != _vadatas.size()) {
+    int wasted_bytes = 0;
+
+    UniqueVADatas::const_iterator uvai;
+    for (uvai = _unique_vadatas.begin();
+         uvai != _unique_vadatas.end();
+         ++uvai) {
+      const GeomVertexArrayData *gvad = (*uvai).first;
+      int dup_count = (*uvai).second;
+      if (dup_count > 1) {
+        wasted_bytes += (dup_count - 1) * gvad->get_data_size_bytes();
+      }
+    }
+    indent(out, indent_level)
+      << _vadatas.size() - _unique_vadatas.size()
+      << " GeomVertexArrayDatas are redundant, wasting " 
+      << (wasted_bytes + 512) / 1024 << "K.\n";
+  }
 
   indent(out, indent_level)
     << _num_tris << " triangles:\n";
@@ -303,10 +342,13 @@ collect_statistics(GeomNode *geom_node) {
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
-  bool inserted = _vdatas.insert(vdata).second;
-  if (inserted) {
+  pair<VDatas::iterator, bool> result = _vdatas.insert(VDatas::value_type(vdata, VDataTracker()));
+  if (result.second) {
     // This is the first time we've encountered this vertex data.
     ++_num_geom_vertex_datas;
+
+    int &dup_count = (*(_unique_vdatas.insert(UniqueVDatas::value_type(vdata, 0)).first)).second;
+    ++dup_count;
 
     int num_rows = vdata->get_num_rows();
     if (vdata->has_column(InternalName::get_vertex())) {
@@ -327,11 +369,17 @@ collect_statistics(const Geom *geom) {
       collect_statistics(vdata->get_array(i));
     }
   }
+  VDataTracker &tracker = (*(result.first)).second;
 
   // Now consider the primitives in the Geom.
   int num_primitives = geom->get_num_primitives();
   for (int i = 0; i < num_primitives; ++i) {
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
+
+    int num_vertices = prim->get_num_vertices();
+    for (int vi = 0; vi < num_vertices; ++vi) {
+      tracker._referenced_vertices.set_bit(prim->get_vertex(vi));
+    }
 
     if (prim->is_indexed()) {
       collect_statistics(prim->get_vertices());
@@ -418,5 +466,7 @@ collect_statistics(const GeomVertexArrayData *vadata) {
   if (inserted) {
     // This is the first time we've encountered this vertex array.
     _vertex_data_size += vadata->get_data_size_bytes();
+    int &dup_count = (*(_unique_vadatas.insert(UniqueVADatas::value_type(vadata, 0)).first)).second;
+    ++dup_count;
   }
 }

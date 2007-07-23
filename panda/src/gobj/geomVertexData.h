@@ -93,6 +93,8 @@ PUBLISHED:
   virtual ~GeomVertexData();
   ALLOC_DELETED_CHAIN(GeomVertexData);
 
+  int compare_to(const GeomVertexData &other) const;
+
   INLINE const string &get_name() const;
   void set_name(const string &name);
 

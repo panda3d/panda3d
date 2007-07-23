@@ -53,6 +53,10 @@ public:
   INLINE void operator = (CopyOnWriteObject *object);
   INLINE ~CopyOnWritePointer();
 
+  INLINE bool operator == (const CopyOnWritePointer &other) const;
+  INLINE bool operator != (const CopyOnWritePointer &other) const;
+  INLINE bool operator < (const CopyOnWritePointer &other) const;
+
 #ifdef COW_THREADED
   CPT(CopyOnWriteObject) get_read_pointer() const;
   PT(CopyOnWriteObject) get_write_pointer();

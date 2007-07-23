@@ -24,6 +24,8 @@
 #include "luse.h"
 #include "pmap.h"
 #include "pset.h"
+#include "bitArray.h"
+#include "indirectCompareTo.h"
 
 class PandaNode;
 class GeomNode;
@@ -94,9 +96,16 @@ private:
   void collect_statistics(Texture *texture);
   void collect_statistics(const GeomVertexArrayData *vadata);
 
+  class VDataTracker {
+  public:
+    BitArray _referenced_vertices;
+  };
+
   typedef pmap<PandaNode *, int> Nodes;
-  typedef pset<CPT(GeomVertexData) > VDatas;
+  typedef pmap<CPT(GeomVertexData), VDataTracker> VDatas;
   typedef pset<CPT(GeomVertexArrayData) > VADatas;
+  typedef pmap<const GeomVertexData *, int, IndirectCompareTo<GeomVertexData> > UniqueVDatas;
+  typedef pmap<const GeomVertexArrayData *, int, IndirectCompareTo<GeomVertexArrayData> > UniqueVADatas;
   typedef pmap<Texture *, int> Textures;
 
   LodMode _lod_mode;
@@ -104,6 +113,8 @@ private:
   Nodes _nodes;
   VDatas _vdatas;
   VADatas _vadatas;
+  UniqueVDatas _unique_vdatas;
+  UniqueVADatas _unique_vadatas;
   Textures _textures;
 
 private:

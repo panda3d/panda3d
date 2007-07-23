@@ -159,6 +159,33 @@ GeomVertexArrayData::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayData::compare_to
+//       Access: Published
+//  Description: Returns 0 if the two arrays are equivalent, even if
+//               they are not the same pointer.
+////////////////////////////////////////////////////////////////////
+int GeomVertexArrayData::
+compare_to(const GeomVertexArrayData &other) const {
+  Thread *current_thread = Thread::get_current_thread();
+
+  CPT(GeomVertexArrayDataHandle) handle = get_handle(current_thread);
+  CPT(GeomVertexArrayDataHandle) other_handle = other.get_handle(current_thread);
+
+  if (handle->get_usage_hint() != other_handle->get_usage_hint()) {
+    return (int)handle->get_usage_hint() - (int)other_handle->get_usage_hint();
+  }
+  if (handle->get_array_format() != other_handle->get_array_format()) {
+    return handle->get_array_format() < other_handle->get_array_format() ? -1 : 1;
+  }
+  if (handle->get_data_size_bytes() != other_handle->get_data_size_bytes()) {
+    return (int)handle->get_data_size_bytes() - (int)other_handle->get_data_size_bytes();
+  }
+  return memcmp(handle->get_read_pointer(true), 
+                other_handle->get_read_pointer(true),
+                handle->get_data_size_bytes());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::set_usage_hint
 //       Access: Published
 //  Description: Changes the UsageHint hint for this array.  See
