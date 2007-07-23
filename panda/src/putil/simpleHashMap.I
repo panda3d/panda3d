@@ -167,6 +167,7 @@ store(const Key &key, const Value &data) {
   // Shouldn't get here unless _num_entries == _table_size, which
   // shouldn't be possible due to consider_expand_table().
   nassertr(false, _table[0]._data);
+  return _table[0]._data;  // To satisfy compiler
 }
 
 ////////////////////////////////////////////////////////////////////
