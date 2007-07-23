@@ -250,7 +250,7 @@ template<class Key, class Value, class Compare>
 INLINE bool SimpleHashMap<Key, Value, Compare>::
 has_element(int n) const {
   nassertr(n >= 0 && n < (int)_table_size, false);
-  return get_exists_array()[n];
+  return (get_exists_array()[n] != 0);
 }
 
 ////////////////////////////////////////////////////////////////////

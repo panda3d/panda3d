@@ -46,6 +46,30 @@ ClockObject() {
   _start_short_time = _true_clock->get_short_time();
   _start_long_time = _true_clock->get_long_time();
   _actual_frame_time = 0.0;
+
+  ConfigVariableDouble max_dt
+    ("max-dt", -1.0,
+     PRC_DESC("Sets a limit on the value returned by ClockObject::get_dt().  If "
+              "this value is less than zero, no limit is imposed; "
+              "otherwise, this is the maximum value that will ever "
+              "be returned by get_dt(), regardless of how much time "
+              "has actually elapsed between frames.  See ClockObject::set_dt()."));
+  ConfigVariableDouble clock_frame_rate
+    ("clock-frame-rate", 1.0,
+     PRC_DESC("In non-real-time clock mode, sets the number of frames per "
+              "second that we should appear to be running.  In forced "
+              "mode or limited mode, sets our target frame rate.  In "
+              "normal mode, this has no effect.  See ClockObject::set_frame_rate()."));
+  ConfigVariableDouble clock_degrade_factor
+    ("clock-degrade-factor", 1.0,
+     PRC_DESC("In degrade clock mode, returns the ratio by which the "
+              "performance is degraded.  A value of 2.0 causes the "
+              "clock to be slowed down by a factor of two (reducing "
+              "performance to 1/2 what would be otherwise).  See ClockObject::set_degrade_factor()."));
+  ConfigVariableDouble average_frame_rate_interval
+    ("average-frame-rate-interval", 1.0,
+     PRC_DESC("See ClockObject::set_average_frame_rate_interval()."));
+
   _max_dt = max_dt;
   _user_frame_rate = clock_frame_rate;
   _degrade_factor = clock_degrade_factor;

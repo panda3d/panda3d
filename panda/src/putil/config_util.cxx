@@ -113,22 +113,12 @@ get_sound_path() {
   return sound_path;
 }
 
-ConfigVariableDouble clock_frame_rate
-("clock-frame-rate", 1.0);
-ConfigVariableDouble clock_degrade_factor
-("clock-degrade-factor", 1.0);
-ConfigVariableDouble max_dt
-("max-dt", -1.0);
-
 ConfigVariableDouble sleep_precision
 ("sleep-precision", 0.01,
  PRC_DESC("This is the accuracy within which we can expect select() to "
           "return precisely.  That is, if we use select() to request a "
           "timeout of 1.0 seconds, we can expect to actually sleep for "
           "somewhere between 1.0 and 1.0 + sleep-precision seconds."));
-
-ConfigVariableDouble average_frame_rate_interval
-("average-frame-rate-interval", 1.0);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libputil

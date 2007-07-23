@@ -41,18 +41,19 @@ PUBLISHED:
 ////////////////////////////////////////////////////////////////////
 //       Class : ClockObject
 // Description : A ClockObject keeps track of elapsed real time and
-//               discrete time.  It can run in two modes: In normal
-//               mode, get_frame_time() returns the time as of the
-//               last time tick() was called.  This is the "discrete"
-//               time, and is usually used to get the time as of, for
-//               instance, the beginning of the current frame.  In
-//               non-real-time mode, get_frame_time() returns a
-//               constant increment since the last time tick() was
-//               called; this is useful when it is desirable to fake
-//               the clock out, for instance for non-real-time
-//               animation rendering.
+//               discrete time.  In normal mode, get_frame_time()
+//               returns the time as of the last time tick() was
+//               called.  This is the "discrete" time, and is usually
+//               used to get the time as of, for instance, the
+//               beginning of the current frame.
 //
-//               In both modes, get_real_time() always returns the
+//               In other modes, as set by set_mode() or the
+//               clock-mode config variable, get_frame_time() may
+//               return other values to simulate different timing
+//               effects, for instance to perform non-real-time
+//               animation.  See set_mode().
+//
+//               In all modes, get_real_time() always returns the
 //               elapsed real time in seconds since the ClockObject
 //               was constructed, or since it was last reset.
 //
