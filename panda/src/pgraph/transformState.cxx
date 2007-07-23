@@ -63,6 +63,9 @@ public:
   int _total_cache_size;
   int _num_states;
   double _last_reset;
+
+  bool _cache_report;
+  double _cache_report_interval;
 };
 static CacheStats _cache_stats;
 
@@ -71,6 +74,9 @@ init() {
   reset(ClockObject::get_global_clock()->get_real_time());
   _total_cache_size = 0;
   _num_states = 0;
+
+  _cache_report = ConfigVariableBool("cache-report", false);
+  _cache_report_interval = ConfigVariableDouble("cache-report-interval", 5.0);
 }
 
 void CacheStats::
@@ -95,14 +101,11 @@ write(ostream &out) const {
       << " average cache size\n";
 }
 
-static ConfigVariableBool cache_report("cache-report", false);
-static ConfigVariableDouble cache_report_interval("cache-report-interval", 5.0);
-
 void CacheStats::
 maybe_report() {
-  if (cache_report) {
+  if (_cache_report) {
     double now = ClockObject::get_global_clock()->get_real_time();
-    if (now - _last_reset < cache_report_interval) {
+    if (now - _last_reset < _cache_report_interval) {
       return;
     }
     write(Notify::out());
