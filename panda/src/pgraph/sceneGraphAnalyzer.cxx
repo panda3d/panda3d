@@ -204,15 +204,17 @@ write(ostream &out, int indent_level) const {
   }
   out << ".\n";
 
-  indent(out, indent_level + 2)
-    << _num_triangles_in_fans
-    << " of these are on " << _num_trifans << " trifans";
   if (_num_trifans != 0) {
-    out << " ("
-        << (double)_num_triangles_in_fans / (double)_num_trifans
-        << " average tris per fan)";
+    indent(out, indent_level + 2)
+      << _num_triangles_in_fans
+      << " of these are on " << _num_trifans << " trifans";
+    if (_num_trifans != 0) {
+      out << " ("
+          << (double)_num_triangles_in_fans / (double)_num_trifans
+          << " average tris per fan)";
+    }
+    out << ".\n";
   }
-  out << ".\n";
 
   indent(out, indent_level + 2)
     << _num_individual_tris
