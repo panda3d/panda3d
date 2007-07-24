@@ -91,6 +91,11 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(SceneGraphExplorer)
 
+    # [gjeon] to set fSortChildren of tree node
+    def setFSortChildren(self, fSortChildren):
+        self._node.setFSortChildren(fSortChildren)
+        self._node.update()
+
     def update(self, fUseCachedChildren = 1):
         """ Refresh scene graph explorer """
         self._node.update(fUseCachedChildren)
@@ -121,6 +126,11 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Remove hooks
         self.ignore('DIRECT_activeParent')
         self.ignore('SGE_Update Explorer')
+    
+    def sortChildren(self, searchKey):
+        sceneGraphItem = self._node.find(searchKey)
+        if sceneGraphItem:
+            sceneGraphItem.updateSelf(fSortChildren = 1)
     
     def updateSelection(self, searchKey):
         # [gjeon] update SGE selection with directSession

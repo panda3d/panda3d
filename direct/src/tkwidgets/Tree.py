@@ -51,6 +51,11 @@ class TreeNode:
         self.menuVar = IntVar()
         self.menuVar.set(0)
         self._popupMenu = None
+        self.fSortChildren = 0 # [gjeon] flag for sorting children or not
+
+    # [gjeon] to set fSortChildren
+    def setFSortChildren(self, fSortChildren):
+        self.fSortChildren = fSortChildren
 
     def destroy(self):
         if self._popupMenu:
@@ -140,7 +145,7 @@ class TreeNode:
         self.item.MenuCommand(command)
         if self.parent and (command != 'Update Explorer'):
             # Update parent to try to keep explorer up to date
-            self.parent.update()
+            self.parent.update(self.fSortChilren)
 
     def expand(self, event=None):
         if not self.item.IsExpandable():
@@ -218,12 +223,26 @@ class TreeNode:
             # IsExpandable() was mistaken; that's allowed
             return y+17
         self.kidKeys = []
+        
+        # [gjeon] to sort children
+        if self.fSortChildren:
+            def compareText(x, y):
+                textX = x.GetText()
+                textY = y.GetText()
+                if (textX > textY):
+                    return 1
+                elif (textX == textY):
+                    return 0
+                else: # textX < textY
+                    return -1
+            sublist.sort(compareText)
         for item in sublist:
             key = item.GetKey()
             if fUseCachedChildren and self.children.has_key(key):
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
+            child.setFSortChildren(self.fSortChildren)
             self.children[key] = child
             self.kidKeys.append(key)
         # Remove unused children
