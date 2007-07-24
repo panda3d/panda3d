@@ -65,6 +65,9 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     _local_bounds.push_back((GeometricBoundingVolume *)NULL);
   } else {
     LPoint3f pos_delta = def._node_path.get_pos_delta(root);
+
+    // We can use a plain pointer, rather than a PT() here, because we
+    // know we are going to save the volume in the vector, below.
     GeometricBoundingVolume *gbv;
     DCAST_INTO_V(gbv, bv->make_copy());
 
@@ -72,12 +75,16 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     // world.  The bounding volume should be extended by the object's
     // motion relative to each object it is considering a collision
     // with.  That makes things complicated!
-    if (pos_delta != LVector3f::zero()) {
+    if (bv->as_bounding_sphere() && 
+        pos_delta != LVector3f::zero()) {
       // If the node has a delta, we have to include the starting
-      // position in the volume as well.
+      // position in the volume as well.  We only do this for bounding
+      // spheres, since (a) other kinds of volumes may not extend so
+      // well, and (b) we've only implemented fluid-motion detection
+      // for CollisionSpheres anyway.
       LMatrix4f inv_trans = LMatrix4f::translate_mat(-pos_delta);
-      GeometricBoundingVolume *gbv_prev;
-      DCAST_INTO_V(gbv_prev, bv->make_copy());
+      PT(GeometricBoundingVolume) gbv_prev;
+      gbv_prev = DCAST(GeometricBoundingVolume, bv->make_copy());
       gbv_prev->xform(inv_trans);
       gbv->extend_by(gbv_prev);
     }
