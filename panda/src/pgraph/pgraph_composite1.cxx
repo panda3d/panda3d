@@ -7,6 +7,7 @@
 #include "attribSlots.cxx"
 #include "bamFile.cxx"
 #include "billboardEffect.cxx"
+#include "cacheStats.cxx"
 #include "camera.cxx"
 #include "clipPlaneAttrib.cxx"
 #include "colorAttrib.cxx"

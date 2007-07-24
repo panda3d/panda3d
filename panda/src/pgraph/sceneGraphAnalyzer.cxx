@@ -79,6 +79,7 @@ clear() {
   _num_geoms = 0;
   _num_geom_vertex_datas = 0;
   _vertex_data_size = 0;
+  _prim_data_size = 0;
 
   _num_vertices = 0;
   _num_normals = 0;
@@ -152,7 +153,11 @@ write(ostream &out, int indent_level) const {
   }
 
   indent(out, indent_level)
-    << "vertices occupy " << (_vertex_data_size + 1023) / 1024 
+    << "GeomVertexData arrays occupy " << (_vertex_data_size + 1023) / 1024 
+    << "K memory.\n";
+
+  indent(out, indent_level)
+    << "GeomPrimitive arrays occupy " << (_prim_data_size + 1023) / 1024 
     << "K memory.\n";
 
   int unreferenced_vertices = 0;
@@ -189,7 +194,25 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << _vadatas.size() - _unique_vadatas.size()
       << " GeomVertexArrayDatas are redundant, wasting " 
-      << (wasted_bytes + 512) / 1024 << "K.\n";
+      << (wasted_bytes + 1023) / 1024 << "K.\n";
+  }
+  if (_unique_prim_vadatas.size() != _prim_vadatas.size()) {
+    int wasted_bytes = 0;
+
+    UniqueVADatas::const_iterator uvai;
+    for (uvai = _unique_prim_vadatas.begin();
+         uvai != _unique_prim_vadatas.end();
+         ++uvai) {
+      const GeomVertexArrayData *gvad = (*uvai).first;
+      int dup_count = (*uvai).second;
+      if (dup_count > 1) {
+        wasted_bytes += (dup_count - 1) * gvad->get_data_size_bytes();
+      }
+    }
+    indent(out, indent_level)
+      << _prim_vadatas.size() - _unique_prim_vadatas.size()
+      << " GeomPrimitive arrays are redundant, wasting " 
+      << (wasted_bytes + 1023) / 1024 << "K.\n";
   }
 
   indent(out, indent_level)
@@ -220,8 +243,10 @@ write(ostream &out, int indent_level) const {
     << _num_individual_tris
     << " of these are independent triangles.\n";
 
-  indent(out, indent_level)
-    << _num_lines << " lines, " << _num_points << " points.\n";
+  if (_num_lines != 0 || _num_points != 0) {
+    indent(out, indent_level)
+      << _num_lines << " lines, " << _num_points << " points.\n";
+  }
 
   indent(out, indent_level)
     << _textures.size() << " textures, estimated minimum "
@@ -384,7 +409,7 @@ collect_statistics(const Geom *geom) {
     }
 
     if (prim->is_indexed()) {
-      collect_statistics(prim->get_vertices());
+      collect_prim_statistics(prim->get_vertices());
       if (prim->is_composite()) {
         collect_statistics(prim->get_mins());
         collect_statistics(prim->get_maxs());
@@ -469,6 +494,26 @@ collect_statistics(const GeomVertexArrayData *vadata) {
     // This is the first time we've encountered this vertex array.
     _vertex_data_size += vadata->get_data_size_bytes();
     int &dup_count = (*(_unique_vadatas.insert(UniqueVADatas::value_type(vadata, 0)).first)).second;
+    ++dup_count;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::collect_prim_statistics
+//       Access: Private
+//  Description: Recursively visits each node, counting up the
+//               statistics.  This one records the vertex index array
+//               associated with a GeomPrimitive, as opposed to the
+//               vertex data array, component of a GeomVertexData.
+////////////////////////////////////////////////////////////////////
+void SceneGraphAnalyzer::
+collect_prim_statistics(const GeomVertexArrayData *vadata) {
+  nassertv(vadata != NULL);
+  bool inserted = _prim_vadatas.insert(vadata).second;
+  if (inserted) {
+    // This is the first time we've encountered this vertex array.
+    _prim_data_size += vadata->get_data_size_bytes();
+    int &dup_count = (*(_unique_prim_vadatas.insert(UniqueVADatas::value_type(vadata, 0)).first)).second;
     ++dup_count;
   }
 }

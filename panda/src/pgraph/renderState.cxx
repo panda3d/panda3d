@@ -51,6 +51,8 @@ PStatCollector RenderState::_state_invert_pcollector("*:State Cache:Invert State
 PStatCollector RenderState::_node_counter("RenderStates:On nodes");
 PStatCollector RenderState::_cache_counter("RenderStates:Cached");
 
+CacheStats RenderState::_cache_stats;
+
 TypeHandle RenderState::_type_handle;
 
 
@@ -69,6 +71,7 @@ RenderState() : _lock("RenderState") {
   _saved_entry = _states->end();
   _flags = 0;
   _last_mi = _mungers.end();
+  _cache_stats.add_num_states(1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,11 +110,12 @@ RenderState::
 
   // unref() should have cleared these.
   nassertv(_saved_entry == _states->end());
-  nassertv(_composition_cache.empty() && _invert_composition_cache.empty());
+  nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
 
   // If this was true at the beginning of the destructor, but is no
   // longer true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
+  _cache_stats.add_num_states(-1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,15 +350,15 @@ compose(const RenderState *other) const {
   ReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
-  CompositionCache::const_iterator ci = _composition_cache.find(other);
-  if (ci != _composition_cache.end()) {
-    const Composition &comp = (*ci).second;
+  int index = _composition_cache.find(other);
+  if (index != -1) {
+    Composition &comp = ((RenderState *)this)->_composition_cache.modify_data(index);
     if (comp._result == (const RenderState *)NULL) {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
       CPT(RenderState) result = do_compose(other);
-      ((Composition &)comp)._result = result;
+      comp._result = result;
 
       if (result != (const RenderState *)this) {
         // See the comments below about the need to up the reference
@@ -363,8 +367,10 @@ compose(const RenderState *other) const {
       }
     }
     // Here's the cache!
+    _cache_stats.inc_hits();
     return comp._result;
   }
+  _cache_stats.inc_misses();
 
   // We need to make a new cache entry, both in this object and in the
   // other object.  We make both records so the other RenderState
@@ -375,9 +381,16 @@ compose(const RenderState *other) const {
   // result; the other will be NULL for now.
   CPT(RenderState) result = do_compose(other);
 
-  // Order is important here, in case other == this.
-  ((RenderState *)other)->_composition_cache[this]._result = NULL;
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
+
   ((RenderState *)this)->_composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
+    ((RenderState *)other)->_composition_cache[this]._result = NULL;
+  }
 
   if (result != (const RenderState *)this) {
     // If the result of compose() is something other than this,
@@ -390,6 +403,8 @@ compose(const RenderState *other) const {
     // result, but we don't increment the reference count, since
     // that would be a self-referential leak.)
   }
+
+  _cache_stats.maybe_report("RenderState");
 
   return result;
 }
@@ -432,15 +447,15 @@ invert_compose(const RenderState *other) const {
   ReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
-  CompositionCache::const_iterator ci = _invert_composition_cache.find(other);
-  if (ci != _invert_composition_cache.end()) {
-    const Composition &comp = (*ci).second;
+  int index = _invert_composition_cache.find(other);
+  if (index != -1) {
+    Composition &comp = ((RenderState *)this)->_invert_composition_cache.modify_data(index);
     if (comp._result == (const RenderState *)NULL) {
       // Well, it wasn't cached already, but we already had an entry
       // (probably created for the reverse direction), so use the same
       // entry to store the new result.
       CPT(RenderState) result = do_invert_compose(other);
-      ((Composition &)comp)._result = result;
+      comp._result = result;
 
       if (result != (const RenderState *)this) {
         // See the comments below about the need to up the reference
@@ -449,8 +464,10 @@ invert_compose(const RenderState *other) const {
       }
     }
     // Here's the cache!
+    _cache_stats.inc_hits();
     return comp._result;
   }
+  _cache_stats.inc_misses();
 
   // We need to make a new cache entry, both in this object and in the
   // other object.  We make both records so the other RenderState
@@ -461,8 +478,15 @@ invert_compose(const RenderState *other) const {
   // result; the other will be NULL for now.
   CPT(RenderState) result = do_invert_compose(other);
 
-  ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
   ((RenderState *)this)->_invert_composition_cache[other]._result = result;
+
+  if (other != this) {
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
+    ((RenderState *)other)->_invert_composition_cache[this]._result = NULL;
+  }
 
   if (result != (const RenderState *)this) {
     // If the result of compose() is something other than this,
@@ -700,6 +724,8 @@ write(ostream &out, int indent_level) const {
     const Attribute &attribute = (*ai);
     attribute._attrib->write(out, indent_level + 2);
   }
+  indent(out, indent_level + 2) << _composition_cache << "\n";
+  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -767,32 +793,34 @@ get_num_unused_states() {
   for (si = _states->begin(); si != _states->end(); ++si) {
     const RenderState *state = (*si);
 
-    CompositionCache::const_iterator ci;
-    for (ci = state->_composition_cache.begin();
-         ci != state->_composition_cache.end();
-         ++ci) {
-      const RenderState *result = (*ci).second._result;
-      if (result != (const RenderState *)NULL && result != state) {
-        // Here's a RenderState that's recorded in the cache.
-        // Count it.
-        pair<StateCount::iterator, bool> ir =
-          state_count.insert(StateCount::value_type(result, 1));
-        if (!ir.second) {
-          // If the above insert operation fails, then it's already in
-          // the cache; increment its value.
-          (*(ir.first)).second++;
+    int i;
+    int cache_size = state->_composition_cache.get_size();
+    for (i = 0; i < cache_size; ++i) {
+      if (state->_composition_cache.has_element(i)) {
+        const RenderState *result = state->_composition_cache.get_data(i)._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          // Here's a RenderState that's recorded in the cache.
+          // Count it.
+          pair<StateCount::iterator, bool> ir =
+            state_count.insert(StateCount::value_type(result, 1));
+          if (!ir.second) {
+            // If the above insert operation fails, then it's already in
+            // the cache; increment its value.
+            (*(ir.first)).second++;
+          }
         }
       }
     }
-    for (ci = state->_invert_composition_cache.begin();
-         ci != state->_invert_composition_cache.end();
-         ++ci) {
-      const RenderState *result = (*ci).second._result;
-      if (result != (const RenderState *)NULL && result != state) {
-        pair<StateCount::iterator, bool> ir =
-          state_count.insert(StateCount::value_type(result, 1));
-        if (!ir.second) {
-          (*(ir.first)).second++;
+    cache_size = state->_invert_composition_cache.get_size();
+    for (i = 0; i < cache_size; ++i) {
+      if (state->_invert_composition_cache.has_element(i)) {
+        const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+        if (result != (const RenderState *)NULL && result != state) {
+          pair<StateCount::iterator, bool> ir =
+            state_count.insert(StateCount::value_type(result, 1));
+          if (!ir.second) {
+            (*(ir.first)).second++;
+          }
         }
       }
     }
@@ -873,27 +901,31 @@ clear_cache() {
     for (ti = temp_states.begin(); ti != temp_states.end(); ++ti) {
       RenderState *state = (RenderState *)(*ti).p();
 
-      CompositionCache::const_iterator ci;
-      for (ci = state->_composition_cache.begin();
-           ci != state->_composition_cache.end();
-           ++ci) {
-        const RenderState *result = (*ci).second._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          result->cache_unref();
-          nassertr(result->get_ref_count() > 0, 0);
+      int i;
+      int cache_size = state->_composition_cache.get_size();
+      for (i = 0; i < cache_size; ++i) {
+        if (state->_composition_cache.has_element(i)) {
+          const RenderState *result = state->_composition_cache.get_data(i)._result;
+          if (result != (const RenderState *)NULL && result != state) {
+            result->cache_unref();
+            nassertr(result->get_ref_count() > 0, 0);
+          }
         }
       }
+      _cache_stats.add_total_size(-state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
-      for (ci = state->_invert_composition_cache.begin();
-           ci != state->_invert_composition_cache.end();
-           ++ci) {
-        const RenderState *result = (*ci).second._result;
-        if (result != (const RenderState *)NULL && result != state) {
-          result->cache_unref();
-          nassertr(result->get_ref_count() > 0, 0);
+      cache_size = state->_invert_composition_cache.get_size();
+      for (i = 0; i < cache_size; ++i) {
+        if (state->_invert_composition_cache.has_element(i)) {
+          const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
+          if (result != (const RenderState *)NULL && result != state) {
+            result->cache_unref();
+            nassertr(result->get_ref_count() > 0, 0);
+          }
         }
       }
+      _cache_stats.add_total_size(-state->_invert_composition_cache.get_num_entries());
       state->_invert_composition_cache.clear();
     }
 
@@ -1338,37 +1370,41 @@ r_detect_cycles(const RenderState *start_state,
   }
   ((RenderState *)current_state)->_cycle_detect = this_seq;
     
-  CompositionCache::const_iterator ci;
-  for (ci = current_state->_composition_cache.begin();
-       ci != current_state->_composition_cache.end();
-       ++ci) {
-    const RenderState *result = (*ci).second._result;
-    if (result != (const RenderState *)NULL) {
-      if (r_detect_cycles(start_state, result, length + 1, 
-                          this_seq, cycle_desc)) {
-        // Cycle detected.
-        if (cycle_desc != (CompositionCycleDesc *)NULL) {
-          CompositionCycleDescEntry entry((*ci).first, result, false);
-          cycle_desc->push_back(entry);
+  int i;
+  int cache_size = current_state->_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_composition_cache.has_element(i)) {
+      const RenderState *result = current_state->_composition_cache.get_data(i)._result;
+      if (result != (const RenderState *)NULL) {
+        if (r_detect_cycles(start_state, result, length + 1, 
+                            this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const RenderState *other = current_state->_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, false);
+            cycle_desc->push_back(entry);
+          }
+          return true;
         }
-        return true;
       }
     }
   }
 
-  for (ci = current_state->_invert_composition_cache.begin();
-       ci != current_state->_invert_composition_cache.end();
-       ++ci) {
-    const RenderState *result = (*ci).second._result;
-    if (result != (const RenderState *)NULL) {
-      if (r_detect_cycles(start_state, result, length + 1,
-                          this_seq, cycle_desc)) {
-        // Cycle detected.
-        if (cycle_desc != (CompositionCycleDesc *)NULL) {
-          CompositionCycleDescEntry entry((*ci).first, result, true);
-          cycle_desc->push_back(entry);
+  cache_size = current_state->_invert_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_invert_composition_cache.has_element(i)) {
+      const RenderState *result = current_state->_invert_composition_cache.get_data(i)._result;
+      if (result != (const RenderState *)NULL) {
+        if (r_detect_cycles(start_state, result, length + 1,
+                            this_seq, cycle_desc)) {
+          // Cycle detected.
+          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+            const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+            CompositionCycleDescEntry entry(other, result, true);
+            cycle_desc->push_back(entry);
+          }
+          return true;
         }
-        return true;
       }
     }
   }
@@ -1428,7 +1464,7 @@ remove_cache_pointers() {
   // it.
 
 #ifdef DO_PSTATS
-  if (_composition_cache.empty() && _invert_composition_cache.empty()) {
+  if (_composition_cache.is_empty() && _invert_composition_cache.is_empty()) {
     return;
   }
   PStatTimer timer(_cache_update_pcollector);
@@ -1436,8 +1472,12 @@ remove_cache_pointers() {
 
   // There are lots of ways to do this loop wrong.  Be very careful if
   // you need to modify it for any reason.
-  while (!_composition_cache.empty()) {
-    CompositionCache::iterator ci = _composition_cache.begin();
+  int i = 0;
+  while (!_composition_cache.is_empty()) {
+    // Scan for the next used slot in the table.
+    while (!_composition_cache.has_element(i)) {
+      ++i;
+    }
 
     // It is possible that the "other" RenderState object is
     // currently within its own destructor.  We therefore can't use a
@@ -1446,29 +1486,33 @@ remove_cache_pointers() {
     // reference count to ensure it doesn't destruct while we process
     // this loop; as long as we ensure that no *other* RenderState
     // objects destruct, there will be no reason for that one to.
-    RenderState *other = (RenderState *)(*ci).first;
+    RenderState *other = (RenderState *)_composition_cache.get_key(i);
 
     // We hold a copy of the composition result so we can dereference
     // it later.
-    Composition comp = (*ci).second;
+    Composition comp = _composition_cache.get_data(i);
 
     // Now we can remove the element from our cache.  We do this now,
     // rather than later, before any other RenderState objects have
     // had a chance to destruct, so we are confident that our iterator
     // is still valid.
-    _composition_cache.erase(ci);
+    _composition_cache.remove_element(i);
+    _cache_stats.add_total_size(-1);
+    _cache_stats.inc_dels();
 
     if (other != this) {
-      CompositionCache::iterator oci = other->_composition_cache.find(this);
+      int oi = other->_composition_cache.find(this);
 
       // We may or may not still be listed in the other's cache (it
       // might be halfway through pulling entries out, from within its
       // own destructor).
-      if (oci != other->_composition_cache.end()) {
+      if (oi != -1) {
         // Hold a copy of the other composition result, too.
-        Composition ocomp = (*oci).second;
+        Composition ocomp = other->_composition_cache.get_data(oi);
         
-        other->_composition_cache.erase(oci);
+        other->_composition_cache.remove_element(oi);
+        _cache_stats.add_total_size(-1);
+        _cache_stats.inc_dels();
         
         // It's finally safe to let our held pointers go away.  This may
         // have cascading effects as other RenderState objects are
@@ -1488,18 +1532,25 @@ remove_cache_pointers() {
   }
 
   // A similar bit of code for the invert cache.
-  while (!_invert_composition_cache.empty()) {
-    CompositionCache::iterator ci = _invert_composition_cache.begin();
-    RenderState *other = (RenderState *)(*ci).first;
+  i = 0;
+  while (!_invert_composition_cache.is_empty()) {
+    while (!_invert_composition_cache.has_element(i)) {
+      ++i;
+    }
+
+    RenderState *other = (RenderState *)_invert_composition_cache.get_key(i);
     nassertv(other != this);
-    Composition comp = (*ci).second;
-    _invert_composition_cache.erase(ci);
+    Composition comp = _invert_composition_cache.get_data(i);
+    _invert_composition_cache.remove_element(i);
+    _cache_stats.add_total_size(-1);
+    _cache_stats.inc_dels();
     if (other != this) {
-      CompositionCache::iterator oci = 
-        other->_invert_composition_cache.find(this);
-      if (oci != other->_invert_composition_cache.end()) {
-        Composition ocomp = (*oci).second;
-        other->_invert_composition_cache.erase(oci);
+      int oi = other->_invert_composition_cache.find(this);
+      if (oi != -1) {
+        Composition ocomp = other->_invert_composition_cache.get_data(oi);
+        other->_invert_composition_cache.remove_element(oi);
+        _cache_stats.add_total_size(-1);
+        _cache_stats.inc_dels();
         if (ocomp._result != (const RenderState *)NULL && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
@@ -1894,6 +1945,7 @@ init_states() {
   // called at static init time, presumably when there is still only
   // one thread in the world.
   _states_lock = new ReMutex("RenderState::_states_lock");
+  _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
 

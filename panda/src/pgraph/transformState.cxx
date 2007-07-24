@@ -28,7 +28,6 @@
 #include "reMutexHolder.h"
 #include "mutexHolder.h"
 #include "thread.h"
-#include "clockObject.h"
 
 ReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;
@@ -45,75 +44,9 @@ PStatCollector TransformState::_transform_hash_pcollector("*:State Cache:Calc Ha
 PStatCollector TransformState::_node_counter("TransformStates:On nodes");
 PStatCollector TransformState::_cache_counter("TransformStates:Cached");
 
+CacheStats TransformState::_cache_stats;
+
 TypeHandle TransformState::_type_handle;
-
-class CacheStats {
-public:
-  void init();
-  void reset(double now);
-  void write(ostream &out) const;
-  void maybe_report();
-
-  int _cache_hits;
-  int _cache_semi_hits;
-  int _cache_misses;
-  int _cache_adds;
-  int _cache_new_adds;
-  int _cache_dels;
-  int _total_cache_size;
-  int _num_states;
-  double _last_reset;
-
-  bool _cache_report;
-  double _cache_report_interval;
-};
-static CacheStats _cache_stats;
-
-void CacheStats::
-init() {
-  reset(ClockObject::get_global_clock()->get_real_time());
-  _total_cache_size = 0;
-  _num_states = 0;
-
-  _cache_report = ConfigVariableBool("cache-report", false);
-  _cache_report_interval = ConfigVariableDouble("cache-report-interval", 5.0);
-}
-
-void CacheStats::
-reset(double now) {
-  _cache_hits = 0;
-  _cache_semi_hits = 0;
-  _cache_misses = 0;
-  _cache_adds = 0;
-  _cache_new_adds = 0;
-  _cache_dels = 0;
-  _last_reset = now;
-}
-
-void CacheStats::
-write(ostream &out) const {
-  out << "TransformState cache: " << _cache_hits << " hits, " 
-      << _cache_semi_hits << " semi-hits, "
-      << _cache_misses << " misses\n";
-  out << _cache_adds + _cache_new_adds << "(" << _cache_new_adds << ") adds(new), "
-      << _cache_dels << " dels, "
-      << (double)_total_cache_size / (double)_num_states 
-      << " average cache size\n";
-}
-
-void CacheStats::
-maybe_report() {
-  if (_cache_report) {
-    double now = ClockObject::get_global_clock()->get_real_time();
-    if (now - _last_reset < _cache_report_interval) {
-      return;
-    }
-    write(Notify::out());
-    reset(now);
-  }
-}
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::Constructor
@@ -130,7 +63,7 @@ TransformState() : _lock("TransformState") {
   _saved_entry = _states->end();
   _flags = F_is_identity | F_singular_known | F_is_2d;
   _inv_mat = (LMatrix4f *)NULL;
-  _cache_stats._num_states++;
+  _cache_stats.add_num_states(1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,7 +113,7 @@ TransformState::
   // If this was true at the beginning of the destructor, but is no
   // longer true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
-  _cache_stats._num_states--;
+  _cache_stats.add_num_states(-1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -688,14 +621,12 @@ compose(const TransformState *other) const {
         // count only when the result is not the same as this.
         result->cache_ref();
       }
-      ++_cache_stats._cache_semi_hits;
-    } else {
-      ++_cache_stats._cache_hits;
     }
     // Here's the cache!
+    _cache_stats.inc_hits();
     return comp._result;
   }
-  ++_cache_stats._cache_misses;
+  _cache_stats.inc_misses();
 
   // We need to make a new cache entry, both in this object and in the
   // other object.  We make both records so the other TransformState
@@ -706,22 +637,14 @@ compose(const TransformState *other) const {
   // result; the other will be NULL for now.
   CPT(TransformState) result = do_compose(other);
 
-  ++_cache_stats._total_cache_size;
-  if (_composition_cache.get_size() == 0) {
-    ++_cache_stats._cache_new_adds;
-  } else {
-    ++_cache_stats._cache_adds;
-  }
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_composition_cache.get_size() == 0);
 
   ((TransformState *)this)->_composition_cache[other]._result = result;
 
   if (other != this) {
-    ++_cache_stats._total_cache_size;
-    if (other->_composition_cache.get_size() == 0) {
-      ++_cache_stats._cache_new_adds;
-    } else {
-      ++_cache_stats._cache_adds;
-    }
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_composition_cache.get_size() == 0);
     ((TransformState *)other)->_composition_cache[this]._result = NULL;
   }
 
@@ -737,7 +660,7 @@ compose(const TransformState *other) const {
     // that would be a self-referential leak.)
   }
 
-  _cache_stats.maybe_report();
+  _cache_stats.maybe_report("TransformState");
 
   return result;
 }
@@ -803,14 +726,12 @@ invert_compose(const TransformState *other) const {
         // count only when the result is not the same as this.
         result->cache_ref();
       }
-      ++_cache_stats._cache_semi_hits;
-    } else {
-      ++_cache_stats._cache_hits;
     }
     // Here's the cache!
+    _cache_stats.inc_hits();
     return comp._result;
   }
-  ++_cache_stats._cache_misses;
+  _cache_stats.inc_misses();
 
   // We need to make a new cache entry, both in this object and in the
   // other object.  We make both records so the other TransformState
@@ -821,21 +742,13 @@ invert_compose(const TransformState *other) const {
   // result; the other will be NULL for now.
   CPT(TransformState) result = do_invert_compose(other);
 
-  ++_cache_stats._total_cache_size;
-  if (_invert_composition_cache.get_size() == 0) {
-    ++_cache_stats._cache_new_adds;
-  } else {
-    ++_cache_stats._cache_adds;
-  }
+  _cache_stats.add_total_size(1);
+  _cache_stats.inc_adds(_invert_composition_cache.get_size() == 0);
   ((TransformState *)this)->_invert_composition_cache[other]._result = result;
 
   if (other != this) {
-    ++_cache_stats._total_cache_size;
-    if (other->_invert_composition_cache.get_size() == 0) {
-      ++_cache_stats._cache_new_adds;
-    } else {
-      ++_cache_stats._cache_adds;
-    }
+    _cache_stats.add_total_size(1);
+    _cache_stats.inc_adds(other->_invert_composition_cache.get_size() == 0);
     ((TransformState *)other)->_invert_composition_cache[this]._result = NULL;
   }
 
@@ -1190,7 +1103,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats._total_cache_size -= state->_composition_cache.get_num_entries();
+      _cache_stats.add_total_size(-state->_composition_cache.get_num_entries());
       state->_composition_cache.clear();
 
       cache_size = state->_invert_composition_cache.get_size();
@@ -1203,7 +1116,7 @@ clear_cache() {
           }
         }
       }
-      _cache_stats._total_cache_size -= state->_invert_composition_cache.get_num_entries();
+      _cache_stats.add_total_size(-state->_invert_composition_cache.get_num_entries());
       state->_invert_composition_cache.clear();
     }
 
@@ -1807,8 +1720,8 @@ remove_cache_pointers() {
     // had a chance to destruct, so we are confident that our iterator
     // is still valid.
     _composition_cache.remove_element(i);
-    --_cache_stats._total_cache_size;
-    ++_cache_stats._cache_dels;
+    _cache_stats.add_total_size(-1);
+    _cache_stats.inc_dels();
 
     if (other != this) {
       int oi = other->_composition_cache.find(this);
@@ -1821,8 +1734,8 @@ remove_cache_pointers() {
         Composition ocomp = other->_composition_cache.get_data(oi);
         
         other->_composition_cache.remove_element(oi);
-        --_cache_stats._total_cache_size;
-        ++_cache_stats._cache_dels;
+        _cache_stats.add_total_size(-1);
+        _cache_stats.inc_dels();
         
         // It's finally safe to let our held pointers go away.  This may
         // have cascading effects as other TransformState objects are
@@ -1852,15 +1765,15 @@ remove_cache_pointers() {
     nassertv(other != this);
     Composition comp = _invert_composition_cache.get_data(i);
     _invert_composition_cache.remove_element(i);
-    --_cache_stats._total_cache_size;
-    ++_cache_stats._cache_dels;
+    _cache_stats.add_total_size(-1);
+    _cache_stats.inc_dels();
     if (other != this) {
       int oi = other->_invert_composition_cache.find(this);
       if (oi != -1) {
         Composition ocomp = other->_invert_composition_cache.get_data(oi);
         other->_invert_composition_cache.remove_element(oi);
-        --_cache_stats._total_cache_size;
-        ++_cache_stats._cache_dels;
+        _cache_stats.add_total_size(-1);
+        _cache_stats.inc_dels();
         if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }

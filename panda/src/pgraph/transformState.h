@@ -34,6 +34,7 @@
 #include "config_pgraph.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
+#include "cacheStats.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -341,6 +342,8 @@ private:
 
   // This mutex protects _flags, and all of the above computed values.
   Mutex _lock;
+
+  static CacheStats _cache_stats;
 
 public:
   static void register_with_read_factory();

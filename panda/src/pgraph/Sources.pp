@@ -23,6 +23,7 @@
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
+    cacheStats.I cacheStats.h \
     camera.I camera.h \
     clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \
@@ -134,6 +135,7 @@
     auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \
+    cacheStats.cxx \
     camera.cxx \
     clipPlaneAttrib.cxx \
     colorAttrib.cxx \
@@ -240,6 +242,7 @@
     auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
+    cacheStats.I cacheStats.h \
     camera.I camera.h \
     clipPlaneAttrib.I clipPlaneAttrib.h \
     colorAttrib.I colorAttrib.h \

@@ -35,6 +35,8 @@
 #include "reMutex.h"
 #include "pmutex.h"
 #include "deletedChain.h"
+#include "simpleHashMap.h"
+#include "cacheStats.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -248,7 +250,7 @@ private:
   // is not reference counted within this map; instead we store a
   // companion pointer in the other object, and remove the references
   // explicitly when either object destructs.
-  typedef phash_map<const RenderState *, Composition, pointer_hash> CompositionCache;
+  typedef SimpleHashMap<const RenderState *, Composition, pointer_hash> CompositionCache;
   CompositionCache _composition_cache;
   CompositionCache _invert_composition_cache;
 
@@ -340,6 +342,8 @@ private:
 
   // This mutex protects _flags, and all of the above computed values.
   Mutex _lock;
+
+  static CacheStats _cache_stats;
 
 public:
   static void register_with_read_factory();

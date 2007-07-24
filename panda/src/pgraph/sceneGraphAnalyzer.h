@@ -95,6 +95,7 @@ private:
   void collect_statistics(const Geom *geom);
   void collect_statistics(Texture *texture);
   void collect_statistics(const GeomVertexArrayData *vadata);
+  void collect_prim_statistics(const GeomVertexArrayData *vadata);
 
   class VDataTracker {
   public:
@@ -113,8 +114,10 @@ private:
   Nodes _nodes;
   VDatas _vdatas;
   VADatas _vadatas;
+  VADatas _prim_vadatas;
   UniqueVDatas _unique_vdatas;
   UniqueVADatas _unique_vadatas;
+  UniqueVADatas _unique_prim_vadatas;
   Textures _textures;
 
 private:
@@ -127,6 +130,7 @@ private:
   int _num_geoms;
   int _num_geom_vertex_datas;
   size_t _vertex_data_size;
+  size_t _prim_data_size;
 
   int _num_vertices;
   int _num_normals;
