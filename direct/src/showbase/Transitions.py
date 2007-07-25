@@ -367,12 +367,11 @@ class Transitions:
         """
         self.noLetterbox()
         self.loadLetterbox()
+        self.letterbox.reparentTo(render2d, -1)
         if (t == 0):
-            self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
             self.letterboxBottom.setPos(0, 0, -1)
             self.letterboxTop.setPos(0, 0, 0.8)
         else:
-            self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
             self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
                                                           pos = Vec3(0, 0, -1),
                                                           startPos = Vec3(0, 0, -1.2)),
@@ -398,7 +397,7 @@ class Transitions:
         if (t == 0):
             self.letterbox.detachNode()
         else:
-            self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
+            # self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
             self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
                                                           pos = Vec3(0, 0, -1.2),
                                                           startPos = Vec3(0, 0, -1)),
