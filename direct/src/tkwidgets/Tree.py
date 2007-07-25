@@ -51,12 +51,18 @@ class TreeNode:
         self.menuVar = IntVar()
         self.menuVar.set(0)
         self._popupMenu = None
-        self.fSortChildren = 0 # [gjeon] flag for sorting children or not
+        self.fSortChildren = False # [gjeon] flag for sorting children or not
+        self.fModeChildrenTag = 0 # [gjeon] 0: hide by given tag, 1: show by given tag
+        self.childrenTag = None
 
     # [gjeon] to set fSortChildren
     def setFSortChildren(self, fSortChildren):
         self.fSortChildren = fSortChildren
 
+    def setChildrenTag(self, tag, fModeChildrenTag):
+        self.childrenTag = tag
+        self.fModeChildrenTag = fModeChildrenTag
+    
     def destroy(self):
         if self._popupMenu:
             self._popupMenu.destroy()
@@ -142,10 +148,20 @@ class TreeNode:
 
     def popupMenuCommand(self):
         command = self.menuList[self.menuVar.get()]
-        self.item.MenuCommand(command)
-        if self.parent and (command != 'Update Explorer'):
-            # Update parent to try to keep explorer up to date
-            self.parent.update(self.fSortChilren)
+        
+        if (command == 'Expand All'):
+            self.update(fExpandMode = 1)
+        ## elif (command == 'Collapse All'):
+            ## self.update(fExpandMode = 2)
+        ## elif (command == 'Expand'):
+            ## self.expand()
+        ## elif (command == 'Collapse'):
+            ## self.collapse()
+        else:
+            self.item.MenuCommand(command)
+            if self.parent and (command != 'Update Explorer'):
+                # Update parent to try to keep explorer up to date
+                self.parent.update()
 
     def expand(self, event=None):
         if not self.item.IsExpandable():
@@ -197,24 +213,30 @@ class TreeNode:
         else:
             return self
 
-    def update(self, fUseCachedChildren = 1):
+    def update(self, fUseCachedChildren = 1, fExpandMode = 0):
         if self.parent:
-            self.parent.update(fUseCachedChildren)
+            self.parent.update(fUseCachedChildren, fExpandMode = fExpandMode)
         else:
             oldcursor = self.canvas['cursor']
             self.canvas['cursor'] = "watch"
             self.canvas.update()
             self.canvas.delete(ALL)     # XXX could be more subtle
-            self.draw(7, 2, fUseCachedChildren)
+            self.draw(7, 2, fUseCachedChildren, fExpandMode = fExpandMode)
             x0, y0, x1, y1 = self.canvas.bbox(ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
-    def draw(self, x, y, fUseCachedChildren = 1):
+    def draw(self, x, y, fUseCachedChildren = 1, fExpandMode = 0):
         # XXX This hard-codes too many geometry constants!
         self.x, self.y = x, y
         self.drawicon()
         self.drawtext()
+        
+        if fExpandMode == 1: # [gjeon] expand all
+            self.state = 'expanded'
+        elif fExpandMode == 2: # [gjeon] collapse all
+            self.state = 'collapsed'
+        
         if self.state != 'expanded':
             return y+17
         # draw children
@@ -242,9 +264,20 @@ class TreeNode:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
+
+            # [gjeon] to set flag recursively
             child.setFSortChildren(self.fSortChildren)
+            child.setChildrenTag(self.childrenTag, self.fModeChildrenTag)
+
             self.children[key] = child
             self.kidKeys.append(key)
+
+            # [gjeon] to filter by given tag
+            if self.childrenTag:
+                #if not item.nodePath.hasTag('GameArea'):
+                if self.fModeChildrenTag != item.nodePath.hasTag(self.childrenTag):
+                    self.kidKeys.remove(key)
+
         # Remove unused children
         for key in self.children.keys():
             if key not in self.kidKeys:
@@ -256,7 +289,7 @@ class TreeNode:
             child = self.children[key]
             cylast = cy
             self.canvas.create_line(x+9, cy+7, cx, cy+7, fill="gray50")
-            cy = child.draw(cx, cy, fUseCachedChildren)
+            cy = child.draw(cx, cy, fUseCachedChildren, fExpandMode = fExpandMode)
             if child.item.IsExpandable():
                 if child.state == 'expanded':
                     iconname = "minusnode"
@@ -365,11 +398,16 @@ class TreeNode:
         # Search for a node who's key matches the given key
         # Is it this node
         if searchKey == self.item.GetKey():
+            # [gjeon] to filter by given tag
+            if self.childrenTag:
+                if self.fModeChildrenTag != self.item.nodePath.hasTag(self.childrenTag):
+                    return None
             return self
         # Nope, check the children
         sublist = self.item._GetSubList()
         for item in sublist:
             key = item.GetKey()
+
             # Use existing child or create new TreeNode if none exists
             if self.children.has_key(key):
                 child = self.children[key]
@@ -378,6 +416,9 @@ class TreeNode:
                 # Update local list of children and keys
                 self.children[key] = child
                 self.kidKeys.append(key)
+            # [gjeon] to set flag recursively
+            child.setChildrenTag(self.childrenTag, self.fModeChildrenTag)
+
             # See if node is child (or one of child's descendants)
             retVal = child.find(searchKey)
             if retVal:

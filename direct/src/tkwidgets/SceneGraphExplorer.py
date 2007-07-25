@@ -11,6 +11,7 @@ import Pmw
 # changing these strings requires changing DirectSession.py SGE_ strs too!
 DEFAULT_MENU_ITEMS = [
     'Update Explorer',
+    'Expand All',
     'Separator',
     'Select', 'Deselect',
     'Separator',
@@ -91,6 +92,11 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(SceneGraphExplorer)
 
+    # [gjeon] to set childrenTag and fModeChildrenTag of tree node
+    def setChildrenTag(self, tag, fModeChildrenTag):
+        self._node.setChildrenTag(tag, fModeChildrenTag)
+        self._node.update()
+
     # [gjeon] to set fSortChildren of tree node
     def setFSortChildren(self, fSortChildren):
         self._node.setFSortChildren(fSortChildren)
@@ -126,12 +132,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         # Remove hooks
         self.ignore('DIRECT_activeParent')
         self.ignore('SGE_Update Explorer')
-    
-    def sortChildren(self, searchKey):
-        sceneGraphItem = self._node.find(searchKey)
-        if sceneGraphItem:
-            sceneGraphItem.updateSelf(fSortChildren = 1)
-    
+   
     def updateSelection(self, searchKey):
         # [gjeon] update SGE selection with directSession
         sceneGraphItem = self._node.find(searchKey)
