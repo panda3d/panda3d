@@ -12,6 +12,7 @@ import Pmw
 DEFAULT_MENU_ITEMS = [
     'Update Explorer',
     'Expand All',
+    'Collapse All',
     'Separator',
     'Select', 'Deselect',
     'Separator',

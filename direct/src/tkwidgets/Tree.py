@@ -150,13 +150,9 @@ class TreeNode:
         command = self.menuList[self.menuVar.get()]
         
         if (command == 'Expand All'):
-            self.update(fExpandMode = 1)
-        ## elif (command == 'Collapse All'):
-            ## self.update(fExpandMode = 2)
-        ## elif (command == 'Expand'):
-            ## self.expand()
-        ## elif (command == 'Collapse'):
-            ## self.collapse()
+            self.updateAll(1)
+        elif (command == 'Collapse All'):
+            self.updateAll(0)
         else:
             self.item.MenuCommand(command)
             if self.parent and (command != 'Update Explorer'):
@@ -213,6 +209,45 @@ class TreeNode:
         else:
             return self
 
+    # [gjeon] function to expand or collapse all the tree nodes
+    def updateAll(self, fMode, depth = 0, fUseCachedChildren = 1):
+        depth = depth + 1
+        if not self.item.IsExpandable():
+            return
+        if fMode:
+            self.state = 'expanded'
+        else:
+            if depth > 1:
+                self.state = 'collapsed'
+
+        sublist = self.item._GetSubList()
+        if not sublist:
+            return
+        self.kidKeys = []
+        for item in sublist:
+            key = item.GetKey()
+            if fUseCachedChildren and self.children.has_key(key):
+                child = self.children[key]
+            else:
+                child = TreeNode(self.canvas, self, item, self.menuList)
+
+            self.children[key] = child
+            self.kidKeys.append(key)
+
+        # Remove unused children
+        for key in self.children.keys():
+            if key not in self.kidKeys:
+                del(self.children[key])
+
+        for key in self.kidKeys:
+            child = self.children[key]
+            child.updateAll(fMode, depth=depth)
+
+        # [gjeon] to update the tree one time only
+        if depth == 1:
+            self.update()
+            self.view()
+
     def update(self, fUseCachedChildren = 1, fExpandMode = 0):
         if self.parent:
             self.parent.update(fUseCachedChildren, fExpandMode = fExpandMode)
@@ -221,21 +256,16 @@ class TreeNode:
             self.canvas['cursor'] = "watch"
             self.canvas.update()
             self.canvas.delete(ALL)     # XXX could be more subtle
-            self.draw(7, 2, fUseCachedChildren, fExpandMode = fExpandMode)
+            self.draw(7, 2, fUseCachedChildren)
             x0, y0, x1, y1 = self.canvas.bbox(ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
-    def draw(self, x, y, fUseCachedChildren = 1, fExpandMode = 0):
+    def draw(self, x, y, fUseCachedChildren = 1):
         # XXX This hard-codes too many geometry constants!
         self.x, self.y = x, y
         self.drawicon()
         self.drawtext()
-        
-        if fExpandMode == 1: # [gjeon] expand all
-            self.state = 'expanded'
-        elif fExpandMode == 2: # [gjeon] collapse all
-            self.state = 'collapsed'
         
         if self.state != 'expanded':
             return y+17
@@ -289,7 +319,7 @@ class TreeNode:
             child = self.children[key]
             cylast = cy
             self.canvas.create_line(x+9, cy+7, cx, cy+7, fill="gray50")
-            cy = child.draw(cx, cy, fUseCachedChildren, fExpandMode = fExpandMode)
+            cy = child.draw(cx, cy, fUseCachedChildren)
             if child.item.IsExpandable():
                 if child.state == 'expanded':
                     iconname = "minusnode"
