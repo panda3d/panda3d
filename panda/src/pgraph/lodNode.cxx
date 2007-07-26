@@ -52,7 +52,7 @@ TypeHandle LODNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PT(LODNode) LODNode::
 make_default_lod(const string &name) {
-  switch (default_lod_type) {
+  switch (default_lod_type.get_value()) {
   case LNT_pop:
     return new LODNode(name);
 
