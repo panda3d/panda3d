@@ -217,11 +217,11 @@ class ShowBase(DirectObject.DirectObject):
             # If we're either playing back or recording, pass the
             # random seed into the system so each session will have
             # the same random seed.
-            import random, whrandom
+            import random #, whrandom
 
             seed = self.recorder.getRandomSeed()
             random.seed(seed)
-            whrandom.seed(seed & 0xff, (seed >> 8) & 0xff, (seed >> 16) & 0xff)
+            #whrandom.seed(seed & 0xff, (seed >> 8) & 0xff, (seed >> 16) & 0xff)
 
         # Now that we've set up the window structures, assign an exitfunc.
         self.oldexitfunc = getattr(sys, 'exitfunc', None)
