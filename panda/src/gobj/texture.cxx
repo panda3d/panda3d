@@ -2895,7 +2895,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
     new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
   }
 
-  switch (textures_power_2) {
+  switch (textures_power_2.get_value()) {
   case ATS_down:
     new_x_size = down_to_power_2(new_x_size);
     new_y_size = down_to_power_2(new_y_size);
@@ -2910,7 +2910,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
     break;
   }
 
-  switch (textures_square) {
+  switch (textures_square.get_value()) {
   case ATS_down:
     new_x_size = new_y_size = min(new_x_size, new_y_size);
     break;
