@@ -335,6 +335,7 @@ class Transitions:
                 image_scale = (2.25,1,.5),
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
+                sortOrder = 0,
                 )
             self.letterboxBottom = DirectFrame(
                 parent = self.letterbox,
@@ -349,7 +350,12 @@ class Transitions:
                 image_scale = (2.25,1,.5),
                 image_pos = (0,0,.1),
                 image_color = (0.3,0.3,0.3,1),
+                sortOrder = 0,
                 )
+
+            # masad: always place these at the bottom of render
+            self.letterboxTop.setBin('sorted',0)
+            self.letterboxBottom.setBin('sorted',0)
 
     def noLetterbox(self):
         """
