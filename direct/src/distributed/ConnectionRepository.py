@@ -134,7 +134,8 @@ class ConnectionRepository(
         # Look up the dclass
         dclass = self.dclassesByName.get(dcname+self.dcSuffix)
         if dclass is None:
-            print "\n\n\nNeed to define", dcname+self.dcSuffix
+            #print "\n\n\nNeed to define", dcname+self.dcSuffix
+            self.notify.warning("Need to define %s" % (dcname+self.dcSuffix))
             dclass = self.dclassesByName.get(dcname+'AI')
         if dclass is None:
             dclass = self.dclassesByName.get(dcname)
