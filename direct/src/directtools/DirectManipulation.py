@@ -583,6 +583,7 @@ class ObjectHandles(NodePath, DirectObject):
         self.scalingNode = self.getChild(0)
         self.scalingNode.setName('ohScalingNode')
         self.ohScalingFactor = 1.0
+        self.directScalingFactor = 1.0
         # To avoid recreating a vec every frame
         self.hitPt = Vec3(0)
         # Get a handle on the components
@@ -796,9 +797,13 @@ class ObjectHandles(NodePath, DirectObject):
     def hideGuides(self):
         self.guideLines.hide()
 
+    def setDirectScalingFactor(self, factor):
+        self.directScalingFactor = factor
+        self.setScalingFactor(1)
+
     def setScalingFactor(self, scaleFactor):
-        self.ohScalingFactor = scaleFactor
-        self.scalingNode.setScale(self.ohScalingFactor)
+        self.ohScalingFactor = self.ohScalingFactor * scaleFactor
+        self.scalingNode.setScale(self.ohScalingFactor * self.directScalingFactor)
 
     def getScalingFactor(self):
         return self.scalingNode.getScale()
@@ -816,7 +821,8 @@ class ObjectHandles(NodePath, DirectObject):
 
     def multiplyScalingFactorBy(self, factor):
         taskMgr.remove('resizeObjectHandles')
-        sf = self.ohScalingFactor = self.ohScalingFactor * factor
+        self.ohScalingFactor = self.ohScalingFactor * factor
+        sf = self.ohScalingFactor * self.directScalingFactor
         self.scalingNode.lerpScale(sf, sf, sf, 0.5,
                                    blendType = 'easeInOut',
                                    task = 'resizeObjectHandles')
@@ -828,6 +834,7 @@ class ObjectHandles(NodePath, DirectObject):
         minDim = min(base.direct.dr.nearWidth, base.direct.dr.nearHeight)
         sf = 0.15 * minDim * (pos[1]/base.direct.dr.near)
         self.ohScalingFactor = sf
+        sf = sf * self.directScalingFactor
         self.scalingNode.lerpScale(sf, sf, sf, 0.5,
                                    blendType = 'easeInOut',
                                    task = 'resizeObjectHandles')

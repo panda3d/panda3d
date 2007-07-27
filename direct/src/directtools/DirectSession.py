@@ -473,7 +473,19 @@ class DirectSession(DirectObject):
 
     def setFScaleWidgetByCam(self, flag):
         self.fScaleWidgetByCam = flag
-
+        if flag:
+            taskMgr.add(self.widgetResizeTask, 'DIRECTWidgetResize')
+        else:
+            taskMgr.remove('DIRECTWidgetResize')
+            
+    def widgetResizeTask(self, state):
+        dnp = self.selected.last
+        if dnp:
+            nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
+            sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
+            self.widget.setDirectScalingFactor(sf)
+        return Task.cont
+    
     def select(self, nodePath, fMultiSelect = 0,
                fSelectTag = 1, fResetAncestry = 1):
         dnp = self.selected.select(nodePath, fMultiSelect, fSelectTag)
@@ -499,12 +511,7 @@ class DirectSession(DirectObject):
             # Adjust widgets size
             # This uses the additional scaling factor used to grow and
             # shrink the widget
-            if self.fScaleWidgetByCam: # [gjeon] for scaling widget by distance from camera
-                nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
-                sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
-                sf = max(1.0,sf)
-                self.widget.setScalingFactor(sf)
-            else:
+            if not self.fScaleWidgetByCam: # [gjeon] for not scaling widget by distance from camera
                 self.widget.setScalingFactor(dnp.getRadius())
             
             # Spawn task to have object handles follow the selected object
