@@ -357,6 +357,8 @@ class Transitions:
             self.letterboxTop.setBin('sorted',0)
             self.letterboxBottom.setBin('sorted',0)
             self.letterbox.reparentTo(render2d, -1)
+            self.letterboxOff()
+            
     def noLetterbox(self):
         """
         Removes any current letterbox tasks and parents the letterbox polygon away
