@@ -357,7 +357,7 @@ class Transitions:
             self.letterboxTop.setBin('sorted',0)
             self.letterboxBottom.setBin('sorted',0)
             self.letterbox.reparentTo(render2d, -1)
-            self.letterboxOff()
+            self.letterboxOff(0)
             
     def noLetterbox(self):
         """
