@@ -295,7 +295,7 @@ class Transitions:
     ##################################################
 
     def loadLetterbox(self):
-        if self.letterbox == None:
+        if not self.letterbox:
             # We create a DirectFrame for the fade polygon, instead of
             # simply loading the polygon model and using it directly,
             # so that it will also obscure mouse events for objects
@@ -356,7 +356,7 @@ class Transitions:
             # masad: always place these at the bottom of render
             self.letterboxTop.setBin('sorted',0)
             self.letterboxBottom.setBin('sorted',0)
-
+            self.letterbox.reparentTo(render2d, -1)
     def noLetterbox(self):
         """
         Removes any current letterbox tasks and parents the letterbox polygon away
@@ -364,8 +364,8 @@ class Transitions:
         if self.letterboxIval:
             self.letterboxIval.pause()
             self.letterboxIval = None
-        if self.letterbox != None:
-            self.letterbox.detachNode()
+        if self.letterbox:
+            self.letterbox.stash()
 
     def letterboxOn(self, t=0.25, finishIval=None):
         """
@@ -373,23 +373,25 @@ class Transitions:
         """
         self.noLetterbox()
         self.loadLetterbox()
-        self.letterbox.reparentTo(render2d, -1)
+        self.letterbox.unstash()
         if (t == 0):
             self.letterboxBottom.setPos(0, 0, -1)
             self.letterboxTop.setPos(0, 0, 0.8)
         else:
-            self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
-                                                          pos = Vec3(0, 0, -1),
-                                                          startPos = Vec3(0, 0, -1.2)),
-                                          LerpPosInterval(self.letterboxTop, t,
-                                                          pos = Vec3(0, 0, 0.8),
-                                                          startPos = Vec3(0, 0, 1)),
-                                          #LerpColorInterval(self.letterbox, t,
-                                          #                  color = self.alphaOn,
-                                          #                  startColor = self.alphaOff),
-                                          ),
-                                 name = self.letterboxTaskName,
-                                 )
+            self.letterboxIval = Sequence(Parallel(
+                LerpPosInterval(self.letterboxBottom,
+                                t,
+                                pos = Vec3(0, 0, -1),
+                                #startPos = Vec3(0, 0, -1.2),
+                                ),
+                LerpPosInterval(self.letterboxTop,
+                                t,
+                                pos = Vec3(0, 0, 0.8),
+                                # startPos = Vec3(0, 0, 1),
+                                ),
+                ),
+                                          name = self.letterboxTaskName,
+                                          )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
@@ -400,19 +402,25 @@ class Transitions:
         """
         self.noLetterbox()
         self.loadLetterbox()
+        self.letterbox.unstash()
         if (t == 0):
-            self.letterbox.detachNode()
+            self.letterbox.stash()
         else:
-            # self.letterbox.reparentTo(render2d, FADE_SORT_INDEX)
-            self.letterboxIval = Sequence(Parallel(LerpPosInterval(self.letterboxBottom, t,
-                                                          pos = Vec3(0, 0, -1.2),
-                                                          startPos = Vec3(0, 0, -1)),
-                                          LerpPosInterval(self.letterboxTop, t,
-                                                          pos = Vec3(0, 0, 1),
-                                                          startPos = Vec3(0, 0, 0.8)),
-                                          ),
-                                 name = self.letterboxTaskName,
-                                 )
+            self.letterboxIval = Sequence(Parallel(
+                LerpPosInterval(self.letterboxBottom,
+                                t,
+                                pos = Vec3(0, 0, -1.2),
+                                # startPos = Vec3(0, 0, -1),
+                                ),
+                LerpPosInterval(self.letterboxTop,
+                                t,
+                                pos = Vec3(0, 0, 1),
+                                # startPos = Vec3(0, 0, 0.8),
+                                ),
+                ),
+                                          Func(self.letterbox.stash),
+                                          name = self.letterboxTaskName,
+                                          )
             if finishIval:
                 self.letterboxIval.append(finishIval)
             self.letterboxIval.start()
