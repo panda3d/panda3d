@@ -623,6 +623,12 @@ rotate_in_place() {
 ////////////////////////////////////////////////////////////////////
 void Geom::
 unify_in_place(int max_indices, bool preserve_order) {
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "unify_in_place(" << max_indices << ", " << preserve_order
+      << "): " << *this << "\n";
+  }
+
   Thread *current_thread = Thread::get_current_thread();
   if (get_num_primitives() <= 1) {
     // If we don't have more than one primitive to start with, no need
