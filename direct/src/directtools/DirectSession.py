@@ -479,11 +479,12 @@ class DirectSession(DirectObject):
             taskMgr.remove('DIRECTWidgetResize')
             
     def widgetResizeTask(self, state):
-        dnp = self.selected.last
-        if dnp:
-            nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
-            sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
-            self.widget.setDirectScalingFactor(sf)
+        if not taskMgr.hasTaskNamed('resizeObjectHandles'):
+            dnp = self.selected.last
+            if dnp:
+                nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
+                sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
+                self.widget.setDirectScalingFactor(sf)
         return Task.cont
     
     def select(self, nodePath, fMultiSelect = 0,
