@@ -41,9 +41,6 @@ class ControlManager:
         ist.append(inputState.watchWithModifiers("reverse", "mouse4", inputSource=inputState.Mouse))
         
         if self.wantWASD:
-
-            
-            
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
             ist.append(inputState.watch("turnLeft", "force-turnLeft", "force-turnLeft-stop"))
@@ -61,7 +58,6 @@ class ControlManager:
             # Used to switch between strafe and turn. We will default to turn
             self.WASDTurnTokens = ()
             self.setWASDTurn(1)
-
         else:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
@@ -109,7 +105,8 @@ class ControlManager:
             the controls when they were added (e.g.
             using the add(<controls>, <name>) call).
 
-        Remove a control instance from the list of available control systems.
+        Remove a control instance from the list of
+        available control systems.
 
         See also: add().
         """

@@ -133,6 +133,9 @@ class InputState(DirectObject.DirectObject):
             name, eventOn, eventOff, startState))
         if inputSource is None:
             inputSource = "eventPair('%s','%s')" % (eventOn, eventOff)
+        # Do we really need to reset the input state just because
+        # we're watching it?  Remember, there may be multiple things
+        # watching this input state.
         self.set(name, startState, inputSource)
         token = InputStateWatchToken(self)
         # make the token listen for the events, to allow multiple listeners for the same event
@@ -162,7 +165,11 @@ class InputState(DirectObject.DirectObject):
         DirectObject.DirectObject.ignore(self, eventOff)
         if len(self._watching[inputSource]) == 0:
             del self._watching[inputSource]
-        self.set(name, False, inputSource)
+
+        # I commented this out because we shouldn't be modifying an
+        # input state simply because we're not looking at it anymore.
+        # self.set(name, False, inputSource)
+
 
     def force(self, name, value, inputSource):
         """

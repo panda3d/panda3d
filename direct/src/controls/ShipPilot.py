@@ -328,7 +328,7 @@ class ShipPilot(PhysicsWalker):
                     base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar hpr = %s\n"%(
                     base.localAvatar.getHpr().pPrintValues(),))
-        # assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
+        assert self.debugPrint("handleAvatarControls(task=%s)"%(task,))
         physObject = self.actorNode.getPhysicsObject()
         contact = self.actorNode.getContactVector()
         # get the button states:
@@ -576,14 +576,14 @@ class ShipPilot(PhysicsWalker):
         """
         Activate the arrow keys, etc.
         """
-        assert self.debugPrint("enableAvatarControls()")
+        assert self.debugPrint("enableShipControls()")
         assert self.collisionsActive
 
         if __debug__:
             #self.accept("control-f3", self.spawnTest) #*#
             self.accept("f3", self.reset) # for debugging only.
 
-        taskName = "AvatarControls-%s"%(id(self),)
+        taskName = "ShipControls-%s"%(id(self),)
         # remove any old
         taskMgr.remove(taskName)
         # spawn the new task
@@ -591,17 +591,17 @@ class ShipPilot(PhysicsWalker):
         if self.physVelocityIndicator:
             taskMgr.add(
                 self.avatarPhysicsIndicator,
-                "AvatarControlsIndicator%s"%(id(self),), 35)
+                "ShipControlsIndicator%s"%(id(self),), 35)
             
     def disableAvatarControls(self):
         """
         Ignore the arrow keys, etc.
         """
-        assert self.debugPrint("disableAvatarControls()")
-        taskName = "AvatarControls-%s"%(id(self),)
+        assert self.debugPrint("disableShipControls()")
+        taskName = "ShipControls-%s"%(id(self),)
         taskMgr.remove(taskName)
 
-        taskName = "AvatarControlsIndicator%s"%(id(self),)
+        taskName = "ShipControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
 
         if __debug__:
