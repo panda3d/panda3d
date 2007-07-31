@@ -235,14 +235,18 @@ class DirectCameraControl(DirectObject):
             moveDir.normalize()
         else:
             moveDir = Vec3(Y_AXIS)
-        moveDir.assign(moveDir * (-1.0 * base.direct.dr.mouseDeltaY *
-                                        state.zoomSF))
-        if base.direct.dr.mouseDeltaY > 0.0:
-            moveDir.setY(moveDir[1] * 1.0)
 
-        hVal = 0.5 * base.direct.dr.mouseDeltaX * base.direct.dr.fovH
         if self.useMayaCamControls : # use maya controls
+            moveDir.assign(moveDir * ((base.direct.dr.mouseDeltaX -1.0 * base.direct.dr.mouseDeltaY) 
+                                    * state.zoomSF))
             hVal = 0.0
+        else:
+            moveDir.assign(moveDir * (-1.0 * base.direct.dr.mouseDeltaY *
+                                        state.zoomSF))
+            if base.direct.dr.mouseDeltaY > 0.0:
+                moveDir.setY(moveDir[1] * 1.0)
+
+            hVal = 0.5 * base.direct.dr.mouseDeltaX * base.direct.dr.fovH
 
         base.direct.camera.setPosHpr(base.direct.camera,
                                 moveDir[0],
