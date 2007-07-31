@@ -27,7 +27,7 @@ DEFAULT_MENU_ITEMS = [
 
 class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
     "Graphical display of a scene graph"
-    def __init__(self, parent = None, nodePath = render, **kw):
+    def __init__(self, parent = None, nodePath = render, isItemEditable = True, **kw):
         # Define the megawidget options.
         optiondefs = (
             ('menuItems',   [],   Pmw.INITOPT),
@@ -145,8 +145,9 @@ class SceneGraphExplorerItem(TreeItem):
 
     """Example TreeItem subclass -- browse the file system."""
 
-    def __init__(self, nodePath):
+    def __init__(self, nodePath, isItemEditable = True):
         self.nodePath = nodePath
+        self.isItemEditable = isItemEditable
 
     def GetText(self):
         type = self.nodePath.node().getType().getName()
@@ -158,7 +159,7 @@ class SceneGraphExplorerItem(TreeItem):
 
     def IsEditable(self):
         # All nodes' names can be edited nowadays.
-        return 1
+        return self.isItemEditable
         #return issubclass(self.nodePath.node().__class__, NamedNode)
 
     def SetText(self, text):
