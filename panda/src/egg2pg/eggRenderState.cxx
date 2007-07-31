@@ -421,7 +421,12 @@ fill_state(EggPrimitive *egg_prim) {
 int EggRenderState::
 compare_to(const EggRenderState &other) const {
   if (_state != other._state) {
-    return _state < other._state ? -1 : 1;
+    if ((*_state) < (*other._state)) {
+      return -1;
+    }
+    if ((*other._state) < (*_state)) {
+      return 1;
+    }
   }
   if (_hidden != other._hidden) {
     return (int)_hidden - (int)other._hidden;
