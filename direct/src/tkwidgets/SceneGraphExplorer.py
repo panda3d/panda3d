@@ -66,7 +66,7 @@ class SceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self.interior().bind('<Destroy>', self.onDestroy)
 
         # Create the contents
-        self._treeItem = SceneGraphExplorerItem(self.nodePath)
+        self._treeItem = SceneGraphExplorerItem(self.nodePath, isItemEditable)
 
         self._node = TreeNode(self._canvas, None, self._treeItem,
                               DEFAULT_MENU_ITEMS + self['menuItems'])
@@ -177,7 +177,7 @@ class SceneGraphExplorerItem(TreeItem):
     def GetSubList(self):
         sublist = []
         for nodePath in self.nodePath.getChildrenAsList():
-            item = SceneGraphExplorerItem(nodePath)
+            item = SceneGraphExplorerItem(nodePath, self.isItemEditable)
             sublist.append(item)
         return sublist
 
