@@ -43,6 +43,10 @@ class DirectManipulationControl(DirectObject):
     def manipulationStart(self, modifiers):
         # Start out in select mode
         self.mode = 'select'
+
+        if base.direct.cameraControl.useMayaCamControls and modifiers == 4:
+            self.mode = 'camera'
+
         # Check for a widget hit point
         entry = base.direct.iRay.pickWidget()
         # Did we hit a widget?

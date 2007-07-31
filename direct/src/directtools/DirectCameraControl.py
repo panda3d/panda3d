@@ -128,7 +128,7 @@ class DirectCameraControl(DirectObject):
         deltaT = stopT - self.startT
         stopF = globalClock.getFrameCount()
         deltaF = stopF - self.startF
-        if (deltaT <= 0.25) or (deltaF <= 1):
+        if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):
             # Check for a hit point based on
             # current mouse position
             # Allow intersection with unpickable objects
@@ -148,7 +148,7 @@ class DirectCameraControl(DirectObject):
         self.coaMarker.show()
         # Resize it
         self.updateCoaMarkerSize()
-
+        
     def mouseFlyStartTopWin(self):
         print "Moving mouse 2 in new window"
         #altIsDown = base.getAlt()
@@ -253,6 +253,7 @@ class DirectCameraControl(DirectObject):
         if (self.lockRoll == True):
             # flatten roll
             base.direct.camera.setR(0)
+
         return Task.cont
 
     def HPPanTask(self, state):
