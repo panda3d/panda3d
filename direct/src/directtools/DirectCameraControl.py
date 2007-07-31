@@ -239,12 +239,16 @@ class DirectCameraControl(DirectObject):
                                         state.zoomSF))
         if base.direct.dr.mouseDeltaY > 0.0:
             moveDir.setY(moveDir[1] * 1.0)
+
+        hVal = 0.5 * base.direct.dr.mouseDeltaX * base.direct.dr.fovH
+        if self.useMayaCamControls : # use maya controls
+            hVal = 0.0
+
         base.direct.camera.setPosHpr(base.direct.camera,
                                 moveDir[0],
                                 moveDir[1],
                                 moveDir[2],
-                                (0.5 * base.direct.dr.mouseDeltaX *
-                                 base.direct.dr.fovH),
+                                hVal,
                                 0.0, 0.0)
         if (self.lockRoll == True):
             # flatten roll
