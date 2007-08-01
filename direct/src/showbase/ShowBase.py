@@ -388,11 +388,10 @@ class ShowBase(DirectObject.DirectObject):
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-        self.loader.destroy()
-        self.graphicsEngine.removeAllWindows()
-
         if self.musicManager:
             self.musicManager.shutdown()
+        self.loader.destroy()
+        self.graphicsEngine.removeAllWindows()
 
         del self.win
         del self.winList
