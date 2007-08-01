@@ -29,7 +29,7 @@ ConfigureDecl(config_pipeline, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
 NotifyCategoryDecl(pipeline, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
 NotifyCategoryDecl(thread, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
 
-extern ConfigVariableBool support_threads;
+extern EXPCL_PANDA_PIPELINE ConfigVariableBool support_threads;
 extern ConfigVariableInt thread_stack_size;
 
 extern EXPCL_PANDA_PIPELINE void init_libpipeline();
