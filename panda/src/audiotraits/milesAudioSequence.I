@@ -1,5 +1,5 @@
-// Filename: milesAudioSound.I
-// Created by:  drose (30Jul07)
+// Filename: milesAudioSequence.I
+// Created by:  drose (31Jul07)
 //
 ////////////////////////////////////////////////////////////////////
 //

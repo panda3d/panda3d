@@ -32,7 +32,8 @@ NotifyCategoryDecl(milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 
 extern ConfigVariableBool miles_audio_force_midi_reset;
 extern ConfigVariableInt miles_audio_expand_mp3_threshold;
-extern ConfigVariableInt miles_audio_calc_mp3_threshold;
+extern ConfigVariableInt miles_audio_preload_threshold;
+extern ConfigVariableBool miles_audio_panda_threads;
 
 extern EXPCL_MILES_AUDIO void init_libMilesAudio();
 

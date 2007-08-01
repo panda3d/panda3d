@@ -74,7 +74,7 @@ get_3d_max_distance() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::add_dsp
+//     Function: AudioSound::add_dsp
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ add_dsp(PT(AudioDSP) x) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::remove_dsp
+//     Function: AudioSound::remove_dsp
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ remove_dsp(PT(AudioDSP) x) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::getSpeakerMix
+//     Function: AudioSound::getSpeakerMix
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ get_speaker_mix(int speaker) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::setSpeakerMix
+//     Function: AudioSound::setSpeakerMix
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ set_speaker_mix(float frontleft, float frontright, float center, float sub, floa
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::get_priority
+//     Function: AudioSound::get_priority
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ get_priority() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::set_priority
+//     Function: AudioSound::set_priority
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -140,3 +140,42 @@ set_priority(int priority) {
 	;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioSound::
+output(ostream &out) const {
+  out << get_type() << " " << get_name() << " " << status();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioSound::
+write(ostream &out) const {
+  out << (*this) << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::SoundStatus::output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, AudioSound::SoundStatus status) {
+  switch (status) {
+  case AudioSound::BAD:
+    return out << "BAD";
+
+  case AudioSound::READY:
+    return out << "READY";
+
+  case AudioSound::PLAYING:
+    return out << "PLAYING";
+  }
+
+  return out << "**invalid AudioSound::SoundStatus(" << (int)status << ")**";
+}

@@ -29,6 +29,9 @@
 #include "pmap.h"
 #include "pdeque.h"
 #include "pvector.h"
+#include "thread.h"
+#include "pmutex.h"
+#include "conditionVar.h"
 
 class MilesAudioSound;
 
@@ -37,35 +40,69 @@ public:
   // See AudioManager.h for documentation.
   
   MilesAudioManager();
-  ~MilesAudioManager();
-
+  virtual ~MilesAudioManager();
+  
   virtual void shutdown();
 
-  bool is_valid();
+  virtual bool is_valid();
   
-  virtual PT(AudioSound) get_sound(const string& file_name, bool positional = false);
-  void uncache_sound(const string& file_name);
-  void clear_cache();
-  void set_cache_limit(unsigned int count);
-  unsigned int get_cache_limit() const;
+  virtual PT(AudioSound) get_sound(const string &file_name, bool positional = false);
+  virtual void uncache_sound(const string &file_name);
+  virtual void clear_cache();
+  virtual void set_cache_limit(unsigned int count);
+  virtual unsigned int get_cache_limit() const;
 
-  void set_volume(float volume);
-  float get_volume() const;
+  virtual void set_volume(float volume);
+  virtual float get_volume() const;
 
   void set_play_rate(float play_rate);
   float get_play_rate() const;
   
-  void set_active(bool active);
-  bool get_active() const;
+  virtual void set_active(bool active);
+  virtual bool get_active() const;
 
-  void set_concurrent_sound_limit(unsigned int limit = 0);
-  unsigned int get_concurrent_sound_limit() const;
+  virtual void set_concurrent_sound_limit(unsigned int limit = 0);
+  virtual unsigned int get_concurrent_sound_limit() const;
 
-  void reduce_sounds_playing_to(unsigned int count);
+  virtual void reduce_sounds_playing_to(unsigned int count);
 
-  void stop_all_sounds();
+  virtual void stop_all_sounds();
+
+  virtual void update();
+
+  // Tell the manager that the sound dtor was called.
+  void release_sound(MilesAudioSound *audioSound);
+  void cleanup();
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out) const;
 
 private:
+  void start_service_stream(HSTREAM stream);
+  void stop_service_stream(HSTREAM stream);
+  
+  void most_recently_used(const string &path);
+  void uncache_a_sound();
+
+  void starting_sound(MilesAudioSound *audio);
+  void stopping_sound(MilesAudioSound *audio);
+
+  class SoundData;
+  PT(SoundData) load(const Filename &file_name);
+
+  void thread_main(volatile bool &keep_running);
+  void do_service_streams();
+
+private:
+  class StreamThread : public Thread {
+  public:
+    StreamThread(MilesAudioManager *mgr);
+    virtual void thread_main();
+
+    MilesAudioManager *_mgr;
+    volatile bool _keep_running;
+  };
+
   // The sound cache:
   class SoundData : public ReferenceCount {
   public:
@@ -73,8 +110,7 @@ private:
     ~SoundData();
     float get_length();
 
-    string _basename;
-    HAUDIO _audio;
+    Filename _basename;
     S32 _file_type;
     pvector<unsigned char> _raw_data;
     bool _has_length;
@@ -83,7 +119,7 @@ private:
   typedef pmap<string, PT(SoundData) > SoundMap;
   SoundMap _sounds;
 
-  typedef pset<MilesAudioSound* > AudioSet;
+  typedef pset<MilesAudioSound *> AudioSet;
   // The offspring of this manager:
   AudioSet _sounds_on_loan;
 
@@ -100,38 +136,16 @@ private:
   bool _active;
   int _cache_limit;
   bool _cleanup_required;
-  // keep a count for startup and shutdown:
-  static int _active_managers;
-  static bool _miles_active;
   unsigned int _concurrent_sound_limit;
   
   bool _is_valid;
   bool _hasMidiSounds;
 
-  // Optional Downloadable Sound field for software midi
-  static HDLSFILEID _dls_field;
-
-  typedef pset<MilesAudioManager *> Managers;
-  static Managers *_managers;
-  
-  PT(SoundData) load(Filename file_name);
-  // Tell the manager that the sound dtor was called.
-  void release_sound(MilesAudioSound* audioSound);
-  
-  void most_recently_used(const string& path);
-  void uncache_a_sound();
-
-  void starting_sound(MilesAudioSound* audio);
-  void stopping_sound(MilesAudioSound* audio);
-
-  // get the default dls file path:
-  void get_gm_file_path(string& result);
-
-  void force_midi_reset();
-  void cleanup();
-
-  friend class MilesAudioSound;
-
+  typedef pvector<HSTREAM> Streams;
+  PT(StreamThread) _stream_thread;
+  Streams _streams;
+  Mutex _streams_lock;
+  ConditionVar _streams_cvar;
 
 public:
   static TypeHandle get_class_type() {
@@ -149,6 +163,11 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class MilesAudioSound;
+  friend class MilesAudioSample;
+  friend class MilesAudioSequence;
+  friend class MilesAudioStream;
 };
 
 EXPCL_MILES_AUDIO PT(AudioManager) Create_AudioManager();

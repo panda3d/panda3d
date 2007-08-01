@@ -1,0 +1,299 @@
+// Filename: milesAudioSequence.cxx
+// Created by:  drose (31Jul07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "milesAudioSequence.h"
+
+#ifdef HAVE_RAD_MSS //[
+
+#include "milesAudioManager.h"
+
+
+TypeHandle MilesAudioSequence::_type_handle;
+
+#undef miles_audio_debug
+
+#ifndef NDEBUG //[
+#define miles_audio_debug(x) \
+    audio_debug("MilesAudioSequence \""<<get_name()<<"\" "<< x )
+#else //][
+#define miles_audio_debug(x) ((void)0)
+#endif //]
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::Constructor
+//       Access: Private
+//  Description: This constructor is called only by the
+//               MilesAudioManager.
+////////////////////////////////////////////////////////////////////
+MilesAudioSequence::
+MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd, 
+                 const string &file_name) :
+  MilesAudioSound(manager, file_name),
+  _sd(sd)
+{
+  nassertv(sd != NULL);
+  audio_debug("MilesAudioSequence(manager=0x"<<(void*)&manager
+              <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
+
+  _sequence = 0;
+  _sequence_index = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MilesAudioSequence::
+~MilesAudioSequence() {
+  miles_audio_debug("~MilesAudioSequence()");
+  cleanup();
+  _manager->release_sound(this);
+  miles_audio_debug("~MilesAudioSequence() done");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::play
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+play() {
+  miles_audio_debug("play()");
+  if (_active) {
+    stop();
+    
+    if (_sd->_raw_data.empty()) {
+      milesAudio_cat.warning()
+        << "Could not play " << _file_name << ": no data\n";
+    } else {
+      _manager->starting_sound(this);
+      nassertv(_sequence == 0);
+
+      GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+      if (!mgr->get_sequence(_sequence, _sequence_index, this)){ 
+        milesAudio_cat.warning()
+          << "Could not play " << _file_name << ": too many open sequences\n";
+        _sequence = 0;
+      } else {
+        AIL_init_sequence(_sequence, &_sd->_raw_data[0], 0);
+
+        set_volume(_volume);
+        set_play_rate(_play_rate);
+        AIL_set_sequence_loop_count(_sequence, _loop_count);
+        AIL_start_sequence(_sequence);
+      }
+    }
+  } else {
+    // In case _loop_count gets set to forever (zero):
+    audio_debug("  paused "<<_file_name );
+    _paused = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::stop
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+stop() {
+  miles_audio_debug("stop()");
+  _manager->stopping_sound(this);
+  // The _paused flag should not be cleared here.  _paused is not like
+  // the Pause button on a cd/dvd player.  It is used as a flag to say
+  // that it was looping when it was set inactive.  There is no need to
+  // make this symmetrical with play().  set_active() is the 'owner' of
+  // _paused.  play() accesses _paused to help in the situation where
+  // someone calls play on an inactive sound().
+
+  if (_sequence != 0) {
+    AIL_end_sequence(_sequence);
+
+    GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+    mgr->release_sequence(_sequence_index, this);
+
+    _sequence = 0;
+    _sequence_index = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::set_time
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+set_time(float time) {
+  miles_audio_debug("set_time(time="<<time<<")");
+
+  if (_sequence != 0) {
+    S32 time_ms = (S32)(1000.0f * time);
+
+    // Ensure we don't inadvertently run off the end of the sound.
+    S32 length_ms;
+    AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+    time_ms = min(time_ms, length_ms);
+    
+    AIL_set_sequence_ms_position(_sequence, time_ms);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::get_time
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float MilesAudioSequence::
+get_time() const {
+  if (_sequence == 0) {
+    return 0.0f;
+  }
+
+  S32 current_ms;
+  AIL_sequence_ms_position(_sequence, NULL, &current_ms);
+  float time = float(current_ms * 0.001f);
+
+  return time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::set_volume
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+set_volume(float volume) {
+  miles_audio_debug("set_volume(volume="<<volume<<")");
+
+  // Set the volume even if our volume is not changing, because the
+  // MilesAudioManager will call set_volume() when *its* volume
+  // changes.
+
+  // Set the volume:
+  _volume = volume;
+
+  if (_sequence != 0) {
+    volume *= _manager->get_volume();
+    
+    // Change to Miles volume, range 0 to 127:
+    S32 milesVolume = (S32)(volume * 127.0f);
+    milesVolume = min(milesVolume, 127);
+    milesVolume = max(milesVolume, 0);
+    
+    AIL_set_sequence_volume(_sequence, milesVolume, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::set_balance
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+set_balance(float balance_right) {
+  miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
+  _balance = balance_right;
+
+  // Balance has no effect on a MIDI file.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::set_play_rate
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+set_play_rate(float play_rate) {
+  miles_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
+
+  // Set the play_rate:
+  _play_rate = play_rate;
+
+  if (_sequence != 0) {
+    play_rate *= _manager->get_play_rate();
+
+    S32 percent = (S32)(play_rate * 100.0f);
+    AIL_set_sequence_tempo(_sequence, percent, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::length
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float MilesAudioSequence::
+length() const {
+  S32 length_ms;
+  AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+  float time = (float)length_ms * 0.001f;
+  return time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::status
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+AudioSound::SoundStatus MilesAudioSequence::
+status() const {
+  if (_sequence == 0) {
+    return AudioSound::READY;
+  }
+  switch (AIL_sequence_status(_sequence)) {
+  case SEQ_DONE:
+  case SEQ_STOPPED:
+  case SEQ_FREE:
+    return AudioSound::READY;
+
+  case SEQ_PLAYING:
+  case SEQ_PLAYINGBUTRELEASED:
+    return AudioSound::PLAYING;
+
+  default:
+    return AudioSound::BAD;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::cleanup
+//       Access: Public, Virtual
+//  Description: Stops the sound from playing and releases any
+//               associated resources, in preparation for releasing
+//               the sound or shutting down the sound system.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+cleanup() {
+  stop();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::internal_stop
+//       Access: Private
+//  Description: Called by the GlobalMilesManager when it is detected
+//               that this particular sound has already stopped, and
+//               its sequence handle will be recycled.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+internal_stop() {
+  _sequence = 0;
+  _sequence_index = 0;
+}
+
+#endif //]

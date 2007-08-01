@@ -209,7 +209,7 @@ setSpeakerSetup(SpeakerModeCategory cat) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::update()
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Must be called every frame.  Failure to call this
 //               every frame could cause problems for some audio
 //               managers.
@@ -296,7 +296,7 @@ float AudioManager::audio_3d_get_drop_off_factor() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::get_dls_pathname
-//       Access: Public
+//       Access: Published, Static
 //  Description: Returns the full pathname to the DLS file, as
 //               specified by the Config.prc file, or the default for
 //               the current OS if appropriate.  Returns empty string
@@ -336,4 +336,24 @@ get_dls_pathname() {
 #else
   return Filename();
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+output(ostream &out) const {
+  out << get_type();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+write(ostream &out) const {
+  out << (*this) << "\n";
 }

@@ -1,5 +1,6 @@
-// Filename: milesAudioSound.I
-// Created by:  drose (30Jul07)
+// Filename: milesAudioSample.I
+// Created by:  skyler (June 6, 2001)
+// Prior system by: cary
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,4 +16,9 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
+
+
+
+
 

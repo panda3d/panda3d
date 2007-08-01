@@ -8,7 +8,7 @@
   #define BUILD_TARGET $[HAVE_RAD_MSS]
   #define USE_PACKAGES rad_mss
   #define BUILDING_DLL BUILDING_MILES_AUDIO
-  #define LOCAL_LIBS audio event
+  #define LOCAL_LIBS audio event pipeline
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
@@ -16,10 +16,16 @@
   #define SOURCES \
       config_milesAudio.h \
       milesAudioManager.h \
-      milesAudioSound.I milesAudioSound.h
+      milesAudioSound.I milesAudioSound.h \
+      milesAudioSample.I milesAudioSample.h \
+      milesAudioSequence.I milesAudioSequence.h \
+      milesAudioStream.I milesAudioStream.h \
+      globalMilesManager.I globalMilesManager.h
       
   #define INCLUDED_SOURCES \
-      config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx 
+      config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx \
+      milesAudioStream.cxx globalMilesManager.cxx milesAudioSample.cxx \
+      milesAudioSequence.cxx
 
 #end lib_target
 

@@ -17,30 +17,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pandabase.h"
+#include "milesAudioManager.h"
+
 #ifdef HAVE_RAD_MSS //[
 
 #include "milesAudioSound.h"
-#include "milesAudioManager.h"
+#include "milesAudioSample.h"
+#include "milesAudioStream.h"
+#include "globalMilesManager.h"
 #include "config_audio.h"
 #include "config_util.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "nullAudioSound.h"
+#include "string_utils.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
 
 
 TypeHandle MilesAudioManager::_type_handle;
-
-int MilesAudioManager::_active_managers = 0;
-bool MilesAudioManager::_miles_active = false;
-HDLSFILEID MilesAudioManager::_dls_field = NULL;
-
-// This is the list of all MilesAudioManager objects in the world.  It
-// must be a pointer rather than a concrete object, so it won't be
-// destructed at exit time before we're done removing things from it.
-MilesAudioManager::Managers *MilesAudioManager::_managers;
 
 PT(AudioManager) Create_AudioManager() {
   audio_debug("Create_AudioManager() Miles.");
@@ -48,7 +44,7 @@ PT(AudioManager) Create_AudioManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::MilesAudioManager
+//     Function: MilesAudioManager::Constructor
 //       Access: Public
 //  Description: Create an audio manager.  This may open the Miles
 //               sound system if there were no other MilesAudioManager
@@ -56,13 +52,12 @@ PT(AudioManager) Create_AudioManager() {
 //               Miles resources.
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
-MilesAudioManager() {
+MilesAudioManager() : _streams_lock("MilesAudioManager::_streams_lock"),
+  _streams_cvar(_streams_lock)
+{
   audio_debug("MilesAudioManager::MilesAudioManager(), this = " 
               << (void *)this);
-  if (_managers == (Managers *)NULL) {
-    _managers = new Managers;
-  }
-  _managers->insert(this);
+  GlobalMilesManager::get_global_ptr()->add_manager(this);
   audio_debug("  audio_active="<<audio_active);
   audio_debug("  audio_volume="<<audio_volume);
   _cleanup_required = true;
@@ -73,76 +68,6 @@ MilesAudioManager() {
   _concurrent_sound_limit = 0;
   _is_valid = true;
   _hasMidiSounds = false;
-  if (_active_managers==0 || !_miles_active) {
-    S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
-    S32 use_MIDI=(audio_play_midi)?1:0;
-
-#ifdef IS_OSX
-    audio_software_midi=true;
-#endif
-
-    if (audio_play_midi && audio_software_midi) {
-      use_MIDI=AIL_QUICK_DLS_ONLY;
-    }
-
-    audio_debug("  use_digital="<<use_digital);
-    audio_debug("  use_MIDI="<<use_MIDI);
-    audio_debug("  audio_output_rate="<<audio_output_rate);
-    audio_debug("  audio_output_bits="<<audio_output_bits);
-    audio_debug("  audio_output_channels="<<audio_output_channels);
-    audio_debug("  audio_software_midi="<<audio_software_midi);
-    #if !defined(NDEBUG) && defined(AIL_MSS_version) //[
-      char version[8];
-      AIL_MSS_version(version, 8);
-      audio_debug("  Mss32.dll Version: "<<version);
-    #endif //]
-    if (AIL_quick_startup(use_digital,
-        use_MIDI, audio_output_rate,
-        audio_output_bits, audio_output_channels)) {
-      _miles_active = true;
-      if (audio_software_midi) {
-        // Load the downloadable sounds file:
-
-        if (_dls_field == NULL) {
-          HDLSDEVICE dls = NULL;
-          AIL_quick_handles(0, 0, &dls);
-          if (dls == NULL) {
-            audio_error("  Unable to open DLS. " << AIL_last_error());
-          } else {
-            Filename dls_pathname = get_dls_pathname();
-            string os_pathname = dls_pathname.to_os_specific();
-            // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
-            nassertv(_dls_field == NULL);
-            audio_debug("  AIL_DLS_load_file(dls, " << os_pathname << ", 0)");
-            _dls_field = AIL_DLS_load_file(dls, os_pathname.c_str(), 0);
-          }
-
-          if (!_dls_field) {
-            audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
-            AIL_quick_shutdown();
-            if (!AIL_quick_startup(use_digital, 1, audio_output_rate,
-                                   audio_output_bits, audio_output_channels)) {
-              audio_error("  midi hardware startup failed, "<<AIL_last_error());
-              _is_valid = false;
-            }
-          } else {
-            audio_info("  using Miles software midi");
-          }
-        }
-      } else {
-        audio_info("  using Miles hardware midi");
-      }
-    } else {
-      audio_error("Unable to init MilesAudioManager.  AIL_quick_startup failed: "<<AIL_last_error());
-      _is_valid = false;
-    }
-  }
-  // We increment _active_managers regardless of possible errors above.
-  // The miles shutdown call will do the right thing when it's called,
-  // either way.
-  ++_active_managers;
-  audio_debug("  _active_managers="<<_active_managers);
-  nassertv(_active_managers>0);
 
   // We used to hang a call to a force-shutdown function on atexit(),
   // so that any running sounds (particularly MIDI sounds) would be
@@ -158,8 +83,8 @@ MilesAudioManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::~MilesAudioManager
-//       Access: Public
+//     Function: MilesAudioManager::Destructor
+//       Access: Public, Virtual
 //  Description: Clean up this audio manager and possibly release
 //               the Miles resources that are reserved by the 
 //               application (the later happens if this is the last
@@ -169,18 +94,15 @@ MilesAudioManager::
 ~MilesAudioManager() {
   audio_debug("MilesAudioManager::~MilesAudioManager(), this = " 
               << (void *)this);
-  nassertv(_managers != (Managers *)NULL);
-  Managers::iterator mi = _managers->find(this);
-  nassertv(mi != _managers->end());
-  _managers->erase(mi);
-
   cleanup();
+  GlobalMilesManager::get_global_ptr()->remove_manager(this);
+
   audio_debug("MilesAudioManager::~MilesAudioManager() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::shutdown
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: Call this at exit time to shut down the audio system.
 //               This will invalidate all currently-active
 //               AudioManagers and AudioSounds in the system.  If you
@@ -189,21 +111,14 @@ MilesAudioManager::
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 shutdown() {
-  audio_debug("shutdown(), _miles_active = " << _miles_active);
-  if (_managers != (Managers *)NULL) {
-    Managers::iterator mi;
-    for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
-      (*mi)->cleanup();
-    }
-  }
-
-  nassertv(_active_managers == 0);
+  audio_debug("shutdown() started");
+  GlobalMilesManager::get_global_ptr()->cleanup();
   audio_debug("shutdown() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::is_valid
-//       Access:
+//       Access: Public, Virtual
 //  Description: This is mostly for debugging, but it it could be
 //               used to detect errors in a release build if you
 //               don't mind the cpu cost.
@@ -229,98 +144,8 @@ is_valid() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::load
-//       Access: Private
-//  Description: Reads a sound file and allocates a SoundData pointer
-//               for it.  Returns NULL if the sound file cannot be
-//               loaded.
-////////////////////////////////////////////////////////////////////
-PT(MilesAudioManager::SoundData) MilesAudioManager::
-load(Filename file_name) {
-  // We used to use callbacks to hook AIL_quick_load() into the vfs
-  // system directly.  The theory was that that would enable
-  // AIL_quick_load() to stream the file from disk, avoiding the need
-  // to keep the whole thing in memory at once.  But it turns out that
-  // AIL_quick_load() always reads the whole file anyway, so it's a
-  // moot point.
-
-  // Nowadays we don't mess around with that callback nonsense, and
-  // just read the whole file directly.  Not only is it simpler, but
-  // preloading the sound files allows us to optionally convert MP3 to
-  // WAV format in-memory at load time.
-
-  PT(SoundData) sd = new SoundData;
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (!vfs->read_file(file_name, sd->_raw_data, true)) {
-    milesAudio_cat.warning()
-      << "Unable to read " << file_name << "\n";
-    return NULL;
-  }
-  if (sd->_raw_data.empty()) {
-    milesAudio_cat.warning()
-      << "File " << file_name << " is empty\n";
-    return NULL;
-  }
-
-  sd->_basename = file_name.get_basename();
-  sd->_file_type = 
-    AIL_file_type(&sd->_raw_data[0], sd->_raw_data.size());
-
-  bool expand_to_wav = false;
-  
-  if (sd->_file_type != AILFILETYPE_MPEG_L3_AUDIO) {
-    audio_debug(sd->_basename << " is not an mp3 file.");
-  } else if ((int)sd->_raw_data.size() >= miles_audio_expand_mp3_threshold) {
-    audio_debug(sd->_basename << " is too large to expand in-memory.");
-  } else {
-    audio_debug(sd->_basename << " will be expanded in-memory.");
-    expand_to_wav = true;
-  }
-
-  if (expand_to_wav) {
-    // Now convert the file to WAV format in-memory.  This is useful
-    // to work around seek and length problems associated with
-    // variable bit-rate MP3 encoding.
-    void *wav_data;
-    U32 wav_data_size;
-    if (AIL_decompress_ASI(&sd->_raw_data[0], sd->_raw_data.size(),
-                           sd->_basename.c_str(), &wav_data, &wav_data_size,
-                           NULL)) {
-      audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
-                  << " bytes to " << wav_data_size << " bytes.");
-
-      if (wav_data_size != 0) {
-        // Now copy the memory into our own buffers, and free the
-        // Miles-allocated memory.
-        sd->_raw_data.clear();
-        sd->_raw_data.insert(sd->_raw_data.end(),
-                             (unsigned char *)wav_data, (unsigned char *)wav_data + wav_data_size);
-        sd->_file_type = AILFILETYPE_PCM_WAV;
-      }
-      AIL_mem_free_lock(wav_data);
-
-    } else {
-      audio_debug("unable to expand " << sd->_basename);
-    }
-  }
-
-  sd->_audio = AIL_quick_load_mem(&sd->_raw_data[0], sd->_raw_data.size());
-
-  if (!sd->_audio) {
-    audio_error("  MilesAudioManager::load failed "<< AIL_last_error());
-    return NULL;
-  }
-
-  // We still need to keep around the raw data value, since
-  // AIL_quick_load_mem() doesn't make a copy.
-
-  return sd;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::get_sound
-//       Access: Public
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
@@ -371,16 +196,30 @@ get_sound(const string& file_name, bool) {
     }
   }
   // Create an AudioSound from the sound:
-  PT(AudioSound) audioSound = 0;
+  PT(AudioSound) audioSound;
+
   if (sd != (SoundData *)NULL) {
     most_recently_used((*si).first);
-    PT(MilesAudioSound) milesAudioSound
-        =new MilesAudioSound(this, sd, (*si).first);
-    nassertr(milesAudioSound, 0);
-    milesAudioSound->set_active(_active);
-    bool inserted = _sounds_on_loan.insert(milesAudioSound).second;
-    nassertr(inserted, milesAudioSound.p());
-    audioSound=milesAudioSound;
+    if (sd->_file_type == AILFILETYPE_MIDI ||
+        sd->_file_type == AILFILETYPE_XMIDI ||
+        sd->_file_type == AILFILETYPE_XMIDI_DLS ||
+        sd->_file_type == AILFILETYPE_XMIDI_MLS) {
+      // MIDI file.
+      audioSound = new MilesAudioSequence(this, sd, file_name);
+
+    } else if (!sd->_raw_data.empty()) {
+      // WAV or MP3 file preloaded into memory.
+      audioSound = new MilesAudioSample(this, sd, file_name);
+
+    } else {
+      // WAV or MP3 file streamed from disk.
+      audioSound = new MilesAudioStream(this, file_name, path);
+    }
+
+    audioSound->set_active(_active);
+
+    bool inserted = _sounds_on_loan.insert((MilesAudioSound *)audioSound.p()).second;
+    nassertr(inserted, audioSound);
 
     _hasMidiSounds |= (file_name.find(".mid")!=string::npos);
   } else {
@@ -395,7 +234,7 @@ get_sound(const string& file_name, bool) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::uncache_sound
-//       Access: Public
+//       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
@@ -422,8 +261,344 @@ uncache_sound(const string& file_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::uncache_a_sound
+//     Function: MilesAudioManager::clear_cache
+//       Access: Public, Virtual
+//  Description: Clear out the sound cache.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+clear_cache() {
+  audio_debug("MilesAudioManager::clear_cache()");
+  if (_is_valid) { assert(is_valid()); }
+  _sounds.clear();
+  _lru.clear();
+  if (_is_valid) { assert(is_valid()); }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_cache_limit
+//       Access: Public, Virtual
+//  Description: Set the number of sounds that the cache can hold.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_cache_limit(unsigned int count) {
+  audio_debug("MilesAudioManager::set_cache_limit(count="<<count<<")");
+  assert(is_valid());
+  while (_lru.size() > count) {
+    uncache_a_sound();
+  }
+  _cache_limit=count;
+  assert(is_valid());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_cache_limit
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+unsigned int MilesAudioManager::
+get_cache_limit() const {
+  return _cache_limit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_volume
+//       Access: Public, Virtual
+//  Description: set the overall volume
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_volume(float volume) {
+  audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
+  if (_volume!=volume) {
+    _volume = volume;
+    // Tell our AudioSounds to adjust:
+    AudioSet::iterator i=_sounds_on_loan.begin();
+    for (; i!=_sounds_on_loan.end(); ++i) {
+      (*i)->set_volume((*i)->get_volume());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_volume
+//       Access: Public, Virtual
+//  Description: get the overall volume
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::
+get_volume() const {
+  return _volume;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_play_rate
 //       Access: Public
+//  Description: set the overall play rate
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_play_rate(float play_rate) {
+  audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
+  if (_play_rate!=play_rate) {
+    _play_rate = play_rate;
+    // Tell our AudioSounds to adjust:
+    AudioSet::iterator i=_sounds_on_loan.begin();
+    for (; i!=_sounds_on_loan.end(); ++i) {
+      (*i)->set_play_rate((*i)->get_play_rate());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_play_rate
+//       Access: Public
+//  Description: get the overall speed/pitch/play rate
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::
+get_play_rate() const {
+  return _play_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_active
+//       Access: Public, Virtual
+//  Description: turn on/off
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_active(bool active) {
+  audio_debug("MilesAudioManager::set_active(flag="<<active<<")");
+  if (_active!=active) {
+    _active=active;
+    // Tell our AudioSounds to adjust:
+    AudioSet::iterator i=_sounds_on_loan.begin();
+    for (; i!=_sounds_on_loan.end(); ++i) {
+      (*i)->set_active(_active);
+    }
+
+    if ((!_active) && _hasMidiSounds) {
+      GlobalMilesManager::get_global_ptr()->force_midi_reset();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_active
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool MilesAudioManager::
+get_active() const {
+  return _active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_concurrent_sound_limit
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_concurrent_sound_limit(unsigned int limit) {
+  _concurrent_sound_limit = limit;
+  reduce_sounds_playing_to(_concurrent_sound_limit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_concurrent_sound_limit
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int MilesAudioManager::
+get_concurrent_sound_limit() const {
+  return _concurrent_sound_limit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::reduce_sounds_playing_to
+//       Access: Private, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+reduce_sounds_playing_to(unsigned int count) {
+  int limit = _sounds_playing.size() - count;
+  while (limit-- > 0) {
+    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    assert(sound != _sounds_playing.end());
+    (**sound).stop();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::stop_all_sounds
+//       Access: Public, Virtual
+//  Description: Stop playback on all sounds managed by this manager.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+stop_all_sounds() {
+  audio_debug("MilesAudioManager::stop_all_sounds()");
+  reduce_sounds_playing_to(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::update()
+//       Access: Public, Virtual
+//  Description: Must be called every frame.  Failure to call this
+//               every frame could cause problems for some audio
+//               managers.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+update() {
+  MutexHolder holder(_streams_lock);
+
+  if (_stream_thread.is_null() && !_streams.empty()) {
+    // If we don't have a sub-thread, we have to service the streams
+    // in the main thread.
+    do_service_streams();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::release_sound
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+release_sound(MilesAudioSound *audioSound) {
+  audio_debug("MilesAudioManager::release_sound(audioSound=\""
+              <<audioSound->get_name()<<"\"), this = " << (void *)this);
+  AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
+  nassertv(ai != _sounds_on_loan.end());
+  _sounds_on_loan.erase(ai);
+
+  audio_debug("MilesAudioManager::release_sound() finished");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::cleanup
+//       Access: Public
+//  Description: Shuts down the audio manager and releases any
+//               resources associated with it.  Also cleans up all
+//               AudioSounds created via the manager.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+cleanup() {
+  audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
+              << ", _cleanup_required = " << _cleanup_required);
+  if (!_cleanup_required) {
+    return;
+  }
+
+  // Be sure to cleanup associated sounds before cleaning up the manager:
+  AudioSet::iterator ai;
+  for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
+    (*ai)->cleanup();
+  }
+
+  clear_cache();
+
+  // Now stop the thread, if it has been started.
+  if (!_stream_thread.is_null()) {
+    milesAudio_cat.info()
+      << "Stopping audio streaming thread.\n";
+    PT(StreamThread) old_thread;
+    {
+      MutexHolder holder(_streams_lock);
+      nassertv(!_stream_thread.is_null());
+      _stream_thread->_keep_running = false;
+      _streams_cvar.signal();
+      old_thread = _stream_thread;
+      _stream_thread.clear();
+    }
+    old_thread->join();
+  }
+
+  _cleanup_required = false;
+  audio_debug("MilesAudioManager::cleanup() finished");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+output(ostream &out) const {
+  out << get_type() << ": " << _sounds_playing.size()
+      << " / " << _sounds_on_loan.size() << " sounds playing / total"; 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+write(ostream &out) const {
+  out << (*this) << "\n";
+  AudioSet::iterator ai;
+  for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
+    MilesAudioSound *sound = (*ai);
+    out << "  " << *sound << "\n";
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::start_service_stream
+//       Access: Private
+//  Description: Adds the indicated stream to the list of streams to
+//               be serviced by a Panda sub-thread.  This is in lieu
+//               of Miles' auto-service-stream mechanism.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+start_service_stream(HSTREAM stream) {
+  MutexHolder holder(_streams_lock);
+  nassertv(find(_streams.begin(), _streams.end(), stream) == _streams.end());
+  _streams.push_back(stream);
+  _streams_cvar.signal();
+
+  if (_stream_thread.is_null() && Thread::is_threading_supported()) {
+    milesAudio_cat.info()
+      << "Starting audio streaming thread.\n";
+    _stream_thread = new StreamThread(this);
+    _stream_thread->start(TP_low, true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::stop_service_stream
+//       Access: Private
+//  Description: Removes the indicated stream from the list of streams
+//               to be serviced by a Panda sub-thread.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+stop_service_stream(HSTREAM stream) {
+  MutexHolder holder(_streams_lock);
+  Streams::iterator si = find(_streams.begin(), _streams.end(), stream);
+  if (si != _streams.end()) {
+    _streams.erase(si);
+  }
+}
+  
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::most_recently_used
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+most_recently_used(const string &path) {
+  audio_debug("MilesAudioManager::most_recently_used(path=\""
+      <<path<<"\")");
+  LRU::iterator i=find(_lru.begin(), _lru.end(), &path);
+  if (i != _lru.end()) {
+    _lru.erase(i);
+  }
+  // At this point, path should not exist in the _lru:
+  assert(find(_lru.begin(), _lru.end(), &path) == _lru.end());
+  _lru.push_back(&path);
+  assert(is_valid());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::uncache_a_sound
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
@@ -445,180 +620,12 @@ uncache_a_sound() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::most_recently_used
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-most_recently_used(const string& path) {
-  audio_debug("MilesAudioManager::most_recently_used(path=\""
-      <<path<<"\")");
-  LRU::iterator i=find(_lru.begin(), _lru.end(), &path);
-  if (i != _lru.end()) {
-    _lru.erase(i);
-  }
-  // At this point, path should not exist in the _lru:
-  assert(find(_lru.begin(), _lru.end(), &path) == _lru.end());
-  _lru.push_back(&path);
-  assert(is_valid());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::clear_cache
-//       Access: Public
-//  Description: Clear out the sound cache.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-clear_cache() {
-  audio_debug("MilesAudioManager::clear_cache()");
-  if (_is_valid) { assert(is_valid()); }
-  _sounds.clear();
-  _lru.clear();
-  if (_is_valid) { assert(is_valid()); }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_cache_limit
-//       Access: Public
-//  Description: Set the number of sounds that the cache can hold.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-set_cache_limit(unsigned int count) {
-  audio_debug("MilesAudioManager::set_cache_limit(count="<<count<<")");
-  assert(is_valid());
-  while (_lru.size() > count) {
-    uncache_a_sound();
-  }
-  _cache_limit=count;
-  assert(is_valid());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_cache_limit
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-unsigned int MilesAudioManager::
-get_cache_limit() const {
-  audio_debug("MilesAudioManager::get_cache_limit() returning "
-      <<_cache_limit);
-  return _cache_limit;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::release_sound
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-release_sound(MilesAudioSound* audioSound) {
-  audio_debug("MilesAudioManager::release_sound(audioSound=\""
-              <<audioSound->get_name()<<"\"), this = " << (void *)this);
-  AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
-  nassertv(ai != _sounds_on_loan.end());
-  _sounds_on_loan.erase(ai);
-
-  audio_debug("MilesAudioManager::release_sound() finished");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_volume
-//       Access: Public
-//  Description: set the overall volume
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-set_volume(float volume) {
-  audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
-  if (_volume!=volume) {
-    _volume = volume;
-    // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
-    for (; i!=_sounds_on_loan.end(); ++i) {
-      (**i).set_volume((**i).get_volume());
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_volume
-//       Access: Public
-//  Description: get the overall volume
-////////////////////////////////////////////////////////////////////
-float MilesAudioManager::
-get_volume() const {
-  audio_debug("MilesAudioManager::get_volume() returning "<<_volume);
-  return _volume;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_play_rate
-//       Access: Public
-//  Description: set the overall play rate
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-set_play_rate(float play_rate) {
-  audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
-  if (_play_rate!=play_rate) {
-    _play_rate = play_rate;
-    // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
-    for (; i!=_sounds_on_loan.end(); ++i) {
-      (**i).set_play_rate((**i).get_play_rate());
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_play_rate
-//       Access: Public
-//  Description: get the overall speed/pitch/play rate
-////////////////////////////////////////////////////////////////////
-float MilesAudioManager::
-get_play_rate() const {
-  audio_debug("MilesAudioManager::get_play_rate() returning "<<_play_rate);
-  return _play_rate;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_active
-//       Access: Public
-//  Description: turn on/off
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-set_active(bool active) {
-  audio_debug("MilesAudioManager::set_active(flag="<<active<<")");
-  if (_active!=active) {
-    _active=active;
-    // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
-    for (; i!=_sounds_on_loan.end(); ++i) {
-      (**i).set_active(_active);
-    }
-
-    if((!_active) && _hasMidiSounds) {
-        force_midi_reset();
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_active
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool MilesAudioManager::
-get_active() const {
-  audio_debug("MilesAudioManager::get_active() returning "<<_active);
-  return _active;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::starting_sound
-//       Access: 
+//       Access: Private
 //  Description: Inform the manager that a sound is about to play.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-starting_sound(MilesAudioSound* audio) {
+starting_sound(MilesAudioSound *audio) {
   if (_concurrent_sound_limit) {
     reduce_sounds_playing_to(_concurrent_sound_limit);
   }
@@ -627,137 +634,209 @@ starting_sound(MilesAudioSound* audio) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::stopping_sound
-//       Access: 
+//       Access: Private
 //  Description: Inform the manager that a sound is finished or 
 //               someone called stop on the sound (this should not
 //               be called if a sound is only paused).
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-stopping_sound(MilesAudioSound* audio) {
+stopping_sound(MilesAudioSound *audio) {
   _sounds_playing.erase(audio);
   if (_hasMidiSounds && _sounds_playing.size() == 0) {
-    force_midi_reset();
+    GlobalMilesManager::get_global_ptr()->force_midi_reset();
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::set_concurrent_sound_limit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-set_concurrent_sound_limit(unsigned int limit) {
-  _concurrent_sound_limit = limit;
-  reduce_sounds_playing_to(_concurrent_sound_limit);
-}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::get_concurrent_sound_limit
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-unsigned int MilesAudioManager::
-get_concurrent_sound_limit() const {
-  return _concurrent_sound_limit;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::reduce_sounds_playing_to
+//     Function: MilesAudioManager::load
 //       Access: Private
-//  Description: 
+//  Description: Reads a sound file and allocates a SoundData pointer
+//               for it.  Returns NULL if the sound file cannot be
+//               loaded.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-reduce_sounds_playing_to(unsigned int count) {
-  int limit = _sounds_playing.size() - count;
-  while (limit-- > 0) {
-    SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
-    (**sound).stop();
-  }
-}
+PT(MilesAudioManager::SoundData) MilesAudioManager::
+load(const Filename &file_name) {
+  PT(SoundData) sd = new SoundData;
 
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::stop_all_sounds
-//       Access: Public
-//  Description: Stop playback on all sounds managed by this manager.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-stop_all_sounds() {
-  audio_debug("MilesAudioManager::stop_all_sounds()");
-  reduce_sounds_playing_to(0);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::force_midi_reset
-//       Access: Private
-//  Description: ?????.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-force_midi_reset() {
-  if (!miles_audio_force_midi_reset) {
-    audio_debug("MilesAudioManager::skipping force_midi_reset");  
-    return;
-  }
-  audio_debug("MilesAudioManager::force_midi_reset");
-
-  // sometimes Miles seems to leave midi notes hanging, even after
-  // stop is called, so perform an explicit reset using winMM.dll
-  // calls, just to ensure silence.
-
-  HMDIDRIVER hMid=NULL;
-  AIL_quick_handles(0, &hMid, 0);
-  if ((hMid!=NULL) && (hMid->deviceid != MIDI_NULL_DRIVER) && (hMid->hMidiOut != NULL)) {
-    audio_debug("MilesAudioManager::calling midiOutReset");
-#ifdef WIN32
-    midiOutReset(hMid->hMidiOut);
-#endif
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::cleanup
-//       Access: Private
-//  Description: Shuts down the audio manager and releases any
-//               resources associated with it.  Also cleans up all
-//               AudioSounds created via the manager.
-////////////////////////////////////////////////////////////////////
-void MilesAudioManager::
-cleanup() {
-  audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
-              << ", _cleanup_required = " << _cleanup_required);
-  if (!_cleanup_required) {
-    return;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) file = vfs->get_file(file_name);
+  if (file == (VirtualFile *)NULL) {
+    milesAudio_cat.warning()
+      << "No such file: " << file_name << "\n";
+    return NULL;
   }
 
-  // Be sure to cleanup associated sounds before cleaning up the manager:
-  AudioSet::iterator ai;
-  for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
-    (*ai)->cleanup();
+  if (file->get_file_size() == 0) {
+    milesAudio_cat.warning()
+      << "File " << file_name << " is empty\n";
+    return NULL;
   }
 
-  clear_cache();
-  nassertv(_active_managers > 0);
-  --_active_managers;
-  audio_debug("  _active_managers="<<_active_managers);
+  sd->_basename = file_name.get_basename();
 
-  if (_active_managers == 0) {
-    if (_dls_field != NULL) {
-      HDLSDEVICE dls;
-      AIL_quick_handles(0, 0, &dls);
-      audio_debug("  AIL_DLS_unload()");
-      AIL_DLS_unload(dls, _dls_field);
-      _dls_field = NULL;
+  string extension = sd->_basename.get_extension();
+  if (extension == "pz") {
+    extension = Filename(sd->_basename.get_basename_wo_extension()).get_extension();
+  }
+  bool is_midi_file = (downcase(extension) == "mid");
+
+  if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (off_t)miles_audio_preload_threshold) ||
+      is_midi_file) {
+    // If the file is sufficiently small, we'll preload it into
+    // memory.  MIDI files cannot be streamed, so we always preload
+    // them, regardless of size.
+
+    if (!file->read_file(sd->_raw_data, true)) {
+      milesAudio_cat.warning()
+        << "Unable to read " << file_name << "\n";
+      return NULL;
     }
 
-    if (_miles_active) {
-      audio_debug("  AIL_quick_shutdown()");
-      AIL_quick_shutdown();
-      _miles_active = false;
+    sd->_file_type = 
+      AIL_file_type(&sd->_raw_data[0], sd->_raw_data.size());
+
+    if (sd->_file_type == AILFILETYPE_MIDI) {
+      // A standard MIDI file.  We have to convert this to XMIDI for
+      // Miles.
+      void *xmi;
+      U32 xmi_size;
+      if (AIL_MIDI_to_XMI(&sd->_raw_data[0], sd->_raw_data.size(),
+                          &xmi, &xmi_size, 0)) {
+        audio_debug("converted " << sd->_basename << " from standard MIDI ("
+                    << sd->_raw_data.size() << " bytes) to XMIDI ("
+                    << xmi_size << " bytes)");
+
+        // Copy the data to our own buffer and free the
+        // Miles-allocated data.
+        sd->_raw_data.clear();
+        sd->_raw_data.insert(sd->_raw_data.end(), 
+                             (unsigned char *)xmi, (unsigned char *)xmi + xmi_size);
+        AIL_mem_free_lock(xmi);
+        sd->_file_type = AILFILETYPE_XMIDI;
+      } else {
+        milesAudio_cat.warning()
+          << "Could not convert " << sd->_basename << " to XMIDI.\n";
+      }
     }
+    
+    bool expand_to_wav = false;
+
+    if (sd->_file_type != AILFILETYPE_MPEG_L3_AUDIO) {
+      audio_debug(sd->_basename << " is not an mp3 file.");
+    } else if ((int)sd->_raw_data.size() >= miles_audio_expand_mp3_threshold) {
+      audio_debug(sd->_basename << " is too large to expand in-memory.");
+    } else {
+      audio_debug(sd->_basename << " will be expanded in-memory.");
+      expand_to_wav = true;
+    }
+    
+    if (expand_to_wav) {
+      // Now convert the file to WAV format in-memory.  This is useful
+      // to work around seek and length problems associated with
+      // variable bit-rate MP3 encoding.
+      void *wav_data;
+      U32 wav_data_size;
+      if (AIL_decompress_ASI(&sd->_raw_data[0], sd->_raw_data.size(),
+                             sd->_basename.c_str(), &wav_data, &wav_data_size,
+                             NULL)) {
+        audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
+                    << " bytes to " << wav_data_size << " bytes.");
+        
+        if (wav_data_size != 0) {
+          // Now copy the memory into our own buffers, and free the
+          // Miles-allocated memory.
+          sd->_raw_data.clear();
+          sd->_raw_data.insert(sd->_raw_data.end(),
+                               (unsigned char *)wav_data, (unsigned char *)wav_data + wav_data_size);
+          sd->_file_type = AILFILETYPE_PCM_WAV;
+          sd->_basename.set_extension("wav");
+        }
+        AIL_mem_free_lock(wav_data);
+        
+      } else {
+        audio_debug("unable to expand " << sd->_basename);
+      }
+    }
+
+  } else {
+    // If the file is large, we'll stream it from disk instead of
+    // preloading it.  This means we don't need to load any data at
+    // this point.
   }
-  _cleanup_required = false;
-  audio_debug("MilesAudioManager::cleanup() finished");
+
+  return sd;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::thread_main
+//       Access: Private
+//  Description: Called to service the streaming audio channels
+//               currently playing on the audio manager.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+thread_main(volatile bool &keep_running) {
+  MutexHolder holder(_streams_lock);
+
+  while (keep_running) {
+    if (_streams.empty()) {
+      // If there are no streams to service, block on the condition
+      // variable.
+      _streams_cvar.wait();
+    } else {
+      do_service_streams();
+    }
+
+    // Now yield to be polite to the main application.
+    _streams_lock.release();
+    Thread::force_yield();
+    _streams_lock.lock();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::do_service_streams
+//       Access: Private
+//  Description: Internal function to service all the streams.
+//               Assumes _streams_lock is already held.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+do_service_streams() {
+  size_t i = 0;
+  while (i < _streams.size()) {
+    HSTREAM stream = _streams[i];
+    
+    // We must release the lock while we are servicing stream i.
+    _streams_lock.release();
+    AIL_service_stream(stream, 0);
+    Thread::consider_yield();
+    _streams_lock.lock();
+    
+    ++i;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::StreamThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MilesAudioManager::StreamThread::
+StreamThread(MilesAudioManager *mgr) : 
+  Thread("StreamThread", "StreamThread"),
+  _mgr(mgr) 
+{
+  _keep_running = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::StreamThread::thread_main
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::StreamThread::
+thread_main() {
+  _mgr->thread_main(_keep_running);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -767,7 +846,6 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::SoundData::
 SoundData() :
-  _audio(0),
   _raw_data(MilesAudioManager::get_class_type()),
   _has_length(false)
 {
@@ -780,12 +858,6 @@ SoundData() :
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::SoundData::
 ~SoundData() {
-  if (_audio != 0) {
-    if (_miles_active) {
-      AIL_quick_unload(_audio);
-    }
-    _audio = 0;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -797,40 +869,36 @@ float MilesAudioManager::SoundData::
 get_length() {
   if (!_has_length) {
     // Time to determine the length of the file.
+    
+    if (_raw_data.empty()) {
+      _length = 0.0f;
+      _has_length = true;
 
-    if (_file_type == AILFILETYPE_MPEG_L3_AUDIO &&
-        (int)_raw_data.size() < miles_audio_calc_mp3_threshold &&
-        !_raw_data.empty()) {
-      // If it's an mp3 file, we may not trust Miles to compute its
-      // length correctly (Miles doesn't correctly compute the length
-      // of VBR MP3 files).  So in that case, decompress the whole
-      // file to determine its precise length.
-      audio_debug("Computing length of " << _basename);
-
-      void *wav_data;
-      U32 wav_data_size;
-      if (AIL_decompress_ASI(&_raw_data[0], _raw_data.size(),
-                             _basename.c_str(), &wav_data, &wav_data_size,
-                             NULL)) {
-        AILSOUNDINFO info;
-        if (AIL_WAV_info(wav_data, &info)) {
-          _length = (float)info.samples / (float)info.rate;
-          audio_debug(info.samples << " samples at " << info.rate
-                      << "; length is " << _length << " seconds.");
-          _has_length = true;
-        }
-
-        AIL_mem_free_lock(wav_data);
+    } else if (_file_type == AILFILETYPE_MPEG_L3_AUDIO) {
+      // If it's an mp3 file, we have to calculate its length by
+      // walking through all of its frames.
+      audio_debug("Computing length of mp3 file " << _basename);
+      
+      MP3_INFO info;
+      AIL_inspect_MP3(&info, &_raw_data[0], _raw_data.size());
+      _length = 0.0f;
+      while (AIL_enumerate_MP3_frames(&info)) {
+        _length += info.data_size * 8.0f / info.bit_rate;
       }
-    }
+      _has_length = true;
 
-    if (!_has_length) {
-      // If it's not an mp3 file, or we don't care about precalcing
-      // mp3 files, just ask Miles to do it.
-      _length = ((float)AIL_quick_ms_length(_audio)) * 0.001f;
+    } else if (_file_type == AILFILETYPE_PCM_WAV ||
+               _file_type == AILFILETYPE_ADPCM_WAV ||
+               _file_type == AILFILETYPE_OTHER_ASI_WAV) {
+      audio_debug("Getting length of wav file " << _basename);
 
-      audio_debug("Miles reports length of " << _length
-                  << " for " << _basename);
+      AILSOUNDINFO info;
+      if (AIL_WAV_info(&_raw_data[0], &info)) {
+        _length = (float)info.samples / (float)info.rate;
+        audio_debug(info.samples << " samples at " << info.rate
+                    << "; length is " << _length << " seconds.");
+        _has_length = true;
+      }
     }
   }
 

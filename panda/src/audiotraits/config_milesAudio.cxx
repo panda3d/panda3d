@@ -22,6 +22,9 @@
 #include "config_milesAudio.h"
 #include "milesAudioManager.h"
 #include "milesAudioSound.h"
+#include "milesAudioSample.h"
+#include "milesAudioSequence.h"
+#include "milesAudioStream.h"
 #include "pandaSystem.h"
 #include "dconfig.h"
 
@@ -42,16 +45,26 @@ ConfigVariableInt miles_audio_expand_mp3_threshold
           "work around problems with Miles being unable to correctly "
           "report the length of, or seek within, a variable bit-rate encoded "
           "MP3 file.  Any MP3 file whose length in bytes is less than "
-          "this value will be expanded."));
+          "this value will be expanded.  This only applies to files "
+          "within the miles-audio-preload-threshold."));
 
-ConfigVariableInt miles_audio_calc_mp3_threshold
-("miles-audio-calc-mp3-threshold", 1048576,
- PRC_DESC("This is a second fallback for miles-audio-expand-mp3-threshold.  "
-          "Any MP3 file whose length in bytes is less than this value "
-          "will have its length calculated on demand, by running through "
-          "the entire file first.  This works around a Miles bug in "
-          "which variable bit-rate encoded MP3 files do not report an "
-          "accurate length."));
+ConfigVariableInt miles_audio_preload_threshold
+("miles-audio-preload-threshold", -1,
+ PRC_DESC("This is the last Miles fallback size, and should be no smaller "
+          "than both miles-audio-expand-mp3-threshold and "
+          "miles-audio-calc-mp3-threshold.  Files that are smaller "
+          "than this number of bytes will be preloaded and kept "
+          "resident in memory, while files that are this size or larger "
+          "will be streamed from disk.  Set this to -1 to preload "
+          "every file."));
+
+ConfigVariableBool miles_audio_panda_threads
+("miles-audio-panda-threads", true,
+ PRC_DESC("Set this true to service Miles background audio via Panda's "
+          "threading interface, instead of Miles' built-in threading "
+          "interface.  This gives Panda more control over the threading, "
+          "and ensures better lock protection within Panda.  This has "
+          "no meaning unless Panda is compiled with thread support."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libMilesAudio
@@ -73,6 +86,9 @@ init_libMilesAudio() {
 
   MilesAudioManager::init_type();
   MilesAudioSound::init_type();
+  MilesAudioSample::init_type();
+  MilesAudioSequence::init_type();
+  MilesAudioStream::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("Miles");

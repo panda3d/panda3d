@@ -216,7 +216,10 @@ PUBLISHED:
   virtual void audio_3d_set_drop_off_factor(float factor);
   virtual float audio_3d_get_drop_off_factor() const;
 
-  Filename get_dls_pathname();
+  static Filename get_dls_pathname();
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out) const;
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);
@@ -250,5 +253,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+inline ostream &
+operator << (ostream &out, const AudioManager &mgr) {
+  mgr.output(out);
+  return out;
+}
 
 #endif /* __AUDIO_MANAGER_H__ */
