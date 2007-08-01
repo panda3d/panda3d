@@ -354,6 +354,8 @@ class GravityWalker(DirectObject.DirectObject):
             # Each time we change the collision geometry, make one
             # more pass to ensure we aren't standing in a wall.
             self.oneTimeCollide()
+            # make sure we have a shadow traverser
+            base.initShadowTrav()
             if active:
                 if 1:
                     # Please let skyler or drose know if this is causing a problem
@@ -364,14 +366,21 @@ class GravityWalker(DirectObject.DirectObject):
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
                 self.cTrav.addCollider(self.cEventSphereNodePath, self.event)
-                self.cTrav.addCollider(self.cRayNodePath, self.lifter)
+                # Add the lifter to the shadow traverser, which runs after
+                # our traverser. This prevents the "fall through wall and
+                # off ledge" bug. The problem was that we couldn't control
+                # which collided first, the wall pusher or the lifter, if
+                # they're in the same collision traverser. If the lifter
+                # collided first, we'd start falling before getting pushed
+                # back behind the wall.
+                base.shadowTrav.addCollider(self.cRayNodePath, self.lifter)
             else:
                 if hasattr(self, 'cTrav'):
                     self.cTrav.removeCollider(self.cWallSphereNodePath)
                     if self.wantFloorSphere:
                         self.cTrav.removeCollider(self.cFloorSphereNodePath)
                     self.cTrav.removeCollider(self.cEventSphereNodePath)
-                    self.cTrav.removeCollider(self.cRayNodePath)
+                base.shadowTrav.removeCollider(self.cRayNodePath)
 
     def getCollisionsActive(self):
         assert self.debugPrint("getCollisionsActive() returning=%s"%(

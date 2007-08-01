@@ -1432,6 +1432,12 @@ class ShowBase(DirectObject.DirectObject):
         IntervalManager.ivalMgr.step()
         return Task.cont
 
+    def initShadowTrav(self):
+        if not self.shadowTrav:
+            # set up the shadow collision traverser
+            self.shadowTrav = CollisionTraverser("base.shadowTrav")
+            self.shadowTrav.setRespectPrevTransform(False)
+
     def __shadowCollisionLoop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
@@ -1509,9 +1515,10 @@ class ShowBase(DirectObject.DirectObject):
         # between collisionLoop and igLoop
         self.taskMgr.add(self.__collisionLoop, 'collisionLoop', priority = 30)
         # do the shadowCollisionLoop after the collisionLoop and
-        # befor the igLoop:
+        # before the igLoop and camera updates (this moves the avatar vertically,
+        # to his final position for the frame):
         self.taskMgr.add(
-            self.__shadowCollisionLoop, 'shadowCollisionLoop', priority = 45)
+            self.__shadowCollisionLoop, 'shadowCollisionLoop', priority = 44)
         # give the igLoop task a reasonably "late" priority,
         # so that it will get run after most tasks
         self.taskMgr.add(self.__igLoop, 'igLoop', priority = 50)
