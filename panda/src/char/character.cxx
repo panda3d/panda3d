@@ -561,7 +561,7 @@ r_merge_bundles(Character::JointMap &joint_map,
   int old_num_children = old_group->get_num_children();
   int new_num_children = new_group->get_num_children();
 
-  PartGroup::Children new_children;
+  PartGroup::Children new_children(PartGroup::get_class_type());
   new_children.reserve(max(old_num_children, new_num_children));
 
   while (i < old_num_children && j < new_num_children) {
