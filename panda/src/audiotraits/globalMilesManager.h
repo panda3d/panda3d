@@ -26,6 +26,10 @@
 #include "pset.h"
 #include "pmutex.h"
 
+#ifndef UINTa
+#define UINTa U32
+#endif
+
 class MilesAudioSample;
 class MilesAudioSequence;
 

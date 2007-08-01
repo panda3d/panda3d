@@ -531,7 +531,7 @@ output(ostream &out) const {
 void MilesAudioManager::
 write(ostream &out) const {
   out << (*this) << "\n";
-  AudioSet::iterator ai;
+  AudioSet::const_iterator ai;
   for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
     MilesAudioSound *sound = (*ai);
     out << "  " << *sound << "\n";
