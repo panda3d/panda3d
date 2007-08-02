@@ -27,3 +27,27 @@ INLINE bool GlobalMilesManager::
 is_open() const {
   return _is_open;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobalMilesManager::get_num_samples
+//       Access: Public
+//  Description: Returns the number of sample handles that have been
+//               allocated.
+////////////////////////////////////////////////////////////////////
+INLINE int GlobalMilesManager::
+get_num_samples() const {
+  MutexHolder holder(_samples_lock);
+  return _samples.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GlobalMilesManager::get_num_sequences
+//       Access: Public
+//  Description: Returns the number of sequence handles that have been
+//               allocated.
+////////////////////////////////////////////////////////////////////
+INLINE int GlobalMilesManager::
+get_num_sequences() const {
+  MutexHolder holder(_sequences_lock);
+  return _sequences.size();
+}

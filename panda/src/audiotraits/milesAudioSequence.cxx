@@ -92,6 +92,8 @@ play() {
         _sequence = 0;
       } else {
         AIL_init_sequence(_sequence, &_sd->_raw_data[0], 0);
+        AIL_set_sequence_user_data(_sequence, 0, (SINTa)this);
+        AIL_register_sequence_callback(_sequence, finish_callback);
 
         set_volume(_volume);
         set_play_rate(_play_rate);
@@ -294,6 +296,22 @@ void MilesAudioSequence::
 internal_stop() {
   _sequence = 0;
   _sequence_index = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::finish_callback
+//       Access: Private, Static
+//  Description: This callback is made by Miles (possibly in a
+//               sub-thread) when the sequence finishes.
+////////////////////////////////////////////////////////////////////
+void AILCALLBACK MilesAudioSequence::
+finish_callback(HSEQUENCE sequence) {
+  MilesAudioSequence *self = (MilesAudioSequence *)AIL_sequence_user_data(sequence, 0);
+  if (milesAudio_cat.is_debug()) {
+    milesAudio_cat.debug()
+      << "finished " << *self << "\n";
+  }
+  self->_manager->_sounds_finished = true;
 }
 
 #endif //]

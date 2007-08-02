@@ -25,9 +25,14 @@
 #include "mss.h"
 #include "pset.h"
 #include "pmutex.h"
+#include "mutexHolder.h"
 
 #ifndef UINTa
 #define UINTa U32
+#endif
+
+#ifndef SINTa
+#define SINTa S32
 #endif
 
 class MilesAudioSample;
@@ -51,9 +56,11 @@ public:
 
   bool get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound);
   void release_sample(size_t index, MilesAudioSample *sound);
+  INLINE int get_num_samples() const;
 
   bool get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound);
   void release_sequence(size_t index, MilesAudioSequence *sound);
+  INLINE int get_num_sequences() const;
 
   void force_midi_reset();
 

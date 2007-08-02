@@ -96,6 +96,8 @@ play() {
                                   &_sd->_raw_data[0], _sd->_raw_data.size(),
                                   0);
         _original_playback_rate = AIL_sample_playback_rate(_sample);
+        AIL_set_sample_user_data(_sample, 0, (SINTa)this);
+        AIL_register_EOS_callback(_sample, finish_callback);
 
         set_volume(_volume);
         set_play_rate(_play_rate);
@@ -294,6 +296,19 @@ cleanup() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSample::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSample::
+output(ostream &out) const {
+  out << get_type() << " " << get_name() << " " << status();
+  if (!_sd.is_null()) {
+    out << " " << (_sd->_raw_data.size() + 1023) / 1024 << "K";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::internal_stop
 //       Access: Private
 //  Description: Called by the GlobalMilesManager when it is detected
@@ -304,6 +319,22 @@ void MilesAudioSample::
 internal_stop() {
   _sample = 0;
   _sample_index = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSample::finish_callback
+//       Access: Private, Static
+//  Description: This callback is made by Miles (possibly in a
+//               sub-thread) when the sample finishes.
+////////////////////////////////////////////////////////////////////
+void AILCALLBACK MilesAudioSample::
+finish_callback(HSAMPLE sample) {
+  MilesAudioSample *self = (MilesAudioSample *)AIL_sample_user_data(sample, 0);
+  if (milesAudio_cat.is_debug()) {
+    milesAudio_cat.debug()
+      << "finished " << *self << "\n";
+  }
+  self->_manager->_sounds_finished = true;
 }
 
 #endif //]

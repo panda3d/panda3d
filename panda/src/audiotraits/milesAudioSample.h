@@ -56,9 +56,11 @@ public:
   virtual AudioSound::SoundStatus status() const;
 
   virtual void cleanup();
+  virtual void output(ostream &out) const;
 
 private:
   void internal_stop();
+  static void AILCALLBACK finish_callback(HSAMPLE sample);
 
   PT(MilesAudioManager::SoundData) _sd;
   HSAMPLE _sample;

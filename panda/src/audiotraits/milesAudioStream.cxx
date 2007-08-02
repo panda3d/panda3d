@@ -77,6 +77,14 @@ play() {
     if (_stream == 0) {
       GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
       _stream = AIL_open_stream(mgr->_digital_driver, _path.c_str(), 0);
+      if (_stream == 0) {
+        milesAudio_cat.warning()
+          << "Could not play " << _file_name << ": too many open streams\n";
+        return;
+      }
+      AIL_set_stream_user_data(_stream, 0, (SINTa)this);
+      AIL_register_stream_callback(_stream, finish_callback);
+
     } else {
       // We already had the stream open.  Keep it open; just restart
       // it.
@@ -84,29 +92,24 @@ play() {
       _manager->stop_service_stream(_stream);
     }
 
-    if (_stream == 0) {
-      milesAudio_cat.warning()
-        << "Could not play " << _file_name << ": too many open streams\n";
-
+    // Start playing:
+    nassertv(_stream != 0);
+    HSAMPLE sample = AIL_stream_sample_handle(_stream);
+    nassertv(sample != 0);
+    
+    _original_playback_rate = AIL_sample_playback_rate(sample);
+    set_volume(_volume);
+    set_play_rate(_play_rate);
+    
+    AIL_set_stream_loop_count(_stream, _loop_count);
+    
+    if (miles_audio_panda_threads) {
+      AIL_auto_service_stream(_stream, 0);
+      _manager->start_service_stream(_stream);
     } else {
-      // Start playing:
-      HSAMPLE sample = AIL_stream_sample_handle(_stream);
-      nassertv(sample != 0);
-      
-      _original_playback_rate = AIL_sample_playback_rate(sample);
-      set_volume(_volume);
-      set_play_rate(_play_rate);
-      
-      AIL_set_stream_loop_count(_stream, _loop_count);
-      
-      if (miles_audio_panda_threads) {
-        AIL_auto_service_stream(_stream, 0);
-        _manager->start_service_stream(_stream);
-      } else {
-        AIL_auto_service_stream(_stream, 1);
-      }
-      AIL_start_stream(_stream);
+      AIL_auto_service_stream(_stream, 1);
     }
+    AIL_start_stream(_stream);
 
   } else {
     // In case _loop_count gets set to forever (zero):
@@ -293,6 +296,22 @@ cleanup() {
   if (_stream) {
     stop();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioStream::finish_callback
+//       Access: Private, Static
+//  Description: This callback is made by Miles (possibly in a
+//               sub-thread) when the stream finishes.
+////////////////////////////////////////////////////////////////////
+void AILCALLBACK MilesAudioStream::
+finish_callback(HSTREAM stream) {
+  MilesAudioStream *self = (MilesAudioStream *)AIL_stream_user_data(stream, 0);
+  if (milesAudio_cat.is_debug()) {
+    milesAudio_cat.debug()
+      << "finished " << *self << "\n";
+  }
+  self->_manager->_sounds_finished = true;
 }
 
 

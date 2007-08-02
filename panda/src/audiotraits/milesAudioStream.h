@@ -58,6 +58,8 @@ public:
   virtual void cleanup();
 
 private:
+  static void AILCALLBACK finish_callback(HSTREAM stream);
+
   Filename _path;
   HSTREAM _stream;
   S32 _original_playback_rate;

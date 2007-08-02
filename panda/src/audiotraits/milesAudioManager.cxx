@@ -32,6 +32,7 @@
 #include "nullAudioSound.h"
 #include "string_utils.h"
 #include "mutexHolder.h"
+#include "reMutexHolder.h"
 
 #include <algorithm>
 
@@ -52,7 +53,9 @@ PT(AudioManager) Create_AudioManager() {
 //               Miles resources.
 ////////////////////////////////////////////////////////////////////
 MilesAudioManager::
-MilesAudioManager() : _streams_lock("MilesAudioManager::_streams_lock"),
+MilesAudioManager() : 
+  _lock("MilesAudioManager::_lock"),
+  _streams_lock("MilesAudioManager::_streams_lock"),
   _streams_cvar(_streams_lock)
 {
   audio_debug("MilesAudioManager::MilesAudioManager(), this = " 
@@ -68,6 +71,7 @@ MilesAudioManager() : _streams_lock("MilesAudioManager::_streams_lock"),
   _concurrent_sound_limit = 0;
   _is_valid = true;
   _hasMidiSounds = false;
+  _sounds_finished = false;
 
   // We used to hang a call to a force-shutdown function on atexit(),
   // so that any running sounds (particularly MIDI sounds) would be
@@ -125,22 +129,8 @@ shutdown() {
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 is_valid() {
-  bool check=true;
-  if (_sounds.size() != _lru.size()) {
-    audio_debug("-- Error _sounds.size() != _lru.size() --");
-    check=false;
-  } else {
-    LRU::const_iterator i=_lru.begin();
-    for (; i != _lru.end(); ++i) {
-      SoundMap::const_iterator smi=_sounds.find(**i);
-      if (smi == _sounds.end()) {
-        audio_debug("-- "<<**i<<" in _lru and not in _sounds --");
-        check=false;
-        break;
-      }
-    }
-  }
-  return _is_valid && check;
+  ReMutexHolder holder(_lock);
+  return do_is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,15 +139,15 @@ is_valid() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
-get_sound(const string& file_name, bool) {
+get_sound(const string &file_name, bool) {
+  ReMutexHolder holder(_lock);
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
-  if(!is_valid()) {
+  if (!do_is_valid()) {
      audio_debug("invalid MilesAudioManager returning NullSound");
      return get_null_sound();
   }
 
-  assert(is_valid());
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -172,6 +162,7 @@ get_sound(const string& file_name, bool) {
     // ...found the sound in the cache.
     sd = (*si).second;
     audio_debug("  sound found in pool 0x" << (void*)sd);
+
   } else {
     // ...the sound was not found in the cache/pool.
     sd = load(path);
@@ -183,11 +174,11 @@ get_sound(const string& file_name, bool) {
       // The following is roughly like: _sounds[path] = sd;
       // But, it gives us an iterator into the map.
       pair<SoundMap::const_iterator, bool> ib
-          =_sounds.insert(SoundMap::value_type(path, sd));
+          = _sounds.insert(SoundMap::value_type(path, sd));
       if (!ib.second) {
         // The insert failed.
         audio_debug("  failed map insert of "<<path);
-        assert(is_valid());
+        nassertr(do_is_valid(), NULL);
         return get_null_sound();
       }
       // Set si, so that we can get a reference to the path
@@ -228,7 +219,7 @@ get_sound(const string& file_name, bool) {
   }
 
   audio_debug("  returning 0x" << (void*)audioSound);
-  assert(is_valid());
+  nassertr(do_is_valid(), NULL);
   return audioSound;
 }
 
@@ -238,10 +229,11 @@ get_sound(const string& file_name, bool) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const string &file_name) {
   audio_debug("MilesAudioManager::uncache_sound(file_name=\""
       <<file_name<<"\")");
-  assert(is_valid());
+  ReMutexHolder holder(_lock);
+  nassertv(do_is_valid());
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -249,15 +241,15 @@ uncache_sound(const string& file_name) {
     vfs->resolve_filename(path, get_model_path());
 
   audio_debug("  path=\""<<path<<"\"");
-  SoundMap::iterator i=_sounds.find(path);
+  SoundMap::iterator i = _sounds.find(path);
   if (i != _sounds.end()) {
-    assert(_lru.size()>0);
-    LRU::iterator lru_i=find(_lru.begin(), _lru.end(), &(i->first));
-    assert(lru_i != _lru.end());
+    nassertv(_lru.size() > 0);
+    LRU::iterator lru_i = find(_lru.begin(), _lru.end(), &(i->first));
+    nassertv(lru_i != _lru.end());
     _lru.erase(lru_i);
     _sounds.erase(i);
   }
-  assert(is_valid());
+  nassertv(do_is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,10 +260,8 @@ uncache_sound(const string& file_name) {
 void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
-  if (_is_valid) { assert(is_valid()); }
-  _sounds.clear();
-  _lru.clear();
-  if (_is_valid) { assert(is_valid()); }
+  ReMutexHolder holder(_lock);
+  do_clear_cache();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,13 +271,15 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 set_cache_limit(unsigned int count) {
+  ReMutexHolder holder(_lock);
+
   audio_debug("MilesAudioManager::set_cache_limit(count="<<count<<")");
-  assert(is_valid());
+  nassertv(do_is_valid());
   while (_lru.size() > count) {
     uncache_a_sound();
   }
   _cache_limit=count;
-  assert(is_valid());
+  nassertv(do_is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,10 +300,11 @@ get_cache_limit() const {
 void MilesAudioManager::
 set_volume(float volume) {
   audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
-  if (_volume!=volume) {
+  ReMutexHolder holder(_lock);
+  if (_volume != volume) {
     _volume = volume;
     // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
+    AudioSet::iterator i = _sounds_on_loan.begin();
     for (; i!=_sounds_on_loan.end(); ++i) {
       (*i)->set_volume((*i)->get_volume());
     }
@@ -336,11 +329,12 @@ get_volume() const {
 void MilesAudioManager::
 set_play_rate(float play_rate) {
   audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
-  if (_play_rate!=play_rate) {
+  ReMutexHolder holder(_lock);
+  if (_play_rate != play_rate) {
     _play_rate = play_rate;
     // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
-    for (; i!=_sounds_on_loan.end(); ++i) {
+    AudioSet::iterator i = _sounds_on_loan.begin();
+    for (; i != _sounds_on_loan.end(); ++i) {
       (*i)->set_play_rate((*i)->get_play_rate());
     }
   }
@@ -364,11 +358,12 @@ get_play_rate() const {
 void MilesAudioManager::
 set_active(bool active) {
   audio_debug("MilesAudioManager::set_active(flag="<<active<<")");
-  if (_active!=active) {
+  ReMutexHolder holder(_lock);
+  if (_active != active) {
     _active=active;
     // Tell our AudioSounds to adjust:
-    AudioSet::iterator i=_sounds_on_loan.begin();
-    for (; i!=_sounds_on_loan.end(); ++i) {
+    AudioSet::iterator i = _sounds_on_loan.begin();
+    for (; i != _sounds_on_loan.end(); ++i) {
       (*i)->set_active(_active);
     }
 
@@ -395,8 +390,9 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
+  ReMutexHolder holder(_lock);
   _concurrent_sound_limit = limit;
-  reduce_sounds_playing_to(_concurrent_sound_limit);
+  do_reduce_sounds_playing_to(_concurrent_sound_limit);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,17 +407,13 @@ get_concurrent_sound_limit() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::reduce_sounds_playing_to
-//       Access: Private, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
-  int limit = _sounds_playing.size() - count;
-  while (limit-- > 0) {
-    SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
-    (**sound).stop();
-  }
+  ReMutexHolder holder(_lock);
+  do_reduce_sounds_playing_to(count);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,12 +436,33 @@ stop_all_sounds() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 update() {
-  MutexHolder holder(_streams_lock);
+  {
+    MutexHolder holder(_streams_lock);
+    if (_stream_thread.is_null() && !_streams.empty()) {
+      // If we don't have a sub-thread, we have to service the streams
+      // in the main thread.
+      do_service_streams();
+    }
+  }
 
-  if (_stream_thread.is_null() && !_streams.empty()) {
-    // If we don't have a sub-thread, we have to service the streams
-    // in the main thread.
-    do_service_streams();
+  if (_sounds_finished) {
+    _sounds_finished = false;
+    
+    // If the _sounds_finished flag was set, we should scan our list
+    // of playing sounds and see if any of them have finished
+    // recently.  We don't do this in the finished callback, because
+    // that might have been called in a sub-thread (and we may not
+    // have threading supported--and mutex protection--compiled in).
+
+    SoundsPlaying::iterator si = _sounds_playing.begin();
+    while (si != _sounds_playing.end()) {
+      MilesAudioSound *sound = (*si);
+      ++si;
+
+      if (sound->status() == AudioSound::READY) {
+        sound->stop();
+      }
+    }
   }
 }
 
@@ -462,6 +475,7 @@ void MilesAudioManager::
 release_sound(MilesAudioSound *audioSound) {
   audio_debug("MilesAudioManager::release_sound(audioSound=\""
               <<audioSound->get_name()<<"\"), this = " << (void *)this);
+  ReMutexHolder holder(_lock);
   AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
   nassertv(ai != _sounds_on_loan.end());
   _sounds_on_loan.erase(ai);
@@ -480,6 +494,7 @@ void MilesAudioManager::
 cleanup() {
   audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
               << ", _cleanup_required = " << _cleanup_required);
+  ReMutexHolder holder(_lock);
   if (!_cleanup_required) {
     return;
   }
@@ -490,7 +505,7 @@ cleanup() {
     (*ai)->cleanup();
   }
 
-  clear_cache();
+  do_clear_cache();
 
   // Now stop the thread, if it has been started.
   if (!_stream_thread.is_null()) {
@@ -519,6 +534,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 output(ostream &out) const {
+  ReMutexHolder holder(_lock);
   out << get_type() << ": " << _sounds_playing.size()
       << " / " << _sounds_on_loan.size() << " sounds playing / total"; 
 }
@@ -530,14 +546,87 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 write(ostream &out) const {
+  ReMutexHolder holder(_lock);
+
   out << (*this) << "\n";
   AudioSet::const_iterator ai;
   for (ai = _sounds_on_loan.begin(); ai != _sounds_on_loan.end(); ++ai) {
     MilesAudioSound *sound = (*ai);
     out << "  " << *sound << "\n";
   }
+
+  {
+    MutexHolder holder(_streams_lock);
+    out << _streams.size() << " streams opened.\n";
+    if (!_stream_thread.is_null()) {
+      out << "(Audio streaming thread has been started.)\n";
+    }
+  }
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+ 
+  int num_samples = mgr->get_num_samples();
+  out << num_samples << " sample handles allocated globally.\n";
+
+  int num_sequences = mgr->get_num_sequences();
+  out << num_sequences << " sequence handles allocated globally.\n";
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::do_is_valid
+//       Access: Private
+//  Description: Implementation of is_valid().  Assumes the lock is
+//               already held.
+////////////////////////////////////////////////////////////////////
+bool MilesAudioManager::
+do_is_valid() {
+  bool check = true;
+  if (_sounds.size() != _lru.size()) {
+    audio_debug("-- Error _sounds.size() != _lru.size() --");
+    check = false;
+
+  } else {
+    LRU::const_iterator i = _lru.begin();
+    for (; i != _lru.end(); ++i) {
+      SoundMap::const_iterator smi = _sounds.find(**i);
+      if (smi == _sounds.end()) {
+        audio_debug("-- "<<**i<<" in _lru and not in _sounds --");
+        check = false;
+        break;
+      }
+    }
+  }
+  return _is_valid && check;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::do_reduce_sounds_playing_to
+//       Access: Private
+//  Description: Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+do_reduce_sounds_playing_to(unsigned int count) {
+  int limit = _sounds_playing.size() - count;
+  while (limit-- > 0) {
+    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    assert(sound != _sounds_playing.end());
+    (**sound).stop();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::do_clear_cache
+//       Access: Private
+//  Description: Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+do_clear_cache() {
+  if (_is_valid) { nassertv(do_is_valid()); }
+  _sounds.clear();
+  _lru.clear();
+  if (_is_valid) { nassertv(do_is_valid()); }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::start_service_stream
@@ -580,7 +669,7 @@ stop_service_stream(HSTREAM stream) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::most_recently_used
 //       Access: Private
-//  Description:
+//  Description: Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 most_recently_used(const string &path) {
@@ -593,18 +682,18 @@ most_recently_used(const string &path) {
   // At this point, path should not exist in the _lru:
   assert(find(_lru.begin(), _lru.end(), &path) == _lru.end());
   _lru.push_back(&path);
-  assert(is_valid());
+  nassertv(do_is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::uncache_a_sound
 //       Access: Private
-//  Description:
+//  Description: Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 uncache_a_sound() {
   audio_debug("MilesAudioManager::uncache_a_sound()");
-  assert(is_valid());
+  nassertv(do_is_valid());
   // uncache least recently used:
   assert(_lru.size()>0);
   LRU::reference path=_lru.front();
@@ -616,7 +705,7 @@ uncache_a_sound() {
     audio_debug("  uncaching \""<<i->first<<"\"");
     _sounds.erase(i);
   }
-  assert(is_valid());
+  nassertv(do_is_valid());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -626,8 +715,9 @@ uncache_a_sound() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 starting_sound(MilesAudioSound *audio) {
+  ReMutexHolder holder(_lock);
   if (_concurrent_sound_limit) {
-    reduce_sounds_playing_to(_concurrent_sound_limit);
+    do_reduce_sounds_playing_to(_concurrent_sound_limit);
   }
   _sounds_playing.insert(audio);
 }
@@ -641,6 +731,7 @@ starting_sound(MilesAudioSound *audio) {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 stopping_sound(MilesAudioSound *audio) {
+  ReMutexHolder holder(_lock);
   _sounds_playing.erase(audio);
   if (_hasMidiSounds && _sounds_playing.size() == 0) {
     GlobalMilesManager::get_global_ptr()->force_midi_reset();
@@ -654,6 +745,8 @@ stopping_sound(MilesAudioSound *audio) {
 //  Description: Reads a sound file and allocates a SoundData pointer
 //               for it.  Returns NULL if the sound file cannot be
 //               loaded.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 PT(MilesAudioManager::SoundData) MilesAudioManager::
 load(const Filename &file_name) {

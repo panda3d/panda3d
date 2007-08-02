@@ -31,6 +31,7 @@
 #include "pvector.h"
 #include "thread.h"
 #include "pmutex.h"
+#include "reMutex.h"
 #include "conditionVar.h"
 
 class MilesAudioSound;
@@ -65,7 +66,6 @@ public:
   virtual unsigned int get_concurrent_sound_limit() const;
 
   virtual void reduce_sounds_playing_to(unsigned int count);
-
   virtual void stop_all_sounds();
 
   virtual void update();
@@ -78,6 +78,10 @@ public:
   virtual void write(ostream &out) const;
 
 private:
+  bool do_is_valid();
+  void do_reduce_sounds_playing_to(unsigned int count);
+  void do_clear_cache();
+
   void start_service_stream(HSTREAM stream);
   void stop_service_stream(HSTREAM stream);
   
@@ -123,12 +127,12 @@ private:
   // The offspring of this manager:
   AudioSet _sounds_on_loan;
 
-  typedef pset<MilesAudioSound* > SoundsPlaying;
+  typedef pset<MilesAudioSound *> SoundsPlaying;
   // The sounds from this manager that are currently playing:
   SoundsPlaying _sounds_playing;
 
   // The Least Recently Used mechanism:
-  typedef pdeque<const string* > LRU;
+  typedef pdeque<const string *> LRU;
   LRU _lru;
   // State:
   float _volume;
@@ -140,6 +144,10 @@ private:
   
   bool _is_valid;
   bool _hasMidiSounds;
+
+  // This mutex protects everything above.
+  ReMutex _lock;
+  bool _sounds_finished;
 
   typedef pvector<HSTREAM> Streams;
   PT(StreamThread) _stream_thread;
