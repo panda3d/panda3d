@@ -304,6 +304,9 @@ issue_parameters(GSG *gsg, bool altered)
     for (int i=0; i<(int)_expansion->_mat_spec.size(); i++) {
       if (altered || _expansion->_mat_spec[i]._trans_dependent) {
         CGparameter p = _cg_parameter_map[_expansion->_mat_spec[i]._id._seqno];
+        if (p == NULL) {
+          continue;
+        }        
         const LMatrix4f *val = gsg->fetch_specified_value(_expansion->_mat_spec[i], altered);
         if (val) {
           HRESULT hr;
@@ -479,6 +482,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
         for (int i=0; i<nvarying; i++) {
           CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+          if (p == NULL) {
+            continue;
+          }        
           InternalName *name = _expansion->_var_spec[i]._name;
           int texslot = _expansion->_var_spec[i]._append_uv;
           if (texslot >= 0) {
@@ -684,6 +690,9 @@ disable_shader_texture_bindings(GSG *gsg)
   if (_cg_context) {
     for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
       CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+      if (p == NULL) {
+        continue;
+      }        
       int texunit = cgGetParameterResourceIndex(p);
 
       HRESULT hr;
@@ -721,6 +730,9 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
   if (_cg_context) {
     for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
       CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+      if (p == NULL) {
+        continue;
+      }        
       Texture *tex = 0;
       InternalName *id = _expansion->_tex_spec[i]._name;
       if (id != 0) {
