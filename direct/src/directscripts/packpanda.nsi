@@ -113,7 +113,7 @@ Section "${SMDIRECTORY}" SecCore
             File /r "${PANDA}\bin\eggcacher.exe"
             SetOutpath $INSTDIR\game
             File /r "${PPGAME}\*"
-            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk" "$INSTDIR\python\ppython.exe" "-E ${PPMAIN}" "$INSTDIR\${PPICON}" 0 SW_SHOWMINIMIZED "" "Play ${NAME}"
             # Preload all EGG files into the model-cache
             SetOutPath $INSTDIR
             SetDetailsPrint textonly
@@ -198,7 +198,7 @@ Section "${SMDIRECTORY}" SecCore
                     Pop $R0
                     StrCpy $TUTNAME $R0
                     CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
-                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
                     FindNext $2 $3
                     goto iloop
                 idone:
