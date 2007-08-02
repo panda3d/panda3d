@@ -52,8 +52,8 @@ class TreeNode:
         self.menuVar.set(0)
         self._popupMenu = None
         self.fSortChildren = False # [gjeon] flag for sorting children or not
-        self.fModeChildrenTag = 0 # [gjeon] 0: hide by given tag, 1: show by given tag
-        self.childrenTag = None
+        self.fModeChildrenTag = 0 # [gjeon] flag for using filter or not
+        self.childrenTag = None # [gjeon] filter dictionary for 
 
     # [gjeon] to set fSortChildren
     def setFSortChildren(self, fSortChildren):
@@ -303,10 +303,14 @@ class TreeNode:
             self.kidKeys.append(key)
 
             # [gjeon] to filter by given tag
-            if self.childrenTag:
-                #if not item.nodePath.hasTag('GameArea'):
-                if self.fModeChildrenTag != item.nodePath.hasTag(self.childrenTag):
-                    self.kidKeys.remove(key)
+            if self.fModeChildrenTag:
+                if self.childrenTag:
+                    showThisItem = False
+                    for tagKey in self.childrenTag.keys():
+                        if item.nodePath.hasTag(tagKey):
+                            showThisItem = self.childrenTag[tagKey]
+                    if not showThisItem:
+                        self.kidKeys.remove(key)
 
         # Remove unused children
         for key in self.children.keys():
@@ -429,9 +433,14 @@ class TreeNode:
         # Is it this node
         if searchKey == self.item.GetKey():
             # [gjeon] to filter by given tag
-            if self.childrenTag:
-                if self.fModeChildrenTag != self.item.nodePath.hasTag(self.childrenTag):
-                    return None
+            if self.fModeChildrenTag:
+                if self.childrenTag:
+                    showThisItem = False
+                    for tagKey in self.childrenTag.keys():
+                        if item.nodePath.hasTag(tagKey):
+                            showThisItem = self.childrenTag[tagKey]
+                    if not showThisItem:
+                        return None
             return self
         # Nope, check the children
         sublist = self.item._GetSubList()
