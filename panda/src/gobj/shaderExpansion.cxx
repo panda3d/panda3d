@@ -770,6 +770,20 @@ cg_release_resources() {
     _cg_context = 0;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderExpansion::cg_report_errors
+//       Access: Private
+//  Description: xyz
+////////////////////////////////////////////////////////////////////
+void ShaderExpansion::
+cg_report_errors() {
+  CGerror err = cgGetError();
+  if (err != CG_NO_ERROR) {
+    gobj_cat.error() << _name << " " << cgGetErrorString(err) << "\n";
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderExpansion::cg_compile_entry_point
 //       Access: Private
@@ -784,6 +798,8 @@ cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
   int nargs = 0;
   int active = fshader ? caps._active_fprofile : caps._active_vprofile;
   int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;
+
+  cg_report_errors();
 
   if (fshader && caps._bug_list.count(SBUG_ati_draw_buffers)) {
     compiler_args[nargs++] = "-po";
@@ -824,6 +840,7 @@ cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
   if (prog != 0) {
     cgDestroyProgram(prog);
   }
+
   return 0;
 }
 
@@ -1110,11 +1127,17 @@ cg_compile_for(const ShaderCaps &caps,
     const ShaderArgId &id = _tex_spec[i]._id;
     CGprogram prog = (id._fshader) ? _cg_fprogram : _cg_vprogram;
     map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
+    if (cgGetParameterBaseResource(map[id._seqno]) == CG_UNDEFINED) {
+      map[id._seqno] = 0;
+    }
   }
   for (int i=0; i<n_var; i++) {
     const ShaderArgId &id = _var_spec[i]._id;
     CGprogram prog = (id._fshader) ? _cg_fprogram : _cg_vprogram;
     map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
+    if (cgGetParameterBaseResource(map[id._seqno]) == CG_UNDEFINED) {
+      map[id._seqno] = 0;
+    }
   }
   
   // Transfer ownership of the compiled shader.

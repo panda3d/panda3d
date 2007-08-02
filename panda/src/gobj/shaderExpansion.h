@@ -239,6 +239,7 @@ public:
   bool          cg_analyze_shader(const ShaderCaps &caps);
   bool          cg_compile_shader(const ShaderCaps &caps);
   void          cg_release_resources();
+  void          cg_report_errors();
   
   ShaderCaps _cg_last_caps;
   CGcontext  _cg_context;

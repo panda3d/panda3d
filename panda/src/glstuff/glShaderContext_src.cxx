@@ -117,6 +117,7 @@ bind(GSG *gsg) {
     cgGLBindProgram(_cg_vprogram);
     cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
     cgGLBindProgram(_cg_fprogram);
+    cg_report_errors();
   }
 #endif
 }
@@ -132,6 +133,7 @@ unbind() {
   if (_cg_context != 0) {
     cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
     cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+    cg_report_errors();
   }
 #endif
 }
@@ -179,6 +181,7 @@ issue_parameters(GSG *gsg, bool altered) {
       }
     }
   }
+  cg_report_errors();
 #endif
 }
 
@@ -196,8 +199,10 @@ disable_shader_vertex_arrays(GSG *gsg) {
 
   for (int i=0; i<(int)_expansion->_var_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+    if (p == 0) continue;
     cgGLDisableClientState(p);
   }
+  cg_report_errors();
 #endif
 }
 
@@ -220,6 +225,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
   if (_cg_context == 0) {
     return true;
   }
+  cg_report_errors();
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (gsg->_use_sender) {
@@ -233,6 +239,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
     int nvarying = _expansion->_var_spec.size();
     for (int i=0; i<nvarying; i++) {
       CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+      if (p == 0) continue;
       InternalName *name = _expansion->_var_spec[i]._name;
       int texslot = _expansion->_var_spec[i]._append_uv;
       if (texslot >= 0) {
@@ -264,6 +271,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
       }
     }
   }
+  cg_report_errors();
 #endif // HAVE_CG
   return true;
 }
@@ -282,6 +290,7 @@ disable_shader_texture_bindings(GSG *gsg) {
 
   for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+    if (p == 0) continue;
     int texunit = cgGetParameterResourceIndex(p);
     gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
     GLP(Disable)(GL_TEXTURE_1D);
@@ -295,6 +304,7 @@ disable_shader_texture_bindings(GSG *gsg) {
     // This is probably faster - but maybe not as safe?
     // cgGLDisableTextureParameter(p);
   }
+  cg_report_errors();
 #endif
 }
 
@@ -319,6 +329,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 
   for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+    if (p == 0) continue;
     Texture *tex = 0;
     InternalName *id = _expansion->_tex_spec[i]._name;
     if (id != 0) {
@@ -358,6 +369,21 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 
     gsg->apply_texture(tc);
   }
+  cg_report_errors();
 #endif
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::cg_report_errors
+//       Access: Public
+//  Description: Report any Cg errors that were not previously caught.
+////////////////////////////////////////////////////////////////////
+#ifdef HAVE_CG
+void CLP(ShaderContext)::
+cg_report_errors() {
+  CGerror err = cgGetError();
+  if (err != CG_NO_ERROR) {
+    GLCAT.error() << _expansion->get_name() << " " << cgGetErrorString(err) << "\n";
+  }
+}
+#endif

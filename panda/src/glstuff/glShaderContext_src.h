@@ -55,6 +55,7 @@ private:
   CGprogram _cg_vprogram;
   CGprogram _cg_fprogram;
   pvector <CGparameter> _cg_parameter_map;
+  void cg_report_errors();
 #endif
 
   void release_resources(void);
