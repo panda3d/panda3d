@@ -555,6 +555,17 @@ write(ostream &out) const {
     out << "  " << *sound << "\n";
   }
 
+  size_t total_preload = 0;
+  size_t num_preloaded = 0;
+  SoundMap::const_iterator si;
+  for (si = _sounds.begin(); si != _sounds.end(); ++si) {
+    if (!(*si).second->_raw_data.empty()) {
+      ++num_preloaded;
+      total_preload += (*si).second->_raw_data.size();
+    }
+  }
+  out << num_preloaded << " of " << _sounds.size() << " sounds preloaded, size used is " << (total_preload + 1023) / 1024 << "K\n";
+
   {
     MutexHolder holder(_streams_lock);
     out << _streams.size() << " streams opened.\n";
