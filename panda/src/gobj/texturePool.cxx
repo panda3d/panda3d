@@ -928,8 +928,6 @@ post_load(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 load_filters() {
-  MutexHolder holder(_lock);
-
   ConfigVariableList texture_filter
     ("texture-filter",
      PRC_DESC("Names one or more external libraries that should be loaded for the "
