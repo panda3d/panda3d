@@ -37,41 +37,43 @@ size_y() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::frame_start
+//     Function: MovieVideo::at_end
 //       Access: Published
-//  Description: MovieVideo streams have variable frame rates.  Each
-//               frame will specify how long it is to be displayed.
-//               These lengths may not be equal from frame to frame.
-//
-//               The frame_start function returns the time at which
-//               the current frame should start being displayed.  This
-//               time is relative to the start of the stream.
+//  Description: Returns true if there is no video left to fetch.
+//               
+//               It is not an error to call 'fetch' when at_end, 
+//               doing so will yield a black frame of one second
+//               duration.
 ////////////////////////////////////////////////////////////////////
-INLINE double MovieVideo::
-frame_start() const {
-  return _frame_start;
+INLINE bool MovieVideo::
+at_end() const {
+  return _at_end;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::frame_end
+//     Function: MovieVideo::next_start
 //       Access: Published
-//  Description: Return the time at which this frame should stop
-//               being displayed.  This time is relative to the start
-//               of the stream.
+//  Description: Indicates the time at which the current frame should
+//               stop being displayed and when the next frame should
+//               start being displayed.  This time is relative to the
+//               start of the stream.
 //
-//               The frame_end function returns the time at which
-//               the current frame should stop being displayed.  This
-//               time is relative to the start of the stream.
+//               MovieVideo streams have variable frame rates.  Each
+//               frame will specify how long it is to be displayed.
+//               These lengths may not be equal from frame to frame.
 ////////////////////////////////////////////////////////////////////
 INLINE double MovieVideo::
-frame_end() const {
-  return _frame_end;
+next_start() const {
+  return _next_start;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::approx_len
 //       Access: Published
-//  Description: Get the vertical size of the movie.
+//  Description: Get the approximate length of the movie.
+//               This is not guaranteed to be accurate. The only
+//               accurate way to determine when the movie is over
+//               is to check the at_end flag.
 ////////////////////////////////////////////////////////////////////
 INLINE double MovieVideo::
 approx_len() const {

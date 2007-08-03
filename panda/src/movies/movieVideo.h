@@ -33,11 +33,10 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   MovieVideo(const string &name, double len);
   INLINE int size_x() const;
   INLINE int size_y() const;
-  INLINE double frame_start() const;
-  INLINE double frame_end() const;
+  INLINE bool at_end() const;
   INLINE double approx_len() const;
-  virtual void load_image(Texture *t);
-  virtual void next_frame();
+  INLINE double next_start() const;
+  virtual void fetch_into(Texture *t);
   
  public:
   virtual ~MovieVideo();
@@ -45,10 +44,9 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
  private:
   int _size_x;
   int _size_y;
-  double _frame_start;
-  double _frame_end;
+  bool _at_end;
+  double _next_start;
   double _approx_len;
-  PTA_uchar _ram_image;
   
 public:
   static TypeHandle get_class_type() {
