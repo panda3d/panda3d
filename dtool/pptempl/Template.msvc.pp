@@ -136,21 +136,6 @@
 // different USE_this or USE_that) than other targets.
 #map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)
 
-// We define $[complete_local_libs] as the full set of libraries (from
-// within this tree) that we must link a particular target with.  It
-// is the transitive closure of our dependent libs: the libraries we
-// depend on, plus the libraries *those* libraries depend on, and so
-// on.
-#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
-#defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
-
-// And $[complete_ipath] is the list of directories (from within this
-// tree) we should add to our -I list.  It's basically just one for
-// each directory named in the $[complete_local_libs], above, plus
-// whatever else the user might have explicitly named in
-// $[LOCAL_INCS].
-#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%\])] $[EXTRA_IPATH]
-
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
 #defer target_ipath $[RELDIR] $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]

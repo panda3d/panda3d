@@ -408,6 +408,22 @@
 #defer active_libs $[active_local_libs] $[active_component_libs]
 
 
+// We define $[complete_local_libs] as the full set of libraries (from
+// within this tree) that we must link a particular target with.  It
+// is the transitive closure of our dependent libs: the libraries we
+// depend on, plus the libraries *those* libraries depend on, and so on.
+#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
+
+// And $[complete_ipath] is the list of directories (from within this
+// tree) we should add to our -I list.  It's basically just one for
+// each directory named in the $[complete_local_libs], above, plus
+// whatever else the user might have explicitly named in
+// $[LOCAL_INCS].  LOCAL_INCS MUST be a ppremake src dir! (RELDIR only
+// checks those) To add an arbitrary extra include dir, define
+// EXTRA_IPATH in the Sources.pp
+#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])] $[EXTRA_IPATH]
+
+
 // This variable, when evaluated within a target, will either be empty
 // string if the target is not to be built, or the target name if it
 // is.
@@ -459,7 +475,7 @@
 
 // This variable returns the set of external packages used by this
 // target, and by all the components shared by this target.
-#defer use_packages $[sort $[USE_PACKAGES] $[components $[USE_PACKAGES],$[active_component_libs]]]
+#defer use_packages $[sort $[USE_PACKAGES] $[all_libs $[USE_PACKAGES],$[active_component_libs] $[complete_local_libs]]]
 
 // This function returns the appropriate cflags for the target, based
 // on the various external packages this particular target claims to

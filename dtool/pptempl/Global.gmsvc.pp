@@ -30,6 +30,8 @@
   $[actual_libs]
 #end get_metalibs
 
+#defer actual_local_libs $[get_metalibs $[TARGET],$[complete_local_libs]]
+
 #defun decygwin frompat,topat,path
   #foreach file $[path]
     $[patsubstw $[frompat],$[topat],$[osfilename $[file]]]

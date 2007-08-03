@@ -83,12 +83,6 @@
 
 #endif  // $[build_directory]
 
-
-// We define $[complete_local_libs] as the full set of libraries (from
-// within this tree) that we must link a particular target with.  It
-// is the transitive closure of our dependent libs: the libraries we
-// depend on, plus the libraries *those* libraries depend on, and so on.
-#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
 #defer actual_local_libs $[complete_local_libs]
 
 // $[static_lib_dependencies] is the set of libraries we will link
@@ -96,13 +90,6 @@
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
 #defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext].a]],$[complete_local_libs]]
-
-// And $[complete_ipath] is the list of directories (from within this
-// tree) we should add to our -I list.  It's basically just one for
-// each directory named in the $[complete_local_libs], above, plus
-// whatever else the user might have explicitly named in
-// $[LOCAL_INCS].
-#defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])] $[EXTRA_IPATH]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -127,6 +114,7 @@
 
 // And $[frameworks] is the set of OSX-style frameworks we will link with.
 #defer frameworks $[unique $[get_frameworks]]
+#defer bin_frameworks $[unique $[get_frameworks]]
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
