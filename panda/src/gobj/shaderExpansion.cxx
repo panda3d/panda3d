@@ -772,19 +772,6 @@ cg_release_resources() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_report_errors
-//       Access: Private
-//  Description: xyz
-////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
-cg_report_errors() {
-  CGerror err = cgGetError();
-  if (err != CG_NO_ERROR) {
-    gobj_cat.error() << _name << " " << cgGetErrorString(err) << "\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ShaderExpansion::cg_compile_entry_point
 //       Access: Private
 //  Description: xyz
@@ -799,7 +786,7 @@ cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
   int active = fshader ? caps._active_fprofile : caps._active_vprofile;
   int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;
 
-  cg_report_errors();
+  cgGetError();
 
   if (fshader && caps._bug_list.count(SBUG_ati_draw_buffers)) {
     compiler_args[nargs++] = "-po";
