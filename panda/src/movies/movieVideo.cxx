@@ -34,9 +34,9 @@ MovieVideo(const string &name, double len) :
   Namable(name),
   _size_x(1),
   _size_y(1),
-  _last_frame(false),
+  _at_end(false),
   _next_start(0.0),
-  _approx_len(len),
+  _approx_len(len)
 {
   if (len < 0.0) {
     _approx_len = 0.0;
@@ -70,10 +70,10 @@ fetch_into(Texture *t) {
   
   t->setup_texture(Texture::TT_2d_texture, 1, 1, 1,
                    Texture::T_unsigned_byte, Texture::F_rgba);
-  PTA_uchar *img = t->modify_ram_image();
+  PTA_uchar img = t->modify_ram_image();
   
-  int frame_index = (int)next_start;
-  if (at_end) {
+  int frame_index = (int)_next_start;
+  if (_at_end) {
     img.set_element(0,0);
     img.set_element(1,0);
     img.set_element(2,0);
