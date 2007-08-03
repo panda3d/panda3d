@@ -475,7 +475,7 @@
 
 // This variable returns the set of external packages used by this
 // target, and by all the components shared by this target.
-#defer use_packages $[sort $[USE_PACKAGES] $[all_libs $[USE_PACKAGES],$[active_component_libs] $[complete_local_libs]]]
+#defer use_packages $[unique $[USE_PACKAGES] $[all_libs $[USE_PACKAGES],$[active_component_libs] $[complete_local_libs]]]
 
 // This function returns the appropriate cflags for the target, based
 // on the various external packages this particular target claims to
