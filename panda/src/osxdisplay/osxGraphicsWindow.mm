@@ -1253,6 +1253,7 @@ OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, Event
   
   return noErr;
 }
+
  ////////////////////////////////////////////////////////////////////
  //     Function: 
  //       Access: 
@@ -1263,16 +1264,16 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 	  WindowProperties properties;
       properties.set_foreground(forground);
 	  system_changed_properties(properties);
-};		
- ////////////////////////////////////////////////////////////////////
- //     Function: 
- //       Access: 
- //  Description: 
- ////////////////////////////////////////////////////////////////////
-	
- void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
- {
-	if(_osx_window != NULL)
+}		
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: 
+//       Access: 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
+{
+    if(_osx_window != NULL)
 	{
 		GrafPtr savePort;
 		Boolean	portChanged	=	QDSwapPort(GetWindowPort(_osx_window), &savePort);
@@ -1281,9 +1282,8 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 
 		if (portChanged)
 			QDSwapPort(savePort, NULL);
-	}
-					
- };
+	}			
+}
 	
  ////////////////////////////////////////////////////////////////////
  //     Function: 
@@ -1300,6 +1300,8 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
      Point qdGlobalPoint = {0, 0};
      UInt32				modifiers = 0;	
      Rect 				rectPort;
+     SInt32 wheelDelta;
+     EventMouseWheelAxis wheelAxis;
 
 //	 cerr <<" Start Mouse Event " << _ID << "\n";
 
@@ -1401,12 +1403,28 @@ void osxGraphicsWindow::SystemSetWindowForground(bool forground)
 				result = noErr;
 
                 break;
-			//long				wheelDelta = 0;		
 				
-//            case kEventMouseWheelMoved: 
-//					result = NoErr;
-  //              GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(long), NULL, &wheelDelta);
-                break;
+            case kEventMouseWheelMoved: 
+                GetEventParameter(event, kEventParamMouseWheelDelta, typeLongInteger, NULL, sizeof(wheelDelta), NULL, &wheelDelta);
+                GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, NULL, sizeof(wheelAxis), NULL, &wheelAxis );
+                GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                SystemPointToLocalPoint(qdGlobalPoint);
+                
+                if (wheelAxis == kEventMouseWheelAxisY)
+                {
+                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                    if (wheelDelta > 0)
+                    {
+                        _input_devices[0].button_down(MouseButton::wheel_up());
+                        result = noErr;					
+                    }
+                    else if (wheelDelta < 0)
+                    {
+                        _input_devices[0].button_down(MouseButton::wheel_down());
+                    }
+                }
+                    result = noErr;
+                break;               
          }
 //         result = noErr;
      }	
@@ -1606,7 +1624,9 @@ if (osxdisplay_cat.is_debug())
        CGPoint newCursorPosition = {0, 0}; 
        newCursorPosition.x = pt.h; 
        newCursorPosition.y = pt.v; 
+       mouse_mode_relative();
        CGWarpMouseCursorPosition(newCursorPosition); 
+       mouse_mode_absolute();
     }
     
     return true; 
@@ -1757,22 +1777,23 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
 
   return;
 }
-//////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
 void osxGraphicsWindow::LocalPointToSystemPoint(Point &qdLocalPoint) 
 { 
-	if(_osx_window != NULL) 
-	{ 
-		GrafPtr	savePort;
-		Boolean	portChanged	=	QDSwapPort(GetWindowPort(_osx_window), &savePort);
-
-		LocalToGlobal( &qdLocalPoint );
-      
-		if (portChanged)
-			QDSwapPort(savePort, NULL);
-   } 
- }; 
+    if(_osx_window != NULL) 
+    { 
+        GrafPtr savePort;
+        Boolean portChanged = QDSwapPort(GetWindowPort(_osx_window), &savePort);
+ 
+        LocalToGlobal( &qdLocalPoint );
+       
+        if (portChanged)
+            QDSwapPort(savePort, NULL);
+    } 
+} 
 
 
 ////////////////////////////////////////////////////////////////////
