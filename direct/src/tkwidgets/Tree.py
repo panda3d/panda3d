@@ -437,7 +437,7 @@ class TreeNode:
                 if self.childrenTag:
                     showThisItem = False
                     for tagKey in self.childrenTag.keys():
-                        if item.nodePath.hasTag(tagKey):
+                        if self.item.nodePath.hasTag(tagKey):
                             showThisItem = self.childrenTag[tagKey]
                     if not showThisItem:
                         return None
