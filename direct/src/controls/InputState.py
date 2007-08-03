@@ -53,6 +53,7 @@ class InputState(DirectObject.DirectObject):
 
     # standard input sources
     WASD = 'WASD'
+    QE = 'QE'
     ArrowKeys = 'ArrowKeys'
     Keyboard = 'Keyboard'
     Mouse = 'Mouse'
@@ -80,7 +81,7 @@ class InputState(DirectObject.DirectObject):
         del self._state
         self.ignoreAll()
 
-    def isSet(self, name):
+    def isSet(self, name, inputSource=None):
         """
         returns True/False
         """
@@ -89,7 +90,14 @@ class InputState(DirectObject.DirectObject):
             return True
         elif name in self._forcingOff:
             return False
-        return name in self._state
+        if inputSource:
+            s = self._state.get(name)
+            if s:
+                return inputSource in s
+            else:
+                return False
+        else:
+            return name in self._state
 
     def set(self, name, isActive, inputSource=None):
         assert self.debugPrint("set(name=%s, isActive=%s, inputSource=%s)"%(name, isActive, inputSource))
