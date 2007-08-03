@@ -1,3 +1,5 @@
+#define USE_PACKAGES cg  // from gobj.
+
 #begin lib_target
   #define TARGET directbase
   
