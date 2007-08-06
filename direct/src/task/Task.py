@@ -365,15 +365,12 @@ class TaskManager:
         # small intervals.
         self.trueClock = TrueClock.getGlobalPtr()
 
-        """
-        base = getBase()
-        self.warnTaskDuration = base.config.GetBool('task-duration-warnings', 1)
-        self.taskDurationWarningThreshold = base.config.GetFloat('task-duration-warning-threshold', 2)
-        """
-        # we don't have a base object at this point, so set some defaults and read the real values
-        # every frame
-        self.warnTaskDuration = 0
-        self.taskDurationWarningThreshold = 2
+        # We don't have a base yet, but we can query the config
+        # variables directly.
+        self.warnTaskDuration = ConfigVariableBool('task-duration-warnings', 1).getValue()
+        self.taskDurationWarningThreshold = ConfigVariableDouble(
+            'task-duration-warning-threshold',
+            TaskManager.DefTaskDurationWarningThreshold).getValue()
 
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
@@ -899,13 +896,6 @@ class TaskManager:
 
 
     def run(self):
-        base = getBase()
-        self.warnTaskDuration = base.config.GetBool('task-duration-warnings',
-                                                    1)
-        self.taskDurationWarningThreshold = base.config.GetFloat(
-            'task-duration-warning-threshold',
-            TaskManager.DefTaskDurationWarningThreshold)
-
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         if self.globalClock:
