@@ -50,7 +50,8 @@
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
@@ -70,7 +71,8 @@
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
@@ -91,7 +93,8 @@
     egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    putil:c pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
@@ -113,7 +116,8 @@
     framework:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
 
@@ -152,7 +156,8 @@
     framework:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
 
@@ -175,7 +180,11 @@
     egg2pg:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolconfig dtool
+    dtoolconfig dtool \
+    event:c gobj:c chan:c pgraph:c parametrics:c char:c prc:c dtoolutil:c \
+    interrogatedb:c dtoolbase:c collide:c pnmimage:c dgraph:c tform:c \
+    pipeline:c pstatclient:c grutil:c gsgbase:c net:c lerp:c display:c \
+    cull:c text:c nativenet:c pnmtext:c
 
   #define SOURCES \
     config_mayaloader.cxx

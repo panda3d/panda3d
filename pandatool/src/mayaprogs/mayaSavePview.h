@@ -29,6 +29,11 @@
 #define _BOOL 1
 #endif
 
+#ifdef __MACH__
+#undef _BOOL
+#include "maya/OpenMayaMac.h"
+#endif
+
 // Even though we don't include any Panda headers, it's safe to
 // include this one, since it only defines some macros that we need to
 // make this program platform-independent.

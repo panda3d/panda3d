@@ -8,7 +8,8 @@
   #define OTHER_LIBS \
     putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
+    pipeline:c interrogatedb:c
 
   #define SOURCES \
     config_maya.cxx config_maya.h \

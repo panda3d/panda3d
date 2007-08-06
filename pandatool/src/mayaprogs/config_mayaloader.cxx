@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef __MACH__
+#define __OPENTRANSPORTPROVIDERS__
+#endif
+
 #include "pandatoolbase.h"
 #include "loaderFileTypePandatool.h"
 #include "config_mayaegg.h"

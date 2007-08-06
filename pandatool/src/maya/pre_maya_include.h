@@ -61,5 +61,10 @@ typedef istream maya_istream;
 #define REQUIRE_IOSTREAM
 #endif  // HAVE_IOSTREAM
 
+#ifdef __MACH__
+#undef _BOOL
+#include "maya/OpenMayaMac.h"
+#endif
+
 #endif  // MAYA_PRE_5_0
 

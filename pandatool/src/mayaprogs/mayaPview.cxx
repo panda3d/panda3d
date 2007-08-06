@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef __MACH__
+#define __OPENTRANSPORTPROVIDERS__
+#endif
+
 #include "mayaPview.h"
 #include "mayaToEggConverter.h"
 #include "eggData.h"
