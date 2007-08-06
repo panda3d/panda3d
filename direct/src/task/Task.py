@@ -840,7 +840,10 @@ class TaskManager:
     def step(self):
         # assert TaskManager.notify.debug('step: begin')
         self.currentTime, self.currentFrame = self.__getTimeFrame()
-        startFrameTime = self.globalClock.getRealTime()
+        startFrameTime = None
+        if self.globalClock:
+            startFrameTime = self.globalClock.getRealTime()
+            
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
@@ -884,10 +887,11 @@ class TaskManager:
 
         # Add new pending tasks
         self.__addPendingTasksToTaskList()
-
-        #this is the spot for a Internal Yield Function
-        nextTaskTime = self.__getNextDoLaterTime()                                    
-        self.doYield(startFrameTime,nextTaskTime)            
+        
+        if startFrameTime:
+            #this is the spot for a Internal Yield Function
+            nextTaskTime = self.__getNextDoLaterTime()
+            self.doYield(startFrameTime,nextTaskTime)            
         
         # Restore default interrupt handler
         signal.signal(signal.SIGINT, signal.default_int_handler)
