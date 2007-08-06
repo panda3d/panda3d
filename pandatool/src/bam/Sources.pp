@@ -1,4 +1,4 @@
-#define USE_PACKAGES fftw
+#define USE_PACKAGES fftw cg
 #define OTHER_LIBS \
   egg2pg:c egg:c pandaegg:m \
   pipeline:c recorder:c parametrics:c collide:c chan:c char:c \

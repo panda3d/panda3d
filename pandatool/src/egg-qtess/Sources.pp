@@ -1,3 +1,5 @@
+#define USE_PACKAGES cg  // from gobj.
+
 #begin bin_target
   #define TARGET egg-qtess
   #define LOCAL_LIBS \

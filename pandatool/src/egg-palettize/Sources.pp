@@ -1,3 +1,5 @@
+#define USE_PACKAGES cg  // from gobj.
+
 #define OTHER_LIBS \
   egg:c pandaegg:m \
   pgraph:c gobj:c lerp:c linmath:c putil:c \
