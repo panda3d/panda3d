@@ -45,6 +45,7 @@ import gc
 import traceback
 
 from direct.directutil import Verify
+from pandac.libpandaexpressModules import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
@@ -804,14 +805,11 @@ def profiled(category=None, terse=False):
 
     def profileDecorator(f):
         def _profiled(*args, **kArgs):
-            # must do this in here because we don't have base/simbase
-            # at the time that PythonUtil is loaded
             name = '(%s) %s from %s' % (category, f.func_name, f.__module__)
-            try:
-                _base = base
-            except:
-                _base = simbase
-            if (category is None) or _base.config.GetBool('want-profile-%s' % category, 0):
+
+            # showbase might not be loaded yet, so don't use
+            # base.config.  Instead, query the ConfigVariableBool.
+            if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
                 return profile(Functor(f, *args, **kArgs), name, terse)
             else:
                 return f(*args, **kArgs)
