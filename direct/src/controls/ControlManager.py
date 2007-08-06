@@ -23,6 +23,7 @@ class ControlManager:
 
     def __init__(self, enable=True):
         assert self.notify.debugCall(id(self))
+        self.inputStateTokens = []
         self.controls = {}
         self.currentControls = None
         self.currentControlsName = None
