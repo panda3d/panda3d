@@ -66,6 +66,28 @@ class DoCollectionManager:
                 matches.append(value)
         return matches
 
+    def _compareDistance(self, do1, do2):
+        has1 = hasattr(do1, 'getPos')
+        has2 = hasattr(do2, 'getPos')
+        if not has1 and not has2:
+            return 0
+        if not has1:
+            return 1
+        if not has2:
+            return -1
+        dist1 = do1.getPos(localAvatar).length()
+        dist2 = do2.getPos(localAvatar).length()
+        if (dist1 < dist2):
+            return -1
+        return 1
+
+    def doByDistance(self):
+        objs = self.doId2do.values()
+        objs.sort(cmp=self._compareDistance)
+        for obj in objs:
+            print '%s\t%s\t%s' % (obj.doId, obj.getPos(localAvatar).length(),
+                                  obj.dclass.getName())
+
     if __debug__:
         def printObjects(self):
             format="%10s %10s %10s %30s %20s"
