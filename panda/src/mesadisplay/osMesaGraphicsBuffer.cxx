@@ -39,7 +39,7 @@ OsMesaGraphicsBuffer(GraphicsPipe *pipe,
   GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _type = GL_UNSIGNED_BYTE;
-  _draw_buffer_type = RenderBuffer::T_front;
+  _screenshot_buffer_type = _draw_buffer_type;
 }
 
 ////////////////////////////////////////////////////////////////////

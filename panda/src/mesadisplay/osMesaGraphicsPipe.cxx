@@ -90,8 +90,6 @@ make_output(const string &name,
   if (!_is_valid) {
     return NULL;
   }
-  
-  // First thing to try: an OsMesaGraphicsBuffer
 
   if (retry == 0) {
     if ((!support_render_texture)||
@@ -102,7 +100,13 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)) {
       return NULL;
     }
-    return new OsMesaGraphicsBuffer(this, name, fb_prop, win_prop,
+
+    // We know that OsMesa windows only support single buffering.  So
+    // don't bother asking for more than that.
+    FrameBufferProperties fb_prop2 = fb_prop;
+    fb_prop2.set_back_buffers(0);
+
+    return new OsMesaGraphicsBuffer(this, name, fb_prop2, win_prop,
                                     flags, gsg, host);
   }
   
