@@ -291,6 +291,9 @@ ConfigVariableInt stencil_bits
 ConfigVariableInt multisamples
 ("multisamples", 0,
  PRC_DESC("The minimum number of samples requested."));
+ConfigVariableInt back_buffers
+("back-buffers", 1,
+ PRC_DESC("The default number of back buffers requested."));
 
 ConfigVariableDouble background_color
 ("background-color", "0.41 0.41 0.41",

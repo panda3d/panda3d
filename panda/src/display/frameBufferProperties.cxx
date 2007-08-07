@@ -70,7 +70,7 @@ subsumes(const FrameBufferProperties &other) const {
 ////////////////////////////////////////////////////////////////////
 const FrameBufferProperties &FrameBufferProperties::
 get_default() {
-  static bool                  default_ready = false;
+  static bool default_ready = false;
   static FrameBufferProperties default_props;
 
   if (default_ready) {
@@ -78,7 +78,7 @@ get_default() {
   }
 
   default_props.set_rgb_color(1);
-  default_props.set_back_buffers(1);
+  default_props.set_back_buffers(back_buffers);
   
   int num_words = framebuffer_mode.get_num_words();
   if (num_words > 0) {
