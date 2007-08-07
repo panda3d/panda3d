@@ -4274,9 +4274,7 @@ bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
 #ifndef NDEBUG
-  static const int max_gl_errors_reported = 20;
-
-  while ((error_count < max_gl_errors_reported) &&
+  while ((CLP(max_errors) < 0 || error_count < CLP(max_errors)) &&
          (error_code != GL_NO_ERROR)) {
     GLCAT.error()
       << "at " << line << " of " << source_file << " : "

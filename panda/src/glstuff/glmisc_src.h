@@ -32,6 +32,7 @@ extern ConfigVariableBool CLP(support_occlusion_query);
 extern ConfigVariableBool CLP(compile_and_execute);
 extern ConfigVariableBool CLP(interleaved_arrays);
 extern ConfigVariableBool CLP(parallel_arrays);
+extern ConfigVariableInt CLP(max_errors);
 
 extern EXPCL_GL void CLP(init_classes)();
 

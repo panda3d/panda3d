@@ -94,6 +94,12 @@ ConfigVariableBool CLP(parallel_arrays)
             "render geometry as it appears in the GeomVertexData.  See "
             "also gl-interleaved-arrays."));
 
+ConfigVariableInt CLP(max_errors)
+  ("gl-max-errors", 20,
+   PRC_DESC("This is the limit on the number of OpenGL errors Panda will "
+            "detect and report before it shuts down rendering.  Set it to "
+            "-1 for no limit."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {
