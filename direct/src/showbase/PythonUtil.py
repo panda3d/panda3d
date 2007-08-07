@@ -45,7 +45,10 @@ import gc
 import traceback
 
 from direct.directutil import Verify
-from pandac.libpandaexpressModules import ConfigVariableBool
+
+# Don't import libpandaexpressModules, which doesn't get built until
+# genPyCode.
+from libpandaexpress import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
