@@ -124,7 +124,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void Thread::
 write_status(ostream &out) {
-#ifdef SIMPLE_THREADS
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   ThreadImpl::write_status(out);
 #endif
 }
