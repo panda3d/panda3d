@@ -384,12 +384,15 @@ run() {
     switch (_download_dest) {
     case DD_none:
       repeat_later = false;  // We're done.
+      break;
 
     case DD_file:
       repeat_later = run_download_to_file();
+      break;
 
     case DD_ram:
       repeat_later = run_download_to_ram();
+      break;
     }
     if (repeat_later) {
       thread_yield();
