@@ -397,6 +397,11 @@ class DirectSession(DirectObject):
             self.fShift = 0
         elif input == 'control':
             self.fControl = 1
+            # [gjeon] to update control key information while mouse1 is pressed
+            if self.fMouse1:
+                modifiers = DIRECT_NO_MOD
+                modifiers |= DIRECT_CONTROL_MOD
+                messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'control-up':
             self.fControl = 0
         elif input == 'alt':

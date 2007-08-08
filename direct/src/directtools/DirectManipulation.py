@@ -60,7 +60,7 @@ class DirectManipulationControl(DirectObject):
             # Nope, off the widget, no constraint
             self.constraint = None
             # [gjeon] to prohibit unwanted object movement while direct window doesn't have focus
-            if base.direct.cameraControl.useMayaCamControls:
+            if base.direct.cameraControl.useMayaCamControls and not base.direct.gotControl(modifiers):
                 return
 
         if not base.direct.gotAlt(modifiers):
