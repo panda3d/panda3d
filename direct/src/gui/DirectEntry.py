@@ -109,6 +109,10 @@ class DirectEntry(DirectFrame):
         for i in range(self['numStates']):
             self.guiItem.setTextDef(i, self.onscreenText.textNode)
 
+        # Now we should call setup() again to make sure it has the
+        # right font def.
+        self.setup()
+
         # Update initial text
         self.unicodeText = 0
         if self['initialText']:
