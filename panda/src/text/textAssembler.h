@@ -142,6 +142,7 @@ private:
     bool _got_soft_hyphens;
     float _xpos;
     float _ypos;
+    PT(ComputedProperties) _eol_cprops;
   };
   typedef pvector<TextRow> TextBlock;
 

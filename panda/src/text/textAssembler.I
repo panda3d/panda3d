@@ -419,7 +419,8 @@ TextRow(const TextAssembler::TextRow &copy) :
   _row_start(copy._row_start),
   _got_soft_hyphens(copy._got_soft_hyphens),
   _xpos(copy._xpos),
-  _ypos(copy._ypos)
+  _ypos(copy._ypos),
+  _eol_cprops(copy._eol_cprops)
 {
 }
 
@@ -435,6 +436,7 @@ operator = (const TextAssembler::TextRow &copy) {
   _got_soft_hyphens = copy._got_soft_hyphens;
   _xpos = copy._xpos;
   _ypos = copy._ypos;
+  _eol_cprops = copy._eol_cprops;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -629,8 +629,8 @@ calc_width(wchar_t character, const TextProperties &properties) {
   }
 
   bool got_glyph;
-  const TextGlyph *first_glyph;
-  const TextGlyph *second_glyph;
+  const TextGlyph *first_glyph = NULL;
+  const TextGlyph *second_glyph = NULL;
   UnicodeLatinMap::AccentType accent_type;
   int additional_flags;
   float glyph_scale;
@@ -808,6 +808,7 @@ wordwrap_text() {
         // Truncate.
         return false;
       }
+      _text_block.back()._eol_cprops = _text_string[p]._cprops;
       _text_block.push_back(TextRow(p + 1));
     } else {
       initial_width += calc_width(_text_string[p]);
@@ -993,6 +994,7 @@ wordwrap_text() {
         // Truncate.
         return false;
       }
+      _text_block.back()._eol_cprops = _text_string[next_start]._cprops;
       next_start++;
       _text_block.push_back(TextRow(next_start));
       needs_newline = false;
@@ -1008,6 +1010,7 @@ wordwrap_text() {
           // Truncate.
           return false;
         }
+        _text_block.back()._eol_cprops = _text_string[p]._cprops;
         _text_block.push_back(TextRow(p + 1));
       } else {
         initial_width += calc_width(_text_string[p]);
@@ -1323,6 +1326,19 @@ assemble_row(TextAssembler::TextRow &row,
   }
 
   row_width = xpos;
+
+  if (row._eol_cprops != (ComputedProperties *)NULL) {
+    // If there's an _eol_cprops, it represents the cprops of the
+    // newline character that ended the line, which should define the
+    // line_height and the alignment.
+
+    const TextProperties *properties = &(row._eol_cprops->_properties);
+    TextFont *font = properties->get_font();
+    nassertv(font != (TextFont *)NULL);
+
+    align = properties->get_align();
+    line_height = max(line_height, font->get_line_height());
+  }
 }
   
 
