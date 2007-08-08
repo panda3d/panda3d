@@ -47,6 +47,8 @@ PUBLISHED:
   TypeHandle get_pipe_type(int n) const;
   void print_pipe_types() const;
 
+  PT(GraphicsPipe) make_pipe(const string &type_name,
+                             const string &module_name = string());
   PT(GraphicsPipe) make_pipe(TypeHandle type);
   PT(GraphicsPipe) make_default_pipe();
 

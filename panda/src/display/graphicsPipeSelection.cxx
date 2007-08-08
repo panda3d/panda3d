@@ -22,6 +22,7 @@
 #include "filename.h"
 #include "load_dso.h"
 #include "config_display.h"
+#include "typeRegistry.h"
 #include "pset.h"
 
 #include <algorithm>
@@ -156,11 +157,55 @@ print_pipe_types() const {
 //               a type more specific than the indicated type, if
 //               necessary) and returns it.  Returns NULL if the type
 //               cannot be matched.
+//
+//               If the type is not already defined, this will
+//               implicitly load the named module, or if module_name
+//               is empty, it will call load_aux_modules().
+////////////////////////////////////////////////////////////////////
+PT(GraphicsPipe) GraphicsPipeSelection::
+make_pipe(const string &type_name, const string &module_name) {
+  TypeRegistry *type_reg = TypeRegistry::ptr();
+
+  // First, see if the type is already available.
+  TypeHandle type = type_reg->find_type(type_name);
+
+  // If it isn't, try the named module.
+  if (type == TypeHandle::none()) {
+    if (!module_name.empty()) {
+      load_named_module(module_name);
+      type = type_reg->find_type(type_name);
+    }
+  }
+
+  // If that didn't help, try the default module.
+  if (type == TypeHandle::none()) {
+    load_default_module();
+    type = type_reg->find_type(type_name);
+  }
+
+  // Still not enough, try all modules.
+  if (type == TypeHandle::none()) {
+    load_aux_modules();
+    type = type_reg->find_type(type_name);
+  }
+
+  if (type == TypeHandle::none()) {
+    return NULL;
+  }
+
+  return make_pipe(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipeSelection::make_pipe
+//       Access: Published
+//  Description: Creates a new GraphicsPipe of the indicated type (or
+//               a type more specific than the indicated type, if
+//               necessary) and returns it.  Returns NULL if the type
+//               cannot be matched.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsPipe) GraphicsPipeSelection::
 make_pipe(TypeHandle type) {
-  load_default_module();
-
   MutexHolder holder(_lock);
   PipeTypes::const_iterator ti;
 
@@ -177,6 +222,19 @@ make_pipe(TypeHandle type) {
   }
 
   // Now look for a more-specific type.
+  for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
+    const PipeType &ptype = (*ti);
+    if (ptype._type.is_derived_from(type)) {
+      // Here's an approximate match.
+      PT(GraphicsPipe) pipe = (*ptype._constructor)();
+      if (pipe != (GraphicsPipe *)NULL) {
+        return pipe;
+      }
+    }
+  }
+
+  // Couldn't find any match; load the default module and try again.
+  load_default_module();
   for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
     const PipeType &ptype = (*ti);
     if (ptype._type.is_derived_from(type)) {
