@@ -489,13 +489,7 @@ erase(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 setup(float width, int num_lines) {
-  set_text(string());
-  _cursor_position = 0;
-  set_max_chars(0);
-  set_max_width(width);
-  set_num_lines(num_lines);
-
-  _accept_enabled = true;
+  setup_minimal(width, num_lines);
 
   TextNode *text_node = get_text_def(S_focus);
   float line_height = text_node->get_line_height();
@@ -552,6 +546,26 @@ setup(float width, int num_lines) {
 
   style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   set_frame_style(S_inactive, style);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::setup_minimal
+//       Access: Published
+//  Description: Sets up the entry without creating any frame or other
+//               decoration.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+setup_minimal(float width, int num_lines) {
+  set_text(string());
+  _cursor_position = 0;
+  set_max_chars(0);
+  set_max_width(width);
+  set_num_lines(num_lines);
+
+  _accept_enabled = true;
+
+  TextNode *text_node = get_text_def(S_focus);
+  float line_height = text_node->get_line_height();
 
   // Set up a default cursor: a vertical bar.
   clear_cursor_def();

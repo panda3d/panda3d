@@ -74,6 +74,7 @@ PUBLISHED:
   };
 
   void setup(float width, int num_lines);
+  void setup_minimal(float width, int num_lines);
 
   INLINE void set_text(const string &text);
   INLINE string get_plain_text() const;
