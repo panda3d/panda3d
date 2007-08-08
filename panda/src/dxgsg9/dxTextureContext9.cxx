@@ -148,16 +148,34 @@ create_texture(DXScreenData &scrn) {
   Texture::CompressionMode compression_mode = Texture::CompressionMode::CM_off;
   bool texture_stored_compressed = false;
   bool texture_wants_compressed = false;
-  
-  if (get_texture()->get_compression() != Texture::CompressionMode::CM_off) {
-    texture_wants_compressed = true;
-    compression_mode = get_texture()->get_ram_image_compression();
-    // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
-    nassertr(((Texture::CompressionMode::CM_dxt1+1)==Texture::CompressionMode::CM_dxt2)&&((Texture::CompressionMode::CM_dxt2+1)==Texture::CompressionMode::CM_dxt3)&&((Texture::CompressionMode::CM_dxt3+1)==Texture::CompressionMode::CM_dxt4)&&((Texture::CompressionMode::CM_dxt4+1)==Texture::CompressionMode::CM_dxt5),false);
-    if ((compression_mode >= Texture::CompressionMode::CM_dxt1) && (compression_mode <= Texture::CompressionMode::CM_dxt5)) {
-      texture_stored_compressed = true;
-    }
+
+  compression_mode = get_texture()->get_ram_image_compression();
+  // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
+  nassertr(((Texture::CompressionMode::CM_dxt1+1)==Texture::CompressionMode::CM_dxt2)&&((Texture::CompressionMode::CM_dxt2+1)==Texture::CompressionMode::CM_dxt3)&&((Texture::CompressionMode::CM_dxt3+1)==Texture::CompressionMode::CM_dxt4)&&((Texture::CompressionMode::CM_dxt4+1)==Texture::CompressionMode::CM_dxt5),false);
+  if ((compression_mode >= Texture::CompressionMode::CM_dxt1) && (compression_mode <= Texture::CompressionMode::CM_dxt5)) {
+    texture_stored_compressed = true;
   }
+  
+  if (texture_stored_compressed) {
+    texture_wants_compressed = true;  
+  }
+  else {
+    if (get_texture()->get_compression() == Texture::CompressionMode::CM_off) {
+      // no compression
+    }
+    else {    
+      if (get_texture()->get_compression() == Texture::CompressionMode::CM_default) {
+        // default = use "compressed-textures" config setting
+        if (compressed_textures) {
+          texture_wants_compressed = true;
+        }
+      }
+      else {
+        texture_wants_compressed = true;
+      }
+    }  
+  }
+    
   switch (get_texture()->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
@@ -172,7 +190,7 @@ create_texture(DXScreenData &scrn) {
       }
       break;
     case Texture::TT_3d_texture:
-      // not supported by all video chips
+      // compression of 3d textures not supported by all video chips
       break;
   }
   
@@ -856,7 +874,7 @@ create_texture(DXScreenData &scrn) {
     data_size *= 6;
   }
   update_data_size_bytes(data_size);
-
+  
   int attempts;
 
   attempts = 0;
@@ -868,15 +886,7 @@ create_texture(DXScreenData &scrn) {
       hr = scrn._d3d_device->CreateTexture
         (target_width, target_height, mip_level_count, usage,
          target_pixel_format, pool, &_d3d_2d_texture, NULL);
-      _d3d_texture = _d3d_2d_texture;
-      
-/* DEBUG      
-if (get_texture()->get_render_to_texture ( )) {
-  printf ("dtc %p \n", this);
-  printf ("_d3d_2d_texture %p \n", _d3d_2d_texture);
-//  __debugbreak();
-}
-*/
+      _d3d_texture = _d3d_2d_texture;      
       break;
 
     case Texture::TT_3d_texture:
@@ -899,7 +909,6 @@ if (get_texture()->get_render_to_texture ( )) {
     attempts++;
   }
   while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
-
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "D3D create_texture failed!" << D3DERRORSTRING(hr);
@@ -949,7 +958,7 @@ if (get_texture()->get_render_to_texture ( )) {
     get_texture()->texture_uploaded();
   }
   mark_loaded();
-
+  
   return true;
 
  error_exit:
@@ -1410,6 +1419,7 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
   nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
 
   CPTA_uchar image = get_texture()->get_ram_image();
+  
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1504,6 +1514,7 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
           // mip_filter_flags |= D3DX_FILTER_DITHER;
           hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
                                 mip_filter_flags);
+
           if (FAILED(hr)) {
             dxgsg9_cat.error()
               << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
@@ -1513,6 +1524,7 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
       }
     }
   }
+
   return hr;
 }
 
