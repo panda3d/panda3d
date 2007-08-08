@@ -118,6 +118,7 @@ class DirectSession(DirectObject):
         self.fControl = 0
         self.fAlt = 0
         self.fShift = 0
+        self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
 
         self.pos = VBase3()
         self.hpr = VBase3()
@@ -374,8 +375,10 @@ class DirectSession(DirectObject):
     def inputHandler(self, input):
         # Deal with keyboard and mouse input
         if input == 'mouse1-up':
+            self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
             messenger.send('DIRECT-mouse1Up')
         elif input.find('mouse1') != -1:
+            self.fMouse1 = 1 # [gjeon] to update alt key information while mouse1 is pressed
             modifiers = self.getModifiers(input, 'mouse1')
             messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'mouse2-up':
@@ -398,6 +401,11 @@ class DirectSession(DirectObject):
             self.fControl = 0
         elif input == 'alt':
             self.fAlt = 1
+            # [gjeon] to update alt key information while mouse1 is pressed
+            if self.fMouse1:
+                modifiers = DIRECT_NO_MOD
+                modifiers |= DIRECT_ALT_MOD
+                messenger.send('DIRECT-mouse1', sentArgs = [modifiers])
         elif input == 'alt-up':
             self.fAlt = 0
         elif input == 'page_up':
