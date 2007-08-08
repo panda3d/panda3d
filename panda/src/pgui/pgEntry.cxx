@@ -190,6 +190,9 @@ void PGEntry::
 press(const MouseWatcherParameter &param, bool background) {
   if (get_active()) {
     if (param.has_button()) {
+      // Make sure _text is initialized properly.
+      update_text();
+
       ButtonHandle button = param.get_button();
       
       if (button == MouseButton::one() ||
@@ -281,6 +284,9 @@ void PGEntry::
 keystroke(const MouseWatcherParameter &param, bool background) {
   if (get_active()) {
     if (param.has_keycode()) {
+      // Make sure _text is initialized properly.
+      update_text();
+
       int keycode = param.get_keycode();
 
       if (!isascii(keycode) || isprint(keycode)) {
