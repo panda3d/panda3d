@@ -306,6 +306,7 @@ INLINE void SmoothMover::
 set_phony_timestamp() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   _sample._timestamp = now;
+  _has_most_recent_timestamp = true;
   _most_recent_timestamp = now;
 }
 
@@ -324,8 +325,19 @@ set_timestamp(double timestamp) {
   }
   */
   _sample._timestamp = timestamp;
+  _has_most_recent_timestamp = true;
   _most_recent_timestamp = timestamp;
   record_timestamp_delay(timestamp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::has_most_recent_timestamp
+//       Access: Published
+//  Description: Returns true if we have most recently recorded timestamp
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+has_most_recent_timestamp() const {
+  return _has_most_recent_timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,21 +346,8 @@ set_timestamp(double timestamp) {
 //  Description: Returns most recently recorded timestamp
 ////////////////////////////////////////////////////////////////////
 INLINE double SmoothMover::
-get_most_recent_timestamp() {
+get_most_recent_timestamp() const {
   return _most_recent_timestamp;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_most_recent_timestamp
-//       Access: Published
-//  Description: Specifies the time that the current position report
-//               applies.  This should be called after a call to
-//               mark_position().
-////////////////////////////////////////////////////////////////////
-INLINE void SmoothMover::
-set_most_recent_timestamp(double timestamp) {
-  _points.back()._timestamp = timestamp;
-  _most_recent_timestamp = timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////

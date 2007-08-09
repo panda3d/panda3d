@@ -46,6 +46,8 @@ SmoothMover() {
   _smooth_lateral_velocity = 0.0;
   _smooth_rotational_velocity = 0.0;
 
+  _has_most_recent_timestamp = false;
+
   _last_point_before = -1;
   _last_point_after = -1;
 
@@ -207,6 +209,7 @@ clear_positions(bool reset_velocity) {
   _last_point_before = -1;
   _last_point_after = -1;
   _smooth_position_known = false;
+  _has_most_recent_timestamp = false;
 
   if (reset_velocity) {
     _smooth_forward_velocity = 0.0;

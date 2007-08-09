@@ -87,8 +87,8 @@ PUBLISHED:
   INLINE void set_phony_timestamp();
   INLINE void set_timestamp(double timestamp);
   
-  INLINE double get_most_recent_timestamp();
-  void set_most_recent_timestamp(double timestamp);
+  INLINE bool has_most_recent_timestamp() const;
+  INLINE double get_most_recent_timestamp() const;
 
   void mark_position();
   void clear_positions(bool reset_velocity);
@@ -201,6 +201,7 @@ private:
   double _smooth_lateral_velocity;
   double _smooth_rotational_velocity;
 
+  bool _has_most_recent_timestamp;
   double _most_recent_timestamp;
 
   //  typedef CircBuffer<SamplePoint, max_position_reports> Points;
