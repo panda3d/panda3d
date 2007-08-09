@@ -107,6 +107,9 @@ set_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
 mark_position() {
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "mark_position\n";
+  }
   if (_smooth_mode == SM_off) {
     // With smoothing disabled, mark_position() simply stores its
     // current position in the smooth_position members.
@@ -138,6 +141,12 @@ mark_position() {
     // report.
 
     if (!_points.empty() && _points.back()._timestamp > _sample._timestamp) {
+      if (deadrec_cat.is_debug()) {
+        deadrec_cat.debug()
+          << "*** timestamp out of order " << _points.back()._timestamp << " "
+          << _sample._timestamp << "\n";
+      }
+
       // If we get a timestamp out of order, one of us must have just
       // reset our clock.  Flush the sequence and start again.
       _points.clear();
@@ -149,11 +158,19 @@ mark_position() {
       _points.push_back(_sample);
 
     } else if (!_points.empty() && _points.back()._timestamp == _sample._timestamp) {
+      if (deadrec_cat.is_debug()) {
+        deadrec_cat.debug()
+          << "*** same timestamp\n";
+      }
       // If the new timestamp is the same as the last timestamp, the
       // value simply replaces the previous value.
       _points.back() = _sample;
 
     } else if ((int)_points.size() >= max_position_reports) {
+      if (deadrec_cat.is_debug()) {
+        deadrec_cat.debug()
+          << "*** dropped oldest position report\n";
+      }
       // If we have too many position reports, throw away the oldest
       // one.
       _points.pop_front();
@@ -181,6 +198,11 @@ mark_position() {
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
 clear_positions(bool reset_velocity) {
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug()
+      << "clear_positions " << reset_velocity << "\n";
+  }
+
   _points.clear();
   _last_point_before = -1;
   _last_point_after = -1;
@@ -530,6 +552,9 @@ compute_smooth_position(double timestamp) {
 ////////////////////////////////////////////////////////////////////
 bool SmoothMover::
 get_latest_position() {
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "get_latest_position\n";
+  }
   if (_points.empty()) {
     // Nothing to do if there are no points.
     return _smooth_position_known;

@@ -132,6 +132,11 @@ set_pos(float x, float y, float z) {
 INLINE bool SmoothMover::
 set_x(float x) {
   bool result = (x != _sample._pos[0]);
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_x " << x << "\n";
+  }
+  */
   _sample._pos[0] = x;
   return result;
 }
@@ -144,6 +149,11 @@ set_x(float x) {
 INLINE bool SmoothMover::
 set_y(float y) {
   bool result = (y != _sample._pos[1]);
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_y " << y << "\n";
+  }
+  */
   _sample._pos[1] = y;
   return result;
 }
@@ -156,6 +166,11 @@ set_y(float y) {
 INLINE bool SmoothMover::
 set_z(float z) {
   bool result = (z != _sample._pos[2]);
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_z " << z << "\n";
+  }
+  */
   _sample._pos[2] = z;
   return result;
 }
@@ -208,6 +223,11 @@ set_hpr(float h, float p, float r) {
 INLINE bool SmoothMover::
 set_h(float h) {
   bool result = (h != _sample._hpr[0]);
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_h " << h << "\n";
+  }
+  */
   _sample._hpr[0] = h;
   return result;
 }
@@ -220,6 +240,11 @@ set_h(float h) {
 INLINE bool SmoothMover::
 set_p(float p) {
   bool result = (p != _sample._hpr[1]);
+  /*  
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_p " << p << "\n";
+  }
+  */
   _sample._hpr[1] = p;
   return result;
 }
@@ -232,6 +257,11 @@ set_p(float p) {
 INLINE bool SmoothMover::
 set_r(float r) {
   bool result = (r != _sample._hpr[2]);
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_r " << r << "\n";
+  }
+  */
   _sample._hpr[2] = r;
   return result;
 }
@@ -276,6 +306,7 @@ INLINE void SmoothMover::
 set_phony_timestamp() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   _sample._timestamp = now;
+  _most_recent_timestamp = now;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,8 +318,37 @@ set_phony_timestamp() {
 ////////////////////////////////////////////////////////////////////
 INLINE void SmoothMover::
 set_timestamp(double timestamp) {
+  /*
+  if (deadrec_cat.is_debug()) {
+    deadrec_cat.debug() << "set_timestamp " << timestamp << "\n";
+  }
+  */
   _sample._timestamp = timestamp;
+  _most_recent_timestamp = timestamp;
   record_timestamp_delay(timestamp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_most_recent_timestamp
+//       Access: Published
+//  Description: Returns most recently recorded timestamp
+////////////////////////////////////////////////////////////////////
+INLINE double SmoothMover::
+get_most_recent_timestamp() {
+  return _most_recent_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_most_recent_timestamp
+//       Access: Published
+//  Description: Specifies the time that the current position report
+//               applies.  This should be called after a call to
+//               mark_position().
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_most_recent_timestamp(double timestamp) {
+  _points.back()._timestamp = timestamp;
+  _most_recent_timestamp = timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////
