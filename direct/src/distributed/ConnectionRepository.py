@@ -170,6 +170,7 @@ class ConnectionRepository(
         dcFileNames is None, reads in all of the dc files listed in
         the Configrc file.
         """
+        #import pdb; pdb.set_trace();
         dcFile = self.getDcFile()
         dcFile.clear()
         self.dclassesByName = {}
@@ -191,14 +192,14 @@ class ConnectionRepository(
                 if not readResult:
                     self.notify.error("Could not read dc file: %s" % (dcFileName))
 
-        if not dcFile.allObjectsValid():
-            names = []
-            for i in range(dcFile.getNumTypedefs()):
-                td = dcFile.getTypedef(i)
-                if td.isBogusTypedef():
-                    names.append(td.getName())
-            nameList = ', '.join(names)
-            self.notify.error("Undefined types in DC file: " + nameList)
+        #if not dcFile.allObjectsValid():
+        #    names = []
+        #    for i in range(dcFile.getNumTypedefs()):
+        #        td = dcFile.getTypedef(i)
+        #        if td.isBogusTypedef():
+        #            names.append(td.getName())
+        #    nameList = ', '.join(names)
+        #    self.notify.error("Undefined types in DC file: " + nameList)
 
         self.hashVal = dcFile.getHash()
 
@@ -255,7 +256,8 @@ class ConnectionRepository(
             else:
                 if type(classDef) == types.ModuleType:
                     if not hasattr(classDef, className):
-                        self.notify.error("Module %s does not define class %s." % (className, className))
+                        self.notify.warning("Module %s does not define class %s." % (className, className))
+                        return
                     classDef = getattr(classDef, className)
 
                 if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
