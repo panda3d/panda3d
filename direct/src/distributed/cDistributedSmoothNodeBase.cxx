@@ -319,9 +319,12 @@ finish_send_update(DCPacker &packer) {
   static const double delta = 0.0f;
 #endif  // HAVE_PYTHON
 
-  double local_time = ClockObject::get_global_clock()->get_frame_time();
+  double local_time = ClockObject::get_global_clock()->get_real_time();
 
-  short network_time = (short)(int)cfloor(((local_time - delta) * network_time_precision) + 0.5);
+  int network_time = (int)cfloor(((local_time - delta) * network_time_precision) + 0.5);
+  // Preserves the lower NetworkTimeBits of the networkTime value,
+  // and extends the sign bit all the way up.
+  network_time = ((network_time + 0x8000) & 0xFFFF) - 0x8000;
   packer.pack_int(network_time);
 
   packer.pop();
