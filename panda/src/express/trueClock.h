@@ -23,6 +23,7 @@
 #include "typedef.h"
 #include "pdeque.h"
 #include "mutexImpl.h"
+#include "config_express.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrueClock
@@ -78,8 +79,6 @@ protected:
   double _frequency, _recip_frequency;
   int _init_tc;
   PN_uint64 _init_tod;
-
-  bool _paranoid_clock;
 
   // The rest of the data structures in this block are strictly for
   // implementing paranoid_clock: they are designed to allow us to

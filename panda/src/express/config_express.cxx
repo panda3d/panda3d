@@ -192,8 +192,7 @@ get_paranoid_clock() {
     paranoid_clock = new ConfigVariableBool
       ("paranoid-clock", false,
        PRC_DESC("Set this to true to double-check the results of the high-resolution "
-                "clock against the system clock.  This has no effect if NDEBUG is "
-                "defined."));
+                "clock against the system clock."));
   }
 
   return *paranoid_clock;

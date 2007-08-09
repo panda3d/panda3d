@@ -26,15 +26,15 @@
 ////////////////////////////////////////////////////////////////////
 INLINE double TrueClock::
 get_short_time() {
-  bool paranoid_clock = _paranoid_clock;
+  bool is_paranoid_clock = get_paranoid_clock();
 
-  if (paranoid_clock) {
+  if (is_paranoid_clock) {
     _lock.lock();
   }
 
   double time = get_short_raw_time();
 
-  if (paranoid_clock) {
+  if (is_paranoid_clock) {
     // Check for rollforwards, rollbacks, and compensate for Speed
     // Gear type programs by verifying against the time of day clock.
     time = correct_time(time);

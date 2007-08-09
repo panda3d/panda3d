@@ -180,23 +180,16 @@ TrueClock() {
   // the above clocks if paranoid-clock is enabled.
   GetSystemTimeAsFileTime((FILETIME *)&_init_tod);
 
-  _paranoid_clock = get_paranoid_clock();
   _chase_clock = CC_keep_even;
 
-  if (_paranoid_clock) {
-    // If we'll be cross-checking the clock, we'd better start out
-    // with at least one timestamp, so we'll know if the clock jumps
-    // just after startup.
-    _timestamps.push_back(Timestamp(0.0, 0.0));
-  }
+  // In case we'll be cross-checking the clock, we'd better start out
+  // with at least one timestamp, so we'll know if the clock jumps
+  // just after startup.
+  _timestamps.push_back(Timestamp(0.0, 0.0));
 
   if (!_has_high_res) {
     clock_cat.warning()
       << "No high resolution clock available." << endl;
-
-  } else if (_paranoid_clock) {
-    clock_cat.info()
-      << "Not trusting the high resolution clock." << endl;
   }
 }
 
