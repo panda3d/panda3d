@@ -15,6 +15,7 @@
     cardMaker.I cardMaker.h \
     config_grutil.h \
     ffmpegTexture.I ffmpegTexture.h \
+    movieTexture.I movieTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
@@ -27,6 +28,7 @@
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
     ffmpegTexture.cxx \
+    movieTexture.cxx \
     fisheyeMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
@@ -41,6 +43,7 @@
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
     ffmpegTexture.I ffmpegTexture.h \
+    movieTexture.I movieTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
