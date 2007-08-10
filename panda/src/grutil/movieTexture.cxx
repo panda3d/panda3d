@@ -348,19 +348,19 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       double offset = delta;
       if (offset > color->next_start()) {
         color->seek_ahead(offset);
+	color->fetch_into_texture((MovieTexture*)this, i);
       } else if (offset < color->last_start()) {
         color = color->get_source()->get_video(offset);
       }
-      color->fetch_into_texture((MovieTexture*)this, i);
     }
     if (alpha) {
       double offset = delta;
       if (offset > alpha->next_start()) {
         alpha->seek_ahead(offset);
+	alpha->fetch_into_texture_alpha((MovieTexture*)this, i, _alpha_file_channel);
       } else if (offset < alpha->last_start()) {
         alpha = alpha->get_source()->get_video(offset);
       }
-      alpha->fetch_into_texture_alpha((MovieTexture*)this, i, _alpha_file_channel);
     }
   }
   return true;
