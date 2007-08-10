@@ -95,7 +95,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    VideoTexture::init_type();
+    Texture::init_type();
     register_type(_type_handle, "MovieTexture",
                   Texture::get_class_type());
   }

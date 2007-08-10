@@ -23,6 +23,7 @@
 #include "clockObject.h"
 #include "config_gobj.h"
 #include "config_grutil.h"
+#include "bamCacheRecord.h"
 
 TypeHandle MovieTexture::_type_handle;
 
