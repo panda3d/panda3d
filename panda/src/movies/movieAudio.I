@@ -17,24 +17,43 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::rate
+//     Function: MovieAudio::get_source
 //       Access: Public
-//  Description: Returns the audio sample rate, in samples per sec.
+//  Description: Returns the source Movie.
 ////////////////////////////////////////////////////////////////////
-INLINE int MovieAudio::
-rate() const {
-  return _rate;
+INLINE CPT(Movie) MovieAudio::
+get_source() const {
+  return _source;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::channels
+//     Function: MovieAudio::audio_rate
 //       Access: Public
-//  Description: Returns the number of audio channels.  Ie, 1 for
-//               mono, 2 for stereo.
+//  Description: See Movie::audio_rate.
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieAudio::
-channels() const {
-  return _channels;
+audio_rate() const {
+  return _source->audio_rate();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::audio_channels
+//       Access: Public
+//  Description: See Movie::audio_channels.
+////////////////////////////////////////////////////////////////////
+INLINE int MovieAudio::
+audio_channels() const {
+  return _source->audio_channels();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::length
+//       Access: Public
+//  Description: See Movie::length.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieAudio::
+length() const {
+  return _source->length();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,28 +73,8 @@ samples_read() const {
 //  Description: Skip audio samples from the stream.  This is mostly
 //               for debugging purposes.
 ////////////////////////////////////////////////////////////////////
-INLINE int MovieAudio::
+INLINE void MovieAudio::
 skip_samples(int n) {
-  return read_samples(n, 0);
+  read_samples(n, 0);
 }
  
-////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::approx_len
-//       Access: Public
-//  Description: Returns a "best guess" amount of the stream length.
-//               For ffmpeg streams, this is usually a pretty close
-//               approximation --- ie, off by a few hundred samples.
-//               For infinite streams, always returns the constant
-//               value 1.0E10.  Caution: it is legal for a stream to
-//               periodically update its estimate of the length!
-//
-//               Stream lengths cannot be determined with accuracy,
-//               because the lengths encoded in AVI files are
-//               generally inaccurate, and some streams (ie, streaming
-//               internet audio) have no knowable length.
-////////////////////////////////////////////////////////////////////
-INLINE double MovieAudio::
-approx_len() const {
-  return _approx_len;
-}
-

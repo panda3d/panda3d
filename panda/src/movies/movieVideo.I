@@ -17,46 +17,87 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::get_source
+//       Access: Published
+//  Description: Returns a pointer to the source Movie.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(Movie) MovieVideo::
+get_source() const {
+  return _source;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::size_x
 //       Access: Published
-//  Description: Get the horizontal size of the movie.
+//  Description: See Movie::size_x
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 size_x() const {
-  return _size_x;
+  return _source->size_x();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::size_y
 //       Access: Published
-//  Description: Get the vertical size of the movie.
+//  Description: See Movie::size_y
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 size_y() const {
-  return _size_y;
+  return _source->size_y();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::at_end
+//     Function: MovieVideo::get_num_components
 //       Access: Published
-//  Description: Returns true if there is no video left to fetch.
-//               
-//               It is not an error to call 'fetch' when at_end, 
-//               doing so will yield a black frame of one second
-//               duration.
+//  Description: See Movie::get_num_components
+////////////////////////////////////////////////////////////////////
+INLINE int MovieVideo::
+get_num_components() const {
+  return _source->get_num_components();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::length
+//       Access: Published
+//  Description: See Movie::length
+////////////////////////////////////////////////////////////////////
+INLINE int MovieVideo::
+length() const {
+  return _source->length();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::aborted
+//       Access: Published
+//  Description: Returns true if the video has aborted prematurely.
+//               For example, this could occur if the Movie was actually
+//               an internet TV station, and the connection was lost.
+//               Reaching the normal end of the video does not
+//               constitute an 'abort' condition.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MovieVideo::
-at_end() const {
-  return _at_end;
+aborted() const {
+  return _aborted;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::last_start
+//       Access: Published
+//  Description: Returns the start time of the last frame you read.
+//
+//               MovieVideo streams have variable frame rates.  Each
+//               frame will specify how long it is to be displayed.
+//               These lengths may not be equal from frame to frame.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieVideo::
+last_start() const {
+  return _last_start;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::next_start
 //       Access: Published
-//  Description: Indicates the time at which the current frame should
-//               stop being displayed and when the next frame should
-//               start being displayed.  This time is relative to the
-//               start of the stream.
+//  Description: Returns the start time of the next frame you can read.
 //
 //               MovieVideo streams have variable frame rates.  Each
 //               frame will specify how long it is to be displayed.
@@ -65,18 +106,5 @@ at_end() const {
 INLINE double MovieVideo::
 next_start() const {
   return _next_start;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::approx_len
-//       Access: Published
-//  Description: Get the approximate length of the movie.
-//               This is not guaranteed to be accurate. The only
-//               accurate way to determine when the movie is over
-//               is to check the at_end flag.
-////////////////////////////////////////////////////////////////////
-INLINE double MovieVideo::
-approx_len() const {
-  return _approx_len;
 }
 

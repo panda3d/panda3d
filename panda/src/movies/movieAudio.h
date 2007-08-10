@@ -23,6 +23,7 @@
 #include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "movie.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieAudio
@@ -31,22 +32,21 @@
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
 
 PUBLISHED:
-  MovieAudio(const string &name, double len);
-  INLINE int rate() const;
-  INLINE int channels() const;
+  MovieAudio(const string &name, CPT(Movie) source);
+  INLINE CPT(Movie) get_source() const;
+  INLINE int audio_rate() const;
+  INLINE int audio_channels() const;
+  INLINE double length() const;
   INLINE int samples_read() const;
-  INLINE double approx_len() const;
-  INLINE int skip_samples(int n);
+  INLINE void skip_samples(int n);
   
 public:
-  virtual int read_samples(int n, PN_int16 *data);
+  virtual void read_samples(int n, PN_int16 *data);
   virtual ~MovieAudio();
-
-private:
-  int _rate;
-  int _channels;
+  
+protected:
+  CPT(Movie) _source;
   int _samples_read;
-  double _approx_len;
   
 public:
   static TypeHandle get_class_type() {

@@ -1933,6 +1933,7 @@ CopyAllHeaders('panda/src/nativenet')
 CopyAllHeaders('panda/src/net')
 CopyAllHeaders('panda/src/pstatclient')
 CopyAllHeaders('panda/src/gobj')
+CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/lerp')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
@@ -2536,6 +2537,17 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
             skip=[], also=["text_composite.cxx"])
 
 #
+# DIRECTORY: panda/src/movies/
+#
+
+IPATH=['panda/src/movies']
+OPTS=['BUILDING_PANDA']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
+EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
+            src='panda/src/movies',  module='panda', library='libmovies',
+            skip=[], also=["movies_composite.cxx"])
+
+#
 # DIRECTORY: panda/src/grutil/
 #
 
@@ -2609,17 +2621,6 @@ EnqueueCxx(ipath=IPATH, opts=OPTS, src='recorder_composite.cxx', obj='recorder_c
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='librecorder.in', obj='librecorder_igate.obj',
             src='panda/src/recorder',  module='panda', library='librecorder',
             skip=[], also=["recorder_composite.cxx"])
-
-#
-# DIRECTORY: panda/src/movies/
-#
-
-IPATH=['panda/src/movies']
-OPTS=['BUILDING_PANDA']
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
-EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
-            src='panda/src/movies',  module='panda', library='libmovies',
-            skip=[], also=["movies_composite.cxx"])
 
 #
 # DIRECTORY: panda/src/vrpn/

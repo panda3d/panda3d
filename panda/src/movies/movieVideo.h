@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "movie.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieVideo
@@ -30,23 +31,31 @@
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
 
  PUBLISHED:
-  MovieVideo(const string &name, double len);
+  MovieVideo(const string &name, CPT(Movie) source);
+  virtual ~MovieVideo();
+  INLINE CPT(Movie) get_source() const;
   INLINE int size_x() const;
   INLINE int size_y() const;
-  INLINE bool at_end() const;
-  INLINE double approx_len() const;
+  INLINE int get_num_components() const;
+  INLINE int length() const;
+  INLINE bool aborted() const;
+  INLINE double last_start() const;
   INLINE double next_start() const;
-  virtual void fetch_into(Texture *t);
-  
- public:
-  virtual ~MovieVideo();
-  
+  virtual void seek_ahead(double t);
+  virtual void fetch_into_texture(Texture *t, int page);
+  virtual void fetch_into_texture_alpha(Texture *t, int page, int alpha_src);
+  virtual void fetch_into_buffer(unsigned char *block, bool rgba);
+
  private:
-  int _size_x;
-  int _size_y;
-  bool _at_end;
+  void allocate_conversion_buffer();
+  unsigned char *_conversion_buffer;
+  
+ protected:
+  CPT(Movie) _source;
+  bool _aborted;
+  double _last_start;
+  double _curr_start;
   double _next_start;
-  double _approx_len;
   
 public:
   static TypeHandle get_class_type() {

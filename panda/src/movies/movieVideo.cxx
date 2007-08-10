@@ -30,20 +30,13 @@ TypeHandle MovieVideo::_type_handle;
 //               to construct a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieVideo::
-MovieVideo(const string &name, double len) :
+MovieVideo(const string &name, CPT(Movie) source) :
   Namable(name),
-  _size_x(1),
-  _size_y(1),
-  _at_end(false),
-  _next_start(0.0),
-  _approx_len(len)
+  _source(source),
+  _aborted(false),
+  _curr_start(-1.0),
+  _next_start(0.0)
 {
-  if (len < 0.0) {
-    _approx_len = 0.0;
-  }
-  if (_approx_len == 0.0) {
-    _at_end = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,45 +46,177 @@ MovieVideo(const string &name, double len) :
 ////////////////////////////////////////////////////////////////////
 MovieVideo::
 ~MovieVideo() {
+  if (_conversion_buffer != 0) {
+    delete[] _conversion_buffer;
+  }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::fetch_into
-//       Access: Published, Virtual
-//  Description: Load the next frame into a texture's ram image.
-//               Advances the frame pointer.
+//     Function: MovieVideo::allocate_conversion_buffer
+//       Access: Private
+//  Description: The generic implementations of fetch_into_texture
+//               and fetch_into_alpha require the use of a conversion
+//               buffer.  This allocates the buffer.
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
-fetch_into(Texture *t) {
-
-  // The following is the implementation of the null video
-  // stream --- a stream of solid blue frames.  Normally,
-  // this method will be overridden by the subclass.
-  
-  t->setup_texture(Texture::TT_2d_texture, 1, 1, 1,
-                   Texture::T_unsigned_byte, Texture::F_rgba);
-  PTA_uchar img = t->modify_ram_image();
-  
-  int frame_index = (int)_next_start;
-  if (_at_end) {
-    img.set_element(0,0);
-    img.set_element(1,0);
-    img.set_element(2,0);
-    img.set_element(3,255);
-  } else if (frame_index & 1) {
-    img.set_element(0,128);
-    img.set_element(1,128);
-    img.set_element(2,255);
-    img.set_element(3,255);
-  } else {
-    img.set_element(0,255);
-    img.set_element(1,255);
-    img.set_element(2,255);
-    img.set_element(3,255);
-  }
-  
-  _next_start = _next_start + 1.0;
-  if (_next_start > _approx_len) {
-    _at_end = true;
+allocate_conversion_buffer() {
+  if (_conversion_buffer == 0) {
+    _conversion_buffer = new unsigned char[size_x() * size_y() * 4];
   }
 }
+  
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::seek_ahead
+//       Access: Published, Virtual
+//  Description: Seeks forward until the next frame contains time t.
+//               Also updates last_start and next_start.
+//               It is an error to pass in a value less than
+//               next_start (that would be a backward seek).
+//
+//               Arbitrary seeking (both forward and backward) can
+//               be accomplished by fetching the original Movie
+//               object, and then calling get_video with an offset.
+//               However, unlike seek_ahead, the result is not
+//               guaranteed to be quite precise, because AVI files
+//               often have inaccurate indices.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+seek_ahead(double t) {
+
+  // The following is the implementation of the null video stream, ie,
+  // a stream of blinking red and blue frames.  This method must be
+  // overridden by the subclass.
+
+  nassertv(t >= _next_start);
+  _next_start = floor(t);
+  _last_start = _next_start - 1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::fetch_into_texture
+//       Access: Published, Virtual
+//  Description: Fetch the next frame into a page of a texture.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+fetch_into_texture(Texture *t, int page) {
+
+  // This generic implementation is layered on fetch_into_buffer.
+  // It will work for any derived class, so it is never necessary to
+  // redefine this.  However, it may be possible to make a faster
+  // implementation that uses fewer intermediate copies, depending
+  // on the capabilities of the underlying codec software.
+
+  nassertv(t->get_x_size() >= size_x());
+  nassertv(t->get_y_size() >= size_y());
+  nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
+  nassertv(t->get_component_width() == 1);
+  nassertv(page < t->get_z_size());
+  
+  PTA_uchar img = t->modify_ram_image();
+  
+  unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
+
+  if (t->get_x_size() == size_x()) {
+    fetch_into_buffer(data, t->get_num_components() == 4);
+  } else {
+    allocate_conversion_buffer();
+    fetch_into_buffer(_conversion_buffer, t->get_num_components() == 4);
+    int src_stride = size_x() * t->get_num_components();
+    int dst_stride = t->get_x_size() * t->get_num_components();
+    unsigned char *p = _conversion_buffer;
+    for (int y=0; y<size_y(); y++) {
+      memcpy(data, p, src_stride);
+      data += dst_stride;
+      p += src_stride;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::fetch_into_texture_alpha
+//       Access: Published, Virtual
+//  Description: Fetch the next frame into the alpha channel
+//               of a texture.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
+
+  // This generic implementation is layered on fetch_into_buffer.
+  // It will work for any derived class, so it is never necessary to
+  // redefine this.  However, it may be possible to make a faster
+  // implementation that uses fewer intermediate copies, depending
+  // on the capabilities of the underlying codec software.
+
+  nassertv(t->get_x_size() >= size_x());
+  nassertv(t->get_y_size() >= size_y());
+  nassertv(t->get_num_components() == 4);
+  nassertv(t->get_component_width() == 1);
+  nassertv(page < t->get_z_size());
+  nassertv((alpha_src >= 0) && (alpha_src <= 4));
+
+  allocate_conversion_buffer();
+  
+  fetch_into_buffer(_conversion_buffer, true);
+  
+  PTA_uchar img = t->modify_ram_image();
+  
+  unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
+  
+  int src_stride = size_x() * 4;
+  int dst_stride = t->get_x_size() * 4;
+  if (alpha_src == 0) {
+    unsigned char *p = _conversion_buffer;
+    for (int y=0; y<size_y(); y++) {
+      for (int x=0; x<size_x(); x++) {
+        data[x*4+3] = (p[x*4+0] + p[x*4+1] + p[x*4+2]) / 3;
+      }
+      data += dst_stride;
+      p += src_stride;
+    }
+  } else {
+    alpha_src -= 1;
+    unsigned char *p = _conversion_buffer;
+    for (int y=0; y<size_y(); y++) {
+      for (int x=0; x<size_x(); x++) {
+        data[x*4+3] = p[x*4+alpha_src];
+      }
+      data += dst_stride;
+      p += src_stride;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::fetch_into_buffer
+//       Access: Published, Virtual
+//  Description: Fetch the next frame into a supplied RGB8 or RGBA8
+//               buffer.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+fetch_into_buffer(unsigned char *data, bool rgba) {
+  
+  // The following is the implementation of the null video stream, ie,
+  // a stream of blinking red and blue frames.  This method must be
+  // overridden by the subclass.
+
+  if (_next_start >= length()) {
+    data[0] = 0;
+    data[1] = 0;
+    data[2] = 0;
+  } else if (((int)_next_start) & 1) {
+    data[0] = 255;
+    data[1] = 128;
+    data[2] = 128;
+  } else {
+    data[0] = 128;
+    data[1] = 128;
+    data[2] = 255;
+  }
+  if (rgba) {
+    data[3] = 255;
+  }
+  
+  _curr_start = _next_start;
+  _next_start = _next_start + 1.0;
+}
+

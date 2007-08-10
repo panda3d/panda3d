@@ -20,6 +20,7 @@
 #include "frameRateMeter.h"
 #include "openCVTexture.h"
 #include "ffmpegTexture.h"
+#include "movieTexture.h"
 #include "pandaSystem.h"
 #include "texturePool.h"
 #include "nodeVertexTransform.h"
@@ -71,6 +72,11 @@ init_libgrutil() {
   NodeVertexTransform::init_type();
   RigidBodyCombiner::init_type();
   PipeOcclusionCullTraverser::init_type();
+
+  MovieTexture::init_type();
+  MovieTexture::register_with_read_factory();
+  TexturePool *ts = TexturePool::get_global_ptr();
+  ts->register_texture_type(MovieTexture::make_texture, "dummyvideo");
 
 #ifdef HAVE_OPENCV
   

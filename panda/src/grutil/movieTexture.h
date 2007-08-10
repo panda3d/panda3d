@@ -1,5 +1,5 @@
-// Filename: openCVTexture.h
-// Created by:  zacpavlov (19Aug05)
+// Filename: movieTexture.h
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,97 +16,76 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGTEXTURE_H
-#define FFMPEGTEXTURE_H
+#ifndef MOVIETEXTURE_H
+#define MOVIETEXTURE_H
 
 #include "pandabase.h"
-#ifdef HAVE_FFMPEG
-
-#include "videoTexture.h"
-
-#include "avcodec.h"
-#include "avformat.h"
+#include "movie.h"
+#include "movieVideo.h"
+#include "movieAudio.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : OpenCVTexture
-// Description : A specialization on VideoTexture that takes its input
-//               using the CV library, to produce an animated texture,
-//               with its source taken from an .avi file or from a
-//               camera input.
+//       Class : MovieTexture
+// Description : A texture that fetches video frames from an
+//               underlying object of class Movie.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL FFMpegTexture : public VideoTexture {
+class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
-  FFMpegTexture(const string &name = string());
+  MovieTexture(const string &name);
 protected:
-  FFMpegTexture(const FFMpegTexture &copy);
+  MovieTexture(const MovieTexture &copy);
 PUBLISHED:
-  virtual ~FFMpegTexture();
+  virtual ~MovieTexture();
 
   virtual PT(Texture) make_copy();
 
+  INLINE int get_video_width() const;
+  INLINE int get_video_height() const;
+  INLINE LVecBase2f get_tex_scale() const;
+
 public:
   static PT(Texture) make_texture();
-
+  virtual bool has_cull_callback() const;
+  virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
+ 
 protected:
-  virtual void update_frame(int frame);
+  virtual void reload_ram_image();
+  virtual bool get_keep_ram_image() const;
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n);
 
-private:    
-  class VideoPage;
-  class VideoStream;
-
-  VideoPage &modify_page(int z);
-  bool reconsider_video_properties(const VideoStream &stream, 
-                                   int num_components, int z);
-  void do_update();
-    
-  class VideoStream {
-  public:
-    VideoStream();
-    VideoStream(const VideoStream &copy);
-    ~VideoStream();
-
-    bool read(const Filename &filename);
-    void clear();
-    INLINE bool is_valid() const;
-    INLINE bool is_from_file() const;
-    bool get_frame_data(int frame);
-
-  private:
-    int read_video_frame(AVPacket *packet);
-
-  public:
-    AVCodecContext *_codec_context; 
-    AVFormatContext *_format_context; 
-    
-    int _stream_number;
-    AVFrame *_frame;
-    AVFrame *_frame_out;
-
-    Filename _filename;
-    int _next_frame_number;
-    int _image_size_bytes;
-
-  private:
-    unsigned char * _raw_data;
-    AVCodec *_codec;
-  };
-
   class VideoPage {
   public:
-    INLINE VideoPage();
-    INLINE VideoPage(const VideoPage &copy);
-    INLINE ~VideoPage();
+    VideoPage();
+    PT(MovieVideo) _color;
+    PT(MovieVideo) _alpha;
+    double _base_clock;
+  };
+  
+  typedef pvector<VideoPage> Pages;
 
-    VideoStream _color, _alpha;
+  class EXPCL_PANDA_GRUTIL CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    virtual CycleData *make_copy() const;
+    virtual TypeHandle get_parent_type() const {
+      return MovieTexture::get_class_type();
+    }
+
+    Pages _pages;
+    int _video_width;
+    int _video_height;
   };
 
-  typedef pvector<VideoPage> Pages;
-  Pages _pages;
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
+  
+  void recalculate_image_properties(CDWriter &cdata);
 
 public:
   static void register_with_read_factory();
@@ -117,8 +96,8 @@ public:
   }
   static void init_type() {
     VideoTexture::init_type();
-    register_type(_type_handle, "FFMpegTexture",
-                  VideoTexture::get_class_type());
+    register_type(_type_handle, "MovieTexture",
+                  Texture::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -129,10 +108,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegTexture.I"
+#include "movieTexture.I"
 
-
-
-#endif  // HAVE_OPENCV
 
 #endif

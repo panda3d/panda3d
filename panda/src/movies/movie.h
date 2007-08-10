@@ -22,8 +22,9 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "movieVideo.h"
-#include "movieAudio.h"
+
+class MovieVideo;
+class MovieAudio;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Movie
@@ -31,25 +32,46 @@
 //               an audio and a video stream.  So that could include
 //               an AVI file, or an internet TV station.  It could
 //               also be an MP3 file paired with a dummy video stream.
+//
+//               Class Movie and anything derived from Movie must be
+//               immutable, for thread-safety reasons.  (However, the
+//               MovieVideo and MovieAudio objects constructed by
+//               get_video and get_audio do not need to be immutable
+//               or thread-safe).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES Movie : public TypedWritableReferenceCount, public Namable{
 
 PUBLISHED:
   Movie(const string &name, double len);
+
+  INLINE int size_x() const;
+  INLINE int size_y() const;
+  INLINE int get_num_components() const;
+  INLINE double length() const;
+  INLINE int audio_rate() const;
+  INLINE int audio_channels() const;
+
   INLINE bool ignores_offset() const;
   INLINE bool dummy_video() const;
   INLINE bool dummy_audio() const;
-  virtual PT(MovieVideo) get_video(double offset=0.0);
-  virtual PT(MovieAudio) get_audio(double offset=0.0);
+
+  virtual PT(MovieVideo) get_video(double offset=0.0) const;
+  virtual PT(MovieAudio) get_audio(double offset=0.0) const;
+  static PT(Movie) load(const Filename &path);
   
 public:
   virtual ~Movie();
-  
+
 private:
+  int _size_x;
+  int _size_y;
+  int _num_components;
+  double _length;
+  int _audio_rate;
+  int _audio_channels;
   bool _ignores_offset;
   bool _dummy_video;
   bool _dummy_audio;
-  double _dummy_len;
   
 public:
   static TypeHandle get_class_type() {
