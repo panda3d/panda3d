@@ -528,27 +528,36 @@ class ParticlePanel(AppShell):
         self.createFloater(linePage, 'Line Renderer', 'Line Scale Factor',
                            'Scale Factor applied to length of line',
                            command = self.setRendererLineScaleFactor)
-        # Geom page #
+
+        ############################################################################
+        # GEOM PARTICLE RENDERER PAGE #
+        ############################################################################
         geomPage = self.rendererNotebook.add('GeomParticleRenderer')
         f = Frame(geomPage)
         f.pack(fill = X)
+
+        # Geom Node input field
         Label(f, width = 12, text = 'Geom Node', pady = 3).pack(side = LEFT)
         self.rendererGeomNode = StringVar()
-        self.rendererGeomNodeEntry = Entry(
-            f, width = 12,
-            textvariable = self.rendererGeomNode)
+        self.rendererGeomNodeEntry = Entry(f, width = 12,
+                                           textvariable = self.rendererGeomNode)
         self.rendererGeomNodeEntry.bind('<Return>', self.setRendererGeomNode)
         self.rendererGeomNodeEntry.pack(side = LEFT, expand = 1, fill = X)
 
+        # Setup frames
         f = Frame(geomPage)
         f.pack(fill = BOTH, expand = 1)
         rendererGeomNotebook = Pmw.NoteBook(f)
         rendererGeomNotebook.pack(fill = BOTH, expand = 1)
 
         rendererGeomBlendPage = rendererGeomNotebook.add('Blend')
+        rendererGeomScalePage = rendererGeomNotebook.add('Scale')
         rendererGeomInterpolationPage = rendererGeomNotebook.add('Interpolate')
-
+        
+        ############################################################################
+        # Blend tab
         p = Frame(rendererGeomBlendPage)
+        p.pack(fill = X)
         self.createOptionMenu(p, 'Geom Renderer',
                               'Color Blend',
                               'How to render semi-transparent colors',
@@ -574,7 +583,58 @@ class ParticlePanel(AppShell):
                                'OZero'),
                               self.setRendererGeomColorBlendFbufferOperand)
         self.getVariable('Geom Renderer','Fbuffer Op.').set('OOneMinusIncomingAlpha')
+
+        ############################################################################
+        # Scale tab
+        p = Frame(rendererGeomScalePage)
         p.pack(fill = X)
+        
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'X Scale',
+            ("On: x scale is interpolated over particle's life; " +
+             "Off: stays as start_X_Scale"),
+            self.toggleRendererGeomXScale, 0, side = LEFT)
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'Y Scale',
+            ("On: y scale is interpolated over particle's life; " +
+             "Off: stays as start_Y_Scale"),
+            self.toggleRendererGeomYScale, 0, side = LEFT)
+        self.createCheckbutton(
+            p, 'Geom Renderer', 'Z Scale',
+            ("On: z scale is interpolated over particle's life; " +
+             "Off: stays as start_Z_Scale"),
+            self.toggleRendererGeomZScale, 0, side = LEFT)
+        
+        p = Frame(rendererGeomScalePage)
+        p.pack(fill = X)
+        
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial X Scale',
+                           'Initial X scaling factor',
+                           command = self.setRendererGeomInitialXScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final X Scale',
+                           'Final X scaling factor, if xScale enabled',
+                           command = self.setRendererGeomFinalXScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial Y Scale',
+                           'Initial Y scaling factor',
+                           command = self.setRendererGeomInitialYScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final Y Scale',
+                           'Final Y scaling factor, if yScale enabled',
+                           command = self.setRendererGeomFinalYScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Initial Z Scale',
+                           'Initial Z scaling factor',
+                           command = self.setRendererGeomInitialZScale)
+        self.createFloater(p, 'Geom Renderer',
+                           'Final Z Scale',
+                           'Final Z scaling factor, if zScale enabled',
+                           command = self.setRendererGeomFinalZScale)
+
+        ############################################################################
+        # Interpolate tab
         p = Frame(rendererGeomInterpolationPage)
         p.pack(fill = X)
         addSegmentButton = Menubutton(p, text = 'Add Segment',
@@ -603,7 +663,9 @@ class ParticlePanel(AppShell):
 
         rendererGeomNotebook.setnaturalsize()
 
-        # Point #
+        ############################################################################
+        # POINT PARTICLE RENDERER PAGE #
+        ############################################################################
         rendererPointPage = self.rendererNotebook.add('PointParticleRenderer')
         self.createFloater(rendererPointPage, 'Point Renderer', 'Point Size',
                            'Width and height of points in pixels',
@@ -704,6 +766,7 @@ class ParticlePanel(AppShell):
 ##################################################################################
         p = Frame(rendererSpriteScalePage)
         p.pack(fill = X)
+        
         self.createCheckbutton(
             p, 'Sprite Renderer', 'X Scale',
             ("On: x scale is interpolated over particle's life; " +
@@ -1569,6 +1632,7 @@ class ParticlePanel(AppShell):
         self.getVariable('Renderer', 'Alpha Mode').set(aMode)
         userAlpha = renderer.getUserAlpha()
         self.getWidget('Renderer', 'User Alpha').set(userAlpha)
+        
         if isinstance(renderer, LineParticleRenderer):
             headColor = renderer.getHeadColor() * 255.0
             self.getWidget('Line Renderer', 'Head Color').set(
@@ -1578,7 +1642,32 @@ class ParticlePanel(AppShell):
                 [tailColor[0], tailColor[1], tailColor[2], tailColor[3]])
             self.getWidget('Line Renderer', 'Line Scale Factor').set(
                 renderer.getLineScaleFactor())
+            
         elif isinstance(renderer, GeomParticleRenderer):
+            self.getVariable('Geom Renderer', 'X Scale').set(
+                renderer.getXScaleFlag())
+            self.getVariable('Geom Renderer', 'Y Scale').set(
+                renderer.getYScaleFlag())
+            self.getVariable('Geom Renderer', 'Z Scale').set(
+                renderer.getZScaleFlag())
+            initialXScale = renderer.getInitialXScale()
+            self.getWidget('Geom Renderer', 'Initial X Scale').set(
+                initialXScale)
+            initialYScale = renderer.getInitialYScale()
+            self.getWidget('Geom Renderer', 'Initial Y Scale').set(
+                initialYScale)
+            initialZScale = renderer.getInitialZScale()
+            self.getWidget('Geom Renderer', 'Initial Z Scale').set(
+                initialZScale)
+            finalXScale = renderer.getFinalXScale()
+            self.getWidget('Geom Renderer', 'Final X Scale').set(
+                finalXScale)
+            finalYScale = renderer.getFinalYScale()
+            self.getWidget('Geom Renderer', 'Final Y Scale').set(
+                finalYScale)
+            finalZScale = renderer.getFinalZScale()
+            self.getWidget('Geom Renderer', 'Final Z Scale').set(
+                finalZScale)
             if(self.getVariable('Geom Renderer','Color Blend').get() in ['MAdd','MSubtract','MInvSubtract']):
                 self.getWidget('Geom Renderer','Incoming Op.').pack(fill = X)
                 self.getWidget('Geom Renderer','Fbuffer Op.').pack(fill = X)
@@ -1618,6 +1707,7 @@ class ParticlePanel(AppShell):
             elif (blendMethod == BaseParticleRenderer.PPBLENDCUBIC):
                 bMethod = "PP_BLEND_CUBIC"
             self.getVariable('Point Renderer', 'Blend Method').set(bMethod)
+            
         elif isinstance(renderer, SparkleParticleRenderer):
             centerColor = renderer.getCenterColor() * 255.0
             self.getWidget('Sparkle Renderer', 'Center Color').set(
@@ -1635,6 +1725,7 @@ class ParticlePanel(AppShell):
             if (lifeScale == SparkleParticleRenderer.SPSCALE):
                 lScale = "SP_SCALE"
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
+            
         elif isinstance(renderer, SpriteParticleRenderer):
             self.getWidget('Sprite Renderer','Frame Rate').set(renderer.getAnimateFramesRate(), 0)
             self.getVariable('Sprite Renderer','Enable Animation').set(
@@ -1726,6 +1817,7 @@ class ParticlePanel(AppShell):
         if nodePath != None:
             node = nodePath.node()
         if (node != None):
+            self.particles.geomReference = self.rendererGeomNode.get()
             self.particles.renderer.setGeomNode(node)
     # Point #
     def setRendererPointSize(self, size):
@@ -1903,25 +1995,53 @@ class ParticlePanel(AppShell):
         blendMethodStr = self.getVariable('Sprite Renderer','Color Blend').get()
         incomingOperandStr = self.getVariable('Sprite Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
-
         self.setRendererColorBlendAttrib('Sprite Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
+
+    # GeomParticleRenderer Functionality
+    def toggleRendererGeomXScale(self):
+        self.particles.renderer.setXScaleFlag(
+            self.getVariable('Geom Renderer', 'X Scale').get())
+    def toggleRendererGeomYScale(self):
+        self.particles.renderer.setYScaleFlag(
+            self.getVariable('Geom Renderer', 'Y Scale').get())
+    def toggleRendererGeomZScale(self):
+        self.particles.renderer.setZScaleFlag(
+            self.getVariable('Geom Renderer', 'Z Scale').get())
+        
+    def setRendererGeomInitialXScale(self, xScale):
+        self.particles.renderer.setInitialXScale(xScale)
+    def setRendererGeomFinalXScale(self, xScale):
+        self.particles.renderer.setFinalXScale(xScale)
+        
+    def setRendererGeomInitialYScale(self, yScale):
+        self.particles.renderer.setInitialYScale(yScale)
+    def setRendererGeomFinalYScale(self, yScale):
+        self.particles.renderer.setFinalYScale(yScale)
+        
+    def setRendererGeomInitialZScale(self, zScale):
+        self.particles.renderer.setInitialZScale(zScale)
+    def setRendererGeomFinalZScale(self, zScale):
+        self.particles.renderer.setFinalZScale(zScale)
+    
     def setRendererGeomColorBlendMethod(self, blendMethod):
         blendMethodStr = blendMethod
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
         fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
-
         self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
     def setRendererGeomColorBlendIncomingOperand(self, operand):
         blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
         incomingOperandStr = operand
         fbufferOperandStr = self.getVariable('Geom Renderer','Fbuffer Op.').get()
-
         self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
     def setRendererGeomColorBlendFbufferOperand(self, operand):
         blendMethodStr = self.getVariable('Geom Renderer','Color Blend').get()
         incomingOperandStr = self.getVariable('Geom Renderer','Incoming Op.').get()
         fbufferOperandStr = operand
         self.setRendererColorBlendAttrib('Geom Renderer', blendMethodStr, incomingOperandStr, fbufferOperandStr)
+
 
     def addConstantInterpolationSegment(self, id = None):
         ren = self.particles.getRenderer()
@@ -2652,7 +2772,9 @@ class ParticlePanel(AppShell):
 
 # Create demo in root window for testing.
 if __name__ == '__main__':
+    
     root = Pmw.initialise()
     pp = ParticlePanel()
+    base.pp=pp
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()

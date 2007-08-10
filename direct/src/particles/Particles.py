@@ -66,6 +66,7 @@ class Particles(ParticleSystem):
         # Enable particles by default
         self.fEnabled = 0
         #self.enable()
+        self.geomReference = ""
 
     def cleanup(self):
         self.disable()
@@ -324,13 +325,25 @@ class Particles(ParticleSystem):
         elif (self.rendererType == "GeomParticleRenderer"):
             file.write('# Geom parameters\n')
             node = self.renderer.getGeomNode()
-            file.write(targ + '.renderer.setGeomNode(' + node.getName() + ')\n')
+            file.write('geomRef = loader.loadModel("' + self.geomReference + '")\n')
+            file.write(targ + '.renderer.setGeomNode(geomRef.node())\n')
+            file.write(targ + '.geomReference = "' + self.geomReference + '"\n');
             cbmLut = ('MNone','MAdd','MSubtract','MInvSubtract','MMin','MMax')
             cboLut = ('OZero','OOne','OIncomingColor','OOneMinusIncomingColor','OFbufferColor',
                       'OOneMinusFbufferColor','OIncomingAlpha','OOneMinusIncomingAlpha',
                       'OFbufferAlpha','OOneMinusFbufferAlpha','OConstantColor',
                       'OOneMinusConstantColor','OConstantAlpha','OOneMinusConstantAlpha',
                       'OIncomingColorSaturate')
+            file.write(targ + '.renderer.setXScaleFlag(%d)\n' % self.renderer.getXScaleFlag())
+            file.write(targ + '.renderer.setYScaleFlag(%d)\n' % self.renderer.getYScaleFlag())
+            file.write(targ + '.renderer.setZScaleFlag(%d)\n' % self.renderer.getZScaleFlag())
+            file.write(targ + '.renderer.setInitialXScale(%.4f)\n' % self.renderer.getInitialXScale())
+            file.write(targ + '.renderer.setFinalXScale(%.4f)\n' % self.renderer.getFinalXScale())
+            file.write(targ + '.renderer.setInitialYScale(%.4f)\n' % self.renderer.getInitialYScale())
+            file.write(targ + '.renderer.setFinalYScale(%.4f)\n' % self.renderer.getFinalYScale())
+            file.write(targ + '.renderer.setInitialZScale(%.4f)\n' % self.renderer.getInitialZScale())
+            file.write(targ + '.renderer.setFinalZScale(%.4f)\n' % self.renderer.getFinalZScale())
+
             cbAttrib = self.renderer.getRenderNode().getAttrib(ColorBlendAttrib.getClassType())
             if(cbAttrib):
                 cbMode = cbAttrib.getMode()

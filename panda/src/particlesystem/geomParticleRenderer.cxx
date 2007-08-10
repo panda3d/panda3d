@@ -37,7 +37,16 @@ GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
   BaseParticleRenderer(am),
   _geom_node(geom_node),
   _color_interpolation_manager(new ColorInterpolationManager(Colorf(1.0f,1.0f,1.0f,1.0f))),
-  _pool_size(0)
+  _pool_size(0),
+  _initial_x_scale(1.0f),
+  _final_x_scale(1.0f),
+  _initial_y_scale(1.0f),
+  _final_y_scale(1.0f),
+  _initial_z_scale(1.0f),
+  _final_z_scale(1.0f),
+  _animate_x_ratio(false),
+  _animate_y_ratio(false),
+  _animate_z_ratio(false)
 {
   if (_geom_node.is_null())
     _geom_node = new PandaNode("empty");
@@ -51,7 +60,18 @@ GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
 
 GeomParticleRenderer::
 GeomParticleRenderer(const GeomParticleRenderer& copy) :
-  BaseParticleRenderer(copy), _pool_size(0) {
+  BaseParticleRenderer(copy), 
+  _pool_size(0),
+  _initial_x_scale(copy._initial_x_scale),
+  _final_x_scale(copy._final_x_scale),
+  _initial_y_scale(copy._initial_y_scale),
+  _final_y_scale(copy._final_y_scale),
+  _initial_z_scale(copy._initial_z_scale),
+  _final_z_scale(copy._final_z_scale),
+  _animate_x_ratio(copy._animate_x_ratio),
+  _animate_y_ratio(copy._animate_y_ratio),
+  _animate_z_ratio(copy._animate_z_ratio)
+{
   _geom_node = copy._geom_node;
 }
 
@@ -82,9 +102,9 @@ make_copy() {
 //      Access : private
 // Description : links the child nodes to the parent stuff
 ////////////////////////////////////////////////////////////////////
-
 void GeomParticleRenderer::
 init_geoms() {
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,10 +235,30 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
       cur_node->set_attrib(ColorAttrib::make_flat(c), 0);
 
+      // animate scale
+      float current_x_scale = _initial_x_scale;
+      float current_y_scale = _initial_y_scale;
+      float current_z_scale = _initial_z_scale;
+
+      if (_animate_x_ratio || _animate_y_ratio || _animate_z_ratio) {
+        if (_animate_x_ratio) {
+          current_x_scale = (_initial_x_scale + 
+                             (t * (_final_x_scale - _initial_x_scale)));
+        }
+        if (_animate_y_ratio) {
+          current_y_scale = (_initial_y_scale + 
+                             (t * (_final_y_scale - _initial_y_scale)));
+        }
+        if (_animate_z_ratio) {
+          current_z_scale = (_initial_z_scale + 
+                             (t * (_final_z_scale - _initial_z_scale)));
+        }
+      }
+
       cur_node->set_transform(TransformState::make_pos_quat_scale
                               (cur_particle->get_position(),
                                cur_particle->get_orientation(),
-                               LVecBase3f(1.0f, 1.0f, 1.0f)));
+                               LVecBase3f(current_x_scale, current_y_scale, current_z_scale)));
 
       // maybe get out early if possible.
 
@@ -276,6 +316,17 @@ write(ostream &out, int indent) const {
   out.width(indent); out<<""; out<<"GeomParticleRenderer:\n";
   out.width(indent+2); out<<""; out<<"_geom_node "<<_geom_node<<"\n";
   out.width(indent+2); out<<""; out<<"_pool_size "<<_pool_size<<"\n";
+
+  out.width(indent+2); out<<""; out<<"_initial_x_scale "<<_initial_x_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_x_scale "<<_final_x_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_y_scale "<<_initial_y_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_y_scale "<<_final_y_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_z_scale "<<_initial_z_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_z_scale "<<_final_z_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_x_ratio "<<_animate_x_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_y_ratio "<<_animate_y_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_z_ratio "<<_animate_z_ratio<<"\n";
+
   write_linear_forces(out, indent+2);
   BaseParticleRenderer::write(out, indent+2);
   #endif //] NDEBUG

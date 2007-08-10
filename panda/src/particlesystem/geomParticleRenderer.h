@@ -39,6 +39,26 @@ PUBLISHED:
   INLINE PandaNode *get_geom_node();
   INLINE ColorInterpolationManager* get_color_interpolation_manager() const;  
 
+  INLINE void set_x_scale_flag(bool animate_x_ratio);
+  INLINE void set_y_scale_flag(bool animate_y_ratio);
+  INLINE void set_z_scale_flag(bool animate_z_ratio);
+  INLINE void set_initial_x_scale(float initial_x_scale);
+  INLINE void set_final_x_scale(float final_x_scale);
+  INLINE void set_initial_y_scale(float initial_y_scale);
+  INLINE void set_final_y_scale(float final_y_scale);
+  INLINE void set_initial_z_scale(float initial_z_scale);
+  INLINE void set_final_z_scale(float final_z_scale);
+
+  INLINE bool get_x_scale_flag() const;
+  INLINE bool get_y_scale_flag() const;
+  INLINE bool get_z_scale_flag() const;
+  INLINE float get_initial_x_scale() const;
+  INLINE float get_final_x_scale() const;
+  INLINE float get_initial_y_scale() const;
+  INLINE float get_final_y_scale() const;
+  INLINE float get_initial_z_scale() const;
+  INLINE float get_final_z_scale() const;
+
   virtual BaseParticleRenderer *make_copy();
 
   virtual void output(ostream &out) const;
@@ -52,6 +72,16 @@ private:
   pvector< PT(PandaNode) > _node_vector;
 
   int _pool_size;
+  float _initial_x_scale;
+  float _final_x_scale;
+  float _initial_y_scale;
+  float _final_y_scale;
+  float _initial_z_scale;
+  float _final_z_scale;
+
+  bool _animate_x_ratio;
+  bool _animate_y_ratio;
+  bool _animate_z_ratio;
 
   // geomparticlerenderer takes advantage of the birth/death functions
 
