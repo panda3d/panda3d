@@ -18,40 +18,40 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
     # distributed set pos and hpr functions
     # these are invoked by the DC system
     # 'send' (d_set*) versions are inherited from DistributedSmoothNodeBase
-    def setSmStop(self, t):
+    def setSmStop(self, t=None):
         pass
 
     # These have their FFI functions exposed for efficiency
-    def setSmH(self, h, t):
+    def setSmH(self, h, t=None):
         self.setH(h)
 
-    def setSmZ(self, z, t):
+    def setSmZ(self, z, t=None):
         self.setZ(z)
 
-    def setSmXY(self, x, y, t):
+    def setSmXY(self, x, y, t=None):
         self.setX(x)
         self.setY(y)
 
-    def setSmXZ(self, x, z, t):
+    def setSmXZ(self, x, z, t=None):
         self.setX(x)
         self.setZ(z)
 
-    def setSmPos(self, x, y, z, t):
+    def setSmPos(self, x, y, z, t=None):
         self.setPos(x, y, z)
 
-    def setSmHpr(self, h, p, r, t):
+    def setSmHpr(self, h, p, r, t=None):
         self.setHpr(h, p, r)
 
-    def setSmXYH(self, x, y, h, t):
+    def setSmXYH(self, x, y, h, t=None):
         self.setX(x)
         self.setY(y)
         self.setH(h)
 
-    def setSmXYZH(self, x, y, z, h, t):
+    def setSmXYZH(self, x, y, z, h, t=None):
         self.setPos(x, y, z)
         self.setH(h)
 
-    def setSmPosHpr(self, x, y, z, h, p, r, t):
+    def setSmPosHpr(self, x, y, z, h, p, r, t=None):
         self.setPosHpr(x, y, z, h, p, r)
 
     def clearSmoothing(self, bogus = None):
