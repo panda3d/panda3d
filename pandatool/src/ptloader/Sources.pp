@@ -13,7 +13,7 @@
     pnmimage:c grutil:c collide:c tform:c text:c \
     char:c dgraph:c display:c device:c cull:c \
     downloader:c pipeline:c pnmtext:c \
-    event:c gsgbase:c lerp:c \
+    event:c gsgbase:c lerp:c movies:c \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     panda:m \
     pandabase:c express:c pandaexpress:m \

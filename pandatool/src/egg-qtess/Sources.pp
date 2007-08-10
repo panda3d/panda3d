@@ -11,6 +11,7 @@
     collide:c gobj:c cull:c device:c pnmtext:c \
     parametrics:c pgraph:c pipeline:c pstatclient:c chan:c \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
+    movies:c \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     panda:m \
     pandabase:c express:c pandaexpress:m \
