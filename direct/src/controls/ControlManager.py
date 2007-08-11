@@ -33,7 +33,10 @@ class ControlManager:
             self.enable()
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
-            
+
+    def __str__(self):
+        return 'ControlManager: using \'%s\'' % self.currentControlsName
+    
     def add(self, controls, name="basic"):
         """
         controls is an avatar control system.
