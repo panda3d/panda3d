@@ -43,26 +43,25 @@ class EXPCL_PANDA_MOVIES Movie : public TypedWritableReferenceCount, public Nama
 
 PUBLISHED:
   Movie(const string &name, double len);
-
+  
   INLINE int size_x() const;
   INLINE int size_y() const;
   INLINE int get_num_components() const;
   INLINE double length() const;
   INLINE int audio_rate() const;
   INLINE int audio_channels() const;
-
   INLINE bool ignores_offset() const;
   INLINE bool dummy_video() const;
   INLINE bool dummy_audio() const;
 
   virtual PT(MovieVideo) get_video(double offset=0.0) const;
   virtual PT(MovieAudio) get_audio(double offset=0.0) const;
-  static PT(Movie) load(const Filename &path);
+  static CPT(Movie) load(const Filename &path);
   
 public:
   virtual ~Movie();
 
-private:
+protected:
   int _size_x;
   int _size_y;
   int _num_components;

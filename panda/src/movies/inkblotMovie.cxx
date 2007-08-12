@@ -49,7 +49,7 @@ InkblotMovie(const string &name, double len, int sizex, int sizey, int fps) :
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideo) InkblotMovie::
 get_video(double offset) const {
-  return new InkblotVideo(get_name(), this);
+  return new InkblotVideo(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +60,6 @@ get_video(double offset) const {
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudio) InkblotMovie::
 get_audio(double offset) const {
-  return new MovieAudio(get_name(), this);
+  return new MovieAudio(this);
 }
 

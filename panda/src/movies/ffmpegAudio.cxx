@@ -1,5 +1,5 @@
-// Filename: movieAudio.cxx
-// Created by: jyelon (02Jul07)
+// Filename: ffmpegAudio.cxx
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,44 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "movieAudio.h"
+#include "ffmpegAudio.h"
 
-TypeHandle MovieAudio::_type_handle;
+TypeHandle FfmpegAudio::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::Constructor
-//       Access: Public
-//  Description: This constructor returns a null audio stream --- a
-//               stream of total silence, at 8000 samples per second.
-//               To get more interesting audio, you need to construct
-//               a subclass of this class.
+//     Function: FfmpegAudio::Constructor
+//       Access: Protected
+//  Description: xxx
 ////////////////////////////////////////////////////////////////////
-MovieAudio::
-MovieAudio(CPT(Movie) source) :
-  Namable(source->get_name()),
-  _source(source),
-  _samples_read(0)
+FfmpegAudio::
+FfmpegAudio(CPT(FfmpegMovie) source, double offset) :
+  MovieAudio((const FfmpegMovie *)source),
+  _sourcep(source)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::Destructor
-//       Access: Public, Virtual
-//  Description: 
+//     Function: FfmpegAudio::Destructor
+//       Access: Protected, Virtual
+//  Description: xxx
 ////////////////////////////////////////////////////////////////////
-MovieAudio::
-~MovieAudio() {
+FfmpegAudio::
+~FfmpegAudio() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::read_samples
+//     Function: FfmpegAudio::read_samples
 //       Access: Public, Virtual
 //  Description: Read audio samples from the stream.  N is the
 //               number of samples you wish to read.  Your buffer
 //               must be equal in size to N * channels.  
 //               Multiple-channel audio will be interleaved. 
 ////////////////////////////////////////////////////////////////////
-void MovieAudio::
+void FfmpegAudio::
 read_samples(int n, PN_int16 *data) {
 
   // This is the null implementation, which generates pure silence.

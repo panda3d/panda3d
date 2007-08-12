@@ -63,7 +63,7 @@ Movie::
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideo) Movie::
 get_video(double offset) const {
-  return new MovieVideo(get_name(), this);
+  return new MovieVideo(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ get_video(double offset) const {
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudio) Movie::
 get_audio(double offset) const {
-  return new MovieAudio(get_name(), this);
+  return new MovieAudio(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ get_audio(double offset) const {
 //       Access: Published, Static
 //  Description: Loads a movie from a file.
 ////////////////////////////////////////////////////////////////////
-PT(Movie) Movie::
+CPT(Movie) Movie::
 load(const Filename &path) {
   // For now, just return a dummy movie.
   return new Movie("dummy",30.0);

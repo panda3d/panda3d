@@ -1,5 +1,5 @@
-// Filename: config_movies.h
-// Created by:  jyelon (02Jul07)
+// Filename: ffmpegAudio.I
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,22 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __CONFIG_MOVIES_H__
-#define __CONFIG_MOVIES_H__
-
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "configVariableEnum.h"
-#include "configVariableDouble.h"
-#include "dconfig.h"
-#include "movie.h"
-#include "movieVideo.h"
-#include "movieAudio.h"
-#include "inkblotVideo.h"
-
-ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
-NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
-
-extern EXPCL_PANDA_MOVIES void init_libmovies();
-
-#endif /* __CONFIG_MOVIES_H__ */

@@ -1,5 +1,5 @@
-// Filename: movieAudio.h
-// Created by: jyelon (02Jul07)
+// Filename: ffmpegMovie.h
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,46 +16,38 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MOVIEAUDIO_H
-#define MOVIEAUDIO_H
+#ifndef FFMPEGMOVIE_H
+#define FFMPEGMOVIE_H
 
 #include "pandabase.h"
-#include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
 #include "movie.h"
 
+class FfmpegVideo;
+class FfmpegAudio;
+
 ////////////////////////////////////////////////////////////////////
-//       Class : MovieAudio
-// Description : A stream that generates a sequence of audio samples.
+//       Class : FfmpegMovie
+// Description : A Movie loader class that uses FFMPEG as its
+//               underlying decoder.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_MOVIES FfmpegMovie : public Movie {
 
 PUBLISHED:
-  INLINE CPT(Movie) get_source() const;
-  INLINE int audio_rate() const;
-  INLINE int audio_channels() const;
-  INLINE double length() const;
-  INLINE int samples_read() const;
-  INLINE void skip_samples(int n);
-  
-public:
-  MovieAudio(CPT(Movie) source);
-  virtual ~MovieAudio();
-  virtual void read_samples(int n, PN_int16 *data);
-  
-protected:
-  CPT(Movie) _source;
-  int _samples_read;
-  
+  FfmpegMovie(const string &filename);
+
+  virtual PT(MovieVideo) get_video(double offset=0.0) const;
+  virtual PT(MovieAudio) get_audio(double offset=0.0) const;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "MovieAudio",
-                  TypedWritableReferenceCount::get_class_type());
+    Movie::init_type();
+    register_type(_type_handle, "FfmpegMovie",
+                  Movie::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -64,8 +56,10 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  friend class FfmpegVideo;
+  friend class FfmpegAudio;
 };
 
-#include "movieAudio.I"
+#include "ffmpegMovie.I"
 
 #endif

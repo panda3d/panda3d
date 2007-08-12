@@ -31,8 +31,6 @@
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
 
  PUBLISHED:
-  MovieVideo(const string &name, CPT(Movie) source);
-  virtual ~MovieVideo();
   INLINE CPT(Movie) get_source() const;
   INLINE int size_x() const;
   INLINE int size_y() const;
@@ -41,11 +39,15 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   INLINE bool aborted() const;
   INLINE double last_start() const;
   INLINE double next_start() const;
-  virtual void seek_ahead(double t);
-  virtual void fetch_into_texture(Texture *t, int page);
-  virtual void fetch_into_texture_alpha(Texture *t, int page, int alpha_src);
-  virtual void fetch_into_buffer(unsigned char *block, bool rgba);
+  virtual void fetch_into_texture(double time, Texture *t, int page);
+  virtual void fetch_into_texture_rgb(double time, Texture *t, int page);
+  virtual void fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src);
 
+ public:
+  MovieVideo(CPT(Movie) source);
+  virtual ~MovieVideo();
+  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  
  private:
   void allocate_conversion_buffer();
   unsigned char *_conversion_buffer;
@@ -54,7 +56,6 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   CPT(Movie) _source;
   bool _aborted;
   double _last_start;
-  double _curr_start;
   double _next_start;
   
 public:

@@ -23,7 +23,6 @@
 #include "texture.h"
 #include "pointerTo.h"
 #include "inkblotMovie.h"
-#include "movieVideo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InkblotVideo
@@ -32,18 +31,18 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES InkblotVideo : public MovieVideo {
 
- PUBLISHED:
-  InkblotVideo(const string &name, CPT(Movie) source);
+ public:
+  InkblotVideo(CPT(InkblotMovie) source);
   virtual ~InkblotVideo();
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
-
+  
  protected:
   const InkblotMovie *_sourcep;
   unsigned char *_cells;
   unsigned char *_cells2;
   int _fps;
   int _frames_read;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

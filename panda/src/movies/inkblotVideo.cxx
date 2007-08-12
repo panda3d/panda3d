@@ -53,14 +53,14 @@ static color colormap[17] = {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InkblotVideo::Constructor
-//       Access: Published
+//       Access: Public
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 InkblotVideo::
-InkblotVideo(const string &name, CPT(Movie) source) :
-  MovieVideo(name, source)
+InkblotVideo(CPT(InkblotMovie) source) :
+  MovieVideo((const InkblotMovie *)source)
 {
-  _sourcep = (const InkblotMovie*)(const Movie*)_source;
+  _sourcep = source;
   int padx = size_x() + 2;
   int pady = size_y() + 2;
   _cells = new unsigned char[padx * pady];
@@ -72,7 +72,7 @@ InkblotVideo(const string &name, CPT(Movie) source) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InkblotVideo::Destructor
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 InkblotVideo::

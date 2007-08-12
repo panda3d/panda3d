@@ -23,25 +23,25 @@ TypeHandle MovieVideo::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::Constructor
-//       Access: Published
+//       Access: Public
 //  Description: This constructor returns a null video stream --- a
 //               stream of plain blue and white frames that last one
 //               second each. To get more interesting video, you need
 //               to construct a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieVideo::
-MovieVideo(const string &name, CPT(Movie) source) :
-  Namable(name),
+MovieVideo(CPT(Movie) source) :
+  Namable(source->get_name()),
   _source(source),
   _aborted(false),
-  _curr_start(-1.0),
+  _last_start(-1.0),
   _next_start(0.0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::Destructor
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MovieVideo::
@@ -66,39 +66,16 @@ allocate_conversion_buffer() {
 }
   
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::seek_ahead
-//       Access: Published, Virtual
-//  Description: Seeks forward until the next frame contains time t.
-//               Also updates last_start and next_start.
-//               It is an error to pass in a value less than
-//               next_start (that would be a backward seek).
-//
-//               Arbitrary seeking (both forward and backward) can
-//               be accomplished by fetching the original Movie
-//               object, and then calling get_video with an offset.
-//               However, unlike seek_ahead, the result is not
-//               guaranteed to be quite precise, because AVI files
-//               often have inaccurate indices.
-////////////////////////////////////////////////////////////////////
-void MovieVideo::
-seek_ahead(double t) {
-
-  // The following is the implementation of the null video stream, ie,
-  // a stream of blinking red and blue frames.  This method must be
-  // overridden by the subclass.
-
-  nassertv(t >= _next_start);
-  _next_start = floor(t);
-  _last_start = _next_start - 1.0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::fetch_into_texture
 //       Access: Published, Virtual
-//  Description: Fetch the next frame into a page of a texture.
+//  Description: Reads frames from the stream until the specified 
+//               time is reached.  The last frame read is stored in
+//               the supplied texture.
+//
+//               See fetch_into_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
-fetch_into_texture(Texture *t, int page) {
+fetch_into_texture(double time, Texture *t, int page) {
 
   // This generic implementation is layered on fetch_into_buffer.
   // It will work for any derived class, so it is never necessary to
@@ -117,10 +94,10 @@ fetch_into_texture(Texture *t, int page) {
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
   if (t->get_x_size() == size_x()) {
-    fetch_into_buffer(data, t->get_num_components() == 4);
+    fetch_into_buffer(time, data, t->get_num_components() == 4);
   } else {
     allocate_conversion_buffer();
-    fetch_into_buffer(_conversion_buffer, t->get_num_components() == 4);
+    fetch_into_buffer(time, _conversion_buffer, t->get_num_components() == 4);
     int src_stride = size_x() * t->get_num_components();
     int dst_stride = t->get_x_size() * t->get_num_components();
     unsigned char *p = _conversion_buffer;
@@ -135,11 +112,15 @@ fetch_into_texture(Texture *t, int page) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::fetch_into_texture_alpha
 //       Access: Published, Virtual
-//  Description: Fetch the next frame into the alpha channel
-//               of a texture.
+//  Description: Reads frames from the stream until the specified 
+//               time is reached.  The last frame read is stored in
+//               the alpha channel of the supplied texture.  The
+//               RGB channels of the texture are not touched.
+//
+//               See fetch_into_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
-fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
+fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
 
   // This generic implementation is layered on fetch_into_buffer.
   // It will work for any derived class, so it is never necessary to
@@ -156,7 +137,7 @@ fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
 
   allocate_conversion_buffer();
   
-  fetch_into_buffer(_conversion_buffer, true);
+  fetch_into_buffer(time, _conversion_buffer, true);
   
   PTA_uchar img = t->modify_ram_image();
   
@@ -187,23 +168,87 @@ fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::fetch_into_buffer
+//     Function: MovieVideo::fetch_into_texture_rgb
 //       Access: Published, Virtual
-//  Description: Fetch the next frame into a supplied RGB8 or RGBA8
-//               buffer.
+//  Description: Reads frames from the stream until the specified 
+//               time is reached.  The last frame read is stored in
+//               the RGB channels of the supplied texture.  The alpha
+//               channel of the texture is not touched.
+//
+//               See fetch_into_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
-fetch_into_buffer(unsigned char *data, bool rgba) {
+fetch_into_texture_rgb(double time, Texture *t, int page) {
+
+  // This generic implementation is layered on fetch_into_buffer.
+  // It will work for any derived class, so it is never necessary to
+  // redefine this.  However, it may be possible to make a faster
+  // implementation that uses fewer intermediate copies, depending
+  // on the capabilities of the underlying codec software.
+
+  nassertv(t->get_x_size() >= size_x());
+  nassertv(t->get_y_size() >= size_y());
+  nassertv(t->get_num_components() == 4);
+  nassertv(t->get_component_width() == 1);
+  nassertv(page < t->get_z_size());
+
+  allocate_conversion_buffer();
+  
+  fetch_into_buffer(time, _conversion_buffer, true);
+  
+  PTA_uchar img = t->modify_ram_image();
+  
+  unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
+  
+  int src_stride = size_x() * 4;
+  int dst_stride = t->get_x_size() * 4;
+  unsigned char *p = _conversion_buffer;
+  for (int y=0; y<size_y(); y++) {
+    for (int x=0; x<size_x(); x++) {
+      data[x*4+0] = p[x*4+0];
+      data[x*4+1] = p[x*4+1];
+      data[x*4+2] = p[x*4+2];
+    }
+    data += dst_stride;
+    p += src_stride;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::fetch_into_buffer
+//       Access: Published, Virtual
+//  Description: Reads frames from the stream until the specified 
+//               time is reached.  The last frame read is stored in
+//               the supplied RGB8 or RGBA8 buffer.
+//
+//               The fetch methods do not seek: they just reads frames
+//               from the stream.  Therefore, they cannot move backward.
+//               If you specify a time value less than next_start, they
+//               will just read one frame and return.
+//
+//               To truly seek, you must call get_video with an
+//               offset.  This is sometimes inaccurate, because AVI
+//               file indices often contain errors.  Therefore, it
+//               is sometimes advantageous to use fetch methods to 
+//               just read frames from the stream until you get
+//               to the target location.
+////////////////////////////////////////////////////////////////////
+void MovieVideo::
+fetch_into_buffer(double time, unsigned char *data, bool rgba) {
   
   // The following is the implementation of the null video stream, ie,
   // a stream of blinking red and blue frames.  This method must be
   // overridden by the subclass.
 
-  if (_next_start >= length()) {
+  if (time < _next_start) time = _next_start;
+  _last_start = floor(time);
+  _next_start = _last_start + 1;
+
+  if (_last_start >= length()) {
     data[0] = 0;
     data[1] = 0;
     data[2] = 0;
-  } else if (((int)_next_start) & 1) {
+  } else if (((int)_last_start) & 1) {
     data[0] = 255;
     data[1] = 128;
     data[2] = 128;
@@ -215,8 +260,5 @@ fetch_into_buffer(unsigned char *data, bool rgba) {
   if (rgba) {
     data[3] = 255;
   }
-  
-  _curr_start = _next_start;
-  _next_start = _next_start + 1.0;
 }
 

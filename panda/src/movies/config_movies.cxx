@@ -45,5 +45,10 @@ init_libmovies() {
   MovieVideo::init_type();
   MovieAudio::init_type();
   Movie::init_type();
+  InkblotVideo::init_type();
+  InkblotMovie::init_type();
+  FfmpegVideo::init_type();
+  FfmpegAudio::init_type();
+  FfmpegMovie::init_type();
 }
 
