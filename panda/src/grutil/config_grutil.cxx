@@ -76,7 +76,7 @@ init_libgrutil() {
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
   TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(MovieTexture::make_texture, "dummyvideo");
+  ts->register_texture_type(MovieTexture::make_texture, "inkblot dummyvideo");
 
 #ifdef HAVE_OPENCV
   

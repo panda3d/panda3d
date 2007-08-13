@@ -20,9 +20,7 @@
 #define MOVIETEXTURE_H
 
 #include "pandabase.h"
-#include "movie.h"
 #include "movieVideo.h"
-#include "movieAudio.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieTexture
@@ -32,6 +30,7 @@
 class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
   MovieTexture(const string &name);
+  MovieTexture(PT(MovieVideo) video);
 protected:
   MovieTexture(const MovieTexture &copy);
 PUBLISHED:
@@ -56,6 +55,7 @@ protected:
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n);
+  bool do_load_one(PT(MovieVideo) color, PT(MovieVideo) alpha, int z);
 
   class VideoPage {
   public:

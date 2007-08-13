@@ -30,12 +30,25 @@ TypeHandle MovieTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::Constructor
 //       Access: Published
-//  Description: Sets up the texture to read frames from a camera
+//  Description: Creates a blank movie texture.  Movies must be 
+//               added using do_read_one or do_load_one.
 ////////////////////////////////////////////////////////////////////
 MovieTexture::
 MovieTexture(const string &name) : 
   Texture(name)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::Constructor
+//       Access: Published
+//  Description: Creates a texture playing the specified movie.
+////////////////////////////////////////////////////////////////////
+MovieTexture::
+MovieTexture(PT(MovieVideo) video) : 
+  Texture(video->get_name())
+{
+  do_load_one(video, NULL, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,9 +94,9 @@ MovieTexture::
 MovieTexture(const MovieTexture &copy) : 
   Texture(copy)
 {
-  // Since 'get_video' can be a slow operation, 
-  // I release the read lock before calling get_video.
-
+  // Since 'make_copy' can be a slow operation, 
+  // I release the read lock before calling make_copy.
+  
   pvector<MovieVideo *> color;
   pvector<MovieVideo *> alpha;
   {
@@ -101,10 +114,10 @@ MovieTexture(const MovieTexture &copy) :
     cdata->_pages.resize(color.size());
     for (int i=0; i<(int)(color.size()); i++) {
       if (color[i]) {
-        cdata->_pages[i]._color = color[i]->get_source()->get_video(0.0);
+        cdata->_pages[i]._color = color[i]->make_copy();
       }
       if (alpha[i]) {
-        cdata->_pages[i]._alpha = color[i]->get_source()->get_video(0.0);
+        cdata->_pages[i]._alpha = color[i]->make_copy();
       }
     }
   }
@@ -218,33 +231,24 @@ bool MovieTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             bool header_only, BamCacheRecord *record) {
+
+  nassertr(n == 0, false);
+  nassertr(z >= 0 && z < get_z_size(), false);
+  
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
   }
 
-  nassertr(n == 0, false);
-  nassertr(z >= 0 && z < get_z_size(), false);
-
-  PT(Movie) color;
-  PT(MovieVideo) color_video;
-  PT(Movie) alpha;
-  PT(MovieVideo) alpha_video;
-
-  color = Movie::load(fullpath);
+  PT(MovieVideo) color;
+  PT(MovieVideo) alpha;
+  
+  color = MovieVideo::load(fullpath);
   if (color == 0) {
     return false;
   }
-  color_video = color->get_video(0.0);
-  if (color_video == 0) {
-    return false;
-  }
   if (!alpha_fullpath.empty()) {
-    alpha = Movie::load(alpha_fullpath);
+    alpha = MovieVideo::load(alpha_fullpath);
     if (alpha == 0) {
-      return false;
-    }
-    alpha_video = alpha->get_video(0.0);
-    if (alpha_video == 0) {
       return false;
     }
   }
@@ -261,23 +265,32 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     set_fullpath(fullpath);
     set_alpha_fullpath(alpha_fullpath);
   }
-  
-  _primary_file_num_channels = 4;
+
+  _primary_file_num_channels = primary_file_num_channels;
   _alpha_file_channel = alpha_file_channel;
+  
+  return do_load_one(color, alpha, z);
+
+  set_loaded_from_image();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_load_one
+//       Access: Protected, Virtual
+//  Description: Loads movie objects into the texture.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+do_load_one(PT(MovieVideo) color, PT(MovieVideo) alpha, int z) {
   
   {
     CDWriter cdata(_cycler);
     cdata->_pages.resize(z+1);
-    cdata->_pages[z]._color = color_video;
-    cdata->_pages[z]._alpha = alpha_video;
+    cdata->_pages[z]._color = color;
+    cdata->_pages[z]._alpha = alpha;
     cdata->_pages[z]._base_clock = ClockObject::get_global_clock()->get_frame_time();
     recalculate_image_properties(cdata);
   }
   
-  // Fetch the first frame.  We ignore the timestamp
-  // of the first frame, and assume it starts at zero.
-  
-  set_loaded_from_image();
   return true;
 }
 
@@ -347,20 +360,18 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     MovieVideo *alpha = cdata->_pages[i]._alpha;
     if (color) {
       double offset = delta;
-      if (offset > color->next_start()) {
-        color->seek_ahead(offset);
-	color->fetch_into_texture((MovieTexture*)this, i);
-      } else if (offset < color->last_start()) {
-        color = color->get_source()->get_video(offset);
+      if ((offset < color->last_start()) || (offset >= color->next_start())) {
+        if (alpha) {
+          color->fetch_into_texture_rgb(offset, (MovieTexture*)this, i);
+        } else {
+          color->fetch_into_texture(offset, (MovieTexture*)this, i);
+        }
       }
     }
     if (alpha) {
       double offset = delta;
-      if (offset > alpha->next_start()) {
-        alpha->seek_ahead(offset);
-	alpha->fetch_into_texture_alpha((MovieTexture*)this, i, _alpha_file_channel);
-      } else if (offset < alpha->last_start()) {
-        alpha = alpha->get_source()->get_video(offset);
+      if ((offset < alpha->last_start()) || (offset >= alpha->next_start())) {
+	alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, _alpha_file_channel);
       }
     }
   }

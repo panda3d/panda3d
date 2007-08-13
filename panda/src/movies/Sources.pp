@@ -11,7 +11,6 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
-	movie.h movie.I \
 	movieAudio.h movieAudio.I \
 	movieVideo.h movieVideo.I \
         inkblotVideo.h inkblotVideo.I \
@@ -28,7 +27,6 @@
         config_movies.cxx
     
   #define INSTALL_HEADERS \
-	movie.h movie.I \
 	movieAudio.h movieAudio.I \
 	movieVideo.h movieVideo.I \
         inkblotVideo.h inkblotVideo.I \
