@@ -141,8 +141,10 @@ create_texture(DXScreenData &scrn) {
     case Texture::TT_cube_map:
       // check config setting
       if (compressed_textures) {
-        // no compression for render target textures
-        if (get_texture()->get_render_to_texture() == false) {
+        // no compression for render target textures, or very small
+        // textures
+        if (get_texture()->get_render_to_texture() == false &&
+          orig_width >= 4 && orig_height >= 4) {
           compress_texture = true;
         }
       }
