@@ -18,26 +18,53 @@
 
 #ifndef FFMPEGVIDEO_H
 #define FFMPEGVIDEO_H
+#ifdef HAVE_FFMPEG
 
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "ffmpegMovie.h"
+
+struct AVFormatContext;
+struct AVCodecContext;
+struct AVStream;
+struct AVPacket;
+struct AVFrame;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegVideo
-// Description : A cellular automaton that generates an amusing
-//               pattern of swirling colors.
+// Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
 
- public:
-  FfmpegVideo(CPT(FfmpegMovie) source, double offset);
+ PUBLISHED:
+  FfmpegVideo(const Filename &name);
   virtual ~FfmpegVideo();
+  virtual PT(MovieVideo) make_copy() const;
+  
+ public:
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
 
  protected:
-  const FfmpegMovie *_sourcep;
+  INLINE double get_time_correction();
+  INLINE void update_time_correction(double diff);
+  void read_ahead();
+  void cleanup();
+  
+  static const int _time_correction_window = 4;
+  double _time_corrections[_time_correction_window];
+  int _time_correction_next;
+
+  Filename _filename;
+  AVFormatContext *_format_ctx;
+  AVCodecContext *_video_ctx;
+  AVCodecContext *_audio_ctx;
+  int _video_index;
+  int _audio_index;
+  double _video_timebase;
+  double _audio_timebase;
+  AVFrame *_frame;
+  AVFrame *_frame_out;
+  int _samples_read;
   
 public:
   static TypeHandle get_class_type() {
@@ -59,4 +86,5 @@ private:
 
 #include "ffmpegVideo.I"
 
-#endif
+#endif // HAVE_FFMPEG
+#endif // FFMPEGVIDEO_H

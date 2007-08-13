@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "inkblotVideo.h"
-#include "inkblotMovie.h"
 #include "config_movies.h"
 
 TypeHandle InkblotVideo::_type_handle;
@@ -57,16 +56,23 @@ static color colormap[17] = {
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 InkblotVideo::
-InkblotVideo(CPT(InkblotMovie) source) :
-  MovieVideo((const InkblotMovie *)source)
+InkblotVideo(int x, int y, int fps) :
+  MovieVideo("inkblot")
 {
-  _sourcep = source;
-  int padx = size_x() + 2;
-  int pady = size_y() + 2;
+  if (x < 1) x=1;
+  if (y < 1) y=1;
+  if (fps < 1) fps=1;
+  _size_x = x;
+  _size_y = y;
+  _fps = fps;
+  
+  int padx = x + 2;
+  int pady = y + 2;
   _cells = new unsigned char[padx * pady];
   _cells2 = new unsigned char[padx * pady];
   memset(_cells, 255, padx * pady);
   memset(_cells2, 255, padx * pady);
+  
   _frames_read = 0;
 }
 
@@ -89,16 +95,24 @@ InkblotVideo::
 void InkblotVideo::
 fetch_into_buffer(double time, unsigned char *data, bool rgba) {
 
-  nassertv(time >= _next_start);
-  
   int padx = size_x() + 2;
   int pady = size_y() + 2;
-  int fps = _sourcep->get_fps();
+  
+  if ((time == 0.0)&&(_next_start != 0.0)) {
+    // Rewind to beginning.
+    memset(_cells, 255, padx * pady);
+    memset(_cells2, 255, padx * pady);
+    _last_start = -1.0;
+    _next_start = 0.0;
+    _frames_read = 0;
+  }
+  
+  nassertv(time >= _next_start);
   
   while (_next_start <= time) {
-    _last_start = (_frames_read * 1.0) / fps;
+    _last_start = (_frames_read * 1.0) / _fps;
     _frames_read += 1;
-    _next_start = (_frames_read * 1.0) / fps;
+    _next_start = (_frames_read * 1.0) / _fps;
     for (int y=1; y<pady-1; y++) {
       for (int x=1; x<padx-1; x++) {
         int tot =
@@ -138,3 +152,12 @@ fetch_into_buffer(double time, unsigned char *data, bool rgba) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: InkblotVideo::make_copy
+//       Access: Published, Virtual
+//  Description: Make a copy of this video with a separate cursor.
+////////////////////////////////////////////////////////////////////
+PT(MovieVideo) InkblotVideo::
+make_copy() const {
+  return new InkblotVideo(_size_x, _size_y, _fps);
+}

@@ -22,7 +22,6 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "inkblotMovie.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InkblotVideo
@@ -31,13 +30,15 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES InkblotVideo : public MovieVideo {
 
- public:
-  InkblotVideo(CPT(InkblotMovie) source);
+ PUBLISHED:
+  InkblotVideo(int x, int y, int fps);
   virtual ~InkblotVideo();
+  virtual PT(MovieVideo) make_copy() const;
+  
+ public:
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
   
  protected:
-  const InkblotMovie *_sourcep;
   unsigned char *_cells;
   unsigned char *_cells2;
   int _fps;

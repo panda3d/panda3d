@@ -18,12 +18,12 @@
 
 #ifndef FFMPEGAUDIO_H
 #define FFMPEGAUDIO_H
+#ifdef HAVE_FFMPEG
 
 #include "pandabase.h"
 #include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
-#include "ffmpegMovie.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegAudio
@@ -31,13 +31,16 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
 
-public:
-  FfmpegAudio(CPT(FfmpegMovie) source, double offset);
+PUBLISHED:
+  FfmpegAudio(const Filename &name);
   virtual ~FfmpegAudio();
+  virtual PT(MovieAudio) make_copy() const;
+
+public:
   virtual void read_samples(int n, PN_int16 *data);
   
 protected:
-  const FfmpegMovie *_sourcep;
+  Filename _filename;
   
 public:
   static TypeHandle get_class_type() {
@@ -59,4 +62,5 @@ private:
 
 #include "ffmpegAudio.I"
 
-#endif
+#endif // HAVE_FFMPEG
+#endif // FFMPEG_AUDIO.H

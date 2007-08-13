@@ -16,7 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_FFMPEG
+
 #include "ffmpegAudio.h"
+#include "avcodec.h"
+#include "avformat.h"
 
 TypeHandle FfmpegAudio::_type_handle;
 
@@ -26,9 +30,9 @@ TypeHandle FfmpegAudio::_type_handle;
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 FfmpegAudio::
-FfmpegAudio(CPT(FfmpegMovie) source, double offset) :
-  MovieAudio((const FfmpegMovie *)source),
-  _sourcep(source)
+FfmpegAudio(const Filename &name) :
+  MovieAudio(name),
+  _filename(name)
 {
 }
 
@@ -65,3 +69,16 @@ read_samples(int n, PN_int16 *data) {
   _samples_read += n;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegAudio::make_copy
+//       Access: Published, Virtual
+//  Description: Make a copy of this MovieAudio with its own cursor.
+////////////////////////////////////////////////////////////////////
+PT(MovieAudio) FfmpegAudio::
+make_copy() const {
+  return new FfmpegAudio(_filename);
+}
+
+////////////////////////////////////////////////////////////////////
+
+#endif // HAVE_FFMPEG

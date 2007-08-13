@@ -19,6 +19,10 @@
 #include "config_movies.h"
 #include "dconfig.h"
 
+#ifdef HAVE_FFMPEG
+#include "avcodec.h"
+#endif
+
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
 
@@ -44,11 +48,11 @@ init_libmovies() {
 
   MovieVideo::init_type();
   MovieAudio::init_type();
-  Movie::init_type();
   InkblotVideo::init_type();
-  InkblotMovie::init_type();
-  FfmpegVideo::init_type();
-  FfmpegAudio::init_type();
-  FfmpegMovie::init_type();
+#ifdef HAVE_FFMPEG
+  //  FfmpegVideo::init_type();
+  //  FfmpegAudio::init_type();
+  av_register_all();
+#endif
 }
 

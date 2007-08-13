@@ -17,53 +17,90 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::get_source
-//       Access: Published
-//  Description: Returns a pointer to the source Movie.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(Movie) MovieVideo::
-get_source() const {
-  return _source;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::size_x
 //       Access: Published
-//  Description: See Movie::size_x
+//  Description: Get the horizontal size of the movie.
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 size_x() const {
-  return _source->size_x();
+  return _size_x;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::size_y
 //       Access: Published
-//  Description: See Movie::size_y
+//  Description: Get the vertical size of the movie.
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 size_y() const {
-  return _source->size_y();
+  return _size_y;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::get_num_components
 //       Access: Published
-//  Description: See Movie::get_num_components
+//  Description: Returns 4 if the movie has an alpha
+//               channel, 3 otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 get_num_components() const {
-  return _source->get_num_components();
+  return _num_components;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::length
 //       Access: Published
-//  Description: See Movie::length
+//  Description: Returns the length of the movie.
+//
+//               Some kinds of Movie, such as internet TV station, 
+//               might not have a predictable length.  In that case,
+//               the length will be set to a very large number: 1.0E10.
+//               If the internet TV station goes offline, the video
+//               or audio stream will set its abort flag.  Reaching the
+//               end of the movie (ie, the specified length) normally
+//               does not cause the abort flag to be set.
+//
+//               The video and audio streams produced by get_video and
+//               get_audio are always of unlimited duration - you can
+//               always read another video frame or another audio
+//               sample.  This is true even if the specified length
+//               is reached, or an abort is flagged. If either stream
+//               runs out of data, it will synthesize blank video
+//               frames and silent audio samples as necessary to
+//               satisfy read requests.
+//
+//               Some AVI files have incorrect length values encoded
+//               into them - usually, they're a second or two long or
+//               short.  When playing such an AVI using the Movie class,
+//               you may see a slightly truncated video, or a slightly
+//               elongated video (padded with black frames).  There are
+//               utilities out there to fix the length values in AVI
+//               files.
+//
 ////////////////////////////////////////////////////////////////////
 INLINE int MovieVideo::
 length() const {
-  return _source->length();
+  return _length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::can_seek
+//       Access: Published
+//  Description: See explanation in fetch_to_buffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool MovieVideo::
+can_seek() const {
+  return _can_seek;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::can_seek_zero
+//       Access: Published
+//  Description: See explanation in fetch_to_buffer.
+////////////////////////////////////////////////////////////////////
+INLINE bool MovieVideo::
+can_seek_zero() const {
+  return _can_seek_zero;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -24,10 +24,11 @@
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
 #include "dconfig.h"
-#include "movie.h"
 #include "movieVideo.h"
 #include "movieAudio.h"
 #include "inkblotVideo.h"
+#include "ffmpegVideo.h"
+#include "ffmpegAudio.h"
 
 ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);

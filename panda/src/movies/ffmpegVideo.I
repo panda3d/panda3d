@@ -16,3 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideo::get_time_correction
+//       Access: Private
+//  Description: The timestamps of packets in AVI files are often
+//               really inaccurate.  This returns a small heuristic
+//               correction based on analysis of the audio packets.
+////////////////////////////////////////////////////////////////////
+
+INLINE double FfmpegVideo::
+get_time_correction() {
+  // The idea here is simple.  For audio packets it
+  // is possible to calculate an accurate time by counting
+  // the audio samples.  It is then possible to measure
+  // the difference between the reported time and the
+  // actual time of the audio packet.  We average this 
+  // difference over the last few audio packets.  We then
+  // assume that the video packets are off by the same amount.
+
+  double correction = 0.0;
+  for (int i=0; i<_time_correction_window; i++) {
+    correction += _time_corrections[i];
+  }
+  correction /= _time_correction_window;
+  return correction;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideo::update_time_correction
+//       Access: Private
+//  Description: The timestamps of packets in AVI files are often
+//               really inaccurate.  This records some data which
+//               is needed to calculate a heuristic correction factor.
+////////////////////////////////////////////////////////////////////
+INLINE void FfmpegVideo::
+update_time_correction(double diff) {
+  _time_corrections[_time_correction_next % _time_correction_window] = diff;
+  _time_correction_next += 1;
+}
+

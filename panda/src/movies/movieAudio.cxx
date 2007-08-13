@@ -29,9 +29,14 @@ TypeHandle MovieAudio::_type_handle;
 //               a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieAudio::
-MovieAudio(CPT(Movie) source) :
-  Namable(source->get_name()),
-  _source(source),
+MovieAudio(const string &name) :
+  Namable(name),
+  _audio_rate(8000),
+  _audio_channels(1),
+  _length(1.0E10),
+  _can_seek(true),
+  _can_seek_zero(true),
+  _aborted(false),
   _samples_read(0)
 {
 }
@@ -69,3 +74,45 @@ read_samples(int n, PN_int16 *data) {
   _samples_read += n;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::seek
+//       Access: Published, Virtual
+//  Description: Skips to the specified point in the movie. After
+//               calling seek, samples_read will be equal to the
+//               offset times the sample rate.
+//
+//               Seeking may not be precise, because AVI files 
+//               often have inaccurate indices.  However, it is
+//               usually pretty close (ie, 0.05 seconds).
+//
+//               It is an error to call seek with a nonzero offset
+//               if can_seek() reports false.  It is an error to
+//               call seek with a zero offset if can_seek_zero
+//               reports false.
+////////////////////////////////////////////////////////////////////
+void MovieAudio::
+seek(double offset) {
+  _samples_read = offset * audio_rate();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::make_copy
+//       Access: Published, Virtual
+//  Description: Make a copy of this MovieAudio with its own cursor.
+////////////////////////////////////////////////////////////////////
+PT(MovieAudio) MovieAudio::
+make_copy() const {
+  return new MovieAudio();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudio::load
+//       Access: Published, Static
+//  Description: Load a movie from a file.
+////////////////////////////////////////////////////////////////////
+PT(MovieAudio) MovieAudio::
+load(const Filename &name) {
+  // Someday, I'll probably put a dispatcher here.
+  // But for now, just hardwire it to go to FFMPEG.
+  return new FfmpegAudio(name);
+}
