@@ -50,8 +50,8 @@ init_libmovies() {
   MovieAudio::init_type();
   InkblotVideo::init_type();
 #ifdef HAVE_FFMPEG
-  //  FfmpegVideo::init_type();
-  //  FfmpegAudio::init_type();
+  FfmpegVideo::init_type();
+  FfmpegAudio::init_type();
   av_register_all();
 #endif
 }
