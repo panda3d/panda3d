@@ -109,9 +109,11 @@ set_mat(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
 mark_position() {
+  /*
   if (deadrec_cat.is_debug()) {
     deadrec_cat.debug() << "mark_position\n";
   }
+  */
   if (_smooth_mode == SM_off) {
     // With smoothing disabled, mark_position() simply stores its
     // current position in the smooth_position members.
@@ -781,11 +783,11 @@ record_timestamp_delay(double timestamp) {
 void SmoothMover::
 handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   Points::iterator pi;
-  CPT(TransformState) transform = old_parent.get_transform(new_parent);
-  const LPoint3f &old_to_new_pos = transform->get_pos();
-  const LVecBase3f &old_to_new_hpr = transform->get_hpr();
+  NodePath np = old_parent.attach_new_node("smoothMoverWrtReparent");
   for (pi = _points.begin(); pi != _points.end(); pi++) {
-    (*pi)._pos += old_to_new_pos;
-    (*pi)._hpr += old_to_new_hpr;
+    np.set_pos_hpr((*pi)._pos, (*pi)._hpr);
+    (*pi)._pos = np.get_pos(new_parent);
+    (*pi)._hpr = np.get_hpr(new_parent);
   }
+  np.detach_node();
 }
