@@ -112,7 +112,11 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudio) MovieAudio::
 load(const Filename &name) {
+#ifdef HAVE_FFMPEG
   // Someday, I'll probably put a dispatcher here.
   // But for now, just hardwire it to go to FFMPEG.
   return new FfmpegAudio(name);
+#else
+  return NULL;
+#endif
 }
