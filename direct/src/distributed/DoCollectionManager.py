@@ -1,4 +1,5 @@
 from direct.distributed import DoHierarchy
+import re
 
 #hack:
 BAD_DO_ID = BAD_ZONE_ID = 0 # 0xFFFFFFFF
@@ -65,6 +66,17 @@ class DoCollectionManager:
             if `value`.find(str) >= 0:
                 matches.append(value)
         return matches
+
+    def doFindAllMatching(self, str):
+        """
+        Returns list of distributed objects with matching str in value.
+        """
+        matches = []
+        for value in self.doId2do.values():
+            if re.search(str,`value`):
+                matches.append(value)
+        return matches
+
 
     def _getDistanceFromLA(self, do):
         if hasattr(do, 'getPos'):
