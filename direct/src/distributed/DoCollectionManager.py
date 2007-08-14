@@ -246,10 +246,20 @@ class DoCollectionManager:
     def storeObjectLocation(self, object, parentId, zoneId):
         oldParentId = object.parentId
         oldZoneId = object.zoneId
-        if (oldParentId != parentId) or (oldZoneId != zoneId):
-            # Remove old location
+        if (oldParentId != parentId):
+            # notify any existing parent that we're moving away
+            oldParentObj = self.doId2do.get(oldParentId)
+            if oldParentObj is not None:
+                oldParentObj.handleChildLeave(object, oldZoneId)
             self.deleteObjectLocation(object, oldParentId, oldZoneId)
-        elif oldParentId == parentId and oldZoneId == zoneId:
+            
+        elif (oldZoneId != zoneId):
+            # Remove old location
+            oldParentObj = self.doId2do.get(oldParentId)
+            if oldParentObj is not None:
+                oldParentObj.handleChildLeaveZone(object, oldZoneId)
+            self.deleteObjectLocation(object, oldParentId, oldZoneId)
+        else:
             # object is already at that parent and zone
             return
 
@@ -269,31 +279,30 @@ class DoCollectionManager:
             object.parentId = parentId
             object.zoneId = zoneId
 
-        if 1:
-            # Do we still need this
-            if oldParentId != parentId:
-                # Give the parent a chance to run code when a new child
-                # sets location to it. For example, the parent may want to
-                # scene graph reparent the child to some subnode it owns.
-                parentObj = self.doId2do.get(parentId)
-                if parentObj is not None:
-                    parentObj.handleChildArrive(object, zoneId)
-                elif parentId not in (0, self.getGameDoId()):
-                    self.notify.warning('storeObjectLocation(%s): parent %s not present' %
-                                        (object.doId, parentId))
+
+        if oldParentId != parentId:
+            # Give the parent a chance to run code when a new child
+            # sets location to it. For example, the parent may want to
+            # scene graph reparent the child to some subnode it owns.
+            parentObj = self.doId2do.get(parentId)
+            if parentObj is not None:
+                parentObj.handleChildArrive(object, zoneId)
+            elif parentId not in (0, self.getGameDoId()):
+                self.notify.warning('storeObjectLocation(%s): parent %s not present' %
+                                    (object.doId, parentId))
+        elif oldZoneId != zoneId:
+            parentObj = self.doId2do.get(parentId)
+            if parentObj is not None:
+                parentObj.handleChildArriveZone(object, zoneId)
+            elif parentId not in (0, self.getGameDoId()):
+                self.notify.warning('storeObjectLocation(%s): parent %s not present' %
+                                    (object.doId, parentId))
             
     def deleteObjectLocation(self, object, parentId, zoneId):
         # Do not worry about null values
         if ((parentId is None) or (zoneId is None) or
             (parentId == zoneId == 0)):
             return
-        if 1:
-            # Do we still need this
-
-            # notify any existing parent that we're moving away
-            oldParentObj = self.doId2do.get(parentId)
-            if oldParentObj is not None:
-                oldParentObj.handleChildLeave(object, zoneId)
 
         self._doHierarchy.deleteObjectLocation(object, parentId, zoneId)
 
@@ -339,6 +348,12 @@ class DoCollectionManager:
         assert self.notify.debugStateCall(self)
         #assert not hasattr(do, "isQueryAllResponse") or not do.isQueryAllResponse
         #assert do.doId in self.doId2do
+        location = do.getLocation()
+        if location:
+           oldParentId, oldZoneId = location
+           oldParentObj = self.doId2do.get(oldParentId)
+           if oldParentObj:
+               oldParentObj.handleChildLeave(object, oldZoneId)
         self.deleteObjectLocation(do, do.parentId, do.zoneId)
         ## location = do.getLocation()
         ## if location is not None:
