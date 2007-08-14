@@ -21,7 +21,8 @@ class ControlManager:
     wantAvatarPhysicsDebug = base.config.GetBool('want-avatar-physics-debug', 0)
     wantWASD = base.config.GetBool('want-WASD', 0)
 
-    def __init__(self, enable=True):
+    def __init__(self, enable=True, passMessagesThrough = False):
+        print ("init control manager %s" % (passMessagesThrough))
         assert self.notify.debugCall(id(self))
         self.inputStateTokens = []
         self.WASDTurnTokens = []
@@ -33,6 +34,17 @@ class ControlManager:
             self.enable()
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
+        
+        self.passMessagesThrough = passMessagesThrough
+        
+        if self.passMessagesThrough: # for not breaking toontown
+            self.inputStateTokens = []
+            ist=self.inputStateTokens
+            ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
+
 
     def __str__(self):
         return 'ControlManager: using \'%s\'' % self.currentControlsName
@@ -245,6 +257,14 @@ class ControlManager:
 
         if self.currentControls:
             self.currentControls.disableAvatarControls()
+            
+        if self.passMessagesThrough: # for not breaking toontown
+            self.inputStateTokens = []
+            ist=self.inputStateTokens
+            ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
+            ist.append(inputState.watchWithModifiers("turnRight", "arrow_right", inputSource=inputState.ArrowKeys))
 
     def stop(self):
         self.disable()
