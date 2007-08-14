@@ -1016,7 +1016,7 @@ compute_file_patches(ostream &write_stream,
       express_cat.debug()
         << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
     }
-    _hash_table = new PN_uint32[_HASHTABLESIZE];
+    _hash_table = (PN_uint32 *)PANDA_MALLOC_ARRAY(_HASHTABLESIZE * sizeof(PN_uint32));
   }
 
   if (express_cat.is_debug()) {
