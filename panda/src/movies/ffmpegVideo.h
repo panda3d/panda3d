@@ -47,24 +47,24 @@ class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
  protected:
   INLINE double get_time_correction();
   INLINE void update_time_correction(double diff);
-  void read_ahead();
+  void fetch_packet(double default_time);
+  void fetch_frame();
+  void seek(double t);
+  void export_frame(unsigned char *data, bool bgra);
   void cleanup();
   
-  static const int _time_correction_window = 4;
-  double _time_corrections[_time_correction_window];
-  int _time_correction_next;
-
   Filename _filename;
+  AVPacket *_packet;
+  double _packet_time;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
   AVCodecContext *_audio_ctx;
-  int _video_index;
-  int _audio_index;
+  int    _video_index;
   double _video_timebase;
-  double _audio_timebase;
   AVFrame *_frame;
   AVFrame *_frame_out;
-  int _samples_read;
+  int _initial_dts;
+  double _min_fseek;
   
 public:
   static TypeHandle get_class_type() {

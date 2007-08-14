@@ -1571,7 +1571,7 @@ MakeDirectory("built/pandac/input")
 #
 ##########################################################################################
 
-DEFAULT_SETTINGS=[
+DTOOL_CONFIG=[
     #_Variable_________________________Windows___________________Unix__________
     ("HAVE_PYTHON",                    '1',                      '1'),
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
@@ -1669,6 +1669,10 @@ DEFAULT_SETTINGS=[
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
+    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
+]
+
+PRC_PARAMETERS=[
     ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
@@ -1681,70 +1685,73 @@ DEFAULT_SETTINGS=[
     ("PRC_RESPECT_TRUST_LEVEL",        'UNDEF',                  'UNDEF'),
     ("PRC_DCONFIG_TRUST_LEVEL",        '0',                      '0'),
     ("PRC_INC_TRUST_LEVEL",            '0',                      '0'),
-    ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
 
 def WriteConfigSettings():
-    settings={}
+    dtool_config={}
+    prc_parameters={}
     if (sys.platform == "win32"):
-        for key,win,unix in DEFAULT_SETTINGS:
-            settings[key] = win
+        for key,win,unix in DTOOL_CONFIG:
+            dtool_config[key] = win
+        for key,win,unix in PRC_PARAMETERS:
+            prc_parameters[key] = win
     else:
         for key,win,unix in DEFAULT_SETTINGS:
-            settings[key] = unix
-    
+            dtool_config[key] = unix
+        for key,win,unix in PRC_PARAMETERS:
+            prc_parameters[key] = unix
+
     for x in PACKAGES:
         if (OMIT.count(x)==0):
-            if (settings.has_key("HAVE_"+x)):
-                settings["HAVE_"+x] = '1'
+            if (dtool_config.has_key("HAVE_"+x)):
+                dtool_config["HAVE_"+x] = '1'
     
-    settings["HAVE_NET"] = '1'
+    dtool_config["HAVE_NET"] = '1'
     
     if (OMIT.count("NVIDIACG")==0):
-        settings["HAVE_CG"] = '1'
-        settings["HAVE_CGGL"] = '1'
-        settings["HAVE_CGDX9"] = '1'
+        dtool_config["HAVE_CG"] = '1'
+        dtool_config["HAVE_CGGL"] = '1'
+        dtool_config["HAVE_CGDX9"] = '1'
     
     if (OPTIMIZE <= 3):
-        if (settings["HAVE_NET"] != 'UNDEF'):
-            settings["DO_PSTATS"] = '1'
+        if (dtool_config["HAVE_NET"] != 'UNDEF'):
+            dtool_config["DO_PSTATS"] = '1'
     
     if (OPTIMIZE <= 3):
-        settings["DO_COLLISION_RECORDING"] = '1'
+        dtool_config["DO_COLLISION_RECORDING"] = '1'
     
     #if (OPTIMIZE <= 2):
-    #    settings["TRACK_IN_INTERPRETER"] = '1'
+    #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
     
     if (OPTIMIZE <= 3):
-        settings["DO_MEMORY_USAGE"] = '1'
+        dtool_config["DO_MEMORY_USAGE"] = '1'
     
     #if (OPTIMIZE <= 1):
-    #    settings["DO_PIPELINING"] = '1'
+    #    dtool_config["DO_PIPELINING"] = '1'
     
     if (OPTIMIZE <= 3):
-        settings["NOTIFY_DEBUG"] = '1'
+        dtool_config["NOTIFY_DEBUG"] = '1'
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
-    for key in settings.keys():
+    for key in prc_parameters.keys():
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
-            val = settings[key]
+            val = prc_parameters[key]
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " " + val + "\n"
-            del settings[key]
+            del prc_parameters[key]
     ConditionalWriteFile('built/include/prc_parameters.h', conf)
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
-    for key in settings.keys():
-        val = settings[key]
+    for key in dtool_config.keys():
+        val = dtool_config[key]
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
-        del settings[key]
+        del dtool_config[key]
     ConditionalWriteFile('built/include/dtool_config.h', conf)
 
     for x in PACKAGES:
         if (OMIT.count(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
         else:               ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
-
 
 WriteConfigSettings()
 
@@ -2541,7 +2548,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 #
 
 IPATH=['panda/src/movies']
-OPTS=['BUILDING_PANDA']
+OPTS=['BUILDING_PANDA', 'FFMPEG']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
             src='panda/src/movies',  module='panda', library='libmovies',
