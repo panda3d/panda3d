@@ -38,7 +38,7 @@ MovieVideo(const string &name) :
   _num_components(3),
   _length(1.0E10),
   _can_seek(true),
-  _can_seek_zero(true),
+  _can_seek_fast(true),
   _aborted(false),
   _last_start(-1.0),
   _next_start(0.0)
@@ -242,19 +242,22 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
 //     Function: MovieVideo::fetch_into_buffer
 //       Access: Published, Virtual
 //  Description: Reads the specified video frame into the supplied
-//               RGB8 or RGBA8 buffer.  The frame's begin and end
+//               BGR or BGRA buffer.  The frame's begin and end
 //               times are stored in last_start and next_start.
 //
-//               You may always specify a timestamp greater than or
-//               equal to next_start --- ie, read forward through the
-//               movie.  If the movie reports that it can_seek_zero,
-//               you may also specify a timestamp of 0.0 --- ie,
-//               rewind the movie.  If the movie reports that it
-//               can_seek, you may specify any timestamp.  It is
-//               generally much faster to read frames sequentially.
+//               If the movie reports that it can_seek, you may
+//               also specify a timestamp less than next_start.
+//               Otherwise, you may only specify a timestamp
+//               greater than or equal to next_start.
+//
+//               If the movie reports that it can_seek, it doesn't
+//               mean that it can do so quickly.  It may have to
+//               rewind the movie and then fast forward to the
+//               desired location.  Only if can_seek_fast returns
+//               true can it seek rapidly.
 ////////////////////////////////////////////////////////////////////
 void MovieVideo::
-fetch_into_buffer(double time, unsigned char *data, bool rgba) {
+fetch_into_buffer(double time, unsigned char *data, bool bgra) {
   
   // The following is the implementation of the null video stream, ie,
   // a stream of blinking red and blue frames.  This method must be
@@ -272,7 +275,7 @@ fetch_into_buffer(double time, unsigned char *data, bool rgba) {
     data[1] = 128;
     data[2] = 255;
   }
-  if (rgba) {
+  if (bgra) {
     data[3] = 255;
   }
 }

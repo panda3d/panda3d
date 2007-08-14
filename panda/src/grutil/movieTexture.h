@@ -42,6 +42,19 @@ PUBLISHED:
   INLINE int get_video_height() const;
   INLINE LVecBase2f get_tex_scale() const;
 
+  void   restart();
+  void   stop();
+  void   play();
+  void   set_time(double t);
+  double get_time() const;
+  void   set_loop(bool enable);
+  bool   get_loop() const;
+  void   set_loop_count(int count);
+  int    get_loop_count() const;
+  void   set_play_rate(double play_rate);
+  double get_play_rate() const;
+  bool   is_playing() const;
+
 public:
   static PT(Texture) make_texture();
   virtual bool has_cull_callback() const;
@@ -62,7 +75,6 @@ protected:
     VideoPage();
     PT(MovieVideo) _color;
     PT(MovieVideo) _alpha;
-    double _base_clock;
   };
   
   typedef pvector<VideoPage> Pages;
@@ -75,10 +87,16 @@ protected:
     virtual TypeHandle get_parent_type() const {
       return MovieTexture::get_class_type();
     }
-
+    
     Pages _pages;
     int _video_width;
     int _video_height;
+    double _video_length;
+
+    double _clock;
+    bool   _playing;
+    int    _loop_count;
+    double _play_rate;
   };
 
   PipelineCycler<CData> _cycler;

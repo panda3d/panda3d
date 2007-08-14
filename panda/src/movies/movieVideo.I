@@ -86,7 +86,14 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::can_seek
 //       Access: Published
-//  Description: See explanation in fetch_to_buffer.
+//  Description: Returns true if the movie can seek.  If this is
+//               true, seeking is still not guaranteed to be fast:
+//               for some movies, seeking is implemented by rewinding
+//               to the beginning and then fast-forwarding to the
+//               desired location.  Even if the movie cannot seek,
+//               the fetch methods can still advance to an arbitrary
+//               location by reading frames and discarding them.
+//               However, to move backward, can_seek must return true.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MovieVideo::
 can_seek() const {
@@ -94,13 +101,13 @@ can_seek() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideo::can_seek_zero
+//     Function: MovieVideo::can_seek_fast
 //       Access: Published
-//  Description: See explanation in fetch_to_buffer.
+//  Description: Returns true if seek operations are constant time.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MovieVideo::
-can_seek_zero() const {
-  return _can_seek_zero;
+can_seek_fast() const {
+  return _can_seek_fast;
 }
 
 ////////////////////////////////////////////////////////////////////

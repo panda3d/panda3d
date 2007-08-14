@@ -24,6 +24,7 @@
 #include "config_gobj.h"
 #include "config_grutil.h"
 #include "bamCacheRecord.h"
+#include "math.h"
 
 TypeHandle MovieTexture::_type_handle;
 
@@ -48,7 +49,9 @@ MovieTexture::
 MovieTexture(PT(MovieVideo) video) : 
   Texture(video->get_name())
 {
-  do_load_one(video, NULL, 0);
+  // It is necessary to copy the video, because
+  // the cull thread will be accessing it.
+  do_load_one(video->make_copy(), NULL, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +60,14 @@ MovieTexture(PT(MovieVideo) video) :
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 MovieTexture::CData::
-CData()
+CData() :
+  _video_width(1),
+  _video_height(1),
+  _video_length(1.0),
+  _playing(false),
+  _clock(0.0),
+  _play_rate(1.0),
+  _loop_count(1)
 {
 }
 
@@ -70,7 +80,12 @@ MovieTexture::CData::
 CData(const CData &copy) :
   _pages(copy._pages),
   _video_width(copy._video_width),
-  _video_height(copy._video_height)
+  _video_height(copy._video_height),
+  _video_length(copy._video_length),
+  _playing(false),
+  _clock(0.0),
+  _play_rate(1.0),
+  _loop_count(1.0)
 {
 }
 
@@ -120,6 +135,7 @@ MovieTexture(const MovieTexture &copy) :
         cdata->_pages[i]._alpha = color[i]->make_copy();
       }
     }
+    recalculate_image_properties(cdata);
   }
 }
 
@@ -183,27 +199,31 @@ VideoPage() :
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
 recalculate_image_properties(CDWriter &cdata) {
-  int x_max = 0;
-  int y_max = 0;
+  int x_max = 1;
+  int y_max = 1;
   bool alpha = false;
+  double len = 0.0;
   
   for (int i=0; i<_z_size; i++) {
     MovieVideo *t = cdata->_pages[i]._color;
     if (t) {
       if (t->size_x() > x_max) x_max = t->size_x();
       if (t->size_y() > y_max) y_max = t->size_y();
+      if (t->length() > len) len = t->length();
       if (t->get_num_components() == 4) alpha=true;
     }
     t = cdata->_pages[i]._alpha;
     if (t) {
       if (t->size_x() > x_max) x_max = t->size_x();
       if (t->size_y() > y_max) y_max = t->size_y();
+      if (t->length() > len) len = t->length();
       alpha = true;
     }
   }
 
   cdata->_video_width  = x_max;
   cdata->_video_height = y_max;
+  cdata->_video_length = len;
   
   if (get_texture_type() == TT_cube_map) {
     // Texture must be square.
@@ -269,9 +289,13 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   _primary_file_num_channels = primary_file_num_channels;
   _alpha_file_channel = alpha_file_channel;
   
-  return do_load_one(color, alpha, z);
-
+  if (!do_load_one(color, alpha, z)) {
+    return false;
+  }
+  
   set_loaded_from_image();
+  set_loop(true);
+  play();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,7 +311,6 @@ do_load_one(PT(MovieVideo) color, PT(MovieVideo) alpha, int z) {
     cdata->_pages.resize(z+1);
     cdata->_pages[z]._color = color;
     cdata->_pages[z]._alpha = alpha;
-    cdata->_pages[z]._base_clock = ClockObject::get_global_clock()->get_frame_time();
     recalculate_image_properties(cdata);
   }
   
@@ -353,25 +376,36 @@ has_cull_callback() const {
 bool MovieTexture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
   CDReader cdata(_cycler);
+  
+  // Calculate the cursor position modulo the length of the movie.
   double now = ClockObject::get_global_clock()->get_frame_time();
+  double clock = cdata->_clock;
+  if (cdata->_playing) {
+    clock += now * cdata->_play_rate;
+  }
+  double offset;
+  if (clock >= cdata->_video_length * cdata->_loop_count) {
+    offset = cdata->_video_length;
+  } else {
+    offset = fmod(clock, cdata->_video_length);
+  }
+  
   for (int i=0; i<((int)(cdata->_pages.size())); i++) {
-    double delta = now - cdata->_pages[i]._base_clock;
     MovieVideo *color = cdata->_pages[i]._color;
     MovieVideo *alpha = cdata->_pages[i]._alpha;
-    if (color) {
-      double offset = delta;
-      if ((offset < color->last_start()) || (offset >= color->next_start())) {
-        if (alpha) {
-          color->fetch_into_texture_rgb(offset, (MovieTexture*)this, i);
-        } else {
-          color->fetch_into_texture(offset, (MovieTexture*)this, i);
-        }
+    if (color && alpha) {
+      if ((offset >= color->next_start())||
+          ((offset < color->last_start()) && (color->can_seek()))) {
+        color->fetch_into_texture_rgb(offset, (MovieTexture*)this, i);
       }
-    }
-    if (alpha) {
-      double offset = delta;
-      if ((offset < alpha->last_start()) || (offset >= alpha->next_start())) {
-	alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, _alpha_file_channel);
+      if ((offset >= alpha->next_start())||
+          ((offset < alpha->last_start()) && (alpha->can_seek()))) {
+        alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, _alpha_file_channel);
+      }
+    } else if (color) {
+      if ((offset >= color->next_start())||
+          ((offset < color->last_start()) && (color->can_seek()))) {
+        color->fetch_into_texture(offset, (MovieTexture*)this, i);
       }
     }
   }
@@ -402,5 +436,188 @@ void MovieTexture::
 reload_ram_image() {
   // A MovieTexture should never dump its RAM image.
   // Therefore, this is not needed.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::restart
+//       Access: Published
+//  Description: Start playing the movie from where it was last
+//               paused.  Has no effect if the movie is not paused,
+//               or if the movie's cursor is already at the end.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+restart() {
+  CDWriter cdata(_cycler);
+  if (!cdata->_playing) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    cdata->_clock = cdata->_clock - (now * cdata->_play_rate);
+    cdata->_playing = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::stop
+//       Access: Published
+//  Description: Stops a currently playing or looping movie right
+//               where it is.  The movie's cursor remains frozen at
+//               the point where it was stopped.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+stop() {
+  CDWriter cdata(_cycler);
+  if (cdata->_playing) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    cdata->_clock = cdata->_clock + (now * cdata->_play_rate);
+    cdata->_playing = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::play
+//       Access: Published
+//  Description: Plays the movie from the beginning.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+play() {
+  CDWriter cdata(_cycler);
+  double now = ClockObject::get_global_clock()->get_frame_time();
+  cdata->_clock = 0.0 - (now * cdata->_play_rate);
+  cdata->_playing = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::set_time
+//       Access: Published
+//  Description: Sets the movie's cursor.  If the movie's loop count
+//               count is greater than one, then its length is
+//               effectively multiplied for the purposes of this
+//               function.  In other words, you can set a value in
+//               the range 0.0 to (length * loopcount).
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+set_time(double t) {
+  CDWriter cdata(_cycler);
+  t = min(cdata->_video_length * cdata->_loop_count, max(0.0, t));
+  if (cdata->_playing) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    cdata->_clock = t - (now * cdata->_play_rate);
+  } else {
+    cdata->_clock = t;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_time
+//       Access: Published
+//  Description: Returns the current value of the movie's cursor.
+//               If the movie's loop count is greater than one, then
+//               its length is effectively multiplied for the
+//               purposes of this function.  In other words, 
+//               the return value will be in the range 0.0 
+//               to (length * loopcount).
+////////////////////////////////////////////////////////////////////
+double MovieTexture::
+get_time() const {
+  CDReader cdata(_cycler);
+  double clock = cdata->_clock;
+  if (cdata->_playing) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    clock += (now * cdata->_play_rate);
+  }
+  return min(cdata->_video_length * cdata->_loop_count, clock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::set_loop
+//       Access: Published
+//  Description: If true, sets the movie's loop count to 1 billion.
+//               If false, sets the movie's loop count to one.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+set_loop(bool loop) {
+  CDWriter cdata(_cycler);
+  if (loop) {
+    cdata->_loop_count = 1000000000;
+  } else {
+    cdata->_loop_count = 1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_loop
+//       Access: Published
+//  Description: Returns true if the movie's loop count is not equal
+//               to one.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+get_loop() const {
+  CDReader cdata(_cycler);
+  return (cdata->_loop_count != 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::set_loop_count
+//       Access: Published
+//  Description: Sets the movie's loop count to the desired value.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+set_loop_count(int n) {
+  CDWriter cdata(_cycler);
+  if (n < 1) n = 1;
+  if (n > 1000000000) n = 1000000000;
+  cdata->_loop_count = n;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_loop_count
+//       Access: Published
+//  Description: Returns the movie's loop count.
+////////////////////////////////////////////////////////////////////
+int MovieTexture::
+get_loop_count() const {
+  CDReader cdata(_cycler);
+  return cdata->_loop_count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::set_play_rate
+//       Access: Published
+//  Description: Sets the movie's play-rate.  This is the speed at
+//               which the movie's cursor advances.  The default is
+//               to advance 1.0 movie-seconds per real-time second.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+set_play_rate(double rate) {
+  CDWriter cdata(_cycler);
+  if (cdata->_playing) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    cdata->_clock += (now * cdata->_play_rate);
+    cdata->_play_rate = rate;
+    cdata->_clock -= (now * cdata->_play_rate);
+  } else {
+    cdata->_play_rate = rate;
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_play_rate
+//       Access: Published
+//  Description: Gets the movie's play-rate.
+////////////////////////////////////////////////////////////////////
+double MovieTexture::
+get_play_rate() const {
+  CDReader cdata(_cycler);
+  return cdata->_play_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::is_playing
+//       Access: Published
+//  Description: Returns true if the movie's cursor is advancing.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+is_playing() const {
+  CDReader cdata(_cycler);
+  return cdata->_playing;
 }
 

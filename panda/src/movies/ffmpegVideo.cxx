@@ -60,12 +60,12 @@ FfmpegVideo(const Filename &name) :
     if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO) {
       _video_index = i;
       _video_ctx = _format_ctx->streams[i]->codec;
-      _video_timebase = av_q2d(_video_ctx->time_base);
+      _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
     }
     if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO) {
       _audio_index = i;
       _audio_ctx = _format_ctx->streams[i]->codec;
-      _audio_timebase = av_q2d(_audio_ctx->time_base);
+      _audio_timebase = av_q2d(_format_ctx->streams[i]->time_base);
     }
   }
   
@@ -86,7 +86,7 @@ FfmpegVideo(const Filename &name) :
 
   _size_x = _video_ctx->width;
   _size_y = _video_ctx->height;
-  _num_components = (_video_ctx->pix_fmt==PIX_FMT_RGBA32) ? 4:3;
+  _num_components = 3; // Don't know how to implement RGBA movies yet.
   
   if (_audio_ctx) {
     AVCodec *pAudioCodec=avcodec_find_decoder(_audio_ctx->codec_id);
@@ -100,10 +100,10 @@ FfmpegVideo(const Filename &name) :
       }
     }
   }
-  
+
   _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
   _can_seek = true;
-  _can_seek_zero = true;
+  _can_seek_fast = true;
 
   memset(_time_corrections, 0, sizeof(_time_corrections));
   
@@ -135,6 +135,7 @@ FfmpegVideo::
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideo::
 cleanup() {
+  _frame_out->data[0] = 0;
   if (_format_ctx) {
     av_close_input_file(_format_ctx);
     _format_ctx = 0;
@@ -217,12 +218,13 @@ read_ahead() {
         }
       }
 
-      cerr << "Audio: " << dts << " " << real << "\n";
+      cerr << "Audio: " << pkt.dts << "(" << dts << ") " << real << "\n";
     }
     
     av_free_packet(&pkt);
   }
   
+  cerr << "Synthesized dummy frame.\n";
   _next_start = _next_start + 1.0;
 }
 
@@ -232,11 +234,13 @@ read_ahead() {
 //  Description: See MovieVideo::fetch_into_buffer.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideo::
-fetch_into_buffer(double time, unsigned char *data, bool rgba) {
+fetch_into_buffer(double time, unsigned char *data, bool bgra) {
 
   // If there was an error at any point, fetch black.
   if (_format_ctx==0) {
-    memset(data,0,size_x()*size_y()*(rgba?4:3));
+    memset(data,0,size_x()*size_y()*(bgra?4:3));
+    _last_start = _next_start;
+    _next_start += 1.0;
     return;
   }
   
@@ -244,13 +248,15 @@ fetch_into_buffer(double time, unsigned char *data, bool rgba) {
   nassertv(ctx->width  == size_x());
   nassertv(ctx->height == size_y());
   
-  if (rgba) {
-    avpicture_fill((AVPicture *)_frame_out, data, PIX_FMT_RGBA32, ctx->width, ctx->height);
-    img_convert((AVPicture *)_frame_out, PIX_FMT_RGBA32, 
+  if (bgra) {
+    _frame_out->data[0] = data + ((ctx->height-1) * ctx->width * 4);
+    _frame_out->linesize[0] = ctx->width * -4;
+    img_convert((AVPicture *)_frame_out, PIX_FMT_BGRA, 
                 (AVPicture *)_frame, ctx->pix_fmt, ctx->width, ctx->height);
   } else {
-    avpicture_fill((AVPicture *)_frame_out, data, PIX_FMT_RGB24, ctx->width, ctx->height);
-    img_convert((AVPicture *)_frame_out, PIX_FMT_RGB24, 
+    _frame_out->data[0] = data + ((ctx->height-1) * ctx->width * 3);
+    _frame_out->linesize[0] = ctx->width * -3;
+    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
                 (AVPicture *)_frame, ctx->pix_fmt, ctx->width, ctx->height);
   }
 

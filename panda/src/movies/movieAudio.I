@@ -76,7 +76,14 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieAudio::can_seek
 //       Access: Public
-//  Description: See method 'seek' for an explanation.
+//  Description: Returns true if the movie can seek.  If this is
+//               true, seeking is still not guaranteed to be fast:
+//               for some movies, seeking is implemented by rewinding
+//               to the beginning and then fast-forwarding to the
+//               desired location.  Even if the movie cannot seek,
+//               the seek method can still advance to an arbitrary
+//               location by reading samples and discarding them.
+//               However, to move backward, can_seek must return true.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MovieAudio::
 can_seek() const {
@@ -84,13 +91,13 @@ can_seek() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::can_seek_zero
+//     Function: MovieAudio::can_seek_fast
 //       Access: Public
-//  Description: See method 'seek' for an explanation.
+//  Description: Returns true if seek operations are constant time.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MovieAudio::
-can_seek_zero() const {
-  return _can_seek_zero;
+can_seek_fast() const {
+  return _can_seek_fast;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -45,11 +45,11 @@ PUBLISHED:
   INLINE int audio_channels() const;
   INLINE double length() const;
   INLINE bool can_seek() const;
-  INLINE bool can_seek_zero() const;
+  INLINE bool can_seek_fast() const;
   INLINE bool aborted() const;
   INLINE int samples_read() const;
   INLINE void skip_samples(int n);
-  virtual void seek(double offset);
+  virtual void seek(int sr);
   virtual PT(MovieAudio) make_copy() const;
   static PT(MovieAudio) load(const Filename &name);
 
@@ -61,7 +61,7 @@ protected:
   int _audio_channels;
   double _length;
   bool _can_seek;
-  bool _can_seek_zero;
+  bool _can_seek_fast;
   bool _aborted;
   int _samples_read;
   

@@ -72,7 +72,8 @@ InkblotVideo(int x, int y, int fps) :
   _cells2 = new unsigned char[padx * pady];
   memset(_cells, 255, padx * pady);
   memset(_cells2, 255, padx * pady);
-  
+  _can_seek = true;
+  _can_seek_fast = false;
   _frames_read = 0;
 }
 
@@ -93,12 +94,12 @@ InkblotVideo::
 //  Description: See MovieVideo::fetch_into_buffer.
 ////////////////////////////////////////////////////////////////////
 void InkblotVideo::
-fetch_into_buffer(double time, unsigned char *data, bool rgba) {
+fetch_into_buffer(double time, unsigned char *data, bool bgra) {
 
   int padx = size_x() + 2;
   int pady = size_y() + 2;
   
-  if ((time == 0.0)&&(_next_start != 0.0)) {
+  if (time < _next_start) {
     // Rewind to beginning.
     memset(_cells, 255, padx * pady);
     memset(_cells2, 255, padx * pady);
@@ -139,10 +140,10 @@ fetch_into_buffer(double time, unsigned char *data, bool rgba) {
       color &c1 = colormap[(val>>4)+0];
       color &c2 = colormap[(val>>4)+1];
       int lerp = val & 15;
-      data[0] = (c1.r * (16-lerp) + c2.r * lerp) / 16;
+      data[0] = (c1.b * (16-lerp) + c2.b * lerp) / 16;
       data[1] = (c1.g * (16-lerp) + c2.g * lerp) / 16;
-      data[2] = (c1.b * (16-lerp) + c2.b * lerp) / 16;
-      if (rgba) {
+      data[2] = (c1.r * (16-lerp) + c2.r * lerp) / 16;
+      if (bgra) {
         data[3] = 255;
         data += 4;
       } else {

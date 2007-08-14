@@ -45,7 +45,7 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   INLINE int get_num_components() const;
   INLINE int length() const;
   INLINE bool can_seek() const;
-  INLINE bool can_seek_zero() const;
+  INLINE bool can_seek_fast() const;
   INLINE bool aborted() const;
   INLINE double last_start() const;
   INLINE double next_start() const;
@@ -57,7 +57,7 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   static PT(MovieVideo) load(const Filename &name);
 
  public:
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  virtual void fetch_into_buffer(double time, unsigned char *block, bool bgra);
   
  private:
   void allocate_conversion_buffer();
@@ -69,7 +69,7 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   int _num_components;
   double _length;
   bool _can_seek;
-  bool _can_seek_zero;
+  bool _can_seek_fast;
   bool _aborted;
   double _last_start;
   double _next_start;
