@@ -50,6 +50,7 @@
 #include "geomNode.h"
 #include "texture.h"
 #include "videoTexture.h"
+#include "movieTexture.h"
 #include "texturePool.h"
 #include "loaderFileTypeRegistry.h"
 #include "pnmImage.h"
@@ -1121,6 +1122,12 @@ load_image_as_model(const Filename &filename) {
     x_size = vtex->get_video_width();
     y_size = vtex->get_video_height();
     tex_scale = vtex->get_tex_scale();
+  } else if (tex->is_of_type(MovieTexture::get_class_type())) {
+    // Get the size from the video stream.
+    MovieTexture *mtex = DCAST(MovieTexture, tex);
+    x_size = mtex->get_video_width();
+    y_size = mtex->get_video_height();
+    tex_scale = mtex->get_tex_scale();
 
   } else if (!tex->get_loaded_from_txo()) {
     // Get the size from the original image (the texture may have
@@ -1140,10 +1147,20 @@ load_image_as_model(const Filename &filename) {
   // Ok, now make a polygon to show the texture.
 
   // Choose the dimensions of the polygon appropriately.
-  float left = -x_size / 2.0;
-  float right = x_size / 2.0;
-  float bottom = -y_size / 2.0;
-  float top = y_size / 2.0;
+  float left,right,top,bottom;
+  if (x_size > y_size) {
+    float scale = 10.0;
+    left   = -scale;
+    right  =  scale;
+    top    =  (scale * y_size) / x_size;
+    bottom = -(scale * y_size) / x_size;
+  } else {
+    float scale = 10.0;
+    left   = -(scale * x_size) / y_size;
+    right  =  (scale * x_size) / y_size;
+    top    =  scale;
+    bottom = -scale;
+  }
 
   PT(GeomNode) card_node = new GeomNode("card");
   card_node->set_attrib(TextureAttrib::make(tex));
