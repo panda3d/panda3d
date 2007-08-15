@@ -157,7 +157,10 @@ def doGetopts():
         del pargs[0]
 
     # Store the program arguments into the codeLibs
-    codeLibs += pargs
+    for arg in pargs:
+        arg = arg.strip()
+        if arg:
+            codeLibs.append(arg)
 
     # Make sure each name appears on codeLibs exactly once.
     newLibs = []
