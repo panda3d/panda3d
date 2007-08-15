@@ -303,16 +303,22 @@ do_autorestart() {
         num_sri++;
       } else {
         time_t last = spam_respawn[(sri + 1) % spam_respawn_count];
-        if (now - last < spam_respawn_time && !spam_restart_delay_time) {
-          fprintf(stderr, "respawning too fast, giving up.\n");
-          break;
-        } else {
-          num_sri = 1; /* reset num_sri */
-          fprintf(stderr, "respawning too fast, will sleep for %d seconds.\n", spam_restart_delay_time);
-          signal (SIGALRM, sigalarm_handler);
-          alarm(spam_restart_delay_time);
-          pause();
-          signal (SIGALRM, SIG_IGN);
+        if (now - last < spam_respawn_time) 
+        {
+          if(!spam_restart_delay_time) 
+          {
+            fprintf(stderr, "respawning too fast, giving up.\n");
+            break;
+          } 
+          else 
+          {
+            num_sri = 1; /* reset num_sri */
+            fprintf(stderr, "respawning too fast, will sleep for %d seconds.\n", spam_restart_delay_time);
+            signal (SIGALRM, sigalarm_handler);
+            alarm(spam_restart_delay_time);
+            pause();
+            signal (SIGALRM, SIG_IGN);
+          }
         }
       }
     }
