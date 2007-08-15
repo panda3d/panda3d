@@ -16,6 +16,7 @@
         inkblotVideo.h inkblotVideo.I \
         ffmpegVideo.h ffmpegVideo.I \
         ffmpegAudio.h ffmpegAudio.I \
+        ffmpegVirtualFile.h ffmpegVirtualFile.I \
 	config_movies.h
     
   #define INCLUDED_SOURCES \
@@ -24,6 +25,7 @@
         inkblotVideo.cxx \
         ffmpegVideo.cxx \
         ffmpegAudio.cxx \
+        ffmpegVirtualFile.cxx \
         config_movies.cxx
     
   #define INSTALL_HEADERS \
@@ -32,6 +34,7 @@
         inkblotVideo.h inkblotVideo.I \
         ffmpegVideo.h ffmpegVideo.I \
         ffmpegAudio.h ffmpegAudio.I \
+        ffmpegVirtualFile.h ffmpegVirtualFile.I \
 	config_movies.h
 
   #define IGATESCAN all

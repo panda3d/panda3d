@@ -53,6 +53,7 @@ init_libmovies() {
   FfmpegVideo::init_type();
   FfmpegAudio::init_type();
   av_register_all();
+  FfmpegVirtualFile::register_protocol();
 #endif
 }
 

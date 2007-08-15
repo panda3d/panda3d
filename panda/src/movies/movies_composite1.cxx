@@ -3,4 +3,5 @@
 #include "inkblotVideo.cxx"
 #include "ffmpegAudio.cxx"
 #include "ffmpegVideo.cxx"
+#include "ffmpegVirtualFile.cxx"
 #include "config_movies.cxx"

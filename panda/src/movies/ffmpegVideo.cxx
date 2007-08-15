@@ -41,8 +41,9 @@ FfmpegVideo(const Filename &name) :
   _frame_out(0),
   _min_fseek(3.0)
 {
-  string osname = _filename.to_os_specific();
-  if (av_open_input_file(&_format_ctx, osname.c_str(), NULL, 0, NULL)!=0) {
+  string url = "pandavfs:";
+  url += name;
+  if (av_open_input_file(&_format_ctx, url.c_str(), NULL, 0, NULL)!=0) {
     cleanup();
     return;
   }
@@ -203,7 +204,6 @@ fetch_frame() {
     fetch_packet(_last_start + 1.0);
   }
   _next_start = _packet_time;
-  cerr << "Fetch yields " << _last_start << " - " << _next_start << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,7 +230,6 @@ seek(double t) {
     return;
   }
   fetch_packet(t);
-  cerr << "Seeking to " << t << " yields " << _packet_time << "\n";
   if (_packet_time > t) {
     _packet_time = t;
   }
