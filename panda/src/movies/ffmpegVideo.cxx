@@ -23,6 +23,16 @@
 #include "avcodec.h"
 #include "avformat.h"
 
+// Earlier versions of ffmpeg didn't define this symbol.
+#ifndef PIX_FMT_BGRA
+#ifdef WORDS_BIGENDIAN
+#define PIX_FMT_BGRA PIX_FMT_BGR32_1
+#else
+#define PIX_FMT_BGRA PIX_FMT_RGBA32
+#endif
+#endif  // PIX_FMT_BGRA
+
+
 TypeHandle FfmpegVideo::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -35,8 +45,8 @@ FfmpegVideo(const Filename &name) :
   MovieVideo(name),
   _filename(name),
   _format_ctx(0),
-  _video_index(-1),
   _video_ctx(0),
+  _video_index(-1),
   _frame(0),
   _frame_out(0),
   _min_fseek(3.0)
