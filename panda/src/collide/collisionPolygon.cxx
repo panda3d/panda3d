@@ -49,30 +49,6 @@ PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPoly
 TypeHandle CollisionPolygon::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: is_right
-//  Description: Returns true if the 2-d v1 is to the right of v2.
-////////////////////////////////////////////////////////////////////
-INLINE bool
-is_right(const LVector2f &v1, const LVector2f &v2) {
-  return (-v1[0] * v2[1] + v1[1] * v2[0]) > 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: dist_to_line
-//  Description: Returns the linear distance of p to the line defined
-//               by f and f+v, where v is a normalized vector.  The
-//               result is negative if p is left of the line, positive
-//               if it is right of the line.
-////////////////////////////////////////////////////////////////////
-INLINE float
-dist_to_line(const LPoint2f &p,
-             const LPoint2f &f, const LVector2f &v) {
-  LVector2f v1 = (p - f);
-  return (-v1[0] * v[1] + v1[1] * v[0]);
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Copy Constructor
 //       Access: Public
 //  Description:
@@ -234,6 +210,7 @@ xform(const LMatrix4f &mat) {
     rederive_to_3d_mat(to_3d_mat);
 
     pvector<LPoint3f> verts;
+    verts.reserve(_points.size());
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
       verts.push_back(to_3d((*pi)._p, to_3d_mat) * mat);
@@ -825,6 +802,126 @@ fill_viz_geom() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::dist_to_line_segment
+//       Access: Private, Static
+//  Description: Returns the linear distance of p to the line segment
+//               defined by f and t, where v = (t - f).normalize().
+//               The result is negative if p is left of the line,
+//               positive if it is right of the line.  If the result
+//               is positive, it is constrained by endpoints of the
+//               line segment (i.e. the result might be larger than it
+//               would be for a straight distance-to-line test).  If
+//               the result is negative, we don't bother.
+////////////////////////////////////////////////////////////////////
+float CollisionPolygon::
+dist_to_line_segment(const LPoint2f &p,
+                     const LPoint2f &f, const LPoint2f &t,
+                     const LVector2f &v) {
+  LVector2f v1 = (p - f);
+  float d = (v1[0] * v[1] - v1[1] * v[0]);
+  if (d < 0.0f) {
+    return d;
+  }
+
+  // Compute the nearest point on the line.
+  LPoint2f q = p + LVector2f(-v[1], v[0]) * d;
+
+  // Now constrain that point to the line segment.
+  if (v[0] > 0.0f) {
+    // X+
+    if (v[1] > 0.0f) {
+      // Y+
+      if (v[0] > v[1]) {
+        // X-dominant.
+        if (q[0] < f[0]) {
+          return (p - f).length();
+        } if (q[0] > t[0]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      } else {
+        // Y-dominant.
+        if (q[1] < f[1]) {
+          return (p - f).length();
+        } if (q[1] > t[1]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      }
+    } else {
+      // Y-
+      if (v[0] > -v[1]) {
+        // X-dominant.
+        if (q[0] < f[0]) {
+          return (p - f).length();
+        } if (q[0] > t[0]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      } else {
+        // Y-dominant.
+        if (q[1] > f[1]) {
+          return (p - f).length();
+        } if (q[1] < t[1]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      }
+    }
+  } else {
+    // X-
+    if (v[1] > 0.0f) {
+      // Y+
+      if (-v[0] > v[1]) {
+        // X-dominant.
+        if (q[0] > f[0]) {
+          return (p - f).length();
+        } if (q[0] < t[0]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      } else {
+        // Y-dominant.
+        if (q[1] < f[1]) {
+          return (p - f).length();
+        } if (q[1] > t[1]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      }
+    } else {
+      // Y-
+      if (-v[0] > -v[1]) {
+        // X-dominant.
+        if (q[0] > f[0]) {
+          return (p - f).length();
+        } if (q[0] < t[0]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      } else {
+        // Y-dominant.
+        if (q[1] > f[1]) {
+          return (p - f).length();
+        } if (q[1] < t[1]) {
+          return (p - t).length();
+        } else {
+          return d;
+        }
+      }
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::compute_vectors
 //       Access: Private, Static
 //  Description: Now that the _p members of the given points array
@@ -933,18 +1030,37 @@ dist_to_polygon(const LPoint2f &p, const CollisionPolygon::Points &points) const
 
   // We know that that the polygon is convex and is defined with the
   // points in counterclockwise order.  Therefore, we simply compare
-  // the signed distance to each line; the answer is the maximum of
-  // these.  (This doesn't quite get the right answer if the closest
-  // part of the polygon is one of the vertices, but it's close enough
-  // for these purposes.)
+  // the signed distance to each line segment; we ignore any negative
+  // values, and take the minimum of all the positive values.  
 
-  float max_dist = dist_to_line(p, points.front()._p, points.front()._v);
+  // If all values are negative, the point is within the polygon; we
+  // therefore return an arbitrary negative result.
+  
+  bool got_dist = false;
+  float best_dist = -1.0f;
 
-  for (size_t i = 1; i < points.size(); i++) {
-    max_dist = max(max_dist, dist_to_line(p, points[i]._p, points[i]._v));
+  size_t num_points = points.size();
+  for (size_t i = 0; i < num_points - 1; ++i) {
+    float d = dist_to_line_segment(p, points[i]._p, points[i + 1]._p,
+                                   points[i]._v);
+    if (d >= 0.0f) {
+      if (!got_dist || d < best_dist) {
+        best_dist = d;
+        got_dist = true;
+      }
+    }
   }
 
-  return max_dist;
+  float d = dist_to_line_segment(p, points[num_points - 1]._p, points[0]._p,
+                                 points[num_points - 1]._v);
+  if (d >= 0.0f) {
+    if (!got_dist || d < best_dist) {
+      best_dist = d;
+      got_dist = true;
+    }
+  }
+
+  return best_dist;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1260,6 +1376,27 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _points.push_back(PointDef(p, v));
   }
   _to_2d_mat.read_datagram(scan);
+
+  if (manager->get_file_minor_ver() < 13) {
+    // Before bam version 6.13, we were inadvertently storing
+    // CollisionPolygon vertices clockwise, instead of
+    // counter-clockwise.  Correct that by re-projecting.
+    if (_points.size() >= 3) {
+      LMatrix4f to_3d_mat;
+      rederive_to_3d_mat(to_3d_mat);
+      
+      pvector<LPoint3f> verts;
+      verts.reserve(_points.size());
+      Points::const_iterator pi;
+      for (pi = _points.begin(); pi != _points.end(); ++pi) {
+        verts.push_back(to_3d((*pi)._p, to_3d_mat));
+      }
+      
+      const LPoint3f *verts_begin = &verts[0];
+      const LPoint3f *verts_end = verts_begin + verts.size();
+      setup_points(verts_begin, verts_end);
+    }
+  }
 }
 
 

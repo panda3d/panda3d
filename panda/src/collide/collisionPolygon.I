@@ -141,6 +141,31 @@ flush_level() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::is_right
+//       Access: Private, Static
+//  Description: Returns true if the 2-d v1 is to the right of v2.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionPolygon::
+is_right(const LVector2f &v1, const LVector2f &v2) {
+  return (v1[0] * v2[1] - v1[1] * v2[0]) > 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::dist_to_line
+//       Access: Private, Static
+//  Description: Returns the linear distance of p to the line defined
+//               by f and f+v, where v is a normalized vector.  The
+//               result is negative if p is left of the line, positive
+//               if it is right of the line.
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionPolygon::
+dist_to_line(const LPoint2f &p,
+             const LPoint2f &f, const LVector2f &v) {
+  LVector2f v1 = (p - f);
+  return (v1[0] * v[1] - v1[1] * v[0]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::to_2d
 //       Access: Private
 //  Description: Assuming the indicated point in 3-d space lies within
@@ -170,7 +195,7 @@ calc_to_3d_mat(LMatrix4f &to_3d_mat) const {
 
   // The up vector, on the other hand, is completely arbitrary.
 
-  look_at(to_3d_mat, get_plane().get_normal(), 
+  look_at(to_3d_mat, -get_plane().get_normal(), 
           LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
   to_3d_mat.set_row(3, get_plane().get_point());
 }

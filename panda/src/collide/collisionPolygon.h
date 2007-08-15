@@ -94,6 +94,14 @@ protected:
   virtual void fill_viz_geom();
 
 private:
+  INLINE static bool is_right(const LVector2f &v1, const LVector2f &v2);
+  INLINE static float dist_to_line(const LPoint2f &p,
+                                   const LPoint2f &f, const LVector2f &v);
+  static float dist_to_line_segment(const LPoint2f &p,
+                                    const LPoint2f &f, const LPoint2f &t,
+                                    const LVector2f &v);
+  
+private:
   class PointDef {
   public:
     INLINE PointDef(const LPoint2f &p, const LVector2f &v);
