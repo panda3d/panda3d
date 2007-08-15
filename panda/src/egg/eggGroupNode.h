@@ -183,7 +183,7 @@ protected:
                         CoordinateSystem coordsys,
                         BamCacheRecord *record);
 
-private:
+PUBLISHED:
   INLINE static bool is_right(const LVector2d &v1, const LVector2d &v2);
 
 private:

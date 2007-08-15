@@ -51,7 +51,7 @@ PGItem::BackgroundFocus PGItem::_background_focus;
 ////////////////////////////////////////////////////////////////////
 INLINE bool
 is_right(const LVector2f &v1, const LVector2f &v2) {
-  return (-v1[0] * v2[1] + v1[1] * v2[0]) > 0;
+  return (v1[0] * v2[1] - v1[1] * v2[0]) > 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1272,12 +1272,12 @@ clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
   new_points.reserve(source_points.size() + 1);
 
   LPoint2f last_point = source_points.back();
-  bool last_is_in = !is_right(last_point - from2d, delta2d);
+  bool last_is_in = is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
   pvector<LPoint2f>::const_iterator pi;
   for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
     const LPoint2f &this_point = (*pi);
-    bool this_is_in = !is_right(this_point - from2d, delta2d);
+    bool this_is_in = is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to
     // extract this comparison outside of the if statement.
