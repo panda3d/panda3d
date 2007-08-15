@@ -307,6 +307,7 @@ do_autorestart() {
           fprintf(stderr, "respawning too fast, giving up.\n");
           break;
         } else {
+          num_sri = 1; /* reset num_sri */
           fprintf(stderr, "respawning too fast, will sleep for %d seconds.\n", spam_restart_delay_time);
           signal (SIGALRM, sigalarm_handler);
           alarm(spam_restart_delay_time);
