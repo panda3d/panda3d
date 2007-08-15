@@ -15,14 +15,12 @@ although it does send messeges that allow a listener to play sounds or
 animations based on control events.
 """
 
+from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.controls.ControlManager import CollisionHandlerRayStart
 from direct.showbase.InputStateGlobal import inputState
 from direct.task.Task import Task
-from pandac.PandaModules import *
-import math
-
 from PhysicsWalker import PhysicsWalker
+import math
 
 class ShipPilot(PhysicsWalker):
     notify = directNotify.newCategory("ShipPilot")
@@ -106,7 +104,7 @@ class ShipPilot(PhysicsWalker):
         # This is a sphere on the ground to detect barrier collisions
 
         # set up collision mechanism
-        self.pusher = PhysicsCollisionHandler()
+        self.pusher = CollisionHandlerPusher()
         self.pusher.setInPattern("enter%in")
         self.pusher.setOutPattern("exit%in")
 
