@@ -69,6 +69,11 @@ typedef jmp_buf cs_jmp_buf;
 
 #ifdef JB_SP
 #define CS_JB_SP JB_SP
+
+#elif defined(__ppc__)
+  /* This was determined experimentally through test_setjmp. */
+#define CS_JB_SP 0
+
 #endif
 
 #endif  /* __i386__ */
