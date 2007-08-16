@@ -472,7 +472,7 @@ class GravityWalker(DirectObject.DirectObject):
 
         # Check for Auto-Run
         if 'localAvatar' in __builtins__:
-            if base.localAvatar.getAutoRun():
+            if base.localAvatar and base.localAvatar.getAutoRun():
                 forward = 1
                 reverse = 0
 
