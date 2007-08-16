@@ -327,9 +327,15 @@ class Actor(DirectObject, NodePath):
                 # assign these elements to ourselve (overwrite)
                 self.assign(otherCopy)
             else:
-                # just copy these to ourselve
+                # just copy these to ourselves
                 otherCopy = other.copyTo(self)
-            self.setGeomNode(otherCopy.getChild(0))
+            # masad: check if otherCopy has a geomNode as its first child
+            # if actor is initialized with flattenable, then otherCopy, not
+            # its first child, is the geom node; check __init__, for reference
+            if other.getGeomNode().getName() == other.getName():
+                self.setGeomNode(otherCopy)
+            else:
+                self.setGeomNode(otherCopy.getChild(0))
 
             # copy the switches for lods
             self.switches = other.switches
