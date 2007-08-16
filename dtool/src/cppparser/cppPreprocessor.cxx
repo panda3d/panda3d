@@ -1479,8 +1479,9 @@ skip_false_if_block(bool consider_elifs) {
       int first_col = get_col_number();
 
       // Is this it?
-      string command;
+      string command, args;
       c = get_preprocessor_command(c, command);
+      c = get_preprocessor_args(c, args);
       if (command == "if" || command == "ifdef" || command == "ifndef") {
         // Hmm, a nested if block.  Even more to skip.
         level++;
@@ -1494,12 +1495,11 @@ skip_false_if_block(bool consider_elifs) {
         if (level == 0 && consider_elifs) {
           // If we pass this test, we're in.
           _save_comments = true;
-          string args;
-          c = get_preprocessor_args(c, args);
           handle_if_directive(args, first_line, first_col, first_file);
           return;
         }
       } else if (command == "endif") {
+        // Skip any args.
         if (level == 0) {
           // Here's the end!
           _save_comments = true;
