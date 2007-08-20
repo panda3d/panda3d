@@ -1296,7 +1296,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
      WindowRef			window = NULL;
      OSStatus			result = eventNotHandledErr;
      UInt32 				kind = GetEventKind (event);
-//     EventMouseButton	button = 0;
+     EventMouseButton	button = 0;
      Point qdGlobalPoint = {0, 0};
      UInt32				modifiers = 0;	
      Rect 				rectPort;
@@ -1321,7 +1321,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
              // start trackball, pan, or dolly
             case kEventMouseDown:
                 {
-//                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
+                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
                     if(_properties.get_mouse_mode()==WindowProperties::M_relative)
                     {
@@ -1335,17 +1335,11 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                       GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);                    
                       SystemPointToLocalPoint(qdGlobalPoint);
                     }
-                    
-                    ButtonHandle	button_h	=	MouseButton::one();
-                    UInt32			buttons		=	GetCurrentEventButtonState();
-                    
-                    if (buttons & (1 << 1))
-//                    if(kEventMouseButtonSecondary == button)
+                    ButtonHandle button_h = MouseButton::one();
+                    if(kEventMouseButtonSecondary == button)
                         button_h = MouseButton::three();
-                    if (buttons & (1 << 2))
-//                    if(kEventMouseButtonTertiary == button)
+                    if(kEventMouseButtonTertiary == button)
                         button_h = MouseButton::two();
-                        
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_down(button_h);
 					result = noErr;
@@ -1354,7 +1348,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                 // stop trackball, pan, or dolly
             case kEventMouseUp:
                 {
-//                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
+                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
                     //				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
                     if(_properties.get_mouse_mode()==WindowProperties::M_relative)
                     {
@@ -1368,17 +1362,11 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                       GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                       SystemPointToLocalPoint(qdGlobalPoint);
                     }
-                    
-                    ButtonHandle	button_h	=	MouseButton::one();
-                    UInt32			buttons		=	GetCurrentEventButtonState();
-                    
-//                    if(kEventMouseButtonSecondary == button)
-                    if (buttons & (1 << 1))
+                    ButtonHandle button_h = MouseButton::one();
+                    if(kEventMouseButtonSecondary == button)
                         button_h = MouseButton::three();
-//                    if(kEventMouseButtonTertiary == button)
-                    if (buttons & (1 << 2))
+                    if(kEventMouseButtonTertiary == button)
                         button_h = MouseButton::two();
-                        
                     _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     _input_devices[0].button_up(button_h);
 					result = noErr;					
