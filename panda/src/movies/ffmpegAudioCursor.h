@@ -1,4 +1,4 @@
-// Filename: ffmpegAudio.h
+// Filename: ffmpegAudioCursor.h
 // Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,28 +16,53 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGAUDIO_H
-#define FFMPEGAUDIO_H
+#ifndef FFMPEGAUDIOCURSOR_H
+#define FFMPEGAUDIOCURSOR_H
 #ifdef HAVE_FFMPEG
 
-#include "movieAudio.h"
+#include "pandabase.h"
+#include "namable.h"
+#include "texture.h"
+#include "pointerTo.h"
 
-class FfmpegAudioCursor;
+struct AVFormatContext;
+struct AVCodecContext;
+struct AVStream;
+struct AVPacket;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
+//       Class : FfmpegAudioCursor
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
+class EXPCL_PANDA_MOVIES FfmpegAudioCursor : public MovieAudioCursor {
 
 PUBLISHED:
-  FfmpegAudio(const Filename &name);
-  virtual ~FfmpegAudio();
-  virtual PT(MovieAudioCursor) open();
+  FfmpegAudioCursor(PT(FfmpegAudio) src);
+  virtual ~FfmpegAudioCursor();
+  virtual void seek(double offset);
+  
+public:
+  virtual void read_samples(int n, PN_int16 *data);
+  
+protected:
+  void fetch_packet();
+  void reload_buffer();
+  void cleanup();
+  Filename _filename;
+  int _initial_dts;
+  AVPacket *_packet;
+  int            _packet_size;
+  unsigned char *_packet_data;
+  AVFormatContext *_format_ctx;
+  AVCodecContext  *_audio_ctx;
+  int _audio_index;
+  double _audio_timebase;
 
- private:
-  Filename _specified_filename;
-  friend class FfmpegAudioCursor;
+  PN_int16 *_buffer;
+  int       _buffer_size;
+  PN_int16 *_buffer_alloc;
+  int       _buffer_head;
+  int       _buffer_tail;
   
 public:
   static TypeHandle get_class_type() {
@@ -45,8 +70,8 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "FfmpegAudio",
-                  MovieAudio::get_class_type());
+    register_type(_type_handle, "FfmpegAudioCursor",
+                  MovieAudioCursor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -57,7 +82,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegAudio.I"
+#include "ffmpegAudioCursor.I"
 
 #endif // HAVE_FFMPEG
 #endif // FFMPEG_AUDIO.H

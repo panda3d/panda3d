@@ -19,6 +19,7 @@
 #include "pandabase.h"
 
 #include "movieVideo.h"
+#include "movieVideoCursor.h"
 #include "movieTexture.h"
 #include "clockObject.h"
 #include "config_gobj.h"
@@ -49,9 +50,7 @@ MovieTexture::
 MovieTexture(PT(MovieVideo) video) : 
   Texture(video->get_name())
 {
-  // It is necessary to copy the video, because
-  // the cull thread will be accessing it.
-  do_load_one(video->make_copy(), NULL, 0);
+  do_load_one(video->open(), NULL, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,8 +111,8 @@ MovieTexture(const MovieTexture &copy) :
   // Since 'make_copy' can be a slow operation, 
   // I release the read lock before calling make_copy.
   
-  pvector<MovieVideo *> color;
-  pvector<MovieVideo *> alpha;
+  pvector<MovieVideoCursor *> color;
+  pvector<MovieVideoCursor *> alpha;
   {
     CDReader copy_cdata(copy._cycler);
     color.resize(copy_cdata->_pages.size());
@@ -129,10 +128,10 @@ MovieTexture(const MovieTexture &copy) :
     cdata->_pages.resize(color.size());
     for (int i=0; i<(int)(color.size()); i++) {
       if (color[i]) {
-        cdata->_pages[i]._color = color[i]->make_copy();
+        cdata->_pages[i]._color = color[i]->get_source()->open();
       }
       if (alpha[i]) {
-        cdata->_pages[i]._alpha = color[i]->make_copy();
+        cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
       }
     }
     recalculate_image_properties(cdata);
@@ -205,7 +204,7 @@ recalculate_image_properties(CDWriter &cdata) {
   double len = 0.0;
   
   for (int i=0; i<_z_size; i++) {
-    MovieVideo *t = cdata->_pages[i]._color;
+    MovieVideoCursor *t = cdata->_pages[i]._color;
     if (t) {
       if (t->size_x() > x_max) x_max = t->size_x();
       if (t->size_y() > y_max) y_max = t->size_y();
@@ -259,15 +258,15 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     record->add_dependent_file(fullpath);
   }
 
-  PT(MovieVideo) color;
-  PT(MovieVideo) alpha;
+  PT(MovieVideoCursor) color;
+  PT(MovieVideoCursor) alpha;
   
-  color = MovieVideo::load(fullpath);
+  color = MovieVideo::get(fullpath)->open();
   if (color == 0) {
     return false;
   }
   if (!alpha_fullpath.empty()) {
-    alpha = MovieVideo::load(alpha_fullpath);
+    alpha = MovieVideo::get(alpha_fullpath)->open();
     if (alpha == 0) {
       return false;
     }
@@ -296,6 +295,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   set_loaded_from_image();
   set_loop(true);
   play();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,7 +304,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //  Description: Loads movie objects into the texture.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_load_one(PT(MovieVideo) color, PT(MovieVideo) alpha, int z) {
+do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z) {
   
   {
     CDWriter cdata(_cycler);
@@ -391,8 +391,8 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
   }
   
   for (int i=0; i<((int)(cdata->_pages.size())); i++) {
-    MovieVideo *color = cdata->_pages[i]._color;
-    MovieVideo *alpha = cdata->_pages[i]._alpha;
+    MovieVideoCursor *color = cdata->_pages[i]._color;
+    MovieVideoCursor *alpha = cdata->_pages[i]._alpha;
     if (color && alpha) {
       if ((offset >= color->next_start())||
           ((offset < color->last_start()) && (color->can_seek()))) {

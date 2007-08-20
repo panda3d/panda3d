@@ -69,7 +69,7 @@ want-tk           #f
 want-pstats            #f
 show-frame-rate-meter  #f
 
-# Enable audio using the FMod audio library by default:
+# Enable audio using the FmodEx audio library by default:
 
 audio-library-name p3fmod_audio
 

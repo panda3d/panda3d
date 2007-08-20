@@ -1,5 +1,5 @@
-// Filename: movieAudio.I
-// Created by: jyelon (02Jul07)
+// Filename: ffmpegAudioCursor.I
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //

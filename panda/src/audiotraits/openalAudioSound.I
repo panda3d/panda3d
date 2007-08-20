@@ -1,5 +1,5 @@
-// Filename: movieAudio.I
-// Created by: jyelon (02Jul07)
+// Filename: openalAudioSound.I
+// Created by:  Ben Buchwald <bb2@alumni.cmu.edu>
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,4 +15,9 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
+
+
+
+
 

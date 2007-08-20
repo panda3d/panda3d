@@ -20,18 +20,6 @@
 
 #include "ffmpegVideo.h"
 #include "config_movies.h"
-#include "avcodec.h"
-#include "avformat.h"
-
-// Earlier versions of ffmpeg didn't define this symbol.
-#ifndef PIX_FMT_BGRA
-#ifdef WORDS_BIGENDIAN
-#define PIX_FMT_BGRA PIX_FMT_BGR32_1
-#else
-#define PIX_FMT_BGRA PIX_FMT_RGBA32
-#endif
-#endif  // PIX_FMT_BGRA
-
 
 TypeHandle FfmpegVideo::_type_handle;
 
@@ -43,71 +31,8 @@ TypeHandle FfmpegVideo::_type_handle;
 FfmpegVideo::
 FfmpegVideo(const Filename &name) :
   MovieVideo(name),
-  _filename(name),
-  _format_ctx(0),
-  _video_ctx(0),
-  _video_index(-1),
-  _frame(0),
-  _frame_out(0),
-  _min_fseek(3.0)
+  _specified_filename(name)
 {
-  string url = "pandavfs:";
-  url += name;
-  if (av_open_input_file(&_format_ctx, url.c_str(), NULL, 0, NULL)!=0) {
-    cleanup();
-    return;
-  }
-  
-  if (av_find_stream_info(_format_ctx)<0) {
-    cleanup();
-    return;
-  }
-  
-  // Find the video stream
-  for(int i=0; i<_format_ctx->nb_streams; i++) {
-    if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO) {
-      _video_index = i;
-      _video_ctx = _format_ctx->streams[i]->codec;
-      _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
-    }
-  }
-  
-  if (_video_ctx == 0) {
-    cleanup();
-    return;
-  }
-
-  AVCodec *pVideoCodec=avcodec_find_decoder(_video_ctx->codec_id);
-  if(pVideoCodec == 0) {
-    cleanup();
-    return;
-  }
-  if(avcodec_open(_video_ctx, pVideoCodec)<0) {
-    cleanup();
-    return;
-  }
-
-  _size_x = _video_ctx->width;
-  _size_y = _video_ctx->height;
-  _num_components = 3; // Don't know how to implement RGBA movies yet.
-  _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
-  _can_seek = true;
-  _can_seek_fast = true;
-
-  _packet = new AVPacket;
-  _frame = avcodec_alloc_frame();
-  _frame_out = avcodec_alloc_frame();
-  if ((_packet == 0)||(_frame == 0)||(_frame_out == 0)) {
-    cleanup();
-    return;
-  }
-  memset(_packet, 0, sizeof(AVPacket));
-  
-  fetch_packet(0.0);
-  _initial_dts = _packet->dts;
-  _packet_time = 0.0;
-  _last_start = -1.0;
-  _next_start = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,195 +42,18 @@ FfmpegVideo(const Filename &name) :
 ////////////////////////////////////////////////////////////////////
 FfmpegVideo::
 ~FfmpegVideo() {
-  cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::cleanup
-//       Access: Public
-//  Description: Reset to a standard inactive state.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-cleanup() {
-  _frame_out->data[0] = 0;
-  if (_packet) {
-    if (_packet->data) {
-      av_free_packet(_packet);
-    }
-    delete _packet;
-    _packet = 0;
-  }
-  if (_format_ctx) {
-    av_close_input_file(_format_ctx);
-    _format_ctx = 0;
-  }
-  if (_frame) {
-    av_free(_frame);
-    _frame = 0;
-  }
-  if (_frame_out) {
-    av_free(_frame_out);
-    _frame_out = 0;
-  }
-  _video_ctx = 0;
-  _video_index = -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::export_frame
-//       Access: Public, Virtual
-//  Description: Exports the contents of the frame buffer into the
-//               user's target buffer.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-export_frame(unsigned char *data, bool bgra) {
-  if (bgra) {
-    _frame_out->data[0] = data + ((_size_y - 1) * _size_x * 4);
-    _frame_out->linesize[0] = _size_x * -4;
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGRA, 
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-  } else {
-    _frame_out->data[0] = data + ((_size_y - 1) * _size_x * 3);
-    _frame_out->linesize[0] = _size_x * -3;
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::fetch_packet
-//       Access: Protected
-//  Description: Fetches a video packet and stores it in the 
-//               packet buffer.  Sets packet_time to the packet's
-//               timestamp.  If a packet could not be read, the
-//               packet is cleared and the packet_time is set to
-//               the specified default value.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-fetch_packet(double default_time) {
-  if (_packet->data) {
-    av_free_packet(_packet);
-  }
-  while (av_read_frame(_format_ctx, _packet) >= 0) {
-    if (_packet->stream_index == _video_index) {
-      _packet_time = _packet->dts * _video_timebase;
-      return;
-    }
-    av_free_packet(_packet);
-  }
-  _packet->data = 0;
-  _packet_time = default_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::fetch_frame
-//       Access: Protected
-//  Description: Fetches a frame from the stream and stores it in
-//               the frame buffer.  Sets last_start and next_start
-//               to indicate the extents of the frame.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-fetch_frame() {
-  int finished = 0;
-  _last_start = _packet_time;
-  while (!finished && _packet->data) {
-    avcodec_decode_video(_video_ctx, _frame,
-                         &finished, _packet->data, _packet->size);
-    fetch_packet(_last_start + 1.0);
-  }
-  _next_start = _packet_time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or 
-//               equal to the specified time.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-seek(double t) {
-  long long target_ts = (long long)(t / _video_timebase);
-  if (target_ts < (long long)(_initial_dts)) {
-    // Attempts to seek before the first packet will fail.
-    target_ts = _initial_dts;
-  }
-  if (av_seek_frame(_format_ctx, _video_index, target_ts, AVSEEK_FLAG_BACKWARD) < 0) {
-    if (t >= _packet_time) {
-      return;
-    }
-    movies_cat.error() << "Seek failure. Shutting down movie.\n";
-    cleanup();
-    _packet_time = t;
-    return;
-  }
-  fetch_packet(t);
-  if (_packet_time > t) {
-    _packet_time = t;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::fetch_into_buffer
-//       Access: Public, Virtual
-//  Description: See MovieVideo::fetch_into_buffer.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideo::
-fetch_into_buffer(double time, unsigned char *data, bool bgra) {
-  
-  // If there was an error at any point, synthesize black.
-  if (_format_ctx==0) {
-    if (data) {
-      memset(data,0,size_x()*size_y()*(bgra?4:3));
-    }
-    _last_start = time;
-    _next_start = time + 1.0;
-    return;
-  }
-  
-  if (time < _last_start) {
-    // Time is in the past.
-    seek(time);
-    while (_packet_time <= time) {
-      fetch_frame();
-    }
-  } else if (time < _next_start) {
-    // Time is in the present: already have the frame.
-  } else if (time < _next_start + _min_fseek) {
-    // Time is in the near future.
-    while (_packet_time <= time) {
-      fetch_frame();
-    }
-  } else {
-    // Time is in the far future.  Seek forward, then read.
-    // There's a danger here: because keyframes are spaced
-    // unpredictably, trying to seek forward could actually
-    // move us backward in the stream!  This must be avoided.
-    // So the rule is, try the seek.  If it hurts us by moving
-    // us backward, we increase the minimum threshold distance
-    // for forward-seeking in the future.
-    
-    double base = _packet_time;
-    seek(time);
-    if (_packet_time < base) {
-      _min_fseek += (base - _packet_time);
-    }
-    while (_packet_time <= time) {
-      fetch_frame();
-    }
-  }
-  export_frame(data, bgra);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideo::make_copy
+//     Function: FfmpegVideo::open
 //       Access: Published, Virtual
-//  Description: Make a copy of this MovieVideo with its own cursor.
+//  Description: Open this video, returning a MovieVideoCursor.
 ////////////////////////////////////////////////////////////////////
-PT(MovieVideo) FfmpegVideo::
-make_copy() const {
-  return new FfmpegVideo(_filename);
+PT(MovieVideoCursor) FfmpegVideo::
+open() {
+  return new FfmpegVideoCursor(this);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 

@@ -36,6 +36,7 @@ class Audio3DManager:
         """
         Control the scale that sets the distance units for 3D spacialized audio.
         Default is 1.0 which is adjust in panda to be feet.
+        When you change this, don't forget that this effects the scale of setSoundMinDistance
         """
         self.audio_manager.audio3dSetDistanceFactor(factor)
 
@@ -84,9 +85,8 @@ class Audio3DManager:
         """
         Controls the distance (in units) that this sound begins to fall off.
         Also affects the rate it falls off.
-        Default is 1.0
-        Closer/Faster, <1.0
-        Farther/Slower, >1.0
+        Default is 3.28 (in feet, this is 1 meter)
+        Don't forget to change this when you change the DistanceFactor
         """
         sound.set3dMinDistance(dist)
 
@@ -94,9 +94,7 @@ class Audio3DManager:
         """
         Controls the distance (in units) that this sound begins to fall off.
         Also affects the rate it falls off.
-        Default is 1.0
-        Closer/Faster, <1.0
-        Farther/Slower, >1.0
+        Default is 3.28 (in feet, this is 1 meter)
         """
         return sound.get3dMinDistance()
 
@@ -267,8 +265,10 @@ class Audio3DManager:
         # to which it is attached
         if self.listener_target:
             pos = self.listener_target.getPos(self.root)
+            forward = self.listener_target.getRelativeVector(self.root, VBase3(0,1,0))
+            up = self.listener_target.getRelativeVector(self.root, VBase3(0,0,1))
             vel = self.getListenerVelocity()
-            self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], 0, 1, 0, 0, 0, 1)
+            self.audio_manager.audio3dSetListenerAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2], forward[0], forward[1], forward[2], up[0], up[1], up[2]) 
         else:
             self.audio_manager.audio3dSetListenerAttributes(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1)
         return Task.cont

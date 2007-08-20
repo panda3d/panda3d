@@ -356,10 +356,8 @@ get_time() const {
     return 0.0f;
   }
   fmod_audio_errcheck("_channel->getPosition()", result);
-
-  current_time = current_time / 1000;
-
-  return current_time;
+  
+  return ((double)current_time) / 1000.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -496,9 +494,7 @@ length() const {
   result = _sound->getLength( &length, FMOD_TIMEUNIT_MS );
   fmod_audio_errcheck("_sound->getLength()", result);
 
-  length = length / 1000;
-
-  return length;
+  return ((double)length) / 1000.0;
 }
 
 ////////////////////////////////////////////////////////////////////

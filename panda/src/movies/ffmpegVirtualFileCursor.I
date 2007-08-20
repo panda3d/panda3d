@@ -1,10 +1,10 @@
-// Filename: movieAudio.I
-// Created by: jyelon (02Jul07)
+// Filename: ffmpegVirtualFile.I
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
-// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+// Copyright (c) 2001 - 2007, Disney Enterprises, Inc.  All rights reserved
 //
 // All use of this software is subject to the terms of the Panda 3d
 // Software license.  You should have received a copy of this license
@@ -15,4 +15,3 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-

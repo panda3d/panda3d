@@ -19,8 +19,7 @@
 #ifdef HAVE_FFMPEG
 
 #include "ffmpegAudio.h"
-#include "avcodec.h"
-#include "avformat.h"
+#include "ffmpegAudioCursor.h"
 
 TypeHandle FfmpegAudio::_type_handle;
 
@@ -32,7 +31,7 @@ TypeHandle FfmpegAudio::_type_handle;
 FfmpegAudio::
 FfmpegAudio(const Filename &name) :
   MovieAudio(name),
-  _filename(name)
+  _specified_filename(name)
 {
 }
 
@@ -46,37 +45,13 @@ FfmpegAudio::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudio::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.  
-//               Multiple-channel audio will be interleaved. 
-////////////////////////////////////////////////////////////////////
-void FfmpegAudio::
-read_samples(int n, PN_int16 *data) {
-
-  // This is the null implementation, which generates pure silence.
-  // Normally, this method will be overridden by a subclass.
-
-  if (n <= 0) {
-    return;
-  }
-
-  for (int i=0; i<n; i++) {
-    data[i] = 0;
-  }
-  _samples_read += n;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegAudio::make_copy
+//     Function: FfmpegAudio::open
 //       Access: Published, Virtual
-//  Description: Make a copy of this MovieAudio with its own cursor.
+//  Description: Open this audio, returning a MovieAudioCursor
 ////////////////////////////////////////////////////////////////////
-PT(MovieAudio) FfmpegAudio::
-make_copy() const {
-  return new FfmpegAudio(_filename);
+PT(MovieAudioCursor) FfmpegAudio::
+open() {
+  return new FfmpegAudioCursor(this);
 }
 
 ////////////////////////////////////////////////////////////////////

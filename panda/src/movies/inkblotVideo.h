@@ -19,9 +19,9 @@
 #ifndef INKBLOTVIDEO_H
 #define INKBLOTVIDEO_H
 
-#include "pandabase.h"
-#include "texture.h"
-#include "pointerTo.h"
+#include "movieVideo.h"
+
+class InkblotVideoCursor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InkblotVideo
@@ -33,16 +33,13 @@ class EXPCL_PANDA_MOVIES InkblotVideo : public MovieVideo {
  PUBLISHED:
   InkblotVideo(int x, int y, int fps);
   virtual ~InkblotVideo();
-  virtual PT(MovieVideo) make_copy() const;
-  
- public:
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
-  
- protected:
-  unsigned char *_cells;
-  unsigned char *_cells2;
-  int _fps;
-  int _frames_read;
+  virtual PT(MovieVideoCursor) open();
+
+ private:
+  int _specified_x;
+  int _specified_y;
+  int _specified_fps;
+  friend class InkblotVideoCursor;
 
 public:
   static TypeHandle get_class_type() {

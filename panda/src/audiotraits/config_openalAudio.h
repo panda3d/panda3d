@@ -1,5 +1,5 @@
-// Filename: config_movies.h
-// Created by:  jyelon (02Jul07)
+// Filename: config_openalAudio.h
+// Created by:  Ben Buchwald <bb2@alumni.cmu.edu>
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,33 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __CONFIG_MOVIES_H__
-#define __CONFIG_MOVIES_H__
+#ifndef CONFIG_OPENALAUDIO_H
+#define CONFIG_OPENALAUDIO_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_OPENAL //[
 #include "notifyCategoryProxy.h"
-#include "configVariableEnum.h"
-#include "configVariableDouble.h"
 #include "dconfig.h"
 
-#include "movieVideo.h"
-#include "movieVideoCursor.h"
+ConfigureDecl(config_openalAudio, EXPCL_OPENAL_AUDIO, EXPTP_OPENAL_AUDIO);
+NotifyCategoryDecl(openalAudio, EXPCL_OPENAL_AUDIO, EXPTP_OPENAL_AUDIO);
 
-#include "movieAudio.h"
-#include "movieAudioCursor.h"
+extern EXPCL_OPENAL_AUDIO void init_libOpenALAudio();
 
-#include "inkblotVideo.h"
-#include "inkblotVideoCursor.h"
+#endif //]
 
-#include "ffmpegVideo.h"
-#include "ffmpegVideoCursor.h"
-
-#include "ffmpegAudio.h"
-#include "ffmpegAudioCursor.h"
-
-ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
-NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
-
-extern EXPCL_PANDA_MOVIES void init_libmovies();
-
-#endif /* __CONFIG_MOVIES_H__ */
+#endif // CONFIG_OPENALAUDIO_H

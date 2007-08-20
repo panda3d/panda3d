@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "movieAudio.h"
+#include "movieAudioCursor.h"
 
 TypeHandle MovieAudio::_type_handle;
 
@@ -30,14 +31,7 @@ TypeHandle MovieAudio::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MovieAudio::
 MovieAudio(const string &name) :
-  Namable(name),
-  _audio_rate(8000),
-  _audio_channels(1),
-  _length(1.0E10),
-  _can_seek(true),
-  _can_seek_fast(true),
-  _aborted(false),
-  _samples_read(0)
+  Namable(name)
 {
 }
 
@@ -51,76 +45,27 @@ MovieAudio::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::read_samples
-//       Access: Public, Virtual
-//  Description: Read audio samples from the stream.  N is the
-//               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.  
-//               Multiple-channel audio will be interleaved. 
-////////////////////////////////////////////////////////////////////
-void MovieAudio::
-read_samples(int n, PN_int16 *data) {
-
-  // This is the null implementation, which generates pure silence.
-  // Normally, this method will be overridden by a subclass.
-
-  if (n <= 0) {
-    return;
-  }
-
-  for (int i=0; i<n; i++) {
-    data[i] = 0;
-  }
-  _samples_read += n;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::seek
+//     Function: MovieAudio::open
 //       Access: Published, Virtual
-//  Description: Skips to the specified sample number. After
-//               calling seek, samples_read will be equal to the
-//               specified value.  If the movie reports that it
-//               cannot seek, then this method can still advance
-//               by reading samples and discarding them.  However,
-//               to move backward, can_seek must be true.
-//
-//               If the movie reports that it can_seek, it doesn't
-//               mean that it can do so quickly.  It may have to
-//               rewind the movie and then fast forward to the
-//               desired location.  Only if can_seek_fast returns
-//               true can seek operations be done in constant time.
-//
-//               Seeking may not be precise, because AVI files 
-//               often have inaccurate indices.  However, it is
-//               usually pretty close (ie, 0.05 seconds).
+//  Description: Open this audio, returning a MovieAudioCursor
 ////////////////////////////////////////////////////////////////////
-void MovieAudio::
-seek(int sr) {
-  _samples_read = sr;
+PT(MovieAudioCursor) MovieAudio::
+open() {
+  return new MovieAudioCursor(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::make_copy
-//       Access: Published, Virtual
-//  Description: Make a copy of this MovieAudio with its own cursor.
-////////////////////////////////////////////////////////////////////
-PT(MovieAudio) MovieAudio::
-make_copy() const {
-  return new MovieAudio();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieAudio::load
+//     Function: MovieAudio::get
 //       Access: Published, Static
-//  Description: Load a movie from a file.
+//  Description: Obtains a MovieAudio that references a file.
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudio) MovieAudio::
-load(const Filename &name) {
+get(const Filename &name) {
 #ifdef HAVE_FFMPEG
   // Someday, I'll probably put a dispatcher here.
   // But for now, just hardwire it to go to FFMPEG.
   return new FfmpegAudio(name);
 #else
-  return NULL;
+  return new MovieAudio("Load-Failure Stub");
 #endif
 }

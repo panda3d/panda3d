@@ -1,5 +1,5 @@
-// Filename: config_movies.cxx
-// Created by:  jyelon (02Jul07)
+// Filename: config_openalAudio.cxx
+// Created by:  cort
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,22 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_movies.h"
+#include "pandabase.h"
+#ifdef HAVE_OPENAL //[
+
+
+#include "config_openalAudio.h"
+#include "openalAudioManager.h"
+#include "openalAudioSound.h"
+#include "pandaSystem.h"
 #include "dconfig.h"
 
-#ifdef HAVE_FFMPEG
-#include "avcodec.h"
-#endif
+ConfigureDef(config_openalAudio);
+NotifyCategoryDef(openalAudio, ":audio");
 
-ConfigureDef(config_movies);
-NotifyCategoryDef(movies, "");
-
-ConfigureFn(config_movies) {
-  init_libmovies();
+ConfigureFn(config_openalAudio) {
+  init_libOpenALAudio();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libmovies
+//     Function: init_libOpenALAudio
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -39,26 +42,23 @@ ConfigureFn(config_movies) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libmovies() {
+init_libOpenALAudio() {
   static bool initialized = false;
   if (initialized) {
     return;
   }
+  
   initialized = true;
 
-  MovieVideo::init_type();
-  MovieVideoCursor::init_type();
-  MovieAudio::init_type();
-  MovieAudioCursor::init_type();
-  InkblotVideo::init_type();
-  InkblotVideoCursor::init_type();
-#ifdef HAVE_FFMPEG
-  FfmpegVideo::init_type();
-  FfmpegVideoCursor::init_type();
-  FfmpegAudio::init_type();
-  FfmpegAudioCursor::init_type();
-  av_register_all();
-  FfmpegVirtualFile::register_protocol();
-#endif
+  AudioManager::register_AudioManager_creator(Create_AudioManager);
+
+  OpenALAudioManager::init_type();
+  OpenALAudioSound::init_type();
+
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("OpenAL");
+  ps->add_system("audio");
+  ps->set_system_tag("audio", "implementation", "OpenAL");
 }
 
+#endif //]

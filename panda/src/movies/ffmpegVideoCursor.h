@@ -1,4 +1,4 @@
-// Filename: ffmpegVideo.h
+// Filename: ffmpegVideoCursor.h
 // Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,37 +16,60 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGVIDEO_H
-#define FFMPEGVIDEO_H
+#ifndef FFMPEGVIDEOCURSOR_H
+#define FFMPEGVIDEOCURSOR_H
 #ifdef HAVE_FFMPEG
 
-#include "movieVideo.h"
+#include "pandabase.h"
+#include "texture.h"
+#include "pointerTo.h"
 
-class FfmpegVideoCursor;
+struct AVFormatContext;
+struct AVCodecContext;
+struct AVStream;
+struct AVPacket;
+struct AVFrame;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FfmpegVideo
+//       Class : FfmpegVideoCursor
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
+class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
 
  PUBLISHED:
-  FfmpegVideo(const Filename &name);
-  virtual ~FfmpegVideo();
-  virtual PT(MovieVideoCursor) open();
+  FfmpegVideoCursor(PT(FfmpegVideo) src);
+  virtual ~FfmpegVideoCursor();
   
- private:
-  Filename _specified_filename;
-  friend class FfmpegVideoCursor;
+ public:
+  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+
+ protected:
+  void fetch_packet(double default_time);
+  void fetch_frame();
+  void seek(double t);
+  void export_frame(unsigned char *data, bool bgra);
+  void cleanup();
+  
+  Filename _filename;
+  AVPacket *_packet;
+  double _packet_time;
+  AVFormatContext *_format_ctx;
+  AVCodecContext *_video_ctx;
+  int    _video_index;
+  double _video_timebase;
+  AVFrame *_frame;
+  AVFrame *_frame_out;
+  int _initial_dts;
+  double _min_fseek;
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    MovieVideo::init_type();
-    register_type(_type_handle, "FfmpegVideo",
-                  MovieVideo::get_class_type());
+    MovieVideoCursor::init_type();
+    register_type(_type_handle, "FfmpegVideoCursor",
+                  MovieVideoCursor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -57,7 +80,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegVideo.I"
+#include "ffmpegVideoCursor.I"
 
 #endif // HAVE_FFMPEG
 #endif // FFMPEGVIDEO_H

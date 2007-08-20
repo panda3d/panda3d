@@ -68,13 +68,13 @@ protected:
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
                            int z, int n);
-  bool do_load_one(PT(MovieVideo) color, PT(MovieVideo) alpha, int z);
+  bool do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z);
 
   class VideoPage {
   public:
     VideoPage();
-    PT(MovieVideo) _color;
-    PT(MovieVideo) _alpha;
+    PT(MovieVideoCursor) _color;
+    PT(MovieVideoCursor) _alpha;
   };
   
   typedef pvector<VideoPage> Pages;

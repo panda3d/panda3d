@@ -12,28 +12,43 @@
 
   #define SOURCES \
 	movieAudio.h movieAudio.I \
+	movieAudioCursor.h movieAudioCursor.I \
 	movieVideo.h movieVideo.I \
+	movieVideoCursor.h movieVideoCursor.I \
         inkblotVideo.h inkblotVideo.I \
+        inkblotVideoCursor.h inkblotVideoCursor.I \
         ffmpegVideo.h ffmpegVideo.I \
+        ffmpegVideoCursor.h ffmpegVideoCursor.I \
         ffmpegAudio.h ffmpegAudio.I \
+        ffmpegAudioCursor.h ffmpegAudioCursor.I \
         ffmpegVirtualFile.h ffmpegVirtualFile.I \
 	config_movies.h
     
   #define INCLUDED_SOURCES \
         movieVideo.cxx \
+        movieVideoCursor.cxx \
         movieAudio.cxx \
+        movieAudioCursor.cxx \
         inkblotVideo.cxx \
+        inkblotVideoCursor.cxx \
         ffmpegVideo.cxx \
+        ffmpegVideoCursor.cxx \
         ffmpegAudio.cxx \
+        ffmpegAudioCursor.cxx \
         ffmpegVirtualFile.cxx \
         config_movies.cxx
     
   #define INSTALL_HEADERS \
 	movieAudio.h movieAudio.I \
+	movieAudioCursor.h movieAudioCursor.I \
 	movieVideo.h movieVideo.I \
+	movieVideoCursor.h movieVideoCursor.I \
         inkblotVideo.h inkblotVideo.I \
+        inkblotVideoCursor.h inkblotVideoCursor.I \
         ffmpegVideo.h ffmpegVideo.I \
+        ffmpegVideoCursor.h ffmpegVideoCursor.I \
         ffmpegAudio.h ffmpegAudio.I \
+        ffmpegAudioCursor.h ffmpegAudioCursor.I \
         ffmpegVirtualFile.h ffmpegVirtualFile.I \
 	config_movies.h
 

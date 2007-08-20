@@ -46,6 +46,12 @@ extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 
+// Config vars for OpenAL:
+
+extern EXPCL_PANDA ConfigVariableDouble audio_doppler_factor; 	 
+extern EXPCL_PANDA ConfigVariableDouble audio_distance_factor; 	 
+extern EXPCL_PANDA ConfigVariableDouble audio_drop_off_factor; 	 
+
 // Config vars for Miles:
 
 extern EXPCL_PANDA_AUDIO ConfigVariableBool audio_software_midi;

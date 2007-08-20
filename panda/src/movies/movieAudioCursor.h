@@ -1,4 +1,4 @@
-// Filename: movieAudio.h
+// Filename: movieAudioCursor.h
 // Created by: jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,35 +16,59 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MOVIEAUDIO_H
-#define MOVIEAUDIO_H
+#ifndef MOVIEAUDIOCURSOR_H
+#define MOVIEAUDIOCURSOR_H
 
 #include "pandabase.h"
 #include "namable.h"
+#include "texture.h"
 #include "pointerTo.h"
-#include "typedWritableReferenceCount.h"
-class MovieAudio;
-#include "movieAudioCursor.h"
+class MovieAudioCursor;
+#include "movieAudio.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MovieAudio
+//       Class : MovieAudioCursor
 // Description : A MovieAudio is actually any source that provides
 //               a sequence of audio samples.  That could include an
 //               AVI file, a microphone, or an internet TV station.
+//               A MovieAudioCursor is a handle that lets you read
+//               data sequentially from a MovieAudio.
 //
-//               The difference between a MovieAudio and a
-//               MovieAudioCursor is like the difference between a
-//               filename and a file handle.  The MovieAudio just
-//               indicates a particular movie.  The MovieAudioCursor
-//               is what allows access.
+//               Thread safety: each individual MovieAudioCursor
+//               must be owned and accessed by a single thread.
+//               It is OK for two different threads to open
+//               the same file at the same time, as long as they
+//               use separate MovieAudioCursor objects.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
+class EXPCL_PANDA_MOVIES MovieAudioCursor : public TypedWritableReferenceCount {
 
 PUBLISHED:
-  MovieAudio(const string &name = "Blank Audio");
-  virtual ~MovieAudio();
-  virtual PT(MovieAudioCursor) open();
-  static PT(MovieAudio) get(const Filename &name);
+  MovieAudioCursor(PT(MovieAudio) src);
+  virtual ~MovieAudioCursor();
+  INLINE PT(MovieAudio) get_source() const;
+  INLINE int audio_rate() const;
+  INLINE int audio_channels() const;
+  INLINE double length() const;
+  INLINE bool can_seek() const;
+  INLINE bool can_seek_fast() const;
+  INLINE bool aborted() const;
+  INLINE double tell() const;
+  INLINE void skip_samples(int n);
+  virtual void seek(double offset);
+
+public:
+  virtual void read_samples(int n, PN_int16 *data);
+  
+protected:
+  PT(MovieAudio) _source;
+  int _audio_rate;
+  int _audio_channels;
+  double _length;
+  bool _can_seek;
+  bool _can_seek_fast;
+  bool _aborted;
+  double _last_seek;
+  PN_int64 _samples_read;
   
 public:
   static TypeHandle get_class_type() {
@@ -52,7 +76,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "MovieAudio",
+    register_type(_type_handle, "MovieAudioCursor",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -64,6 +88,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "movieAudio.I"
+#include "movieAudioCursor.I"
 
 #endif

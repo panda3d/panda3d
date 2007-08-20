@@ -40,7 +40,11 @@ ConfigVariableString audio_library_name
 #if defined(HAVE_RAD_MSS)
  "miles_audio"
 #elif defined(HAVE_FMODEX)
+ "fmodex_audio"
+#elif defined(HAVE_FMOD)
  "fmod_audio"
+#elif defined(HAVE_OPENAL)
+ "openal_audio"
 #else
  ""
 #endif
@@ -49,23 +53,24 @@ ConfigVariableString audio_library_name
 ConfigVariableDouble audio_volume 
 ("audio-volume", 1.0f);
 
-ConfigVariableFilename audio_dls_file 
-("audio-dls-file", Filename(),
- PRC_DESC("Specifies a DLS file that defines an instrument set to load "
-          "for MIDI file playback.  If this is not specified, the sound "
-          "interface will try to use the system default DLS file, if "
-          "one is available; the likely success of this depends on the "
-          "operating system."));
+// Config variables for Fmod3:
+
+ConfigVariableDouble audio_doppler_factor 	 
+("audio-doppler-factor", 1.0f); 	 
+	  	 
+ConfigVariableDouble audio_distance_factor 	 
+("audio-distance-factor", 1.0f); 	 
+	  	 
+ConfigVariableDouble audio_drop_off_factor 	 
+("audio-drop-off-factor", 1.0f); 	 
+	  	 
+ConfigVariableInt audio_min_hw_channels 	 
+("audio-min-hw-channels", 15, 	 
+PRC_DESC("Guarantee this many channels on the local sound card, or just " 	 
+         "play EVERYTHING in software."));
 
 // Config variables for Fmod:
 
-// At one time, the actual number of sound channels was twice this,
-// because Panda creates two AudioManagers, and each AudioManager was
-// initializing the sound hardware separately.  But it turns out you
-// can't do that reliably on all platforms, so now we only initialize
-// the sound hardware once, and this is once again the overall limit.
-// But with FMOD Ex there's not much reason to make this a small
-// number.
 ConfigVariableInt fmod_number_of_sound_channels
 ("fmod-number-of-sound-channels", 128,
  PRC_DESC("Guarantee this many channels you will have with FMOD.  AKA the max number of sounds you can play at one time.") );
@@ -79,6 +84,14 @@ ConfigVariableBool fmod_use_surround_sound
 
 ConfigVariableBool audio_software_midi 
 ("audio-software-midi", true);
+
+ConfigVariableFilename audio_dls_file 
+("audio-dls-file", Filename(),
+ PRC_DESC("Specifies a DLS file that defines an instrument set to load "
+          "for MIDI file playback.  If this is not specified, the sound "
+          "interface will try to use the system default DLS file, if "
+          "one is available; the likely success of this depends on the "
+          "operating system."));
 
 ConfigVariableBool audio_play_midi 
 ("audio-play-midi", true);

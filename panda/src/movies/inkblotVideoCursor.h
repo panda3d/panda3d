@@ -1,5 +1,5 @@
-// Filename: ffmpegAudio.h
-// Created by: jyelon (01Aug2007)
+// Filename: inkblotVideoCursor.h
+// Created by: jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,37 +16,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef FFMPEGAUDIO_H
-#define FFMPEGAUDIO_H
-#ifdef HAVE_FFMPEG
+#ifndef INKBLOTVIDEOCURSOR_H
+#define INKBLOTVIDEOCURSOR_H
 
-#include "movieAudio.h"
-
-class FfmpegAudioCursor;
+#include "pandabase.h"
+#include "texture.h"
+#include "pointerTo.h"
+#include "inkblotVideo.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : FfmpegAudio
-// Description : A stream that generates a sequence of audio samples.
+//       Class : InkblotVideoCursor
+// Description : A cellular automaton that generates an amusing
+//               pattern of swirling colors.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
+class EXPCL_PANDA_MOVIES InkblotVideoCursor : public MovieVideoCursor {
 
-PUBLISHED:
-  FfmpegAudio(const Filename &name);
-  virtual ~FfmpegAudio();
-  virtual PT(MovieAudioCursor) open();
-
- private:
-  Filename _specified_filename;
-  friend class FfmpegAudioCursor;
+ PUBLISHED:
+  InkblotVideoCursor(PT(InkblotVideo) src);
+  virtual ~InkblotVideoCursor();
   
+ public:
+  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  
+ protected:
+  unsigned char *_cells;
+  unsigned char *_cells2;
+  int _fps;
+  int _frames_read;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "FfmpegAudio",
-                  MovieAudio::get_class_type());
+    MovieVideoCursor::init_type();
+    register_type(_type_handle, "InkblotVideoCursor",
+                  MovieVideoCursor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -57,7 +62,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "ffmpegAudio.I"
+#include "inkblotVideoCursor.I"
 
-#endif // HAVE_FFMPEG
-#endif // FFMPEG_AUDIO.H
+#endif
