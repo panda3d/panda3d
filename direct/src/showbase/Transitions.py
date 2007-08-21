@@ -421,6 +421,7 @@ class Transitions:
                                 ),
                 ),
                                           Func(self.letterbox.stash),
+                                          Func(messenger.send,'letterboxOff'),
                                           name = self.letterboxTaskName,
                                           )
             if finishIval:
