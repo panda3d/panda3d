@@ -3534,7 +3534,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
   // we have to reset the device before creating new swapchain.
   // inorder to reset properly, we need to release all swapchains
 
-  if (!(_screen->_swap_chain)
+  if (true || !(_screen->_swap_chain)
       || (_presentation_reset.BackBufferWidth < presentation_params->BackBufferWidth)
       || (_presentation_reset.BackBufferHeight < presentation_params->BackBufferHeight)) {
     if (wdxdisplay8_cat.is_debug()) {
@@ -3592,6 +3592,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
       }
     }
 
+    this -> mark_new();
     hr = _d3d_device->Reset(&_presentation_reset);
     if (FAILED(hr)) {
       return hr;
@@ -3670,6 +3671,9 @@ check_cooperative_level() {
     break;
 
   case D3DERR_DEVICELOST:
+    // sleep while the device is lost to free up the CPU
+    Sleep (10);
+
     if (SUCCEEDED(_last_testcooplevel_result)) {
       if (_dx_is_ready) {
         _dx_is_ready = false;
