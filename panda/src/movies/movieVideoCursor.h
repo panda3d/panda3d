@@ -84,7 +84,7 @@ public:
   }
   static void init_type() {
     TypedWritableReferenceCount::init_type();
-    register_type(_type_handle, "MovieVideo",
+    register_type(_type_handle, "MovieVideoCursor",
                   TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
