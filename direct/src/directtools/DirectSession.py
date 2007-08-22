@@ -535,6 +535,7 @@ class DirectSession(DirectObject):
             taskMgr.add(t, 'followSelectedNodePath')
             # Send an message marking the event
             messenger.send('DIRECT_selectedNodePath', [dnp])
+            messenger.send('DIRECT_selectedNodePath_fMulti_fTag', [dnp, fMultiSelect, fSelectTag])
 
     def followSelectedNodePathTask(self, state):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
@@ -585,6 +586,9 @@ class DirectSession(DirectObject):
             # Alert everyone else
             messenger.send('DIRECT_reparent',
                            [nodePath, oldParent, self.activeParent])
+            # [gjeon] for others who needs fWrt information
+            messenger.send('DIRECT_reparent_fWrt',
+                           [nodePath, oldParent, self.activeParent, fWrt])
 
     def isNotCycle(self, nodePath, parent):
         if nodePath.id() == parent.id():
