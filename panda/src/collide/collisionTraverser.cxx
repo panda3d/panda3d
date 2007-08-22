@@ -1177,8 +1177,8 @@ compare_collider_to_node(CollisionEntry &entry,
     DCAST_INTO_V(cnode, entry._into_node);
     int num_solids = cnode->get_num_solids();
     collide_cat.spam()
-      << "Colliding against CollisionNode " << entry._into_node << " which has " << num_solids
-      << " collision solids.\n";
+      << "Colliding against CollisionNode " << entry._into_node
+      << " which has " << num_solids << " collision solids.\n";
     for (int s = 0; s < num_solids; ++s) {
       entry._into = cnode->get_solid(s);
       if (entry._from != entry._into) {

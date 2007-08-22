@@ -149,25 +149,37 @@ any_in_bounds() {
         // node.
         CollideMask from_mask = cnode->get_from_collide_mask() & _include_mask;
         if (!(from_mask & node()->get_net_collide_mask()).is_zero()) {
-          // There are bits in common, so go ahead and try the
-          // bounding volume.
-          const GeometricBoundingVolume *col_gbv =
-            get_local_bound(c);
-
-          is_in = true;  // If there's no bounding volume, we're implicitly in.
-
-          if (col_gbv != (GeometricBoundingVolume *)NULL) {
-            is_in = (node_gbv->contains(col_gbv) != 0);
-            _node_volume_pcollector.add_level(1);
-
+          // Also don't test a node with itself, or with any of its
+          // descendants.
+          if (node() == cnode) {
 #ifndef NDEBUG
             if (collide_cat.is_spam()) {
-              collide_cat.spam();
               indent(collide_cat.spam(false), indent_level)
-                << "Comparing " << c << ": " << *col_gbv
-                << " to " << *node_gbv << ", is_in = " << is_in << "\n";
+                << "Not comparing " << c << " to " << _node_path
+                << " (same node)\n";
             }
 #endif  // NDEBUG
+
+          } else {
+            // There are bits in common, and it's not the same
+            // instance, so go ahead and try the bounding volume.
+            const GeometricBoundingVolume *col_gbv =
+              get_local_bound(c);
+
+            is_in = true;  // If there's no bounding volume, we're implicitly in.
+          
+            if (col_gbv != (GeometricBoundingVolume *)NULL) {
+              is_in = (node_gbv->contains(col_gbv) != 0);
+              _node_volume_pcollector.add_level(1);
+              
+#ifndef NDEBUG
+              if (collide_cat.is_spam()) {
+                indent(collide_cat.spam(false), indent_level)
+                  << "Comparing " << c << ": " << *col_gbv
+                  << " to " << *node_gbv << ", is_in = " << is_in << "\n";
+              }
+#endif  // NDEBUG
+            }
           }
         }
 
