@@ -1260,6 +1260,39 @@ class Actor(DirectObject, NodePath):
         frontParts.reparentTo(backPart)
 
 
+    def fixBoundsNew(self, partName = None):
+        if(partName == None):
+            #iterate through everything
+            for lodData in self.__partBundleDict.values():
+                for partData in lodData.values():
+                    char = partData.partBundleNP
+                    char.node().update()
+                    geomNodes = char.findAllMatches("**/+GeomNode")
+                    numGeomNodes = geomNodes.getNumPaths()
+                    for nodeNum in xrange(numGeomNodes):
+                        thisGeomNode = geomNodes.getPath(nodeNum)
+                        numGeoms = thisGeomNode.node().getNumGeoms()
+                        for geomNum in xrange(numGeoms):
+                            thisGeom = thisGeomNode.node().getGeom(geomNum)
+                            thisGeom.markBoundsStale()
+                        thisGeomNode.node().markInternalBoundsStale()
+        else:
+            #iterate through for a specific part
+            for lodData in self.__partBundleDict.values():
+                partData = lodData.get(partName):
+                if(partData):
+                    char = partData.partBundleNP
+                    char.node().update()
+                    geomNodes = char.findAllMatches("**/+GeomNode")
+                    numGeomNodes = geomNodes.getNumPaths()
+                    for nodeNum in xrange(numGeomNodes):
+                        thisGeomNode = geomNodes.getPath(nodeNum)
+                        numGeoms = thisGeomNode.node().getNumGeoms()
+                        for geomNum in xrange(numGeoms):
+                            thisGeom = thisGeomNode.node().getGeom(geomNum)
+                            thisGeom.markBoundsStale()
+                        thisGeomNode.node().markInternalBoundsStale()            
+        
     def fixBounds(self, part=None):
         """fixBounds(self, nodePath=None)
         Force recomputation of bounding spheres for all geoms
