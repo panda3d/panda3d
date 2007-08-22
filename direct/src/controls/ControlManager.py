@@ -24,6 +24,7 @@ class ControlManager:
     def __init__(self, enable=True, passMessagesThrough = False):
         print ("init control manager %s" % (passMessagesThrough))
         assert self.notify.debugCall(id(self))
+        self.passMessagesThrough = passMessagesThrough
         self.inputStateTokens = []
         self.WASDTurnTokens = []
         self.controls = {}
@@ -35,10 +36,9 @@ class ControlManager:
         #self.monitorTask = taskMgr.add(self.monitor, "ControlManager-%s"%(id(self)), priority=-1)
         self.forceAvJumpToken = None
         
-        self.passMessagesThrough = passMessagesThrough
+        
         
         if self.passMessagesThrough: # for not breaking toontown
-            self.inputStateTokens = []
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
@@ -196,7 +196,7 @@ class ControlManager:
         self.isEnabled = 1
 
         # keep track of what we do on the inputState so we can undo it later on
-        self.inputStateTokens = []
+        #self.inputStateTokens = []
         ist = self.inputStateTokens
         ist.append(inputState.watch("run", 'runningEvent', "running-on", "running-off"))
         
@@ -259,7 +259,6 @@ class ControlManager:
             self.currentControls.disableAvatarControls()
             
         if self.passMessagesThrough: # for not breaking toontown
-            self.inputStateTokens = []
             ist=self.inputStateTokens
             ist.append(inputState.watchWithModifiers("forward", "arrow_up", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watchWithModifiers("reverse", "arrow_down", inputSource=inputState.ArrowKeys))
