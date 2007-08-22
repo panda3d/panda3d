@@ -18,10 +18,10 @@
 
 #include "config_audio.h"
 #include "dconfig.h"
+#include "filterProperties.h"
 #include "audioLoadRequest.h"
 #include "audioManager.h"
 #include "audioSound.h"
-#include "nullAudioDSP.h"
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
 
@@ -114,11 +114,10 @@ ConfigVariableInt audio_output_channels
 
 
 ConfigureFn(config_audio) {
+  FilterProperties::init_type();
   AudioLoadRequest::init_type();
   AudioManager::init_type();
   AudioSound::init_type();
-  AudioDSP::init_type();
-  nullAudioDSP::init_type();
   NullAudioManager::init_type();
   NullAudioSound::init_type();
 }

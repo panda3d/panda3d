@@ -23,15 +23,14 @@
 #include "config_audio.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
-
-#include "audioDSP.h"
+#include "filterProperties.h"
 
 class AudioManager;
 
 class EXPCL_PANDA_AUDIO AudioSound : public TypedReferenceCount {
 PUBLISHED:
   virtual ~AudioSound();
-          
+
   // For best compatability, set the loop_count,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
@@ -125,14 +124,13 @@ PUBLISHED:
   virtual void set_3d_max_distance(float dist);
   virtual float get_3d_max_distance() const;
 
-  virtual bool add_dsp(PT(AudioDSP) x);
-  virtual bool remove_dsp(PT(AudioDSP) x);
-
   virtual float get_speaker_mix(int speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
 
   virtual int get_priority();
   virtual void set_priority(int priority);
+
+  virtual bool configure_filters(FilterProperties *config);
 
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
@@ -168,6 +166,8 @@ operator << (ostream &out, const AudioSound &sound) {
   sound.output(out);
   return out;
 }
+
+#include "audioSound.I"
 
 EXPCL_PANDA_AUDIO ostream &
 operator << (ostream &out, AudioSound::SoundStatus status);

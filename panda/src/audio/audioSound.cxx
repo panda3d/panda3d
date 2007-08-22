@@ -74,29 +74,6 @@ get_3d_max_distance() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioSound::add_dsp
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool AudioSound::
-add_dsp(PT(AudioDSP) x) {
-	// intentionally blank
-	return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioSound::remove_dsp
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool AudioSound::
-remove_dsp(PT(AudioDSP) x) {
-	// intentionally blank
-	return false;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: AudioSound::getSpeakerMix
 //       Access: Published
 //  Description: 
@@ -116,6 +93,27 @@ void AudioSound::
 set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright) {
 	// intentionally blank
 	;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::configure_filters
+//       Access: Published
+//  Description: Configure the local DSP filter chain.
+//
+//               There is no guarantee that any given configuration
+//               will be supported by the implementation.  The only 
+//               way to find out what's supported is to call 
+//               configure_filters.  If it returns true, the
+//               configuration is supported.
+////////////////////////////////////////////////////////////////////
+bool AudioSound::
+configure_filters(FilterProperties *config) {
+  const FilterProperties::ConfigVector &conf = config->get_config();
+  if (conf.empty()) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

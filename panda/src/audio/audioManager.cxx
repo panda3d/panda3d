@@ -149,43 +149,6 @@ get_null_sound() {
   return _null_sound;
 }
 
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::create_dsp
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-PT(AudioDSP) AudioManager::
-create_dsp(DSP_category) {
-  // intentionally blank.
-  return NULL;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::add_dsp
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool AudioManager::
-add_dsp(PT(AudioDSP) x) {
-  // intentionally blank
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioManager::remove_dsp
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool AudioManager::
-remove_dsp(PT(AudioDSP) x) {
-  // intentionally blank
-  return false;
-}
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::getSpeakerSetup()
 //       Access: Published
@@ -205,6 +168,27 @@ getSpeakerSetup() {
 void AudioManager::
 setSpeakerSetup(SpeakerModeCategory cat) {
   // intentionally blank
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::configure_filters
+//       Access: Published
+//  Description: Configures the global DSP filter chain.
+//
+//               There is no guarantee that any given configuration
+//               will be supported by the implementation.  The only 
+//               way to find out what's supported is to call 
+//               configure_filters.  If it returns true, the
+//               configuration is supported.
+////////////////////////////////////////////////////////////////////
+bool AudioManager::
+configure_filters(FilterProperties *config) {
+  const FilterProperties::ConfigVector &conf = config->get_config();
+  if (conf.empty()) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

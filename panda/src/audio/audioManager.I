@@ -1,5 +1,5 @@
-// Filename: audio.h
-// Created by:  frang (06Jul00)
+// Filename: audioManager.I
+// Created by: jyelon (01Aug2007)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,11 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __AUDIO_H__
-#define __AUDIO_H__
-
-#include "filterProperties.h"
-#include "audioSound.h"
-#include "audioManager.h"
-
-#endif /* __AUDIO_H__ */

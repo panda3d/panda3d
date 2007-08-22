@@ -10,31 +10,28 @@
 
   #define SOURCES \
     config_audio.h \
-    audioDSP.h \
+    filterProperties.h filterProperties.I\
     audioLoadRequest.h audioLoadRequest.I \
-    audioManager.h \
-    audioSound.h \
-    nullAudioDSP.h \
+    audioManager.h audioManager.I\
+    audioSound.h audioSound.I\
     nullAudioManager.h \
     nullAudioSound.h
     
   #define INCLUDED_SOURCES \
     config_audio.cxx \
-    audioDSP.cxx \
+    filterProperties.cxx \
     audioLoadRequest.cxx \
     audioManager.cxx \
     audioSound.cxx \
-    nullAudioDSP.cxx \
     nullAudioManager.cxx \
     nullAudioSound.cxx
 
   #define INSTALL_HEADERS \
     config_audio.h \
-    audioDSP.h \
+    filterProperties.h filterProperties.I\
     audioLoadRequest.h audioLoadRequest.I \
-    audioManager.h \
-    audioSound.h \
-    nullAudioDSP.h \
+    audioManager.h audioManager.I\
+    audioSound.h audioSound.I\
     nullAudioManager.h \
     nullAudioSound.h
 
