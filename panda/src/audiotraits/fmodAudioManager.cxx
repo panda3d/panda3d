@@ -30,7 +30,6 @@
 #include "config_util.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
-#include "fmodAudioDSP.h"
 //Needed so People use Panda's Generic UNIX Style Paths for Filename.
 #include "filename.h"
 #include "virtualFileSystem.h"
@@ -39,7 +38,7 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
-
+#define USER_DSP_MAGIC ((void*)0x7012AB35)
 
 TypeHandle FmodAudioManager::_type_handle;
 
@@ -82,9 +81,9 @@ PT(AudioManager) Create_AudioManager() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::FmodAudioManager()
+//     Function: FmodAudioManager::Constructor
 //       Access: Public
-//  Description: Constructor
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 FmodAudioManager() {
@@ -137,7 +136,8 @@ FmodAudioManager() {
     }
 
     //Now we Initialize the System.
-    result = _system->init(fmod_number_of_sound_channels, FMOD_INIT_NORMAL, 0);
+	int nchan = fmod_number_of_sound_channels;
+    result = _system->init(nchan, FMOD_INIT_NORMAL, 0);
     fmod_audio_errcheck("_system->init()", result);
 
     _system_is_valid = (result == FMOD_OK);
@@ -173,17 +173,14 @@ FmodAudioManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::~FmodAudioManager
+//     Function: FmodAudioManager::Destructor
 //       Access: Public
-//  Description: DESTRCUTOR !!!
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 ~FmodAudioManager() {
   // Be sure to delete associated sounds before deleting the manager!
   FMOD_RESULT result;
-
-  //Release DSPs First
-  _system_dsp.clear();
 
   //Release Sounds Next
   _all_sounds.clear();
@@ -211,6 +208,200 @@ is_valid() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::make_dsp
+//       Access: Private
+//  Description: Converts a FilterConfig to an FMOD_DSP
+////////////////////////////////////////////////////////////////////
+FMOD::DSP *FmodAudioManager::
+make_dsp(const FilterProperties::FilterConfig &conf) {
+  FMOD_DSP_TYPE dsptype;
+  FMOD_RESULT result;
+  FMOD::DSP *dsp;
+  switch (conf._type) {
+  case FilterProperties::FT_lowpass:    dsptype = FMOD_DSP_TYPE_LOWPASS;     break;
+  case FilterProperties::FT_highpass:   dsptype = FMOD_DSP_TYPE_HIGHPASS;    break;
+  case FilterProperties::FT_echo:       dsptype = FMOD_DSP_TYPE_ECHO;        break;
+  case FilterProperties::FT_flange:     dsptype = FMOD_DSP_TYPE_FLANGE;      break;
+  case FilterProperties::FT_distort:    dsptype = FMOD_DSP_TYPE_DISTORTION;  break;
+  case FilterProperties::FT_normalize:  dsptype = FMOD_DSP_TYPE_NORMALIZE;   break;
+  case FilterProperties::FT_parameq:    dsptype = FMOD_DSP_TYPE_PARAMEQ;     break;
+  case FilterProperties::FT_pitchshift: dsptype = FMOD_DSP_TYPE_PITCHSHIFT;  break;
+  case FilterProperties::FT_chorus:     dsptype = FMOD_DSP_TYPE_CHORUS;      break;
+  case FilterProperties::FT_reverb:     dsptype = FMOD_DSP_TYPE_REVERB;      break;
+  case FilterProperties::FT_compress:   dsptype = FMOD_DSP_TYPE_COMPRESSOR;  break;
+  default:
+    audio_error("Garbage in DSP configuration data");
+    return NULL;
+  }
+
+  result = _system->createDSPByType( dsptype, &dsp);
+  if (result != 0) {
+    audio_error("Could not create DSP object");
+    return NULL;
+  }
+
+  FMOD_RESULT res1=FMOD_OK;
+  FMOD_RESULT res2=FMOD_OK;
+  FMOD_RESULT res3=FMOD_OK;
+  FMOD_RESULT res4=FMOD_OK;
+  FMOD_RESULT res5=FMOD_OK;
+  FMOD_RESULT res6=FMOD_OK;
+  FMOD_RESULT res7=FMOD_OK;
+  FMOD_RESULT res8=FMOD_OK;
+
+  switch (conf._type) {
+  case FilterProperties::FT_lowpass:
+    res1=dsp->setParameter(FMOD_DSP_LOWPASS_CUTOFF,     conf._a);
+    res2=dsp->setParameter(FMOD_DSP_LOWPASS_RESONANCE,  conf._b);
+    break;
+  case FilterProperties::FT_highpass:
+    res1=dsp->setParameter(FMOD_DSP_HIGHPASS_CUTOFF,    conf._a);
+    res2=dsp->setParameter(FMOD_DSP_HIGHPASS_RESONANCE, conf._b);
+    break;
+  case FilterProperties::FT_echo:
+    res1=dsp->setParameter(FMOD_DSP_ECHO_DRYMIX,        conf._a);
+    res2=dsp->setParameter(FMOD_DSP_ECHO_WETMIX,        conf._b);
+    res3=dsp->setParameter(FMOD_DSP_ECHO_DELAY,         conf._c);
+    res4=dsp->setParameter(FMOD_DSP_ECHO_DECAYRATIO,    conf._d);
+    break;
+  case FilterProperties::FT_flange:
+    res1=dsp->setParameter(FMOD_DSP_FLANGE_DRYMIX,      conf._a);
+    res2=dsp->setParameter(FMOD_DSP_FLANGE_WETMIX,      conf._b);
+    res3=dsp->setParameter(FMOD_DSP_FLANGE_DEPTH,       conf._c);
+    res4=dsp->setParameter(FMOD_DSP_FLANGE_RATE,        conf._d);
+    break;
+  case FilterProperties::FT_distort:
+    res1=dsp->setParameter(FMOD_DSP_DISTORTION_LEVEL,   conf._a);
+    break;
+  case FilterProperties::FT_normalize:
+    res1=dsp->setParameter(FMOD_DSP_NORMALIZE_FADETIME,  conf._a);
+    res2=dsp->setParameter(FMOD_DSP_NORMALIZE_THRESHHOLD,conf._b);
+    res3=dsp->setParameter(FMOD_DSP_NORMALIZE_MAXAMP,    conf._c);
+    break;
+  case FilterProperties::FT_parameq:
+    res1=dsp->setParameter(FMOD_DSP_PARAMEQ_CENTER,     conf._a);
+    res2=dsp->setParameter(FMOD_DSP_PARAMEQ_BANDWIDTH,  conf._b);
+    res3=dsp->setParameter(FMOD_DSP_PARAMEQ_GAIN,       conf._c);
+    break;
+  case FilterProperties::FT_pitchshift:
+    res1=dsp->setParameter(FMOD_DSP_PITCHSHIFT_PITCH,   conf._a);
+    res2=dsp->setParameter(FMOD_DSP_PITCHSHIFT_FFTSIZE, conf._b);
+    res3=dsp->setParameter(FMOD_DSP_PITCHSHIFT_OVERLAP, conf._c);
+    break;
+  case FilterProperties::FT_chorus:
+    res1=dsp->setParameter(FMOD_DSP_CHORUS_DRYMIX,      conf._a);
+    res2=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX1,     conf._b);
+    res3=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX2,     conf._c);
+    res4=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX3,     conf._d);
+    res5=dsp->setParameter(FMOD_DSP_CHORUS_DELAY,       conf._e);
+    res6=dsp->setParameter(FMOD_DSP_CHORUS_RATE,        conf._f);
+    res7=dsp->setParameter(FMOD_DSP_CHORUS_DEPTH,       conf._g);
+    res8=dsp->setParameter(FMOD_DSP_CHORUS_FEEDBACK,    conf._h);
+    break;
+  case FilterProperties::FT_reverb:
+    res1=dsp->setParameter(FMOD_DSP_REVERB_DRYMIX,      conf._a);
+    res2=dsp->setParameter(FMOD_DSP_REVERB_WETMIX,      conf._b);
+    res3=dsp->setParameter(FMOD_DSP_REVERB_ROOMSIZE,    conf._c);
+    res4=dsp->setParameter(FMOD_DSP_REVERB_DAMP,        conf._d);
+    res5=dsp->setParameter(FMOD_DSP_REVERB_WIDTH,       conf._e);
+    break;
+  case FilterProperties::FT_compress:
+    res1=dsp->setParameter(FMOD_DSP_COMPRESSOR_THRESHOLD, conf._a);
+    res2=dsp->setParameter(FMOD_DSP_COMPRESSOR_ATTACK,    conf._b);
+    res3=dsp->setParameter(FMOD_DSP_COMPRESSOR_RELEASE,   conf._c);
+    res4=dsp->setParameter(FMOD_DSP_COMPRESSOR_GAINMAKEUP,conf._d);
+    break;
+  }
+
+  if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||
+      (res5!=FMOD_OK)||(res6!=FMOD_OK)||(res7!=FMOD_OK)||(res8!=FMOD_OK)) {
+    audio_error("Could not configure DSP");
+    dsp->release();
+    return NULL;
+  }
+
+  dsp->setUserData(USER_DSP_MAGIC);
+  
+  return dsp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::update_dsp_chain
+//       Access: Public
+//  Description: Alters a DSP chain to make it match the specified
+//               configuration.
+//
+//               This is an inadequate implementation - it just
+//               clears the whole DSP chain and rebuilds it from
+//               scratch.  A better implementation would compare
+//               the existing DSP chain to the desired one, and
+//               make incremental changes.  This would prevent
+//               a "pop" sound when the changes are made.
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
+  const FilterProperties::ConfigVector &conf = config->get_config();
+  FMOD_RESULT res1,res2,res3,res4,res5,res6;
+  while (1) {
+    int numinputs;
+    res1 = head->getNumInputs(&numinputs);
+    if (numinputs != 1) {
+      break;
+    }
+    FMOD::DSP *prev;
+    res2 = head->getInput(0, &prev);
+    void *userdata;
+    res3 = prev->getUserData(&userdata);
+    if (userdata != USER_DSP_MAGIC) {
+      break;
+    }
+    res4 = prev->remove();
+    res5 = prev->release();
+    if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||(res5!=FMOD_OK)) {
+      audio_error("Could not clean up DSP chain.");
+      return;
+    }
+  }
+  
+  for (int i=0; i<(int)(conf.size()); i++) {
+    FMOD::DSP *dsp = make_dsp(conf[i]);
+    if (dsp == 0) break;
+    FMOD::DSP *prev;
+    res1 = head->getInput(0, &prev);
+    res2 = head->disconnectFrom(prev);
+    res3 = head->addInput(dsp);
+    res4 = dsp->addInput(prev);
+    res5 = dsp->setActive(true);
+    if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||(res5!=FMOD_OK)) {
+      audio_error("Could not update DSP chain.");
+      return;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::configure_filters
+//       Access: Public
+//  Description: Configure the global DSP filter chain.
+//
+//               FMOD has a relatively powerful DSP 
+//               implementation.  It is likely that most 
+//               configurations will be supported.
+////////////////////////////////////////////////////////////////////
+bool FmodAudioManager::
+configure_filters(FilterProperties *config) {
+  FMOD_RESULT result;
+  FMOD::DSP *head;
+  result = _system->getDSPHead(&head);
+  if (result != 0) {
+    audio_error("Getting DSP head: " << FMOD_ErrorString(result) );
+    return false;
+  }
+  update_dsp_chain(head, config);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::get_sound()
 //       Access: Public
 //  Description: This is what creates a sound instance.
@@ -235,75 +426,6 @@ get_sound(const string &file_name, bool positional) {
   audioSound = fmodAudioSound;
 
   return audioSound;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::create_dsp()
-//       Access: Published
-//  Description: This is what creates a DSP instance.
-////////////////////////////////////////////////////////////////////
-PT(AudioDSP) FmodAudioManager::
-create_dsp(DSP_category index) {
-  // Build a new AudioSound from the audio data.
-  PT(FmodAudioDSP) fmodAudioDSP = new FmodAudioDSP(this, index);
-
-  return (AudioDSP*)fmodAudioDSP;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::add_dsp()
-//       Access: Published
-//  Description: This stick the DSP in the Global Effect Chain
-//        DSP effects here, affect all the SOUNDS being played
-//        in panda.
-////////////////////////////////////////////////////////////////////
-bool FmodAudioManager::
-add_dsp( PT(AudioDSP) x) {
-  FMOD_RESULT result;
-
-  FmodAudioDSP *fdsp;
-
-  DCAST_INTO_R(fdsp, x, false);
-
-  if ( fdsp->get_in_chain() ) {
-    return false;
-  } else {
-    result = _system->addDSP( fdsp->_dsp );
-    fmod_audio_errcheck("_system->addDSP()", result);
-    _system_dsp.insert(fdsp);
-    fdsp->set_in_chain(true);
-    return true;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::remove_dsp()
-//       Access: Published
-//  Description: This removes the DSP from the Global Effect chain but does not destroy it.
-//               Just remember a "Removed"  DSP is still availible for use 
-//         in another chain Global or a specific sound.
-////////////////////////////////////////////////////////////////////
-bool FmodAudioManager::
-remove_dsp(PT(AudioDSP) x) {
-  FMOD_RESULT result;
-
-  FmodAudioDSP *fdsp;
-  DCAST_INTO_R(fdsp, x, false);
-
-  if ( fdsp->get_in_chain() ) {
-    result = fdsp->_dsp->remove();
-    fmod_audio_errcheck("_dsp->remove()", result);
-
-    _system_dsp.erase(fdsp);
-
-    fdsp->set_in_chain(false);
-
-    return true;
-  } else {
-    return false;
-  }
 }
 
 

@@ -28,7 +28,6 @@
 //Panda Headers
 #include "config_audio.h"
 #include "fmodAudioSound.h"
-#include "fmodAudioDSP.h"
 #include "string_utils.h"
 
 TypeHandle FmodAudioSound::_type_handle;
@@ -143,9 +142,6 @@ FmodAudioSound::
 
   //Remove me from table of all sounds.
   _manager->_all_sounds.erase(this);
-
-  //Release DSPs First
-  _sound_dsp.clear();
 
   //The Release Sound
   result = _sound->release();
@@ -325,7 +321,7 @@ set_time(float start_time) {
     set_volume_on_channel();
     set_play_rate_on_channel();
     set_speaker_mix_or_balance_on_channel();
-    add_dsp_on_channel();
+    // add_dsp_on_channel();
     set_3d_attributes_on_channel();
 
     if (_active) {
@@ -609,108 +605,6 @@ float FmodAudioSound::
 get_3d_max_distance() const {
   return _max_dist;
 }
-
-
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::add_dsp
-//       Access: Published
-//  Description: This adds a DSP effect to a Sound's personal DSP Chain.
-//        DSPs set here will only affect it respective sound.
-//        
-////////////////////////////////////////////////////////////////////
-bool FmodAudioSound::
-add_dsp( PT(AudioDSP) x) {
-  FMOD_RESULT result;
-  bool playingState;
-
-  FmodAudioDSP *fdsp;
-  DCAST_INTO_R(fdsp, x, false);
-
-  if ( fdsp->get_in_chain() ) {
-
-    audio_debug("This DSP has already been assigned to the system or a sound.");
-
-    return false;
-
-  } else {
-    
-    _sound_dsp.insert(fdsp);
-    
-    if ( _channel != 0 ) {
-      result = _channel->isPlaying( &playingState );
-      fmod_audio_errcheck("_channel->isPlaying()", result);
-      if ( playingState ) {
-        result = _channel->addDSP( fdsp->_dsp );
-        fmod_audio_errcheck("_channel->addDSP()", result);
-      }
-    }
-    
-    fdsp->set_in_chain(true);
-    
-    return true;
-    
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::add_dsp_on_channel()
-//       Access: Published
-//  Description: Sets the DSPs on a prepared Sound channel.
-////////////////////////////////////////////////////////////////////
-void FmodAudioSound::
-add_dsp_on_channel() {
-  FMOD_RESULT result;
-
-  for (DSPSet::iterator i = _sound_dsp.begin(); i != _sound_dsp.end(); ++i) {
-    if (_channel != 0) {
-      result = _channel->addDSP( (*i)->_dsp );
-      if (result == FMOD_ERR_INVALID_HANDLE) {
-        _channel = 0;
-      } else {
-        fmod_audio_errcheck("_channel->addDSP()", result);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::remove_dsp
-//       Access: Published
-//  Description: This will remove a DSP from a Sound's DSP Chain, but
-//        It will not destroy it!
-//        So in theory you could reuse the DSP for something else.
-//        In the Global Chain or another sound.
-////////////////////////////////////////////////////////////////////
-bool FmodAudioSound::
-remove_dsp(PT(AudioDSP) x) {
-  FMOD_RESULT result;
-
-  FmodAudioDSP *fdsp;
-  DCAST_INTO_R(fdsp, x, false);
-
-  if ( fdsp->get_in_chain() ) {
-
-    result = fdsp->_dsp->remove();
-    fmod_audio_errcheck("_dsp->remove()", result);
-
-    _sound_dsp.erase(fdsp);
-
-    fdsp->set_in_chain(false);
-
-    return true;
-
-  } else {
-
-    audio_debug("FmodAudioManager()::remove_dsp()");
-    audio_debug("This DSP doesn't exist in this chain.");
-    
-    return false;
-    
-  }
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::get_speaker_mix

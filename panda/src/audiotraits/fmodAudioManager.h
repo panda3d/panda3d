@@ -89,13 +89,11 @@
 #include <fmod_errors.h>
 
 class FmodAudioSound;
-class FmodAudioDSP;
 
 extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
 
 class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   friend class FmodAudioSound;
-  friend class FmodAudioDSP;
 
  public:
 
@@ -107,10 +105,6 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
           
   virtual PT(AudioSound) get_sound(const string&, bool positional = false);
     
-  virtual PT(AudioDSP) create_dsp(DSP_category);
-  virtual bool add_dsp(PT(AudioDSP) dspToAdd);
-  virtual bool remove_dsp(PT(AudioDSP) x);
-
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);
 
@@ -186,9 +180,13 @@ private:
   
   static FMOD_RESULT F_CALLBACK 
   seek_callback(void *handle, unsigned int pos, void *user_data);
-
+  
+  FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);
+  void update_dsp_chain(FMOD::DSP *head, FilterProperties *config);
+  virtual bool configure_filters(FilterProperties *config);
+  
  private:
-
+  
   static FMOD::System *_system; 
   static pset<FmodAudioManager *> _all_managers;
 
@@ -206,17 +204,13 @@ private:
   // DLS info for MIDI files
   string _dlsname;
   FMOD_CREATESOUNDEXINFO _midi_info;
-
+  
   bool _is_valid;
   bool _active;
-
+  
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
-
-  // The Data Structure that holds all the DSPs.
-  typedef pset<PT (FmodAudioDSP) > DSPSet;
-  DSPSet _system_dsp;
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!

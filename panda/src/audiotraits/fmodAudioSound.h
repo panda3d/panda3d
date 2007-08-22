@@ -84,9 +84,6 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
-class FmodAudioDSP;
-
-
 class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
  public:
 
@@ -151,9 +148,6 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
             
   AudioSound::SoundStatus status() const;
 
-  virtual bool add_dsp( PT(AudioDSP) dspToAdd );
-  virtual bool remove_dsp( PT(AudioDSP) x);
-
   virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
 
@@ -169,8 +163,6 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   const string& get_finished_event() const;
   ////////////////////////////////////////////////////////////////////
 
- protected:
-        
  private:
   PT(FmodAudioManager) _manager;
   FMOD::Sound      *_sound;
@@ -200,18 +192,14 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   void set_play_rate_on_channel();
   void set_speaker_mix_on_channel();
   void set_3d_attributes_on_channel();
-  void add_dsp_on_channel();
+  // void add_dsp_on_channel();
   void set_speaker_mix_or_balance_on_channel();
 
   virtual int get_priority();
   virtual void set_priority(int priority);
-
-  //The Data Structure that holds all the DSPs.
-  typedef pset<PT (FmodAudioDSP) > DSPSet;
-  DSPSet _sound_dsp;
-
+  
   bool _active;
-
+  
   // This reference-counting pointer is set to this while the sound is
   // playing, and cleared when we get an indication that the sound has
   // stopped.  This prevents a sound from destructing while it is
