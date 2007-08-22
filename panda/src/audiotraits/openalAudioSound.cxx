@@ -38,26 +38,31 @@ TypeHandle OpenALAudioSound::_type_handle;
 #endif //]
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::OpenALAudioSound
-//       Access: public
-//  Description: Constructor
-//               All sound will DEFAULT load as a 2D sound unless
-//               otherwise specified.
+//     Function: OpenALAudioSound::Constructor
+//       Access: Private
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 
 OpenALAudioSound::
 OpenALAudioSound(OpenALAudioManager* manager,
-    OpenALAudioManager::SoundData *sd, string file_name, bool positional)
-    : _sd(sd), _source(0), _manager(manager), _file_name(file_name),
-    _volume(1.0f), _balance(0), _play_rate(1.0),
-    _loop_count(1), _pause_time(0.0),
-    _active(true), _paused(false) {
-  nassertv(sd != NULL);
-  nassertv(!file_name.empty());
-  audio_debug("OpenALAudioSound(manager=0x"<<(void*)&manager
-      <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
-
+                 const Filename &path,
+                 PT(MovieAudioCursor) stream,
+                 OpenALAudioManager::SoundData *sample,
+                 bool positional) :
+  _sample(sample),
+  _stream(stream),
+  _source(0),
+  _manager(manager),
+  _path(path),
+  _volume(1.0f),
+  _balance(0),
+  _play_rate(1.0),
+  _loop_count(1),
+  _active(true),
+  _paused(false)
+{
   //Inits 3D Attributes
+  
   _location[0] = 0;
   _location[1] = 0;
   _location[2] = 0;
@@ -68,126 +73,60 @@ OpenALAudioSound(OpenALAudioManager* manager,
 
   _min_dist = 3.28f; _max_dist = 1000000000.0f;
   _drop_off_factor = 1.0f;
-
-  _buffer = _sd->_buffer;
   
-  // don't assign source until we play since sources are limited
-  /*
-  // Create a source to play the buffer
-  alGetError(); // clear errors
-  alGenSources(1,&_source);
-  al_audio_errcheck("alGenSources()");
-
-  // Assign the buffer to the source
-  alSourcei(_source,AL_BUFFER,_buffer);
-  al_audio_errcheck("alSourcei(_source,AL_BUFFER,_buffer)");
-  */
-
-  // nonpositional sources are made relative to the listener so they don't move
   _positional = positional;
   if (_positional) {
-    int nChannels=1;
-    alGetBufferi(_buffer,AL_CHANNELS,&nChannels);
-    al_audio_errcheck("alGetBufferi(_buffer,AL_CHANNELS)");
-    if (nChannels>1)
-      audio_warning("OpenALAudioSound: Stereo sounds won't be spacialized: "<<file_name);
-  } else {
-    /*alSourcei(_source,AL_SOURCE_RELATIVE,AL_TRUE);
-    al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE,AL_TRUE)");*/
+    if ((_sample && (_sample->_channels != 1)) ||
+        (_stream && (_stream->audio_channels() != 1))) {
+      audio_warning("Stereo sounds won't be spacialized: "<<path);
+    }
   }
-
-  /*
-  // set initial values since they are manager-relative
-  set_volume(_volume);
-  //set_balance(_balance);
-  set_play_rate(_play_rate);
-  set_3d_min_distance(_min_dist);
-  set_3d_max_distance(_max_dist);
-  set_3d_drop_off_factor(_drop_off_factor);
-  */
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::~OpenALAudioSound
+//     Function: OpenALAudioSound::Destructor
 //       Access: public
-//  Description: DESTRUCTOR!!!
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 OpenALAudioSound::
 ~OpenALAudioSound() {
-  openal_audio_debug("~OpenALAudioSound()");
   cleanup();
-  _manager->release_sound(this);
-  openal_audio_debug("~OpenALAudioSound() done");
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::cleanup
+//       Access: Private
+//  Description: Disables the sound forever.  Releases resources and
+//               detaches the sound from its audio manager.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+cleanup() {
+  if (_manager == 0) {
+    return;
+  }
+  if (_source) {
+    stop();
+  }
+  if (_sample) {
+    _manager->decrement_client_count(_sample);
+    _sample = 0;
+  }
+  _manager->release_sound(this);
+  _manager = 0;
+  _active = false;
+}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound:: play
+//     Function: OpenALAudioSound::play
 //       Access: public
 //  Description: Plays a sound.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 play() {
-  float px,py,pz,vx,vy,vz;
-      
-  openal_audio_debug("play()");
-  if (_active) {
-    if (status() == AudioSound::PLAYING) {
-      stop();
-    }
-    //nassertv(_source);
-    _manager->starting_sound(this);
-
-    if (_source) {
-      // Setup source
-      _manager->make_current();
-
-      alGetError(); // clear errors
-      
-      // Assign the buffer to the source
-      alSourcei(_source,AL_BUFFER,_buffer);
-      ALenum result = alGetError();
-      if (result!=AL_NO_ERROR) {
-        audio_error("alSourcei(_source,AL_BUFFER,_buffer): " << alGetString(result) );
-        stop();
-        return;
-      }
-
-      // nonpositional sources are made relative to the listener so they don't move
-      alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
-      al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
-
-      // set source properties that we have stored
-      set_volume(_volume);
-      //set_balance(_balance);
-      set_play_rate(_play_rate);
-      set_3d_min_distance(_min_dist);
-      set_3d_max_distance(_max_dist);
-      set_3d_drop_off_factor(_drop_off_factor);
-      
-      get_3d_attributes(&px,&py,&pz,&vx,&vy,&vz);
-      set_3d_attributes(px, py, pz, vx, vy, vz);
-
-      set_loop_count(_loop_count);
-
-      if (_pause_time) {
-        set_time(_pause_time);
-        _pause_time = 0.0;
-      }
-
-      // Start playing:
-      alSourcePlay(_source);
-      al_audio_errcheck("alSourcePlay(_source)");
-
-      audio_debug("  started sound " << _file_name );
-    }
-  } else {
-    // In case _loop_count gets set to forever (zero):
-    audio_debug("  paused "<<_file_name );
-    _paused=true;
-  }
+  set_time(0.0);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::stop
@@ -206,8 +145,6 @@ stop() {
     alSourceStop(_source);
     al_audio_errcheck("alSourceStop(_source)");
   }
-
-  _pause_time = 0.0;
 
   _manager->stopping_sound(this);
   // The _paused flag should not be cleared here.  _paused is not like
@@ -239,8 +176,6 @@ finished() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_loop(bool loop) {
-  openal_audio_debug("set_loop(loop="<<loop<<")");
-  // loop count of 0 means always loop
   set_loop_count((loop)?0:1);
 }
 
@@ -251,8 +186,7 @@ set_loop(bool loop) {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioSound::
 get_loop() const {
-  openal_audio_debug("get_loop() returning "<<(_loop_count==0));
-  return (_loop_count == 0);
+  return (_loop_count != 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,14 +202,17 @@ set_loop_count(unsigned long loop_count) {
     audio_error("OpenALAudioSound::set_loop_count() doesn't support looping a finite number of times, 0 (infinite) or 1 only");
     loop_count = 1;
   }
-
-  if (_loop_count!=loop_count) {
-    _loop_count=loop_count;
+  
+  if (_loop_count==loop_count) {
+    return;
   }
-
+  
+  _loop_count=loop_count;
+  
   if (_source) {
+    // I believe there is a race condition here.
     _manager->make_current();
-
+    
     alGetError(); // clear errors
     alSourcei(_source,AL_LOOPING,_loop_count==0?AL_TRUE:AL_FALSE);
     al_audio_errcheck("alSourcei(_source,AL_LOOPING)");
@@ -289,7 +226,6 @@ set_loop_count(unsigned long loop_count) {
 ////////////////////////////////////////////////////////////////////
 unsigned long OpenALAudioSound::
 get_loop_count() const {
-  openal_audio_debug("get_loop_count() returning "<<_loop_count);
   return _loop_count;
 }
 
@@ -300,32 +236,63 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_time(float time) {
+  float px,py,pz,vx,vy,vz;
+  
+  openal_audio_debug("play()");
+  if (!_active) {
+    _paused=true;
+    return;
+  }
+  
+  if (status() == AudioSound::PLAYING) {
+    stop();
+  }
+  
+  _manager->starting_sound(this);
+  
+  if (!_source) {
+    return;
+  }
+
+  // Setup source
+  _manager->make_current();
+  
+  alGetError(); // clear errors
+  
+  // Assign the buffer to the source
+  alSourcei(_source,AL_BUFFER,_sample->_buffer);
+  ALenum result = alGetError();
+  if (result!=AL_NO_ERROR) {
+    audio_error("alSourcei(_source,AL_BUFFER,_sample->_buffer): " << alGetString(result) );
+    stop();
+    return;
+  }
+  
+  // nonpositional sources are made relative to the listener so they don't move
+  alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
+  al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
+  
+  // set source properties that we have stored
+  set_volume(_volume);
+  //set_balance(_balance);
+  set_play_rate(_play_rate);
+  set_3d_min_distance(_min_dist);
+  set_3d_max_distance(_max_dist);
+  set_3d_drop_off_factor(_drop_off_factor);
+  get_3d_attributes(&px,&py,&pz,&vx,&vy,&vz);
+  set_3d_attributes(px, py, pz, vx, vy, vz);
+  
+  set_loop_count(_loop_count);
+  
   openal_audio_debug("set_time(time="<<time<<")");
 
-  //nassertv(_source);
+  alSourcef(_source,AL_SEC_OFFSET,time);
+  al_audio_errcheck("alSourcef(_source,AL_SEC_OFFSET)");
+
+  alSourcePlay(_source);
+  al_audio_errcheck("alSourcePlay(_source)");
   
-  // Ensure we don't inadvertently run off the end of the sound.
-  float max_time = length();
-  if (time > max_time) {
-    openalAudio_cat.warning()
-      << "set_time(" << time << ") requested for sound of length " 
-      << max_time << "\n";
-    time = max_time;
-  }
-
-  if (_source) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source,AL_SEC_OFFSET,time);
-    al_audio_errcheck("alSourcef(_source,AL_SEC_OFFSET)");
-  }
-
-  if (status()==PLAYING) {
-    _pause_time = 0.0;
-  } else {
-    _pause_time = time;
-  }
+  audio_debug("  started sound " << _path );
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -336,19 +303,16 @@ set_time(float time) {
 float OpenALAudioSound::
 get_time() const {
   float time;
-
-  //nassertv(_source);
-
+  
   if (_source) {
     _manager->make_current();
-
     alGetError(); // clear errors
     alGetSourcef(_source,AL_SEC_OFFSET,&time);
     al_audio_errcheck("alGetSourcef(_source,AL_SEC_OFFSET)");
   } else {
-    time = _pause_time;
+    return 0.0;
   }
-  openal_audio_debug("get_time() returning "<<time);
+  
   return time;
 }
 
@@ -455,7 +419,7 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioSound::
 length() const {
-  return _sd->get_length();
+  return _sample->_length;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -674,7 +638,7 @@ get_finished_event() const {
 ////////////////////////////////////////////////////////////////////
 const string& OpenALAudioSound::
 get_name() const {
-  return _file_name;
+  return _path;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -685,45 +649,22 @@ get_name() const {
 AudioSound::SoundStatus OpenALAudioSound::
 status() const {
   ALenum status;
-
+  
   if (_source==0) {
     //return AudioSound::BAD;
     return AudioSound::READY;
   }
-
+  
   _manager->make_current();
-
+  
   alGetError(); // clear errors
   alGetSourcei(_source,AL_SOURCE_STATE,&status);
   al_audio_errcheck("alGetSourcei(_source,AL_SOURCE_STATE)");
-
+  
   if (status == AL_PLAYING/* || status == AL_PAUSED*/) {
     return AudioSound::PLAYING;
   } else {
     return AudioSound::READY;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::cleanup
-//       Access: Private
-//  Description: Called to release any resources associated with the
-//               sound.
-////////////////////////////////////////////////////////////////////
-void OpenALAudioSound::
-cleanup() {
-  if (_source) {
-    stop();
-    /*
-    if (OpenALAudioManager::_openal_active) {
-      // delete the source
-      _manager->make_current();
-      alGetError(); // clear errors
-      alDeleteSources(1,&_source);
-      al_audio_errcheck("alDeleteSources()");
-    }
-    _source = 0;
-    */
   }
 }
 

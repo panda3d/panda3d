@@ -28,17 +28,16 @@
 #include "pset.h"
 #include "pmap.h"
 #include "pdeque.h"
+#include "movieAudioCursor.h"
 
 //The Includes needed for OpenAL
 #include <al.h>
 #include <alc.h>
-#include <alut.h>
 
 class OpenALAudioSound;
 
 extern void al_audio_errcheck(const char *context);
 extern void alc_audio_errcheck(const char *context,ALCdevice* device);
-extern void alut_audio_errcheck(const char *context);
 
 class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   class SoundData;
@@ -116,51 +115,63 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
 
 private:
   void make_current() const;
-
-  PT(SoundData) load(Filename file_name);
+  
+  bool can_use_audio(MovieAudioCursor *source);
+  bool can_load_audio(MovieAudioCursor *source);
+  
+  SoundData *cached_sound_data(const Filename &file_name);
+  SoundData *load_sound_data(MovieAudioCursor *source);
 
   // Tell the manager that the sound dtor was called.
   void release_sound(OpenALAudioSound* audioSound);
+  void increment_client_count(SoundData *sd);
+  void decrement_client_count(SoundData *sd);
+  void discard_excess_cache(int limit);
   
-  void most_recently_used(const string& path);
-  void uncache_a_sound();
-
   void starting_sound(OpenALAudioSound* audio);
   void stopping_sound(OpenALAudioSound* audio);
 
   void cleanup();
+  
 private:
 
-  // The sound cache:
-  class SoundData : public ReferenceCount {
+  // An AudioSound that uses a SoundData is called a "client"
+  // of the SoundData.  The SoundData keeps track of how
+  // many clients are using it.  When the number of clients
+  // drops to zero, the SoundData is no longer in use.  The
+  // expiration queue is a list of all SoundData that aren't
+  // in use, in least-recently-used order.  If a SoundData
+  // in the expiration queue gains a new client, it is removed
+  // from the expiration queue.  When the number of sounds
+  // in the expiration queue exceeds the cache limit, the
+  // first sound in the expiration queue is purged.
+
+  class SoundData {
   public:
-    SoundData(OpenALAudioManager* manager);
+    SoundData(OpenALAudioManager* manager, const Filename &path);
     ~SoundData();
-    float get_length();
-
     OpenALAudioManager* _manager;
-    string _basename;
+    Filename _path;
     ALuint _buffer;
-    bool _has_length;
-    float _length;  // in seconds.
+    double _length;
+    int _rate;
+    int _channels;
+    int _client_count;
   };
-  typedef pmap<string, PT(SoundData) > SoundMap;
-  SoundMap _sounds;
-  int _cache_limit;
-
-  typedef pset<OpenALAudioSound* > AudioSet;
-  // The offspring of this manager:
-  AudioSet _sounds_on_loan;
-
-  typedef pset<OpenALAudioSound* > SoundsPlaying;
-  // The sounds from this manager that are currently playing
+  typedef pmap<string, SoundData *> SoundDataSet;
+  SoundDataSet _all_sound_data;
+  
+  typedef pset<OpenALAudioSound *> AudioSoundSet;
+  AudioSoundSet _all_audio_sounds;
+  
+  typedef pdeque<SoundData *> ExpirationQueue;
+  ExpirationQueue _expiration_queue;
+  
+  typedef pset<OpenALAudioSound *> SoundsPlaying;
   SoundsPlaying _sounds_playing;
-
-  // The Least Recently Used mechanism:
-  typedef pdeque<const string* > LRU;
-  LRU _lru;
-
+  
   // State:
+  int _cache_limit;
   float _volume;
   float _play_rate;
   bool _active;

@@ -27,10 +27,10 @@
 #ifdef HAVE_OPENAL //[
 
 #include "audioSound.h"
+#include "movieAudioCursor.h"
 
 #include <al.h>
 #include <alc.h>
-#include <alut.h>
 
 class EXPCL_OPENAL_AUDIO OpenALAudioSound : public AudioSound {
   friend class OpenALAudioManager;
@@ -113,21 +113,26 @@ public:
   void finished();
 
 private:
-  OpenALAudioSound(OpenALAudioManager* manager, OpenALAudioManager::SoundData *sd,
-                  string file_name, bool positional);
+  OpenALAudioSound(OpenALAudioManager* manager, 
+                   const Filename &path,
+                   PT(MovieAudioCursor) cursor,
+                   OpenALAudioManager::SoundData *sd,
+                   bool positional);
   void cleanup();
 
 private:
-  PT(OpenALAudioManager::SoundData) _sd;
-  ALuint _buffer;
+
+  // A Sound can have a sample or a stream, but not both.
+  OpenALAudioManager::SoundData *_sample;
+  PT(MovieAudioCursor) _stream;
+  ALuint _stream_buffers[3];
+  
   ALuint _source;
   PT(OpenALAudioManager) _manager;
-
+  
   float _volume; // 0..1.0
   float _balance; // -1..1
   float _play_rate; // 0..1.0
-
-  float _pause_time;
 
   bool _positional;
   ALfloat _location[3];
@@ -144,8 +149,8 @@ private:
   // when the sound finishes playing.  It is not triggered
   // when the sound is stopped with stop().
   string _finished_event;
-
-  string _file_name;
+  
+  Filename _path;
 
   // _active is for things like a 'turn off sound effects' in
   // a preferences pannel.
