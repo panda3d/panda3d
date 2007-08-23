@@ -70,7 +70,7 @@ class ClientRepositoryBase(ConnectionRepository):
         no deferring will occur."""
 
         self.deferInterval = deferInterval
-        self.setHandleCUpdates(self.deferInterval != 0)
+        self.setHandleCUpdates(self.deferInterval == 0)
 
         if self.deferredGenerates:
             taskMgr.remove('deferredGenerate')
