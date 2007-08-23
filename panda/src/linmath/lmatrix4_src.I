@@ -656,7 +656,7 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 //       Access: Public
 //  Description: The matrix transforms a 3-component vector (without
 //               translation component) and returns the result.  This
-//               assumes the matrix is an affine transform.
+//               assumes the matrix is an orthonormal transform.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
 xform_vec(const FLOATNAME(LVecBase3) &v) const {
@@ -670,6 +670,22 @@ xform_vec(const FLOATNAME(LVecBase3) &v) const {
   v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22;
   
   return v_res;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_vec_general
+//       Access: Public
+//  Description: The matrix transforms a 3-component vector (without
+//               translation component) and returns the result, as a
+//               fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
+xform_vec_general(const FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("LVecBase3 LMatrix4::xform_vec_general(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LMatrix3) i;
+  i.invert_transpose_from(*this);
+
+  return i.xform(v);
 }
 
 ////////////////////////////////////////////////////////////////////

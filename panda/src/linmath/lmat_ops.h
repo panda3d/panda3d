@@ -25,8 +25,7 @@
 #include "lvecBase4.h"
 #include "lpoint4.h"
 #include "lvector4.h"
-#include "lmatrix3.h"
-#include "lmatrix4.h"
+#include "lmatrix.h"
 
 #include "fltnames.h"
 #include "lmat_ops_src.h"

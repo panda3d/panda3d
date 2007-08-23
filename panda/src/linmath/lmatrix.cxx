@@ -16,11 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pandabase.h"
 #include "lmatrix.h"
 
-// This tells GCC to explicitly instantiate the templates defined in
-// lmatrix.h and leave them here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
+#include "fltnames.h"
+#include "lmatrix3_src.cxx"
+#include "lmatrix4_src.cxx"
+
+#include "dblnames.h"
+#include "lmatrix3_src.cxx"
+#include "lmatrix4_src.cxx"

@@ -14,8 +14,8 @@
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
      coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h  \
      flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
-     lcast_to_src.I lmatrix.h lmatrix3.h lmatrix3_src.I  \
-     lmatrix3_src.cxx lmatrix3_src.h lmatrix4.h lmatrix4_src.I  \
+     lcast_to_src.I lmatrix.h  lmatrix3_src.I  \
+     lmatrix3_src.cxx lmatrix3_src.h lmatrix4_src.I  \
      lmatrix4_src.cxx lmatrix4_src.h lorientation.h  \
      lorientation_src.I lorientation_src.cxx lorientation_src.h  \
      lpoint2.h lpoint2_src.I lpoint2_src.cxx lpoint2_src.h  \
@@ -39,8 +39,8 @@
     
    #define INCLUDED_SOURCES \
      compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx  \
-     lmatrix.cxx lmatrix3.cxx  \
-     lmatrix4.cxx lorientation.cxx lpoint2.cxx  \
+     lmatrix.cxx \
+     lorientation.cxx lpoint2.cxx  \
      lpoint3.cxx lpoint4.cxx lquaternion.cxx lrotation.cxx  \
      luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx  \
      lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx  \
@@ -53,8 +53,8 @@
     compose_matrix_src.h config_linmath.h coordinateSystem.h \
     dbl2fltnames.h dblnames.h deg_2_rad.h \
     flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.I lcast_to_src.h \
-    lmat_ops.h lmat_ops_src.I lmat_ops_src.h lmatrix.h lmatrix3.h \
-    lmatrix3_src.I lmatrix3_src.h lmatrix4.h lmatrix4_src.I \
+    lmat_ops.h lmat_ops_src.I lmat_ops_src.h lmatrix.h \
+    lmatrix3_src.I lmatrix3_src.h lmatrix4_src.I \
     lmatrix4_src.h lorientation.h lorientation_src.I \
     lorientation_src.h lpoint2.h lpoint2_src.I lpoint2_src.h lpoint3.h \
     lpoint3_src.I lpoint3_src.h lpoint4.h lpoint4_src.I lpoint4_src.h \

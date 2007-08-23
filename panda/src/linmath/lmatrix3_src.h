@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+class FLOATNAME(LMatrix4);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : LMatrix3
 // Description : This is a 3-by-3 transform matrix.  It typically will
@@ -103,6 +105,12 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_vec(const FLOATNAME(LVecBase2) &v) const;
 
+  INLINE_LINMATH FLOATNAME(LVecBase3)
+  xform_vec(const FLOATNAME(LVecBase3) &v) const;
+
+  INLINE_LINMATH FLOATNAME(LVecBase3)
+  xform_vec_general(const FLOATNAME(LVecBase3) &v) const;
+
   // this = other1 * other2
   INLINE_LINMATH void multiply(
     const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2);
@@ -130,6 +138,9 @@ PUBLISHED:
 
   INLINE_LINMATH bool invert_from(const FLOATNAME(LMatrix3) &other);
   INLINE_LINMATH bool invert_in_place();
+
+  INLINE_LINMATH bool invert_transpose_from(const FLOATNAME(LMatrix3) &other);
+  INLINE_LINMATH bool invert_transpose_from(const FLOATNAME(LMatrix4) &other);
 
   static INLINE_LINMATH const FLOATNAME(LMatrix3) &ident_mat();
 
@@ -288,5 +299,9 @@ BEGIN_PUBLISH
 INLINE_LINMATH FLOATNAME(LMatrix3) transpose(const FLOATNAME(LMatrix3) &a);
 INLINE_LINMATH FLOATNAME(LMatrix3) invert(const FLOATNAME(LMatrix3) &a);
 END_PUBLISH
+
+// We can safely include lmatrix4_src.h down here and avoid circular
+// dependencies.
+#include "lmatrix4_src.h"
 
 #include "lmatrix3_src.I"

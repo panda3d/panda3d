@@ -99,9 +99,8 @@ FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b, FLOATTYPE c, FLOATTYPE d) :
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
 operator * (const FLOATNAME(LMatrix3) &mat) const {
-  FLOATNAME(LVector3) new_normal = get_normal() * mat;
-  FLOATNAME(LPoint3) new_point = get_point() * mat;
-  return FLOATNAME(Plane)(new_normal, new_point);
+  FLOATNAME(LVector3) new_normal = mat.xform(get_normal());
+  return FLOATNAME(Plane)(new_normal, get_point());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +110,7 @@ operator * (const FLOATNAME(LMatrix3) &mat) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
 operator * (const FLOATNAME(LMatrix4) &mat) const {
-  FLOATNAME(LVector3) new_normal = get_normal() * mat;
+  FLOATNAME(LVector3) new_normal = mat.xform_vec_general(get_normal());
   FLOATNAME(LPoint3) new_point = get_point() * mat;
   return FLOATNAME(Plane)(new_normal, new_point);
 }

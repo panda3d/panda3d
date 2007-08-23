@@ -107,6 +107,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3)
   xform_vec(const FLOATNAME(LVecBase3) &v) const;
 
+  INLINE_LINMATH FLOATNAME(LVecBase3)
+  xform_vec_general(const FLOATNAME(LVecBase3) &v) const;
+
   // this = other1 * other2
   INLINE_LINMATH void multiply(const FLOATNAME(LMatrix4) &other1, const FLOATNAME(LMatrix4) &other2);
 

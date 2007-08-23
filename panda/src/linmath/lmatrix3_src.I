@@ -450,8 +450,7 @@ v_res._v.v._2 = v._v.v._0*mat._m.m._02 + v._v.v._1*mat._m.m._12 + v._v.v._2*mat.
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::xform
 //       Access: Public
-//  Description: 3-component vector or point times matrix.  This is a
-//               fully general operation.
+//  Description: 3-component vector or point times matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
 xform(const FLOATNAME(LVecBase3) &v) const {
@@ -504,6 +503,45 @@ xform_vec(const FLOATNAME(LVecBase2) &v) const {
   
 //  return FLOATNAME(LVecBase2)(v.dot(get_col2(0)),
 //                          v.dot(get_col2(1)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::xform_vec
+//       Access: Public
+//  Description: The matrix transforms a 3-component vector and
+//               returns the result.  This assumes the matrix is an
+//               orthonormal transform.
+//
+//               In practice, this is the same computation as xform().
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+xform_vec(const FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("LVecBase3 LMatrix3::xform_vec(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LVecBase3) v_res;
+  
+  // v._v.v._3 == 0.0f for this case
+  
+  v_res._v.v._0 = v._v.v._0*_m.m._00 + v._v.v._1*_m.m._10 + v._v.v._2*_m.m._20;
+  v_res._v.v._1 = v._v.v._0*_m.m._01 + v._v.v._1*_m.m._11 + v._v.v._2*_m.m._21;
+  v_res._v.v._2 = v._v.v._0*_m.m._02 + v._v.v._1*_m.m._12 + v._v.v._2*_m.m._22;
+  
+  return v_res;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::xform_vec_general
+//       Access: Public
+//  Description: The matrix transforms a 3-component vector (without
+//               translation component) and returns the result, as a
+//               fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix3)::
+xform_vec_general(const FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("LVecBase3 LMatrix3::xform_vec_general(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LMatrix3) i;
+  i.invert_transpose_from(*this);
+
+  return i.xform(v);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,6 +869,78 @@ invert_in_place() {
   TAU_PROFILE("bool LMatrix3::invert_in_place()", " ", TAU_USER);
   FLOATNAME(LMatrix3) temp = (*this);
   return invert_from(temp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::invert_transpose_from
+//       Access: Public
+//  Description: Simultaneously computes the inverse of the indicated
+//               matrix, and then the transpose of that inverse.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
+invert_transpose_from(const FLOATNAME(LMatrix3) &other) {
+  TAU_PROFILE("bool LMatrix3::invert_transpose_from(const LMatrix3 &)", " ", TAU_USER);
+
+  FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
+
+  if (IS_THRESHOLD_ZERO(other_det, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
+#ifdef NOTIFY_DEBUG
+    linmath_cat.warning() << "Tried to invert singular LMatrix3.\n";
+#endif
+    (*this) = ident_mat();
+    return false;
+  }
+
+  other_det = 1.0f / other_det;
+  _m.m._00 =  other_det * DET2(other._m.m._11, other._m.m._12, other._m.m._21, other._m.m._22);
+  _m.m._01 = -other_det * DET2(other._m.m._10, other._m.m._12, other._m.m._20, other._m.m._22);
+  _m.m._02 =  other_det * DET2(other._m.m._10, other._m.m._11, other._m.m._20, other._m.m._21);
+
+  _m.m._10 = -other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._21, other._m.m._22);
+  _m.m._11 =  other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._20, other._m.m._22);
+  _m.m._12 = -other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._20, other._m.m._21);
+
+  _m.m._20 =  other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._11, other._m.m._12);
+  _m.m._21 = -other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._10, other._m.m._12);
+  _m.m._22 =  other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._10, other._m.m._11);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::invert_transpose_from
+//       Access: Public
+//  Description: Simultaneously computes the inverse of the indicated
+//               matrix, and then the transpose of that inverse.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH bool FLOATNAME(LMatrix3)::
+invert_transpose_from(const FLOATNAME(LMatrix4) &other) {
+  TAU_PROFILE("bool LMatrix3::invert_transpose_from(const LMatrix4 &)", " ", TAU_USER);
+
+  FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
+
+  if (IS_THRESHOLD_ZERO(other_det, (NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE)))) {
+#ifdef NOTIFY_DEBUG
+    linmath_cat.warning() << "Tried to invert singular LMatrix4.\n";
+#endif
+    (*this) = ident_mat();
+    return false;
+  }
+
+  other_det = 1.0f / other_det;
+  _m.m._00 =  other_det * DET2(other._m.m._11, other._m.m._12, other._m.m._21, other._m.m._22);
+  _m.m._01 = -other_det * DET2(other._m.m._10, other._m.m._12, other._m.m._20, other._m.m._22);
+  _m.m._02 =  other_det * DET2(other._m.m._10, other._m.m._11, other._m.m._20, other._m.m._21);
+
+  _m.m._10 = -other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._21, other._m.m._22);
+  _m.m._11 =  other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._20, other._m.m._22);
+  _m.m._12 = -other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._20, other._m.m._21);
+
+  _m.m._20 =  other_det * DET2(other._m.m._01, other._m.m._02, other._m.m._11, other._m.m._12);
+  _m.m._21 = -other_det * DET2(other._m.m._00, other._m.m._02, other._m.m._10, other._m.m._12);
+  _m.m._22 =  other_det * DET2(other._m.m._00, other._m.m._01, other._m.m._10, other._m.m._11);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

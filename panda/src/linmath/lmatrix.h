@@ -21,21 +21,26 @@
 
 #include "pandabase.h"
 #include "config_linmath.h"
+#include <math.h>
+#include "typedObject.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "pnotify.h"
+#include "indent.h"
 
-#include "lmatrix3.h"
-#include "lmatrix4.h"
+#include "deg_2_rad.h"
+#include "nearly_zero.h"
 
-/*
-typedef LMatrix3<float> LMatrix3f;
-typedef LMatrix4<float> LMatrix4f;
+#include "coordinateSystem.h"
+#include "lvecBase4.h"
+#include "lvecBase3.h"
+#include "lvecBase2.h"
 
-typedef LMatrix3<double> LMatrix3d;
-typedef LMatrix4<double> LMatrix4d;
-*/
+#include "fltnames.h"
+// lmatrix3_src.h includes lmatrix4_src.h.
+#include "lmatrix3_src.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
+#include "dblnames.h"
+#include "lmatrix3_src.h"
 
 #endif

@@ -26,7 +26,6 @@
 #include "characterVertexSlider.h"
 #include "jointVertexTransform.h"
 #include "dconfig.h"
-#include "lmatrix4.h"
 
 Configure(config_char);
 NotifyCategoryDef(char, "");
@@ -67,12 +66,6 @@ init_libchar() {
   CharacterSlider::init_type();
   CharacterVertexSlider::init_type();
   JointVertexTransform::init_type();
-
-  // This isn't defined in this package, but it *is* essential that it
-  // be initialized.  We have to do it explicitly here since template
-  // statics don't necessarily resolve very well across dynamic
-  // libraries.
-  LMatrix4f::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory

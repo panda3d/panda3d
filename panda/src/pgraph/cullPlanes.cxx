@@ -155,6 +155,9 @@ do_cull(int &result, CPT(RenderState) &state,
   Planes::const_iterator pi;
   for (pi = _planes.begin(); pi != _planes.end(); ++pi) {
     int plane_result = (*pi).second->contains(node_gbv);
+    pgraph_cat.debug()
+      << "comparing " << *(*pi).second << " to " << *node_gbv
+      << ": " << hex << plane_result << dec << "\n";
     if (plane_result == BoundingVolume::IF_no_intersection) {
       // The node is completely behind this clip plane.  Short-circuit
       // the rest of the logic; none of the other planes matter.

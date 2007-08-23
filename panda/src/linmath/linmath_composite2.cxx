@@ -2,8 +2,6 @@
 #include "compose_matrix.cxx"
 #include "config_linmath.cxx"
 #include "coordinateSystem.cxx"
-#include "lmatrix3.cxx"
-#include "lmatrix4.cxx"
 #include "lmatrix.cxx"
 #include "lorientation.cxx"
 #include "lpoint2.cxx"
