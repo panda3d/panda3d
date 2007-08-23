@@ -1260,7 +1260,7 @@ class Actor(DirectObject, NodePath):
         frontParts.reparentTo(backPart)
 
 
-    def fixBoundsNew(self, partName = None):
+    def fixBounds(self, partName = None):
         if(partName == None):
             #iterate through everything
             for lodData in self.__partBundleDict.values():
@@ -1279,7 +1279,7 @@ class Actor(DirectObject, NodePath):
         else:
             #iterate through for a specific part
             for lodData in self.__partBundleDict.values():
-                partData = lodData.get(partName):
+                partData = lodData.get(partName)
                 if(partData):
                     char = partData.partBundleNP
                     char.node().update()
@@ -1293,7 +1293,7 @@ class Actor(DirectObject, NodePath):
                             thisGeom.markBoundsStale()
                         thisGeomNode.node().markInternalBoundsStale()            
         
-    def fixBounds(self, part=None):
+    def fixBounds_old(self, part=None):
         """fixBounds(self, nodePath=None)
         Force recomputation of bounding spheres for all geoms
         in a given part. If no part specified, fix all geoms
