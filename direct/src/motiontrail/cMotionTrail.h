@@ -26,7 +26,7 @@
 #include "geomVertexData.h"
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
-#include "lmatrix4.h"
+#include "luse.h"
 #include "nurbsCurveEvaluator.h"
 
 #include <list>
