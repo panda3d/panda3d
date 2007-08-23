@@ -120,7 +120,7 @@ apply_transform_and_state(CullTraverser *trav,
 
   if (clip_plane_cull) {
     _cull_planes = _cull_planes->apply_state(trav, this, 
-                                             _state->get_clip_plane(),
+                                             node_state->get_clip_plane(),
                                              DCAST(ClipPlaneAttrib, off_clip_planes));
   }
 }
@@ -187,6 +187,18 @@ is_in_view_impl() {
         << result << dec << "\n";
       _cull_planes->write(pgraph_cat.spam(false));
     }
+
+    if (_node_reader.is_final()) {
+      // Even though the node may be partially within the clip planes,
+      // do no more culling against them below this node.
+      _cull_planes = CullPlanes::make_empty();
+      
+      if (pgraph_cat.is_spam()) {
+        pgraph_cat.spam()
+          << _node_path << " is_final, cull planes disabled, state:\n";
+        _state->write(pgraph_cat.spam(false), 2);
+      }
+    }
     
     if (result == BoundingVolume::IF_no_intersection) {
       // No intersection at all.  Cull.
@@ -197,17 +209,8 @@ is_in_view_impl() {
       // of the clip planes.  The do_cull() call should therefore have
       // removed all of the clip planes.
       nassertr(_cull_planes->is_empty(), true);
-      
-    } else {
-      // The node is partially within one or more clip planes.
-      if (_node_reader.is_final()) {
-        // Even though the node is only partially within the clip
-        // planes, stop culling against them.
-        _cull_planes = CullPlanes::make_empty();
-      }
     }
   }
-
 
   return true;
 }

@@ -78,6 +78,7 @@ modify_geom(int n) {
   CDWriter cdata(_cycler, true);
   PT(GeomList) geoms = cdata->modify_geoms();
   nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  mark_internal_bounds_stale();
   return (*geoms)[n]._geom.get_write_pointer();
 }
 
