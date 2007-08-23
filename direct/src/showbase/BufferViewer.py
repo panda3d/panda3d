@@ -22,6 +22,7 @@ class BufferViewer(DirectObject):
         self.exclude = "none"
         self.cullbin = "fixed"
         self.cullsort = 10000
+        self.renderParent = render2d
         self.cards = []
         self.cardindex = 0
         self.cardmaker = CardMaker("cubemaker")
@@ -170,6 +171,12 @@ class BufferViewer(DirectObject):
         default value is 'fixed', 10000."""
         self.cullbin = bin
         self.cullsort = sort
+        self.dirty = 1
+
+    def setRenderParent(self, renderParent):
+        """Set the scene graph root to which the output cards should
+        be parented.  The default is render2d. """
+        self.renderParent = renderParent
         self.dirty = 1
 
     def analyzeTextureSet(self, x, set):
@@ -398,7 +405,7 @@ class BufferViewer(DirectObject):
                     placer.setPos(posx, 0, posy)
                     placer.setScale(fsizex*0.5, 1.0, fsizey*0.5)
                     placer.setBin(self.cullbin, self.cullsort)
-                    placer.reparentTo(render2d)
+                    placer.reparentTo(self.renderParent)
                     frame.instanceTo(placer)
                     cards[index].reparentTo(placer)
                     cards[index] = placer

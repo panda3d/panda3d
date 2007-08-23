@@ -343,6 +343,8 @@ class ShowBase(DirectObject.DirectObject):
         # Offscreen buffer viewing utility.
         # This needs to be allocated even if the viewer is off.
         self.bufferViewer = BufferViewer()
+        if self.wantRender2dp:
+            self.bufferViewer.setRenderParent(self.render2dp)
 
         if self.windowType != 'none':
             self.__doStartDirect()
@@ -922,7 +924,6 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
         self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
         self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
-
 
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
