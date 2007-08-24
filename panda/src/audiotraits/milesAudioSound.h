@@ -46,6 +46,8 @@ public:
   virtual float get_balance() const;
   virtual float get_play_rate() const;
 
+  virtual void set_time(float start_time=0.0);
+
   virtual void set_active(bool active=true);
   virtual bool get_active() const;
 
@@ -80,6 +82,11 @@ protected:
   // finishes playing.  It is not triggered when the sound is stopped
   // with stop().  Note: no longer implemented.
   string _finished_event;
+
+  // This is set whenever we call set_time().  Calling play() will
+  // respect this if it is set, and then reset it.
+  float _start_time;
+  bool _got_start_time;
 
 public:
   static TypeHandle get_class_type() {

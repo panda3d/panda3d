@@ -44,7 +44,6 @@ public:
   virtual void play();
   virtual void stop();
   
-  virtual void set_time(float time=0.0f);
   virtual float get_time() const;
   
   virtual void set_volume(float volume=1.0f);
@@ -61,6 +60,7 @@ public:
 private:
   void internal_stop();
   static void AILCALLBACK finish_callback(HSAMPLE sample);
+  void do_set_time(float time);
 
   PT(MilesAudioManager::SoundData) _sd;
   HSAMPLE _sample;

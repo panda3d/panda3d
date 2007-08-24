@@ -56,9 +56,9 @@ PUBLISHED:
   // a file.
   // time in seconds: 0 = beginning; length() = end.
   // inits to 0.0.
-  // - Unlike the other get_* and set_* calls for a sound, the
-  //   current time position will change while the sound is playing.
-  //   To play the same sound from a time offset a second time,
+  // - The current time position will not change while the sound is
+  //   playing; you must call play() again to effect the change.  To
+  //   play the same sound from a time offset a second time,
   //   explicitly set the time position again.  When looping, the
   //   second and later loops will start from the beginning of the
   //   sound.

@@ -102,8 +102,16 @@ play() {
         set_volume(_volume);
         set_play_rate(_play_rate);
         AIL_set_sample_loop_count(_sample, _loop_count);
-        AIL_start_sample(_sample);
+
+        if (_got_start_time) {
+          do_set_time(_start_time);
+          AIL_resume_sample(_sample);
+        } else {
+          AIL_start_sample(_sample);
+        }
       }
+      
+      _got_start_time = false;
     }
   } else {
     // In case _loop_count gets set to forever (zero):
@@ -140,30 +148,6 @@ stop() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSample::set_time
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void MilesAudioSample::
-set_time(float time) {
-  miles_audio_debug("set_time(time="<<time<<")");
-
-  if (_sample != 0) {
-    // Ensure we don't inadvertently run off the end of the sound.
-    float max_time = length();
-    if (time > max_time) {
-      milesAudio_cat.warning()
-        << "set_time(" << time << ") requested for sound of length " 
-        << max_time << "\n";
-      time = max_time;
-    }
-    
-    S32 time_ms = (S32)(1000.0f * time);
-    AIL_set_sample_ms_position(_sample, time_ms);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSample::get_time
 //       Access: Public, Virtual
 //  Description: 
@@ -171,6 +155,9 @@ set_time(float time) {
 float MilesAudioSample::
 get_time() const {
   if (_sample == 0) {
+    if (_got_start_time) {
+      return _start_time;
+    }
     return 0.0f;
   }
 
@@ -335,6 +322,29 @@ finish_callback(HSAMPLE sample) {
       << "finished " << *self << "\n";
   }
   self->_manager->_sounds_finished = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSample::do_set_time
+//       Access: Private
+//  Description: Sets the start time of an already allocated sample.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSample::
+do_set_time(float time) {
+  miles_audio_debug("do_set_time(time="<<time<<")");
+  nassertv(_sample != 0);
+
+  // Ensure we don't inadvertently run off the end of the sound.
+  float max_time = length();
+  if (time > max_time) {
+    milesAudio_cat.warning()
+      << "set_time(" << time << ") requested for sound of length " 
+      << max_time << "\n";
+    time = max_time;
+  }
+  
+  S32 time_ms = (S32)(1000.0f * time);
+  AIL_set_sample_ms_position(_sample, time_ms);
 }
 
 #endif //]

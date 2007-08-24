@@ -102,6 +102,13 @@ play() {
     set_play_rate(_play_rate);
     
     AIL_set_stream_loop_count(_stream, _loop_count);
+
+    AIL_start_stream(_stream);
+    if (_got_start_time) {
+      // There's no AIL_resume_stream(), so we start in the middle by
+      // starting normally, then immediately skipping to the middle.
+      do_set_time(_start_time);
+    }
     
     if (miles_audio_panda_threads) {
       AIL_auto_service_stream(_stream, 0);
@@ -109,7 +116,8 @@ play() {
     } else {
       AIL_auto_service_stream(_stream, 1);
     }
-    AIL_start_stream(_stream);
+
+    _got_start_time = false;
 
   } else {
     // In case _loop_count gets set to forever (zero):
@@ -148,28 +156,14 @@ stop() {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void MilesAudioStream::
-set_time(float time) {
-  if (_stream != 0) {
-    S32 time_ms = (S32)(1000.0f * time);
-
-    // Ensure we don't inadvertently run off the end of the sound.
-    S32 length_ms;
-    AIL_stream_ms_position(_stream, &length_ms, NULL);
-    time_ms = min(time_ms, length_ms);
-    
-    AIL_set_stream_ms_position(_stream, time_ms);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioStream::
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
 float MilesAudioStream::
 get_time() const {
-  nassertr(_stream, 0.0f);
+  if (_stream == 0) {
+    if (_got_start_time) {
+      return _start_time;
+    }
+    return 0.0f;
+  }
 
   S32 current_ms;
   AIL_stream_ms_position(_stream, NULL, &current_ms);
@@ -312,6 +306,25 @@ finish_callback(HSTREAM stream) {
       << "finished " << *self << "\n";
   }
   self->_manager->_sounds_finished = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioStream::do_set_time
+//       Access: Private
+//  Description: Sets the start time of an already allocated stream.
+////////////////////////////////////////////////////////////////////
+void MilesAudioStream::
+do_set_time(float time) {
+  nassertv(_stream != 0);
+
+  S32 time_ms = (S32)(1000.0f * time);
+
+  // Ensure we don't inadvertently run off the end of the sound.
+  S32 length_ms;
+  AIL_stream_ms_position(_stream, &length_ms, NULL);
+  time_ms = min(time_ms, length_ms);
+  
+  AIL_set_stream_ms_position(_stream, time_ms);
 }
 
 

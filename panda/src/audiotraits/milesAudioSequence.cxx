@@ -98,8 +98,16 @@ play() {
         set_volume(_volume);
         set_play_rate(_play_rate);
         AIL_set_sequence_loop_count(_sequence, _loop_count);
-        AIL_start_sequence(_sequence);
+
+        if (_got_start_time) {
+          do_set_time(_start_time);
+          AIL_resume_sequence(_sequence);
+        } else {
+          AIL_start_sequence(_sequence);
+        }
       }
+
+      _got_start_time = false;
     }
   } else {
     // In case _loop_count gets set to forever (zero):
@@ -136,27 +144,6 @@ stop() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioSequence::set_time
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void MilesAudioSequence::
-set_time(float time) {
-  miles_audio_debug("set_time(time="<<time<<")");
-
-  if (_sequence != 0) {
-    S32 time_ms = (S32)(1000.0f * time);
-
-    // Ensure we don't inadvertently run off the end of the sound.
-    S32 length_ms;
-    AIL_sequence_ms_position(_sequence, &length_ms, NULL);
-    time_ms = min(time_ms, length_ms);
-    
-    AIL_set_sequence_ms_position(_sequence, time_ms);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioSequence::get_time
 //       Access: Public, Virtual
 //  Description: 
@@ -164,6 +151,9 @@ set_time(float time) {
 float MilesAudioSequence::
 get_time() const {
   if (_sequence == 0) {
+    if (_got_start_time) {
+      return _start_time;
+    }
     return 0.0f;
   }
 
@@ -312,6 +302,27 @@ finish_callback(HSEQUENCE sequence) {
       << "finished " << *self << "\n";
   }
   self->_manager->_sounds_finished = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::do_set_time
+//       Access: Private
+//  Description: Sets the start time of an already allocated stream.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+do_set_time(float time) {
+  miles_audio_debug("do_set_time(time="<<time<<")");
+
+  nassertv(_sequence != 0);
+
+  S32 time_ms = (S32)(1000.0f * time);
+
+    // Ensure we don't inadvertently run off the end of the sound.
+  S32 length_ms;
+  AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+  time_ms = min(time_ms, length_ms);
+  
+  AIL_set_sequence_ms_position(_sequence, time_ms);
 }
 
 #endif //]

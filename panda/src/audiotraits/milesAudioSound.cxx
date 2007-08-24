@@ -44,7 +44,10 @@ MilesAudioSound(MilesAudioManager *manager,
   _file_name(file_name),
   _volume(1.0f), _balance(0), _play_rate(1.0f),
   _loop_count(1), 
-  _active(true), _paused(false) 
+  _active(true), 
+  _paused(false),
+  _start_time(0.0f),
+  _got_start_time(false)
 {
   nassertv(!file_name.empty());
 }
@@ -130,6 +133,20 @@ get_balance() const {
 float MilesAudioSound::
 get_play_rate() const {
   return _play_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSound::set_time
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MilesAudioSound::
+set_time(float time) {
+  miles_audio_debug("set_time(time="<<time<<")");
+
+  // Mark this position for the next play().
+  _start_time = time;
+  _got_start_time = true;
 }
 
 ////////////////////////////////////////////////////////////////////

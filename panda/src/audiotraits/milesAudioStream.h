@@ -44,7 +44,6 @@ public:
   virtual void play();
   virtual void stop();
   
-  virtual void set_time(float time=0.0f);
   virtual float get_time() const;
   
   virtual void set_volume(float volume=1.0f);
@@ -59,6 +58,7 @@ public:
 
 private:
   static void AILCALLBACK finish_callback(HSTREAM stream);
+  void do_set_time(float time);
 
   Filename _path;
   HSTREAM _stream;
