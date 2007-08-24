@@ -800,11 +800,14 @@ render_frame() {
   // wait for those threads before we can flip.
   _flip_state = _auto_flip ? FS_flip : FS_draw;
 
-  if (yield_timeslice) { 
+  if (yield_timeslice) {
     // Nap for a moment to yield the timeslice, to be polite to other
     // running applications.
     PStatTimer timer(_yield_pcollector, current_thread);
     Thread::force_yield();
+  } else if (!Thread::is_true_threads()) { 
+    PStatTimer timer(_yield_pcollector, current_thread);
+    Thread::consider_yield();
   }
 
   // Anything that happens outside of GraphicsEngine::render_frame()
