@@ -453,8 +453,8 @@ dispatch_flag_groups(const string &opt, const string &arg, void *var) {
 
   } else {
     // If there's no equal sign, the default is to name all groups
-    // after the last word.
-    entry._name = last_word;
+    // after the group itself.  We leave the name empty to indicate
+    // that.
   }
 
   // Convert the words to GlobPatterns.
@@ -1301,7 +1301,11 @@ do_flag_groups(EggGroupNode *egg_group) {
          ++si) {
       if ((*si).matches(egg_group->get_name())) {
         matched = true;
-        name = entry._name;
+        if (!entry._name.empty()) {
+          name = entry._name;
+        } else {
+          name = egg_group->get_name();
+        }
       }
     }
   }
