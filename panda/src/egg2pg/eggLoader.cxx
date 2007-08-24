@@ -3180,20 +3180,35 @@ create_collision_floor_mesh(CollisionNode *cnode,
   for (ci = group->begin(); ci != group->end(); ++ci) {
     EggPolygon *poly = DCAST(EggPolygon, *ci);
     if (poly->get_num_vertices() == 3) {
-      EggPolygon::const_iterator vi;
-      EggVertex p1,p2,p3;
-      vi = poly->begin();
       CollisionFloorMesh::TriangleIndices tri;
       
       //generate a shared vertex triangle from the vertex pool
       tri.p1=pool.create_unique_vertex(*poly->get_vertex(0))->get_index();
-      ++vi;
       tri.p2=pool.create_unique_vertex(*poly->get_vertex(1))->get_index();
-      ++vi;
       tri.p3=pool.create_unique_vertex(*poly->get_vertex(2))->get_index();
       
       triangles.push_back(tri);
-    }
+    } else if (poly->get_num_vertices() == 4) {
+      //this is a case that really shouldn't happen, but appears to be required
+      //-split up the quad int 2 tris. 
+      CollisionFloorMesh::TriangleIndices tri;
+      CollisionFloorMesh::TriangleIndices tri2;
+      
+      //generate a shared vertex triangle from the vertex pool
+      tri.p1=pool.create_unique_vertex(*poly->get_vertex(0))->get_index();
+      tri.p2=pool.create_unique_vertex(*poly->get_vertex(1))->get_index();
+      tri.p3=pool.create_unique_vertex(*poly->get_vertex(2))->get_index();
+      
+      triangles.push_back(tri);
+
+      //generate a shared vertex triangle from the vertex pool
+      tri2.p1=tri.p1;
+      tri2.p2=tri.p3;      
+      tri2.p3=pool.create_unique_vertex(*poly->get_vertex(3))->get_index();
+
+      
+      triangles.push_back(tri2);
+    }  
   }
   
   //Now we have a set of triangles, and a pool
