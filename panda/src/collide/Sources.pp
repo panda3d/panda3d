@@ -12,12 +12,13 @@
   #define SOURCES \
     collisionEntry.I collisionEntry.h \
     collisionGeom.I collisionGeom.h \
-    collisionHandler.h  \
+    collisionHandler.I collisionHandler.h  \
     collisionHandlerEvent.I collisionHandlerEvent.h  \
     collisionHandlerFloor.I collisionHandlerFloor.h  \
     collisionHandlerGravity.I collisionHandlerGravity.h  \
     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
     collisionHandlerPusher.I collisionHandlerPusher.h  \
+    collisionHandlerFluidPusher.I collisionHandlerFluidPusher.h  \
     collisionHandlerQueue.h \
     collisionDSSolid.I collisionDSSolid.h \
     collisionInvSphere.I collisionInvSphere.h \
@@ -47,6 +48,7 @@
     collisionHandlerGravity.cxx \
     collisionHandlerPhysical.cxx  \
     collisionHandlerPusher.cxx \
+    collisionHandlerFluidPusher.cxx \
     collisionHandlerQueue.cxx  \
     collisionLevelStateBase.cxx \
     collisionLevelState.cxx \
@@ -70,12 +72,13 @@
   #define INSTALL_HEADERS \
     collisionEntry.I collisionEntry.h \
     collisionGeom.I collisionGeom.h \
-    collisionHandler.h \
+    collisionHandler.I collisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \
     collisionHandlerGravity.I collisionHandlerGravity.h \
     collisionHandlerPhysical.I collisionHandlerPhysical.h \
     collisionHandlerPusher.I collisionHandlerPusher.h \
+    collisionHandlerFluidPusher.I collisionHandlerFluidPusher.h \
     collisionHandlerQueue.h \
     collisionDSSolid.I collisionDSSolid.h \
     collisionInvSphere.I collisionInvSphere.h \
