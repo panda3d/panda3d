@@ -3085,3 +3085,4 @@ __builtin__.flywheel = flywheel
 __builtin__.loopGen = loopGen
 __builtin__.StackTrace = StackTrace
 __builtin__.choice = choice
+__builtin__.report = report
