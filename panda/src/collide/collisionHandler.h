@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "typedReferenceCount.h"
+#include "nodePath.h"
 
 class CollisionEntry;
 
@@ -35,9 +36,14 @@ class CollisionEntry;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionHandler : public TypedReferenceCount {
 public:
+  CollisionHandler();
+
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
   virtual bool end_group();
+
+  INLINE bool wants_all_potential_collidees() const;
+  INLINE void set_root(const NodePath &root);
 
 PUBLISHED:
   static TypeHandle get_class_type() {
@@ -55,11 +61,17 @@ public:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
+protected:
+  bool _wants_all_potential_collidees;
+  const NodePath *_root;
+
 private:
   static TypeHandle _type_handle;
 
   friend class CollisionTraverser;
 };
+
+#include "collisionHandler.I"
 
 #endif
 

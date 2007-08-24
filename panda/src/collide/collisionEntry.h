@@ -63,6 +63,9 @@ PUBLISHED:
   INLINE NodePath get_from_node_path() const;
   INLINE NodePath get_into_node_path() const;
 
+  INLINE void set_t(float t);
+  INLINE float get_t() const;
+
   INLINE bool get_respect_prev_transform() const;
 
   INLINE void set_surface_point(const LPoint3f &point);
@@ -108,6 +111,7 @@ private:
   NodePath _from_node_path;
   NodePath _into_node_path;
   CPT(ClipPlaneAttrib) _into_clip_planes;
+  float _t;
 
   enum Flags {
     F_has_surface_point       = 0x0001,
@@ -141,6 +145,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class CollisionTraverser;
+  friend class CollisionHandlerFluidPusher;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionEntry &entry);

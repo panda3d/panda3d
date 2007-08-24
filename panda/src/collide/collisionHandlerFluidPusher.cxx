@@ -102,13 +102,13 @@ handle_entries() {
     7. go to 2
   */
   bool okflag = true;
-
+  
   if (!_horizontal) {
     collide_cat.error() << "collisionHandlerFluidPusher::handle_entries is only supported in "
       "horizontal mode" << endl;
     nassertr(false, false);
   }
-
+  
   // for every fluid mover being pushed...
   FromEntries::iterator fei;
   for (fei = _from_entries.begin(); fei != _from_entries.end(); ++fei) {
@@ -129,17 +129,30 @@ handle_entries() {
       ColliderDef &def = (*ci).second;
       
       // extract the collision entries into a vector that we can safely modify
-      Entries SCS(*entries);
+      Entries entries(*entries);
+      Entries next_entries;
+      
+      // extract out the initial set of collision solids
+      CollisionSolids SCS;
+      
+      Entries::iterator ei;
+      for (ei = entries.begin(); ei != entries.end(); ++ei) {
+        SCS.push_back((*ei)->get_into());
+      }
       
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
-      DCAST_INTO_R(sphere, (*SCS.front()).get_from(), 0);
+      DCAST_INTO_R(sphere, (*entries.front()).get_from(), 0);
       // use a slightly larger radius value so that when we move along
       // collision planes we don't re-collide
       float sphere_radius = sphere->get_radius() * 1.001;
       
+      // make a copy of the original from_nodepath that we can mess with
+      // in the process of calculating the final position
+      _from_node_path_copy = from_node_path.copy_to(from_node_path.get_parent());
+      
       LPoint3f N(from_node_path.get_pos_delta(*_root));
-      const LPoint3f orig_pos(from_node_path.get_pos());
+      const LPoint3f orig_pos(_from_node_path_copy.get_pos());
       // this will hold the final calculated position
       LPoint3f PosX(orig_pos);
       
@@ -157,20 +170,17 @@ handle_entries() {
       // if both of these become true, we're stuck in a 'corner'
       bool left_halfspace_obstructed = false;
       bool right_halfspace_obstructed = false;
-      LVector3f left_plane_normal;
-      LVector3f right_plane_normal;
       float left_plane_dot = 200.0f;
       float right_plane_dot = 200.0f;
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
         CollisionEntry *C = 0;
-        Entries::iterator ei;
         // find the first (earliest) collision
-        for (ei = SCS.begin(); ei != SCS.end(); ++ei) {
+        for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
-          if (entry->get_t() < C->get_t()) {
+          if ((C == 0) || (entry->get_t() < C->get_t())) {
             nassertr(from_node_path == entry->get_from_node_path(), false);
             C = entry;
             break;
@@ -186,12 +196,12 @@ handle_entries() {
         nassertr(C->has_surface_point(), true);
         nassertr(C->has_surface_normal(), true);
         nassertr(C->has_interior_point(), true);
-        LVector3f surface_normal = C->get_surface_normal(from_node_path);
+        LVector3f surface_normal = C->get_surface_normal(_from_node_path_copy);
         if (_horizontal) {
           surface_normal[2] = 0.0f;
         }
         surface_normal.normalize();
-        PosX = C->get_surface_point(from_node_path) + (sphere_radius * surface_normal);
+        PosX = C->get_surface_point(_from_node_path_copy) + (sphere_radius * surface_normal);
         
         // check to see if we're stuck, given this collision
         float dot = right_unit.dot(surface_normal);
@@ -204,7 +214,6 @@ handle_entries() {
               break;
             }
             left_halfspace_obstructed = true;
-            left_plane_normal = surface_normal;
           }
         } else {
           // negative dot means plane is coming from the right (looking along original
@@ -216,11 +225,29 @@ handle_entries() {
               break;
             }
             right_halfspace_obstructed = true;
-            right_plane_normal = surface_normal;
           }
         }
         
         // set up new current/last positions, re-calculate collisions
+        CPT(TransformState) prev_trans(_from_node_path_copy.get_prev_transform());
+        prev_trans->set_pos(_from_node_path_copy.get_pos());
+        _from_node_path_copy.set_prev_transform(prev_trans);
+        _from_node_path_copy.set_pos(PosX);
+
+        // calculate new collisions given new movement vector
+        CollisionEntry new_entry;
+        new_entry._from_node_path = _from_node_path_copy;
+        new_entry._from = sphere;
+        next_entries.clear();
+        CollisionSolids::iterator csi;
+        for (csi = SCS.begin(); csi != SCS.end(); ++csi) {
+          PT(CollisionEntry) result = (*csi)->test_intersection_from_sphere(new_entry);
+          if (result != (CollisionEntry *)NULL) {
+            next_entries.push_back(result);
+          }
+        }
+        // swap in the new set of collision events
+        entries.swap(next_entries);
       }
       
       LVector3f net_shove(PosX - orig_pos);

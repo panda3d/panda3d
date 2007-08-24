@@ -178,6 +178,7 @@ private:
   friend class CollisionLine;
   friend class CollisionRay;
   friend class CollisionSegment;
+  friend class CollisionHandlerFluidPusher;
 };
 
 INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {

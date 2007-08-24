@@ -147,7 +147,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     // is as good as any other.
     surface_normal.set(1.0, 0.0, 0.0);
   } else {
-    surface_normal = -vec / vec_length;
+    surface_normal = vec / -vec_length;
   }
 
   LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;

@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 
+#include "collisionSolid.h"
 #include "collisionHandlerPusher.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +38,11 @@ public:
   virtual void add_entry(CollisionEntry *entry);
 
 protected:
+  typedef pvector< CPT(CollisionSolid) > CollisionSolids;
+
   virtual bool handle_entries();
+
+  NodePath _from_node_path_copy;
 
 public:
   static TypeHandle get_class_type() {

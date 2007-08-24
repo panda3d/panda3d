@@ -288,6 +288,7 @@ traverse(const NodePath &root) {
   
   Handlers::iterator hi;
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
+    (*hi).first->set_root(root);
     (*hi).first->begin_group();
   }
 

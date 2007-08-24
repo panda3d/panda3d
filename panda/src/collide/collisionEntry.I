@@ -25,6 +25,7 @@
 INLINE CollisionEntry::
 CollisionEntry() {
   _flags = 0;
+  _t = 1.f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,6 +124,28 @@ get_from_node_path() const {
 INLINE NodePath CollisionEntry::
 get_into_node_path() const {
   return _into_node_path;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_t
+//       Access: Published
+//  Description: Sets a time value for this collision relative to
+//               other CollisionEntries
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_t(float t) {
+  _t = t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_t
+//       Access: Published
+//  Description: returns time value for this collision relative to
+//               other CollisionEntries
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionEntry::
+get_t() const {
+  return _t;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -213,6 +213,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_intersection_point = from_a + t1 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, from_radius);
+  new_entry->set_t(t1);
 
   return new_entry;
 }

@@ -36,6 +36,7 @@ CollisionEntry(const CollisionEntry &copy) :
   _from_node_path(copy._from_node_path),
   _into_node_path(copy._into_node_path),
   _into_clip_planes(copy._into_clip_planes),
+  _t(copy._t),
   _flags(copy._flags),
   _surface_point(copy._surface_point),
   _surface_normal(copy._surface_normal),
@@ -57,6 +58,7 @@ operator = (const CollisionEntry &copy) {
   _from_node_path = copy._from_node_path;
   _into_node_path = copy._into_node_path;
   _into_clip_planes = copy._into_clip_planes;
+  _t = copy._t;
   _flags = copy._flags;
   _surface_point = copy._surface_point;
   _surface_normal = copy._surface_normal;

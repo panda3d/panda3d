@@ -414,6 +414,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3f orig_center = sphere->get_center() * wrt_mat;
   LPoint3f from_center = orig_center;
   bool moved_from_center = false;
+  float t = 1.0f;
 
   if (wrt_prev_space != wrt_space) {
     // If we have a delta between the previous position and the
@@ -439,13 +440,15 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // at the point along its path that is closest to intersecting
       // the plane.  This may be the actual intersection point, or it
       // may be the starting point or the final point.
-      float t = -(dist_to_plane(a) / dot);
+      t = -(dist_to_plane(a) / dot);
       if (t >= 1.0f) {
         // Leave it where it is.
+        t = 1.0f;
 
       } else if (t < 0.0f) {
         from_center = a;
         moved_from_center = true;
+        t = 0.0f;
 
       } else {
         from_center = a + t * delta;
@@ -556,6 +559,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(from_center - normal * dist);
   new_entry->set_interior_point(from_center - normal * (dist + into_depth));
+  new_entry->set_t(t);
 
   return new_entry;
 }

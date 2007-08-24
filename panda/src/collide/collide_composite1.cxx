@@ -7,6 +7,7 @@
 #include "collisionHandlerGravity.cxx"
 #include "collisionHandlerPhysical.cxx"
 #include "collisionHandlerPusher.cxx"
+#include "collisionHandlerFluidPusher.cxx"
 #include "collisionHandlerQueue.cxx"
 #include "collisionDSSolid.cxx"
 #include "collisionInvSphere.cxx"

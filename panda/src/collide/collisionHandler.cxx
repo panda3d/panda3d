@@ -21,6 +21,16 @@
 TypeHandle CollisionHandler::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandler::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+CollisionHandler::
+CollisionHandler() {
+  _wants_all_potential_collidees = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandler::begin_group
 //       Access: Public, Virtual
 //  Description: Will be called by the CollisionTraverser before a new

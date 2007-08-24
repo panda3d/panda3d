@@ -45,7 +45,6 @@ protected:
       const LVector3f &force_normal);
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 
-private:
   bool _horizontal;
 
 
