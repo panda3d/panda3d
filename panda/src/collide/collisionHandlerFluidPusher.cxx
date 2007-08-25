@@ -152,7 +152,10 @@ handle_entries() {
       _from_node_path_copy = from_node_path.copy_to(from_node_path.get_parent());
       
       LPoint3f N(from_node_path.get_pos_delta(*_root));
-      const LPoint3f orig_pos(_from_node_path_copy.get_pos());
+      if (_horizontal) {
+        N[2] = 0.0f;
+      }
+      const LPoint3f orig_pos(from_node_path.get_pos(*_root));
       // this will hold the final calculated position
       LPoint3f PosX(orig_pos);
       
@@ -196,12 +199,13 @@ handle_entries() {
         nassertr(C->has_surface_point(), true);
         nassertr(C->has_surface_normal(), true);
         nassertr(C->has_interior_point(), true);
-        LVector3f surface_normal = C->get_surface_normal(_from_node_path_copy);
+        LVector3f surface_normal = C->get_surface_normal(*_root);
         if (_horizontal) {
           surface_normal[2] = 0.0f;
         }
         surface_normal.normalize();
-        PosX = C->get_surface_point(_from_node_path_copy) + (sphere_radius * surface_normal);
+        collide_cat.info() << "normal: " << surface_normal << endl;
+        PosX = C->get_surface_point(*_root) + (sphere_radius * surface_normal);
         
         // check to see if we're stuck, given this collision
         float dot = right_unit.dot(surface_normal);
@@ -229,11 +233,11 @@ handle_entries() {
         }
         
         // set up new current/last positions, re-calculate collisions
-        CPT(TransformState) prev_trans(_from_node_path_copy.get_prev_transform());
-        prev_trans->set_pos(_from_node_path_copy.get_pos());
-        _from_node_path_copy.set_prev_transform(prev_trans);
+        CPT(TransformState) prev_trans(_from_node_path_copy.get_prev_transform(*_root));
+        prev_trans->set_pos(_from_node_path_copy.get_pos(*_root));
+        _from_node_path_copy.set_prev_transform(*_root, prev_trans);
         _from_node_path_copy.set_pos(PosX);
-
+        
         // calculate new collisions given new movement vector
         CollisionEntry new_entry;
         new_entry._from_node_path = _from_node_path_copy;
@@ -251,14 +255,23 @@ handle_entries() {
       }
       
       LVector3f net_shove(PosX - orig_pos);
+      if (_horizontal) {
+        net_shove[2] = 0.0f;
+      }
       LVector3f force_normal(net_shove);
       force_normal.normalize();
       
+      collide_cat.info() << "PosX: " << PosX << endl;
+      collide_cat.info() << "orig_pos: " << orig_pos << endl;
+      collide_cat.info() << "net_shove: " << net_shove << endl;
+      collide_cat.info() << endl;
+
+      
       // This is the part where the node actually gets moved:
-      CPT(TransformState) trans = def._target.get_transform();
+      CPT(TransformState) trans = def._target.get_transform(*_root);
       LVecBase3f pos = trans->get_pos();
       pos += net_shove * trans->get_mat();
-      def._target.set_transform(trans->set_pos(pos));
+      def._target.set_transform(*_root, trans->set_pos(pos));
       def.updated_transform();
       
       // We call this to allow derived classes to do other
