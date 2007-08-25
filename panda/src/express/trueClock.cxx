@@ -123,12 +123,41 @@ get_short_raw_time() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::set_cpu_affinity, Win32 implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
+typedef BOOL (WINAPI * PFNGETPROCESSAFFINITYMASK)(HANDLE, PDWORD_PTR, PDWORD_PTR);
+
+bool TrueClock::
+set_cpu_affinity(PN_uint32 mask) const {
+  HMODULE hker = GetModuleHandle("kernel32");
+  if (hker != 0) {
+    PFNGETPROCESSAFFINITYMASK gp = (PFNGETPROCESSAFFINITYMASK)
+      GetProcAddress(hker, "GetProcessAffinityMask");
+    PFNSETPROCESSAFFINITYMASK sp = (PFNSETPROCESSAFFINITYMASK)
+      GetProcAddress(hker, "SetProcessAffinityMask");
+    if (gp != 0 && sp != 0) {
+      DWORD proc_mask;
+      DWORD sys_mask;
+      if (gp(GetCurrentProcess(), &proc_mask, &sys_mask)) {
+        // make sure we don't reference CPUs that don't exist
+        proc_mask = mask & sys_mask;
+        if (proc_mask) {
+          return sp(GetCurrentProcess(), proc_mask);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TrueClock::Constructor, Win32 implementation
 //       Access: Protected
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-typedef BOOL (WINAPI * PFNSETPROCESSAFFINITYMASK)(HANDLE, DWORD_PTR);
-
 TrueClock::
 TrueClock() {
   _error_count = 0;
@@ -142,14 +171,7 @@ TrueClock() {
   _report_time_scale_time = 0.0;
 
   if (lock_to_one_cpu) {
-    HMODULE hker = GetModuleHandle("kernel32");
-    if (hker != 0) {
-      PFNSETPROCESSAFFINITYMASK sp = (PFNSETPROCESSAFFINITYMASK)
-        GetProcAddress(hker, "SetProcessAffinityMask");
-      if (sp != 0) {
-        sp(GetCurrentProcess(), 1);
-      }
-    }
+    set_cpu_affinity(0x01);
   }
   
   if (get_use_high_res_clock()) {
@@ -553,6 +575,16 @@ get_short_raw_time() {
   // back to 1970, and we want to leave the double with as much
   // precision as it can get.
   return (double)(tv.tv_sec - _init_sec) + (double)tv.tv_usec / 1000000.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TrueClock::set_cpu_affinity, Posix implementation
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool TrueClock::
+set_cpu_affinity(PN_int32 mask) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

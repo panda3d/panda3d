@@ -62,6 +62,8 @@ PUBLISHED:
 
   INLINE static TrueClock *get_global_ptr();
 
+  bool set_cpu_affinity(PN_uint32 mask) const;
+
 protected:
   TrueClock();
   INLINE ~TrueClock();
