@@ -151,16 +151,20 @@ handle_entries() {
       // in the process of calculating the final position
       _from_node_path_copy = from_node_path.copy_to(from_node_path.get_parent());
       
-      LPoint3f N(from_node_path.get_pos_delta(*_root));
+      // this is the original position delta for the entire frame, before collision response
+      LPoint3f M(from_node_path.get_pos_delta(*_root));
       if (_horizontal) {
-        N[2] = 0.0f;
+        M[2] = 0.0f;
       }
+      // this is used to track position deltas every time we collide against a solid
+      LPoint3f N(M);
+      
       const LPoint3f orig_pos(from_node_path.get_pos(*_root));
       // this will hold the final calculated position
       LPoint3f PosX(orig_pos);
       
       // unit vector facing back into original direction of motion
-      LVector3f reverse_vec(-N);
+      LVector3f reverse_vec(-M);
       if (_horizontal) {
         reverse_vec[2] = 0.0f;
       }
@@ -196,16 +200,29 @@ handle_entries() {
         }
         
         // calculate point of collision, move back to it
-        nassertr(C->has_surface_point(), true);
-        nassertr(C->has_surface_normal(), true);
-        nassertr(C->has_interior_point(), true);
-        LVector3f surface_normal = C->get_surface_normal(*_root);
+        LPoint3f surface_point;
+        LVector3f surface_normal;
+        LPoint3f interior_point;
+        
+        if (!C->get_all(def._target, surface_point, surface_normal, interior_point)) {
+          collide_cat.warning()
+            << "Cannot shove on " << from_node_path << " for collision into "
+            << C->get_into_node_path() << "; no normal/depth information.\n";
+          break;
+        }
+        
         if (_horizontal) {
           surface_normal[2] = 0.0f;
+          surface_normal.normalize();
         }
-        surface_normal.normalize();
         collide_cat.info() << "normal: " << surface_normal << endl;
-        PosX = C->get_surface_point(*_root) + (sphere_radius * surface_normal);
+        
+        // move back to the initial point of contact
+        _from_node_path_copy.set_pos(*_root, _from_node_path_copy.get_pos(*_root) +
+                                     -N * (1.0f - C->get_t()));
+        
+        // calculate new position given that you collided with this thing
+        PosX += (surface_point - interior_point).length() * surface_normal;
         
         // check to see if we're stuck, given this collision
         float dot = right_unit.dot(surface_normal);
@@ -236,7 +253,10 @@ handle_entries() {
         CPT(TransformState) prev_trans(_from_node_path_copy.get_prev_transform(*_root));
         prev_trans->set_pos(_from_node_path_copy.get_pos(*_root));
         _from_node_path_copy.set_prev_transform(*_root, prev_trans);
-        _from_node_path_copy.set_pos(PosX);
+        _from_node_path_copy.set_pos(*_root, PosX);
+        
+        // recalculate the position delta
+        N = _from_node_path_copy.get_pos_delta(*_root);
         
         // calculate new collisions given new movement vector
         CollisionEntry new_entry;
