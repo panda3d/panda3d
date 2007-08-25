@@ -130,7 +130,6 @@ handle_entries() {
       
       // extract the collision entries into a vector that we can safely modify
       Entries entries(*entries);
-      Entries next_entries;
       
       // extract out the initial set of collision solids
       CollisionSolids SCS;
@@ -143,9 +142,6 @@ handle_entries() {
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
       DCAST_INTO_R(sphere, (*entries.front()).get_from(), 0);
-      // use a slightly larger radius value so that when we move along
-      // collision planes we don't re-collide
-      float sphere_radius = sphere->get_radius() * 1.001;
       
       // make a copy of the original from_nodepath that we can mess with
       // in the process of calculating the final position
@@ -160,7 +156,7 @@ handle_entries() {
       LPoint3f N(M);
       
       const LPoint3f orig_pos(from_node_path.get_pos(*_root));
-      // this will hold the final calculated position
+      // this will hold the final calculated position at each iteration
       LPoint3f PosX(orig_pos);
       
       // unit vector facing back into original direction of motion
@@ -257,21 +253,21 @@ handle_entries() {
         
         // recalculate the position delta
         N = _from_node_path_copy.get_pos_delta(*_root);
+        collide_cat.info() << "N: " << N << endl;
         
         // calculate new collisions given new movement vector
         CollisionEntry new_entry;
         new_entry._from_node_path = _from_node_path_copy;
         new_entry._from = sphere;
-        next_entries.clear();
+        entries.clear();
         CollisionSolids::iterator csi;
         for (csi = SCS.begin(); csi != SCS.end(); ++csi) {
           PT(CollisionEntry) result = (*csi)->test_intersection_from_sphere(new_entry);
           if (result != (CollisionEntry *)NULL) {
-            next_entries.push_back(result);
+            collide_cat.info() << "new collision" << endl;
+            entries.push_back(result);
           }
         }
-        // swap in the new set of collision events
-        entries.swap(next_entries);
       }
       
       LVector3f net_shove(PosX - orig_pos);
