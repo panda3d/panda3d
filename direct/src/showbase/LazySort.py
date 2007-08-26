@@ -57,7 +57,7 @@ def itersorted(iterable, cmp = cmp, key = lambda x: x, reverse = False):
             # If init, get the first value and stop.
             # Otherwise, find the first value 'to the right'
             # of the most recently yielded value.
-            while (not init) and (cmp(k,lLimit) == -rev):
+            while (not init) and (cmp(k,lLimit) != rev):
                 k,val = a.next()
                 pass
 
@@ -89,7 +89,6 @@ def itersorted(iterable, cmp = cmp, key = lambda x: x, reverse = False):
                 layer[2].append(val)
                 pass
             pass
-        
         # Remove the initialization condition to enable lLimit checking.
         init = False
 
@@ -104,9 +103,22 @@ def itersorted(iterable, cmp = cmp, key = lambda x: x, reverse = False):
             yield val
             pass
 
+def test():
+    import random
+    from itertools import islice
+
+    control = sorted(data, key = lambda x: x[0])
+    variable = itersorted(data, key = lambda x: x[0])
+        
+    print control[:10] == [x for x in islice(variable,10)]
+    print data
+    print control
+
+    variable = itersorted(data, key = lambda x: x[0])
+    print [x for x in islice(variable,10)]
 if __debug__:
-    def pp(i):
-        for x in i:
+    def P(i):
+        for x in reversed(i):
             print x
 
     from unittest import TestCase, main
@@ -119,16 +131,16 @@ if __debug__:
         > python LazySort.py
         """
         
-        RANGELEN = 10
-        TESTLEN = 10
+        TESTLEN = 1000
+        RANGELEN = max(TESTLEN, 1000)
 
-        a = range(RANGELEN)
-        b = range(RANGELEN)
+        a = range(RANGELEN/2)*2
+        b = range(RANGELEN/2)*2
         shuffle(a)
         shuffle(b)
         DATA = zip(a,b)
         shuffle(DATA)
-        
+        DATA = [(2, 0), (2, 2), (4, 0), (3, 1), (1, 1), (0, 3), (0, 2), (4, 3), (3, 4), (1, 4)]
         del a
         del b
         
