@@ -103,23 +103,24 @@ def itersorted(iterable, cmp = cmp, key = lambda x: x, reverse = False):
             yield val
             pass
 
-def test():
-    import random
-    from itertools import islice
-
-    control = sorted(data, key = lambda x: x[0])
-    variable = itersorted(data, key = lambda x: x[0])
-        
-    print control[:10] == [x for x in islice(variable,10)]
-    print data
-    print control
-
-    variable = itersorted(data, key = lambda x: x[0])
-    print [x for x in islice(variable,10)]
 if __debug__:
     def P(i):
         for x in reversed(i):
             print x
+
+    def test():
+        import random
+        from itertools import islice
+
+        control = sorted(data, key = lambda x: x[0])
+        variable = itersorted(data, key = lambda x: x[0])
+        
+        print control[:10] == [x for x in islice(variable,10)]
+        print data
+        print control
+
+        variable = itersorted(data, key = lambda x: x[0])
+        print [x for x in islice(variable,10)]
 
     from unittest import TestCase, main
     from random import shuffle
