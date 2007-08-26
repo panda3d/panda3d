@@ -95,7 +95,7 @@ def itersorted(iterable, cmp = cmp, key = lambda x: x, reverse = False):
         # Whatever values that are on the top stack at this point are
         # the 'left-most' we've found that we haven't yet yielded. Yield
         # them in the order that we discovered them in the source data.
-        # Define lLimit as the rightmost limit for values that have not
+        # Define lLimit as the right-most limit for values that have not
         # yet been yielded.  This will allow us to ignore these values
         # on future iterations.
         lLimit, b, vals = stack.pop()
@@ -132,8 +132,8 @@ if __debug__:
         > python LazySort.py
         """
         
-        TESTLEN = 1000
-        RANGELEN = max(TESTLEN, 1000)
+        TESTLEN = 10
+        RANGELEN = max(TESTLEN, 10)
 
         a = range(RANGELEN/2)*2
         b = range(RANGELEN/2)*2
@@ -141,7 +141,6 @@ if __debug__:
         shuffle(b)
         DATA = zip(a,b)
         shuffle(DATA)
-        DATA = [(2, 0), (2, 2), (4, 0), (3, 1), (1, 1), (0, 3), (0, 2), (4, 3), (3, 4), (1, 4)]
         del a
         del b
         
