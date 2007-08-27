@@ -583,7 +583,7 @@ get_short_raw_time() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool TrueClock::
-set_cpu_affinity(PN_int32 mask) const {
+set_cpu_affinity(PN_uint32 mask) const {
   return false;
 }
 
