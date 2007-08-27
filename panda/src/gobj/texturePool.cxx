@@ -239,7 +239,7 @@ ns_has_texture(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-    bool read_mipmaps) {
+                bool read_mipmaps) {
   Filename filename(orig_filename);
 
   if (!_fake_texture_image.empty()) {
