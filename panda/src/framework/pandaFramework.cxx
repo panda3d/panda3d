@@ -1293,15 +1293,19 @@ event_f9(const Event *event, void *data) {
       text = filename;
     }
 
+    // Adds the full path to the output string
+    string output_text = (string)ExecutionEnvironment::get_cwd() + "/" + (string)text;
+
     TextNode *text_node = new TextNode("screenshot");
     self->_screenshot_text = NodePath(text_node);
     text_node->set_align(TextNode::A_center);
     text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
     text_node->set_shadow(0.04f, 0.04f);
-    text_node->set_text((string)ExecutionEnvironment::get_cwd() + "/" + (string)text);
+    text_node->set_text(output_text);
     self->_screenshot_text.set_scale(0.06);
     self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
     self->_screenshot_text.reparent_to(wf->get_aspect_2d());
+    cout << "Screenshot saved: " + output_text + "\n";
 
     double now = ClockObject::get_global_clock()->get_frame_time();
     self->_screenshot_clear_time = now + 3.0;
