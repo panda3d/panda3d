@@ -477,8 +477,6 @@ private:
   GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;
 
-  static GraphicsStateGuardian *_global_gsg;
-
 public:
   void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
