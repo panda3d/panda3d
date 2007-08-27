@@ -80,6 +80,13 @@ egg-object-type-tube            <Collide> { Tube descend }
 egg-object-type-trigger         <Collide> { Polyset descend intangible }
 egg-object-type-trigger-sphere  <Collide> { Sphere descend intangible }
 
+# "floor" and "dupefloor" define the nodes in question as floor
+# polygons.  dupefloor means to duplicate the geometry first so that
+# the same polygons serve both as visible geometry and as collision
+# polygons.
+egg-object-type-floor           <Collide> { Polyset descend level }
+egg-object-type-dupefloor       <Collide> { Polyset keep descend level }
+
 # "bubble" puts an invisible bubble around an object, but does not
 # otherwise remove the geometry.
 egg-object-type-bubble          <Collide> { Sphere keep descend }
