@@ -113,7 +113,7 @@ handle_entries() {
   FromEntries::iterator fei;
   for (fei = _from_entries.begin(); fei != _from_entries.end(); ++fei) {
     NodePath from_node_path = fei->first;
-    Entries *entries = &fei->second;
+    Entries *entries_ptr = &fei->second;
     
     Colliders::iterator ci;
     ci = _colliders.find(from_node_path);
@@ -129,7 +129,7 @@ handle_entries() {
       ColliderDef &def = (*ci).second;
       
       // extract the collision entries into a vector that we can safely modify
-      Entries entries(*entries);
+      Entries entries(*entries_ptr);
       
       // extract out the initial set of collision solids
       CollisionSolids SCS;
