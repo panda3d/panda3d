@@ -331,6 +331,9 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
     def GetPuppetConnectionChannel(self, doId):
         return doId + (1L << 32)
 
+    def GetAccountConnectionChannel(self, doId):
+        return doId + (3L << 32)
+
     def GetAccountIDFromChannelCode(self, channel):
         return channel >> 32
 
@@ -340,6 +343,11 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
     def sendUpdateToAvatarId(self, avId, fieldName, args):
         assert self.notify.debugStateCall(self)
         channelId = self.GetPuppetConnectionChannel(avId)
+        self.sendUpdateToChannel(channelId, fieldName, args)
+
+    def sendUpdateToAccountId(self, accountId, fieldName, args):
+        assert self.notify.debugStateCall(self)
+        channelId = self.GetAccountConnectionChannel(accountId)
         self.sendUpdateToChannel(channelId, fieldName, args)
 
     def sendUpdateToChannel(self, channelId, fieldName, args):
