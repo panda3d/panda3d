@@ -87,7 +87,7 @@ get_flush_time() const {
 //
 //               Note that in the case of multiple different processes
 //               simultaneously operating on the same cache directory,
-//               the actual cache size may slightlyexceed this value
+//               the actual cache size may slightly exceed this value
 //               from time to time due to latency in checking between
 //               the processes.
 ////////////////////////////////////////////////////////////////////
