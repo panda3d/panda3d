@@ -706,9 +706,10 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
     // with CollisionNodes and special geometry under higher levels of
     // detail.
     int index = DCAST(LODNode, node)->get_lowest_switch();
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateSingle next_state(level_state, node->get_child(i));
+      CollisionLevelStateSingle next_state(level_state, children.get_child(i));
       if (i != index) {
         next_state.set_include_mask(next_state.get_include_mask() &
           ~GeomNode::get_default_collide_mask());
@@ -718,9 +719,10 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
 
   } else {
     // Otherwise, visit all the children.
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateSingle next_state(level_state, node->get_child(i));
+      CollisionLevelStateSingle next_state(level_state, children.get_child(i));
       r_traverse_single(next_state, pass);
     }
   }
@@ -921,9 +923,10 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
     // with CollisionNodes and special geometry under higher levels of
     // detail.
     int index = DCAST(LODNode, node)->get_lowest_switch();
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateDouble next_state(level_state, node->get_child(i));
+      CollisionLevelStateDouble next_state(level_state, children.get_child(i));
       if (i != index) {
         next_state.set_include_mask(next_state.get_include_mask() &
           ~GeomNode::get_default_collide_mask());
@@ -933,9 +936,10 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
 
   } else {
     // Otherwise, visit all the children.
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateDouble next_state(level_state, node->get_child(i));
+      CollisionLevelStateDouble next_state(level_state, children.get_child(i));
       r_traverse_double(next_state, pass);
     }
   }
@@ -1136,9 +1140,10 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
     // with CollisionNodes and special geometry under higher levels of
     // detail.
     int index = DCAST(LODNode, node)->get_lowest_switch();
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateQuad next_state(level_state, node->get_child(i));
+      CollisionLevelStateQuad next_state(level_state, children.get_child(i));
       if (i != index) {
         next_state.set_include_mask(next_state.get_include_mask() &
           ~GeomNode::get_default_collide_mask());
@@ -1148,9 +1153,10 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
 
   } else {
     // Otherwise, visit all the children.
-    int num_children = node->get_num_children();
+    PandaNode::Children children = node->get_children();
+    int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      CollisionLevelStateQuad next_state(level_state, node->get_child(i));
+      CollisionLevelStateQuad next_state(level_state, children.get_child(i));
       r_traverse_quad(next_state, pass);
     }
   }
@@ -1298,17 +1304,16 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
         const GeomPrimitive *primitive = geom->get_primitive(i);
         CPT(GeomPrimitive) tris = primitive->decompose();
         nassertv(tris->is_of_type(GeomTriangles::get_class_type()));
-        int num_vertices = tris->get_num_vertices();
-        nassertv((num_vertices % 3) == 0);
-        
-        for (int vi = 0; vi < num_vertices; vi += 3) {
+
+        GeomVertexReader index(tris->get_vertices(), 0);
+        while (!index.is_at_end()) {
           Vertexf v[3];
 
-          vertex.set_row(tris->get_vertex(vi));
+          vertex.set_row(index.get_data1i());
           v[0] = vertex.get_data3f();
-          vertex.set_row(tris->get_vertex(vi + 1));
+          vertex.set_row(index.get_data1i());
           v[1] = vertex.get_data3f();
-          vertex.set_row(tris->get_vertex(vi + 2));
+          vertex.set_row(index.get_data1i());
           v[2] = vertex.get_data3f();
           
           // Generate a temporary CollisionGeom on the fly for each
