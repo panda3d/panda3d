@@ -30,6 +30,7 @@
 #include "mouseAndKeyboard.h"
 #include "mouseRecorder.h"
 #include "throw_event.h"
+#include "executionEnvironment.h"
 
 LoaderOptions PandaFramework::_loader_options;
 
@@ -1297,13 +1298,13 @@ event_f9(const Event *event, void *data) {
     text_node->set_align(TextNode::A_center);
     text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
     text_node->set_shadow(0.04f, 0.04f);
-    text_node->set_text(text);
+    text_node->set_text((string)ExecutionEnvironment::get_cwd() + "/" + (string)text);
     self->_screenshot_text.set_scale(0.06);
     self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
     self->_screenshot_text.reparent_to(wf->get_aspect_2d());
 
     double now = ClockObject::get_global_clock()->get_frame_time();
-    self->_screenshot_clear_time = now + 2.0;
+    self->_screenshot_clear_time = now + 3.0;
   }
 }
 
