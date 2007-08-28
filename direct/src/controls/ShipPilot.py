@@ -112,29 +112,39 @@ class ShipPilot(PhysicsWalker):
 
         cNode = CollisionNode('SP.cNode')
 
-        """
         # Front sphere:
+        frontPos = self.bowPos[1]+sRadius
+        rearPos = self.sternPos[1]-sRadius
         cBowSphere = CollisionSphere(
-            0.0, self.bowPos[1]+sRadius, 0.0, sRadius)
-        
+            0.0, frontPos, 0.0, sRadius)
+
         # Back sphere:
         cSternSphere = CollisionSphere(
-            0.0, self.sternPos[1]-sRadius, 0.0, sRadius)
-        cSternSphereNode = CollisionNode('SP.cSternSphereNode')
-        """
+            0.0, rearPos, 0.0, sRadius)
+
+        # Mid sphere:  create to fill in the gap between front and back spheres,
+        # minimum radius it can be is the radius of the front and rear sphere, but
+        # allow it to get bigger to completely fill the middle
+        midSphereRadius = max(sRadius,((rearPos - frontPos) - (sRadius * 2))/2)
+        cMidSphere = CollisionSphere(
+            0.0, frontPos + ((rearPos - frontPos) / 2), 0.0, midSphereRadius)
 
         # Scaled sphere
-        cObj = CollisionSphere(
-            0.0, (self.sternPos[1]+self.bowPos[1])/2.0, 0.0, sRadius)
+        # jbutler: abandoned using the stretched sphere since there are problems
+        # with pushing against a scaled sphere
+#        cObj = CollisionSphere(
+#            0.0, (self.sternPos[1]+self.bowPos[1])/2.0, 0.0, sRadius)
 
         ## Combine them all
-        # cNode.addSolid(cBowSphere)
-        # cNode.addSolid(cSternSphere)
-        cNode.addSolid(cObj)
+        cNode.addSolid(cBowSphere)
+        cNode.addSolid(cMidSphere)
+        cNode.addSolid(cSternSphere)
+        #cNode.addSolid(cObj)
         shipIColRoot = self.ship.getInteractCollisionRoot()
         self.cNodePath = shipIColRoot.attachNewNode(cNode)
         shipLen = abs(self.sternPos[1]-self.bowPos[1])
-        self.cNodePath.setScale(1,(shipLen/2.0)/sRadius,1)
+        self.cNodePath.setScale(1,1,1)
+        #self.cNodePath.setScale(1,(shipLen/2.0)/sRadius,1)
         self.pusher.addCollider(
             self.cNodePath, self.shipNodePath)
         self.pusher.setHorizontal(True)
@@ -407,7 +417,6 @@ class ShipPilot(PhysicsWalker):
         if self.currentTurning < 0.001 and self.currentTurning > -0.001:
             self.currentTurning = 0.0
         self.__rotationSpeed = self.currentTurning
-
 
         if self.wantDebugIndicator:
             self.displayDebugInfo()
