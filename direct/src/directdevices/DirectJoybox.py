@@ -4,6 +4,7 @@ from DirectDeviceManager import *
 from direct.directtools.DirectUtil import *
 from direct.gui import OnscreenText
 from direct.task import Task
+import math
 
 """
 TODO:
@@ -32,11 +33,14 @@ JOYBOX_MIN = ANALOG_MIN + ANALOG_DEADBAND
 JOYBOX_MAX = ANALOG_MAX - ANALOG_DEADBAND
 JOYBOX_RANGE = JOYBOX_MAX - JOYBOX_MIN
 
+JOYBOX_TREAD_SEPERATION = 1.0
+
 class DirectJoybox(DirectObject):
     joyboxCount = 0
     xyzMultiplier = 1.0
     hprMultiplier = 1.0
-    def __init__(self, device = 'CerealBox', nodePath = base.direct.camera):
+    def __init__(self, device = 'CerealBox', nodePath = base.direct.camera,
+                 headingNP = base.direct.camera):
         # See if device manager has been initialized
         if base.direct.deviceManager == None:
             base.direct.deviceManager = DirectDeviceManager()
@@ -58,6 +62,10 @@ class DirectJoybox(DirectObject):
         self.lastTime = globalClock.getFrameTime()
         # Record node path
         self.nodePath = nodePath
+        self.headingNP = headingNP
+        self.useHeadingNP = False
+        self.rotateInPlace = False
+        self.floatingNP = NodePath("floating")
         # Ref CS for orbit mode
         self.refCS = base.direct.cameraControl.coaMarker
         self.tempCS = base.direct.group.attachNewNode('JoyboxTempCS')
@@ -77,6 +85,12 @@ class DirectJoybox(DirectObject):
         self.addButtonEvents()
         # Spawn update task
         self.enable()
+
+
+    def setHeadingNodePath(self,np):
+
+        self.headingNP = np
+
 
     def enable(self):
         # Kill existing task
@@ -238,7 +252,27 @@ class DirectJoybox(DirectObject):
         p = getAxisVal(4) * self.modifier[4]
         r = getAxisVal(5) * self.modifier[5]
         hpr = Vec3(h, p, r) * (hprScale * self.deltaTime)
-        # Move node path
+        # if we are using a heading nodepath, we want
+        # to drive in the direction we are facing,
+        # however, we don't want the z component to change
+        if (self.useHeadingNP and self.headingNP != None):
+            oldZ = pos.getZ()
+            pos = self.nodePath.getRelativeVector(self.headingNP,
+                                                  pos)
+            pos.setZ(oldZ)
+            # if we are using a heading NP we might want to rotate
+            # in place around that NP
+            if (self.rotateInPlace):
+                parent = self.nodePath.getParent()
+                self.floatingNP.reparentTo(parent)
+                self.floatingNP.setPos(self.headingNP,0,0,0)
+                self.floatingNP.setHpr(0,0,0)
+                self.nodePath.wrtReparentTo(self.floatingNP)
+                self.floatingNP.setHpr(hpr)
+                self.nodePath.wrtReparentTo(parent)
+                hpr = Vec3(0,0,0)
+            
+            
         self.nodePath.setPosHpr(self.nodePath, pos, hpr)
 
     def joeMode(self):
@@ -246,6 +280,23 @@ class DirectJoybox(DirectObject):
                         R_TWIST, L_TWIST, NULL_AXIS]
         self.modifier = [1, 1, 1, -1, -1, 0]
         self.setMode(self.joyboxFly, 'Joe Mode')
+
+
+    def basicMode(self):
+        self.mapping = [NULL_AXIS, R_FWD_BACK, NULL_AXIS,
+                        R_LEFT_RIGHT, NULL_AXIS, NULL_AXIS]
+        self.modifier = [0,1,0,-1,0,0]
+        self.setMode(self.joyboxFly,'Basic Mode')
+
+    def fpsMode(self):
+        self.mapping = [L_LEFT_RIGHT,R_FWD_BACK,L_FWD_BACK,
+                        R_LEFT_RIGHT, NULL_AXIS, NULL_AXIS]
+        self.modifier = [1,1,1,-1,0,0]
+        self.setMode(self.joyboxFly,'FPS Mode')
+
+    def tankMode(self):
+        self.setMode(self.tankFly,'Tank Mode')
+
 
     def lucMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
@@ -297,6 +348,29 @@ class DirectJoybox(DirectObject):
 
     def spaceMode(self):
         self.setMode(self.spaceFly, 'Space Mode')
+
+
+    def tankFly(self):
+
+        leftTreadSpeed  = (self.normalizeChannel(L_SLIDE,.1,100) *
+                           DirectJoybox.xyzMultiplier) * self.aList[L_FWD_BACK]
+        rightTreadSpeed = (self.normalizeChannel(R_SLIDE,.1,100) *
+                           DirectJoybox.xyzMultiplier) * self.aList[R_FWD_BACK]
+
+        forwardSpeed = (leftTreadSpeed + rightTreadSpeed)*.5
+        headingSpeed = math.atan2(leftTreadSpeed - rightTreadSpeed,
+                                  JOYBOX_TREAD_SEPERATION)
+        headingSpeed = 180/3.14159 * headingSpeed
+
+        dh = -1.0*headingSpeed * self.deltaTime*.3
+        dy = forwardSpeed * self.deltaTime
+
+        self.nodePath.setH(self.nodePath,dh)
+        self.nodePath.setY(self.nodePath,dy)
+                                                
+        
+        
+        
 
     def spaceFly(self):
         # Do nothing if no nodePath selected
