@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "movieVideo.h"
+#include "audioSound.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieTexture
@@ -41,7 +42,7 @@ PUBLISHED:
   INLINE int get_video_width() const;
   INLINE int get_video_height() const;
   INLINE LVecBase2f get_tex_scale() const;
-
+  
   void   restart();
   void   stop();
   void   play();
@@ -54,7 +55,9 @@ PUBLISHED:
   void   set_play_rate(double play_rate);
   double get_play_rate() const;
   bool   is_playing() const;
-
+  void   synchronize_to(AudioSound *sound);
+  void   unsynchronize();
+  
 public:
   static PT(Texture) make_texture();
   virtual bool has_cull_callback() const;
@@ -93,10 +96,12 @@ protected:
     int _video_height;
     double _video_length;
 
-    double _clock;
-    bool   _playing;
-    int    _loop_count;
-    double _play_rate;
+    double         _clock;
+    bool           _playing;
+    int            _loop_count;
+    int            _loops_total;
+    double         _play_rate;
+    PT(AudioSound) _synchronize;
   };
 
   PipelineCycler<CData> _cycler;

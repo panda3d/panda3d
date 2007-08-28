@@ -26,6 +26,7 @@
 #include "config_grutil.h"
 #include "bamCacheRecord.h"
 #include "math.h"
+#include "audioSound.h"
 
 TypeHandle MovieTexture::_type_handle;
 
@@ -66,7 +67,8 @@ CData() :
   _playing(false),
   _clock(0.0),
   _play_rate(1.0),
-  _loop_count(1)
+  _loop_count(1),
+  _loops_total(1)
 {
 }
 
@@ -84,7 +86,8 @@ CData(const CData &copy) :
   _playing(false),
   _clock(0.0),
   _play_rate(1.0),
-  _loop_count(1.0)
+  _loop_count(1),
+  _loops_total(1)
 {
 }
 
@@ -377,17 +380,25 @@ bool MovieTexture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
   CDReader cdata(_cycler);
   
-  // Calculate the cursor position modulo the length of the movie.
-  double now = ClockObject::get_global_clock()->get_frame_time();
-  double clock = cdata->_clock;
-  if (cdata->_playing) {
-    clock += now * cdata->_play_rate;
-  }
   double offset;
-  if (clock >= cdata->_video_length * cdata->_loop_count) {
-    offset = cdata->_video_length;
+  if (cdata->_synchronize != 0) {
+    offset = cdata->_synchronize->get_time();
   } else {
-    offset = fmod(clock, cdata->_video_length);
+    // Calculate the cursor position modulo the length of the movie.
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    double clock = cdata->_clock;
+    if (cdata->_playing) {
+      clock += now * cdata->_play_rate;
+    }
+    int true_loop_count = cdata->_loops_total;
+    if (true_loop_count <= 0) {
+      true_loop_count = 1000000000;
+    }
+    if (clock >= cdata->_video_length * true_loop_count) {
+      offset = cdata->_video_length;
+    } else {
+      offset = fmod(clock, cdata->_video_length);
+    }
   }
   
   for (int i=0; i<((int)(cdata->_pages.size())); i++) {
@@ -483,21 +494,18 @@ play() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   cdata->_clock = 0.0 - (now * cdata->_play_rate);
   cdata->_playing = true;
+  cdata->_loops_total = cdata->_loop_count;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::set_time
 //       Access: Published
-//  Description: Sets the movie's cursor.  If the movie's loop count
-//               count is greater than one, then its length is
-//               effectively multiplied for the purposes of this
-//               function.  In other words, you can set a value in
-//               the range 0.0 to (length * loopcount).
+//  Description: Sets the movie's cursor.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
 set_time(double t) {
   CDWriter cdata(_cycler);
-  t = min(cdata->_video_length * cdata->_loop_count, max(0.0, t));
+  t = min(cdata->_video_length, max(0.0, t));
   if (cdata->_playing) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     cdata->_clock = t - (now * cdata->_play_rate);
@@ -524,7 +532,11 @@ get_time() const {
     double now = ClockObject::get_global_clock()->get_frame_time();
     clock += (now * cdata->_play_rate);
   }
-  return min(cdata->_video_length * cdata->_loop_count, clock);
+  if (clock >= cdata->_video_length * cdata->_loops_total) {
+    return cdata->_video_length;
+  } else {
+    return fmod(clock, cdata->_video_length);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -535,12 +547,7 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
 set_loop(bool loop) {
-  CDWriter cdata(_cycler);
-  if (loop) {
-    cdata->_loop_count = 1000000000;
-  } else {
-    cdata->_loop_count = 1;
-  }
+  set_loop_count(loop ? 0:1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -552,7 +559,7 @@ set_loop(bool loop) {
 bool MovieTexture::
 get_loop() const {
   CDReader cdata(_cycler);
-  return (cdata->_loop_count != 1);
+  return (cdata->_loop_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -563,8 +570,6 @@ get_loop() const {
 void MovieTexture::
 set_loop_count(int n) {
   CDWriter cdata(_cycler);
-  if (n < 1) n = 1;
-  if (n > 1000000000) n = 1000000000;
   cdata->_loop_count = n;
 }
 
@@ -621,3 +626,26 @@ is_playing() const {
   return cdata->_playing;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::synchronize_to
+//       Access: Published
+//  Description: Synchronize this texture to a sound.  Typically,
+//               you would load the texture and the sound from the
+//               same AVI file.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+synchronize_to(AudioSound *s) {
+  CDWriter cdata(_cycler);
+  cdata->_synchronize = s;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::unsynchronize
+//       Access: Published
+//  Description: Stop synchronizing with a sound.
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+unsynchronize() {
+  CDWriter cdata(_cycler);
+  cdata->_synchronize = 0;
+}
