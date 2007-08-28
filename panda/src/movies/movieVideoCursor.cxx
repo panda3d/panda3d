@@ -30,7 +30,7 @@ TypeHandle MovieVideoCursor::_type_handle;
 //               to construct a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
-MovieVideoCursor(PT(MovieVideo) src) :
+MovieVideoCursor(MovieVideo *src) :
   _source(src),
   _size_x(1),
   _size_y(1),
@@ -40,7 +40,8 @@ MovieVideoCursor(PT(MovieVideo) src) :
   _can_seek_fast(true),
   _aborted(false),
   _last_start(-1.0),
-  _next_start(0.0)
+  _next_start(0.0),
+  _conversion_buffer(0)
 {
 }
 

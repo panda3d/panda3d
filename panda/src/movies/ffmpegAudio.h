@@ -36,7 +36,6 @@ PUBLISHED:
   virtual PT(MovieAudioCursor) open();
 
  private:
-  Filename _specified_filename;
   friend class FfmpegAudioCursor;
   
 public:

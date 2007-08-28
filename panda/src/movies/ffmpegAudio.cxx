@@ -30,9 +30,9 @@ TypeHandle FfmpegAudio::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FfmpegAudio::
 FfmpegAudio(const Filename &name) :
-  MovieAudio(name),
-  _specified_filename(name)
+  MovieAudio(name)
 {
+  _filename = name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +51,13 @@ FfmpegAudio::
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudioCursor) FfmpegAudio::
 open() {
-  return new FfmpegAudioCursor(this);
+  PT(FfmpegAudioCursor) result = new FfmpegAudioCursor(this);
+  if (result->_format_ctx == 0) {
+    movies_cat.error() << "Could not open " << _filename << "\n";
+    return NULL;
+  } else {
+    return (MovieAudioCursor*)(FfmpegAudioCursor*)result;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

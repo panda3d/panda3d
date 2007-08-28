@@ -16,3 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideo::get_filename
+//       Access: Published
+//  Description: Returns the movie's filename.  A movie is not
+//               guaranteed to have a filename, if not, then this
+//               function returns a null filename.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &MovieVideo::
+get_filename() const {
+  return _filename;
+}

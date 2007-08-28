@@ -32,7 +32,7 @@
 class EXPCL_PANDA_MOVIES InkblotVideoCursor : public MovieVideoCursor {
 
  PUBLISHED:
-  InkblotVideoCursor(PT(InkblotVideo) src);
+  InkblotVideoCursor(InkblotVideo *src);
   virtual ~InkblotVideoCursor();
   
  public:

@@ -41,14 +41,15 @@ TypeHandle FfmpegVideoCursor::_type_handle;
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 FfmpegVideoCursor::
-FfmpegVideoCursor(PT(FfmpegVideo) src) :
-  MovieVideoCursor((MovieVideo*)(FfmpegVideo*)src),
-  _filename(src->_specified_filename),
+FfmpegVideoCursor(FfmpegVideo *src) :
+  MovieVideoCursor(src),
+  _filename(src->_filename),
   _format_ctx(0),
   _video_index(-1),
   _video_ctx(0),
   _frame(0),
   _frame_out(0),
+  _packet(0),
   _min_fseek(3.0)
 {
   string url = "pandavfs:";
@@ -127,7 +128,15 @@ FfmpegVideoCursor::
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 cleanup() {
-  _frame_out->data[0] = 0;
+  if (_frame) {
+    av_free(_frame);
+    _frame = 0;
+  }
+  if (_frame_out) {
+    _frame_out->data[0] = 0;
+    av_free(_frame_out);
+    _frame_out = 0;
+  }
   if (_packet) {
     if (_packet->data) {
       av_free_packet(_packet);
@@ -142,14 +151,6 @@ cleanup() {
   if (_format_ctx) {
     av_close_input_file(_format_ctx);
     _format_ctx = 0;
-  }
-  if (_frame) {
-    av_free(_frame);
-    _frame = 0;
-  }
-  if (_frame_out) {
-    av_free(_frame_out);
-    _frame_out = 0;
   }
   _video_ctx = 0;
   _video_index = -1;
@@ -241,6 +242,16 @@ seek(double t) {
     movies_cat.error() << "Seek failure. Shutting down movie.\n";
     cleanup();
     _packet_time = t;
+    return;
+  }
+  avcodec_close(_video_ctx);
+  AVCodec *pVideoCodec=avcodec_find_decoder(_video_ctx->codec_id);
+  if(pVideoCodec == 0) {
+    cleanup();
+    return;
+  }
+  if(avcodec_open(_video_ctx, pVideoCodec)<0) {
+    cleanup();
     return;
   }
   fetch_packet(t);

@@ -30,9 +30,9 @@ TypeHandle FfmpegVideo::_type_handle;
 ////////////////////////////////////////////////////////////////////
 FfmpegVideo::
 FfmpegVideo(const Filename &name) :
-  MovieVideo(name),
-  _specified_filename(name)
+  MovieVideo(name)
 {
+  _filename = name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +51,13 @@ FfmpegVideo::
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideoCursor) FfmpegVideo::
 open() {
-  return new FfmpegVideoCursor(this);
+  PT(FfmpegVideoCursor) result = new FfmpegVideoCursor(this);
+  if (result->_format_ctx == 0) {
+    movies_cat.error() << "Could not open " << _filename << "\n";
+    return NULL;
+  } else {
+    return (MovieVideoCursor*)(FfmpegVideoCursor*)result;
+  }
 }
 
 

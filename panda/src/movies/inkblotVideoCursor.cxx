@@ -56,8 +56,8 @@ static color colormap[17] = {
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 InkblotVideoCursor::
-InkblotVideoCursor(PT(InkblotVideo) src) :
-  MovieVideoCursor((MovieVideo*)(InkblotVideo*)src)
+InkblotVideoCursor(InkblotVideo *src) :
+  MovieVideoCursor(src)
 {
   _size_x = src->_specified_x;
   _size_y = src->_specified_y;

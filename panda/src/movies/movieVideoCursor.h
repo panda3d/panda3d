@@ -22,8 +22,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
-class MovieVideoCursor;
-#include "movieVideo.h"
+class MovieVideo;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieVideoCursor
@@ -42,7 +41,7 @@ class MovieVideoCursor;
 class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
 
  PUBLISHED:
-  MovieVideoCursor(PT(MovieVideo) src);
+  MovieVideoCursor(MovieVideo *src);
   virtual ~MovieVideoCursor();
   PT(MovieVideo) get_source() const;
   INLINE int size_x() const;
@@ -97,5 +96,6 @@ private:
 };
 
 #include "movieVideoCursor.I"
+#include "movieVideo.h"
 
 #endif

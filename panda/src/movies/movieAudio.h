@@ -23,8 +23,7 @@
 #include "namable.h"
 #include "pointerTo.h"
 #include "typedWritableReferenceCount.h"
-class MovieAudio;
-#include "movieAudioCursor.h"
+class MovieAudioCursor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieAudio
@@ -40,13 +39,17 @@ class MovieAudio;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
 
-PUBLISHED:
+ PUBLISHED:
   MovieAudio(const string &name = "Blank Audio");
   virtual ~MovieAudio();
   virtual PT(MovieAudioCursor) open();
   static PT(MovieAudio) get(const Filename &name);
-  
-public:
+  INLINE const Filename &get_filename() const;
+
+ protected:
+  Filename _filename;
+
+ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -60,10 +63,11 @@ public:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-private:
+ private:
   static TypeHandle _type_handle;
 };
 
 #include "movieAudio.I"
+#include "movieAudioCursor.h"
 
 #endif

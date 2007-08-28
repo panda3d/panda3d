@@ -30,9 +30,15 @@ TypeHandle FfmpegAudioCursor::_type_handle;
 //  Description: xxx
 ////////////////////////////////////////////////////////////////////
 FfmpegAudioCursor::
-FfmpegAudioCursor(PT(FfmpegAudio) src) :
-  MovieAudioCursor((MovieAudio*)(FfmpegAudio*)src),
-  _filename(src->_specified_filename)
+FfmpegAudioCursor(FfmpegAudio *src) :
+  MovieAudioCursor(src),
+  _filename(src->_filename),
+  _packet(0),
+  _packet_data(0),
+  _format_ctx(0),
+  _audio_ctx(0),
+  _buffer(0),
+  _buffer_alloc(0)
 {
   string url = "pandavfs:";
   url += _filename;
@@ -211,25 +217,36 @@ reload_buffer() {
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
 seek(double t) {
-  movies_cat.error() << "Seek not implemented yet.\n";
-  //  PN_int64 target_ts = (PN_int64)(t / _audio_timebase);
-  //  if (target_ts < (PN_int64)(_initial_dts)) {
-  //    // Attempts to seek before the first packet will fail.
-  //    target_ts = _initial_dts;
-  //  }
-  //  if (av_seek_frame(_format_ctx, _audio_index, target_ts, AVSEEK_FLAG_BACKWARD) < 0) {
-  //    if (t >= _packet_time) {
-  //      return;
-  //    }
-  //    movies_cat.error() << "Seek failure. Shutting down movie.\n";
-  //    cleanup();
-  //    _packet_time = t;
-  //    return;
-  //  }
-  //  fetch_packet(t);
-  //  if (_packet_time > t) {
-  //    _packet_time = t;
-  //  }
+  PN_int64 target_ts = (PN_int64)(t / _audio_timebase);
+  if (target_ts < (PN_int64)(_initial_dts)) {
+    // Attempts to seek before the first packet will fail.
+    target_ts = _initial_dts;
+  }
+  if (av_seek_frame(_format_ctx, _audio_index, target_ts, AVSEEK_FLAG_BACKWARD) < 0) {
+    movies_cat.error() << "Seek failure. Shutting down movie.\n";
+    cleanup();
+    return;
+  }
+  avcodec_close(_audio_ctx);
+  AVCodec *pAudioCodec=avcodec_find_decoder(_audio_ctx->codec_id);
+  if(pAudioCodec == 0) {
+    cleanup();
+    return;
+  }
+  if(avcodec_open(_audio_ctx, pAudioCodec)<0) {
+    cleanup();
+    return;
+  }
+  _buffer_head = 0;
+  _buffer_tail = 0;
+  fetch_packet();
+  double ts = _packet->dts * _audio_timebase;
+  if (t > ts) {
+    int skip = (int)((t-ts) * _audio_rate);
+    read_samples(skip, 0);
+  }
+  _last_seek = t;
+  _samples_read = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,8 +267,10 @@ read_samples(int n, PN_int16 *data) {
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;
     if (ncopy) {
-      memcpy(data, _buffer + _buffer_head, ncopy * 2);
-      data += ncopy;
+      if (data != 0) {
+        memcpy(data, _buffer + _buffer_head, ncopy * 2);
+        data += ncopy;
+      }
       desired -= ncopy;
       _buffer_head += ncopy;
     }

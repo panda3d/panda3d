@@ -23,8 +23,7 @@
 #include "namable.h"
 #include "pointerTo.h"
 #include "typedWritableReferenceCount.h"
-class MovieVideo;
-#include "movieVideoCursor.h"
+class MovieVideoCursor;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieVideo
@@ -45,8 +44,12 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   virtual ~MovieVideo();
   virtual PT(MovieVideoCursor) open();
   static PT(MovieVideo) get(const Filename &name);
+  INLINE const Filename &get_filename() const;
   
-public:
+ protected:
+  Filename _filename;
+  
+ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -60,10 +63,11 @@ public:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-private:
+ private:
   static TypeHandle _type_handle;
 };
 
 #include "movieVideo.I"
+#include "movieVideoCursor.h"
 
 #endif

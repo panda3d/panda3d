@@ -36,7 +36,6 @@ class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
   virtual PT(MovieVideoCursor) open();
   
  private:
-  Filename _specified_filename;
   friend class FfmpegVideoCursor;
   
 public:

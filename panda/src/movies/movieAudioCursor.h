@@ -23,8 +23,7 @@
 #include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
-class MovieAudioCursor;
-#include "movieAudio.h"
+class MovieAudio;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieAudioCursor
@@ -43,7 +42,7 @@ class MovieAudioCursor;
 class EXPCL_PANDA_MOVIES MovieAudioCursor : public TypedWritableReferenceCount {
 
 PUBLISHED:
-  MovieAudioCursor(PT(MovieAudio) src);
+  MovieAudioCursor(MovieAudio *src);
   virtual ~MovieAudioCursor();
   INLINE PT(MovieAudio) get_source() const;
   INLINE int audio_rate() const;
@@ -89,5 +88,6 @@ private:
 };
 
 #include "movieAudioCursor.I"
+#include "movieAudio.h"
 
 #endif

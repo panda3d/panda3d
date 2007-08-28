@@ -35,9 +35,10 @@ struct AVPacket;
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegAudioCursor : public MovieAudioCursor {
+  friend class FfmpegAudio;
 
 PUBLISHED:
-  FfmpegAudioCursor(PT(FfmpegAudio) src);
+  FfmpegAudioCursor(FfmpegAudio *src);
   virtual ~FfmpegAudioCursor();
   virtual void seek(double offset);
   

@@ -35,9 +35,10 @@ struct AVFrame;
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
+  friend class FfmpegVideo;
 
  PUBLISHED:
-  FfmpegVideoCursor(PT(FfmpegVideo) src);
+  FfmpegVideoCursor(FfmpegVideo *src);
   virtual ~FfmpegVideoCursor();
   
  public:

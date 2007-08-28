@@ -29,7 +29,7 @@ TypeHandle MovieAudioCursor::_type_handle;
 //               a subclass of this class.
 ////////////////////////////////////////////////////////////////////
 MovieAudioCursor::
-MovieAudioCursor(PT(MovieAudio) src) :
+MovieAudioCursor(MovieAudio *src) :
   _source(src),
   _audio_rate(8000),
   _audio_channels(1),
