@@ -4856,8 +4856,8 @@ has_depth_test() const {
 //  Description: Returns true if depth-test rendering has been
 //               specifically set on this node via set_depth_test(), or
 //               false if depth-test rendering has been specifically
-//               disabled, or if nothing has been specifically set.  See
-//               also has_depth_test().
+//               disabled.  If nothing has been specifically set,
+//               returns true.  See also has_depth_test().
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 get_depth_test() const {
@@ -4869,7 +4869,7 @@ get_depth_test() const {
     return (dta->get_mode() != DepthTestAttrib::M_none);
   }
 
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4926,8 +4926,8 @@ has_depth_write() const {
 //  Description: Returns true if depth-write rendering has been
 //               specifically set on this node via set_depth_write(), or
 //               false if depth-write rendering has been specifically
-//               disabled, or if nothing has been specifically set.  See
-//               also has_depth_write().
+//               disabled.  If nothing has been specifically set,
+//               returns true.  See also has_depth_write().
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 get_depth_write() const {
@@ -4939,7 +4939,7 @@ get_depth_write() const {
     return (dta->get_mode() != DepthWriteAttrib::M_off);
   }
 
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
