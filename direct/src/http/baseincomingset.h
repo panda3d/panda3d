@@ -27,6 +27,8 @@ enum CloseState
 ////////////////////////////////////////////////////////////////////
 template < class _INCLASS1,class _IN_LISTEN, class MESSAGE_READER_BUF, class MESSAGE_READER_UPPASS> class BaseIncomingSet : public  std::list<_INCLASS1 *>
 {
+        typedef std::list<_INCLASS1 *> BaseClass;
+        typedef TYPENAME BaseClass::iterator iterator;
 	_IN_LISTEN					_Listener;
 
 	inline void AddFromListener(void);

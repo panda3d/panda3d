@@ -10,7 +10,7 @@
 
 
 typedef BaseIncomingSet< Http_Request , Socket_TCP_Listen , char [10240], char *>  Http_Source_BaseIncomingSet;
-static std::set< Http_Request * >                       Global_WebRequests_pendingNotify;
+std::set< Http_Request * >                       Global_WebRequests_pendingNotify;
 static Http_Source_BaseIncomingSet                      Global_HttpManager;
 
 bool Http_Request::HttpManager_Initialize( unsigned short port)

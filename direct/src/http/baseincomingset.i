@@ -38,7 +38,7 @@ inline int BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READE
 	MESSAGE_READER_BUF		message;
 	
 	iterator lpNext, lp;
-	for (lpNext  = lp = begin(); lp != end() ; lp = lpNext)
+	for (lpNext  = lp = BaseClass::begin(); lp != BaseClass::end() ; lp = lpNext)
 	{
 		lpNext++;	
 		
@@ -99,7 +99,7 @@ BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READER_UPPASS>::
 template <class _INCLASS1,class _IN_LISTEN,typename  MESSAGE_READER_BUF, typename  MESSAGE_READER_UPPASS> 
 BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READER_UPPASS>::~BaseIncomingSet()
 {
-    for(iterator ii = begin(); ii != end(); ii++)
+    for(iterator ii = BaseClass::begin(); ii != BaseClass::end(); ii++)
         delete *ii;
 }
 ////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ inline  void BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_REA
 		set1.setForSocket(_Listener);
 	iterator lp;
 	
-	for (lp = begin(); lp != end(); lp = lp++)
+	for (lp = BaseClass::begin(); lp != BaseClass::end(); lp = lp++)
 		set1.setForSocket((*lp)->val);
 }
 
@@ -189,7 +189,7 @@ inline void BaseIncomingSet<_INCLASS1,_IN_LISTEN,MESSAGE_READER_BUF,MESSAGE_READ
 {
 	_Listener.Close();
 	iterator lpNext, lp;
-	for (lpNext  = lp = begin(); lp != end() ; lp = lpNext)
+	for (lpNext  = lp = BaseClass::begin(); lp != BaseClass::end() ; lp = lpNext)
 	{
 		lpNext++;	
 		(*lp)->Reset();
