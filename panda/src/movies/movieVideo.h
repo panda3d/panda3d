@@ -67,7 +67,9 @@ class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public
   static TypeHandle _type_handle;
 };
 
-#include "movieVideo.I"
+/* okcircular */
 #include "movieVideoCursor.h"
+
+#include "movieVideo.I"
 
 #endif

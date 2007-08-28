@@ -67,7 +67,9 @@ class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public
   static TypeHandle _type_handle;
 };
 
-#include "movieAudio.I"
+/* okcircular */
 #include "movieAudioCursor.h"
+
+#include "movieAudio.I"
 
 #endif
