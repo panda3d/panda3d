@@ -98,6 +98,19 @@ set_frame(const Vertexf &ll, const Vertexf &lr, const Vertexf &ur, const Vertexf
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_frame_fullscreen_quad
+//       Access: Public
+//  Description: Sets the card to (-1,1,-1,1), which is appropriate
+//               if you plan to parent it to render2d and use it
+//               as a fullscreen quad.
+////////////////////////////////////////////////////////////////////
+INLINE void CardMaker::
+set_frame_fullscreen_quad()
+{
+  set_frame(-1,1,-1,1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::set_color
 //       Access: Public
 //  Description: Sets the color of the card.

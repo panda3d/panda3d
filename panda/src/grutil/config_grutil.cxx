@@ -51,7 +51,6 @@ ConfigVariableDouble frame_rate_meter_scale
 ConfigVariableDouble frame_rate_meter_side_margins
 ("frame-rate-meter-side-margins", 0.5);
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at
@@ -62,6 +61,14 @@ ConfigVariableDouble frame_rate_meter_side_margins
 ////////////////////////////////////////////////////////////////////
 void
 init_libgrutil() {
+  ConfigVariableBool use_movietexture
+    ("use-movietexture", false,
+     PRC_DESC("Panda contains a new animated texture class, MovieTexture. "
+              "Because it is not yet fully tested, the texture loader "
+              "will not use it unless this variable is set.  Eventually, "
+              "this config variable will go away and the new code will "
+              "be enabled all the time."));
+
   static bool initialized = false;
   if (initialized) {
     return;
@@ -75,40 +82,34 @@ init_libgrutil() {
 
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
-  TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(MovieTexture::make_texture, "inkblot dummyvideo");
+#ifdef HAVE_OPENCV
+  OpenCVTexture::init_type();
+  OpenCVTexture::register_with_read_factory();
+#endif
+#ifdef HAVE_FFMPEG
+  av_register_all();
+  FFMpegTexture::init_type();
+  FFMpegTexture::register_with_read_factory();
+#endif
 
 #ifdef HAVE_OPENCV
-  
-  {
-    OpenCVTexture::init_type();
-    OpenCVTexture::register_with_read_factory();
-    
-    PandaSystem *ps = PandaSystem::get_global_ptr();
-    ps->add_system("OpenCV");
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("OpenCV");
+#endif
 
-#ifndef HAVE_FFMPEG
-    // We use OpenCV to render AVI files only if ffmpeg is not
-    // available.
-    TexturePool *ts = TexturePool::get_global_ptr();
+  TexturePool *ts = TexturePool::get_global_ptr();
+  if (use_movietexture) {
+#if defined(HAVE_FFMPEG)
+    ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg wmv asf flv nut ogm");
+#elif defined(HAVE_OPENCV)
+    ts->register_texture_type(OpenCVTexture::make_texture, "avi");
+#endif
+  } else {
+#if defined(HAVE_FFMPEG)
+    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg wmv asf flv nut ogm");
+#elif defined(HAVE_OPENCV)
     ts->register_texture_type(OpenCVTexture::make_texture, "avi");
 #endif
   }
-#endif // HAVE_OPENCV
-
-#ifdef HAVE_FFMPEG
-  {
-    //configure all known codecs. Can take a few frames. 
-    av_register_all();
-    
-    FFMpegTexture::init_type();
-    FFMpegTexture::register_with_read_factory();
-    
-    PandaSystem *ps = PandaSystem::get_global_ptr();
-    ps->add_system("FFMpeg");
-    TexturePool *ts = TexturePool::get_global_ptr();
-    ts->register_texture_type(FFMpegTexture::make_texture, "avi mov mpg");
-  }
-#endif // HAVE_FFMPEG
 }
 

@@ -257,6 +257,19 @@ set_uv_range_cube(int face) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CardMaker::set_uv_range
+//       Access: Public
+//  Description: Sets the range of UV's that will be applied to the
+//               vertices appropriately to play a specified Movie.
+////////////////////////////////////////////////////////////////////
+void CardMaker::
+set_uv_range(const MovieTexture *movie) {
+  double maxu = (movie->get_video_width()*1.0) / movie->get_x_size();
+  double maxv = (movie->get_video_height()*1.0) / movie->get_y_size();
+  set_uv_range(TexCoordf(0.0,0.0), TexCoordf(maxu,maxv));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CardMaker::rescale_source_geometry
 //       Access: Private
 //  Description: Generates the card by rescaling the source geometry

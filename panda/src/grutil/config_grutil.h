@@ -24,6 +24,7 @@
 #include "configVariableDouble.h"
 #include "configVariableString.h"
 #include "configVariableInt.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(grutil, EXPCL_PANDA_GRUTIL, EXPTP_PANDA_GRUTIL);
 
