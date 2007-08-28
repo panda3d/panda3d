@@ -1361,8 +1361,7 @@ def CompileLink(dll, obj, opts, ldef):
         if (PkgSelected(opts,"FMODEX")):
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmodex/lib/fmodex_vc.lib'
         if (PkgSelected(opts,"OPENAL")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openal/lib/OpenAL32.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openal/lib/alut.lib'
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openal/lib/pandaopenal32.lib'
         if (PkgSelected(opts,"MILES")):
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'miles/lib/mss32.lib'
         if (PkgSelected(opts,"NVIDIACG")):
@@ -1415,7 +1414,7 @@ def CompileLink(dll, obj, opts, ldef):
             elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
         #if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmod/lib -lfmod'
         if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
-        #if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lopenal -lalut'
+        #if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lopenal'
         if (PkgSelected(opts,"NVIDIACG")):
             cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
             if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
