@@ -53,7 +53,7 @@ ConfigVariableString audio_library_name
 ConfigVariableDouble audio_volume 
 ("audio-volume", 1.0f);
 
-// Config variables for Fmod3:
+// Config variables for OpenAL:
 
 ConfigVariableDouble audio_doppler_factor 	 
 ("audio-doppler-factor", 1.0f); 	 
@@ -64,6 +64,19 @@ ConfigVariableDouble audio_distance_factor
 ConfigVariableDouble audio_drop_off_factor 	 
 ("audio-drop-off-factor", 1.0f); 	 
 	  	 
+ConfigVariableDouble audio_buffering_seconds
+("audio-buffering-seconds", 3.0f,
+ PRC_DESC("Controls the amount of audio buffering when streaming audio. "
+          "If you are playing a streaming sound, and any single frame "
+          "takes longer than this, the audio will stutter.  Caution: "
+          "buffering streaming audio takes a lot of memory.  For example, "
+          "5 seconds of stereo audio at 44,100 samples/sec takes one "
+          "megabyte.  The 3-second default is intentionally high, favoring "
+          "correctness over efficiency, but for a commercial application "
+          "you may wish to lower this."));
+
+// Unknown
+
 ConfigVariableInt audio_min_hw_channels 	 
 ("audio-min-hw-channels", 15, 	 
 PRC_DESC("Guarantee this many channels on the local sound card, or just " 	 

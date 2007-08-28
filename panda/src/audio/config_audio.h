@@ -51,6 +51,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 extern EXPCL_PANDA ConfigVariableDouble audio_doppler_factor; 	 
 extern EXPCL_PANDA ConfigVariableDouble audio_distance_factor; 	 
 extern EXPCL_PANDA ConfigVariableDouble audio_drop_off_factor; 	 
+extern EXPCL_PANDA ConfigVariableDouble audio_buffering_seconds;
 
 // Config vars for Miles:
 
