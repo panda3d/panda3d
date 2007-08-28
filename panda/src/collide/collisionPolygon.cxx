@@ -415,6 +415,13 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3f from_center = orig_center;
   bool moved_from_center = false;
   float t = 1.0f;
+  LPoint3f contact_point(from_center);
+  float actual_t = 1.0f;
+
+  LVector3f from_radius_v =
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  float from_radius_2 = from_radius_v.length_squared();
+  float from_radius = csqrt(from_radius_2);
 
   if (wrt_prev_space != wrt_space) {
     // If we have a delta between the previous position and the
@@ -440,15 +447,25 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // at the point along its path that is closest to intersecting
       // the plane.  This may be the actual intersection point, or it
       // may be the starting point or the final point.
-      t = -(dist_to_plane(a) / dot);
+      // dot is equal to the (negative) magnitude of 'delta' along the
+      // direction of the plane normal
+      // t = ratio of (distance from start pos to plane) to (distance
+      // from start pos to end pos), along axis of plane normal
+      float dist_to_p = dist_to_plane(a);
+      t = (dist_to_p / -dot);
+      
+      // also compute the actual contact point and time of contact
+      // for handlers that need it
+      actual_t = ((dist_to_p - from_radius) / -dot);
+      actual_t = min(1.0f, max(0.0f, actual_t));
+      contact_point = a + (actual_t * delta);
+
       if (t >= 1.0f) {
         // Leave it where it is.
-        t = 1.0f;
 
       } else if (t < 0.0f) {
         from_center = a;
         moved_from_center = true;
-        t = 0.0f;
 
       } else {
         from_center = a + t * delta;
@@ -456,11 +473,6 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       }
     }
   }
-
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius_2 = from_radius_v.length_squared();
-  float from_radius = csqrt(from_radius_2);
 
   LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 #ifndef NDEBUG
@@ -559,7 +571,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(from_center - normal * dist);
   new_entry->set_interior_point(from_center - normal * (dist + into_depth));
-  new_entry->set_t(t);
+  new_entry->set_contact_point(contact_point);
+  new_entry->set_contact_normal(get_normal());
+  new_entry->set_t(actual_t);
 
   return new_entry;
 }

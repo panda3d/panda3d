@@ -25,7 +25,8 @@
 INLINE CollisionEntry::
 CollisionEntry() {
   _flags = 0;
-  _t = 1.f;
+  // > 1. means collision didn't happen
+  _t = 2.f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,6 +150,29 @@ get_t() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::collided
+//       Access: Published
+//  Description: returns true if this represents an actual collision
+//               as opposed to a potential collision, needed for
+//               iterative collision resolution where path of
+//               collider changes mid-frame
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+collided() const {
+  return ((0.f <= _t) && (_t <= 1.f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::reset_collided
+//       Access: Published
+//  Description: prepare for another collision test
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+reset_collided() {
+  _t = 2.f;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_respect_prev_transform
 //       Access: Published
 //  Description: Returns true if the collision was detected by a
@@ -248,6 +272,62 @@ has_surface_normal() const {
 INLINE bool CollisionEntry::
 has_interior_point() const {
   return (_flags & F_has_interior_point) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_contact_point
+//       Access: Published
+//  Description: Stores the point, on the surface of the "into"
+//               object, at which the collision is first detected.
+//
+//               This point is specified in the coordinate space of
+//               the "into" object.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_contact_point(const LPoint3f &point) {
+  _contact_point = point;
+  _flags |= F_has_contact_point;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_contact_normal
+//       Access: Published
+//  Description: Stores the surface normal of the "into" object at the
+//               contact point.
+//
+//               This normal is specified in the coordinate space of
+//               the "into" object.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_contact_normal(const LVector3f &normal) {
+  _contact_normal = normal;
+  _flags |= F_has_contact_normal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_contact_point
+//       Access: Published
+//  Description: Returns true if the contact point has been specified,
+//               false otherwise.  See get_contact_point().  Some
+//               types of collisions may not compute the contact
+//               point.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_contact_point() const {
+  return (_flags & F_has_contact_point) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_contact_normal
+//       Access: Published
+//  Description: Returns true if the contact normal has been specified,
+//               false otherwise.  See get_contact_normal().  Some
+//               types of collisions may not compute the contact
+//               normal.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_contact_normal() const {
+  return (_flags & F_has_contact_normal) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,6 +444,12 @@ test_intersection(CollisionHandler *record,
 #ifdef DO_PSTATS
   ((CollisionSolid *)get_into())->get_test_pcollector().add_level(1);
 #endif  // DO_PSTATS
+  // if there was no collision detected but the handler wants to know about all
+  // potential collisions, create a "didn't collide" collision entry for it
+  if (record->wants_all_potential_collidees() && result == (CollisionEntry *)NULL) {
+    result = new CollisionEntry(*this);
+    result->reset_collided();
+  }
   if (result != (CollisionEntry *)NULL) {
     record->add_entry(result);
   }

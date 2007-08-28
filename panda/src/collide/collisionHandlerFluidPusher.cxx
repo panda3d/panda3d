@@ -55,7 +55,9 @@ add_entry(CollisionEntry *entry) {
       (!entry->has_into() || entry->get_into()->is_tangible())) {
 
     _from_entries[entry->get_from_node_path()].push_back(entry);
-    _has_contact = true;
+    if (entry->collided()) {
+      _has_contact = true;
+    }
   }
 }
 
@@ -102,7 +104,12 @@ handle_entries() {
     7. go to 2
   */
   bool okflag = true;
-  
+
+  // if all we got was potential collisions, don't bother
+  if (!_has_contact) {
+    return okflag;
+  }
+
   if (!_horizontal) {
     collide_cat.error() << "collisionHandlerFluidPusher::handle_entries is only supported in "
       "horizontal mode" << endl;
@@ -113,7 +120,7 @@ handle_entries() {
   FromEntries::iterator fei;
   for (fei = _from_entries.begin(); fei != _from_entries.end(); ++fei) {
     NodePath from_node_path = fei->first;
-    Entries *entries_ptr = &fei->second;
+    Entries *orig_entries = &fei->second;
     
     Colliders::iterator ci;
     ci = _colliders.find(from_node_path);
@@ -129,23 +136,14 @@ handle_entries() {
       ColliderDef &def = (*ci).second;
       
       // extract the collision entries into a vector that we can safely modify
-      Entries entries(*entries_ptr);
+      Entries entries(*orig_entries);
       
-      // extract out the initial set of collision solids
-      CollisionSolids SCS;
-      
-      Entries::iterator ei;
-      for (ei = entries.begin(); ei != entries.end(); ++ei) {
-        SCS.push_back((*ei)->get_into());
-      }
+      // make a copy of the original collision entries that we can use to re-test the collisions
+      Entries SCS(*orig_entries);
       
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
-      DCAST_INTO_R(sphere, (*entries.front()).get_from(), 0);
-      
-      // make a copy of the original from_nodepath that we can mess with
-      // in the process of calculating the final position
-      _from_node_path_copy = from_node_path.copy_to(from_node_path.get_parent());
+      DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
       
       // this is the original position delta for the entire frame, before collision response
       LPoint3f M(from_node_path.get_pos_delta(*_root));
@@ -154,10 +152,19 @@ handle_entries() {
       }
       // this is used to track position deltas every time we collide against a solid
       LPoint3f N(M);
+      //collide_cat.info() << "N: " << N << endl;
       
       const LPoint3f orig_pos(from_node_path.get_pos(*_root));
+      CPT(TransformState) prev_trans(from_node_path.get_prev_transform(*_root));
+      const LPoint3f orig_prev_pos(prev_trans->get_pos());
+      //collide_cat.info() << "orig_pos: " << orig_pos << endl;
+      //collide_cat.info() << "orig_prev_pos: " << orig_prev_pos << endl;
+      
       // this will hold the final calculated position at each iteration
-      LPoint3f PosX(orig_pos);
+      LPoint3f candidate_final_pos(orig_pos);
+      // this holds the position before reacting to collisions
+      LPoint3f uncollided_pos(candidate_final_pos);
+      //collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
       
       // unit vector facing back into original direction of motion
       LVector3f reverse_vec(-M);
@@ -165,25 +172,30 @@ handle_entries() {
         reverse_vec[2] = 0.0f;
       }
       reverse_vec.normalize();
+      //collide_cat.info() << "reverse_vec: " << reverse_vec << endl;
       
       // unit vector pointing out to the right relative to the direction of motion,
       // looking into the direction of motion
       const LVector3f right_unit(LVector3f::up().cross(reverse_vec));
+      //collide_cat.info() << "right_unit: " << right_unit << endl;
       
       // if both of these become true, we're stuck in a 'corner'
       bool left_halfspace_obstructed = false;
       bool right_halfspace_obstructed = false;
+      LVector3f left_halfspace_normal;
+      LVector3f right_halfspace_normal;
       float left_plane_dot = 200.0f;
       float right_plane_dot = 200.0f;
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
-        CollisionEntry *C = 0;
+        const CollisionEntry *C = 0;
         // find the first (earliest) collision
-        for (ei = entries.begin(); ei != entries.end(); ++ei) {
-          CollisionEntry *entry = (*ei);
+        Entries::const_iterator cei;
+        for (cei = entries.begin(); cei != entries.end(); ++cei) {
+          const CollisionEntry *entry = (*cei);
           nassertr(entry != (CollisionEntry *)NULL, false);
-          if ((C == 0) || (entry->get_t() < C->get_t())) {
+          if (entry->collided() && ((C == 0) || (entry->get_t() < C->get_t()))) {
             nassertr(from_node_path == entry->get_from_node_path(), false);
             C = entry;
             break;
@@ -195,105 +207,137 @@ handle_entries() {
           break;
         }
         
-        // calculate point of collision, move back to it
-        LPoint3f surface_point;
-        LVector3f surface_normal;
-        LPoint3f interior_point;
+        //collide_cat.info() << "t: " << C->get_t() << endl;
         
-        if (!C->get_all(def._target, surface_point, surface_normal, interior_point)) {
+        // move back to initial contact point
+        LPoint3f contact_point;
+        LVector3f contact_normal;
+
+        if (!C->get_all_contact_info(*_root, contact_point, contact_normal)) {
           collide_cat.warning()
             << "Cannot shove on " << from_node_path << " for collision into "
-            << C->get_into_node_path() << "; no normal/depth information.\n";
+            << C->get_into_node_path() << "; no contact point/normal information.\n";
           break;
         }
+
+        uncollided_pos = candidate_final_pos;
+        candidate_final_pos[0] = contact_point[0];
+        candidate_final_pos[1] = contact_point[1];
+        //collide_cat.info() << "contact_point: " << contact_point << endl;
         
+        LVector3f proj_surface_normal(contact_normal);
         if (_horizontal) {
-          surface_normal[2] = 0.0f;
-          surface_normal.normalize();
+          proj_surface_normal[2] = 0.0f;
         }
-        collide_cat.info() << "normal: " << surface_normal << endl;
+        //collide_cat.info() << "normal: " << contact_normal << endl;
+        //collide_cat.info() << "proj_surface_normal: " << proj_surface_normal << endl;
         
-        // move back to the initial point of contact
-        _from_node_path_copy.set_pos(*_root, _from_node_path_copy.get_pos(*_root) +
-                                     -N * (1.0f - C->get_t()));
-        
-        // calculate new position given that you collided with this thing
-        PosX += (surface_point - interior_point).length() * surface_normal;
+        LVector3f norm_proj_surface_normal(proj_surface_normal);
+        norm_proj_surface_normal.normalize();
+        //collide_cat.info() << "norm_proj_surface_normal: " << norm_proj_surface_normal << endl;
         
         // check to see if we're stuck, given this collision
-        float dot = right_unit.dot(surface_normal);
+        float dot = right_unit.dot(norm_proj_surface_normal);
+        //collide_cat.info() << "dot: " << dot << endl;
+        
         if (dot > 0.0f) {
           // positive dot means plane is coming from the left (looking along original
           // direction of motion)
+          if (right_halfspace_obstructed) {
+            // we have obstructions from both directions, we're stuck
+            break;
+          }
+          left_halfspace_obstructed = true;
           if (dot < left_plane_dot) {
-            if (right_halfspace_obstructed) {
-              // we have obstructions from both directions, we're stuck
-              break;
-            }
-            left_halfspace_obstructed = true;
+            left_halfspace_normal = norm_proj_surface_normal;
+          } else {
+            // detected collision has a steeper plane wrt fwd motion than a previous collision
+            // continue colliding against the shallower plane
+            norm_proj_surface_normal = left_halfspace_normal;
           }
         } else {
           // negative dot means plane is coming from the right (looking along original
           // direction of motion)
+          if (left_halfspace_obstructed) {
+            // we have obstructions from both directions, we're stuck
+            break;
+          }
+          right_halfspace_obstructed = true;
           dot = -dot;
           if (dot < right_plane_dot) {
-            if (left_halfspace_obstructed) {
-              // we have obstructions from both directions, we're stuck
-              break;
-            }
-            right_halfspace_obstructed = true;
+            right_halfspace_normal = norm_proj_surface_normal;
+          } else {
+            // detected collision has a steeper plane wrt fwd motion than a previous collision
+            // continue colliding against the shallower plane
+            norm_proj_surface_normal = right_halfspace_normal;
           }
         }
+        
+        // calculate new position given that you collided with this thing
+        // project the final position onto the plane of the obstruction
+        LVector3f blocked_movement(uncollided_pos - contact_point);
+        if (_horizontal) {
+          blocked_movement[2] = 0.0f;
+        }
+        //collide_cat.info() << "blocked movement: " << blocked_movement << endl;
+        
+        candidate_final_pos += (norm_proj_surface_normal *
+                                -blocked_movement.dot(norm_proj_surface_normal));
+        
+        // this is how the regular pusher pushes
+        //candidate_final_pos += (contact_point - interior_point).length() * norm_proj_surface_normal;
+        
+        //collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
         
         // set up new current/last positions, re-calculate collisions
-        CPT(TransformState) prev_trans(_from_node_path_copy.get_prev_transform(*_root));
-        prev_trans->set_pos(_from_node_path_copy.get_pos(*_root));
-        _from_node_path_copy.set_prev_transform(*_root, prev_trans);
-        _from_node_path_copy.set_pos(*_root, PosX);
+        from_node_path.set_pos(*_root, candidate_final_pos);
+        CPT(TransformState) prev_trans(from_node_path.get_prev_transform(*_root));
+        prev_trans->set_pos(contact_point);
+        from_node_path.set_prev_transform(*_root, prev_trans);
         
         // recalculate the position delta
-        N = _from_node_path_copy.get_pos_delta(*_root);
-        collide_cat.info() << "N: " << N << endl;
+        N = from_node_path.get_pos_delta(*_root);
+        if (_horizontal) {
+          N[2] = 0.0f;
+        }
+        //collide_cat.info() << "N: " << N << endl;
         
         // calculate new collisions given new movement vector
-        CollisionEntry new_entry;
-        new_entry._from_node_path = _from_node_path_copy;
-        new_entry._from = sphere;
         entries.clear();
-        CollisionSolids::iterator csi;
-        for (csi = SCS.begin(); csi != SCS.end(); ++csi) {
-          PT(CollisionEntry) result = (*csi)->test_intersection_from_sphere(new_entry);
-          if (result != (CollisionEntry *)NULL) {
-            collide_cat.info() << "new collision" << endl;
-            entries.push_back(result);
-          }
-        }
+//        for (cei = SCS.begin(); cei != SCS.end(); ++cei) {
+//          *cei->reset_collided();
+//          PT(CollisionEntry) result = (*cei)->get_from()->test_intersection(**cei);
+//          if (result != (CollisionEntry *)NULL) {
+//            collide_cat.info() << "new collision" << endl;
+//            entries.push_back(result);
+//          }
+//        }
       }
       
-      LVector3f net_shove(PosX - orig_pos);
-      if (_horizontal) {
-        net_shove[2] = 0.0f;
-      }
+      // put things back where they were
+      from_node_path.set_pos(*_root, orig_pos);
+      // restore the appropriate previous position
+      prev_trans = from_node_path.get_prev_transform(*_root);
+      prev_trans->set_pos(orig_prev_pos);
+      from_node_path.set_prev_transform(*_root, prev_trans);
+      
+      LVector3f net_shove(candidate_final_pos - orig_pos);
       LVector3f force_normal(net_shove);
       force_normal.normalize();
       
-      collide_cat.info() << "PosX: " << PosX << endl;
-      collide_cat.info() << "orig_pos: " << orig_pos << endl;
-      collide_cat.info() << "net_shove: " << net_shove << endl;
-      collide_cat.info() << endl;
-
+      //collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
+      //collide_cat.info() << "orig_pos: " << orig_pos << endl;
+      //collide_cat.info() << "net_shove: " << net_shove << endl;
       
       // This is the part where the node actually gets moved:
-      CPT(TransformState) trans = def._target.get_transform(*_root);
-      LVecBase3f pos = trans->get_pos();
-      pos += net_shove * trans->get_mat();
-      def._target.set_transform(*_root, trans->set_pos(pos));
-      def.updated_transform();
+      def._target.set_pos(*_root, candidate_final_pos);
       
       // We call this to allow derived classes to do other
       // fix-ups as they see fit:
       apply_net_shove(def, net_shove, force_normal);
       apply_linear_force(def, force_normal);
+      
+      //collide_cat.info() << endl;
     }
   }
   

@@ -40,7 +40,9 @@ CollisionEntry(const CollisionEntry &copy) :
   _flags(copy._flags),
   _surface_point(copy._surface_point),
   _surface_normal(copy._surface_normal),
-  _interior_point(copy._interior_point)
+  _interior_point(copy._interior_point),
+  _contact_point(copy._contact_point),
+  _contact_normal(copy._contact_normal)
 {
 }
 
@@ -63,6 +65,8 @@ operator = (const CollisionEntry &copy) {
   _surface_point = copy._surface_point;
   _surface_normal = copy._surface_normal;
   _interior_point = copy._interior_point;
+  _contact_point = copy._contact_point;
+  _contact_normal = copy._contact_normal;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,6 +75,8 @@ operator = (const CollisionEntry &copy) {
 //  Description: Returns the point, on the surface of the "into"
 //               object, at which a collision is detected.  This can
 //               be thought of as the first point of intersection.
+//               However the contact point is the actual first point of
+//               intersection.
 //
 //               The point will be converted into whichever coordinate
 //               space the caller specifies.
@@ -157,6 +163,79 @@ get_all(const NodePath &space, LPoint3f &surface_point,
     all_ok = false;
   } else {
     interior_point = _interior_point * mat;
+  }
+
+  return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_contact_point
+//       Access: Published
+//  Description: Returns the point, on the surface of the "into"
+//               object, at which a collision is detected.  This can
+//               be thought of as the first point of intersection.
+//               The surface point is not always the initial point of
+//               intersection. We preserve the original implementation
+//               of surface_point detection so that the existing
+//               collision response code will still work, and provide
+//               the contact_point for collision response code that
+//               needs precise collision information.
+//
+//               The point will be converted into whichever coordinate
+//               space the caller specifies.
+////////////////////////////////////////////////////////////////////
+LPoint3f CollisionEntry::
+get_contact_point(const NodePath &space) const {
+  nassertr(has_contact_point(), LPoint3f::zero());
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  return _contact_point * transform->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_contact_normal
+//       Access: Published
+//  Description: Returns the surface normal of the "into" object at
+//               the contact point.
+//
+//               The normal will be converted into whichever coordinate
+//               space the caller specifies.
+////////////////////////////////////////////////////////////////////
+LVector3f CollisionEntry::
+get_contact_normal(const NodePath &space) const {
+  nassertr(has_contact_normal(), LVector3f::zero());
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  return _contact_normal * transform->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_all_contact_info
+//       Access: Published
+//  Description: Simultaneously transforms the surface point, surface
+//               normal, and interior point of the collision into the
+//               indicated coordinate space.
+//
+//               Returns true if all three properties are available,
+//               or false if any one of them is not.
+////////////////////////////////////////////////////////////////////
+bool CollisionEntry::
+get_all_contact_info(const NodePath &space, LPoint3f &contact_point,
+                     LVector3f &contact_normal) const {
+  CPT(TransformState) transform = _into_node_path.get_transform(space);
+  const LMatrix4f &mat = transform->get_mat();
+  bool all_ok = true;
+
+  if (!has_contact_point()) {
+    contact_point = LPoint3f::zero();
+    all_ok = false;
+  } else {
+    contact_point = _contact_point * mat;
+  }
+
+  if (!has_contact_normal()) {
+    contact_normal = LVector3f::zero();
+    all_ok = false;
+  } else {
+    contact_normal = _contact_normal * mat;
   }
 
   return all_ok;
