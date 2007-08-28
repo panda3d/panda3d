@@ -25,9 +25,9 @@
 #ifdef HAVE_OPENAL //[
 
 #include "audioManager.h"
-#include "pset.h"
+#include "plist.h"
 #include "pmap.h"
-#include "pdeque.h"
+#include "pset.h"
 #include "movieAudioCursor.h"
 
 //The Includes needed for OpenAL
@@ -115,12 +115,11 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
 
 private:
   void make_current() const;
-  
+
   bool can_use_audio(MovieAudioCursor *source);
   bool can_load_audio(MovieAudioCursor *source);
   
-  SoundData *cached_sound_data(const Filename &file_name);
-  SoundData *load_sound_data(MovieAudioCursor *source);
+  SoundData *get_sound_data(MovieAudio *source);
 
   // Tell the manager that the sound dtor was called.
   void release_sound(OpenALAudioSound* audioSound);
@@ -135,6 +134,16 @@ private:
   
 private:
 
+  // An expiration queue is a list of SoundData
+  // that are no longer being used.  They are kept
+  // around for a little while, since it is common to
+  // stop using a sound for a brief moment and then
+  // quickly resume.
+  
+  typedef plist<void *> ExpirationQueue;
+  ExpirationQueue _expiring_samples;
+  ExpirationQueue _expiring_streams;
+
   // An AudioSound that uses a SoundData is called a "client"
   // of the SoundData.  The SoundData keeps track of how
   // many clients are using it.  When the number of clients
@@ -148,27 +157,28 @@ private:
 
   class SoundData {
   public:
-    SoundData(OpenALAudioManager* manager, const Filename &path);
+    SoundData();
     ~SoundData();
-    OpenALAudioManager* _manager;
-    Filename _path;
-    ALuint _buffer;
-    double _length;
-    int _rate;
-    int _channels;
-    int _client_count;
+    OpenALAudioManager*  _manager;
+    PT(MovieAudio)       _movie;
+    ALuint               _sample;
+    PT(MovieAudioCursor) _stream;
+    double               _length;
+    int                  _rate;
+    int                  _channels;
+    int                  _client_count;
+    ExpirationQueue::iterator _expire;
   };
-  typedef pmap<string, SoundData *> SoundDataSet;
-  SoundDataSet _all_sound_data;
+
   
-  typedef pset<OpenALAudioSound *> AudioSoundSet;
-  AudioSoundSet _all_audio_sounds;
+  typedef phash_map<string, SoundData *> SampleCache;
+  SampleCache _sample_cache;
   
-  typedef pdeque<SoundData *> ExpirationQueue;
-  ExpirationQueue _expiration_queue;
-  
-  typedef pset<OpenALAudioSound *> SoundsPlaying;
+  typedef phash_set<OpenALAudioSound *> SoundsPlaying;
   SoundsPlaying _sounds_playing;
+
+  typedef phash_set<OpenALAudioSound *> AllSounds;
+  AllSounds _all_sounds;
   
   // State:
   int _cache_limit;

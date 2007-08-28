@@ -74,7 +74,6 @@ void alc_audio_errcheck(const char *context,ALCdevice* device) {
 //  Description: Factory Function
 ////////////////////////////////////////////////////////////////////
 PT(AudioManager) Create_AudioManager() {
-  audio_debug("Create_AudioManager() OpenAL.");
   return new OpenALAudioManager;
 }
 
@@ -86,17 +85,12 @@ PT(AudioManager) Create_AudioManager() {
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 OpenALAudioManager() {
-  audio_debug("OpenALAudioManager::OpenALAudioManager(), this = " 
-              << (void *)this);
   if (_managers == (Managers *)NULL) {
     _managers = new Managers;
     _al_sources = new SourceCache;
   }
 
   _managers->insert(this);
-
-  audio_debug("  audio_active="<<audio_active);
-  audio_debug("  audio_volume="<<audio_volume);
 
   _cleanup_required = true;
   _active = audio_active;
@@ -146,7 +140,6 @@ OpenALAudioManager() {
   // The shutdown call will do the right thing when it's called,
   // either way.
   ++_active_managers;
-  audio_debug("  _active_managers="<<_active_managers);
   nassertv(_active_managers>0);
 
   if (!_device || !_context) {
@@ -170,15 +163,11 @@ OpenALAudioManager() {
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 ~OpenALAudioManager() {
-  audio_debug("OpenALAudioManager::~OpenALAudioManager(), this = " 
-              << (void *)this);
   nassertv(_managers != (Managers *)NULL);
   Managers::iterator mi = _managers->find(this);
   nassertv(mi != _managers->end());
   _managers->erase(mi);
-
   cleanup();
-  audio_debug("OpenALAudioManager::~OpenALAudioManager() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,7 +181,6 @@ OpenALAudioManager::
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 shutdown() {
-  audio_debug("shutdown(), _openal_active = " << _openal_active);
   if (_managers != (Managers *)NULL) {
     Managers::iterator mi;
     for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
@@ -201,7 +189,6 @@ shutdown() {
   }
 
   nassertv(_active_managers == 0);
-  audio_debug("shutdown() finished");
 }
 
 
@@ -267,77 +254,97 @@ can_load_audio(MovieAudioCursor *source) {
   int channels = source->audio_channels();
   int samples = (int)(source->length() * source->audio_rate());
   int bytes = samples * channels * 2;
-  if (bytes > 200000000) {
+  if (bytes > 200000) {
     return false;
   }
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::load_sound_data
+//     Function: OpenALAudioManager::get_sound_data
 //       Access: Private
-//  Description: Reads a sound file and creates a SoundData.
-//               When you are done with the SoundData, you need
-//               to decrement the client count.
-////////////////////////////////////////////////////////////////////
-OpenALAudioManager::SoundData *OpenALAudioManager::
-load_sound_data(MovieAudioCursor *source) {
-
-  nassertr(can_use_audio(source), NULL);
-  nassertr(can_load_audio(source), NULL);
-  
-  make_current();
-  Filename path = source->get_source()->get_filename();
-  SoundData *sd = new SoundData(this, path);
-  
-  alGetError(); // clear errors
-  sd->_buffer = 0;
-  alGenBuffers(1, &sd->_buffer);
-  al_audio_errcheck("alGenBuffers");
-  if (sd->_buffer == 0) {
-    audio_error("Could not create an OpenAL buffer object");
-    return NULL;
-  }
-
-  int channels = source->audio_channels();
-  int samples = (int)(source->length() * source->audio_rate());
-  
-  PN_int16 *data = new PN_int16[samples * channels];
-  source->read_samples(samples, data);
-  alBufferData(sd->_buffer,
-               (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-               data, samples * channels * 2, source->audio_rate());
-  int err = alGetError();
-  if (err != AL_NO_ERROR) {
-    audio_error("alBufferData: " << alGetString(err));
-    alDeleteBuffers(1, &sd->_buffer);
-    return NULL;
-  }
-  sd->_rate = source->audio_rate();
-  sd->_channels = source->audio_channels();
-  sd->_length = source->length();
-  _all_sound_data.insert(SoundDataSet::value_type(path, sd));
-  return sd;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::cached_sound_data
-//       Access: Private
-//  Description: Looks in the cache for the specified sound data,
-//               and returns it if present.
+//  Description: Obtains a SoundData for the specified sound.
 //
 //               When you are done with the SoundData, you need
 //               to decrement the client count.
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData *OpenALAudioManager::
-cached_sound_data(const Filename &path) {
-  SoundDataSet::const_iterator si=_all_sound_data.find(path);
-  if (si != _all_sound_data.end()) {
-    SoundData *sd = (*si).second;
-    increment_client_count(sd);
-    return sd;
+get_sound_data(MovieAudio *movie) {
+  const Filename &path = movie->get_filename();
+  
+  // Search for an already-cached sample or an already-opened stream.
+  if (!path.empty()) {
+    
+    SampleCache::iterator lsmi=_sample_cache.find(path);
+    if (lsmi != _sample_cache.end()) {
+      SoundData *sd = (*lsmi).second;
+      increment_client_count(sd);
+      return sd;
+    }
+
+    ExpirationQueue::iterator exqi;
+    for (exqi=_expiring_streams.begin(); exqi!=_expiring_streams.end(); exqi++) {
+      SoundData *sd = (SoundData*)(*exqi);
+      if (sd->_movie->get_filename() == path) {
+        increment_client_count(sd);
+        return sd;
+      }
+    }
   }
-  return NULL;
+  
+  PT(MovieAudioCursor) stream = movie->open();
+  if (stream == 0) {
+    audio_error("Cannot open file: "<<path);
+    return NULL;
+  }
+  
+  if (!can_use_audio(stream)) {
+    audio_error("File is not in usable format: "<<path);
+    return NULL;
+  }
+  
+  SoundData *sd = new SoundData();
+  sd->_client_count = 1;
+  sd->_manager  = this;
+  sd->_movie    = movie;
+  sd->_rate     = stream->audio_rate();
+  sd->_channels = stream->audio_channels();
+  sd->_length   = stream->length();
+
+  audio_debug("Creating: " << sd->_movie->get_filename().get_basename());
+
+  if (can_load_audio(stream)) {
+    audio_debug(path.get_basename() << ": loading as sample");
+    make_current();
+    alGetError(); // clear errors
+    sd->_sample = 0;
+    alGenBuffers(1, &sd->_sample);
+    al_audio_errcheck("alGenBuffers");
+    if (sd->_sample == 0) {
+      audio_error("Could not create an OpenAL buffer object");
+      delete sd;
+      return NULL;
+    }
+    int channels = stream->audio_channels();
+    int samples = (int)(stream->length() * stream->audio_rate());
+    PN_int16 *data = new PN_int16[samples * channels];
+    stream->read_samples(samples, data);
+    alBufferData(sd->_sample,
+                 (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
+                 data, samples * channels * 2, stream->audio_rate());
+    int err = alGetError();
+    if (err != AL_NO_ERROR) {
+      audio_error("could not fill OpenAL buffer object with data");
+      delete sd;
+      return NULL;
+    }
+    _sample_cache.insert(SampleCache::value_type(path, sd));
+  } else {
+    audio_debug(path.get_basename() << ": loading as stream");
+    sd->_stream = stream;
+  }
+  
+  return sd;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,39 +368,20 @@ get_sound(const string &file_name, bool positional) {
     return NULL;
   }
   
-  PT(MovieAudioCursor) cursor;
-  SoundData *sd = cached_sound_data(path);
-  if (sd == 0) {
-    cursor = MovieAudio::get(path)->open();
-    if (cursor == 0) {
-      audio_error("Cannot open file: "<<path);
-      return NULL;
-    }
-    if (!can_use_audio(cursor)) {
-      audio_error("Audio data not supported format: "<<path);
-      return NULL;
-    }
-    if (can_load_audio(cursor)) {
-      sd = load_sound_data(cursor);
-      cursor = 0;
-    }
-  }
+  PT(MovieAudio) mva = MovieAudio::get(path);
   
   PT(OpenALAudioSound) oas = 
-    new OpenALAudioSound(this, path, cursor, sd, positional);
+    new OpenALAudioSound(this, mva, positional);
   
-  if (oas->get_active()) {
-    _all_audio_sounds.insert(oas);
-    PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
-    return res;
-  }
-  return NULL;
+  _all_sounds.insert(oas);
+  PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
+  return res;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioManager::uncache_sound
 //       Access: Public
-//  Description: Deletes a sound from the expiration queue.
+//  Description: Deletes a sample from the expiration queues.
 //               If the sound is actively in use, then the sound
 //               cannot be deleted, and this function has no effect.
 ////////////////////////////////////////////////////////////////////
@@ -405,15 +393,13 @@ uncache_sound(const string& file_name) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_sound_path()) ||
     vfs->resolve_filename(path, get_model_path());
-  
-  SoundDataSet::iterator sdi=_all_sound_data.find(path);
-  if (sdi != _all_sound_data.end()) {
-    SoundData *sd = (*sdi).second;
-    ExpirationQueue::iterator exi =
-      find(_expiration_queue.begin(), _expiration_queue.end(), sd);
-    if (exi != _expiration_queue.end()) {
-      _expiration_queue.erase(exi);
-      _all_sound_data.erase(sdi);
+
+  SampleCache::iterator sci = _sample_cache.find(path);
+  if (sci != _sample_cache.end()) {
+    SoundData *sd = (*sci).second;
+    if (sd->_client_count == 0) {
+      _expiring_samples.erase(sd->_expire);
+      _sample_cache.erase(sci);
       delete sd;
     }
   }
@@ -457,9 +443,9 @@ get_cache_limit() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 release_sound(OpenALAudioSound* audioSound) {
-  AudioSoundSet::iterator ai = _all_audio_sounds.find(audioSound);
-  if (ai != _all_audio_sounds.end()) {
-    _all_audio_sounds.erase(ai);
+  AllSounds::iterator ai = _all_sounds.find(audioSound);
+  if (ai != _all_sounds.end()) {
+    _all_sounds.erase(ai);
   }
 }
 
@@ -470,13 +456,12 @@ release_sound(OpenALAudioSound* audioSound) {
 //        Sets listener gain
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::set_volume(float volume) {
-  audio_debug("OpenALAudioManager::set_volume(volume="<<volume<<")");
   if (_volume!=volume) {
     _volume = volume;
 
     // Tell our AudioSounds to adjust:
-    AudioSoundSet::iterator i=_all_audio_sounds.begin();
-    for (; i!=_all_audio_sounds.end(); ++i) {
+    AllSounds::iterator i=_all_sounds.begin();
+    for (; i!=_all_sounds.end(); ++i) {
       (**i).set_volume((**i).get_volume());
     }
 
@@ -499,7 +484,6 @@ void OpenALAudioManager::set_volume(float volume) {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioManager::
 get_volume() const {
-  audio_debug("OpenALAudioManager::get_volume() returning "<<_volume);
   return _volume;
 }
 
@@ -510,12 +494,11 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_play_rate(float play_rate) {
-  audio_debug("OpenALAudioManager::set_play_rate(play_rate="<<play_rate<<")");
   if (_play_rate!=play_rate) {
     _play_rate = play_rate;
     // Tell our AudioSounds to adjust:
-    AudioSoundSet::iterator i=_all_audio_sounds.begin();
-    for (; i!=_all_audio_sounds.end(); ++i) {
+    AllSounds::iterator i=_all_sounds.begin();
+    for (; i!=_all_sounds.end(); ++i) {
       (**i).set_play_rate((**i).get_play_rate());
     }
   }
@@ -528,7 +511,6 @@ set_play_rate(float play_rate) {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioManager::
 get_play_rate() const {
-  audio_debug("OpenALAudioManager::get_play_rate() returning "<<_play_rate);
   return _play_rate;
 }
 
@@ -540,12 +522,11 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_active(bool active) {
-  audio_debug("OpenALAudioManager::set_active(flag="<<active<<")");
   if (_active!=active) {
     _active=active;
     // Tell our AudioSounds to adjust:
-    AudioSoundSet::iterator i=_all_audio_sounds.begin();
-    for (; i!=_all_audio_sounds.end(); ++i) {
+    AllSounds::iterator i=_all_sounds.begin();
+    for (; i!=_all_sounds.end(); ++i) {
       (**i).set_active(_active);
     }
   }
@@ -558,7 +539,6 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioManager::
 get_active() const {
-  audio_debug("OpenALAudioManager::get_active() returning "<<_active);
   return _active;
 }
 
@@ -661,8 +641,8 @@ audio_3d_set_distance_factor(float factor) {
     al_audio_errcheck("alDopplerFactor()");
   }
 
-  AudioSoundSet::iterator i=_all_audio_sounds.begin();
-  for (; i!=_all_audio_sounds.end(); ++i) {
+  AllSounds::iterator i=_all_sounds.begin();
+  for (; i!=_all_sounds.end(); ++i) {
     (**i).set_3d_min_distance((**i).get_3d_min_distance());
     (**i).set_3d_max_distance((**i).get_3d_max_distance());
   }
@@ -715,8 +695,8 @@ void OpenALAudioManager::
 audio_3d_set_drop_off_factor(float factor) {
   _drop_off_factor = factor;
 
-  AudioSoundSet::iterator i=_all_audio_sounds.begin();
-  for (; i!=_all_audio_sounds.end(); ++i) {
+  AllSounds::iterator i=_all_sounds.begin();
+  for (; i!=_all_sounds.end(); ++i) {
     (**i).set_3d_drop_off_factor((**i).get_3d_drop_off_factor());
   }
 }
@@ -842,7 +822,6 @@ reduce_sounds_playing_to(unsigned int count) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 stop_all_sounds() {
-  audio_debug("OpenALAudioManager::stop_all_sounds()");
   reduce_sounds_playing_to(0);
 }
 
@@ -853,7 +832,6 @@ stop_all_sounds() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 update() {
-  //audio_debug("OpenALAudioManager::update()");
 
   // See if any of our playing sounds have ended
   // we must first collect a seperate list of finished sounds and then
@@ -862,13 +840,19 @@ update() {
   // since finished() modifies _sounds_playing
   SoundsPlaying sounds_finished;
 
+  double rtc = TrueClock::get_global_ptr()->get_short_time();
   SoundsPlaying::iterator i=_sounds_playing.begin();
   for (; i!=_sounds_playing.end(); ++i) {
-    if ((**i).status()!=AudioSound::PLAYING) {
+    OpenALAudioSound *sound = (*i);
+    sound->pull_used_buffers();
+    sound->push_fresh_buffers();
+    sound->restart_stalled_audio();
+    sound->cache_time(rtc);
+    if (sound->status()!=AudioSound::PLAYING) {
       sounds_finished.insert(*i);
     }
   }
-
+  
   i=sounds_finished.begin();
   for (; i!=sounds_finished.end(); ++i) {
     (**i).finished();
@@ -885,19 +869,16 @@ update() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 cleanup() {
-  audio_debug("OpenALAudioManager::cleanup(), this = " << (void *)this
-              << ", _cleanup_required = " << _cleanup_required);
   if (!_cleanup_required) {
     return;
   }
 
-  AudioSoundSet sounds(_all_audio_sounds);
-  AudioSoundSet::iterator ai;
+  AllSounds sounds(_all_sounds);
+  AllSounds::iterator ai;
   for (ai = sounds.begin(); ai != sounds.end(); ++ai) {
     (*ai)->cleanup();
   }
   
-  assert(_all_sound_data.size() == _expiration_queue.size());
   clear_cache();
   
   nassertv(_active_managers > 0);
@@ -938,7 +919,6 @@ cleanup() {
     }
   }
   _cleanup_required = false;
-  audio_debug("OpenALAudioManager::cleanup() finished");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -947,12 +927,15 @@ cleanup() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData::
-SoundData(OpenALAudioManager* manager, const Filename &path) :
-  _manager(manager),
-  _path(path),
-  _buffer(0),
-  _client_count(1),
-  _length(0.0)
+SoundData() :
+  _manager(0),
+  _movie(0),
+  _sample(0),
+  _stream(NULL),
+  _length(0.0),
+  _rate(0),
+  _channels(0),
+  _client_count(0)
 {
 }
 
@@ -963,12 +946,12 @@ SoundData(OpenALAudioManager* manager, const Filename &path) :
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData::
 ~SoundData() {
-  if (_buffer != 0) {
+  if (_sample != 0) {
     if (_manager->_is_valid) {
       _manager->make_current();
-      alDeleteBuffers(1,&_buffer);
+      alDeleteBuffers(1,&_sample);
     }
-    _buffer = 0;
+    _sample = 0;
   }
 }
 
@@ -981,13 +964,14 @@ OpenALAudioManager::SoundData::
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 increment_client_count(SoundData *sd) {
-  audio_debug("Incrementing client count: " << sd->_path);
   sd->_client_count += 1;
+  audio_debug("Incrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
   if (sd->_client_count == 1) {
-    audio_debug("Removing from expiration queue: " << sd->_path);
-    ExpirationQueue::iterator p=find(_expiration_queue.begin(), _expiration_queue.end(), sd);
-    assert(p != _expiration_queue.end());
-    _expiration_queue.erase(p);
+    if (sd->_sample) {
+      _expiring_samples.erase(sd->_expire);
+    } else {
+      _expiring_streams.erase(sd->_expire);
+    }
   }
 }
 
@@ -1002,11 +986,18 @@ increment_client_count(SoundData *sd) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 decrement_client_count(SoundData *sd) {
-  audio_debug("Decrementing client count: " << sd->_path);
   sd->_client_count -= 1;
+  audio_debug("Decrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
   if (sd->_client_count == 0) {
-    audio_debug("Adding to expiration queue: " << sd->_path);
-    _expiration_queue.push_back(sd);
+    if (sd->_sample) {
+      _expiring_samples.push_back(sd);
+      sd->_expire = _expiring_samples.end();
+      sd->_expire--;
+    } else {
+      _expiring_streams.push_back(sd);
+      sd->_expire = _expiring_streams.end();
+      sd->_expire--;
+    }
     discard_excess_cache(_cache_limit);
   }
 }
@@ -1018,13 +1009,25 @@ decrement_client_count(SoundData *sd) {
 //               number of sounds remaining is under the limit.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-discard_excess_cache(int limit) {
-  while (((int)_expiration_queue.size()) > limit) {
-    SoundData *sd = _expiration_queue.front();
-    audio_debug("Deleting head of sound cache: " << sd->_path);
+discard_excess_cache(int sample_limit) {
+  int stream_limit = 5;
+
+  while (((int)_expiring_samples.size()) > sample_limit) {
+    SoundData *sd = (SoundData*)(_expiring_samples.front());
     assert(sd->_client_count == 0);
-    _expiration_queue.pop_front();
-    _all_sound_data.erase(sd->_path);
+    assert(sd->_expire == _expiring_samples.begin());
+    _expiring_samples.pop_front();
+    _sample_cache.erase(_sample_cache.find(sd->_movie->get_filename()));
+    audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
+    delete sd;
+  }
+
+  while (((int)_expiring_streams.size()) > stream_limit) {
+    SoundData *sd = (SoundData*)(_expiring_streams.front());
+    assert(sd->_client_count == 0);
+    assert(sd->_expire == _expiring_streams.begin());
+    _expiring_streams.pop_front();
+    audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
     delete sd;
   }
 }

@@ -28,6 +28,7 @@
 
 #include "audioSound.h"
 #include "movieAudioCursor.h"
+#include "trueClock.h"
 
 #include <al.h>
 #include <alc.h>
@@ -89,7 +90,7 @@ public:
   const string& get_finished_event() const;
 
   const string &get_name() const;
-            
+  
   // return: playing time in seconds.
   float length() const;
 
@@ -114,18 +115,39 @@ public:
 
 private:
   OpenALAudioSound(OpenALAudioManager* manager, 
-                   const Filename &path,
-                   PT(MovieAudioCursor) cursor,
-                   OpenALAudioManager::SoundData *sd,
+                   MovieAudio *movie,
                    bool positional);
+  INLINE void   set_calibrated_clock(double rtc, double t, double playrate);
+  INLINE double get_calibrated_clock(double rtc) const;
+  void          correct_calibrated_clock(double rtc, double t);
+  void          cache_time(double rtc);
   void cleanup();
-
+  void restart_stalled_audio();
+  void delete_queued_buffers();
+  ALuint make_buffer(int samples, int channels, int rate, unsigned char *data);
+  void queue_buffer(ALuint buffer, int loop_index, double time_offset);
+  int  read_stream_data(int bytelen, unsigned char *data);
+  void pull_used_buffers();
+  void push_fresh_buffers();
+  INLINE void require_sound_data();
+  INLINE void release_sound_data();
+  
 private:
+  
+  PT(MovieAudio) _movie;
+  OpenALAudioManager::SoundData *_sd;
 
-  // A Sound can have a sample or a stream, but not both.
-  OpenALAudioManager::SoundData *_sample;
-  PT(MovieAudioCursor) _stream;
-  ALuint _stream_buffers[3];
+  struct QueuedBuffer {
+    ALuint _buffer;
+    int    _loop_index;
+    double _time_offset;
+  };
+
+  int    _playing_loops;
+  float  _playing_rate;
+  
+  pdeque<QueuedBuffer> _stream_queued;
+  int                  _loops_completed;
   
   ALuint _source;
   PT(OpenALAudioManager) _manager;
@@ -133,7 +155,7 @@ private:
   float _volume; // 0..1.0
   float _balance; // -1..1
   float _play_rate; // 0..1.0
-
+  
   bool _positional;
   ALfloat _location[3];
   ALfloat _velocity[3];
@@ -141,28 +163,40 @@ private:
   float _min_dist;
   float _max_dist;
   float _drop_off_factor;
+  
+  double _length;
+  int    _loop_count;
 
-  mutable float _length; // in seconds.
-  unsigned long _loop_count;
+  // The calibrated clock is initialized when the
+  // sound starts playing, and is periodically corrected
+  // thereafter.  
+  double _calibrated_clock_base;
+  double _calibrated_clock_scale;
+  double _calibrated_clock_decavg;
+  
+  // The start_time field affects the next call to play.
+  double _start_time;
 
+  // The current_time field is updated every frame
+  // during the AudioManager update.  Updates need
+  // to be atomic, because get_time can be called
+  // in the cull thread.
+  float  _current_time;
+  
   // This is the string that throw_event() will throw
   // when the sound finishes playing.  It is not triggered
   // when the sound is stopped with stop().
   string _finished_event;
   
-  Filename _path;
+  Filename _basename;
 
   // _active is for things like a 'turn off sound effects' in
   // a preferences pannel.
   // _active is not about whether a sound is currently playing.
   // Use status() for info on whether the sound is playing.
   bool _active;
-
-  // _paused is not like the Pause button on a cd/dvd player.
-  // It is used as a flag to say that the sound was looping when
-  // itwas set inactive.
   bool _paused;
-
+  
  public:
   static TypeHandle get_class_type() {
     return _type_handle;

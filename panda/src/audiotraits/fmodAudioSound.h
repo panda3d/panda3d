@@ -154,14 +154,9 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   void set_active(bool active=true);
   bool get_active() const;
 
-  //THESE ARE NOT USED ANYMORE.
-  //THEY ARE ONLY HERE BECAUSE THEY are still needed by Miles.
-  //THESE are stubs in FMOD-EX version
-  ////////////////////////////////////////////////////////////////////
   void finished();
   void set_finished_event(const string& event);
   const string& get_finished_event() const;
-  ////////////////////////////////////////////////////////////////////
 
  private:
   PT(FmodAudioManager) _manager;
@@ -199,7 +194,10 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   virtual void set_priority(int priority);
   
   bool _active;
+  bool _paused;
   
+  string _finished_event;
+
   // This reference-counting pointer is set to this while the sound is
   // playing, and cleared when we get an indication that the sound has
   // stopped.  This prevents a sound from destructing while it is
@@ -207,11 +205,6 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   // hand to help guard against accidental reference count leaks or
   // other mismanagement.
   PT(FmodAudioSound) _self_ref;
-
-  //THESE AREN'T USED ANYMORE.
-  //THEY ARE ONLY HERE BECAUSE THEY are still need by Miles.
-  //THESE are stubs in FMOD-EX version
-  string _finished_event;
 
   friend FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
                                                    FMOD_CHANNEL_CALLBACKTYPE  type, 

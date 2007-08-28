@@ -45,42 +45,48 @@ TypeHandle OpenALAudioSound::_type_handle;
 
 OpenALAudioSound::
 OpenALAudioSound(OpenALAudioManager* manager,
-                 const Filename &path,
-                 PT(MovieAudioCursor) stream,
-                 OpenALAudioManager::SoundData *sample,
+                 MovieAudio *movie,
                  bool positional) :
-  _sample(sample),
-  _stream(stream),
+  _movie(movie),
+  _sd(NULL),
+  _loops_completed(0),
+  _playing_rate(0.0),
+  _playing_loops(0),
   _source(0),
   _manager(manager),
-  _path(path),
+  _basename(movie->get_filename().get_basename()),
   _volume(1.0f),
   _balance(0),
-  _play_rate(1.0),
   _loop_count(1),
+  _length(0.0),
+  _start_time(0.0),
+  _play_rate(1.0),
+  _current_time(0.0),
   _active(true),
   _paused(false)
 {
-  //Inits 3D Attributes
-  
   _location[0] = 0;
   _location[1] = 0;
   _location[2] = 0;
-
+  
   _velocity[0] = 0;
   _velocity[1] = 0;
   _velocity[2] = 0;
-
+  
   _min_dist = 3.28f; _max_dist = 1000000000.0f;
   _drop_off_factor = 1.0f;
   
   _positional = positional;
-  if (_positional) {
-    if ((_sample && (_sample->_channels != 1)) ||
-        (_stream && (_stream->audio_channels() != 1))) {
-      audio_warning("Stereo sounds won't be spacialized: "<<path);
+  
+  require_sound_data();
+  if (_manager == 0) return;
+  _length = _sd->_length;
+  if (positional) {
+    if (_sd->_channels != 1) {
+      audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
+  release_sound_data();
 }
 
 
@@ -108,13 +114,12 @@ cleanup() {
   if (_source) {
     stop();
   }
-  if (_sample) {
-    _manager->decrement_client_count(_sample);
-    _sample = 0;
+  if (_sd) {
+    _manager->decrement_client_count(_sd);
+    _sd = 0;
   }
   _manager->release_sound(this);
   _manager = 0;
-  _active = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,9 +129,72 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 play() {
-  set_time(0.0);
-}
+  if (_manager == 0) return;
 
+  float px,py,pz,vx,vy,vz;
+  
+  if (!_active) {
+    _paused = true;
+    return;
+  }
+  
+  stop();
+
+  require_sound_data();
+  if (_manager == 0) return;
+  _manager->starting_sound(this);
+  
+  if (!_source) {
+    return;
+  }
+  
+  _manager->make_current();
+  
+  alGetError(); // clear errors
+  
+  // nonpositional sources are made relative to the listener so they don't move
+  alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
+  al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
+  
+  // set source properties that we have stored
+  set_volume(_volume);
+  //set_balance(_balance);
+
+  set_3d_min_distance(_min_dist);
+  set_3d_max_distance(_max_dist);
+  set_3d_drop_off_factor(_drop_off_factor);
+  get_3d_attributes(&px,&py,&pz,&vx,&vy,&vz);
+  set_3d_attributes(px, py, pz, vx, vy, vz);
+  
+  _playing_loops = _loop_count;
+  if (_playing_loops == 0) {
+    _playing_loops = 1000000000;
+  }
+  _loops_completed = 0;
+
+  double play_rate = _play_rate * _manager->get_play_rate();
+  audio_debug("playing. Rate=" << play_rate);
+  alSourcef(_source, AL_PITCH, play_rate);
+  _playing_rate = play_rate;
+  
+  if (_sd->_sample) {
+    push_fresh_buffers();
+    alSourcef(_source, AL_SEC_OFFSET, _start_time);
+    _stream_queued[0]._time_offset = _start_time;
+    restart_stalled_audio();
+  } else {
+    audio_debug("Play: stream tell = " << _sd->_stream->tell() << " seeking " << _start_time); 
+    if (_sd->_stream->tell() != _start_time) {
+      _sd->_stream->seek(_start_time);
+    }
+    push_fresh_buffers();
+    restart_stalled_audio();
+  }
+  double rtc = TrueClock::get_global_ptr()->get_short_time();
+  set_calibrated_clock(rtc, _start_time, 1.0);
+  _current_time = _start_time;
+  _start_time = 0.0;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::stop
@@ -135,24 +203,28 @@ play() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 stop() {
-  openal_audio_debug("stop()");
-  //nassertv(_source);
-  
+  if (_manager==0) return;
+
   if (_source) {
     _manager->make_current();
 
     alGetError(); // clear errors
     alSourceStop(_source);
-    al_audio_errcheck("alSourceStop(_source)");
+    al_audio_errcheck("stopping a source");
+    alSourcei(_source, AL_BUFFER, 0);
+    al_audio_errcheck("clear source buffers");
+    for (int i=0; i<((int)(_stream_queued.size())); i++) {
+      ALuint buffer = _stream_queued[i]._buffer;
+      if (buffer != _sd->_sample) {
+        alDeleteBuffers(1, &buffer);
+        al_audio_errcheck("deleting a buffer");
+      }
+    }
+    _stream_queued.resize(0);
   }
-
+  
   _manager->stopping_sound(this);
-  // The _paused flag should not be cleared here.  _paused is not like
-  // the Pause button on a cd/dvd player.  It is used as a flag to say
-  // that it was looping when it was set inactive.  There is no need to
-  // make this symmetrical with play().  set_active() is the 'owner' of
-  // _paused.  play() accesses _paused to help in the situation where
-  // someone calls play on an inactive sound().
+  release_sound_data();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,8 +234,8 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 finished() {
-  openal_audio_debug("finished()");
-  _manager->stopping_sound(this);
+  stop();
+  _current_time = _length;
   if (!_finished_event.empty()) {
     throw_event(_finished_event);
   }
@@ -186,7 +258,7 @@ set_loop(bool loop) {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioSound::
 get_loop() const {
-  return (_loop_count != 1);
+  return (_loop_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,27 +268,12 @@ get_loop() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
-  openal_audio_debug("set_loop_count(loop_count="<<loop_count<<")");
-
-  if (loop_count>1) {
-    audio_error("OpenALAudioSound::set_loop_count() doesn't support looping a finite number of times, 0 (infinite) or 1 only");
-    loop_count = 1;
-  }
+  if (_manager==0) return;
   
-  if (_loop_count==loop_count) {
-    return;
+  if (loop_count >= 1000000000) {
+    loop_count = 0;
   }
-  
   _loop_count=loop_count;
-  
-  if (_source) {
-    // I believe there is a race condition here.
-    _manager->make_current();
-    
-    alGetError(); // clear errors
-    alSourcei(_source,AL_LOOPING,_loop_count==0?AL_TRUE:AL_FALSE);
-    al_audio_errcheck("alSourcei(_source,AL_LOOPING)");
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,69 +287,249 @@ get_loop_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::restart_stalled_audio
+//       Access: public
+//  Description: When streaming audio, the computer is supposed to 
+//               keep OpenAL's queue full.  However, there are times
+//               when the computer is running slow and the queue 
+//               empties prematurely.  In that case, OpenAL will stop.
+//               When the computer finally gets around to refilling
+//               the queue, it is necessary to tell OpenAL to resume
+//               playing.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+restart_stalled_audio() {
+  ALenum status;
+  if (_stream_queued.size() == 0) {
+    return;
+  }
+  alGetError();
+  alGetSourcei(_source, AL_SOURCE_STATE, &status);
+  if (status != AL_PLAYING) {
+    alSourcePlay(_source);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::queue_buffer
+//       Access: public
+//  Description: Pushes a buffer into the source queue.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+queue_buffer(ALuint buffer, int loop_index, double time_offset) {
+  // Now push the buffer into the stream queue.
+  alGetError();
+  alSourceQueueBuffers(_source,1,&buffer);
+  ALenum err = alGetError();
+  if (err != AL_NO_ERROR) {
+    audio_error("could not load sample buffer into the queue");
+    cleanup();
+    return;
+  }
+  QueuedBuffer buf;
+  buf._buffer = buffer;
+  buf._loop_index = loop_index;
+  buf._time_offset = time_offset;
+  _stream_queued.push_back(buf);
+  //  audio_debug("Buffer queued " << loop_index << " " << time_offset);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::make_buffer
+//       Access: public
+//  Description: Creates an OpenAL buffer object.
+////////////////////////////////////////////////////////////////////
+ALuint OpenALAudioSound::
+make_buffer(int samples, int channels, int rate, unsigned char *data) {
+  
+  // Allocate a buffer to hold the data.
+  alGetError();
+  ALuint buffer;
+  alGenBuffers(1, &buffer);
+  if (alGetError() != AL_NO_ERROR) {
+    audio_error("could not allocate an OpenAL buffer object");
+    cleanup();
+    return 0;
+  }
+  
+  // Now fill the buffer with the data provided.
+  alBufferData(buffer,
+               (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
+               data, samples * channels * 2, rate);
+  int err = alGetError();
+  if (err != AL_NO_ERROR) {
+    audio_error("could not fill OpenAL buffer object with data");
+    cleanup();
+    return 0;
+  }
+  
+  return buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::read_stream_data
+//       Access: public
+//  Description: Fills a buffer with data from the stream.
+//               Returns the number of samples stored in the buffer.
+////////////////////////////////////////////////////////////////////
+int OpenALAudioSound::
+read_stream_data(int bytelen, unsigned char *buffer) {
+
+  MovieAudioCursor *cursor = _sd->_stream;
+  double length = cursor->length();
+  int channels = cursor->audio_channels();
+  int rate = cursor->audio_rate();
+  int space = bytelen / (channels * 2);
+  int fill = 0;
+  
+  while (space && (_loops_completed < _playing_loops)) {
+    double t = cursor->tell();
+    double remain = length - t;
+    if (remain > 60.0) {
+      remain = 60.0;
+    }
+    int samples = (int)(remain * rate);
+    if (samples <= 0) {
+      _loops_completed += 1;
+      cursor->seek(0.0);
+      continue;
+    }
+    if (samples > space) {
+      samples = space;
+    }
+    cursor->read_samples(samples, (PN_int16 *)buffer);
+    size_t hval = AddHash::add_hash(0, (PN_uint8*)buffer, samples*channels*2);
+    audio_debug("Streaming " << cursor->get_source()->get_filename().get_basename() << " at " << t << " hash " << hval);
+    fill += samples;
+    space -= samples;
+    buffer += (samples * channels * 2);
+  }
+  return fill; 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::correct_calibrated_clock
+//       Access: public
+//  Description: Compares the specified time to the value of the
+//               calibrated clock, and adjusts the calibrated
+//               clock speed to make it closer to the target value.
+//               This routine is quite careful to make sure that
+//               the calibrated clock moves in a smooth, monotonic
+//               way.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+correct_calibrated_clock(double rtc, double t) {
+  double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
+  double diff = cc-t;
+  _calibrated_clock_decavg = (_calibrated_clock_decavg * 0.95) + (diff * 0.05);
+  if (diff > 0.5) {
+    set_calibrated_clock(rtc, t, 1.0);
+    _calibrated_clock_decavg = 0.0;
+  } else {
+    double scale = 1.0;
+    if ((_calibrated_clock_decavg > 0.01) && (diff > 0.01)) {
+      scale = 0.98;
+    }
+    if ((_calibrated_clock_decavg < -0.01) && (diff < -0.01)) {
+      scale = 1.03;
+    }
+    if ((_calibrated_clock_decavg < -0.05) && (diff < -0.05)) {
+      scale = 1.2;
+    }
+    if ((_calibrated_clock_decavg < -0.15) && (diff < -0.15)) {
+      scale = 1.5;
+    }
+    set_calibrated_clock(rtc, cc, scale);
+  }
+  cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::pull_used_buffers
+//       Access: public
+//  Description: Pulls any used buffers out of OpenAL's queue.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+pull_used_buffers() {
+  while (_stream_queued.size()) {
+    ALuint buffer = 0;
+    alGetError();
+    alSourceUnqueueBuffers(_source, 1, &buffer);
+    int err = alGetError();
+    if (err == AL_NO_ERROR) {
+      if (_stream_queued[0]._buffer != buffer) {
+        audio_error("corruption in stream queue");
+        cleanup();
+        return;
+      }
+      _stream_queued.pop_front();
+      if (_stream_queued.size()) {
+        double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
+        double rtc = TrueClock::get_global_ptr()->get_short_time();
+        correct_calibrated_clock(rtc, al);
+      }
+      if (buffer != _sd->_sample) {
+        alDeleteBuffers(1,&buffer);
+      }
+    } else {
+      break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::push_fresh_buffers
+//       Access: public
+//  Description: Pushes fresh buffers into OpenAL's queue until
+//               the queue is "full" (ie, has plenty of data).
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+push_fresh_buffers() {
+  static unsigned char data[65536];
+  
+  if (_sd->_sample) {
+    while ((_loops_completed < _playing_loops) &&
+           (_stream_queued.size() < 100)) {
+      queue_buffer(_sd->_sample, _loops_completed, 0.0);
+      _loops_completed += 1;
+    }
+  } else {
+    MovieAudioCursor *cursor = _sd->_stream;
+    int channels = cursor->audio_channels();
+    int rate = cursor->audio_rate();
+    double space = 65536 / (channels * 2);
+    
+    // Calculate how many buffers to keep in the queue.
+    int fill_to = (int)((audio_buffering_seconds * rate) / space) + 1;
+    if (fill_to < 3) {
+      fill_to = 3;
+    }
+    
+    while ((_loops_completed < _playing_loops) &&
+           (((int)(_stream_queued.size())) < fill_to)) {
+      int loop_index = _loops_completed;
+      double time_offset = cursor->tell();
+      int samples = read_stream_data(65536, data);
+      if (samples == 0) {
+        break;
+      }
+      ALuint buffer = make_buffer(samples, channels, rate, data);
+      if (_manager == 0) return;
+      queue_buffer(buffer, loop_index, time_offset);
+      if (_manager == 0) return;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_time
 //       Access: public
-//  Description: Sets the play position within the sound
+//  Description: The next time you call play, the sound will
+//               start from the specified offset.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_time(float time) {
-  float px,py,pz,vx,vy,vz;
-  
-  openal_audio_debug("play()");
-  if (!_active) {
-    _paused=true;
-    return;
-  }
-  
-  if (status() == AudioSound::PLAYING) {
-    stop();
-  }
-  
-  _manager->starting_sound(this);
-  
-  if (!_source) {
-    return;
-  }
-
-  // Setup source
-  _manager->make_current();
-  
-  alGetError(); // clear errors
-  
-  // Assign the buffer to the source
-  alSourcei(_source,AL_BUFFER,_sample->_buffer);
-  ALenum result = alGetError();
-  if (result!=AL_NO_ERROR) {
-    audio_error("alSourcei(_source,AL_BUFFER,_sample->_buffer): " << alGetString(result) );
-    stop();
-    return;
-  }
-  
-  // nonpositional sources are made relative to the listener so they don't move
-  alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
-  al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
-  
-  // set source properties that we have stored
-  set_volume(_volume);
-  //set_balance(_balance);
-  set_play_rate(_play_rate);
-  set_3d_min_distance(_min_dist);
-  set_3d_max_distance(_max_dist);
-  set_3d_drop_off_factor(_drop_off_factor);
-  get_3d_attributes(&px,&py,&pz,&vx,&vy,&vz);
-  set_3d_attributes(px, py, pz, vx, vy, vz);
-  
-  set_loop_count(_loop_count);
-  
-  openal_audio_debug("set_time(time="<<time<<")");
-
-  alSourcef(_source,AL_SEC_OFFSET,time);
-  al_audio_errcheck("alSourcef(_source,AL_SEC_OFFSET)");
-
-  alSourcePlay(_source);
-  al_audio_errcheck("alSourcePlay(_source)");
-  
-  audio_debug("  started sound " << _path );
+  _start_time = time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,18 +539,27 @@ set_time(float time) {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioSound::
 get_time() const {
-  float time;
-  
-  if (_source) {
-    _manager->make_current();
-    alGetError(); // clear errors
-    alGetSourcef(_source,AL_SEC_OFFSET,&time);
-    al_audio_errcheck("alGetSourcef(_source,AL_SEC_OFFSET)");
-  } else {
+  if (_manager == 0) {
     return 0.0;
   }
-  
-  return time;
+  return _current_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioSound::cache_time
+//       Access: Private
+//  Description: Updates the current_time field of a playing sound.
+////////////////////////////////////////////////////////////////////
+void OpenALAudioSound::
+cache_time(double rtc) {
+  assert(_source != 0);
+  double t=get_calibrated_clock(rtc);
+  double max = _length * _playing_loops;
+  if (t >= max) {
+    _current_time = _length;
+  } else {
+    _current_time = fmod(t, _length);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -324,17 +570,11 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_volume(float volume) {
-  openal_audio_debug("set_volume(volume="<<volume<<")");
-
-  //nassertv(_source);
-  
   _volume=volume;
 
   if (_source) {
     volume*=_manager->get_volume();
-    
     _manager->make_current();
-
     alGetError(); // clear errors
     alSourcef(_source,AL_GAIN,volume);
     al_audio_errcheck("alSourcef(_source,AL_GAIN)");
@@ -348,7 +588,6 @@ set_volume(float volume) {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioSound::
 get_volume() const {
-  openal_audio_debug("get_volume() returning "<<_volume);
   return _volume;
 }
 
@@ -384,21 +623,7 @@ get_balance() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_play_rate(float play_rate) {
-  openal_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
-
-  //nassertv(_source);
-  
-  _play_rate=play_rate;
-
-  if (_source) {
-    play_rate*=_manager->get_play_rate();
-    
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source,AL_PITCH,play_rate);
-    al_audio_errcheck("alSourcef(_source,AL_PITCH)");
-  }
+  _play_rate = play_rate;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -408,7 +633,6 @@ set_play_rate(float play_rate) {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioSound::
 get_play_rate() const {
-  openal_audio_debug("get_play_rate() returning "<<_play_rate);
   return _play_rate;
 }
 
@@ -419,23 +643,24 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 float OpenALAudioSound::
 length() const {
-  return _sample->_length;
+  return _length;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::set_3d_attributes
 //       Access: public
 //  Description: Set position and velocity of this sound
-//        NOW LISTEN UP!!! THIS IS IMPORTANT!
-//        Both Panda3D and OpenAL use a right handed coordinate system.
-//        But there is a major difference!
-//        In Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.
-//        In OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
-//        The solution is simple, we just flip the Y and Z axis and negate the Z, as we move coordinates
-//        from Panda to OpenAL and back.
-//        What does did mean to average Panda user?  Nothing, they shouldn't notice anyway.
-//        But if you decide to do any 3D audio work in here you have to keep it in mind.
-//        I told you, so you can't say I didn't.
+//
+//               Both Panda3D and OpenAL use a right handed
+//               coordinate system.  However, in Panda3D the
+//               Y-Axis is going into the Screen and the
+//               Z-Axis is going up.  In OpenAL the Y-Axis is
+//               going up and the Z-Axis is coming out of
+//               the screen.
+//
+//               The solution is simple, we just flip the Y
+//               and Z axis and negate the Z, as we move
+//               coordinates from Panda to OpenAL and back.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
@@ -572,14 +797,11 @@ get_3d_drop_off_factor() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_active(bool active) {
-  openal_audio_debug("set_active(active="<<active<<")");
   if (_active!=active) {
     _active=active;
     if (_active) {
       // ...activate the sound.
-      if (_paused
-          &&
-          _loop_count==0) {
+      if (_paused && _loop_count==0) {
         // ...this sound was looping when it was paused.
         _paused=false;
         play();
@@ -605,7 +827,6 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioSound::
 get_active() const {
-  openal_audio_debug("get_active() returning "<<_active);
   return _active;
 }
 
@@ -616,7 +837,6 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_finished_event(const string& event) {
-  openal_audio_debug("set_finished_event(event="<<event<<")");
   _finished_event = event;
 }
 
@@ -627,7 +847,6 @@ set_finished_event(const string& event) {
 ////////////////////////////////////////////////////////////////////
 const string& OpenALAudioSound::
 get_finished_event() const {
-  openal_audio_debug("get_finished_event() returning "<<_finished_event);
   return _finished_event;
 }
 
@@ -638,33 +857,29 @@ get_finished_event() const {
 ////////////////////////////////////////////////////////////////////
 const string& OpenALAudioSound::
 get_name() const {
-  return _path;
+  return _basename;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenALAudioSound::status
 //       Access: public
 //  Description: Get status of the sound.
+//
+//               This returns the status as of the
+//               last AudioManager::update.
 ////////////////////////////////////////////////////////////////////
 AudioSound::SoundStatus OpenALAudioSound::
 status() const {
-  ALenum status;
-  
   if (_source==0) {
-    //return AudioSound::BAD;
     return AudioSound::READY;
   }
   
   _manager->make_current();
   
-  alGetError(); // clear errors
-  alGetSourcei(_source,AL_SOURCE_STATE,&status);
-  al_audio_errcheck("alGetSourcei(_source,AL_SOURCE_STATE)");
-  
-  if (status == AL_PLAYING/* || status == AL_PAUSED*/) {
-    return AudioSound::PLAYING;
-  } else {
+  if (_stream_queued.size() == 0) {
     return AudioSound::READY;
+  } else {
+    return AudioSound::PLAYING;
   }
 }
 

@@ -341,7 +341,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
 void FmodAudioManager::
 update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
   const FilterProperties::ConfigVector &conf = config->get_config();
-  FMOD_RESULT res1,res2,res3,res4,res5,res6;
+  FMOD_RESULT res1,res2,res3,res4,res5;
   while (1) {
     int numinputs;
     res1 = head->getNumInputs(&numinputs);

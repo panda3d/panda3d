@@ -282,14 +282,19 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::set_time
 //       Access: public
-//  Description: Sets the play position within the sound
+//  Description: Starts playing from the specified location.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_time(float start_time) {
   FMOD_RESULT result;
 
+  if (!_active) {
+    _paused = true;
+    return;
+  }
+  
   int startTime = (int)(start_time * 1000);
-
+  
   if (_channel != 0) {
     // try backing up current sound.
     result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
@@ -324,10 +329,8 @@ set_time(float start_time) {
     // add_dsp_on_channel();
     set_3d_attributes_on_channel();
 
-    if (_active) {
-      result = _channel->setPaused(false);
-      fmod_audio_errcheck("_channel->setPaused()", result);
-    }
+    result = _channel->setPaused(false);
+    fmod_audio_errcheck("_channel->setPaused()", result);
     
     _self_ref = this;
   }
@@ -785,13 +788,26 @@ status() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_active(bool active) {
-  _active = active;
+  if (_active != active) {
+    _active = active;
+    if (_active) {
+      // ...activate the sound.
+      if (_paused && get_loop_count()==0) {
+        // ...this sound was looping when it was paused.
+        _paused = false;
+        play();
+      }
 
-  if (status() == PLAYING) {
-    // If the sound is (or should be) playing, then pause or unpause
-    // it in the system.
-    FMOD_RESULT result = _channel->setPaused(!_active);
-    fmod_audio_errcheck("_channel->setPaused()", result);
+    } else {
+      // ...deactivate the sound.
+      if (status() == PLAYING) {
+        if (get_loop_count() == 0) {
+          // ...we're pausing a looping sound.
+          _paused = true;
+        }
+        stop();
+      }
+    }
   }
 }
 
@@ -809,14 +825,11 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioSound::finished
 //       Access: public
-//  Description: NOT USED ANYMORE!!!
-//        Called by finishedCallback function when a sound
-//              terminates (but doesn't loop).
+//  Description: Not implemented.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 finished() {
-  audio_debug("FmodAudioSound::finished()");
-  audio_debug("NOT USED ANYMORE in FMOD-EX version of PANDA.");
+  audio_error("finished: not implemented under FMOD-EX");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -829,8 +842,7 @@ finished() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_finished_event(const string& event) {
-  audio_debug("FmodAudioSound::set_finished_event(event="<<event<<")");
-  audio_debug("NOT USED ANYMORE in FMOD-EX version of PANDA.");
+  audio_error("set_finished_event: not implemented under FMOD-EX");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -843,8 +855,7 @@ set_finished_event(const string& event) {
 ////////////////////////////////////////////////////////////////////
 const string& FmodAudioSound::
 get_finished_event() const {
-  audio_debug("FmodAudioSound::get_finished_event() returning " << _finished_event );
-  audio_debug("NOT USED ANYMORE in FMOD-EX version of PANDA.");
+  audio_error("get_finished_event: not implemented under FMOD-EX");
   return _finished_event;
 }
 
