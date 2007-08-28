@@ -145,7 +145,7 @@ set_cpu_affinity(PN_uint32 mask) const {
         // make sure we don't reference CPUs that don't exist
         proc_mask = mask & sys_mask;
         if (proc_mask) {
-          return sp(GetCurrentProcess(), proc_mask);
+          return sp(GetCurrentProcess(), proc_mask) != 0;
         }
       }
     }
