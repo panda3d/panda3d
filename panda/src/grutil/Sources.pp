@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET grutil
   #define LOCAL_LIBS \
-    display text pgraph gobj linmath putil movies
+    display text pgraph gobj linmath putil movies audio
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
