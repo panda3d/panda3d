@@ -31,7 +31,7 @@ class InterestState:
         # waiting for a response on the removal of a single interest.
         self.events = []
         self.eventCounter = eventCounter
-        if event is not None:
+        if event:
             self.addEvent(event)
         self.parentId = parentId
         self.zoneIdList = zoneIdList
@@ -98,7 +98,7 @@ class DoInterestManager(DirectObject.DirectObject):
     _interests = {}
     if __debug__:
         _debug_interestHistory = []
-        _debug_maxDescriptionLen = 35
+        _debug_maxDescriptionLen = 40
 
     _SerialGen = SerialNumGen()
     _SerialNum = serialNum()
@@ -111,7 +111,6 @@ class DoInterestManager(DirectObject.DirectObject):
         self._noNewInterests = False
         self._completeDelayedCallback = None
         # keep track of request contexts that have not completed
-        self._outstandingContexts = set()
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
 
@@ -139,7 +138,6 @@ class DoInterestManager(DirectObject.DirectObject):
 
     def resetInterestStateForConnectionLoss(self):
         DoInterestManager._interests.clear()
-        self._outstandingContexts = set()
         self._completeEventCount = ScratchPad(num=0)
         if __debug__:
             self._addDebugInterestHistory("RESET", "", 0, 0, 0, [])
@@ -155,14 +153,13 @@ class DoInterestManager(DirectObject.DirectObject):
         iState = DoInterestManager._interests.get(handle.asInt())
         if iState:
             iState.setDesc(desc)
-            
-    def addInterest(self, parentId, zoneIdList, description, event=None, auto=False):
+
+    def addInterest(self, parentId, zoneIdList, description, event=None):
         """
         Look into a (set of) zone(s).
         """
         
         assert DoInterestManager.notify.debugCall()
-        #assert not self._noNewInterests
         handle = self._getNextHandle()
         if self._noNewInterests:
             DoInterestManager.notify.warning(
@@ -181,34 +178,64 @@ class DoInterestManager(DirectObject.DirectObject):
                         'addInterest: no setParentingRules defined in the DC for object %s (%s)'
                         '' % (parentId, parent.__class__.__name__))
 
-        if auto:
-            contextId = 0
-            event = None
-        else:
+                    
+        
+        if event:
             contextId = self._getNextContextId()
-            self._outstandingContexts.add(contextId)
-            if event is None:
-                event = self._getAnonymousEvent('addInterest')
+        else:
+            contextId = 0
+            # event = self._getAnonymousEvent('addInterest')
+            
         DoInterestManager._interests[handle] = InterestState(
             description, InterestState.StateActive, contextId, event, parentId, zoneIdList, self._completeEventCount)
         if self.__verbose():
-            print 'CR::INTEREST.addInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s, auto=%s)' % (
-                handle, parentId, zoneIdList, description, event, auto)
-        if not auto:
-            self._sendAddInterest(handle, contextId, parentId, zoneIdList, description)
+            print 'CR::INTEREST.addInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s, event=%s)' % (
+                handle, parentId, zoneIdList, description, event)
+        self._sendAddInterest(handle, contextId, parentId, zoneIdList, description)
         if event:
             messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
         return InterestHandle(handle)
 
-    def removeInterest(self, handle, event=None, auto=False):
+    def addAutoInterest(self, parentId, zoneIdList, description):
+        """
+        Look into a (set of) zone(s).
+        """
+        assert DoInterestManager.notify.debugCall()
+        handle = self._getNextHandle()
+        if self._noNewInterests:
+            DoInterestManager.notify.warning(
+                "addInterest: addingInterests on delete: %s" % (handle))
+            return
+
+        # make sure we've got parenting rules set in the DC
+        if parentId not in (self.getGameDoId(),):
+            parent = self.getDo(parentId)
+            if not parent:
+                DoInterestManager.notify.error(
+                    'addInterest: attempting to add interest under unknown object %s' % parentId)
+            else:
+                if not parent.hasParentingRules():
+                    DoInterestManager.notify.error(
+                        'addInterest: no setParentingRules defined in the DC for object %s (%s)'
+                        '' % (parentId, parent.__class__.__name__))
+
+        DoInterestManager._interests[handle] = InterestState(
+            description, InterestState.StateActive, 0, None, parentId, zoneIdList, self._completeEventCount, True)
+        if self.__verbose():
+            print 'CR::INTEREST.addInterest(handle=%s, parentId=%s, zoneIdList=%s, description=%s)' % (
+                handle, parentId, zoneIdList, description)
+        assert self.printInterestsIfDebug()
+        return InterestHandle(handle)
+
+    def removeInterest(self, handle, event = None):
         """
         Stop looking in a (set of) zone(s)
         """
         assert DoInterestManager.notify.debugCall()
         assert isinstance(handle, InterestHandle)
         existed = False
-        if ((not auto) and (event is None)):
+        if not event:
             event = self._getAnonymousEvent('removeInterest')
         handle = handle.asInt()
         if DoInterestManager._interests.has_key(handle):
@@ -234,19 +261,51 @@ class DoInterestManager(DirectObject.DirectObject):
                                         intState.events)
                     intState.clearEvents()
                 intState.state = InterestState.StatePendingDel
-                if auto:
+                contextId = self._getNextContextId()
+                intState.context = contextId
+                if event:
+                    intState.addEvent(event)
+                self._sendRemoveInterest(handle, contextId)
+                if not event:
                     self._considerRemoveInterest(handle)
-                else:
-                    contextId = self._getNextContextId()
-                    intState.context = contextId
-                    if event is not None:
-                        intState.addEvent(event)
-                    self._sendRemoveInterest(handle, contextId)
-                    if event is None:
-                        self._considerRemoveInterest(handle)
                 if self.__verbose():
-                    print 'CR::INTEREST.removeInterest(handle=%s, event=%s, auto=%s)' % (
-                        handle, event, auto)
+                    print 'CR::INTEREST.removeInterest(handle=%s, event=%s)' % (
+                        handle, event)
+        else:
+            DoInterestManager.notify.warning(
+                "removeInterest: handle not found: %s" % (handle))
+        assert self.printInterestsIfDebug()
+        return existed
+    
+    def removeAutoInterest(self, handle):
+        """
+        Stop looking in a (set of) zone(s)
+        """
+        assert DoInterestManager.notify.debugCall()
+        assert isinstance(handle, InterestHandle)
+        existed = False
+        handle = handle.asInt()
+        if DoInterestManager._interests.has_key(handle):
+            existed = True
+            intState = DoInterestManager._interests[handle]
+            if intState.isPendingDelete():
+                self.notify.warning(
+                    'removeInterest: interest %s already pending removal' %
+                    handle)
+                # this interest is already pending delete, so let's just tack this
+                # callback onto the list
+            else:
+                if len(intState.events) > 0:
+                    # we're not pending a removal, but we have outstanding events?
+                    # probably we are waiting for an add/alter complete.
+                    # should we send those events now?
+                    self.notify.warning('removeInterest: abandoning events: %s' %
+                                        intState.events)
+                    intState.clearEvents()
+                intState.state = InterestState.StatePendingDel
+                self._considerRemoveInterest(handle)
+                if self.__verbose():
+                    print 'CR::INTEREST.removeAutoInterest(handle=%s)' % (handle)
         else:
             DoInterestManager.notify.warning(
                 "removeInterest: handle not found: %s" % (handle))
@@ -310,14 +369,14 @@ class DoInterestManager(DirectObject.DirectObject):
         obj._autoInterestHandle = None
         if not len(autoInterests):
             return
-        obj._autoInterestHandle = self.addInterest(obj.doId, autoInterests, '%s-autoInterest' % obj.__class__.__name__, auto=True)
+        obj._autoInterestHandle = self.addAutoInterest(obj.doId, autoInterests, '%s-autoInterest' % obj.__class__.__name__)
     def closeAutoInterests(self, obj):
         if not hasattr(obj, '_autoInterestHandle'):
             # must be multiple inheritance
             self.notify.debug('closeAutoInterests(%s): interests already closed' % obj)
             return
         if obj._autoInterestHandle is not None:
-            self.removeInterest(obj._autoInterestHandle, auto=True)
+            self.removeAutoInterest(obj._autoInterestHandle)
         del obj._autoInterestHandle
 
     # events for InterestWatcher
@@ -391,10 +450,12 @@ class DoInterestManager(DirectObject.DirectObject):
             
         def printInterestSets(self):
             print "******************* Interest Sets **************"
-            format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %10s %5s %9s %9s %10s'
+            format = '%6s %' + str(DoInterestManager._debug_maxDescriptionLen) + 's %11s %11s %8s %8s %8s'
             print format % (
-                "Handle", "Description", "State", "Context",
-                "ParentId", "ZoneIdList", "Event")
+                "Handle", "Description", 
+                "ParentId", "ZoneIdList",
+                "State", "Context",
+                "Event")
             for id, state in DoInterestManager._interests.items():
                 if len(state.events) == 0:
                     event = ''
@@ -402,8 +463,10 @@ class DoInterestManager(DirectObject.DirectObject):
                     event = state.events[0]
                 else:
                     event = state.events
-                print format % (id, state.desc, state.state, state.context,
-                                state.parentId, state.zoneIdList, event)
+                print format % (id, state.desc,
+                                state.parentId, state.zoneIdList,
+                                state.state, state.context,
+                                event)
             print "************************************************"
 
         def printInterests(self):
