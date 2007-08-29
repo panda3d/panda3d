@@ -108,6 +108,9 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   PN_uint64 physical_memory;
   PN_uint64 available_physical_memory;
 
+  int vendor_id;
+  int device_id;
+
   success = false;
   window_width = 0;
   window_height = 0;
@@ -132,6 +135,9 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
   physical_memory = 0;
   available_physical_memory = 0;
+
+  vendor_id = 0;
+  device_id = 0;
   
   HMODULE d3d_dll;
   DIRECT_3D_CREATE Direct3DCreate;
@@ -177,6 +183,30 @@ static int get_display_information (DisplaySearchParameters &display_search_para
         flags = 0;
         if (direct_3d -> GetAdapterIdentifier (adapter, flags, &d3d_adapter_identifier) == D3D_OK) {
           // print adapter info
+          d3d_adapter_identifier.Driver;
+          d3d_adapter_identifier.Description;
+          #if DX8 
+          #else
+          d3d_adapter_identifier.DeviceName;
+          #endif
+          d3d_adapter_identifier.DriverVersion;
+          d3d_adapter_identifier.VendorId;
+          d3d_adapter_identifier.DeviceId;
+          d3d_adapter_identifier.SubSysId;
+          d3d_adapter_identifier.Revision;
+          d3d_adapter_identifier.DeviceIdentifier;
+          d3d_adapter_identifier.WHQLLevel;
+
+          /*
+          printf ("Driver = %s\n", d3d_adapter_identifier.Driver);
+          printf ("Description = %s\n", d3d_adapter_identifier.Description);
+
+          printf ("VendorId = 0x%x\n", d3d_adapter_identifier.VendorId);
+          printf ("DeviceId = 0x%x\n", d3d_adapter_identifier.DeviceId);
+          */
+          
+          vendor_id = d3d_adapter_identifier.VendorId;
+          device_id = d3d_adapter_identifier.DeviceId;
         }
 
         if (direct_3d -> GetDeviceCaps (adapter, device_type, &d3d_caps) == D3D_OK) {
@@ -503,6 +533,8 @@ static int get_display_information (DisplaySearchParameters &display_search_para
     display_information -> _shader_model = shader_model;
     display_information -> _video_memory = video_memory;
     display_information -> _texture_memory = texture_memory;
+    display_information -> _vendor_id = vendor_id;
+    display_information -> _device_id = device_id;
   }
 
   // memory
