@@ -98,6 +98,9 @@ PUBLISHED:
   void clear_to_initial();
   bool is_playing() const;
 
+  double get_play_rate() const;
+  void set_play_rate(double play_rate);
+
   // These functions control the actual playback of the interval.
   // Don't call them directly; they're intended to be called from a
   // supervising object, e.g. the Python start() .. finish()

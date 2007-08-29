@@ -289,6 +289,37 @@ is_playing() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_play_rate
+//       Access: Published
+//  Description: Returns the play rate as set by the last call to
+//               start(), loop(), or set_play_rate().
+////////////////////////////////////////////////////////////////////
+double CInterval::
+get_play_rate() const {
+  return _play_rate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_play_rate
+//       Access: Published
+//  Description: Changes the play rate of the interval.  If the
+//               interval is already started, this changes its speed
+//               on-the-fly.  Note that since play_rate is a parameter
+//               to start() and loop(), the next call to start() or
+//               loop() will reset this parameter.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+set_play_rate(double play_rate) {
+  if (is_playing()) {
+    pause();
+    _play_rate = play_rate;
+    resume();
+  } else {
+    _play_rate = play_rate;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::priv_do_event
 //       Access: Published
 //  Description: Calls the appropriate event function indicated by the

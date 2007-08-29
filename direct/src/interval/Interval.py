@@ -170,6 +170,24 @@ class Interval(DirectObject):
     def isPlaying(self):
         return taskMgr.hasTaskNamed(self.getName() + '-play')
 
+    def getPlayRate(self):
+        """ Returns the play rate as set by the last call to start(),
+        loop(), or setPlayRate(). """
+        return self.__playRate
+
+    def setPlayRate(self, playRate):
+        """ Changes the play rate of the interval.  If the interval is
+        already started, this changes its speed on-the-fly.  Note that
+        since playRate is a parameter to start() and loop(), the next
+        call to start() or loop() will reset this parameter. """
+        
+        if self.isPlaying():
+            self.pause()
+            self.__playRate = playRate
+            self.resume()
+        else:
+            self.__playRate = playRate
+
     def setDoneEvent(self, event):
         self.doneEvent = event
 
