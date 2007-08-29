@@ -387,6 +387,35 @@ class ShowBase(DirectObject.DirectObject):
            print getSoundPath()
            print "}"
 
+    def destroy(self):
+        """ Call this function to destroy the ShowBase and stop all
+        its tasks, freeing all of the Panda resources.  Normally, you
+        should not need to call it explicitly, as it is bound to the
+        exitfunc and will be called at application exit time
+        automatically.
+
+        This function is designed to be safe to call multiple times."""
+
+        if getattr(self, 'musicManager', None):
+            self.musicManager.shutdown()
+            self.musicManager = None
+            self.sfxManagerList = []
+        if getattr(self, 'loader', None):
+            self.loader.destroy()
+            self.loader = None
+        if getattr(self, 'graphicsEngine', None):
+            self.graphicsEngine.removeAllWindows()        
+
+        try:
+            self.direct.panel.destroy()
+        except:
+            pass
+
+        if hasattr(self, 'win'):
+            del self.win
+            del self.winList
+            del self.pipe
+
     def exitfunc(self):
         """
         This should be assigned to sys.exitfunc to be called just
@@ -394,21 +423,7 @@ class ShowBase(DirectObject.DirectObject):
         is closed cleanly, so that we free system resources, restore
         the desktop and keyboard functionality, etc.
         """
-        if self.musicManager:
-            self.musicManager.shutdown()
-        self.loader.destroy()
-        self.graphicsEngine.removeAllWindows()
-
-        del self.win
-        del self.winList
-        del self.pipe
-        del self.musicManager
-        del self.sfxManagerList
-
-        try:
-            base.direct.panel.destroy()
-        except StandardError:
-            pass
+        self.destroy()
 
         if self.oldexitfunc:
             self.oldexitfunc()
