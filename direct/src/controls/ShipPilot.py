@@ -441,9 +441,9 @@ class ShipPilot(PhysicsWalker):
         physVel = physObject.getVelocity()
         physVelLen = physVel.length()
         if (physVelLen!=0.
-                or self.__speed
-                or self.__slideSpeed
-                or self.__rotationSpeed):
+            or self.__speed
+            or self.__slideSpeed
+            or self.__rotationSpeed):
             # don't factor in dt, the physics system will do that
             distance = self.__speed #dt * self.__speed
             goForward = True
@@ -472,7 +472,8 @@ class ShipPilot(PhysicsWalker):
                 maxLen = self.ship.acceleration
             else:
                 maxLen = self.ship.reverseAcceleration
-            if newVector.length() > maxLen:
+            if newVector.length() > maxLen and \
+               not (debugRunning or base.localAvatar.getTurbo()):
                 newVector.normalize()
                 newVector *= maxLen
 
