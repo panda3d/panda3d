@@ -32,10 +32,6 @@
 
 #include <algorithm>
 
-//OpenAL Headers.
-#include <al.h>
-#include <alc.h>
-
 TypeHandle OpenALAudioManager::_type_handle;
 
 int OpenALAudioManager::_active_managers = 0;
