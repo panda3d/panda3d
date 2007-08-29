@@ -72,6 +72,9 @@ PUBLISHED:
   PN_uint64 get_physical_memory();
   PN_uint64 get_available_physical_memory();
 
+  int get_vendor_id();
+  int get_device_id();
+
 public:
   DetectionState _state;
   int _get_adapter_display_mode_state;
@@ -86,6 +89,8 @@ public:
   int _texture_memory;
   PN_uint64 _physical_memory;
   PN_uint64 _available_physical_memory;
+  int _vendor_id;
+  int _device_id;
 };
 
 #endif

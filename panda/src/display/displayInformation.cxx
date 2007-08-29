@@ -80,6 +80,9 @@ DisplayInformation() {
   _texture_memory = texture_memory;
   _physical_memory = physical_memory;
   _available_physical_memory = available_physical_memory;
+
+  _vendor_id = 0;
+  _device_id = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -264,4 +267,24 @@ get_physical_memory() {
 PN_uint64 DisplayInformation::
 get_available_physical_memory() {
   return _available_physical_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_vendor_id
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_vendor_id() {
+  return _vendor_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_device_id
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_device_id() {
+  return _device_id;
 }
