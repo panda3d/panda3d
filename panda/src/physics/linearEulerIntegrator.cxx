@@ -120,14 +120,19 @@ child_integrate(Physical *physical,
       }
 
       // now we go from force space to our object's space.
+      nassertv(!matrices[index].is_nan());
+      nassertv(!cur_force->get_vector(current_object).is_nan());
       f = cur_force->get_vector(current_object) * matrices[index++];
+      nassertv(!f.is_nan());
 
       physics_spam("child_integrate "<<f);
       // tally it into the accum vectors.
       if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
+        nassertv(!md_accum_vec.is_nan());
       } else {
         non_md_accum_vec += f;
+        nassertv(!non_md_accum_vec.is_nan());
       }
     }
 
@@ -155,14 +160,20 @@ child_integrate(Physical *physical,
 
     // get this object's physical info
     LPoint3f pos = current_object->get_position();
+    nassertv(!pos.is_nan());
     vel_vec = current_object->get_velocity();
+    nassertv(!vel_vec.is_nan());
     float mass = current_object->get_mass();
 
     // we want 'a' in F = ma
     // get it by computing F / m
     nassertv(mass != 0.0f);
+    nassertv(!md_accum_vec.is_nan());
     accel_vec = md_accum_vec / mass;
+    nassertv(!accel_vec.is_nan());
+    nassertv(!non_md_accum_vec.is_nan());
     accel_vec += non_md_accum_vec;
+    nassertv(!accel_vec.is_nan());
 
     #if 0 //[
     // step the position and velocity
@@ -181,6 +192,8 @@ child_integrate(Physical *physical,
     assert(current_object->get_position()==current_object->get_last_position());
     
     accel_vec*=viscosityDamper;
+    nassertv(!accel_vec.is_nan());
+    nassertv(!vel_vec.is_nan());
     
     // x = x + v * t + 0.5 * a * t * t
     pos += vel_vec * dt + 0.5 * accel_vec * dt * dt;
@@ -189,7 +202,9 @@ child_integrate(Physical *physical,
     #endif //]
     
     // and store them back.
+    nassertv(!pos.is_nan());
     current_object->set_position(pos);
+    nassertv(!vel_vec.is_nan());
     current_object->set_velocity(vel_vec);
   }
 }
