@@ -30,8 +30,8 @@
 #include "movieAudioCursor.h"
 #include "trueClock.h"
 
-#include <al.h>
-#include <alc.h>
+#include <AL/al.h>
+#include <AL/alc.h>
 
 class EXPCL_OPENAL_AUDIO OpenALAudioSound : public AudioSound {
   friend class OpenALAudioManager;
