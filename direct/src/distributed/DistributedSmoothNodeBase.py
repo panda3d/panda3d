@@ -12,6 +12,7 @@ class DistributedSmoothNodeBase:
     def __init__(self):
         self.cnode = CDistributedSmoothNodeBase()
         self.cnode.setClockDelta(globalClockDelta)
+        self.d_broadcastPosHpr = None
 
     def delete(self):
         # make sure our task is gone
@@ -87,5 +88,7 @@ class DistributedSmoothNodeBase:
         return Task.again
 
     def sendCurrentPosition(self):
-        self.cnode.initialize(self, self.dclass, self.doId)
+        # if we're not currently broadcasting, make sure things are set up
+        if self.d_broadcastPosHpr is None:
+            self.cnode.initialize(self, self.dclass, self.doId)
         self.cnode.sendEverything()
