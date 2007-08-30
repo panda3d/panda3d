@@ -1,3 +1,5 @@
+#define BUILD_DIRECTORY $[WANT_NATIVE_NET]
+
 #define OTHER_LIBS \
     express:c pandaexpress:m \
     pstatclient:c pipeline:c panda:m \
