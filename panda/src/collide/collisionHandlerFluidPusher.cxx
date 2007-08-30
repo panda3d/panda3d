@@ -141,10 +141,6 @@ handle_entries() {
       // make a copy of the original collision entries that we can use to re-test the collisions
       Entries SCS(*orig_entries);
       
-      // currently we only support spheres as the collider
-      const CollisionSphere *sphere;
-      DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
-      
       // this is the original position delta for the entire frame, before collision response
       LPoint3f M(from_node_path.get_pos_delta(*_root));
       if (_horizontal) {
@@ -159,6 +155,15 @@ handle_entries() {
       const LPoint3f orig_prev_pos(prev_trans->get_pos());
       collide_cat.info() << "orig_pos: " << orig_pos << endl;
       collide_cat.info() << "orig_prev_pos: " << orig_prev_pos << endl;
+      
+      // currently we only support spheres as the collider
+      const CollisionSphere *sphere;
+      DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
+      
+      from_node_path.set_pos(*_root, 0,0,0);
+      LPoint3f sphere_offset = (sphere->get_center() *
+                                from_node_path.get_transform(*_root)->get_mat());
+      from_node_path.set_pos(*_root, orig_pos);
       
       // this will hold the final calculated position at each iteration
       LPoint3f candidate_final_pos(orig_pos);
@@ -192,6 +197,7 @@ handle_entries() {
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
+        cout << "while (true)" << endl;
         const CollisionEntry *C = 0;
         // find the first (earliest) collision
         Entries::const_iterator cei;
@@ -222,11 +228,18 @@ handle_entries() {
             << C->get_into_node_path() << "; no contact point/normal information.\n";
           break;
         }
-
-        uncollided_pos = candidate_final_pos;
-        candidate_final_pos[0] = contact_point[0];
-        candidate_final_pos[1] = contact_point[1];
         collide_cat.info() << "contact_point: " << contact_point << endl;
+        
+        contact_point -= sphere_offset;
+        
+        LVector3f blocked_movement(candidate_final_pos - contact_point);
+        if (_horizontal) {
+          blocked_movement[2] = 0.0f;
+        }
+        collide_cat.info() << "blocked movement: " << blocked_movement << endl;
+        
+        uncollided_pos = candidate_final_pos;
+        candidate_final_pos -= blocked_movement;
         
         LVector3f proj_surface_normal(contact_normal);
         if (_horizontal) {
@@ -278,12 +291,6 @@ handle_entries() {
         
         // calculate new position given that you collided with this thing
         // project the final position onto the plane of the obstruction
-        LVector3f blocked_movement(uncollided_pos - contact_point);
-        if (_horizontal) {
-          blocked_movement[2] = 0.0f;
-        }
-        collide_cat.info() << "blocked movement: " << blocked_movement << endl;
-        
         candidate_final_pos += (norm_proj_surface_normal *
                                 -blocked_movement.dot(norm_proj_surface_normal));
         
@@ -311,14 +318,24 @@ handle_entries() {
         
         // calculate new collisions given new movement vector
         entries.clear();
-//        for (cei = SCS.begin(); cei != SCS.end(); ++cei) {
-//          *cei->reset_collided();
-//          PT(CollisionEntry) result = (*cei)->get_from()->test_intersection(**cei);
-//          if (result != (CollisionEntry *)NULL) {
-//            collide_cat.info() << "new collision" << endl;
-//            entries.push_back(result);
-//          }
-//        }
+        Entries::iterator ei;
+        Entries::iterator to_erase = SCS.end();
+        for (ei = SCS.begin(); ei != SCS.end(); ++ei) {
+          // remove the one we just collided against
+          if (*ei == C) {
+            to_erase = ei;
+          } else {
+            (*ei)->reset_collided();
+            PT(CollisionEntry) result = (*ei)->get_from()->test_intersection(**ei);
+            if (result != (CollisionEntry *)NULL) {
+              collide_cat.info() << "new collision" << endl;
+              entries.push_back(result);
+            }
+          }
+        }
+        if (to_erase != SCS.end()) {
+          SCS.erase(to_erase);
+        }
       }
       
       // put things back where they were
@@ -346,7 +363,7 @@ handle_entries() {
       apply_net_shove(def, net_shove, force_normal);
       apply_linear_force(def, force_normal);
       
-      //collide_cat.info() << endl;
+      collide_cat.info() << endl;
     }
   }
   
