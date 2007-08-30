@@ -1420,6 +1420,7 @@ def CompileLink(dll, obj, opts, ldef):
             if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
             cmd = cmd + " -lCg "
         if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
+        if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lpandaopenal'
         if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
         if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
         if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
