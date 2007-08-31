@@ -53,23 +53,23 @@ public:
 };
 
 /*
-class ParsedHttpResponce
+class ParsedHttpResponse
 {
     std::string             _Raw_Text;
-    std::string             _responce_header;
+    std::string             _response_header;
     
     std::map<std::string,std::string>   _header_Lines;
 
 
 public:
 
-    std::string GetresponceCode()
+    std::string GetresponseCode()
     {
         std::string answer;
 
-        size_t pos = _responce_header.find_first_of(" ");
+        size_t pos = _response_header.find_first_of(" ");
         if(pos != std::string::npos)
-            answer =   support::trim_tonew(_responce_header.substr(pos,100));
+            answer =   support::trim_tonew(_response_header.substr(pos,100));
 
 
         pos = answer.find_first_of(" \t\n\r\0");
@@ -80,9 +80,9 @@ public:
         return answer;
     }
 
-    bool ParseThis(const std::string &responce)
+    bool ParseThis(const std::string &response)
     {   
-        _Raw_Text = responce;
+        _Raw_Text = response;
 
         int line_number = 0;
         std::string work1(_Raw_Text);
@@ -96,7 +96,7 @@ public:
                 if(line_number == 0 && line1.substr(0,4) == "HTTP")
                 {
                     // the first line...
-                    _responce_header = line1;
+                    _response_header = line1;
 //                    printf("[%s]\n",line1.c_str());
                 }
 
@@ -112,7 +112,7 @@ public:
         }
 
 
-        return !_responce_header.empty();
+        return !_response_header.empty();
     }
 
     size_t  PullCR(std::string &src, std::string &dst)

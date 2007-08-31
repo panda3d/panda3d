@@ -51,13 +51,13 @@ PUBLISHED:
         return _MyAddress.get_ip_port();
     }
 
-    void   AppendToResponce(const std::string &in)
+    void   AppendToResponse(const std::string &in)
     {
         _writer+=in;
     }
 
 
-    void SendThisResponce(const std::string &in)
+    void SendThisResponse(const std::string &in)
     {
         _writer+=in;
         Finish();

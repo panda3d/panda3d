@@ -186,7 +186,7 @@ inline int Http_BufferedReader::PumpCRRead(char * data, int   maxdata, Socket_TC
 }
 ////////////////////////////////////////////////////////////////////
 // Function name	: Http_BufferedReader::PumpHTTPHeaderRead
-// Description	    :  Will read a HTTP head ,, GET ..... or responce from web server
+// Description	    :  Will read a HTTP head ,, GET ..... or response from web server
 //  
 // Return type		: inline int 
 // Argument         : char * data
