@@ -68,6 +68,7 @@ InstType "Typical"
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
 var READABLE
+var MANPAGE
 var TUTNAME
 
 Function runFunction
@@ -163,11 +164,13 @@ Section "${SMDIRECTORY}" SecCore
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
             WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php"
+            WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/Sample_Programs_in_the_Distribution"
             SetOutPath $INSTDIR\samples\GreetingCard
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk" "$INSTDIR\python\ppython.exe" 'GreetingCard.py "$SMPROGRAMS\${SMDIRECTORY}"' "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Panda Greeting Card"
             SetOutPath $INSTDIR
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Manual"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Website"
+            CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Sample Program Manual"
 
             FindFirst $0 $1 $INSTDIR\samples\*--*
             loop:
@@ -181,9 +184,19 @@ Section "${SMDIRECTORY}" SecCore
                 Call StrRep
                 Pop $R0
                 StrCpy $READABLE $R0
+		Push $1
+		Push "--"
+		Push ":_"
+	        Call StrRep
+	        Push "-"
+                Push "_"
+                Call StrRep
+                Pop $R0
+                StrCpy $MANPAGE $R0
                 CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\$READABLE"
                 SetOutPath $INSTDIR\samples\$1
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Introduction.lnk" "$INSTDIR\samples\$1\Intro.html"
+                WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/$MANPAGE"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Manual Entry on this Sample Program"
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
                 FindFirst $2 $3 $INSTDIR\samples\$1\Tut-*.py
                 iloop:
