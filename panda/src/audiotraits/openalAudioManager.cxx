@@ -123,14 +123,14 @@ OpenALAudioManager() {
     if (!_device) {
       // this is a unique kind of error
       audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
-    } else {
+   } else {
       alcGetError(_device); // clear errors
       _context=alcCreateContext(_device,NULL);
       alc_audio_errcheck("alcCreateContext(_device,NULL)",_device);
       if (_context!=NULL) {
         _openal_active = true;
       }
-    }
+   }
   }
   // We increment _active_managers regardless of possible errors above.
   // The shutdown call will do the right thing when it's called,
@@ -142,7 +142,9 @@ OpenALAudioManager() {
     audio_error("OpenALAudioManager: No open device or context");
     _is_valid = false;
   } else {
-    make_current();	
+    alcGetError(_device); // clear errors
+    alcMakeContextCurrent(_context);
+    alc_audio_errcheck("alcMakeContextCurrent(_context)",_device);
 
     // set 3D sound characteristics as they are given in the configrc
     audio_3d_set_doppler_factor(audio_doppler_factor);
@@ -208,9 +210,7 @@ is_valid() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 make_current() const {
-  alcGetError(_device); // clear errors
-  alcMakeContextCurrent(_context);
-  alc_audio_errcheck("alcMakeContextCurrent(_context)",_device);
+  // Since we only use one context, this is now a no-op.
 }
 
 ////////////////////////////////////////////////////////////////////
