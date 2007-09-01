@@ -135,14 +135,14 @@ handle_entries() {
     } else {
       ColliderDef &def = (*ci).second;
       
+      // we do our math in this node's space
+      NodePath wrt_node(*_root);
+      
       // extract the collision entries into a vector that we can safely modify
       Entries entries(*orig_entries);
       
-      // make a copy of the original collision entries that we can use to re-test the collisions
-      Entries SCS(*orig_entries);
-      
       // this is the original position delta for the entire frame, before collision response
-      LPoint3f M(from_node_path.get_pos_delta(*_root));
+      LPoint3f M(from_node_path.get_pos_delta(wrt_node));
       if (_horizontal) {
         M[2] = 0.0f;
       }
@@ -150,8 +150,8 @@ handle_entries() {
       LPoint3f N(M);
       collide_cat.info() << "N: " << N << endl;
       
-      const LPoint3f orig_pos(from_node_path.get_pos(*_root));
-      CPT(TransformState) prev_trans(from_node_path.get_prev_transform(*_root));
+      const LPoint3f orig_pos(from_node_path.get_pos(wrt_node));
+      CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
       const LPoint3f orig_prev_pos(prev_trans->get_pos());
       collide_cat.info() << "orig_pos: " << orig_pos << endl;
       collide_cat.info() << "orig_prev_pos: " << orig_prev_pos << endl;
@@ -160,10 +160,11 @@ handle_entries() {
       const CollisionSphere *sphere;
       DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
       
-      from_node_path.set_pos(*_root, 0,0,0);
+      from_node_path.set_pos(wrt_node, 0,0,0);
       LPoint3f sphere_offset = (sphere->get_center() *
-                                from_node_path.get_transform(*_root)->get_mat());
-      from_node_path.set_pos(*_root, orig_pos);
+                                from_node_path.get_transform(wrt_node)->get_mat());
+      from_node_path.set_pos(wrt_node, orig_pos);
+      collide_cat.info() << "sphere_offset: " << sphere_offset << endl;
       
       // this will hold the final calculated position at each iteration
       LPoint3f candidate_final_pos(orig_pos);
@@ -222,24 +223,18 @@ handle_entries() {
         LPoint3f contact_point;
         LVector3f contact_normal;
 
-        if (!C->get_all_contact_info(*_root, contact_point, contact_normal)) {
+        if (!C->get_all_contact_info(wrt_node, contact_point, contact_normal)) {
           collide_cat.warning()
             << "Cannot shove on " << from_node_path << " for collision into "
             << C->get_into_node_path() << "; no contact point/normal information.\n";
           break;
         }
+        // calculate the position of the target node at the point of contact
+        contact_point -= sphere_offset;
         collide_cat.info() << "contact_point: " << contact_point << endl;
         
-        contact_point -= sphere_offset;
-        
-        LVector3f blocked_movement(candidate_final_pos - contact_point);
-        if (_horizontal) {
-          blocked_movement[2] = 0.0f;
-        }
-        collide_cat.info() << "blocked movement: " << blocked_movement << endl;
-        
         uncollided_pos = candidate_final_pos;
-        candidate_final_pos -= blocked_movement;
+        candidate_final_pos = contact_point;
         
         LVector3f proj_surface_normal(contact_normal);
         if (_horizontal) {
@@ -289,62 +284,74 @@ handle_entries() {
           }
         }
         
+        LVector3f blocked_movement(uncollided_pos - contact_point);
+        if (_horizontal) {
+          blocked_movement[2] = 0.0f;
+        }
+        collide_cat.info() << "blocked movement: " << blocked_movement << endl;
+        
         // calculate new position given that you collided with this thing
         // project the final position onto the plane of the obstruction
-        candidate_final_pos += (norm_proj_surface_normal *
-                                -blocked_movement.dot(norm_proj_surface_normal));
-        
-        // this is how the regular pusher pushes
-        //candidate_final_pos += (contact_point - interior_point).length() * norm_proj_surface_normal;
+        candidate_final_pos = uncollided_pos + (norm_proj_surface_normal *
+                                                -blocked_movement.dot(proj_surface_normal));
         
         collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
         
         // set up new current/last positions, re-calculate collisions
         candidate_final_pos[2] = orig_pos[2];
-
-        from_node_path.set_pos(*_root, candidate_final_pos);
-        CPT(TransformState) prev_trans(from_node_path.get_prev_transform(*_root));
-        prev_trans->set_pos(contact_point);
-        from_node_path.set_prev_transform(*_root, prev_trans);
-
+        
+        from_node_path.set_pos(wrt_node, candidate_final_pos);
+        CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
+        collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
+        prev_trans = prev_trans->set_pos(contact_point);
+        collide_cat.info() << "contact_point: " << contact_point << endl;
+        collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
+        from_node_path.set_prev_transform(wrt_node, prev_trans);
+        
         candidate_final_pos[2] = 0.0f;
         
+        {
+          const LPoint3f new_pos(from_node_path.get_pos(wrt_node));
+          CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
+          const LPoint3f new_prev_pos(new_prev_trans->get_pos());
+          collide_cat.info() << "new_pos: " << new_pos << endl;
+          collide_cat.info() << "new_prev_pos: " << new_prev_pos << endl;
+        }
+
         // recalculate the position delta
-        N = from_node_path.get_pos_delta(*_root);
+        N = from_node_path.get_pos_delta(wrt_node);
         if (_horizontal) {
           N[2] = 0.0f;
         }
         collide_cat.info() << "N: " << N << endl;
         
         // calculate new collisions given new movement vector
-        entries.clear();
         Entries::iterator ei;
-        Entries::iterator to_erase = SCS.end();
-        for (ei = SCS.begin(); ei != SCS.end(); ++ei) {
-          // remove the one we just collided against
-          if (*ei == C) {
-            to_erase = ei;
-          } else {
-            (*ei)->reset_collided();
-            PT(CollisionEntry) result = (*ei)->get_from()->test_intersection(**ei);
-            if (result != (CollisionEntry *)NULL) {
-              collide_cat.info() << "new collision" << endl;
-              entries.push_back(result);
+        Entries new_entries;
+        for (ei = entries.begin(); ei != entries.end(); ++ei) {
+          CollisionEntry *entry = (*ei);
+          nassertr(entry != (CollisionEntry *)NULL, false);
+          // skip the one we just collided against
+          if (entry != C) {
+            entry->_from_node_path = from_node_path;
+            entry->reset_collided();
+            PT(CollisionEntry) result = entry->get_from()->test_intersection(**ei);
+            if (result != (CollisionEntry *)NULL && result != (CollisionEntry *)0) {
+              new_entries.push_back(result);
             }
           }
         }
-        if (to_erase != SCS.end()) {
-          SCS.erase(to_erase);
-        }
+        entries.swap(new_entries);
       }
       
       // put things back where they were
-      from_node_path.set_pos(*_root, orig_pos);
+      from_node_path.set_pos(wrt_node, orig_pos);
       // restore the appropriate previous position
-      prev_trans = from_node_path.get_prev_transform(*_root);
-      prev_trans->set_pos(orig_prev_pos);
-      from_node_path.set_prev_transform(*_root, prev_trans);
+      prev_trans = from_node_path.get_prev_transform(wrt_node);
+      prev_trans = prev_trans->set_pos(orig_prev_pos);
+      from_node_path.set_prev_transform(wrt_node, prev_trans);
       
+      // don't move in Z
       candidate_final_pos[2] = orig_pos[2];
 
       LVector3f net_shove(candidate_final_pos - orig_pos);
@@ -356,7 +363,7 @@ handle_entries() {
       collide_cat.info() << "net_shove: " << net_shove << endl;
       
       // This is the part where the node actually gets moved:
-      def._target.set_pos(*_root, candidate_final_pos);
+      def._target.set_pos(wrt_node, candidate_final_pos);
       
       // We call this to allow derived classes to do other
       // fix-ups as they see fit:
