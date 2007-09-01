@@ -12,8 +12,7 @@
 #
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal
-from glob import glob
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
 
 ########################################################################
 ##
@@ -392,6 +391,16 @@ def PkgSelected(pkglist, pkg):
     if (pkglist.count(pkg)==0): return 0
     if (OMIT.count(pkg)): return 0
     return 1
+
+def DeleteCVS(dir):
+    for entry in os.listdir(dir):
+        if (entry != ".") and (entry != ".."):
+            subdir = dir + "/" + entry
+            if (os.path.isdir(subdir)):
+                if (entry == "CVS"):
+                    shutil.rmtree(subdir)
+                else:
+                    DeleteCVS(subdir)
 
 def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
@@ -1901,7 +1910,6 @@ CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
 CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
 if (OMIT.count("PYTHON")==0):
     CopyTree('built/Pmw',         'thirdparty/Pmw')
-    CopyTree('built/SceneEditor', 'SceneEditor')
 ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
@@ -4724,6 +4732,7 @@ def MakeInstallerLinux():
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
     oscmd("mkdir -p linuxroot/usr/share/panda3d")
+    oscmd("mkdir -p linuxroot/usr/lib/panda3d")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
     oscmd("mkdir -p linuxroot/etc/ld.so.conf.d")
@@ -4734,7 +4743,6 @@ def MakeInstallerLinux():
     oscmd("cp --recursive built/pandac  linuxroot/usr/share/panda3d/pandac")
     oscmd("cp --recursive built/Pmw     linuxroot/usr/share/panda3d/Pmw")
     oscmd("cp built/direct/__init__.py  linuxroot/usr/share/panda3d/direct/__init__.py")
-    oscmd("cp --recursive SceneEditor   linuxroot/usr/share/panda3d/SceneEditor")
     oscmd("cp --recursive built/models  linuxroot/usr/share/panda3d/models")
     oscmd("cp --recursive samples       linuxroot/usr/share/panda3d/samples")
     oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
@@ -4742,15 +4750,15 @@ def MakeInstallerLinux():
     oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
     oscmd("echo '/usr/lib/panda3d'   >  linuxroot/etc/ld.so.conf.d/panda3d.conf")
     oscmd("echo '/usr/share/panda3d' >  linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
+    oscmd("echo '/usr/lib/panda3d'   >> linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
     oscmd("cp built/bin/*               linuxroot/usr/bin/")
     for base in os.listdir("built/lib"):
-        oscmd("ln -sf /usr/lib/"+base+" linuxroot/usr/lib/"+PYTHONV+"/lib-dynload/"+base)
-        oscmd("cp built/lib/"+base+" linuxroot/usr/lib/"+base)
+        oscmd("cp built/lib/"+base+" linuxroot/usr/lib/panda3d/"+base)
     for base in os.listdir("linuxroot/usr/share/panda3d/direct/src"):
         if ((base != "extensions") and (base != "extensions_native")):
             compileall.compile_dir("linuxroot/usr/share/panda3d/direct/src/"+base)
     compileall.compile_dir("linuxroot/usr/share/panda3d/Pmw")
-    compileall.compile_dir("linuxroot/usr/share/panda3d/SceneEditor")
+    DeleteCVS("linuxroot")
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
 
     if (os.path.exists("/usr/bin/dpkg-deb")):
@@ -4760,6 +4768,9 @@ def MakeInstallerLinux():
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
         WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
+	WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
+	oscmd("chmod 755 linuxroot/DEBIAN/postinst")
+	oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
         oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
 
@@ -4769,8 +4780,8 @@ def MakeInstallerLinux():
         oscmd("rpmbuild --define '_rpmdir "+PANDASOURCE+"' -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
 
-    oscmd("chmod -R 755 linuxroot")
-    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
+#    oscmd("chmod -R 755 linuxroot")
+#    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
     
         
 if (INSTALLER != 0):
