@@ -68,7 +68,7 @@ private:
 //               based on distance from the camera's eyepoint.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggSwitchConditionDistance : public EggSwitchCondition {
-public:
+PUBLISHED:
   EggSwitchConditionDistance(double switch_in, double switch_out,
                              const LPoint3d &center, double fade = 0.0);
 
