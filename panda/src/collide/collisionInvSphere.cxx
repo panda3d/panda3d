@@ -175,7 +175,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   LVector3f from_direction = line->get_direction() * wrt_mat;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+  if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // The line is in the middle of space, and therefore intersects
     // the sphere.
     t1 = t2 = 0.0;
@@ -218,7 +218,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LVector3f from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+  if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // The ray is in the middle of space, and therefore intersects
     // the sphere.
     t1 = t2 = 0.0;
@@ -265,7 +265,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LVector3f from_direction = from_b - from_a;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_a, from_direction)) {
+  if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
     // The segment is in the middle of space, and therefore intersects
     // the sphere.
     t1 = t2 = 0.0;

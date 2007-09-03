@@ -275,25 +275,25 @@ has_interior_point() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_contact_point
+//     Function: CollisionEntry::set_contact_pos
 //       Access: Published
-//  Description: Stores the point, on the surface of the "into"
-//               object, at which the collision is first detected.
+//  Description: Stores the position of the "from" object at the
+//               instant at which the collision is first detected.
 //
-//               This point is specified in the coordinate space of
+//               This position is specified in the coordinate space of
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_contact_point(const LPoint3f &point) {
-  _contact_point = point;
-  _flags |= F_has_contact_point;
+set_contact_pos(const LPoint3f &pos) {
+  _contact_pos = pos;
+  _flags |= F_has_contact_pos;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_contact_normal
 //       Access: Published
 //  Description: Stores the surface normal of the "into" object at the
-//               contact point.
+//               contact pos.
 //
 //               This normal is specified in the coordinate space of
 //               the "into" object.
@@ -305,16 +305,16 @@ set_contact_normal(const LVector3f &normal) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::has_contact_point
+//     Function: CollisionEntry::has_contact_pos
 //       Access: Published
-//  Description: Returns true if the contact point has been specified,
-//               false otherwise.  See get_contact_point().  Some
+//  Description: Returns true if the contact position has been specified,
+//               false otherwise.  See get_contact_pos().  Some
 //               types of collisions may not compute the contact
-//               point.
+//               pos.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
-has_contact_point() const {
-  return (_flags & F_has_contact_point) != 0;
+has_contact_pos() const {
+  return (_flags & F_has_contact_pos) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////

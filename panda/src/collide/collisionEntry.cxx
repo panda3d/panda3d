@@ -41,7 +41,7 @@ CollisionEntry(const CollisionEntry &copy) :
   _surface_point(copy._surface_point),
   _surface_normal(copy._surface_normal),
   _interior_point(copy._interior_point),
-  _contact_point(copy._contact_point),
+  _contact_pos(copy._contact_pos),
   _contact_normal(copy._contact_normal)
 {
 }
@@ -65,7 +65,7 @@ operator = (const CollisionEntry &copy) {
   _surface_point = copy._surface_point;
   _surface_normal = copy._surface_normal;
   _interior_point = copy._interior_point;
-  _contact_point = copy._contact_point;
+  _contact_pos = copy._contact_pos;
   _contact_normal = copy._contact_normal;
 }
 
@@ -169,33 +169,26 @@ get_all(const NodePath &space, LPoint3f &surface_point,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_contact_point
+//     Function: CollisionEntry::get_contact_pos
 //       Access: Published
-//  Description: Returns the point, on the surface of the "into"
-//               object, at which a collision is detected.  This can
-//               be thought of as the first point of intersection.
-//               The surface point is not always the initial point of
-//               intersection. We preserve the original implementation
-//               of surface_point detection so that the existing
-//               collision response code will still work, and provide
-//               the contact_point for collision response code that
-//               needs precise collision information.
+//  Description: Returns the position of the "from" object at the instant
+//               that a collision is first detected.
 //
-//               The point will be converted into whichever coordinate
+//               The position will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
 LPoint3f CollisionEntry::
-get_contact_point(const NodePath &space) const {
-  nassertr(has_contact_point(), LPoint3f::zero());
+get_contact_pos(const NodePath &space) const {
+  nassertr(has_contact_pos(), LPoint3f::zero());
   CPT(TransformState) transform = _into_node_path.get_transform(space);
-  return _contact_point * transform->get_mat();
+  return _contact_pos * transform->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_contact_normal
 //       Access: Published
 //  Description: Returns the surface normal of the "into" object at
-//               the contact point.
+//               the contact position.
 //
 //               The normal will be converted into whichever coordinate
 //               space the caller specifies.
@@ -210,25 +203,25 @@ get_contact_normal(const NodePath &space) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_all_contact_info
 //       Access: Published
-//  Description: Simultaneously transforms the surface point, surface
-//               normal, and interior point of the collision into the
+//  Description: Simultaneously transforms the contact position and
+//               contact normal of the collision into the
 //               indicated coordinate space.
 //
 //               Returns true if all three properties are available,
 //               or false if any one of them is not.
 ////////////////////////////////////////////////////////////////////
 bool CollisionEntry::
-get_all_contact_info(const NodePath &space, LPoint3f &contact_point,
+get_all_contact_info(const NodePath &space, LPoint3f &contact_pos,
                      LVector3f &contact_normal) const {
   CPT(TransformState) transform = _into_node_path.get_transform(space);
   const LMatrix4f &mat = transform->get_mat();
   bool all_ok = true;
 
-  if (!has_contact_point()) {
-    contact_point = LPoint3f::zero();
+  if (!has_contact_pos()) {
+    contact_pos = LPoint3f::zero();
     all_ok = false;
   } else {
-    contact_point = _contact_point * mat;
+    contact_pos = _contact_pos * mat;
   }
 
   if (!has_contact_normal()) {

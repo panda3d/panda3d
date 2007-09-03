@@ -142,12 +142,12 @@ handle_entries() {
       Entries entries(*orig_entries);
       
       // this is the original position delta for the entire frame, before collision response
-      LPoint3f M(from_node_path.get_pos_delta(wrt_node));
+      LVector3f M(from_node_path.get_pos_delta(wrt_node));
       if (_horizontal) {
         M[2] = 0.0f;
       }
       // this is used to track position deltas every time we collide against a solid
-      LPoint3f N(M);
+      LVector3f N(M);
       collide_cat.info() << "N: " << N << endl;
       
       const LPoint3f orig_pos(from_node_path.get_pos(wrt_node));
@@ -198,7 +198,7 @@ handle_entries() {
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
-        cout << "while (true)" << endl;
+        collide_cat.info() << "while (true)" << endl;
         const CollisionEntry *C = 0;
         // find the first (earliest) collision
         Entries::const_iterator cei;
@@ -219,22 +219,22 @@ handle_entries() {
         
         collide_cat.info() << "t: " << C->get_t() << endl;
         
-        // move back to initial contact point
-        LPoint3f contact_point;
+        // move back to initial contact position
+        LPoint3f contact_pos;
         LVector3f contact_normal;
 
-        if (!C->get_all_contact_info(wrt_node, contact_point, contact_normal)) {
+        if (!C->get_all_contact_info(wrt_node, contact_pos, contact_normal)) {
           collide_cat.warning()
             << "Cannot shove on " << from_node_path << " for collision into "
-            << C->get_into_node_path() << "; no contact point/normal information.\n";
+            << C->get_into_node_path() << "; no contact pos/normal information.\n";
           break;
         }
         // calculate the position of the target node at the point of contact
-        contact_point -= sphere_offset;
-        collide_cat.info() << "contact_point: " << contact_point << endl;
+        contact_pos -= sphere_offset;
+        collide_cat.info() << "contact_pos: " << contact_pos << endl;
         
         uncollided_pos = candidate_final_pos;
-        candidate_final_pos = contact_point;
+        candidate_final_pos = contact_pos;
         
         LVector3f proj_surface_normal(contact_normal);
         if (_horizontal) {
@@ -284,16 +284,24 @@ handle_entries() {
           }
         }
         
-        LVector3f blocked_movement(uncollided_pos - contact_point);
+        LVector3f blocked_movement(uncollided_pos - contact_pos);
         if (_horizontal) {
           blocked_movement[2] = 0.0f;
         }
         collide_cat.info() << "blocked movement: " << blocked_movement << endl;
         
+        float push_magnitude(-blocked_movement.dot(proj_surface_normal));
+        LVector3f push;
+        if (push_magnitude < 0.0f) {
+          // don't ever push into plane, always push out along plane normal
+          push = LVector3f(0,0,0);
+        } else {
+          push = norm_proj_surface_normal * push_magnitude;
+        }
+        
         // calculate new position given that you collided with this thing
         // project the final position onto the plane of the obstruction
-        candidate_final_pos = uncollided_pos + (norm_proj_surface_normal *
-                                                -blocked_movement.dot(proj_surface_normal));
+        candidate_final_pos = uncollided_pos + push;
         
         collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
         
@@ -303,8 +311,8 @@ handle_entries() {
         from_node_path.set_pos(wrt_node, candidate_final_pos);
         CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
         collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
-        prev_trans = prev_trans->set_pos(contact_point);
-        collide_cat.info() << "contact_point: " << contact_point << endl;
+        prev_trans = prev_trans->set_pos(contact_pos);
+        collide_cat.info() << "contact_pos: " << contact_pos << endl;
         collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
         from_node_path.set_prev_transform(wrt_node, prev_trans);
         

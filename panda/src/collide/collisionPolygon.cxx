@@ -571,7 +571,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(from_center - normal * dist);
   new_entry->set_interior_point(from_center - normal * (dist + into_depth));
-  new_entry->set_contact_point(contact_point);
+  new_entry->set_contact_pos(contact_point);
   new_entry->set_contact_normal(get_normal());
   new_entry->set_t(actual_t);
 

@@ -78,10 +78,10 @@ PUBLISHED:
   INLINE bool has_surface_normal() const;
   INLINE bool has_interior_point() const;
 
-  INLINE void set_contact_point(const LPoint3f &point);
+  INLINE void set_contact_pos(const LPoint3f &pos);
   INLINE void set_contact_normal(const LVector3f &normal);
 
-  INLINE bool has_contact_point() const;
+  INLINE bool has_contact_pos() const;
   INLINE bool has_contact_normal() const;
 
   LPoint3f get_surface_point(const NodePath &space) const;
@@ -92,10 +92,10 @@ PUBLISHED:
                LVector3f &surface_normal,
                LPoint3f &interior_point) const;
 
-  LPoint3f get_contact_point(const NodePath &space) const;
+  LPoint3f get_contact_pos(const NodePath &space) const;
   LVector3f get_contact_normal(const NodePath &space) const;
   bool get_all_contact_info(const NodePath &space,
-                            LPoint3f &contact_point,
+                            LPoint3f &contact_pos,
                             LVector3f &contact_normal) const;
 
   void output(ostream &out) const;
@@ -133,7 +133,7 @@ private:
     F_has_interior_point      = 0x0004,
     F_respect_prev_transform  = 0x0008,
     F_checked_clip_planes     = 0x0010,
-    F_has_contact_point       = 0x0020,
+    F_has_contact_pos         = 0x0020,
     F_has_contact_normal      = 0x0040,
   };
 
@@ -143,7 +143,7 @@ private:
   LVector3f _surface_normal;
   LPoint3f _interior_point;
 
-  LPoint3f _contact_point;
+  LPoint3f _contact_pos;
   LVector3f _contact_normal;
   
 public:

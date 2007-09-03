@@ -315,21 +315,57 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
 
-  LPoint3f from_center = sphere->get_center() * wrt_mat;
+  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+
+  LPoint3f from_a = sphere->get_center() * wrt_prev_space->get_mat();
+  LPoint3f from_b = sphere->get_center() * wrt_mat;
+
+  LPoint3f into_center(get_center());
+  float into_radius(get_radius());
+
   LVector3f from_radius_v =
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
   float from_radius = length(from_radius_v);
 
-  LPoint3f into_center = get_center();
-  float into_radius = get_radius();
+  LPoint3f into_intersection_point;
+  double t1, t2;
 
-  LVector3f vec = from_center - into_center;
-  float dist2 = dot(vec, vec);
-  if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
-    // No intersection.
-    return NULL;
+  if (from_a != from_b) {
+    LVector3f from_direction = from_b - from_a;
+    if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
+      // No intersection.
+      return NULL;
+    }
+
+    if (t2 < 0.0 || t1 > 1.0) {
+      // Both intersection points are before the start of the segment or
+      // after the end of the segment.
+      return NULL;
+    }
+
+    if (t1 < 0.0) {
+      // Point a is within the sphere.  The first intersection point is
+      // point a itself.
+      into_intersection_point = from_a;
+    } else {
+      // Point a is outside the sphere, and point b is either inside the
+      // sphere or beyond it.  The first intersection point is at t1.
+      into_intersection_point = from_a + t1 * from_direction;
+    }
+
+  } else {
+    LVector3f vec = from_a - into_center;
+    float dist2 = dot(vec, vec);
+    if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
+      // No intersection.
+      return NULL;
+    }
+
+    into_intersection_point = from_a;
+    t1 = 0.0f;
   }
 
   if (collide_cat.is_debug()) {
@@ -339,22 +375,28 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
+  LPoint3f from_center = sphere->get_center() * wrt_mat;
+
   LVector3f surface_normal;
-  float vec_length = vec.length();
+  LVector3f v(into_intersection_point - into_center);
+  float vec_length = v.length();
   if (IS_NEARLY_ZERO(vec_length)) {
     // If we don't have a collision normal (e.g. the centers are
     // exactly coincident), then make up an arbitrary normal--any one
     // is as good as any other.
     surface_normal.set(1.0, 0.0, 0.0);
   } else {
-    surface_normal = vec / vec_length;
+    surface_normal = v / vec_length;
   }
 
-  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
+  LVector3f eff_normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
 
-  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_normal(eff_normal);
   new_entry->set_surface_point(into_center + surface_normal * into_radius);
   new_entry->set_interior_point(from_center - surface_normal * from_radius);
+  new_entry->set_contact_pos(into_intersection_point);
+  new_entry->set_contact_normal(surface_normal);
+  new_entry->set_t(t1);
 
   return new_entry;
 }
@@ -375,7 +417,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   LVector3f from_direction = line->get_direction() * wrt_mat;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+  if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
     return NULL;
   }
@@ -417,7 +459,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LVector3f from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+  if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
     return NULL;
   }
@@ -467,7 +509,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LVector3f from_direction = from_b - from_a;
 
   double t1, t2;
-  if (!intersects_line(t1, t2, from_a, from_direction)) {
+  if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
     // No intersection.
     return NULL;
   }
@@ -560,7 +602,8 @@ fill_viz_geom() {
 ////////////////////////////////////////////////////////////////////
 bool CollisionSphere::
 intersects_line(double &t1, double &t2,
-                const LPoint3f &from, const LVector3f &delta) const {
+                const LPoint3f &from, const LVector3f &delta,
+                float inflate_radius) const {
   // Solve the equation for the intersection of a line with a sphere
   // using the quadratic equation.
 
@@ -598,7 +641,8 @@ intersects_line(double &t1, double &t2,
   LVector3f fc = from - get_center();
   double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
-  double C = fc_d2 - get_radius() * get_radius();
+  double radius = get_radius() + inflate_radius;
+  double C = fc_d2 - radius * radius;
 
   double radical = B*B - 4.0*A*C;
 

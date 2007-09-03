@@ -79,7 +79,8 @@ protected:
 
 protected:
   bool intersects_line(double &t1, double &t2,
-                       const LPoint3f &from, const LVector3f &delta) const;
+                       const LPoint3f &from, const LVector3f &delta,
+                       float inflate_radius) const;
   Vertexf compute_point(float latitude, float longitude) const;
 
 private:
