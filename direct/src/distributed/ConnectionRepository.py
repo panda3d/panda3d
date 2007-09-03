@@ -512,7 +512,6 @@ class ConnectionRepository(
         return self.http
 
     def startReaderPollTask(self):
-        print '########## startReaderPollTask'
         # Stop any tasks we are running now
         self.stopReaderPollTask()
         self.accept(CConnectionRepository.getOverflowEventName(),
@@ -521,7 +520,6 @@ class ConnectionRepository(
                     priority = self.taskPriority)
 
     def stopReaderPollTask(self):
-        print '########## stopReaderPollTask'
         taskMgr.remove(self.uniqueName("readerPollTask"))
         self.ignore(CConnectionRepository.getOverflowEventName())
 
