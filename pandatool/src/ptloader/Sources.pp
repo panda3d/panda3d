@@ -15,6 +15,7 @@
     downloader:c pipeline:c pnmtext:c \
     event:c gsgbase:c lerp:c movies:c \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+    $[if $[HAVE_AUDIO],audio:c] \
     panda:m \
     pandabase:c express:c pandaexpress:m \
     interrogatedb:c prc:c dconfig:c dtoolconfig:m \

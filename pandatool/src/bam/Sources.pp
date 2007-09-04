@@ -8,6 +8,7 @@
   gsgbase:c grutil:c display:c text:c cull:c pnmtext:c \
   tform:c device:c movies:c \
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+  $[if $[HAVE_AUDIO],audio:c] \
   panda:m \
   pandabase:c express:c pandaexpress:m \
   interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c \
