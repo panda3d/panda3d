@@ -246,7 +246,10 @@ class ClientRepositoryBase(ConnectionRepository):
                     self.lastGenerate = globalClock.getFrameTime()
 
                 for dg, di in updates:
-                    self.__doUpdate(doId, di)
+                    # ovUpdated is set to True since its OV
+                    # is assumbed to have occured when the
+                    # deferred update was originally received
+                    self.__doUpdate(doId, di, True)
         else:
             self.notify.warning("Ignoring deferred message %s" % (msgType))
 
@@ -511,6 +514,8 @@ class ClientRepositoryBase(ConnectionRepository):
         # Get the DO Id
         doId = di.getUint32()
 
+        ovUpdated = self.__doUpdateOwner(doId, di)
+        
         if doId in self.deferredDoIds:
             # This object hasn't really been generated yet.  Sit on
             # the update.
@@ -523,17 +528,26 @@ class ClientRepositoryBase(ConnectionRepository):
             updates.append((dg, di))
         else:
             # This object has been fully generated.  It's OK to update.
-            self.__doUpdate(doId, di)
+            self.__doUpdate(doId, di, ovUpdated)
 
-    def __doUpdate(self, doId, di):
+    def __doUpdate(self, doId, di, ovUpdated):
         # Find the DO
         do = self.doId2do.get(doId)
         if do is not None:
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
-        else:
+        elif not ovUpdated:
             self.notify.warning(
                 "Asked to update non-existent DistObj " + str(doId))
+            
+    def __doUpdateOwner(self, doId, di):
+        ovObj = self.doId2ownerView.get(doId)
+        if ovObj:
+            odg = Datagram(di.getDatagram())
+            odi = DatagramIterator(odg, di.getCurrentIndex())
+            ovObj.dclass.receiveUpdate(ovObj, odi)
+            return True
+        return False
 
     def handleGoGetLost(self, di):
         # The server told us it's about to drop the connection on us.
