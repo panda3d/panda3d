@@ -2062,14 +2062,17 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         parameter_list += ", &" + param_name;
         
       } else if (TypeManager::is_wstring(orig_type)) {
-        indent(out,indent_level) << "Py_UNICODE *" << param_name
-            << "_str; int " << param_name << "_len";
-        format_specifiers += "u#";
-        parameter_list += ", &" + param_name
-          + "_str, &" + param_name + "_len";
+        indent(out,indent_level) << "PyUnicodeObject *" << param_name << "\n";
+        format_specifiers += "U";
+        parameter_list += ", &" + param_name;
+
+        extra_convert += " int " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + "); wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len]; PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
+
         pexpr_string = "basic_string<wchar_t>((wchar_t *)" +
           param_name + "_str, " +
           param_name + "_len)";
+
+        extra_cleanup += " delete[] " + param_name + "_str;";
 
       } else {
         indent(out,indent_level) << "char *" << param_name
