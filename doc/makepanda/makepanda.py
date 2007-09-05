@@ -1439,7 +1439,7 @@ def CompileLink(dll, obj, opts, ldef):
         if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
         if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
         if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
-        cmd = cmd + " -lpthread"
+        cmd = cmd + " -lpthread -ldl"
         oscmd(cmd)
 
 def EnqueueLink(dll=0, obj=[], opts=[], xdep=[], ldef=0):
@@ -2801,8 +2801,6 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libdistort.in', obj='libdistort_igate
 #
 # DIRECTORY: panda/src/downloadertools/
 #
-# There's something funny about this OMIT.count('OPENSSL')... check it out.
-#
 
 if OMIT.count("OPENSSL")==0:
     IPATH=['panda/src/downloadertools']
@@ -2818,18 +2816,26 @@ if OMIT.count("OPENSSL")==0:
     EnqueueLink(dll='check_crc.exe', opts=OPTS, obj=['check_crc_check_crc.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='check_md5.cxx', obj='check_md5_check_md5.obj')
     EnqueueLink(dll='check_md5.exe', opts=OPTS, obj=['check_md5_check_md5.obj']+LIBS)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
-    EnqueueLink(dll='multify.exe', opts=OPTS, obj=['multify_multify.obj']+LIBS)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='pzip.cxx', obj='pzip_pzip.obj')
-    EnqueueLink(dll='pzip.exe', opts=OPTS, obj=['pzip_pzip.obj']+LIBS)
-    EnqueueCxx(ipath=IPATH, opts=OPTS, src='punzip.cxx', obj='punzip_punzip.obj')
-    EnqueueLink(dll='punzip.exe', opts=OPTS, obj=['punzip_punzip.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pdecrypt.cxx', obj='pdecrypt_pdecrypt.obj')
     EnqueueLink(dll='pdecrypt.exe', opts=OPTS, obj=['pdecrypt_pdecrypt.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='pencrypt.cxx', obj='pencrypt_pencrypt.obj')
     EnqueueLink(dll='pencrypt.exe', opts=OPTS, obj=['pencrypt_pencrypt.obj']+LIBS)
     EnqueueCxx(ipath=IPATH, opts=OPTS, src='show_ddb.cxx', obj='show_ddb_show_ddb.obj')
     EnqueueLink(dll='show_ddb.exe', opts=OPTS, obj=['show_ddb_show_ddb.obj']+LIBS)
+
+#
+# DIRECTORY: panda/src/downloadertools/
+#
+
+IPATH=['panda/src/downloadertools']
+OPTS=['ZLIB', 'ADVAPI']
+LIBS=['libpandaexpress.dll', 'libpanda.dll', 'libp3dtoolconfig.dll', 'libp3dtool.dll', 'libp3pystub.dll']
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='multify.cxx', obj='multify_multify.obj')
+EnqueueLink(dll='multify.exe', opts=OPTS, obj=['multify_multify.obj']+LIBS)
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='pzip.cxx', obj='pzip_pzip.obj')
+EnqueueLink(dll='pzip.exe', opts=OPTS, obj=['pzip_pzip.obj']+LIBS)
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='punzip.cxx', obj='punzip_punzip.obj')
+EnqueueLink(dll='punzip.exe', opts=OPTS, obj=['punzip_punzip.obj']+LIBS)
 
 #
 # DIRECTORY: panda/src/windisplay/
