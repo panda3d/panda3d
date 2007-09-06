@@ -75,7 +75,7 @@ Function runFunction
         !ifdef PPGAME
         ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Play ${NAME}.lnk"
         !else
-        ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Panda Greeting Card.lnk"
+        ExecShell "open" "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk"
         !endif
 FunctionEnd
 
