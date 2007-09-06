@@ -10,13 +10,20 @@ class DistributedSmoothNodeBase:
     BroadcastTypes = Enum('FULL, XYH, XY')
     
     def __init__(self):
+        pass
+
+    def generate(self):
         self.cnode = CDistributedSmoothNodeBase()
         self.cnode.setClockDelta(globalClockDelta)
         self.d_broadcastPosHpr = None
 
-    def delete(self):
+    def disable(self):
+        del self.cnode
         # make sure our task is gone
         self.stopPosHprBroadcast()
+
+    def delete(self):
+        pass
 
     def b_clearSmoothing(self):
         self.d_clearSmoothing()

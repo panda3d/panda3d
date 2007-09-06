@@ -66,20 +66,28 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.DistributedSmoothNode_initialized = 1
             DistributedNode.DistributedNode.__init__(self, cr)
             DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
-            self.cnode.setRepository(cr, 0, 0)
-
-            self.smoother = SmoothMover()
             self.smoothStarted = 0
-            self.lastSuggestResync = 0
-            self._smoothWrtReparents = False
+
+    def generate(self):
+        self.smoother = SmoothMover()
+        self.smoothStarted = 0
+        self.lastSuggestResync = 0
+        self._smoothWrtReparents = False
+
+        DistributedNode.DistributedNode.generate(self)
+        DistributedSmoothNodeBase.DistributedSmoothNodeBase.generate(self)
+        self.cnode.setRepository(self.cr, 0, 0)
+
+        self.activateSmoothing(GlobalSmoothing, GlobalPrediction)
+
+    def disable(self):
+        DistributedSmoothNodeBase.DistributedSmoothNodeBase.disable(self)
+        DistributedNode.DistributedNode.disable(self)
+        del self.smoother
 
     def delete(self):
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.delete(self)
         DistributedNode.DistributedNode.delete(self)
-
-    def generate(self):
-        DistributedNode.DistributedNode.generate(self)
-        self.activateSmoothing(GlobalSmoothing, GlobalPrediction)
 
     ### Methods to handle computing and updating of the smoothed
     ### position.
