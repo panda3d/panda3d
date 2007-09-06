@@ -1,3 +1,11 @@
+------------------------  RELEASE 1.4.1  ------------------------
+
+This release:
+
+* fixes a couple of small bugs
+* adds support for the new OpenAL/FFMpeg unified sound/video system.
+* renames the sample programs in a more sensible way
+
 ------------------------  RELEASE 1.4.0  ------------------------
 
 This release incorporates lots of small, incremental
