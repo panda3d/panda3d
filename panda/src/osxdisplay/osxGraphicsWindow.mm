@@ -535,6 +535,7 @@ osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe,
 	_input_devices.push_back(device);
 	_input_devices[0].set_pointer_in_window(0, 0);
 	_last_key_modifiers = 0;
+        _last_buttons = 0;
 	
 	if (osxdisplay_cat.is_debug())	
 		osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
@@ -1318,60 +1319,32 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
      if (eventNotHandledErr == result) 
      { // only handle events not already handled (prevents wierd resize interaction)
          switch (kind) {
-             // start trackball, pan, or dolly
+             // Whenever mouse button state changes, generate the
+             // appropriate Panda down/up events to represent the
+             // change.
+
             case kEventMouseDown:
-                {
-                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-                    GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
-                    if(_properties.get_mouse_mode()==WindowProperties::M_relative)
-                    {
-                      GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                      MouseData currMouse=get_pointer(0);
-                      qdGlobalPoint.h+=currMouse.get_x();
-                      qdGlobalPoint.v+=currMouse.get_y();
-                    } 
-                    else
-                    {
-                      GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);                    
-                      SystemPointToLocalPoint(qdGlobalPoint);
-                    }
-                    ButtonHandle button_h = MouseButton::one();
-                    if(kEventMouseButtonSecondary == button)
-                        button_h = MouseButton::three();
-                    if(kEventMouseButtonTertiary == button)
-                        button_h = MouseButton::two();
-                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-                    _input_devices[0].button_down(button_h);
-					result = noErr;
-                }
-                break;
-                // stop trackball, pan, or dolly
             case kEventMouseUp:
-                {
-                    GetEventParameter(event, kEventParamMouseButton, typeMouseButton, NULL, sizeof(EventMouseButton), NULL, &button);
-                    //				GetEventParameter(event, kEventParamWindowMouseLocation, typeHIPoint, NULL, sizeof(HIPoint), NULL, &location);	// Mac OS X v10.1 and later
-                    if(_properties.get_mouse_mode()==WindowProperties::M_relative)
-                    {
-                      GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                      MouseData currMouse=get_pointer(0);
-                      qdGlobalPoint.h+=currMouse.get_x();
-                      qdGlobalPoint.v+=currMouse.get_y();
-                    }
-                    else
-                    {
-                      GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
-                      SystemPointToLocalPoint(qdGlobalPoint);
-                    }
-                    ButtonHandle button_h = MouseButton::one();
-                    if(kEventMouseButtonSecondary == button)
-                        button_h = MouseButton::three();
-                    if(kEventMouseButtonTertiary == button)
-                        button_h = MouseButton::two();
-                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-                    _input_devices[0].button_up(button_h);
-					result = noErr;					
+              {
+                GetEventParameter(event, kEventParamKeyModifiers, typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
+                if (_properties.get_mouse_mode() == WindowProperties::M_relative) {
+                  GetEventParameter(event, kEventParamMouseDelta,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
+                  MouseData currMouse = get_pointer(0);
+                  qdGlobalPoint.h += currMouse.get_x();
+                  qdGlobalPoint.v += currMouse.get_y();
+                } else {
+                  GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);                    
+                  SystemPointToLocalPoint(qdGlobalPoint);
                 }
-                break;
+
+                _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+
+                UInt32 new_buttons = GetCurrentEventButtonState();
+                HandleButtonDelta(new_buttons);
+              }
+              result = noErr;
+              break;
+
             case kEventMouseMoved:	
             case kEventMouseDragged:
                 if(_properties.get_mouse_mode()==WindowProperties::M_relative)
@@ -1388,7 +1361,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                   SystemPointToLocalPoint(qdGlobalPoint);
                 }
                 _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-				result = noErr;
+                result = noErr;
 
                 break;
 				
@@ -1583,6 +1556,43 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
     _last_key_modifiers = newModifiers;						   
 								
  };
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::HandleButtonDelta
+//       Access: Private
+//  Description: Used to emulate buttons events/
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+HandleButtonDelta(UInt32 new_buttons) {
+  UInt32 changed = _last_buttons ^ new_buttons;
+
+  if (changed & 0x01) {
+    if (new_buttons & 0x01) {
+      _input_devices[0].button_down(MouseButton::one());
+    } else {
+      _input_devices[0].button_up(MouseButton::one());
+    }
+  }
+
+  if (changed & 0x04) {
+    if (new_buttons & 0x04) {
+      _input_devices[0].button_down(MouseButton::two());
+    } else {
+      _input_devices[0].button_up(MouseButton::two());
+    }
+  }
+
+  if (changed & 0x02) {
+    if (new_buttons & 0x02) {
+      _input_devices[0].button_down(MouseButton::three());
+    } else {
+      _input_devices[0].button_up(MouseButton::three());
+    }
+  }
+
+  _last_buttons = new_buttons;
+}
+
  ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::move_pointer
 //       Access: Published, Virtual

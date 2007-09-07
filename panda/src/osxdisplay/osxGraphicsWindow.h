@@ -87,6 +87,7 @@ public: // do not call direct ..
   static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
 
   void     HandleModifireDeleta(UInt32 modifiers);
+  void HandleButtonDelta(UInt32 new_buttons);
   void     DoResize(void);
 
   OSStatus event_handler(EventHandlerCallRef myHandler, EventRef event);
@@ -103,6 +104,7 @@ public: // do not call direct ..
 
 private:
   UInt32 _last_key_modifiers;
+  UInt32 _last_buttons;
   WindowRef _osx_window;
   bool _is_fullscreen;
 
