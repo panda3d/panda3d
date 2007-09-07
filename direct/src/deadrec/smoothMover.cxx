@@ -189,6 +189,7 @@ mark_position() {
       _points.push_back(_sample);
     }
   }
+  //cout << "mark_position: " << _points.back()._pos << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -654,6 +655,15 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
 
   double age = (point_a._timestamp - point_b._timestamp);
 
+  /*
+  Points::const_iterator pi;
+  cout << "linear_interpolate: ";
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    cout << "(" << (*pi)._pos << "), ";
+  }
+  cout << endl;
+  */
+
   if (point_before == _last_point_before && 
       point_after == _last_point_after) {
     if (deadrec_cat.is_spam()) {
@@ -784,11 +794,17 @@ void SmoothMover::
 handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   Points::iterator pi;
   NodePath np = old_parent.attach_new_node("smoothMoverWrtReparent");
+
+  /*
+  cout << "handle_wrt_reparent: ";
   for (pi = _points.begin(); pi != _points.end(); pi++) {
     np.set_pos_hpr((*pi)._pos, (*pi)._hpr);
     (*pi)._pos = np.get_pos(new_parent);
     (*pi)._hpr = np.get_hpr(new_parent);
+    cout << "(" << (*pi)._pos << "), ";
   }
+  cout << endl;
+  */
   
   np.set_pos_hpr(_sample._pos, _sample._hpr);
   _sample._pos = np.get_pos(new_parent);

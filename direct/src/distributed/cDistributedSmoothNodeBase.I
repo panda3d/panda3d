@@ -64,6 +64,7 @@ only_changed(int flags, int compare) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmStop() {
+  //cout << "d_setSmStop" << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmStop");
   finish_send_update(packer);
@@ -76,6 +77,7 @@ d_setSmStop() {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmH(float h) {
+  //cout << "d_setSmH: " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmH");
   packer.pack_double(h);
@@ -89,6 +91,7 @@ d_setSmH(float h) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmZ(float z) {
+  //cout << "d_setSmZ: " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmZ");
   packer.pack_double(z);
@@ -102,6 +105,7 @@ d_setSmZ(float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXY(float x, float y) {
+  //cout << "d_setSmXY: " << x << ", " << y << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXY");
   packer.pack_double(x);
@@ -116,6 +120,7 @@ d_setSmXY(float x, float y) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXZ(float x, float z) {
+  //cout << "d_setSmXZ: " << x << ", " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXZ");
   packer.pack_double(x);
@@ -130,6 +135,7 @@ d_setSmXZ(float x, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmPos(float x, float y, float z) {
+  //cout << "d_setSmXYZ: " << x << ", " << y << ", " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmPos");
   packer.pack_double(x);
@@ -145,6 +151,7 @@ d_setSmPos(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmHpr(float h, float p, float r) {
+  //cout << "d_setSmHPR: " << h << ", " << p << ", " << r << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmHpr");
   packer.pack_double(h);
@@ -160,6 +167,7 @@ d_setSmHpr(float h, float p, float r) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXYH(float x, float y, float h) {
+  //cout << "d_setSmXYH: " << x << ", " << y << ", " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXYH");
   packer.pack_double(x);
@@ -175,6 +183,7 @@ d_setSmXYH(float x, float y, float h) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmXYZH(float x, float y, float z, float h) {
+  //cout << "d_setSmXYZH: " << x << ", " << y << ", " << z << ", " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXYZH");
   packer.pack_double(x);
@@ -191,6 +200,7 @@ d_setSmXYZH(float x, float y, float z, float h) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
 d_setSmPosHpr(float x, float y, float z, float h, float p, float r) {
+  //cout << "d_setSmPosHpr: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmPosHpr");
   packer.pack_double(x);
