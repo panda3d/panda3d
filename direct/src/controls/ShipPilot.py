@@ -26,7 +26,10 @@ class ShipPilot(PhysicsWalker):
     notify = directNotify.newCategory("ShipPilot")
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
-
+    
+    MAX_STRAIGHT_SAIL_BONUS = 1.0
+    STRAIGHT_SAIL_BONUS_TIME = 10.0
+    
     # special methods
     def __init__(self,
                  gravity = -32.1740,
@@ -37,7 +40,7 @@ class ShipPilot(PhysicsWalker):
             gravity, standableGround))
         PhysicsWalker.__init__(
             self, gravity, standableGround, hardLandingForce)
-
+        
         self.__speed=0.0
         self.__rotationSpeed=0.0
         self.__slideSpeed=0.0
@@ -46,6 +49,11 @@ class ShipPilot(PhysicsWalker):
         
         self.ship = None
         self.pusher = None
+
+        # Keeps track of the ship sailing in a straight heading
+        # for long periods of time.  We slowly up the ship's max
+        # acceleration as this increases.
+        self.straightHeading = 0
 
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.debugPrint("setWalkSpeed()")
@@ -93,7 +101,6 @@ class ShipPilot(PhysicsWalker):
         self.sternPos = stern.getPos(cRootNodePath)
         self.starboardPos = starboard.getPos(cRootNodePath)
         self.portPos = port.getPos(cRootNodePath)
-
 
     def setupCollisions(self):
         if self.pusher:
@@ -354,9 +361,25 @@ class ShipPilot(PhysicsWalker):
         if self.ship.getIsAutoSailing():
             forward = 1
             reverse = 0
-
+            
         # How far did we move based on the amount of time elapsed?
         dt = ClockObject.getGlobalClock().getDt()
+        
+        if reverse or turnLeft or turnRight or not forward:
+            # Reset Straight Sailing Bonus
+            self.straightHeading = 0
+        else:
+            # Add in the Straight Sailing Time
+            self.straightHeading += dt
+            
+        # Straight Sailing Acceleration Bonus
+        straightSailBonus = 0.0
+        #if self.straightHeading > self.STRAIGHT_SAIL_BONUS_TIME * 0.333:
+        #    straightSailBonus = (self.straightHeading - (self.STRAIGHT_SAIL_BONUS_TIME * 0.333)) / self.STRAIGHT_SAIL_BONUS_TIME * 0.666
+        if self.straightHeading > (self.STRAIGHT_SAIL_BONUS_TIME * 0.5):
+            straightSailBonus = (self.straightHeading - (self.STRAIGHT_SAIL_BONUS_TIME * 0.5)) / self.STRAIGHT_SAIL_BONUS_TIME * 0.5
+        straightSailBonus = min(self.MAX_STRAIGHT_SAIL_BONUS, straightSailBonus * self.MAX_STRAIGHT_SAIL_BONUS)
+        straightSailBonus += 1.0
         
         # this was causing the boat to get stuck moving forward or back
         if 0:
@@ -374,14 +397,14 @@ class ShipPilot(PhysicsWalker):
                 self.sailsDeployed -= 0.25
                 if self.sailsDeployed < -1.0:
                     self.sailsDeployed = -1.0
-            self.__speed = self.ship.acceleration * self.sailsDeployed
+            self.__speed = self.ship.acceleration * straightSailBonus
         else:
-            self.__speed=(forward and self.ship.acceleration) or \
+            self.__speed=(forward and self.ship.acceleration * straightSailBonus) or \
                 (reverse and -self.ship.reverseAcceleration)
             #self.__speed=(forward and min(dt*(self.__speed + self.ship.acceleration), self.ship.maxSpeed) or
             #        reverse and min(dt*(self.__speed - self.ship.reverseAcceleration), self.ship.maxReverseSpeed))
             
-        avatarSlideSpeed=self.ship.acceleration*0.5
+        avatarSlideSpeed=self.ship.acceleration *0.5 * straightSailBonus
         #self.__slideSpeed=slide and (
         #        (turnLeft and -avatarSlideSpeed) or
         #        (turnRight and avatarSlideSpeed))
@@ -392,8 +415,12 @@ class ShipPilot(PhysicsWalker):
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
         
-        # Enable debug turbo mode
-        maxSpeed = self.ship.maxSpeed
+        # Add in Straight Sailing Multiplier
+        self.__speed *= straightSailBonus
+        self.__slideSpeed *= straightSailBonus
+        maxSpeed = self.ship.maxSpeed * straightSailBonus
+        
+        # Enable debug turbo modec
         debugRunning = inputState.isSet("debugRunning")
         if debugRunning or base.localAvatar.getTurbo():
             self.__speed*=4.0
@@ -469,15 +496,14 @@ class ShipPilot(PhysicsWalker):
             #newVector=Vec3(rotMat.xform(newVector))
             #maxLen = maxSpeed
             if (goForward):
-                maxLen = self.ship.acceleration
+                maxLen = self.ship.acceleration * straightSailBonus
             else:
                 maxLen = self.ship.reverseAcceleration
             if newVector.length() > maxLen and \
                not (debugRunning or base.localAvatar.getTurbo()):
                 newVector.normalize()
                 newVector *= maxLen
-
-
+                
             if __debug__:
                 onScreenDebug.add(
                     "newVector", newVector)
