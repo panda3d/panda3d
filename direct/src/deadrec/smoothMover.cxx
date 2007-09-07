@@ -789,5 +789,16 @@ handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
     (*pi)._pos = np.get_pos(new_parent);
     (*pi)._hpr = np.get_hpr(new_parent);
   }
+  
+  np.set_pos_hpr(_sample._pos, _sample._hpr);
+  _sample._pos = np.get_pos(new_parent);
+  _sample._hpr = np.get_hpr(new_parent);
+
+  np.set_pos_hpr(_smooth_pos, _smooth_hpr);
+  _smooth_pos = np.get_pos(new_parent);
+  _smooth_hpr = np.get_hpr(new_parent);
+
+  compose_smooth_mat();
+
   np.detach_node();
 }
