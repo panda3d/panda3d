@@ -27,7 +27,7 @@ class ShipPilot(PhysicsWalker):
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
     
-    MAX_STRAIGHT_SAIL_BONUS = 1.0
+    MAX_STRAIGHT_SAIL_BONUS = 1.25
     STRAIGHT_SAIL_BONUS_TIME = 10.0
     
     # special methods
