@@ -256,7 +256,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   // Store the appropriate key length in the context.
   int key_length = (_key_length + 7) / 8;
   if (key_length == 0) {
-    key_length = EVP_CIPHER_CTX_key_length(cipher);
+    key_length = EVP_CIPHER_key_length(cipher);
   }
   result = EVP_CIPHER_CTX_set_key_length(&_write_ctx, key_length);
   if (result <= 0) {
