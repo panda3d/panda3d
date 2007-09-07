@@ -761,8 +761,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 apply(self.setHpr, hpr)
         if self['scale']:
             scale = self['scale']
-            # Can either be a Vec3 or a tuple of 3 values
-            if (isinstance(scale, Vec3) or
+            # Can either be a VBase3 or a tuple of 3 values
+            if (isinstance(scale, VBase3) or
                 (type(scale) == types.IntType) or
                 (type(scale) == types.FloatType)):
                 self.setScale(scale)
@@ -770,8 +770,8 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
                 apply(self.setScale, scale)
         if self['color']:
             color = self['color']
-            # Can either be a Vec4 or a tuple of 4 values
-            if (isinstance(color, Vec4)):
+            # Can either be a VBase4 or a tuple of 4 values
+            if (isinstance(color, VBase4)):
                 self.setColor(color)
             else:
                 apply(self.setColor, color)
