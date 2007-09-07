@@ -795,16 +795,14 @@ handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   Points::iterator pi;
   NodePath np = old_parent.attach_new_node("smoothMoverWrtReparent");
 
-  /*
-  cout << "handle_wrt_reparent: ";
+  //cout << "handle_wrt_reparent: ";
   for (pi = _points.begin(); pi != _points.end(); pi++) {
     np.set_pos_hpr((*pi)._pos, (*pi)._hpr);
     (*pi)._pos = np.get_pos(new_parent);
     (*pi)._hpr = np.get_hpr(new_parent);
-    cout << "(" << (*pi)._pos << "), ";
+    //cout << "(" << (*pi)._pos << "), ";
   }
-  cout << endl;
-  */
+  //cout << endl;
   
   np.set_pos_hpr(_sample._pos, _sample._hpr);
   _sample._pos = np.get_pos(new_parent);
