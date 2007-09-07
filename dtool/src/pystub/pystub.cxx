@@ -98,7 +98,11 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyType_IsSubtype(...);
   EXPCL_DTOOLCONFIG int PyType_Ready(...);
   EXPCL_DTOOLCONFIG int PyUnicodeUCS2_FromWideChar(...);
+  EXPCL_DTOOLCONFIG int PyUnicodeUCS2_AsWideChar(...);
+  EXPCL_DTOOLCONFIG int PyUnicodeUCS2_GetSize(...);
   EXPCL_DTOOLCONFIG int PyUnicodeUCS4_FromWideChar(...);
+  EXPCL_DTOOLCONFIG int PyUnicodeUCS4_AsWideChar(...);
+  EXPCL_DTOOLCONFIG int PyUnicodeUCS4_GetSize(...);
   EXPCL_DTOOLCONFIG int PyUnicode_Type(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
@@ -194,7 +198,11 @@ int PyType_GenericAlloc(...) { return 0; };
 int PyType_IsSubtype(...) { return 0; }
 int PyType_Ready(...) { return 0; };
 int PyUnicodeUCS2_FromWideChar(...) { return 0; }
+int PyUnicodeUCS2_AsWideChar(...) { return 0; }
+int PyUnicodeUCS2_GetSize(...) { return 0; }
 int PyUnicodeUCS4_FromWideChar(...) { return 0; }
+int PyUnicodeUCS4_AsWideChar(...) { return 0; }
+int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
