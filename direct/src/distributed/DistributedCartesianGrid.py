@@ -90,7 +90,6 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                 % self.doId)
             return
         taskMgr.remove(self.taskName("processVisibility"))
-        # self.stopProcessVisibility()
         self.acceptOnce(self.cr.StopVisibilityEvent, self.stopProcessVisibility)
         self.visAvatar = avatar
         self.visZone = None
