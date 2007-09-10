@@ -123,6 +123,10 @@ public:
                                        const TransformState *transform);
   LPDIRECT3DDEVICE8 get_d3d_device();
 
+  static bool static_set_gamma(float gamma);
+  bool set_gamma(float gamma);
+  static void atexit_function(void);
+
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
@@ -270,7 +274,7 @@ public:
     register_type(_type_handle, "DXGraphicsStateGuardian8",
                   GraphicsStateGuardian::get_class_type());
   }
-
+  
 private:
   static TypeHandle _type_handle;
 

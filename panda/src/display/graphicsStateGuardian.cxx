@@ -202,6 +202,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // The default is no shader support.
   _auto_detect_shader_model = SM_00;
   _shader_model = SM_00;
+  
+  _gamma = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2063,3 +2065,57 @@ calc_projection_mat(const Lens *lens) {
   return TransformState::make_identity();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_gamma
+//       Access: Published, Virtual
+//  Description: Set gamma.  Returns true on success.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+set_gamma(float gamma) {
+  _gamma = gamma;  
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::create_gamma_table
+//       Access: Published
+//  Description: Get the current gamma setting.
+////////////////////////////////////////////////////////////////////
+float GraphicsStateGuardian::
+get_gamma(float gamma) {
+  return _gamma;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::create_gamma_table
+//       Access: Public, Static
+//  Description: Create a gamma table.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+  int i;
+
+  if (gamma <= 0.0) {
+    // avoid divide by zero and negative exponents
+    gamma = 1.0;
+  }
+  
+  for (i = 0; i < 256; i++) {
+    double g;
+    double x;
+    float gamma_correction;
+    
+    x = ((double) i / 255.0);
+    gamma_correction = 1.0 / gamma;    
+    x = pow (x, (double) gamma_correction);
+    if (x > 1.00) {
+      x = 1.0;
+    }
+
+    g = x * 65535.0;    
+    red_table [i] = g;
+    green_table [i] = g;
+    blue_table [i] = g;
+  }    
+}

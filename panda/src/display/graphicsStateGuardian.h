@@ -151,6 +151,9 @@ PUBLISHED:
 
   virtual PreparedGraphicsObjects *get_prepared_objects();
 
+  virtual bool set_gamma(float gamma);
+  float get_gamma(float gamma);
+  
 public:
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
@@ -261,6 +264,8 @@ public:
 
   INLINE void set_stencil_clear_value(unsigned int stencil_clear_value);
   INLINE unsigned int get_stencil_clear_value();
+
+  static void create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
 #ifdef DO_PSTATS
   static void init_frame_pstats();
@@ -414,6 +419,8 @@ protected:
 
   ShaderExpansion::ShaderCaps _shader_caps;
 
+  float _gamma;
+  
 public:
   // Statistics
   static PStatCollector _vertex_buffer_switch_pcollector;

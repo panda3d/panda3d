@@ -50,6 +50,10 @@ public:
 
   INLINE HDC get_twindow_dc();
 
+  static bool static_set_gamma(float gamma);
+  bool set_gamma(float gamma);
+  static void atexit_function(void);
+
 protected:
   virtual void get_extra_extensions();
   virtual void *get_extension_func(const char *prefix, const char *name);

@@ -169,6 +169,10 @@ public:
   INLINE HRESULT set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
   INLINE HRESULT set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value);
 
+  static bool static_set_gamma(float gamma);
+  bool set_gamma(float gamma);
+  static void atexit_function(void);
+
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
@@ -366,6 +370,8 @@ protected:
   bool _supports_stream_offset;
 
   list <wdxGraphicsBuffer9 *> _graphics_buffer_list;
+
+  int _supports_gamma_calibration;  
 
 public:
   virtual TypeHandle get_type() const {

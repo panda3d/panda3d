@@ -157,6 +157,8 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
   _vertex_shader_maximum_constants = 0;
 
   _supports_stream_offset = false;
+
+  atexit (atexit_function);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2659,6 +2661,8 @@ reset() {
 
   _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
 
+  _supports_gamma_calibration = ((d3d_caps.Caps2 & D3DCAPS2_CANCALIBRATEGAMMA) != 0);
+
   // Test for occlusion query support
   hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, NULL);
   _supports_occlusion_query = !FAILED(hr);
@@ -2696,6 +2700,7 @@ reset() {
       << "\nsupports_stencil_wrap = " << _supports_stencil_wrap
       << "\nsupports_two_sided_stencil = " << _supports_two_sided_stencil
       << "\nsupports_occlusion_query = " << _supports_occlusion_query
+      << "\nsupports_gamma_calibration = " << _supports_gamma_calibration
       << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
       << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
@@ -4994,8 +4999,9 @@ DBG_S dxgsg9_cat.debug ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"
   HRESULT hr;
 
   if (_swap_chain) {
-  DWORD flags;
-  flags = 0;
+    DWORD flags;
+    flags = 0;
+    
     hr = _swap_chain->Present((CONST RECT*)NULL, (CONST RECT*)NULL, (HWND)NULL, NULL, flags);
   } else {
     hr = _d3d_device->Present((CONST RECT*)NULL, (CONST RECT*)NULL, (HWND)NULL, NULL);
@@ -5631,4 +5637,58 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
     props.set_multisamples(multisampletype);
   }
   return props;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::static_set_gamma
+//       Access: Public, Static
+//  Description: Static function for setting gamma which is needed 
+//               for atexit.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+static_set_gamma(float gamma) {
+  bool set;  
+  HDC hdc = GetDC(NULL);
+
+  set = false;
+  if (hdc) {   
+    unsigned short ramp [256 * 3];
+    
+    GraphicsStateGuardian::create_gamma_table (gamma, &ramp [0], &ramp [256], &ramp [512]);
+    if (SetDeviceGammaRamp (hdc, ramp)) {
+      set = true;
+    }
+    
+    ReleaseDC (NULL, hdc);
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_gamma
+//       Access: Published
+//  Description: Non static version of setting gamma.  Returns true
+//               on success.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+set_gamma(float gamma) {
+  bool set;
+
+  set = static_set_gamma(gamma);
+  if (set) {
+    _gamma = gamma;  
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::atexit_function
+//       Access: Public, Static
+//  Description: This function is passed to the atexit function.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+atexit_function(void) {
+  static_set_gamma(1.0);
 }

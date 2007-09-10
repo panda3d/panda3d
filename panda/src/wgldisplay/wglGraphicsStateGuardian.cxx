@@ -49,6 +49,8 @@ wglGraphicsStateGuardian(GraphicsPipe *pipe,
   _supports_pbuffer = false;
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
+  
+  atexit(atexit_function);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -735,4 +737,58 @@ register_twindow_class() {
     return;
   }
   _twindow_class_registered = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::static_set_gamma
+//       Access: Public, Static
+//  Description: Static function for setting gamma which is needed 
+//               for atexit.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsStateGuardian::
+static_set_gamma(float gamma) {
+  bool set;  
+  HDC hdc = GetDC(NULL);
+
+  set = false;
+  if (hdc) {   
+    unsigned short ramp [256 * 3];
+    
+    GraphicsStateGuardian::create_gamma_table (gamma, &ramp [0], &ramp [256], &ramp [512]);
+    if (SetDeviceGammaRamp (hdc, ramp)) {
+      set = true;
+    }
+    
+    ReleaseDC (NULL, hdc);
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_gamma
+//       Access: Published
+//  Description: Non static version of setting gamma.  Returns true
+//               on success.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsStateGuardian::
+set_gamma(float gamma) {
+  bool set;
+
+  set = static_set_gamma(gamma);
+  if (set) {
+    _gamma = gamma;  
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::atexit_function
+//       Access: Public, Static
+//  Description: This function is passed to the atexit function.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsStateGuardian::
+atexit_function(void) {
+  static_set_gamma(1.0);
 }

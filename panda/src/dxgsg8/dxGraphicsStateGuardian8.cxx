@@ -118,6 +118,8 @@ DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
+
+  atexit (atexit_function);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4265,3 +4267,56 @@ calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype) {
   return props;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::static_set_gamma
+//       Access: Public, Static
+//  Description: Static function for setting gamma which is needed 
+//               for atexit.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+static_set_gamma(float gamma) {
+  bool set;  
+  HDC hdc = GetDC(NULL);
+
+  set = false;
+  if (hdc) {   
+    unsigned short ramp [256 * 3];
+    
+    GraphicsStateGuardian::create_gamma_table (gamma, &ramp [0], &ramp [256], &ramp [512]);
+    if (SetDeviceGammaRamp (hdc, ramp)) {
+      set = true;
+    }
+    
+    ReleaseDC (NULL, hdc);
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::set_gamma
+//       Access: Published
+//  Description: Non static version of setting gamma.  Returns true
+//               on success.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+set_gamma(float gamma) {
+  bool set;
+
+  set = static_set_gamma(gamma);
+  if (set) {
+    _gamma = gamma;  
+  }
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::atexit_function
+//       Access: Public, Static
+//  Description: This function is passed to the atexit function.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+atexit_function(void) {
+  static_set_gamma(1.0);
+}
