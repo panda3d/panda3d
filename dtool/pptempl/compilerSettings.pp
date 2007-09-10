@@ -47,7 +47,7 @@
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
 
-#elif $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]]
+#elif $[or $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]], &[eq $[USE_COMPILER],MSVC8]]
 
   #define COMPILER cl
   #define LINKER link
@@ -117,7 +117,11 @@
   #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /stack:4194304
 
   // Added to avoid old iostream reference problems
-  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
+  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB 
+  // Added to make pandatool function in VS 8
+  #if $[eq $[USE_COMPILER],MSVC8]
+    #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
+  #endif
 //  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcprt.lib
 
 // in case we have mixed intel/msvc build

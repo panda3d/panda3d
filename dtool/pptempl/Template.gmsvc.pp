@@ -422,13 +422,20 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib] : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #define local $[get_dllname $[TARGET]].$[dlllib]
 #define dest $[install_lib_dir]
-$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
+$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]
 #endif
+$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+
+#endif
+
 
 $[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
 #define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+
 
 #if $[and $[build_dlls],$[build_pdbs]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].pdb
@@ -678,6 +685,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
 #define installed_files \
     $[install_bin_dir]/$[TARGET].exe \
     $[if $[build_pdbs],$[install_bin_dir]/$[TARGET].pdb] \
+    $[if $[eq $[USE_COMPILER],MSVC8],$[install_bin_dir]/$[TARGET].exe.manifest] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -685,6 +693,7 @@ $[ODIR]/$[TARGET].pdb : $[ODIR]/$[TARGET].exe
     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
 install-$[TARGET] : $[installed_files]
+
 
 uninstall-$[TARGET] :
 #if $[installed_files]
@@ -695,6 +704,9 @@ $[install_bin_dir]/$[TARGET].exe : $[ODIR]/$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+#if $[eq $[USE_COMPILER],MSVC8]
+$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]/
+#endif
 
 #if $[build_pdbs]
 $[install_bin_dir]/$[TARGET].pdb : $[ODIR]/$[TARGET].pdb
