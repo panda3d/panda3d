@@ -298,7 +298,7 @@ static pascal OSStatus	windowEvtHndlr(EventHandlerCallRef myHandler, EventRef ev
   {
     osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
     if (osx_win != (osxGraphicsWindow *)NULL)
-      return osx_win->event_handler(myHandler, event);    }
+      return osx_win->event_handler(myHandler, event);
   }
 
   return eventNotHandledErr;
@@ -1166,7 +1166,7 @@ void osxGraphicsWindow::process_events()
     EventTargetRef theTarget;
     theTarget = GetEventDispatcherTarget();
 
-	if (!req_properties.has_parent_window())
+	if (!_properties.has_parent_window())
 	{
     //    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
 		while  (ReceiveNextEvent(0, NULL,kEventDurationNoWait,true, &theEvent)== noErr)
