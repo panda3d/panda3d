@@ -622,6 +622,7 @@ set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
   }
   if (_smooth_hpr != hpr) {
     _smooth_hpr = hpr;
+    _smooth_position_changed = true;
     _computed_smooth_mat = false;
     _computed_forward_axis = false;
   }
@@ -813,6 +814,8 @@ handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   _smooth_hpr = np.get_hpr(new_parent);
 
   compose_smooth_mat();
+
+  _computed_forward_axis = false;
 
   np.detach_node();
 }
