@@ -119,6 +119,7 @@ DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
+  get_gamma_table();
   atexit (atexit_function);
 }
 
@@ -4267,6 +4268,88 @@ calc_fb_properties(DWORD cformat, DWORD dformat, DWORD multisampletype) {
   return props;
 }
 
+#define GAMMA_1 (255.0 * 256.0)
+
+static bool _gamma_table_initialized = false;
+static unsigned short _orignial_gamma_table [256 * 3];
+
+void _create_gamma_table (float gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+  int i;
+  double gamma_correction;
+
+  if (gamma <= 0.0) {
+    // avoid divide by zero and negative exponents
+    gamma = 1.0;
+  }
+  gamma_correction = 1.0 / (double) gamma;    
+  
+  for (i = 0; i < 256; i++) {
+    double r;
+    double g;
+    double b;
+
+    if (original_red_table) {
+      r = (double) original_red_table [i] / GAMMA_1;
+      g = (double) original_green_table [i] / GAMMA_1;
+      b = (double) original_blue_table [i] / GAMMA_1;
+    }
+    else {    
+      r = ((double) i / 255.0);
+      g = r;
+      b = r;
+    }    
+
+    r = pow (r, gamma_correction);
+    g = pow (g, gamma_correction);
+    b = pow (b, gamma_correction);
+
+    if (r > 1.00) {
+      r = 1.0;
+    }
+    if (g > 1.00) {
+      g = 1.0;
+    }
+    if (b > 1.00) {
+      b = 1.0;
+    }
+
+    r = r * GAMMA_1;    
+    g = g * GAMMA_1;    
+    b = b * GAMMA_1;    
+
+    red_table [i] = r;
+    green_table [i] = g;
+    blue_table [i] = b;
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_gamma_table
+//       Access: Public, Static
+//  Description: Static function for getting the original gamma.
+////////////////////////////////////////////////////////////////////
+
+bool DXGraphicsStateGuardian8::
+get_gamma_table(void) {
+  bool get;  
+
+  get = false;
+  if (_gamma_table_initialized == false) {
+    HDC hdc = GetDC(NULL);
+
+    if (hdc) {   
+      if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
+        _gamma_table_initialized = true;
+        get = true;
+      }
+
+      ReleaseDC (NULL, hdc);
+    }
+  }
+  
+  return get;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::static_set_gamma
 //       Access: Public, Static
@@ -4281,8 +4364,14 @@ static_set_gamma(float gamma) {
   set = false;
   if (hdc) {   
     unsigned short ramp [256 * 3];
-    
-    GraphicsStateGuardian::create_gamma_table (gamma, &ramp [0], &ramp [256], &ramp [512]);
+
+    if (_gamma_table_initialized) {    
+      _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
+    }
+    else {
+      _create_gamma_table (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
+    }
+
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
     }

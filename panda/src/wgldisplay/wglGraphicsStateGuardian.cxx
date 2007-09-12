@@ -50,6 +50,7 @@ wglGraphicsStateGuardian(GraphicsPipe *pipe,
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
   
+  get_gamma_table();
   atexit(atexit_function);
 }
 
@@ -739,8 +740,90 @@ register_twindow_class() {
   _twindow_class_registered = true;
 }
 
+#define GAMMA_1 (255.0 * 256.0)
+
+static bool _gamma_table_initialized = false;
+static unsigned short _orignial_gamma_table [256 * 3];
+
+void _create_gamma_table (float gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+  int i;
+  double gamma_correction;
+
+  if (gamma <= 0.0) {
+    // avoid divide by zero and negative exponents
+    gamma = 1.0;
+  }
+  gamma_correction = 1.0 / (double) gamma;    
+  
+  for (i = 0; i < 256; i++) {
+    double r;
+    double g;
+    double b;
+
+    if (original_red_table) {
+      r = (double) original_red_table [i] / GAMMA_1;
+      g = (double) original_green_table [i] / GAMMA_1;
+      b = (double) original_blue_table [i] / GAMMA_1;
+    }
+    else {    
+      r = ((double) i / 255.0);
+      g = r;
+      b = r;
+    }    
+
+    r = pow (r, gamma_correction);
+    g = pow (g, gamma_correction);
+    b = pow (b, gamma_correction);
+
+    if (r > 1.00) {
+      r = 1.0;
+    }
+    if (g > 1.00) {
+      g = 1.0;
+    }
+    if (b > 1.00) {
+      b = 1.0;
+    }
+
+    r = r * GAMMA_1;    
+    g = g * GAMMA_1;    
+    b = b * GAMMA_1;    
+
+    red_table [i] = r;
+    green_table [i] = g;
+    blue_table [i] = b;
+  }    
+}
+
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::static_set_gamma
+//     Function: wglGraphicsStateGuardian::get_gamma_table
+//       Access: Public, Static
+//  Description: Static function for getting the original gamma.
+////////////////////////////////////////////////////////////////////
+
+bool wglGraphicsStateGuardian::
+get_gamma_table(void) {
+  bool get;  
+
+  get = false;
+  if (_gamma_table_initialized == false) {
+    HDC hdc = GetDC(NULL);
+
+    if (hdc) {   
+      if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
+        _gamma_table_initialized = true;
+        get = true;
+      }
+
+      ReleaseDC (NULL, hdc);
+    }
+  }
+  
+  return get;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::static_set_gamma
 //       Access: Public, Static
 //  Description: Static function for setting gamma which is needed 
 //               for atexit.
@@ -753,8 +836,14 @@ static_set_gamma(float gamma) {
   set = false;
   if (hdc) {   
     unsigned short ramp [256 * 3];
-    
-    GraphicsStateGuardian::create_gamma_table (gamma, &ramp [0], &ramp [256], &ramp [512]);
+
+    if (_gamma_table_initialized) {    
+      _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
+    }
+    else {
+      _create_gamma_table (gamma, 0, 0, 0, &ramp [0], &ramp [256], &ramp [512]);
+    }
+
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
     }
@@ -766,7 +855,7 @@ static_set_gamma(float gamma) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_gamma
+//     Function: wglGraphicsStateGuardian::set_gamma
 //       Access: Published
 //  Description: Non static version of setting gamma.  Returns true
 //               on success.
@@ -784,7 +873,7 @@ set_gamma(float gamma) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::atexit_function
+//     Function: wglGraphicsStateGuardian::atexit_function
 //       Access: Public, Static
 //  Description: This function is passed to the atexit function.
 ////////////////////////////////////////////////////////////////////

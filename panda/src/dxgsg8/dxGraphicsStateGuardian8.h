@@ -123,6 +123,7 @@ public:
                                        const TransformState *transform);
   LPDIRECT3DDEVICE8 get_d3d_device();
 
+  static bool get_gamma_table(void);
   static bool static_set_gamma(float gamma);
   bool set_gamma(float gamma);
   static void atexit_function(void);

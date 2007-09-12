@@ -169,6 +169,7 @@ public:
   INLINE HRESULT set_texture_stage_state (DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
   INLINE HRESULT set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value);
 
+  static bool get_gamma_table(void);
   static bool static_set_gamma(float gamma);
   bool set_gamma(float gamma);
   static void atexit_function(void);
