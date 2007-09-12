@@ -688,8 +688,13 @@ reset() {
   if (cgGLIsProfileSupported(CG_PROFILE_ARBFP1) &&
       cgGLIsProfileSupported(CG_PROFILE_ARBVP1)) {
     _supports_basic_shaders = true;
-    _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
-    _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    if (basic_shaders_only) {
+      _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
+      _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
+    } else { 
+      _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
+      _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
+    }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
