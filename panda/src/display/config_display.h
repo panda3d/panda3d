@@ -90,6 +90,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble background_color;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool basic_shaders_only;
 
 extern EXPCL_PANDA_DISPLAY void init_libdisplay();
 

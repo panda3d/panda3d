@@ -309,6 +309,15 @@ ConfigVariableBool sync_video
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
 
+ConfigVariableBool basic_shaders_only
+("basic_shaders_only", false,
+ PRC_DESC("Set this to true if you aren't interested in shader model three "
+          "and beyond.  Setting this flag will cause panda to disable "
+          "bleeding-edge shader functionality which tends to be unreliable "
+          "or broken.  At some point, when functionality that is currently "
+          "flaky becomes reliable, we may expand the definition of what "
+          "constitutes 'basic' shaders."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay
 //  Description: Initializes the library.  This must be called at
