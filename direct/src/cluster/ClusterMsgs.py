@@ -9,16 +9,17 @@ from direct.distributed.PyDatagramIterator import PyDatagramIterator
 import time
 
 #these are the types of messages that are currently supported.
-CLUSTER_NONE    = 0
-CLUSTER_CAM_OFFSET = 1
-CLUSTER_CAM_FRUSTUM = 2
-CLUSTER_CAM_MOVEMENT = 3
-CLUSTER_SWAP_READY = 4
-CLUSTER_SWAP_NOW   = 5
-CLUSTER_COMMAND_STRING = 6
-CLUSTER_SELECTED_MOVEMENT = 7
-CLUSTER_TIME_DATA = 8
-CLUSTER_EXIT = 100
+CLUSTER_NONE                  = 0
+CLUSTER_CAM_OFFSET            = 1
+CLUSTER_CAM_FRUSTUM           = 2
+CLUSTER_CAM_MOVEMENT          = 3
+CLUSTER_SWAP_READY            = 4
+CLUSTER_SWAP_NOW              = 5
+CLUSTER_COMMAND_STRING        = 6
+CLUSTER_SELECTED_MOVEMENT     = 7
+CLUSTER_TIME_DATA             = 8
+CLUSTER_NAMED_OBJECT_MOVEMENT = 9
+CLUSTER_EXIT                  = 100
 
 #Port number for cluster rendering
 # DAEMON PORT IS PORT USED FOR STARTUP MESSAGE EXCHANGE
@@ -156,6 +157,24 @@ class ClusterMsgHandler:
         datagram.addFloat32(hpr[2])
         return datagram
 
+    def makeNamedObjectMovementDatagram(self, xyz, hpr, scale, hidden, name):
+        datagram = PyDatagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_NAMED_OBJECT_MOVEMENT)
+        datagram.addString(name)
+        datagram.addFloat32(xyz[0])
+        datagram.addFloat32(xyz[1])
+        datagram.addFloat32(xyz[2])
+        datagram.addFloat32(hpr[0])
+        datagram.addFloat32(hpr[1])
+        datagram.addFloat32(hpr[2])
+        datagram.addFloat32(scale[0])
+        datagram.addFloat32(scale[1])
+        datagram.addFloat32(scale[2])
+        datagram.addBool(hidden)
+        return datagram    
+
     def parseCamMovementDatagram(self, dgi):
         x=dgi.getFloat32()
         y=dgi.getFloat32()
@@ -166,6 +185,21 @@ class ClusterMsgHandler:
         self.notify.debug(('  new position=%f %f %f  %f %f %f' %
                            (x, y, z, h, p, r)))
         return (x, y, z, h, p, r)
+
+    def parseNamedMovementDatagram(self, dgi):
+        name = dgi.getString()
+        x=dgi.getFloat32()
+        y=dgi.getFloat32()
+        z=dgi.getFloat32()
+        h=dgi.getFloat32()
+        p=dgi.getFloat32()
+        r=dgi.getFloat32()
+        sx = dgi.getFloat32()
+        sy = dgi.getFloat32()
+        sz = dgi.getFloat32()
+        hidden = dgi.getBool()
+        return (name,x, y, z, h, p, r, sx, sy, sz, hidden)
+
 
     def makeSelectedMovementDatagram(self, xyz, hpr, scale):
         datagram = PyDatagram()
@@ -181,6 +215,7 @@ class ClusterMsgHandler:
         datagram.addFloat32(scale[0])
         datagram.addFloat32(scale[1])
         datagram.addFloat32(scale[2])
+        #datagram.addBool(hidden)
         return datagram
 
     def parseSelectedMovementDatagram(self, dgi):

@@ -54,6 +54,12 @@ class ClusterServer(DirectObject.DirectObject):
         globalClock.setMode(ClockObject.MSlave)
         # Send verification of startup to client
         self.daemon = DirectD()
+
+        self.objectMappings  = {}
+        self.controlMappings = {}
+        self.controlOffsets  = {}
+
+
         # These must be passed in as bootstrap arguments and stored in
         # the __builtins__ namespace
         try:
@@ -65,6 +71,8 @@ class ClusterServer(DirectObject.DirectObject):
         except NameError:
             clusterDaemonPort = CLUSTER_DAEMON_PORT
         self.daemon.serverReady(clusterDaemonClient, clusterDaemonPort)
+
+
 
     def startListenerPollTask(self):
         # Run this task near the start of frame, sometime after the dataLoop
@@ -87,6 +95,58 @@ class ClusterServer(DirectObject.DirectObject):
             else:
                 self.notify.warning("getNewConnection returned false")
         return Task.cont
+
+
+    def addNamedObjectMapping(self,object,name):
+        if (not self.objectMappings.has_key(name)):
+            self.objectMappings[name] = object
+        else:
+            self.notify.debug('attempt to add duplicate named object: '+name)
+
+    def removeObjectMapping(self,name):
+        if (self.objectMappings.has_key(name)):
+            self.objectMappings.pop(name)
+
+
+    def addControlMapping(self,objectName,controlledName, offset = None):
+        if (not self.controlMappings.has_key(objectName)):
+            self.controlMappings[objectName] = controlledName
+            if (offset == None):
+                offset = Vec3(0,0,0)
+            self.controlOffsets[objectName]  = offset
+        else:
+            self.notify.debug('attempt to add duplicate controlled object: '+name)
+
+    def setControlMappingOffset(self,objectName,offset):
+        if (self.controlMappings.has_key(objectName)):
+            self.controlOffsets[objectName] = offset
+    
+
+    def removeControlMapping(self,name):
+        if (self.controlMappings.has_key(name)):
+            self.controlMappings.pop(name)
+
+            
+    def startControlObjectTask(self):
+        self.notify.debug("moving control objects")
+        taskMgr.add(self.controlObjectTask,"controlObjectTask")
+
+    def controlObjectTask(self, task):
+        for object in self.controlMappings:
+            name       = self.controlMappings[object]
+            if (self.objectMappings.has_key(object)):
+                self.moveObject(self.objectMappings[object],name,self.controlOffsets[object])
+
+        return Task.cont
+
+    def moveObject(self, nodePath, object, offset):
+        self.notify.debug('moving object '+object)
+        xyz = nodePath.getPos(render) + offset
+        hpr = nodePath.getHpr(render)
+        scale = nodePath.getScale(render)
+        hidden = nodePath.isHidden()
+        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz,hpr,scale,hidden,object)
+        self.cw.send(datagram, self.lastConnection)
 
     def startReaderPollTask(self):
         """ Task to handle datagrams from client """
@@ -171,6 +231,8 @@ class ClusterServer(DirectObject.DirectObject):
         elif (type == CLUSTER_TIME_DATA):
             self.notify.debug('time data')
             self.handleTimeData(dgi)
+        elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
+            self.handleNamedMovement(dgi)
         else:
             self.notify.warning("Received unknown packet type:" % type)
         return type
@@ -189,11 +251,25 @@ class ClusterServer(DirectObject.DirectObject):
         self.lens.setFilmSize(fs[0], fs[1])
         self.lens.setFilmOffset(fo[0], fo[1])
 
+    def handleNamedMovement(self, dgi):
+        """ Update cameraJig position to reflect latest position """
+        (name,x, y, z, h, p, r,sx,sy,sz, hidden) = self.msgHandler.parseNamedMovementDatagram(
+            dgi)
+        if (self.objectMappings.has_key(name)):
+            self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
+            self.objectMappings[name].setScale(render,sx,sy,sz)
+            if (hidden):
+                self.objectMappings[name].hide()
+            else:
+                self.objectMappings[name].show()
+        else:
+            self.notify.debug("recieved unknown named object command: "+name)
+
     def handleCamMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
         (x, y, z, h, p, r) = self.msgHandler.parseCamMovementDatagram(dgi)
         self.cameraJig.setPosHpr(render, x, y, z, h, p, r)
-        self.fPosReceived = 1
+        self.fPosReceived = 1        
 
     def handleSelectedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """

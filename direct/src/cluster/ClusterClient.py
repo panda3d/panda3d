@@ -51,6 +51,16 @@ class ClusterClient(DirectObject.DirectObject):
         self.qcm=QueuedConnectionManager()
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
+
+        # A dictionary of objects that can be accessed by name
+        self.objectMappings  = {}
+
+        # a dictionary of name objects and the corresponding names of
+        # objects they are to control on the server side
+        self.controlMappings = {}
+        self.controlOffsets  = {}
+        self.taggedObjects   = {}
+
         for serverConfig in configList:
             server = DisplayConnection(
                 self.qcm, serverConfig.serverName,
@@ -78,6 +88,27 @@ class ClusterClient(DirectObject.DirectObject):
         self.notify.debug('post startMoveCam')
         self.startMoveSelectedTask()
 
+
+    def startReaderPollTask(self):
+        """ Task to handle datagrams from server """
+        # Run this task just after the listener poll task
+        taskMgr.add(self._readerPollTask, "clientReaderPollTask", -39)
+
+    def _readerPollTask(self, state):
+        """ Non blocking task to read all available datagrams """
+
+        for server in self.serverList:
+            datagrams = server.poll()
+            for data in datagrams:
+                self.handleDatagram(data[0],data[1])
+
+        return Task.cont
+
+
+    def startControlObjectTask(self):
+        self.notify.debug("moving control objects")
+        taskMgr.add(self.controlObjectTask,"controlObjectTask")
+
     def startSynchronizeTimeTask(self):
         self.notify.debug('broadcasting frame time')
         taskMgr.add(self.synchronizeTimeTask, "synchronizeTimeTask", -40)
@@ -93,6 +124,27 @@ class ClusterClient(DirectObject.DirectObject):
     def startMoveCamTask(self):
         self.notify.debug('adding move cam')
         taskMgr.add(self.moveCameraTask, "moveCamTask", 49)
+
+
+    def controlObjectTask(self, task):
+        for object in self.controlMappings:
+            name       = self.controlMappings[object][0]
+            serverList = self.controlMappings[object][1]
+            if (self.objectMapping.has_key(object)):
+                self.moveObject(self.objectMappings[object],name,serverList,
+                                self.controlOffsets[object])
+
+        return Task.cont
+
+    def moveObject(self, nodePath, object, serverList, offset):
+        self.notify.debug('moving object '+object)
+        xyz = nodePath.getPos(render) + offset
+        hpr = nodePath.getHpr(render)
+        scale = nodePath.getScale(render)
+        hidden = nodePath.isHidden()
+        for server in serverList:
+            self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,hidden,object)
+
 
     def moveCameraTask(self, task):
         self.moveCamera(
@@ -120,6 +172,39 @@ class ClusterClient(DirectObject.DirectObject):
                 server.sendMoveSelected(xyz, hpr, scale)
         return Task.cont
 
+
+    def addNamedObjectMapping(self,object,name):
+        if (not self.objectMappings.has_key(name)):
+            self.objectMappings[name] = object
+        else:
+            self.notify.debug('attempt to add duplicate named object: '+name)
+
+    def removeObjectMapping(self,name):
+        if (self.objectMappings.has_key(name)):
+            self.objectMappings.pop(name)
+
+
+    def addControlMapping(self,objectName,controlledName, serverList = None,
+                          offset = None):
+        if (not self.controlMappings.has_key(objectName)):
+            if (serverList == None):
+                serverList = range(len(self.serverList))
+            if (offset == None):
+                offset = Vec3(0,0,0)
+                
+            self.controlMappings[objectName] = [controlledName,serverList]
+            self.controlOffsets[objectName]  = offset
+        else:
+            self.notify.debug('attempt to add duplicate controlled object: '+name)
+
+    def setControlMappingOffset(self,objectName,offset):
+        if (self.controlMappings.has_key(objectName)):
+            self.controlOffsets[objectName] = offset
+
+    def removeControlMapping(self,name):
+        if (self.controlMappings.has_key(name)):
+            self.controlMappings.pop(name)
+
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = `nodePath`
@@ -131,10 +216,53 @@ class ClusterClient(DirectObject.DirectObject):
         else:
             return rootName
 
+    def getNodePathName(self, nodePath):
+        import string
+        pathString = `nodePath`
+        index = string.find(pathString, '/')
+        if index != -1:
+            name = pathString[index+1:]
+            return name
+        else:
+            return pathString
+
+
+    def addObjectTag(self,object,selectFunction,deselectFunction,selectArgs,deselectArgs):
+        newTag = {}
+        newTag["selectFunction"] = selectFunction
+        newTag["selectArgs"]     = selectArgs
+        newTag["deselectFunction"] = deselectFunction
+        newTag["deselectArgs"]     = deselectArgs        
+        self.taggedObjects[object] = newTag
+
+
+    def removeObjectTag(self,object):
+
+        self.taggedObjects.pop(object)
+    
+
     def selectNodePath(self, nodePath):
-        self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
+        name = self.getNodePathName(nodePath)
+        if self.taggedObjects.has_key(name):
+            taskMgr.remove("moveSelectedTask")
+            tag = self.taggedObjects[name]
+            function = tag["selectFunction"]
+            args     = tag["selectArgs"]
+            if (function != None):
+                function(*args)
+        else:
+            self(self.getNodePathFindCmd(nodePath) + '.select()', 0)
+        
 
     def deselectNodePath(self, nodePath):
+        name = self.getNodePathName(nodePath)
+        if self.taggedObjects.has_key(name):
+            tag = self.taggedObjects[name]
+            function = tag["deselectFunction"]
+            args     = tag["deselectArgs"]        
+            if (function != None):
+                function(*args)
+            self.startMoveSelectedTask()
         self(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
 
     def sendCamFrustum(self, focalLength, filmSize, filmOffset, indexList=[]):
@@ -163,6 +291,31 @@ class ClusterClient(DirectObject.DirectObject):
             # Execute locally
             exec(commandString, __builtins__)
 
+
+    def handleDatagram(self,dgi,type):
+        if (type == CLUSTER_NONE):
+            pass
+        elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
+            self.handleNamedMovement(dgi)
+        else:
+            self.notify.warning("Received unsupported packet type:" % type)
+        return type                       
+
+    def handleNamedMovement(self, dgi):
+        """ Update cameraJig position to reflect latest position """
+        (name,x, y, z, h, p, r, sx, sy, sz, hidden) = self.msgHandler.parseNamedMovementDatagram(
+            dgi)
+        if (self.objectMappings.has_key(name)):
+            self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
+            self.objectMappings[name].setScale(render,sx,sy,sz)
+            if (hidden):
+                self.objectMappings[name].hide()
+            else:
+                self.objectMappings[name].show()
+        else:
+            self.notify.debug("recieved unknown named object command: "+name)
+
+
     def exit(self):
         # Execute remotely
         for server in self.serverList:
@@ -178,6 +331,7 @@ class ClusterClientSync(ClusterClient):
         #I probably don't need this
         self.waitForSwap = 0
         self.ready = 0
+        print "creating synced client"
         self.startSwapCoordinatorTask()
 
     def startSwapCoordinatorTask(self):
@@ -200,6 +354,8 @@ class ClusterClientSync(ClusterClient):
             base.graphicsEngine.flipFrame()
             self.notify.debug(
                 "------------------------------------------END swap")
+
+        #print "syncing"
         return Task.cont
 
     def moveCamera(self, xyz, hpr):
@@ -226,6 +382,25 @@ class DisplayConnection:
             self.qcr.addConnection(self.tcpConn)
             self.cw=ConnectionWriter(qcm, 0)
 
+
+
+    def poll(self):
+        """ Non blocking task to read all available datagrams """
+        dataGrams = []
+        while 1:
+            (datagram, dgi, type) = self.msgHandler.nonBlockingRead(self.qcr)
+            # Queue is empty, done for now
+            if type is CLUSTER_NONE:
+                break
+            else:
+                # Got a datagram, add it to the list
+                dataGrams.append([dgi, type, datagram])
+
+        return dataGrams
+
+
+
+
     def sendCamOffset(self, xyz, hpr):
         ClusterClient.notify.debug("send cam offset...")
         ClusterClient.notify.debug(("packet %d xyz, hpr=%f %f %f %f %f %f" %
@@ -244,6 +419,16 @@ class DisplayConnection:
             )
         datagram = self.msgHandler.makeCamFrustumDatagram(
             focalLength, filmSize, filmOffset)
+        self.cw.send(datagram, self.tcpConn)
+
+
+    def sendMoveNamedObject(self, xyz, hpr, name):
+        ClusterClient.notify.debug("send named object move...")
+        ClusterClient.notify.debug(("packet %d xyz, hpr=%f %f %f %f %f %f" %
+             (self.msgHandler.packetNumber, xyz[0], xyz[1], xyz[2],
+             hpr[0], hpr[1], hpr[2])))
+        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz, hpr,
+                                                                   name)
         self.cw.send(datagram, self.tcpConn)
 
     def sendMoveCam(self, xyz, hpr):
