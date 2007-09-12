@@ -133,5 +133,8 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI, NodePath):
         self.sendUpdate("setXYZH", [x, y, z, h])
 
     # setPosHpr provided by NodePath
+    def b_setPosHpr(self, x, y, z, h, p, r):
+        self.setPosHpr(x, y, z, h, p, r)
+        self.d_setPosHpr(x, y, z, h, p, r)
     def d_setPosHpr(self, x, y, z, h, p, r):
         self.sendUpdate("setPosHpr", [x, y, z, h, p, r])
