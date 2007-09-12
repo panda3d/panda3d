@@ -209,6 +209,8 @@ add_net_transform(PandaNode *node) {
   if (_character != (Character *)NULL) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
+  CPT(TransformState) t = TransformState::make_mat(_net_transform);
+  node->set_transform(t, Thread::get_current_thread());
   return _net_transform_nodes.insert(node).second;
 }
 
@@ -317,6 +319,8 @@ add_local_transform(PandaNode *node) {
   if (_character != (Character *)NULL) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
+  CPT(TransformState) t = TransformState::make_mat(_value);
+  node->set_transform(t, Thread::get_current_thread());
   return _local_transform_nodes.insert(node).second;
 }
 
