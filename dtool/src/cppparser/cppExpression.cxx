@@ -92,7 +92,8 @@ as_integer() const {
     return (int)_u._real;
 
   case RT_pointer:
-    return (int)_u._pointer;
+    // We don't mind if this loses precision.
+    return reinterpret_cast<int>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
@@ -116,7 +117,8 @@ as_real() const {
     return _u._real;
 
   case RT_pointer:
-    return (double)(int)_u._pointer;
+    // We don't mind if this loses precision.
+    return (double)reinterpret_cast<int>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
