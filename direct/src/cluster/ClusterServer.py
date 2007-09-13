@@ -132,6 +132,7 @@ class ClusterServer(DirectObject.DirectObject):
         taskMgr.add(self.controlObjectTask,"controlObjectTask")
 
     def controlObjectTask(self, task):
+        #print "running control object task"
         for object in self.controlMappings:
             name       = self.controlMappings[object]
             if (self.objectMappings.has_key(object)):
@@ -141,11 +142,13 @@ class ClusterServer(DirectObject.DirectObject):
 
     def moveObject(self, nodePath, object, offset):
         self.notify.debug('moving object '+object)
+        #print "moving object",object
         xyz = nodePath.getPos(render) + offset
         hpr = nodePath.getHpr(render)
         scale = nodePath.getScale(render)
+        color = nodePath.getColor()
         hidden = nodePath.isHidden()
-        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz,hpr,scale,hidden,object)
+        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz,hpr,scale,color,hidden,object)
         self.cw.send(datagram, self.lastConnection)
 
     def startReaderPollTask(self):
@@ -253,11 +256,12 @@ class ClusterServer(DirectObject.DirectObject):
 
     def handleNamedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (name,x, y, z, h, p, r,sx,sy,sz, hidden) = self.msgHandler.parseNamedMovementDatagram(
+        (name,x, y, z, h, p, r,sx,sy,sz, r, g, b, a, hidden) = self.msgHandler.parseNamedMovementDatagram(
             dgi)
         if (self.objectMappings.has_key(name)):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
+            self.objectMappings[name].setColor(r,g,b,a)
             if (hidden):
                 self.objectMappings[name].hide()
             else:

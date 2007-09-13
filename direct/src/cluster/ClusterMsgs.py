@@ -157,7 +157,7 @@ class ClusterMsgHandler:
         datagram.addFloat32(hpr[2])
         return datagram
 
-    def makeNamedObjectMovementDatagram(self, xyz, hpr, scale, hidden, name):
+    def makeNamedObjectMovementDatagram(self, xyz, hpr, scale, color, hidden, name):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
@@ -172,6 +172,10 @@ class ClusterMsgHandler:
         datagram.addFloat32(scale[0])
         datagram.addFloat32(scale[1])
         datagram.addFloat32(scale[2])
+        datagram.addFloat32(color[0])
+        datagram.addFloat32(color[1])
+        datagram.addFloat32(color[2])
+        datagram.addFloat32(color[3])        
         datagram.addBool(hidden)
         return datagram    
 
@@ -197,8 +201,12 @@ class ClusterMsgHandler:
         sx = dgi.getFloat32()
         sy = dgi.getFloat32()
         sz = dgi.getFloat32()
+        r = dgi.getFloat32()
+        g = dgi.getFloat32()
+        b = dgi.getFloat32()
+        a = dgi.getFloat32()        
         hidden = dgi.getBool()
-        return (name,x, y, z, h, p, r, sx, sy, sz, hidden)
+        return (name,x, y, z, h, p, r, sx, sy, sz, r, g, b, a, hidden)
 
 
     def makeSelectedMovementDatagram(self, xyz, hpr, scale):

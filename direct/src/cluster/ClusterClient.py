@@ -130,10 +130,12 @@ class ClusterClient(DirectObject.DirectObject):
         for object in self.controlMappings:
             name       = self.controlMappings[object][0]
             serverList = self.controlMappings[object][1]
-            if (self.objectMapping.has_key(object)):
+            #print object
+            if (self.objectMappings.has_key(object)):
                 self.moveObject(self.objectMappings[object],name,serverList,
                                 self.controlOffsets[object])
-
+                
+        #print "running control object"
         return Task.cont
 
     def moveObject(self, nodePath, object, serverList, offset):
@@ -142,8 +144,9 @@ class ClusterClient(DirectObject.DirectObject):
         hpr = nodePath.getHpr(render)
         scale = nodePath.getScale(render)
         hidden = nodePath.isHidden()
+        color = nodePath.getColor()
         for server in serverList:
-            self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,hidden,object)
+            self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,hidden,color,object)
 
 
     def moveCameraTask(self, task):
@@ -296,6 +299,7 @@ class ClusterClient(DirectObject.DirectObject):
         if (type == CLUSTER_NONE):
             pass
         elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
+            #print "handling named movement datagram"
             self.handleNamedMovement(dgi)
         else:
             self.notify.warning("Received unsupported packet type:" % type)
@@ -303,11 +307,13 @@ class ClusterClient(DirectObject.DirectObject):
 
     def handleNamedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (name,x, y, z, h, p, r, sx, sy, sz, hidden) = self.msgHandler.parseNamedMovementDatagram(
+        (name,x, y, z, h, p, r, sx, sy, sz,r,g,b,a, hidden) = self.msgHandler.parseNamedMovementDatagram(
             dgi)
+        #print "name"
         if (self.objectMappings.has_key(name)):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
+            self.objectMappings[name].setColor(r,g,b,a)
             if (hidden):
                 self.objectMappings[name].hide()
             else:
@@ -422,12 +428,13 @@ class DisplayConnection:
         self.cw.send(datagram, self.tcpConn)
 
 
-    def sendMoveNamedObject(self, xyz, hpr, name):
+    def sendMoveNamedObject(self, xyz, hpr, scale, color, hidden, name):
         ClusterClient.notify.debug("send named object move...")
         ClusterClient.notify.debug(("packet %d xyz, hpr=%f %f %f %f %f %f" %
              (self.msgHandler.packetNumber, xyz[0], xyz[1], xyz[2],
              hpr[0], hpr[1], hpr[2])))
-        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz, hpr,
+        datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz,hpr,scale,
+                                                                   color,hidden,
                                                                    name)
         self.cw.send(datagram, self.tcpConn)
 
