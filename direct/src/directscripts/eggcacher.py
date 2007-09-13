@@ -8,7 +8,7 @@
 #
 ##############################################################################
 
-import os,sys
+import os,sys,gc
 from pandac.PandaModules import *
 
 class EggCacher:
@@ -82,6 +82,7 @@ class EggCacher:
             sys.stdout.flush()
             if (cached) and (cached.hasData()==0):
                 self.pandaloader.loadSync(fn, self.loaderopts)
+            gc.collect()
             ModelPool.releaseAllModels()
             progress += size
 
