@@ -54,6 +54,7 @@ class ClusterClient(DirectObject.DirectObject):
 
         # A dictionary of objects that can be accessed by name
         self.objectMappings  = {}
+        self.objectHasColor  = {}
 
         # a dictionary of name objects and the corresponding names of
         # objects they are to control on the server side
@@ -133,18 +134,21 @@ class ClusterClient(DirectObject.DirectObject):
             #print object
             if (self.objectMappings.has_key(object)):
                 self.moveObject(self.objectMappings[object],name,serverList,
-                                self.controlOffsets[object])
+                                self.controlOffsets[object], self.objectHasColor[object])
                 
         #print "running control object"
         return Task.cont
 
-    def moveObject(self, nodePath, object, serverList, offset):
+    def moveObject(self, nodePath, object, serverList, offset, hasColor = True):
         self.notify.debug('moving object '+object)
         xyz = nodePath.getPos(render) + offset
         hpr = nodePath.getHpr(render)
         scale = nodePath.getScale(render)
         hidden = nodePath.isHidden()
-        color = nodePath.getColor()
+        if (hasColor):
+            color = nodePath.getColor()
+        else:
+            color = [1,1,1,1]
         for server in serverList:
             self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,hidden,color,object)
 
@@ -176,9 +180,10 @@ class ClusterClient(DirectObject.DirectObject):
         return Task.cont
 
 
-    def addNamedObjectMapping(self,object,name):
+    def addNamedObjectMapping(self,object,name,hasColor = True):
         if (not self.objectMappings.has_key(name)):
             self.objectMappings[name] = object
+            self.objectHasColor[name] = hasColor
         else:
             self.notify.debug('attempt to add duplicate named object: '+name)
 
@@ -307,13 +312,17 @@ class ClusterClient(DirectObject.DirectObject):
 
     def handleNamedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (name,x, y, z, h, p, r, sx, sy, sz,r,g,b,a, hidden) = self.msgHandler.parseNamedMovementDatagram(
+    
+        (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = self.msgHandler.parseNamedMovementDatagram(
             dgi)
         #print "name"
+        #if (name == "camNode"):
+        #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden
         if (self.objectMappings.has_key(name)):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
-            self.objectMappings[name].setColor(r,g,b,a)
+            if (self.objectHasColor[name]):
+                self.objectMappings[name].setColor(red,g,b,a)
             if (hidden):
                 self.objectMappings[name].hide()
             else:

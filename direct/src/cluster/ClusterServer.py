@@ -56,6 +56,7 @@ class ClusterServer(DirectObject.DirectObject):
         self.daemon = DirectD()
 
         self.objectMappings  = {}
+        self.objectHasColor  = {}
         self.controlMappings = {}
         self.controlOffsets  = {}
 
@@ -97,9 +98,10 @@ class ClusterServer(DirectObject.DirectObject):
         return Task.cont
 
 
-    def addNamedObjectMapping(self,object,name):
+    def addNamedObjectMapping(self,object,name,hasColor = True):
         if (not self.objectMappings.has_key(name)):
             self.objectMappings[name] = object
+            self.objectHasColor[name] = hasColor
         else:
             self.notify.debug('attempt to add duplicate named object: '+name)
 
@@ -136,17 +138,21 @@ class ClusterServer(DirectObject.DirectObject):
         for object in self.controlMappings:
             name       = self.controlMappings[object]
             if (self.objectMappings.has_key(object)):
-                self.moveObject(self.objectMappings[object],name,self.controlOffsets[object])
+                self.moveObject(self.objectMappings[object],name,self.controlOffsets[object],
+                                self.objectHasColor[object])
 
         return Task.cont
 
-    def moveObject(self, nodePath, object, offset):
+    def moveObject(self, nodePath, object, offset, hasColor):
         self.notify.debug('moving object '+object)
         #print "moving object",object
         xyz = nodePath.getPos(render) + offset
         hpr = nodePath.getHpr(render)
         scale = nodePath.getScale(render)
-        color = nodePath.getColor()
+        if (hasColor):
+            color = nodePath.getColor()
+        else:
+            color = [1,1,1,1]
         hidden = nodePath.isHidden()
         datagram = self.msgHandler.makeNamedObjectMovementDatagram(xyz,hpr,scale,color,hidden,object)
         self.cw.send(datagram, self.lastConnection)
@@ -256,12 +262,12 @@ class ClusterServer(DirectObject.DirectObject):
 
     def handleNamedMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """
-        (name,x, y, z, h, p, r,sx,sy,sz, r, g, b, a, hidden) = self.msgHandler.parseNamedMovementDatagram(
+        (name,x, y, z, h, p, r,sx,sy,sz, red, g, b, a, hidden) = self.msgHandler.parseNamedMovementDatagram(
             dgi)
         if (self.objectMappings.has_key(name)):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
-            self.objectMappings[name].setColor(r,g,b,a)
+            self.objectMappings[name].setColor(red,g,b,a)
             if (hidden):
                 self.objectMappings[name].hide()
             else:

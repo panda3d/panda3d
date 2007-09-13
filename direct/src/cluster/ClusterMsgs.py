@@ -201,12 +201,12 @@ class ClusterMsgHandler:
         sx = dgi.getFloat32()
         sy = dgi.getFloat32()
         sz = dgi.getFloat32()
-        r = dgi.getFloat32()
+        red = dgi.getFloat32()
         g = dgi.getFloat32()
         b = dgi.getFloat32()
         a = dgi.getFloat32()        
         hidden = dgi.getBool()
-        return (name,x, y, z, h, p, r, sx, sy, sz, r, g, b, a, hidden)
+        return (name,x, y, z, h, p, r, sx, sy, sz, red, g, b, a, hidden)
 
 
     def makeSelectedMovementDatagram(self, xyz, hpr, scale):
