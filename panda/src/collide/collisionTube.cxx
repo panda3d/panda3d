@@ -171,6 +171,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3f from_a = sphere->get_center() * wrt_mat;
   LPoint3f from_b = from_a;
 
+  LPoint3f contact_point;
+  float actual_t = 0.0f;
+
   if (wrt_prev_space != wrt_space) {
     // If the sphere is moving relative to the tube, it becomes a tube
     // itself.
@@ -195,6 +198,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     return NULL;
   }
 
+  actual_t = min(1.0f, max(0.0f, t1));
+  contact_point = from_a + actual_t * (from_b - from_a);
+
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "intersection detected from " << entry.get_from_node_path() << " into "
@@ -213,7 +219,16 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_intersection_point = from_a + t1 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, from_radius);
-  new_entry->set_t(t1);
+
+  LPoint3f fake_contact_point;
+  LVector3f contact_normal;
+  calculate_surface_point_and_normal(contact_point,
+                                     from_radius,
+                                     fake_contact_point,
+                                     contact_normal);
+  new_entry->set_contact_pos(contact_point);
+  new_entry->set_contact_normal(contact_normal);
+  new_entry->set_t(actual_t);
 
   return new_entry;
 }
@@ -758,19 +773,20 @@ sphere_intersects_line(double &t1, double &t2, float center_y,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionTube::set_intersection_point
+//     Function: CollisionTube::calculate_surface_point_and_normal
 //       Access: Private
-//  Description: After an intersection has been detected, record the
-//               computed intersection point in the CollisionEntry,
-//               and also compute the relevant normal based on that
-//               point.
+//  Description: Calculates a point that is exactly on the surface
+//               of the tube and its corresponding normal, given
+//               a point that is supposedly on the surface of the
+//               tube.
 ////////////////////////////////////////////////////////////////////
 void CollisionTube::
-set_intersection_point(CollisionEntry *new_entry, 
-                       const LPoint3f &into_intersection_point, 
-                       double extra_radius) const {
+calculate_surface_point_and_normal(const LPoint3f &surface_point,
+                                   double extra_radius,
+                                   LPoint3f &result_point,
+                                   LVector3f &result_normal) const {
   // Convert the point into our canonical space for analysis.
-  LPoint3f point = into_intersection_point * _inv_mat;
+  LPoint3f point = surface_point * _inv_mat;
   LVector3f normal;
 
   if (point[1] <= 0.0) {
@@ -801,10 +817,29 @@ set_intersection_point(CollisionEntry *new_entry,
   }
 
   // Now convert the point and normal back into real space.
-  point = point * _mat;
-  normal = normal * _mat;
+  result_point = point * _mat;
+  result_normal = normal * _mat;
+}
 
-  LVector3f contact_normal(normal);
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::set_intersection_point
+//       Access: Private
+//  Description: After an intersection has been detected, record the
+//               computed intersection point in the CollisionEntry,
+//               and also compute the relevant normal based on that
+//               point.
+////////////////////////////////////////////////////////////////////
+void CollisionTube::
+set_intersection_point(CollisionEntry *new_entry, 
+                       const LPoint3f &into_intersection_point, 
+                       double extra_radius) const {
+  LPoint3f point;
+  LVector3f normal;
+
+  calculate_surface_point_and_normal(into_intersection_point,
+                                     extra_radius,
+                                     point,
+                                     normal);
 
   if (has_effective_normal() && new_entry->get_from()->get_respect_effective_normal()) {
     normal = get_effective_normal();
@@ -816,8 +851,6 @@ set_intersection_point(CollisionEntry *new_entry,
   // extra_radius, which should put it on the surface of the tube if
   // our collision was tangential.
   new_entry->set_interior_point(into_intersection_point - normal * extra_radius);
-  new_entry->set_contact_pos(into_intersection_point);
-  new_entry->set_contact_normal(contact_normal);
 }
 
 ////////////////////////////////////////////////////////////////////

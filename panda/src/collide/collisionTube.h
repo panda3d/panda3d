@@ -97,6 +97,10 @@ private:
   bool sphere_intersects_line(double &t1, double &t2, float center_y,
                               const LPoint3f &from, const LVector3f &delta,
                               float inflate_radius) const;
+  void calculate_surface_point_and_normal(const LPoint3f &surface_point,
+                                          double extra_radius,
+                                          LPoint3f &result_point,
+                                          LVector3f &result_normal) const;
   void set_intersection_point(CollisionEntry *new_entry, 
                               const LPoint3f &into_intersection_point, 
                               double extra_radius) const;

@@ -330,8 +330,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
   float from_radius = length(from_radius_v);
 
-  LPoint3f into_intersection_point;
+  LPoint3f into_intersection_point(from_b);
   double t1, t2;
+  LPoint3f contact_point(into_intersection_point);
+  float actual_t = 0.0f;
 
   if (from_a != from_b) {
     LVector3f from_direction = from_b - from_a;
@@ -345,6 +347,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // after the end of the segment.
       return NULL;
     }
+
+    actual_t = min(1.0f, max(0.0f, t1));
+    contact_point = from_a + actual_t * (from_b - from_a);
 
     if (t1 < 0.0) {
       // Point a is within the sphere.  The first intersection point is
@@ -391,12 +396,24 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3f eff_normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
 
+  LVector3f contact_normal;
+  LVector3f v2 = contact_point - into_center;
+  float v2_len = v2.length();
+  if (IS_NEARLY_ZERO(v2_len)) {
+    // If we don't have a collision normal (e.g. the centers are
+    // exactly coincident), then make up an arbitrary normal--any one
+    // is as good as any other.
+    contact_normal.set(1.0, 0.0, 0.0);
+  } else {
+    contact_normal = v2 / v2_len;
+  }
+
   new_entry->set_surface_normal(eff_normal);
   new_entry->set_surface_point(into_center + surface_normal * into_radius);
   new_entry->set_interior_point(from_center - surface_normal * from_radius);
-  new_entry->set_contact_pos(into_intersection_point);
-  new_entry->set_contact_normal(surface_normal);
-  new_entry->set_t(t1);
+  new_entry->set_contact_pos(contact_point);
+  new_entry->set_contact_normal(contact_normal);
+  new_entry->set_t(actual_t);
 
   return new_entry;
 }
