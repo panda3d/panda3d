@@ -163,6 +163,17 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerEvent::flush
+//       Access: Public
+//  Description: Same as clear() except "out" events are thrown.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerEvent::
+flush() {
+  begin_group();
+  end_group();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerEvent::throw_event_for
 //       Access: Private
 //  Description: Throws whatever events are suggested by the list of

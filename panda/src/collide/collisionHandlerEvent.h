@@ -66,6 +66,7 @@ PUBLISHED:
   INLINE string get_out_pattern(int n) const;
 
   void clear();
+  void flush();
 
 protected:
   void throw_event_for(const vector_string &patterns, CollisionEntry *entry);
