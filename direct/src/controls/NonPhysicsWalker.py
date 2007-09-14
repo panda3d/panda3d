@@ -307,6 +307,11 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
 
+    def flushEventHandlers(self):
+        if hasattr(self, 'cTrav'):
+            self.pusher.flush()
+        self.lifter.flush() # not currently defined or needed
+        
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

@@ -216,14 +216,10 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up collision mechanism
         if config.GetBool('want-fluid-pusher', 0):
-            handler = CollisionHandlerFluidPusher()
+            self.pusher = CollisionHandlerFluidPusher()
         else:
-            handler = CollisionHandlerPusher()
-        #handler.setInPattern("pusher_enter%in")
-        #handler.setOutPattern("pusher_exit%in")
-
-        handler.addCollider(cSphereNodePath, self.avatarNodePath)
-        self.pusher = handler
+            self.pusher = CollisionHandlerPusher()
+        self.pusher.addCollider(cSphereNodePath, self.avatarNodePath)
         self.cWallSphereNodePath = cSphereNodePath
 
     def setupEventSphere(self, bitmask, avatarRadius):
@@ -245,11 +241,9 @@ class GravityWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        handler = CollisionHandlerEvent()
-        handler.addInPattern("enter%in")
-        handler.addOutPattern("exit%in")
-
-        self.event = handler
+        self.event = CollisionHandlerEvent()
+        self.event.addInPattern("enter%in")
+        self.event.addOutPattern("exit%in")
         self.cEventSphereNodePath = cSphereNodePath
 
     def setupFloorSphere(self, bitmask, avatarRadius):
@@ -269,12 +263,8 @@ class GravityWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        handler = CollisionHandlerPusher()
-        #handler.setInPattern("pusherFloor_enter%in")
-        #handler.setOutPattern("pusherFloor_exit%in")
-
-        handler.addCollider(cSphereNodePath, self.avatarNodePath)
-        self.pusherFloor = handler
+        self.pusherFloorhandler = CollisionHandlerPusher()
+        self.pusherFloor.addCollider(cSphereNodePath, self.avatarNodePath)
         self.cFloorSphereNodePath = cSphereNodePath
 
     def setWallBitMask(self, bitMask):
@@ -656,6 +646,14 @@ class GravityWalker(DirectObject.DirectObject):
             self.ignore("control-f3") #*#
 
 
+    def flushEventHandlers(self):
+        if hasattr(self, 'cTrav'):
+            self.pusher.flush()
+            if self.wantFloorSphere:
+                self.floorPusher.flush()
+            self.event.flush()
+        self.lifter.flush() # not currently defined or needed
+        
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""

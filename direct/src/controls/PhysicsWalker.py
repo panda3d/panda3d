@@ -136,7 +136,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         cRayNode.setFromCollideMask(self.cRayBitMask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
 
-        if 0 or self.useLifter:
+        if self.useLifter:
             # set up floor collision mechanism
             self.lifter = CollisionHandlerFloor()
             self.lifter.setInPattern("enter%in")
@@ -772,6 +772,11 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.ignore("control-f3") #*#
             self.ignore("f3")
 
+    def flushEventHandlers(self):
+        if hasattr(self, 'cTrav'):
+            if self.useLifter:
+                self.lifter.flush() # not currently defined or needed
+            self.pusher.flush()
 
     if __debug__:
         def setupAvatarPhysicsIndicator(self):

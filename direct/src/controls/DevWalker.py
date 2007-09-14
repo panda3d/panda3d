@@ -180,6 +180,9 @@ class DevWalker(DirectObject.DirectObject):
             self.task.remove()
             self.task = None
 
+    def flushEventHandlers(self):
+        pass
+    
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""
