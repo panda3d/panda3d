@@ -215,7 +215,10 @@ class GravityWalker(DirectObject.DirectObject):
         cSphereNode.setIntoCollideMask(BitMask32.allOff())
 
         # set up collision mechanism
-        handler = CollisionHandlerPusher()
+        if config.GetBool('want-fluid-pusher', 0):
+            handler = CollisionHandlerFluidPusher()
+        else:
+            handler = CollisionHandlerPusher()
         #handler.setInPattern("pusher_enter%in")
         #handler.setOutPattern("pusher_exit%in")
 
