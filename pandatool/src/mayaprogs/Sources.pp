@@ -184,7 +184,7 @@
     event:c gobj:c chan:c pgraph:c parametrics:c char:c prc:c dtoolutil:c \
     interrogatedb:c dtoolbase:c collide:c pnmimage:c dgraph:c tform:c \
     pipeline:c pstatclient:c grutil:c gsgbase:c net:c lerp:c display:c \
-    cull:c text:c nativenet:c pnmtext:c
+    cull:c text:c nativenet:c pnmtext:c movies:c audio:c
 
   #define SOURCES \
     config_mayaloader.cxx
