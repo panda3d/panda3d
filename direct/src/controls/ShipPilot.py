@@ -611,7 +611,8 @@ class ShipPilot(PhysicsWalker):
         Activate the arrow keys, etc.
         """
         assert self.debugPrint("enableShipControls()")
-        assert self.collisionsActive
+
+        self.setCollisionsActive(1)
 
         if __debug__:
             #self.accept("control-f3", self.spawnTest) #*#
@@ -638,6 +639,9 @@ class ShipPilot(PhysicsWalker):
         taskName = "ShipControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
 
+        if self.ship:
+            self.ship.worldVelocity = Vec3(0)
+        
         if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
