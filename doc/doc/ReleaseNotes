@@ -1,3 +1,14 @@
+------------------------  RELEASE 1.4.2  ------------------------
+
+This is a bugfix release.
+
+* The installer now uses less memory.
+* Now easier to compile with recent versions of SSL.
+* Minor bugfix in exposeJoint
+* Added config variable: basic-shaders-only
+* graphicsEngine.removeWindow() and graphicsOutput.setOneShot() fixed.
+* Roaming ralph sample now uses collision detection correctly.
+
 ------------------------  RELEASE 1.4.1  ------------------------
 
 This release:
