@@ -68,6 +68,7 @@ LinearForce::
 LVector3f LinearForce::
 get_vector(const PhysicsObject *po) {
   LVector3f child_vector = get_child_vector(po) * _amplitude;
+  nassertr(!child_vector.is_nan(), LVector3f::zero());
 
   if (_x_mask == false)
     child_vector[0] = 0.0f;

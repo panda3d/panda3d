@@ -66,6 +66,12 @@ child_integrate(Physical *physical,
   // otherwise your transforms will be VERY bad.
   precompute_linear_matrices(physical, forces);
   const MatrixVector &matrices = get_precomputed_linear_matrices();
+#ifndef NDEBUG
+  MatrixVector::const_iterator mi;
+  for (mi = matrices.begin(); mi != matrices.end(); ++mi) {
+    nassertv(!(*mi).is_nan());
+  }
+#endif  // NDEBUG
 
   // Get the greater of the local or global viscosity:
   float viscosityDamper=1.0f-physical->get_viscosity();
@@ -148,13 +154,16 @@ child_integrate(Physical *physical,
 
       // go from force space to object space
       f = cur_force->get_vector(current_object) * matrices[index++];
+      nassertv(!f.is_nan());
 
       physics_spam("child_integrate "<<f);
       // tally it into the accum vectors
       if (cur_force->get_mass_dependent() == true) {
         md_accum_vec += f;
+        nassertv(!md_accum_vec.is_nan());
       } else {
         non_md_accum_vec += f;
+        nassertv(!non_md_accum_vec.is_nan());
       }
     }
 
