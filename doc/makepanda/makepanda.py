@@ -4675,7 +4675,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     cmd=cmd+'/DLICENSE="'+panda+'\\LICENSE" '
     cmd=cmd+'/DLANGUAGE="Panda3DEnglish" '
     cmd=cmd+'/DRUNTEXT="Visit the Panda Manual" '
-x    cmd=cmd+'/DIBITMAP="panda-install.bmp" '
+    cmd=cmd+'/DIBITMAP="panda-install.bmp" '
     cmd=cmd+'/DUBITMAP="panda-uninstall.bmp" '
     cmd=cmd+'/DPANDA="'+panda+'" '
     cmd=cmd+'/DPANDACONF="'+panda+'\\etc" '
