@@ -2,4 +2,6 @@
 #include "asyncTaskManager.cxx"
 #include "buttonEvent.cxx"
 #include "buttonEventList.cxx"
+#include "pointerEvent.cxx"
+#include "pointerEventList.cxx"
 #include "config_event.cxx"
