@@ -2589,7 +2589,7 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
+def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
     a @decorator, except you must be sure to call it as a function.
@@ -2704,6 +2704,9 @@ def report(types = [], prefix = '', notifyFunc = None, dConfigParam = []):
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
 
+            if xform:
+                outStr = '%s : %s' % (outStr, xform(args[0]))
+                
             if notifyFunc:
                 notifyFunc(outStr)
             else:
