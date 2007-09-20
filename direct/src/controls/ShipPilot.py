@@ -82,7 +82,7 @@ class ShipPilot(PhysicsWalker):
             # this could still break if we have more than one ShipPilot referencing
             # a single boat
             if (self.ship is not None and
-                base.controlForce.getPhysicsObject() is self.ship.node().getPhysicsObject()):
+                base.controlForce.getPhysicsObject() == self.ship.node().getPhysicsObject()):
                 base.controlForce.clearPhysicsObject()
                 base.controlForce.setVector(Vec3(0))
             self.takedownPhysics()
