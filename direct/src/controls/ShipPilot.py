@@ -77,8 +77,14 @@ class ShipPilot(PhysicsWalker):
         
     def setAvatar(self, ship):
         if ship is None:
-            base.controlForce.clearPhysicsObject()
-            base.controlForce.setVector(Vec3(0))
+            # only clear out the global controlForce's physics object if it hasn't
+            # been changed since we set it up for our boat
+            # this could still break if we have more than one ShipPilot referencing
+            # a single boat
+            if (self.ship is not None and
+                base.controlForce.getPhysicsObject() is self.ship.node().getPhysicsObject()):
+                base.controlForce.clearPhysicsObject()
+                base.controlForce.setVector(Vec3(0))
             self.takedownPhysics()
             self.setCollisionsActive(0)
             self.ship = ship
