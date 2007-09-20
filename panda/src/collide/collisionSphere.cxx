@@ -348,7 +348,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       return NULL;
     }
 
-    actual_t = min(1.0f, max(0.0f, t1));
+    // doubles, not floats, to satisfy min and max templates.
+    actual_t = min(1.0, max(0.0, t1));
     contact_point = from_a + actual_t * (from_b - from_a);
 
     if (t1 < 0.0) {
