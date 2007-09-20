@@ -2240,12 +2240,19 @@ def appendStr(obj, st):
 try:
     import pdb
     set_trace = pdb.set_trace
+    # set_trace that can be asserted
+    def setTrace():
+        set_trace()
+        return True
     pm = pdb.pm
 except:
     # we're in production, there is no pdb module. assign these to something so that the
     # __builtin__ exports will work
+    # references in the code should either be if __dev__'d or asserted
     set_trace = None
+    setTrace = None
     pm = None
+
 
 class ScratchPad:
     """empty class to stick values onto"""
@@ -3060,6 +3067,7 @@ __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
 __builtin__.set_trace = set_trace
+__builtin__.setTrace = setTrace
 __builtin__.pm = pm
 __builtin__.itype = itype
 __builtin__.exceptionLogged = exceptionLogged
