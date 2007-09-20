@@ -392,7 +392,8 @@ check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
       state = state->remove_attrib(LightAttrib::get_class_type());
       state = state->remove_attrib(ColorScaleAttrib::get_class_type());
       state = state->remove_attrib(FogAttrib::get_class_type());
-      state = state->add_attrib(ColorAttrib::make_flat(bin->get_flash_color()));
+      state = state->add_attrib(ColorAttrib::make_flat(bin->get_flash_color()),
+                                RenderState::get_max_priority());
     }
   }
 }
@@ -413,7 +414,8 @@ check_flash_transparency(CPT(RenderState) &state, const Colorf &transparency) {
       state = state->remove_attrib(LightAttrib::get_class_type());
       state = state->remove_attrib(ColorScaleAttrib::get_class_type());
       state = state->remove_attrib(FogAttrib::get_class_type());
-      state = state->add_attrib(ColorAttrib::make_flat(transparency));
+      state = state->add_attrib(ColorAttrib::make_flat(transparency),
+                                RenderState::get_max_priority());
     }
   }
 }
@@ -450,8 +452,14 @@ get_dual_transparent_state() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.8f, 0.2f, 0.2f, 1.0f)));
-        flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f));
+        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.2f, 0.2f, 1.0f)),
+                                        RenderState::get_max_priority());
+
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+                                              RenderState::get_max_priority());
+
+        flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
+                                              RenderState::get_max_priority());
       }
       return flash_state;
     }
@@ -488,7 +496,11 @@ get_dual_transparent_state_decals() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.8f, 0.2f, 0.2f, 1.0f)));
+        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.2f, 0.2f, 1.0f)),
+                                        RenderState::get_max_priority());
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+                                              RenderState::get_max_priority());
+
       }
       return flash_state;
     }
@@ -519,7 +531,11 @@ get_dual_opaque_state() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorScaleAttrib::make(LVecBase4f(0.2f, 0.2f, 0.8f, 1.0f)));
+        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.2f, 0.2f, 0.8f, 1.0f)),
+                                        RenderState::get_max_priority());
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+                                              RenderState::get_max_priority());
+
       }
       return flash_state;
     }
