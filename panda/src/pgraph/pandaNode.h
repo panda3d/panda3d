@@ -209,6 +209,17 @@ PUBLISHED:
   void copy_all_properties(PandaNode *other);
   void replace_node(PandaNode *other);
 
+  enum UnexpectedChange {
+    UC_parents   = 0x001,
+    UC_children  = 0x002,
+    UC_transform = 0x004,
+    UC_state     = 0x008,
+    UC_draw_mask = 0x010,
+  };
+  void set_unexpected_change(unsigned int flags);
+  unsigned int get_unexpected_change(unsigned int flags) const;
+  void clear_unexpected_change(unsigned int flags);
+
   INLINE static DrawMask get_overall_bit();
   INLINE static DrawMask get_all_camera_mask();
   INLINE bool is_overall_hidden() const;
@@ -432,6 +443,9 @@ private:
   typedef phash_map<string, PyObject *, string_hash> PythonTagData;
 #endif  // HAVE_PYTHON
 
+#ifndef NDEBUG
+  unsigned int _unexpected_change_flags;
+#endif // !NDEBUG
   
   // This is the data that must be cycled between pipeline stages. 
 

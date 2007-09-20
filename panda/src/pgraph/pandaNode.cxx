@@ -86,6 +86,10 @@ PandaNode(const string &name) :
     pgraph_cat.debug()
       << "Constructing " << (void *)this << ", " << get_name() << "\n";
   }
+#ifndef NDEBUG
+  _unexpected_change_flags = 0;
+#endif // !NDEBUG
+
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
@@ -139,6 +143,9 @@ PandaNode(const PandaNode &copy) :
   MemoryUsage::update_type(this, this);
 #endif
   // Copying a node does not copy its children.
+#ifndef NDEBUG
+  _unexpected_change_flags = 0;
+#endif // !NDEBUG
 
   // Copy the other node's state.
   {
@@ -1800,6 +1807,76 @@ replace_node(PandaNode *other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_unexpected_change
+//       Access: Published
+//  Description: Sets one or more of the PandaNode::UnexpectedChange
+//               bits on, indicating that the corresponding property
+//               should not change again on this node.  Once one of
+//               these bits has been set, if the property changes, an
+//               assertion failure will be raised, which is designed
+//               to assist the developer in identifying the
+//               troublesome code that modified the property
+//               unexpectedly.
+//
+//               The input parameter is the union of bits that are to
+//               be set.  To clear these bits later, use
+//               clear_unexpected_change().
+//
+//               Since this is a developer debugging tool only, this
+//               function does nothing in a production (NDEBUG) build.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_unexpected_change(unsigned int flags) {
+#ifndef NDEBUG
+  _unexpected_change_flags |= flags;
+#endif // !NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_unexpected_change
+//       Access: Published
+//  Description: Returns nonzero if any of the bits in the input
+//               parameter are set on this node, or zero if none of
+//               them are set.  More specifically, this returns the
+//               particular set of bits (masked by the input
+//               parameter) that have been set on this node.  See
+//               set_unexpected_change().
+//
+//               Since this is a developer debugging tool only, this
+//               function always returns zero in a production (NDEBUG)
+//               build.
+////////////////////////////////////////////////////////////////////
+unsigned int PandaNode::
+get_unexpected_change(unsigned int flags) const {
+#ifndef NDEBUG
+  return _unexpected_change_flags & flags;
+#else
+  return 0;
+#endif // !NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_unexpected_change
+//       Access: Published
+//  Description: Sets one or more of the PandaNode::UnexpectedChange
+//               bits off, indicating that the corresponding property
+//               may once again change on this node.  See
+//               set_unexpected_change().
+//
+//               The input parameter is the union of bits that are to
+//               be cleared.
+//
+//               Since this is a developer debugging tool only, this
+//               function does nothing in a production (NDEBUG) build.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+clear_unexpected_change(unsigned int flags) {
+#ifndef NDEBUG
+  _unexpected_change_flags &= ~flags;
+#endif // !NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::adjust_draw_mask
 //       Access: Published
 //  Description: Adjusts the hide/show bits of this particular node.
@@ -2448,6 +2525,7 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 parents_changed() {
+  nassertv((_unexpected_change_flags & UC_parents) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2461,6 +2539,7 @@ parents_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 children_changed() {
+  nassertv((_unexpected_change_flags & UC_children) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2472,6 +2551,7 @@ children_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 transform_changed() {
+  nassertv((_unexpected_change_flags & UC_transform) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2483,6 +2563,7 @@ transform_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 state_changed() {
+  nassertv((_unexpected_change_flags & UC_state) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2494,6 +2575,7 @@ state_changed() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 draw_mask_changed() {
+  nassertv((_unexpected_change_flags & UC_draw_mask) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
