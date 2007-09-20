@@ -78,6 +78,7 @@ class ShipPilot(PhysicsWalker):
     def setAvatar(self, ship):
         if ship is None:
             base.controlForce.clearPhysicsObject()
+            base.controlForce.setVector(Vec3(0))
             self.takedownPhysics()
             self.setCollisionsActive(0)
             self.ship = ship
@@ -381,28 +382,8 @@ class ShipPilot(PhysicsWalker):
         straightSailBonus = min(self.MAX_STRAIGHT_SAIL_BONUS, straightSailBonus * self.MAX_STRAIGHT_SAIL_BONUS)
         straightSailBonus += 1.0
         
-        # this was causing the boat to get stuck moving forward or back
-        if 0:
-            if not hasattr(self, "sailsDeployed"):
-                self.sailsDeployed = 0.0
-            if forward and reverse:
-                # Way anchor:
-                self.__speed = 0.0
-                physObject.setVelocity(Vec3.zero())
-            elif forward:
-                self.sailsDeployed += 0.25
-                if self.sailsDeployed > 1.0:
-                    self.sailsDeployed = 1.0
-            elif reverse:
-                self.sailsDeployed -= 0.25
-                if self.sailsDeployed < -1.0:
-                    self.sailsDeployed = -1.0
-            self.__speed = self.ship.acceleration * straightSailBonus
-        else:
-            self.__speed=(forward and self.ship.acceleration * straightSailBonus) or \
-                (reverse and -self.ship.reverseAcceleration)
-            #self.__speed=(forward and min(dt*(self.__speed + self.ship.acceleration), self.ship.maxSpeed) or
-            #        reverse and min(dt*(self.__speed - self.ship.reverseAcceleration), self.ship.maxReverseSpeed))
+        self.__speed=(forward and self.ship.acceleration * straightSailBonus) or \
+                      (reverse and -self.ship.reverseAcceleration)
             
         avatarSlideSpeed=self.ship.acceleration *0.5 * straightSailBonus
         #self.__slideSpeed=slide and (
@@ -467,7 +448,7 @@ class ShipPilot(PhysicsWalker):
         # Check to see if we're moving at all:
         physVel = physObject.getVelocity()
         physVelLen = physVel.length()
-        if (physVelLen!=0.
+        if (not physVel.almostEqual(Vec3(0),0.1)
             or self.__speed
             or self.__slideSpeed
             or self.__rotationSpeed):
@@ -499,6 +480,7 @@ class ShipPilot(PhysicsWalker):
                 maxLen = self.ship.acceleration * straightSailBonus
             else:
                 maxLen = self.ship.reverseAcceleration
+
             if newVector.length() > maxLen and \
                not (debugRunning or base.localAvatar.getTurbo()):
                 newVector.normalize()
@@ -509,10 +491,12 @@ class ShipPilot(PhysicsWalker):
                     "newVector", newVector)
                 onScreenDebug.add(
                     "newVector length", newVector.length())
+
             base.controlForce.setVector(newVector)
-            assert base.controlForce.getLocalVector() == newVector
-            assert base.controlForce.getPhysicsObject()
-            assert base.controlForce.getPhysicsObject() == physObject
+
+            assert base.controlForce.getLocalVector() == newVector,'1'
+            assert base.controlForce.getPhysicsObject(),'2'
+            assert base.controlForce.getPhysicsObject() == physObject,'3'
 
             #momentum = self.momentumForce.getLocalVector()
             #momentum *= 0.9
@@ -531,7 +515,7 @@ class ShipPilot(PhysicsWalker):
             messenger.send("avatarMoving")
         else:
             # even if there are no active inputs, we still might be moving
-            assert physObject.getVelocity().length() == 0.
+            assert physObject.getVelocity().almostEqual(Vec3(0),0.1)
             #base.controlForce.setVector(Vec3.zero())
             goForward = True
 
@@ -552,18 +536,6 @@ class ShipPilot(PhysicsWalker):
         # modify based on sail damage
         speed *= self.ship.Sp
         speed /= self.ship.maxSp
-        ## physObject.setVelocity(speed)
-
-        # print self.ship.getZ()
-        # self.ship.setZ(0)
-        
-        #rotMat=Mat3.rotateMatNormaxis(self.shipNodePath.getH(), Vec3.up())
-        #speed=rotMat.xform(speed)
-        # The momentumForce makes it feel like we are sliding on ice -- Joe
-        # f = Vec3(self.__vel)
-        # f.normalize()
-        # self.momentumForce.setVector(Vec3(f*(speed.length()*0.9)))
-
 
         if __debug__:
             q1=self.shipNodePath.getQuat()
