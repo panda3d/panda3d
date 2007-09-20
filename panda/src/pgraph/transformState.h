@@ -181,8 +181,15 @@ PUBLISHED:
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
 
+  INLINE int get_composition_cache_num_entries() const;
+  INLINE int get_invert_composition_cache_num_entries() const;
+
   INLINE int get_composition_cache_size() const;
+  INLINE const TransformState *get_composition_cache_source(int n) const;
+  INLINE const TransformState *get_composition_cache_result(int n) const;
   INLINE int get_invert_composition_cache_size() const;
+  INLINE const TransformState *get_invert_composition_cache_source(int n) const;
+  INLINE const TransformState *get_invert_composition_cache_result(int n) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;

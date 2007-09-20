@@ -775,7 +775,7 @@ node_unref() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_composition_cache_size
+//     Function: TransformState::get_composition_cache_num_entries
 //       Access: Published
 //  Description: Returns the number of entries in the composition
 //               cache for this TransformState.  This is the number of
@@ -784,24 +784,146 @@ node_unref() const {
 //               practical reason other than performance analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
-get_composition_cache_size() const {
+get_composition_cache_num_entries() const {
   ReMutexHolder holder(*_states_lock);
   return _composition_cache.get_num_entries();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransformState::get_invert_composition_cache_size
+//     Function: TransformState::get_invert_composition_cache_num_entries
 //       Access: Published
 //  Description: Returns the number of entries in the
 //               invert_composition cache for this TransformState.
 //               This is similar to the composition cache, but it
 //               records cache entries for the invert_compose()
-//               operation.  See get_composition_cache_size().
+//               operation.  See get_composition_cache_num_entries().
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+get_invert_composition_cache_num_entries() const {
+  ReMutexHolder holder(*_states_lock);
+  return _invert_composition_cache.get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of slots in the composition
+//               cache for this TransformState.  You may use this as
+//               an upper bound when walking through all of the
+//               composition cache results via
+//               get_composition_cache_source() or result().
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
+////////////////////////////////////////////////////////////////////
+INLINE int TransformState::
+get_composition_cache_size() const {
+  ReMutexHolder holder(*_states_lock);
+  return _composition_cache.get_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_composition_cache_source
+//       Access: Published
+//  Description: Returns the source TransformState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//               See get_composition_cache_result().
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *TransformState::
+get_composition_cache_source(int n) const {
+  ReMutexHolder holder(*_states_lock);
+  if (!_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _composition_cache.get_key(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_composition_cache_result
+//       Access: Published
+//  Description: Returns the result TransformState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//
+//               In general,
+//               a->compose(a->get_composition_cache_source(n)) ==
+//               a->get_composition_cache_result(n).
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *TransformState::
+get_composition_cache_result(int n) const {
+  ReMutexHolder holder(*_states_lock);
+  if (!_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _composition_cache.get_data(n)._result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_invert_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of slots in the composition
+//               cache for this TransformState.  You may use this as
+//               an upper bound when walking through all of the
+//               composition cache results via
+//               get_invert_composition_cache_source() or result().
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_invert_composition_cache_size() const {
   ReMutexHolder holder(*_states_lock);
-  return _invert_composition_cache.get_num_entries();
+  return _invert_composition_cache.get_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_invert_composition_cache_source
+//       Access: Published
+//  Description: Returns the source TransformState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//               See get_invert_composition_cache_result().
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *TransformState::
+get_invert_composition_cache_source(int n) const {
+  ReMutexHolder holder(*_states_lock);
+  if (!_invert_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _invert_composition_cache.get_key(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_invert_composition_cache_result
+//       Access: Published
+//  Description: Returns the result TransformState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//
+//               In general,
+//               a->compose(a->get_invert_composition_cache_source(n)) ==
+//               a->get_invert_composition_cache_result(n).
+//
+//               This has no practical value other than for examining
+//               the cache for performacne analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *TransformState::
+get_invert_composition_cache_result(int n) const {
+  ReMutexHolder holder(*_states_lock);
+  if (!_invert_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _invert_composition_cache.get_data(n)._result;
 }
 
 ////////////////////////////////////////////////////////////////////
