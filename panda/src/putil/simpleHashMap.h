@@ -32,12 +32,6 @@
 //               it wants an additional method on the Compare object,
 //               Compare::is_equal(a, b), and (c) it doesn't depend on
 //               the system STL providing hash_map.
-//
-//               The map uses a void * as a unique key, which is
-//               associated with another void * as data.  You may pass
-//               any pointer other than NULL as the key; you may pass
-//               any pointer (including NULL) as the data.  Only one
-//               entry is stored per each different key pointer.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
 class SimpleHashMap {
