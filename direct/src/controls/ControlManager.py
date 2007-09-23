@@ -27,6 +27,7 @@ class ControlManager:
         self.passMessagesThrough = passMessagesThrough
         self.inputStateTokens = []
         self.WASDTurnTokens = []
+        self.__WASDTurn = True
         self.controls = {}
         self.currentControls = None
         self.currentControlsName = None
@@ -223,9 +224,9 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.QE))
             ist.append(inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.QE))
 
-            # Used to switch between strafe and turn. We will default to turn
+            # Used to switch between strafe and turn. We will reset to whatever was last set.
             self.WASDTurnTokens = []
-            self.setWASDTurn(1)
+            self.setWASDTurn(self.__WASDTurn)
         else:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
             ist.append(inputState.watch("turnLeft", "mouse-look_left", "mouse-look_left-done"))
@@ -306,6 +307,7 @@ class ControlManager:
 
 
     def setWASDTurn(self, turn):
+        self.__WASDTurn = turn
 
         if not self.isEnabled:
             return
