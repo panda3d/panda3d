@@ -1591,14 +1591,14 @@ do_issue_light() {
   int num_enabled = 0;
   int num_on_lights = 0;
 
-  if (display_cat.is_debug()) {
-    display_cat.debug()
+  if (display_cat.is_spam()) {
+    display_cat.spam()
       << "do_issue_light: " << _target._light << "\n";
   }
   if (_target._light != (LightAttrib *)NULL) {
     CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
-    if (display_cat.is_debug()) {
-      new_light->write(display_cat.debug(false), 2);
+    if (display_cat.is_spam()) {
+      new_light->write(display_cat.spam(false), 2);
     }
 
     num_on_lights = new_light->get_num_on_lights();
