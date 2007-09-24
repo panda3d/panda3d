@@ -248,6 +248,9 @@ class DistributedObjectUD(DistributedObjectBase):
         # note that this will return a different node if we change zones
         return self.air.getRender(self.zoneId)
 
+    def getNonCollidableParent(self):
+        return self.air.getNonCollidableParent(self.zoneId)
+
     def getParentMgr(self):
         return self.air.getParentMgr(self.zoneId)
 

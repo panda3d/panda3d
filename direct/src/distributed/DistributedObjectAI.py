@@ -316,6 +316,9 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         #return self.air.getRender(self.zoneId)
         return self.getZoneData().getRender()
 
+    def getNonCollidableParent(self):
+        return self.getZoneData().getNonCollidableParent()
+
     def getParentMgr(self):
         #return self.air.getParentMgr(self.zoneId)
         return self.getZoneData().getParentMgr()
