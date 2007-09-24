@@ -838,7 +838,8 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg9_cat.error()
               << "Unable to clear depth buffer; removing.\n";
-            _current_properties->set_depth_bits(0);
+            // This is really hacky code.
+            ((FrameBufferProperties *)_current_properties)->set_depth_bits(0);
           }
         }
         if (buffer_type & RenderBuffer::T_stencil) {
@@ -848,7 +849,8 @@ do_clear(const RenderBuffer &buffer) {
           if (FAILED(hr2)) {
             dxgsg9_cat.error()
               << "Unable to clear stencil buffer; removing.\n";
-            _current_properties->set_stencil_bits(0);
+            // This is really hacky code.
+            ((FrameBufferProperties *)_current_properties)->set_stencil_bits(0);
           }
         }
       }
