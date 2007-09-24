@@ -237,6 +237,11 @@ buildGL(osxGraphicsWindow &window, bool full_screen,
     attrib.push_back(AGL_PBUFFER);
   }
 
+  // Request the largest buffer available that meets the minimum
+  // requirements specified.
+  attrib.push_back(AGL_MINIMUM_POLICY);
+  attrib.push_back(AGL_MAXIMUM_POLICY);
+
   // Terminate the list.
   attrib.push_back(AGL_NONE);
 
