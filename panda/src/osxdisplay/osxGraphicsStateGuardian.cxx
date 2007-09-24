@@ -364,11 +364,11 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
         fb_props.set_force_software(!value);
       }
       if (aglDescribeRenderer(rinfo, AGL_VIDEO_MEMORY, &value)) {
-        osxdisplay_cat.info()
+        osxdisplay_cat.debug()
           << "Reported video memory is " << value << "\n";
       }
       if (aglDescribeRenderer(rinfo, AGL_TEXTURE_MEMORY, &value)) {
-        osxdisplay_cat.info()
+        osxdisplay_cat.debug()
           << "Reported texture memory is " << value << "\n";
       }
     }
