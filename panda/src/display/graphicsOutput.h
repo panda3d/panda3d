@@ -149,7 +149,7 @@ PUBLISHED:
   INLINE unsigned int get_left_eye_color_mask() const;
   INLINE unsigned int get_right_eye_color_mask() const;
 
-  INLINE FrameBufferProperties &get_fb_properties();
+  INLINE const FrameBufferProperties &get_fb_properties() const;
   INLINE bool is_stereo() const;
 
   INLINE void clear_delete_flag();

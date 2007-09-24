@@ -743,7 +743,7 @@ get_inv_cs_transform() const {
 //               window/buffer with the given FrameBufferProperties
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
-set_current_properties(FrameBufferProperties *prop) {
+set_current_properties(const FrameBufferProperties *prop) {
   _current_properties = prop;
 }
 

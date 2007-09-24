@@ -208,7 +208,7 @@ public:
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
 
-  void set_current_properties(FrameBufferProperties *properties);
+  void set_current_properties(const FrameBufferProperties *properties);
 
   virtual bool depth_offset_decals();
   virtual CPT(RenderState) begin_decal_base_first();
@@ -329,7 +329,7 @@ protected:
   CPT(Lens) _current_lens;
   CPT(TransformState) _projection_mat;
   CPT(TransformState) _projection_mat_inv;
-  FrameBufferProperties *_current_properties;
+  const FrameBufferProperties *_current_properties;
 
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
