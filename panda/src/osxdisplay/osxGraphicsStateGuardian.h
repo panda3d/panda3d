@@ -47,8 +47,14 @@ protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   
 public:
-  OSStatus buildGL (osxGraphicsWindow  &window);
+  OSStatus buildGL(osxGraphicsWindow &window, bool full_screen,
+                   FrameBufferProperties &fb_props);
   AGLContext  get_context(void) { return _aglcontext; };
+  
+  const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };
+
+private:
+  void describe_pixel_format(FrameBufferProperties &fb_props);
 
   // We have to save a pointer to the GSG we intend to share texture
   // context with, since we don't create our own context in the
@@ -56,8 +62,6 @@ public:
   PT(osxGraphicsStateGuardian) _share_with;
   AGLPixelFormat	_aglPixFmt;
   AGLContext		_aglcontext;
-  
-  const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };
 
 public:
   GLint   SharedBuffer;

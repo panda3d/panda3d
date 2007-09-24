@@ -178,56 +178,199 @@ draw_resize_box() {
 //     Function: osxGraphicsStateGuardian::buildGL
 //       Access: Public, Virtual
 //  Description: This function will build up a context for a gsg..  
-//   rhh..  This does not respect the flags passed into it for context type ?? hmmm things to do things to do..
-//
 ////////////////////////////////////////////////////////////////////
-OSStatus osxGraphicsStateGuardian::buildGL (osxGraphicsWindow  &window)
-{
-	OSStatus err = noErr;
-//	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 16, AGL_NONE };
-//	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY, AGL_FULLSCREEN, AGL_DOUBLEBUFFER, AGL_DEPTH_SIZE, 32, AGL_SAMPLE_BUFFERS_ARB, 1, AGL_SAMPLES_ARB, 0, 0 };
-// 	GLint attrib[] = { AGL_RGBA, AGL_NO_RECOVERY,  AGL_DOUBLEBUFFER, AGL_NONE, 0, 0 };   
-//	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER,AGL_FULLSCREEN,AGL_ACCELERATED,AGL_DEPTH_SIZE, 32, AGL_NONE };	
-	GLint attrib[] = { AGL_RGBA, AGL_DOUBLEBUFFER,AGL_NO_RECOVERY,AGL_FULLSCREEN,AGL_DEPTH_SIZE, 32, AGL_NONE };	
-	if (_aglcontext)
-		return noErr; // already built
-	
-	GDHandle display = GetMainDevice ();		
-	// build context
-	_aglcontext = NULL;
-	_aglPixFmt = aglChoosePixelFormat(&display, 1, attrib);
-	err = aglReportError ("aglChoosePixelFormat");
-	if (_aglPixFmt)
-	 {
-	  if(_share_with == NULL)
-		_aglcontext = aglCreateContext(_aglPixFmt, NULL);
-	  else
-		_aglcontext = aglCreateContext(_aglPixFmt, ((osxGraphicsStateGuardian *)_share_with)->_aglcontext);
-	  err = aglReportError ("aglCreateContext");
+OSStatus osxGraphicsStateGuardian::
+buildGL(osxGraphicsWindow &window, bool full_screen,
+        FrameBufferProperties &fb_props) {
+  if (_aglcontext) {
+    describe_pixel_format(fb_props);
+    return noErr; // already built
+  }
 
-	if (_aglcontext == NULL)
-	{
-		osxdisplay_cat.error() << "osxGraphicsStateGuardian::buildG Error Getting Gl Context \n" ;
-		if(err == noErr)
-		   err = -1;
-	}
-	else
-	{
-			aglSetInteger (_aglcontext, AGL_BUFFER_NAME, &SharedBuffer); 	
-			err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");			
-	}
+  OSStatus err = noErr;
 	
-	}
-	else
-	{
-		osxdisplay_cat.error() << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format  \n" ;
-		if(err == noErr)
-		   err = -1;
+  GDHandle display = GetMainDevice ();		
+        
+  pvector<GLint> attrib;
+  if (!fb_props.get_indexed_color()) {
+    attrib.push_back(AGL_RGBA);
+    int color_bits = fb_props.get_color_bits();
+    int alpha_bits = fb_props.get_alpha_bits();
+    attrib.push_back(AGL_BUFFER_SIZE);
+    attrib.push_back(color_bits + alpha_bits);
+    attrib.push_back(AGL_PIXEL_SIZE);
+    attrib.push_back(color_bits);
+    attrib.push_back(AGL_RED_SIZE);
+    attrib.push_back(color_bits / 3);
+    attrib.push_back(AGL_GREEN_SIZE);
+    attrib.push_back(color_bits / 3);
+    attrib.push_back(AGL_BLUE_SIZE);
+    attrib.push_back(color_bits / 3);
+    attrib.push_back(AGL_ALPHA_SIZE);
+    attrib.push_back(alpha_bits);
+  }
+  attrib.push_back(AGL_DEPTH_SIZE);
+  attrib.push_back(fb_props.get_depth_bits());
+  attrib.push_back(AGL_STENCIL_SIZE);
+  attrib.push_back(fb_props.get_stencil_bits());
+  attrib.push_back(AGL_SAMPLES_ARB);
+  attrib.push_back(fb_props.get_multisamples());
+
+  if (fb_props.is_stereo()) {
+    attrib.push_back(AGL_STEREO);
+  }
+
+  if (!fb_props.is_single_buffered()) {
+    attrib.push_back(AGL_DOUBLEBUFFER);
+  }
+  if (full_screen) {
+    attrib.push_back(AGL_FULLSCREEN);
+  }
+
+  // These are renderer modes, not pixel modes.  Not sure if they have
+  // any meaning here; maybe we should handle these flags differently.
+  if (fb_props.get_force_hardware()) {
+    attrib.push_back(AGL_ACCELERATED);
+    attrib.push_back(AGL_NO_RECOVERY);
+  }
+  if (fb_props.get_force_software()) {
+    attrib.push_back(AGL_PBUFFER);
+  }
+
+  // Terminate the list.
+  attrib.push_back(AGL_NONE);
+
+  // build context
+  _aglcontext = NULL;
+  _aglPixFmt = aglChoosePixelFormat(&display, 1, &attrib[0]);
+  err = aglReportError ("aglChoosePixelFormat");
+  if (_aglPixFmt) {
+    if(_share_with == NULL) {
+      _aglcontext = aglCreateContext(_aglPixFmt, NULL);
+    } else {
+      _aglcontext = aglCreateContext(_aglPixFmt, ((osxGraphicsStateGuardian *)_share_with)->_aglcontext);
+    }
+    err = aglReportError ("aglCreateContext");
+
+    if (_aglcontext == NULL) {
+      osxdisplay_cat.error()
+        << "osxGraphicsStateGuardian::buildG Error Getting Gl Context \n" ;
+      if(err == noErr) {
+        err = -1;
+      }
+    } else {
+      aglSetInteger (_aglcontext, AGL_BUFFER_NAME, &SharedBuffer); 	
+      err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");			
+    }
 	
-	}
+  } else {
+    osxdisplay_cat.error()
+      << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format  \n" ;
+    if(err == noErr) {
+      err = -1;
+    }
+  }
+
+  describe_pixel_format(fb_props);
 	
-	osxdisplay_cat.debug() << "osxGraphicsStateGuardian::buildGL Returning :" << err << "\n"; 
-	
-    return err;
+  if (osxdisplay_cat.is_debug()) {
+    osxdisplay_cat.debug()
+      << "osxGraphicsStateGuardian::buildGL Returning :" << err << "\n"; 
+    osxdisplay_cat.debug()
+      << fb_props << "\n";
+  }
+
+  return err;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::describe_pixel_format
+//       Access: Private
+//  Description: Fills in the fb_props member with the appropriate
+//               values according to the chosen pixel format.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsStateGuardian::
+describe_pixel_format(FrameBufferProperties &fb_props) {
+  fb_props.clear();
+  GLint value;
+
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_RGBA, &value)) {
+    fb_props.set_indexed_color(!value);
+    fb_props.set_rgb_color(value);
+  }
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_DEPTH_SIZE, &value)) {
+    fb_props.set_depth_bits(value);
+  }
+  int color_bits = 0;
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_RED_SIZE, &value)) {
+    color_bits += value;
+  }
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_GREEN_SIZE, &value)) {
+    color_bits += value;
+  }
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_BLUE_SIZE, &value)) {
+    color_bits += value;
+  }
+  fb_props.set_color_bits(color_bits);
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_ALPHA_SIZE, &value)) {
+    fb_props.set_alpha_bits(value);
+  }
+
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_STENCIL_SIZE, &value)) {
+    fb_props.set_stencil_bits(value);
+  }
+
+  int accum_bits = 0;
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_ACCUM_RED_SIZE, &value)) {
+    accum_bits += value;
+  }
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_ACCUM_GREEN_SIZE, &value)) {
+    accum_bits += value;
+  }
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_ACCUM_BLUE_SIZE, &value)) {
+    accum_bits += value;
+  }
+
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_SAMPLES_ARB, &value)) {
+    fb_props.set_multisamples(value);
+  }
+
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_DOUBLEBUFFER, &value)) {
+    if (value) {
+      fb_props.set_back_buffers(1);
+    } else {
+      fb_props.set_back_buffers(0);
+    }
+  }
+
+  if (aglDescribePixelFormat(_aglPixFmt, AGL_STEREO, &value)) {
+    fb_props.set_stereo(value);
+  }
+
+  // Until we query the renderer, we don't know whether it's hardware
+  // or software based, so set both flags to indicate we don't know.
+  fb_props.set_force_hardware(true);
+  fb_props.set_force_software(true);
+
+  GLint ndevs;
+  AGLDevice *gdevs = aglDevicesOfPixelFormat(_aglPixFmt, &ndevs);
+  if (gdevs != (AGLDevice *)NULL) {
+    AGLRendererInfo rinfo = aglQueryRendererInfo(gdevs, ndevs);
+    if (rinfo != NULL) {
+      if (aglDescribeRenderer(rinfo, AGL_ACCELERATED, &value)) {
+        // Now we know whether it's hardware or software.
+        fb_props.set_force_hardware(value);
+        fb_props.set_force_software(!value);
+      }
+      if (aglDescribeRenderer(rinfo, AGL_VIDEO_MEMORY, &value)) {
+        osxdisplay_cat.info()
+          << "Reported video memory is " << value << "\n";
+      }
+      if (aglDescribeRenderer(rinfo, AGL_TEXTURE_MEMORY, &value)) {
+        osxdisplay_cat.info()
+          << "Reported texture memory is " << value << "\n";
+      }
+    }
+  }
+}

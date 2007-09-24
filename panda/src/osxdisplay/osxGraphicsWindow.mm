@@ -599,45 +599,40 @@ AGLContext  osxGraphicsWindow::get_ggs_context(void)
 //       Access: private..
 //  Description:  Code of the class.. used to control the GL context Allocation .. 
 ////////////////////////////////////////////////////////////////////
-OSStatus osxGraphicsWindow::buildGL (bool full_screen)
-{
-	// make sure the ggs is up and runnig..
-		osxGraphicsStateGuardian *osxgsg = NULL;
-		osxgsg = DCAST(osxGraphicsStateGuardian, _gsg);
-		OSStatus stat = osxgsg->buildGL(*this);
-		if(stat != noErr)
-		   return stat;
+OSStatus osxGraphicsWindow::
+buildGL(bool full_screen) {
+  // make sure the ggs is up and runnig..
+  osxGraphicsStateGuardian *osxgsg = NULL;
+  osxgsg = DCAST(osxGraphicsStateGuardian, _gsg);
+  OSStatus stat = osxgsg->buildGL(*this, full_screen, _fb_properties);
 
-	OSStatus err = noErr;
+  if(stat != noErr) {
+    return stat;
+  }
+  
+  OSStatus err = noErr;
 	
-//	if(!full_screen)
-	{
-		if (osxgsg->getAGlPixelFormat())
-		 {
-			_holder_aglcontext = aglCreateContext(osxgsg->getAGlPixelFormat(),NULL);
-			
-			err  = aglReportError ("aglCreateContext");
-			if(_holder_aglcontext == NULL)
-			{
-				osxdisplay_cat.error() << "osxGraphicsWindow::buildG Error aglCreateContext \n";
-				if(err ==noErr)
-				  err = -1;				
-			}
-			else
-			{			
-				aglSetInteger (_holder_aglcontext, AGL_BUFFER_NAME, &osxgsg->SharedBuffer); 	
-				err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");
-			
-			}
-		}
-		else
-		{
-			osxdisplay_cat.error() << "osxGraphicsWindow::buildG Error Getting PixelFormat \n"; 	
-			if(err ==noErr)
-				err = -1;				
-		}
-	}
-    return err;
+  if (osxgsg->getAGlPixelFormat()) {
+    _holder_aglcontext = aglCreateContext(osxgsg->getAGlPixelFormat(),NULL);
+    
+    err  = aglReportError ("aglCreateContext");
+    if(_holder_aglcontext == NULL) {
+      osxdisplay_cat.error() << "osxGraphicsWindow::buildG Error aglCreateContext \n";
+      if(err ==noErr)
+        err = -1;				
+    } else {			
+      aglSetInteger (_holder_aglcontext, AGL_BUFFER_NAME, &osxgsg->SharedBuffer); 	
+      err = aglReportError ("aglSetInteger AGL_BUFFER_NAME");
+      
+    }
+  } else {
+    osxdisplay_cat.error()
+      << "osxGraphicsWindow::buildG Error Getting PixelFormat \n"; 	
+    if(err ==noErr) {
+      err = -1;
+    }
+  }
+  return err;
 }
 
 ////////////////////////////////////////////////////////////////////
