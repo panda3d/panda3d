@@ -102,6 +102,8 @@ GraphicsOutput(GraphicsPipe *pipe,
   _cube_map_index = -1;
   _cube_map_dr = NULL;
   _sort = 0;
+  _child_sort = 0;
+  _got_child_sort = false;
   _internal_sort_index = 0;
   _active = true;
   _one_shot = false;
@@ -733,7 +735,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
-                name, get_sort()-1,
+                name, get_child_sort(),
                 props, WindowProperties::size(x_size, y_size),
                 GraphicsPipe::BF_refuse_window,
                 get_gsg(), get_host());

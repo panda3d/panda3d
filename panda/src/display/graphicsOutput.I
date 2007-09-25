@@ -377,6 +377,58 @@ get_sort() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_child_sort
+//       Access: Published
+//  Description: Specifies the sort value of future offscreen buffers
+//               created by make_texture_sort().
+//
+//               The purpose of this method is to allow the user to
+//               limit the sort value chosen for a buffer created via
+//               make_texture_buffer().  Normally, this buffer will be
+//               assigned a value of get_sort() - 1, so that it
+//               will be rendered before this window is rendered; but
+//               sometimes this isn't sufficiently early, especially
+//               if other buffers also have a view into the same
+//               scene.
+//
+//               If you specify a value here, then new buffers created
+//               via make_texture_buffer() will be given that sort
+//               value instead of get_sort() - 1.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+set_child_sort(int child_sort) {
+  _child_sort = child_sort;
+  _got_child_sort = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::clear_child_sort
+//       Access: Published
+//  Description: Resets the sort value of future offscreen buffers
+//               created by make_texture_sort() to the default value.
+//               See set_child_sort().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+clear_child_sort() {
+  _got_child_sort = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_child_sort
+//       Access: Published
+//  Description: Returns the sort value of future offscreen buffers
+//               created by make_texture_sort(). See set_child_sort().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_child_sort() const {
+  if (_got_child_sort) {
+    return _child_sort;
+  } else {
+    return get_sort() - 1;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::trigger_copy
 //       Access: Published
 //  Description: When the GraphicsOutput is in triggered copy mode,

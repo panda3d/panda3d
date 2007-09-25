@@ -158,6 +158,10 @@ PUBLISHED:
   void set_sort(int sort);
   INLINE int get_sort() const;
 
+  INLINE void set_child_sort(int child_sort);
+  INLINE void clear_child_sort();
+  INLINE int get_child_sort() const;
+
   INLINE void trigger_copy();
   
   INLINE DisplayRegion *make_display_region();
@@ -279,6 +283,8 @@ private:
   void do_determine_display_regions();
   
   int _sort;
+  int _child_sort;
+  bool _got_child_sort;
   unsigned int _internal_sort_index;
 
 protected:
