@@ -181,6 +181,8 @@ class DirectSession(DirectObject):
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
 
+        self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
+
         if base.wantTk:
             from direct.showbase import TkGlobal
             from direct.tkpanels import DirectSessionPanel
@@ -200,6 +202,10 @@ class DirectSession(DirectObject):
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
 
+
+    def addPassThroughKey(self,key):
+
+        self.passThroughKeys.append(key)
 
     def enable(self):
         # don't enable DIRECT if someone has posted DIRECTdisablePost
@@ -460,8 +466,7 @@ class DirectSession(DirectObject):
 
         #Pass along certain events if this display is a cluster client
         if self.clusterMode == 'client':
-            if input in ('v','b','l','p', 'r', 'shift-r', 's', 't',
-                         'shift-a', 'w'):
+            if input in self.passThroughKeys:
                 self.cluster('messenger.send("%s")' % input, 0)
 
     def getModifiers(self, input, base):
