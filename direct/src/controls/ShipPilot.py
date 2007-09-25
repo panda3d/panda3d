@@ -610,10 +610,12 @@ class ShipPilot(PhysicsWalker):
         """
         Ignore the arrow keys, etc.
         """
+        base.controlForce.setVector(Vec3(0))
+
         assert self.debugPrint("disableShipControls()")
         taskName = "ShipControls-%s"%(id(self),)
         taskMgr.remove(taskName)
-
+        
         taskName = "ShipControlsIndicator%s"%(id(self),)
         taskMgr.remove(taskName)
 
