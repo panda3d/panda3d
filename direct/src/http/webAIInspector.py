@@ -69,7 +69,7 @@ class aiWebServer(SystemInformation):
         memberList.reverse()
         while memberList:
              tempMember = memberList.pop()
-             if (type(tempMember[1]) == str or type(tempMember[1]) == int or type(tempMember[1]) == float or type(tempMember[1]) == dict) and (tempMember[0] != '__doc__') or (tempMember[0] != 'DtoolClassDict') :
+             if (type(tempMember[1]) == str or type(tempMember[1]) == int or type(tempMember[1]) == float or type(tempMember[1]) == dict):
                  body = '%s<LI>%s\n' % (body, str(tempMember))
         replyTo.respond('%s%s%s' % (head,body,foot))
         
@@ -78,7 +78,7 @@ class aiWebServer(SystemInformation):
         # This will populate the left frame with a alpha sorted list of
         # objects.
 
-        #print "%s|oType Frame Accessed" % self.timeStamp()
+        # print "%s|oType Frame Accessed" % self.timeStamp()
         head = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n<head>\n<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">\n<title>Object List</title>\n</head>\n<body>\n<UL>'
         foot = '</ul></body></HTML>'
         objList = self.generateSortedIDList()
@@ -87,10 +87,10 @@ class aiWebServer(SystemInformation):
         # Pop off the Null entry
         while objList:
             tempObjElement = objList.pop()
-            #tempObjElement[0].replace('<','')
-            #tempObjElement[0].replace('>','')
-            if str(tempObjElement[0]).find('render') == -1:
-                body = '%s<LI><A HREF="oInst?id=%s" target="oInst">%s</A>\n' % (body, tempObjElement[1], str(tempObjElement[0]).replace('<','').replace('>',''))
+            # tempObjElement[0].replace('<','')
+            # tempObjElement[0].replace('>','')
+            # if str(tempObjElement[0]).find('render') == -1:
+            body = '%s<LI><A HREF="oInst?id=%s" target="oInst">%s</A>\n' % (body, tempObjElement[1], str(tempObjElement[0]).replace('<','').replace('>',''))
         replyTo.respond('%s%s%s' % (head,body,foot))    
 
     def inspect(self, replyTo, **kw):
