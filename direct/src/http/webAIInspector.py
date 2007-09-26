@@ -64,7 +64,11 @@ class aiWebServer(SystemInformation):
         for j, k in kw.iteritems():
             doIdRequested = int(k)
             #print j,k
-        memberList = inspect.getmembers(simbase.air.doId2do[doIdRequested])
+        try:
+            memberList = inspect.getmembers(simbase.air.doId2do[doIdRequested])
+        except KeyError:
+            replyTo.respond('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n<head>\n<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">\n<TITLE>OBJ Gone</title>\n</head><body>The object is no longer on the system</body>\n</HTML>')
+            return
         memberList.sort()
         memberList.reverse()
         while memberList:
