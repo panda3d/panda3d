@@ -13,6 +13,8 @@
     config_event.h \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
+    pointerEvent.I pointerEvent.h \
+    pointerEventList.I pointerEventList.h \
     event.I event.h eventHandler.h eventHandler.I \
     eventParameter.I eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
@@ -23,6 +25,8 @@
     asyncTaskManager.cxx \
     buttonEvent.cxx \
     buttonEventList.cxx \
+    pointerEvent.cxx \
+    pointerEventList.cxx \
     config_event.cxx event.cxx eventHandler.cxx \ 
     eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
     pt_Event.cxx
@@ -32,6 +36,8 @@
     asyncTaskManager.h asyncTaskManager.I \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
+    pointerEvent.I pointerEvent.h \
+    pointerEventList.I pointerEventList.h \
     event.I event.h eventHandler.h eventHandler.I \
     eventParameter.I eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
