@@ -58,6 +58,16 @@ class DisplayRegion;
 //               apply to a piece of geometry placed under the 2-d
 //               scene graph.  It will move the geometry around
 //               according to the mouse's known position.
+//
+//               Finally, this class can keep a record of the mouse
+//               trail.  This is useful if you want to know, not just
+//               where the mouse is, but the exact sequence of movements
+//               it took to get there.  This information is mainly useful
+//               for gesture-recognition code.  To use trail logging,
+//               you need to enable the generation of pointer events
+//               in the GraphicsWindowInputDevice and set the trail 
+//               log duration in the MouseWatcher. Otherwise, the
+//               trail log will be empty.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherGroup {
 PUBLISHED:
