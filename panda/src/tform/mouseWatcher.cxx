@@ -29,6 +29,9 @@
 #include "dataNodeTransmit.h"
 #include "transformState.h"
 #include "displayRegion.h"
+#include "geomVertexWriter.h"
+#include "geomLinestrips.h"
+#include "geomPoints.h"
 #include "dcast.h"
 #include "indent.h"
 #include "mutexHolder.h"
@@ -51,6 +54,7 @@ MouseWatcher(const string &name) :
   _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
+  _pointer_events_input = define_input("pointer_events", PointerEventList::get_class_type());
 
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
@@ -59,6 +63,7 @@ MouseWatcher(const string &name) :
 
   _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _button_events = new ButtonEventList;
 
   _has_mouse = false;
@@ -68,20 +73,24 @@ MouseWatcher(const string &name) :
   _button_down = false;
   _eh = (EventHandler *)NULL;
   _display_region = (DisplayRegion *)NULL;
-
+  
   _inactivity_timeout = inactivity_timeout;
   _has_inactivity_timeout = !IS_NEARLY_ZERO(_inactivity_timeout);
+  
+  _num_trail_recent = 0;
+  _trail_log_duration = 0.0;
+  _trail_log = new PointerEventList();
   
   _inactivity_timeout_event = "inactivity_timeout";
   _last_activity = 0.0;
   _inactivity_state = IS_active;
-
+  
   // When this flag is true, the mouse pointer is allowed to be
   // "entered" into multiple regions simultaneously; when false, it
   // will only be "within" multiple regions, but "entered" into the
   // topmost of those.
   _enter_multiple = false;
-
+  
   // When this flag is true, moving the pointer into a region is
   // enough to click it.  The click is simulated with mouse button
   // one.
@@ -342,6 +351,128 @@ get_group(int n) const {
   MutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_groups.size(), NULL);
   return _groups[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_trail_log_duration
+//       Access: Published
+//  Description: If the duration is nonzero, causes the MouseWatcher
+//               to log the mouse's trail.  Events older than the
+//               specified duration are discarded.  If the duration is
+//               zero, logging is disabled.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+set_trail_log_duration(double duration) {
+  if (duration < 0.0) {
+    duration = 0.0;
+  }
+  _trail_log_duration = duration;
+  discard_excess_trail_log();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::discard_excess_trail_log
+//       Access: Private
+//  Description: Discards trail log events whose age exceed the
+//               desired log duration.  Keeps one event that is beyond
+//               the specified age, because otherwise, it is not always
+//               possible to determine where the mouse was for the
+//               full logging duration.  If the duration is zero, this
+//               method discards all trail events.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+discard_excess_trail_log() {
+  if (_trail_log_duration == 0.0) {
+    _trail_log->clear();
+  } else {
+    if (_trail_log->get_num_events() >= 2) {
+      double old = ClockObject::get_global_clock()->get_frame_time() - _trail_log_duration;
+      while ((_trail_log->get_num_events() >= 2)&&
+             (_trail_log->get_time(0) <= old)&&
+             (_trail_log->get_time(1) <= old)) {
+        _trail_log->pop_front();
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_trail_node
+//       Access: Published
+//  Description: Returns a GeomNode that represents the mouse trail.
+//               The intent is that you should reparent this GeomNode
+//               to Render2D, and then forget about it.  The
+//               MouseWatcher will continually update the trail node.
+//               There is only one trail node, it does not create a
+//               new one each time you call get_trail_node.
+//
+//               This is not a particularly beautiful way to render
+//               a mouse trail.  It is intended more for debugging
+//               purposes than for finished applications.  Even so,
+//               It is suggested that you might want to apply a line
+//               thickness and antialias mode to the line --- doing
+//               so makes it look a lot better.
+////////////////////////////////////////////////////////////////////
+PT(GeomNode) MouseWatcher::
+get_trail_node() {
+  if (_trail_node == 0) {
+    _trail_node = new GeomNode("Mouse Trail Node");
+    update_trail_node();
+  }
+  return _trail_node;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::clear_trail_node
+//       Access: Published
+//  Description: If you have previously fetched the trail node
+//               using get_trail_node, then the MouseWatcher is
+//               continually updating the trail node every frame.
+//               Using clear_trail_node causes the MouseWatcher to
+//               forget the trail node and stop updating it.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+clear_trail_node() {
+  _trail_node = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::update_trail_node
+//       Access: Private
+//  Description: Causes the trail node to represent the mouse trail.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+update_trail_node() {
+  if (_trail_node == 0) {
+    return;
+  }
+  _trail_node->remove_all_geoms();
+
+  if (_trail_log->get_num_events() < 2) {
+    return;
+  }
+  
+  PT(GeomVertexData) data = new GeomVertexData
+    ("mouseTrailSegs", GeomVertexFormat::get_v3(), Geom::UH_static);
+  
+  GeomVertexWriter vertex(data, InternalName::get_vertex());
+    
+  PT(GeomLinestrips) lines = new GeomLinestrips(Geom::UH_static);
+  
+  double xscale = 2.0 / _pixel_size->get_value().get_x();
+  double yscale = 2.0 / _pixel_size->get_value().get_y();
+  
+  for (int i=0; i<(int)_trail_log->get_num_events(); i++) {
+    double x = (_trail_log->get_x(i) * xscale) - 1.0;
+    double y = (_trail_log->get_y(i) * yscale) - 1.0;
+    vertex.add_data3f(LVecBase3f(x,0.0,-y));
+    lines->add_vertex(i);
+  }
+  lines->close_primitive();
+
+  PT(Geom) l_geom = new Geom(data);
+  l_geom->add_primitive(lines);
+  _trail_node->add_geom(l_geom);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1242,6 +1373,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   _internal_suppress = 0;
   _external_suppress = 0;
 
+  // We always pass the pixel_size data through.
+  EventStoreVec2 *pixel_size;
+  DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
+  output.set_data(_pixel_size_output, pixel_size);
+  _pixel_size = pixel_size;
+
   if (!input.has_data(_xy_input)) {
     // No mouse in the window.
     set_no_mouse();
@@ -1305,6 +1442,24 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     }
   }
 
+  // Code for recording the mouse trail.
+  _num_trail_recent = 0;
+  if (input.has_data(_pointer_events_input) && (_trail_log_duration > 0.0)) {
+    const PointerEventList *this_pointer_events;
+    DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_ptr());
+    _num_trail_recent = this_pointer_events->get_num_events();
+    for (int i = 0; i < _num_trail_recent; i++) {
+      _trail_log->add_event(this_pointer_events->get_event(i));
+    }
+  }
+  if (_trail_log->get_num_events() > 0) {
+    discard_excess_trail_log();
+    update_trail_node();
+  }
+  if (_num_trail_recent > _trail_log->get_num_events()) {
+    _num_trail_recent = _trail_log->get_num_events();
+  }
+  
   // If the mouse is over a particular region, or still considered
   // owned by a region because of a recent button-down event, that
   // region determines whether we suppress events below us.
@@ -1481,7 +1636,4 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   if (_button_events->get_num_events() != 0) {
     output.set_data(_button_events_output, EventParameter(_button_events));
   }
-
-  // We always pass the pixel_size data through.
-  output.set_data(_pixel_size_output, input.get_data(_pixel_size_input));
 }

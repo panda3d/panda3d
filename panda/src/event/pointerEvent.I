@@ -24,7 +24,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PointerEvent::
 PointerEvent() :
-  _pointer(-1),
+  _device(-1),
+  _sequence(0),
   _time(0.0)
 {
 }
@@ -35,9 +36,10 @@ PointerEvent() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PointerEvent::
-PointerEvent(int pointer, const MouseData &data, double time) :
-  _pointer(pointer),
+PointerEvent(int dev, const MouseData &data, int seq, double time) :
+  _device(dev),
   _data(data),
+  _sequence(seq),
   _time(time)
 {
 }
@@ -49,8 +51,9 @@ PointerEvent(int pointer, const MouseData &data, double time) :
 ////////////////////////////////////////////////////////////////////
 INLINE PointerEvent::
 PointerEvent(const PointerEvent &copy) :
-  _pointer(copy._pointer),
+  _device(copy._device),
   _data(copy._data),
+  _sequence(copy._sequence),
   _time(copy._time)
 {
 }
@@ -62,8 +65,9 @@ PointerEvent(const PointerEvent &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void PointerEvent::
 operator = (const PointerEvent &copy) {
-  _pointer = copy._pointer;
+  _device = copy._device;
   _data = copy._data;
+  _sequence = copy._sequence;
   _time = copy._time;
 }
 
@@ -75,9 +79,10 @@ operator = (const PointerEvent &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PointerEvent::
 operator == (const PointerEvent &other) const {
-  return (_pointer == other._pointer &&
+  return (_device == other._device &&
           _data._xpos == other._data._xpos &&
           _data._ypos == other._data._ypos &&
+          _sequence == other._sequence &&
           _data._in_window == other._data._in_window);
 }
 
@@ -98,8 +103,11 @@ operator != (const PointerEvent &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PointerEvent::
 operator < (const PointerEvent &other) const {
-  if (_pointer != other._pointer) {
-    return _pointer < other._pointer;
+  if (_device != other._device) {
+    return _device < other._device;
+  }
+  if (_sequence != other._sequence) {
+    return _sequence < other._sequence;
   }
   if (_data._xpos != other._data._xpos) {
     return _data._xpos < other._data._xpos;

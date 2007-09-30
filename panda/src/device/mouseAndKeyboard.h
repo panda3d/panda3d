@@ -23,6 +23,7 @@
 
 #include "dataNode.h"
 #include "buttonEventList.h"
+#include "pointerEventList.h"
 #include "linmath_events.h"
 #include "pointerTo.h"
 #include "graphicsWindow.h"
@@ -52,6 +53,10 @@ PUBLISHED:
   MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
   void set_source(GraphicsWindow *window, int device);
 
+public:
+  PT(GraphicsWindow) get_source_window() const;
+  int                get_source_device() const;
+  
 protected:
   // Inherited from DataNode
   virtual void do_transmit_data(DataGraphTraverser *trav,
@@ -64,11 +69,13 @@ private:
   int _pixel_size_output;
   int _xy_output;
   int _button_events_output;
+  int _pointer_events_output;
 
   PT(EventStoreVec2) _pixel_xy;
   PT(EventStoreVec2) _pixel_size;
   PT(EventStoreVec2) _xy;
   PT(ButtonEventList) _button_events;
+  PT(PointerEventList) _pointer_events;
 
   PT(GraphicsWindow) _window;
   int _device;

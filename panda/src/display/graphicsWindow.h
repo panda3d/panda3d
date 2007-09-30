@@ -73,6 +73,11 @@ PUBLISHED:
   bool has_keyboard(int device) const;
   
 
+  void enable_pointer_events(int device);
+  void disable_pointer_events(int device);
+  void enable_pointer_mode(int device, double speed);
+  void disable_pointer_mode(int device);
+
   MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
@@ -81,6 +86,8 @@ public:
   // No need to publish these.
   bool has_button_event(int device) const;
   ButtonEvent get_button_event(int device);
+  bool has_pointer_event(int device) const;
+  PointerEvent get_pointer_event(int device);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 
@@ -115,6 +122,7 @@ private:
   static unsigned int parse_color_mask(const string &word);
 
 protected:
+  INLINE void add_input_device(const GraphicsWindowInputDevice &device);
   typedef vector_GraphicsWindowInputDevice InputDevices;
   InputDevices _input_devices;
   Mutex _input_lock;

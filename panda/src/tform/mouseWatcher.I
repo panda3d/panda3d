@@ -619,3 +619,34 @@ without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
   region->without_region(param);
   throw_event_pattern(_without_pattern, region, ButtonHandle::none());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_trail_log
+//       Access: Published
+//  Description: Obtain the mouse trail log.  This is a PointerEventList.
+//               Does not make a copy, therefore, this PointerEventList
+//               will be updated each time process_events gets called.
+//
+//               To use trail logging, you need to enable the
+//               generation of pointer events in the
+//               GraphicsWindowInputDevice and set the trail log
+//               duration in the MouseWatcher. Otherwise, the
+//               trail log will be empty.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(PointerEventList) MouseWatcher::
+get_trail_log() const {
+  return _trail_log;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::num_trail_recent
+//       Access: Published
+//  Description: This counter indicates how many events were added
+//               to the trail log this frame.  The trail log is
+//               updated once per frame, during the process_events
+//               operation.  
+////////////////////////////////////////////////////////////////////
+INLINE int MouseWatcher::
+num_trail_recent() const {
+  return _num_trail_recent;
+}

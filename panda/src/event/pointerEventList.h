@@ -39,15 +39,23 @@ class DatagramIterator;
 //               is desired.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT PointerEventList : public EventStoreValueBase {
+PUBLISHED:
+  INLINE int get_num_events() const;
+  INLINE int    get_x(int n) const;
+  INLINE int    get_y(int n) const;
+  INLINE bool   get_in_window(int n) const;
+  INLINE int    get_sequence(int n) const;
+  INLINE double get_time(int n) const;
+  
 public:
   INLINE PointerEventList();
   INLINE PointerEventList(const PointerEventList &copy);
   INLINE void operator = (const PointerEventList &copy);
 
   INLINE void add_event(const PointerEvent &event);
-  INLINE int get_num_events() const;
   INLINE const PointerEvent &get_event(int n) const;
   INLINE void clear();
+  INLINE void pop_front();
 
   void add_events(const PointerEventList &other);
   
@@ -55,7 +63,7 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef pvector<PointerEvent> Events;
+  typedef pdeque<PointerEvent> Events;
   Events _events;
 
 public:

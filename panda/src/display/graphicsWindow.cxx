@@ -338,6 +338,54 @@ has_keyboard(int device) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::enable_pointer_events
+//       Access: Published
+//  Description: Turn on the generation of pointer events.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+enable_pointer_events(int device) {
+  MutexHolder holder(_input_lock);
+  nassertv(device >= 0 && device < (int)_input_devices.size());
+  _input_devices[device].enable_pointer_events();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::disable_pointer_events
+//       Access: Published
+//  Description: Turn off the generation of pointer events.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+disable_pointer_events(int device) {
+  MutexHolder holder(_input_lock);
+  nassertv(device >= 0 && device < (int)_input_devices.size());
+  _input_devices[device].disable_pointer_events();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::enable_pointer_mode
+//       Access: Published
+//  Description: See GraphicsWindowInputDevice::enable_pointer_mode
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+enable_pointer_mode(int device, double speed) {
+  MutexHolder holder(_input_lock);
+  nassertv(device >= 0 && device < (int)_input_devices.size());
+  _input_devices[device].enable_pointer_mode(speed);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::disable_pointer_events
+//       Access: Published
+//  Description: See GraphicsWindowInputDevice::disable_pointer_mode
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+disable_pointer_mode(int device) {
+  MutexHolder holder(_input_lock);
+  nassertv(device >= 0 && device < (int)_input_devices.size());
+  _input_devices[device].disable_pointer_mode();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_pointer
 //       Access: Published
 //  Description: Returns the MouseData associated with the nth input
@@ -414,6 +462,43 @@ get_button_event(int device) {
     nassertr(device >= 0 && device < (int)_input_devices.size(), ButtonEvent());
     nassertr(_input_devices[device].has_button_event(), ButtonEvent());
     result = _input_devices[device].get_button_event();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::has_pointer_event
+//       Access: Public
+//  Description: Returns true if the indicated device has a pending
+//               pointer event (a mouse movement).  If this returns
+//               true, the particular event may be extracted via
+//               get_pointer_event().
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindow::
+has_pointer_event(int device) const {
+  bool result;
+  {
+    MutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), false);
+    result = _input_devices[device].has_pointer_event();
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_pointer_event
+//       Access: Public
+//  Description: Assuming a previous call to has_pointer_event()
+//               returned true, this returns the pending pointer event.
+////////////////////////////////////////////////////////////////////
+PointerEvent GraphicsWindow::
+get_pointer_event(int device) {
+  PointerEvent result;
+  {
+    MutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), PointerEvent());
+    nassertr(_input_devices[device].has_pointer_event(), PointerEvent());
+    result = _input_devices[device].get_pointer_event();
   }
   return result;
 }

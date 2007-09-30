@@ -29,7 +29,6 @@ TypeHandle PointerEventList::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void PointerEventList::
 add_events(const PointerEventList &other) {
-  _events.reserve(_events.size() + other._events.size());
   Events::const_iterator ei;
   for (ei = other._events.begin(); ei != other._events.end(); ++ei) {
     _events.push_back(*ei);
@@ -138,7 +137,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   int num_events = scan.get_uint16();
   _events.clear();
-  _events.reserve(num_events);
   for (int i = 0; i < num_events; i++) {
     PointerEvent event;
     event.read_datagram(scan);

@@ -59,12 +59,67 @@ add_event(const PointerEvent &event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerEventList::get_num_events
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of events in the list.
 ////////////////////////////////////////////////////////////////////
 INLINE int PointerEventList::
 get_num_events() const {
   return _events.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_x
+//       Access: Published
+//  Description: Get the x-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_x(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._data._xpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_y
+//       Access: Published
+//  Description: Get the y-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_y(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._data._ypos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_in_window
+//       Access: Published
+//  Description: Get the in-window flag of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE bool PointerEventList::
+get_in_window(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._data._in_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_sequence
+//       Access: Published
+//  Description: Get the sequence number of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_sequence(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._sequence;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_time
+//       Access: Published
+//  Description: Get the timestamp of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE double PointerEventList::
+get_time(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,4 +147,14 @@ get_event(int n) const {
 INLINE void PointerEventList::
 clear() {
   _events.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::pop_front
+//       Access: Public
+//  Description: Discards the first event on the list.
+////////////////////////////////////////////////////////////////////
+INLINE void PointerEventList::
+pop_front() {
+  _events.pop_front();
 }

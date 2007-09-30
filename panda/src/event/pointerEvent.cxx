@@ -27,9 +27,8 @@
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 output(ostream &out) const {
-  out << "pointer " << _pointer << " to "
-      << _data._xpos << "," << _data._ypos
-      << (_data._in_window ? " in" : " out");
+  out << (_data._in_window ? "In@" : "Out@")
+      << _data._xpos << "," << _data._ypos << " ";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,10 +38,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 write_datagram(Datagram &dg) const {
-  dg.add_int8(_pointer);
+  dg.add_int8(_device);
   dg.add_bool(_data._in_window);
   dg.add_int32(_data._xpos);
   dg.add_int32(_data._ypos);
+  dg.add_int32(_sequence);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,9 +52,10 @@ write_datagram(Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 read_datagram(DatagramIterator &scan) {
-  _pointer = scan.get_int8();
+  _device = scan.get_int8();
   _data._in_window = scan.get_bool();
   _data._xpos = scan.get_int32();
   _data._ypos = scan.get_int32();
+  _sequence = scan.get_int32();
   _time = 0.0;
 }

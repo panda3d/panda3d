@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "buttonEvent.h"
+#include "pointerEvent.h"
 #include "mouseData.h"
 #include "clockObject.h"
 
@@ -38,26 +39,37 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice {
 private:
-  GraphicsWindowInputDevice(const string &name, int flags);
+  GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);
 
 public:
-  static GraphicsWindowInputDevice pointer_only(const string &name);
-  static GraphicsWindowInputDevice keyboard_only(const string &name);
-  static GraphicsWindowInputDevice pointer_and_keyboard(const string &name);
-
+  static GraphicsWindowInputDevice pointer_only(GraphicsWindow *host, const string &name);
+  static GraphicsWindowInputDevice keyboard_only(GraphicsWindow *host, const string &name);
+  static GraphicsWindowInputDevice pointer_and_keyboard(GraphicsWindow *host, const string &name);
+  
   INLINE GraphicsWindowInputDevice();
   GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy);
   void operator = (const GraphicsWindowInputDevice &copy);
   ~GraphicsWindowInputDevice();
-
+  
   INLINE string get_name() const;
   INLINE bool has_pointer() const;
   INLINE bool has_keyboard() const;
 
+  INLINE void set_device_index(int index);
+  
   INLINE const MouseData &get_pointer() const;
-
+  INLINE const MouseData &get_raw_pointer() const;
+  
+  INLINE void enable_pointer_events();
+  INLINE void disable_pointer_events();
+  
+  INLINE void enable_pointer_mode(double speed);
+  INLINE void disable_pointer_mode();
+  
   bool has_button_event() const;
   ButtonEvent get_button_event();
+  bool has_pointer_event() const;
+  PointerEvent get_pointer_event();
 
 public:
   // The following interface is for the various kinds of
@@ -69,8 +81,9 @@ public:
   void candidate(const wstring &candidate_string, size_t highlight_start, 
                  size_t higlight_end, size_t cursor_pos);
 
-  INLINE void set_pointer_in_window(int x, int y);
-  INLINE void set_pointer_out_of_window();
+  INLINE void set_pointer_in_window(int x, int y, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
+  void set_pointer(bool inwin, int x, int y, double time);
 
 public:
   // We need these methods to make VC++ happy when we try to
@@ -86,11 +99,25 @@ private:
     IDF_has_keyboard   = 0x02
   };
   typedef pdeque<ButtonEvent> ButtonEvents;
-
+  typedef pdeque<PointerEvent> PointerEvents;
+  
+  GraphicsWindow *_host;
+  
   string _name;
   int _flags;
+  int _device_index;
+  int _event_sequence;
+  
+  bool   _pointer_mode_enable;
+  double _pointer_speed;
+  double _pointer_true_x;
+  double _pointer_true_y;
+  
+  bool _enable_pointer_events;
   MouseData _mouse_data;
+  MouseData _true_mouse_data;
   ButtonEvents _button_events;
+  PointerEvents _pointer_events;
 };
 
 #include "graphicsWindowInputDevice.I"

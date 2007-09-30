@@ -40,11 +40,13 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
+  _pointer_events_output = define_output("pointer_events", PointerEventList::get_class_type());
 
   _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _button_events = new ButtonEventList;
+  _pointer_events = new PointerEventList;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,6 +60,26 @@ void MouseAndKeyboard::
 set_source(GraphicsWindow *window, int device) {
   _window = window;
   _device = device;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseAndKeyboard::get_source_window
+//       Access: Public
+//  Description: Returns the associated source window.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsWindow) MouseAndKeyboard::
+get_source_window() const {
+  return _window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseAndKeyboard::get_source_device
+//       Access: Public
+//  Description: Returns the associated source device.
+////////////////////////////////////////////////////////////////////
+int MouseAndKeyboard::
+get_source_device() const {
+  return _device;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,6 +106,15 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
       _button_events->add_event(be);
     }
     output.set_data(_button_events_output, EventParameter(_button_events));
+  }
+  if (_window->has_pointer_event(_device)) {
+    // Fill up the pointer events.
+    _pointer_events->clear();
+    while (_window->has_pointer_event(_device)) {
+      PointerEvent be = _window->get_pointer_event(_device);
+      _pointer_events->add_event(be);
+    }
+    output.set_data(_pointer_events_output, EventParameter(_pointer_events));
   }
 
   // Get the window size.

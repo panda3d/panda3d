@@ -30,6 +30,8 @@
 #include "modifierButtons.h"
 #include "buttonHandle.h"
 #include "buttonEventList.h"
+#include "pointerEvent.h"
+#include "pointerEventList.h"
 #include "linmath_events.h"
 #include "bitArray.h"
 #include "clockObject.h"
@@ -130,7 +132,13 @@ PUBLISHED:
 
   INLINE void set_inactivity_timeout_event(const string &event);
   INLINE const string &get_inactivity_timeout_event() const;
-
+  
+  INLINE CPT(PointerEventList) get_trail_log() const;
+  INLINE int   num_trail_recent() const;
+  void         set_trail_log_duration(double duration);
+  PT(GeomNode) get_trail_node();
+  void         clear_trail_node();
+  
   void note_activity();
 
 public:
@@ -184,7 +192,9 @@ protected:
 
 private:
   void consider_keyboard_suppress(const MouseWatcherRegion *region);
-
+  void discard_excess_trail_log();
+  void update_trail_node();
+  
 private:
   // This wants to be a set, but because you cannot export sets across
   // dlls in windows, we will make it a vector instead
@@ -198,6 +208,11 @@ private:
   LPoint2f _mouse_pixel;
   BitArray _current_buttons_down;
 
+  PT(PointerEventList) _trail_log;
+  int _num_trail_recent;
+  double _trail_log_duration;
+  PT(GeomNode) _trail_node;
+  
   Regions _current_regions;
   PT(MouseWatcherRegion) _preferred_region;
   PT(MouseWatcherRegion) _preferred_button_down_region;
@@ -215,7 +230,7 @@ private:
   string _without_pattern;
 
   PT(PandaNode) _geometry;
-
+  
   EventHandler *_eh;
   ModifierButtons _mods;
   DisplayRegion *_display_region;
@@ -251,6 +266,7 @@ private:
   int _pixel_size_input;
   int _xy_input;
   int _button_events_input;
+  int _pointer_events_input;
 
   // outputs
   int _pixel_xy_output;
@@ -260,6 +276,7 @@ private:
 
   PT(EventStoreVec2) _pixel_xy;
   PT(EventStoreVec2) _xy;
+  PT(EventStoreVec2) _pixel_size;
   PT(ButtonEventList) _button_events;
 
 public:

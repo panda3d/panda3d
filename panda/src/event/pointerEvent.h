@@ -34,7 +34,7 @@ public:
 
   INLINE PointerEvent();
   INLINE PointerEvent(const PointerEvent &copy);
-  INLINE PointerEvent(int pointer, const MouseData &data, double time);
+  INLINE PointerEvent(int dev, const MouseData &data, int seq, double time);
   INLINE void operator = (const PointerEvent &copy);
 
   INLINE bool operator == (const PointerEvent &other) const;
@@ -47,8 +47,9 @@ public:
   void read_datagram(DatagramIterator &scan);
 
 public:
-  int       _pointer;
+  int       _device;
   MouseData _data;
+  int       _sequence;
   double    _time;
 };
 

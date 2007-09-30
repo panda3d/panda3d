@@ -68,6 +68,51 @@ get_pointer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::get_raw_pointer
+//       Access: Public
+//  Description: Returns the MouseData associated with the input
+//               device's pointer, in raw form (ie, prior to any
+//               pointer_mode interpretation).
+////////////////////////////////////////////////////////////////////
+INLINE const MouseData &GraphicsWindowInputDevice::
+get_raw_pointer() const {
+  return _true_mouse_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::set_device_index
+//       Access: Public
+//  Description: Set the device index.  This is reported in pointer 
+//               events.  The device index will be equal to the position
+//               of the GraphicsWindowInputDevice in the window's list.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+set_device_index(int index) {
+  _device_index = index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::enable_pointer_events
+//       Access: Public
+//  Description: Enables the generation of mouse-movement events.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+enable_pointer_events() {
+  _enable_pointer_events = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::disable_pointer_events
+//       Access: Public
+//  Description: Disables the generation of mouse-movement events.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindowInputDevice::
+disable_pointer_events() {
+  _enable_pointer_events = false;
+  _pointer_events.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::set_pointer_in_window
 //       Access: Public
 //  Description: To be called by a particular kind of GraphicsWindow
@@ -75,10 +120,8 @@ get_pointer() const {
 //               the given pixel coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
-set_pointer_in_window(int x, int y) {
-  _mouse_data._in_window = true;
-  _mouse_data._xpos = x;
-  _mouse_data._ypos = y;
+set_pointer_in_window(int x, int y, double time) {
+  set_pointer(true, x, y, time);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,8 +132,8 @@ set_pointer_in_window(int x, int y) {
 //               window.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
-set_pointer_out_of_window() {
-  _mouse_data._in_window = false;
+set_pointer_out_of_window(double time) {
+  set_pointer(false, _mouse_data._xpos, _mouse_data._ypos, time);
 }
 
 ////////////////////////////////////////////////////////////////////

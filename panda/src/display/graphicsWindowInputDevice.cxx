@@ -45,9 +45,17 @@
 //               the named constructors, below.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
-GraphicsWindowInputDevice(const string &name, int flags) :
+GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
+  _host(host),
   _name(name),
-  _flags(flags)
+  _flags(flags),
+  _device_index(0),
+  _event_sequence(0),
+  _pointer_mode_enable(false),
+  _pointer_speed(1.0),
+  _pointer_true_x(0.0),
+  _pointer_true_y(0.0),
+  _enable_pointer_events(false)
 {
 }
 
@@ -58,8 +66,8 @@ GraphicsWindowInputDevice(const string &name, int flags) :
 //               only has a pointing device, no keyboard.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
-pointer_only(const string &name) {
-  return GraphicsWindowInputDevice(name, IDF_has_pointer);
+pointer_only(GraphicsWindow *host, const string &name) {
+  return GraphicsWindowInputDevice(host, name, IDF_has_pointer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,8 +77,8 @@ pointer_only(const string &name) {
 //               only has a keyboard, no pointing device.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
-keyboard_only(const string &name) {
-  return GraphicsWindowInputDevice(name, IDF_has_keyboard);
+keyboard_only(GraphicsWindow *host, const string &name) {
+  return GraphicsWindowInputDevice(host, name, IDF_has_keyboard);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,9 +88,9 @@ keyboard_only(const string &name) {
 //               has both a keyboard and pointer.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice GraphicsWindowInputDevice::
-pointer_and_keyboard(const string &name) {
+pointer_and_keyboard(GraphicsWindow *host, const string &name) {
   return
-    GraphicsWindowInputDevice(name, IDF_has_pointer | IDF_has_keyboard);
+    GraphicsWindowInputDevice(host, name, IDF_has_pointer | IDF_has_keyboard);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,10 +100,20 @@ pointer_and_keyboard(const string &name) {
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
+  _host(copy._host),
   _name(copy._name),
   _flags(copy._flags),
+  _device_index(copy._device_index),
+  _event_sequence(copy._event_sequence),
+  _pointer_mode_enable(copy._pointer_mode_enable),
+  _pointer_speed(copy._pointer_speed),
+  _pointer_true_x(copy._pointer_true_x),
+  _pointer_true_y(copy._pointer_true_y),
+  _enable_pointer_events(copy._enable_pointer_events),
   _mouse_data(copy._mouse_data),
-  _button_events(copy._button_events)
+  _true_mouse_data(copy._true_mouse_data),
+  _button_events(copy._button_events),
+  _pointer_events(copy._pointer_events)
 {
 }
 
@@ -106,10 +124,20 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 operator = (const GraphicsWindowInputDevice &copy) {
+  _host = copy._host;
   _name = copy._name;
   _flags = copy._flags;
+  _device_index = copy._device_index;
+  _event_sequence = copy._event_sequence;
+  _pointer_mode_enable = copy._pointer_mode_enable;
+  _pointer_speed = copy._pointer_speed;
+  _pointer_true_x = copy._pointer_true_x;
+  _pointer_true_y = copy._pointer_true_y;
+  _enable_pointer_events = copy._enable_pointer_events;
   _mouse_data = copy._mouse_data;
+  _true_mouse_data = copy._true_mouse_data;
   _button_events = copy._button_events;
+  _pointer_events = copy._pointer_events;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,6 +174,112 @@ get_button_event() {
   ButtonEvent be = _button_events.front();
   _button_events.pop_front();
   return be;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::has_pointer_event
+//       Access: Public
+//  Description: Returns true if this device has a pending pointer
+//               event (a mouse movement), or false otherwise.  If 
+//               this returns true, the particular event may be
+//               extracted via get_pointer_event().
+////////////////////////////////////////////////////////////////////
+bool GraphicsWindowInputDevice::
+has_pointer_event() const {
+  return !_pointer_events.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::get_pointer_event
+//       Access: Public
+//  Description: Assuming a previous call to has_pointer_event()
+//               returned true, this returns the pending pointer event.
+////////////////////////////////////////////////////////////////////
+PointerEvent GraphicsWindowInputDevice::
+get_pointer_event() {
+  PointerEvent be = _pointer_events.front();
+  _pointer_events.pop_front();
+  return be;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::enable_pointer_mode
+//       Access: Public
+//  Description: There are two modes: raw mode, and pointer mode.
+//               In pointer mode, the mouse stops when it reaches the
+//               edges of the window.  In raw mode, the mouse ignores
+//               the screen boundaries and can continue indefinitely,
+//               even into negative coordinates.  In raw mode, each
+//               "blip" from the mouse hardware corresponds to a
+//               change of 1 unit in the mouse's (x,y) coordinate.
+//               In pointer mode, a variety of speed adjustment factors
+//               and concepts like "mouse acceleration" may be applied.
+//
+//               Mouse zero represents the system mouse pointer.  This
+//               is by definition a pointer, not a raw mouse.  It is
+//               an error to try to enable or disable pointer mode on
+//               mouse zero.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+enable_pointer_mode(double speed) {
+  nassertv(_device_index != 0);
+  _pointer_mode_enable = true;
+  _pointer_speed = speed;
+  _pointer_true_x = _host->get_x_size() * 0.5;
+  _pointer_true_y = _host->get_y_size() * 0.5;
+  _mouse_data._in_window = true;
+  _mouse_data._xpos = int(_pointer_true_x + 0.5);
+  _mouse_data._ypos = int(_pointer_true_y + 0.5);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::disable_pointer_mode
+//       Access: Public
+//  Description: see enable_pointer_mode.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+disable_pointer_mode() {
+  nassertv(_device_index != 0);
+  _pointer_mode_enable = false;
+  _pointer_speed = 1.0;
+  _pointer_true_x = 0.0;
+  _pointer_true_y = 0.0;
+  _mouse_data = _true_mouse_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::set_pointer
+//       Access: Public
+//  Description: Records that a mouse movement has taken place.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+set_pointer(bool inwin, int x, int y, double time) {
+  int delta_x = x - _true_mouse_data._xpos;
+  int delta_y = y - _true_mouse_data._ypos;
+  _true_mouse_data._in_window = inwin;
+  _true_mouse_data._xpos = x;
+  _true_mouse_data._ypos = y;
+
+  if (_pointer_mode_enable) {
+    _pointer_true_x += (delta_x * _pointer_speed);
+    _pointer_true_y += (delta_y * _pointer_speed);
+    double xhi = _host->get_x_size();
+    double yhi = _host->get_y_size();
+    if (_pointer_true_x < 0.0) _pointer_true_x = 0.0;
+    if (_pointer_true_y < 0.0) _pointer_true_y = 0.0;
+    if (_pointer_true_x > xhi) _pointer_true_x = xhi;
+    if (_pointer_true_y > yhi) _pointer_true_y = yhi;
+    _mouse_data._in_window = true;
+    _mouse_data._xpos = int(_pointer_true_x + 0.5);
+    _mouse_data._ypos = int(_pointer_true_y + 0.5);
+  } else {
+    _mouse_data = _true_mouse_data;
+  }
+  
+  if (_enable_pointer_events) {
+    int seq = _event_sequence ++;
+    _pointer_events.push_back(PointerEvent(_device_index, _mouse_data, seq, time));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

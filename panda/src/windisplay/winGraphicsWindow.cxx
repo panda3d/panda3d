@@ -459,8 +459,8 @@ initialize_input_devices() {
   // Clear the handle array, and set up the system keyboard/mouse
   memset(_input_device_handle, 0, sizeof(_input_device_handle));
   GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-  _input_devices.push_back(device);
+    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+  add_input_device(device);
   
   // Try initializing the Raw Input function pointers.
   if (pRegisterRawInputDevices==0) {
@@ -517,9 +517,9 @@ initialize_input_devices() {
           }
           if (pound2) *pound2 = '.';
           _input_device_handle[_input_devices.size()] = pRawInputDeviceList[i].hDevice;
-          GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(psName);
+          GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_only(this, psName);
           device.set_pointer_in_window(0,0);
-          _input_devices.push_back(device);
+          add_input_device(device);
         }
       }
     }
@@ -2183,8 +2183,8 @@ handle_raw_input(HRAWINPUT hraw) {
       if (raw->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE) {
         _input_devices[i].set_pointer_in_window(adjx, adjy);
       } else {
-        int oldx = _input_devices[i].get_pointer().get_x();
-        int oldy = _input_devices[i].get_pointer().get_y();
+        int oldx = _input_devices[i].get_raw_pointer().get_x();
+        int oldy = _input_devices[i].get_raw_pointer().get_y();
         _input_devices[i].set_pointer_in_window(oldx + adjx, oldy + adjy);
       }
       

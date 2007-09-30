@@ -79,8 +79,8 @@ glxGraphicsWindow(GraphicsPipe *pipe,
   _net_wm_state_remove = glx_pipe->_net_wm_state_remove;
 
   GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-  _input_devices.push_back(device);
+    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+  add_input_device(device);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1080,8 +1080,8 @@ open_raw_mice()
 	  inf._io_buffer = "";
 	  _mouse_device_info.push_back(inf);
 	  GraphicsWindowInputDevice device =
-	    GraphicsWindowInputDevice::pointer_only(full_id);
-	  _input_devices.push_back(device);
+	    GraphicsWindowInputDevice::pointer_only(this, full_id);
+          add_input_device(device);
 	  glxdisplay_cat.info() << "Raw mouse " <<
 	    inf._input_device_index << " detected: " << full_id << "\n";
 	  any_mice = true;
@@ -1150,8 +1150,8 @@ poll_raw_mice()
     }
     const input_event *events = (const input_event *)(inf._io_buffer.c_str());
     GraphicsWindowInputDevice &dev = _input_devices[inf._input_device_index];
-    int x = dev.get_pointer().get_x();
-    int y = dev.get_pointer().get_y();
+    int x = _input_devices[i].get_raw_pointer().get_x();
+    int y = _input_devices[i].get_raw_pointer().get_y();
     for (int i=0; i<nevents; i++) {
       if (events[i].type == EV_REL) {
 	if (events[i].code == REL_X) x += events[i].value;
