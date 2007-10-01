@@ -67,7 +67,7 @@ write(ostream &out, int indent_level) const {
 //               Automatically calculates the dx, dy, length,
 //               direction, and rotation for all but the first event.
 ////////////////////////////////////////////////////////////////////
-INLINE void PointerEventList::
+void PointerEventList::
 add_event(bool in_win, int xpos, int ypos, int seq, double time) {
   PointerEvent pe;
   pe._in_window = in_win;

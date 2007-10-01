@@ -64,8 +64,8 @@ public:
   INLINE void enable_pointer_events();
   INLINE void disable_pointer_events();
   
-  INLINE void enable_pointer_mode(double speed);
-  INLINE void disable_pointer_mode();
+  void enable_pointer_mode(double speed);
+  void disable_pointer_mode();
   
   bool has_button_event() const;
   ButtonEvent get_button_event();

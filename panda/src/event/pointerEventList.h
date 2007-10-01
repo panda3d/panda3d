@@ -56,10 +56,10 @@ PUBLISHED:
 
   INLINE void   clear();
   INLINE void   pop_front();
-  INLINE void   add_event(bool in_win, int xpos, int ypos, int seq, double time);
+  void   add_event(bool in_win, int xpos, int ypos, int seq, double time);
   
-  INLINE bool   encircles(int x, int y) const;
-  INLINE double total_turns(double sec) const;
+  bool   encircles(int x, int y) const;
+  double total_turns(double sec) const;
   
 public:
   INLINE PointerEventList(const PointerEventList &copy);
