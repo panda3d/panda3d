@@ -43,8 +43,8 @@ PUBLISHED:
 
 public:
   bool _in_window;
-  double _xpos;
-  double _ypos;
+  int _xpos;
+  int _ypos;
 };
 
 INLINE ostream &operator << (ostream &out, const MouseData &md);

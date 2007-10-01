@@ -25,8 +25,8 @@
 INLINE MouseData::
 MouseData() {
   _in_window = false;
-  _xpos = 0.0;
-  _ypos = 0.0;
+  _xpos = 0;
+  _ypos = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
