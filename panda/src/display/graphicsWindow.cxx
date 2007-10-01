@@ -472,7 +472,7 @@ get_button_event(int device) {
 //  Description: Returns true if the indicated device has a pending
 //               pointer event (a mouse movement).  If this returns
 //               true, the particular event may be extracted via
-//               get_pointer_event().
+//               get_pointer_events().
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindow::
 has_pointer_event(int device) const {
@@ -486,19 +486,19 @@ has_pointer_event(int device) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_pointer_event
+//     Function: GraphicsWindow::get_pointer_events
 //       Access: Public
 //  Description: Assuming a previous call to has_pointer_event()
-//               returned true, this returns the pending pointer event.
+//               returned true, this returns the pending pointer event list.
 ////////////////////////////////////////////////////////////////////
-PointerEvent GraphicsWindow::
-get_pointer_event(int device) {
-  PointerEvent result;
+PT(PointerEventList) GraphicsWindow::
+get_pointer_events(int device) {
+  PT(PointerEventList) result;
   {
     MutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), PointerEvent());
-    nassertr(_input_devices[device].has_pointer_event(), PointerEvent());
-    result = _input_devices[device].get_pointer_event();
+    nassertr(device >= 0 && device < (int)_input_devices.size(), NULL);
+    nassertr(_input_devices[device].has_pointer_event(), NULL);
+    result = _input_devices[device].get_pointer_events();
   }
   return result;
 }

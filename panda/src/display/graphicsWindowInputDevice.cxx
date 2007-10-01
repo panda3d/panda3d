@@ -186,20 +186,20 @@ get_button_event() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindowInputDevice::
 has_pointer_event() const {
-  return !_pointer_events.empty();
+  return (_pointer_events != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::get_pointer_event
+//     Function: GraphicsWindowInputDevice::get_pointer_events
 //       Access: Public
-//  Description: Assuming a previous call to has_pointer_event()
-//               returned true, this returns the pending pointer event.
+//  Description: Returns a PointerEventList containing all the recent
+//               pointer events.
 ////////////////////////////////////////////////////////////////////
-PointerEvent GraphicsWindowInputDevice::
-get_pointer_event() {
-  PointerEvent be = _pointer_events.front();
-  _pointer_events.pop_front();
-  return be;
+PT(PointerEventList) GraphicsWindowInputDevice::
+get_pointer_events() {
+  PT(PointerEventList) result = _pointer_events;
+  _pointer_events = 0;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,8 +277,14 @@ set_pointer(bool inwin, int x, int y, double time) {
   }
   
   if (_enable_pointer_events) {
-    int seq = _event_sequence ++;
-    _pointer_events.push_back(PointerEvent(_device_index, _mouse_data, seq, time));
+    int seq = _event_sequence++;
+    if (_pointer_events == 0) {
+      _pointer_events = new PointerEventList();
+    }
+    _pointer_events->add_event(_mouse_data._in_window,
+                               _mouse_data._xpos,
+                               _mouse_data._ypos,
+                               seq, time);
   }
 }
 

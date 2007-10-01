@@ -46,7 +46,6 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
   _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
   _button_events = new ButtonEventList;
-  _pointer_events = new PointerEventList;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,15 +107,10 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     output.set_data(_button_events_output, EventParameter(_button_events));
   }
   if (_window->has_pointer_event(_device)) {
-    // Fill up the pointer events.
-    _pointer_events->clear();
-    while (_window->has_pointer_event(_device)) {
-      PointerEvent be = _window->get_pointer_event(_device);
-      _pointer_events->add_event(be);
-    }
-    output.set_data(_pointer_events_output, EventParameter(_pointer_events));
+    PT(PointerEventList) pel = _window->get_pointer_events(_device);
+    output.set_data(_pointer_events_output, EventParameter(pel));
   }
-
+  
   // Get the window size.
   WindowProperties properties = _window->get_properties();
   if (properties.has_size()) {

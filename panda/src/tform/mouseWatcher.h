@@ -148,6 +148,7 @@ PUBLISHED:
   void         set_trail_log_duration(double duration);
   PT(GeomNode) get_trail_node();
   void         clear_trail_node();
+  INLINE void  clear_trail_log();
   
   void note_activity();
 

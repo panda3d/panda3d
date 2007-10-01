@@ -24,23 +24,16 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PointerEvent::
 PointerEvent() :
-  _device(-1),
+  _in_window(false),
+  _xpos(0),
+  _ypos(0),
+  _dx(0),
+  _dy(0),
   _sequence(0),
+  _length(0.0),
+  _direction(0.0),
+  _rotation(0.0),
   _time(0.0)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEvent::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PointerEvent::
-PointerEvent(int dev, const MouseData &data, int seq, double time) :
-  _device(dev),
-  _data(data),
-  _sequence(seq),
-  _time(time)
 {
 }
 
@@ -51,9 +44,15 @@ PointerEvent(int dev, const MouseData &data, int seq, double time) :
 ////////////////////////////////////////////////////////////////////
 INLINE PointerEvent::
 PointerEvent(const PointerEvent &copy) :
-  _device(copy._device),
-  _data(copy._data),
+  _in_window(copy._in_window),
+  _xpos(copy._xpos),
+  _ypos(copy._ypos),
+  _dx(copy._dx),
+  _dy(copy._dy),
   _sequence(copy._sequence),
+  _length(copy._length),
+  _direction(copy._direction),
+  _rotation(copy._rotation),
   _time(copy._time)
 {
 }
@@ -65,9 +64,15 @@ PointerEvent(const PointerEvent &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void PointerEvent::
 operator = (const PointerEvent &copy) {
-  _device = copy._device;
-  _data = copy._data;
+  _in_window = copy._in_window;
+  _xpos = copy._xpos;
+  _ypos = copy._ypos;
+  _dx = copy._dx;
+  _dy = copy._dy;
   _sequence = copy._sequence;
+  _length = copy._length;
+  _direction = copy._direction;
+  _rotation = copy._rotation;
   _time = copy._time;
 }
 
@@ -79,11 +84,15 @@ operator = (const PointerEvent &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PointerEvent::
 operator == (const PointerEvent &other) const {
-  return (_device == other._device &&
-          _data._xpos == other._data._xpos &&
-          _data._ypos == other._data._ypos &&
+  return (_in_window == other._in_window &&
+          _xpos == other._xpos &&
+          _ypos == other._ypos &&
+          _dx == other._dx &&
+          _dy == other._dy &&
           _sequence == other._sequence &&
-          _data._in_window == other._data._in_window);
+          _length == other._length &&
+          _direction == other._direction &&
+          _rotation == other._rotation);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,18 +112,30 @@ operator != (const PointerEvent &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PointerEvent::
 operator < (const PointerEvent &other) const {
-  if (_device != other._device) {
-    return _device < other._device;
-  }
   if (_sequence != other._sequence) {
     return _sequence < other._sequence;
   }
-  if (_data._xpos != other._data._xpos) {
-    return _data._xpos < other._data._xpos;
+  if (_xpos != other._xpos) {
+    return _xpos < other._xpos;
   }
-  if (_data._ypos != other._data._ypos) {
-    return _data._ypos < other._data._ypos;
+  if (_ypos != other._ypos) {
+    return _ypos < other._ypos;
   }
-  return _data._in_window < other._data._in_window;
+  if (_dx != other._dx) {
+    return _dx < other._dx;
+  }
+  if (_dy != other._dy) {
+    return _dy < other._dy;
+  }
+  if (_length != other._length) {
+    return _length < other._length;
+  }
+  if (_direction != other._direction) {
+    return _direction < other._direction;
+  }
+  if (_rotation != other._rotation) {
+    return _rotation < other._rotation;
+  }
+  return _in_window < other._in_window;
 }
 

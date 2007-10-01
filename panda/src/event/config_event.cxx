@@ -33,6 +33,7 @@ ConfigureFn(config_event) {
   AsyncTask::init_type();
   AsyncTaskManager::init_type();
   ButtonEventList::init_type();
+  PointerEventList::init_type();
   Event::init_type();
   EventHandler::init_type();
   EventStoreValueBase::init_type();

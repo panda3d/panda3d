@@ -18,22 +18,11 @@
 
 #include "pointerEventList.h"
 #include "indent.h"
+#include "clockObject.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 TypeHandle PointerEventList::_type_handle;
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::add_events
-//       Access: Public
-//  Description: Appends the events from the other list onto the end
-//               of this one.
-////////////////////////////////////////////////////////////////////
-void PointerEventList::
-add_events(const PointerEventList &other) {
-  Events::const_iterator ei;
-  for (ei = other._events.begin(); ei != other._events.end(); ++ei) {
-    _events.push_back(*ei);
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerEventList::output
@@ -72,74 +61,98 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::register_with_read_factory
-//       Access: Public, Static
-//  Description: Tells the BamReader how to create objects of type
-//               Lens.
+//     Function: PointerEventList::add_event
+//       Access: Published
+//  Description: Adds a new event to the end of the list.
+//               Automatically calculates the dx, dy, length,
+//               direction, and rotation for all but the first event.
 ////////////////////////////////////////////////////////////////////
-void PointerEventList::
-register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::write_datagram
-//       Access: Public, Virtual
-//  Description: Writes the contents of this object to the datagram
-//               for shipping out to a Bam file.
-////////////////////////////////////////////////////////////////////
-void PointerEventList::
-write_datagram(BamWriter *manager, Datagram &dg) {
-  TypedWritable::write_datagram(manager, dg);
-
-  dg.add_uint16(_events.size());
-  Events::const_iterator ei;
-  for (ei = _events.begin(); ei != _events.end(); ++ei) {
-    (*ei).write_datagram(dg);
+INLINE void PointerEventList::
+add_event(bool in_win, int xpos, int ypos, int seq, double time) {
+  PointerEvent pe;
+  pe._in_window = in_win;
+  pe._xpos = xpos;
+  pe._ypos = ypos;
+  pe._sequence = seq;
+  pe._time = time;
+  if (_events.size() > 0) {
+    pe._dx = xpos - _events.back()._xpos;
+    pe._dy = ypos - _events.back()._ypos;
+    double ddx = pe._dx;
+    double ddy = pe._dy;
+    pe._length = sqrt(ddx*ddx + ddy*ddy);
+    if (pe._length > 0.0) {
+      pe._direction = atan2(-ddy,ddx) * (180.0 / M_PI);
+      if (pe._direction < 0.0) pe._direction += 360.0;
+    } else {
+      pe._direction = _events.back()._direction;
+    }
+    pe._rotation = pe._direction - _events.back()._direction;
+    if (pe._rotation >  180.0) pe._rotation -= 360.0;
+    if (pe._rotation < -180.0) pe._rotation += 360.0;
+  } else {
+    pe._dx = 0;
+    pe._dy = 0;
+    pe._length = 0.0;
+    pe._direction = 0.0;
+    pe._rotation = 0.0;
   }
-}
+  _events.push_back(pe);
+}       
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::make_from_bam
-//       Access: Protected, Static
-//  Description: This function is called by the BamReader's factory
-//               when a new object of type Lens is encountered
-//               in the Bam file.  It should create the Lens
-//               and extract its information from the file.
+//     Function: PointerEventList::encircles
+//       Access: Published
+//  Description: Returns true if the trail loops around the
+//               specified point.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *PointerEventList::
-make_from_bam(const FactoryParams &params) {
-  PointerEventList *list = new PointerEventList;
-  DatagramIterator scan;
-  BamReader *manager;
-
-  parse_params(params, scan, manager);
-  list->fillin(scan, manager);
-
-  return list;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::fillin
-//       Access: Public
-//  Description: This internal function is called by make_from_bam to
-//               read in all of the relevant data from the BamFile for
-//               the new PointerEventList.
-//
-//               This function is normally protected, but it is
-//               declared public in this case so that MouseRecorder
-//               may call it to read a PointerEventList from the middle
-//               of a datagram.
-////////////////////////////////////////////////////////////////////
-void PointerEventList::
-fillin(DatagramIterator &scan, BamReader *manager) {
-  TypedWritable::fillin(scan, manager);
-
-  int num_events = scan.get_uint16();
-  _events.clear();
-  for (int i = 0; i < num_events; i++) {
-    PointerEvent event;
-    event.read_datagram(scan);
-    _events.push_back(event);
+bool PointerEventList::
+encircles(int x, int y) const {
+  int tot_events = _events.size();
+  if (tot_events < 3) {
+    return false;
   }
+  double dx = _events[0]._xpos - x;
+  double dy = _events[0]._ypos - y;
+  double lastang = atan2(dy, dx) * (180.0/M_PI);
+  double total = 0.0;
+  for (int i=1; (i<tot_events) && (total < 360.0) && (total > -360.0); i++) {
+    dx = _events[i]._xpos - x;
+    dy = _events[i]._ypos - y;
+    if ((dx==0.0)&&(dy==0.0)) {
+      continue;
+    }
+    double angle = atan2(dy,dx) * (180.0/M_PI);
+    double deltang = angle - lastang;
+    if (deltang < -180.0) deltang += 360.0;
+    if (deltang >  180.0) deltang -= 360.0;
+    if (deltang * total < 0.0) {
+      total = 0.0;
+    }
+    total += deltang;
+    lastang = angle;
+  }
+  return (total > 360.0) || (total < -360.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::total_turns
+//       Access: Published
+//  Description: returns the total angular deviation that the trail
+//               has made in the specified time period.  A small
+//               number means that the trail is moving in a relatively
+//               straight line, a large number means that the trail
+//               is zig-zagging or spinning.  The result is in degrees.
+////////////////////////////////////////////////////////////////////
+double PointerEventList::
+total_turns(double sec) const {
+  double old = ClockObject::get_global_clock()->get_frame_time() - sec;
+  int pos = _events.size()-1;
+  double tot = 0.0;
+  while ((pos >= 0)&&(_events[pos]._time >= old)) {
+    double rot = _events[pos]._rotation;
+    if (rot < 0.0) rot = -rot;
+    tot += rot;
+  }
+  return tot;
 }

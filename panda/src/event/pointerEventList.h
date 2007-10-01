@@ -40,25 +40,32 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT PointerEventList : public EventStoreValueBase {
 PUBLISHED:
+  INLINE PointerEventList();
+
   INLINE int get_num_events() const;
-  INLINE int    get_x(int n) const;
-  INLINE int    get_y(int n) const;
   INLINE bool   get_in_window(int n) const;
+  INLINE int    get_xpos(int n) const;
+  INLINE int    get_ypos(int n) const;
+  INLINE int    get_dx(int n) const;
+  INLINE int    get_dy(int n) const;
   INLINE int    get_sequence(int n) const;
+  INLINE double get_length(int n) const;
+  INLINE double get_direction(int n) const;
+  INLINE double get_rotation(int n) const;
   INLINE double get_time(int n) const;
+
+  INLINE void   clear();
+  INLINE void   pop_front();
+  INLINE void   add_event(bool in_win, int xpos, int ypos, int seq, double time);
+  
+  INLINE bool   encircles(int x, int y) const;
+  INLINE double total_turns(double sec) const;
   
 public:
-  INLINE PointerEventList();
   INLINE PointerEventList(const PointerEventList &copy);
   INLINE void operator = (const PointerEventList &copy);
 
-  INLINE void add_event(const PointerEvent &event);
-  INLINE const PointerEvent &get_event(int n) const;
-  INLINE void clear();
-  INLINE void pop_front();
 
-  void add_events(const PointerEventList &other);
-  
   virtual void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
@@ -66,16 +73,6 @@ private:
   typedef pdeque<PointerEvent> Events;
   Events _events;
 
-public:
-  static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &dg);
-
-protected:
-  static TypedWritable *make_from_bam(const FactoryParams &params);
-
-public:
-  void fillin(DatagramIterator &scan, BamReader *manager);
-  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

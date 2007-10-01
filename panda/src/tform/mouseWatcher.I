@@ -621,6 +621,17 @@ without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::clear_trail_log
+//       Access: Published
+//  Description: Clears the mouse trail log.  This does not prevent
+//               further accumulation of the log given future events.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+clear_trail_log() {
+  _trail_log->clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::get_trail_log
 //       Access: Published
 //  Description: Obtain the mouse trail log.  This is a PointerEventList.

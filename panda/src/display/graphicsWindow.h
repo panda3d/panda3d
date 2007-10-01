@@ -87,7 +87,7 @@ public:
   bool has_button_event(int device) const;
   ButtonEvent get_button_event(int device);
   bool has_pointer_event(int device) const;
-  PointerEvent get_pointer_event(int device);
+  PT(PointerEventList) get_pointer_events(int device);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 

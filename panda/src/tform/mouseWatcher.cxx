@@ -377,7 +377,8 @@ set_trail_log_duration(double duration) {
 //               desired log duration.  Keeps one event that is beyond
 //               the specified age, because otherwise, it is not always
 //               possible to determine where the mouse was for the
-//               full logging duration.  If the duration is zero, this
+//               full logging duration.  Also, keeps a minimum of two
+//               events in the queue.  If the duration is zero, this
 //               method discards all trail events.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
@@ -385,9 +386,9 @@ discard_excess_trail_log() {
   if (_trail_log_duration == 0.0) {
     _trail_log->clear();
   } else {
-    if (_trail_log->get_num_events() >= 2) {
+    if (_trail_log->get_num_events() > 2) {
       double old = ClockObject::get_global_clock()->get_frame_time() - _trail_log_duration;
-      while ((_trail_log->get_num_events() >= 2)&&
+      while ((_trail_log->get_num_events() > 2)&&
              (_trail_log->get_time(0) <= old)&&
              (_trail_log->get_time(1) <= old)) {
         _trail_log->pop_front();
@@ -463,8 +464,8 @@ update_trail_node() {
   double yscale = 2.0 / _pixel_size->get_value().get_y();
   
   for (int i=0; i<(int)_trail_log->get_num_events(); i++) {
-    double x = (_trail_log->get_x(i) * xscale) - 1.0;
-    double y = (_trail_log->get_y(i) * yscale) - 1.0;
+    double x = (_trail_log->get_xpos(i) * xscale) - 1.0;
+    double y = (_trail_log->get_ypos(i) * yscale) - 1.0;
     vertex.add_data3f(LVecBase3f(x,0.0,-y));
     lines->add_vertex(i);
   }
@@ -1449,7 +1450,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     DCAST_INTO_V(this_pointer_events, input.get_data(_pointer_events_input).get_ptr());
     _num_trail_recent = this_pointer_events->get_num_events();
     for (int i = 0; i < _num_trail_recent; i++) {
-      _trail_log->add_event(this_pointer_events->get_event(i));
+      bool in_win = this_pointer_events->get_in_window(i);
+      int xpos = this_pointer_events->get_xpos(i);
+      int ypos = this_pointer_events->get_ypos(i);
+      int sequence = this_pointer_events->get_sequence(i);
+      double time = this_pointer_events->get_time(i);
+      _trail_log->add_event(in_win, xpos, ypos, sequence, time);
     }
   }
   if (_trail_log->get_num_events() > 0) {

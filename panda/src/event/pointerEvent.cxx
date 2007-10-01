@@ -27,8 +27,8 @@
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 output(ostream &out) const {
-  out << (_data._in_window ? "In@" : "Out@")
-      << _data._xpos << "," << _data._ypos << " ";
+  out << (_in_window ? "In@" : "Out@")
+      << _xpos << "," << _ypos << " ";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,11 +38,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 write_datagram(Datagram &dg) const {
-  dg.add_int8(_device);
-  dg.add_bool(_data._in_window);
-  dg.add_int32(_data._xpos);
-  dg.add_int32(_data._ypos);
-  dg.add_int32(_sequence);
+  nassertv(false && "This function not implemented yet.");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,10 +48,5 @@ write_datagram(Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void PointerEvent::
 read_datagram(DatagramIterator &scan) {
-  _device = scan.get_int8();
-  _data._in_window = scan.get_bool();
-  _data._xpos = scan.get_int32();
-  _data._ypos = scan.get_int32();
-  _sequence = scan.get_int32();
-  _time = 0.0;
+  nassertv(false && "This function not implemented yet.");
 }

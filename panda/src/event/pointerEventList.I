@@ -48,16 +48,6 @@ operator = (const PointerEventList &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::add_event
-//       Access: Public
-//  Description: Adds a new event to the end of the list.
-////////////////////////////////////////////////////////////////////
-INLINE void PointerEventList::
-add_event(const PointerEvent &event) {
-  _events.push_back(event);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PointerEventList::get_num_events
 //       Access: Published
 //  Description: Returns the number of events in the list.
@@ -68,28 +58,6 @@ get_num_events() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::get_x
-//       Access: Published
-//  Description: Get the x-coordinate of the nth event.
-////////////////////////////////////////////////////////////////////
-INLINE int PointerEventList::
-get_x(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._data._xpos;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::get_y
-//       Access: Published
-//  Description: Get the y-coordinate of the nth event.
-////////////////////////////////////////////////////////////////////
-INLINE int PointerEventList::
-get_y(int evt) const {
-  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._data._ypos;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PointerEventList::get_in_window
 //       Access: Published
 //  Description: Get the in-window flag of the nth event.
@@ -97,7 +65,84 @@ get_y(int evt) const {
 INLINE bool PointerEventList::
 get_in_window(int evt) const {
   nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
-  return _events[evt]._data._in_window;
+  return _events[evt]._in_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_xpos
+//       Access: Published
+//  Description: Get the x-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_xpos(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._xpos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_ypos
+//       Access: Published
+//  Description: Get the y-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_ypos(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._ypos;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_dx
+//       Access: Published
+//  Description: Get the x-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_dx(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._dx;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_dy
+//       Access: Published
+//  Description: Get the y-coordinate of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE int PointerEventList::
+get_dy(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._dy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_length
+//       Access: Published
+//  Description: Get the length of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE double PointerEventList::
+get_length(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_direction
+//       Access: Published
+//  Description: Get the direction of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE double PointerEventList::
+get_direction(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._direction;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerEventList::get_rotation
+//       Access: Published
+//  Description: Get the rotation of the nth event.
+////////////////////////////////////////////////////////////////////
+INLINE double PointerEventList::
+get_rotation(int evt) const {
+  nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
+  return _events[evt]._rotation;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,23 +165,6 @@ INLINE double PointerEventList::
 get_time(int evt) const {
   nassertr((evt >= 0) && (evt < (int)_events.size()), 0);
   return _events[evt]._time;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerEventList::get_event
-//       Access: Public
-//  Description: Returns the nth event in the list.  This does not
-//               remove the event from the list; the only way to
-//               remove events is to empty the whole list with
-//               clear().
-////////////////////////////////////////////////////////////////////
-INLINE const PointerEvent &PointerEventList::
-get_event(int n) const {
-#ifndef NDEBUG
-  static PointerEvent empty_event;
-  nassertr(n >= 0 && n < (int)_events.size(), empty_event);
-#endif  // NDEBUG
-  return _events[n];
 }
 
 ////////////////////////////////////////////////////////////////////

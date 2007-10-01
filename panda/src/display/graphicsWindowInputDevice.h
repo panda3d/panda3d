@@ -23,6 +23,7 @@
 
 #include "buttonEvent.h"
 #include "pointerEvent.h"
+#include "pointerEventList.h"
 #include "mouseData.h"
 #include "clockObject.h"
 
@@ -69,7 +70,7 @@ public:
   bool has_button_event() const;
   ButtonEvent get_button_event();
   bool has_pointer_event() const;
-  PointerEvent get_pointer_event();
+  PT(PointerEventList) get_pointer_events();
 
 public:
   // The following interface is for the various kinds of
@@ -99,7 +100,6 @@ private:
     IDF_has_keyboard   = 0x02
   };
   typedef pdeque<ButtonEvent> ButtonEvents;
-  typedef pdeque<PointerEvent> PointerEvents;
   
   GraphicsWindow *_host;
   
@@ -117,7 +117,7 @@ private:
   MouseData _mouse_data;
   MouseData _true_mouse_data;
   ButtonEvents _button_events;
-  PointerEvents _pointer_events;
+  PT(PointerEventList) _pointer_events;
 };
 
 #include "graphicsWindowInputDevice.I"
