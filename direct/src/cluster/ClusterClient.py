@@ -108,7 +108,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def startControlObjectTask(self):
         self.notify.debug("moving control objects")
-        taskMgr.add(self.controlObjectTask,"controlObjectTask")
+        taskMgr.add(self.controlObjectTask,"controlObjectTask",50)
 
     def startSynchronizeTimeTask(self):
         self.notify.debug('broadcasting frame time')
@@ -203,16 +203,36 @@ class ClusterClient(DirectObject.DirectObject):
             self.controlMappings[objectName] = [controlledName,serverList]
             self.controlOffsets[objectName]  = offset
         else:
-            self.notify.debug('attempt to add duplicate controlled object: '+name)
+            oldList = self.controlMappings[objectName]
+            mergedList = []
+            for item in oldList:
+                mergedList.append(item)
+            for item in serverList:
+                if (item is not in mergedList):
+                    mergedList.append(item)
+                    
+            #self.notify.debug('attempt to add duplicate controlled object: '+name)
 
     def setControlMappingOffset(self,objectName,offset):
         if (self.controlMappings.has_key(objectName)):
             self.controlOffsets[objectName] = offset
 
-    def removeControlMapping(self,name):
+    def removeControlMapping(self,name, serverList = None):
         if (self.controlMappings.has_key(name)):
-            self.controlMappings.pop(name)
 
+            if (serverList == None):
+                self.controlMappings.pop(name)
+            else:
+                list = self.controlMappings[key][1]
+                newList = []
+                for server in list:
+                    if (server is not in serverList):
+                        newList.append(server)
+                self.controlMappings[key][1] = newList
+                if (len(newList) == 0):
+                    self.controlMappings.pop(name)
+            
+                
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = `nodePath`

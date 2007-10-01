@@ -110,6 +110,8 @@ class ClusterServer(DirectObject.DirectObject):
             self.objectMappings.pop(name)
 
 
+
+
     def addControlMapping(self,objectName,controlledName, offset = None):
         if (not self.controlMappings.has_key(objectName)):
             self.controlMappings[objectName] = controlledName
@@ -131,7 +133,7 @@ class ClusterServer(DirectObject.DirectObject):
             
     def startControlObjectTask(self):
         self.notify.debug("moving control objects")
-        taskMgr.add(self.controlObjectTask,"controlObjectTask")
+        taskMgr.add(self.controlObjectTask,"controlObjectTask",50)
 
     def controlObjectTask(self, task):
         #print "running control object task"
