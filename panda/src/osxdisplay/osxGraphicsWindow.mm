@@ -534,16 +534,16 @@ osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe,
   _originalMode(NULL),
   _ID(id_seed++)
 {
-	GraphicsWindowInputDevice device =
-	GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
-	_input_devices.push_back(device);
-	_input_devices[0].set_pointer_in_window(0, 0);
-	_last_key_modifiers = 0;
-        _last_buttons = 0;
-	
-	if (osxdisplay_cat.is_debug())	
-		osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
-  }
+  GraphicsWindowInputDevice device =
+    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+  _input_devices.push_back(device);
+  _input_devices[0].set_pointer_in_window(0, 0);
+  _last_key_modifiers = 0;
+  _last_buttons = 0;
+  
+  if (osxdisplay_cat.is_debug())	
+    osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::Destructor
