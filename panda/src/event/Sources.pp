@@ -1,4 +1,4 @@
-#define LOCAL_LIBS putil express pandabase pstatclient
+#define LOCAL_LIBS putil express pandabase pstatclient linmath
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 

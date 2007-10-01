@@ -19,7 +19,7 @@
 #include "pointerEventList.h"
 #include "indent.h"
 #include "clockObject.h"
-#define _USE_MATH_DEFINES
+#include "mathNumbers.h"
 #include <math.h>
 
 TypeHandle PointerEventList::_type_handle;
@@ -82,7 +82,7 @@ add_event(bool in_win, int xpos, int ypos, int seq, double time) {
     double ddy = pe._dy;
     pe._length = sqrt(ddx*ddx + ddy*ddy);
     if (pe._length > 0.0) {
-      pe._direction = atan2(-ddy,ddx) * (180.0 / M_PI);
+      pe._direction = atan2(-ddy,ddx) * (180.0 / MathNumbers::pi);
       if (pe._direction < 0.0) pe._direction += 360.0;
     } else {
       pe._direction = _events.back()._direction;
@@ -114,7 +114,7 @@ encircles(int x, int y) const {
   }
   double dx = _events[0]._xpos - x;
   double dy = _events[0]._ypos - y;
-  double lastang = atan2(dy, dx) * (180.0/M_PI);
+  double lastang = atan2(dy, dx) * (180.0/MathNumbers::pi);
   double total = 0.0;
   for (int i=1; (i<tot_events) && (total < 360.0) && (total > -360.0); i++) {
     dx = _events[i]._xpos - x;
@@ -122,7 +122,7 @@ encircles(int x, int y) const {
     if ((dx==0.0)&&(dy==0.0)) {
       continue;
     }
-    double angle = atan2(dy,dx) * (180.0/M_PI);
+    double angle = atan2(dy,dx) * (180.0/MathNumbers::pi);
     double deltang = angle - lastang;
     if (deltang < -180.0) deltang += 360.0;
     if (deltang >  180.0) deltang -= 360.0;
