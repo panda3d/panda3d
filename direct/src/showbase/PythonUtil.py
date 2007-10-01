@@ -2777,6 +2777,18 @@ def exceptionLogged(append=True):
     to set append to False so that the exception stack is not hidden
     by the output of this decorator.
     """
+    try:
+        null = not __dev__
+    except:
+        null = not __debug__
+    if null:
+        # if we're not in __dev__, just return the function itself. This
+        # results in zero runtime overhead, since decorators are evaluated
+        # at module-load.
+        def nullDecorator(f):
+            return f
+        return nullDecorator
+    
     def _decoratorFunc(f, append=append):
         def _exceptionLogged(*args, **kArgs):
             try:
