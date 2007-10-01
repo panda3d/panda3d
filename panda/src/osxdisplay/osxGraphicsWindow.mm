@@ -1157,21 +1157,24 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 void osxGraphicsWindow::process_events()
 {
     GraphicsWindow::process_events();
-    EventRef theEvent;
-    EventTargetRef theTarget;
-    theTarget = GetEventDispatcherTarget();
 
-	if (!_properties.has_parent_window())
+    if (!osx_disable_event_loop) {
+      EventRef theEvent;
+      EventTargetRef theTarget;
+      theTarget = GetEventDispatcherTarget();
+      
+      if (!_properties.has_parent_window())
 	{
-    //    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
-		while  (ReceiveNextEvent(0, NULL,kEventDurationNoWait,true, &theEvent)== noErr)
-		{
-	//	    cerr << "--------------------------------------------Dispatch Event " << pass++ << "\n";
-			SendEventToEventTarget (theEvent, theTarget);
-			ReleaseEvent(theEvent);
-	//		cerr << "------------------------------------Done Dispatch \n";
-		}
+          //    while  (ReceiveNextEvent(0, NULL,kEventDurationForever,true, &theEvent)== noErr)
+          while  (ReceiveNextEvent(0, NULL,kEventDurationNoWait,true, &theEvent)== noErr)
+            {
+              //	    cerr << "--------------------------------------------Dispatch Event " << pass++ << "\n";
+              SendEventToEventTarget (theEvent, theTarget);
+              ReleaseEvent(theEvent);
+              //		cerr << "------------------------------------Done Dispatch \n";
+            }
 	}
+    }
 };
 
 // handle display config changes meaing we need to update the GL context via the resize function and check for windwo dimension changes

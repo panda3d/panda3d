@@ -41,6 +41,13 @@ ConfigVariableBool show_resize_box
           "window would completely hide any resize control drawn by the "
           "OS.  Set this variable false to allow this control to be hidden."));
 
+ConfigVariableBool osx_disable_event_loop
+("osx-disable-event-loop", false,
+ PRC_DESC("Set this true to disable the window event loop for the Panda "
+          "windows.  This makes sense only in a publish environment where "
+          "the window event loop is already handled by another part of the "
+          "app."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libosxdisplay
 //  Description: Initializes the library.  This must be called at
