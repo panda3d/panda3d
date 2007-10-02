@@ -59,7 +59,7 @@ class ClusterServer(DirectObject.DirectObject):
         self.objectHasColor  = {}
         self.controlMappings = {}
         self.controlOffsets  = {}
-
+        self.messageQueue    = []
 
         # These must be passed in as bootstrap arguments and stored in
         # the __builtins__ namespace
@@ -143,8 +143,16 @@ class ClusterServer(DirectObject.DirectObject):
                 self.moveObject(self.objectMappings[object],name,self.controlOffsets[object],
                                 self.objectHasColor[object])
 
+        self.sendNamedMovementDone()
         return Task.cont
 
+
+    def sendNamedMovementDone(self):
+
+        self.notify.debug("named movement done")
+        datagram = self.msgHandler.makeNamedMovementDone()
+        self.cw.send(datagram,self.lastConnection)
+    
     def moveObject(self, nodePath, object, offset, hasColor):
         self.notify.debug('moving object '+object)
         #print "moving object",object
@@ -243,7 +251,14 @@ class ClusterServer(DirectObject.DirectObject):
             self.notify.debug('time data')
             self.handleTimeData(dgi)
         elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
-            self.handleNamedMovement(dgi)
+            self.messageQueue.append(self.msgHandler.parseNamedMovementDatagram(dgi))
+            #self.handleNamedMovement(dgi)
+        elif (type == CLUSTER_NAMED_MOVEMENT_DONE):
+            #print "got done",self.messageQueue
+            #if (len(self.messageQueue) > 0):
+            #    print self.messageQueue[0]
+            #    print dir(self.messageQueue)
+            self.handleMessageQueue()
         else:
             self.notify.warning("Received unknown packet type:" % type)
         return type
@@ -262,10 +277,9 @@ class ClusterServer(DirectObject.DirectObject):
         self.lens.setFilmSize(fs[0], fs[1])
         self.lens.setFilmOffset(fo[0], fo[1])
 
-    def handleNamedMovement(self, dgi):
+    def handleNamedMovement(self, data):
         """ Update cameraJig position to reflect latest position """
-        (name,x, y, z, h, p, r,sx,sy,sz, red, g, b, a, hidden) = self.msgHandler.parseNamedMovementDatagram(
-            dgi)
+        (name,x, y, z, h, p, r,sx,sy,sz, red, g, b, a, hidden) = data
         if (self.objectMappings.has_key(name)):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
@@ -276,6 +290,16 @@ class ClusterServer(DirectObject.DirectObject):
                 self.objectMappings[name].show()
         else:
             self.notify.debug("recieved unknown named object command: "+name)
+
+
+    def handleMessageQueue(self):
+
+        #print self.messageQueue
+        for data in self.messageQueue:
+            #print "in queue",dgi
+            self.handleNamedMovement(data)
+
+        self.messageQueue = []
 
     def handleCamMovement(self, dgi):
         """ Update cameraJig position to reflect latest position """

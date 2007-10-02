@@ -50,6 +50,7 @@ class ClusterClient(DirectObject.DirectObject):
         print 'End waitForServers'
         self.qcm=QueuedConnectionManager()
         self.serverList = []
+        self.serverQueues = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
 
         # A dictionary of objects that can be accessed by name
@@ -82,6 +83,7 @@ class ClusterClient(DirectObject.DirectObject):
                                           serverConfig.filmSize,
                                           serverConfig.filmOffset)
                 self.serverList.append(server)
+                self.serverQueues.append([])
         self.notify.debug('pre startTimeTask')
         self.startSynchronizeTimeTask()
         self.notify.debug('pre startMoveCam')
@@ -98,10 +100,11 @@ class ClusterClient(DirectObject.DirectObject):
     def _readerPollTask(self, state):
         """ Non blocking task to read all available datagrams """
 
-        for server in self.serverList:
+        for i in range(len(self.serverList)):
+            server = self.serverList[i]
             datagrams = server.poll()
             for data in datagrams:
-                self.handleDatagram(data[0],data[1])
+                self.handleDatagram(data[0],data[1],i)
 
         return Task.cont
 
@@ -135,10 +138,20 @@ class ClusterClient(DirectObject.DirectObject):
             if (self.objectMappings.has_key(object)):
                 self.moveObject(self.objectMappings[object],name,serverList,
                                 self.controlOffsets[object], self.objectHasColor[object])
-                
+
+        self.sendNamedMovementDone()
         #print "running control object"
         return Task.cont
 
+    def sendNamedMovementDone(self, serverList = None):
+
+        if (serverList == None):
+            serverList = range(len(self.serverList))
+        
+        for server in serverList:
+            self.serverList[server].sendNamedMovementDone()
+
+        
     def moveObject(self, nodePath, object, serverList, offset, hasColor = True):
         self.notify.debug('moving object '+object)
         xyz = nodePath.getPos(render) + offset
@@ -150,7 +163,7 @@ class ClusterClient(DirectObject.DirectObject):
         else:
             color = [1,1,1,1]
         for server in serverList:
-            self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,hidden,color,object)
+            self.serverList[server].sendMoveNamedObject(xyz,hpr,scale,color,hidden,object)
 
 
     def moveCameraTask(self, task):
@@ -208,7 +221,7 @@ class ClusterClient(DirectObject.DirectObject):
             for item in oldList:
                 mergedList.append(item)
             for item in serverList:
-                if (item is not in mergedList):
+                if (item not in mergedList):
                     mergedList.append(item)
                     
             #self.notify.debug('attempt to add duplicate controlled object: '+name)
@@ -226,7 +239,7 @@ class ClusterClient(DirectObject.DirectObject):
                 list = self.controlMappings[key][1]
                 newList = []
                 for server in list:
-                    if (server is not in serverList):
+                    if (server not in serverList):
                         newList.append(server)
                 self.controlMappings[key][1] = newList
                 if (len(newList) == 0):
@@ -320,20 +333,36 @@ class ClusterClient(DirectObject.DirectObject):
             exec(commandString, __builtins__)
 
 
-    def handleDatagram(self,dgi,type):
+    def handleDatagram(self,dgi,type,server):
         if (type == CLUSTER_NONE):
             pass
         elif (type == CLUSTER_NAMED_OBJECT_MOVEMENT):
-            #print "handling named movement datagram"
-            self.handleNamedMovement(dgi)
+            self.serverQueues[server].append(self.msgHandler.parseNamedMovementDatagram(dgi))
+            #self.handleNamedMovement(dgi)
+        # when we recieve a 'named movement done' packet from a server we handle
+        # all of its messages
+        elif (type == CLUSTER_NAMED_MOVEMENT_DONE):
+            self.handleMessageQueue(server)
         else:
             self.notify.warning("Received unsupported packet type:" % type)
-        return type                       
+        return type
 
-    def handleNamedMovement(self, dgi):
+    def handleMessageQueue(self,server):
+
+        list = self.serverQueues[server]
+        # handle all messages in the queue
+        for data in list:
+            #print dgi
+            self.handleNamedMovement(data)
+
+        # clear the queue
+        self.serverQueues[server] = []
+        
+
+    def handleNamedMovement(self, data):
         """ Update cameraJig position to reflect latest position """
     
-        (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = self.msgHandler.parseNamedMovementDatagram(
+        (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data 
             dgi)
         #print "name"
         #if (name == "camNode"):
@@ -456,6 +485,11 @@ class DisplayConnection:
             focalLength, filmSize, filmOffset)
         self.cw.send(datagram, self.tcpConn)
 
+
+    def sendNamedMovementDone(self):
+
+        datagram = self.msgHandler.makeNamedMovementDone()
+        self.cw.send(datagram, self.tcpConn)
 
     def sendMoveNamedObject(self, xyz, hpr, scale, color, hidden, name):
         ClusterClient.notify.debug("send named object move...")

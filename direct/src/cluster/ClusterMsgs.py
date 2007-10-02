@@ -19,6 +19,7 @@ CLUSTER_COMMAND_STRING        = 6
 CLUSTER_SELECTED_MOVEMENT     = 7
 CLUSTER_TIME_DATA             = 8
 CLUSTER_NAMED_OBJECT_MOVEMENT = 9
+CLUSTER_NAMED_MOVEMENT_DONE   = 10
 CLUSTER_EXIT                  = 100
 
 #Port number for cluster rendering
@@ -156,6 +157,16 @@ class ClusterMsgHandler:
         datagram.addFloat32(hpr[1])
         datagram.addFloat32(hpr[2])
         return datagram
+
+
+    def makeNamedMovementDone(self):
+
+        datagram = PyDatagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_NAMED_MOVEMENT_DONE)
+        return datagram
+            
 
     def makeNamedObjectMovementDatagram(self, xyz, hpr, scale, color, hidden, name):
         datagram = PyDatagram()
