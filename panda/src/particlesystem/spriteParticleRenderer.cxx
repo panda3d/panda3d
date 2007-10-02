@@ -136,10 +136,11 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 int SpriteParticleRenderer::
 extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col, TextureCollection &tex_col) {
-  NodePath tex_node_path = node_path, geom_node_path;
+  NodePath tex_node_path = node_path;
+  NodePath geom_node_path;
 
   // Look for a sequence node first, in case they want animated texture sprites
-  if (tex_node_path.node()->get_type() != SequenceNode::get_class_type()) {
+  if (!tex_node_path.is_empty() && tex_node_path.node()->get_type() != SequenceNode::get_class_type()) {
     tex_node_path = node_path.find("**/+SequenceNode");
   }
 
@@ -167,7 +168,7 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
   // If a sequence node is not found, we just want to look for a regular geom node.
   if (geom_node_path.is_empty()) {  
     // Find the first GeomNode.
-    if (node_path.node()->get_type() != GeomNode::get_class_type()) {
+    if (!node_path.is_empty() && node_path.node()->get_type() != GeomNode::get_class_type()) {
       geom_node_path = node_path.find("**/+GeomNode");
       if (geom_node_path.is_empty()) {
         particlesystem_cat.error();
@@ -244,6 +245,7 @@ void SpriteParticleRenderer::
 set_from_node(const NodePath &node_path, bool size_from_texels) {
   // Clear all texture information
   _anims.clear();
+  nassertv(node_path.is_empty());
   add_from_node(node_path,size_from_texels,true);
 }
 
