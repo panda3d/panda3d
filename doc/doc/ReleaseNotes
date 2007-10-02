@@ -1,6 +1,7 @@
 ------------------------  RELEASE 1.4.2  ------------------------
 
 * Added code for mouse-trail logging.
+* Fixed a minor bug in the new OpenAL code.
 * The installer now uses less memory.
 * Now easier to compile with recent versions of SSL.
 * Minor bugfix in exposeJoint
