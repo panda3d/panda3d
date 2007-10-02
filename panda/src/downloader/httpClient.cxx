@@ -159,6 +159,7 @@ operator = (const HTTPClient &copy) {
   _http_version = copy._http_version;
   _verify_ssl = copy._verify_ssl;
   _usernames = copy._usernames;
+  _cookies = copy._cookies;
   clear_expected_servers();
 
   ExpectedServers::const_iterator ei;
@@ -708,6 +709,22 @@ get_cookie(const HTTPCookie &cookie) const {
   }
 
   return HTTPCookie();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::copy_cookies_from
+//       Access: Published
+//  Description: Copies all the cookies from the indicated HTTPClient
+//               into this one.  Existing cookies in this client are
+//               not affected, unless they are shadowed by the new
+//               cookies.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+copy_cookies_from(const HTTPClient &other) {
+  Cookies::const_iterator ci;
+  for (ci = other._cookies.begin(); ci != other._cookies.end(); ++ci) {
+    set_cookie(*ci);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

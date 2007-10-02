@@ -92,6 +92,7 @@ PUBLISHED:
   void clear_all_cookies();
   bool has_cookie(const HTTPCookie &cookie) const;
   HTTPCookie get_cookie(const HTTPCookie &cookie) const;
+  void copy_cookies_from(const HTTPClient &other);
 
   void write_cookies(ostream &out) const;
   void send_cookies(ostream &out, const URLSpec &url);

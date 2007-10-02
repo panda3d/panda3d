@@ -164,6 +164,11 @@ will_close_connection() const {
     return true;
   }
 
+  if (connection.empty() && !get_persistent_connection()) {
+    // The server didn't say, but we asked it to close.
+    return true;
+  }
+
   // Assume the server will keep it open.
   return false;
 }
@@ -1516,6 +1521,15 @@ run_ssl_handshake() {
       _state = S_failure;
       return false;
     }
+
+  } else if (verify_result == X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN) {
+    downloader_cat.info()
+      << "Self-signed certificate in chain from " << _request.get_url().get_server_and_port() << "\n";
+    // This doesn't appear to be an actual validation error.  I guess.
+    // It's only an error if we don't recognize the root authority.
+    // There appear to be some legitimate certs (e.g. from starfield
+    // tech) that trigger this error, even though they appear to have
+    // a fully-authorized chain up to the root.
 
   } else if (verify_result != X509_V_OK) {
     downloader_cat.info()
