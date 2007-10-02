@@ -104,13 +104,16 @@ join() {
 void PythonThread::
 thread_main() {
   // Create a new Python thread state data structure, so Python can
-  // properly lock itself.  We can't use the PyGILState interface,
-  // which assumes we are using true OS-level threading (and we might
-  // be just using SIMPLE_THREADS).  PyGILState enforces policies like
-  // only one thread state per OS-level thread, which is not true in
-  // the case of SIMPLE_THREADS.
+  // properly lock itself.  
 
-  PyThreadState *orig_thread_state = PyThreadState_Get();
+#ifdef SIMPLE_THREADS
+  // We can't use the PyGILState interface, which assumes we are using
+  // true OS-level threading (and we might be just using
+  // SIMPLE_THREADS).  PyGILState enforces policies like only one
+  // thread state per OS-level thread, which is not true in the case
+  // of SIMPLE_THREADS.
+
+  PyThreadState *orig_thread_state = PyThreadState_Swap(NULL);
   PyInterpreterState *istate = orig_thread_state->interp;
   PyThreadState *new_thread_state = PyThreadState_New(istate);
   PyThreadState_Swap(new_thread_state);
@@ -124,6 +127,22 @@ thread_main() {
   PyThreadState_Swap(orig_thread_state);
   PyThreadState_Clear(new_thread_state);
   PyThreadState_Delete(new_thread_state);
+
+#else  // SIMPLE_THREADS
+  // With true threading enabled, we're better off using PyGILSTate.
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  // Call the user's function.
+  _result = PyObject_Call(_function, _args, NULL);
+  if (_result == (PyObject *)NULL && PyErr_Occurred()) {
+    handle_python_exception();
+  }
+
+  // Release the thread state data structure.
+  PyGILState_Release(gstate);
+
+#endif  // SIMPLE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
