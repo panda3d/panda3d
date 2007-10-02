@@ -144,10 +144,10 @@ cleanup() {
     delete _packet;
     _packet = 0;
   }
-  if (_video_ctx) {
+  if ((_video_ctx)&&(_video_ctx->codec)) {
     avcodec_close(_video_ctx);
-    _video_ctx = 0;
   }
+  _video_ctx = 0;
   if (_format_ctx) {
     av_close_input_file(_format_ctx);
     _format_ctx = 0;

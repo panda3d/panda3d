@@ -135,10 +135,10 @@ cleanup() {
     _buffer_alloc = 0;
     _buffer = 0;
   }
-  if (_audio_ctx) {
+  if ((_audio_ctx)&&(_audio_ctx->codec)) {
     avcodec_close(_audio_ctx);
-    _audio_ctx = 0;
   }
+  _audio_ctx = 0;
   if (_format_ctx) {
     av_close_input_file(_format_ctx);
     _format_ctx = 0;
