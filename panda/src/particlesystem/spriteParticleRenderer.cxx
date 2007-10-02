@@ -243,9 +243,9 @@ set_from_node(const NodePath &node_path, const string &model, const string &node
 ////////////////////////////////////////////////////////////////////
 void SpriteParticleRenderer::
 set_from_node(const NodePath &node_path, bool size_from_texels) {
+  nassertv(!node_path.is_empty());
   // Clear all texture information
   _anims.clear();
-  nassertv(node_path.is_empty());
   add_from_node(node_path,size_from_texels,true);
 }
 
