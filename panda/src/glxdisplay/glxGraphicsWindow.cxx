@@ -1150,8 +1150,8 @@ poll_raw_mice()
     }
     const input_event *events = (const input_event *)(inf._io_buffer.c_str());
     GraphicsWindowInputDevice &dev = _input_devices[inf._input_device_index];
-    int x = _input_devices[i].get_raw_pointer().get_x();
-    int y = _input_devices[i].get_raw_pointer().get_y();
+    int x = dev.get_raw_pointer().get_x();
+    int y = dev.get_raw_pointer().get_y();
     for (int i=0; i<nevents; i++) {
       if (events[i].type == EV_REL) {
 	if (events[i].code == REL_X) x += events[i].value;
