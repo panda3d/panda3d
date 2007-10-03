@@ -7,6 +7,7 @@ The port will need to be defined when the instance is inited.
 """
 
 import string, time, direct, inspect
+from operator import itemgetter
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.http import WebRequest
 from socket import gethostname
@@ -225,6 +226,8 @@ class aiWebServer(SystemInformation):
         head = '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n<head>\n<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">\n<title>Object List</title>\n</head>\n<body>\n<UL>'
         foot = '</ul></body></HTML>'
         objList = self.generateSortedIDList()
+        # Need to sort objList by second col (the doid)
+        objList = sorted(objList, key=itemgetter(1))
         objList.reverse()
         body = ''
         # Pop off the Null entry
