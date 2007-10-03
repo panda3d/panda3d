@@ -60,7 +60,7 @@ class aiWebServer(SystemInformation):
         except KeyError:
             # MagicWord issue. Malformed URL
             replyTo.respond('<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n<head>\n<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">\n<TITLE>Magic Word Error</title>\n</head><body>Please check the URL. Transaction could not be completed. Malformed URL.</BODY>\n</HTML>')
-                return
+            return
 
         # Next we execute the magic word request
         if theMagicWord == 'aiobjectcount':
