@@ -133,6 +133,36 @@ class DoCollectionManager:
                 print '%s %s' % (count, name)
         print ''
 
+    def _returnObjects(self, table):
+        class2count = {}
+        stringToReturn = ''
+        for obj in self.getDoTable(ownerView=False).values():
+            className = obj.__class__.__name__
+            class2count.setdefault(className, 0)
+            class2count[className] += 1
+        count2classes = invertDictLossless(class2count)
+        counts = count2classes.keys()
+        counts.sort()
+        counts.reverse()
+        for count in counts:
+            count2classes[count].sort()
+            for name in count2classes[count]:
+                # print '%s %s' % (count, name)
+                stringToReturn = '%s%s %s\n' % (stringToReturn, count, name)
+        # print ''
+        return stringToReturn
+
+    def webPrintObjectCount(self):
+        strToReturn = '==== OBJECT COUNT ====\n'
+        if self.hasOwnerView():
+            strToReturn = '%s == doId2do\n' % (strToReturn)
+        strToReturn = '%s%s' % (strToReturn, self._returnObjects(self.getDoTable(ownerView=False)))
+        if self.hasOwnerView():
+            strToReturn = '%s\n== doId2ownerView\n' % (strToReturn)
+            strToReturn = '%s%s' % (strToReturn, self._returnObjects(self.getDoTable(ownerView=False)))
+        return strToReturn
+        
+
     def printObjectCount(self):
         # print object counts by distributed object type
         print '==== OBJECT COUNT ===='
