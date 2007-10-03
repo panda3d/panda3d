@@ -45,8 +45,9 @@ init_thread_context(struct ThreadContext *context,
   makecontext(&context->_ucontext, (void (*)())&begin_context, 2, thread_func, data);
 }
 
-void save_thread_context(struct ThreadContext *context,
-                         ContextFunction *next_context, void *data) {
+void
+save_thread_context(struct ThreadContext *context,
+                    ContextFunction *next_context, void *data) {
   /* getcontext requires us to use a volatile auto variable to
      differentiate between pass 1 (immediate return) and pass 2
      (return from setcontext). */
@@ -297,8 +298,9 @@ init_thread_context(struct ThreadContext *context,
   setup_context_1();
 }  
 
-void save_thread_context(struct ThreadContext *context,
-                         ContextFunction *next_context, void *data) {
+void
+save_thread_context(struct ThreadContext *context,
+                    ContextFunction *next_context, void *data) {
   if (cs_setjmp(context->_jmp_context) != 0) {
     /* We have just returned from longjmp.  In this case, return from
        the function.  The stack is still good. */

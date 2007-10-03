@@ -33,13 +33,14 @@ PythonThread(PyObject *function, PyObject *args,
              const string &name, const string &sync_name) :
   Thread(name, sync_name)
 {
+  _function = function;
+  Py_INCREF(_function);
+  _args = NULL;
   _result = NULL;
 
-  _function = function;
   if (!PyCallable_Check(_function)) {
     nassert_raise("Invalid function passed to PythonThread constructor");
   }
-  Py_INCREF(_function);
 
   if (args == Py_None) {
     // None means no arguments; create an empty tuple.
@@ -113,7 +114,7 @@ thread_main() {
   // thread state per OS-level thread, which is not true in the case
   // of SIMPLE_THREADS.
 
-  PyThreadState *orig_thread_state = PyThreadState_Swap(NULL);
+  PyThreadState *orig_thread_state = PyThreadState_Get();
   PyInterpreterState *istate = orig_thread_state->interp;
   PyThreadState *new_thread_state = PyThreadState_New(istate);
   PyThreadState_Swap(new_thread_state);

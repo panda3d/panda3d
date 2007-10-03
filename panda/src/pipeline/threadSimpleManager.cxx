@@ -200,6 +200,14 @@ preempt(ThreadSimpleImpl *thread) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 next_context() {
+  // Delete any threads that need it.  We can't delete the current
+  // thread, though.
+  while (!_finished.empty() && _finished.front() != _current_thread) {
+    ThreadSimpleImpl *finished_thread = _finished.front();
+    _finished.pop_front();
+    unref_delete(finished_thread->_parent_obj);
+  }
+
   // Mark the current thread's resume point.
 
 #ifdef HAVE_PYTHON
@@ -268,6 +276,7 @@ prepare_for_exit() {
 
   next_context();
 
+  // Delete any remaining threads.
   while (!_finished.empty() && _finished.front() != _current_thread) {
     ThreadSimpleImpl *finished_thread = _finished.front();
     _finished.pop_front();
@@ -410,12 +419,6 @@ st_choose_next_context(void *data) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 choose_next_context() {
-  while (!_finished.empty() && _finished.front() != _current_thread) {
-    ThreadSimpleImpl *finished_thread = _finished.front();
-    _finished.pop_front();
-    unref_delete(finished_thread->_parent_obj);
-  }
-
   _current_thread = NULL;
 
   double now = get_current_time();
