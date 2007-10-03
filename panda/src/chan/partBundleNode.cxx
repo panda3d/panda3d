@@ -21,6 +21,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "sceneGraphReducer.h"
 
 TypeHandle PartBundleNode::_type_handle;
 
@@ -33,29 +34,34 @@ PartBundleNode::
 ~PartBundleNode() {
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    (*bi)->remove_node(this);
+    (*bi)->get_bundle()->remove_node(this);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PartBundleNode::safe_to_transform
+//     Function: PartBundleNode::apply_attribs_to_vertices
 //       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of PandaNode by calling the
-//               xform() method, false otherwise.
+//  Description: Applies whatever attributes are specified in the
+//               AccumulatedAttribs object (and by the attrib_types
+//               bitmask) to the vertices on this node, if
+//               appropriate.  If this node uses geom arrays like a
+//               GeomNode, the supplied GeomTransformer may be used to
+//               unify shared arrays across multiple different nodes.
+//
+//               This is a generalization of xform().
 ////////////////////////////////////////////////////////////////////
-bool PartBundleNode::
-safe_to_transform() const {
-  // If any of our bundles appear on multiple nodes, we can't
-  // transform any of them without transforming all of them at once.
-  Bundles::const_iterator bi;
-  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    if ((*bi)->get_num_nodes() > 1) {
-      return false;
+void PartBundleNode::
+apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
+                          GeomTransformer &transformer) {
+  if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    Bundles::iterator bi;
+    for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+      PT(PartBundleHandle) handle = (*bi);
+      PartBundle *bundle = handle->get_bundle();
+      PT(PartBundle) new_bundle = bundle->apply_transform(attribs._transform);
+      update_bundle(handle, new_bundle);
     }
   }
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,6 +73,10 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
 xform(const LMatrix4f &mat) {
+  // With plain xform(), we can't attempt to share bundles across
+  // different nodes.  Better to use apply_attribs_to_vertices(),
+  // instead.
+
   if (mat.almost_equal(LMatrix4f::ident_mat())) {
     // Don't bother.
     return;
@@ -74,7 +84,14 @@ xform(const LMatrix4f &mat) {
 
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    (*bi)->xform(mat);
+    PT(PartBundleHandle) handle = (*bi);
+    PartBundle *bundle = handle->get_bundle();
+    if (bundle->get_num_nodes() > 1) {
+      PT(PartBundle) new_bundle = DCAST(PartBundle, bundle->copy_subgraph());
+      update_bundle(handle, new_bundle);
+      bundle = new_bundle;
+    }
+    bundle->xform(mat);
   }
 }
 
@@ -85,8 +102,25 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
 add_bundle(PartBundle *bundle) {
-  _bundles.push_back(bundle);
-  bundle->add_node(this);
+  PT(PartBundleHandle) handle = new PartBundleHandle(bundle);
+  add_bundle_handle(handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::add_bundle_handle
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PartBundleNode::
+add_bundle_handle(PartBundleHandle *handle) {
+  Bundles::iterator bi = find(_bundles.begin(), _bundles.end(), handle);
+  if (bi != _bundles.end()) {
+    // This handle is already within the node.
+    return;
+  }
+
+  _bundles.push_back(handle);
+  handle->get_bundle()->add_node(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,14 +131,32 @@ add_bundle(PartBundle *bundle) {
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
 steal_bundles(PartBundleNode *other) {
+  if (other == this) {
+    return;
+  }
+
   Bundles::iterator bi;
   for (bi = other->_bundles.begin(); bi != other->_bundles.end(); ++bi) {
-    PartBundle *bundle = (*bi);
-    _bundles.push_back(bundle);
-    bundle->remove_node(other);
-    bundle->add_node(this);
+    PartBundleHandle *handle = (*bi);
+    handle->get_bundle()->remove_node(other);
+    add_bundle_handle(handle);
   }
   other->_bundles.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::update_bundle
+//       Access: Protected, Virtual
+//  Description: Replaces the contents of the indicated
+//               PartBundleHandle (presumably stored within this node)
+//               with new_bundle.
+////////////////////////////////////////////////////////////////////
+void PartBundleNode::
+update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
+  PartBundle *old_bundle = old_bundle_handle->get_bundle();
+  old_bundle->remove_node(this);
+  old_bundle_handle->set_bundle(new_bundle);
+  new_bundle->add_node(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +172,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint16(_bundles.size());
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    manager->write_pointer(dg, (*bi));
+    manager->write_pointer(dg, (*bi)->get_bundle());
   }
 }
 
@@ -137,8 +189,9 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
 
   Bundles::iterator bi;
   for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
-    (*bi) = DCAST(PartBundle, p_list[pi++]);
-    (*bi)->add_node(this);
+    PT(PartBundle) bundle = DCAST(PartBundle, p_list[pi++]);
+    bundle->add_node(this);
+    (*bi) = new PartBundleHandle(bundle);
   }
 
   return pi;

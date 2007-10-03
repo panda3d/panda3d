@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "partBundle.h"
+#include "partBundleHandle.h"
 
 #include "pandaNode.h"
 #include "dcast.h"
@@ -43,19 +44,25 @@ protected:
 
 public:
   virtual ~PartBundleNode();
-  virtual bool safe_to_transform() const;
+  virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
+                                         int attrib_types,
+                                         GeomTransformer &transformer);
   virtual void xform(const LMatrix4f &mat);
 
 PUBLISHED:
   INLINE int get_num_bundles() const;
   INLINE PartBundle *get_bundle(int n) const;
+  INLINE PartBundleHandle *get_bundle_handle(int n) const;
 
 protected:
   void add_bundle(PartBundle *bundle);
+  void add_bundle_handle(PartBundleHandle *handle);
   void steal_bundles(PartBundleNode *other);
+  virtual void update_bundle(PartBundleHandle *old_bundle_handle, 
+                             PartBundle *new_bundle);
 
 protected:
-  typedef pvector< PT(PartBundle) > Bundles;
+  typedef pvector< PT(PartBundleHandle) > Bundles;
   Bundles _bundles;
 
 public:

@@ -125,6 +125,46 @@ set_anim_blend_flag(bool anim_blend_flag) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::apply_transform
+//       Access: Published
+//  Description: Returns a PartBundle that is a duplicate of this one,
+//               but with the indicated transform applied.  If this is
+//               called multiple times with the same TransformState
+//               pointer, it returns the same PartBundle each time.
+////////////////////////////////////////////////////////////////////
+PT(PartBundle) PartBundle::
+apply_transform(const TransformState *transform) {
+  if (transform->is_identity()) {
+    // Trivial no-op.
+    return this;
+  }
+
+  AppliedTransforms::iterator ati = _applied_transforms.find(transform);
+  if (ati != _applied_transforms.end()) {
+    if ((*ati).first.is_valid_pointer() &&
+        (*ati).second.is_valid_pointer()) {
+      // Here's our cached result.
+      return (*ati).second.p();
+    }
+  }
+
+  PT(PartBundle) new_bundle = DCAST(PartBundle, copy_subgraph());
+  new_bundle->xform(transform->get_mat());
+
+  if (ati != _applied_transforms.end()) {
+    // A stale pointer to a deleted result.  Update it.
+    (*ati).first.refresh();
+    (*ati).second = new_bundle;
+  } else {
+    // No such result yet.  Store it.
+    bool inserted = _applied_transforms.insert(AppliedTransforms::value_type(transform, new_bundle)).second;
+    nassertr(inserted, new_bundle);
+  }
+
+  return new_bundle;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::clear_control_effects
 //       Access: Published
 //  Description: Sets the control effect of all AnimControls to zero

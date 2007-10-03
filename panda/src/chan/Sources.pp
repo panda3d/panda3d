@@ -26,6 +26,7 @@
     movingPartBase.I movingPartBase.h  \
     movingPartMatrix.I movingPartMatrix.h movingPartScalar.I  \
     movingPartScalar.h partBundle.I partBundle.N partBundle.h  \
+    partBundleHandle.I partBundleHandle.h \
     partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h  \
     partSubset.I partSubset.h \
@@ -45,6 +46,7 @@
     animControlCollection.cxx animGroup.cxx auto_bind.cxx  \
     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
     movingPartScalar.cxx partBundle.cxx \
+    partBundleHandle.cxx \
     partBundleNode.cxx \
     partGroup.cxx \
     partSubset.cxx \
@@ -66,6 +68,7 @@
     movingPart.I movingPart.h movingPartBase.I \
     movingPartBase.h movingPartMatrix.I movingPartMatrix.h \
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \
+    partBundleHandle.I partBundleHandle.h \
     partBundleNode.I partBundleNode.h \
     partGroup.I partGroup.h \
     partSubset.I partSubset.h \

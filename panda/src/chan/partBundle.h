@@ -32,6 +32,8 @@
 #include "cycleDataWriter.h"
 #include "luse.h"
 #include "pvector.h"
+#include "transformState.h"
+#include "weakPointerTo.h"
 
 class AnimBundle;
 class PartBundleNode;
@@ -106,6 +108,7 @@ PUBLISHED:
   INLINE void set_root_xform(const LMatrix4f &root_xform);
   INLINE void xform(const LMatrix4f &mat);
   INLINE const LMatrix4f &get_root_xform() const;
+  PT(PartBundle) apply_transform(const TransformState *transform);
 
   INLINE int get_num_nodes() const;
   INLINE PartBundleNode *get_node(int n) const;
@@ -148,6 +151,9 @@ private:
 
   typedef pvector<PartBundleNode *> Nodes;
   Nodes _nodes;
+
+  typedef pmap<WCPT(TransformState), WPT(PartBundle) > AppliedTransforms;
+  AppliedTransforms _applied_transforms;
 
   // This is the data that must be cycled between pipeline stages.
   class CData : public CycleData {

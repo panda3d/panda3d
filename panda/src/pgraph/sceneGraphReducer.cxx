@@ -116,7 +116,9 @@ flatten(PandaNode *root, int combine_siblings_bits) {
       num_pass_nodes += r_flatten(root, child_node, combine_siblings_bits);
     }
 
-    if (combine_siblings_bits != 0 && root->get_num_children() >= 2) {
+    if (combine_siblings_bits != 0 && 
+        root->get_num_children() >= 2 && 
+        root->safe_to_combine_children()) {
       num_pass_nodes += flatten_siblings(root, combine_siblings_bits);
     }
 
@@ -397,7 +399,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
 
     // Finally, if any of our remaining children are plain PandaNodes
     // with no children, just remove them.
-    {
+    if (parent_node->safe_to_combine_children()) {
       for (int i = parent_node->get_num_children() - 1; i >= 0; --i) {
         PandaNode *child_node = parent_node->get_child(i);
         if (child_node->is_exact_type(PandaNode::get_class_type()) &&

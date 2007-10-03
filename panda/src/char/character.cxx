@@ -230,6 +230,43 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 //               pointer, and all geometry within this node will be
 //               updated to reference new_bundle.
 //
+//               This method is deprecated.  Use the newer version of
+//               this method, below.
+////////////////////////////////////////////////////////////////////
+void Character::
+merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
+  if (old_bundle == new_bundle) {
+    // Trivially return.
+    return;
+  }
+
+  // Find the PartBundleHandle of old_bundle.
+  PT(PartBundleHandle) old_bundle_handle;
+  Bundles::const_iterator bi;
+  for (bi = _bundles.begin(); bi != _bundles.end(); ++bi) {
+    if ((*bi)->get_bundle() == old_bundle) {
+      old_bundle_handle = (*bi);
+      break;
+    }
+  }
+  nassertv(!old_bundle_handle.is_null());
+
+  PT(PartBundleHandle) new_bundle_handle = new PartBundleHandle(new_bundle);
+  merge_bundles(old_bundle_handle, new_bundle_handle);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::merge_bundles
+//       Access: Published
+//  Description: Merges old_bundle_handle->get_bundle() with
+//               new_bundle.  old_bundle_handle must be one of the
+//               PartBundleHandle within this node.  At the end of
+//               this call, the bundle pointer within the
+//               old_bundle_handle will be replaced with that within
+//               the new_bundle_handle pointer, and all geometry
+//               within this node will be updated to reference
+//               new_bundle.
+//
 //               Normally, this is called when the two bundles have
 //               the same, or nearly the same, hierarchies.  In this
 //               case, new_bundle will simply be assigned over the
@@ -246,34 +283,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
 //               LOD's of the same model.
 ////////////////////////////////////////////////////////////////////
 void Character::
-merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
-  // Find the index number of old_bundle.
-  size_t index = 0;
-  while (index < _bundles.size()) {
-    if (_bundles[index] == old_bundle) {
-      break;
-    }
-    ++index;
-  }
-  nassertv_always(index < _bundles.size());
-
-  if (old_bundle == new_bundle) {
-    // Trivially return.
-    return;
-  }
-
-  // First, merge the bundles themselves.
-  JointMap joint_map;
-  r_merge_bundles(joint_map, old_bundle, new_bundle);
-  old_bundle->remove_node(this);
-  _bundles[index] = new_bundle;
-  new_bundle->add_node(this);
-
-  // Now convert the geometry to use the new bundle.
-  GeomVertexMap gvmap;
-  GeomJointMap gjmap;
-  GeomSliderMap gsmap;
-  r_update_geom(this, joint_map, gvmap, gjmap, gsmap);
+merge_bundles(PartBundleHandle *old_bundle_handle, 
+              PartBundleHandle *new_bundle_handle) {
+  update_bundle(old_bundle_handle, new_bundle_handle->get_bundle());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -406,28 +418,6 @@ force_update() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Character::do_update
-//       Access: Private
-//  Description: The actual implementation of update().  Assumes the
-//               appropriate PStatCollector has already been started.
-////////////////////////////////////////////////////////////////////
-void Character::
-do_update() {
-  // Update all the joints and sliders.
-  if (even_animation) {
-    int num_bundles = get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      get_bundle(i)->force_update();
-    }
-  } else {
-    int num_bundles = get_num_bundles();
-    for (int i = 0; i < num_bundles; ++i) {
-      get_bundle(i)->update();
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Character::r_copy_children
 //       Access: Protected, Virtual
 //  Description: This is called by r_copy_subgraph(); the copy has
@@ -472,6 +462,56 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 
   for (i = 0; i < num_bundles; ++i) {
     copy_node_pointers(node_map, get_bundle(i), from_char->get_bundle(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::update_bundle
+//       Access: Protected, Virtual
+//  Description: Replaces the contents of the indicated
+//               PartBundleHandle (presumably stored within this node)
+//               with new_bundle.
+////////////////////////////////////////////////////////////////////
+void Character::
+update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
+  if (old_bundle_handle->get_bundle() == new_bundle) {
+    // Trivially return.
+    return;
+  }
+
+  // First, merge the bundles, to ensure we have the same set of
+  // joints in the new bundle.
+  JointMap joint_map;
+  r_merge_bundles(joint_map, old_bundle_handle->get_bundle(), new_bundle);
+
+  PartBundleNode::update_bundle(old_bundle_handle, new_bundle);
+
+  // Now convert the geometry to use the new bundle.
+  GeomVertexMap gvmap;
+  GeomJointMap gjmap;
+  GeomSliderMap gsmap;
+  r_update_geom(this, joint_map, gvmap, gjmap, gsmap);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::do_update
+//       Access: Private
+//  Description: The actual implementation of update().  Assumes the
+//               appropriate PStatCollector has already been started.
+////////////////////////////////////////////////////////////////////
+void Character::
+do_update() {
+  // Update all the joints and sliders.
+  if (even_animation) {
+    int num_bundles = get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      get_bundle(i)->force_update();
+    }
+  } else {
+    int num_bundles = get_num_bundles();
+    for (int i = 0; i < num_bundles; ++i) {
+      get_bundle(i)->update();
+    }
   }
 }
 

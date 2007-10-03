@@ -400,6 +400,24 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WeakPointerToBase::refresh
+//       Access: Published
+//  Description: Informs the WeakPointerTo object that its pointer is
+//               no longer deleted.  This may be used after a
+//               WeakPointerTo has deleted a deleted pointer, and then
+//               a new pointer has been reallocated.  It's equivalent
+//               to simply reassigning the pointer to its new
+//               (i.e. original) value, but has the advantage that it
+//               is const, so can be used for WeakPointers used as
+//               keys in STL maps and sets.
+////////////////////////////////////////////////////////////////////
+template<class T>
+INLINE void WeakPointerToBase<T>::
+refresh() const {
+  ((WeakPointerToBase<T> *)this)->reassign((To *)_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WeakPointerToBase::output
 //       Access: Published
 //  Description: A handy function to output PointerTo's as a hex

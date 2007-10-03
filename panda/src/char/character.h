@@ -65,6 +65,8 @@ public:
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle(int i) const;
   void merge_bundles(PartBundle *old_bundle, PartBundle *other_bundle);
+  void merge_bundles(PartBundleHandle *old_bundle_handle, 
+                     PartBundleHandle *other_bundle_handle);
 
   CharacterJoint *find_joint(const string &name) const;
   CharacterSlider *find_slider(const string &name) const;
@@ -76,6 +78,12 @@ PUBLISHED:
   void update();
   void force_update();
 
+protected:
+  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
+                               Thread *current_thread);
+  virtual void update_bundle(PartBundleHandle *old_bundle_handle, 
+                             PartBundle *new_bundle);
+
 private:
   void do_update();
 
@@ -85,8 +93,6 @@ private:
   typedef pmap<const VertexTransform *, PT(JointVertexTransform) > GeomJointMap;
   typedef pmap<const VertexSlider *, PT(CharacterVertexSlider) > GeomSliderMap;
 
-  virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map,
-                               Thread *current_thread);
   void fill_joint_map(JointMap &joint_map, PartGroup *copy, PartGroup *orig);
   void r_merge_bundles(Character::JointMap &joint_map, 
                        PartGroup *old_group, PartGroup *new_group);

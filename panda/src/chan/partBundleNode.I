@@ -74,5 +74,19 @@ get_num_bundles() const {
 INLINE PartBundle *PartBundleNode::
 get_bundle(int n) const {
   nassertr(n >= 0 && n < (int)_bundles.size(), NULL);
+  return _bundles[n]->get_bundle();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundleNode::get_bundle_handle
+//       Access: Public
+//  Description: Returns the PartBundleHandle that wraps around the
+//               actual nth PartBundle.  While the PartBundle pointer
+//               might later change due to a future flatten operation,
+//               the PartBundleHandle will not.
+////////////////////////////////////////////////////////////////////
+INLINE PartBundleHandle *PartBundleNode::
+get_bundle_handle(int n) const {
+  nassertr(n >= 0 && n < (int)_bundles.size(), NULL);
   return _bundles[n];
 }

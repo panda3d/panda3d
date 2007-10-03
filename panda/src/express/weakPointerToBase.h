@@ -83,6 +83,7 @@ public:
 
 PUBLISHED:
   INLINE void clear();
+  INLINE void refresh() const;
 
   void output(ostream &out) const;
 };
