@@ -363,7 +363,7 @@ class ClusterClient(DirectObject.DirectObject):
         """ Update cameraJig position to reflect latest position """
     
         (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data 
-            dgi)
+#            dgi)
         #print "name"
         #if (name == "camNode"):
         #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden
