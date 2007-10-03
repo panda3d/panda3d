@@ -210,6 +210,12 @@ parse_cookie_param(const string &param, bool first_param) {
     } else if (key == "domain") {
       _domain = HTTPChannel::downcase(value);
 
+      // From RFC 2965: If an explicitly specified value does not
+      // start with a dot, the user agent supplies a leading dot.
+      if (!_domain.empty() && _domain[0] != '.') {
+        _domain = string(".") + _domain;
+      }
+
     } else if (key == "secure") {
       _secure = true;
 
