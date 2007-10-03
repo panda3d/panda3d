@@ -58,8 +58,10 @@ class ClusterServer(DirectObject.DirectObject):
         self.objectMappings  = {}
         self.objectHasColor  = {}
         self.controlMappings = {}
+        self.controlPriorities = {}
         self.controlOffsets  = {}
         self.messageQueue    = []
+        self.sortedControlMappings   = []
 
         # These must be passed in as bootstrap arguments and stored in
         # the __builtins__ namespace
@@ -98,7 +100,8 @@ class ClusterServer(DirectObject.DirectObject):
         return Task.cont
 
 
-    def addNamedObjectMapping(self,object,name,hasColor = True):
+    def addNamedObjectMapping(self,object,name,hasColor = True,
+                              priority = 0):
         if (not self.objectMappings.has_key(name)):
             self.objectMappings[name] = object
             self.objectHasColor[name] = hasColor
@@ -110,14 +113,25 @@ class ClusterServer(DirectObject.DirectObject):
             self.objectMappings.pop(name)
 
 
+    def redoSortedPriorities(self):
+
+        self.sortedControlMappings = []
+        for key in self.objectMappings:
+            self.sortedControlMappings.append([self.controlPriorities[key],
+                                               key])
+
+        self.sortedControlMappings.sort()
 
 
-    def addControlMapping(self,objectName,controlledName, offset = None):
+    def addControlMapping(self,objectName,controlledName, offset = None,
+                          priority = 0):
         if (not self.controlMappings.has_key(objectName)):
             self.controlMappings[objectName] = controlledName
             if (offset == None):
                 offset = Vec3(0,0,0)
             self.controlOffsets[objectName]  = offset
+            self.controlPriorities[objectName] = priority
+            self.redoSortedPriorities()
         else:
             self.notify.debug('attempt to add duplicate controlled object: '+name)
 
@@ -129,6 +143,8 @@ class ClusterServer(DirectObject.DirectObject):
     def removeControlMapping(self,name):
         if (self.controlMappings.has_key(name)):
             self.controlMappings.pop(name)
+            self.controlPriorities.pop(name)
+        self.redoSortedPriorities()
 
             
     def startControlObjectTask(self):
@@ -137,8 +153,9 @@ class ClusterServer(DirectObject.DirectObject):
 
     def controlObjectTask(self, task):
         #print "running control object task"
-        for object in self.controlMappings:
-            name       = self.controlMappings[object]
+        for pair in self.sortedControlPriorities:
+            object = pair[1]
+            name   = self.controlMappings[object] 
             if (self.objectMappings.has_key(object)):
                 self.moveObject(self.objectMappings[object],name,self.controlOffsets[object],
                                 self.objectHasColor[object])

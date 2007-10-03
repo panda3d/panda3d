@@ -62,6 +62,8 @@ class ClusterClient(DirectObject.DirectObject):
         self.controlMappings = {}
         self.controlOffsets  = {}
         self.taggedObjects   = {}
+        self.controlPriorities = {}
+        self.sortedControlMappings = []
 
         for serverConfig in configList:
             server = DisplayConnection(
@@ -131,16 +133,14 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def controlObjectTask(self, task):
-        for object in self.controlMappings:
+        for pair in self.sortedControlMappings:
+            object     = pair[1]
             name       = self.controlMappings[object][0]
             serverList = self.controlMappings[object][1]
-            #print object
             if (self.objectMappings.has_key(object)):
                 self.moveObject(self.objectMappings[object],name,serverList,
                                 self.controlOffsets[object], self.objectHasColor[object])
-
         self.sendNamedMovementDone()
-        #print "running control object"
         return Task.cont
 
     def sendNamedMovementDone(self, serverList = None):
@@ -151,6 +151,16 @@ class ClusterClient(DirectObject.DirectObject):
         for server in serverList:
             self.serverList[server].sendNamedMovementDone()
 
+
+
+    def redoSortedPriorities(self):
+
+        self.sortedControlMappings = []
+        for key in self.controlMappings:
+            self.sortedControlMappings.append([self.controlPriorities[key],
+                                               key])
+
+        self.sortedControlMappings.sort()
         
     def moveObject(self, nodePath, object, serverList, offset, hasColor = True):
         self.notify.debug('moving object '+object)
@@ -206,7 +216,7 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def addControlMapping(self,objectName,controlledName, serverList = None,
-                          offset = None):
+                          offset = None, priority = 0):
         if (not self.controlMappings.has_key(objectName)):
             if (serverList == None):
                 serverList = range(len(self.serverList))
@@ -215,6 +225,7 @@ class ClusterClient(DirectObject.DirectObject):
                 
             self.controlMappings[objectName] = [controlledName,serverList]
             self.controlOffsets[objectName]  = offset
+            self.controlPriorities[objectName] = priority
         else:
             oldList = self.controlMappings[objectName]
             mergedList = []
@@ -223,7 +234,8 @@ class ClusterClient(DirectObject.DirectObject):
             for item in serverList:
                 if (item not in mergedList):
                     mergedList.append(item)
-                    
+
+        self.redoSortedPriorities()
             #self.notify.debug('attempt to add duplicate controlled object: '+name)
 
     def setControlMappingOffset(self,objectName,offset):
@@ -235,6 +247,7 @@ class ClusterClient(DirectObject.DirectObject):
 
             if (serverList == None):
                 self.controlMappings.pop(name)
+                self.controlPriorities.pop(name)                
             else:
                 list = self.controlMappings[key][1]
                 newList = []
@@ -244,8 +257,10 @@ class ClusterClient(DirectObject.DirectObject):
                 self.controlMappings[key][1] = newList
                 if (len(newList) == 0):
                     self.controlMappings.pop(name)
-            
-                
+                    self.controlPriorities.pop(name)
+        self.redoSortedPriorities()
+
+        
     def getNodePathFindCmd(self, nodePath):
         import string
         pathString = `nodePath`
@@ -363,7 +378,6 @@ class ClusterClient(DirectObject.DirectObject):
         """ Update cameraJig position to reflect latest position """
     
         (name,x, y, z, h, p, r, sx, sy, sz,red,g,b,a, hidden) = data 
-#            dgi)
         #print "name"
         #if (name == "camNode"):
         #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden
