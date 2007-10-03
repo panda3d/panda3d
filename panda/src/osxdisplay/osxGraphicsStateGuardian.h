@@ -16,6 +16,7 @@
 #ifndef OSXGRAPHICSSTATEGUARDIAN_H
 #define OSXGRAPHICSSTATEGUARDIAN_H
 #include <Carbon/Carbon.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 #define __glext_h_
 #include <OpenGL/gl.h>
@@ -42,6 +43,11 @@ public:
   virtual void reset();
 
   void draw_resize_box();
+  
+//  static bool get_gamma_table(void);
+  static bool static_set_gamma(float gamma);
+  bool set_gamma(float gamma);
+  static void atexit_function(void);
 	
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);

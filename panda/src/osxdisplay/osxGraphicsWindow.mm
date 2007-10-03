@@ -315,7 +315,7 @@ static pascal OSStatus	windowEvtHndlr(EventHandlerCallRef myHandler, EventRef ev
 
 void     osxGraphicsWindow::DoResize(void)
 {
-	osxdisplay_cat.debug() << "In Resize Out....." << _properties << "\n";
+	osxdisplay_cat.info() << "In Resize....." << _properties << "\n";
 
     // only in window mode .. not full screen
     if(_osx_window != NULL && _is_fullscreen == false && _properties.has_size())
@@ -958,6 +958,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 
 	if (req_properties.has_fullscreen() && req_properties.get_fullscreen())
 	{
+		osxdisplay_cat.info() << "Creating full screen\n";
+
 		// capture the main display
 		CGDisplayCapture( kCGDirectMainDisplay );
 		// if sized try and switch it..
@@ -1035,6 +1037,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			NSRect		aRect				=	[aView frame];
 			NSPoint		origin				=	[parentWindow convertBaseToScreen:aRect.origin];
 			
+			osxdisplay_cat.info() << "Creating child window\n";
+
 			CreateNewWindow(kSimpleWindowClass, kWindowNoAttributes, &r, &_osx_window);
 			NSWindow*	childWindow			=	[[NSWindow alloc] initWithWindowRef:_osx_window];
 			
@@ -1051,6 +1055,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			if (req_properties.has_undecorated() && req_properties.get_undecorated())
 			{ // create a unmovable .. no edge window..
 				
+				osxdisplay_cat.info() << "Creating undecorated window\n";
+				
 				CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes |  kWindowNoTitleBarAttribute, &r, &_osx_window);
 			}
 			else
@@ -1066,6 +1072,7 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 				r.top = max(r.top, bounds.top);
 				r.bottom = min(r.bottom, bounds.bottom);
 				
+				osxdisplay_cat.info() << "Creating standard window\n";
 				CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute, &r, &_osx_window);
 			}
 		}
@@ -1638,6 +1645,8 @@ if (osxdisplay_cat.is_debug())
 
 bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_origin,int x_size, int y_size)
 {
+	osxdisplay_cat.info() << "Do Reshape\n";
+
   if (_properties.get_fullscreen()) {
     // Can't resize fullscreen windows that easily.
     return false;

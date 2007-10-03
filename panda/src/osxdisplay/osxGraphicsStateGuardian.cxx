@@ -379,3 +379,75 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::static_set_gamma
+//       Access: Public, Static
+//  Description: Static function for setting gamma which is needed 
+//               for atexit.
+////////////////////////////////////////////////////////////////////
+bool osxGraphicsStateGuardian::
+static_set_gamma(float gamma) {
+    bool set;  
+
+    set = false;
+
+	CGGammaValue gOriginalRedTable[ 256 ];
+	CGGammaValue gOriginalGreenTable[ 256 ];
+	CGGammaValue gOriginalBlueTable[ 256 ];
+	
+	CGTableCount sampleCount;
+    CGDisplayErr cgErr;
+	
+	cgErr = CGGetDisplayTransferByTable( 0, 256, gOriginalRedTable, gOriginalGreenTable, gOriginalBlueTable, &sampleCount);
+	
+	CGGammaValue redTable[ 256 ];
+    CGGammaValue greenTable[ 256 ];
+    CGGammaValue blueTable[ 256 ];
+	
+	short j, i;
+	short y[3];
+	
+	y[0] = 256 * gamma;
+	y[1] = 256 * gamma;
+	y[2] = 256 * gamma;
+	
+	redTable[i] = gOriginalRedTable[ i ] * (y[ 0 ] ) / 256;
+	greenTable[ i ] = gOriginalGreenTable[ i ] * (y[ 1 ] ) / 256;
+	blueTable[ i ] = gOriginalBlueTable[ i ] * (y[ 2 ] ) / 256;
+
+	cgErr = CGSetDisplayTransferByTable( 0, 256, redTable, greenTable, blueTable);
+
+	if (cgErr == 0){
+		set = true;
+		}
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::set_gamma
+//       Access: Published
+//  Description: Non static version of setting gamma.  Returns true
+//               on success.
+////////////////////////////////////////////////////////////////////
+bool osxGraphicsStateGuardian::
+set_gamma(float gamma) {
+  bool set;
+
+  set = static_set_gamma(gamma);
+
+  return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::atexit_function
+//       Access: Public, Static
+//  Description: This function is passed to the atexit function.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsStateGuardian::
+atexit_function(void) {
+  static_set_gamma(1.0);
+}
+
+
