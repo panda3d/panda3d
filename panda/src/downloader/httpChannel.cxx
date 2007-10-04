@@ -385,10 +385,10 @@ run() {
       }
     }
 
-    bool repeat_later;
+    bool repeat_later = false;
     switch (_download_dest) {
     case DD_none:
-      repeat_later = false;  // We're done.
+      // We're done.
       break;
 
     case DD_file:
