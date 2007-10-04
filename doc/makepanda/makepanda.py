@@ -283,26 +283,38 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
 if sys.platform == "win32":
     import _winreg
 
+    def TryRegistryKey(path):
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
+            return key
+        except: pass
+        try:
+            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ | 256)
+            return key
+        except: pass
+        return 0
+        
     def ListRegistryKeys(path):
         result=[]
         index=0
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
-            while (1):
-                result.append(_winreg.EnumKey(key, index))
-                index = index + 1
-        except: pass
-        if (key!=0): _winreg.CloseKey(key)
+        key = TryRegistryKey(path)
+        if (key != 0):
+            try:
+                while (1):
+                    result.append(_winreg.EnumKey(key, index))
+                    index = index + 1
+            except: pass
+            _winreg.CloseKey(key)
         return result
 
     def GetRegistryKey(path, subkey):
         k1=0
-        key=0
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
-            k1, k2 = _winreg.QueryValueEx(key, subkey)
-        except: pass
-        if (key!=0): _winreg.CloseKey(key)
+        key = TryRegistryKey(path)
+        if (key != 0):
+            try:
+                k1, k2 = _winreg.QueryValueEx(key, subkey)
+            except: pass
+            _winreg.CloseKey(key)
         return k1
 
 def oscmd(cmd):
