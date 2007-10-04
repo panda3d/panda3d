@@ -52,6 +52,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LVector3) &other) const;
 
+  INLINE_LINMATH FLOATTYPE relative_angle_rad(const FLOATNAME(LVector3) &other) const;
+  INLINE_LINMATH FLOATTYPE relative_angle_deg(const FLOATNAME(LVector3) &other) const;
+
+
   INLINE_LINMATH FLOATNAME(LVector3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector3) operator / (FLOATTYPE scalar) const;
 
