@@ -214,6 +214,11 @@ HTTPDate(const string &format) {
   }
 
   // Everything checks out; convert the date.
+#ifdef __GNUC__
+  _time = timegm(&t);
+
+#else  // __GNUC__
+  // Without the GNU extension timegm, we have to use mktime() instead.
   _time = mktime(&t);
 
   if (_time != (time_t)-1) {
@@ -222,6 +227,7 @@ HTTPDate(const string &format) {
     extern long int timezone;
     _time -= timezone;
   }
+#endif  // __GNUC__
 }
 
 ////////////////////////////////////////////////////////////////////

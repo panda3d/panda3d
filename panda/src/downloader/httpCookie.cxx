@@ -130,6 +130,7 @@ matches_url(const URLSpec &url) const {
   }
   string server = url.get_server();
   if (server == _domain || 
+      (string(".") + server) == _domain ||
       (server.length() > _domain.length() &&
        server.substr(server.length() - _domain.length()) == _domain &&
        (_domain[0] == '.' || server[server.length() - _domain.length() - 1] == '.'))) {
