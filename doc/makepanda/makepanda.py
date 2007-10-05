@@ -1350,6 +1350,11 @@ def CompileLink(dll, obj, opts, ldef):
         if (OMIT.count("PYTHON")==0): cmd = cmd + ' /LIBPATH:thirdparty/win-python/libs '
         for x in obj:
             if (x.endswith(".dll")): cmd = cmd + ' built/lib/' + x[:-4] + ".lib"
+            elif (x.endswith(".lib")):
+                dname = x[:-4]+".dll"
+                if (os.path.exists("built/bin/" + x[:-4] + ".dll")):
+                    exit("Error: in makepanda, specify "+dname+", not "+x)
+                cmd = cmd + ' ' + FindLocation(x,[])
             else: cmd = cmd + ' ' + FindLocation(x,[])
         if (wdll[-4:]==".exe"): cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
         for ver in DXVERSIONS:
@@ -4188,7 +4193,7 @@ for VER in MAYAVERSIONS:
     EnqueueLink(dll='libp3mayaloader'+VER+'.dll',                 opts=['ADVAPI',  'MAYA'+VER], obj=[
                  'mayaloader'+VER+'_config_mayaloader.obj',
                  'libmayaegg'+VER+'.lib',
-                 'libp3ptloader.lib',
+                 'libp3ptloader.dll',
                  'libconverter.lib',
                  'libpandatoolbase.lib',
                  'libmaya'+VER+'.lib',
