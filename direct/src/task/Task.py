@@ -84,6 +84,10 @@ class Task:
         # Unique ID for each task
         self.id = Task.count
         Task.count += 1
+
+        #set to have the task managed
+        self.owner = None
+
         self.__call__ = callback
         self._priority = priority
         self._removed = 0
@@ -125,6 +129,8 @@ class Task:
 
     def remove(self):
         if not self._removed:
+            if(self.owner):
+                self.owner._clearTask(self)
             self._removed = 1
             # Remove any refs to real objects
             # In case we hang around the doLaterList for a while
@@ -474,7 +480,7 @@ class TaskManager:
         return cont
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
-            priority=0, uponDeath=None, appendTask=False):
+            priority=0, uponDeath=None, appendTask=False, owner = None):
         if delayTime < 0:
             self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
@@ -485,6 +491,7 @@ class TaskManager:
             self.notify.error('doMethodLater: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
+        task.owner = owner
         if extraArgs == None:
             extraArgs = []
             appendTask = True
@@ -518,7 +525,8 @@ class TaskManager:
         return task
 
     def add(self, funcOrTask, name, priority=0, extraArgs=None, uponDeath=None,
-            appendTask = False):
+            appendTask = False, owner = None):
+        
         """
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
@@ -533,6 +541,7 @@ class TaskManager:
                 'add: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
+        task.owner = owner
         if extraArgs == None:
             extraArgs = []
             appendTask = True
