@@ -177,7 +177,7 @@ class ShipPilot(PhysicsWalker):
             self.collisionsActive = active
             shipCollWall = self.shipNodePath.find("**/collision_hull;+s")
             if active:
-                self.cNodePath.node().setFromCollideMask(self.wallBitmask | self.floorBitmask)
+                self.cNodePath.node().setFromCollideMask(self.wallBitmask)
                 self.cNodePath.node().setIntoCollideMask(BitMask32.allOff())
                 self.cTrav.addCollider(self.cNodePath, self.pusher)
                 shipCollWall.stash()
