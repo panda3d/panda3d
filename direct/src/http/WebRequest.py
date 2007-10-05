@@ -3,8 +3,7 @@ from libdirect import HttpRequest
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 
-if __debug__:
-    notify = directNotify.newCategory('WebRequestDispatcher')
+notify = directNotify.newCategory('WebRequestDispatcher')
 
 class WebRequest(object):
     """
@@ -76,8 +75,7 @@ class WebRequestDispatcher(object):
 
     requestTimeout = 10.0
     
-    if __debug__:
-        notify = notify
+    notify = notify
 
     def __new__(self, *a, **kw):
         obj = object.__new__(self, *a, **kw)
