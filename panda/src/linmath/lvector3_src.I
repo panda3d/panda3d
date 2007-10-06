@@ -207,8 +207,7 @@ angle_rad(const FLOATNAME(LVector3) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_rad(const FLOATNAME(LVector3) &other) const {
-  //okay, we'll 
-  return atan2((other._v.v._0*_v.v._1)-(other._v.v._1*_v.v._0), dot(other));
+  return atan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,7 +218,6 @@ relative_angle_rad(const FLOATNAME(LVector3) &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_deg(const FLOATNAME(LVector3) &other) const {
-  //okay, we'll 
   return relative_angle_rad(other)*180/3.1415926535;
 }
 
