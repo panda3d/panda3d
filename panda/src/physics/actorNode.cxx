@@ -40,6 +40,7 @@ ActorNode(const string &name) :
     _mass_center->set_name(name);
   #endif
   _ok_to_callback = true;
+  _transform_limit = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +54,7 @@ ActorNode(const ActorNode &copy) :
   _contact_vector = LVector3f::zero();
   _ok_to_callback = true;
   _mass_center = get_physical(0)->get_phys_body();
+  _transform_limit = copy._transform_limit;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,8 +79,29 @@ update_transform() {
 
   // lock the callback so that this doesn't call transform_changed.
   _ok_to_callback = false;
+  if (_transform_limit > 0.0) {
+    test_transform(TransformState::make_mat(lcs));
+  }
   set_transform(TransformState::make_mat(lcs));
   _ok_to_callback = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : test_transform
+//       Access : private
+//  Description : this tests the transform to make sure it's within
+//                the specified limits.  It's done so we can assert
+//                to see when an invalid transform is being applied.
+////////////////////////////////////////////////////////////////////
+void ActorNode::
+test_transform(const TransformState *ts) const {
+  LPoint3f pos(ts->get_pos());
+  nassertv(pos[0] < _transform_limit);
+  nassertv(pos[0] > -_transform_limit);
+  nassertv(pos[1] < _transform_limit);
+  nassertv(pos[1] > -_transform_limit);
+  nassertv(pos[2] < _transform_limit);
+  nassertv(pos[2] > -_transform_limit);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +132,7 @@ transform_changed() {
   // apply
   _mass_center->set_position(transform->get_pos());
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function : write

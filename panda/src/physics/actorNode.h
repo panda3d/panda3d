@@ -46,16 +46,19 @@ PUBLISHED:
   // i.e. copy from PhysicsObject to PandaNode
   void update_transform();
   
+  void set_transform_limit(float limit) { _transform_limit = limit; };
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   PhysicsObject *_mass_center;
   LVector3f _contact_vector;
   bool _ok_to_callback;
+  float _transform_limit;
 
   // node hook if the client changes the node's transform.
   // i.e. copy from PandaNode to PhysicsObject
   virtual void transform_changed();
+  void test_transform(const TransformState *ts) const;
 
 public:
   static TypeHandle get_class_type() {
