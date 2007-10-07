@@ -707,7 +707,7 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
     case AT_model: 
     default: apcParameters[iParameterCount++]="model"; break;
   }
-
+  
   //Start Frame
   //If the export options need a start frame and we have one
   //then use it
@@ -716,7 +716,7 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
     apcParameters[iParameterCount++] = "-sf";
     apcParameters[iParameterCount++] = pszSF;
   }
-
+  
   //Start Frame
   //If the export options need an end frame and we have one
   //then use it
@@ -725,11 +725,11 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
     apcParameters[iParameterCount++] = "-ef";
     apcParameters[iParameterCount++] = pszEF;
   }
-
+  
   // Doublesided: This option may be diabled in the converter
   // but this is here for when it is enabled
   if (dblSided) apcParameters[iParameterCount++] = "-bface";
-
+  
   // Final ARGV = Output file
   // Pass in the output filename
   // Output file has to be passed in with the -o parameter in order to be able 
@@ -749,19 +749,12 @@ bool MaxEggExpOptions::DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog)
   // This was put in try block because originally deleting pmteConverter 
   // would throw an exception.  That no longer happens, but this is still
   // here for good measure
-  try {
-                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before deleting pmteconverter");
-    delete pmteConverter; 
-  } catch (...) {
-                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before error message window");
-    MessageBox(ip->GetMAXHWnd(), "I just got an unknown exception.",
-               "Panda3D Converter", MB_OK);
-  }
-                Logger::Log(MTEC, Logger::SAT_MEDIUM_LEVEL, "before logger function exit");
+  delete pmteConverter; 
+  
   Logger::FunctionExit();
   //Free the error logger
   if ( Logger::globalLoggingInstance )
     delete Logger::globalLoggingInstance;
- 
+  
   return successful;
 }
