@@ -1876,6 +1876,7 @@ run_reading_header() {
         reset_url(_request.get_url(), new_url);
         _request.set_url(new_url);
         _want_ssl = _request.get_url().is_ssl();
+        reconsider_proxy();
         make_header();
         make_request_text();
 
@@ -2344,7 +2345,7 @@ void HTTPChannel::
 reconsider_proxy() {
   _proxy_tunnel_now = false;
   _proxy_serves_document = false;
-
+  
   if (!_proxy.empty()) {
     // If the user insists we always tunnel through a proxy, or if
     // we're opening an SSL connection, or the user has explicitly
