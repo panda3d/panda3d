@@ -1952,7 +1952,31 @@ class Actor(DirectObject, NodePath):
                 
                 self.__animControlDict[lod][partName][animName]= Actor.AnimDef(filename)
 
-                
+    def postFlatten(self):
+        """Call this after performing an aggressive flatten operation,
+        such as flattenStrong(), that involves the Actor.  This is
+        especially necessary when mergeLODBundles is true, since this
+        kind of actor may be broken after a flatten operation; this
+        method should restore proper Actor functionality. """
+        
+        if self.mergeLODBundles:
+            # Re-merge all bundles, and restore the common bundle map.
+            self.__commonBundleHandles = {}
+
+            for lodName, bundleDict in self.__partBundleDict.items():
+                for partName, partDef in bundleDict.items():
+                    loadedBundleHandle = self.__commonBundleHandles.get(partName, None)
+                    node = partDef.partBundleNP.node()
+                    if loadedBundleHandle:
+                        node.mergeBundles(partDef.partBundleHandle, loadedBundleHandle)
+                        partDef.partBundleHandle = loadedBundleHandle
+                    else:
+                        self.__commonBundleHandles[partName] = partDef.partBundleHandle
+                        
+            # Since we may have merged together some bundles, all of
+            # our anims are now suspect.  Force them to reload.
+            self.unloadAnims()
+        
     def unloadAnims(self, anims=None, partName=None, lodName=None):
         """unloadAnims(self, string:string{}, string='modelRoot',
         string='lodRoot')
