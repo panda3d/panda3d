@@ -489,6 +489,13 @@ INLINE void DatagramIterator::
 skip_bytes(size_t size) {
   nassertv(_datagram != (const Datagram *)NULL);
   nassertv((int)size >= 0);
+#ifndef NDEBUG
+  if (_current_index + size > _datagram->get_length()) {
+     nout << "datagram overflow: current_index = " << _current_index
+          << " size = " << size << " length = " << _datagram->get_length() << "\n";
+    _datagram->dump_hex(nout);
+  }
+#endif
   nassertv(_current_index + size <= _datagram->get_length());
   _current_index += size;
 }
