@@ -405,11 +405,13 @@ run() {
     return repeat_later;
   }
 
+  /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
       << "begin run(), _state = " << _state << ", _done_state = "
       << _done_state << "\n";
   }
+  */
 
   if (_state == _done_state) {
     return reached_done_state();
@@ -460,10 +462,12 @@ run() {
       _connect_count++;
     }
 
+    /*
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << "continue run(), _state = " << _state << "\n";
     }
+    */
 
     switch (_state) {
     case S_try_next_proxy:
@@ -560,11 +564,13 @@ run() {
     thread_consider_yield();
   } while (!repeat_later || _bio.is_null());
 
+  /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
       << "later run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
+  */
 
   thread_yield();
   return true;
@@ -785,11 +791,13 @@ downcase(const string &s) {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 reached_done_state() {
+  /*
   if (downloader_cat.is_spam()) {
     downloader_cat.spam()
       << "terminating run(), _state = " << _state
       << ", _done_state = " << _done_state << "\n";
   }
+  */
 
   if (_state == S_failure) {
     // We had to give up.  Each proxy we tried, in sequence, failed.
