@@ -1412,9 +1412,9 @@ class ShowBase(DirectObject.DirectObject):
 
     def playSfx(
             self, sfx, looping = 0, interrupt = 1, volume = None,
-            time = 0.0, node = None):
+            time = 0.0, node = None, listener = None, cutoff = None):
         # This goes through a special player for potential localization
-        return self.sfxPlayer.playSfx(sfx, looping, interrupt, volume, time, node)
+        return self.sfxPlayer.playSfx(sfx, looping, interrupt, volume, time, node, listener, cutoff)
 
     def playMusic(self, music, looping = 0, interrupt = 1, volume = None, time = 0.0):
         if music:

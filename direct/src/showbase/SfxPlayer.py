@@ -41,7 +41,7 @@ class SfxPlayer:
         """Return the curent cutoff distance."""
         return self.cutoffDistance
 
-    def getLocalizedVolume(self, node, listenerNode = None):
+    def getLocalizedVolume(self, node, listenerNode = None, cutoff = None):
         """
         Get the volume that a sound should be played at if it is
         localized at this node. We compute this wrt the camera
@@ -53,7 +53,7 @@ class SfxPlayer:
                 d = node.getDistance(listenerNode)
             else:
                 d = node.getDistance(base.cam)
-        if d == None or d > self.cutoffDistance:
+        if d == None or d > cutoff:
             volume = 0
         else:
             if SfxPlayer.UseInverseSquare:
@@ -61,16 +61,20 @@ class SfxPlayer:
                 volume = min(1, 1 / (sd*sd or 1))
                 #print d, sd, volume
             else:
-                volume = 1 - (d / (self.cutoffDistance or 1))
+                volume = 1 - (d / (cutoff or 1))
                 #print d, volume
+
         return volume
 
     def playSfx(
             self, sfx, looping = 0, interrupt = 1, volume = None,
-            time = 0.0, node=None, listenerNode = None):
+            time = 0.0, node=None, listenerNode = None, cutoff = None):
         if sfx:
-            self.setFinalVolume(sfx, node, volume, listenerNode)
+            if not cutoff:
+                cutoff = self.cutoffDistance
             
+            self.setFinalVolume(sfx, node, volume, listenerNode, cutoff)
+
             # dont start over if it's already playing, unless
             # "interrupt" was specified
             if interrupt or (sfx.status() != AudioSound.PLAYING):
@@ -78,13 +82,13 @@ class SfxPlayer:
                 sfx.setLoop(looping)
                 sfx.play()
 
-    def setFinalVolume(self, sfx, node, volume, listenerNode):
+    def setFinalVolume(self, sfx, node, volume, listenerNode, cutoff = None):
         """Calculate the final volume based on all contributed factors."""
         # If we have either a node or a volume, we need to adjust the sfx
         # The volume passed in multiplies the distance base volume
         if node or (volume is not None):
             if node:
-                finalVolume = self.getLocalizedVolume(node, listenerNode)
+                finalVolume = self.getLocalizedVolume(node, listenerNode, cutoff)
             else:
                 finalVolume = 1
             if volume is not None:
