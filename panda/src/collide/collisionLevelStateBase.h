@@ -30,8 +30,10 @@
 #include "plist.h"
 #include "pStatCollector.h"
 #include "bitMask.h"
+#include "lvector3.h"
 #include "register_type.h"
 #include "collisionSolid.h"
+
 
 class CollisionSolid;
 class CollisionNode;

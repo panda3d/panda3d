@@ -19,6 +19,7 @@
 #include "collisionLevelStateBase.h"
 #include "collisionSolid.h"
 #include "collisionNode.h"
+#include "config_collide.h"
 #include "dcast.h"
 
 PStatCollector CollisionLevelStateBase::_node_volume_pcollector("Collision Volumes:PandaNode");
@@ -75,6 +76,11 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     // with.  That makes things complicated!
     if (bv->as_bounding_sphere()) {
       LPoint3f pos_delta = def._node_path.get_pos_delta(root);
+      
+      LVector3f cap(pos_delta);
+      if(cap.length()>fluid_cap_amount) {
+        pos_delta=LPoint3f(cap/cap.length())*fluid_cap_amount;
+      }
       if (pos_delta != LVector3f::zero()) {
         // If the node has a delta, we have to include the starting
         // position in the volume as well.  We only do this for bounding
@@ -84,6 +90,7 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
         LMatrix4f inv_trans = LMatrix4f::translate_mat(-pos_delta);
         PT(GeometricBoundingVolume) gbv_prev;
         gbv_prev = DCAST(GeometricBoundingVolume, bv->make_copy());
+         
         gbv_prev->xform(inv_trans);
         gbv->extend_by(gbv_prev);
       }

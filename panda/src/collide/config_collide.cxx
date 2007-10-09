@@ -86,6 +86,9 @@ ConfigVariableBool flatten_collision_nodes
           "to be efficient, and combining CollisionNodes is likely "
           "to merge bounding volumes inappropriately."));
 
+ConfigVariableInt fluid_cap_amount 
+("fluid-cap-amount", 100,
+ PRC_DESC("ensures that fluid pos doesn't check beyond X feet"));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide

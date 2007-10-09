@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 
 NotifyCategoryDecl(collide, EXPCL_PANDA_COLLIDE, EXPTP_PANDA_COLLIDE);
 
@@ -29,6 +30,7 @@ extern EXPCL_PANDA_COLLIDE ConfigVariableBool respect_prev_transform;
 extern EXPCL_PANDA_COLLIDE ConfigVariableBool respect_effective_normal;
 extern EXPCL_PANDA_COLLIDE ConfigVariableBool allow_collider_multiple;
 extern EXPCL_PANDA_COLLIDE ConfigVariableBool flatten_collision_nodes;
+extern EXPCL_PANDA_COLLIDE ConfigVariableInt fluid_cap_amount;
 
 extern EXPCL_PANDA_COLLIDE void init_libcollide();
 
