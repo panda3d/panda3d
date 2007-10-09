@@ -563,6 +563,14 @@ affects_polygon_alpha() const {
   case ET_blend_color_scale:
     return false;
 
+  case ET_normal_map:
+  case ET_gloss_map:
+  case ET_normal_gloss_map:
+    return false;
+
+  case ET_selector_map:
+    return true;
+
   case ET_unspecified:
     break;
   }
@@ -871,6 +879,18 @@ string_env_type(const string &string) {
 
   } else if (cmp_nocase_uh(string, "blend_color_scale") == 0) {
     return ET_blend_color_scale;
+
+  } else if (cmp_nocase_uh(string, "normal_map") == 0) {
+    return ET_normal_map;
+
+  } else if (cmp_nocase_uh(string, "gloss_map") == 0) {
+    return ET_gloss_map;
+
+  } else if (cmp_nocase_uh(string, "normal_gloss_map") == 0) {
+    return ET_normal_gloss_map;
+
+  } else if (cmp_nocase_uh(string, "selector_map") == 0) {
+    return ET_selector_map;
 
   } else {
     return ET_unspecified;
@@ -1270,6 +1290,18 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
 
   case EggTexture::ET_blend_color_scale:
     return out << "blend_color_scale";
+
+  case EggTexture::ET_normal_map:
+    return out << "normal_map";
+
+  case EggTexture::ET_gloss_map:
+    return out << "gloss_map";
+
+  case EggTexture::ET_normal_gloss_map:
+    return out << "normal_gloss_map";
+
+  case EggTexture::ET_selector_map:
+    return out << "selector_map";
   }
 
   nassertr(false, out);

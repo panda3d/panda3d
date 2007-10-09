@@ -836,7 +836,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //     Function: TextureAttrib::sort_on_stages
 //       Access: Private
 //  Description: Sorts the list of stages so that they are listed in
-//               render order.  Also clears the _filtered map.
+//               render order.  Also clears the _filtered map and
+//               recalculates the list of fixed-function stages.
 ////////////////////////////////////////////////////////////////////
 void TextureAttrib::
 sort_on_stages() {
@@ -844,6 +845,14 @@ sort_on_stages() {
 
   _sort_seq = TextureStage::get_sort_seq();
 
+  _on_ff_stages.clear();
+  OnStages::const_iterator osi;
+  for (osi = _on_stages.begin(); osi != _on_stages.end(); ++osi) {
+    if ((*osi)->is_fixed_function()) {
+      _on_ff_stages.push_back(*osi);
+    }
+  }
+  
   // Also clear the _filtered map, so we'll have to recompute those
   // (in case the priority orders have changed as well).
   _filtered.clear();

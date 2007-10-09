@@ -48,6 +48,8 @@ PUBLISHED:
   virtual ~TextureStage();
 
   enum Mode {
+    // Modes that pertain to the fixed-function pipeline.
+    
     M_modulate,
     M_decal,
     M_blend,
@@ -55,8 +57,15 @@ PUBLISHED:
     M_add,
     M_combine,
     M_blend_color_scale,
+    
+    // Modes that are only relevant to shader-based rendering.
+    
+    M_normal_map,
+    M_gloss_map,
+    M_normal_gloss_map,
+    M_selector_map,
   };
-
+  
   enum CombineMode {
     CM_undefined,
     CM_replace,
@@ -104,10 +113,12 @@ PUBLISHED:
   INLINE void set_texcoord_name(InternalName *name);
   INLINE void set_texcoord_name(const string &texcoord_name);
   INLINE InternalName *get_texcoord_name() const;
-
+  
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
-
+  
+  INLINE bool is_fixed_function() const;
+  
   INLINE void set_color(const Colorf &color);
   INLINE Colorf get_color() const;
 

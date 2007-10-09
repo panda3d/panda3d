@@ -189,6 +189,18 @@ get_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::is_fixed_function
+//       Access: Published
+//  Description: Returns true if the TextureStage is relevant to
+//               the classic fixed function pipeline.  This excludes
+//               texture stages such as normal mapping and the like.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+is_fixed_function() const {
+  return (_mode < M_normal_map);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::set_color
 //       Access: Published
 //  Description: Set the color for this stage

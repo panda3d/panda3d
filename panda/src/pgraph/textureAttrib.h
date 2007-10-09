@@ -58,6 +58,8 @@ PUBLISHED:
 
   INLINE int get_num_on_stages() const;
   INLINE TextureStage *get_on_stage(int n) const;
+  INLINE int get_num_on_ff_stages() const;
+  INLINE TextureStage *get_on_ff_stage(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
 
@@ -78,6 +80,7 @@ PUBLISHED:
 
 public:
   INLINE const Geom::ActiveTextureStages &get_on_stages() const;
+  INLINE const Geom::ActiveTextureStages &get_on_ff_stages() const;
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;
 
   virtual void output(ostream &out) const;
@@ -99,7 +102,8 @@ private:
 private:
   typedef Geom::ActiveTextureStages OnStages;
   OnStages _on_stages;
-
+  OnStages _on_ff_stages;
+  
   typedef ov_set<TextureStage *> OffStages;
   OffStages _off_stages;
   bool _off_all_stages;

@@ -3856,10 +3856,10 @@ void DXGraphicsStateGuardian9::
 update_standard_texture_bindings() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  int num_stages = _effective_texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_ff_stages();
   int num_old_stages = _max_texture_stages;
   if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_stages();
+    num_old_stages = _state._texture->get_num_on_ff_stages();
   }
 
   nassertv(num_stages <= _max_texture_stages &&
@@ -3877,7 +3877,7 @@ update_standard_texture_bindings() {
 
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _effective_texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_ff_stage(i);
     Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 

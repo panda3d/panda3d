@@ -1785,7 +1785,7 @@ update_standard_vertex_arrays(bool force) {
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages =
-      _effective_texture->get_on_stages();
+      _effective_texture->get_on_ff_stages();
     const Geom::NoTexCoordStages &no_texcoords =
       _effective_tex_gen->get_no_texcoords();
 
@@ -1886,7 +1886,7 @@ update_standard_vertex_arrays(bool force) {
     // least those for which we're not generating texture coordinates
     // automatically.
     const Geom::ActiveTextureStages &active_stages =
-      _effective_texture->get_on_stages();
+      _effective_texture->get_on_ff_stages();
     const Geom::NoTexCoordStages &no_texcoords =
       _effective_tex_gen->get_no_texcoords();
     
@@ -6092,7 +6092,7 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
-  int num_stages = _effective_texture->get_num_on_stages();
+  int num_stages = _effective_texture->get_num_on_ff_stages();
 
   nassertv(num_stages <= _max_texture_stages &&
            _num_active_texture_stages <= _max_texture_stages);
@@ -6103,7 +6103,7 @@ update_standard_texture_bindings() {
   int last_stage = -1;
   int i;
   for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _effective_texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_ff_stage(i);
     Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
@@ -6313,7 +6313,7 @@ do_issue_tex_matrix() {
   nassertv(_num_active_texture_stages <= _max_texture_stages);
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    TextureStage *stage = _effective_texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_ff_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
 
     GLP(MatrixMode)(GL_TEXTURE);
@@ -6360,7 +6360,7 @@ do_issue_tex_gen() {
   bool got_point_sprites = false;
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    TextureStage *stage = _effective_texture->get_on_stage(i);
+    TextureStage *stage = _effective_texture->get_on_ff_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_GEN_S);
     GLP(Disable)(GL_TEXTURE_GEN_T);

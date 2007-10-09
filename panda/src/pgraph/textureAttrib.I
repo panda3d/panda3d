@@ -105,6 +105,33 @@ get_on_stage(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_num_on_ff_stages
+//       Access: Published
+//  Description: Returns the number of on-stages that are relevant
+//               to the classic fixed function pipeline.  This excludes 
+//               texture stages such as normal maps.
+////////////////////////////////////////////////////////////////////
+INLINE int TextureAttrib::
+get_num_on_ff_stages() const {
+  check_sorted();
+  return _on_ff_stages.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_on_ff_stage
+//       Access: Published
+//  Description: Returns the nth stage turned on by the attribute,
+//               sorted in render order, including only those relevant
+//               to the classic fixed function pipeline.  This excludes 
+//               texture stages such as normal maps.
+////////////////////////////////////////////////////////////////////
+INLINE TextureStage *TextureAttrib::
+get_on_ff_stage(int n) const {
+  nassertr(n >= 0 && n < (int)_on_ff_stages.size(), (TextureStage *)NULL);
+  return _on_ff_stages[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::has_on_stage
 //       Access: Published
 //  Description: Returns true if the indicated stage is turned on by
@@ -198,6 +225,20 @@ is_identity() const {
 INLINE const Geom::ActiveTextureStages &TextureAttrib::
 get_on_stages() const {
   return _on_stages;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_on_ff_stages
+//       Access: Public
+//  Description: Returns the complete list of stages defined within
+//               this TextureAttrib, including only those which are
+//               relevant to the classic fixed-function pipeline.
+//               The result is suitable for passing to
+//               Geom::setup_multitexcoord_iterator().
+////////////////////////////////////////////////////////////////////
+INLINE const Geom::ActiveTextureStages &TextureAttrib::
+get_on_ff_stages() const {
+  return _on_ff_stages;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -102,6 +102,10 @@ PUBLISHED:
     ET_replace,
     ET_add,
     ET_blend_color_scale,
+    ET_normal_map,
+    ET_gloss_map,
+    ET_normal_gloss_map,
+    ET_selector_map,
   };
   enum CombineMode {
     CM_unspecified,
