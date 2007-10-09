@@ -210,14 +210,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LPoint3f into_intersection_point;
-  if (t1 < 0.0) {
-    // Point a is within the tube.  The first intersection point is
-    // point a itself.
-    into_intersection_point = from_a;
+  if (t2 > 1.0) {
+    // Point b is within the tube.  The first intersection point is
+    // point b itself.
+    into_intersection_point = from_b;
   } else {
-    // Point a is outside the tube, and point b is either inside the
-    // tube or beyond it.  The first intersection point is at t1.
-    into_intersection_point = from_a + t1 * from_direction;
+    // Point b is outside the tube, and point a is either inside the
+    // tube or beyond it.  The first intersection point is at t2.
+    into_intersection_point = from_a + t2 * from_direction;
   }
   set_intersection_point(new_entry, into_intersection_point, from_radius);
 
