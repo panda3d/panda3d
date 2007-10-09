@@ -69,12 +69,22 @@ PUBLISHED:
   int get_video_memory();
   int get_texture_memory();
 
+  void update_memory_information();
   PN_uint64 get_physical_memory();
   PN_uint64 get_available_physical_memory();
+  PN_uint64 get_page_file_size();
+  PN_uint64 get_available_page_file_size();
+  PN_uint64 get_process_virtual_memory();
+  PN_uint64 get_available_process_virtual_memory();
+  int get_memory_load();
+  PN_uint64 get_process_memory();
+  PN_uint64 get_peak_process_memory();
+  PN_uint64 get_page_file_usage();
+  PN_uint64 get_peak_page_file_usage();
 
   int get_vendor_id();
   int get_device_id();
-
+  
 public:
   DetectionState _state;
   int _get_adapter_display_mode_state;
@@ -87,10 +97,25 @@ public:
   int _shader_model;
   int _video_memory;
   int _texture_memory;
+
   PN_uint64 _physical_memory;
   PN_uint64 _available_physical_memory;
+  PN_uint64 _page_file_size;
+  PN_uint64 _available_page_file_size;
+  PN_uint64 _process_virtual_memory;
+  PN_uint64 _available_process_virtual_memory;
+  
+  PN_uint64 _process_memory;
+  PN_uint64 _peak_process_memory;
+  PN_uint64 _page_file_usage;
+  PN_uint64 _peak_page_file_usage;
+  
+  int _memory_load;
+
   int _vendor_id;
   int _device_id;
+  
+  void (*_get_memory_information_function) (DisplayInformation *display_information);
 };
 
 #endif

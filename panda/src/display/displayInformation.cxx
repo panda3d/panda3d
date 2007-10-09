@@ -78,11 +78,23 @@ DisplayInformation() {
   _shader_model = shader_model;
   _video_memory = video_memory;
   _texture_memory = texture_memory;
+
   _physical_memory = physical_memory;
   _available_physical_memory = available_physical_memory;
+  _page_file_size = 0;
+  _available_page_file_size = 0;
+  _process_virtual_memory = 0;
+  _available_process_virtual_memory = 0;
+  _memory_load = 0;
+  _process_memory = 0;
+  _peak_process_memory = 0;
+  _page_file_usage = 0;
+  _peak_page_file_usage = 0;
 
   _vendor_id = 0;
   _device_id = 0;
+  
+  _get_memory_information_function = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,6 +262,18 @@ get_texture_memory() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::update_memory_information
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DisplayInformation::
+update_memory_information() {
+  if (_get_memory_information_function) {
+    _get_memory_information_function (this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayInformation::get_physical_memory
 //       Access: Published
 //  Description: 
@@ -267,6 +291,96 @@ get_physical_memory() {
 PN_uint64 DisplayInformation::
 get_available_physical_memory() {
   return _available_physical_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_page_file_size
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_page_file_size() {
+  return _page_file_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_available_page_file_size
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_available_page_file_size() {
+  return _available_page_file_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::_process_virtual_memory
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_process_virtual_memory() {
+  return _process_virtual_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_available_process_virtual_memory
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_available_process_virtual_memory() {
+  return _available_process_virtual_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_memory_load
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_memory_load() {
+  return _memory_load;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_process_memory
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_process_memory() {
+  return _process_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_peak_process_memory
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_peak_process_memory() {
+  return _peak_process_memory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_page_file_usage
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_page_file_usage() {
+  return _page_file_usage;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_peak_page_file_usage
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_peak_page_file_usage() {
+  return _peak_page_file_usage;
 }
 
 ////////////////////////////////////////////////////////////////////
