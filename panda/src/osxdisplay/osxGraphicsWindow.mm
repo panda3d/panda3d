@@ -871,18 +871,18 @@ void osxGraphicsWindow::close_window()
 // HACK ALLERT ************ Undocumented OSX calls...
 // I can not find any other way to get the mouse focus to a window in OSX..
 //
-extern "C" {
-	struct  CPSProcessSerNum
-	{
-		UInt32 lo;
-		UInt32 hi;
-	};
+//extern "C" {
+//	struct  CPSProcessSerNum
+//	{
+//		UInt32 lo;
+//		UInt32 hi;
+//	};
 
-extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
-extern OSErr CPSEnableForegroundOperation( struct CPSProcessSerNum *psn);
-extern OSErr CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
-extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
-};
+//extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
+//extern OSErr CPSEnableForegroundOperation( struct CPSProcessSerNum *psn);
+//extern OSErr CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
+//extern OSErr CPSSetFrontProcess( struct CPSProcessSerNum *psn);
+//};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::open_window
@@ -943,17 +943,21 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 		err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &ref1 );
 		GlobalInits = true;
 
-		struct CPSProcessSerNum PSN;
-		GetCurrentProcess((ProcessSerialNumber *)&PSN);
-		err = CPSGetCurrentProcess(&PSN);
+		ProcessSerialNumber psn = { 0, kCurrentProcess };
+		TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+		SetFrontProcess(&psn);
 
-		if (req_properties.has_title())
-			err = CPSSetProcessName(&PSN,(char *)req_properties.get_title().c_str());
-		else
-			err = CPSSetProcessName(&PSN,"");
+//		struct CPSProcessSerNum PSN;
+//		GetCurrentProcess((ProcessSerialNumber *)&PSN);
+//		err = CPSGetCurrentProcess(&PSN);
+
+//		if (req_properties.has_title())
+//			err = CPSSetProcessName(&PSN,(char *)req_properties.get_title().c_str());
+//		else
+//			err = CPSSetProcessName(&PSN,"");
 				
-		err = CPSEnableForegroundOperation(&PSN);
-		err = CPSSetFrontProcess(&PSN);
+//		err = CPSEnableForegroundOperation(&PSN);
+//		err = CPSSetFrontProcess(&PSN);
 	}
 
 	if (req_properties.has_fullscreen() && req_properties.get_fullscreen())
