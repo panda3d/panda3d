@@ -1628,11 +1628,13 @@ bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_
 
   // For now, ignore the origin, since we seem to be getting a bogus
   // origin of (0, 0).
-  /*
+  // 
+  // We need this to be here so that changing window size places the
+  // window in the correct position.
+
   if (has_origin) {
     MoveWindow(_osx_window, x_origin, y_origin, false);
   }
-  */
 
   if (!_properties.get_undecorated())
   {
