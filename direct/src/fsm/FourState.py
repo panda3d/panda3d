@@ -43,9 +43,7 @@ class FourState:
     I found that this pattern repeated in several things I was
     working on, so this base class was created.
     """
-    if __debug__:
-        notify = DirectNotifyGlobal.directNotify.newCategory(
-                'FourState')
+    notify = DirectNotifyGlobal.directNotify.newCategory('FourState')
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """

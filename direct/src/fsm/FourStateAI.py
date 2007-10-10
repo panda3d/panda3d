@@ -43,9 +43,7 @@ class FourStateAI:
     I found that this pattern repeated in several things I was
     working on, so this base class was created.
     """
-    if __debug__:
-        notify = DirectNotifyGlobal.directNotify.newCategory(
-                'FourStateAI')
+    notify = DirectNotifyGlobal.directNotify.newCategory('FourStateAI')
 
     def __init__(self, names, durations = [0, 1, None, 1, 1]):
         """

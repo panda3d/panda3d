@@ -38,8 +38,7 @@ class AsyncRequest(DirectObject):
     """
     _asyncRequests = {}
 
-    if __debug__:
-        notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
+    notify = DirectNotifyGlobal.directNotify.newCategory('AsyncRequest')
 
     def __init__(self, air, replyToChannelId = None,
                  timeoutTime = ASYNC_REQUEST_DEFAULT_TIMEOUT_IN_SECONDS,

@@ -8,7 +8,6 @@ The port will need to be defined when the instance is inited.
 
 import string, time, direct, inspect
 from operator import itemgetter
-from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.http import WebRequest
 from socket import gethostname
 from direct.task.Task import Task
@@ -21,9 +20,6 @@ if platform == 'win32':
     from windowsSystemInfo import SystemInformation
 else:
     from linuxSystemInfo import SystemInformation
-
-if __debug__:
-    notify = directNotify.newCategory('AIWebInterface')
 
 class aiWebServer(SystemInformation):
     def __init__(self, air, listenPort=8080):

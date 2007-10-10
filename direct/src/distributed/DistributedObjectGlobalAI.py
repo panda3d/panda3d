@@ -2,13 +2,9 @@
 from DistributedObjectAI import DistributedObjectAI
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
-if __debug__:
-    notify = directNotify.newCategory('DistributedObjectGlobalAI')
-
 
 class DistributedObjectGlobalAI(DistributedObjectAI):
-    if __debug__:
-        notify = notify
+    notify = directNotify.newCategory('DistributedObjectGlobalAI')
 
     doNotDeallocateChannel = 1
     isGlobalDistObj = 1

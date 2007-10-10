@@ -3,13 +3,9 @@
 from DistributedObjectUD import DistributedObjectUD
 from direct.directnotify.DirectNotifyGlobal import directNotify
 
-if __debug__:
-    notify = directNotify.newCategory('DistributedObjectGlobalUD')
-
 
 class DistributedObjectGlobalUD(DistributedObjectUD):
-    if __debug__:
-        notify = notify
+    notify = directNotify.newCategory('DistributedObjectGlobalUD')
 
     doNotDeallocateChannel = 1
     isGlobalDistObj = 1

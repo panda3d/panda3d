@@ -32,8 +32,7 @@ class NetMessenger(Messenger):
     are sent over the network and (possibly) handled (accepted) on a
     remote machine (server).
     """
-    if __debug__:
-        notify = DirectNotifyGlobal.directNotify.newCategory('NetMessenger')
+    notify = DirectNotifyGlobal.directNotify.newCategory('NetMessenger')
 
     def __init__(self, air, channels):
         """
