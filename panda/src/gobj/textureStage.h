@@ -61,8 +61,8 @@ PUBLISHED:
     // Modes that are only relevant to shader-based rendering.
     
     M_normal_map,
-    M_gloss_map,
-    M_normal_gloss_map,
+    M_normal_spower_map,
+    M_scolor_spower_map,
     M_selector_map,
   };
   

@@ -564,8 +564,8 @@ affects_polygon_alpha() const {
     return false;
 
   case ET_normal_map:
-  case ET_gloss_map:
-  case ET_normal_gloss_map:
+  case ET_normal_spower_map:
+  case ET_scolor_spower_map:
     return false;
 
   case ET_selector_map:
@@ -883,11 +883,11 @@ string_env_type(const string &string) {
   } else if (cmp_nocase_uh(string, "normal_map") == 0) {
     return ET_normal_map;
 
-  } else if (cmp_nocase_uh(string, "gloss_map") == 0) {
-    return ET_gloss_map;
+  } else if (cmp_nocase_uh(string, "normal_spower_map") == 0) {
+    return ET_normal_spower_map;
 
-  } else if (cmp_nocase_uh(string, "normal_gloss_map") == 0) {
-    return ET_normal_gloss_map;
+  } else if (cmp_nocase_uh(string, "scolor_spower_map") == 0) {
+    return ET_scolor_spower_map;
 
   } else if (cmp_nocase_uh(string, "selector_map") == 0) {
     return ET_selector_map;
@@ -1294,12 +1294,12 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
   case EggTexture::ET_normal_map:
     return out << "normal_map";
 
-  case EggTexture::ET_gloss_map:
-    return out << "gloss_map";
-
-  case EggTexture::ET_normal_gloss_map:
-    return out << "normal_gloss_map";
-
+  case EggTexture::ET_normal_spower_map:
+    return out << "normal_spower_map";
+    
+  case EggTexture::ET_scolor_spower_map:
+    return out << "scolor_spower_map";
+    
   case EggTexture::ET_selector_map:
     return out << "selector_map";
   }
