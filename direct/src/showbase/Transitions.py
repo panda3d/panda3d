@@ -92,7 +92,8 @@ class Transitions:
         transitionIval = Sequence(Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
-                                                self.alphaOn),
+                                                # self.alphaOn,
+                                                ),
                                   Func(self.fade.detachNode),
                                   name = self.fadeTaskName,
                                   )
@@ -111,7 +112,8 @@ class Transitions:
         transitionIval = Sequence(Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
-                                                self.alphaOff),
+                                                # self.alphaOff,
+                                                ),
                                   name = self.fadeTaskName,
                                   )
         if finishIval:
