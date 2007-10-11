@@ -175,7 +175,7 @@ OSStatus osxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRe
 	UInt32 the_class = GetEventClass(event);
 	UInt32 kind = GetEventKind(event);
 
-	WindowRef window = _osx_window	//	NULL;		
+	WindowRef window = _osx_window;	//	NULL;		
 //	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
 	if (osxdisplay_cat.is_spam())
