@@ -84,9 +84,9 @@ class DistributedSmoothNodeBase:
         if stagger:
             delay = randFloat(period)
         taskMgr.doMethodLater(self.__broadcastPeriod + delay,
-                              self.__posHprBroadcast, taskName)
+                              self._posHprBroadcast, taskName)
 
-    def __posHprBroadcast(self, task):
+    def _posHprBroadcast(self, task):
         # TODO: we explicitly stagger the initial task timing in
         # startPosHprBroadcast; we should at least make an effort to keep
         # this task accurately aligned with its period and starting time.
@@ -99,3 +99,4 @@ class DistributedSmoothNodeBase:
         if self.d_broadcastPosHpr is None:
             self.cnode.initialize(self, self.dclass, self.doId)
         self.cnode.sendEverything()
+
