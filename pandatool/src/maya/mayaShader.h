@@ -43,18 +43,41 @@ public:
 
   void output(ostream &out) const;
   void write(ostream &out) const;
+  
+private:
+  bool find_textures_modern(MObject shader);
+  bool find_textures_legacy(MObject shader);
 
+public:
+  void collect_maps();
+  bool _legacy_mode;
+  
+  MayaShaderColorList _all_maps;
+
+public: // relevant only to modern mode.
+
+  Colord _flat_color;
+  
+  MayaShaderColorList _color_maps;
+  MayaShaderColorList _trans_maps;
+  MayaShaderColorList _normal_maps;
+  MayaShaderColorList _gloss_maps;
+
+  void bind_uvsets(MayaFileToUVSetMap &map);
+  
+private:
+  void calculate_pairings();
+  void try_pair(MayaShaderColorDef *map1,
+                MayaShaderColorDef *map2,
+                bool perfect);
+  string get_file_prefix(const string &fn);
+
+public: // relevant only to legacy mode.
+
+  MayaShaderColorList _color;
+  MayaShaderColorDef  _transparency;
   Colorf get_rgba(size_t idx=0) const;
   MayaShaderColorDef *get_color_def(size_t idx=0) const;
-
-  MayaShaderColorDef _transparency;
-  //MayaShaderColorDef _color;
-  // There could be multiple textures, so create an array of these colordefs
-  typedef pvector<MayaShaderColorDef *> ColorDef;
-  ColorDef _color;
-
-private:
-  bool read_surface_shader(MObject shader);
 };
 
 INLINE ostream &operator << (ostream &out, const MayaShader &shader) {

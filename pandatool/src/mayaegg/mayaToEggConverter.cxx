@@ -1686,32 +1686,6 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::find_uv_link
-//       Access: Private
-//  Description: given the texture name, find corresponding uvLink
-////////////////////////////////////////////////////////////////////
-string MayaToEggConverter::
-find_uv_link(string match) {
-  // find the index of this string in the _tex_names
-  int idx = 0;
-  vector_string::iterator vi;
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam() << "ful: looking for " << match << endl;
-  }
-  for (vi = _tex_names.begin(); vi != _tex_names.end(); ++vi, ++idx) {
-    if (mayaegg_cat.is_spam()) {
-      mayaegg_cat.spam() << "ful:" << idx << ":stored_name is " << vi->c_str() << endl;
-    }
-    if (vi->find(match) != string::npos) {
-      return _uvset_names[idx];
-    }
-  }
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam() << "ful: did not find uvset-texture link called:" << match << endl;
-  }
-  return "not found";
-}
-////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::round uvs
 //       Access: Private
 //  Description: given uvsets, round them up or down
@@ -1725,58 +1699,7 @@ round(double value) {
   else
     return   floor( value + 0.5);
 }
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: MayaToEggConverter::store_tex_names
-//       Access: Private
-//  Description: check the uvsets and see what texture these are 
-//               connected to. set_shader_attribute will use this
-//               information to write eggTexture
-////////////////////////////////////////////////////////////////////
-void MayaToEggConverter::
-make_tex_names(const MFnMesh &mesh, const MObject &mesh_object) {
 
-  // test the connection editor to gather the uvLink to the texture name
-  MFnDependencyNode dn(mesh_object);
-  MStringArray mresult;
-  MPlugArray pla;
-
-  _tex_names.clear();
-  dn.getConnections(pla);
-  mayaegg_cat.info() << "number of connections: " << pla.length() << endl;
-  string uv1("uvLink -query -uvSet ");
-  uv1.append(mesh.name().asChar());
-  uv1.append(".uvSet[0].uvSetName");
-  MGlobal::executeCommand(MString(uv1.c_str()), mresult);
-  string tcat;
-  for (size_t k=0; k<mresult.length(); ++k) {
-    maya_cat.spam() << "found uvLink to texture: " << mresult[k].asChar() << endl;
-    tcat.append(mresult[k].asChar());
-  }
-  mayaegg_cat.info() << "saving string to look up uvset: " << tcat << endl;
-  _tex_names.push_back(tcat);
-  for (size_t j=0; j<pla.length(); ++j) {
-    MPlug pl = pla[j];
-    mayaegg_cat.info() << pl.name() << " is(pl) " << pl.node().apiTypeStr() << endl;
-    string tn;
-    string ts = pl.name().asChar();
-    if (ts.find("uvSetName") != string::npos) {
-      string execString = "uvLink -query -uvSet " + ts;
-      //mayaegg_cat.info() << "executing command: " << execString << "\n";
-      MGlobal::executeCommand(MString(execString.c_str()), mresult);
-      for (size_t k=0; k<mresult.length(); ++k) {
-        maya_cat.info() << "found uvLink to texture: " << mresult[k].asChar() << endl;
-        tcat.append(mresult[k].asChar());
-      }
-      // save unique of this string
-      if (find_uv_link(tcat) == "not found") {
-        mayaegg_cat.info() << "saving string: " << tcat << endl;
-        _tex_names.push_back(tcat);
-      }
-    }
-  } 
-}
-*/
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::make_polyset
 //       Access: Private
@@ -1878,36 +1801,39 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
 
-  MStringArray maya_uvset_names;
-  status = mesh.getUVSetNames(maya_uvset_names);
-  if (!status) {
-    status.perror("MFnMesh getUVSetNames not found");
-  }
-  MObjectArray moa;
-  _tex_names.clear();
-  _uvset_names.clear();
-  for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
-    if (mayaegg_cat.is_spam()) {
-      mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
-    }
-    _uvset_names.push_back(maya_uvset_names[ui].asChar());
+  _shaders.bind_uvsets(mesh.object());
 
-    // Get the tex_names that are connected to those uvnames
-    mesh.getAssociatedUVSetTextures(maya_uvset_names[ui], moa);
-    string t_n("");
-    for (size_t ui=0; ui<moa.length(); ++ui){
-      MFnDependencyNode dt(moa[ui]);
-      t_n = dt.name().asChar();
-      if (mayaegg_cat.is_spam()) {
-        mayaegg_cat.spam() << "texture_node:" << t_n << endl;
-      }
-    }
-    _tex_names.push_back(t_n);
-  }
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam()
-      << "done scanning uvs\n";
-  }
+  //  MStringArray maya_uvset_names;
+  //  status = mesh.getUVSetNames(maya_uvset_names);
+  //  if (!status) {
+  //    status.perror("MFnMesh getUVSetNames not found");
+  //  }
+  //  MObjectArray moa;
+  //  _tex_names.clear();
+  //  _uvset_names.clear();
+  //  for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
+  //    if (mayaegg_cat.is_spam()) {
+  //      mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
+  //    }
+  //    string uvset_name = maya_uvset_names[ui].asChar();
+  //    _uvset_names.push_back(uvset_name);
+  //
+  //    // Get the tex_names that are connected to those uvnames
+  //    mesh.getAssociatedUVSetTextures(maya_uvset_names[ui], moa);
+  //    string t_n("");
+  //    for (size_t ui=0; ui<moa.length(); ++ui){
+  //      MFnDependencyNode dt(moa[ui]);
+  //      string t_n = dt.name().asChar();
+  //      if (mayaegg_cat.is_spam()) {
+  //        mayaegg_cat.spam() << "texture_node:" << t_n << endl;
+  //      }
+  //    }
+  //    _tex_names.push_back(t_n);
+  //  }
+  //  if (mayaegg_cat.is_spam()) {
+  //    mayaegg_cat.spam()
+  //      << "done scanning uvs\n";
+  //  }
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -2007,9 +1933,9 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         }
         mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
       }
-      for (size_t ti=0; ti< _uvset_names.size(); ++ti) {
+      for (size_t ti=0; ti< _shaders._uvset_names.size(); ++ti) {
         // get the eggTexture pointer
-        string colordef_uv_name = uvset_name=  _uvset_names[ti];
+        string colordef_uv_name = uvset_name= _shaders._uvset_names[ti];
         if (mayaegg_cat.is_debug()) {
           mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
         }
@@ -2569,7 +2495,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         mayaegg_cat.debug() << "ssa:texture name[" << i << "]: " << color_def->_texture_name << endl;
       }
 
-      string uvset_name = find_uv_link(color_def->_texture_name);
+      string uvset_name = _shaders.find_uv_link(color_def->_texture_name);
       if (mayaegg_cat.is_debug()) {
         mayaegg_cat.debug() << "ssa:corresponding uvset name is " << uvset_name << endl;
       }
@@ -2752,7 +2678,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
           new_tex->set_uv_name(color_def->_uvset_name);
           if (i == (int)shader._color.size()-1 && is_decal) {
             dummy_uvset_name.assign(color_def->_uvset_name);
-          } 
+          }
         }
       } else {
         primitive.add_texture(new_tex);

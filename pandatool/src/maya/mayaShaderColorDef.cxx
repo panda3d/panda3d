@@ -39,17 +39,18 @@
 ////////////////////////////////////////////////////////////////////
 MayaShaderColorDef::
 MayaShaderColorDef() {
-  _color_gain.set(1.0f, 1.0f, 1.0f, 1.0f);
 
-  _has_flat_color = false;
-  _flat_color.set(0.0, 0.0, 0.0, 0.0);
+  _blend_type = BT_unspecified;
 
-  _has_texture = false;
-  _texture_name = "";
-  _uvset_name = "default";
   _projection_type = PT_off;
-  _map_uvs = NULL;
-
+  _projection_matrix = LMatrix4d::ident_mat();
+  _u_angle = 0.0;
+  _v_angle = 0.0;
+    
+  _texture_filename = "";
+  _texture_name = "";
+  _color_gain.set(1.0f, 1.0f, 1.0f, 1.0f);
+  
   _coverage.set(1.0, 1.0);
   _translate_frame.set(0.0, 0.0);
   _rotate_frame = 0.0;
@@ -59,18 +60,24 @@ MayaShaderColorDef() {
   _wrap_u = true;
   _wrap_v = true;
 
-  _has_alpha_channel = false;
-  _keep_color = false; // classic mode overwrites color: new mode retains color with a 3rd layer
-  _keep_alpha = false;
-  _interpolate = false;
-
-  _blend_type = BT_unspecified;
-
   _repeat_uv.set(1.0, 1.0);
   _offset.set(0.0, 0.0);
   _rotate_uv = 0.0;
 
+  _opposite = 0;
+
   _color_object = (MObject *)NULL;
+
+  _has_texture = false;
+  _has_flat_color = false;
+  _flat_color.set(0.0, 0.0, 0.0, 0.0);
+  _has_alpha_channel = false;
+  _keep_color = false; // classic mode overwrites color: new mode retains color with a 3rd layer
+  _keep_alpha = false;
+  _interpolate = false;
+  _uvset_name = "default";
+
+  _map_uvs = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,6 +122,8 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
 
   _map_uvs = copy._map_uvs;
   _color_object = copy._color_object;
+  
+  _opposite = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,14 +262,15 @@ strip_prefix(string full_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::read_surface_color
+//     Function: MayaShaderColorDef::find_textures_legacy
 //       Access: Private
-//  Description: Determines the surface color specified by the shader.
+//  Description: This is part of the deprecated codepath.
+//               Determines the surface color specified by the shader.
 //               This includes texturing and other advanced shader
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-read_surface_color(MayaShader *shader, MObject color, bool trans) {
+find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
   RGBColorf color_gain;
   if (get_vec3f_attribute(color, "colorGain", color_gain)) {
     color_gain[0] = color_gain[0] > 1.0 ? 1.0 : color_gain[0];
@@ -331,7 +341,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       image_plug.connectedTo(image_pa, true, false);
       
       for (size_t i = 0; i < image_pa.length(); i++) {
-        read_surface_color(shader, image_pa[0].node());
+        find_textures_legacy(shader, image_pa[0].node());
       }
     }
 
@@ -438,7 +448,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
             maya_cat.debug() << pl.name().asChar() << " next:connectedTo: " << pla_name << endl;
           }
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
-          color_p->read_surface_color(shader, pla[j].node());
+          color_p->find_textures_legacy(shader, pla[j].node());
           color_p->_texture_name.assign(pla[j].name().asChar());
           color_p->_blend_type = bt;
           size_t loc = color_p->_texture_name.find('.',0);
@@ -453,7 +463,7 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           if (maya_cat.is_debug()) {
             maya_cat.debug() << pl.name().asChar() << " first:connectedTo: " << pla_name << endl;
           }
-          read_surface_color(shader, pla[j].node());
+          find_textures_legacy(shader, pla[j].node());
           _texture_name.assign(pla[j].name().asChar());
           _blend_type = bt;
           size_t loc = _texture_name.find('.',0);
@@ -483,6 +493,178 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
           << "**Don't know how to interpret color attribute type "
           << color.apiTypeStr() << "\n";
       }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaderColorDef::find_textures
+//       Access: Private
+//  Description: Search to find any file textures that lead into the
+//               given input plug.  Any textures found will be added
+//               to the provided MayaShaderColorList.
+////////////////////////////////////////////////////////////////////
+void MayaShaderColorDef::
+find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug) {
+
+  MPlugArray outplugs;
+  inplug.connectedTo(outplugs, true, false);
+  if (outplugs.length() == 0) {
+    return;
+  }
+  if (outplugs.length() > 1) {
+    // Only one output plug should be connected to a given input plug.
+    maya_cat.warning()
+      << "Shader " << shadername << " has weird plug connections.\n";
+    return;
+  }
+  MPlug outplug = outplugs[0];
+  MObject source = outplug.node();
+  MFnDependencyNode sourceFn(source);
+  
+  if (source.hasFn(MFn::kFileTexture)) {
+
+    string filename;
+    bool hasfn = get_string_attribute(source, "fileTextureName", filename);
+    if ((!hasfn) || (filename.empty())) {
+      maya_cat.warning()
+        << "Shader " << shadername << " references file texture "
+        << "with no file name, ignoring invalid file texture.\n";
+      return;
+    }
+    Filename fn = filename;
+    if (fn.is_directory()) {
+      maya_cat.warning()
+        << "Shader " << shadername << " references file name "
+        << filename << " which is a directory, ignoring it.\n";
+      return;
+    }
+    
+    MayaShaderColorDef *def = new MayaShaderColorDef;
+    
+    def->_color_object = new MObject(source);
+    def->_texture_filename = Filename::from_os_specific(filename);
+    def->_texture_name = sourceFn.name().asChar();
+
+    get_vec2f_attribute(source, "coverage",       def->_coverage);
+    get_vec2f_attribute(source, "translateFrame", def->_translate_frame);
+    get_angle_attribute(source, "rotateFrame",    def->_rotate_frame);
+    
+    get_bool_attribute(source, "mirror",          def->_mirror);
+    get_bool_attribute(source, "stagger",         def->_stagger);
+    get_bool_attribute(source, "wrapU",           def->_wrap_u);
+    get_bool_attribute(source, "wrapV",           def->_wrap_v);
+
+    get_vec2f_attribute(source, "repeatUV",       def->_repeat_uv);
+    get_vec2f_attribute(source, "offset",         def->_offset);
+    get_angle_attribute(source, "rotateUV",       def->_rotate_uv);
+
+    RGBColorf color_gain;
+    float alpha_gain;
+    get_vec3f_attribute(source, "colorGain",      color_gain);
+    get_maya_attribute(source, "alphaGain",       alpha_gain);
+    def->_color_gain[0] = color_gain[0];
+    def->_color_gain[1] = color_gain[1];
+    def->_color_gain[2] = color_gain[2];
+    def->_color_gain[3] = alpha_gain;
+
+    if (maya_cat.is_debug()) {
+      maya_cat.debug() << "pushed a file texture" << endl;
+    }
+    list.push_back(def);
+
+    return;
+  }
+
+  if (source.hasFn(MFn::kProjection)) {
+    // This is a projected texture.  We will have to step one level
+    // deeper to find the actual texture.
+    size_t before = list.size();
+    MPlug image_plug = sourceFn.findPlug("image");
+    if (!image_plug.isNull()) {
+      MPlugArray image_pa;
+      image_plug.connectedTo(image_pa, true, false);
+      
+      for (size_t i = 0; i < image_pa.length(); i++) {
+        find_textures_modern(shadername, list, image_pa[0]);
+      }
+    }
+    
+    // Now apply any inherited attributes to all textures found.
+    
+    for (size_t i=before; i<list.size(); i++) {
+      MayaShaderColorDef *def = list[i];
+      
+      if (!get_mat4d_attribute(source, "placementMatrix", def->_projection_matrix)) {
+        def->_projection_matrix = LMatrix4d::ident_mat();
+      }
+
+      // The uAngle and vAngle might be used for certain kinds of
+      // projections.
+      if (!get_angle_attribute(source, "uAngle", def->_u_angle)) {
+        def->_u_angle = 360.0;
+      }
+      if (!get_angle_attribute(source, "vAngle", def->_v_angle)) {
+        def->_v_angle = 180.0;
+      }
+
+      string type;
+      if (get_enum_attribute(source, "projType", type)) {
+        def->set_projection_type(type);
+      }
+    }
+    return;
+  }
+  
+  if (source.hasFn(MFn::kLayeredTexture)) {
+    if (maya_cat.is_debug()) {
+      maya_cat.debug() << "Found layered texture" << endl;
+    }
+
+    MPlug inputsPlug = sourceFn.findPlug("inputs");
+    size_t nlayers = inputsPlug.numElements();
+    for (size_t layer=0; layer < nlayers; layer++) {
+      MPlug elt = inputsPlug.elementByPhysicalIndex(layer);
+      MPlug color;
+      MPlug blend;
+      for (size_t j=0; j<elt.numChildren(); j++) {
+        MPlug child = elt.child(j);
+        MFnAttribute att(child.attribute());
+        if (att.name() == "color") color = child;
+        if (att.name() == "blendMode") blend = child;
+      }
+      if (color.isNull() || blend.isNull()) {
+        maya_cat.warning() << "Invalid layered texture - bad inputs.\n";
+        return;
+      }
+      size_t before = list.size();
+      find_textures_modern(shadername, list, color);
+      int blendValue;
+      blend.getValue(blendValue);
+      for (size_t sub=before; sub<list.size(); sub++) {
+        MayaShaderColorDef *def = list[sub];
+        switch (blendValue) {
+        case 1:  def->_blend_type = BT_decal;     break;
+        case 6:  def->_blend_type = BT_modulate;  break;
+        case 4:  def->_blend_type = BT_add;       break;
+        }
+      }
+    }
+  }
+
+  // This shader wasn't understood.
+  if (maya_cat.is_debug()) {
+    maya_cat.info()
+      << "**Don't know how to interpret color attribute type "
+      << source.apiTypeStr() << "\n";
+  } else {
+    // If we don't have a heavy verbose count, only report each type
+    // of unsupported shader once.
+    static pset<MFn::Type> bad_types;
+    if (bad_types.insert(source.apiType()).second) {
+      maya_cat.info()
+        << "**Don't know how to interpret color attribute type "
+        << source.apiTypeStr() << "\n";
     }
   }
 }

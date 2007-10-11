@@ -101,6 +101,41 @@ find_shader_for_node(MObject node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::bind_uvsets
+//       Access: Public
+//  Description: Causes all shaders in the set to use the given
+//               mesh as a file-to-uvset map.
+////////////////////////////////////////////////////////////////////
+void MayaShaders::
+bind_uvsets(MObject mesh) {
+  _uvset_names.clear();
+  _file_to_uvset.clear();
+  
+  if (mesh.hasFn(MFn::kMesh)) {
+    MFnMesh mesh_fn(mesh);
+    MStatus status;
+    MStringArray maya_uvset_names;
+    status = mesh_fn.getUVSetNames(maya_uvset_names);
+    for (size_t i=0; i<maya_uvset_names.length(); ++i) {
+      MObjectArray moa;
+      string uvset_name = maya_uvset_names[i].asChar();
+      _uvset_names.push_back(uvset_name);
+      mesh_fn.getAssociatedUVSetTextures(maya_uvset_names[i], moa);
+      for (size_t j=0; j<moa.length(); ++j){
+        MFnDependencyNode dt(moa[j]);
+        string tex_name = dt.name().asChar();
+        _file_to_uvset[tex_name] = uvset_name;
+      }
+    }
+  }
+  
+  Shaders::iterator sha;
+  for (sha=_shaders.begin(); sha!=_shaders.end(); sha++) {
+    (*sha).second->bind_uvsets(_file_to_uvset);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaShaders::find_shader_for_shading_engine
 //       Access: Public
 //  Description: Returns the MayaShader object associated with the
@@ -122,11 +157,28 @@ find_shader_for_shading_engine(MObject engine) {
   // All right, this is a newly encountered shading engine.  Create a
   // new MayaShader object to represent it.
   MayaShader *shader = new MayaShader(engine);
-
+  shader->bind_uvsets(_file_to_uvset);
+  
   // Record this for the future.
   _shaders.insert(Shaders::value_type(engine_name, shader));
   _shaders_in_order.push_back(shader);
   return shader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShaders::find_uv_link
+//       Access: Public
+//  Description: Returns the current mapping from file to uvset
+//               for the given file texture name.
+////////////////////////////////////////////////////////////////////
+string MayaShaders::
+find_uv_link(const string &match) {
+  MayaFileToUVSetMap::iterator it = _file_to_uvset.find(match);
+  if (it == _file_to_uvset.end()) {
+    return "not found";
+  } else {
+    return (*it).second;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,4 +219,5 @@ clear() {
 
   _shaders.clear();
   _shaders_in_order.clear();
+  _file_to_uvset.clear();
 }

@@ -25,7 +25,11 @@
 #include "lmatrix.h"
 
 class MObject;
+class MPlug;
 class MayaShader;
+class MayaShaderColorDef;
+typedef pvector<MayaShaderColorDef *> MayaShaderColorList;
+typedef pmap<string, string> MayaFileToUVSetMap;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaShaderColorDef
@@ -36,7 +40,7 @@ class MayaShader;
 class MayaShaderColorDef {
 public:
   MayaShaderColorDef();
-  MayaShaderColorDef(MayaShaderColorDef&);
+  MayaShaderColorDef (MayaShaderColorDef&);
   ~MayaShaderColorDef();
 
   string strip_prefix(string full_name);
@@ -58,8 +62,6 @@ public:
     BT_blend_color_scale,
   };
 
-  BlendType _blend_type;
-
   enum ProjectionType {
     PT_off,
     PT_planar,
@@ -71,20 +73,16 @@ public:
     PT_concentric,
     PT_perspective,
   };
-
+  
+  BlendType _blend_type;
   ProjectionType _projection_type;
   LMatrix4d _projection_matrix;
   double _u_angle;
   double _v_angle;
     
-  bool _has_texture;
   Filename _texture_filename;
   string _texture_name;
-  string _uvset_name;
   Colorf _color_gain;
-  
-  bool _has_flat_color;
-  Colord _flat_color;
   
   LVector2f _coverage;
   LVector2f _translate_frame;
@@ -95,17 +93,19 @@ public:
   bool _wrap_u;
   bool _wrap_v;
 
-  bool _has_alpha_channel;
-  bool _keep_color;
-  bool _keep_alpha;
-  bool _interpolate;
-  
   LVector2f _repeat_uv;
   LVector2f _offset;
   double _rotate_uv;
   
+  MayaShaderColorDef *_opposite;
+  
 private:
-  void read_surface_color(MayaShader *shader, MObject color, bool trans=false);
+  MObject *_color_object;
+  
+private:
+  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug);
+  void find_textures_legacy(MayaShader *shader, MObject color, bool trans=false);
+
   void set_projection_type(const string &type);
 
   LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;
@@ -115,9 +115,40 @@ private:
   // Define a pointer to one of the above member functions.
   LPoint2d (MayaShaderColorDef::*_map_uvs)(const LPoint3d &pos, const LPoint3d &centroid) const;
   
-  MObject *_color_object;
-  
   friend class MayaShader;
+
+
+  // Deprecated Fields - these fields are only used by the
+  // deprecated codepath.  These fields are deprecated for the
+  // following reasons:
+  //
+  // * has_texture is redundant --- if there's no
+  // texture, just don't allocate a MayaShaderColorDef.
+  //
+  // * has_flat_color and flat_color don't belong here,
+  // they belong in the shader. 
+  //
+  // * has_alpha_channel is not needed - there are better
+  // ways to determine if a texture stage involves an alpha
+  // channel.
+  //
+  // * keep_color, keep_alpha, and interpolate are all
+  // adjuncts to blend_mode - it would make more sense just to
+  // add some more blend_modes.  
+  //
+  // * uvset_name is a property of a mesh, not a property
+  // of a shader.  It varies as you move through the scene.
+
+public:
+  bool     _has_texture;       // deprecated, see above.
+  bool     _has_flat_color;    // deprecated, see above.
+  Colord   _flat_color;        // deprecated, see above.
+  bool     _has_alpha_channel; // deprecated, see above.
+  bool     _keep_color;        // deprecated, see above.
+  bool     _keep_alpha;        // deprecated, see above.
+  bool     _interpolate;       // deprecated, see above.
+  string   _uvset_name;        // deprecated, see above.
+
 };
 
 #endif

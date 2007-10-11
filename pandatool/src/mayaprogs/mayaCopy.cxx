@@ -253,13 +253,10 @@ copy_maya_file(const Filename &source, const Filename &dest,
   int num_shaders = _shaders.get_num_shaders();
   for (int i = 0; i < num_shaders; i++) {
     MayaShader *shader = _shaders.get_shader(i);
-    for (size_t j = 0; j < shader->_color.size(); j++) {
-      if (!extract_texture(*shader->get_color_def(j), dir)) {
+    for (size_t j = 0; j < shader->_all_maps.size(); j++) {
+      if (!extract_texture(*shader->_all_maps[j], dir)) {
         return false;
       }
-    }
-    if (!extract_texture(shader->_transparency, dir)) {
-      return false;
     }
   }
 

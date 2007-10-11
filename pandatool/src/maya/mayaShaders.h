@@ -23,6 +23,7 @@
 
 #include "pmap.h"
 #include "pvector.h"
+#include "mayaShaderColorDef.h"
 
 class MayaShader;
 class MObject;
@@ -38,11 +39,15 @@ public:
   ~MayaShaders();
   MayaShader *find_shader_for_node(MObject node);
   MayaShader *find_shader_for_shading_engine(MObject engine);
-
+  
   int get_num_shaders() const;
   MayaShader *get_shader(int n) const;
-
+  
+  MayaFileToUVSetMap _file_to_uvset;
+  pvector<string> _uvset_names;
   void clear();
+  void bind_uvsets(MObject mesh);
+  string find_uv_link(const string &match);
 
 private:
   typedef pmap<string, MayaShader *> Shaders;

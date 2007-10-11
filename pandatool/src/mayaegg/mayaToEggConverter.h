@@ -25,6 +25,7 @@
 
 #include "mayaApi.h"
 #include "mayaShaders.h"
+#include "mayaShaderColorDef.h"
 #include "eggTextureCollection.h"
 #include "distanceUnit.h"
 #include "coordinateSystem.h"
@@ -154,14 +155,9 @@ private:
 
   bool reparent_decals(EggGroupNode *egg_parent);
 
-  string find_uv_link(string match);
- 
   int round(double value);
 
   string _program_name;
-
-  vector_string _uvset_names;
-  vector_string _tex_names;
 
   bool _from_selection;
   string _subroot;
