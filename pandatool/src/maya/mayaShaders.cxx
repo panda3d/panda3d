@@ -25,6 +25,8 @@
 #include <maya/MStatus.h>
 #include <maya/MObject.h>
 #include <maya/MFnDependencyNode.h>
+#include <maya/MFnMesh.h>
+#include <maya/MObjectArray.h>
 #include <maya/MPlug.h>
 #include <maya/MPlugArray.h>
 #include <maya/MFn.h>
