@@ -139,7 +139,6 @@ add_on_stage(TextureStage *stage, Texture *tex) const {
     // wasn't present before--then add the stage to the linear list
     // also.
     attrib->_on_stages.push_back(stage);
-    attrib->_sort_seq = UpdateSeq::old();
 
     // Also ensure it is removed from the off_stages list.
     attrib->_off_stages.erase(stage);
@@ -149,6 +148,10 @@ add_on_stage(TextureStage *stage, Texture *tex) const {
     // definition for that stage.  Replace it.
     (*insert_result.first).second = tex;
   }
+
+  // In either case, we now need to re-sort the attrib list.
+  attrib->_sort_seq = UpdateSeq::old();
+
   return return_new(attrib);
 }
 
@@ -171,6 +174,7 @@ remove_on_stage(TextureStage *stage) const {
            PT(TextureStage)(stage));
     if (si != attrib->_on_stages.end()) {
       attrib->_on_stages.erase(si);
+      attrib->_sort_seq = UpdateSeq::old();
     }
   }
 
@@ -199,6 +203,7 @@ add_off_stage(TextureStage *stage) const {
              PT(TextureStage)(stage));
       if (si != attrib->_on_stages.end()) {
         attrib->_on_stages.erase(si);
+        attrib->_sort_seq = UpdateSeq::old();
       }
     }
   }
