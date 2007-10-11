@@ -17,9 +17,9 @@ CollisionHandlerRayStart = 4000.0 # This is a hack, it may be better to use a li
 
 class ControlManager:
     notify = DirectNotifyGlobal.directNotify.newCategory("ControlManager")
-    wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
-    wantAvatarPhysicsDebug = base.config.GetBool('want-avatar-physics-debug', 0)
-    wantWASD = base.config.GetBool('want-WASD', 0)
+    wantAvatarPhysicsIndicator = config.GetBool('want-avatar-physics-indicator', 0)
+    wantAvatarPhysicsDebug = config.GetBool('want-avatar-physics-debug', 0)
+    wantWASD = config.GetBool('want-WASD', 0)
 
     def __init__(self, enable=True, passMessagesThrough = False):
         print ("init control manager %s" % (passMessagesThrough))
