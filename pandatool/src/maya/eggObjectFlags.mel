@@ -36,7 +36,7 @@ for ($i in $sel)
   string $attrName = "eggObjectTypes";
 
   // Modify this line as needed to add your own object types.
-  string $eggFlags = "none:portal:polylight:seq24:seq12:indexed:model:dcs:barrier:sphere:tube:trigger:trigger-sphere:bubble:ghost:keep-all-uvsets"
+  string $eggFlags = "none:portal:polylight:seq24:seq12:indexed:model:dcs:barrier:sphere:tube:trigger:trigger-sphere:bubble:ghost:keep-all-uvsets";
   
   string $object = ($i + ".eggObjectTypes");
   

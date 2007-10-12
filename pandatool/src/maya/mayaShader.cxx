@@ -213,10 +213,22 @@ find_textures_modern(MObject shader) {
 
   string n = shader_fn.name().asChar();
   
-  MayaShaderColorDef::find_textures_modern(n, _color_maps,  shader_fn.findPlug("color"));
-  MayaShaderColorDef::find_textures_modern(n, _trans_maps,  shader_fn.findPlug("transparency"));
-  MayaShaderColorDef::find_textures_modern(n, _normal_maps, shader_fn.findPlug("normalCamera"));
-  MayaShaderColorDef::find_textures_modern(n, _gloss_maps,  shader_fn.findPlug("specularColor"));
+  MayaShaderColorDef::find_textures_modern(n, _color_maps,  shader_fn.findPlug("color"), false);
+  if (_color_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _color_maps,  shader_fn.findPlug("colorR"), false);
+  }
+  MayaShaderColorDef::find_textures_modern(n, _trans_maps,  shader_fn.findPlug("transparency"), true);
+  if (_trans_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _trans_maps,  shader_fn.findPlug("transparencyR"), true);
+  }
+  MayaShaderColorDef::find_textures_modern(n, _normal_maps, shader_fn.findPlug("normalCamera"), false);
+  if (_normal_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _normal_maps, shader_fn.findPlug("normalCameraR"), false);
+  }
+  MayaShaderColorDef::find_textures_modern(n, _gloss_maps,  shader_fn.findPlug("specularColor"), true);
+  if (_gloss_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _gloss_maps,  shader_fn.findPlug("specularColorR"), true);
+  }
   
   collect_maps();
 
@@ -287,6 +299,20 @@ calculate_pairings() {
   for (size_t i=0; i<_normal_maps.size(); i++) {
     for (size_t j=0; j<_gloss_maps.size(); j++) {
       try_pair(_normal_maps[i], _gloss_maps[j], false);
+    }
+  }
+  for (size_t i=0; i<_normal_maps.size(); i++) {
+    if (_normal_maps[i]->_opposite) {
+      _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_gloss_map;
+    } else {
+      _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_map;
+    }
+  }
+  for (size_t i=0; i<_gloss_maps.size(); i++) {
+    if (_gloss_maps[i]->_opposite) {
+      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+    } else {
+      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_gloss_map;
     }
   }
 }

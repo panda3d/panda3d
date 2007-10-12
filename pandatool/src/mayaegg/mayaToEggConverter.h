@@ -143,17 +143,23 @@ private:
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
-  //  void set_shader_attributes(EggPrimitive &primitive,
-  //                             const MayaShader &shader);
-  void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                             const MItMeshPolygon *pi = NULL);
-                             //const vector_string &uvset_names = vector_string());
-  void apply_texture_properties(EggTexture &tex, 
-                                const MayaShaderColorDef &color_def);
-  bool compare_texture_properties(EggTexture &tex, 
-                                  const MayaShaderColorDef &color_def);
-
+  void apply_texture_uvprops(EggTexture &tex, 
+                             const MayaShaderColorDef &color_def);
+  void apply_texture_blendtype(EggTexture &tex, 
+                               const MayaShaderColorDef &color_def);
+  void apply_texture_filename(EggTexture &tex, 
+                              const MayaShaderColorDef &color_def);
+  void apply_texture_alpha_filename(EggTexture &tex, 
+                                    const MayaShaderColorDef &color_def);
+  bool compare_texture_uvprops(EggTexture &tex, 
+                               const MayaShaderColorDef &color_def);
   bool reparent_decals(EggGroupNode *egg_parent);
+  void set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
+                             bool mesh = false);
+  void set_shader_modern(EggPrimitive &primitive, const MayaShader &shader,
+                         bool mesh);
+  void set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
+                         bool mesh);
 
   int round(double value);
 

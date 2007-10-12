@@ -1861,7 +1861,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
     // And apply the shader properties to the polygon.
     if (shader != (MayaShader *)NULL) {
-      set_shader_attributes(*egg_poly, *shader, &pi);
+      set_shader_attributes(*egg_poly, *shader, true);
       default_color_def = shader->get_color_def();
     }
 
@@ -2445,8 +2445,74 @@ get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
-                      const MItMeshPolygon *pi) {
+                      bool mesh) {
+  if (shader._legacy_mode) {
+    set_shader_legacy(primitive, shader, mesh);
+  } else {
+    set_shader_modern(primitive, shader, mesh);
+  }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::set_shader_modern
+//       Access: Private
+//  Description: The modern implementation of set_shader_attributes.
+//
+//               In the modern codepath, the MayaShader is a direct,
+//               literal representation of a list of EggTextures.
+//               All this exporter has to do is translate the list
+//               without interpretation.  All the complex interpretation
+//               is handled elsewhere, in the MayaShader module.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_shader_modern(EggPrimitive &primitive, const MayaShader &shader,
+                      bool mesh) {
+  
+  for (size_t idx=0; idx < shader._all_maps.size(); idx++) {
+    MayaShaderColorDef *def = shader._all_maps[idx];
+    if ((def->_is_alpha)&&(def->_opposite != 0)) {
+      // This texture represents an alpha-filename.  It doesn't get its own <Texture>
+      continue;
+    }
+    
+    EggTexture tex(shader.get_name(), "");
+    tex.set_format(def->_is_alpha ? EggTexture::F_alpha : EggTexture::F_rgb);
+    apply_texture_filename(tex, *def);
+    if (def->_opposite) {
+      apply_texture_alpha_filename(tex, *def);
+    }
+    apply_texture_uvprops(tex, *def);
+    apply_texture_blendtype(tex, *def);
+    tex.set_uv_name(def->get_panda_uvset_name());
+  
+    EggTexture *new_tex =
+      _textures.create_unique_texture(tex, ~0);
+    primitive.add_texture(new_tex);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::set_shader_legacy
+//       Access: Private
+//  Description: The legacy implementation of set_shader_attributes.
+//               The old behavior of the exporter is just plain weird.
+//               It seems to be a result of an inexperienced coder
+//               who made some core mistakes, and then patched them
+//               up with kludges.  It seems to produce plausible
+//               results in certain specific cases, but overall, it
+//               doesn't make any sense.  Unfortunately, this weird
+//               behavior cannot be discarded - vast numbers of 3D
+//               models have been created that rely on this behavior.
+//               The solution is to compartmentalize the weirdness.
+//               The legacy codepath, when activated, implements the
+//               old weird behavior.  A brand-new codepath that
+//               shares almost nothing with the legacy codepath
+//               implements a much more straightforward behavior.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
+                      bool mesh) {
+  
   // determine if the base texture or any of the top texture need to be rgb only
   MayaShaderColorDef *color_def = NULL;
   bool is_rgb = false;
@@ -2510,7 +2576,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
-        apply_texture_properties(tex, *color_def);
+        apply_texture_uvprops(tex, *color_def);
         
         // If we also have a texture on transparency, apply it as the
         // alpha filename.
@@ -2522,7 +2588,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
               << " has contradictory wrap modes on color and texture.\n";
           }
           
-          if (!compare_texture_properties(tex, trans_def)) {
+          if (!compare_texture_uvprops(tex, trans_def)) {
             // Only report each broken shader once.
             static pset<string> bad_shaders;
             if (bad_shaders.insert(shader.get_name()).second) {
@@ -2632,7 +2698,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
               }
               texDummy.set_filename(outpath);
               texDummy.set_fullpath(fullpath);
-              apply_texture_properties(texDummy, *color_def);
+              apply_texture_uvprops(texDummy, *color_def);
               texDummy.set_combine_mode(EggTexture::CC_rgb, EggTexture::CM_modulate);
               texDummy.set_combine_source(EggTexture::CC_rgb, 0, EggTexture::CS_primary_color);
               texDummy.set_combine_operand(EggTexture::CC_rgb, 0, EggTexture::CO_src_color);
@@ -2655,7 +2721,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         tex.set_format(EggTexture::F_alpha);
-        apply_texture_properties(tex, trans_def);
+        apply_texture_uvprops(tex, trans_def);
       }
       
       if (mayaegg_cat.is_debug()) {
@@ -2668,7 +2734,7 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
       EggTexture *new_tex =
         _textures.create_unique_texture(tex, ~0);
       
-      if (pi) {
+      if (mesh) {
         if (uvset_name.find("not found") == -1) {
           primitive.add_texture(new_tex);
           if (uvset_name == "map1")  // this is the name to look up by in maya
@@ -2726,14 +2792,14 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::apply_texture_properties
+//     Function: MayaShader::apply_texture_uvprops
 //       Access: Private
 //  Description: Applies all the appropriate texture properties to the
 //               EggTexture object, including wrap modes and texture
 //               matrix.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
+apply_texture_uvprops(EggTexture &tex, const MayaShaderColorDef &color_def) {
   // Let's mipmap all textures by default.
   tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
   tex.set_magfilter(EggTexture::FT_linear);
@@ -2743,7 +2809,7 @@ apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
 
   tex.set_wrap_u(wrap_u);
   tex.set_wrap_v(wrap_v);
-  
+
   LMatrix3d mat = color_def.compute_texture_matrix();
   if (!mat.almost_equal(LMatrix3d::ident_mat())) {
     tex.set_transform2d(mat);
@@ -2751,17 +2817,94 @@ apply_texture_properties(EggTexture &tex, const MayaShaderColorDef &color_def) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::compare_texture_properties
+//     Function: MayaShader::apply_texture_blendtype
+//       Access: Private
+//  Description: Applies the blendtype to the EggTexture.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+apply_texture_blendtype(EggTexture &tex, const MayaShaderColorDef &color_def) {
+  switch (color_def._blend_type) {
+  case MayaShaderColorDef::BT_unspecified:
+    tex.set_env_type(EggTexture::ET_unspecified);
+    return;
+  case MayaShaderColorDef::BT_modulate:
+    tex.set_env_type(EggTexture::ET_modulate);
+    return;
+  case MayaShaderColorDef::BT_decal:
+    tex.set_env_type(EggTexture::ET_decal);
+    return;
+  case MayaShaderColorDef::BT_blend:
+    tex.set_env_type(EggTexture::ET_blend);
+    return;
+  case MayaShaderColorDef::BT_replace:
+    tex.set_env_type(EggTexture::ET_replace);
+    return;
+  case MayaShaderColorDef::BT_add:
+    tex.set_env_type(EggTexture::ET_add);
+    return;
+  case MayaShaderColorDef::BT_blend_color_scale:
+    tex.set_env_type(EggTexture::ET_blend_color_scale);
+    return;
+  case MayaShaderColorDef::BT_normal_map:
+    tex.set_env_type(EggTexture::ET_normal_map);
+    return;
+  case MayaShaderColorDef::BT_gloss_map:
+    tex.set_env_type(EggTexture::ET_gloss_map);
+    return;
+  case MayaShaderColorDef::BT_normal_gloss_map:
+    tex.set_env_type(EggTexture::ET_normal_gloss_map);
+    return;
+  case MayaShaderColorDef::BT_selector_map:
+    tex.set_env_type(EggTexture::ET_selector_map);
+    return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::apply_texture_filename
+//       Access: Private
+//  Description: Applies the filename to the EggTexture.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+apply_texture_filename(EggTexture &tex, const MayaShaderColorDef &def) {
+  Filename filename = Filename::from_os_specific(def._texture_filename);
+  Filename fullpath, outpath;
+  _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+  tex.set_filename(outpath);
+  tex.set_fullpath(fullpath);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::apply_texture_alpha_filename
+//       Access: Private
+//  Description: Applies the alpha filename to the EggTexture.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+apply_texture_alpha_filename(EggTexture &tex, const MayaShaderColorDef &def) {
+  if (def._opposite) {
+    tex.set_format(EggTexture::F_rgba);
+    if (def._opposite->_texture_filename != def._texture_filename) {
+      Filename filename = Filename::from_os_specific(def._opposite->_texture_filename);
+      Filename fullpath, outpath;
+      _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+      tex.set_alpha_filename(outpath);
+      tex.set_alpha_fullpath(fullpath);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::compare_texture_uvprops
 //       Access: Private
 //  Description: Compares the texture properties already on the
 //               texture (presumably set by a previous call to
-//               apply_texture_properties()) and returns false if they
+//               apply_texture_uvprops()) and returns false if they
 //               differ from that specified by the indicated color_def
 //               object, or true if they match.
 ////////////////////////////////////////////////////////////////////
 bool MayaToEggConverter::
-compare_texture_properties(EggTexture &tex, 
-                           const MayaShaderColorDef &color_def) {
+compare_texture_uvprops(EggTexture &tex, 
+                        const MayaShaderColorDef &color_def) {
   bool okflag = true;
 
   EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;

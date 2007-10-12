@@ -64,6 +64,8 @@ MayaShaderColorDef() {
   _offset.set(0.0, 0.0);
   _rotate_uv = 0.0;
 
+  _is_alpha = false;
+
   _opposite = 0;
 
   _color_object = (MObject *)NULL;
@@ -120,6 +122,8 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
   _offset = copy._offset;
   _rotate_uv = copy._rotate_uv;
 
+  _is_alpha = copy._is_alpha;
+  
   _map_uvs = copy._map_uvs;
   _color_object = copy._color_object;
   
@@ -241,24 +245,18 @@ reset_maya_texture(const Filename &texture) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MayaShaderColorDef::strip_prefix
+//     Function: MayaShaderColorDef::get_panda_uvset_name
 //       Access: Private
-//  Description: Maya puts a prefix on shader nameswhen files are 
-//               imported. This routine strips that out before writing 
-//               egg file. //This was a hack: not needed anymore
+//  Description: Maya's default uvset name is "map1".  Panda's default
+//               uvset name is "default".  Otherwise, leaves uvset
+//               name untranslated.
 ////////////////////////////////////////////////////////////////////
 string MayaShaderColorDef::
-strip_prefix(string full_name) {
-  string axed_name;
-  size_t cut_point = full_name.find(":");
-  if (cut_point != string::npos) {
-    axed_name = full_name.substr(cut_point+1);
-    if (maya_cat.is_spam()) {
-      maya_cat.spam() << "stripped from: " << full_name << "-> to: " << axed_name << endl;
-    }
-    return axed_name;
+get_panda_uvset_name() {
+  if (_uvset_name == "map1") {
+    return "default";
   }
-  return full_name;
+  return _uvset_name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,7 +503,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
 //               to the provided MayaShaderColorList.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug) {
+find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha) {
 
   MPlugArray outplugs;
   inplug.connectedTo(outplugs, true, false);
@@ -568,6 +566,8 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     def->_color_gain[2] = color_gain[2];
     def->_color_gain[3] = alpha_gain;
 
+    def->_is_alpha = is_alpha;
+    
     if (maya_cat.is_debug()) {
       maya_cat.debug() << "pushed a file texture" << endl;
     }
@@ -586,7 +586,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
       image_plug.connectedTo(image_pa, true, false);
       
       for (size_t i = 0; i < image_pa.length(); i++) {
-        find_textures_modern(shadername, list, image_pa[0]);
+        find_textures_modern(shadername, list, image_pa[0], is_alpha);
       }
     }
     
@@ -623,7 +623,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
 
     MPlug inputsPlug = sourceFn.findPlug("inputs");
     size_t nlayers = inputsPlug.numElements();
-    for (size_t layer=0; layer < nlayers; layer++) {
+    for (int layer=nlayers-1; layer >= 0; layer--) {
       MPlug elt = inputsPlug.elementByPhysicalIndex(layer);
       MPlug color;
       MPlug blend;
@@ -638,7 +638,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
         return;
       }
       size_t before = list.size();
-      find_textures_modern(shadername, list, color);
+      find_textures_modern(shadername, list, color, is_alpha);
       int blendValue;
       blend.getValue(blendValue);
       for (size_t sub=before; sub<list.size(); sub++) {
@@ -650,8 +650,15 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
         }
       }
     }
+    return;
   }
 
+  if (source.apiType() == MFn::kReverse) {
+    MPlug input_plug = sourceFn.findPlug("input");
+    find_textures_modern(shadername, list, input_plug, is_alpha);
+    return;
+  }
+  
   // This shader wasn't understood.
   if (maya_cat.is_debug()) {
     maya_cat.info()
@@ -662,9 +669,9 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     // of unsupported shader once.
     static pset<MFn::Type> bad_types;
     if (bad_types.insert(source.apiType()).second) {
-      maya_cat.info()
-        << "**Don't know how to interpret color attribute type "
-        << source.apiTypeStr() << "\n";
+      maya_cat.warning()
+        << "Don't know how to export a shader of type "
+        << source.apiTypeStr() << " " << sourceFn.type() << "\n";
     }
   }
 }

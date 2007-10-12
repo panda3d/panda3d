@@ -60,6 +60,10 @@ public:
     BT_replace,
     BT_add,
     BT_blend_color_scale,
+    BT_normal_map,
+    BT_gloss_map,
+    BT_normal_gloss_map,
+    BT_selector_map,
   };
 
   enum ProjectionType {
@@ -96,14 +100,19 @@ public:
   LVector2f _repeat_uv;
   LVector2f _offset;
   double _rotate_uv;
+
+  bool _is_alpha;
   
+  string _uvset_name;
   MayaShaderColorDef *_opposite;
   
+  string get_panda_uvset_name();
+
 private:
   MObject *_color_object;
   
 private:
-  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug);
+  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha);
   void find_textures_legacy(MayaShader *shader, MObject color, bool trans=false);
 
   void set_projection_type(const string &type);
@@ -135,9 +144,6 @@ private:
   // * keep_color, keep_alpha, and interpolate are all
   // adjuncts to blend_mode - it would make more sense just to
   // add some more blend_modes.  
-  //
-  // * uvset_name is a property of a mesh, not a property
-  // of a shader.  It varies as you move through the scene.
 
 public:
   bool     _has_texture;       // deprecated, see above.
@@ -147,7 +153,6 @@ public:
   bool     _keep_color;        // deprecated, see above.
   bool     _keep_alpha;        // deprecated, see above.
   bool     _interpolate;       // deprecated, see above.
-  string   _uvset_name;        // deprecated, see above.
 
 };
 
