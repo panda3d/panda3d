@@ -65,6 +65,8 @@ PUBLISHED:
   INLINE void set_preserve_attributes(int attrib_mask);
   INLINE int get_preserve_attributes() const;
 
+  void set_transform_limit(float limit) { _transform_limit = limit; };
+
 private:
   PreserveTransform _preserve_transform;
   int _preserve_attributes;
@@ -76,6 +78,13 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager);
+
+  virtual void transform_changed();
+  void test_transform(const TransformState *ts) const;
+
+  float _transform_limit;
+
+
 
 public:
   static TypeHandle get_class_type() {

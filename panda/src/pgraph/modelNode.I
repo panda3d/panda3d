@@ -28,6 +28,7 @@ ModelNode(const string &name) :
 {
   _preserve_transform = PT_none;
   _preserve_attributes = 0;
+  _transform_limit = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,6 +104,7 @@ INLINE ModelNode::
 ModelNode(const ModelNode &copy) :
   PandaNode(copy),
   _preserve_transform(copy._preserve_transform),
-  _preserve_attributes(copy._preserve_attributes)
+  _preserve_attributes(copy._preserve_attributes),
+  _transform_limit(copy._transform_limit)
 {
 }

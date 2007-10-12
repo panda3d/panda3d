@@ -137,6 +137,44 @@ register_with_read_factory() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function : test_transform
+//       Access : private
+//  Description : this tests the transform to make sure it's within
+//                the specified limits.  It's done so we can assert
+//                to see when an invalid transform is being applied.
+////////////////////////////////////////////////////////////////////
+void ModelNode::
+test_transform(const TransformState *ts) const {
+  LPoint3f pos(ts->get_pos());
+  nassertv(pos[0] < _transform_limit);
+  nassertv(pos[0] > -_transform_limit);
+  nassertv(pos[1] < _transform_limit);
+  nassertv(pos[1] > -_transform_limit);
+  nassertv(pos[2] < _transform_limit);
+  nassertv(pos[2] > -_transform_limit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : transform_changed
+//       Access : private, virtual
+//  Description : node hook.  This function handles outside
+//                (non-physics) actions on the actor
+//                and updates the internal representation of the node.
+//                i.e. copy from PandaNode to PhysicsObject
+////////////////////////////////////////////////////////////////////
+void ModelNode::
+transform_changed() {
+  PandaNode::transform_changed();
+  // get the transform
+  CPT(TransformState) transform = get_transform();
+
+  if (_transform_limit > 0.0) {
+    test_transform(transform);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram

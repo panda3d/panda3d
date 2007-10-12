@@ -79,9 +79,6 @@ update_transform() {
 
   // lock the callback so that this doesn't call transform_changed.
   _ok_to_callback = false;
-  if (_transform_limit > 0.0) {
-    test_transform(TransformState::make_mat(lcs));
-  }
   set_transform(TransformState::make_mat(lcs));
   _ok_to_callback = true;
 }
@@ -123,6 +120,10 @@ transform_changed() {
 
   // get the transform
   CPT(TransformState) transform = get_transform();
+
+  if (_transform_limit > 0.0) {
+    test_transform(transform);
+  }
 
   // extract the orientation
   if (_mass_center->get_oriented() == true) {
