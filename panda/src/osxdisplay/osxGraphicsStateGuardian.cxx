@@ -389,7 +389,7 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
 bool osxGraphicsStateGuardian::
 static_set_gamma(float gamma) {
     bool set;  
-
+	CGDisplayRestoreColorSyncSettings();
     set = false;
 
 	CGGammaValue gOriginalRedTable[ 256 ];
@@ -408,16 +408,23 @@ static_set_gamma(float gamma) {
 	short j, i;
 	short y[3];
 
+	for (j = 0; j < 3; j++)
+		{
+			y[j] = 255;
+		};
+
     gamma = (2 * gamma) + 1.0;
 	
 	y[0] = 256 * gamma;
 	y[1] = 256 * gamma;
 	y[2] = 256 * gamma;
 	
+	for (i = 0; i < 256; i++)
+	{
 	redTable[i] = gOriginalRedTable[ i ] * (y[ 0 ] ) / 256;
 	greenTable[ i ] = gOriginalGreenTable[ i ] * (y[ 1 ] ) / 256;
 	blueTable[ i ] = gOriginalBlueTable[ i ] * (y[ 2 ] ) / 256;
-
+	};
 	cgErr = CGSetDisplayTransferByTable( 0, 256, redTable, greenTable, blueTable);
 
 	if (cgErr == 0){
@@ -425,6 +432,7 @@ static_set_gamma(float gamma) {
 		}
 
   return set;
+
 }
 
 ////////////////////////////////////////////////////////////////////
