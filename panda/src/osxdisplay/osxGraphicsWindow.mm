@@ -186,7 +186,7 @@ OSStatus osxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRe
   switch (the_class)
   {
 	  case kEventClassMouse:
-	  	osxdisplay_cat.info() << "Mouse movement handled by Window handler\n";
+            // osxdisplay_cat.info() << "Mouse movement handled by Window handler\n";
 		result  = handleWindowMouseEvents (myHandler, event);
 		break;
 		
@@ -409,7 +409,7 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
 			break;
 
 		case kEventClassMouse:
-			osxdisplay_cat.info() << "Mouse movement handled by Application handler\n";
+                  // osxdisplay_cat.info() << "Mouse movement handled by Application handler\n";
 			//if(osxGraphicsWindow::FullScreenWindow != NULL)	
 				result = osx_win->handleWindowMouseEvents (myHandler, event);
  		    //result = noErr; 
@@ -1626,14 +1626,12 @@ bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_
     return false;
   }
 
-  // For now, ignore the origin, since we seem to be getting a bogus
-  // origin of (0, 0).
-  // 
-  // We need this to be here so that changing window size places the
-  // window in the correct position.
-
+  // We sometimes get a bogus origin of (0, 0).  As a special hack,
+  // treat this as a special case, and ignore it.
   if (has_origin) {
-    MoveWindow(_osx_window, x_origin, y_origin, false);
+    if (x_origin != 0 || y_origin != 0) {
+      MoveWindow(_osx_window, x_origin, y_origin, false);
+    }
   }
 
   if (!_properties.get_undecorated())
