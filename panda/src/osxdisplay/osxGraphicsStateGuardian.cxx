@@ -413,8 +413,6 @@ static_set_gamma(float gamma) {
 			y[j] = 255;
 		};
 
-    gamma = (2 * gamma) + 1.0;
-	
 	y[0] = 256 * gamma;
 	y[1] = 256 * gamma;
 	y[2] = 256 * gamma;
