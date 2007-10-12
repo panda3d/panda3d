@@ -34,6 +34,20 @@ def get_registry_value(key, subkey, value):
     (value, type) = _winreg.QueryValueEx(handle, value)
     return value
 
+c_ulong = ctypes.c_ulong
+
+class MEMORYSTATUS(ctypes.Structure):
+            _fields_ = [
+                ('dwLength', c_ulong),
+                ('dwMemoryLoad', c_ulong),
+                ('dwTotalPhys', c_ulong),
+                ('dwAvailPhys', c_ulong),
+                ('dwTotalPageFile', c_ulong),
+                ('dwAvailPageFile', c_ulong),
+                ('dwTotalVirtual', c_ulong),
+                ('dwAvailVirtual', c_ulong)
+            ]
+
 class SystemInformation:
     def __init__(self):
 
@@ -96,19 +110,8 @@ class SystemInformation:
             
     def _ram(self):
         kernel32 = ctypes.windll.kernel32
-        c_ulong = ctypes.c_ulong
-        class MEMORYSTATUS(ctypes.Structure):
-            _fields_ = [
-                ('dwLength', c_ulong),
-                ('dwMemoryLoad', c_ulong),
-                ('dwTotalPhys', c_ulong),
-                ('dwAvailPhys', c_ulong),
-                ('dwTotalPageFile', c_ulong),
-                ('dwAvailPageFile', c_ulong),
-                ('dwTotalVirtual', c_ulong),
-                ('dwAvailVirtual', c_ulong)
-            ]
-            
+        
+
         memoryStatus = MEMORYSTATUS()
         memoryStatus.dwLength = ctypes.sizeof(MEMORYSTATUS)
         kernel32.GlobalMemoryStatus(ctypes.byref(memoryStatus))
