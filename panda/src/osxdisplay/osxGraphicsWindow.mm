@@ -1626,12 +1626,25 @@ bool osxGraphicsWindow::do_reshape_request(int x_origin, int y_origin, bool has_
     return false;
   }
 
-  // We sometimes get a bogus origin of (0, 0).  As a special hack,
-  // treat this as a special case, and ignore it.
-  if (has_origin) {
-    if (x_origin != 0 || y_origin != 0) {
-      MoveWindow(_osx_window, x_origin, y_origin, false);
-    }
+  if (_properties.has_parent_window())
+  {
+    if (has_origin)
+    {
+		NSWindow*	parentWindow		=	(NSWindow *)_properties.get_parent_window();
+		NSRect		parentFrame			=	[parentWindow frame];
+		
+		MoveWindow(_osx_window, x_origin+parentFrame.origin.x, y_origin+parentFrame.origin.y, false);
+	 }
+  }
+  else
+  {
+	  // We sometimes get a bogus origin of (0, 0).  As a special hack,
+	  // treat this as a special case, and ignore it.
+	  if (has_origin) {
+		if (x_origin != 0 || y_origin != 0) {
+		  MoveWindow(_osx_window, x_origin, y_origin, false);
+		}
+	  }
   }
 
   if (!_properties.get_undecorated())
