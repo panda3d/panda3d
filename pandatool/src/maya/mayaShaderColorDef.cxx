@@ -288,7 +288,9 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
     _color_gain[3] *= alpha_gain;
   }
   if (color.hasFn(MFn::kFileTexture)) {
+    MFnDependencyNode dfn(color);
     _color_object = new MObject(color);
+    _texture_name = dfn.name().asChar();
     string filename;
     _has_texture = get_string_attribute(color, "fileTextureName", filename);
     _has_texture = _has_texture && !filename.empty();
@@ -447,7 +449,6 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
           }
           MayaShaderColorDef *color_p = new MayaShaderColorDef;
           color_p->find_textures_legacy(shader, pla[j].node());
-          color_p->_texture_name.assign(pla[j].name().asChar());
           color_p->_blend_type = bt;
           size_t loc = color_p->_texture_name.find('.',0);
           if (loc != string::npos) {
