@@ -4330,7 +4330,6 @@ void _create_gamma_table (float gamma, unsigned short *original_red_table, unsig
 //       Access: Public, Static
 //  Description: Static function for getting the original gamma.
 ////////////////////////////////////////////////////////////////////
-
 bool DXGraphicsStateGuardian8::
 get_gamma_table(void) {
   bool get;  
@@ -4359,7 +4358,7 @@ get_gamma_table(void) {
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-static_set_gamma(float gamma) {
+static_set_gamma(bool restore, float gamma) {
   bool set;  
   HDC hdc = GetDC(NULL);
 
@@ -4367,7 +4366,7 @@ static_set_gamma(float gamma) {
   if (hdc) {   
     unsigned short ramp [256 * 3];
 
-    if (_gamma_table_initialized) {    
+    if (restore && _gamma_table_initialized) {    
       _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
@@ -4394,12 +4393,22 @@ bool DXGraphicsStateGuardian8::
 set_gamma(float gamma) {
   bool set;
 
-  set = static_set_gamma(gamma);
+  set = static_set_gamma(false, gamma);
   if (set) {
     _gamma = gamma;  
   }
 
   return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::restore_gamma
+//       Access: Published
+//  Description: Restore original gamma.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+restore_gamma() {
+  static_set_gamma(true, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4409,5 +4418,5 @@ set_gamma(float gamma) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 atexit_function(void) {
-  static_set_gamma(1.0);
+  static_set_gamma(true, 1.0);
 }

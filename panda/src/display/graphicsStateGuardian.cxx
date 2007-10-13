@@ -2088,6 +2088,15 @@ get_gamma(float gamma) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::restore_gamma
+//       Access: Published, Virtual
+//  Description: Restore original gamma setting.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+restore_gamma() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::create_gamma_table
 //       Access: Public, Static
 //  Description: Create a gamma table.

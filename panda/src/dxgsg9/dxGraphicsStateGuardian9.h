@@ -170,8 +170,9 @@ public:
   INLINE HRESULT set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value);
 
   static bool get_gamma_table(void);
-  static bool static_set_gamma(float gamma);
+  static bool static_set_gamma(bool restore, float gamma);
   bool set_gamma(float gamma);
+  void restore_gamma();
   static void atexit_function(void);
 
 protected:

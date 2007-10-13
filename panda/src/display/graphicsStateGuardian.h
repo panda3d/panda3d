@@ -153,6 +153,7 @@ PUBLISHED:
 
   virtual bool set_gamma(float gamma);
   float get_gamma(float gamma);
+  virtual void restore_gamma();
   
 public:
   bool set_scene(SceneSetup *scene_setup);
