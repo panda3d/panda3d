@@ -323,8 +323,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         #return self.air.getParentMgr(self.zoneId)
         return self.getZoneData().getParentMgr()
 
-    def getCollTrav(self):
-        return self.getZoneData().getCollTrav()
+    def getCollTrav(self, *args, **kArgs):
+        return self.getZoneData().getCollTrav(*args, **kArgs)
 
     def sendUpdate(self, fieldName, args = []):
         assert self.notify.debugStateCall(self)

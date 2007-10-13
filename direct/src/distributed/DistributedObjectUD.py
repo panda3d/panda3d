@@ -254,8 +254,8 @@ class DistributedObjectUD(DistributedObjectBase):
     def getParentMgr(self):
         return self.air.getParentMgr(self.zoneId)
 
-    def getCollTrav(self):
-        return self.air.getCollTrav(self.zoneId)
+    def getCollTrav(self, *args, **kArgs):
+        return self.air.getCollTrav(self.zoneId, *args, **kArgs)
 
     def sendUpdate(self, fieldName, args = []):
         assert self.notify.debugStateCall(self)
