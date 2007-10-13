@@ -13,6 +13,8 @@ from direct.task.Task import Task
 # downloaded.
 #from pandac.PandaModules import *
 
+from pandac.PandaModules import PStatCollector
+
 class EventManager:
 
     notify = None
@@ -33,12 +35,22 @@ class EventManager:
         self.eventQueue = eventQueue
         self.eventHandler = None
 
+        self._wantPstats = None # no config at this point
+
     def doEvents(self):
         """
         Process all the events on the C++ event queue
         """
+        if self._wantPstats is None:
+            self._wantPstats = config.GetBool('pstats-eventmanager', 0)
+        # use different methods for handling events with and without pstats tracking
+        # for efficiency
+        if self._wantPstats:
+            processFunc = self.processEventPstats
+        else:
+            processFunc = self.processEvent
         while (not self.eventQueue.isQueueEmpty()):
-            self.processEvent(self.eventQueue.dequeueEvent())
+            processFunc(self.eventQueue.dequeueEvent())
 
     def eventLoopTask(self, task):
         """
@@ -79,7 +91,48 @@ class EventManager:
     def processEvent(self, event):
         """
         Process a C++ event
+        Duplicate any changes in processEventPstats
         """
+        # **************************************************************
+        # ******** Duplicate any changes in processEventPstats *********
+        # **************************************************************
+        # Get the event name
+        eventName = event.getName()
+        if eventName:
+            paramList = []
+            for i in range(event.getNumParameters()):
+                eventParameter = event.getParameter(i)
+                eventParameterData = self.parseEventParameter(eventParameter)
+                paramList.append(eventParameterData)
+            # Do not print the new frame debug, it is too noisy!
+            if (EventManager.notify.getDebug() and eventName != 'NewFrame'):
+                EventManager.notify.debug('received C++ event named: ' + eventName +
+                                          ' parameters: ' + `paramList`)
+            # **************************************************************
+            # ******** Duplicate any changes in processEventPstats *********
+            # **************************************************************
+            # Send the event, we used to send it with the event 
+            # name as a parameter, but now you can use extraArgs for that
+            if paramList:
+                messenger.send(eventName, paramList)
+            else:
+                messenger.send(eventName)
+            # Also send the event down into C++ land
+            if self.eventHandler:
+                self.eventHandler.dispatchEvent(event)
+            
+        else:
+            # An unnamed event from C++ is probably a bad thing
+            EventManager.notify.warning('unnamed event in processEvent')
+
+    def processEventPstats(self, event):
+        """
+        Process a C++ event with pstats tracking
+        Duplicate any changes in processEvent
+        """
+        # ********************************************************
+        # ******** Duplicate any changes in processEvent *********
+        # ********************************************************
         # Get the event name
         eventName = event.getName()
         if eventName:
@@ -94,13 +147,37 @@ class EventManager:
                                           ' parameters: ' + `paramList`)
             # Send the event, we used to send it with the event 
             # name as a parameter, but now you can use extraArgs for that
+            # ********************************************************
+            # ******** Duplicate any changes in processEvent *********
+            # ********************************************************
+            if self._wantPstats:
+                name = eventName
+                hyphen = name.find('-')
+                if hyphen >= 0:
+                    name = name[0:hyphen]
+                pstatCollector = PStatCollector('App:Show code:eventManager:' + name)
+                pstatCollector.start()
+                if self.eventHandler:
+                    cppPstatCollector = PStatCollector(
+                        'App:Show code:eventManager:' + name + ':C++')
+
             if paramList:
                 messenger.send(eventName, paramList)
             else:
                 messenger.send(eventName)
             # Also send the event down into C++ land
             if self.eventHandler:
+                if self._wantPstats:
+                    cppPstatCollector.start()
                 self.eventHandler.dispatchEvent(event)
+            # ********************************************************
+            # ******** Duplicate any changes in processEvent *********
+            # ********************************************************
+
+            if self._wantPstats:
+                if self.eventHandler:
+                    cppPstatCollector.stop()
+                pstatCollector.stop()
             
         else:
             # An unnamed event from C++ is probably a bad thing
