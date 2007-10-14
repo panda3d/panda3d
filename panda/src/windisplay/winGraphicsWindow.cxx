@@ -141,21 +141,30 @@ move_pointer(int device, int x, int y) {
 
   // Note: this is not thread-safe; it should be called only from App.
   // Probably not an issue.
-  nassertr(device == 0, false);
-  if (!_properties.get_foreground() )
-//      !_input_devices[0].get_pointer().get_in_window()) 
-  {
-    // If the window doesn't have input focus, or the mouse isn't
-    // currently within the window, forget it.
-    return false;
+  if (device == 0) {
+    // Move the system mouse pointer.
+    if (!_properties.get_foreground() )
+      //      !_input_devices[0].get_pointer().get_in_window()) 
+      {
+        // If the window doesn't have input focus, or the mouse isn't
+        // currently within the window, forget it.
+        return false;
+      }
+
+    RECT view_rect;
+    get_client_rect_screen(_hWnd, &view_rect);
+    
+    SetCursorPos(view_rect.left + x, view_rect.top + y);
+    _input_devices[0].set_pointer_in_window(x, y);
+    return true;
+  } else {
+    // Move a raw mouse.
+    if ((device < 1)||(device >= _input_devices.size())) {
+      return false;
+    }
+    _input_devices[device].set_pointer_in_window(x, y);
+    return true;
   }
-
-  RECT view_rect;
-  get_client_rect_screen(_hWnd, &view_rect);
-
-  SetCursorPos(view_rect.left + x, view_rect.top + y);
-  _input_devices[0].set_pointer_in_window(x, y);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
