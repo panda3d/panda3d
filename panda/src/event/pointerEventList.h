@@ -60,6 +60,7 @@ PUBLISHED:
   
   bool   encircles(int x, int y) const;
   double total_turns(double sec) const;
+  double match_pattern(const string &pattern, double rot, double seglen);
   
 public:
   INLINE PointerEventList(const PointerEventList &copy);
@@ -70,6 +71,7 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
+  void parse_pattern(const string &ascpat, pvector <double> &pattern);
   typedef pdeque<PointerEvent> Events;
   Events _events;
 
