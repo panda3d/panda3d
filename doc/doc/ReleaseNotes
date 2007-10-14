@@ -1,3 +1,10 @@
+------------------------  RELEASE 1.4.3  ------------------------
+
+* New support for normal & gloss texture stages.
+  - actual normal mapping and gloss mapping not included yet.
+* Ability to use method move_pointer on a raw mouse.
+* Added PointerEventList::match_pattern
+
 ------------------------  RELEASE 1.4.2  ------------------------
 
 * Added code for mouse-trail logging.
