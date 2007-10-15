@@ -175,8 +175,8 @@ OSStatus osxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRe
 	UInt32 the_class = GetEventClass(event);
 	UInt32 kind = GetEventKind(event);
 
-	WindowRef window = _osx_window;	//	NULL;		
-//	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+	WindowRef window = NULL;
+	GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
 	if (osxdisplay_cat.is_spam())
 	{
@@ -186,7 +186,6 @@ OSStatus osxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRe
   switch (the_class)
   {
 	  case kEventClassMouse:
-            // osxdisplay_cat.info() << "Mouse movement handled by Window handler\n";
 		result  = handleWindowMouseEvents (myHandler, event);
 		break;
 		
@@ -291,21 +290,17 @@ void osxGraphicsWindow::SystemCloseWindow()
 
 static pascal OSStatus	windowEvtHndlr(EventHandlerCallRef myHandler, EventRef event, void *userData)
 {
-	osxGraphicsWindow*	osx_win = (osxGraphicsWindow *)userData;
-	if (osx_win != (osxGraphicsWindow *)NULL)
-		return osx_win->event_handler(myHandler, event);
-
-//#pragma unused (userData)
+#pragma unused (userData)
  
-//  WindowRef window = NULL;		
-//  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
+  WindowRef window = NULL;		
+  GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
-//  if (window != NULL)
-//  {
-//    osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
-//    if (osx_win != (osxGraphicsWindow *)NULL)
-//      return osx_win->event_handler(myHandler, event);
-//  }
+  if (window != NULL)
+  {
+    osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
+    if (osx_win != (osxGraphicsWindow *)NULL)
+      return osx_win->event_handler(myHandler, event);
+  }
 
   return eventNotHandledErr;
 }
