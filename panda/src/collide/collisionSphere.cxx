@@ -562,6 +562,51 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::test_intersection_from_parabola
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  Parabolaf local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  double t;
+  if (!intersects_parabola(t, local_p, parabola->get_t1(), parabola->get_t2(),
+                           local_p.calc_point(parabola->get_t1()),
+                           local_p.calc_point(parabola->get_t2()))) {
+    // No intersection.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = local_p.calc_point(t);
+  new_entry->set_surface_point(into_intersection_point);
+
+  if (has_effective_normal() && parabola->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3f normal = into_intersection_point - get_center();
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable
@@ -631,7 +676,7 @@ intersects_line(double &t1, double &t2,
   // A sphere with radius r about point c is defined as all P such
   // that r^2 = (P - c)^2.
 
-  // Subsituting P in the above we have:
+  // Substituting P in the above we have:
 
   // r^2 = (f + td - c)^2 =
   // (f^2 + ftd - fc + ftd + t^2d^2 - tdc - fc - tdc + c^2) =
@@ -679,6 +724,71 @@ intersects_line(double &t1, double &t2,
   t1 = ( -B - sqrt_radical ) * reciprocal_2A;
   t2 = ( -B + sqrt_radical ) * reciprocal_2A;
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::intersects_parabola
+//       Access: Protected
+//  Description: Determine a point of intersection of a parametric
+//               parabola with the sphere.
+//
+//               We only consider the segment of the parabola between
+//               t1 and t2, which has already been computed as
+//               corresponding to points p1 and p2.  If there is an
+//               intersection, t is set to the parametric point of
+//               intersection, and true is returned; otherwise, false
+//               is returned.
+////////////////////////////////////////////////////////////////////
+bool CollisionSphere::
+intersects_parabola(double &t, const Parabolaf &parabola,
+                    double t1, double t2,
+                    const LPoint3f &p1, const LPoint3f &p2) const {
+  if (t1 == t2) {
+    // Special case: a single point.
+    if ((p1 - _center).length_squared() > _radius * _radius) {
+      // No intersection.
+      return false;
+    }
+    t = t1;
+    return true;
+  }
+
+  // To directly test for intersection between a parabola (quadratic)
+  // and a sphere (also quadratic) requires solving a quartic
+  // equation.  Doable, but hard, and I'm a programmer, not a
+  // mathematician.  So I'll solve it the programmer's way instead, by
+  // approximating the parabola with a series of line segments.
+  // Hence, this function works by recursively subdividing the
+  // parabola as necessary.
+
+  // First, see if the line segment (p1 - p2) comes sufficiently close
+  // to the parabola.  Do this by computing the parametric intervening
+  // point and comparing its distance from the linear intervening
+  // point.
+  double tmid = (t1 + t2) * 0.5;
+  LPoint3f pmid = parabola.calc_point(tmid);
+  LPoint3f pmid2 = (p1 + p2) * 0.5f;
+
+  if ((pmid - pmid2).length_squared() > 0.001f) {
+    // Subdivide.
+    if (intersects_parabola(t, parabola, t1, tmid, p1, pmid)) {
+      return true;
+    }
+    return intersects_parabola(t, parabola, tmid, t2, pmid, p2);
+  }
+
+  // The line segment is sufficiently close; compare the segment itself.
+  double t1a, t2a;
+  if (!intersects_line(t1a, t2a, p1, p2 - p1, 0.0f)) {
+    return false;
+  }
+
+  if (t2a < 0.0 || t1a > 1.0) {
+    return false;
+  }
+
+  t = max(t1a, 0.0);
   return true;
 }
 

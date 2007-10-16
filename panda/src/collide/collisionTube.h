@@ -20,8 +20,8 @@
 #define COLLISIONTUBE_H
 
 #include "pandabase.h"
-
 #include "collisionSolid.h"
+#include "parabola.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionTube
@@ -81,6 +81,8 @@ protected:
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_parabola(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 
@@ -97,6 +99,9 @@ private:
   bool sphere_intersects_line(double &t1, double &t2, float center_y,
                               const LPoint3f &from, const LVector3f &delta,
                               float inflate_radius) const;
+  bool intersects_parabola(double &t, const Parabolaf &parabola,
+                           double t1, double t2,
+                           const LPoint3f &p1, const LPoint3f &p2) const;
   void calculate_surface_point_and_normal(const LPoint3f &surface_point,
                                           double extra_radius,
                                           LPoint3f &result_point,

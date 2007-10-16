@@ -1,5 +1,5 @@
-// Filename: plane.h
-// Created by:  mike (09Jan97)
+// Filename: parabola.h
+// Created by:  drose (10Oct07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,24 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PLANE_H
-#define PLANE_H
+#ifndef PARABOLA_H
+#define PARABOLA_H
 
 #include "pandabase.h"
 
 #include "luse.h"
 #include "indent.h"
-#include "nearly_zero.h"
-#include "cmath.h"
-#include "parabola.h"
-
-class Datagram;
-class DatagramIterator;
 
 #include "fltnames.h"
-#include "plane_src.h"
+#include "parabola_src.h"
 
 #include "dblnames.h"
-#include "plane_src.h"
+#include "parabola_src.h"
 
 #endif

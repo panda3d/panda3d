@@ -59,6 +59,9 @@ PUBLISHED:
                         FLOATNAME(LVector3) &delta,
                         const FLOATNAME(Plane) &other) const;
 
+  bool intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
+                           const FLOATNAME(Parabola) &parabola) const;
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 };

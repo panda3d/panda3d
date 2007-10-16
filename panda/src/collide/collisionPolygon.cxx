@@ -804,6 +804,96 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::test_intersection_from_parabola
+//       Access: Public, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a parabola.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  if (_points.size() < 3) {
+    return NULL;
+  }
+
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  Parabolaf local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  float t1, t2;
+  if (!get_plane().intersects_parabola(t1, t2, local_p)) {
+    // No intersection.
+    return NULL;
+  }
+
+  // No guarantee that t1 < t2.  Enforce this.
+  if (t2 < t1) {
+    float tx = t1;
+    t1 = t2;
+    t2 = tx;
+  }
+
+  if (t2 < parabola->get_t1() || t1 > parabola->get_t2()) {
+    // The intersection points are before the start of the parabola
+    // or after the end of the parabola.
+    return NULL;
+  }
+
+  float t = t1;
+  if (t < parabola->get_t1()) {
+    t = t2;
+  }
+
+  LPoint3f plane_point = local_p.calc_point(t);
+  LPoint2f p = to_2d(plane_point);
+
+  const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
+  if (cpa != (ClipPlaneAttrib *)NULL) {
+    // We have a clip plane; apply it.
+    Points new_points;
+    if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
+      // All points are behind the clip plane.
+      if (!point_is_inside(p, _points)) {
+        return NULL;
+      }
+
+    } else {
+      if (new_points.size() < 3) {
+        return NULL;
+      }
+      if (!point_is_inside(p, new_points)) {
+        return NULL;
+      }
+    }
+
+  } else {
+    // No clip plane is in effect.  Do the default test.
+    if (!point_is_inside(p, _points)) {
+      return NULL;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3f normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(plane_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable

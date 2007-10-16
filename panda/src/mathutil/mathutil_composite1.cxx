@@ -7,4 +7,5 @@
 #include "finiteBoundingVolume.cxx"
 #include "geometricBoundingVolume.cxx"
 #include "omniBoundingVolume.cxx"
+#include "parabola.cxx"
 #include "config_mathutil.cxx"

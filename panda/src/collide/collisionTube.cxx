@@ -415,6 +415,59 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::test_intersection_from_parabola
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionTube::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  Parabolaf local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  double t;
+  if (!intersects_parabola(t, local_p, parabola->get_t1(), parabola->get_t2(),
+                           local_p.calc_point(parabola->get_t1()),
+                           local_p.calc_point(parabola->get_t2()))) {
+    // No intersection.
+    return NULL;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = local_p.calc_point(t);
+  set_intersection_point(new_entry, into_intersection_point, 0.0);
+
+  if (has_effective_normal() && parabola->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+
+  } else {
+    LVector3f normal = into_intersection_point * _inv_mat;
+    if (normal[1] > _length) {
+      // The point is within the top endcap.
+      normal[1] -= _length;
+    } else if (normal[1] > 0.0f) {
+      // The point is within the cylinder body.
+      normal[1] = 0;
+    }
+    normal = normalize(normal * _mat);
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionTube::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable
@@ -770,6 +823,58 @@ sphere_intersects_line(double &t1, double &t2, float center_y,
   t1 = ( -B - sqrt_radical ) * reciprocal_2A;
   t2 = ( -B + sqrt_radical ) * reciprocal_2A;
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTube::intersects_parabola
+//       Access: Protected
+//  Description: Determine a point of intersection of a parametric
+//               parabola with the tube.
+//
+//               We only consider the segment of the parabola between
+//               t1 and t2, which has already been computed as
+//               corresponding to points p1 and p2.  If there is an
+//               intersection, t is set to the parametric point of
+//               intersection, and true is returned; otherwise, false
+//               is returned.
+////////////////////////////////////////////////////////////////////
+bool CollisionTube::
+intersects_parabola(double &t, const Parabolaf &parabola,
+                    double t1, double t2,
+                    const LPoint3f &p1, const LPoint3f &p2) const {
+  // I don't even want to think about the math to do this calculation
+  // directly--it's even worse than sphere-parabola.  So I'll use the
+  // recursive subdivision solution again, just like I did for
+  // sphere-parabola.
+
+  // First, see if the line segment (p1 - p2) comes sufficiently close
+  // to the parabola.  Do this by computing the parametric intervening
+  // point and comparing its distance from the linear intervening
+  // point.
+  double tmid = (t1 + t2) * 0.5;
+  LPoint3f pmid = parabola.calc_point(tmid);
+  LPoint3f pmid2 = (p1 + p2) * 0.5f;
+
+  if ((pmid - pmid2).length_squared() > 0.001f) {
+    // Subdivide.
+    if (intersects_parabola(t, parabola, t1, tmid, p1, pmid)) {
+      return true;
+    }
+    return intersects_parabola(t, parabola, tmid, t2, pmid, p2);
+  }
+
+  // The line segment is sufficiently close; compare the segment itself.
+  double t1a, t2a;
+  if (!intersects_line(t1a, t2a, p1, p2 - p1, 0.0f)) {
+    return false;
+  }
+
+  if (t2a < 0.0 || t1a > 1.0) {
+    return false;
+  }
+
+  t = max(t1a, 0.0);
   return true;
 }
 

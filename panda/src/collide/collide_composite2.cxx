@@ -1,4 +1,5 @@
 #include "collisionNode.cxx"
+#include "collisionParabola.cxx"
 #include "collisionPlane.cxx"
 #include "collisionPolygon.cxx"
 #include "collisionFloorMesh.cxx"

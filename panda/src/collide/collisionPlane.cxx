@@ -183,8 +183,15 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 
   float t;
   if (!_plane.intersects_line(t, from_origin, from_direction)) {
-    // No intersection.
-    return NULL;
+    // No intersection.  The line is parallel to the plane.
+
+    if (_plane.dist_to_plane(from_origin) > 0.0f) {
+      // The line is entirely in front of the plane.
+      return NULL;
+    }
+
+    // The line is entirely behind the plane.
+    t = 0.0f;
   }
 
   if (collide_cat.is_debug()) {
@@ -222,14 +229,23 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LVector3f from_direction = ray->get_direction() * wrt_mat;
 
   float t;
-  if (!_plane.intersects_line(t, from_origin, from_direction)) {
-    // No intersection.
-    return NULL;
-  }
 
-  if (t < 0.0f) {
-    // The intersection point is before the start of the ray.
-    return NULL;
+  if (_plane.dist_to_plane(from_origin) < 0.0f) {
+    // The origin of the ray is behind the plane, so we don't need to
+    // test further.
+    t = 0.0f;
+
+  } else {
+    if (!_plane.intersects_line(t, from_origin, from_direction)) {
+      // No intersection.  The ray is parallel to the plane.
+      return NULL;
+    }
+
+    if (t < 0.0f) {
+      // The intersection point is before the start of the ray, and so
+      // the ray is entirely in front of the plane.
+      return NULL;
+    }
   }
 
   if (collide_cat.is_debug()) {
@@ -268,15 +284,23 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LVector3f from_direction = from_b - from_a;
 
   float t;
-  if (!_plane.intersects_line(t, from_a, from_direction)) {
-    // No intersection.
-    return NULL;
-  }
+  if (_plane.dist_to_plane(from_a) < 0.0f) {
+    // The first point of the line segment is behind the plane, so we
+    // don't need to test further.
+    t = 0.0f;
 
-  if (t < 0.0f || t > 1.0f) {
-    // The intersection point is before the start of the segment or
-    // after the end of the segment.
-    return NULL;
+  } else {
+    if (!_plane.intersects_line(t, from_a, from_direction)) {
+      // No intersection.  The line segment is parallel to the plane.
+      return NULL;
+    }
+
+    if (t < 0.0f || t > 1.0f) {
+      // The intersection point is before the start of the segment or
+      // after the end of the segment.  Therefore, the line segment is
+      // entirely in front of the plane.
+      return NULL;
+    }
   }
 
   if (collide_cat.is_debug()) {
@@ -289,6 +313,69 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LPoint3f into_intersection_point = from_a + t * from_direction;
 
   LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(into_intersection_point);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::test_intersection_from_parabola
+//       Access: Public, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a parabola.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_parabola(const CollisionEntry &entry) const {
+  const CollisionParabola *parabola;
+  DCAST_INTO_R(parabola, entry.get_from(), 0);
+
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  // Convert the parabola into local coordinate space.
+  Parabolaf local_p(parabola->get_parabola());
+  local_p.xform(wrt_mat);
+
+  float t;
+  if (_plane.dist_to_plane(local_p.calc_point(parabola->get_t1())) < 0.0f) {
+    // The first point in the parabola is behind the plane, so we
+    // don't need to test further.
+    t = parabola->get_t1();
+
+  } else {
+    float t1, t2;
+    if (!get_plane().intersects_parabola(t1, t2, local_p)) {
+      // No intersection.  The infinite parabola is entirely in front
+      // of the plane.
+      return NULL;
+    }
+
+    if (t2 < parabola->get_t1() || t1 > parabola->get_t2()) {
+      // The intersection points are before the start of the parabola
+      // or after the end of the parabola.  The finite subset of the
+      // parabola is entirely in front of the plane.
+      return NULL;
+    }
+
+    // Choose one of the intersecting points.
+    t = t1;
+    if (t < parabola->get_t1()) {
+      t = t2;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3f into_intersection_point = local_p.calc_point(t);
+
+  LVector3f normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);

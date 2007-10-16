@@ -20,8 +20,8 @@
 #define COLLISIONSPHERE_H
 
 #include "pandabase.h"
-
 #include "collisionSolid.h"
+#include "parabola.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionSphere
@@ -74,6 +74,8 @@ protected:
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_parabola(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 
@@ -81,6 +83,9 @@ protected:
   bool intersects_line(double &t1, double &t2,
                        const LPoint3f &from, const LVector3f &delta,
                        float inflate_radius) const;
+  bool intersects_parabola(double &t, const Parabolaf &parabola,
+                           double t1, double t2,
+                           const LPoint3f &p1, const LPoint3f &p2) const;
   Vertexf compute_point(float latitude, float longitude) const;
 
 private:

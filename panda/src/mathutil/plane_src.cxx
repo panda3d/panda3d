@@ -104,6 +104,52 @@ intersects_plane(FLOATNAME(LPoint3) &from,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Plane::intersects_parabola
+//       Access: Published
+//  Description: Determines whether and where the indicated parabola
+//               intersects with the plane.
+//
+//               If there is no intersection with the plane, the
+//               function returns false and leaves t1 and t2
+//               undefined.  If there is an intersection with the
+//               plane, the function returns true and sets t1 and t2
+//               to the parametric value that defines the two points
+//               of intersection.  If the parabola is exactly tangent
+//               to the plane, then t1 == t2.
+////////////////////////////////////////////////////////////////////
+bool FLOATNAME(Plane)::
+intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
+                    const FLOATNAME(Parabola) &parabola) const {
+  //
+  // The parabola intersects the plane wherever:
+  //
+  // a * t^2 + b * t + c == 0
+  //
+  // where a = normal dot parabola.get_a(),
+  //       b = normal dot parabola.get_b(),
+  //       c = normal dot parabola.get_c() + d.
+  //
+
+  FLOATNAME(LVector3) normal = get_normal();
+  FLOATTYPE a = normal.dot(parabola.get_a());
+  FLOATTYPE b = normal.dot(parabola.get_b());
+  FLOATTYPE c = normal.dot(parabola.get_c()) + _v.v._3;
+
+  // Now use the quadratic equation to solve for t.
+  FLOATTYPE discriminant = b * b - 4.0 * a * c;
+  if (discriminant < 0.0f) {
+    // No intersection.
+    return false;
+  }
+
+  FLOATTYPE sqrd = csqrt(discriminant);
+
+  t1 = (-b - sqrd) / (2.0 * a);
+  t2 = (-b + sqrd) / (2.0 * a);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Plane::output
 //       Access: Published
 //  Description:

@@ -112,6 +112,8 @@ protected:
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_parabola(const CollisionEntry &entry) const;
 
   static void report_undefined_intersection_test(TypeHandle from_type,
                                                  TypeHandle into_type);
@@ -178,6 +180,7 @@ private:
   friend class CollisionLine;
   friend class CollisionRay;
   friend class CollisionSegment;
+  friend class CollisionParabola;
   friend class CollisionHandlerFluidPusher;
 };
 

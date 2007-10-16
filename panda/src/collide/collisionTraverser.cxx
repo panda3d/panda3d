@@ -1268,6 +1268,14 @@ compare_collider_to_solid(CollisionEntry &entry,
     #ifdef DO_PSTATS
     ((CollisionSolid *)entry.get_into())->get_volume_pcollector().add_level(1);
     #endif  // DO_PSTATS
+#ifndef NDEBUG
+    if (collide_cat.is_spam()) {
+      collide_cat.spam(false)
+        << "Comparing to solid: " << *from_node_gbv
+        << " to " << *solid_gbv << ", within_solid_bounds = " 
+        << within_solid_bounds << "\n";
+    }
+#endif  // NDEBUG
   }
   if (within_solid_bounds) {
     Colliders::const_iterator ci;

@@ -27,11 +27,11 @@
     mersenne.h \
     omniBoundingVolume.I  \
     omniBoundingVolume.h \
+    parabola.h parabola_src.I parabola_src.cxx parabola_src.h \
     perlinNoise.h perlinNoise.I \
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
-    plane.h plane_src.I plane_src.cxx  \
-    plane_src.h \
+    plane.h plane_src.I plane_src.cxx plane_src.h \
     randomizer.h randomizer.I \
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
@@ -49,14 +49,16 @@
     linmath_events.cxx \
     mersenne.cxx \
     omniBoundingVolume.cxx \
+    parabola.cxx \
     perlinNoise.cxx \
     perlinNoise2.cxx \
     perlinNoise3.cxx \
+    plane.cxx \
     randomizer.cxx \
+    rotate_to.cxx \
     stackedPerlinNoise2.cxx \
     stackedPerlinNoise3.cxx \
-    triangulator.cxx \
-    plane.cxx rotate_to.cxx
+    triangulator.cxx
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
@@ -71,11 +73,11 @@
     linmath_events.h \
     mersenne.h \
     omniBoundingVolume.I omniBoundingVolume.h \
+    parabola.h parabola_src.I parabola_src.cxx parabola_src.h \
     perlinNoise.h perlinNoise.I \
     perlinNoise2.h perlinNoise2.I \
     perlinNoise3.h perlinNoise3.I \
-    plane.h plane_src.I plane_src.cxx \
-    plane_src.h \
+    plane.h plane_src.I plane_src.cxx plane_src.h \
     randomizer.h randomizer.I \
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \

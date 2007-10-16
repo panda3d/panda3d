@@ -235,3 +235,38 @@ int BoundingPlane::
 contains_plane(const BoundingPlane *plane) const {
   return IF_possible;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingPlane::contains_hexahedron
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a hexahedron.
+////////////////////////////////////////////////////////////////////
+int BoundingPlane::
+contains_hexahedron(const BoundingHexahedron *hexahedron) const {
+  nassertr(!is_empty() && !is_infinite(), 0);
+  nassertr(!hexahedron->is_empty() && !hexahedron->is_infinite(), 0);
+
+  int result = IF_possible | IF_some | IF_all;
+
+  bool all_in = true;
+  bool all_out = true;
+  for (int i = 0; i < 8 && (all_in || all_out) ; ++i) {
+    if (_plane.dist_to_plane(hexahedron->get_point(i)) < 0.0f) {
+      // This point is inside the plane.
+      all_out = false;
+    } else {
+      // This point is outside the plane.
+      all_in = false;
+    }
+  }
+    
+  if (all_out) {
+    return IF_no_intersection;
+  } else if (!all_in) {
+    result &= ~IF_all;
+  }
+
+  return result;
+}

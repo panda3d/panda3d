@@ -31,6 +31,7 @@
 #include "collisionLine.h"
 #include "collisionLevelStateBase.h"
 #include "collisionNode.h"
+#include "collisionParabola.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionFloorMesh.h"
@@ -120,6 +121,7 @@ init_libcollide() {
   CollisionLine::init_type();
   CollisionLevelStateBase::init_type();
   CollisionNode::init_type();
+  CollisionParabola::init_type();
   CollisionPlane::init_type();
   CollisionPolygon::init_type();
   CollisionFloorMesh::init_type();
@@ -139,6 +141,7 @@ init_libcollide() {
   CollisionInvSphere::register_with_read_factory();
   CollisionLine::register_with_read_factory();
   CollisionNode::register_with_read_factory();
+  CollisionParabola::register_with_read_factory();
   CollisionPlane::register_with_read_factory();
   CollisionPolygon::register_with_read_factory();
   CollisionFloorMesh::register_with_read_factory();

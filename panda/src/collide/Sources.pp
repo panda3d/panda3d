@@ -26,6 +26,7 @@
     collisionLevelStateBase.I collisionLevelStateBase.h \
     collisionLevelState.I collisionLevelState.h \
     collisionNode.I collisionNode.h \
+    collisionParabola.I collisionParabola.h  \
     collisionPlane.I collisionPlane.h  \
     collisionPolygon.I collisionPolygon.h \
     collisionFloorMesh.I collisionFloorMesh.h \
@@ -56,6 +57,7 @@
     collisionInvSphere.cxx  \
     collisionLine.cxx \
     collisionNode.cxx \
+    collisionParabola.cxx  \
     collisionPlane.cxx  \
     collisionPolygon.cxx \
     collisionFloorMesh.cxx \
@@ -86,6 +88,7 @@
     collisionLevelState.I collisionLevelState.h \
     collisionLine.I collisionLine.h \
     collisionNode.I collisionNode.h \
+    collisionParabola.I collisionParabola.h \
     collisionPlane.I collisionPlane.h \
     collisionPolygon.I collisionPolygon.h \
     collisionFloorMesh.I collisionFloorMesh.h \

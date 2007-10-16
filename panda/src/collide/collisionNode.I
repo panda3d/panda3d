@@ -113,6 +113,7 @@ get_solid(int n) const {
 INLINE PT(CollisionSolid) CollisionNode::
 modify_solid(int n) {
   nassertr(n >= 0 && n < get_num_solids(), NULL);
+  mark_internal_bounds_stale();
   return _solids[n].get_write_pointer();
 }
 

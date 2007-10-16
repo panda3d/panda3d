@@ -1,5 +1,5 @@
-// Filename: collisionPlane.h
-// Created by:  drose (25Apr00)
+// Filename: collisionParabola.h
+// Created by:  drose (11Oct07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,32 +16,39 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef COLLISIONPLANE_H
-#define COLLISIONPLANE_H
+#ifndef COLLISIONPARABOLA_H
+#define COLLISIONPARABOLA_H
 
 #include "pandabase.h"
 
 #include "collisionSolid.h"
+#include "parabola.h"
 
-#include "luse.h"
-#include "plane.h"
+class LensNode;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : CollisionPlane
-// Description :
+//       Class : CollisionParabola
+// Description : This defines a parabolic arc, or subset of an arc,
+//               similar to the path of a projectile or falling
+//               object.  It is finite, having a specific beginning
+//               and end, but it is infinitely thin.
+//
+//               Think of it as a wire bending from point t1 to point
+//               t2 along the path of a pre-defined parabola.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_COLLIDE CollisionPlane : public CollisionSolid {
-protected:
-  INLINE CollisionPlane();
-
+class EXPCL_PANDA_COLLIDE CollisionParabola : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionPlane(const Planef &plane);
-  INLINE CollisionPlane(const CollisionPlane &copy);
+  INLINE CollisionParabola();
+  INLINE CollisionParabola(const Parabolaf &parabola, float t1, float t2);
 
   virtual LPoint3f get_collision_origin() const;
 
 public:
+  INLINE CollisionParabola(const CollisionParabola &copy);
   virtual CollisionSolid *make_copy();
+
+  virtual PT(CollisionEntry)
+  test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat);
 
@@ -50,46 +57,36 @@ public:
 
   virtual void output(ostream &out) const;
 
-  INLINE static void flush_level();
-
 PUBLISHED:
-  INLINE LVector3f get_normal() const;
-  INLINE float dist_to_plane(const LPoint3f &point) const;
+  INLINE void set_parabola(const Parabolaf &parabola);
+  INLINE const Parabolaf &get_parabola() const;
 
-  INLINE void set_plane(const Planef &plane);
-  INLINE const Planef &get_plane() const;
+  INLINE void set_t1(float t1);
+  INLINE float get_t1() const;
+
+  INLINE void set_t2(float t2);
+  INLINE float get_t2() const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 
 protected:
-  virtual PT(CollisionEntry)
-  test_intersection_from_sphere(const CollisionEntry &entry) const;
-  virtual PT(CollisionEntry)
-  test_intersection_from_line(const CollisionEntry &entry) const;
-  virtual PT(CollisionEntry)
-  test_intersection_from_ray(const CollisionEntry &entry) const;
-  virtual PT(CollisionEntry)
-  test_intersection_from_segment(const CollisionEntry &entry) const;
-  virtual PT(CollisionEntry)
-  test_intersection_from_parabola(const CollisionEntry &entry) const;
-
   virtual void fill_viz_geom();
 
 private:
-  Planef _plane;
+  Parabolaf _parabola;
+  float _t1, _t2;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter* manager, Datagram &me);
-
-  static TypedWritable *make_CollisionPlane(const FactoryParams &params);
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
 protected:
-  void fillin(DatagramIterator& scan, BamReader* manager);
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
   static TypeHandle get_class_type() {
@@ -97,7 +94,7 @@ public:
   }
   static void init_type() {
     CollisionSolid::init_type();
-    register_type(_type_handle, "CollisionPlane",
+    register_type(_type_handle, "CollisionParabola",
                   CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -109,7 +106,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "collisionPlane.I"
+#include "collisionParabola.I"
 
 #endif
 
