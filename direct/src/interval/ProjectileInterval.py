@@ -28,7 +28,8 @@ class ProjectileInterval(Interval):
                  endPos = None, duration = None,
                  startVel = None, endZ = None,
                  wayPoint = None, timeToWayPoint = None,
-                 gravityMult = None, name = None):
+                 gravityMult = None, name = None,
+                 collNode = None):
         """
         You may specify several different sets of input parameters.
         (If startPos is not provided, it will be obtained from the node's
@@ -48,8 +49,22 @@ class ProjectileInterval(Interval):
         You may alter gravity by providing a multiplier in 'gravityMult'.
         '2.' will make gravity twice as strong, '.5' half as strong.
         '-1.' will reverse gravity
+
+        If collNode is not None, it should be an empty CollisionNode
+        which will be filled with an appropriate CollisionParabola
+        when the interval starts.  This CollisionParabola will be set
+        to match the interval's parabola, and its t1, t2 values will
+        be updated automatically as the interval plays.  It will *not*
+        be automatically removed from the node when the interval
+        finishes.
+        
         """
         self.node = node
+        self.collNode = collNode
+        if self.collNode:
+            if isinstance(self.collNode, NodePath):
+                self.collNode = self.collNode.node()
+            assert self.collNode.getNumSolids() == 0
 
         if name == None:
             name = '%s-%s' % (self.__class__.__name__,
@@ -158,7 +173,7 @@ class ProjectileInterval(Interval):
             assert not timeToWayPoint
             self.duration = duration
             self.startVel = startVel
-            self.endPos = self.__calcPos(self.duration)
+            self.endPos = None
         elif (None not in (startVel, endZ)):
             assert not endPos
             assert not duration
@@ -171,7 +186,7 @@ class ProjectileInterval(Interval):
                 self.notify.error(
                     'projectile never reaches plane Z=%s' % endZ)
             self.duration = time
-            self.endPos = self.__calcPos(self.duration)
+            self.endPos = None
         elif (None not in (wayPoint, timeToWayPoint, endZ)):
             assert not endPos
             assert not duration
@@ -182,16 +197,24 @@ class ProjectileInterval(Interval):
                                          timeToWayPoint, self.zAcc)
             self.duration = calcTimeOfLastImpactOnPlane(
                 self.startPos[2], endZ, self.startVel[2], self.zAcc)
-            self.endPos = self.__calcPos(self.duration)
+            self.endPos = None
         else:
             self.notify.error('invalid set of inputs to ProjectileInterval')
 
+        self.parabola = Parabolaf(VBase3(0, 0, 0.5 * self.zAcc),
+                                  self.startVel,
+                                  self.startPos)
+
+        if not self.endPos:
+            self.endPos = self.__calcPos(self.duration)
+            
         # these are the parameters that we need to know:
         self.notify.debug('startPos: %s' % `self.startPos`)
         self.notify.debug('endPos:   %s' % `self.endPos`)
         self.notify.debug('duration: %s' % self.duration)
         self.notify.debug('startVel: %s' % `self.startVel`)
         self.notify.debug('z-accel:  %s' % self.zAcc)
+            
 
     def __initialize(self):
         if self.implicitStartPos:
@@ -199,22 +222,31 @@ class ProjectileInterval(Interval):
 
     def privInitialize(self, t):
         self.__initialize()
+        if self.collNode:
+            self.collNode.clearSolids()
+            csolid = CollisionParabola(self.parabola, 0, 0)
+            self.collNode.addSolid(csolid)
+
         Interval.privInitialize(self, t)
 
     def privInstant(self):
         self.__initialize()
         Interval.privInstant(self)
+        if self.collNode:
+            self.collNode.clearSolids()
+            csolid = CollisionParabola(self.parabola, 0, self.duration)
+            self.collNode.addSolid(csolid)
 
     def __calcPos(self, t):
-        return Point3(
-            self.startPos[0] + (self.startVel[0] * t),
-            self.startPos[1] + (self.startVel[1] * t),
-            (self.startPos[2] + (self.startVel[2] * t) +
-             (.5 * self.zAcc * t * t)))
+        return self.parabola.calcPoint(t)
 
     def privStep(self, t):
         self.node.setFluidPos(self.__calcPos(t))
         Interval.privStep(self, t)
+        if self.collNode and self.collNode.getNumSolids() > 0:
+            csolid = self.collNode.modifySolid(0)
+            csolid.setT1(csolid.getT2())
+            csolid.setT2(t)
 
 """
         ##################################################################
