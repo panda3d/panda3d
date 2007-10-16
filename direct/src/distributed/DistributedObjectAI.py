@@ -329,7 +329,9 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
     def sendUpdate(self, fieldName, args = []):
         assert self.notify.debugStateCall(self)
         if self.air:
-            self.air.sendUpdate(self, fieldName, args)
+            dg = self.dclass.aiFormatUpdate(
+                fieldName, self.doId, self.doId, self.air.ourChannel, args)
+            self.air.sendDatagram(dg)        
 
     def GetPuppetConnectionChannel(self, doId):
         return doId + (1L << 32)

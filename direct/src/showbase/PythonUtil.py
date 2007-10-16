@@ -3050,12 +3050,12 @@ if __debug__:
 
 def quickProfile(name="unnamed"):    
     def profileDecorator(f):
-        if(not base.config.GetBool("use-profiler",0)):
+        if(not config.GetBool("use-profiler",0)):
             return f
         def _profiled(*args, **kArgs):
             # must do this in here because we don't have base/simbase
             # at the time that PythonUtil is loaded
-            if(not base.config.GetBool("profile-debug",0)):
+            if(not config.GetBool("profile-debug",0)):
                 #dumb timings
                 st=globalClock.getRealTime()
                 f(*args,**kArgs)

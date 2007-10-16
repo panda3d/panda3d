@@ -410,30 +410,26 @@ class TaskManager:
     def hasTaskNamed(self, taskName):
         # TODO: check pending task list
         # Get the tasks with this name
-        tasks = self.nameDict.get(taskName)
         # If we found some, see if any of them are still active (not removed)
-        if tasks:
-            for task in tasks:
-                if not task._removed:
-                    return 1
+        for task in self.nameDict.get(taskName, []):
+            if not task._removed:
+                return 1
         # Didnt find any, return 0
         return 0
 
     def getTasksNamed(self, taskName):
         # TODO: check pending tasks
         # Get the tasks with this name
-        tasks = self.nameDict.get(taskName, [])
-        # Filter out the tasks that have been removed
-        if tasks:
-            tasks = filter(lambda task: not task._removed, tasks)
-        return tasks
+        return [task for task in self.nameDict.get(taskName, []) #grab all tasks with name
+                   if not task._removed] #filter removed tasks
 
     def __doLaterFilter(self):
         # Filter out all the tasks that have been removed like a mark and
         # sweep garbage collector. Returns the number of tasks that have
         # been removed Warning: this creates an entirely new doLaterList.
         oldLen = len(self.__doLaterList)
-        self.__doLaterList = filter(lambda task: not task._removed, self.__doLaterList)
+        self.__doLaterList = [task for task in self.__doLaterList #grab all tasks with name
+                              if not task._removed] #filter removed tasks
         # Re heapify to maintain ordering after filter
         heapify(self.__doLaterList)
         newLen = len(self.__doLaterList)
