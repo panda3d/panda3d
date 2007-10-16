@@ -136,8 +136,21 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
   FLOATTYPE c = normal.dot(parabola.get_c()) + _v.v._3;
 
   if (IS_NEARLY_ZERO(a)) {
-    // No intersection.
-    return false;
+    // It's not quadratic.  The equation is actually:
+    //    b * t + c == 0.
+    // Which means:
+    //    t = -c / b.
+
+    if (IS_NEARLY_ZERO(b)) {
+      // It's not even linear.  The parabola must be completely
+      // parallel to the plane, or if c == 0, it's completely within
+      // the plane.  In both cases, we'll call it no intersection.
+      return false;
+    }
+
+    t1 = -c / b;
+    t2 = t1;
+    return true;
   }
 
   // Now use the quadratic equation to solve for t.
