@@ -135,6 +135,11 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
   FLOATTYPE b = normal.dot(parabola.get_b());
   FLOATTYPE c = normal.dot(parabola.get_c()) + _v.v._3;
 
+  if (IS_NEARLY_ZERO(a)) {
+    // No intersection.
+    return false;
+  }
+
   // Now use the quadratic equation to solve for t.
   FLOATTYPE discriminant = b * b - 4.0 * a * c;
   if (discriminant < 0.0f) {
