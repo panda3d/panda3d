@@ -87,6 +87,19 @@ ConfigVariableBool flatten_collision_nodes
           "to be efficient, and combining CollisionNodes is likely "
           "to merge bounding volumes inappropriately."));
 
+ConfigVariableDouble collision_parabola_bounds_threshold
+("collision-parabola-bounds-threshold", 10.0,
+ PRC_DESC("This is the threshold size for a CollisionParabola to "
+          "make a bounding box (BoundingHexahedron).  If the parabola "
+          "is smaller than this, it will make a BoundingSphere instead, "
+          "which is much easier to make and will be good enough for "
+          "small parabolas."));
+
+ConfigVariableInt collision_parabola_bounds_sample
+("collision-parabola-bounds-sample", 10,
+ PRC_DESC("This is the number of points along a CollisionParabola to "
+          "sample in order to determine an accurate bounding box."));
+
 ConfigVariableInt fluid_cap_amount 
 ("fluid-cap-amount", 100,
  PRC_DESC("ensures that fluid pos doesn't check beyond X feet"));

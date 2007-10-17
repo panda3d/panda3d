@@ -129,7 +129,7 @@ compute_internal_bounds() const {
   // If p1 and p2 are sufficiently close, just put a sphere around
   // them.
   float d2 = pdelta.length_squared();
-  if (d2 < 10.0f) {
+  if (d2 < collision_parabola_bounds_threshold * collision_parabola_bounds_threshold) {
     LPoint3f pmid = (p1 + p2) * 0.5f;
     return new BoundingSphere(pmid, csqrt(d2) * 0.5f);
   }
@@ -165,9 +165,9 @@ compute_internal_bounds() const {
 
   // We compute a few points along the parabola to attempt to get the
   // minmax.
-  float min_z = p1[2];
-  float max_z = p1[2];
-  static const int num_points = 4;
+  float min_z = 0.0f;
+  float max_z = 0.0f;
+  int num_points = collision_parabola_bounds_sample;
   for (int i = 0; i < num_points; ++i) {
     double t = (double)(i + 1) / (double)(num_points + 1);
     LPoint3f p = psp.calc_point(get_t1() + t * (get_t2() - get_t1()));

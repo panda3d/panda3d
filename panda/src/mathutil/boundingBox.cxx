@@ -596,7 +596,7 @@ contains_box(const BoundingBox *box) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingBox::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
-  return contains_finite(hexahedron);
+  return hexahedron->contains_box(this) & ~IF_all;
 }
 
 ////////////////////////////////////////////////////////////////////

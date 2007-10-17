@@ -116,6 +116,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class BoundingSphere;
+  friend class BoundingBox;
 };
 
 #include "boundingHexahedron.I"
