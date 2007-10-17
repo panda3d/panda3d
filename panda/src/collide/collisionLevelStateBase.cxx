@@ -77,10 +77,10 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     if (bv->as_bounding_sphere()) {
       LPoint3f pos_delta = def._node_path.get_pos_delta(root);
       
-      LVector3f cap(pos_delta);
-      if(cap.length()>fluid_cap_amount) {
-        pos_delta=LPoint3f(cap/cap.length())*fluid_cap_amount;
-      }
+      //LVector3f cap(pos_delta);
+      //if(cap.length()>fluid_cap_amount) {
+      //  pos_delta=LPoint3f(cap/cap.length())*fluid_cap_amount;
+      //}
       if (pos_delta != LVector3f::zero()) {
         // If the node has a delta, we have to include the starting
         // position in the volume as well.  We only do this for bounding
