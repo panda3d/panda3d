@@ -401,10 +401,10 @@ class DistributedObjectUD(DistributedObjectBase):
         self._DOUD_requestedDelete = True
 
     def taskName(self, taskString):
-        return (taskString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (taskString, self.doId))
 
     def uniqueName(self, idString):
-        return (idString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (idString, self.doId))
 
     def validate(self, avId, bool, msg):
         if not bool:

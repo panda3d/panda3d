@@ -189,7 +189,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         pass
 
     def addInterest(self, zoneId, note="", event=None):
-        self.air.addInterest(self.getDoId(), zoneId, note, event)
+        self.air.addInterest(self.doId, zoneId, note, event)
 
     def b_setLocation(self, parentId, zoneId):
         self.d_setLocation(parentId, zoneId)
@@ -472,10 +472,10 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self._DOAI_requestedDelete = True
 
     def taskName(self, taskString):
-        return (taskString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (taskString, self.doId))
 
     def uniqueName(self, idString):
-        return (idString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (idString, self.doId))
 
     def validate(self, avId, bool, msg):
         if not bool:

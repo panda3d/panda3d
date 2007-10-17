@@ -326,10 +326,10 @@ class DistributedObject(DistributedObjectBase, EnforcesCalldowns):
         self.cr.sendDeleteMsg(self.doId)
 
     def taskName(self, taskString):
-        return (taskString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (taskString, self.doId))
 
     def uniqueName(self, idString):
-        return (idString + "-" + str(self.getDoId()))
+        return ("%s-%s" % (idString, self.doId))
 
     def getCallbackContext(self, callback, extraArgs = []):
         # Some objects implement a back-and-forth handshake operation
