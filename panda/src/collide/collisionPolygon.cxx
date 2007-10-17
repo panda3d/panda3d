@@ -831,22 +831,24 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
     return NULL;
   }
 
-  // No guarantee that t1 < t2.  Enforce this.
-  if (t2 < t1) {
-    float tx = t1;
-    t1 = t2;
-    t2 = tx;
-  }
+  float t;
+  if (t1 >= parabola->get_t1() && t1 <= parabola->get_t2()) {
+    if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
+      // Both intersection points are within our segment of the
+      // parabola.  Choose the first of the two.
+      t = min(t1, t2);
+    } else {
+      // Only t1 is within our segment.
+      t = t1;
+    }
 
-  if (t2 < parabola->get_t1() || t1 > parabola->get_t2()) {
-    // The intersection points are before the start of the parabola
-    // or after the end of the parabola.
-    return NULL;
-  }
-
-  float t = t1;
-  if (t < parabola->get_t1()) {
+  } else if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
+    // Only t2 is within our segment.
     t = t2;
+
+  } else {
+    // Neither intersection point is within our segment.
+    return NULL;
   }
 
   LPoint3f plane_point = local_p.calc_point(t);
