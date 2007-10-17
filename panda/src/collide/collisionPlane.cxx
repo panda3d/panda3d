@@ -352,17 +352,23 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
       return NULL;
     }
 
-    if (t2 < parabola->get_t1() || t1 > parabola->get_t2()) {
-      // The intersection points are before the start of the parabola
-      // or after the end of the parabola.  The finite subset of the
-      // parabola is entirely in front of the plane.
-      return NULL;
-    }
-
-    // Choose one of the intersecting points.
-    t = t1;
-    if (t < parabola->get_t1()) {
+    if (t1 >= parabola->get_t1() && t1 <= parabola->get_t2()) {
+      if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
+        // Both intersection points are within our segment of the
+        // parabola.  Choose the first of the two.
+        t = min(t1, t2);
+      } else {
+        // Only t1 is within our segment.
+        t = t1;
+      }
+      
+    } else if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
+      // Only t2 is within our segment.
       t = t2;
+      
+    } else {
+      // Neither intersection point is within our segment.
+      return NULL;
     }
   }
 
