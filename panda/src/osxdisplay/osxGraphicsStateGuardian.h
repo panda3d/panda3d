@@ -45,9 +45,10 @@ public:
   void draw_resize_box();
   
 //  static bool get_gamma_table(void);
-  static bool static_set_gamma(float gamma);
+  static bool static_set_gamma(bool restore, float gamma);
   bool set_gamma(float gamma);
   static void atexit_function(void);
+  void restore_gamma();
 	
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);

@@ -387,10 +387,17 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsStateGuardian::
-static_set_gamma(float gamma) {
+static_set_gamma(bool restore, float gamma) {
     bool set;  
-	CGDisplayRestoreColorSyncSettings();
+	
     set = false;
+
+	if (restore) {
+		CGDisplayRestoreColorSyncSettings();
+		set = true;
+		return set;
+	}
+    CGDisplayRestoreColorSyncSettings();
 
 	CGGammaValue gOriginalRedTable[ 256 ];
 	CGGammaValue gOriginalGreenTable[ 256 ];
@@ -443,9 +450,19 @@ bool osxGraphicsStateGuardian::
 set_gamma(float gamma) {
   bool set;
 
-  set = static_set_gamma(gamma);
+  set = static_set_gamma(false, gamma);
 
   return set;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::restore_gamma
+//       Access: Published
+//  Description: Restore original gamma.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsStateGuardian::
+restore_gamma() {
+  static_set_gamma(true, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -455,7 +472,7 @@ set_gamma(float gamma) {
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsStateGuardian::
 atexit_function(void) {
-  static_set_gamma(1.0);
+  static_set_gamma(true, 1.0);
 }
 
 
