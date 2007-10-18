@@ -44,10 +44,10 @@ public:
 
   void draw_resize_box();
   
-//  static bool get_gamma_table(void);
-  static bool static_set_gamma(bool restore, float gamma);
+  bool get_gamma_table(void);
+  bool static_set_gamma(bool restore, float gamma);
   bool set_gamma(float gamma);
-  static void atexit_function(void);
+  void atexit_function(void);
   void restore_gamma();
 	
 protected:
@@ -69,6 +69,11 @@ private:
   PT(osxGraphicsStateGuardian) _share_with;
   AGLPixelFormat	_aglPixFmt;
   AGLContext		_aglcontext;
+  CGGammaValue _gOriginalRedTable[ 256 ];
+  CGGammaValue _gOriginalGreenTable[ 256 ];
+  CGGammaValue _gOriginalBlueTable[ 256 ];
+  CGTableCount _sampleCount;
+  CGDisplayErr _cgErr;
 
 public:
   GLint   SharedBuffer;

@@ -70,6 +70,7 @@ osxGraphicsStateGuardian(GraphicsPipe *pipe,
   _aglcontext(NULL)
 {
   SharedBuffer = 1011;
+  get_gamma_table();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,6 +380,16 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
     }
   }
 }
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsStateGuardian::get_gamma_table
+//       Access: Public, Static
+//  Description: Static function for getting the orig gamma tables
+////////////////////////////////////////////////////////////////////
+bool osxGraphicsStateGuardian::get_gamma_table(void) {
+	CGDisplayRestoreColorSyncSettings();
+	_cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable, _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
+
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsStateGuardian::static_set_gamma
@@ -397,16 +408,16 @@ static_set_gamma(bool restore, float gamma) {
 		set = true;
 		return set;
 	}
-    CGDisplayRestoreColorSyncSettings();
+    // CGDisplayRestoreColorSyncSettings();
 
-	CGGammaValue gOriginalRedTable[ 256 ];
-	CGGammaValue gOriginalGreenTable[ 256 ];
-	CGGammaValue gOriginalBlueTable[ 256 ];
+	// CGGammaValue gOriginalRedTable[ 256 ];
+	// CGGammaValue gOriginalGreenTable[ 256 ];
+	// CGGammaValue gOriginalBlueTable[ 256 ];
 	
-	CGTableCount sampleCount;
-    CGDisplayErr cgErr;
+	// CGTableCount sampleCount;
+    // CGDisplayErr cgErr;
 	
-	cgErr = CGGetDisplayTransferByTable( 0, 256, gOriginalRedTable, gOriginalGreenTable, gOriginalBlueTable, &sampleCount);
+	// cgErr = CGGetDisplayTransferByTable( 0, 256, _gOriginalRedTable, _gOriginalGreenTable, _gOriginalBlueTable, &_sampleCount);
 	
 	CGGammaValue redTable[ 256 ];
     CGGammaValue greenTable[ 256 ];
@@ -426,13 +437,13 @@ static_set_gamma(bool restore, float gamma) {
 	
 	for (i = 0; i < 256; i++)
 	{
-	redTable[i] = gOriginalRedTable[ i ] * (y[ 0 ] ) / 256;
-	greenTable[ i ] = gOriginalGreenTable[ i ] * (y[ 1 ] ) / 256;
-	blueTable[ i ] = gOriginalBlueTable[ i ] * (y[ 2 ] ) / 256;
+	redTable[i] = _gOriginalRedTable[ i ] * (y[ 0 ] ) / 256;
+	greenTable[ i ] = _gOriginalGreenTable[ i ] * (y[ 1 ] ) / 256;
+	blueTable[ i ] = _gOriginalBlueTable[ i ] * (y[ 2 ] ) / 256;
 	};
-	cgErr = CGSetDisplayTransferByTable( 0, 256, redTable, greenTable, blueTable);
+	_cgErr = CGSetDisplayTransferByTable( 0, 256, redTable, greenTable, blueTable);
 
-	if (cgErr == 0){
+	if (_cgErr == 0){
 		set = true;
 		}
 
