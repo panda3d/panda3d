@@ -100,6 +100,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
             av = self.gridObjects[avId]
             # handle a missing object after it is already gone?
             if (av.isEmpty()):
+                task.delayTime = 1.0
                 del self.gridObjects[avId]
                 continue
             pos = av.getPos()
@@ -135,8 +136,8 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
                 for i in av.impulses:
                     print "impulse: %s"%i
                     print "target is %s"%av.impulses[i].targetPos()
-                    print "heading is %s"%.impulses[i].relH
-                    
+                    print "heading is %s"%av.impulses[i].relH
+                     
             except:
                 print "issue with impulse code, talk to Zac"
             return
