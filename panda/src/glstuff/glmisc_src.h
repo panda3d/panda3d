@@ -18,6 +18,9 @@
 
 #include "pandabase.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
+#include "configVariableEnum.h"
+#include "geomEnums.h"
 
 //#define GSG_VERBOSE 1
 
@@ -33,6 +36,8 @@ extern ConfigVariableBool CLP(compile_and_execute);
 extern ConfigVariableBool CLP(interleaved_arrays);
 extern ConfigVariableBool CLP(parallel_arrays);
 extern ConfigVariableInt CLP(max_errors);
+extern ConfigVariableEnum<GeomEnums::UsageHint> CLP(min_buffer_usage_hint);
+extern ConfigVariableBool CLP(debug_buffers);
 
 extern EXPCL_GL void CLP(init_classes)();
 

@@ -100,6 +100,27 @@ ConfigVariableInt CLP(max_errors)
             "detect and report before it shuts down rendering.  Set it to "
             "-1 for no limit."));
 
+ConfigVariableEnum<GeomEnums::UsageHint> CLP(min_buffer_usage_hint)
+  ("gl-min-buffer-usage-hint", GeomEnums::UH_stream,
+   PRC_DESC("This specifies the first usage hint value that will be "
+            "loaded as a vertex buffer, instead of directly from the "
+            "client.  Normally, this should be \"stream\", which means "
+            "to load the vertex buffer using GL_STREAM_DRAW.  If this "
+            "is set to \"dynamic\", or \"static\", then only usage hints "
+            "at that level or higher will be loaded as a vertex buffer, "
+            "and stream or lower will be rendered directly from the "
+            "client array.  If changing this results in a remarkable "
+            "performance improvement, you may have code that is "
+            "creating and destroying vertex buffers every frame, instead "
+            "of reusing the same buffers.  Consider increasing "
+            "released-vbuffer-cache-size instead."));
+
+ConfigVariableBool CLP(debug_buffers)
+  ("gl-debug-buffers", false,
+   PRC_DESC("Set this true, in addition to enabling debug notify for "
+            "glgsg, to enable debug messages about the creation and "
+            "destruction of OpenGL vertex buffers."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {
