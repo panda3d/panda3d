@@ -89,7 +89,10 @@ class MetaInterval(CMetaInterval):
         self.__ivalsDirty = 1
 
         if name == None:
-            name = '%s-%d' % (self.__class__.__name__, self.SequenceNum)
+            name = self.__class__.__name__ + '-%d'
+
+        if '%' in name:
+            name = name % (self.SequenceNum)
             MetaInterval.SequenceNum += 1
 
         CMetaInterval.__init__(self, name)
