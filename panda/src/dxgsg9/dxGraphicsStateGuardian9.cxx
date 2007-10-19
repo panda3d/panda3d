@@ -3027,6 +3027,10 @@ reset() {
 
   void dx_set_stencil_functions (StencilRenderStates *stencil_render_states);
   dx_set_stencil_functions (_stencil_render_states);
+
+  // Now that the GSG has been initialized, make it available for
+  // optimizations.
+  add_gsg(this);
 }
 
 ////////////////////////////////////////////////////////////////////
