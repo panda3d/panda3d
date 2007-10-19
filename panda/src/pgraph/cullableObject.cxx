@@ -350,7 +350,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   int new_prim_verts = 6 * orig_verts;  // two triangles per point.
 
   PT(GeomVertexData) new_data = new GeomVertexData
-    (_munged_data->get_name(), new_format, Geom::UH_client);
+    (_munged_data->get_name(), new_format, Geom::UH_stream);
   new_data->unclean_set_num_rows(new_verts);
 
   GeomVertexWriter new_vertex(new_data, InternalName::get_vertex());
@@ -549,10 +549,10 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // generally faster on PC hardware (otherwise, we'd have to nearly
         // double the vertices to stitch all the little triangle strips
         // together).
-        PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_client);
+        PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_stream);
 
         PT(GeomVertexArrayData) new_index 
-          = new GeomVertexArrayData(new_prim_format, GeomEnums::UH_client);
+          = new GeomVertexArrayData(new_prim_format, GeomEnums::UH_stream);
         new_index->unclean_set_num_rows(new_prim_verts);
 
         GeomVertexWriter index(new_index, 0);
