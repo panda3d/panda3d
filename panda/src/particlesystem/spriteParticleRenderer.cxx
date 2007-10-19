@@ -503,10 +503,10 @@ init_geoms() {
     // For each frame of the animation...
     for (j = 0; j < _anim_size[i]; ++j) {
       _ttl_count[i] = (int *)PANDA_MALLOC_ARRAY(_anim_size[i] * sizeof(int));
-      _vdata[i].push_back(new GeomVertexData("particles", format, Geom::UH_dynamic));
+      _vdata[i].push_back(new GeomVertexData("particles", format, Geom::UH_stream));
       PT(Geom) geom = new Geom(_vdata[i][j]);
       _sprite_primitive[i].push_back((Geom*)geom);
-      _sprites[i].push_back(new GeomPoints(Geom::UH_dynamic));
+      _sprites[i].push_back(new GeomPoints(Geom::UH_stream));
       geom->add_primitive(_sprites[i][j]);
       
       // This will be overwritten in render(), but we had to have some initial value 

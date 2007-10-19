@@ -134,10 +134,10 @@ void SparkleParticleRenderer::
 init_geoms() {
   _vdata = new GeomVertexData
     ("particles", GeomVertexFormat::get_v3cp(),
-     Geom::UH_dynamic);
+     Geom::UH_stream);
   PT(Geom) geom = new Geom(_vdata);
   _line_primitive = geom;
-  _lines = new GeomLines(Geom::UH_dynamic);
+  _lines = new GeomLines(Geom::UH_stream);
   geom->add_primitive(_lines);
 
   GeomNode *render_node = get_render_node();

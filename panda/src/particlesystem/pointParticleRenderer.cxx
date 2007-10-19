@@ -113,10 +113,10 @@ void PointParticleRenderer::
 init_geoms() {
   _vdata = new GeomVertexData
     ("particles", GeomVertexFormat::get_v3cp(),
-     Geom::UH_dynamic);
+     Geom::UH_stream);
   PT(Geom) geom = new Geom(_vdata);
   _point_primitive = geom;
-  _points = new GeomPoints(Geom::UH_dynamic);
+  _points = new GeomPoints(Geom::UH_stream);
   geom->add_primitive(_points);
   
   GeomNode *render_node = get_render_node();
