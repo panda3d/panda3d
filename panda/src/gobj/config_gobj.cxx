@@ -250,6 +250,24 @@ ConfigVariableInt geom_cache_min_frames
           "object will remain in the geom cache, even if geom-cache-size "
           "is exceeded."));
 
+ConfigVariableInt released_vbuffer_cache_size
+("released-vbuffer-cache-size", 1048576,
+ PRC_DESC("Specifies the size in bytes of the cache of vertex "
+          "buffers that have recently been released.  If a new vertex "
+          "buffer is prepared while a recently-released one of the same "
+          "size is still in the cache, that same buffer is recycled.  This "
+          "cuts down on the overhead of creating and destroying vertex "
+          "buffers on the graphics card."));
+
+ConfigVariableInt released_ibuffer_cache_size
+("released-ibuffer-cache-size", 102400,
+ PRC_DESC("Specifies the size in bytes of the cache of index "
+          "buffers that have recently been released.  If a new index "
+          "buffer is prepared while a recently-released one of the same "
+          "size is still in the cache, that same buffer is recycled.  This "
+          "cuts down on the overhead of creating and destroying index "
+          "buffers on the graphics card."));
+
 ConfigVariableDouble default_near
 ("default-near", 1.0,
  PRC_DESC("The default near clipping distance for all cameras."));

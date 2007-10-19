@@ -17,8 +17,68 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomEnums.h"
+#include "string_utils.h"
+#include "config_gobj.h"
 
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomEnums::UsageHint output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, GeomEnums::UsageHint usage_hint) {
+  switch (usage_hint) {
+  case GeomEnums::UH_client:
+    return out << "client";
+
+  case GeomEnums::UH_stream:
+    return out << "stream";
+
+  case GeomEnums::UH_dynamic:
+    return out << "dynamic";
+
+  case GeomEnums::UH_static:
+    return out << "static";
+
+  case GeomEnums::UH_unspecified:
+    return out << "unspecified";
+  }
+
+  return out << "**invalid usage hint (" << (int)usage_hint << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomEnums::UsageHint input operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, GeomEnums::UsageHint &usage_hint) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "client") == 0) {
+    usage_hint = GeomEnums::UH_client;
+  } else if (cmp_nocase(word, "stream") == 0) {
+    usage_hint = GeomEnums::UH_stream;
+  } else if (cmp_nocase(word, "dynamic") == 0) {
+    usage_hint = GeomEnums::UH_dynamic;
+  } else if (cmp_nocase(word, "static") == 0) {
+    usage_hint = GeomEnums::UH_static;
+  } else if (cmp_nocase(word, "unspecified") == 0) {
+    usage_hint = GeomEnums::UH_unspecified;
+
+  } else {
+    gobj_cat->error() << "Invalid usage hint value: " << word << "\n";
+    usage_hint = GeomEnums::UH_unspecified;
+  }
+
+  return in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomEnums::NumericType output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, GeomEnums::NumericType numeric_type) {
   switch (numeric_type) {
@@ -44,6 +104,10 @@ operator << (ostream &out, GeomEnums::NumericType numeric_type) {
   return out << "**invalid numeric type (" << (int)numeric_type << ")**";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomEnums::Contents output operator
+//  Description: 
+////////////////////////////////////////////////////////////////////
 ostream &
 operator << (ostream &out, GeomEnums::Contents contents) {
   switch (contents) {

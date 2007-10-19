@@ -63,6 +63,8 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_min_frames;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt released_vbuffer_cache_size;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt released_ibuffer_cache_size;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_near;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_far;

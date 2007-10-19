@@ -72,3 +72,37 @@ get_num_prepared() const {
           get_num_prepared_vertex_buffers() +
           get_num_prepared_index_buffers());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::BufferCacheKey::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PreparedGraphicsObjects::BufferCacheKey::
+operator < (const PreparedGraphicsObjects::BufferCacheKey &other) const {
+  if (_data_size_bytes != other._data_size_bytes) {
+    return _data_size_bytes < other._data_size_bytes;
+  }
+  return (int)_usage_hint < (int)other._usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::BufferCacheKey::operator ==
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PreparedGraphicsObjects::BufferCacheKey::
+operator == (const PreparedGraphicsObjects::BufferCacheKey &other) const {
+  return (_data_size_bytes == other._data_size_bytes &&
+          _usage_hint == other._usage_hint);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::BufferCacheKey::operator !=
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool PreparedGraphicsObjects::BufferCacheKey::
+operator != (const PreparedGraphicsObjects::BufferCacheKey &other) const {
+  return !operator == (other);
+}

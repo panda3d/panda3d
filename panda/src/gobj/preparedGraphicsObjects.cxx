@@ -42,7 +42,9 @@ PreparedGraphicsObjects() :
   _name(init_name()),
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),
-  _ibuffer_residency(_name, "ibuffer")
+  _ibuffer_residency(_name, "ibuffer"),
+  _vertex_buffer_cache_size(0),
+  _index_buffer_cache_size(0)
 {
 }
 
@@ -59,68 +61,41 @@ PreparedGraphicsObjects::
   // cleaned up.  Quietly erase these remaining objects.
   ReMutexHolder holder(_lock);
 
+  release_all_textures();
   Textures::iterator tci;
-  for (tci = _prepared_textures.begin();
-       tci != _prepared_textures.end();
+  for (tci = _released_textures.begin();
+       tci != _released_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->get_texture()->clear_prepared(this);
     tc->set_owning_chain(NULL);
   }
-
-  _prepared_textures.clear();
   _released_textures.clear();
-  _enqueued_textures.clear();
 
-  Geoms::iterator gci;
-  for (gci = _prepared_geoms.begin();
-       gci != _prepared_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
-    gc->_geom->clear_prepared(this);
-  }
-
-  _prepared_geoms.clear();
+  release_all_geoms();
   _released_geoms.clear();
-  _enqueued_geoms.clear();
 
-  Shaders::iterator sci;
-  for (sci = _prepared_shaders.begin();
-       sci != _prepared_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
-    sc->_expansion->clear_prepared(this);
-  }
-
-  _prepared_shaders.clear();
+  release_all_shaders();
   _released_shaders.clear();
-  _enqueued_shaders.clear();
 
-  VertexBuffers::iterator vbci;
-  for (vbci = _prepared_vertex_buffers.begin();
-       vbci != _prepared_vertex_buffers.end();
+  release_all_vertex_buffers();
+  Buffers::iterator vbci;
+  for (vbci = _released_vertex_buffers.begin();
+       vbci != _released_vertex_buffers.end();
        ++vbci) {
-    VertexBufferContext *vbc = (*vbci);
-    vbc->_data->clear_prepared(this);
+    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
     vbc->set_owning_chain(NULL);
   }
-
-  _prepared_vertex_buffers.clear();
   _released_vertex_buffers.clear();
-  _enqueued_vertex_buffers.clear();
 
-  IndexBuffers::iterator ibci;
-  for (ibci = _prepared_index_buffers.begin();
-       ibci != _prepared_index_buffers.end();
+  release_all_index_buffers();
+  Buffers::iterator ibci;
+  for (ibci = _released_index_buffers.begin();
+       ibci != _released_index_buffers.end();
        ++ibci) {
-    IndexBufferContext *ibc = (*ibci);
-    ibc->_data->clear_prepared(this);
+    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
     ibc->set_owning_chain(NULL);
   }
-
-  _prepared_index_buffers.clear();
   _released_index_buffers.clear();
-  _enqueued_index_buffers.clear();
 }
 
 
@@ -772,6 +747,9 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   vbc->_data->clear_prepared(this);
 
+  size_t data_size_bytes = vbc->_data->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = vbc->_data->get_usage_hint();
+
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
   // released.
@@ -780,7 +758,11 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
 
-  _released_vertex_buffers.insert(vbc);
+  cache_unprepared_buffer(vbc, data_size_bytes, usage_hint,
+                          _vertex_buffer_cache,
+                          _vertex_buffer_cache_lru, _vertex_buffer_cache_size,
+                          released_vbuffer_cache_size,
+                          _released_vertex_buffers);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -797,11 +779,11 @@ release_all_vertex_buffers() {
 
   int num_vertex_buffers = (int)_prepared_vertex_buffers.size() + (int)_enqueued_vertex_buffers.size();
 
-  VertexBuffers::iterator vbci;
+  Buffers::iterator vbci;
   for (vbci = _prepared_vertex_buffers.begin();
        vbci != _prepared_vertex_buffers.end();
        ++vbci) {
-    VertexBufferContext *vbc = (*vbci);
+    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
     vbc->_data->clear_prepared(this);
     vbc->_data = (GeomVertexArrayData *)NULL;
 
@@ -811,6 +793,23 @@ release_all_vertex_buffers() {
   _prepared_vertex_buffers.clear();
   _enqueued_vertex_buffers.clear();
 
+  // Also clear the cache of recently-unprepared vertex buffers.
+  BufferCache::iterator bci;
+  for (bci = _vertex_buffer_cache.begin(); 
+       bci != _vertex_buffer_cache.end(); 
+       ++bci) {
+    BufferList &buffer_list = (*bci).second;
+    nassertr(!buffer_list.empty(), num_vertex_buffers);
+    BufferList::iterator li;
+    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
+      VertexBufferContext *vbc = (VertexBufferContext *)(*li);
+      _released_vertex_buffers.insert(vbc);
+    }
+  }
+  _vertex_buffer_cache.clear();
+  _vertex_buffer_cache_lru.clear();
+  _vertex_buffer_cache_size = 0;
+  
   return num_vertex_buffers;
 }
 
@@ -862,11 +861,24 @@ VertexBufferContext *PreparedGraphicsObjects::
 prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // Ask the GSG to create a brand new VertexBufferContext.  There might
-  // be several GSG's sharing the same set of datas; if so, it
-  // doesn't matter which of them creates the context (since they're
-  // all shared anyway).
-  VertexBufferContext *vbc = gsg->prepare_vertex_buffer(data);
+  // First, see if there might be a cached context of the appropriate
+  // size.
+  size_t data_size_bytes = data->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = data->get_usage_hint();
+  VertexBufferContext *vbc = (VertexBufferContext *)
+    get_cached_buffer(data_size_bytes, usage_hint,
+                      _vertex_buffer_cache, _vertex_buffer_cache_lru,
+                      _vertex_buffer_cache_size);
+  if (vbc != (VertexBufferContext *)NULL) {
+    vbc->_data = data;
+
+  } else {
+    // Ask the GSG to create a brand new VertexBufferContext.  There
+    // might be several GSG's sharing the same set of datas; if so, it
+    // doesn't matter which of them creates the context (since they're
+    // all shared anyway).
+    vbc = gsg->prepare_vertex_buffer(data);
+  }
 
   if (vbc != (VertexBufferContext *)NULL) {
     bool prepared = _prepared_vertex_buffers.insert(vbc).second;
@@ -960,6 +972,9 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   ibc->_data->clear_prepared(this);
 
+  size_t data_size_bytes = ibc->_data->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = ibc->_data->get_usage_hint();
+
   // We have to set the Data pointer to NULL at this point, since
   // the Data itself might destruct at any time after it has been
   // released.
@@ -968,7 +983,11 @@ release_index_buffer(IndexBufferContext *ibc) {
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
 
-  _released_index_buffers.insert(ibc);
+  cache_unprepared_buffer(ibc, data_size_bytes, usage_hint,
+                          _index_buffer_cache,
+                          _index_buffer_cache_lru, _index_buffer_cache_size,
+                          released_ibuffer_cache_size,
+                          _released_index_buffers);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -985,11 +1004,11 @@ release_all_index_buffers() {
 
   int num_index_buffers = (int)_prepared_index_buffers.size() + (int)_enqueued_index_buffers.size();
 
-  IndexBuffers::iterator ibci;
+  Buffers::iterator ibci;
   for (ibci = _prepared_index_buffers.begin();
        ibci != _prepared_index_buffers.end();
        ++ibci) {
-    IndexBufferContext *ibc = (*ibci);
+    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
     ibc->_data->clear_prepared(this);
     ibc->_data = (GeomPrimitive *)NULL;
 
@@ -998,6 +1017,23 @@ release_all_index_buffers() {
 
   _prepared_index_buffers.clear();
   _enqueued_index_buffers.clear();
+
+  // Also clear the cache of recently-unprepared index buffers.
+  BufferCache::iterator bci;
+  for (bci = _index_buffer_cache.begin(); 
+       bci != _index_buffer_cache.end(); 
+       ++bci) {
+    BufferList &buffer_list = (*bci).second;
+    nassertr(!buffer_list.empty(), num_index_buffers);
+    BufferList::iterator li;
+    for (li = buffer_list.begin(); li != buffer_list.end(); ++li) {
+      IndexBufferContext *vbc = (IndexBufferContext *)(*li);
+      _released_index_buffers.insert(vbc);
+    }
+  }
+  _index_buffer_cache.clear();
+  _index_buffer_cache_lru.clear();
+  _index_buffer_cache_size = 0;
 
   return num_index_buffers;
 }
@@ -1050,11 +1086,24 @@ IndexBufferContext *PreparedGraphicsObjects::
 prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
-  // Ask the GSG to create a brand new IndexBufferContext.  There might
-  // be several GSG's sharing the same set of datas; if so, it
-  // doesn't matter which of them creates the context (since they're
-  // all shared anyway).
-  IndexBufferContext *ibc = gsg->prepare_index_buffer(data);
+  // First, see if there might be a cached context of the appropriate
+  // size.
+  size_t data_size_bytes = data->get_data_size_bytes();
+  GeomEnums::UsageHint usage_hint = data->get_usage_hint();
+  IndexBufferContext *ibc = (IndexBufferContext *)
+    get_cached_buffer(data_size_bytes, usage_hint,
+                      _index_buffer_cache, _index_buffer_cache_lru,
+                      _index_buffer_cache_size);
+  if (ibc != (IndexBufferContext *)NULL) {
+    ibc->_data = data;
+
+  } else {
+    // Ask the GSG to create a brand new IndexBufferContext.  There
+    // might be several GSG's sharing the same set of datas; if so, it
+    // doesn't matter which of them creates the context (since they're
+    // all shared anyway).
+    ibc = gsg->prepare_index_buffer(data);
+  }
 
   if (ibc != (IndexBufferContext *)NULL) {
     bool prepared = _prepared_index_buffers.insert(ibc).second;
@@ -1114,21 +1163,21 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
 
   _released_shaders.clear();
 
-  VertexBuffers::iterator vbci;
+  Buffers::iterator vbci;
   for (vbci = _released_vertex_buffers.begin();
        vbci != _released_vertex_buffers.end();
        ++vbci) {
-    VertexBufferContext *vbc = (*vbci);
+    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
     gsg->release_vertex_buffer(vbc);
   }
 
   _released_vertex_buffers.clear();
 
-  IndexBuffers::iterator ibci;
+  Buffers::iterator ibci;
   for (ibci = _released_index_buffers.begin();
        ibci != _released_index_buffers.end();
        ++ibci) {
-    IndexBufferContext *ibc = (*ibci);
+    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
     gsg->release_index_buffer(ibc);
   }
 
@@ -1220,4 +1269,97 @@ init_name() {
   ostringstream strm;
   strm << "context" << _name_index;
   return strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::cache_unprepared_buffer
+//       Access: Private
+//  Description: Called when a vertex or index buffer is no longer
+//               officially "prepared".  However, we still have the
+//               context on the graphics card, and we might be able to
+//               reuse that context if we're about to re-prepare a
+//               different buffer, especially one exactly the same
+//               size.  So instead of immediately enqueuing the vertex
+//               buffer for release, we cache it.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
+                        GeomEnums::UsageHint usage_hint,
+                        PreparedGraphicsObjects::BufferCache &buffer_cache,
+                        PreparedGraphicsObjects::BufferCacheLRU &buffer_cache_lru,
+                        size_t &buffer_cache_size, 
+                        int released_buffer_cache_size,
+                        PreparedGraphicsObjects::Buffers &released_buffers) {
+  BufferCacheKey key;
+  key._data_size_bytes = data_size_bytes;
+  key._usage_hint = usage_hint;
+
+  buffer_cache[key].push_back(buffer);
+  buffer_cache_size += data_size_bytes;
+
+  // Move the key to the head of the LRU.
+  BufferCacheLRU::iterator li =
+    find(buffer_cache_lru.begin(), buffer_cache_lru.end(), key);
+  if (li != buffer_cache_lru.end()) {
+    buffer_cache_lru.erase(li);
+  }
+  buffer_cache_lru.insert(buffer_cache_lru.begin(), key);
+
+  // Now release not-recently-used buffers until we fit within the
+  // constrained size.
+  while ((int)buffer_cache_size > released_buffer_cache_size) {
+    nassertv(!buffer_cache_lru.empty());
+    const BufferCacheKey &release_key = *buffer_cache_lru.rbegin();
+    BufferList &buffer_list = buffer_cache[release_key];
+    while (!buffer_list.empty() && 
+           (int)buffer_cache_size > released_buffer_cache_size) {
+      BufferContext *released_buffer = buffer_list.back();
+      buffer_list.pop_back();
+      released_buffers.insert(released_buffer);
+      buffer_cache_size -= release_key._data_size_bytes;
+    }
+
+    if (buffer_list.empty()) {
+      buffer_cache.erase(release_key);
+      buffer_cache_lru.pop_back();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_cached_buffer
+//       Access: Private
+//  Description: Returns a previously-cached buffer from the cache, or
+//               NULL if there is no such buffer.
+////////////////////////////////////////////////////////////////////
+BufferContext *PreparedGraphicsObjects::
+get_cached_buffer(size_t data_size_bytes, GeomEnums::UsageHint usage_hint,
+                  PreparedGraphicsObjects::BufferCache &buffer_cache,
+                  PreparedGraphicsObjects::BufferCacheLRU &buffer_cache_lru,
+                  size_t &buffer_cache_size) {
+  BufferCacheKey key;
+  key._data_size_bytes = data_size_bytes;
+  key._usage_hint = usage_hint;
+
+  BufferCache::iterator bci = buffer_cache.find(key);
+  if (bci == buffer_cache.end()) {
+    return NULL;
+  }
+
+  BufferList &buffer_list = (*bci).second;
+  nassertr(!buffer_list.empty(), NULL);
+
+  BufferContext *buffer = buffer_list.back();
+  buffer_list.pop_back();
+  if (buffer_list.empty()) {
+    buffer_cache.erase(bci);
+    BufferCacheLRU::iterator li =
+      find(buffer_cache_lru.begin(), buffer_cache_lru.end(), key);
+    if (li != buffer_cache_lru.end()) {
+      buffer_cache_lru.erase(li);
+    }
+  }
+
+  buffer_cache_size -= data_size_bytes;
+  return buffer;
 }

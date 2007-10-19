@@ -67,7 +67,7 @@ PUBLISHED:
     UH_static,
 
     // UH_unspecified: the usage is unspecified.  This is intended as
-    // a "don't care" option for abstract objects, it should not be
+    // a "don't care" option for abstract objects; it should not be
     // applied to any actual geometry to be rendered.  You take your
     // chances if a geom actually gets into the scene graph with this
     // set.
@@ -211,6 +211,8 @@ PUBLISHED:
   };
 };
 
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::UsageHint usage_hint);
+EXPCL_PANDA_GOBJ istream &operator >> (istream &in, GeomEnums::UsageHint &usage_hint);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::Contents contents);
 

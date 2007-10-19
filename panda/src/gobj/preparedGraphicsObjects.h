@@ -144,10 +144,34 @@ private:
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
   typedef phash_set<ShaderContext *, pointer_hash> Shaders;
   typedef phash_set< PT(ShaderExpansion) > EnqueuedShaders;
-  typedef phash_set<VertexBufferContext *, pointer_hash> VertexBuffers;
+  typedef phash_set<BufferContext *, pointer_hash> Buffers;
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
-  typedef phash_set<IndexBufferContext *, pointer_hash> IndexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;
+
+  class BufferCacheKey {
+  public:
+    INLINE bool operator < (const BufferCacheKey &other) const;
+    INLINE bool operator == (const BufferCacheKey &other) const;
+    INLINE bool operator != (const BufferCacheKey &other) const;
+    size_t _data_size_bytes;
+    GeomEnums::UsageHint _usage_hint;
+  };
+  typedef pvector<BufferContext *> BufferList;
+  typedef pmap<BufferCacheKey, BufferList> BufferCache;
+  typedef plist<BufferCacheKey> BufferCacheLRU;
+
+  void cache_unprepared_buffer(BufferContext *buffer, size_t data_size_bytes,
+                               GeomEnums::UsageHint usage_hint,
+                               BufferCache &buffer_cache,
+                               BufferCacheLRU &buffer_cache_lru,
+                               size_t &buffer_cache_size,
+                               int released_buffer_cache_size,
+                               Buffers &released_buffers);
+  BufferContext *get_cached_buffer(size_t data_size_bytes, 
+                                   GeomEnums::UsageHint usage_hint,
+                                   BufferCache &buffer_cache,
+                                   BufferCacheLRU &buffer_cache_lru,
+                                   size_t &buffer_cache_size);
 
   ReMutex _lock;
   string _name;
@@ -157,10 +181,18 @@ private:
   EnqueuedGeoms _enqueued_geoms;
   Shaders _prepared_shaders, _released_shaders;
   EnqueuedShaders _enqueued_shaders;
-  VertexBuffers _prepared_vertex_buffers, _released_vertex_buffers;  
+  Buffers _prepared_vertex_buffers, _released_vertex_buffers;  
   EnqueuedVertexBuffers _enqueued_vertex_buffers;
-  IndexBuffers _prepared_index_buffers, _released_index_buffers;  
+  Buffers _prepared_index_buffers, _released_index_buffers;  
   EnqueuedIndexBuffers _enqueued_index_buffers;
+
+  BufferCache _vertex_buffer_cache;
+  BufferCacheLRU _vertex_buffer_cache_lru;
+  size_t _vertex_buffer_cache_size;
+
+  BufferCache _index_buffer_cache;
+  BufferCacheLRU _index_buffer_cache_lru;
+  size_t _index_buffer_cache_size;
 
 public:
   BufferResidencyTracker _texture_residency;
