@@ -128,6 +128,17 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
             self.notify.warning(
                 "%s handleAvatarZoneChange %s: not a valid zone (%s) for pos %s" %
                 (self.doId, av.doId, zoneId, pos))
+            try:
+                print "avatar is at %s, %s"%(av.getPos(av.getParentObj()), av.currParentPos)
+                if(hasattr(av,"impulses")):
+                    print "av has %s impulses"%av.impulses
+                for i in av.impulses:
+                    print "impulse: %s"%i
+                    print "target is %s"%av.impulses[i].targetPos()
+                    print "heading is %s"%.impulses[i].relH
+                    
+            except:
+                print "issue with impulse code, talk to Zac"
             return
 
         # Set the location on the server.
