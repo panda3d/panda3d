@@ -596,6 +596,15 @@ contains_box(const BoundingBox *box) const {
 ////////////////////////////////////////////////////////////////////
 int BoundingBox::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
+  // First, try the quick bounding-box test.  If that's decisive,
+  // we'll accept it.
+  int result = contains_finite(hexahedron);
+  if (result == IF_no_intersection || ((result & IF_all) != 0)) {
+    return result;
+  }
+
+  // If that was inconclusive, we'll look more closely with the
+  // somewhat more expensive reverse answer.
   return hexahedron->contains_box(this) & ~IF_all;
 }
 
