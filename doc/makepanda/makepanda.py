@@ -1733,7 +1733,7 @@ def WriteConfigSettings():
         for key,win,unix in PRC_PARAMETERS:
             prc_parameters[key] = win
     else:
-        for key,win,unix in DEFAULT_SETTINGS:
+        for key,win,unix in DTOOL_CONFIG:
             dtool_config[key] = unix
         for key,win,unix in PRC_PARAMETERS:
             prc_parameters[key] = unix
