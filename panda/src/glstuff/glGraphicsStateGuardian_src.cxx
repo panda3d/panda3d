@@ -248,6 +248,11 @@ CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
   GraphicsStateGuardian(CS_yup_right, pipe)
 {
   _error_count = 0;
+
+  // Hack.  Turn on the flag that we turned off at a higher level,
+  // since we know this works properly in OpenGL, and we want the
+  // performance benefit it gives us.
+  _prepared_objects->_support_released_buffer_cache = true;
 }
 
 ////////////////////////////////////////////////////////////////////

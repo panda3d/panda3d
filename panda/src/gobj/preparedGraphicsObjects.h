@@ -199,6 +199,11 @@ public:
   BufferResidencyTracker _vbuffer_residency;
   BufferResidencyTracker _ibuffer_residency;
 
+public:
+  // This is only public as a temporary hack.  Don't mess with it
+  // unless you know what you're doing.
+  bool _support_released_buffer_cache;
+
 private:
   static int _name_index;
 

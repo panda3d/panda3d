@@ -46,6 +46,10 @@ PreparedGraphicsObjects() :
   _vertex_buffer_cache_size(0),
   _index_buffer_cache_size(0)
 {
+  // GLGSG will turn this flag on.  This is a temporary hack to
+  // disable this feature for DX8/DX9 for now, until we work out the
+  // fine points of updating the fvf properly.
+  _support_released_buffer_cache = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,11 +762,15 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
 
-  cache_unprepared_buffer(vbc, data_size_bytes, usage_hint,
-                          _vertex_buffer_cache,
-                          _vertex_buffer_cache_lru, _vertex_buffer_cache_size,
-                          released_vbuffer_cache_size,
-                          _released_vertex_buffers);
+  if (_support_released_buffer_cache) {
+    cache_unprepared_buffer(vbc, data_size_bytes, usage_hint,
+                            _vertex_buffer_cache,
+                            _vertex_buffer_cache_lru, _vertex_buffer_cache_size,
+                            released_vbuffer_cache_size,
+                            _released_vertex_buffers);
+  } else {
+    _released_vertex_buffers.insert(vbc);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -983,11 +991,15 @@ release_index_buffer(IndexBufferContext *ibc) {
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
 
-  cache_unprepared_buffer(ibc, data_size_bytes, usage_hint,
-                          _index_buffer_cache,
-                          _index_buffer_cache_lru, _index_buffer_cache_size,
-                          released_ibuffer_cache_size,
-                          _released_index_buffers);
+  if (_support_released_buffer_cache) {
+    cache_unprepared_buffer(ibc, data_size_bytes, usage_hint,
+                            _index_buffer_cache,
+                            _index_buffer_cache_lru, _index_buffer_cache_size,
+                            released_ibuffer_cache_size,
+                            _released_index_buffers);
+  } else {
+    _released_index_buffers.insert(ibc);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
