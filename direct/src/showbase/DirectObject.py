@@ -63,7 +63,11 @@ class DirectObject:
     
     def removeTask(self, taskOrName):
         if type(taskOrName) == type(''):
-            taskMgr.remove(taskOrName)
+            # we must use a copy, since task.remove will modify self._taskList
+            taskListValues = self._taskList.values()
+            for task in taskListValues:
+                if task.name == taskOrName:
+                    task.remove()            
         else:
             taskOrName.remove()
 
