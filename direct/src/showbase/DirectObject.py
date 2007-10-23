@@ -61,8 +61,11 @@ class DirectObject:
         self._taskList[task.id] = task
         return task
     
-    def removeTask(self, task):
-        task.remove()
+    def removeTask(self, taskOrName):
+        if type(taskOrName) == type(''):
+            taskMgr.remove(taskOrName)
+        else:
+            taskOrName.remove()
 
     def removeAllTasks(self):
         for task in self._taskList.values():
