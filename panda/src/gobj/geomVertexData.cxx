@@ -1624,7 +1624,7 @@ finalize(BamReader *manager) {
 
     CPT(GeomVertexArrayFormat) new_array_format = new_format->get_array(i);
     PT(GeomVertexArrayData) array_obj = cdata->_arrays[i].get_unsafe_pointer();
-    nassertv(array_obj->_array_format->compare_to(*new_array_format) == 0);
+    nassertv(new_array_format->is_data_subset_of(*array_obj->_array_format));
 
     manager->change_pointer(array_obj->_array_format, new_array_format);
     array_obj->_array_format = new_array_format;
