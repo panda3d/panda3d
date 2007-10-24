@@ -72,8 +72,9 @@ class DirectObject:
             taskOrName.remove()
 
     def removeAllTasks(self):
-        for task in self._taskList.values():
-            task.remove()
+        if hasattr(self,'_taskList'):
+            for task in self._taskList.values():
+                task.remove()
 
     def _clearTask(self, task):
         del self._taskList[task.id]        
