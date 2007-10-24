@@ -231,6 +231,11 @@ private:
   };
 
   static void
+  draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
+                  float underscore_start, float underscore_end, 
+                  const TextProperties *underscore_properties);
+
+  static void
   get_character_glyphs(int character, const TextProperties *properties,
                        bool &got_glyph, const TextGlyph *&glyph,
                        const TextGlyph *&second_glyph,

@@ -41,6 +41,8 @@ TextProperties() {
   _small_caps = text_small_caps;
   _small_caps_scale = text_small_caps_scale;
   _slant = 0.0f;
+  _underscore = false;
+  _underscore_height = 0.0f;
   _align = A_left;
   _indent_width = 0.0f;
   _wordwrap_width = 0.0f;
@@ -77,6 +79,8 @@ operator = (const TextProperties &copy) {
   _small_caps = copy._small_caps;
   _small_caps_scale = copy._small_caps_scale;
   _slant = copy._slant;
+  _underscore = copy._underscore;
+  _underscore_height = copy._underscore_height;
   _align = copy._align;
   _indent_width = copy._indent_width;
   _wordwrap_width = copy._wordwrap_width;
@@ -112,6 +116,12 @@ operator == (const TextProperties &other) const {
     return false;
   }
   if ((_specified & F_has_slant) && _slant != other._slant) {
+    return false;
+  }
+  if ((_specified & F_has_underscore) && _underscore != other._underscore) {
+    return false;
+  }
+  if ((_specified & F_has_underscore_height) && _underscore_height != other._underscore_height) {
     return false;
   }
   if ((_specified & F_has_align) && _align != other._align) {
@@ -187,6 +197,12 @@ add_properties(const TextProperties &other) {
   if (other.has_slant()) {
     set_slant(other.get_slant());
   }
+  if (other.has_underscore()) {
+    set_underscore(other.get_underscore());
+  }
+  if (other.has_underscore_height()) {
+    set_underscore_height(other.get_underscore_height());
+  }
   if (other.has_align()) {
     set_align(other.get_align());
   }
@@ -258,6 +274,14 @@ write(ostream &out, int indent_level) const {
   if (has_slant()) {
     indent(out, indent_level)
       << "slant = " << get_slant() << "\n";
+  }
+  if (has_underscore()) {
+    indent(out, indent_level)
+      << "underscore = " << get_underscore() << "\n";
+  }
+  if (has_underscore_height()) {
+    indent(out, indent_level)
+      << "underscore_height = " << get_underscore_height() << "\n";
   }
 
   if (has_align()) {

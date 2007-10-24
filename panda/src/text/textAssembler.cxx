@@ -26,6 +26,11 @@
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
 #include "config_text.h"
+#include "geomVertexWriter.h"
+#include "geomLines.h"
+#include "geomVertexFormat.h"
+#include "geomVertexData.h"
+#include "geom.h"
 
 #include <ctype.h>
   
@@ -1154,12 +1159,29 @@ assemble_row(TextAssembler::TextRow &row,
   float xpos = 0.0f;
   align = TextProperties::A_left;
 
+  bool underscore = false;
+  float underscore_start = 0.0f;
+  const TextProperties *underscore_properties = NULL;
+
   TextString::const_iterator si;
   for (si = row._string.begin(); si != row._string.end(); ++si) {
     const TextCharacter &tch = (*si);
     wchar_t character = tch._character;
     const TextGraphic *graphic = tch._graphic;
     const TextProperties *properties = &(tch._cprops->_properties);
+
+    if (properties->get_underscore() != underscore ||
+        (underscore && (properties->get_text_color() != underscore_properties->get_text_color() ||
+                        properties->get_underscore_height() != underscore_properties->get_underscore_height()))) {
+      // Change the underscore status.
+      if (underscore && underscore_start != xpos) {
+        draw_underscore(row_placed_glyphs, underscore_start, xpos,
+                        underscore_properties);
+      }
+      underscore = properties->get_underscore();
+      underscore_start = xpos;
+      underscore_properties = properties;
+    }
 
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
@@ -1330,6 +1352,11 @@ assemble_row(TextAssembler::TextRow &row,
     }
   }
 
+  if (underscore && underscore_start != xpos) {
+    draw_underscore(row_placed_glyphs, underscore_start, xpos,
+                    underscore_properties);
+  }
+
   row_width = xpos;
 
   if (row._eol_cprops != (ComputedProperties *)NULL) {
@@ -1346,6 +1373,41 @@ assemble_row(TextAssembler::TextRow &row,
   }
 }
   
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::draw_underscore
+//       Access: Private, Static
+//  Description: Creates the geometry to render the underscore line
+//               for the indicated range of glyphs in this row.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::
+draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
+                float underscore_start, float underscore_end, 
+                const TextProperties *underscore_properties) {
+  CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
+  PT(GeomVertexData) vdata = 
+    new GeomVertexData("text", format, Geom::UH_static);
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  GeomVertexWriter color(vdata, InternalName::get_color());
+  float y = underscore_properties->get_underscore_height();
+  vertex.add_data3f(underscore_start, 0.0f, y);
+  color.add_data4f(underscore_properties->get_text_color());
+  vertex.add_data3f(underscore_end, 0.0f, y);
+  color.add_data4f(underscore_properties->get_text_color());
+
+  PT(GeomLines) lines = new GeomLines(Geom::UH_static);
+  lines->add_vertices(0, 1);
+  lines->close_primitive();
+
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(lines);
+
+  GlyphPlacement *placement = new GlyphPlacement;
+  placement->add_piece(geom, RenderState::make_empty());
+  placement->_xform = LMatrix4f::ident_mat();
+  placement->_properties = underscore_properties;
+
+  row_placed_glyphs.push_back(placement);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::get_character_glyphs

@@ -263,6 +263,97 @@ get_slant() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::set_underscore
+//       Access: Published
+//  Description: Sets the underscore flag.  When this is set,
+//               the text is underscored with a one-pixel line the
+//               same color as the text foreground, drawn at the
+//               baseline.
+////////////////////////////////////////////////////////////////////
+INLINE void TextProperties::
+set_underscore(bool underscore) {
+  _underscore = underscore;
+  _specified |= F_has_underscore;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::clear_underscore
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void TextProperties::
+clear_underscore() {
+  _underscore = false;
+  _specified &= ~F_has_underscore;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::has_underscore
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TextProperties::
+has_underscore() const {
+  return (_specified & F_has_underscore) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::get_underscore
+//       Access: Published
+//  Description: Returns the underscore flag.  See set_underscore().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextProperties::
+get_underscore() const {
+  return _underscore;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::set_underscore_height
+//       Access: Published
+//  Description: Specifies the vertical height of the underscore,
+//               relative to the text baseline.  This only has meaning
+//               if the underscore mode is enabled with
+//               set_underscore().
+////////////////////////////////////////////////////////////////////
+INLINE void TextProperties::
+set_underscore_height(float underscore_height) {
+  _underscore_height = underscore_height;
+  _specified |= F_has_underscore_height;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::clear_underscore_height
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TextProperties::
+clear_underscore_height() {
+  _underscore_height = 0.0f;
+  _specified &= ~F_has_underscore_height;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::has_underscore_height
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool TextProperties::
+has_underscore_height() const {
+  return (_specified & F_has_underscore_height) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextProperties::get_underscore_height
+//       Access: Published
+//  Description: Returns the vertical height of the underscore; see
+//               set_underscore_height().
+////////////////////////////////////////////////////////////////////
+INLINE float TextProperties::
+get_underscore_height() const {
+  return _underscore_height;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextProperties::set_align
 //       Access: Published
 //  Description: Specifies the alignment of the text within its

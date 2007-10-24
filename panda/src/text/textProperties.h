@@ -88,6 +88,16 @@ PUBLISHED:
   INLINE bool has_slant() const;
   INLINE float get_slant() const;
 
+  INLINE void set_underscore(bool underscore);
+  INLINE void clear_underscore();
+  INLINE bool has_underscore() const;
+  INLINE bool get_underscore() const;
+
+  INLINE void set_underscore_height(float underscore_height);
+  INLINE void clear_underscore_height();
+  INLINE bool has_underscore_height() const;
+  INLINE float get_underscore_height() const;
+
   INLINE void set_align(Alignment align_type);
   INLINE void clear_align();
   INLINE bool has_align() const;
@@ -159,22 +169,24 @@ private:
   static void load_default_font();
 
   enum Flags {
-    F_has_font                         = 0x0001,
-    F_has_small_caps                   = 0x0002,
-    F_has_small_caps_scale             = 0x0004,
-    F_has_slant                        = 0x0008,
-    F_has_align                        = 0x0010,
-    F_has_indent                       = 0x0020,
-    F_has_wordwrap                     = 0x0040,
-    F_has_preserve_trailing_whitespace = 0x0080,
-    F_has_text_color                   = 0x0100,
-    F_has_shadow_color                 = 0x0200,
-    F_has_shadow                       = 0x0400,
-    F_has_bin                          = 0x0800,
-    F_has_draw_order                   = 0x1000,
-    F_has_tab_width                    = 0x2000,
-    F_has_glyph_scale                  = 0x4000,
-    F_has_glyph_shift                  = 0x8000,
+    F_has_font                         = 0x00000001,
+    F_has_small_caps                   = 0x00000002,
+    F_has_small_caps_scale             = 0x00000004,
+    F_has_slant                        = 0x00000008,
+    F_has_align                        = 0x00000010,
+    F_has_indent                       = 0x00000020,
+    F_has_wordwrap                     = 0x00000040,
+    F_has_preserve_trailing_whitespace = 0x00000080,
+    F_has_text_color                   = 0x00000100,
+    F_has_shadow_color                 = 0x00000200,
+    F_has_shadow                       = 0x00000400,
+    F_has_bin                          = 0x00000800,
+    F_has_draw_order                   = 0x00001000,
+    F_has_tab_width                    = 0x00002000,
+    F_has_glyph_scale                  = 0x00004000,
+    F_has_glyph_shift                  = 0x00008000,
+    F_has_underscore                   = 0x00010000,
+    F_has_underscore_height            = 0x00020000,
   };
 
   int _specified;
@@ -183,6 +195,8 @@ private:
   bool _small_caps;
   float _small_caps_scale;
   float _slant;
+  bool _underscore;
+  float _underscore_height;
   Alignment _align;
   float _indent_width;
   float _wordwrap_width;
