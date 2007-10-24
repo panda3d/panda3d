@@ -1727,13 +1727,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #else // WANT_NEW_FOCUS_MANAGMENT
         {
             double message_time = get_message_time();
-            for (int i = 0; i < num_virtual_keys; i++) 
-            {
-                ButtonHandle bh = lookup_key(i);
-                if(bh != ButtonHandle::none())
-                    handle_keyrelease(bh,message_time);
+            int i;
+            for (i = 0; i < num_virtual_keys; i++) {
+              ButtonHandle bh = lookup_key(i);
+              if(bh != ButtonHandle::none()) {
+                handle_keyrelease(bh,message_time);
+              }
             }
             memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
+
+            // Also up the mouse buttons.
+            for (i = 0; i < MouseButton::num_mouse_buttons; ++i) {
+              handle_keyrelease(MouseButton::button(i), message_time);
+            }
+            handle_keyrelease(MouseButton::wheel_up(), message_time);
+            handle_keyrelease(MouseButton::wheel_down(), message_time);
+
             _lost_keypresses = true;
         }
 #endif // WANT_NEW_FOCUS_MANAGMENT
