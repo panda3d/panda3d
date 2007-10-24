@@ -14,6 +14,8 @@
 ////////////////////////////////////////////////////////////////////
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
+#include <unistd.h>
+
 
 #include "osxGraphicsWindow.h"
 #include "config_osxdisplay.h"
@@ -28,6 +30,7 @@
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
 #include "config_util.h"
+
 
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
@@ -951,6 +954,9 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 //		err = CPSEnableForegroundOperation(&PSN);
 //		err = CPSSetFrontProcess(&PSN);
 	}
+
+// total hack to help find a race.. must remove later
+    usleep( 1000000 * 2);
 
 	if (req_properties.has_fullscreen() && req_properties.get_fullscreen())
 	{
