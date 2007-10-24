@@ -190,7 +190,7 @@ def relHpr(nodePath, base, h, p, r):
 # Quaternion interpolation
 def qSlerp(startQuat, endQuat, t):
     startQ = Quat(startQuat)
-    destQuat = Quat.identQuat()
+    destQuat = Quat(Quat.identQuat())
     # Calc dot product
     cosOmega = (startQ.getI() * endQuat.getI() +
                 startQ.getJ() * endQuat.getJ() +
