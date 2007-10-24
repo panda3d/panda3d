@@ -45,6 +45,7 @@ FrameStyleDict = {'flat': FLAT, 'raised': RAISED, 'sunken': SUNKEN,
 # Orientation of DirectSlider and DirectScrollBar
 HORIZONTAL = 'horizontal'
 VERTICAL = 'vertical'
+VERTICAL_INVERTED = 'vertical_inverted'
 
 # Dialog button values
 DIALOG_NO = 0

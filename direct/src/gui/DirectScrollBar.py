@@ -38,7 +38,7 @@ class DirectScrollBar(DirectFrame):
             ('extraArgs',      [],                 None),
             )
 
-        if kw.get('orientation') == DGG.VERTICAL:
+        if kw.get('orientation') in (DGG.VERTICAL, DGG.VERTICAL_INVERTED):
             # These are the default options for a vertical layout.
             optiondefs += (
                 ('frameSize',      (-0.04, 0.04, -0.5, 0.5),   None),
@@ -67,6 +67,22 @@ class DirectScrollBar(DirectFrame):
             "decButton", (), None,
             DirectButton, (self,),
             borderWidth = self['borderWidth'])
+
+        if self.decButton['frameSize'] == None and \
+           self.decButton.bounds == [0.0, 0.0, 0.0, 0.0]:
+            f = self['frameSize']
+            if self['orientation'] == DGG.HORIZONTAL:
+                self.decButton['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
+            else:
+                self.decButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
+
+        if self.incButton['frameSize'] == None and \
+           self.incButton.bounds == [0.0, 0.0, 0.0, 0.0]:
+            f = self['frameSize']
+            if self['orientation'] == DGG.HORIZONTAL:
+                self.incButton['frameSize'] = (f[0]*0.05, f[1]*0.05, f[2], f[3])
+            else:
+                self.incButton['frameSize'] = (f[0], f[1], f[2]*0.05, f[3]*0.05)
 
         self.guiItem.setThumbButton(self.thumb.guiItem)
         self.guiItem.setLeftButton(self.decButton.guiItem)
@@ -123,6 +139,8 @@ class DirectScrollBar(DirectFrame):
             self.guiItem.setAxis(Vec3(1, 0, 0))
         elif self['orientation'] == DGG.VERTICAL:
             self.guiItem.setAxis(Vec3(0, 0, -1))
+        elif self['orientation'] == DGG.VERTICAL_INVERTED:
+            self.guiItem.setAxis(Vec3(0, 0, 1))
         else:
             raise ValueError, 'Invalid value for orientation: %s' % (self['orientation'])
 
