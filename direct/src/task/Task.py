@@ -97,6 +97,7 @@ class Task:
             self.maxDt = 0.0
             self.runningTotal = 0.0
             self.pstats = None
+            self.pstatCollector = None
         self.extraArgs = []
         # Used for doLaters
         self.wakeTime = 0.0
@@ -136,6 +137,8 @@ class Task:
             # In case we hang around the doLaterList for a while
             del self.__call__
             del self.extraArgs
+            if TaskManager.taskTimerVerbose and self.pstatCollector:
+                self.pstatCollector.subLevelNow(1)
 
     def isRemoved(self):
         return self._removed
@@ -167,6 +170,11 @@ class Task:
             if hyphen >= 0:
                 name = name[0:hyphen]
             self.pstats = PStatCollector("App:Show code:" + name)
+            if self.wakeTime or self.delayTime:
+                self.pstatCollector = PStatCollector("Tasks:doLaters:" + name)
+            else:
+                self.pstatCollector = PStatCollector("Tasks:" + name)
+            self.pstatCollector.addLevelNow(1)
 
     def finishTask(self, verbose):
         if hasattr(self, "uponDeath"):
