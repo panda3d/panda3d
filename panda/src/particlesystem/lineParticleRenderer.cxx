@@ -137,7 +137,7 @@ resize_pool(int new_size) {
 void LineParticleRenderer::
 init_geoms() {
   _vdata = new GeomVertexData
-    ("particles", GeomVertexFormat::get_v3cp(),
+    ("line_particles", GeomVertexFormat::get_v3cp(),
      Geom::UH_stream);
   PT(Geom) geom = new Geom(_vdata);
   _line_primitive = geom;
