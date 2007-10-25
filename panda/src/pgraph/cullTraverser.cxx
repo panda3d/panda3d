@@ -266,6 +266,9 @@ traverse_below(CullTraverserData &data) {
 
       for (int i = 0; i < num_geoms; i++) {
         const Geom *geom = geoms.get_geom(i);
+        if (geom->is_empty()) {
+          continue;
+        }
 
         CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
         if (state->has_cull_callback() && !state->cull_callback(this, data)) {
@@ -730,6 +733,9 @@ start_decal(const CullTraverserData &data) {
   
   for (int i = num_geoms - 1; i >= 0; i--) {
     const Geom *geom = geoms.get_geom(i);
+    if (geom->is_empty()) {
+      continue;
+    }
 
     CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
     if (state->has_cull_callback() && !state->cull_callback(this, data)) {
@@ -839,6 +845,9 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
 
       for (int i = num_geoms - 1; i >= 0; i--) {
         const Geom *geom = geoms.get_geom(i);
+        if (geom->is_empty()) {
+          continue;
+        }
 
         CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
         if (state->has_cull_callback() && !state->cull_callback(this, data)) {

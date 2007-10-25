@@ -92,6 +92,19 @@ get_vertex_data(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::is_empty
+//       Access: Published
+//  Description: Returns true if there appear to be no vertices to be
+//               rendered by this Geom, false if has some actual data.
+////////////////////////////////////////////////////////////////////
+INLINE bool Geom::
+is_empty() const {
+  CDReader cdata(_cycler);
+  return (cdata->_data.get_read_pointer()->get_num_rows() == 0 ||
+          cdata->_primitives.empty());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_num_primitives
 //       Access: Published
 //  Description: Returns the number of GeomPrimitive objects stored

@@ -89,6 +89,8 @@ PUBLISHED:
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
 
+  INLINE bool is_empty() const;
+
   INLINE int get_num_primitives() const;
   INLINE CPT(GeomPrimitive) get_primitive(int i) const;
   INLINE PT(GeomPrimitive) modify_primitive(int i);
