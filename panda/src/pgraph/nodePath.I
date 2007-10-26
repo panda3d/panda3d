@@ -2051,7 +2051,9 @@ get_collide_mask() const {
 //       Access: Published
 //  Description: Recursively applies the indicated CollideMask to the
 //               into_collide_masks for all nodes at this level and
-//               below.  Only nodes 
+//               below.  If node_type is not TypeHandle::none(), then
+//               only nodes matching (or inheriting from) the
+//               indicated PandaNode subclass are modified.
 //
 //               The default is to change all bits, but if
 //               bits_to_change is not all bits on, then only the bits
