@@ -260,12 +260,16 @@ set_uv_range_cube(int face) {
 //     Function: CardMaker::set_uv_range
 //       Access: Public
 //  Description: Sets the range of UV's that will be applied to the
-//               vertices appropriately to play a specified Movie.
+//               vertices appropriately to show the non-pad region
+//               of the texture.
 ////////////////////////////////////////////////////////////////////
 void CardMaker::
-set_uv_range(const MovieTexture *movie) {
-  double maxu = (movie->get_video_width()*1.0) / movie->get_x_size();
-  double maxv = (movie->get_video_height()*1.0) / movie->get_y_size();
+set_uv_range(const Texture *tex) {
+  nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+  int nonpadx = tex->get_x_size() - tex->get_pad_x_size();
+  int nonpady = tex->get_y_size() - tex->get_pad_y_size();
+  double maxu = (nonpadx*1.0) / tex->get_x_size();
+  double maxv = (nonpady*1.0) / tex->get_y_size();
   set_uv_range(TexCoordf(0.0,0.0), TexCoordf(maxu,maxv));
 }
 

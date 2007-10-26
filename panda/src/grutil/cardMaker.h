@@ -25,7 +25,7 @@
 #include "pandaNode.h"
 #include "pointerTo.h"
 #include "namable.h"
-#include "movieTexture.h"
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CardMaker
@@ -44,7 +44,7 @@ PUBLISHED:
   void set_uv_range(const TexCoord3f &ll, const TexCoord3f &lr, const TexCoord3f &ur, const TexCoord3f &ul);
   void set_uv_range(const LVector4f &x, const LVector4f &y, const LVector4f &z);
   void set_uv_range_cube(int face);
-  void set_uv_range(const MovieTexture *frame);
+  void set_uv_range(const Texture *tex);
 
   INLINE void set_has_uvs(bool flag);
   INLINE void set_has_3d_uvs(bool flag);
