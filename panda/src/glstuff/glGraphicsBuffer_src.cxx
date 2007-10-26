@@ -178,7 +178,7 @@ rebuild_bitplanes() {
   }
   int bitplane_x = _x_size;
   int bitplane_y = _y_size;
-  if (!glgsg->get_supports_tex_non_pow2()) {
+  if (textures_power_2 != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
   }
@@ -282,6 +282,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     // Bind the texture to the slot.
     tex->set_x_size(_rb_size_x);
     tex->set_y_size(_rb_size_y);
+    tex->set_pad_size(_rb_size_x - _x_size, _rb_size_y - _y_size);
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
       tex->set_format(Texture::F_depth_stencil);
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);

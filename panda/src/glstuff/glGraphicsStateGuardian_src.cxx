@@ -7157,6 +7157,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       default:
         if (image_compression == Texture::CM_off) {
+          if (n==0) {
+            // It's unfortunate that we can't adjust the width, too,
+            // but TexSubImage2D doesn't accept a row-stride parameter.
+            height = tex->get_y_size() - tex->get_pad_y_size();
+          }
           GLP(TexSubImage2D)(page_target, n - mipmap_bias, 0, 0, width, height,
                              external_format, component_type, image_ptr);
         } else {
