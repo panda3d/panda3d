@@ -37,6 +37,7 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 #include "throw_event.h"
+#include "config_gobj.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -314,9 +315,16 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  tex->set_x_size(Texture::up_to_power_2(get_x_size()));
-  tex->set_y_size(Texture::up_to_power_2(get_y_size()));
-
+  if (textures_power_2 != ATS_none) {
+    tex->set_x_size(Texture::up_to_power_2(get_x_size()));
+    tex->set_y_size(Texture::up_to_power_2(get_y_size()));
+  } else {
+    tex->set_x_size(get_x_size());
+    tex->set_y_size(get_y_size());
+  }
+  tex->set_pad_size(tex->get_x_size() - get_x_size(),
+                    tex->get_y_size() - get_y_size());
+  
   if (mode == RTM_bind_or_copy && !support_render_texture) {
     mode = RTM_copy_texture;
   }
@@ -582,7 +590,7 @@ create_texture_card_vdata(int x, int y)
   float xhi = 1.0;
   float yhi = 1.0;
 
-  if (!_gsg->get_supports_tex_non_pow2()) {
+  if (textures_power_2 != ATS_none) {
     int xru = Texture::up_to_power_2(x);
     int yru = Texture::up_to_power_2(y);
     xhi = (x * 1.0f) / xru;
