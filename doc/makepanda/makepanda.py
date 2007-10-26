@@ -35,7 +35,7 @@ VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX","OPENAL","NVIDIACG",
-          "OPENSSL","FREETYPE","FFTW","MILES",
+          "OPENSSL","FREETYPE","FFTW","MILES","ARTOOLKIT",
           "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8","MAX9",
           "FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
@@ -1408,6 +1408,8 @@ def CompileLink(dll, obj, opts, ldef):
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avcodec-51-panda.lib'
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avformat-50-panda.lib'
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avutil-49-panda.lib'
+        if (PkgSelected(opts,"ARTOOLKIT")):
+            cmd = cmd + ' ' + THIRDPARTYLIBS + 'artoolkit/lib/libAR.lib'
         for ver in MAYAVERSIONS:
             if (PkgSelected(opts,"MAYA"+ver)):
                 cmd = cmd + ' "' + MAYASDK["MAYA"+ver] +  '/lib/Foundation.lib"'
@@ -1706,6 +1708,7 @@ DTOOL_CONFIG=[
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
 
@@ -2595,7 +2598,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.o
 #
 
 IPATH=['panda/src/grutil']
-OPTS=['BUILDING_PANDA',  'FFMPEG']
+OPTS=['BUILDING_PANDA',  'FFMPEG', 'ARTOOLKIT']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.obj',
@@ -2683,7 +2686,7 @@ if (OMIT.count("VRPN")==0):
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG', 'ARTOOLKIT']
 INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
