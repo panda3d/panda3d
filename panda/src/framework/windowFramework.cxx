@@ -1111,10 +1111,12 @@ load_image_as_model(const Filename &filename) {
     return NULL;
   }
 
-  int x_size = tex->get_x_size();
-  int y_size = tex->get_y_size();
+  int x_size = tex->get_x_size() - tex->get_pad_x_size();
+  int y_size = tex->get_y_size() - tex->get_pad_y_size();
+  int full_x = tex->get_x_size();
+  int full_y = tex->get_y_size();
   bool has_alpha = true;
-  LVecBase2f tex_scale(1.0f, 1.0f);
+  LVecBase2f tex_scale((x_size)*1.0f/full_x, (y_size*1.0f)/full_y);
 
   if (tex->is_of_type(VideoTexture::get_class_type())) {
     // Get the size from the video stream.
@@ -1123,12 +1125,7 @@ load_image_as_model(const Filename &filename) {
     y_size = vtex->get_video_height();
     tex_scale = vtex->get_tex_scale();
   } else if (tex->is_of_type(MovieTexture::get_class_type())) {
-    // Get the size from the video stream.
-    MovieTexture *mtex = DCAST(MovieTexture, tex);
-    x_size = mtex->get_video_width();
-    y_size = mtex->get_video_height();
-    tex_scale = mtex->get_tex_scale();
-
+    // Don't try to read a PNMImageHeader.
   } else if (!tex->get_loaded_from_txo()) {
     // Get the size from the original image (the texture may have
     // scaled it to make a power of 2).
