@@ -232,7 +232,9 @@ recalculate_image_properties(CDWriter &cdata) {
     if (x_max > y_max) y_max = x_max;
     if (y_max > x_max) x_max = y_max;
   }
-  
+
+  int x_size = x_max;
+  int y_size = y_max;
   if (textures_power_2 != ATS_none) {
     x_max = up_to_power_2(x_max);
     y_max = up_to_power_2(y_max);
@@ -240,6 +242,7 @@ recalculate_image_properties(CDWriter &cdata) {
   
   reconsider_image_properties(x_max, y_max, alpha?4:3, 
                               T_unsigned_byte, cdata->_pages.size());
+  set_pad_size(x_max - x_size, y_max - y_size);
 }
 
 ////////////////////////////////////////////////////////////////////

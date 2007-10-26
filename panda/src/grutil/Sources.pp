@@ -13,6 +13,7 @@
   #define SOURCES \
     pipeOcclusionCullTraverser.I pipeOcclusionCullTraverser.h \
     cardMaker.I cardMaker.h \
+    arToolKit.I arToolKit.h \
     config_grutil.h \
     ffmpegTexture.I ffmpegTexture.h \
     movieTexture.I movieTexture.h \
@@ -27,6 +28,7 @@
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
+    arToolKit.cxx \
     ffmpegTexture.cxx \
     movieTexture.cxx \
     fisheyeMaker.cxx \
@@ -42,6 +44,7 @@
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
+    arToolKit.I arToolKit.h \
     ffmpegTexture.I ffmpegTexture.h \
     movieTexture.I movieTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
