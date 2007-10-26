@@ -19,9 +19,10 @@
 #ifndef ARTOOLKIT_H
 #define ARTOOLKIT_H
 
+#include "pandabase.h"
+
 #ifdef HAVE_ARTOOLKIT
 
-#include "pandabase.h"
 #include "nodePath.h"
 #include "texture.h"
 

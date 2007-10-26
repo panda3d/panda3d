@@ -16,9 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "arToolKit.h"
+
 #ifdef HAVE_ARTOOLKIT
 
-#include "arToolKit.h"
 #include "pandaNode.h"
 #include "camera.h"
 #include "config_grutil.h"
