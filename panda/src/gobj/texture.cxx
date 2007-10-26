@@ -79,6 +79,10 @@ Texture(const string &name) :
   set_format(F_rgb);
   set_component_type(T_unsigned_byte);
 
+  _pad_x_size = 0;
+  _pad_y_size = 0;
+  _pad_z_size = 0;
+
   _loaded_from_image = false;
   _loaded_from_txo = false;
   _has_read_pages = false;
@@ -104,6 +108,9 @@ Texture(const Texture &copy) :
   _x_size(copy._x_size),
   _y_size(copy._y_size),
   _z_size(copy._z_size),
+  _pad_x_size(copy._pad_x_size),
+  _pad_y_size(copy._pad_y_size),
+  _pad_z_size(copy._pad_z_size),
   _num_components(copy._num_components),
   _component_width(copy._component_width),
   _texture_type(copy._texture_type),
@@ -151,6 +158,9 @@ operator = (const Texture &copy) {
   _x_size = copy._x_size;
   _y_size = copy._y_size;
   _z_size = copy._z_size;
+  _pad_x_size = copy._pad_x_size;
+  _pad_y_size = copy._pad_y_size;
+  _pad_z_size = copy._pad_z_size;
   _num_components = copy._num_components;
   _component_width = copy._component_width;
   _texture_type = copy._texture_type;
@@ -245,6 +255,7 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
   set_format(format);
 
   clear_ram_image();
+  set_pad_size();
   _loaded_from_image = false;
   _loaded_from_txo = false;
   _has_read_pages = false;
@@ -2643,11 +2654,14 @@ reconsider_image_properties(int x_size, int y_size, int num_components,
       nassertr(x_size == y_size, false);
     }
 #endif
+    if ((_x_size != x_size)||(_y_size != y_size)) {
+      set_pad_size();
+    }
     _x_size = x_size;
     _y_size = y_size;
     _num_components = num_components;
     set_component_type(component_type);
-
+    
   } else {
     if (_x_size != x_size ||
         _y_size != y_size ||
@@ -3541,6 +3555,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       _ram_images[n]._image = image;
     }
     _loaded_from_image = true;
+    set_pad_size();
     ++_image_modified;
     ++_properties_modified;
   }

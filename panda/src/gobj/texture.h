@@ -340,6 +340,13 @@ PUBLISHED:
   INLINE void set_x_size(int x_size);
   INLINE void set_y_size(int y_size);
   INLINE void set_z_size(int z_size);
+
+  INLINE int get_pad_x_size() const;
+  INLINE int get_pad_y_size() const;
+  INLINE int get_pad_z_size() const;
+  
+  INLINE void set_pad_size(int x=0, int y=0, int z=0);
+  
   void set_format(Format format);
   void set_component_type(ComponentType component_type);
   INLINE void set_loaded_from_image();
@@ -504,6 +511,10 @@ protected:
   bool _render_to_texture;
   bool _match_framebuffer_format;
 
+  int _pad_x_size;
+  int _pad_y_size;
+  int _pad_z_size;
+  
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Textures that
@@ -511,7 +522,7 @@ protected:
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
   Contexts _contexts;
-
+  
   // It is common, when using normal maps, specular maps, gloss maps,
   // and such, to use a file naming convention where the filenames
   // of the special maps are derived by concatenating a suffix to
@@ -519,7 +530,7 @@ protected:
   // lookup of the special maps given the diffuse map and the suffix.
   typedef pmap<CPT(InternalName), PT(Texture)> RelatedTextures;
   RelatedTextures _related_textures;
-
+  
   CompressionMode _ram_image_compression;
 
   // There is usually one RamImage for the mipmap level 0 (the base
@@ -527,10 +538,10 @@ protected:
   // additional mipmap levels.
   typedef pvector<RamImage> RamImages;
   RamImages _ram_images;
-
+  
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
-
+  
 private:
   // The auxiliary data is not recorded to a bam file.
   typedef pmap<string, PT(TypedReferenceCount) > AuxData;

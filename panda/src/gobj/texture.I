@@ -503,6 +503,62 @@ get_z_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_pad_x_size
+//       Access: Published
+//  Description: Returns size of the pad region.  See set_pad_size.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_pad_x_size() const {
+  return _pad_x_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_pad_y_size
+//       Access: Published
+//  Description: Returns size of the pad region.  See set_pad_size.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_pad_y_size() const {
+  return _pad_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_pad_z_size
+//       Access: Published
+//  Description: Returns size of the pad region.  See set_pad_size.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_pad_z_size() const {
+  return _pad_z_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_pad_size
+//       Access: Published
+//  Description: Sets the size of the pad region.
+//
+//               Sometimes, when a video card demands power-of-two
+//               textures, it is necessary to create a big texture
+//               and then only use a portion of it.  The pad region
+//               indicates which portion of the texture is not
+//               really in use.  All operations use the texture
+//               as a whole, including the pad region, unless they
+//               explicitly state that they use only the non-pad
+//               region.
+//
+//               Changing the texture's size clears the pad region.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_pad_size(int x, int y, int z) {
+  if (x > _x_size) x = _x_size;
+  if (y > _y_size) y = _y_size;
+  if (z > _z_size) z = _z_size;
+  _pad_x_size = x;
+  _pad_y_size = y;
+  _pad_z_size = z;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_num_components
 //       Access: Published
 //  Description: Returns the number of color components for each texel
@@ -1087,6 +1143,7 @@ set_x_size(int x_size) {
     _x_size = x_size;
     ++_image_modified;
     clear_ram_image();
+    set_pad_size();
   }
 }
 
@@ -1104,6 +1161,7 @@ set_y_size(int y_size) {
     _y_size = y_size;
     ++_image_modified;
     clear_ram_image();
+    set_pad_size();
   }
 }
 
@@ -1123,6 +1181,7 @@ set_z_size(int z_size) {
     _z_size = z_size;
     ++_image_modified;
     clear_ram_image();
+    set_pad_size();
   }
 }
 
