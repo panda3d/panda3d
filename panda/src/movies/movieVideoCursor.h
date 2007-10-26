@@ -53,6 +53,7 @@ class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
   INLINE bool aborted() const;
   INLINE double last_start() const;
   INLINE double next_start() const;
+  void setup_texture(Texture *tex) const;
   virtual void fetch_into_bitbucket(double time);
   virtual void fetch_into_texture(double time, Texture *t, int page);
   virtual void fetch_into_texture_rgb(double time, Texture *t, int page);

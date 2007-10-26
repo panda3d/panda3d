@@ -22,6 +22,8 @@
 #include "config_movies.h"
 #include "avcodec.h"
 #include "avformat.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 
 // Earlier versions of ffmpeg didn't define this symbol.
 #ifndef PIX_FMT_BGRA
@@ -162,16 +164,18 @@ cleanup() {
 //  Description: Exports the contents of the frame buffer into the
 //               user's target buffer.
 ////////////////////////////////////////////////////////////////////
+static PStatCollector export_frame_collector("*:FFMPEG Convert Video to BGR");
 void FfmpegVideoCursor::
-export_frame(unsigned char *data, bool bgra) {
+export_frame(unsigned char *data, bool bgra, int bufx) {
+  PStatTimer timer(export_frame_collector);
   if (bgra) {
-    _frame_out->data[0] = data + ((_size_y - 1) * _size_x * 4);
-    _frame_out->linesize[0] = _size_x * -4;
+    _frame_out->data[0] = data + ((_size_y - 1) * bufx * 4);
+    _frame_out->linesize[0] = bufx * -4;
     img_convert((AVPicture *)_frame_out, PIX_FMT_BGRA, 
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
   } else {
-    _frame_out->data[0] = data + ((_size_y - 1) * _size_x * 3);
-    _frame_out->linesize[0] = _size_x * -3;
+    _frame_out->data[0] = data + ((_size_y - 1) * bufx * 3);
+    _frame_out->linesize[0] = bufx * -3;
     img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
   }
@@ -261,23 +265,13 @@ seek(double t) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::fetch_into_buffer
+//     Function: FfmpegVideoCursor::fetch_time
 //       Access: Public, Virtual
-//  Description: See MovieVideoCursor::fetch_into_buffer.
+//  Description: Advance until the specified time is in the 
+//               export buffer.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-fetch_into_buffer(double time, unsigned char *data, bool bgra) {
-  
-  // If there was an error at any point, synthesize black.
-  if (_format_ctx==0) {
-    if (data) {
-      memset(data,0,size_x()*size_y()*(bgra?4:3));
-    }
-    _last_start = time;
-    _next_start = time + 1.0;
-    return;
-  }
-  
+fetch_time(double time) {
   if (time < _last_start) {
     // Time is in the past.
     seek(time);
@@ -309,7 +303,64 @@ fetch_into_buffer(double time, unsigned char *data, bool bgra) {
       fetch_frame();
     }
   }
-  export_frame(data, bgra);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::fetch_into_texture
+//       Access: Public, Virtual
+//  Description: See MovieVideoCursor::fetch_into_texture.
+////////////////////////////////////////////////////////////////////
+static PStatCollector fetch_into_texture_pcollector("*:FFMPEG Video Decoding");
+void FfmpegVideoCursor::
+fetch_into_texture(double time, Texture *t, int page) {
+  PStatTimer timer(fetch_into_texture_pcollector);
+  
+  nassertv(t->get_x_size() >= size_x());
+  nassertv(t->get_y_size() >= size_y());
+  nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
+  nassertv(t->get_component_width() == 1);
+  nassertv(page < t->get_z_size());
+  
+  PTA_uchar img = t->modify_ram_image();
+  
+  unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
+  
+  // If there was an error at any point, synthesize black.
+  if (_format_ctx==0) {
+    if (data) {
+      memset(data,0,t->get_x_size() * t->get_y_size() * t->get_num_components());
+    }
+    _last_start = time;
+    _next_start = time + 1.0;
+    return;
+  }
+  
+  fetch_time(time);
+  export_frame(data, (t->get_num_components()==4), t->get_x_size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::fetch_into_buffer
+//       Access: Public, Virtual
+//  Description: See MovieVideoCursor::fetch_into_buffer.
+////////////////////////////////////////////////////////////////////
+static PStatCollector fetch_into_buffer_pcollector("*:FFMPEG Video Decoding");
+void FfmpegVideoCursor::
+fetch_into_buffer(double time, unsigned char *data, bool bgra) {
+  PStatTimer timer(fetch_into_buffer_pcollector);
+  
+  // If there was an error at any point, synthesize black.
+  if (_format_ctx==0) {
+    if (data) {
+      memset(data,0,size_x()*size_y()*(bgra?4:3));
+    }
+    _last_start = time;
+    _next_start = time + 1.0;
+    return;
+  }
+
+  fetch_time(time);
+  export_frame(data, bgra, _size_x);
 }
 
 ////////////////////////////////////////////////////////////////////

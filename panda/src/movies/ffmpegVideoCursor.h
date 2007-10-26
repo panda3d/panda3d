@@ -42,13 +42,15 @@ class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
   virtual ~FfmpegVideoCursor();
   
  public:
+  virtual void fetch_into_texture(double time, Texture *t, int page);
   virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
 
  protected:
   void fetch_packet(double default_time);
   void fetch_frame();
   void seek(double t);
-  void export_frame(unsigned char *data, bool bgra);
+  void fetch_time(double time);
+  void export_frame(unsigned char *data, bool bgra, int bufx);
   void cleanup();
   
   Filename _filename;

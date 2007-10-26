@@ -18,6 +18,8 @@
 
 #include "movieVideoCursor.h"
 #include "config_movies.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
 
 TypeHandle MovieVideoCursor::_type_handle;
 
@@ -72,6 +74,26 @@ allocate_conversion_buffer() {
 }
   
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::setup_texture
+//       Access: Published
+//  Description: Set up the specified Texture object to contain
+//               content from this movie.  This should be called
+//               once, not every frame.
+////////////////////////////////////////////////////////////////////
+void MovieVideoCursor::
+setup_texture(Texture *tex) const {
+  int fullx = size_x();
+  int fully = size_y();
+  if (textures_power_2) {
+    fullx = Texture::up_to_power_2(fullx);
+    fully = Texture::up_to_power_2(fully);
+  }
+  Texture::Format fmt = (get_num_components() == 4) ? Texture::F_rgba : Texture::F_rgb;
+  tex->setup_texture(Texture::TT_2d_texture, fullx, fully, 1, Texture::T_unsigned_byte, fmt);
+  tex->set_pad_size(fullx - size_x(), fully - size_y());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::fetch_into_bitbucket
 //       Access: Published, Virtual
 //  Description: Discards the next video frame.  Still sets
@@ -100,8 +122,10 @@ fetch_into_bitbucket(double time) {
 //
 //               See fetch_into_buffer for more details.
 ////////////////////////////////////////////////////////////////////
+static PStatCollector fetch_into_texture_collector("*:Decode Video into Texture");
 void MovieVideoCursor::
 fetch_into_texture(double time, Texture *t, int page) {
+  PStatTimer timer(fetch_into_texture_collector);
 
   // This generic implementation is layered on fetch_into_buffer.
   // It will work for any derived class, so it is never necessary to
