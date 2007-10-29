@@ -23,6 +23,8 @@
 #include "pandaNode.h"
 #include "camera.h"
 #include "perspectiveLens.h"
+#include "lvecBase3.h"
+#include "compose_matrix.h"
 #include "config_grutil.h"
 extern "C" {
   #include "artools.h"
@@ -30,63 +32,96 @@ extern "C" {
 
 ARToolKit::PatternTable ARToolKit::_pattern_table;
 
-static void argConvGLcpara2( double cparam[3][4], int width, int height, double gnear, double gfar, double m[16] )
+static void change_size( ARParam *source, int xsize, int ysize, ARParam *newparam )
 {
-    double   icpara[3][4];
-    double   trans[3][4];
-    double   p[3][3], q[4][4];
-    int      i, j;
+    int     i;
 
-    if( arParamDecompMat(cparam, icpara, trans) < 0 ) {
-        printf("gConvGLcpara: Parameter error!!\n");
-        exit(0);
-    }
+    newparam->xsize = xsize;
+    newparam->ysize = ysize;
 
-    for( i = 0; i < 3; i++ ) {
-        for( j = 0; j < 3; j++ ) {
-            p[i][j] = icpara[i][j] / icpara[2][2];
-        }
-    }
-    q[0][0] = (2.0 * p[0][0] / width);
-    q[0][1] = (2.0 * p[0][1] / width);
-    q[0][2] = ((2.0 * p[0][2] / width)  - 1.0);
-    q[0][3] = 0.0;
-
-    q[1][0] = 0.0;
-    q[1][1] = (2.0 * p[1][1] / height);
-    q[1][2] = ((2.0 * p[1][2] / height) - 1.0);
-    q[1][3] = 0.0;
-
-    q[2][0] = 0.0;
-    q[2][1] = 0.0;
-    q[2][2] = (gfar + gnear)/(gfar - gnear);
-    q[2][3] = -2.0 * gfar * gnear / (gfar - gnear);
-
-    q[3][0] = 0.0;
-    q[3][1] = 0.0;
-    q[3][2] = 1.0;
-    q[3][3] = 0.0;
-
+    double xscale = (double)xsize / (double)(source->xsize);
+    double yscale = (double)ysize / (double)(source->ysize);
     for( i = 0; i < 4; i++ ) {
-        for( j = 0; j < 3; j++ ) {
-            m[i+j*4] = q[i][0] * trans[0][j]
-                     + q[i][1] * trans[1][j]
-                     + q[i][2] * trans[2][j];
-        }
-        m[i+3*4] = q[i][0] * trans[0][3]
-                 + q[i][1] * trans[1][3]
-                 + q[i][2] * trans[2][3]
-                 + q[i][3];
+      newparam->mat[0][i] = source->mat[0][i] * xscale;
+      newparam->mat[1][i] = source->mat[1][i] * yscale;
+      newparam->mat[2][i] = source->mat[2][i];
     }
+
+    newparam->dist_factor[0] = source->dist_factor[0] * xscale;
+    newparam->dist_factor[1] = source->dist_factor[1] * yscale;
+    newparam->dist_factor[2] = source->dist_factor[2] / (xscale*yscale);
+    newparam->dist_factor[3] = source->dist_factor[3];
+}
+
+static void analyze_fov(double cparam[3][4], int width, int height, double &xfov, double &yfov)
+{
+  double   gnear = 10.0;
+  double gfar = 1000.0;
+  double   icpara[3][4];
+  double   trans[3][4];
+  double   p[3][3], q[4][4];
+  double   xval, yval;
+  int      i, j;
+  
+  if( arParamDecompMat(cparam, icpara, trans) < 0 ) {
+    printf("gConvGLcpara: Parameter error!!\n");
+    exit(0);
+  }
+  
+  for( i = 0; i < 3; i++ ) {
+    for( j = 0; j < 3; j++ ) {
+      p[i][j] = icpara[i][j] / icpara[2][2];
+    }
+  }
+  q[0][0] = (2.0 * p[0][0] / width);
+  q[0][1] = (2.0 * p[0][1] / width);
+  q[0][2] = ((2.0 * p[0][2] / width)  - 1.0);
+  q[0][3] = 0.0;
+  
+  q[1][0] = 0.0;
+  q[1][1] = (2.0 * p[1][1] / height);
+  q[1][2] = ((2.0 * p[1][2] / height) - 1.0);
+  q[1][3] = 0.0;
+  
+  q[2][0] = 0.0;
+  q[2][1] = 0.0;
+  q[2][2] = (gfar + gnear)/(gfar - gnear);
+  q[2][3] = -2.0 * gfar * gnear / (gfar - gnear);
+  
+  q[3][0] = 0.0;
+  q[3][1] = 0.0;
+  q[3][2] = 1.0;
+  q[3][3] = 0.0;
+  
+  xval =
+    q[0][0] * trans[0][0] + 
+    q[0][1] * trans[1][0] +
+    q[0][2] * trans[2][0];
+  yval =
+    q[1][0] * trans[0][1] + 
+    q[1][1] * trans[1][1] +
+    q[1][2] * trans[2][1];
+  
+  xfov = 2.0 * atan(1.0/xval) * (180.0/3.141592654);
+  yfov = 2.0 * atan(1.0/yval) * (180.0/3.141592654);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ARToolKit::Constructor
+//     Function: ARToolKit::make
 //       Access: Private
-//  Description: 
+//  Description: Create a new ARToolKit instance.
+//               
+//               Camera must be the nodepath of a panda camera object.
+//               The panda camera's field of view is initialized to match
+//               the field of view of the physical webcam.  Each time
+//               you call analyze, all marker nodepaths will be moved
+//               into a position which is relative to this camera.
+//               The marker_size parameter indicates how large you
+//               printed the physical markers.  You should use the same
+//               size units that you wish to use in the panda code.
 ////////////////////////////////////////////////////////////////////
 ARToolKit *ARToolKit::
-make(NodePath camera, const Filename &paramfile) {
+make(NodePath camera, const Filename &paramfile, double marker_size) {
   
   if (AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGRA) {
     grutil_cat.error() <<
@@ -120,18 +155,15 @@ make(NodePath camera, const Filename &paramfile) {
   }
   
   arParamDisp(&wparam);
-  double m[16];
-  argConvGLcpara2(wparam.mat, 640, 480, 10, 1000, m);
-  cerr << "Panda3D projection mat: " << lens->get_projection_mat() << "\n";
-  cerr << "Artoolkit mat: "
-       << m[ 0] << " " << m[ 1] << " " << m[ 2] << " " << m[ 3] << "\n"
-       << m[ 4] << " " << m[ 5] << " " << m[ 6] << " " << m[ 7] << "\n"
-       << m[ 8] << " " << m[ 9] << " " << m[10] << " " << m[11] << "\n"
-       << m[12] << " " << m[13] << " " << m[14] << " " << m[15] << "\n";
+  double xfov, yfov;
+  analyze_fov(wparam.mat, 640, 480, xfov, yfov);
+  
+  lens->set_fov(xfov, yfov);
   
   ARToolKit *result = new ARToolKit();
   result->_camera = camera;
   result->_camera_param = new ARParam;
+  result->_marker_size = marker_size;
   memcpy(result->_camera_param, &wparam, sizeof(wparam));
   return result;
 }
@@ -245,7 +277,7 @@ analyze(Texture *tex, double thresh) {
   nassertv((xsize > 0) && (ysize > 0));
   
   ARParam cparam;
-  arParamChangeSize( (ARParam*)_camera_param, xsize, ysize, &cparam );
+  change_size( (ARParam*)_camera_param, xsize, ysize, &cparam );
   arInitCparam( &cparam );
 
   // Pack the data into a buffer with no padding and invert the video
@@ -276,6 +308,7 @@ analyze(Texture *tex, double thresh) {
   }
 
   for (ctrli=_controls.begin(); ctrli!=_controls.end(); ctrli++) {
+    NodePath np = (*ctrli).second;
     int pattern = (*ctrli).first;
     arDeactivatePatt(pattern);
     double conf = -1;
@@ -289,12 +322,40 @@ analyze(Texture *tex, double thresh) {
       }
     }
     if (conf > 0.0) {
-      cerr << "Marker " << pattern 
-           << " " << int(marker_info[best].vertex[0][0]) << "," << int(marker_info[best].vertex[0][1])
-           << " " << int(marker_info[best].vertex[1][0]) << "," << int(marker_info[best].vertex[1][1])
-           << " " << int(marker_info[best].vertex[2][0]) << "," << int(marker_info[best].vertex[2][1])
-           << " " << int(marker_info[best].vertex[3][0]) << "," << int(marker_info[best].vertex[3][1])
-           << "\n";
+      ARMarkerInfo *inf = &marker_info[best];
+      double center[2];
+      center[0] = 0.0;
+      center[1] = 0.0;
+      double patt_trans[3][4];
+      arGetTransMat(inf, center, _marker_size, patt_trans);
+      LMatrix4f mat;
+      for (int i=0; i<4; i++) {
+	mat(i,0) =  patt_trans[0][i];
+	mat(i,1) =  patt_trans[2][i];
+	mat(i,2) = -patt_trans[1][i];
+	mat(i,3) = 0.0;
+      }
+      mat(3,3) = 1.0;
+      LVecBase3f scale, shear, hpr, pos;
+      decompose_matrix(mat, scale, shear, hpr, pos);
+      np.set_pos(pos);
+      np.set_hpr(hpr);
+      np.show();
+      //      cerr << "Markert:\n"
+      //	   << "  Id: " << inf->id << "\n"
+      //	   << "  Area: " << inf->area << "\n"
+      //	   << "  Dir: " << inf->dir << "\n"
+      //	   << "  Cf: " << inf->cf << "\n"
+      //	   << "  Pos: " << inf->pos[0] << "," << inf->pos[1] << "\n"
+      //	   << "  Vtx0: " << inf->vertex[0][0] << "," << inf->vertex[0][1] << "\n"
+      //	   << "  Vtx1: " << inf->vertex[1][0] << "," << inf->vertex[1][1] << "\n"
+      //	   << "  Vtx2: " << inf->vertex[2][0] << "," << inf->vertex[2][1] << "\n"
+      //	   << "  Vtx3: " << inf->vertex[3][0] << "," << inf->vertex[3][1] << "\n"
+      //	   << "  Row0: " << patt_trans[0][0] << " " << patt_trans[0][1] << " " << patt_trans[0][2] << " " << patt_trans[0][3] << "\n"
+      //	   << "  Row1: " << patt_trans[1][0] << " " << patt_trans[1][1] << " " << patt_trans[1][2] << " " << patt_trans[1][3] << "\n"
+      //	   << "  Row2: " << patt_trans[2][0] << " " << patt_trans[2][1] << " " << patt_trans[2][2] << " " << patt_trans[2][3] << "\n";
+    } else {
+      np.hide();
     }
   }
   

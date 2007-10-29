@@ -3,12 +3,12 @@
 
 #define USE_PACKAGES opencv ffmpeg
 
-#begin lib_target
+#begin lib_target]
   #define TARGET grutil
   #define LOCAL_LIBS \
     display text pgraph gobj linmath putil movies audio
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES \
     pipeOcclusionCullTraverser.I pipeOcclusionCullTraverser.h \
@@ -41,7 +41,6 @@
     lineSegs.cxx \
     rigidBodyCombiner.cxx
     
-
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
     arToolKit.I arToolKit.h \

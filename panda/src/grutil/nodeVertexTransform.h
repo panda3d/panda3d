@@ -20,6 +20,7 @@
 #define NODEVERTEXTRANSFORM_H
 
 #include "pandabase.h"
+#include "pandaNode.h"
 #include "vertexTransform.h"
 
 class FactoryParams;

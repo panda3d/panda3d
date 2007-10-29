@@ -47,7 +47,7 @@
 class EXPCL_PANDA_GRUTIL ARToolKit {
   
 PUBLISHED:
-  static ARToolKit *make(NodePath camera, const Filename &paramfile);
+  static ARToolKit *make(NodePath camera, const Filename &paramfile, double markersize);
   ~ARToolKit();
   
   void attach_pattern(const Filename &pattern, NodePath path);
@@ -67,6 +67,8 @@ private:
   
   NodePath _camera;
   void *_camera_param;
+  
+  double _marker_size;
 };
 
 #include "arToolKit.I"

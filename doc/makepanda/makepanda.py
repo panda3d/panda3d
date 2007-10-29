@@ -2600,7 +2600,8 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.o
 IPATH=['panda/src/grutil']
 OPTS=['BUILDING_PANDA',  'FFMPEG', 'ARTOOLKIT']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='multitexReducer.cxx', obj='grutil_multitexReducer.obj')
-EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite.cxx', obj='grutil_composite.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite1.cxx', obj='grutil_composite1.obj')
+EnqueueCxx(ipath=IPATH, opts=OPTS, src='grutil_composite2.cxx', obj='grutil_composite2.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libgrutil.in', obj='libgrutil_igate.obj',
             src='panda/src/grutil',  module='panda', library='libgrutil',
             skip=[], also=["multitexReducer.cxx","grutil_composite.cxx"])
@@ -2698,7 +2699,7 @@ OBJFILES=['panda_panda.obj', 'libpanda_module.obj',
           'pgraph_composite1.obj', 'pgraph_composite2.obj', 'pgraph_composite3.obj', 'pgraph_composite4.obj', 'libpgraph_igate.obj',
           'cull_composite.obj',
 	  'movies_composite1.obj', 'libmovies_igate.obj',
-          'grutil_multitexReducer.obj', 'grutil_composite.obj', 'libgrutil_igate.obj',
+          'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'grutil_composite2.obj', 'libgrutil_igate.obj',
           'chan_composite.obj', 'libchan_igate.obj',
           'pstatclient_composite.obj', 'libpstatclient_igate.obj',
           'char_composite.obj', 'libchar_igate.obj',
@@ -2745,7 +2746,7 @@ EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
 #
 
 IPATH=['panda/src/skel']
-OPTS=['BUILDING_PANDASKEL']
+OPTS=['BUILDING_PANDASKEL', 'ARTOOLKIT']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='skel_composite.cxx', obj='skel_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
              src='panda/src/skel',  module='pandaskel', library='libskel',
@@ -2755,9 +2756,10 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
 # DIRECTORY: panda/metalibs/panda
 #
 
+OPTS=['BUILDING_PANDASKEL', 'ARTOOLKIT', 'ADVAPI']
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaskel_module.obj',
             module='pandaskel', library='libpandaskel', files=["libskel.in","libmovies.in"])
-EnqueueLink(dll='libpandaskel.dll', opts=['ADVAPI'], obj=[
+EnqueueLink(dll='libpandaskel.dll', opts=OPTS, obj=[
     'skel_composite.obj',
     'libskel_igate.obj',
     'libpandaskel_module.obj',

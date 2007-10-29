@@ -25,6 +25,7 @@
 #include "config_gobj.h"
 #include "config_grutil.h"
 #include "bamCacheRecord.h"
+#include "bamReader.h"
 #include "math.h"
 #include "audioSound.h"
 
