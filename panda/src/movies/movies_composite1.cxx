@@ -15,4 +15,6 @@
 
 #include "ffmpegVirtualFile.cxx"
 
+#include "webcamVideo.cxx"
+
 #include "config_movies.cxx"

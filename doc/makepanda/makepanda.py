@@ -730,6 +730,7 @@ def ChooseCompiler():
         AddToPathEnv("INCLUDE", vcdir + "VC\\include")
         AddToPathEnv("LIB",     vcdir + "VC\\lib")
         AddToPathEnv("INCLUDE", platsdk + "include")
+        AddToPathEnv("INCLUDE", platsdk + "include\\atl")
         AddToPathEnv("LIB",     platsdk + "lib")
 	COMPILER="MSVC"
 	THIRDPARTYLIBS="thirdparty/win-libs-vc8/"
@@ -1375,6 +1376,7 @@ def CompileLink(dll, obj, opts, ldef):
         if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
         if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
         if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
+        if (opts.count("DIRECTSHOW")):  cmd = cmd + " strmiids.lib quartz.lib odbc32.lib odbccp32.lib"
         if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
         if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
         if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
@@ -2587,7 +2589,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 #
 
 IPATH=['panda/src/movies']
-OPTS=['BUILDING_PANDA', 'FFMPEG']
+OPTS=['BUILDING_PANDA', 'FFMPEG', 'DX9', 'DIRECTSHOW']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
             src='panda/src/movies',  module='panda', library='libmovies',
@@ -2687,7 +2689,7 @@ if (OMIT.count("VRPN")==0):
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG', 'ARTOOLKIT']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTSHOW', 'ARTOOLKIT']
 INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -2746,7 +2748,7 @@ EnqueueLink(opts=OPTS, dll='libpanda.dll', obj=OBJFILES, xdep=[
 #
 
 IPATH=['panda/src/skel']
-OPTS=['BUILDING_PANDASKEL', 'ARTOOLKIT']
+OPTS=['BUILDING_PANDASKEL', 'ADVAPI']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='skel_composite.cxx', obj='skel_composite.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
              src='panda/src/skel',  module='pandaskel', library='libskel',
@@ -2756,7 +2758,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
 # DIRECTORY: panda/metalibs/panda
 #
 
-OPTS=['BUILDING_PANDASKEL', 'ARTOOLKIT', 'ADVAPI']
+OPTS=['BUILDING_PANDASKEL', 'ADVAPI']
 EnqueueImod(ipath=IPATH, opts=OPTS, obj='libpandaskel_module.obj',
             module='pandaskel', library='libpandaskel', files=["libskel.in","libmovies.in"])
 EnqueueLink(dll='libpandaskel.dll', opts=OPTS, obj=[

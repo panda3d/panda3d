@@ -18,6 +18,7 @@
 
 #include "config_movies.h"
 #include "dconfig.h"
+#include "webcamVideo.h"
 
 #ifdef HAVE_FFMPEG
 #include "avcodec.h"
@@ -52,6 +53,8 @@ init_libmovies() {
   MovieAudioCursor::init_type();
   InkblotVideo::init_type();
   InkblotVideoCursor::init_type();
+  WebcamVideo::init_type();
+  WebcamVideo::init_cursor_type();
 #ifdef HAVE_FFMPEG
   FfmpegVideo::init_type();
   FfmpegVideoCursor::init_type();
