@@ -3,7 +3,7 @@
 
 #define USE_PACKAGES opencv ffmpeg
 
-#begin lib_target]
+#begin lib_target
   #define TARGET grutil
   #define LOCAL_LIBS \
     display text pgraph gobj linmath putil movies audio
