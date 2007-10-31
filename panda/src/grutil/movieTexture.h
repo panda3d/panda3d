@@ -22,6 +22,10 @@
 #include "pandabase.h"
 #include "movieVideo.h"
 #include "audioSound.h"
+#include "pipelineCycler.h"
+#include "cycleData.h"
+#include "cycleDataWriter.h"
+#include "cycleDataReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieTexture
