@@ -43,7 +43,7 @@ get_device_name(int n) {
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideoCursor) WebcamVideo::
 open() {
-  skel_cat.error() << "WebcamVideo support is not compiled in.\n";
+  movies_cat.error() << "WebcamVideo support is not compiled in.\n";
   return NULL;
 }
 
