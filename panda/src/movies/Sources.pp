@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define USE_PACKAGES ffmpeg
+#define USE_PACKAGES ffmpeg dx9
 
 #begin lib_target
   #define TARGET movies
