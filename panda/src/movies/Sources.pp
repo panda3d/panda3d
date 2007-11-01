@@ -2,6 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
 #define USE_PACKAGES ffmpeg dx9
+#define WIN_SYS_LIBS strmiids.lib
 
 #begin lib_target
   #define TARGET movies
