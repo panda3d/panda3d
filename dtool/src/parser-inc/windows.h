@@ -38,4 +38,12 @@ union LARGE_INTEGER {
   __int64 QuadPart;
 };
 
+class IGraphBuilder;
+class ICaptureGraphBuilder2;
+class IBaseFilter;
+class IMediaControl;
+class IVMRWindowlessControl;
+class CSampleGrabberCB;
+template<class N> class CComPtr;
+
 #endif
