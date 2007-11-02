@@ -160,7 +160,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         used whenever show code bangs on the node position and expects
         it to stick.
         """
-        #printStack()
         self.smoother.clearPositions(0)
         self.smoother.setMat(self.getMat())
         self.smoother.setPhonyTimestamp()
@@ -297,6 +296,10 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.smoother.setTimestamp(local)
             self.smoother.markPosition()
 
+        if not self.smoothStarted and \
+           self.smoother.getLatestPosition():
+            self.smoother.applySmoothMat(self)
+                
     def clearSmoothing(self, bogus = None):
         # Call this to invalidate all the old position reports
         # (e.g. just before popping to a new position).
