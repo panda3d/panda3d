@@ -126,6 +126,7 @@ class JobManager:
     @staticmethod
     def getDefaultTimeslice():
         # run for 1/2 millisecond per frame by default
+        # config is in milliseconds, this func returns value in seconds
         return getBase().config.GetFloat('job-manager-timeslice-ms', .5) / 1000.
     def getTimeslice(self):
         if self._timeslice:
