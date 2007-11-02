@@ -127,6 +127,8 @@ private:
 
   // True if the cursor is actually hidden right now via system calls.
   bool _display_hide_cursor;
+
+  SInt32 _wheel_delta;
 	 
 public:
   static TypeHandle get_class_type() {

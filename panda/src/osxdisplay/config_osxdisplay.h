@@ -18,8 +18,8 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
-#include "configVariableString.h"
 #include "configVariableBool.h"
+#include "configVariableInt.h"
 
 NotifyCategoryDecl( osxdisplay , EXPCL_PANDAGL, EXPTP_PANDAGL);
 
@@ -27,5 +27,6 @@ extern EXPCL_PANDAGL void init_libosxdisplay();
 
 extern ConfigVariableBool show_resize_box;
 extern ConfigVariableBool osx_disable_event_loop;
+extern ConfigVariableInt osx_mouse_wheel_scale;
 
 #endif /* __CONFIG_OSXDISPLAY_H__ */

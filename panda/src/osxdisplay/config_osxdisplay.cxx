@@ -48,6 +48,11 @@ ConfigVariableBool osx_disable_event_loop
           "the window event loop is already handled by another part of the "
           "app."));
 
+ConfigVariableInt osx_mouse_wheel_scale
+("osx-mouse-wheel-scale", 5,
+ PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
+          "represent a single wheel_up or wheel_down message."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libosxdisplay
 //  Description: Initializes the library.  This must be called at
