@@ -538,6 +538,9 @@ osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe,
   _input_devices[0].set_pointer_in_window(0, 0);
   _last_key_modifiers = 0;
   _last_buttons = 0;
+
+  _cursor_hidden = false;
+  _display_hide_cursor = false;
   
   if (osxdisplay_cat.is_debug())	
     osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
@@ -674,6 +677,44 @@ bool osxGraphicsWindow::set_icon_filename(const Filename &icon_filename)
   _pending_icon = icon_image;
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::set_pointer_in_window
+//       Access: Private
+//  Description: Indicates the mouse pointer is seen within the
+//               window.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+set_pointer_in_window(int x, int y) {
+  _input_devices[0].set_pointer_in_window(x, y);
+
+  if (_cursor_hidden != _display_hide_cursor) {
+    if (_cursor_hidden) {
+      CGDisplayHideCursor(kCGDirectMainDisplay); 
+      _display_hide_cursor = true;
+    } else { 
+      CGDisplayShowCursor(kCGDirectMainDisplay); 
+      _display_hide_cursor = false;
+    } 
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: osxGraphicsWindow::set_pointer_out_of_window
+//       Access: Private
+//  Description: Indicates the mouse pointer is no longer within the
+//               window.
+////////////////////////////////////////////////////////////////////
+void osxGraphicsWindow::
+set_pointer_out_of_window() {
+  _input_devices[0].set_pointer_out_of_window();
+
+  if (_display_hide_cursor) {
+    CGDisplayShowCursor(kCGDirectMainDisplay); 
+    _display_hide_cursor = false;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: osxGraphicsWindow::begin_frame
@@ -1292,8 +1333,13 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
      // Mac OS X v10.1 and later
      // should this be front window???
      GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
-	 if(!_is_fullscreen && (window == NULL || window != _osx_window ))
-	     return eventNotHandledErr;
+
+     if(!_is_fullscreen && (window == NULL || window != _osx_window )) {
+       if (kind == kEventMouseMoved) {
+         set_pointer_out_of_window();
+       }
+       return eventNotHandledErr;
+     }
 	 
 	 
      GetWindowPortBounds (window, &rectPort);
@@ -1323,7 +1369,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                   SystemPointToLocalPoint(qdGlobalPoint);
                 }
 
-                _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
 
                 UInt32 new_buttons = GetCurrentEventButtonState();
                 HandleButtonDelta(new_buttons);
@@ -1346,7 +1392,14 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                   GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                   SystemPointToLocalPoint(qdGlobalPoint);
                 }
-                _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                if (kind == kEventMouseMoved && 
+                    (qdGlobalPoint.h < 0 || qdGlobalPoint.v < 0)) {
+                  // Moving into the titlebar region.
+                  set_pointer_out_of_window();
+                } else {
+                  // Moving within the window itself (or dragging anywhere).
+                  set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                }
                 result = noErr;
 
                 break;
@@ -1359,7 +1412,7 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                 
                 if (wheelAxis == kEventMouseWheelAxisY)
                 {
-                    _input_devices[0].set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                    set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
                     if (wheelDelta > 0)
                     {
                         _input_devices[0].button_down(MouseButton::wheel_up());
@@ -1600,7 +1653,7 @@ if (osxdisplay_cat.is_debug())
     Point pt = {0, 0}; 
     pt.h = x; 
     pt.v = y; 
-    _input_devices[0].set_pointer_in_window(x, y);  
+    set_pointer_in_window(x, y);  
 
     if(_properties.get_mouse_mode()==WindowProperties::M_absolute)
     {
@@ -1758,10 +1811,17 @@ void osxGraphicsWindow::set_properties_now(WindowProperties &properties)
 
   if (properties.has_cursor_hidden()) { 
     _properties.set_cursor_hidden(properties.get_cursor_hidden()); 
-    if (properties.get_cursor_hidden()) { 
-      CGDisplayHideCursor(kCGDirectMainDisplay); 
+    _cursor_hidden = properties.get_cursor_hidden();
+    if (_cursor_hidden && _input_devices[0].has_pointer()) { 
+      if (!_display_hide_cursor) {
+        CGDisplayHideCursor(kCGDirectMainDisplay); 
+        _display_hide_cursor = true;
+      }
     } else { 
-      CGDisplayShowCursor(kCGDirectMainDisplay); 
+      if (_display_hide_cursor) {
+        CGDisplayShowCursor(kCGDirectMainDisplay); 
+        _display_hide_cursor = false;
+      }
     } 
     properties.clear_cursor_hidden(); 
   } 

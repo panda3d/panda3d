@@ -102,6 +102,9 @@ public: // do not call direct ..
   OSStatus buildGL(bool full_screen);
   bool set_icon_filename(const Filename &icon_filename);
 
+  void set_pointer_in_window(int x, int y);
+  void set_pointer_out_of_window();
+
 private:
   UInt32 _last_key_modifiers;
   UInt32 _last_buttons;
@@ -118,6 +121,12 @@ private:
   AGLContext _holder_aglcontext;
 #endif
   CFDictionaryRef _originalMode;
+
+  // True if _properties.get_cursor_hidden() is true.
+  bool _cursor_hidden;
+
+  // True if the cursor is actually hidden right now via system calls.
+  bool _display_hide_cursor;
 	 
 public:
   static TypeHandle get_class_type() {
