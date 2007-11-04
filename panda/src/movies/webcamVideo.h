@@ -26,7 +26,7 @@
 // Description : Allows you to open a webcam or other video capture
 //               device as a video stream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL WebcamVideo : public MovieVideo {
+class EXPCL_PANDA_MOVIES WebcamVideo : public MovieVideo {
 
 PUBLISHED:
   virtual ~WebcamVideo();
