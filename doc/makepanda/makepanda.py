@@ -35,7 +35,7 @@ VERSION=0
 VERBOSE=1
 COMPRESSOR="zlib"
 PACKAGES=["PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX","OPENAL","NVIDIACG",
-          "OPENSSL","FREETYPE","FFTW","MILES","ARTOOLKIT",
+          "OPENSSL","FREETYPE","FFTW","MILES","ARTOOLKIT","DIRECTCAM",
           "MAYA6","MAYA65","MAYA7","MAYA8","MAYA85","MAX6","MAX7","MAX8","MAX9",
           "FFMPEG","PANDATOOL","PANDAAPP","DX8","DX9"]
 OMIT=PACKAGES[:]
@@ -1336,7 +1336,7 @@ def CompileLink(dll, obj, opts, ldef):
     wdll = FindLocation(dll, [])
     if (COMPILER=="MSVC"):
         cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd"
+        if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
         if (wdll.endswith(".exe")==0): cmd = cmd + " /DLL"
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
@@ -1376,11 +1376,11 @@ def CompileLink(dll, obj, opts, ldef):
         if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
         if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
         if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-        if (opts.count("DIRECTSHOW")):  cmd = cmd + " strmiids.lib quartz.lib odbc32.lib odbccp32.lib"
-        if (PkgSelected(opts,"PNG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
-        if (PkgSelected(opts,"JPEG")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
-        if (PkgSelected(opts,"TIFF")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
-        if (PkgSelected(opts,"ZLIB")):     cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
+        if (PkgSelected(opts,"DIRECTCAM")): cmd = cmd + " strmiids.lib quartz.lib odbc32.lib odbccp32.lib"
+        if (PkgSelected(opts,"PNG")):       cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
+        if (PkgSelected(opts,"JPEG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
+        if (PkgSelected(opts,"TIFF")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
+        if (PkgSelected(opts,"ZLIB")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
         if (PkgSelected(opts,"VRPN")):
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
@@ -1711,6 +1711,7 @@ DTOOL_CONFIG=[
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
+    ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
 
@@ -2589,7 +2590,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libtext.in', obj='libtext_igate.obj',
 #
 
 IPATH=['panda/src/movies']
-OPTS=['BUILDING_PANDA', 'FFMPEG', 'DX9', 'DIRECTSHOW']
+OPTS=['BUILDING_PANDA', 'FFMPEG', 'DX9', 'DIRECTCAM']
 EnqueueCxx(ipath=IPATH, opts=OPTS, src='movies_composite1.cxx', obj='movies_composite1.obj')
 EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libmovies.in', obj='libmovies_igate.obj',
             src='panda/src/movies',  module='panda', library='libmovies',
@@ -2689,7 +2690,7 @@ if (OMIT.count("VRPN")==0):
 #
 
 IPATH=['panda/metalibs/panda']
-OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTSHOW', 'ARTOOLKIT']
+OPTS=['BUILDING_PANDA', 'ZLIB', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',  'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT']
 INFILES=['librecorder.in', 'libpgraph.in', 'libcull.in', 'libgrutil.in', 'libchan.in', 'libpstatclient.in',
          'libchar.in', 'libcollide.in', 'libdevice.in', 'libdgraph.in', 'libdisplay.in', 'libpipeline.in', 'libevent.in',
          'libgobj.in', 'libgsgbase.in', 'liblinmath.in', 'libmathutil.in', 'libparametrics.in',
@@ -2755,7 +2756,7 @@ EnqueueIgate(ipath=IPATH, opts=OPTS, outd='libskel.in', obj='libskel_igate.obj',
              skip=[], also=["skel_composite.cxx"])
 
 #
-# DIRECTORY: panda/metalibs/panda
+# DIRECTORY: panda/src/skel
 #
 
 OPTS=['BUILDING_PANDASKEL', 'ADVAPI']
