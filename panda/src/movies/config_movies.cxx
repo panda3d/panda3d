@@ -54,7 +54,6 @@ init_libmovies() {
   InkblotVideo::init_type();
   InkblotVideoCursor::init_type();
   WebcamVideo::init_type();
-  WebcamVideo::init_cursor_type();
 #ifdef HAVE_FFMPEG
   FfmpegVideo::init_type();
   FfmpegVideoCursor::init_type();

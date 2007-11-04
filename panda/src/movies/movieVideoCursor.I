@@ -162,3 +162,36 @@ next_start() const {
   return _next_start;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::streaming
+//       Access: Published
+//  Description: Returns true if the video frames are being "pushed"
+//               at us by something that operates at its own speed - 
+//               for example, a webcam.  In this case, the frames come
+//               when they're ready to come.  Attempting to read too
+//               soon will produce nothing, reading too late will cause
+//               frames to be dropped.  In this case, the ready flag
+//               can be used to determine whether or not a frame is
+//               ready for reading.
+//
+//               When streaming, you should still pay attention to
+//               last_start, but the value of next_start is only a
+//               guess.
+////////////////////////////////////////////////////////////////////
+INLINE bool MovieVideoCursor::
+streaming() const {
+  return _streaming;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::ready
+//       Access: Published
+//  Description: Returns true if the cursor is a streaming source, and
+//               if a video frame is ready to be read.  For non-
+//               streaming sources, this is always false.
+////////////////////////////////////////////////////////////////////
+INLINE bool MovieVideoCursor::
+ready() const {
+  return _ready;
+}
+

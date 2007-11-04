@@ -26,26 +26,32 @@
 // Description : Allows you to open a webcam or other video capture
 //               device as a video stream.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES WebcamVideo : public MovieVideo {
+class EXPCL_PANDASKEL WebcamVideo : public MovieVideo {
 
- PUBLISHED:
-  WebcamVideo(const string &dev, int x=640, int y=480, int fps=24);
+PUBLISHED:
   virtual ~WebcamVideo();
 
-  static int    get_num_devices();
-  static string get_device_name(int n);
+  static int             get_num_options();
+  static PT(WebcamVideo) get_option(int n);
   
-  virtual PT(MovieVideoCursor) open();
+  INLINE const string &get_name() const;
+  INLINE int get_size_x() const;
+  INLINE int get_size_y() const;
+  INLINE int get_fps() const;
   
- private:
-  string _specified_device;
-  int    _specified_x;
-  int    _specified_y;
-  int    _specified_fps;
-  friend class WebcamVideoCursor;
-  
+  virtual PT(MovieVideoCursor) open() = 0;
+
 public:
-  static void init_cursor_type();
+  static void find_all_webcams();
+  
+
+protected:
+  string _name;
+  int _size_x;
+  int _size_y;
+  int _fps;
+
+  static pvector<PT(WebcamVideo)> _all_webcams;
 
 public:
   static TypeHandle get_class_type() {

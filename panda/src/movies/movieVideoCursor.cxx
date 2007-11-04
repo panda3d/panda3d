@@ -43,7 +43,9 @@ MovieVideoCursor(MovieVideo *src) :
   _aborted(false),
   _last_start(-1.0),
   _next_start(0.0),
-  _conversion_buffer(0)
+  _conversion_buffer(0),
+  _streaming(false),
+  _ready(false)
 {
 }
 

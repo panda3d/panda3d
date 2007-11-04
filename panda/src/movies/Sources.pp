@@ -38,7 +38,8 @@
         ffmpegAudio.cxx \
         ffmpegAudioCursor.cxx \
         ffmpegVirtualFile.cxx \
-        webcamVideo.cxx webcamVideoDX.cxx webcamVideoV4L.cxx webcamVideoNull.cxx \
+	webcamVideo.cxx \
+	webcamVideoDS.cxx \
         config_movies.cxx
     
   #define INSTALL_HEADERS \

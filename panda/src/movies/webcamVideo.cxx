@@ -20,28 +20,13 @@
 #include "pandabase.h"
 #include "movieVideoCursor.h"
 
+pvector<PT(WebcamVideo)> WebcamVideo::_all_webcams;
 TypeHandle WebcamVideo::_type_handle;
 
-////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideo::Constructor
-//       Access: Public
-//  Description: The parameters x,y, and fps are suggestions.  The
-//               webcam will match these as closely as it can, but
-//               of course, there are no guarantees.
-////////////////////////////////////////////////////////////////////
-WebcamVideo::
-WebcamVideo(const string &dev, int x, int y, int fps) :
-  MovieVideo("webcam"),
-  _specified_device(dev),
-  _specified_x(x),
-  _specified_y(y),
-  _specified_fps(y)
-{
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideo::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 WebcamVideo::
@@ -49,22 +34,59 @@ WebcamVideo::
 }
 
 ////////////////////////////////////////////////////////////////////
-// The rest of this file is OS-dependent.
-// We include the appropriate version depending 
-// the user's compile-configuration.
+//     Function: WebcamVideo::find_all_webcams
+//       Access: Public
+//  Description: Scans the hardware for webcams, and pushes them
+//               onto the global list of all webcams.
+//
+//               There are several implementations of WebcamVideo,
+//               including one based on DirectShow, one based on
+//               Video4Linux, and so forth.  These implementations
+//               are contained in one C++ file each, and they export
+//               nothing at all except a single "find_all" function.
+//               Otherwise, they can only be accessed through the
+//               virtual methods of the WebcamVideo objects they
+//               create.
 ////////////////////////////////////////////////////////////////////
+void WebcamVideo::
+find_all_webcams() {
+  static bool initialized = false;
+  if (initialized) return;
+  initialized = true;
 
-#if defined(HAVE_DX9)
-
-#include "webcamVideoDX.cxx"
-
-#elif defined(HAVE_VIDEO4LINUX)
-
-#include "webcamVideoV4L.cxx"
-
-#else
-
-#include "webcamVideoNull.cxx"
-
+#ifdef HAVE_DIRECTCAM
+  extern void find_all_webcams_ds();
+  find_all_webcams_ds();
 #endif
 
+#ifdef HAVE_VIDEO4LINUX
+  extern void find_all_webcams_v4l();
+  find_all_webcams_v4l();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebcamVideo::get_num_options
+//       Access: Public
+//  Description: Returns the number of webcam options.  An "option"
+//               consists of a device plus a set of configuration
+//               parameters.  For example, "Creative Webcam Live at
+//               640x480, 30 fps" is an option.  
+////////////////////////////////////////////////////////////////////
+int WebcamVideo::
+get_num_options() {
+  find_all_webcams();
+  return _all_webcams.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebcamVideo::get_option
+//       Access: Public
+//  Description: Returns the nth webcam option.
+////////////////////////////////////////////////////////////////////
+PT(WebcamVideo) WebcamVideo::
+get_option(int n) {
+  find_all_webcams();
+  nassertr((n >= 0) && (n < (int)_all_webcams.size()), NULL);
+  return _all_webcams[n];
+}
