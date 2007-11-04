@@ -31,6 +31,11 @@ typedef long HRESULT;
 typedef int CRITICAL_SECTION;
 typedef int HANDLE;
 typedef void *LPVOID;
+typedef unsigned short WCHAR;
+typedef WCHAR *BSTR;
+typedef struct _MediaType AM_MEDIA_TYPE;
+typedef struct _VIDEO_STREAM_CONFIG_CAPS VIDEO_STREAM_CONFIG_CAPS;
+typedef struct _GUID GUID;
 
 #define WINAPI
 
