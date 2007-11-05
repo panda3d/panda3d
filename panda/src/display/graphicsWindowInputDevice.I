@@ -66,7 +66,7 @@ has_keyboard() const {
 //  Description: Returns the MouseData associated with the input
 //               device's pointer.
 ////////////////////////////////////////////////////////////////////
-INLINE const MouseData GraphicsWindowInputDevice::
+INLINE  MouseData GraphicsWindowInputDevice::
 get_pointer() const {
   MutexHolder holder(_lock);
   return _mouse_data;
@@ -79,7 +79,7 @@ get_pointer() const {
 //               device's pointer, in raw form (ie, prior to any
 //               pointer_mode interpretation).
 ////////////////////////////////////////////////////////////////////
-INLINE const MouseData GraphicsWindowInputDevice::
+INLINE  MouseData GraphicsWindowInputDevice::
 get_raw_pointer() const {
   MutexHolder holder(_lock);
   return _true_mouse_data;
