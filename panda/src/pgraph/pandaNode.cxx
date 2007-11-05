@@ -1678,7 +1678,11 @@ copy_all_properties(PandaNode *other) {
     cdataw->_effects = cdatar->_effects;
     cdataw->_draw_control_mask = cdatar->_draw_control_mask;
     cdataw->_draw_show_mask = cdatar->_draw_show_mask;
-    cdataw->_into_collide_mask = cdatar->_into_collide_mask;
+
+    // The collide mask becomes the union of the two masks.  This is
+    // important to preserve properties such as the default GeomNode
+    // bitmask.
+    cdataw->_into_collide_mask |= cdatar->_into_collide_mask;
       
     TagData::const_iterator ti;
     for (ti = cdatar->_tag_data.begin();
