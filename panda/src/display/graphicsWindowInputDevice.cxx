@@ -99,22 +99,9 @@ pointer_and_keyboard(GraphicsWindow *host, const string &name) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
-GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
-  _host(copy._host),
-  _name(copy._name),
-  _flags(copy._flags),
-  _device_index(copy._device_index),
-  _event_sequence(copy._event_sequence),
-  _pointer_mode_enable(copy._pointer_mode_enable),
-  _pointer_speed(copy._pointer_speed),
-  _pointer_true_x(copy._pointer_true_x),
-  _pointer_true_y(copy._pointer_true_y),
-  _enable_pointer_events(copy._enable_pointer_events),
-  _mouse_data(copy._mouse_data),
-  _true_mouse_data(copy._true_mouse_data),
-  _button_events(copy._button_events),
-  _pointer_events(copy._pointer_events)
+GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) 
 {
+    *this = copy;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,7 +110,10 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-operator = (const GraphicsWindowInputDevice &copy) {
+operator = (const GraphicsWindowInputDevice &copy) 
+{
+  MutexHolder holder(_lock);
+  MutexHolder holder1(copy._lock);
   _host = copy._host;
   _name = copy._name;
   _flags = copy._flags;
@@ -160,6 +150,7 @@ GraphicsWindowInputDevice::
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindowInputDevice::
 has_button_event() const {
+  MutexHolder holder(_lock);
   return !_button_events.empty();
 }
 
@@ -171,6 +162,7 @@ has_button_event() const {
 ////////////////////////////////////////////////////////////////////
 ButtonEvent GraphicsWindowInputDevice::
 get_button_event() {
+  MutexHolder holder(_lock);
   ButtonEvent be = _button_events.front();
   _button_events.pop_front();
   return be;
@@ -186,6 +178,7 @@ get_button_event() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsWindowInputDevice::
 has_pointer_event() const {
+  MutexHolder holder(_lock);
   return (_pointer_events != 0);
 }
 
@@ -197,6 +190,7 @@ has_pointer_event() const {
 ////////////////////////////////////////////////////////////////////
 PT(PointerEventList) GraphicsWindowInputDevice::
 get_pointer_events() {
+  MutexHolder holder(_lock);
   PT(PointerEventList) result = _pointer_events;
   _pointer_events = 0;
   return result;
@@ -222,6 +216,7 @@ get_pointer_events() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 enable_pointer_mode(double speed) {
+  MutexHolder holder(_lock);
   nassertv(_device_index != 0);
   _pointer_mode_enable = true;
   _pointer_speed = speed;
@@ -239,6 +234,7 @@ enable_pointer_mode(double speed) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 disable_pointer_mode() {
+  MutexHolder holder(_lock);
   nassertv(_device_index != 0);
   _pointer_mode_enable = false;
   _pointer_speed = 1.0;
@@ -254,6 +250,8 @@ disable_pointer_mode() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 set_pointer(bool inwin, int x, int y, double time) {
+  MutexHolder holder(_lock);
+
   int delta_x = x - _true_mouse_data._xpos;
   int delta_y = y - _true_mouse_data._ypos;
   _true_mouse_data._in_window = inwin;
@@ -295,6 +293,7 @@ set_pointer(bool inwin, int x, int y, double time) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_down(ButtonHandle button, double time) {
+  MutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_down, time));
 }
 
@@ -308,6 +307,7 @@ button_down(ButtonHandle button, double time) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_resume_down(ButtonHandle button, double time) {
+  MutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time));
 }
 
@@ -318,6 +318,7 @@ button_resume_down(ButtonHandle button, double time) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_up(ButtonHandle button, double time) {
+  MutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_up, time));
 }
 
@@ -329,6 +330,7 @@ button_up(ButtonHandle button, double time) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 keystroke(int keycode, double time) {
+  MutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(keycode, time));
 }
 
@@ -341,6 +343,7 @@ keystroke(int keycode, double time) {
 void GraphicsWindowInputDevice::
 candidate(const wstring &candidate_string, size_t highlight_start, 
           size_t highlight_end, size_t cursor_pos) {
+  MutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(candidate_string, 
                                        highlight_start, highlight_end,
                                        cursor_pos));

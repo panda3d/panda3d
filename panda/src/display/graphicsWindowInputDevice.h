@@ -29,6 +29,9 @@
 
 #include "pdeque.h"
 #include "pvector.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindowInputDevice
@@ -58,8 +61,8 @@ public:
 
   INLINE void set_device_index(int index);
   
-  INLINE const MouseData &get_pointer() const;
-  INLINE const MouseData &get_raw_pointer() const;
+  INLINE MouseData get_pointer() const;
+  INLINE MouseData get_raw_pointer() const;
   
   INLINE void enable_pointer_events();
   INLINE void disable_pointer_events();
@@ -100,6 +103,8 @@ private:
     IDF_has_keyboard   = 0x02
   };
   typedef pdeque<ButtonEvent> ButtonEvents;
+
+  Mutex _lock;
   
   GraphicsWindow *_host;
   
@@ -118,6 +123,7 @@ private:
   MouseData _true_mouse_data;
   ButtonEvents _button_events;
   PT(PointerEventList) _pointer_events;
+
 };
 
 #include "graphicsWindowInputDevice.I"
