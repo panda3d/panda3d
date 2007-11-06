@@ -49,7 +49,7 @@ ConfigVariableBool osx_disable_event_loop
           "app."));
 
 ConfigVariableInt osx_mouse_wheel_scale
-("osx-mouse-wheel-scale", 5,
+("osx-mouse-wheel-scale", 1,
  PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
           "represent a single wheel_up or wheel_down message."));
 
