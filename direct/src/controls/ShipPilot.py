@@ -62,7 +62,9 @@ class ShipPilot(PhysicsWalker):
     def setWallBitMask(self, bitMask):
         self.wallBitmask = bitMask
 
-    def swapWallBitMask(self, oldMask, newMask):
+    def adjustWallBitMask(self, oldMask, newMask):
+        # this will clear any bits set in oldMask and set any bits
+        # set in newMask
         self.wallBitmask = self.wallBitmask &~ oldMask
         self.wallBitmask |= newMask
 
