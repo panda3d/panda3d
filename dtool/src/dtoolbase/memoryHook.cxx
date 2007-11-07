@@ -18,6 +18,7 @@
 
 #include "memoryHook.h"
 #include "deletedBufferChain.h"
+#include <stdlib.h>
 
 #ifdef WIN32
 
