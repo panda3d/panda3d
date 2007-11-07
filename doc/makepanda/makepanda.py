@@ -46,22 +46,19 @@ MAXSDK = {}
 MAXSDKCS = {}
 PYTHONSDK=0
 STARTTIME=time.time()
-THREADCOUNT=1
+SLAVEFILE=0
+DEPENDENCYQUEUE=[]
+TIMESTAMPCACHE = {}
+FINDSOURCESTUBS = {}
+BUILTFROMCACHE = {}
+CXXINCLUDECACHE = {}
+THREADCOUNT=0
 DXVERSIONS=["8","9"]
 MAYAVERSIONS=["6","65","7","8","85"]
 MAXVERSIONS=["6","7","8","9"]
+ICACHEPATH="built/tmp/makepanda-dcache"
+INTERRUPT=0
 MAINTHREAD=threading.currentThread()
-
-##########################################################################################
-#
-# Global State
-#
-##########################################################################################
-
-TIMESTAMPCACHE = {}
-DEPENDENCYQUEUE=[]
-BUILTFROMCACHE = {}
-CXXINCLUDECACHE = {}
 
 ##########################################################################################
 #
@@ -192,7 +189,7 @@ def CxxGetIncludes(path):
 ########################################################################
 
 def SaveDependencyCache():
-    try: icache = open("built/tmp/makepanda-dcache",'wb')
+    try: icache = open(ICACHEPATH,'wb')
     except: icache = 0
     if (icache!=0):
         print "Storing dependency cache."
@@ -203,7 +200,7 @@ def SaveDependencyCache():
 def LoadDependencyCache():
     global CXXINCLUDECACHE
     global BUILTFROMCACHE
-    try: icache = open("built/tmp/makepanda-dcache",'rb')
+    try: icache = open(ICACHEPATH,'rb')
     except: icache = 0
     if (icache!=0):
         CXXINCLUDECACHE = cPickle.load(icache)
@@ -467,6 +464,7 @@ def usage(problem):
     print "  --v2 X            (set the minor version number)"
     print "  --v3 X            (set the sequence version number)"
     print "  --lzma            (use lzma compression when building installer)"
+    print "  --slaves X        (use the distributed build system. see manual)"
     print "  --threads N       (use the multithreaded build system. see manual)"
     print ""
     for pkg in PACKAGES:
@@ -487,11 +485,11 @@ def usage(problem):
 
 def parseopts(args):
     global OPTIMIZE,OMIT,INSTALLER,GENMAN
-    global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
+    global VERSION,COMPRESSOR,VERBOSE,SLAVEFILE,THREADCOUNT
     longopts = [
         "help","package-info",
         "optimize=","everything","nothing","installer","quiet","verbose",
-        "version=","lzma","no-python","threads="]
+        "version=","lzma","no-python","slaves=","threads="]
     anything = 0
     for pkg in PACKAGES: longopts.append("no-"+pkg.lower())
     for pkg in PACKAGES: longopts.append("use-"+pkg.lower())
@@ -506,6 +504,7 @@ def parseopts(args):
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): OMIT=[]
             elif (option=="--nothing"): OMIT=PACKAGES[:]
+            elif (option=="--slaves"): SLAVEFILE=value
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--version"):
                 VERSION=value
@@ -1337,7 +1336,7 @@ def CompileLink(dll, obj, opts, ldef):
     wdll = FindLocation(dll, [])
     if (COMPILER=="MSVC"):
         cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
+        if (THIRDPARTYLIBS=="thirdparty/win-libs-vc8/"): cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
         if (wdll.endswith(".exe")==0): cmd = cmd + " /DLL"
         optlevel = getoptlevel(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
@@ -4570,7 +4569,8 @@ if (OMIT.count("PANDATOOL")==0):
 #
 ##########################################################################################
 
-def BuildWorker(taskqueue, donequeue):
+def BuildWorker(taskqueue, donequeue, slave):
+    print "Slave online: "+slave
     while (1):
         task = taskqueue.get()
         sys.stdout.flush()
@@ -4593,6 +4593,10 @@ def AllSourcesReady(task, pending):
     return 1
 
 def ParallelMake(tasklist):
+    # Read the slave-file.
+    slaves = []
+    for i in range(THREADCOUNT):
+        slaves.append("local")
     # create the communication queues.
     donequeue=Queue.Queue()
     taskqueue=Queue.Queue()
@@ -4602,17 +4606,17 @@ def ParallelMake(tasklist):
         for target in task[2]:
             pending[target] = 1
     # create the workers
-    for slave in range(THREADCOUNT):
-        th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue])
+    for slave in slaves:
+        th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue,slave])
         th.setDaemon(1)
         th.start()
     # feed tasks to the workers.
     tasksqueued = 0
     while (1):
-        if (tasksqueued < THREADCOUNT*2):
+        if (tasksqueued < len(slaves)*2):
             extras = []
             for task in tasklist:
-                if (tasksqueued < THREADCOUNT*3) & (AllSourcesReady(task, pending)):
+                if (tasksqueued < len(slaves)*3) & (AllSourcesReady(task, pending)):
                     if (NeedsBuild(task[2], task[3])):
                         tasksqueued += 1
                         taskqueue.put(task)
@@ -4633,14 +4637,25 @@ def ParallelMake(tasklist):
         for target in donetask[2]:
             del pending[target]
     # kill the workers.
-    for slave in range(THREADCOUNT):
+    for slave in slaves:
         taskqueue.put(0)
     # make sure there aren't any unsatisfied tasks
     if (len(tasklist)>0):
         exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
 
+def SequentialMake(tasklist):
+    for task in tasklist:
+        if (NeedsBuild(task[2], task[3])):
+            apply(task[0], task[1])
+            JustBuilt(task[2], task[3])
 
-ParallelMake(DEPENDENCYQUEUE)
+def RunDependencyQueue(tasklist):
+    if (THREADCOUNT!=0):
+        ParallelMake(tasklist)
+    else:
+        SequentialMake(tasklist)
+
+RunDependencyQueue(DEPENDENCYQUEUE)
 
 ##########################################################################################
 #
