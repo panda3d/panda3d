@@ -33,10 +33,81 @@
 #include <AGL/agl.h>
 #include <ApplicationServices/ApplicationServices.h>
 
+#include "pmutex.h"
+//#include "mutexHolder.h"
+
+////////////////////////////////////
+
+\
+Mutex &  OSXGloablMutex()
+{
+    static   Mutex  m("OSXWIN_Mutex");
+	return m;
+}
+
+
+struct work1
+{
+	volatile bool work_done;
+};
+
+#define PANDA_CREATE_WINDOW  101
+static void Post_Event_Wiait(unsigned short type, unsigned int data1 , unsigned int data2 , int target_window )
+{
+	work1 w;
+	w.work_done = false;
+	NSEvent *ev = [NSEvent otherEventWithType:NSApplicationDefined 
+									 location:NSZeroPoint 
+								modifierFlags:0 
+									timestamp:0.0f 
+								 windowNumber:target_window 
+									  context:nil 
+									  subtype:type
+										data1:data1
+										data2:(int)&w]; 
+	
+	[NSApp postEvent:ev atStart:NO];
+	while(!w.work_done)
+	    usleep(10);
+	
+}
+
+
+
 ////////////////////////// Global Objects .....
 
 TypeHandle osxGraphicsWindow::_type_handle;
 osxGraphicsWindow  * osxGraphicsWindow::FullScreenWindow = NULL;
+
+
+#define USER_CONTAINER
+
+#include <set>
+
+#ifdef USER_CONTAINER
+
+std::set< WindowRef >     MyWindows;
+void AddAWindow( WindowRef window)
+{
+     MyWindows.insert(window);
+}
+bool checkmywindow(WindowRef window)
+{
+   return MyWindows.find(window) != MyWindows.end();
+}
+#else
+
+void AddAWindow( WindowRef window)
+{
+}
+
+bool checkmywindow(WindowRef window)
+{
+    return true;
+}
+
+#endif
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -59,8 +130,11 @@ osxGraphicsWindow* osxGraphicsWindow::GetCurrentOSxWindow(WindowRef window)
 			window	=	FrontNonFloatingWindow();
 	}
 		
-	if (window)
+	if (window  && checkmywindow(window))
+	//if (window )
+	{
 		return (osxGraphicsWindow *)GetWRefCon (window);
+	}
 	else
 		return NULL;
 }
@@ -171,6 +245,7 @@ static void CompositeGLBufferIntoWindow (AGLContext ctx, Rect *bufferRect, GrafP
 ////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsWindow::event_handler(EventHandlerCallRef myHandler, EventRef event)
 {
+
 	OSStatus result = eventNotHandledErr;
 	UInt32 the_class = GetEventClass(event);
 	UInt32 kind = GetEventKind(event);
@@ -287,10 +362,11 @@ void osxGraphicsWindow::SystemCloseWindow()
 //  handle system window events..
 //        
 ////////////////////////////////////////////////////////////////////
-
 static pascal OSStatus	windowEvtHndlr(EventHandlerCallRef myHandler, EventRef event, void *userData)
 {
 #pragma unused (userData)
+  
+//  volatile().lock();
  
   WindowRef window = NULL;		
   GetEventParameter(event, kEventParamDirectObject, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
@@ -299,9 +375,13 @@ static pascal OSStatus	windowEvtHndlr(EventHandlerCallRef myHandler, EventRef ev
   {
     osxGraphicsWindow *osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
     if (osx_win != (osxGraphicsWindow *)NULL)
+	{
+        //OSXGloablMutex().release();
       return osx_win->event_handler(myHandler, event);
+	}
   }
-
+  
+  //OSXGloablMutex().release();
   return eventNotHandledErr;
 }
 
@@ -355,8 +435,11 @@ void     osxGraphicsWindow::DoResize(void)
 static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef event, void* userData)
 {
 #pragma unused (myHandler)
-
     OSStatus result = eventNotHandledErr;
+	{
+
+    //OSXGloablMutex().lock();
+
     osxGraphicsWindow *osx_win = NULL;
     WindowRef window = NULL;	
     UInt32 the_class = GetEventClass (event);
@@ -365,8 +448,11 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
 	GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, (void*) &window);
     osx_win = osxGraphicsWindow::GetCurrentOSxWindow(window);
     if (osx_win == NULL)
+	{
+	    //OSXGloablMutex().release();
 	  return eventNotHandledErr;
-	  
+	  }
+
 	switch (the_class)
 	{
         case kEventClassTextInput:
@@ -410,6 +496,10 @@ static pascal OSStatus appEvtHndlr (EventHandlerCallRef myHandler, EventRef even
  		    //result = noErr; 
 			break;
 	}
+	
+    //OSXGloablMutex().release();	
+	}
+		
     return result;
 }
 
@@ -686,7 +776,8 @@ bool osxGraphicsWindow::set_icon_filename(const Filename &icon_filename)
 //               window.
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::
-set_pointer_in_window(int x, int y) {
+set_pointer_in_window(int x, int y) 
+{
   _input_devices[0].set_pointer_in_window(x, y);
 
   if (_cursor_hidden != _display_hide_cursor) {
@@ -907,7 +998,7 @@ void osxGraphicsWindow::close_window()
 //		UInt32 lo;
 //		UInt32 hi;
 //	};
-//
+///
 //extern OSErr CPSGetCurrentProcess(CPSProcessSerNum *psn);
 //extern OSErr CPSEnableForegroundOperation( struct CPSProcessSerNum *psn);
 //extern OSErr CPSSetProcessName ( struct CPSProcessSerNum *psn, char *processname);
@@ -930,14 +1021,17 @@ bool osxGraphicsWindow::open_window()
     _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
   }
   
-  return OSOpenWindow(req_properties);
+  //OSXGloablMutex().lock();
+  bool answer =  OSOpenWindow(req_properties);
+  //OSXGloablMutex().release();
+  return answer;
 }
 
 
 bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 {
 	OSErr err = noErr;
-	
+
 	if (_current_icon != NULL && _pending_icon == NULL)
 	{
 		// If we already have an icon specified, we'll need to reapply it
@@ -946,13 +1040,15 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 		_current_icon = NULL;
 	}
   
+  
+  
 	static bool GlobalInits = false;
 	if (!GlobalInits)
 	{
 		//
 		// one time aplication inits.. to get a window open from a standalone aplication..
 
-		EventHandlerRef	ref1;
+		EventHandlerRef	application_event_ref_ref1;
 		EventTypeSpec	list1[] =
 		{ 
 			//{ kEventClassCommand,  kEventProcessCommand },
@@ -970,28 +1066,12 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 		};
 
 		EventHandlerUPP	gEvtHandler = NewEventHandlerUPP(appEvtHndlr);
-		err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &ref1 );
+		err = InstallApplicationEventHandler (gEvtHandler, GetEventTypeCount (list1) , list1, this, &application_event_ref_ref1 );
 		GlobalInits = true;
-
-//		Replicating the hacky code with more document/support code which should do the same thing
 
 		ProcessSerialNumber psn = { 0, kCurrentProcess };
 		TransformProcessType(&psn, kProcessTransformToForegroundApplication);
 		SetFrontProcess(&psn);
-
-//		Hacky code
-
-//		struct CPSProcessSerNum PSN;
-//		GetCurrentProcess((ProcessSerialNumber *)&PSN);
-//		err = CPSGetCurrentProcess(&PSN);
-
-//		if (req_properties.has_title())
-//			err = CPSSetProcessName(&PSN,(char *)req_properties.get_title().c_str());
-//		else
-//			err = CPSSetProcessName(&PSN,"");
-				
-//		err = CPSEnableForegroundOperation(&PSN);
-//		err = CPSSetFrontProcess(&PSN);
 	}
 
 	if (req_properties.has_fullscreen() && req_properties.get_fullscreen())
@@ -1037,7 +1117,6 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 		}	
 
 		_properties.set_fullscreen(true);
-
 		_is_fullscreen	=true;	
 		FullScreenWindow = this;
 		req_properties.clear_fullscreen();
@@ -1069,22 +1148,11 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
     
 		if (req_properties.has_parent_window())
 		{
-			NSWindow*	parentWindow		=	(NSWindow *)req_properties.get_parent_window();
-			NSView*		aView				=	[[parentWindow contentView] viewWithTag:378];
-			NSRect		aRect				=	[aView frame];
-			NSPoint		origin				=	[parentWindow convertBaseToScreen:aRect.origin];
-			
 			osxdisplay_cat.info() << "Creating child window\n";
 
 			CreateNewWindow(kSimpleWindowClass, kWindowNoAttributes, &r, &_osx_window);
-			NSWindow*	childWindow			=	[[NSWindow alloc] initWithWindowRef:_osx_window];
-			
-			[childWindow setFrameOrigin:origin];
-			[childWindow setAcceptsMouseMovedEvents:YES];
-			[childWindow setBackgroundColor:[NSColor blackColor]];
-			[parentWindow addChildWindow:childWindow ordered:NSWindowAbove];
-			[childWindow orderFront:nil];
-			
+			AddAWindow(_osx_window);
+						
 			_properties.set_fixed_size(true);
 			osxdisplay_cat.info() << "Child window created\n";
 		}
@@ -1112,12 +1180,14 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 				
 				osxdisplay_cat.info() << "Creating standard window\n";
 				CreateNewWindow(kDocumentWindowClass, kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute, &r, &_osx_window);
+  			    AddAWindow(_osx_window);
 			}
 		}
 
     
 		if (_osx_window)
 		{
+		
 			EventHandlerUPP gWinEvtHandler;			// window event handler
 			EventTypeSpec list[] =
 			{ 
@@ -1137,7 +1207,36 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 			SetWRefCon (_osx_window, (long) this); // point to the window record in the ref con of the window
 			gWinEvtHandler = NewEventHandlerUPP(windowEvtHndlr); 
 			InstallWindowEventHandler(_osx_window, gWinEvtHandler, GetEventTypeCount(list), list, (void*)this, NULL); // add event handler
-			ShowWindow (_osx_window);
+			
+            if(!req_properties.has_parent_window())
+			{
+			    ShowWindow (_osx_window);
+			}
+			else
+			{
+			    
+				NSWindow*	parentWindow		=	(NSWindow *)req_properties.get_parent_window();
+			//	NSView*		aView				=	[[parentWindow contentView] viewWithTag:378];
+			//	NSRect		aRect				=	[aView frame];
+			//	NSPoint		origin				=	[parentWindow convertBaseToScreen:aRect.origin];
+						
+			//	NSWindow*	childWindow			=	[[NSWindow alloc] initWithWindowRef:_osx_window];
+			
+					
+				Post_Event_Wiait(PANDA_CREATE_WINDOW,(unsigned long) _osx_window,1,[parentWindow windowNumber]);			
+			
+			//	[childWindow setFrameOrigin:origin];
+			//	[childWindow setAcceptsMouseMovedEvents:YES];
+			//	[childWindow setBackgroundColor:[NSColor blackColor]];
+				 // this seems to block till the parent accepts the connection ?
+//				[parentWindow addChildWindow:childWindow ordered:NSWindowAbove];
+//				[childWindow orderFront:nil];
+				
+				
+				_properties.set_parent_window(req_properties.get_parent_window());
+				req_properties.clear_parent_window();
+				
+			}	
       
 			osxdisplay_cat.info() << "Event handler installed, now buildGL\n";
 			if(buildGL(false) != noErr)
@@ -1190,7 +1289,8 @@ bool osxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties)
 
 	if (_properties.has_size())
 		set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
-	
+ 
+  
   return (err == noErr);
 }
 
@@ -1205,7 +1305,8 @@ void osxGraphicsWindow::process_events()
 {
     GraphicsWindow::process_events();
 
-    if (!osx_disable_event_loop)
+    //if (!osx_disable_event_loop)
+	if (!_properties.has_parent_window())
     {
       EventRef 		 theEvent;
       EventTargetRef theTarget	=	GetEventDispatcherTarget();
@@ -1230,7 +1331,9 @@ void osxGraphicsWindow::process_events()
 ////////////////////////////////////////////////////////////////////
 // key input handler
 OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown) {
-  if (osxdisplay_cat.is_debug()) {
+
+
+ if (osxdisplay_cat.is_debug()) {
     UInt32 keyCode;
     GetEventParameter (event, kEventParamKeyCode, typeUInt32, NULL, sizeof(UInt32), NULL, &keyCode);
 
@@ -1240,7 +1343,7 @@ OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, Event
       << ", " << (int)keyDown << "\n";
   }
   
-  CallNextEventHandler(myHandler, event);
+  //CallNextEventHandler(myHandler, event);
 
   // We don't check the result of the above function.  In principle,
   // this should return eventNotHandledErr if the key event is not
@@ -1269,15 +1372,14 @@ OSStatus osxGraphicsWindow::handleKeyInput (EventHandlerCallRef myHandler, Event
         user_close_request();
       }
     }
-    
     SendKeyEvent(button, true);
   }
   else
   {
     SendKeyEvent(button, false);
   }
-  
-  return noErr;
+  return   CallNextEventHandler(myHandler, event);
+//  return noErr;
 }
 
  ////////////////////////////////////////////////////////////////////
@@ -1336,17 +1438,19 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
      GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, sizeof(WindowRef), NULL, &window);
 
      if(!_is_fullscreen && (window == NULL || window != _osx_window )) {
-       if (kind == kEventMouseMoved) {
+       if (kind == kEventMouseMoved)
+      {
          set_pointer_out_of_window();
        }
        return eventNotHandledErr;
      }
-	 
+
+
 	 
      GetWindowPortBounds (window, &rectPort);
 
-     result = CallNextEventHandler(myHandler, event);	
-     if (eventNotHandledErr == result) 
+    // result = CallNextEventHandler(myHandler, event);	
+    // if (eventNotHandledErr == result) 
      { // only handle events not already handled (prevents wierd resize interaction)
          switch (kind) {
              // Whenever mouse button state changes, generate the
@@ -1433,7 +1537,6 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
 //         result = noErr;
      }	
 	 
-//	 	 cerr <<" End Mouse Event \n";
 
      return result;
  }
