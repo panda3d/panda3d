@@ -1,0 +1,958 @@
+########################################################################
+##
+## Caution: there are two separate, independent build systems:
+## 'makepanda', and 'ppremake'.  Use one or the other, do not attempt
+## to use both.  This file is part of the 'makepanda' system.
+##
+## This file, makepandacore, contains all the global state and
+## global functions for the makepanda system.
+##
+########################################################################
+
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
+
+SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx"]
+SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe"]
+SUFFIX_LIB=[".lib",".ilb"]
+STARTTIME=time.time()
+MAINTHREAD=threading.currentThread()
+
+########################################################################
+##
+## The exit routine will normally
+##
+## - print a message
+## - save the dependency cache
+## - exit
+##
+## However, if it is invoked inside a thread, it instead:
+##
+## - prints a message
+## - raises the "initiate-exit" exception
+##
+## If you create a thread, you must be prepared to catch this
+## exception, save the dependency cache, and exit.
+##
+########################################################################
+
+WARNINGS=[]
+
+def PrettyTime(t):
+    t = int(t)
+    hours = t/3600
+    t -= hours*3600
+    minutes = t/60
+    t -= minutes*60
+    seconds = t
+    if (hours): return str(hours)+" hours "+str(minutes)+" min"
+    if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
+    return str(seconds)+" sec"
+
+def exit(msg):
+    if (threading.currentThread() == MAINTHREAD):
+        SaveDependencyCache()
+        print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
+        print msg
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(1)
+    else:
+        print msg
+        raise "initiate-exit"
+
+########################################################################
+##
+## Run a command.
+##
+########################################################################
+
+def oscmd(cmd):
+    print cmd
+    sys.stdout.flush()
+    if sys.platform == "win32":
+        exe = cmd.split()[0]+".exe"
+        if os.path.isfile(exe)==0:
+            for i in os.environ["PATH"].split(";"):
+                if os.path.isfile(os.path.join(i, exe)):
+                    exe = os.path.join(i, exe)
+                    break
+            if os.path.isfile(exe)==0:
+                exit("Cannot find "+exe+" on search path")
+        res = os.spawnl(os.P_WAIT, exe, cmd)
+    else:
+        res = os.system(cmd)
+    if res != 0:
+        exit("")
+
+########################################################################
+##
+## GetDirectoryContents
+##
+## At times, makepanda will use a function like "os.listdir" to process
+## all the files in a directory.  Unfortunately, that means that any
+## accidental addition of a file to a directory could cause makepanda
+## to misbehave without warning.
+##
+## To alleviate this weakness, we created GetDirectoryContents.  This
+## uses "os.listdir" to fetch the directory contents, but then it
+## compares the results to the appropriate CVS/Entries to see if
+## they match.  If not, it prints a big warning message.
+##
+########################################################################
+
+def GetDirectoryContents(dir, filters="*", skip=[]):
+    if (type(filters)==str):
+        filters = [filters]
+    actual = {}
+    files = os.listdir(dir)
+    for filter in filters:
+        for file in fnmatch.filter(files, filter):
+            if (skip.count(file)==0) and (os.path.isfile(dir + "/" + file)):
+                actual[file] = 1
+    if (os.path.isfile(dir + "/CVS/Entries")):
+        cvs = {}
+        srchandle = open(dir+"/CVS/Entries", "r")
+        files = []
+        for line in srchandle:
+            if (line[0]=="/"):
+                s = line.split("/",2)
+                if (len(s)==3):
+                    files.append(s[1])
+        srchandle.close()
+        for filter in filters:
+            for file in fnmatch.filter(files, filter):
+                if (skip.count(file)==0):
+                    cvs[file] = 1
+        for file in actual.keys():
+            if (cvs.has_key(file)==0):
+                msg = "WARNING: %s is in %s, but not in CVS"%(file, dir)
+                print msg
+                WARNINGS.append(msg)
+        for file in cvs.keys():
+            if (actual.has_key(file)==0):
+                msg = "WARNING: %s is not in %s, but is in CVS"%(file, dir)
+                print msg
+                WARNINGS.append(msg)
+    results = actual.keys()
+    results.sort()
+    return results
+
+########################################################################
+##
+## The Timestamp Cache
+##
+## The make utility is constantly fetching the timestamps of files.
+## This can represent the bulk of the file accesses during the make
+## process.  The timestamp cache eliminates redundant checks.
+##
+########################################################################
+
+TIMESTAMPCACHE = {}
+
+def GetTimestamp(path):
+    if TIMESTAMPCACHE.has_key(path):
+        return TIMESTAMPCACHE[path]
+    try: date = os.path.getmtime(path)
+    except: date = 0
+    TIMESTAMPCACHE[path] = date
+    return date
+
+def ClearTimestamp(path):
+    del TIMESTAMPCACHE[path]
+
+########################################################################
+##
+## The Dependency cache.
+##
+## Makepanda's strategy for file dependencies is different from most
+## make-utilities.  Whenever a file is built, makepanda records
+## that the file was built, and it records what the input files were,
+## and what their dates were.  Whenever a file is about to be built,
+## panda compares the current list of input files and their dates,
+## to the previous list of input files and their dates.  If they match,
+## there is no need to build the file.
+##
+########################################################################
+
+BUILTFROMCACHE = {}
+
+def JustBuilt(files,others):
+    dates = []
+    for file in files:
+        del TIMESTAMPCACHE[file]
+        dates.append(GetTimestamp(file))
+    for file in others:
+        dates.append(GetTimestamp(file))
+    key = tuple(files)
+    BUILTFROMCACHE[key] = [others,dates]
+
+def NeedsBuild(files,others):
+    dates = []
+    for file in files:
+        dates.append(GetTimestamp(file))
+    for file in others:
+        dates.append(GetTimestamp(file))
+    key = tuple(files)
+    if (BUILTFROMCACHE.has_key(key)):
+        if (BUILTFROMCACHE[key] == [others,dates]):
+            return 0
+        else:
+            oldothers = BUILTFROMCACHE[key][0]
+            if (oldothers != others):
+                for f in files:
+                    print "CAUTION: file dependencies changed: "+f
+    return 1
+
+########################################################################
+##
+## The CXX include cache:
+##
+## The following routine scans a CXX file and returns a list of
+## the include-directives inside that file.  It's not recursive:
+## it just returns the includes that are textually inside the 
+## file.  If you need recursive dependencies, you need the higher-level
+## routine CxxCalcDependencies, defined elsewhere.
+##
+## Since scanning a CXX file is slow, we cache the result.  It records
+## the date of the source file and the list of includes that it
+## contains.  It assumes that if the file date hasn't changed, that
+## the list of include-statements inside the file has not changed
+## either.  Once again, this particular routine does not return
+## recursive dependencies --- it only returns an explicit list of
+## include statements that are textually inside the file.  That
+## is what the cache stores, as well.
+##
+########################################################################
+
+CXXINCLUDECACHE = {}
+
+global CxxIncludeRegex
+CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$')
+
+def CxxGetIncludes(path):
+    date = GetTimestamp(path)
+    if (CXXINCLUDECACHE.has_key(path)):
+        cached = CXXINCLUDECACHE[path]
+        if (cached[0]==date): return cached[1]
+    try: sfile = open(path, 'rb')
+    except:
+        exit("Cannot open source file \""+path+"\" for reading.")
+    include = []
+    for line in sfile:
+        match = CxxIncludeRegex.match(line,0)
+        if (match):
+            incname = match.group(1)
+            include.append(incname)
+    sfile.close()
+    CXXINCLUDECACHE[path] = [date, include]
+    return include
+
+########################################################################
+##
+## SaveDependencyCache / LoadDependencyCache
+##
+## This actually saves both the dependency and cxx-include caches.
+##
+########################################################################
+
+def SaveDependencyCache():
+    try: icache = open("built/tmp/makepanda-dcache",'wb')
+    except: icache = 0
+    if (icache!=0):
+        print "Storing dependency cache."
+        cPickle.dump(CXXINCLUDECACHE, icache, 1)
+        cPickle.dump(BUILTFROMCACHE, icache, 1)
+        icache.close()
+
+def LoadDependencyCache():
+    global CXXINCLUDECACHE
+    global BUILTFROMCACHE
+    try: icache = open("built/tmp/makepanda-dcache",'rb')
+    except: icache = 0
+    if (icache!=0):
+        CXXINCLUDECACHE = cPickle.load(icache)
+        BUILTFROMCACHE = cPickle.load(icache)
+        icache.close()
+
+########################################################################
+##
+## CxxFindSource: given a source file name and a directory list,
+## searches the directory list for the given source file.  Returns
+## the full pathname of the located file.
+##
+## CxxFindHeader: given a source file, an include directive, and a
+## directory list, searches the directory list for the given header
+## file.  Returns the full pathname of the located file.
+##
+## Of course, CxxFindSource and CxxFindHeader cannot find a source
+## file that has not been created yet.  This can cause dependency
+## problems.  So the function CreateStubHeader can be used to create
+## a file that CxxFindSource or CxxFindHeader can subsequently find.
+##
+########################################################################
+
+def CxxFindSource(name, ipath):
+    for dir in ipath:
+        if (dir == "."): full = name
+        else: full = dir + "/" + name
+        if GetTimestamp(full) > 0: return full
+    exit("Could not find source file: "+name)
+
+def CxxFindHeader(srcfile, incfile, ipath):
+    if (incfile.startswith(".")):
+        last = srcfile.rfind("/")
+        if (last < 0): exit("CxxFindHeader cannot handle this case #1")
+        srcdir = srcfile[:last+1]
+        while (incfile[:1]=="."):
+            if (incfile[:2]=="./"):
+                incfile = incfile[2:]
+            elif (incfile[:3]=="../"):
+                incfile = incfile[3:]
+                last = srcdir[:-1].rfind("/")
+                if (last < 0): exit("CxxFindHeader cannot handle this case #2")
+                srcdir = srcdir[:last+1]
+            else: exit("CxxFindHeader cannot handle this case #3")
+        full = srcdir + incfile
+        if GetTimestamp(full) > 0: return full
+        return 0
+    else:
+        for dir in ipath:
+            full = dir + "/" + incfile
+            if GetTimestamp(full) > 0: return full
+        return 0
+
+########################################################################
+##
+## CxxCalcDependencies(srcfile, ipath, ignore)
+##
+## Calculate the dependencies of a source file given a
+## particular include-path.  Any file in the list of files to
+## ignore is not considered.
+##
+########################################################################
+
+global CxxIgnoreHeader
+global CxxDependencyCache
+CxxIgnoreHeader = {}
+CxxDependencyCache = {}
+
+def CxxCalcDependencies(srcfile, ipath, ignore):
+    if (CxxDependencyCache.has_key(srcfile)):
+        return CxxDependencyCache[srcfile]
+    if (ignore.count(srcfile)): return []
+    dep = {}
+    dep[srcfile] = 1
+    includes = CxxGetIncludes(srcfile)
+    for include in includes:
+        if (CxxIgnoreHeader.has_key(include)==0):
+            header = CxxFindHeader(srcfile, include, ipath)
+            if (header!=0):
+                if (ignore.count(header)==0):
+                    hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
+                    for x in hdeps: dep[x] = 1
+            else:
+                pass
+#               print "CAUTION: header file "+include+" cannot be found in "+srcfile+" IPATH="+str(ipath)
+    result = dep.keys()
+    CxxDependencyCache[srcfile] = result
+    return result
+
+########################################################################
+##
+## Registry Key Handling
+##
+## Of course, these routines will fail if you call them on a
+## non win32 platform.  If you use them on a win64 platform, they
+## will look in the win32 private hive first, then look in the
+## win64 hive.
+##
+########################################################################
+
+if sys.platform == "win32":
+    import _winreg
+
+def TryRegistryKey(path):
+    try:
+        key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
+        return key
+    except: pass
+    try:
+        key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ | 256)
+        return key
+    except: pass
+    return 0
+        
+def ListRegistryKeys(path):
+    result=[]
+    index=0
+    key = TryRegistryKey(path)
+    if (key != 0):
+        try:
+            while (1):
+                result.append(_winreg.EnumKey(key, index))
+                index = index + 1
+        except: pass
+        _winreg.CloseKey(key)
+    return result
+
+def GetRegistryKey(path, subkey):
+    k1=0
+    key = TryRegistryKey(path)
+    if (key != 0):
+        try:
+            k1, k2 = _winreg.QueryValueEx(key, subkey)
+        except: pass
+        _winreg.CloseKey(key)
+    return k1
+
+########################################################################
+##
+## Parsing Compiler Option Lists
+##
+########################################################################
+
+def GetListOption(opts, prefix):
+    res=[]
+    for x in opts:
+        if (x.startswith(prefix)):
+            res.append(x[len(prefix):])
+    return res
+
+def GetValueOption(opts, prefix):
+    for x in opts:
+        if (x.startswith(prefix)):
+            return x[len(prefix):]
+    return 0
+
+def GetOptimizeOption(opts,defval):
+    val = GetValueOption(opts, "OPT:")
+    if (val == 0):
+        return defval
+    return val
+
+########################################################################
+##
+## General File Manipulation
+##
+########################################################################
+
+def MakeDirectory(path):
+    if os.path.isdir(path): return 0
+    os.mkdir(path)
+
+def ReadFile(wfile):
+    try:
+        srchandle = open(wfile, "rb")
+        data = srchandle.read()
+        srchandle.close()
+        return data
+    except: exit("Cannot read "+wfile)
+
+def WriteFile(wfile,data):
+    try:
+        dsthandle = open(wfile, "wb")
+        dsthandle.write(data)
+        dsthandle.close()
+    except: exit("Cannot write "+wfile)
+
+def ConditionalWriteFile(dest,desiredcontents):
+    try:
+        rfile = open(dest, 'rb')
+        contents = rfile.read(-1)
+        rfile.close()
+    except:
+        contents=0
+    if contents != desiredcontents:
+        sys.stdout.flush()
+        WriteFile(dest,desiredcontents)
+
+def DeleteCVS(dir):
+    for entry in os.listdir(dir):
+        if (entry != ".") and (entry != ".."):
+            subdir = dir + "/" + entry
+            if (os.path.isdir(subdir)):
+                if (entry == "CVS"):
+                    shutil.rmtree(subdir)
+                else:
+                    DeleteCVS(subdir)
+
+def CreateFile(file):
+    if (os.path.exists(file)==0):
+        WriteFile(file,"")
+
+########################################################################
+#
+# Make sure that you are in the root of the panda tree.
+#
+########################################################################
+
+def CheckPandaSourceTree():
+    dir = os.getcwd()
+    if ((os.path.exists(os.path.join(dir, "makepanda/makepanda.py"))==0) or
+        (os.path.exists(os.path.join(dir, "dtool","src","dtoolbase","dtoolbase.h"))==0) or
+        (os.path.exists(os.path.join(dir, "panda","src","pandabase","pandabase.h"))==0)):
+        exit("Current directory is not the root of the panda tree.")
+
+########################################################################
+##
+## Visual Studio Manifest Manipulation.
+##
+########################################################################
+
+VC80CRTVERSIONRE=re.compile(" name=['\"]Microsoft.VC80.CRT['\"] version=['\"]([0-9.]+)['\"] ")
+
+def GetVC80CRTVersion(fn):
+    manifest = ReadFile(fn)
+    version = VC80CRTVERSIONRE.search(manifest)
+    if (version == None):
+        exit("Cannot locate version number in "+manifn)
+    return version.group(1)
+
+def SetVC80CRTVersion(fn, ver):
+    manifest = ReadFile(fn)
+    subst = " name='Microsoft.VC80.CRT' version='"+ver+"' "
+    manifest = VC80CRTVERSIONRE.sub(subst, manifest)
+    WriteFile(fn, manifest)
+
+########################################################################
+##
+## Package Selection
+##
+## This facility enables makepanda to keep a list of packages selected
+## by the user for inclusion or omission.
+##
+########################################################################
+
+PKG_LIST_ALL=0
+PKG_LIST_OMIT=0
+
+def PkgListSet(pkgs):
+    global PKG_LIST_ALL
+    global PKG_LIST_OMIT
+    PKG_LIST_ALL=pkgs
+    PKG_LIST_OMIT={}
+    PkgDisableAll()
+
+def PkgListGet():
+    return PKG_LIST_ALL
+
+def PkgEnableAll():
+    for x in PKG_LIST_ALL:
+        PKG_LIST_OMIT[x] = 0
+
+def PkgDisableAll():
+    for x in PKG_LIST_ALL:
+        PKG_LIST_OMIT[x] = 1
+
+def PkgEnable(pkg):
+    PKG_LIST_OMIT[pkg] = 0
+
+def PkgDisable(pkg):
+    PKG_LIST_OMIT[pkg] = 1
+
+def PkgSkip(pkg):
+    return PKG_LIST_OMIT[pkg]
+
+def PkgSelected(pkglist, pkg):
+    if (pkglist.count(pkg)==0): return 0
+    if (PKG_LIST_OMIT[pkg]): return 0
+    return 1
+
+########################################################################
+##
+## SDK Location
+##
+## This section is concerned with locating the install directories
+## for various third-party packages.  The results are stored in the
+## SDK table.
+##
+## Microsoft keeps changing the &*#$*& registry key for the DirectX SDK.
+## The only way to reliably find it is to search through the installer's
+## uninstall-directories, look in each one, and see if it contains the
+## relevant files.
+##
+########################################################################
+
+SDK = {}
+
+MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
+                 ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
+                 ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
+                 ("MAYA8",  "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath"),
+                 ("MAYA85", "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath")
+]
+
+MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
+                  ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
+]
+
+def SdkLocateDirectX():
+    if (sys.platform != "win32"): return
+    if (os.path.isdir("sdks/directx8")): SDK["DX8"]="sdks/directx8"
+    if (os.path.isdir("sdks/directx9")): SDK["DX9"]="sdks/directx9"
+    uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+    for subdir in ListRegistryKeys(uninstaller):
+        if (subdir[0]=="{"):
+            dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
+            if (dir != 0):
+                if ((SDK.has_key("DX8")==0) and
+                    (os.path.isfile(dir+"\\Include\\d3d8.h")) and
+                    (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
+                    (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
+                    (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
+                   SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
+                if ((SDK.has_key("DX9")==0) and
+                    (os.path.isfile(dir+"\\Include\\d3d9.h")) and
+                    (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
+                    (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
+                    (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
+                    (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
+                   SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+
+def SdkLocateMaya():
+    if (sys.platform != "win32"): return
+    for (ver,key) in MAYAVERSIONINFO:
+        if (PkgSkip(ver)==0):
+            if (SDK.has_key(ver)==0):
+                ddir = "sdks/"+ver.lower()
+                if (os.path.isdir(ddir)):
+                    SDK[ver] = ddir
+                else:
+                    res = GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
+                    if (key != 0):
+                        res = res.replace("\\", "/").rstrip("/")
+                        SDK[res] = ver
+
+def SdkLocateMax():
+    if (sys.platform != "win32"): return
+    for version,key1,key2,subdir in MAXVERSIONINFO:
+        if (PkgSkip(version)==0):
+            if (SDK.has_key(version)==0):
+                ddir = "sdks/"+version.lower()
+                if (os.path.isdir(ddir)):
+                    SDK[version] = ddir
+                    SDK[version+"CS"] = ddir
+                else:
+                    top = GetRegistryKey(key1,key2)
+                    if (top != 0):
+                        SDK[version] = top + "maxsdk"
+                        if (os.path.isdir(top + "\\" + subdir)!=0):
+                            SDK[version+"CS"] = top + subdir
+
+def SdkLocatePython():
+    if (PkgSkip("PYTHON")==0):
+        if (sys.platform == "win32"):
+            SDK["PYTHON"]="thirdparty/win-python"
+        else:
+            if   (os.path.isdir("/usr/include/python2.5")): SDK["PYTHON"] = "/usr/include/python2.5"
+            elif (os.path.isdir("/usr/include/python2.4")): SDK["PYTHON"] = "/usr/include/python2.4"
+            elif (os.path.isdir("/usr/include/python2.3")): SDK["PYTHON"] = "/usr/include/python2.3"
+            elif (os.path.isdir("/usr/include/python2.2")): SDK["PYTHON"] = "/usr/include/python2.2"
+            else: exit("Cannot find the python SDK")
+
+def SdkLocateVisualStudio():
+    if (sys.platform != "win32"): return
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "8.0")
+    if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
+	vcdir = vcdir[:-3]
+        SDK["VISUALSTUDIO"] = vcdir
+
+def SdkLocateMSPlatform():
+    platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1",
+                           "Install Dir")
+    if (platsdk != 0):
+        SDK["MSPLATFORM"] = platsdk
+
+########################################################################
+##
+## SDK Auto-Disables
+##
+## Disable packages whose SDKs could not be found.
+##
+########################################################################
+
+def SdkAutoDisableDirectX():
+    for ver in ["DX8","DX9"]:
+        if (PkgSkip(ver)==0):
+            if (SDK.has_key(ver)==0):
+                WARNINGS.append("I cannot locate SDK for "+ver)
+                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+                PkgDisable(ver)
+            else:
+                WARNINGS.append("Using "+ver+" sdk: "+SDK[ver])
+
+def SdkAutoDisableMaya():
+    for (ver,key) in MAYAVERSIONINFO:
+        if (SDK.has_key(ver)==0) and (PkgSkip(ver)==0):
+            if (sys.platform == "win32"):
+                WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
+                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+            else:
+                WARNINGS.append(ver+" not yet supported under linux")
+                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+            PkgDisable(ver)
+
+def SdkAutoDisableMax():
+    for version,key1,key2,subdir in MAXVERSIONINFO:
+        if (PkgSkip(version)==0) and ((SDK.has_key(version)==0) or (SDK.has_key(version+"CS")==0)): 
+            if (sys.platform == "win32"):
+                if (SDK.has_key(version)):
+                    WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
+                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                else:
+                    WARNINGS.append("The registry does not appear to contain a pointer to "+version)
+                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+            else:
+                WARNINGS.append(version+" not yet supported under linux")
+                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+            PkgDisable(version)
+
+########################################################################
+##
+## Visual Studio comes with a script called VSVARS32.BAT, which 
+## you need to run before using visual studio command-line tools.
+## The following python subroutine serves the same purpose.
+##
+########################################################################
+
+def AddToPathEnv(path,add):
+    if (os.environ.has_key(path)):
+        os.environ[path] = add + ";" + os.environ[path]
+    else:
+        os.environ[path] = add
+
+def SetupVisualStudioEnviron():
+    if (SDK.has_key("VISUALSTUDIO")==0):
+        exit("Could not find Visual Studio install directory")
+    if (SDK.has_key("MSPLATFORM")==0):
+        exit("Could not find the Microsoft Platform SDK")
+    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin")
+    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
+    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib")
+    AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
+    AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
+    AddToPathEnv("LIB",     SDK["MSPLATFORM"] + "lib")
+
+########################################################################
+#
+# On Linux, to run panda, the dynamic linker needs to know how to find
+# the shared libraries.  This subroutine verifies that the dynamic
+# linker is properly configured.  If not, it sets it up on a temporary
+# basis and issues a warning.
+#
+########################################################################
+
+
+def CheckLinkerLibraryPath():
+    if (sys.platform == "win32"): return
+    builtlib = os.path.abspath("built/lib")
+    try:
+        ldpath = []
+        f = file("/etc/ld.so.conf","r")
+        for line in f: ldpath.append(line.rstrip())
+        f.close()
+    except: ldpath = []
+    if (os.environ.has_key("LD_LIBRARY_PATH")):
+        ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
+    if (ldpath.count(builtlib)==0):
+        WARNINGS.append("Caution: the built/lib directory is not in LD_LIBRARY_PATH")
+        WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
+        if (os.environ.has_key("LD_LIBRARY_PATH")):
+            os.environ["LD_LIBRARY_PATH"] = builtlib + ":" + os.environ["LD_LIBRARY_PATH"]
+        else:
+            os.environ["LD_LIBRARY_PATH"] = builtlib
+
+########################################################################
+##
+## Routines to copy files into the build tree
+##
+########################################################################
+
+def CopyFile(dstfile,srcfile):
+    if (dstfile[-1]=='/'):
+        dstdir = dstfile
+        fnl = srcfile.rfind("/")
+        if (fnl < 0): fn = srcfile
+        else: fn = srcfile[fnl+1:]
+        dstfile = dstdir + fn
+    if (NeedsBuild([dstfile],[srcfile])):
+        WriteFile(dstfile,ReadFile(srcfile))
+        JustBuilt([dstfile], [srcfile])
+
+def CopyAllFiles(dstdir, srcdir, suffix=""):
+    for x in GetDirectoryContents(srcdir, ["*"+suffix]):
+        CopyFile(dstdir+x, srcdir+x)
+
+def CopyAllHeaders(dir, skip=[]):
+    for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
+        srcfile = dir + "/" + filename
+        dstfile = "built/include/" + filename
+        if (NeedsBuild([dstfile],[srcfile])):
+            WriteFile(dstfile,ReadFile(srcfile))
+            JustBuilt([dstfile],[srcfile])
+
+def CopyTree(dstdir,srcdir):
+    if (os.path.isdir(dstdir)): return 0
+    if (sys.platform == "win32"):
+        cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+    else:
+        cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
+    oscmd(cmd)
+
+########################################################################
+##
+## Parse PandaVersion.pp to extract the version number.
+##
+########################################################################
+
+def ParsePandaVersion(fn):
+    try:
+        f = file(fn, "r")
+        pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
+        for line in f:
+            match = pattern.match(line,0)
+            if (match):
+                version = match.group(1)+"."+match.group(2)+"."+match.group(3)
+                break
+        f.close()
+    except: version="0.0.0"
+    return version
+
+########################################################################
+##
+## FindLocation
+##
+########################################################################
+
+def FindLocation(fn, ipath):
+    if (fn.count("/")): return fn
+    if (sys.platform == "win32"):
+        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")): return "built/tmp/"+fn
+        if (fn.endswith(".dll")): return "built/bin/"+fn
+        if (fn.endswith(".dlo")): return "built/plugins/"+fn
+        if (fn.endswith(".dli")): return "built/plugins/"+fn
+        if (fn.endswith(".dle")): return "built/plugins/"+fn
+        if (fn.endswith(".mll")): return "built/plugins/"+fn
+        if (fn.endswith(".exe")): return "built/bin/"+fn
+        if (fn.endswith(".lib")): return "built/lib/"+fn
+        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".lib"
+        if (fn.endswith(".dat")): return "built/tmp/"+fn
+        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+    else:
+        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
+        if (fn.endswith(".lib")): return "built/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")): return "built/tmp/"+fn
+        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+    return fn
+
+########################################################################
+##
+## TargetAdd
+##
+## Makepanda maintains a list of make-targets.  Each target has
+## these attributes:
+##
+## name   - the name of the file being created.
+## ext    - the original file extension, prior to OS-specific translation
+## inputs - the names of the input files to the compiler
+## deps   - other input files that the target also depends on
+## opts   - compiler options, a catch-all category
+##
+## TargetAdd will create the target if it does not exist.  Then,
+## depending on what options you pass, it will push data onto these
+## various target attributes.  This is cumulative: for example, if
+## you use TargetAdd to add compiler options, then use TargetAdd
+## again with more compiler options, both sets of options will be
+## included.
+##
+## TargetAdd does some automatic dependency generation on C++ files.
+## It will scan these files for include-files and automatically push
+## the include files onto the list of dependencies.  In order to do
+## this, it needs an include-file search path.  So if you supply
+## any C++ input, you also need to supply compiler options containing
+## include-directories, or alternately, a separate ipath parameter.
+## 
+## The main body of 'makepanda' is a long list of TargetAdd
+## directives building up a giant list of make targets.  Then, 
+## finally, the targets are run and panda is built.
+##
+## Makepanda's dependency system does not understand multiple
+## outputs from a single build step.  When a build step generates
+## a primary output file and a secondary output file, it is
+## necessary to trick the dependency system.  Insert a dummy
+## build step that "generates" the secondary output file, using
+## the primary output file as an input.  There is a special
+## compiler option DEPENDENCYONLY that creates such a dummy
+## build-step.  There are two cases where dummy build steps must
+## be inserted: bison generates an OBJ and a secondary header
+## file, interrogate generates an IN and a secondary IGATE.OBJ.
+##
+########################################################################
+
+class Target:
+    pass
+
+TARGET_LIST=[]
+TARGET_TABLE={}
+
+def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
+    if (dummy != 0):
+        exit("Syntax error in TargetAdd "+target)
+    if (ipath == 0): ipath = opts
+    if (ipath == 0): ipath = []
+    if (type(input) == str): input = [input]
+    if (type(dep) == str): dep = [dep]
+    full = FindLocation(target,["built/include"])
+    if (TARGET_TABLE.has_key(full) == 0):
+        (base,suffix) = os.path.splitext(target)
+        t = Target()
+        t.ext = suffix
+        t.name = full
+        t.inputs = []
+        t.deps = {}
+        t.opts = []
+        TARGET_TABLE[full] = t
+        TARGET_LIST.append(t)
+    else:
+        t = TARGET_TABLE[full]
+    ipath = ["built/tmp"] + GetListOption(ipath, "DIR:") + ["built/include"]
+    if (opts != 0):
+        for x in opts:
+            if (t.opts.count(x)==0):
+                t.opts.append(x)
+    if (input != 0):
+        for x in input:
+            fullinput = FindLocation(x, ipath)
+            t.inputs.append(fullinput)
+            t.deps[fullinput] = 1
+            (base,suffix) = os.path.splitext(x)
+            if (SUFFIX_INC.count(suffix)):
+                for d in CxxCalcDependencies(fullinput, ipath, []):
+                    t.deps[d] = 1
+    if (dep != 0):                
+        for x in dep:
+            fulldep = FindLocation(x, ipath)
+            t.deps[fulldep] = 1
+    if (target.endswith(".in")):
+        t.deps[FindLocation("interrogate.exe",[])] = 1
+        t.deps[FindLocation("dtool_have_python.dat",[])] = 1
+
