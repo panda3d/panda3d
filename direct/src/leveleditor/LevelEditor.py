@@ -272,6 +272,8 @@ except NameError:
     if 'GZ' in hoods:
         loadDNAFile(DNASTORE, 'phase_6/dna/storage_GZ.dna', CSDefault, 1)
         loadDNAFile(DNASTORE, 'phase_6/dna/storage_GZ_sz.dna', CSDefault, 1)
+    if 'CC' in hoods:
+        loadDNAFile(DNASTORE, 'phase_12/dna/storage_CC_sz.dna', CSDefault, 1)        
     __builtin__.dnaLoaded = 1
 
 # Precompute class types for type comparisons
