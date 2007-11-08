@@ -1305,8 +1305,7 @@ void osxGraphicsWindow::process_events()
 {
     GraphicsWindow::process_events();
 
-    //if (!osx_disable_event_loop)
-	if (!_properties.has_parent_window())
+    if (!osx_disable_event_loop)
     {
       EventRef 		 theEvent;
       EventTargetRef theTarget	=	GetEventDispatcherTarget();
