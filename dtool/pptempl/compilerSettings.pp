@@ -6,7 +6,7 @@
   #define COMMONFLAGS /Gi-
 
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
-  #define OPTFLAGS /O2 /Ob1 /G6 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
+  #define OPTFLAGS /O2 /Ob1 /G7 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
   #define OPT1FLAGS /GZ
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
@@ -95,10 +95,14 @@
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb, $[target]]]"
 
+  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
+  //
   // if LINK_FORCE_STATIC_C_RUNTIME is defined, it always links with static c runtime (release version
   // for both Opt1 and Opt4!) instead of the msvcrt dlls
+  //
+  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
 
-  #defer DEBUGFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MDd] $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
+  #defer DEBUGFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MTd, /MDd] $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
 
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:LINES
@@ -117,7 +121,7 @@
   #define LINKER_FLAGS /DEBUG $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS] /fixed:no /incremental:no /stack:4194304
 
   // Added to avoid old iostream reference problems
-  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB 
+  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
   // Added to make pandatool function in VS 8
   #if $[eq $[USE_COMPILER],MSVC8]
     #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
