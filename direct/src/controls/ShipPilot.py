@@ -55,6 +55,8 @@ class ShipPilot(PhysicsWalker):
         # acceleration as this increases.
         self.straightHeading = 0
 
+        self.cNodePath = None
+        
     def setWalkSpeed(self, forward, jump, reverse, rotate):
         assert self.debugPrint("setWalkSpeed()")
         PhysicsWalker.setWalkSpeed(self, forward, 0, reverse, rotate)
@@ -205,7 +207,7 @@ class ShipPilot(PhysicsWalker):
         """
         if hasattr(self, "cNodePath"):
             self.cNodePath.removeNode()
-            del self.cNodePath
+            self.cNodePath = None
 
             del self.pusher
 
