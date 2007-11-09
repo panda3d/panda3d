@@ -338,8 +338,8 @@ finish_send_update(DCPacker &packer) {
     if (packer.had_range_error()) {
       ostringstream error;
       error << "Node position out of range for DC file: "
-            << _node_path << " pos = " << _node_path.get_pos()
-            << " hpr = " << _node_path.get_hpr();
+            << _node_path << " pos = " << _store_xyz
+            << " hpr = " << _store_hpr;
       nassert_raise(error.str());
 
     } else {
