@@ -469,6 +469,8 @@ class ShipPilot(PhysicsWalker):
                 goForward = False
             slideDistance = self.__slideSpeed
             rotation = self.__rotationSpeed
+            if debugRunning:
+                rotation *= 4
 
             # update pos:
             # Take a step in the direction of our previous heading.
@@ -595,7 +597,7 @@ class ShipPilot(PhysicsWalker):
         assert self.debugPrint("enableShipControls()")
 
         self.setCollisionsActive(1)
-
+        
         if __debug__:
             #self.accept("control-f3", self.spawnTest) #*#
             self.accept("f3", self.reset) # for debugging only.
@@ -615,7 +617,7 @@ class ShipPilot(PhysicsWalker):
         Ignore the arrow keys, etc.
         """
         base.controlForce.setVector(Vec3(0))
-
+            
         assert self.debugPrint("disableShipControls()")
         taskName = "ShipControls-%s"%(id(self),)
         taskMgr.remove(taskName)
