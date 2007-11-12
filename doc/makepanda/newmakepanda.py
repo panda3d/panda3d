@@ -188,9 +188,9 @@ if (PkgSkip("MILES")==0):
     PkgDisable("MILES")
 
 if (sys.platform != "win32"):
-    if (PkgSkip("DX8")==0): PkgDisable("DX8")
-    if (PkgSkip("DX9")==0): PkgDisable("DX9")
-    if (PkgSkip("DIRECTCAM")==0): PkgDisable("DIRECTCAM")
+    PkgDisable("DX8")
+    PkgDisable("DX9")
+    PkgDisable("DIRECTCAM")
 
 if (sys.platform == "win32"):
      os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
