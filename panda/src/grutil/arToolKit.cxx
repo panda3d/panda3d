@@ -163,6 +163,7 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
   ARToolKit *result = new ARToolKit();
   result->_camera = camera;
   result->_camera_param = new ARParam;
+  result->_threshold = 0.5;
   result->_marker_size = marker_size;
   memcpy(result->_camera_param, &wparam, sizeof(wparam));
   return result;
@@ -256,9 +257,10 @@ detach_patterns() {
 //     Function: ARToolKit::analyze
 //       Access: Public
 //  Description: Analyzes the non-pad region of the specified texture.
+//               This causes all attached nodepaths to move.
 ////////////////////////////////////////////////////////////////////
 void ARToolKit::
-analyze(Texture *tex, double thresh) {
+analyze(Texture *tex) {
   nassertv(tex->has_ram_image());
   nassertv(tex->get_ram_image_compression() == Texture::CM_off);
   nassertv(tex->get_component_type() == Texture::T_unsigned_byte);
@@ -301,8 +303,7 @@ analyze(Texture *tex, double thresh) {
   ARMarkerInfo *marker_info;
   int marker_num;
 
-  cerr << "Analyze video " << xsize << " x " << ysize << "\n";
-  if (arDetectMarker(data, thresh, &marker_info, &marker_num) < 0) {
+  if (arDetectMarker(data, _threshold * 256, &marker_info, &marker_num) < 0) {
     grutil_cat.error() << "ARToolKit detection error.\n";
     return;
   }
@@ -338,22 +339,17 @@ analyze(Texture *tex, double thresh) {
       mat(3,3) = 1.0;
       LVecBase3f scale, shear, hpr, pos;
       decompose_matrix(mat, scale, shear, hpr, pos);
-      np.set_pos(pos);
-      np.set_hpr(hpr);
+      
+      NodePath parent = np.get_parent();
+      if (parent.is_empty()) {
+        grutil_cat.error() << "NodePath must have a parent.\n";
+      } else {
+        np.reparent_to(_camera);
+        np.set_pos_hpr(pos,hpr);
+        np.wrt_reparent_to(parent);
+      }
+      
       np.show();
-      //      cerr << "Markert:\n"
-      //	   << "  Id: " << inf->id << "\n"
-      //	   << "  Area: " << inf->area << "\n"
-      //	   << "  Dir: " << inf->dir << "\n"
-      //	   << "  Cf: " << inf->cf << "\n"
-      //	   << "  Pos: " << inf->pos[0] << "," << inf->pos[1] << "\n"
-      //	   << "  Vtx0: " << inf->vertex[0][0] << "," << inf->vertex[0][1] << "\n"
-      //	   << "  Vtx1: " << inf->vertex[1][0] << "," << inf->vertex[1][1] << "\n"
-      //	   << "  Vtx2: " << inf->vertex[2][0] << "," << inf->vertex[2][1] << "\n"
-      //	   << "  Vtx3: " << inf->vertex[3][0] << "," << inf->vertex[3][1] << "\n"
-      //	   << "  Row0: " << patt_trans[0][0] << " " << patt_trans[0][1] << " " << patt_trans[0][2] << " " << patt_trans[0][3] << "\n"
-      //	   << "  Row1: " << patt_trans[1][0] << " " << patt_trans[1][1] << " " << patt_trans[1][2] << " " << patt_trans[1][3] << "\n"
-      //	   << "  Row2: " << patt_trans[2][0] << " " << patt_trans[2][1] << " " << patt_trans[2][2] << " " << patt_trans[2][3] << "\n";
     } else {
       np.hide();
     }

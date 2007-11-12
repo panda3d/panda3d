@@ -50,9 +50,10 @@ PUBLISHED:
   static ARToolKit *make(NodePath camera, const Filename &paramfile, double markersize);
   ~ARToolKit();
   
+  INLINE void set_threshold(double n);
   void attach_pattern(const Filename &pattern, NodePath path);
   void detach_patterns();
-  void analyze(Texture *tex, double thresh);
+  void analyze(Texture *tex);
   
 private:
   static int get_pattern(const Filename &pattern);
@@ -67,7 +68,7 @@ private:
   
   NodePath _camera;
   void *_camera_param;
-  
+  double _threshold;
   double _marker_size;
 };
 
