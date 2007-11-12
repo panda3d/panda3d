@@ -58,7 +58,7 @@ PUBLISHED:
   INLINE Texture          *get_texture() const;
   INLINE const NodePath   &get_nodepath() const;
   INLINE const LVector4f  &get_vector() const;
-  
+
 public:
   static void register_with_read_factory();
 

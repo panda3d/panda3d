@@ -63,6 +63,10 @@ PUBLISHED:
   const Shader      *get_shader() const;
   const ShaderInput *get_shader_input(InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
+
+  const NodePath    &get_shader_input_nodepath(InternalName *id) const;
+  const LVector4f   &get_shader_input_vector(InternalName *id) const;
+  Texture*           get_shader_input_texture(InternalName *id) const;
   
   static void register_with_read_factory();
   

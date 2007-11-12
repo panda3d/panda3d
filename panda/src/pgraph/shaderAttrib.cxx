@@ -258,6 +258,78 @@ get_shader_input(const string &id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_shader_input_nodepath
+//       Access: Published
+//  Description: Returns the ShaderInput as a nodepath.  Assertion 
+//               fails if there is none, or if it is not a nodepath.
+////////////////////////////////////////////////////////////////////
+const NodePath &ShaderAttrib::
+get_shader_input_nodepath(InternalName *id) const {
+  static NodePath resfail;
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
+    nassertr(false, resfail);
+  } else {
+    const ShaderInput *p = (*i).second;
+    if (p->get_value_type() != ShaderInput::M_nodepath) {
+      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a nodepath.\n";
+      nassertr(false, resfail);
+    }
+    return p->get_nodepath();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_shader_input_vector
+//       Access: Published
+//  Description: Returns the ShaderInput as a vector.  Assertion 
+//               fails if there is none, or if it is not a vector.
+////////////////////////////////////////////////////////////////////
+const LVector4f &ShaderAttrib::
+get_shader_input_vector(InternalName *id) const {
+  static LVector4f resfail(0,0,0,0);
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
+    nassertr(false, resfail);
+    return resfail;
+  } else {
+    const ShaderInput *p = (*i).second;
+    if (p->get_value_type() != ShaderInput::M_vector) {
+      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a vector.\n";
+      nassertr(false, resfail);
+      return resfail;
+    }
+    return p->get_vector();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_shader_input_texture
+//       Access: Published
+//  Description: Returns the ShaderInput as a texture.  Assertion 
+//               fails if there is none, or if it is not a texture.
+////////////////////////////////////////////////////////////////////
+Texture *ShaderAttrib::
+get_shader_input_texture(InternalName *id) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
+    nassertr(false, NULL);
+    return NULL;
+  } else {
+    const ShaderInput *p = (*i).second;
+    if (p->get_value_type() != ShaderInput::M_texture) {
+      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a texture.\n";
+      nassertr(false, NULL);
+      return NULL;
+    }
+    return p->get_texture();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader
 //       Access: Published
 //  Description: Returns the shader object associated with the node.

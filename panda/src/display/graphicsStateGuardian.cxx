@@ -886,15 +886,13 @@ fetch_specified_part(ShaderExpansion::ShaderMatInput part, InternalName *name, L
     return &t;
   }
   case ShaderExpansion::SMO_mat_constant_x: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    if (input->get_nodepath().is_empty()) {
-      return &LMatrix4f::ident_mat();
-    }
-    return &(input->get_nodepath().node()->get_transform()->get_mat());
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    return &(np.node()->get_transform()->get_mat());
   }
   case ShaderExpansion::SMO_vec_constant_x: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    const float *data = input->get_vector().get_data();
+    const LVector4f &input = _target._shader->get_shader_input_vector(name);
+    const float *data = input.get_data();
     t = LMatrix4f(data[0],data[1],data[2],data[3],
                   data[0],data[1],data[2],data[3],
                   data[0],data[1],data[2],data[3],
@@ -949,67 +947,51 @@ fetch_specified_part(ShaderExpansion::ShaderMatInput part, InternalName *name, L
     return &t;
   }
   case ShaderExpansion::SMO_view_x_to_view: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-
-    if (input->get_nodepath().is_empty()) {
-      gsg_cat.error()
-        << "SHADER INPUT ASSERT: "
-        << name
-        << "\n";
-    }
-
-    nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
-    t = input->get_nodepath().get_net_transform()->get_mat() *
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    t = np.get_net_transform()->get_mat() *
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
   case ShaderExpansion::SMO_view_to_view_x: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-
-    if (input->get_nodepath().is_empty()) {
-      gsg_cat.error()
-        << "SHADER INPUT ASSERT: "
-        << name
-        << "\n";
-    }
-
-    nassertr(!input->get_nodepath().is_empty(),  &LMatrix4f::ident_mat());
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(input->get_nodepath().get_net_transform()->get_mat());
+      invert(np.get_net_transform()->get_mat());
     return &t;
   }
   case ShaderExpansion::SMO_apiview_x_to_view: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = LMatrix4f::convert_mat(_internal_coordinate_system, _coordinate_system) *
-      input->get_nodepath().get_net_transform()->get_mat() *
+      np.get_net_transform()->get_mat() *
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
   case ShaderExpansion::SMO_view_to_apiview_x: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = (get_scene()->get_camera_transform()->get_mat() *
-         invert(input->get_nodepath().get_net_transform()->get_mat()) *
+         invert(np.get_net_transform()->get_mat()) *
          LMatrix4f::convert_mat(_coordinate_system, _internal_coordinate_system));
     return &t;
   }
   case ShaderExpansion::SMO_clip_x_to_view: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
-    Lens *lens = DCAST(LensNode, input->get_nodepath().node())->get_lens();
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = lens->get_projection_mat_inv(_current_stereo_channel) *
       LMatrix4f::convert_mat(lens->get_coordinate_system(), _coordinate_system) *
-      input->get_nodepath().get_net_transform()->get_mat() *
+      np.get_net_transform()->get_mat() *
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
   case ShaderExpansion::SMO_view_to_clip_x: {
-    const ShaderInput *input = _target._shader->get_shader_input(name);
-    nassertr(!input->get_nodepath().is_empty(), &LMatrix4f::ident_mat());
-    Lens *lens = DCAST(LensNode, input->get_nodepath().node())->get_lens();
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(input->get_nodepath().get_net_transform()->get_mat()) *
+      invert(np.get_net_transform()->get_mat()) *
       LMatrix4f::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel);
     return &t;
