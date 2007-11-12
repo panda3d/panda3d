@@ -827,7 +827,12 @@ def ParsePandaVersion(fn):
 ##
 ########################################################################
 
-def FindLocation(fn, ipath):
+ORIG_EXT={}
+
+def GetOrigExt(x):
+    return ORIG_EXT[x]
+
+def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
     if (sys.platform == "win32"):
         if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
@@ -863,6 +868,13 @@ def FindLocation(fn, ipath):
         if (fn.endswith(".dat")): return "built/tmp/"+fn
         if (fn.endswith(".in")):  return "built/pandac/input/"+fn
     return fn
+
+
+def FindLocation(fn, ipath):
+    loc = CalcLocation(fn, ipath)
+    (base,ext) = os.path.splitext(fn)
+    ORIG_EXT[loc] = ext
+    return loc
 
 ########################################################################
 ##
@@ -923,9 +935,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
     if (type(dep) == str): dep = [dep]
     full = FindLocation(target,["built/include"])
     if (TARGET_TABLE.has_key(full) == 0):
-        (base,suffix) = os.path.splitext(target)
         t = Target()
-        t.ext = suffix
         t.name = full
         t.inputs = []
         t.deps = {}

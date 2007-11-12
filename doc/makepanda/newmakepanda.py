@@ -190,6 +190,7 @@ if (PkgSkip("MILES")==0):
 if (sys.platform != "win32"):
     if (PkgSkip("DX8")==0): PkgDisable("DX8")
     if (PkgSkip("DX9")==0): PkgDisable("DX9")
+    if (PkgSkip("DIRECTCAM")==0): PkgDisable("DIRECTCAM")
 
 if (sys.platform == "win32"):
      os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
@@ -280,7 +281,8 @@ def CompileCxx(obj,src,opts):
         if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmodex/include'
         if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'openal/include'
         if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nvidiacg/include'
-        if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
+        if (PkgSelected(opts,"FFMPEG")):    cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
+        if (PkgSelected(opts,"ARTOOLKIT")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'artoolkit/include'
         if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
         for x in ipath: cmd = cmd + ' -I' + x
         if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
@@ -341,11 +343,12 @@ def CompileFlex(wobj,wsrc,opts):
 ########################################################################
 
 def CompileIgate(woutd,wsrc,opts):
-    wobj = "built/tmp/"+(os.path.basename(woutd)[:-3])+"_igate.obj"
+    outbase = os.path.basename(woutd)[:-3]
+    woutc = "built/tmp/"+outbase+"_igate.cxx"
+    wobj = FindLocation(outbase + "_igate.obj", [])
     srcdir = GetValueOption(opts, "SRCDIR:")
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
-    woutc = wobj[:-4]+".cxx"
     ipath = ["built/tmp"] + GetListOption(opts, "DIR:") + ["built/include"]
     if (PkgSkip("PYTHON")):
         WriteFile(woutc,"")
@@ -420,7 +423,6 @@ def CompileIgate(woutd,wsrc,opts):
 ########################################################################
 
 def CompileImod(wobj, wsrc, opts):
-    woutc = wobj[:-4]+".cxx"
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
     if (PkgSkip("PYTHON")):
@@ -428,6 +430,7 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj,woutc,opts)
         return
     if (COMPILER=="MSVC"):
+	woutc = wobj[:-4]+".cxx"
         cmd = 'built/bin/interrogate_module '
         cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in wsrc: cmd = cmd + ' ' + x
@@ -435,6 +438,7 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj,woutc,opts)
         return
     if (COMPILER=="LINUX"):
+	woutc = wobj[:-2]+".cxx"
         cmd = 'built/bin/interrogate_module '
         cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
         for x in wsrc: cmd = cmd + ' ' + x
@@ -468,7 +472,7 @@ def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
         cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
-        if (dll.endswith(".exe")==0): cmd = cmd + " /DLL"
+        if (GetOrigExt(dll) == ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
         if (optlevel==2): cmd = cmd + " /MAP:NUL "
@@ -569,15 +573,11 @@ def CompileLink(dll, obj, opts):
         else:                          mtcmd = mtcmd + ';1'
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
-        if (dll.endswith(".exe")): cmd = 'g++ -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-        else:                      cmd = 'g++ -shared -o ' + wdll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        else:                         cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
         for x in obj:
-            suffix = x[-4:]
-            if   (suffix==".obj"): cmd = cmd + ' built/tmp/' + x[:-4] + '.o'
-            elif (suffix==".dll"): cmd = cmd + ' -l' + x[3:-4]
-            elif (suffix==".lib"): cmd = cmd + ' built/lib/' + x[:-4] + '.a'
-            elif (suffix==".ilb"): cmd = cmd + ' built/tmp/' + x[:-4] + '.a'
-            elif (suffix==".dat"): pass
+	    if (GetOrigExt(x) != ".dat"):
+		cmd = cmd + ' ' + x
         #if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmod/lib -lfmod'
         if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
         #if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lopenal'
@@ -595,6 +595,7 @@ def CompileLink(dll, obj, opts):
         if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
         if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
         if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
+	if (PkgSelected(opts,"ARTOOLKIT")):cmd = cmd + ' -L' + THIRDPARTYLIBS + 'artoolkit/lib -lAR'
         if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
         cmd = cmd + " -lpthread -ldl"
         oscmd(cmd)
@@ -618,12 +619,13 @@ def CompileEggPZ(eggpz, src, opts):
 #
 ##########################################################################################
 
-def CompileAnything(target, origsuffix, inputs, opts):
+def CompileAnything(target, inputs, opts):
     if (opts.count("DEPENDENCYONLY")):
         return
     if (len(inputs)==0):
         exit("No input files for target "+target)
     infile = inputs[0]
+    origsuffix = GetOrigExt(target)
     if SUFFIX_LIB.count(origsuffix):
         return CompileLib(target, inputs, opts)
     elif SUFFIX_DLL.count(origsuffix):
@@ -1257,8 +1259,11 @@ COMMON_EGG2X_LIBS=[
     'libconverter.lib',
     'libpandatoolbase.lib',
     'libpandaegg.dll',
-    'libp3pystub.dll',
 ] + COMMON_PANDA_LIBS
+
+COMMON_DTOOL_LIBS_PYSTUB = COMMON_DTOOL_LIBS + ['libp3pystub.dll']
+COMMON_PANDA_LIBS_PYSTUB = COMMON_PANDA_LIBS + ['libp3pystub.dll']
+COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.dll']
 
 ########################################################################
 #
@@ -1374,19 +1379,19 @@ OPTS=['DIR:dtool/src/interrogate', 'DIR:dtool/src/cppparser', 'DIR:dtool/src/int
 TargetAdd('interrogate_composite.obj', opts=OPTS, input='interrogate_composite.cxx')
 TargetAdd('interrogate.exe', input='interrogate_composite.obj')
 TargetAdd('interrogate.exe', input='libcppParser.ilb')
-TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
 TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
 
 TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
 TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
 TargetAdd('interrogate_module.exe', input='libcppParser.ilb')
-TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
 TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL'])
 
 TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
 TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
 TargetAdd('parse_file.exe', input='libcppParser.ilb')
-TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
 TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
@@ -1397,7 +1402,7 @@ if (PkgSkip("OPENSSL")==0):
     OPTS=['DIR:dtool/src/prckeys', 'OPENSSL']
     TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
     TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
-    TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
     TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
@@ -1407,7 +1412,7 @@ if (PkgSkip("OPENSSL")==0):
 OPTS=['DIR:dtool/src/test_interrogate']
 TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
 TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
-TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
 TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
 
 #
@@ -2051,35 +2056,43 @@ if PkgSkip("OPENSSL")==0:
     OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI']
 
     TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
-    TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
+    TargetAdd('apply_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('apply_patch.exe', opts=OPTS)
 
     TargetAdd('build_patch_build_patch.obj', opts=OPTS, input='build_patch.cxx')
-    TargetAdd('build_patch.exe', input=['build_patch_build_patch.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('build_patch.exe', input=['build_patch_build_patch.obj'])
+    TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('build_patch.exe', opts=OPTS)
 
     TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
+    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('check_adler.exe', opts=OPTS)
 
     TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
+    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('check_crc.exe', opts=OPTS)
 
     TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
-    TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
+    TargetAdd('check_md5.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('check_md5.exe', opts=OPTS)
 
     TargetAdd('pdecrypt_pdecrypt.obj', opts=OPTS, input='pdecrypt.cxx')
-    TargetAdd('pdecrypt.exe', input=['pdecrypt_pdecrypt.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('pdecrypt.exe', input=['pdecrypt_pdecrypt.obj'])
+    TargetAdd('pdecrypt.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('pdecrypt.exe', opts=OPTS)
 
     TargetAdd('pencrypt_pencrypt.obj', opts=OPTS, input='pencrypt.cxx')
-    TargetAdd('pencrypt.exe', input=['pencrypt_pencrypt.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('pencrypt.exe', input=['pencrypt_pencrypt.obj'])
+    TargetAdd('pencrypt.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('pencrypt.exe', opts=OPTS)
 
     TargetAdd('show_ddb_show_ddb.obj', opts=OPTS, input='show_ddb.cxx')
-    TargetAdd('show_ddb.exe', input=['show_ddb_show_ddb.obj']+COMMON_PANDA_LIBS)
+    TargetAdd('show_ddb.exe', input=['show_ddb_show_ddb.obj'])
+    TargetAdd('show_ddb.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('show_ddb.exe', opts=OPTS)
 
 #
@@ -2089,15 +2102,18 @@ if PkgSkip("OPENSSL")==0:
 OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'ADVAPI']
 
 TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
-TargetAdd('multify.exe', input=['multify_multify.obj']+COMMON_PANDA_LIBS)
+TargetAdd('multify.exe', input=['multify_multify.obj'])
+TargetAdd('multify.exe', input=COMMON_PANDA_LIBS_PYSTUB)
 TargetAdd('multify.exe', opts=OPTS)
 
 TargetAdd('pzip_pzip.obj', opts=OPTS, input='pzip.cxx')
-TargetAdd('pzip.exe', input=['pzip_pzip.obj']+COMMON_PANDA_LIBS)
+TargetAdd('pzip.exe', input=['pzip_pzip.obj'])
+TargetAdd('pzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
 TargetAdd('pzip.exe', opts=OPTS)
 
 TargetAdd('punzip_punzip.obj', opts=OPTS, input='punzip.cxx')
-TargetAdd('punzip.exe', input=['punzip_punzip.obj']+COMMON_PANDA_LIBS)
+TargetAdd('punzip.exe', input=['punzip_punzip.obj'])
+TargetAdd('punzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
 TargetAdd('punzip.exe', opts=OPTS)
 
 #
@@ -2378,7 +2394,7 @@ TargetAdd('pview_pview.obj', opts=OPTS, input='pview.cxx')
 TargetAdd('pview.exe', input='pview_pview.obj')
 TargetAdd('pview.exe', input='libp3framework.dll')
 TargetAdd('pview.exe', input='libpandafx.dll')
-TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
+TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
 TargetAdd('pview.exe', opts=['ADVAPI'])
 
 #
@@ -2516,8 +2532,7 @@ if (PkgSkip("PYTHON")==0):
     TargetAdd('dcparse_dcparse.obj', opts=OPTS, input='dcparse.cxx')
     TargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
     TargetAdd('p3dcparse.exe', input='libp3direct.dll')
-    TargetAdd('p3dcparse.exe', input='libpandaexpress.dll')
-    TargetAdd('p3dcparse.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('p3dcparse.exe', opts=['ADVAPI'])
 
 #
@@ -2579,18 +2594,17 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('bam-info.exe', input='libprogbase.lib')
     TargetAdd('bam-info.exe', input='libpandatoolbase.lib')
     TargetAdd('bam-info.exe', input='libpandaegg.dll')
-    TargetAdd('bam-info.exe', input='libp3pystub.dll')
-    TargetAdd('bam-info.exe', input=COMMON_PANDA_LIBS)
+    TargetAdd('bam-info.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('bam-info.exe', opts=['ADVAPI',  'FFTW'])
 
     TargetAdd('bam2egg_bamToEgg.obj', opts=OPTS, input='bamToEgg.cxx')
     TargetAdd('bam2egg.exe', input='bam2egg_bamToEgg.obj')
-    TargetAdd('bam2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('bam2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('bam2egg.exe', opts=['ADVAPI',  'FFTW'])
 
     TargetAdd('egg2bam_eggToBam.obj', opts=OPTS, input='eggToBam.cxx')
     TargetAdd('egg2bam.exe', input='egg2bam_eggToBam.obj')
-    TargetAdd('egg2bam.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2bam.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg2bam.exe', opts=['ADVAPI',  'FFTW'])
     
 #
@@ -2633,15 +2647,14 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('dxf-points.exe', input='libprogbase.lib')
     TargetAdd('dxf-points.exe', input='libdxf.lib')
     TargetAdd('dxf-points.exe', input='libpandatoolbase.lib')
-    TargetAdd('dxf-points.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('dxf-points.exe', input='libp3pystub.dll')
+    TargetAdd('dxf-points.exe', input=COMMON_PANDA_LIBS_PYSTUB)
     TargetAdd('dxf-points.exe', opts=['ADVAPI',  'FFTW'])
 
     TargetAdd('dxf2egg_dxfToEgg.obj', opts=OPTS, input='dxfToEgg.cxx')
     TargetAdd('dxf2egg.exe', input='dxf2egg_dxfToEgg.obj')
     TargetAdd('dxf2egg.exe', input='libdxfegg.lib')
     TargetAdd('dxf2egg.exe', input='libdxf.lib')
-    TargetAdd('dxf2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('dxf2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('dxf2egg.exe', opts=['ADVAPI',  'FFTW'])
 
     TargetAdd('egg2dxf_eggToDXF.obj', opts=OPTS, input='eggToDXF.cxx')
@@ -2649,7 +2662,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg2dxf.exe', input='egg2dxf_eggToDXF.obj')
     TargetAdd('egg2dxf.exe', input='egg2dxf_eggToDXFLayer.obj')
     TargetAdd('egg2dxf.exe', input='libdxf.lib')
-    TargetAdd('egg2dxf.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2dxf.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg2dxf.exe', opts=['ADVAPI',  'FFTW'])
 
 #
@@ -2674,7 +2687,7 @@ if (PkgSkip("FREETYPE")==0) and (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg-mkfont.exe', input='egg-mkfont_rangeDescription.obj')
     TargetAdd('egg-mkfont.exe', input='egg-mkfont_rangeIterator.obj')
     TargetAdd('egg-mkfont.exe', input='libpalettizer.lib')
-    TargetAdd('egg-mkfont.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-mkfont.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-mkfont.exe', opts=['ADVAPI', 'FREETYPE'])
 
 #
@@ -2701,7 +2714,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg-optchar.exe', input='egg-optchar_eggOptcharUserData.obj')
     TargetAdd('egg-optchar.exe', input='egg-optchar_vertexMembership.obj')
     TargetAdd('egg-optchar.exe', input='libeggcharbase.lib')
-    TargetAdd('egg-optchar.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-optchar.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-optchar.exe', opts=['ADVAPI', 'FREETYPE'])
 
 #
@@ -2713,7 +2726,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg-palettize_eggPalettize.obj', opts=OPTS, input='eggPalettize.cxx')
     TargetAdd('egg-palettize.exe', input='egg-palettize_eggPalettize.obj')
     TargetAdd('egg-palettize.exe', input='libpalettizer.lib')
-    TargetAdd('egg-palettize.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-palettize.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-palettize.exe', opts=['ADVAPI'])
 
 #
@@ -2727,7 +2740,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg-qtess.exe', input='libeggbase.lib')
     TargetAdd('egg-qtess.exe', input='libprogbase.lib')
     TargetAdd('egg-qtess.exe', input='libconverter.lib')
-    TargetAdd('egg-qtess.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-qtess.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-qtess.exe', opts=['ADVAPI'])
     
 #
@@ -2738,44 +2751,44 @@ if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/eggprogs']
     TargetAdd('egg-crop_eggCrop.obj', opts=OPTS, input='eggCrop.cxx')
     TargetAdd('egg-crop.exe', input='egg-crop_eggCrop.obj')
-    TargetAdd('egg-crop.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-crop.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-crop.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-make-tube_eggMakeTube.obj', opts=OPTS, input='eggMakeTube.cxx')
     TargetAdd('egg-make-tube.exe', input='egg-make-tube_eggMakeTube.obj')
-    TargetAdd('egg-make-tube.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-make-tube.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-make-tube.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-texture-cards_eggTextureCards.obj', opts=OPTS, input='eggTextureCards.cxx')
     TargetAdd('egg-texture-cards.exe', input='egg-texture-cards_eggTextureCards.obj')
-    TargetAdd('egg-texture-cards.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-texture-cards.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-texture-cards.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-topstrip_eggTopstrip.obj', opts=OPTS, input='eggTopstrip.cxx')
     TargetAdd('egg-topstrip.exe', input='egg-topstrip_eggTopstrip.obj')
     TargetAdd('egg-topstrip.exe', input='libeggcharbase.lib')
-    TargetAdd('egg-topstrip.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-topstrip.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-topstrip.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-trans_eggTrans.obj', opts=OPTS, input='eggTrans.cxx')
     TargetAdd('egg-trans.exe', input='egg-trans_eggTrans.obj')
-    TargetAdd('egg-trans.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-trans.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('egg2c_eggToC.obj', opts=OPTS, input='eggToC.cxx')
     TargetAdd('egg2c.exe', input='egg2c_eggToC.obj')
-    TargetAdd('egg2c.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2c.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg2c.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-rename_eggRename.obj', opts=OPTS, input='eggRename.cxx')
     TargetAdd('egg-rename.exe', input='egg-rename_eggRename.obj')
-    TargetAdd('egg-rename.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-rename.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-rename.exe', opts=['ADVAPI'])
 
     TargetAdd('egg-retarget-anim_eggRetargetAnim.obj', opts=OPTS, input='eggRetargetAnim.cxx')
     TargetAdd('egg-retarget-anim.exe', input='egg-retarget-anim_eggRetargetAnim.obj')
     TargetAdd('egg-retarget-anim.exe', input='libeggcharbase.lib')
-    TargetAdd('egg-retarget-anim.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg-retarget-anim.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg-retarget-anim.exe', opts=['ADVAPI'])
 
 #
@@ -2807,33 +2820,33 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg2flt_eggToFlt.obj', opts=OPTS, input='eggToFlt.cxx')
     TargetAdd('egg2flt.exe', input='egg2flt_eggToFlt.obj')
     TargetAdd('egg2flt.exe', input='libflt.lib')
-    TargetAdd('egg2flt.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2flt.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg2flt.exe', opts=['ADVAPI'])
 
     TargetAdd('flt-info_fltInfo.obj', opts=OPTS, input='fltInfo.cxx')
     TargetAdd('flt-info.exe', input='flt-info_fltInfo.obj')
     TargetAdd('flt-info.exe', input='libflt.lib')
-    TargetAdd('flt-info.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('flt-info.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('flt-info.exe', opts=['ADVAPI'])
 
     TargetAdd('flt-trans_fltTrans.obj', opts=OPTS, input='fltTrans.cxx')
     TargetAdd('flt-trans.exe', input='flt-trans_fltTrans.obj')
     TargetAdd('flt-trans.exe', input='libflt.lib')
-    TargetAdd('flt-trans.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('flt-trans.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('flt-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('flt2egg_fltToEgg.obj', opts=OPTS, input='fltToEgg.cxx')
     TargetAdd('flt2egg.exe', input='flt2egg_fltToEgg.obj')
     TargetAdd('flt2egg.exe', input='libflt.lib')
     TargetAdd('flt2egg.exe', input='libfltegg.lib')
-    TargetAdd('flt2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('flt2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('flt2egg.exe', opts=['ADVAPI'])
 
     TargetAdd('fltcopy_fltCopy.obj', opts=OPTS, input='fltCopy.cxx')
     TargetAdd('fltcopy.exe', input='fltcopy_fltCopy.obj')
     TargetAdd('fltcopy.exe', input='libcvscopy.lib')
     TargetAdd('fltcopy.exe', input='libflt.lib')
-    TargetAdd('fltcopy.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('fltcopy.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('fltcopy.exe', opts=['ADVAPI'])
 
 
@@ -2921,7 +2934,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('lwo2egg.exe', input='lwo2egg_lwoToEgg.obj')
     TargetAdd('lwo2egg.exe', input='liblwo.lib')
     TargetAdd('lwo2egg.exe', input='liblwoegg.lib')
-    TargetAdd('lwo2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('lwo2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('lwo2egg.exe', opts=['ADVAPI'])
 
 #
@@ -2958,7 +2971,7 @@ for VER in MAXVERSIONS:
     TargetAdd('maxegg'+VER+'.dlo', input='maxegg'+VER+'_composite1.obj')
     TargetAdd('maxegg'+VER+'.dlo', input='maxEgg.obj')
     TargetAdd('maxegg'+VER+'.dlo', input='maxEgg.def', ipath=OPTS)
-    TargetAdd('maxegg'+VER+'.dlo', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maxegg'+VER+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('maxegg'+VER+'.dlo', opts=OPTS)
 
 #
@@ -3109,21 +3122,21 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VER+'.mll', input='libmayaegg'+VER+'.lib')
     TargetAdd('libmayapview'+VER+'.mll', input='libmaya'+VER+'.lib')
     TargetAdd('libmayapview'+VER+'.mll', input='libp3framework.dll')
-    TargetAdd('libmayapview'+VER+'.mll', input=COMMON_EGG2X_LIBS)
+    TargetAdd('libmayapview'+VER+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('libmayapview'+VER+'.mll', opts=['ADVAPI', 'MAYA'+VER])
 
     TargetAdd('maya2egg'+VER+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
     TargetAdd('maya2egg'+VER+'-wrapped.exe', input='maya2egg'+VER+'_mayaToEgg.obj')
     TargetAdd('maya2egg'+VER+'-wrapped.exe', input='libmayaegg'+VER+'.lib')
     TargetAdd('maya2egg'+VER+'-wrapped.exe', input='libmaya'+VER+'.lib')
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('maya2egg'+VER+'-wrapped.exe', opts=['ADVAPI', 'MAYA'+VER])
 
     TargetAdd('mayacopy'+VER+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
     TargetAdd('mayacopy'+VER+'-wrapped.exe', input='mayacopy'+VER+'_mayaCopy.obj')
     TargetAdd('mayacopy'+VER+'-wrapped.exe', input='libcvscopy.lib')
     TargetAdd('mayacopy'+VER+'-wrapped.exe', input='libmaya'+VER+'.lib')
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('mayacopy'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('mayacopy'+VER+'-wrapped.exe', opts=['ADVAPI', 'MAYA'+VER])
 
     TargetAdd('mayasavepview'+VER+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
@@ -3217,7 +3230,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('vrml2egg.exe', input='vrml2egg_vrmlToEgg.obj')
     TargetAdd('vrml2egg.exe', input='libvrmlegg.lib')
     TargetAdd('vrml2egg.exe', input='libpvrml.lib')
-    TargetAdd('vrml2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('vrml2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('vrml2egg.exe', opts=['ADVAPI'])
 
 #
@@ -3245,7 +3258,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('egg2x.exe', input='egg2x_eggToX.obj')
     TargetAdd('egg2x.exe', input='libxfileegg.lib')
     TargetAdd('egg2x.exe', input='libxfile.lib')
-    TargetAdd('egg2x.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2x.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('egg2x.exe', opts=['ADVAPI'])
 
     TargetAdd('x-trans_xFileTrans.obj', opts=OPTS, input='xFileTrans.cxx')
@@ -3261,7 +3274,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('x2egg.exe', input='x2egg_xFileToEgg.obj')
     TargetAdd('x2egg.exe', input='libxfileegg.lib')
     TargetAdd('x2egg.exe', input='libxfile.lib')
-    TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('x2egg.exe', opts=['ADVAPI'])
 
 #
@@ -3368,12 +3381,11 @@ if (PkgSkip("PANDATOOL")==0):
 DEPENDENCYQUEUE=[]
 
 for target in TARGET_LIST:
-    ext = target.ext
     name = target.name
     inputs = target.inputs
     opts = target.opts
     deps = target.deps
-    DEPENDENCYQUEUE.append([CompileAnything, [name, ext, inputs, opts], [name], deps, []])
+    DEPENDENCYQUEUE.append([CompileAnything, [name, inputs, opts], [name], deps, []])
 
 def BuildWorker(taskqueue, donequeue):
     while (1):
