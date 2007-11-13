@@ -2159,7 +2159,7 @@ class Singleton(type):
 class SingletonError(ValueError):
     """ Used to indicate an inappropriate value for a Singleton."""
 
-def printListEnum(l):
+def printListEnumGen(l):
     # log each individual item with a number in front of it
     digits = 0
     n = len(l)
@@ -2169,6 +2169,11 @@ def printListEnum(l):
     format = '%0' + '%s' % digits + 'i:%s'
     for i in range(len(l)):
         print format % (i, l[i])
+        yield None
+
+def printListEnum(l):
+    for result in printListEnumGen(l):
+        pass
 
 def gcDebugOn():
     import gc
@@ -2463,14 +2468,30 @@ def printNumberedTyped(items, maxLen=5000):
         n /= 10
     digits = digits
     format = '%0' + '%s' % digits + 'i:%s \t%s'
-    first = True
     for i in xrange(len(items)):
-        first = False
         objStr = fastRepr(items[i])
         if len(objStr) > maxLen:
             snip = '<SNIP>'
             objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
         print format % (i, itype(items[i]), objStr)
+
+def printNumberedTypesGen(items, maxLen=5000):
+    digits = 0
+    n = len(items)
+    while n > 0:
+        digits += 1
+        n /= 10
+    digits = digits
+    format = '%0' + '%s' % digits + 'i:%s'
+    for i in xrange(len(items)):
+        print format % (i, itype(items[i]))
+        yield None
+
+def printNumberedTypes(items, maxLen=5000):
+    """print out the type of each item of the list on its own line,
+    with each item numbered on the left from zero"""
+    for result in printNumberedTypesGen(items, maxLen):
+        yield result
 
 class DelayedCall:
     """ calls a func after a specified delay """

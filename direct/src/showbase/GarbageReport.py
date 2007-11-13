@@ -3,7 +3,7 @@
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr
+from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
 from direct.showbase.Job import Job
 import gc
 
@@ -26,7 +26,8 @@ class GarbageReport(Job):
     NotGarbage = 'NG'
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, doneCallback=None, autoDestroy=False, priority=None):
+                 threaded=False, doneCallback=None, autoDestroy=False, priority=None,
+                 safeMode=False):
         # if autoDestroy is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
@@ -34,7 +35,7 @@ class GarbageReport(Job):
         # stick the arguments onto a ScratchPad so we can delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback,
-                                autoDestroy=autoDestroy)
+                                autoDestroy=autoDestroy, safeMode=safeMode)
         if priority is not None:
             self.setPriority(priority)
         jobMgr.add(self)
@@ -48,24 +49,33 @@ class GarbageReport(Job):
         if not wasOn:
             gc.set_debug(gc.DEBUG_SAVEALL)
         gc.collect()
-        yield None
-        # don't repr the garbage list if we don't have to
-        if self.notify.getDebug():
-            self.notify.debug('gc.garbage == %s' % fastRepr(gc.garbage))
-            yield None
         self.garbage = list(gc.garbage)
+        # only yield if there's more time-consuming work to do,
+        # if there's no garbage, give instant feedback
+        if len(self.garbage) > 0:
+            yield None
         # don't repr the garbage list if we don't have to
         if self.notify.getDebug():
-            self.notify.debug('self.garbage == %s' % self.garbage)
+            self.notify.debug('self.garbage == %s' % safeRepr(self.garbage))
         del gc.garbage[:]
         if not wasOn:
             gc.set_debug(oldFlags)
 
         self.numGarbage = len(self.garbage)
-        yield None
+        # only yield if there's more time-consuming work to do,
+        # if there's no garbage, give instant feedback
+        if self.numGarbage > 0:
+            yield None
 
         if self._args.verbose:
             self.notify.info('found %s garbage items' % self.numGarbage)
+
+        # print the types of the garbage first, in case the repr of an object
+        # causes a crash
+        if self.numGarbage > 0:
+            self.notify.info('TYPES ONLY (this is only needed if a crash occurs before GarbageReport finishes):')
+            for result in printNumberedTypesGen(self.garbage):
+                yield None
 
         self.referrersByReference = {}
         self.referrersByNumber = {}
@@ -149,7 +159,11 @@ class GarbageReport(Job):
             for i in xrange(numGarbage):
                 yield None
                 id = garbageIds[i]
-                objStr = safeRepr(self.garbage[id])
+                if self._args.safeMode:
+                    # in safe mode, don't try to repr any of the objects
+                    objStr = repr(itype(self.garbage[id]))
+                else:
+                    objStr = safeRepr(self.garbage[id])
                 maxLen = 5000
                 if len(objStr) > maxLen:
                     snip = '<SNIP>'
