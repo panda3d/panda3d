@@ -68,6 +68,14 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             DistributedSmoothNodeBase.DistributedSmoothNodeBase.__init__(self)
             self.smoothStarted = 0
 
+            # Set this True to assert that the local process has
+            # complete authority over the position of this object when
+            # smoothing is not in effect.  When this is True, position
+            # reports received over the wire will not be applied to
+            # this node's position, unless those position reports are
+            # received between startSmooth() and endSmooth().
+            self.localControl = False
+
     def generate(self):
         self.smoother = SmoothMover()
         self.smoothStarted = 0
@@ -296,7 +304,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             self.smoother.setTimestamp(local)
             self.smoother.markPosition()
 
-        if not self.smoothStarted and \
+        if not self.localControl and not self.smoothStarted and \
            self.smoother.getLatestPosition():
             self.smoother.applySmoothMat(self)
                 
