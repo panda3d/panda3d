@@ -148,6 +148,9 @@ class Transitions:
         fadeIn or call noFade.
         lerp
         """
+        if base.config.GetBool('no-loading-screen',0):
+            return
+
         if (t == 0):
             # Fade out immediately with no lerp
             self.noTransitions()
