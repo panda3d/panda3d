@@ -629,6 +629,9 @@ class LevelEditor(NodePath, DirectObject):
         self.outerBarricadeDict = {}
         self.innerBarricadeDict = {}
 
+        # [gjeon] to find out currently moving camera in maya mode
+        self.mouseMayaCamera = False
+ 
     # ENABLE/DISABLE
     def enable(self):
         """ Enable level editing and show level """
@@ -1686,6 +1689,12 @@ class LevelEditor(NodePath, DirectObject):
 
     # LEVEL-OBJECT MODIFICATION FUNCTIONS
     def levelHandleMouse3(self, modifiers):
+        if base.direct.cameraControl.useMayaCamControls and modifiers == 4: # alt is down, use maya controls
+            self.mouseMayaCamera = True
+            return
+        else:
+            self.mouseMayaCamera = False
+        
         # Initialize dna target
         self.DNATarget = None
 
@@ -1875,6 +1884,9 @@ class LevelEditor(NodePath, DirectObject):
         return menuMode, wallNum
 
     def levelHandleMouse3Up(self):
+        if self.mouseMayaCamera:
+            return
+        
         if self.activeMenu:
             self.activeMenu.removePieMenuTask()
         # Update panel color if appropriate
@@ -2396,6 +2408,8 @@ class LevelEditor(NodePath, DirectObject):
             else:
                 base.direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
 
+        if self.mouseMayaCamera:
+            return
         # Also move the camera
         taskMgr.remove('autoMoveDelay')
         handlesToCam = base.direct.widget.getPos(base.direct.camera)
@@ -5898,6 +5912,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                                       variable = self.fGrid,
                                       command = self.toggleGrid)
         base.direct.gridButton.pack(side = LEFT, expand = 1, fill = X)
+
+        self.fMaya = IntVar()
+        self.fMaya.set(0)
+        self.mayaButton = Checkbutton(buttonFrame,
+                                      text = 'Maya Cam',
+                                      width = 6,
+                                      variable = self.fMaya,
+                                      command = self.toggleMaya)
+        self.mayaButton.pack(side = LEFT, expand = 1, fill = X)
+
         buttonFrame.pack(fill = X)
 
         buttonFrame4 = Frame(hull)
@@ -5970,6 +5994,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
     def updateInfo(self, page):
         if page == 'Signs':
             self.updateSignPage()
+
+    # [gjeon] to toggle maya cam mode
+    def toggleMaya(self):
+        base.direct.cameraControl.lockRoll = self.fMaya.get()
+        direct.cameraControl.useMayaCamControls = self.fMaya.get()
 
     def toggleGrid(self):
         if self.fGrid.get():
