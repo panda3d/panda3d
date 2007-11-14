@@ -573,27 +573,31 @@ class DoInterestManager(DirectObject.DirectObject):
         DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received handle %s, context %s" % (
             handle, contextId))
-        eventsToSend = []
-        # if the context matches, send out the event
-        if contextId == DoInterestManager._interests[handle].context:
-            DoInterestManager._interests[handle].context = NO_CONTEXT
-            # the event handlers may call back into the interest manager. Send out
-            # the events after we're once again in a stable state.
-            #DoInterestManager._interests[handle].sendEvents()
-            eventsToSend = list(DoInterestManager._interests[handle].getEvents())
-            DoInterestManager._interests[handle].clearEvents()
+        if DoInterestManager._interests.has_key(handle):
+            eventsToSend = []
+            # if the context matches, send out the event
+            if contextId == DoInterestManager._interests[handle].context:
+                DoInterestManager._interests[handle].context = NO_CONTEXT
+                # the event handlers may call back into the interest manager. Send out
+                # the events after we're once again in a stable state.
+                #DoInterestManager._interests[handle].sendEvents()
+                eventsToSend = list(DoInterestManager._interests[handle].getEvents())
+                DoInterestManager._interests[handle].clearEvents()
+            else:
+                DoInterestManager.notify.debug(
+                    "handleInterestDoneMessage--> handle: %s: Expecting context %s, got %s" % (
+                    handle, DoInterestManager._interests[handle].context, contextId))
+            if __debug__:
+                state = DoInterestManager._interests[handle]
+                self._addDebugInterestHistory(
+                    "finished", state.desc, handle, contextId, state.parentId,
+                    state.zoneIdList)
+            self._considerRemoveInterest(handle)
+            for event in eventsToSend:
+                messenger.send(event)
         else:
-            DoInterestManager.notify.debug(
-                "handleInterestDoneMessage--> handle: %s: Expecting context %s, got %s" % (
-                handle, DoInterestManager._interests[handle].context, contextId))
-        if __debug__:
-            state = DoInterestManager._interests[handle]
-            self._addDebugInterestHistory(
-                "finished", state.desc, handle, contextId, state.parentId,
-                state.zoneIdList)
-        self._considerRemoveInterest(handle)
-        for event in eventsToSend:
-            messenger.send(event)
+            DoInterestManager.notify.warning(
+                "handleInterestDoneMessage: handle not found: %s" % (handle))
         # if there are no more outstanding interest-completes, send out global all-done event
         if self._completeEventCount.num == 0:
             self.queueAllInterestsCompleteEvent()
