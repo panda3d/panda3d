@@ -7,6 +7,8 @@ import DirectGuiGlobals as DGG
 from DirectFrame import *
 from OnscreenText import OnscreenText
 import string,types
+# import this to make sure it gets pulled into the publish
+import encodings.utf_8
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
