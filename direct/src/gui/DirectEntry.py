@@ -64,6 +64,7 @@ class DirectEntry(DirectFrame):
             # Sounds to be used for button events
             ('rolloverSound',   DGG.getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',      DGG.getDefaultClickSound(),    self.setClickSound),
+            ('autoCapitalize',  0,                self.autoCapitalizeFunc),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -119,8 +120,7 @@ class DirectEntry(DirectFrame):
             self.set(self['initialText'])
 
     def destroy(self):
-        self.ignore(self.guiItem.getFocusInEvent())
-        self.ignore(self.guiItem.getFocusOutEvent())
+        self.ignoreAll()
         DirectFrame.destroy(self)
 
     def setup(self):
@@ -166,13 +166,47 @@ class DirectEntry(DirectFrame):
             # Pass any extra args
             apply(self['failedCommand'], [self.get()] + self['failedExtraArgs'])
 
+    def autoCapitalizeFunc(self):
+        if self['autoCapitalize']:
+            self.accept(self.guiItem.getTypeEvent(), self._handleTyping)
+            self.accept(self.guiItem.getEraseEvent(), self._handleErasing)
+        else:
+            self.ignore(self.guiItem.getTypeEvent())
+            self.ignore(self.guiItem.getEraseEvent())
+
     def focusInCommandFunc(self):
         if self['focusInCommand']:
             apply(self['focusInCommand'], self['focusInExtraArgs'])
+        if self['autoCapitalize']:
+            self.accept(self.guiItem.getTypeEvent(), self._handleTyping)
+            self.accept(self.guiItem.getEraseEvent(), self._handleErasing)
+
+    def _handleTyping(self, guiEvent):
+        self._autoCapitalize()
+    def _handleErasing(self, guiEvent):
+        self._autoCapitalize()
+
+    def _autoCapitalize(self):
+        name = self.get().decode('utf-8')
+        # capitalize each word
+        capName = ''
+        for i in xrange(len(name)):
+            character = name[i]
+            # is it a letter?
+            # This assumes that string.lower and string.upper will return different
+            # values for all unicode letters.
+            if string.lower(character) != string.upper(character):
+                # if it's not preceded by a letter, capitalize it
+                if (i == 0) or string.lower(name[i-1]) == string.upper(name[i-1]):
+                    character = string.upper(character)
+            capName += character
+        self.enterText(capName.encode('utf-8'))
 
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
             apply(self['focusOutCommand'], self['focusOutExtraArgs'])
+        self.ignore(self.guiItem.getTypeEvent())
+        self.ignore(self.guiItem.getEraseEvent())
 
     def set(self, text):
         """ Changes the text currently showing in the typable region;
