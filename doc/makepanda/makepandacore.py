@@ -482,6 +482,37 @@ def CreateFile(file):
 
 ########################################################################
 #
+# Create the panda build tree.
+#
+########################################################################
+
+def MakeBuildTree():
+    MakeDirectory("built")
+    MakeDirectory("built/bin")
+    MakeDirectory("built/lib")
+    MakeDirectory("built/etc")
+    MakeDirectory("built/plugins")
+    MakeDirectory("built/modelcache")
+    MakeDirectory("built/include")
+    MakeDirectory("built/include/parser-inc")
+    MakeDirectory("built/include/parser-inc/openssl")
+    MakeDirectory("built/include/parser-inc/netinet")
+    MakeDirectory("built/include/parser-inc/Cg")
+    MakeDirectory("built/include/openssl")
+    MakeDirectory("built/tmp")
+    MakeDirectory("built/models")
+    MakeDirectory("built/models/audio")
+    MakeDirectory("built/models/audio/sfx")
+    MakeDirectory("built/models/icons")
+    MakeDirectory("built/models/maps")
+    MakeDirectory("built/models/misc")
+    MakeDirectory("built/models/gui")
+    MakeDirectory("built/direct")
+    MakeDirectory("built/pandac")
+    MakeDirectory("built/pandac/input")
+
+########################################################################
+#
 # Make sure that you are in the root of the panda tree.
 #
 ########################################################################
@@ -645,12 +676,17 @@ def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
             SDK["PYTHON"]="thirdparty/win-python"
+	    SDK["PYTHONVERSION"]="python2.4"
         else:
-            if   (os.path.isdir("/usr/include/python2.5")): SDK["PYTHON"] = "/usr/include/python2.5"
-            elif (os.path.isdir("/usr/include/python2.4")): SDK["PYTHON"] = "/usr/include/python2.4"
-            elif (os.path.isdir("/usr/include/python2.3")): SDK["PYTHON"] = "/usr/include/python2.3"
-            elif (os.path.isdir("/usr/include/python2.2")): SDK["PYTHON"] = "/usr/include/python2.2"
-            else: exit("Cannot find the python SDK")
+            oscmd("python -V > built/tmp/pythonversion 2>&1")
+            pv=ReadFile("built/tmp/pythonversion")
+            if (pv.startswith("Python ")==0):
+                exit("python -V did not produce the expected output")
+            pv = pv[7:10]
+            if (os.path.isdir("/usr/include/python"+pv)==0):
+                exit("Python reports version "+pv+" but /usr/include/python"+pv+" is not installed.")
+            SDK["PYTHON"]="/usr/include/python"+pv
+            SDK["PYTHONVERSION"]="python"+pv
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return

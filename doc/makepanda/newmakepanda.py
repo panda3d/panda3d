@@ -145,6 +145,8 @@ parseopts(sys.argv[1:])
 ##
 ########################################################################
 
+MakeBuildTree()
+
 SdkLocateDirectX()
 SdkLocateMaya()
 SdkLocateMax()
@@ -723,36 +725,6 @@ CxxIgnoreHeader["algorithm"] = 1
 
 ##########################################################################################
 #
-# Create the directory tree
-#
-##########################################################################################
-
-MakeDirectory("built")
-MakeDirectory("built/bin")
-MakeDirectory("built/lib")
-MakeDirectory("built/etc")
-MakeDirectory("built/plugins")
-MakeDirectory("built/modelcache")
-MakeDirectory("built/include")
-MakeDirectory("built/include/parser-inc")
-MakeDirectory("built/include/parser-inc/openssl")
-MakeDirectory("built/include/parser-inc/netinet")
-MakeDirectory("built/include/parser-inc/Cg")
-MakeDirectory("built/include/openssl")
-MakeDirectory("built/tmp")
-MakeDirectory("built/models")
-MakeDirectory("built/models/audio")
-MakeDirectory("built/models/audio/sfx")
-MakeDirectory("built/models/icons")
-MakeDirectory("built/models/maps")
-MakeDirectory("built/models/misc")
-MakeDirectory("built/models/gui")
-MakeDirectory("built/direct")
-MakeDirectory("built/pandac")
-MakeDirectory("built/pandac/input")
-
-##########################################################################################
-#
 # Generate dtool_config.h, prc_parameters.h, and dtool_have_xxx.dat
 #
 ##########################################################################################
@@ -1004,8 +976,6 @@ def CreatePandaVersionFiles():
     ConditionalWriteFile('built/include/pandaVersion.h',        pandaversion_h)
     ConditionalWriteFile('built/include/checkPandaVersion.cxx', checkpandaversion_cxx)
     ConditionalWriteFile('built/include/checkPandaVersion.h',   checkpandaversion_h)
-    if (PkgSkip("PYTHON")==0):
-        ConditionalWriteFile("built/tmp/pythonversion", os.path.basename(SDK["PYTHON"]))
     ConditionalWriteFile("built/tmp/null.cxx","")
 
 
@@ -3566,7 +3536,7 @@ The Panda3D engine.
 
 def MakeInstallerLinux():
     import compileall
-    PYTHONV=os.path.basename(SDK["PYTHON"])
+    PYTHONV=SDK["PYTHONVERSION"]
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
