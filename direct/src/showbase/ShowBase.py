@@ -963,6 +963,9 @@ class ShowBase(DirectObject.DirectObject):
             win = self.win
 
         if win != None and win.hasSize():
+            if(win.getYSize() == 0 or win.getXSize() == 0):
+                #flub the aspect since we can't actually see anything
+                return 1
             aspectRatio = float(win.getXSize()) / float(win.getYSize())
 
         else:
