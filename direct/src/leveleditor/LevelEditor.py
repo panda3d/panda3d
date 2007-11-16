@@ -29,6 +29,8 @@ import __builtin__
 # [gjeon] to control avatar movement in drive mode
 from direct.controls import ControlManager
 from direct.controls import GravityWalker
+from direct.interval.LerpInterval import LerpFunctionInterval
+
 
 from toontown.toon import RobotToon
 from otp.otpbase import OTPGlobals
@@ -571,6 +573,14 @@ class LevelEditor(NodePath, DirectObject):
             ('k', self.addToLandmarkBlock),
             ('shift-k', self.toggleShowLandmarkBlock),
             ('%', self.pdbBreak),
+
+            ('page_up', self.pageUp),
+            ('page_down', self.pageDown),
+            ]
+
+        self.overrideEvents = [
+            ('page_up', base.direct),
+            ('page_down',  base.direct)
             ]
 
         # Initialize state
@@ -645,6 +655,10 @@ class LevelEditor(NodePath, DirectObject):
         # [gjeon] to control drive mode
         self.controlManager = None
         self.avatar = None
+
+        self.fov = 60
+        self.isPageUp=0
+        self.isPageDown=0        
  
     # ENABLE/DISABLE
     def enable(self):
@@ -652,6 +666,11 @@ class LevelEditor(NodePath, DirectObject):
         # Make sure level is visible
         self.reparentTo(base.direct.group)
         self.show()
+
+        # [gjeon] Ignore overridden events
+        for event in self.overrideEvents:
+            event[1].ignore(event[0])
+        
         # Add all the action events
         for event in self.actionEvents:
             if len(event) == 3:
@@ -801,13 +820,58 @@ class LevelEditor(NodePath, DirectObject):
 
         self.fDrive = False
 
+    def lerpCameraP(self, p, time):
+        """
+        lerp the camera P over time (used by the battle)
+        """
+        taskMgr.remove('cam-p-lerp-play')
+        def setCamP(p):
+            base.camera.setP(p)
+
+        if self.isPageUp:
+            fromP = 36.8699
+        elif self.isPageDown:
+            fromP = -27.5607
+        else:
+            fromP = 0
+
+        self.camLerpInterval = LerpFunctionInterval(setCamP,
+            fromData=fromP, toData=p, duration=time,
+            name='cam-p-lerp')
+        self.camLerpInterval.start()
+
+    def clearPageUpDown(self):
+        if self.isPageDown or self.isPageUp:
+            self.lerpCameraP(0, 0.6)
+            self.isPageDown = 0
+            self.isPageUp = 0
+            #self.setCameraPositionByIndex(self.cameraIndex)
+
+    def pageUp(self):
+        if not self.isPageUp:
+            self.lerpCameraP(36.8699, 0.6)
+            self.isPageDown = 0
+            self.isPageUp = 1
+            #self.setCameraPositionByIndex(self.cameraIndex)
+        else:
+            self.clearPageUpDown()
+
+    def pageDown(self):
+        if not self.isPageDown:
+            self.lerpCameraP(-27.5607, 0.6)
+            self.isPageUp = 0
+            self.isPageDown = 1
+            #self.setCameraPositionByIndex(self.cameraIndex)
+        else:
+            self.clearPageUpDown()            
+
     def useDriveMode(self):
         """ Lerp down to eye level then switch to Drive mode """
         # create avatar and set it's location to the camera
         if (self.avatar == None):
             self.avatar = RobotToon.RobotToon()
             self.avatar.setName("The Inspector")
-            self.avatar.loop('idle')
+            self.avatar.loop('neutral')
 
         self.avatar.setPos(base.camera.getPos())
         self.avatar.reparentTo(render)
@@ -888,7 +952,34 @@ class LevelEditor(NodePath, DirectObject):
                 )
         else:
             self.controlManager.enable()
-        
+
+        self.avatarAnimTask = taskMgr.add(self.avatarAnimate, 'avatarAnimTask', 24)
+        self.avatarMoving = 0
+
+    #--------------------------------------------------------------------------
+    # Function:   animate avatar model based on if it is moving
+    # Parameters: none
+    # Changes:
+    # Returns:
+    #--------------------------------------------------------------------------
+    def avatarAnimate(self,task=None):
+        if (self.controlManager):
+            if (self.controlManager.currentControls.moving and
+                self.avatarMoving == 0):
+                self.clearPageUpDown()
+                # moving, play walk anim
+                if (self.controlManager.currentControls.speed < 0 or
+                    self.controlManager.currentControls.rotationSpeed):
+                    self.avatar.loop('walk')
+                else:
+                    self.avatar.loop('run')
+                self.avatarMoving = 1
+            elif (self.controlManager.currentControls.moving == 0 and
+                  self.avatarMoving == 1):
+                # no longer moving, play neutral anim
+                self.avatar.loop('neutral')
+                self.avatarMoving = 0
+        return Task.cont
 
     def configureDriveModeCollisionData(self):
         """
