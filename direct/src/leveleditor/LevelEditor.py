@@ -31,6 +31,7 @@ from direct.controls import ControlManager
 from direct.controls import GravityWalker
 from direct.interval.LerpInterval import LerpFunctionInterval
 
+from otp.avatar import LocalAvatar
 
 from toontown.toon import RobotToon
 from otp.otpbase import OTPGlobals
@@ -815,6 +816,7 @@ class LevelEditor(NodePath, DirectObject):
         # [gjeon]  disable avatar and controlManager
         if (self.avatar):
             self.avatar.reparentTo(hidden)
+            self.avatar.stopUpdateSmartCamera()
         if (self.controlManager):
             self.controlManager.disable()
 
@@ -869,9 +871,15 @@ class LevelEditor(NodePath, DirectObject):
         """ Lerp down to eye level then switch to Drive mode """
         # create avatar and set it's location to the camera
         if (self.avatar == None):
-            self.avatar = RobotToon.RobotToon()
+            #self.avatar = RobotToon.RobotToon()
+            self.avatar = LocalAvatar.LocalAvatar(None, None, None)
+            base.localAvatar = self.avatar
+            self.avatar.doId = 0
+            self.avatar.robot = RobotToon.RobotToon()
+            self.avatar.robot.reparentTo(self.avatar)
+            self.avatar.setHeight(self.avatar.robot.getHeight())
             self.avatar.setName("The Inspector")
-            self.avatar.loop('neutral')
+            self.avatar.robot.loop('neutral')
 
         self.avatar.setPos(base.camera.getPos())
         self.avatar.reparentTo(render)
@@ -917,7 +925,9 @@ class LevelEditor(NodePath, DirectObject):
 
         base.camLens.setFov(VBase2(60, 46.8265))
 
-
+        #self.initializeSmartCameraCollisions()
+        #self._smartCamEnabled = False
+        
         # Turn on collisions
         if self.panel.fColl.get():
             self.collisionsOn()
@@ -954,6 +964,8 @@ class LevelEditor(NodePath, DirectObject):
             self.controlManager.enable()
 
         self.avatarAnimTask = taskMgr.add(self.avatarAnimate, 'avatarAnimTask', 24)
+        self.avatar.startUpdateSmartCamera()
+        
         self.avatarMoving = 0
 
     #--------------------------------------------------------------------------
@@ -970,14 +982,14 @@ class LevelEditor(NodePath, DirectObject):
                 # moving, play walk anim
                 if (self.controlManager.currentControls.speed < 0 or
                     self.controlManager.currentControls.rotationSpeed):
-                    self.avatar.loop('walk')
+                    self.avatar.robot.loop('walk')
                 else:
-                    self.avatar.loop('run')
+                    self.avatar.robot.loop('run')
                 self.avatarMoving = 1
             elif (self.controlManager.currentControls.moving == 0 and
                   self.avatarMoving == 1):
                 # no longer moving, play neutral anim
-                self.avatar.loop('neutral')
+                self.avatar.robot.loop('neutral')
                 self.avatarMoving = 0
         return Task.cont
 
