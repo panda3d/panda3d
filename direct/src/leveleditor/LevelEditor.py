@@ -26,6 +26,13 @@ from direct.task import Task
 import Pmw
 import __builtin__
 
+# [gjeon] to control avatar movement in drive mode
+from direct.controls import ControlManager
+from direct.controls import GravityWalker
+
+from toontown.toon import RobotToon
+from otp.otpbase import OTPGlobals
+
 # Force direct and tk to be on
 base.startDirect(fWantDirect = 1, fWantTk = 1)
 
@@ -631,6 +638,13 @@ class LevelEditor(NodePath, DirectObject):
 
         # [gjeon] to find out currently moving camera in maya mode
         self.mouseMayaCamera = False
+
+        # [gjeon] to find out drive mode stat
+        self.fDrive = False
+
+        # [gjeon] to control drive mode
+        self.controlManager = None
+        self.avatar = None
  
     # ENABLE/DISABLE
     def enable(self):
@@ -771,6 +785,7 @@ class LevelEditor(NodePath, DirectObject):
         self.collisionsOff()
         # Turn on visiblity
         self.visibilityOff()
+        base.camera.wrtReparentTo(render)
         # Reset cam
         base.camera.iPos(base.cam)
         base.cam.iPosHpr()
@@ -778,39 +793,67 @@ class LevelEditor(NodePath, DirectObject):
         self.enableMouse()
         base.direct.enable()
 
+        # [gjeon]  disable avatar and controlManager
+        if (self.avatar):
+            self.avatar.reparentTo(hidden)
+        if (self.controlManager):
+            self.controlManager.disable()
+
+        self.fDrive = False
+
     def useDriveMode(self):
         """ Lerp down to eye level then switch to Drive mode """
-        pos = base.direct.camera.getPos()
-        pos.setZ(4.0)
-        hpr = base.direct.camera.getHpr()
-        hpr.set(hpr[0], 0.0, 0.0)
-        t = base.direct.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
-                                   task = 'manipulateCamera')
+        # create avatar and set it's location to the camera
+        if (self.avatar == None):
+            self.avatar = RobotToon.RobotToon()
+            self.avatar.setName("The Inspector")
+            self.avatar.loop('idle')
+
+        self.avatar.setPos(base.camera.getPos())
+        self.avatar.reparentTo(render)
+
+##         pos = base.direct.camera.getPos()
+##         pos.setZ(4.0)
+##         hpr = base.direct.camera.getHpr()
+##         hpr.set(hpr[0], 0.0, 0.0)
+##         t = base.direct.camera.lerpPosHpr(pos, hpr, 1.0, blendType = 'easeInOut',
+##                                    task = 'manipulateCamera')
         # Note, if this dies an unatural death, this could screw things up
         # t.uponDeath = self.switchToDriveMode
+        self.switchToDriveMode(None)
+        self.fDrive = True
 
     def switchToDriveMode(self, state):
         """ Disable direct camera manipulation and enable player drive mode """
-        base.direct.minimumConfiguration()
-        base.direct.manipulationControl.disableManipulation()
+        #base.direct.minimumConfiguration()
+        #base.direct.manipulationControl.disableManipulation()
         # Update vis data
         self.initVisibilityData()
-        # Switch to drive mode
-        base.useDrive()
-        # Move cam up and back
-        base.cam.setPos(0, -5, 4)
-        # And move down and forward to compensate
-        base.camera.setPos(base.camera, 0, 5, -4)
-        # Make sure we're where we want to be
-        pos = base.direct.camera.getPos()
-        pos.setZ(0.0)
-        hpr = base.direct.camera.getHpr()
-        hpr.set(hpr[0], 0.0, 0.0)
-        # Fine tune the drive mode
-        base.mouseInterface.node().setPos(pos)
-        base.mouseInterface.node().setHpr(hpr)
-        base.mouseInterface.node().setForwardSpeed(20.0)
-        base.mouseInterface.node().setReverseSpeed(20.0)
+##         # Switch to drive mode
+##         base.useDrive()
+##         # Move cam up and back
+##         base.cam.setPos(0, -5, 4)
+##         # And move down and forward to compensate
+##         base.camera.setPos(base.camera, 0, 5, -4)
+##         # Make sure we're where we want to be
+##         pos = base.direct.camera.getPos()
+##         pos.setZ(0.0)
+##         hpr = base.direct.camera.getHpr()
+##         hpr.set(hpr[0], 0.0, 0.0)
+##         # Fine tune the drive mode
+##         base.mouseInterface.node().setPos(pos)
+##         base.mouseInterface.node().setHpr(hpr)
+##         base.mouseInterface.node().setForwardSpeed(0)
+##         base.mouseInterface.node().setReverseSpeed(0)
+
+        base.camera.wrtReparentTo(self.avatar)
+        base.camera.setHpr(0, 0, 0)
+        #base.camera.setPos(0, 0, 0)
+        base.camera.setPos(0, -11.8125, 3.9375)
+
+        base.camLens.setFov(VBase2(60, 46.8265))
+
+
         # Turn on collisions
         if self.panel.fColl.get():
             self.collisionsOn()
@@ -820,6 +863,32 @@ class LevelEditor(NodePath, DirectObject):
         # Turn on collision traversal
         if self.panel.fColl.get() or self.panel.fVis.get():
             self.traversalOn()
+
+        if (self.controlManager == None):
+            # create player movement controls,camera controls, and avatar
+            self.controlManager = ControlManager.ControlManager()
+            avatarRadius = 1.4
+            floorOffset = OTPGlobals.FloorOffset
+            reach = 4.0
+
+            walkControls=GravityWalker.GravityWalker(gravity = -32.1740 * 2.0)
+            walkControls.setWallBitMask(OTPGlobals.WallBitmask)
+            walkControls.setFloorBitMask(OTPGlobals.FloorBitmask)
+            walkControls.initializeCollisions(self.cTrav, self.avatar,
+                                              avatarRadius, floorOffset, reach)
+            self.controlManager.add(walkControls, "walk")
+            self.controlManager.use("walk", self)
+
+            # set speeds after adding controls to the control manager
+            self.controlManager.setSpeeds(
+                OTPGlobals.ToonForwardSpeed,
+                OTPGlobals.ToonJumpForce,
+                OTPGlobals.ToonReverseSpeed,
+                OTPGlobals.ToonRotateSpeed
+                )
+        else:
+            self.controlManager.enable()
+        
 
     def configureDriveModeCollisionData(self):
         """
@@ -869,8 +938,8 @@ class LevelEditor(NodePath, DirectObject):
         self.cTrav = CollisionTraverser("LevelEditor")
 
         # activate the collider with the traverser and pusher
-        self.pusher.addCollider(self.cSphereNodePath, base.camera, base.drive.node())
-        self.lifter.addCollider(self.cRayNodePath, base.camera, base.drive.node())
+        #self.pusher.addCollider(self.cSphereNodePath, base.camera, base.drive.node())
+        #self.lifter.addCollider(self.cRayNodePath, base.camera, base.drive.node())
         # A map of zone ID's to a list of nodes that are visible from
         # that zone.
         self.nodeDict = {}
@@ -889,11 +958,11 @@ class LevelEditor(NodePath, DirectObject):
         base.cTrav = 0
 
     def collisionsOff(self):
-        self.cTrav.removeCollider(self.cSphereNode)
+        self.cTrav.removeCollider(self.cSphereNodePath)
 
     def collisionsOn(self):
         self.collisionsOff()
-        self.cTrav.addCollider(self.cSphereNode, self.pusher)
+        self.cTrav.addCollider(self.cSphereNodePath, self.pusher)
 
     def toggleCollisions(self):
         if self.panel.fColl.get():
@@ -979,7 +1048,7 @@ class LevelEditor(NodePath, DirectObject):
         # Accept event
         self.accept("on-floor", self.enterZone)
         # Add collider
-        self.cTrav.addCollider(self.cRayNode, self.lifter)
+        self.cTrav.addCollider(self.cRayNodePath, self.lifter)
         # Reset lifter
         self.lifter.clear()
         # Reset flag
@@ -987,7 +1056,7 @@ class LevelEditor(NodePath, DirectObject):
 
     def visibilityOff(self):
         self.ignore("on-floor")
-        self.cTrav.removeCollider(self.cRayNode)
+        self.cTrav.removeCollider(self.cRayNodePath)
         self.showAllVisibles()
 
     def toggleVisibility(self):
@@ -1000,6 +1069,7 @@ class LevelEditor(NodePath, DirectObject):
                 self.traversalOff()
 
     def enterZone(self, newZone):
+        return
         """
         Puts the toon in the indicated zone.  newZone may either be a
         CollisionEntry object as determined by a floor polygon, or an
@@ -1012,7 +1082,10 @@ class LevelEditor(NodePath, DirectObject):
         # Get zone id
         if isinstance(newZone, CollisionEntry):
             # Get the name of the collide node
-            newZoneId = int(newZone.getIntoNode().getName())
+            try:
+                newZoneId = int(newZone.getIntoNode().getName())
+            except:
+                newZoneId = 0
         else:
             newZoneId = newZone
         # Ensure we have vis data
@@ -2080,6 +2153,13 @@ class LevelEditor(NodePath, DirectObject):
         # Let others know that something new may be selected:
         for i in self.selectedNodePathHookHooks:
                 i()
+
+        # if in drive mode and some object is selected, disable
+        # avatar controls and camera controls to prevent conflicts
+        # with being able to manipulate the selected object
+        if self.fDrive:
+            if self.controlManager:
+                self.controlManager.disable()
 
     def deselectedNodePathHook(self, nodePath):
         # Clear out old root variables
