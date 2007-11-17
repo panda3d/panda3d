@@ -2257,12 +2257,8 @@ class LevelEditor(NodePath, DirectObject):
         for i in self.selectedNodePathHookHooks:
                 i()
 
-        # if in drive mode and some object is selected, disable
-        # avatar controls and camera controls to prevent conflicts
-        # with being able to manipulate the selected object
         if self.fDrive:
-            if self.controlManager:
-                self.controlManager.disable()
+            base.direct.deselect(nodePath)
 
     def deselectedNodePathHook(self, nodePath):
         # Clear out old root variables
