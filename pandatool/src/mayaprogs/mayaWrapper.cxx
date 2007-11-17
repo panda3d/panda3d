@@ -17,6 +17,9 @@
 #error You must define the symbol MAYAVERSION when compiling mayawrapper.
 #endif
 
+#define QUOTESTR(x) #x
+#define TOSTRING(x) QUOTESTR(x)
+
 #define _CRT_SECURE_NO_DEPRECATE 1
 
 #include <windows.h>
@@ -28,34 +31,41 @@
 #include <signal.h>
 #define PATH_MAX 1024
 
-void getMayaLocation(int major, int minor, char *loc)
+struct { char *ver, *key; } reg_keys[] = {
+  { "MAYA6",    "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath" },
+  { "MAYA65",   "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath" },
+  { "MAYA7",    "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath" },
+  { "MAYA8",    "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath" },
+  { "MAYA85",   "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath" },
+  { "MAYA2008", "SOFTWARE\\Autodesk\\Maya\\2008\\Setup\\InstallPath" },
+  { 0, 0 },
+};
+
+char *getRegistryKey(char *ver) {
+  for (int i=0; reg_keys[i].ver != 0; i++) {
+    if (strcmp(reg_keys[i].ver, ver)==0) {
+      return reg_keys[i].key;
+    }
+  }
+  return 0;
+}
+
+void getMayaLocation(char *key, char *loc)
 {
-  char key[1024]; HKEY hkey;
-  DWORD size, dtype; LONG res; int retry;
+  HKEY hkey; DWORD size, dtype; LONG res;
+
   loc[0] = 0;
-
-  for (retry=0; retry<3; retry++) {
-    char *developer;
-    switch(retry) {
-    case 0: developer = "Alias|Wavefront"; break;
-    case 1: developer = "Alias"; break;
-    case 2: developer = "Autodesk"; break;
+  res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, key, 0, KEY_READ, &hkey);
+  if (res == ERROR_SUCCESS) {
+    size=1024;
+    res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)loc, &size);
+    if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
+      loc[size] = 0;
+      return;
+    } else {
+      loc[0] = 0;
     }
-
-    sprintf(key, "SOFTWARE\\%s\\Maya\\%d.%d\\Setup\\InstallPath", developer, major, minor);
-
-    res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, key, 0, KEY_READ, &hkey);
-    if (res == ERROR_SUCCESS) {
-      size=1024;
-      res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)loc, &size);
-      if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
-        loc[size] = 0;
-        break;
-      } else {
-        loc[0] = 0;
-      }
-      RegCloseKey(hkey);
-    }
+    RegCloseKey(hkey);
   }
 }
 
@@ -77,20 +87,18 @@ void getWrapperName(char *prog)
 
 int main(int argc, char **argv)
 {
-  int major = MAYAVERSION / 10;
-  int minor = MAYAVERSION - major * 10;
   char loc[1024], prog[1024];
-  char *cmd, *path, *env1, *env2; int len;
+  char *key, *cmd, *path, *env1, *env2; int len;
   STARTUPINFO si; PROCESS_INFORMATION pi;
-
-  if (major == 0) {
-    major = minor;
-    minor = 0;
-  }
   
-  getMayaLocation(major, minor, loc);
+  key = getRegistryKey(TOSTRING(MAYAVERSION));
+  if (key == 0) {
+    printf("MayaWrapper: unknown maya version %s\n", TOSTRING(MAYAVERSION));
+    exit(1);
+  }
+  getMayaLocation(key, loc);
   if (loc[0]==0) {
-    printf("Cannot locate Maya %d.%d (registry key missing)\n", major, minor);
+    printf("Cannot locate %s - it does not appear to be installed\n", TOSTRING(MAYAVERSION));
     exit(1);
   }
 

@@ -19,6 +19,35 @@ MAINTHREAD=threading.currentThread()
 
 ########################################################################
 ##
+## Maya and Max Version List (with registry keys)
+##
+########################################################################
+
+MAYAVERSIONINFO=[("MAYA6",   "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
+                 ("MAYA65",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
+                 ("MAYA7",   "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
+                 ("MAYA8",   "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath"),
+                 ("MAYA85",  "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath"),
+		 ("MAYA2008","SOFTWARE\\Autodesk\\Maya\\2008\\Setup\\InstallPath"),
+]
+
+MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
+                  ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
+]
+
+MAYAVERSIONS=[]
+MAXVERSIONS=[]
+
+for (ver,key) in MAYAVERSIONINFO:
+    MAYAVERSIONS.append(ver)
+
+for (ver,key1,key2,subdir) in MAXVERSIONINFO:
+    MAXVERSIONS.append(ver)
+
+########################################################################
+##
 ## The exit routine will normally
 ##
 ## - print a message
@@ -490,6 +519,7 @@ def MakeBuildTree():
     MakeDirectory("built")
     MakeDirectory("built/bin")
     MakeDirectory("built/lib")
+    MakeDirectory("built/tmp")
     MakeDirectory("built/etc")
     MakeDirectory("built/plugins")
     MakeDirectory("built/modelcache")
@@ -499,7 +529,6 @@ def MakeBuildTree():
     MakeDirectory("built/include/parser-inc/netinet")
     MakeDirectory("built/include/parser-inc/Cg")
     MakeDirectory("built/include/openssl")
-    MakeDirectory("built/tmp")
     MakeDirectory("built/models")
     MakeDirectory("built/models/audio")
     MakeDirectory("built/models/audio/sfx")
@@ -606,19 +635,6 @@ def PkgSelected(pkglist, pkg):
 
 SDK = {}
 
-MAYAVERSIONINFO=[("MAYA6",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
-                 ("MAYA65", "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
-                 ("MAYA7",  "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
-                 ("MAYA8",  "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath"),
-                 ("MAYA85", "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath")
-]
-
-MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
-                  ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
-]
-
 def SdkLocateDirectX():
     if (sys.platform != "win32"): return
     if (os.path.isdir("sdks/directx8")): SDK["DX8"]="sdks/directx8"
@@ -647,7 +663,7 @@ def SdkLocateMaya():
     for (ver,key) in MAYAVERSIONINFO:
         if (PkgSkip(ver)==0):
             if (SDK.has_key(ver)==0):
-                ddir = "sdks/"+ver.lower()
+                ddir = "sdks/"+ver.lower().replace("x","")
                 if (os.path.isdir(ddir)):
                     SDK[ver] = ddir
                 else:

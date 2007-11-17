@@ -36,16 +36,12 @@ GENMAN=0
 VERBOSE=1
 COMPRESSOR="zlib"
 THREADCOUNT=0
-DXVERSIONS=["8","9"]
-MAYAVERSIONS=["6","65","7","8","85"]
-MAXVERSIONS=["6","7","8","9"]
+DXVERSIONS=["DX8","DX9"]
 
-PkgListSet([
+PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
   "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","MILES",
-  "ARTOOLKIT","DIRECTCAM","MAYA6","MAYA65","MAYA7","MAYA8",
-  "MAYA85","MAX6","MAX7","MAX8","MAX9","FFMPEG","PANDATOOL",
-  "PANDAAPP","DX8","DX9"
+  "ARTOOLKIT","DIRECTCAM","FFMPEG","PANDATOOL","PANDAAPP"
 ])
 
 CheckPandaSourceTree()
@@ -247,15 +243,15 @@ def CompileCxx(obj,src,opts):
         cmd = "cl /wd4996 /Fo" + obj + " /nologo /c "
         if (PkgSkip("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
         for ver in DXVERSIONS:
-            if (PkgSelected(opts,"DX"+ver)):
-                cmd = cmd + ' /I"' + SDK["DX"+ver] + '/include"'
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' /I"' + SDK[ver] + '/include"'
         for ver in MAYAVERSIONS:
-            if (PkgSelected(opts,"MAYA"+ver)):
-                cmd = cmd + ' /I"' + SDK["MAYA"+ver] + '/include"'
-                cmd = cmd + " /DMAYAVERSION=" + ver
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' /I"' + SDK[ver] + '/include"'
+                cmd = cmd + ' /DMAYAVERSION=' + ver  
         for ver in MAXVERSIONS:
-            if (PkgSelected(opts,"MAX"+ver)):
-                cmd = cmd + ' /I"' + SDK["MAX"+ver] + '/include" /I"' + SDK["MAX"+ver+"CS"] + '" /DMAX' + ver
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' /I"' + SDK[ver] + '/include" /I"' + SDK[ver+"CS"] + '" /DMAX' + ver
         for pkg in PkgListGet():
             if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
                 cmd = cmd + " /I" + THIRDPARTYLIBS + pkg.lower() + "/include"
@@ -373,11 +369,11 @@ def CompileIgate(woutd,wsrc,opts):
         for x in ipath: cmd = cmd + ' -I' + x
         cmd = cmd + ' -Sthirdparty/win-python/include'
         for ver in DXVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,"DX"+ver)):
-                cmd = cmd + ' -S"' + SDK["DX"+ver] + '/include"'
+            if ((COMPILER=="MSVC") and PkgSelected(opts,ver)):
+                cmd = cmd + ' -S"' + SDK[ver] + '/include"'
         for ver in MAYAVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,"MAYA"+ver)):
-                cmd = cmd + ' -S"' + SDK["MAYA"+ver] + '/include"'
+            if ((COMPILER=="MSVC") and PkgSelected(opts,ver)):
+                cmd = cmd + ' -S"' + SDK[ver] + '/include"'
         for pkg in PkgListGet():
             if (PkgSelected(opts,pkg)):
                 cmd = cmd + " -S" + THIRDPARTYLIBS + pkg.lower() + "/include"
@@ -411,8 +407,8 @@ def CompileIgate(woutd,wsrc,opts):
         if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
         cmd = cmd + ' -module ' + module + ' -library ' + library
         for ver in MAYAVERSIONS:
-            if (PkgSelected(opts, "MAYA"+ver)):
-                cmd = cmd + ' -I"' + SDK["MAYA"+ver] + '/include"'
+            if (PkgSelected(opts, ver)):
+                cmd = cmd + ' -I"' + SDK[ver] + '/include"'
         for x in wsrc: cmd = cmd + ' ' + os.path.basename(x)
         oscmd(cmd)
         CompileCxx(wobj,woutc,opts)
@@ -501,10 +497,11 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"):
 	    cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
         for ver in DXVERSIONS:
-            if (PkgSelected(opts,"DX"+ver)):
-                cmd = cmd + ' /LIBPATH:"' + SDK["DX"+ver] + '/lib/x86"'
-                cmd = cmd + ' /LIBPATH:"' + SDK["DX"+ver] + '/lib"'
-                cmd = cmd + ' d3dVER.lib d3dxVER.lib dxerrVER.lib ddraw.lib dxguid.lib'.replace("VER",ver)
+	    vnum=ver[2:]
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' /LIBPATH:"' + SDK[ver] + '/lib/x86"'
+                cmd = cmd + ' /LIBPATH:"' + SDK[ver] + '/lib"'
+                cmd = cmd + ' d3dVNUM.lib d3dxVNUM.lib dxerrVNUM.lib ddraw.lib dxguid.lib'.replace("VNUM",vnum)
         if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
         if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
         if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
@@ -555,20 +552,20 @@ def CompileLink(dll, obj, opts):
         if (PkgSelected(opts,"ARTOOLKIT")):
             cmd = cmd + ' ' + THIRDPARTYLIBS + 'artoolkit/lib/libAR.lib'
         for ver in MAYAVERSIONS:
-            if (PkgSelected(opts,"MAYA"+ver)):
-                cmd = cmd + ' "' + SDK["MAYA"+ver] +  '/lib/Foundation.lib"'
-                cmd = cmd + ' "' + SDK["MAYA"+ver] +  '/lib/OpenMaya.lib"'
-                cmd = cmd + ' "' + SDK["MAYA"+ver] +  '/lib/OpenMayaAnim.lib"'
-                cmd = cmd + ' "' + SDK["MAYA"+ver] +  '/lib/OpenMayaUI.lib"'
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/Foundation.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMaya.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMayaAnim.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMayaUI.lib"'
         for ver in MAXVERSIONS:
-            if (PkgSelected(opts,"MAX"+ver)):
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/core.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/edmodel.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/gfx.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/geom.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/mesh.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/maxutil.lib"'
-                cmd = cmd + ' "' + SDK["MAX"+ver] +  '/lib/paramblk2.lib"'
+            if (PkgSelected(opts,ver)):
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/core.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/edmodel.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/gfx.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/geom.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/mesh.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/maxutil.lib"'
+                cmd = cmd + ' "' + SDK[ver] +  '/lib/paramblk2.lib"'
         oscmd(cmd)
         SetVC80CRTVersion(dll+".manifest", VC80CRTVERSION)
         mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
@@ -2913,56 +2910,60 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 for VER in MAYAVERSIONS:
-  if (PkgSkip("MAYA"+VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/maya', 'MAYA'+VER]
-    TargetAdd('maya'+VER+'_composite1.obj', opts=OPTS, input='maya_composite1.cxx')
-    TargetAdd('libmaya'+VER+'.lib', input='maya'+VER+'_composite1.obj')
+  VNUM=VER[4:]
+  if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/maya', VER]
+    TargetAdd('maya'+VNUM+'_composite1.obj', opts=OPTS, input='maya_composite1.cxx')
+    TargetAdd('libmaya'+VNUM+'.lib', input='maya'+VNUM+'_composite1.obj')
 
 #
 # DIRECTORY: pandatool/src/mayaegg/
 #
 
 for VER in MAYAVERSIONS:
-  if (PkgSkip("MAYA"+VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/maya', 'MAYA'+VER]
-    TargetAdd('mayaegg'+VER+'_loader.obj', opts=OPTS, input='mayaEggLoader.cxx')
-    TargetAdd('mayaegg'+VER+'_composite1.obj', opts=OPTS, input='mayaegg_composite1.cxx')
-    TargetAdd('libmayaegg'+VER+'.lib', input='mayaegg'+VER+'_composite1.obj')
+  VNUM=VER[4:]
+  if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/maya', VER]
+    TargetAdd('mayaegg'+VNUM+'_loader.obj', opts=OPTS, input='mayaEggLoader.cxx')
+    TargetAdd('mayaegg'+VNUM+'_composite1.obj', opts=OPTS, input='mayaegg_composite1.cxx')
+    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_composite1.obj')
 
 #
 # DIRECTORY: pandatool/src/maxegg/
 #
 
 for VER in MAXVERSIONS:
-  if (PkgSkip("MAX"+VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/maxegg', 'MAX'+VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+  VNUM=VER[3:]
+  if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyFile("built/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
-    TargetAdd('maxegg'+VER+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
-    TargetAdd('maxegg'+VER+'_composite1.obj', opts=OPTS, input='maxegg_composite1.cxx')
-    TargetAdd('maxegg'+VER+'.dlo', input='maxegg'+VER+'_composite1.obj')
-    TargetAdd('maxegg'+VER+'.dlo', input='maxEgg.obj')
-    TargetAdd('maxegg'+VER+'.dlo', input='maxEgg.def', ipath=OPTS)
-    TargetAdd('maxegg'+VER+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('maxegg'+VER+'.dlo', opts=OPTS)
+    TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
+    TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='maxegg_composite1.cxx')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.obj')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
+    TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
 
 #
 # DIRECTORY: pandatool/src/maxprogs/
 #
 
 for VER in MAXVERSIONS:
-  if (PkgSkip("MAX"+VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/maxprogs', 'MAX'+VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
+  VNUM=VER[3:]
+  if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     CopyFile("built/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
-    TargetAdd('maxprogs'+VER+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
-    TargetAdd('maxeggimport'+VER+'.dle', input='maxegg'+VER+'_loader.obj')
-    TargetAdd('maxeggimport'+VER+'.dle', input='maxprogs'+VER+'_maxeggimport.obj')
-    TargetAdd('maxeggimport'+VER+'.dle', input='maxImportRes.obj')
-    TargetAdd('maxeggimport'+VER+'.dle', input='libpandaeggstripped.dll')
-    TargetAdd('maxeggimport'+VER+'.dle', input='libpandastripped.dll')
-    TargetAdd('maxeggimport'+VER+'.dle', input='libpandaexpress.dll')
-    TargetAdd('maxeggimport'+VER+'.dle', input='maxEggImport.def', ipath=OPTS)
-    TargetAdd('maxeggimport'+VER+'.dle', input=COMMON_DTOOL_LIBS)
-    TargetAdd('maxeggimport'+VER+'.dle', opts=OPTS)
+    TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.obj')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaeggstripped.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandastripped.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaexpress.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxEggImport.def', ipath=OPTS)
+    TargetAdd('maxeggimport'+VNUM+'.dle', input=COMMON_DTOOL_LIBS)
+    TargetAdd('maxeggimport'+VNUM+'.dle', opts=OPTS)
 
 #
 # DIRECTORY: pandatool/src/vrml/
@@ -3055,72 +3056,73 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 for VER in MAYAVERSIONS:
-  if (PkgSkip('MAYA'+VER)==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/cvscopy', 'BUILDING:MISC', 'MAYA'+VER]
-    TargetAdd('mayaeggimport'+VER+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
-    TargetAdd('mayaeggimport'+VER+'.mll', input='mayaegg'+VER+'_loader.obj')
-    TargetAdd('mayaeggimport'+VER+'.mll', input='mayaeggimport'+VER+'_mayaeggimport.obj')
-    TargetAdd('mayaeggimport'+VER+'.mll', input='libpandaegg.dll')
-    TargetAdd('mayaeggimport'+VER+'.mll', input=COMMON_PANDA_LIBS)
-    TargetAdd('mayaeggimport'+VER+'.mll', input='libp3pystub.dll')
-    TargetAdd('mayaeggimport'+VER+'.mll', opts=['ADVAPI', 'MAYA'+VER])
+  VNUM=VER[4:]
+  if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/cvscopy', 'BUILDING:MISC', VER]
+    TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaegg'+VNUM+'_loader.obj')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.dll')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER])
 
-    TargetAdd('mayaloader'+VER+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='mayaloader'+VER+'_config_mayaloader.obj')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libmayaegg'+VER+'.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libp3ptloader.dll')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libmaya'+VER+'.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libfltegg.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libflt.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='liblwoegg.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='liblwo.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libdxfegg.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libdxf.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libvrmlegg.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libpvrml.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libxfileegg.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libxfile.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libeggbase.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libprogbase.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libconverter.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libpandatoolbase.lib')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input='libpandaegg.dll')
-    TargetAdd('libp3mayaloader'+VER+'.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3mayaloader'+VER+'.dll', opts=['ADVAPI', 'MAYA'+VER])
+    TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='mayaloader'+VNUM+'_config_mayaloader.obj')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3ptloader.dll')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmaya'+VNUM+'.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libfltegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libflt.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='liblwoegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='liblwo.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libdxfegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libdxf.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libvrmlegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpvrml.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libxfileegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libxfile.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libeggbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libprogbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libconverter.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpandatoolbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpandaegg.dll')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', opts=['ADVAPI', VER])
 
-    TargetAdd('mayapview'+VER+'_mayaPview.obj', opts=OPTS, input='mayaPview.cxx')
-    TargetAdd('libmayapview'+VER+'.mll', input='mayapview'+VER+'_mayaPview.obj')
-    TargetAdd('libmayapview'+VER+'.mll', input='libmayaegg'+VER+'.lib')
-    TargetAdd('libmayapview'+VER+'.mll', input='libmaya'+VER+'.lib')
-    TargetAdd('libmayapview'+VER+'.mll', input='libp3framework.dll')
-    TargetAdd('libmayapview'+VER+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('libmayapview'+VER+'.mll', opts=['ADVAPI', 'MAYA'+VER])
+    TargetAdd('mayapview'+VNUM+'_mayaPview.obj', opts=OPTS, input='mayaPview.cxx')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='mayapview'+VNUM+'_mayaPview.obj')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
+    TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
 
-    TargetAdd('maya2egg'+VER+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', input='maya2egg'+VER+'_mayaToEgg.obj')
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', input='libmayaegg'+VER+'.lib')
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', input='libmaya'+VER+'.lib')
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('maya2egg'+VER+'-wrapped.exe', opts=['ADVAPI', 'MAYA'+VER])
+    TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
 
-    TargetAdd('mayacopy'+VER+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', input='mayacopy'+VER+'_mayaCopy.obj')
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', input='libcvscopy.lib')
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', input='libmaya'+VER+'.lib')
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('mayacopy'+VER+'-wrapped.exe', opts=['ADVAPI', 'MAYA'+VER])
+    TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libcvscopy.lib')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
 
-    TargetAdd('mayasavepview'+VER+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
-    TargetAdd('libmayasavepview'+VER+'.mll', input='mayasavepview'+VER+'_mayaSavePview.obj')
-    TargetAdd('libmayasavepview'+VER+'.mll', opts=['ADVAPI',  'MAYA'+VER])
+    TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
+    TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
+    TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI',  VER])
 
-    TargetAdd('mayaWrapper'+VER+'.obj', opts=OPTS, input='mayaWrapper.cxx')
+    TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
 
-    TargetAdd('maya2egg'+VER+'.exe', input='mayaWrapper'+VER+'.obj')
-    TargetAdd('maya2egg'+VER+'.exe', opts=['ADVAPI'])
+    TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
 
-    TargetAdd('mayacopy'+VER+'.exe', input='mayaWrapper'+VER+'.obj')
-    TargetAdd('mayacopy'+VER+'.exe', opts=['ADVAPI'])
+    TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
 
 
