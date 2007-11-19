@@ -53,7 +53,8 @@ PUBLISHED:
   int push_level(const string &name,
                  double rel_time, RelativeStart rel_to);
   int add_c_interval(CInterval *c_interval, 
-                     double rel_time, RelativeStart rel_to);
+                     double rel_time = 0.0f, 
+                     RelativeStart rel_to = RS_previous_end);
   int add_ext_index(int ext_index, const string &name,
                     double duration, bool open_ended,
                     double rel_time, RelativeStart rel_to);
