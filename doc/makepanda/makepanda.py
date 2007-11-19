@@ -577,8 +577,9 @@ def CompileLink(dll, obj, opts):
         else:                         cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
         for x in obj:
 	    if (GetOrigExt(x) != ".dat"):
-                if (x[-3:]==".so") and (x[:3]=="lib"):
-                    cmd = cmd + ' -l' + os.path.basename(x)[3:-3]
+                base = os.path.basename(x)
+                if (base[-3:]==".so") and (base[:3]=="lib"):
+                    cmd = cmd + ' -l' + base[3:-3]
                 else:
                     cmd = cmd + ' ' + x
         #if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmod/lib -lfmod'
