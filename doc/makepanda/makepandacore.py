@@ -694,7 +694,7 @@ def SdkLocatePython():
             SDK["PYTHON"]="thirdparty/win-python"
 	    SDK["PYTHONVERSION"]="python2.4"
         else:
-            oscmd("python -V > built/tmp/pythonversion 2>&1")
+            os.system("python -V > built/tmp/pythonversion 2>&1")
             pv=ReadFile("built/tmp/pythonversion")
             if (pv.startswith("Python ")==0):
                 exit("python -V did not produce the expected output")
