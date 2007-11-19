@@ -577,7 +577,10 @@ def CompileLink(dll, obj, opts):
         else:                         cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
         for x in obj:
 	    if (GetOrigExt(x) != ".dat"):
-		cmd = cmd + ' ' + x
+                if (x[-3:]==".so") and (x[:3]=="lib"):
+                    cmd = cmd + ' -l' + os.path.basename(x)[3:-3]
+                else:
+                    cmd = cmd + ' ' + x
         #if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmod/lib -lfmod'
         if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
         #if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lopenal'
