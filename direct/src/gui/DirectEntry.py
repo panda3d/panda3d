@@ -192,15 +192,36 @@ class DirectEntry(DirectFrame):
         name = self.get().decode('utf-8')
         # capitalize each word
         capName = ''
+        # allow no more than two capital letters per word
+        capCount = 0
+        capMax = 2
         for i in xrange(len(name)):
             character = name[i]
-            # is it a letter?
+            # is it a letter that can be capitalized?
             # This assumes that string.lower and string.upper will return different
             # values for all unicode letters.
-            if string.lower(character) != string.upper(character):
-                # if it's not preceded by a letter, capitalize it
+            canCapitalize = string.lower(character) != string.upper(character)
+            if not canCapitalize:
+                # this is a non-capitalize-able letter, assume we are between words.
+                # reset the per-word capital letter count
+                capCount = 0
+            else:
+                capitalize = False
+                # if it's not preceded by a letter, capitalize it unconditionally;
+                # it's the first letter of a word
                 if (i == 0) or string.lower(name[i-1]) == string.upper(name[i-1]):
+                    capitalize = True
+                elif capCount < capMax:
+                    # we haven't hit the per-word limit for capital letters yet
+                    # is it a capital letter?
+                    if (character == string.upper(character)):
+                        # allow this letter to remain capitalized
+                        capitalize = True
+                if capitalize:
                     character = string.upper(character)
+                    capCount += 1
+                else:
+                    character = string.lower(character)
             capName += character
         self.enterText(capName.encode('utf-8'))
 
