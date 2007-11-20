@@ -91,6 +91,9 @@ PUBLISHED:
   INLINE static void show_current_ages();
   INLINE static void show_trend_ages();
 
+protected:
+  virtual void overflow_heap_size();
+
 private:
   MemoryUsage(const MemoryHook &copy);
   static MemoryUsage *get_global_ptr();
@@ -183,7 +186,11 @@ private:
 
 
   bool _track_memory_usage;
+  bool _startup_track_memory_usage;
   bool _count_memory_usage;
+  bool _report_memory_usage;
+  double _report_memory_interval;
+  double _last_report_time;
 
   static bool _recursion_protect;
 };

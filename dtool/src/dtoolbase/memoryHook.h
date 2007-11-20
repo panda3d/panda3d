@@ -82,7 +82,13 @@ protected:
   TVOLATILE PN_int32 _total_heap_array_size;
   TVOLATILE PN_int32 _requested_heap_size;
   TVOLATILE PN_int32 _total_mmap_size;
-#endif
+
+  // If the allocated heap size crosses this threshold, we call
+  // overflow_heap_size().
+  size_t _max_heap_size;
+
+  virtual void overflow_heap_size();
+#endif  // DO_MEMORY_USAGE
 
 private:
   size_t _page_size;

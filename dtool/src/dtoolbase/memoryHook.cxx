@@ -135,6 +135,7 @@ MemoryHook() {
   _total_heap_array_size = 0;
   _requested_heap_size = 0;
   _total_mmap_size = 0;
+  _max_heap_size = ~(size_t)0;
 #endif
 }
 
@@ -152,6 +153,7 @@ MemoryHook(const MemoryHook &copy) :
   _total_heap_array_size = copy._total_heap_array_size;
   _requested_heap_size = copy._requested_heap_size;
   _total_mmap_size = copy._total_mmap_size;
+  _max_heap_size = copy._max_heap_size;
 #endif
 
   ((MutexImpl &)copy._lock).lock();
@@ -183,12 +185,6 @@ MemoryHook::
 ////////////////////////////////////////////////////////////////////
 void *MemoryHook::
 heap_alloc_single(size_t size) {
-#ifdef DO_MEMORY_USAGE
-  // In the DO_MEMORY_USAGE case, we want to track the total size of
-  // allocated bytes on the heap.
-  AtomicAdjust::add(_total_heap_single_size, (PN_int32)size);
-#endif  // DO_MEMORY_USAGE
-
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.lock();
   void *alloc = call_malloc(inflate_size(size));
@@ -201,6 +197,17 @@ heap_alloc_single(size_t size) {
     cerr << "Out of memory!\n";
     abort();
   }
+
+#ifdef DO_MEMORY_USAGE
+  // In the DO_MEMORY_USAGE case, we want to track the total size of
+  // allocated bytes on the heap.
+  AtomicAdjust::add(_total_heap_single_size, (PN_int32)size);
+  if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
+      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+      _max_heap_size) {
+    overflow_heap_size();
+  }
+#endif  // DO_MEMORY_USAGE
 
   return alloc_to_ptr(alloc, size);
 }
@@ -244,12 +251,6 @@ heap_free_single(void *ptr) {
 ////////////////////////////////////////////////////////////////////
 void *MemoryHook::
 heap_alloc_array(size_t size) {
-#ifdef DO_MEMORY_USAGE
-  // In the DO_MEMORY_USAGE case, we want to track the total size of
-  // allocated bytes on the heap.
-  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size);
-#endif  // DO_MEMORY_USAGE
-
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.lock();
   void *alloc = call_malloc(inflate_size(size));
@@ -262,6 +263,17 @@ heap_alloc_array(size_t size) {
     cerr << "Out of memory!\n";
     abort();
   }
+
+#ifdef DO_MEMORY_USAGE
+  // In the DO_MEMORY_USAGE case, we want to track the total size of
+  // allocated bytes on the heap.
+  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size);
+  if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
+      (size_t)AtomicAdjust::get(_total_heap_array_size) >
+      _max_heap_size) {
+    overflow_heap_size();
+  }
+#endif  // DO_MEMORY_USAGE
 
   return alloc_to_ptr(alloc, size);
 }
@@ -490,3 +502,21 @@ get_deleted_chain(size_t buffer_size) {
   _lock.release();
   return chain;
 }
+
+#ifdef DO_MEMORY_USAGE
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::overflow_heap_size
+//       Access: Protected, Virtual
+//  Description: This callback method is called whenever the total
+//               allocated heap size exceeds _max_heap_size.  It's
+//               mainly intended for reporting memory leaks, on the
+//               assumption that once we cross some specified
+//               threshold, we're just leaking memory.
+//
+//               The implementation for this method is in MemoryUsage.
+////////////////////////////////////////////////////////////////////
+void MemoryHook::
+overflow_heap_size() {
+  _max_heap_size = ~(size_t)0;
+}
+#endif  // DO_MEMORY_USAGE

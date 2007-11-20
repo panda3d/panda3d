@@ -382,7 +382,33 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
      PRC_DESC("Set this to true to enable full-force tracking of C++ allocations "
               "and recordkeeping by type.  It's quite expensive."));
 
+  // Since enabling this after startup might cause bogus errors, we'd
+  // like to know if this happened, so we can squelch those error
+  // messages.
+  _startup_track_memory_usage = _track_memory_usage;
+
+  _report_memory_usage = ConfigVariableBool
+    ("report-memory-usage", false,
+     PRC_DESC("Set this true to enable automatic reporting of allocated objects "
+              "at the interval specified by report-memory-interval.  This also "
+              "requires track-memory-usage."));
+  _report_memory_interval = ConfigVariableDouble
+    ("report-memory-interval", 5.0,
+     PRC_DESC("This is the interval, in seconds, for reports of currently allocated "
+              "memory, when report-memory-usage is true."));
+  _last_report_time = 0.0;
+
   _count_memory_usage = false;
+
+  int max_heap_size = ConfigVariableInt
+    ("max-heap-size", 0,
+     PRC_DESC("If this is nonzero, it is the maximum number of bytes expected "
+              "to be allocated on the heap before we enter report-memory-usage "
+              "mode automatically.  The assumption is that once this limit "
+              "has been crossed, we must be leaking."));
+  if (max_heap_size != 0) {
+    _max_heap_size = (size_t)max_heap_size;
+  }
 
 #ifdef USE_MEMORY_NOWRAPPERS
 #error Cannot compile MemoryUsage without malloc wrappers!
@@ -403,6 +429,37 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   _total_cpp_size = 0;
   _interpreter_size = 0;
   _total_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryUsage::overflow_heap_size
+//       Access: Protected, Virtual
+//  Description: This callback method is called whenever the total
+//               allocated heap size exceeds _max_heap_size.  It's
+//               mainly intended for reporting memory leaks, on the
+//               assumption that once we cross some specified
+//               threshold, we're just leaking memory.
+////////////////////////////////////////////////////////////////////
+void MemoryUsage::
+overflow_heap_size() {
+  MemoryHook::overflow_heap_size();
+
+  express_cat.error()
+    << "Total allocated memory has reached "
+    << get_panda_heap_single_size() + get_panda_heap_array_size()
+    << " bytes."
+    << "\n  heap single: " << get_panda_heap_single_size()
+    << "\n  heap array: " << get_panda_heap_array_size()
+    << "\n  heap overhead: " << get_panda_heap_overhead()
+    << "\n  mmap: " << get_panda_mmap_size()
+    << "\n  interpreter: " << get_interpreter_size()
+    << "\n  external: " << get_external_size()
+    << "\n  total: " << get_total_size()
+    << "\n";
+
+  // Turn on spamful debugging.
+  _track_memory_usage = true;
+  _report_memory_usage = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -464,6 +521,16 @@ ns_record_pointer(ReferenceCount *ptr) {
     // that we also protect ourselves against a possible recursive
     // call in TrueClock::get_global_ptr().
     _recursion_protect = false;
+
+    if (_report_memory_usage) {
+      double now = TrueClock::get_global_ptr()->get_long_time();
+      if (now - _last_report_time > _report_memory_interval) {
+        _last_report_time = now;
+        express_cat.info()
+          << "*** Current memory usage: " << get_total_size() << "\n";
+        show_current_types();
+      }
+    }
   }
 }
 
@@ -482,10 +549,12 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
-      express_cat.error()
-        << "Attempt to update type to " << type << " for unrecorded pointer "
-        << (void *)ptr << "!\n";
-      nassertv(false);
+      if (_startup_track_memory_usage) {
+        express_cat.error()
+          << "Attempt to update type to " << type << " for unrecorded pointer "
+          << (void *)ptr << "!\n";
+        nassertv(false);
+      }
       return;
     }
 
@@ -514,10 +583,12 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
-      express_cat.error()
-        << "Attempt to update type to " << typed_ptr->get_type()
-        << " for unrecorded pointer "
-        << (void *)ptr << "!\n";
+      if (_startup_track_memory_usage) {
+        express_cat.error()
+          << "Attempt to update type to " << typed_ptr->get_type()
+          << " for unrecorded pointer "
+          << (void *)ptr << "!\n";
+      }
       return;
     }
 
@@ -541,11 +612,13 @@ ns_remove_pointer(ReferenceCount *ptr) {
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
-      express_cat.error()
-        << "Attempt to remove pointer " << (void *)ptr
-        << ", not in table.\n"
-        << "Possibly a double-destruction.\n";
-      nassertv(false);
+      if (_startup_track_memory_usage) {
+        express_cat.error()
+          << "Attempt to remove pointer " << (void *)ptr
+          << ", not in table.\n"
+          << "Possibly a double-destruction.\n";
+        nassertv(false);
+      }
       return;
     }
 
