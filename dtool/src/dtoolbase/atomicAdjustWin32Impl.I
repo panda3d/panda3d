@@ -36,7 +36,7 @@ inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustWin32Impl::
 dec(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
-  return (InterlockedDecrement(var) != 0);
+  return (InterlockedDecrement(&var) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
