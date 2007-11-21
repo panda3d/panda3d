@@ -194,8 +194,8 @@ private:
   };
   typedef Collector *CollectorPointer;
   void *_collectors;  // CollectorPointer *_collectors;
-  PN_int32 _collectors_size;  // size of the allocated array
-  PN_int32 _num_collectors;   // number of in-use elements within the array
+  AtomicAdjust::Integer _collectors_size;  // size of the allocated array
+  AtomicAdjust::Integer _num_collectors;   // number of in-use elements within the array
 
   // This defines a single thread, i.e. a separate chain of execution,
   // independent of all other threads.  Timing and level data are
@@ -222,8 +222,8 @@ private:
   };
   typedef InternalThread *ThreadPointer;
   void *_threads;  // ThreadPointer *_threads;
-  PN_int32 _threads_size;  // size of the allocated array
-  PN_int32 _num_threads;   // number of in-use elements within the array
+  AtomicAdjust::Integer _threads_size;  // size of the allocated array
+  AtomicAdjust::Integer _num_threads;   // number of in-use elements within the array
 
   PStatClientImpl *_impl;
 

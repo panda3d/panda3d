@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "atomicAdjust.h"
 
 // The number of threads to spawn.
 static const int number_of_threads = 4;
@@ -32,10 +33,10 @@ static const int number_of_iterations = 50000000;
   stuff; \
 }
 
-PN_int32 _inc_count = 0;
-PN_int32 _dec_count = 0;
-PN_int32 _net_count = 0;
-PN_int32 _num_net_count_incremented = 0;
+AtomicAdjust::Integer _inc_count = 0;
+AtomicAdjust::Integer _dec_count = 0;
+AtomicAdjust::Integer _net_count = 0;
+AtomicAdjust::Integer _num_net_count_incremented = 0;
 
 class MyThread : public Thread {
 public:

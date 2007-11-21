@@ -32,18 +32,20 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustDummyImpl {
 public:
-  INLINE static void inc(TVOLATILE PN_int32 &var);
-  INLINE static bool dec(TVOLATILE PN_int32 &var);
-  INLINE static void add(TVOLATILE PN_int32 &var, PN_int32 delta);
-  INLINE static PN_int32 set(TVOLATILE PN_int32 &var, PN_int32 new_value);
-  INLINE static PN_int32 get(const TVOLATILE PN_int32 &var);
+  typedef int Integer;
+
+  INLINE static void inc(TVOLATILE Integer &var);
+  INLINE static bool dec(TVOLATILE Integer &var);
+  INLINE static void add(TVOLATILE Integer &var, Integer delta);
+  INLINE static Integer set(TVOLATILE Integer &var, Integer new_value);
+  INLINE static Integer get(const TVOLATILE Integer &var);
 
   INLINE static void *set_ptr(void * TVOLATILE &var, void *new_value);
   INLINE static void *get_ptr(void * const TVOLATILE &var);
 
-  INLINE static PN_int32 compare_and_exchange(TVOLATILE PN_int32 &mem, 
-                                              PN_int32 old_value,
-                                              PN_int32 new_value);
+  INLINE static Integer compare_and_exchange(TVOLATILE Integer &mem, 
+                                              Integer old_value,
+                                              Integer new_value);
 
   INLINE static void *compare_and_exchange_ptr(void * TVOLATILE &mem, 
                                                void *old_value,

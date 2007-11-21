@@ -67,7 +67,7 @@ private:
   bool _got_default_value;
   EnumType _default_value;
 
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   EnumType _cache;
 };
 

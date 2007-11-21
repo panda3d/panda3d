@@ -54,7 +54,7 @@ private:
   void set_default_value(int default_value);
 
 private:
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   int _cache;
 };
 

@@ -89,7 +89,7 @@ operator = (const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 clear() {
-  AtomicAdjust::set(_seq, (PN_int32)SC_initial);
+  AtomicAdjust::set(_seq, (AtomicAdjust::Integer)SC_initial);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_initial() const {
-  return AtomicAdjust::get(_seq) == (PN_int32)SC_initial;
+  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_old() const {
-  return AtomicAdjust::get(_seq) == (PN_int32)SC_old;
+  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_old;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ is_old() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_fresh() const {
-  return AtomicAdjust::get(_seq) == (PN_int32)SC_fresh;
+  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_fresh;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,16 +203,16 @@ operator >= (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ () {
-  PN_int32 old_seq = AtomicAdjust::get(_seq);
-  PN_int32 new_seq = old_seq + 1;
+  AtomicAdjust::Integer old_seq = AtomicAdjust::get(_seq);
+  AtomicAdjust::Integer new_seq = old_seq + 1;
   if (priv_is_special(new_seq)) {
     // Oops, wraparound.  We don't want to confuse the new value
     // with our special cases.
-    new_seq = (PN_int32)SC_old + 1;
+    new_seq = (AtomicAdjust::Integer)SC_old + 1;
   }
 
 #ifdef HAVE_THREADS
-  PN_int32 result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
+  AtomicAdjust::Integer result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   while (result != old_seq) {
     // Some other thread beat us to it; try again.
     old_seq = AtomicAdjust::get(_seq);
@@ -220,7 +220,7 @@ operator ++ () {
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      new_seq = (PN_int32)SC_old + 1;
+      new_seq = (AtomicAdjust::Integer)SC_old + 1;
     }
     result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   }
@@ -238,16 +238,16 @@ operator ++ () {
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ (int) {
-  PN_int32 old_seq = AtomicAdjust::get(_seq);
-  PN_int32 new_seq = old_seq + 1;
+  AtomicAdjust::Integer old_seq = AtomicAdjust::get(_seq);
+  AtomicAdjust::Integer new_seq = old_seq + 1;
   if (priv_is_special(new_seq)) {
     // Oops, wraparound.  We don't want to confuse the new value
     // with our special cases.
-    new_seq = (PN_int32)SC_old + 1;
+    new_seq = (AtomicAdjust::Integer)SC_old + 1;
   }
 
 #ifdef HAVE_THREADS
-  PN_int32 result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
+  AtomicAdjust::Integer result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   while (result != old_seq) {
     // Some other thread beat us to it; try again.
     old_seq = AtomicAdjust::get(_seq);
@@ -255,7 +255,7 @@ operator ++ (int) {
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value
       // with our special cases.
-      new_seq = (PN_int32)SC_old + 1;
+      new_seq = (AtomicAdjust::Integer)SC_old + 1;
     }
     result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
   }
@@ -275,7 +275,7 @@ operator ++ (int) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 output(ostream &out) const {
-  PN_int32 seq = AtomicAdjust::get(_seq);
+  AtomicAdjust::Integer seq = AtomicAdjust::get(_seq);
   switch (seq) {
   case SC_initial:
     out << "initial";
@@ -300,7 +300,7 @@ output(ostream &out) const {
 //  Description: The private implementation of is_special().
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
-priv_is_special(PN_int32 seq) {
+priv_is_special(AtomicAdjust::Integer seq) {
   // This relies on the assumption that (~0 + 1) == 0.
   return (((unsigned int)seq + 1) <= 2);
 }
@@ -311,7 +311,7 @@ priv_is_special(PN_int32 seq) {
 //  Description: The private implementation of operator < ().
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
-priv_lt(PN_int32 a, PN_int32 b) {
+priv_lt(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
   // The special cases of SC_initial or SC_old are less than all other
   // non-special numbers, and SC_initial is less than SC_old.  The
   // special case of SC_fresh is greater than all other non-special
@@ -328,7 +328,7 @@ priv_lt(PN_int32 a, PN_int32 b) {
 //  Description: The private implementation of operator <= ().
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
-priv_le(PN_int32 a, PN_int32 b) {
+priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
   return (a == b) || priv_lt(a, b);
 }
 

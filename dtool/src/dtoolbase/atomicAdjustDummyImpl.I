@@ -23,7 +23,7 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustDummyImpl::
-inc(TVOLATILE PN_int32 &var) {
+inc(TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   ++var;
 }
 
@@ -35,7 +35,7 @@ inc(TVOLATILE PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustDummyImpl::
-dec(TVOLATILE PN_int32 &var) {
+dec(TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   return (--var) != 0;
 }
 
@@ -46,7 +46,7 @@ dec(TVOLATILE PN_int32 &var) {
 //               delta to be negative.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustDummyImpl::
-add(TVOLATILE PN_int32 &var, PN_int32 delta) {
+add(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Integer delta) {
   var += delta;
 }
 
@@ -56,9 +56,9 @@ add(TVOLATILE PN_int32 &var, PN_int32 delta) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustDummyImpl::
-set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
-  PN_int32 orig_value = var;
+INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
+set(TVOLATILE AtomicAdjustDummyImpl::Integer &var, AtomicAdjustDummyImpl::Integer new_value) {
+  Integer orig_value = var;
   var = new_value;
   return orig_value;
 }
@@ -72,8 +72,8 @@ set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustDummyImpl::
-get(const TVOLATILE PN_int32 &var) {
+INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
+get(const TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
   return var;
 }
 
@@ -114,10 +114,10 @@ get_ptr(void * const TVOLATILE &var) {
 //               The caller can test for success by comparing
 //               return_value == old_value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustDummyImpl::
-compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
-                     PN_int32 new_value) {
-  PN_int32 orig_value = mem;
+INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
+compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem, AtomicAdjustDummyImpl::Integer old_value,
+                     AtomicAdjustDummyImpl::Integer new_value) {
+  Integer orig_value = mem;
   if (mem == old_value) {
     mem = new_value;
   }

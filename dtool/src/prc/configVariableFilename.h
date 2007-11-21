@@ -70,7 +70,7 @@ private:
   void reload_cache();
 
 private:
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   Filename _cache;
 };
 

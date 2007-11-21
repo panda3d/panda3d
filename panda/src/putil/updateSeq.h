@@ -74,9 +74,9 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
 
 private:
-  INLINE static bool priv_is_special(PN_int32 seq);
-  INLINE static bool priv_lt(PN_int32 a, PN_int32 b);
-  INLINE static bool priv_le(PN_int32 a, PN_int32 b);
+  INLINE static bool priv_is_special(AtomicAdjust::Integer seq);
+  INLINE static bool priv_lt(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
+  INLINE static bool priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
 
 private:
   enum SpecialCases {
@@ -85,7 +85,7 @@ private:
     SC_fresh = ~(unsigned int)0,
   };
 
-  PN_int32 _seq;
+  AtomicAdjust::Integer _seq;
 };
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value);

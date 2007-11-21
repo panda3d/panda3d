@@ -23,8 +23,8 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustWin32Impl::
-inc(TVOLATILE PN_int32 &var) {
-  InterlockedIncrement((LONG *)&var);
+inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
+  InterlockedIncrement(&var);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,8 +35,8 @@ inc(TVOLATILE PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustWin32Impl::
-dec(TVOLATILE PN_int32 &var) {
-  return (InterlockedDecrement((LONG *)&var) != 0);
+dec(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
+  return (InterlockedDecrement(var) != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ dec(TVOLATILE PN_int32 &var) {
 //               delta to be negative.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustWin32Impl::
-add(TVOLATILE PN_int32 &var, PN_int32 delta) {
-  PN_int32 orig_value = var;
+add(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Integer delta) {
+  AtomicAdjustWin32Impl::Integer orig_value = var;
   while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
     orig_value = var;
   }
@@ -59,9 +59,9 @@ add(TVOLATILE PN_int32 &var, PN_int32 delta) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustWin32Impl::
-set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
-  return InterlockedExchange((LONG *)&var, new_value);
+INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
+set(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Integer new_value) {
+  return InterlockedExchange(&var, new_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustWin32Impl::
-get(const TVOLATILE PN_int32 &var) {
+INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
+get(const TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
   return var;
 }
 
@@ -124,9 +124,9 @@ get_ptr(void * const TVOLATILE &var) {
 //                 return orig_value;
 //
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustWin32Impl::
-compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
-                     PN_int32 new_value) {
+INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
+compare_and_exchange(TVOLATILE AtomicAdjustWin32Impl::Integer &mem, AtomicAdjustWin32Impl::Integer old_value,
+                     AtomicAdjustWin32Impl::Integer new_value) {
   // Note that the AtomicAdjust parameter order is different from
   // Windows convention!
   return InterlockedCompareExchange((TVOLATILE LONG *)&mem, new_value, old_value);

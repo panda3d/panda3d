@@ -79,7 +79,7 @@ private:
 
   DSearchPath _prefix, _postfix;
 
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   DSearchPath _cache;
 };
 

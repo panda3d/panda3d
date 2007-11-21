@@ -201,7 +201,7 @@ heap_alloc_single(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
-  AtomicAdjust::add(_total_heap_single_size, (PN_int32)size);
+  AtomicAdjust::add(_total_heap_single_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
       _max_heap_size) {
@@ -225,7 +225,7 @@ heap_free_single(void *ptr) {
 
 #ifdef DO_MEMORY_USAGE
   assert((int)size <= _total_heap_single_size);
-  AtomicAdjust::add(_total_heap_single_size, -(PN_int32)size);
+  AtomicAdjust::add(_total_heap_single_size, -(AtomicAdjust::Integer)size);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -267,7 +267,7 @@ heap_alloc_array(size_t size) {
 #ifdef DO_MEMORY_USAGE
   // In the DO_MEMORY_USAGE case, we want to track the total size of
   // allocated bytes on the heap.
-  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size);
+  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size);
   if ((size_t)AtomicAdjust::get(_total_heap_single_size) + 
       (size_t)AtomicAdjust::get(_total_heap_array_size) >
       _max_heap_size) {
@@ -290,8 +290,8 @@ heap_realloc_array(void *ptr, size_t size) {
   void *alloc = ptr_to_alloc(ptr, orig_size);
 
 #ifdef DO_MEMORY_USAGE
-  assert((PN_int32)orig_size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, (PN_int32)size-(PN_int32)orig_size);
+  assert((AtomicAdjust::Integer)orig_size <= _total_heap_array_size);
+  AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
@@ -323,7 +323,7 @@ heap_free_array(void *ptr) {
 
 #ifdef DO_MEMORY_USAGE
   assert((int)size <= _total_heap_array_size);
-  AtomicAdjust::add(_total_heap_array_size, -(PN_int32)size);
+  AtomicAdjust::add(_total_heap_array_size, -(AtomicAdjust::Integer)size);
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK

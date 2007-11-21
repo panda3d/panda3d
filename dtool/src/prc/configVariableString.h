@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE void set_word(int n, const string &value);
 
 private:
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   string _cache;
 };
 

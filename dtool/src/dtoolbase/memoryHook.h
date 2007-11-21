@@ -78,10 +78,10 @@ private:
 
 #ifdef DO_MEMORY_USAGE
 protected:
-  TVOLATILE PN_int32 _total_heap_single_size;
-  TVOLATILE PN_int32 _total_heap_array_size;
-  TVOLATILE PN_int32 _requested_heap_size;
-  TVOLATILE PN_int32 _total_mmap_size;
+  TVOLATILE AtomicAdjust::Integer _total_heap_single_size;
+  TVOLATILE AtomicAdjust::Integer _total_heap_array_size;
+  TVOLATILE AtomicAdjust::Integer _requested_heap_size;
+  TVOLATILE AtomicAdjust::Integer _total_mmap_size;
 
   // If the allocated heap size crosses this threshold, we call
   // overflow_heap_size().

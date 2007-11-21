@@ -89,7 +89,7 @@ private:
     deleted_ref_count = -100,
   };
 
-  PN_int32 _ref_count;
+  AtomicAdjust::Integer _ref_count;
   WeakReferenceList *_weak_list;
 
 public:

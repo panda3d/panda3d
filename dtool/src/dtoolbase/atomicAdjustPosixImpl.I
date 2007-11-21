@@ -23,7 +23,7 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustPosixImpl::
-inc(TVOLATILE PN_int32 &var) {
+inc(TVOLATILE AtomicAdjustPosixImpl::Integer &var) {
   pthread_mutex_lock(&_mutex);
   ++var;
   pthread_mutex_unlock(&_mutex);
@@ -37,9 +37,9 @@ inc(TVOLATILE PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustPosixImpl::
-dec(TVOLATILE PN_int32 &var) {
+dec(TVOLATILE AtomicAdjustPosixImpl::Integer &var) {
   pthread_mutex_lock(&_mutex);
-  PN_int32 result = --var;
+  Integer result = --var;
   pthread_mutex_unlock(&_mutex);
   return (result != 0);
 }
@@ -51,7 +51,7 @@ dec(TVOLATILE PN_int32 &var) {
 //               delta to be negative.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustPosixImpl::
-add(TVOLATILE PN_int32 &var, PN_int32 delta) {
+add(TVOLATILE AtomicAdjustPosixImpl::Integer &var, AtomicAdjustPosixImpl::Integer delta) {
   pthread_mutex_lock(&_mutex);
   var += delta;
   pthread_mutex_unlock(&_mutex);
@@ -63,10 +63,10 @@ add(TVOLATILE PN_int32 &var, PN_int32 delta) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
-set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
+INLINE AtomicAdjustPosixImpl::Integer AtomicAdjustPosixImpl::
+set(TVOLATILE AtomicAdjustPosixImpl::Integer &var, AtomicAdjustPosixImpl::Integer new_value) {
   pthread_mutex_lock(&_mutex);
-  PN_int32 orig_value = var;
+  Integer orig_value = var;
   var = new_value;
   pthread_mutex_unlock(&_mutex);
   return orig_value;
@@ -81,10 +81,10 @@ set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
-get(const TVOLATILE PN_int32 &var) {
+INLINE AtomicAdjustPosixImpl::Integer AtomicAdjustPosixImpl::
+get(const TVOLATILE AtomicAdjustPosixImpl::Integer &var) {
   pthread_mutex_lock(&_mutex);
-  PN_int32 orig_value = var;
+  Integer orig_value = var;
   pthread_mutex_unlock(&_mutex);
   return orig_value;
 }
@@ -140,11 +140,11 @@ get_ptr(void * const TVOLATILE &var) {
 //                 return orig_value;
 //
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustPosixImpl::
-compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
-                     PN_int32 new_value) {
+INLINE AtomicAdjustPosixImpl::Integer AtomicAdjustPosixImpl::
+compare_and_exchange(TVOLATILE AtomicAdjustPosixImpl::Integer &mem, AtomicAdjustPosixImpl::Integer old_value,
+                     AtomicAdjustPosixImpl::Integer new_value) {
   pthread_mutex_lock(&_mutex);
-  PN_int32 orig_value = mem;
+  Integer orig_value = mem;
   if (mem == old_value) {
     mem = new_value;
   }

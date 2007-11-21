@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 void ConditionVarSpinlockImpl::
 wait() {
-  PN_int32 current = _event;
+  AtomicAdjust::Integer current = _event;
   _mutex.release();
 
   while (AtomicAdjust::get(_event) == current) {

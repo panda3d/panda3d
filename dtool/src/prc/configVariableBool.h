@@ -49,7 +49,7 @@ PUBLISHED:
   INLINE void set_word(int n, bool value);
 
 private:
-  PN_int32 _local_modified;
+  AtomicAdjust::Integer _local_modified;
   bool _cache;
 };
 

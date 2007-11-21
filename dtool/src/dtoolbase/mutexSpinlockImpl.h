@@ -47,7 +47,7 @@ public:
 private:
   void do_lock();
 
-  TVOLATILE PN_int32 _lock;
+  TVOLATILE AtomicAdjust::Integer _lock;
 };
 
 #include "mutexSpinlockImpl.I"

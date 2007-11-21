@@ -62,7 +62,7 @@ private:
   CRITICAL_SECTION *_external_mutex;
   HANDLE _event_signal;
   HANDLE _event_broadcast;
-  TVOLATILE PN_int32 _waiters_count;
+  TVOLATILE AtomicAdjust::Integer _waiters_count;
 };
 
 #include "conditionVarFullWin32Impl.I"

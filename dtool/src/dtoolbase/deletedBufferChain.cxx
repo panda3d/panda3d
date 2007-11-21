@@ -32,7 +32,7 @@ DeletedBufferChain(size_t buffer_size) {
 
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we also need to reserve space for _flag.
-  _alloc_size += sizeof(PN_int32);
+  _alloc_size += sizeof(AtomicAdjust::Integer);
 #endif  // NDEBUG
 
   // We must allocate at least this much space for bookkeeping
@@ -62,7 +62,7 @@ allocate(size_t size, TypeHandle type_handle) {
     _lock.release();
 
 #ifdef USE_DELETEDCHAINFLAG
-    assert(obj->_flag == (PN_int32)DCF_deleted);
+    assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
     obj->_flag = DCF_alive;
 #endif  // NDEBUG
 
@@ -115,14 +115,14 @@ deallocate(void *ptr, TypeHandle type_handle) {
   ObjectNode *obj = buffer_to_node(ptr);
 
 #ifdef USE_DELETEDCHAINFLAG
-  PN_int32 orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
+  AtomicAdjust::Integer orig_flag = AtomicAdjust::compare_and_exchange(obj->_flag, DCF_alive, DCF_deleted);
 
   // If this assertion is triggered, you double-deleted an object.
-  assert(orig_flag != (PN_int32)DCF_deleted);
+  assert(orig_flag != (AtomicAdjust::Integer)DCF_deleted);
 
   // If this assertion is triggered, you tried to delete an object
   // that was never allocated, or you have heap corruption.
-  assert(orig_flag == (PN_int32)DCF_alive);
+  assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
 #endif  // NDEBUG
 
   _lock.lock();

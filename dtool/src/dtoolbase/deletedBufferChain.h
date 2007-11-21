@@ -85,7 +85,7 @@ private:
     // maintained out-of-band from the actual pointer returned, so we
     // can safely use this flag to indicate the difference between
     // allocated and freed pointers.
-    TVOLATILE PN_int32 _flag;
+    TVOLATILE AtomicAdjust::Integer _flag;
 #endif
 
     // This pointer sits within the buffer, in the same space

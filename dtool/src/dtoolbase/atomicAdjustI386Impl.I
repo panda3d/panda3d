@@ -23,10 +23,10 @@
 //  Description: Atomically increments the indicated variable.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
-inc(TVOLATILE PN_int32 &var) {
+inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 #ifdef _M_IX86
   // Windows case
-  TVOLATILE PN_int32 *var_ptr = &var;
+  TVOLATILE Integer *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
     lock inc dword ptr [edx];
@@ -47,11 +47,11 @@ inc(TVOLATILE PN_int32 &var) {
 //               is zero.
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustI386Impl::
-dec(TVOLATILE PN_int32 &var) {
+dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   unsigned char c;
 #ifdef _M_IX86
   // Windows case
-  TVOLATILE PN_int32 *var_ptr = &var;
+  TVOLATILE Integer *var_ptr = &var;
   __asm {
     mov edx, var_ptr;
     lock dec dword ptr [edx];
@@ -73,8 +73,8 @@ dec(TVOLATILE PN_int32 &var) {
 //               delta to be negative.
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
-add(TVOLATILE PN_int32 &var, PN_int32 delta) {
-  PN_int32 orig_value = var;
+add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer delta) {
+  Integer orig_value = var;
   while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
     orig_value = var;
   }
@@ -86,9 +86,9 @@ add(TVOLATILE PN_int32 &var, PN_int32 delta) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustI386Impl::
-set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
-  PN_int32 orig_value = var;
+INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
+set(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer new_value) {
+  Integer orig_value = var;
   var = new_value;
   return orig_value;
 }
@@ -102,8 +102,8 @@ set(TVOLATILE PN_int32 &var, PN_int32 new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustI386Impl::
-get(const TVOLATILE PN_int32 &var) {
+INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
+get(const TVOLATILE AtomicAdjustI386Impl::Integer &var) {
   return var;
 }
 
@@ -153,13 +153,13 @@ get_ptr(void * const TVOLATILE &var) {
 //                 return orig_value;
 //
 ////////////////////////////////////////////////////////////////////
-INLINE PN_int32 AtomicAdjustI386Impl::
-compare_and_exchange(TVOLATILE PN_int32 &mem, PN_int32 old_value,
-                     PN_int32 new_value) {
-  PN_int32 prev;
+INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
+compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem, AtomicAdjustI386Impl::Integer old_value,
+                     AtomicAdjustI386Impl::Integer new_value) {
+  Integer prev;
 #ifdef _M_IX86
   // Windows case
-  TVOLATILE PN_int32 *mem_ptr = &mem;
+  TVOLATILE Integer *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;
     mov ecx, new_value;

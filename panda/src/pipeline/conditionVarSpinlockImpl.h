@@ -50,7 +50,7 @@ public:
 
 private:
   MutexSpinlockImpl &_mutex;
-  TVOLATILE PN_int32 _event;
+  TVOLATILE AtomicAdjust::Integer _event;
 };
 
 #include "conditionVarSpinlockImpl.I"
