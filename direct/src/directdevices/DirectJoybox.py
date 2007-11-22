@@ -229,6 +229,15 @@ class DirectJoybox(DirectObject):
         self.showMode(self.modeName)
         self.enable()
 
+
+    def setUseHeadingNP(self,enabled):
+
+        self.useHeadingNP = enabled
+
+    def setRotateInPlace(self,enabled):
+
+        self.rotateInPlace = enabled
+
     def joyboxFly(self):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
@@ -297,6 +306,9 @@ class DirectJoybox(DirectObject):
     def tankMode(self):
         self.setMode(self.tankFly,'Tank Mode')
 
+    def nullMode(self):
+        self.setMode(self.nullFly,'Null Mode')
+
 
     def lucMode(self):
         self.mapping = [R_LEFT_RIGHT, R_FWD_BACK, L_FWD_BACK,
@@ -349,6 +361,9 @@ class DirectJoybox(DirectObject):
     def spaceMode(self):
         self.setMode(self.spaceFly, 'Space Mode')
 
+
+    def nullFly(self):
+        return
 
     def tankFly(self):
 
