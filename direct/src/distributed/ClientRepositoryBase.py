@@ -11,6 +11,7 @@ import time
 from ClockDelta import *
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
+import types
 
 class ClientRepositoryBase(ConnectionRepository):
     """
@@ -246,10 +247,17 @@ class ClientRepositoryBase(ConnectionRepository):
                     self.lastGenerate = globalClock.getFrameTime()
 
                 for dg, di in updates:
-                    # ovUpdated is set to True since its OV
-                    # is assumbed to have occured when the
-                    # deferred update was originally received
-                    self.__doUpdate(doId, di, True)
+                    # non-DC updates that need to be played back in-order are
+                    # stored as (msgType, (dg, di))
+                    if type(di) is types.TupleType:
+                        msgType = dg
+                        dg, di = di
+                        self.replayDeferredGenerate(msgType, (dg, di))
+                    else:
+                        # ovUpdated is set to True since its OV
+                        # is assumbed to have occured when the
+                        # deferred update was originally received
+                        self.__doUpdate(doId, di, True)
         else:
             self.notify.warning("Ignoring deferred message %s" % (msgType))
 
