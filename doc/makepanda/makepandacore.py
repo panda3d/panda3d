@@ -677,7 +677,7 @@ def SdkLocateMax():
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0):
             if (SDK.has_key(version)==0):
-                ddir = "sdks/"+version.lower()
+                ddir = "sdks/maxsdk"+version.lower()[3:]
                 if (os.path.isdir(ddir)):
                     SDK[version] = ddir
                     SDK[version+"CS"] = ddir
