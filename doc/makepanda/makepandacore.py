@@ -668,7 +668,7 @@ def SdkLocateMaya():
                     SDK[ver] = ddir
                 else:
                     res = GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
-                    if (key != 0):
+                    if (res != 0):
                         res = res.replace("\\", "/").rstrip("/")
                         SDK[res] = ver
 
