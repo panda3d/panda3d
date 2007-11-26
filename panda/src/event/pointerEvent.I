@@ -29,10 +29,10 @@ PointerEvent() :
   _ypos(0),
   _dx(0),
   _dy(0),
-  _sequence(0),
   _length(0.0),
   _direction(0.0),
   _rotation(0.0),
+  _sequence(0),
   _time(0.0)
 {
 }
@@ -49,10 +49,10 @@ PointerEvent(const PointerEvent &copy) :
   _ypos(copy._ypos),
   _dx(copy._dx),
   _dy(copy._dy),
-  _sequence(copy._sequence),
   _length(copy._length),
   _direction(copy._direction),
   _rotation(copy._rotation),
+  _sequence(copy._sequence),
   _time(copy._time)
 {
 }

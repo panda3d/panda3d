@@ -40,11 +40,11 @@ PreparedGraphicsObjects::
 PreparedGraphicsObjects() : 
   _lock("PreparedGraphicsObjects::_lock"),
   _name(init_name()),
+  _vertex_buffer_cache_size(0),
+  _index_buffer_cache_size(0),
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),
-  _ibuffer_residency(_name, "ibuffer"),
-  _vertex_buffer_cache_size(0),
-  _index_buffer_cache_size(0)
+  _ibuffer_residency(_name, "ibuffer")
 {
   // GLGSG will turn this flag on.  This is a temporary hack to
   // disable this feature for DX8/DX9 for now, until we work out the

@@ -108,9 +108,6 @@ Texture(const Texture &copy) :
   _x_size(copy._x_size),
   _y_size(copy._y_size),
   _z_size(copy._z_size),
-  _pad_x_size(copy._pad_x_size),
-  _pad_y_size(copy._pad_y_size),
-  _pad_z_size(copy._pad_z_size),
   _num_components(copy._num_components),
   _component_width(copy._component_width),
   _texture_type(copy._texture_type),
@@ -131,6 +128,9 @@ Texture(const Texture &copy) :
   _border_color(copy._border_color),
   _compression(copy._compression),
   _match_framebuffer_format(copy._match_framebuffer_format),
+  _pad_x_size(copy._pad_x_size),
+  _pad_y_size(copy._pad_y_size),
+  _pad_z_size(copy._pad_z_size),
   _ram_image_compression(copy._ram_image_compression),
   _ram_images(copy._ram_images)
 {

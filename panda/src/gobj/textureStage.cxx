@@ -396,6 +396,18 @@ operator << (ostream &out, TextureStage::Mode mode) {
 
   case TextureStage::M_blend_color_scale:
     return out << "blend_color_scale";
+
+  case TextureStage::M_normal_map:
+    return out << "normal_map";
+
+  case TextureStage::M_gloss_map:
+    return out << "gloss_map";
+
+  case TextureStage::M_normal_gloss_map:
+    return out << "normal_gloss_map";
+
+  case TextureStage::M_selector_map:
+    return out << "selector_map";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";
