@@ -156,7 +156,10 @@ get_thread_object(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PStatClient::
 get_real_time() const {
-  return get_impl()->get_real_time();
+  if (has_impl()) {
+    return _impl->get_real_time();
+  }
+  return 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
