@@ -278,6 +278,9 @@ get_shader_input_nodepath(InternalName *id) const {
     }
     return p->get_nodepath();
   }
+
+  // Satisfy compiler.
+  return resfail;
 }
 
 ////////////////////////////////////////////////////////////////////
