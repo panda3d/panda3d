@@ -325,7 +325,7 @@ load_gridded_models(WindowFramework *window,
                                   ypos+new_center._v.v._1,
                                   0.0);
 
-          LMatrix4f::rotate_mat_normaxis(info.ang2,rotate_axis,tmat1);
+          tmat1.set_rotate_mat_normaxis(info.ang2,rotate_axis);
           tmat2 = LMatrix4f::translate_mat(translate_vec);
           xfm_mat = tmat1 * tmat2;
         } else if(gridmotiontype==LinearMotion) {
@@ -353,7 +353,7 @@ load_gridded_models(WindowFramework *window,
           const LVector3f rotate_axis(0.0, 0.0, 1.0);
           float ang = rad_2_deg(atan2(-xdel,ydel));
 
-          LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,info.rotmat);
+          info.rotmat.set_rotate_mat_normaxis(ang,rotate_axis);
 
           LVector3f translate_vec(xpos, ypos, 0.0);
           LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
@@ -418,10 +418,12 @@ main(int argc, char *argv[]) {
     load_gridded_models(window, gridded_filenames, info_arr);
 
     window->loop_animations();
+    window->stagger_animations();
 
     framework.enable_default_keys();
 
-    while (framework.do_frame()) {
+    Thread *current_thread = Thread::get_current_thread();
+    while (framework.do_frame(current_thread)) {
       if (!info_arr.empty() && gridmotiontype) {
         move_gridded_stuff(gridmotiontype, &info_arr[0], info_arr.size());
       }
