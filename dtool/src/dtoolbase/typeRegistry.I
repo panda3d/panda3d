@@ -39,7 +39,7 @@ freshen_derivations() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TypeRegistry::
 init_lock() {
-  if (_lock == (ReMutexImpl *)NULL) {
-    _lock = new ReMutexImpl;
+  if (_lock == (MutexImpl *)NULL) {
+    _lock = new MutexImpl;
   }
 }

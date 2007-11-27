@@ -26,6 +26,7 @@
 
 typedef bool BOOL;
 typedef long DWORD;
+typedef long LONG;
 typedef unsigned long ULONG;
 typedef long HRESULT;
 typedef int CRITICAL_SECTION;

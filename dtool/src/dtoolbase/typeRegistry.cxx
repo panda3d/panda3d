@@ -25,7 +25,7 @@
 
 #include <algorithm>
 
-ReMutexImpl *TypeRegistry::_lock = NULL;
+MutexImpl *TypeRegistry::_lock = NULL;
 TypeRegistry *TypeRegistry::_global_pointer = NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -524,17 +524,7 @@ reregister_types() {
 void TypeRegistry::
 write(ostream &out) const {
   _lock->lock();
-  // Recursively write out the tree, starting from each node that has
-  // no parent.
-  HandleRegistry::const_iterator hi;
-  for (hi = _handle_registry.begin();
-       hi != _handle_registry.end();
-       ++hi) {
-    const TypeRegistryNode *root = *hi;
-    if (root != NULL && root->_parent_classes.empty()) {
-      write_node(out, 2, root);
-    }
-  }
+  do_write(out);
   _lock->release();
 }
 
@@ -633,10 +623,31 @@ rebuild_derivations() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::do_write
+//       Access: Private
+//  Description: The private implementation of write(), this assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+void TypeRegistry::
+do_write(ostream &out) const {
+  // Recursively write out the tree, starting from each node that has
+  // no parent.
+  HandleRegistry::const_iterator hi;
+  for (hi = _handle_registry.begin();
+       hi != _handle_registry.end();
+       ++hi) {
+    const TypeRegistryNode *root = *hi;
+    if (root != NULL && root->_parent_classes.empty()) {
+      write_node(out, 2, root);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::write_node
 //       Access: Private
 //  Description: Writes a single TypeRegistryNode out, along with all of
-//               its descendants.
+//               its descendants.  Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void TypeRegistry::
 write_node(ostream &out, int indent_level, const TypeRegistryNode *node) const {
@@ -666,6 +677,8 @@ write_node(ostream &out, int indent_level, const TypeRegistryNode *node) const {
 //               the object that owns the handle, if available.  It is
 //               only used in an error condition, if for some reason
 //               the handle was uninitialized.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 TypeRegistryNode *TypeRegistry::
 look_up(TypeHandle handle, TypedObject *object) const {
@@ -675,8 +688,11 @@ look_up(TypeHandle handle, TypedObject *object) const {
 
     if (object != NULL) {
       // But we're lucky enough to have a TypedObject pointer handy!
-      // Maybe we can use it to resolve the error.
+      // Maybe we can use it to resolve the error.  We have to drop
+      // the lock while we do this, so we don't get a recursive lock.
+      _lock->release();
       handle = object->force_init_type();
+      _lock->lock();
       if (handle._index == 0) {
         // Strange.
         cerr

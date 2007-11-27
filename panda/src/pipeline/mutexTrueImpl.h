@@ -47,7 +47,9 @@ typedef ReMutexSimpleImpl ReMutexTrueImpl;
 #else
 
 typedef MutexImpl MutexTrueImpl;
+#if HAVE_REMUTEXIMPL
 typedef ReMutexImpl ReMutexTrueImpl;
+#endif // HAVE_REMUTEXIMPL
 
 #endif
 

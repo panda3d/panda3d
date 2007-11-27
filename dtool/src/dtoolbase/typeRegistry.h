@@ -95,6 +95,8 @@ private:
 
   INLINE void freshen_derivations();
   void rebuild_derivations();
+
+  void do_write(ostream &out) const;
   void write_node(ostream &out, int indent_level,
                   const TypeRegistryNode *node) const;
 
@@ -111,7 +113,7 @@ private:
 
   bool _derivations_fresh;
 
-  static ReMutexImpl *_lock;
+  static MutexImpl *_lock;
   static TypeRegistry *_global_pointer;
 
   friend class TypeHandle;
