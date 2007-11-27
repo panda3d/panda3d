@@ -94,6 +94,7 @@ public:
   void loop_animations(int hierarchy_match_flags = 
                        PartGroup::HMF_ok_part_extra |
                        PartGroup::HMF_ok_anim_extra);
+  void stagger_animations();
   void next_anim_control();
   void set_anim_controls(bool enable);
   INLINE bool get_anim_controls() const;

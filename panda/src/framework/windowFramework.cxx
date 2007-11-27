@@ -718,6 +718,24 @@ loop_animations(int hierarchy_match_flags) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::stagger_animations
+//       Access: Public
+//  Description: Walks through all the animations that were bound by
+//               loop_animations() and staggers their play rate
+//               slightly so that they will not remain perfectly in
+//               sync.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+stagger_animations() {
+  for (int i = 0; i < _anim_controls.get_num_anims(); ++i) {
+    AnimControl *control = _anim_controls.get_anim(i);
+    double r = (double)rand() / (double)RAND_MAX;
+    r = r * 0.2 + 0.9;
+    control->set_play_rate(r);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::next_anim_control
 //       Access: Public
 //  Description: Rotates the animation controls through all of the
