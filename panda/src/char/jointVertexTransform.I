@@ -36,9 +36,6 @@ get_joint() const {
 INLINE void JointVertexTransform::
 check_matrix() const {
   if (_matrix_stale) {
-    ((JointVertexTransform *)this)->_matrix = 
-      _joint->_initial_net_transform_inverse *
-      _joint->_net_transform;
-    ((JointVertexTransform *)this)->_matrix_stale = false;
+    ((JointVertexTransform *)this)->compute_matrix();
   }
 }

@@ -21,6 +21,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "mutexHolder.h"
 
 TypeHandle JointVertexTransform::_type_handle;
 
@@ -131,6 +132,20 @@ accumulate_matrix(LMatrix4f &accum, float weight) const {
 void JointVertexTransform::
 output(ostream &out) const {
   out << _joint->get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: JointVertexTransform::compute_matrix
+//       Access: Private
+//  Description: Recomputes _matrix if it needs it.  Uses locking.
+////////////////////////////////////////////////////////////////////
+void JointVertexTransform::
+compute_matrix() {
+  MutexHolder holder(_lock);
+  if (_matrix_stale) {
+    _matrix = _joint->_initial_net_transform_inverse * _joint->_net_transform;
+    _matrix_stale = false;
+  }
 }
 
 

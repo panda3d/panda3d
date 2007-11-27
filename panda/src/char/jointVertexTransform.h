@@ -23,6 +23,7 @@
 #include "characterJoint.h"
 #include "vertexTransform.h"
 #include "pointerTo.h"
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : JointVertexTransform
@@ -56,11 +57,13 @@ PUBLISHED:
 
 private:
   INLINE void check_matrix() const;
+  void compute_matrix();
 
   PT(CharacterJoint) _joint;
 
   LMatrix4f _matrix;
   bool _matrix_stale;
+  Mutex _lock;
 
 public:
   static void register_with_read_factory();
