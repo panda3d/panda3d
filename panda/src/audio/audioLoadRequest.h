@@ -36,6 +36,9 @@
 //               an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_AUDIO AudioLoadRequest : public AsyncTask {
+public:
+  ALLOC_DELETED_CHAIN(AudioLoadRequest);
+
 PUBLISHED:
   INLINE AudioLoadRequest(AudioManager *audio_manager, const string &filename, 
                           bool positional);

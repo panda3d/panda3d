@@ -35,6 +35,9 @@
 //               an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ModelLoadRequest : public AsyncTask {
+public:
+  ALLOC_DELETED_CHAIN(ModelLoadRequest);
+
 PUBLISHED:
   INLINE ModelLoadRequest(const Filename &filename, 
                           const LoaderOptions &options);

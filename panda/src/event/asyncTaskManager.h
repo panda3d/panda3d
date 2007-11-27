@@ -50,7 +50,7 @@
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
   AsyncTaskManager(const string &name, int num_threads);
-  virtual ~AsyncTaskManager();
+  BLOCKING virtual ~AsyncTaskManager();
 
   INLINE int get_num_threads() const;
   BLOCKING void stop_threads();
@@ -61,6 +61,8 @@ PUBLISHED:
   bool add_and_do(AsyncTask *task);
   bool remove(AsyncTask *task);
   bool has_task(AsyncTask *task) const;
+
+  BLOCKING void wait_for_tasks();
 
   INLINE int get_num_tasks() const;
 
@@ -76,11 +78,12 @@ protected:
   void service_one_task(AsyncTaskManagerThread *thread);
   void task_done(AsyncTask *task);
   void do_start_threads();
+  void do_poll();
 
 protected:
   class AsyncTaskManagerThread : public Thread {
   public:
-    AsyncTaskManagerThread(AsyncTaskManager *manager);
+    AsyncTaskManagerThread(const string &name, AsyncTaskManager *manager);
     virtual void thread_main();
 
     AsyncTaskManager *_manager;

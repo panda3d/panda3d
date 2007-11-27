@@ -37,5 +37,5 @@ AsyncTask::
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
 output(ostream &out) const {
-  out << get_type() << " " << get_name();
+  out << get_type();
 }

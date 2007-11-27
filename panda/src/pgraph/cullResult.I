@@ -18,19 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullResult::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE CullResult::
-CullResult(GraphicsStateGuardianBase *gsg,
-           const PStatCollector &draw_region_pcollector) :
-  _gsg(gsg),
-  _draw_region_pcollector(draw_region_pcollector)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CullResult::Destructor
 //       Access: Public
 //  Description: 

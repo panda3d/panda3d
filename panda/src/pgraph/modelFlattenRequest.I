@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ModelFlattenRequest::
 ModelFlattenRequest(PandaNode *orig) :
-  AsyncTask(orig->get_name()),
   _orig(orig),
   _is_ready(false)
 {

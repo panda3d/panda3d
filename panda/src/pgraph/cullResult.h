@@ -24,7 +24,6 @@
 #include "renderState.h"
 #include "cullableObject.h"
 #include "geomMunger.h"
-
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "pvector.h"
@@ -51,8 +50,8 @@ class SceneSetup;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH CullResult : public ReferenceCount {
 public:
-  INLINE CullResult(GraphicsStateGuardianBase *gsg,
-                    const PStatCollector &draw_region_pcollector);
+  CullResult(GraphicsStateGuardianBase *gsg,
+             const PStatCollector &draw_region_pcollector);
   INLINE ~CullResult();
 
   PT(CullResult) make_next() const;
@@ -81,7 +80,7 @@ private:
 
   GraphicsStateGuardianBase *_gsg;
   PStatCollector _draw_region_pcollector;
-
+  
   typedef pvector< PT(CullBin) > Bins;
   Bins _bins;
 };

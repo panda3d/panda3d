@@ -24,6 +24,15 @@
 #include "pnotify.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullHandler::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CullHandler::
+CullHandler() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullHandler::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -48,6 +57,17 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   nout << *object->_geom << " " << *object->_modelview_transform << " " 
        << *object->_state << "\n";
   delete object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullHandler::end_traverse
+//       Access: Public, Virtual
+//  Description: This callback function is intended to be overridden
+//               by a derived class.  This is called at the end of the
+//               traversal.
+////////////////////////////////////////////////////////////////////
+void CullHandler::
+end_traverse() {
 }
 
 ////////////////////////////////////////////////////////////////////

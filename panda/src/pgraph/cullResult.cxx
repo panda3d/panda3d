@@ -57,6 +57,19 @@ static const float dual_opaque_level = 252.0f / 256.0f;
 static const double bin_color_flash_rate = 1.0;  // 1 state change per second
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullResult::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CullResult::
+CullResult(GraphicsStateGuardianBase *gsg,
+           const PStatCollector &draw_region_pcollector) :
+  _gsg(gsg),
+  _draw_region_pcollector(draw_region_pcollector)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
 //       Access: Public
 //  Description: Returns a newly-allocated CullResult object that

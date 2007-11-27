@@ -194,6 +194,7 @@ remove(AsyncTask *task) {
   // serviced.  Wait for it to finish.
   while (task->_manager == this && 
          task->_state == AsyncTask::S_servicing) {
+    PStatTimer timer(_wait_pcollector);
     _cvar.wait();
   }
 
@@ -236,6 +237,37 @@ has_task(AsyncTask *task) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::wait_for_tasks
+//       Access: Published
+//  Description: Blocks until the task list is empty.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+wait_for_tasks() {
+  MutexHolder holder(_lock);
+
+  if (_threads.empty()) {
+    // Non-threaded case.
+    while (!_active.empty()) {
+      if (_state == AsyncTaskManager::S_shutdown) {
+        return;
+      }
+      do_poll();
+    }
+
+  } else {
+    // Threaded case.
+    while (_num_tasks > 0) {
+      if (_state == AsyncTaskManager::S_shutdown) {
+        return;
+      }
+      
+      PStatTimer timer(_wait_pcollector);
+      _cvar.wait();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskManager::poll
 //       Access: Published
 //  Description: Runs through all the tasks in the task list, once, if
@@ -250,32 +282,8 @@ poll() {
   if (!_threads.empty()) {
     return;
   }
-
-  Tasks new_active;
-  int new_num_tasks = 0;
-  Tasks::iterator ti;
-  for (ti = _active.begin(); ti != _active.end(); ++ti) {
-    AsyncTask *task = (*ti);
-    nassertv(task->_state == AsyncTask::S_active);
-    task->_state = AsyncTask::S_servicing;
-
-    // Here we keep the manager lock held while we are servicing each
-    // task.  This is the single-threaded implementation, after all,
-    // so what difference should it make?
-    if (task->do_task()) {
-      new_active.push_back(task);
-      ++new_num_tasks;
-      task->_state = AsyncTask::S_active;
-
-    } else {
-      // The task has finished.
-      task_done(task);
-    }
-  }
-
-  _active.swap(new_active);
-  _num_tasks = new_num_tasks;
-  _cvar.signal_all();
+  
+  do_poll();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -417,7 +425,9 @@ do_start_threads() {
     if (Thread::is_threading_supported()) {
       _threads.reserve(_num_threads);
       for (int i = 0; i < _num_threads; ++i) {
-        PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(this);
+        ostringstream strm;
+        strm << get_name() << "_" << i;
+        PT(AsyncTaskManagerThread) thread = new AsyncTaskManagerThread(strm.str(), this);
         if (thread->start(TP_low, true)) {
           _threads.push_back(thread);
         }
@@ -427,13 +437,48 @@ do_start_threads() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::do_poll
+//       Access: Protected
+//  Description: The private implementation of poll(), this assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+do_poll() {
+  Tasks new_active;
+  int new_num_tasks = 0;
+  Tasks::iterator ti;
+  for (ti = _active.begin(); ti != _active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    nassertv(task->_state == AsyncTask::S_active);
+    task->_state = AsyncTask::S_servicing;
+
+    // Here we keep the manager lock held while we are servicing each
+    // task.  This is the single-threaded implementation, after all,
+    // so what difference should it make?
+    if (task->do_task()) {
+      new_active.push_back(task);
+      ++new_num_tasks;
+      task->_state = AsyncTask::S_active;
+
+    } else {
+      // The task has finished.
+      task_done(task);
+    }
+  }
+
+  _active.swap(new_active);
+  _num_tasks = new_num_tasks;
+  _cvar.signal_all();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskManager::AsyncTaskManagerThread::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 AsyncTaskManager::AsyncTaskManagerThread::
-AsyncTaskManagerThread(AsyncTaskManager *manager) :
-  Thread(manager->get_name(), manager->get_name()),
+AsyncTaskManagerThread(const string &name, AsyncTaskManager *manager) :
+  Thread(name, manager->get_name()),
   _manager(manager),
   _servicing(NULL)
 {

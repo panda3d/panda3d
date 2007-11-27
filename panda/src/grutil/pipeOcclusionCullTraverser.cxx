@@ -251,6 +251,7 @@ end_traverse() {
 #endif  // NDEBUG
   }
   _pending_objects.clear();
+  CullTraverser::end_traverse();
 
   gsg->end_scene();
   _buffer->end_frame(GraphicsOutput::FM_render, current_thread);

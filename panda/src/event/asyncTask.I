@@ -23,8 +23,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE AsyncTask::
-AsyncTask(const string &name) : 
-  Namable(name),
+AsyncTask() : 
   _state(S_inactive),
   _manager(NULL)
 {

@@ -26,7 +26,6 @@
 INLINE AudioLoadRequest::
 AudioLoadRequest(AudioManager *audio_manager, const string &filename, 
                  bool positional) :
-  AsyncTask(filename),
   _audio_manager(audio_manager),
   _filename(filename),
   _positional(positional),

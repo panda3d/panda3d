@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ModelLoadRequest::
 ModelLoadRequest(const Filename &filename, const LoaderOptions &options) :
-  AsyncTask(filename),
   _filename(filename),
   _options(options),
   _is_ready(false)

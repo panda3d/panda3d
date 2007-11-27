@@ -35,6 +35,9 @@
 //               retrieved from this object.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ModelFlattenRequest : public AsyncTask {
+public:
+  ALLOC_DELETED_CHAIN(ModelFlattenRequest);
+
 PUBLISHED:
   INLINE ModelFlattenRequest(PandaNode *orig);
   
