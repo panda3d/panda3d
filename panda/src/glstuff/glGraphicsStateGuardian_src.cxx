@@ -438,6 +438,7 @@ reset() {
   _supports_depth_texture =
     has_extension("GL_ARB_depth_texture") || is_at_least_version(1, 4);
 
+  _supports_depth_stencil = false;
   if (_supports_depth_texture) {
     _supports_depth_stencil =
       has_extension("GL_EXT_packed_depth_stencil");
@@ -3397,16 +3398,16 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     }
     switch (get_component_type(component_type)) {
     case GL_UNSIGNED_BYTE:
-      GLCAT.spam(false) << "GL_UNSIGNED_BYTE, ";
+      GLCAT.spam(false) << "GL_UNSIGNED_BYTE";
       break;
     case GL_UNSIGNED_SHORT:
-      GLCAT.spam(false) << "GL_UNSIGNED_SHORT, ";
+      GLCAT.spam(false) << "GL_UNSIGNED_SHORT";
       break;
     case GL_FLOAT:
-      GLCAT.spam(false) << "GL_FLOAT, ";
+      GLCAT.spam(false) << "GL_FLOAT";
       break;
     default:
-      GLCAT.spam(false) << "unknown, ";
+      GLCAT.spam(false) << "unknown";
       break;
     }
     GLCAT.spam(false)
