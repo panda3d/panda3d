@@ -597,6 +597,7 @@ def CompileLink(dll, obj, opts):
         if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
         if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
         if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
+        if (opts.count("GTK2")):           cmd = cmd + ' -lgtk-x11-2.0'
         if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
         if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
 	if (PkgSelected(opts,"ARTOOLKIT")):cmd = cmd + ' -L' + THIRDPARTYLIBS + 'artoolkit/lib -lAR'
@@ -3212,18 +3213,23 @@ if (PkgSkip("PANDATOOL")==0):
 
 #
 # DIRECTORY: pandatool/src/win-stats/
+# DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0) and (sys.platform == "win32"):
-    OPTS=['DIR:pandatool/src/win-stats']
-    TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
+if (PkgSkip("PANDATOOL")==0):
+    if (sys.platform == "win32"):
+      OPTS=['DIR:pandatool/src/win-stats']
+      TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
+    else:
+      OPTS=['DIR:pandatool/src/gtk-stats']
+      TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
     TargetAdd('pstats.exe', input='pstats_composite1.obj')
     TargetAdd('pstats.exe', input='libpstatserver.lib')
     TargetAdd('pstats.exe', input='libprogbase.lib')
     TargetAdd('pstats.exe', input='libpandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
     TargetAdd('pstats.exe', input='libp3pystub.dll')
-    TargetAdd('pstats.exe', opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
+    TargetAdd('pstats.exe', opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
 
 #
 # DIRECTORY: pandatool/src/xfileprogs/
