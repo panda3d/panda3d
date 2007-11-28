@@ -739,7 +739,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                     Texture *tex, bool to_ram) {
   FrameBufferProperties props;
   props.set_rgb_color(1);
-  props.set_depth_bits(get_fb_properties().get_depth_bits());
+  props.set_depth_bits(1);
   
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
