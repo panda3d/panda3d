@@ -4,11 +4,13 @@ from ClockDelta import *
 from direct.task import Task
 from direct.showbase.PythonUtil import randFloat, Enum
 
+DummyTask = ScratchPad()
+    
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
     """
     BroadcastTypes = Enum('FULL, XYH, XY')
-    
+
     def __init__(self):
         pass
 
@@ -45,6 +47,12 @@ class DistributedSmoothNodeBase:
         taskMgr.remove(self.getPosHprBroadcastTaskName())
         # Delete this callback because it maintains a reference to self
         self.d_broadcastPosHpr = None
+
+    def posHprBroadcastStarted(self):
+        return self.d_broadcastPosHpr != None
+
+    def wantSmoothPosBroadcastTask(self):
+        return True
 
     def startPosHprBroadcast(self, period=.2, stagger=0, type=None):
         if self.cnode == None:
@@ -83,10 +91,11 @@ class DistributedSmoothNodeBase:
         delay = 0.
         if stagger:
             delay = randFloat(period)
-        taskMgr.doMethodLater(self.__broadcastPeriod + delay,
-                              self._posHprBroadcast, taskName)
+        if self.wantSmoothPosBroadcastTask():
+            taskMgr.doMethodLater(self.__broadcastPeriod + delay,
+                                  self._posHprBroadcast, taskName)
 
-    def _posHprBroadcast(self, task):
+    def _posHprBroadcast(self, task=DummyTask):
         # TODO: we explicitly stagger the initial task timing in
         # startPosHprBroadcast; we should at least make an effort to keep
         # this task accurately aligned with its period and starting time.
