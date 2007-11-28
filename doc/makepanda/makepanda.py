@@ -282,6 +282,7 @@ def CompileCxx(obj,src,opts):
         if (PkgSelected(opts,"FFMPEG")):    cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
         if (PkgSelected(opts,"ARTOOLKIT")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'artoolkit/include'
         if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
+        if (opts.count("GTK2")): cmd = cmd + ' -I/usr/include/gtk-2.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pango-1.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0'
         for x in ipath: cmd = cmd + ' -I' + x
         if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
@@ -3221,7 +3222,7 @@ if (PkgSkip("PANDATOOL")==0):
       OPTS=['DIR:pandatool/src/win-stats']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
     else:
-      OPTS=['DIR:pandatool/src/gtk-stats']
+      OPTS=['DIR:pandatool/src/gtk-stats', 'GTK2']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='gtkstats_composite1.cxx')
     TargetAdd('pstats.exe', input='pstats_composite1.obj')
     TargetAdd('pstats.exe', input='libpstatserver.lib')
