@@ -937,13 +937,8 @@ class TaskManager:
                         self.step()
                 except KeyboardInterrupt:
                     self.stop()
-                except IOError, v:
-                    # IOError unpack from http://www.python.org/doc/essays/stdexceptions/
-                    try:
-                        (code, message) = v
-                    except:
-                        code = 0
-                        message = v
+                except IOError, ioError:
+                    code, message = self._unpackIOError(ioError)
                     # Since upgrading to Python 2.4.1, pausing the execution
                     # often gives this IOError during the sleep function:
                     #     IOError: [Errno 4] Interrupted function call
@@ -960,6 +955,17 @@ class TaskManager:
                         print_exc_plus()
                     else:
                         raise
+
+    def _unpackIOError(self, ioError):
+        # IOError unpack from http://www.python.org/doc/essays/stdexceptions/
+        # this needs to be in its own method, exceptions that occur inside
+        # a nested try block are not caught by the inner try block's except
+        try:
+            (code, message) = ioError
+        except:
+            code = 0
+            message = ioError
+        return code, message
 
     def stop(self):
         # Set a flag so we will stop before beginning next frame
