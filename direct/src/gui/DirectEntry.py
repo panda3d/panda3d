@@ -9,6 +9,7 @@ from OnscreenText import OnscreenText
 import string,types
 # import this to make sure it gets pulled into the publish
 import encodings.utf_8
+from direct.showbase.DirectObject import DirectObject
 
 # DirectEntry States:
 ENTRY_FOCUS_STATE    = PGEntry.SFocus      # 0
@@ -105,6 +106,10 @@ class DirectEntry(DirectFrame):
         self.accept(self.guiItem.getFocusInEvent(), self.focusInCommandFunc)
         self.accept(self.guiItem.getFocusOutEvent(), self.focusOutCommandFunc)
 
+        # listen for auto-capitalize events on a separate object to prevent
+        # clashing with other parts of the system
+        self._autoCapListener = DirectObject()
+
         # Call option initialization functions
         self.initialiseoptions(DirectEntry)
 
@@ -123,6 +128,7 @@ class DirectEntry(DirectFrame):
 
     def destroy(self):
         self.ignoreAll()
+        self._autoCapListener.ignoreAll()
         DirectFrame.destroy(self)
 
     def setup(self):
@@ -170,11 +176,11 @@ class DirectEntry(DirectFrame):
 
     def autoCapitalizeFunc(self):
         if self['autoCapitalize']:
-            self.accept(self.guiItem.getTypeEvent(), self._handleTyping)
-            self.accept(self.guiItem.getEraseEvent(), self._handleErasing)
+            self._autoCapListener.accept(self.guiItem.getTypeEvent(), self._handleTyping)
+            self._autoCapListener.accept(self.guiItem.getEraseEvent(), self._handleErasing)
         else:
-            self.ignore(self.guiItem.getTypeEvent())
-            self.ignore(self.guiItem.getEraseEvent())
+            self._autoCapListener.ignore(self.guiItem.getTypeEvent())
+            self._autoCapListener.ignore(self.guiItem.getEraseEvent())
 
     def focusInCommandFunc(self):
         if self['focusInCommand']:
