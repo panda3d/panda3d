@@ -68,17 +68,24 @@ PUBLISHED:
   void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on(),
                         TypeHandle node_type = TypeHandle::none());
 
-  void set_color(float r, float g, float b, float a = 1.0,
-                 int priority = 0);
+  void set_texture(Texture *tex, int priority = 0);
+  void set_texture(TextureStage *stage, Texture *tex, int priority = 0);
+  void set_texture_off(int priority = 0);
+  void set_texture_off(TextureStage *stage, int priority = 0);
+
+  INLINE void set_color(float r, float g, float b, float a = 1.0,
+                        int priority = 0);
   void set_color(const Colorf &color, int priority = 0);
 
-  void set_color_scale(float r, float g, float b, float a = 1.0,
-                       int priority = 0);
-  void set_color_scale(const Colorf &color, int priority = 0);
+  INLINE void set_color_scale(float r, float g, float b, float a = 1.0,
+                              int priority = 0);
+  void set_color_scale(const LVecBase4f &scale, int priority = 0);
 
-  void compose_color_scale(float r, float g, float b, float a = 1.0,
-                        int priority = 0);
-  void compose_color_scale(const Colorf &color, int priority = 0);
+  INLINE void compose_color_scale(float r, float g, float b, float a = 1.0,
+                                  int priority = 0);
+  void compose_color_scale(const LVecBase4f &scale, int priority = 0);
+
+  void set_attrib(const RenderAttrib *attrib, int priority = 0);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -86,6 +93,9 @@ PUBLISHED:
 private:
   typedef PTA(NodePath) NodePaths;
   NodePaths _node_paths;
+
+  // This typedef is used in set_attrib() and similar methods.
+  typedef pmap<CPT(RenderState), CPT(RenderState) > StateMap;
 };
 
 INLINE ostream &operator << (ostream &out, const NodePathCollection &col) {

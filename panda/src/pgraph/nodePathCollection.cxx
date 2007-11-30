@@ -19,6 +19,8 @@
 #include "nodePathCollection.h"
 #include "findApproxPath.h"
 #include "findApproxLevelEntry.h"
+#include "textureAttrib.h"
+#include "colorScaleAttrib.h"
 #include "colorAttrib.h"
 
 #include "indent.h"
@@ -422,14 +424,99 @@ set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_color
+//     Function: NodePathCollection::set_texture
 //       Access: Published
-//  Description: Colors all NodePaths in the collection
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the default texture stage.
+//
+//               This is the deprecated single-texture variant of this
+//               method; it is now superceded by set_texture() that
+//               accepts a stage and texture.  However, this method
+//               may be used in the presence of multitexture if you
+//               just want to adjust the default stage.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-set_color(float r, float g, float b, float a, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).set_color(Colorf(r, g, b, a), priority);
+set_texture(Texture *tex, int priority) {
+  PT(TextureStage) stage = TextureStage::get_default();
+  set_texture(stage, tex, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_texture
+//       Access: Published
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the indicated multitexture
+//               stage.  If there are multiple texture stages
+//               specified (possibly on multiple different nodes at
+//               different levels), they will all be applied to
+//               geometry together, according to the stage
+//               specification set up in the TextureStage object.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_texture(TextureStage *stage, Texture *tex, int priority) {
+  StateMap state_map;
+
+  NodePaths::iterator npi;
+  for (npi = _node_paths.begin(); npi != _node_paths.end(); ++npi) {
+    NodePath &np = (*npi);
+    CPT(RenderState) orig_state = np.get_state();
+    StateMap::iterator smi = state_map.find(orig_state);
+    if (smi != state_map.end()) {
+      // This RenderState has already been encountered; reuse it.
+      np.set_state((*smi).second);
+    } else {
+      // This RenderState has not yet been encountered; apply the
+      // attrib to it.
+      np.set_texture(stage, tex, priority);
+      state_map[orig_state] = np.get_state();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_texture_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using no texture, on any stage.  This is different
+//               from not specifying a texture; rather, this
+//               specifically contradicts set_texture() at a higher
+//               node level (or, with a priority, overrides a
+//               set_texture() at a lower level).
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_texture_off(int priority) {
+  nassertv_always(!is_empty());
+  set_attrib(TextureAttrib::make_all_off(), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::set_texture_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using no texture, on the indicated stage.  This is
+//               different from not specifying a texture; rather, this
+//               specifically contradicts set_texture() at a higher
+//               node level (or, with a priority, overrides a
+//               set_texture() at a lower level).
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+set_texture_off(TextureStage *stage, int priority) {
+  StateMap state_map;
+
+  NodePaths::iterator npi;
+  for (npi = _node_paths.begin(); npi != _node_paths.end(); ++npi) {
+    NodePath &np = (*npi);
+    CPT(RenderState) orig_state = np.get_state();
+    StateMap::iterator smi = state_map.find(orig_state);
+    if (smi != state_map.end()) {
+      // This RenderState has already been encountered; reuse it.
+      np.set_state((*smi).second);
+    } else {
+      // This RenderState has not yet been encountered; apply the
+      // attrib to it.
+      np.set_texture_off(stage, priority);
+      state_map[orig_state] = np.get_state();
+    }
   }
 }
 
@@ -440,57 +527,91 @@ set_color(float r, float g, float b, float a, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
 set_color(const Colorf &color, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).set_color(color, priority);
-    //get_path(i).node()->set_attrib(ColorAttrib::make_flat(color), priority);
-  }
+  set_attrib(ColorAttrib::make_flat(color), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::set_color_scale
 //       Access: Published
-//  Description: Applies color scales to all NodePaths in the collection
+//  Description: Applies color scales to all NodePaths in the
+//               collection.  The existing color scale is replaced.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-set_color_scale(float r, float g, float b, float a, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).set_color_scale(Colorf(r, g, b, a), priority);
-  }
-}
+set_color_scale(const LVecBase4f &scale, int priority) {
+  StateMap state_map;
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::set_color_scale
-//       Access: Published
-//  Description: Applies color scales to all NodePaths in the collection
-////////////////////////////////////////////////////////////////////
-void NodePathCollection::
-set_color_scale(const Colorf &color, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).set_color_scale(color, priority);
+  NodePaths::iterator npi;
+  for (npi = _node_paths.begin(); npi != _node_paths.end(); ++npi) {
+    NodePath &np = (*npi);
+    CPT(RenderState) orig_state = np.get_state();
+    StateMap::iterator smi = state_map.find(orig_state);
+    if (smi != state_map.end()) {
+      // This RenderState has already been encountered; reuse it.
+      np.set_state((*smi).second);
+    } else {
+      // This RenderState has not yet been encountered; apply the
+      // attrib to it.
+      np.set_color_scale(scale, priority);
+      state_map[orig_state] = np.get_state();
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::compose_color_scale
 //       Access: Published
-//  Description: Applies color scales to all NodePaths in the collection
+//  Description: Applies color scales to all NodePaths in the
+//               collection.  The existing color scale, if any, is
+//               multiplied by the specified color scale.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-compose_color_scale(float r, float g, float b, float a, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).compose_color_scale(Colorf(r, g, b, a), priority);
+compose_color_scale(const LVecBase4f &scale, int priority) {
+  StateMap state_map;
+
+  NodePaths::iterator npi;
+  for (npi = _node_paths.begin(); npi != _node_paths.end(); ++npi) {
+    NodePath &np = (*npi);
+    CPT(RenderState) orig_state = np.get_state();
+    StateMap::iterator smi = state_map.find(orig_state);
+    if (smi != state_map.end()) {
+      // This RenderState has already been encountered; reuse it.
+      np.set_state((*smi).second);
+    } else {
+      // This RenderState has not yet been encountered; apply the
+      // attrib to it.
+      np.compose_color_scale(scale, priority);
+      state_map[orig_state] = np.get_state();
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::compose_color_scale
+//     Function: NodePathCollection::set_attrib
 //       Access: Published
-//  Description: Applies color scales to all NodePaths in the collection
+//  Description: Applies the indicated RenderAttrib to all NodePaths
+//               in the collection.  An effort is made to apply the
+//               attrib to many NodePaths as quickly as possible;
+//               redundant RenderState compositions are not
+//               duplicated.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-compose_color_scale(const Colorf &color, int priority) {
-  for (int i = 0; i < get_num_paths(); i++) {
-    get_path(i).compose_color_scale(color, priority);
+set_attrib(const RenderAttrib *attrib, int priority) {
+  StateMap state_map;
+
+  NodePaths::iterator npi;
+  for (npi = _node_paths.begin(); npi != _node_paths.end(); ++npi) {
+    NodePath &np = (*npi);
+    CPT(RenderState) orig_state = np.get_state();
+    StateMap::iterator smi = state_map.find(orig_state);
+    if (smi != state_map.end()) {
+      // This RenderState has already been encountered; reuse it.
+      np.set_state((*smi).second);
+    } else {
+      // This RenderState has not yet been encountered; apply the
+      // attrib to it.
+      np.set_attrib(attrib, priority);
+      state_map[orig_state] = np.get_state();
+    }
   }
 }
 
