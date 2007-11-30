@@ -254,6 +254,23 @@ ConfigVariableBool premunge_data
           "encoding requirements, as appropriate.  When this is false, the "
           "data will be munged at render time instead."));
 
+ConfigVariableBool preserve_geom_nodes
+("preserve-geom-nodes", false,
+ PRC_DESC("This specifies the default value for the \"preserved\" flag on "
+          "every GeomNode created.  When this is true, GeomNodes will not "
+          "be flattened, so setting this true effectively disables the "
+          "use of flatten to combine GeomNodes."));
+
+ConfigVariableBool flatten_geoms
+("flatten-geoms", true,
+ PRC_DESC("When this is true (the default), NodePath::flatten_strong() and "
+          "flatten_medium() will attempt to combine multiple Geoms into "
+          "as few Geoms as possible, by combing GeomVertexDatas and then "
+          "unifying.  Setting this false disables this behavior, so that "
+          "NodePath flatten operations will only reduce nodes.  This affects "
+          "only the NodePath interfaces; you may still make the lower-level "
+          "SceneGraphReducer calls directly."));
+
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

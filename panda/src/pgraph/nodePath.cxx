@@ -5838,8 +5838,10 @@ flatten_medium() {
   gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), 0);
 
-  gr.collect_vertex_data(node());
-  gr.unify(node(), true);
+  if (flatten_geoms) {
+    gr.collect_vertex_data(node());
+    gr.unify(node(), true);
+  }
 
   return num_removed;
 }
@@ -5868,8 +5870,10 @@ flatten_strong() {
   gr.apply_attribs(node());
   int num_removed = gr.flatten(node(), ~0);
 
-  gr.collect_vertex_data(node(), ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name | SceneGraphReducer::CVD_animation_type));
-  gr.unify(node(), false);
+  if (flatten_geoms) {
+    gr.collect_vertex_data(node(), ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name | SceneGraphReducer::CVD_animation_type));
+    gr.unify(node(), false);
+  }
 
   return num_removed;
 }

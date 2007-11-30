@@ -64,8 +64,9 @@ public:
   virtual bool safe_to_combine() const;
 
 PUBLISHED:
-
   INLINE void set_preserved(bool value);
+  INLINE bool get_preserved() const;
+
   INLINE int get_num_geoms() const;
   INLINE CPT(Geom) get_geom(int n) const;
   INLINE PT(Geom) modify_geom(int n);

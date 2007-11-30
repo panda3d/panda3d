@@ -47,8 +47,9 @@ GeomNode::
 GeomNode(const string &name) :
   PandaNode(name)
 {
+  _preserved = preserve_geom_nodes;
+
   // GeomNodes have a certain set of bits on by default.
-  _preserved = false;
   set_into_collide_mask(get_default_collide_mask());
 }
 
@@ -280,38 +281,38 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::safe_to_flatten
 //       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-//
-//               For a GeomNode, this does the right thing, but it is
-//               better to use a GeomTransformer instead, since it
-//               will share the new arrays properly between different
-//               GeomNodes.
+//  Description: Returns true if it is generally safe to flatten out
+//               this particular kind of PandaNode by duplicating
+//               instances (by calling dupe_for_flatten()), false
+//               otherwise (for instance, a Camera cannot be safely
+//               flattened, because the Camera pointer itself is
+//               meaningful).
 ////////////////////////////////////////////////////////////////////
 bool GeomNode::
 safe_to_flatten() const {
-  if(_preserved)
+  if (_preserved) {
     return false;
+  }
+
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::safe_to_combine
 //       Access: Public, Virtual
-//  Description: Transforms the contents of this node by the indicated
-//               matrix, if it means anything to do so.  For most
-//               kinds of nodes, this does nothing.
-//
-//               For a GeomNode, this does the right thing, but it is
-//               better to use a GeomTransformer instead, since it
-//               will share the new arrays properly between different
-//               GeomNodes.
+//  Description: Returns true if it is generally safe to combine this
+//               particular kind of PandaNode with other kinds of
+//               PandaNodes of compatible type, adding children or
+//               whatever.  For instance, an LODNode should not be
+//               combined with any other PandaNode, because its set of
+//               children is meaningful.
 ////////////////////////////////////////////////////////////////////
 bool GeomNode::
 safe_to_combine() const {
-  if(_preserved)
+  if (_preserved) {
     return false;
+  }
+
   return true;
 }
 

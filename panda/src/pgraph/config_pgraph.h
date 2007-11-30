@@ -55,6 +55,8 @@ extern ConfigVariableBool depth_offset_decals;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
 extern ConfigVariableBool premunge_data;
+extern ConfigVariableBool preserve_geom_nodes;
+extern ConfigVariableBool flatten_geoms;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;

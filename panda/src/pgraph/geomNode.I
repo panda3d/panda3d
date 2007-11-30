@@ -18,8 +18,32 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::set_preserved
+//       Access: Published
+//  Description: Sets the "preserved" flag.  When this is true, the
+//               GeomNode will be left untouched by any flatten
+//               operations.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomNode::
+set_preserved(bool value) {
+  _preserved = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_preserved
+//       Access: Published
+//  Description: Returns the "preserved" flag.  When this is true, the
+//               GeomNode will be left untouched by any flatten
+//               operations.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomNode::
+get_preserved() const {
+  return _preserved;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_num_geoms
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of geoms in the node.
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomNode::
@@ -30,18 +54,8 @@ get_num_geoms() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::get_num_geoms
-//       Access: Public
-//  Description: Returns the number of geoms in the node.
-////////////////////////////////////////////////////////////////////
-INLINE void GeomNode::
-set_preserved(bool value){
-  _preserved = value;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_geom
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth geom of the node.  This object should
 //               not be modified, since the same object might be
 //               shared between multiple different GeomNodes, but see
@@ -57,7 +71,7 @@ get_geom(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::modify_geom
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth geom of the node, suitable for
 //               modifying it.  If the nth Geom has multiple reference
 //               counts to it, reassigns it to an identical copy
@@ -84,7 +98,7 @@ modify_geom(int n) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_geom_state
-//       Access: Public
+//       Access: Published
 //  Description: Returns the RenderState associated with the nth geom
 //               of the node.  This is just the RenderState directly
 //               associated with the Geom; the actual state in which
@@ -102,7 +116,7 @@ get_geom_state(int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::set_geom_state
-//       Access: Public
+//       Access: Published
 //  Description: Changes the RenderState associated with the nth geom
 //               of the node.  This is just the RenderState directly
 //               associated with the Geom; the actual state in which
@@ -194,7 +208,7 @@ get_name_count(const GeomNode::NameCount &name_count, const InternalName *name) 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_geoms
-//       Access: Public
+//       Access: Published
 //  Description: Returns an object that can be used to walk through
 //               the list of geoms of the node.  When you intend to
 //               visit multiple geoms, using this is slightly
