@@ -234,8 +234,9 @@ class DirectEntry(DirectFrame):
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
             apply(self['focusOutCommand'], self['focusOutExtraArgs'])
-        self.ignore(self.guiItem.getTypeEvent())
-        self.ignore(self.guiItem.getEraseEvent())
+        if self['autoCapitalize']:
+            self.ignore(self.guiItem.getTypeEvent())
+            self.ignore(self.guiItem.getEraseEvent())
 
     def set(self, text):
         """ Changes the text currently showing in the typable region;
