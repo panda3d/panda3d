@@ -123,6 +123,10 @@ PUBLISHED:
 
   bool send_datagram(const Datagram &dg);
 
+  void start_message_bundle();
+  void send_message_bundle(unsigned int channel, unsigned int sender_channel);
+  void bundle_msg(const Datagram &dg);
+
   bool consider_flush();
   bool flush();
 
@@ -186,6 +190,10 @@ private:
   unsigned int                          _msg_type;
 
   static const string _overflow_event_name;
+
+  bool _bundling_msgs;
+  typedef std::vector< const string > BundledMsgVector;
+  BundledMsgVector _bundle_msgs;
 
   static PStatCollector _update_pcollector;
 };

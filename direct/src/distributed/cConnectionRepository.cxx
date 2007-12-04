@@ -71,7 +71,8 @@ CConnectionRepository(bool has_owner_view) :
   _msg_sender(0),
   _msg_type(0),
   _has_owner_view(has_owner_view),
-  _handle_c_updates(true)
+  _handle_c_updates(true),
+  _bundling_msgs(false)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -391,6 +392,11 @@ send_datagram(const Datagram &dg) {
     describe_message(nout, "SEND", dg);
   }
 
+  if (_bundling_msgs) {
+    bundle_msg(dg);
+    return false;
+  }
+
 #ifdef WANT_NATIVE_NET
   if(_native)
     return _bdc.SendMessage(dg);
@@ -418,6 +424,74 @@ send_datagram(const Datagram &dg) {
   distributed_cat.warning()
     << "Unable to send datagram after connection is closed.\n";
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::start_message_bundle
+//       Access: Published
+//  Description: Send a set of messages to the state server that will be processed
+//               atomically
+//               for instance you can do a combined setLocation/setPos and prevent
+//               race conditions where clients briefly get the setLocation but not
+//               the setPos, because the state server hasn't processed the setPos yet
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+start_message_bundle() {
+  // store up network messages until sendMessageBundle is called
+  // all updates in between must be sent from the same doId (updates
+  // must all affect the same DistributedObject)
+  // it is an error to call this again before calling sendMessageBundle
+  // NOTE: this is currently only implemented for setLocation and sendUpdate
+  // msgs
+  nassertv(!_bundling_msgs);
+  _bundling_msgs = true;
+  _bundle_msgs.clear();
+  if (get_verbose()) {
+    nout << "CR::SEND:BUNDLE_START" << endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::send_message_bundle
+//       Access: Published
+//  Description: send network messages queued up since startMessageBundle was called
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+send_message_bundle(unsigned int channel, unsigned int sender_channel) {
+  nassertv(_bundling_msgs);
+
+  Datagram dg;
+  // add server header (see PyDatagram.addServerHeader)
+  dg.add_int8(1);
+  dg.add_uint64(channel);
+  dg.add_uint64(sender_channel);
+  dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
+  // add each bundled message
+  BundledMsgVector::const_iterator bmi;
+  for (bmi = _bundle_msgs.begin(); bmi != _bundle_msgs.end(); bmi++) {
+    dg.add_string(*bmi);
+  }
+
+  _bundling_msgs = false;
+  _bundle_msgs.clear();
+
+  if (get_verbose()) {
+    nout << "CR::SEND:BUNDLE_FINISH" << endl;
+  }
+
+  // once _bundling_msgs flag is set to false, we can send the datagram
+  send_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::bundle_msg
+//       Access: Published
+//  Description: send network messages queued up since startMessageBundle was called
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+bundle_msg(const Datagram &dg) {
+  nassertv(_bundling_msgs);
+  _bundle_msgs.push_back(dg.get_message());
 }
 
 ////////////////////////////////////////////////////////////////////

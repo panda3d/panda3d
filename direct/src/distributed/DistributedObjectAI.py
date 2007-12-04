@@ -267,6 +267,11 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
     def sendSetZone(self, zoneId):
         self.air.sendSetZone(self, zoneId)
 
+    def startMessageBundle(self, name):
+        self.air.startMessageBundle(name)
+    def sendMessageBundle(self):
+        self.air.sendMessageBundle(self.doId)
+
     def getZoneChangeEvent(self):
         # this event is generated whenever this object changes zones.
         # arguments are newZoneId, oldZoneId
