@@ -72,7 +72,7 @@ CConnectionRepository(bool has_owner_view) :
   _msg_type(0),
   _has_owner_view(has_owner_view),
   _handle_c_updates(true),
-  _bundling_msgs(false)
+  _bundling_msgs(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -392,7 +392,7 @@ send_datagram(const Datagram &dg) {
     describe_message(nout, "SEND", dg);
   }
 
-  if (_bundling_msgs) {
+  if (is_bundling_messages()) {
     bundle_msg(dg);
     return false;
   }
@@ -441,14 +441,13 @@ start_message_bundle() {
   // all updates in between must be sent from the same doId (updates
   // must all affect the same DistributedObject)
   // it is an error to call this again before calling sendMessageBundle
-  // NOTE: this is currently only implemented for setLocation and sendUpdate
-  // msgs
-  nassertv(!_bundling_msgs);
-  _bundling_msgs = true;
-  _bundle_msgs.clear();
   if (get_verbose()) {
-    nout << "CR::SEND:BUNDLE_START" << endl;
+    nout << "CR::SEND:BUNDLE_START(" << _bundling_msgs << ")" << endl;
   }
+  if (_bundling_msgs == 0) {
+    _bundle_msgs.clear();
+  }
+  ++_bundling_msgs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -460,27 +459,41 @@ void CConnectionRepository::
 send_message_bundle(unsigned int channel, unsigned int sender_channel) {
   nassertv(_bundling_msgs);
 
-  Datagram dg;
-  // add server header (see PyDatagram.addServerHeader)
-  dg.add_int8(1);
-  dg.add_uint64(channel);
-  dg.add_uint64(sender_channel);
-  dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
-  // add each bundled message
-  BundledMsgVector::const_iterator bmi;
-  for (bmi = _bundle_msgs.begin(); bmi != _bundle_msgs.end(); bmi++) {
-    dg.add_string(*bmi);
-  }
-
-  _bundling_msgs = false;
-  _bundle_msgs.clear();
+  --_bundling_msgs;
 
   if (get_verbose()) {
-    nout << "CR::SEND:BUNDLE_FINISH" << endl;
+    nout << "CR::SEND:BUNDLE_FINISH(" << _bundling_msgs << ")" << endl;
   }
 
-  // once _bundling_msgs flag is set to false, we can send the datagram
-  send_datagram(dg);
+  // if _bundling_msgs ref count is zero, send the bundle out
+  if (_bundling_msgs == 0) {
+    Datagram dg;
+    // add server header (see PyDatagram.addServerHeader)
+    dg.add_int8(1);
+    dg.add_uint64(channel);
+    dg.add_uint64(sender_channel);
+    dg.add_uint16(STATESERVER_BOUNCE_MESSAGE);
+    // add each bundled message
+    BundledMsgVector::const_iterator bmi;
+    for (bmi = _bundle_msgs.begin(); bmi != _bundle_msgs.end(); bmi++) {
+      dg.add_string(*bmi);
+    }
+
+    send_datagram(dg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::abandon_message_bundles
+//       Access: Published
+//  Description: throw out any msgs that have been queued up for
+//               message bundles
+////////////////////////////////////////////////////////////////////
+void CConnectionRepository::
+abandon_message_bundles() {
+  nassertv(is_bundling_messages());
+  _bundling_msgs = 0;
+  _bundle_msgs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -490,7 +503,7 @@ send_message_bundle(unsigned int channel, unsigned int sender_channel) {
 ////////////////////////////////////////////////////////////////////
 void CConnectionRepository::
 bundle_msg(const Datagram &dg) {
-  nassertv(_bundling_msgs);
+  nassertv(is_bundling_messages());
   _bundle_msgs.push_back(dg.get_message());
 }
 

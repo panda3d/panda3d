@@ -248,6 +248,17 @@ get_overflow_event_name() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::is_bundling_messages
+//       Access: Published
+//  Description: Returns true if repository is queueing outgoing messages
+//               into a message bundle
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+is_bundling_messages() const {
+  return _bundling_msgs > 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_simulated_disconnect
 //       Access: Published
 //  Description: Sets the simulated disconnect flag.  While this is
