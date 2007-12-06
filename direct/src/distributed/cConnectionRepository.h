@@ -123,6 +123,9 @@ PUBLISHED:
 
   bool send_datagram(const Datagram &dg);
 
+  INLINE void set_want_message_bundling(bool flag);
+  INLINE bool get_want_message_bundling() const;
+
   void start_message_bundle();
   INLINE bool is_bundling_messages() const;
   void send_message_bundle(unsigned int channel, unsigned int sender_channel);
@@ -193,6 +196,7 @@ private:
 
   static const string _overflow_event_name;
 
+  bool _want_message_bundling;
   unsigned int _bundling_msgs;
   typedef std::vector< const string > BundledMsgVector;
   BundledMsgVector _bundle_msgs;

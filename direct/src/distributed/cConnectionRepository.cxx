@@ -72,6 +72,7 @@ CConnectionRepository(bool has_owner_view) :
   _msg_type(0),
   _has_owner_view(has_owner_view),
   _handle_c_updates(true),
+  _want_message_bundling(true),
   _bundling_msgs(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
@@ -392,7 +393,7 @@ send_datagram(const Datagram &dg) {
     describe_message(nout, "SEND", dg);
   }
 
-  if (is_bundling_messages()) {
+  if (is_bundling_messages() && get_want_message_bundling()) {
     bundle_msg(dg);
     return false;
   }
@@ -466,7 +467,7 @@ send_message_bundle(unsigned int channel, unsigned int sender_channel) {
   }
 
   // if _bundling_msgs ref count is zero, send the bundle out
-  if (_bundling_msgs == 0) {
+  if (_bundling_msgs == 0 && get_want_message_bundling()) {
     Datagram dg;
     // add server header (see PyDatagram.addServerHeader)
     dg.add_int8(1);

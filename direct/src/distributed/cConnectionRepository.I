@@ -259,6 +259,28 @@ is_bundling_messages() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_want_message_bundling
+//       Access: Published
+//  Description: Enable/disable outbound message bundling
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_want_message_bundling(bool flag) {
+  // don't allow enable/disable while bundling
+  nassertv(_bundling_msgs == 0);
+  _want_message_bundling = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_want_message_bundling
+//       Access: Published
+//  Description: Returns true if message bundling enabled
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_want_message_bundling() const {
+  return _want_message_bundling;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_simulated_disconnect
 //       Access: Published
 //  Description: Sets the simulated disconnect flag.  While this is
