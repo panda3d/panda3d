@@ -386,7 +386,7 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?
         if self.__preallocDoId:
-            assert doId == self.__preallocDoId
+            assert doId == self.doId
             self.__preallocDoId = 0
 
         # The repository is the one that really does the work
@@ -399,8 +399,8 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         assert self.notify.debugStateCall(self)
         # have we already allocated a doId?
         if self.__preallocDoId:
-            assert doId is None or doId == self.__preallocDoId
-            doId=self.__preallocDoId
+            assert doId is None or doId == self.doId
+            doId=self.doId
             self.__preallocDoId = 0
 
         # Assign it an id
