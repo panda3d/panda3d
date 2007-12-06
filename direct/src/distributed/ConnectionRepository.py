@@ -257,7 +257,7 @@ class ConnectionRepository(
                 if type(classDef) == types.ModuleType:
                     if not hasattr(classDef, className):
                         self.notify.warning("Module %s does not define class %s." % (className, className))
-                        return
+                        continue
                     classDef = getattr(classDef, className)
 
                 if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
