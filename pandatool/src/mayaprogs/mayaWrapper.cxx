@@ -32,12 +32,12 @@
 #define PATH_MAX 1024
 
 struct { char *ver, *key; } reg_keys[] = {
-  { "MAYA6",    "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath" },
-  { "MAYA65",   "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath" },
-  { "MAYA7",    "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath" },
-  { "MAYA8",    "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath" },
-  { "MAYA85",   "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath" },
-  { "MAYA2008", "SOFTWARE\\Autodesk\\Maya\\2008\\Setup\\InstallPath" },
+  { "MAYA6",    "6.0" },
+  { "MAYA65",   "6.5" },
+  { "MAYA7",    "7.0" },
+  { "MAYA8",    "8.0" },
+  { "MAYA85",   "8.5" },
+  { "MAYA2008", "2008" },
   { 0, 0 },
 };
 
@@ -50,22 +50,33 @@ char *getRegistryKey(char *ver) {
   return 0;
 }
 
-void getMayaLocation(char *key, char *loc)
+void getMayaLocation(char *ver, char *loc)
 {
-  HKEY hkey; DWORD size, dtype; LONG res;
+  char fullkey[1024], *developer;
+  HKEY hkey; DWORD size, dtype; LONG res; int dev, hive;
 
-  loc[0] = 0;
-  res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, key, 0, KEY_READ, &hkey);
-  if (res == ERROR_SUCCESS) {
-    size=1024;
-    res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)loc, &size);
-    if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
-      loc[size] = 0;
-      return;
-    } else {
-      loc[0] = 0;
+  for (dev=0; dev<3; dev++) {
+    switch (dev) {
+    case 0: developer="Alias|Wavefront"; break;
+    case 1: developer="Alias"; break;
+    case 2: developer="Autodesk"; break;
     }
-    RegCloseKey(hkey);
+    sprintf(fullkey, "SOFTWARE\\%s\\Maya\\%s\\Setup\\InstallPath", developer, ver);
+    for (hive=0; hive<2; hive++) {
+      loc[0] = 0;
+      res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, fullkey, 0, KEY_READ | (hive ? 256:0), &hkey);
+      if (res == ERROR_SUCCESS) {
+        size=1024;
+        res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)loc, &size);
+        if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
+          loc[size] = 0;
+          return;
+        } else {
+          loc[0] = 0;
+        }
+        RegCloseKey(hkey);
+      }
+    }
   }
 }
 
@@ -88,7 +99,7 @@ void getWrapperName(char *prog)
 int main(int argc, char **argv)
 {
   char loc[1024], prog[1024];
-  char *key, *cmd, *path, *env1, *env2; int len;
+  char *key, *cmd, *path, *env1, *env2, *env3; int len;
   STARTUPINFO si; PROCESS_INFORMATION pi;
   
   key = getRegistryKey(TOSTRING(MAYAVERSION));
@@ -115,8 +126,11 @@ int main(int argc, char **argv)
   sprintf(env1, "PATH=%s\\bin;%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
+  env3 = (char*)malloc(300 + 5*strlen(loc));
+  sprintf(env3, "PYTHONPATH=%s\\bin;%s\\Python;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\site-packages", loc, loc, loc, loc, loc);
   _putenv(env1);
   _putenv(env2);
+  //  _putenv(env3);
 
   cmd = GetCommandLine();
   memset(&si, 0, sizeof(si));
