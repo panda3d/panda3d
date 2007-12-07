@@ -62,6 +62,7 @@ public: // relevant only to modern mode.
   MayaShaderColorList _trans_maps;
   MayaShaderColorList _normal_maps;
   MayaShaderColorList _gloss_maps;
+  MayaShaderColorList _glow_maps;
 
   void bind_uvsets(MayaFileToUVSetMap &map);
   

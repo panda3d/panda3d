@@ -57,11 +57,13 @@ PUBLISHED:
     M_add,
     M_combine,
     M_blend_color_scale,
+    M_modulate_glow_map, // When fixed-function, equivalent to modulate.
     
     // Modes that are only relevant to shader-based rendering.
     
     M_normal_map,
     M_gloss_map,
+    M_glow_map,
     M_normal_gloss_map,
     M_selector_map,
   };

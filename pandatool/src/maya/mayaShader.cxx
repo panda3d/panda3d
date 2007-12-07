@@ -178,6 +178,9 @@ collect_maps() {
   for (size_t i=0; i<_gloss_maps.size(); i++) {
     _all_maps.push_back(_gloss_maps[i]);
   }
+  for (size_t i=0; i<_glow_maps.size(); i++) {
+    _all_maps.push_back(_glow_maps[i]);
+  }
 
   for (size_t i=0; i<_color.size(); i++) {
     if (_color[i]->_has_texture) {
@@ -228,6 +231,10 @@ find_textures_modern(MObject shader) {
   MayaShaderColorDef::find_textures_modern(n, _gloss_maps,  shader_fn.findPlug("specularColor"), true);
   if (_gloss_maps.size() == 0) {
     MayaShaderColorDef::find_textures_modern(n, _gloss_maps,  shader_fn.findPlug("specularColorR"), true);
+  }
+  MayaShaderColorDef::find_textures_modern(n, _glow_maps,  shader_fn.findPlug("incandescence"), true);
+  if (_glow_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _glow_maps,  shader_fn.findPlug("incandescenceR"), true);
   }
   
   collect_maps();
@@ -282,8 +289,11 @@ calculate_pairings() {
   }
   
   for (size_t i=0; i<_color_maps.size(); i++) {
-    for (size_t j=0; j<_trans_maps.size(); j++) {
-      try_pair(_color_maps[i], _trans_maps[j], true);
+    if ((_color_maps[i]->_blend_type == MayaShaderColorDef::BT_modulate)||
+        (_color_maps[i]->_blend_type == MayaShaderColorDef::BT_unspecified)) {
+      for (size_t j=0; j<_trans_maps.size(); j++) {
+        try_pair(_color_maps[i], _trans_maps[j], true);
+      }
     }
   }
   for (size_t i=0; i<_normal_maps.size(); i++) {
@@ -291,28 +301,31 @@ calculate_pairings() {
       try_pair(_normal_maps[i], _gloss_maps[j], true);
     }
   }
-  for (size_t i=0; i<_color_maps.size(); i++) {
-    for (size_t j=0; j<_trans_maps.size(); j++) {
-      try_pair(_color_maps[i], _trans_maps[j], false);
+  if (_trans_maps.size() == 0) {
+    for (size_t i=0; i<_color_maps.size(); i++) {
+      for (size_t j=0; j<_glow_maps.size(); j++) {
+        try_pair(_color_maps[i], _glow_maps[j], true);
+      }
     }
   }
+  
   for (size_t i=0; i<_normal_maps.size(); i++) {
-    for (size_t j=0; j<_gloss_maps.size(); j++) {
-      try_pair(_normal_maps[i], _gloss_maps[j], false);
-    }
-  }
-  for (size_t i=0; i<_normal_maps.size(); i++) {
-    if (_normal_maps[i]->_opposite) {
-      _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_gloss_map;
-    } else {
-      _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_map;
-    }
+    _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_map;
   }
   for (size_t i=0; i<_gloss_maps.size(); i++) {
     if (_gloss_maps[i]->_opposite) {
       _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+      _gloss_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_normal_gloss_map;
     } else {
       _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_gloss_map;
+    }
+  }
+  for (size_t i=0; i<_glow_maps.size(); i++) {
+    if (_glow_maps[i]->_opposite) {
+      _glow_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+      _glow_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_modulate_glow_map;
+    } else {
+      _glow_maps[i]->_blend_type = MayaShaderColorDef::BT_glow_map;
     }
   }
 }

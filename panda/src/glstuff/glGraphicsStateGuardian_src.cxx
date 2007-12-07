@@ -5290,6 +5290,7 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
   case TextureStage::M_add: return GL_ADD;
   case TextureStage::M_combine: return GL_COMBINE;
   case TextureStage::M_blend_color_scale: return GL_BLEND;
+  case TextureStage::M_modulate_glow_map: return GL_MODULATE;
   }
 
   GLCAT.error()

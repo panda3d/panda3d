@@ -562,9 +562,10 @@ affects_polygon_alpha() const {
   case ET_add:
   case ET_blend_color_scale:
     return false;
-
+  case ET_modulate_glow_map:
   case ET_normal_map:
   case ET_gloss_map:
+  case ET_glow_map:
   case ET_normal_gloss_map:
     return false;
 
@@ -880,11 +881,17 @@ string_env_type(const string &string) {
   } else if (cmp_nocase_uh(string, "blend_color_scale") == 0) {
     return ET_blend_color_scale;
 
+  } else if (cmp_nocase_uh(string, "modulate_glow_map") == 0) {
+    return ET_modulate_glow_map;
+
   } else if (cmp_nocase_uh(string, "normal_map") == 0) {
     return ET_normal_map;
 
   } else if (cmp_nocase_uh(string, "gloss_map") == 0) {
     return ET_gloss_map;
+
+  } else if (cmp_nocase_uh(string, "glow_map") == 0) {
+    return ET_glow_map;
 
   } else if (cmp_nocase_uh(string, "normal_gloss_map") == 0) {
     return ET_normal_gloss_map;
@@ -1291,11 +1298,17 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
   case EggTexture::ET_blend_color_scale:
     return out << "blend_color_scale";
 
+  case EggTexture::ET_modulate_glow_map:
+    return out << "modulate_glow_map";
+
   case EggTexture::ET_normal_map:
     return out << "normal_map";
 
   case EggTexture::ET_gloss_map:
     return out << "gloss_map";
+    
+  case EggTexture::ET_glow_map:
+    return out << "glow_map";
     
   case EggTexture::ET_normal_gloss_map:
     return out << "normal_gloss_map";

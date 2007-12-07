@@ -60,8 +60,10 @@ public:
     BT_replace,
     BT_add,
     BT_blend_color_scale,
+    BT_modulate_glow_map,
     BT_normal_map,
     BT_gloss_map,
+    BT_glow_map,
     BT_normal_gloss_map,
     BT_selector_map,
   };

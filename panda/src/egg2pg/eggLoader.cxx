@@ -1379,12 +1379,20 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_mode(TextureStage::M_blend_color_scale);
     break;
 
+  case EggTexture::ET_modulate_glow_map:
+    stage->set_mode(TextureStage::M_modulate_glow_map);
+    break;
+
   case EggTexture::ET_normal_map:
     stage->set_mode(TextureStage::M_normal_map);
     break;
 
   case EggTexture::ET_gloss_map:
     stage->set_mode(TextureStage::M_gloss_map);
+    break;
+
+  case EggTexture::ET_glow_map:
+    stage->set_mode(TextureStage::M_glow_map);
     break;
 
   case EggTexture::ET_normal_gloss_map:

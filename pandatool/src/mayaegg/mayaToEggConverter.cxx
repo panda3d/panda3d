@@ -2803,11 +2803,17 @@ apply_texture_blendtype(EggTexture &tex, const MayaShaderColorDef &color_def) {
   case MayaShaderColorDef::BT_blend_color_scale:
     tex.set_env_type(EggTexture::ET_blend_color_scale);
     return;
+  case MayaShaderColorDef::BT_modulate_glow_map:
+    tex.set_env_type(EggTexture::ET_modulate_glow_map);
+    return;
   case MayaShaderColorDef::BT_normal_map:
     tex.set_env_type(EggTexture::ET_normal_map);
     return;
   case MayaShaderColorDef::BT_gloss_map:
     tex.set_env_type(EggTexture::ET_gloss_map);
+    return;
+  case MayaShaderColorDef::BT_glow_map:
+    tex.set_env_type(EggTexture::ET_glow_map);
     return;
   case MayaShaderColorDef::BT_normal_gloss_map:
     tex.set_env_type(EggTexture::ET_normal_gloss_map);

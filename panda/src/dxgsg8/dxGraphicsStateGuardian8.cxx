@@ -3335,6 +3335,7 @@ void DXGraphicsStateGuardian8::
 set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
   case TextureStage::M_modulate:
+  case TextureStage::M_modulate_glow_map:
     // emulates GL_MODULATE glTexEnv mode
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
     _d3d_device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);

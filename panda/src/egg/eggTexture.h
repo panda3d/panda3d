@@ -102,8 +102,10 @@ PUBLISHED:
     ET_replace,
     ET_add,
     ET_blend_color_scale,
+    ET_modulate_glow_map,
     ET_normal_map,
     ET_gloss_map,
+    ET_glow_map,
     ET_normal_gloss_map,
     ET_selector_map,
   };
