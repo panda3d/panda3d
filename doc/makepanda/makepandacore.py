@@ -23,12 +23,12 @@ MAINTHREAD=threading.currentThread()
 ##
 ########################################################################
 
-MAYAVERSIONINFO=[("MAYA6",   "SOFTWARE\\Alias|Wavefront\\Maya\\6.0\\Setup\\InstallPath"),
-                 ("MAYA65",  "SOFTWARE\\Alias|Wavefront\\Maya\\6.5\\Setup\\InstallPath"),
-                 ("MAYA7",   "SOFTWARE\\Alias|Wavefront\\Maya\\7.0\\Setup\\InstallPath"),
-                 ("MAYA8",   "SOFTWARE\\Alias\\Maya\\8.0\\Setup\\InstallPath"),
-                 ("MAYA85",  "SOFTWARE\\Alias\\Maya\\8.5\\Setup\\InstallPath"),
-		 ("MAYA2008","SOFTWARE\\Autodesk\\Maya\\2008\\Setup\\InstallPath"),
+MAYAVERSIONINFO=[("MAYA6",   "6.0"),
+                 ("MAYA65",  "6.5"),
+                 ("MAYA7",   "7.0"),
+                 ("MAYA8",   "8.0"),
+                 ("MAYA85",  "8.5"),
+		 ("MAYA2008","2008"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -667,10 +667,12 @@ def SdkLocateMaya():
                 if (os.path.isdir(ddir)):
                     SDK[ver] = ddir
                 else:
-                    res = GetRegistryKey(key, "MAYA_INSTALL_LOCATION")
-                    if (res != 0):
-                        res = res.replace("\\", "/").rstrip("/")
-                        SDK[res] = ver
+                    for dev in ["Alias|Wavefront","Alias","Autodesk"]:
+                        fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
+                        res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION")
+                        if (res != 0):
+                            res = res.replace("\\", "/").rstrip("/")
+                            SDK[res] = ver
 
 def SdkLocateMax():
     if (sys.platform != "win32"): return
