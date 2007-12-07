@@ -171,7 +171,7 @@ find_shader_for_shading_engine(MObject engine) {
 //     Function: MayaShaders::find_uv_link
 //       Access: Public
 //  Description: Returns the current mapping from file to uvset
-//               for the given file texture name.
+//               for the given file texture name.  
 ////////////////////////////////////////////////////////////////////
 string MayaShaders::
 find_uv_link(const string &match) {

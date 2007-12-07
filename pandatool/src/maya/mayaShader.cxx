@@ -256,7 +256,7 @@ bind_uvsets(MayaFileToUVSetMap &map) {
     MayaShaderColorDef *def = _all_maps[i];
     MayaFileToUVSetMap::iterator p = map.find(def->_texture_name);
     if (p == map.end()) {
-      def->_uvset_name = "default";
+      def->_uvset_name = "map1";
     } else {
       def->_uvset_name = (*p).second;
     }

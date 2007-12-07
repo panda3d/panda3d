@@ -77,7 +77,7 @@ MayaShaderColorDef() {
   _keep_color = false; // classic mode overwrites color: new mode retains color with a 3rd layer
   _keep_alpha = false;
   _interpolate = false;
-  _uvset_name = "default";
+  _uvset_name = "map1";
 
   _map_uvs = NULL;
 }

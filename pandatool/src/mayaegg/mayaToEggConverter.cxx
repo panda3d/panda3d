@@ -1803,38 +1803,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
 
   _shaders.bind_uvsets(mesh.object());
 
-  //  MStringArray maya_uvset_names;
-  //  status = mesh.getUVSetNames(maya_uvset_names);
-  //  if (!status) {
-  //    status.perror("MFnMesh getUVSetNames not found");
-  //  }
-  //  MObjectArray moa;
-  //  _tex_names.clear();
-  //  _uvset_names.clear();
-  //  for (size_t ui=0; ui<maya_uvset_names.length(); ++ui) {
-  //    if (mayaegg_cat.is_spam()) {
-  //      mayaegg_cat.spam() << "uv_set[" << ui << "] name: " << maya_uvset_names[ui].asChar() << endl;
-  //    }
-  //    string uvset_name = maya_uvset_names[ui].asChar();
-  //    _uvset_names.push_back(uvset_name);
-  //
-  //    // Get the tex_names that are connected to those uvnames
-  //    mesh.getAssociatedUVSetTextures(maya_uvset_names[ui], moa);
-  //    string t_n("");
-  //    for (size_t ui=0; ui<moa.length(); ++ui){
-  //      MFnDependencyNode dt(moa[ui]);
-  //      string t_n = dt.name().asChar();
-  //      if (mayaegg_cat.is_spam()) {
-  //        mayaegg_cat.spam() << "texture_node:" << t_n << endl;
-  //      }
-  //    }
-  //    _tex_names.push_back(t_n);
-  //  }
-  //  if (mayaegg_cat.is_spam()) {
-  //    mayaegg_cat.spam()
-  //      << "done scanning uvs\n";
-  //  }
-
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
     egg_group->add_child(egg_poly);
@@ -1925,7 +1893,6 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         vert.set_normal(n3d);
       }
 
-      string uvset_name("");
       // Go thru all the texture references for this primitive and set uvs
       if (mayaegg_cat.is_debug()) {
         if (shader != (MayaShader *)NULL) {
@@ -1935,58 +1902,52 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
       for (size_t ti=0; ti< _shaders._uvset_names.size(); ++ti) {
         // get the eggTexture pointer
-        string colordef_uv_name = uvset_name= _shaders._uvset_names[ti];
+        string uvset_name(_shaders._uvset_names[ti]);
+        string panda_uvset_name = uvset_name;
+        if (panda_uvset_name == "map1") {
+          panda_uvset_name = "default";
+        }
         if (mayaegg_cat.is_debug()) {
           mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
         }
         
-        if (uvset_name == "map1")  // this is the name to look up by in maya
-          colordef_uv_name = "default";
-        
         // get the shader color def that matches this EggTexture
         // Asad: optimizing uvset: to discard unused uvsets. This for 
         // loop figures out which ones are unused.
-        // 
-        MayaShaderColorDef *color_def = NULL;
-        bool found = false;
+        
+        bool keep_uv = keep_all_uvsets;
+        bool project_uv = false;
+        TexCoordd uv_projection;
+
         if (shader != (MayaShader *)NULL) {
-          for (size_t tj = 0; tj < shader->_color.size(); ++tj) {
-            color_def = shader->get_color_def(tj);
-            if (color_def->_uvset_name == colordef_uv_name) {
+          for (size_t tj = 0; tj < shader->_all_maps.size(); ++tj) {
+            MayaShaderColorDef *def = shader->_all_maps[tj];
+            if (def->_uvset_name == uvset_name) {
               if (mayaegg_cat.is_debug()) {
                 mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
               }
-              found = true;
+              keep_uv = true;
+              if (def->has_projection()) {
+                project_uv = true;
+                uv_projection = def->project_uv(p3d, centroid);
+              }
               break;
             }
-          }
-
-          if (!found && shader->_transparency._uvset_name == colordef_uv_name) {
-            if (mayaegg_cat.is_debug()) {
-              mayaegg_cat.debug() << "matched colordef to transparency\n";
-            }
-            color_def = &shader->_transparency;
-            found = true;
           }
         }
 
         // if uvset is not used don't add it to the vertex
-        if (!found && !keep_all_uvsets) {
+        if (!keep_uv) {
           if (mayaegg_cat.is_spam()) {
             mayaegg_cat.spam() << "discarding unused uvset " << uvset_name << endl;
           }
           continue;
         }
-        nassertv(color_def != (MayaShaderColorDef *)NULL);
         
-        if (mayaegg_cat.is_debug()) {
-          mayaegg_cat.debug() << "color_def->uvset_name :" << color_def->_uvset_name << endl;
-        }
-        if (color_def->has_projection()) {
+        if (project_uv) {
           // If the shader has a projection, use it instead of the
           // polygon's built-in UV's.
-          vert.set_uv(colordef_uv_name,
-                      color_def->project_uv(p3d, centroid));
+          vert.set_uv(panda_uvset_name, uv_projection);
         } else {
           // Get the UV's from the polygon.
           float2 uvs;
@@ -2011,12 +1972,12 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                   mayaegg_cat.debug() << "after rounding uvs[1]: " << uvs[1] << endl;
                 }
               }
-              vert.set_uv(colordef_uv_name, TexCoordd(uvs[0], uvs[1]));
+              vert.set_uv(panda_uvset_name, TexCoordd(uvs[0], uvs[1]));
             }
           }
         }
       }
-
+      
       if (!ignore_vertex_color) {
         if (mayaegg_cat.is_spam()) {
           mayaegg_cat.spam() << "poly_color = " << poly_color << endl;
@@ -2737,10 +2698,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
       if (mesh) {
         if (uvset_name.find("not found") == -1) {
           primitive.add_texture(new_tex);
-          if (uvset_name == "map1")  // this is the name to look up by in maya
-            color_def->_uvset_name.assign("default");
-          else
-            color_def->_uvset_name.assign(uvset_name.c_str());
+          color_def->_uvset_name.assign(uvset_name.c_str());
           new_tex->set_uv_name(color_def->_uvset_name);
           if (i == (int)shader._color.size()-1 && is_decal) {
             dummy_uvset_name.assign(color_def->_uvset_name);
