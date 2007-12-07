@@ -2707,7 +2707,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     def decorator(f):
         return f
     try:
-        if not __dev__:
+        if not (__dev__ or config.GetBool('force-reports', 0)):
             return decorator
 
         # determine whether we should use the decorator
@@ -3128,8 +3128,64 @@ def choice(condition, ifTrue, ifFalse):
     else:
         return ifFalse
 
+class MiniLog:
+    def __init__(self, name):
+        self.indent = 1
+        self.name = name
+        self.lines = []
 
+    def __str__(self):
+        return '%s\nMiniLog: %s\n%s\n%s\n%s' % \
+               ('*'*50, self.name, '-'*50, '\n'.join(self.lines), '*'*50)
+    
+    def enterFunction(self, funcName, *args, **kw):
+        if args:
+            rArgs = [args[0].__class__.__name__ + ', ']
+        else:
+            rArgs = []
+            
+        rArgs += [`x`+', ' for x in args[1:]] + \
+                 [ x + ' = ' + '%s, ' % `y` for x,y in kw.items()]
+            
+        if not rArgs:
+            rArgs = '()'
+        else:
+            rArgs = '(' + reduce(str.__add__,rArgs)[:-2] + ')'
 
+        line = '%s%s' % (funcName, rArgs)
+        self.appendFunctionCall(line)
+        self.indent += 1
+
+        return line
+    
+    def exitFunction(self):
+        self.indent -= 1
+        return self.indent
+
+    def appendFunctionCall(self, line):
+        self.lines.append(' '*(self.indent*2) + line)
+        return line
+    
+    def appendLine(self, line):
+        self.lines.append(' '*(self.indent*2) + '<< ' + line + ' >>')
+        return line
+
+    def flush(self):
+        outStr = str(self)
+        self.indent = 0
+        self.lines = []
+        return outStr
+
+class MiniLogSentry:
+    def __init__(self, log, funcName, *args, **kw):
+        self.log = log
+        self.log.enterFunction(funcName, *args, **kw)
+
+    def __del__(self):
+        self.log.exitFunction()
+        del self.log
+
+        
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -3171,3 +3227,5 @@ __builtin__.loopGen = loopGen
 __builtin__.StackTrace = StackTrace
 __builtin__.choice = choice
 __builtin__.report = report
+__builtin__.MiniLog = MiniLog
+__builtin__.MiniLogSentry = MiniLogSentry
