@@ -33,6 +33,7 @@ class ConnectionRepository(
         # 'I own this object and have a separate view of it regardless of
         # where it currently is located')
         CConnectionRepository.__init__(self, hasOwnerView)
+        self.setWantMessageBundling(config.GetBool('want-message-bundling', 1))
         # DoInterestManager.__init__ relies on CConnectionRepository being
         # initialized
         DoInterestManager.__init__(self)
