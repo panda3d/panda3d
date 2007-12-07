@@ -3139,13 +3139,8 @@ class MiniLog:
                ('*'*50, self.name, '-'*50, '\n'.join(self.lines), '*'*50)
     
     def enterFunction(self, funcName, *args, **kw):
-        if args:
-            rArgs = [args[0].__class__.__name__ + ', ']
-        else:
-            rArgs = []
-            
-        rArgs += [`x`+', ' for x in args[1:]] + \
-                 [ x + ' = ' + '%s, ' % `y` for x,y in kw.items()]
+        rArgs = [`x`+', ' for x in args] + \
+                [ x + ' = ' + '%s, ' % `y` for x,y in kw.items()]
             
         if not rArgs:
             rArgs = '()'
