@@ -200,7 +200,8 @@ class GarbageReport(Job):
         if self._args.log:
             self.printingBegin()
             for i in xrange(len(self._report)):
-                yield None
+                if self.numGarbage > 0:
+                    yield None
                 self.notify.info(self._report[i])
             self.printingEnd()
 
