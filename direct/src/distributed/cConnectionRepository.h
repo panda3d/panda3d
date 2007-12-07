@@ -198,7 +198,7 @@ private:
 
   bool _want_message_bundling;
   unsigned int _bundling_msgs;
-  typedef std::vector< const string > BundledMsgVector;
+  typedef std::vector< string > BundledMsgVector;
   BundledMsgVector _bundle_msgs;
 
   static PStatCollector _update_pcollector;
