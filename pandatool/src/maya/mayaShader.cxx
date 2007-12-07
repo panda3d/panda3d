@@ -284,27 +284,34 @@ bind_uvsets(MayaFileToUVSetMap &map) {
 void MayaShader::
 calculate_pairings() {
 
+  if (_legacy_mode) {
+    return;
+  }
+  
   for (size_t i=0; i<_all_maps.size(); i++) {
     _all_maps[i]->_opposite = 0;
   }
   
-  for (size_t i=0; i<_color_maps.size(); i++) {
-    if ((_color_maps[i]->_blend_type == MayaShaderColorDef::BT_modulate)||
-        (_color_maps[i]->_blend_type == MayaShaderColorDef::BT_unspecified)) {
-      for (size_t j=0; j<_trans_maps.size(); j++) {
-        try_pair(_color_maps[i], _trans_maps[j], true);
+  for (int retry=0; retry<2; retry++) {
+    bool perfect=(retry==0);
+    for (size_t i=0; i<_color_maps.size(); i++) {
+      if ((_color_maps[i]->_blend_type == MayaShaderColorDef::BT_modulate)||
+          (_color_maps[i]->_blend_type == MayaShaderColorDef::BT_unspecified)) {
+        for (size_t j=0; j<_trans_maps.size(); j++) {
+          try_pair(_color_maps[i], _trans_maps[j], perfect);
+        }
       }
     }
-  }
-  for (size_t i=0; i<_normal_maps.size(); i++) {
-    for (size_t j=0; j<_gloss_maps.size(); j++) {
-      try_pair(_normal_maps[i], _gloss_maps[j], true);
+    for (size_t i=0; i<_normal_maps.size(); i++) {
+      for (size_t j=0; j<_gloss_maps.size(); j++) {
+        try_pair(_normal_maps[i], _gloss_maps[j], perfect);
+      }
     }
-  }
-  if (_trans_maps.size() == 0) {
-    for (size_t i=0; i<_color_maps.size(); i++) {
-      for (size_t j=0; j<_glow_maps.size(); j++) {
-        try_pair(_color_maps[i], _glow_maps[j], true);
+    if (_trans_maps.size() == 0) {
+      for (size_t i=0; i<_color_maps.size(); i++) {
+        for (size_t j=0; j<_glow_maps.size(); j++) {
+          try_pair(_color_maps[i], _glow_maps[j], perfect);
+        }
       }
     }
   }

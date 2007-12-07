@@ -129,8 +129,8 @@ private:
   friend class MayaShader;
 
 
-  // Deprecated Fields - these fields are only used by the
-  // deprecated codepath.  These fields are deprecated for the
+  // Legacy Fields - these fields are only used by the
+  // legacy codepath.  These fields are deprecated for the
   // following reasons:
   //
   // * has_texture is redundant --- if there's no
