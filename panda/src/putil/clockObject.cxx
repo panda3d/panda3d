@@ -278,6 +278,41 @@ get_average_frame_rate(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::calc_frame_time_deviation
+//       Access: Published
+//  Description: Returns the standard deviation of the frame times of
+//               the frames rendered over the past
+//               get_average_frame_rate_interval() seconds.  This
+//               number gives an estimate of the chugginess of the
+//               frame rate; if it is large, there is a large
+//               variation in the frame rate; if is small, all of the
+//               frames are consistent in length.
+//
+//               A large value might also represent just a recent
+//               change in frame rate, for instance, because the
+//               camera has just rotated from looking at a simple
+//               scene to looking at a more complex scene.
+////////////////////////////////////////////////////////////////////
+double ClockObject::
+calc_frame_rate_deviation(Thread *current_thread) const {
+  CDStageReader cdata(_cycler, 0, current_thread);
+  if (_ticks.size() <= 1) {
+    return 0.0;
+  } else {
+    double mean = (_ticks.back() - _ticks.front()) / (_ticks.size() - 1);
+    size_t i;
+    double sum_squares = 0.0;
+    for (i = 0; i < _ticks.size() - 1; ++i) {
+      double delta = _ticks[i + 1] - _ticks[i];
+      double diff = (delta - mean);
+      sum_squares += (diff * diff);
+    }
+    double deviation_2 = sum_squares / (_ticks.size() - 1);
+    return sqrt(deviation_2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::tick
 //       Access: Published
 //  Description: Instructs the clock that a new frame has just begun.

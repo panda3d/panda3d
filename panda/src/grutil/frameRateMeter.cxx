@@ -181,14 +181,15 @@ do_update(Thread *current_thread) {
   _last_update = _clock_object->get_frame_time(current_thread);
 
   double frame_rate = _clock_object->get_average_frame_rate(current_thread);
+  double deviation = _clock_object->calc_frame_rate_deviation(current_thread);
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 #ifdef WIN32_VC
   // Windows doesn't define snprintf().  Hope we don't overflow.
-  sprintf(buffer, _text_pattern.c_str(), frame_rate);
+  sprintf(buffer, _text_pattern.c_str(), frame_rate, deviation);
 #else
-  snprintf(buffer, buffer_size, _text_pattern.c_str(), frame_rate);
+  snprintf(buffer, buffer_size, _text_pattern.c_str(), frame_rate, deviation);
 #endif
   nassertv(strlen(buffer) < buffer_size);
 

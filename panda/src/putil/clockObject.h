@@ -108,6 +108,7 @@ PUBLISHED:
   INLINE void set_average_frame_rate_interval(double time);
   INLINE double get_average_frame_rate_interval() const;
   double get_average_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
+  double calc_frame_rate_deviation(Thread *current_thread = Thread::get_current_thread()) const;
 
   void tick(Thread *current_thread = Thread::get_current_thread());
   void sync_frame_time(Thread *current_thread = Thread::get_current_thread());
