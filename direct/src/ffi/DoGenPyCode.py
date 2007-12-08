@@ -224,6 +224,8 @@ def doErrorCheck():
         FFIConstants.CodeModuleNameList = codeLibs
 
 def generateNativeWrappers():
+    from direct.extensions_native.extension_native_helpers import Dtool_PreloadDLL
+
     # Empty out the output directories of unnecessary crud from
     # previous runs before we begin.
     for file in os.listdir(outputCodeDir):
@@ -253,6 +255,7 @@ def generateNativeWrappers():
     # each named module.
     for moduleName in FFIConstants.CodeModuleNameList:
         print 'Importing code library: ' + moduleName
+        Dtool_PreloadDLL(moduleName)
         exec('import %s as module' % moduleName)
 
         pandaModules.write('from %sModules import *\n' % (moduleName))
@@ -261,6 +264,7 @@ def generateNativeWrappers():
         moduleModules = open(moduleModulesFilename, 'w')
 
         moduleModules.write('from extension_native_helpers import *\n')
+        moduleModules.write('Dtool_PreloadDLL("%s")\n' % (moduleName))
         moduleModules.write('from %s import *\n\n' % (moduleName))
 
         # Now look for extensions

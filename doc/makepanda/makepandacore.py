@@ -694,7 +694,7 @@ def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
             SDK["PYTHON"]="thirdparty/win-python"
-	    SDK["PYTHONVERSION"]="python2.4"
+	    SDK["PYTHONVERSION"]="python2.5"
         else:
             os.system("python -V > built/tmp/pythonversion 2>&1")
             pv=ReadFile("built/tmp/pythonversion")

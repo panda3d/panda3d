@@ -1041,7 +1041,7 @@ if (COMPILER=="MSVC"):
     CopyAllFiles("built/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
 if (sys.platform == "win32"):
     if (PkgSkip("PYTHON")==0):
-        CopyFile('built/bin/python24.dll', 'thirdparty/win-python/python24.dll')
+        CopyFile('built/bin/python25.dll', 'thirdparty/win-python/python25.dll')
         CopyTree('built/python', 'thirdparty/win-python')
         ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
 

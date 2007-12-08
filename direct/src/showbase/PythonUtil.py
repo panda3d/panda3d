@@ -45,9 +45,9 @@ import gc
 import traceback
 
 from direct.directutil import Verify
-
 # Don't import libpandaexpressModules, which doesn't get built until
 # genPyCode.
+import direct.extensions_native.extension_native_helpers
 from libpandaexpress import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)

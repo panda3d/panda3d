@@ -1,22 +1,39 @@
 ###  Tools
-__all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod"]
+__all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod", "Dtool_PreloadDLL"]
 
-import sys,os
+import imp,sys,os
 
-# Make sure the panda DLL directory is first on the path.
 if (sys.platform == "win32"):
     target = None
     for dir in sys.path + [sys.prefix]:
-        lib = os.path.join(dir,"libpandaexpress.dll")
+        lib = os.path.join(dir, "libpandaexpress.dll")
         if (os.path.exists(lib)):
             target = dir
     if (target == None):
-        print "Cannot find libpandaexpress. Exiting."
-        sys.exit(1)
+        raise "Cannot find libpandaexpress.dll"
     path=os.environ["PATH"]
     if (path.startswith(target+";")==0):
         os.environ["PATH"] = target+";"+path
 
+def Dtool_PreloadDLL(module):
+    """ Preloading solves the problem that python 2.5 on
+    windows can't find DLLs - it can only find PYDs.  The
+    preloader is able to find DLLs."""
+
+    if (sys.platform != "win32"):
+        return
+    if (sys.modules.has_key(module)):
+        return
+    target = None
+    for dir in sys.path + [sys.prefix]:
+        lib = os.path.join(dir, module + ".dll")
+        if (os.path.exists(lib)):
+            target = dir
+    if (target == None):
+        raise "DLL loader cannot find "+module+"."
+    imp.load_dynamic(module, os.path.join(target, module + ".dll"))
+
+Dtool_PreloadDLL("libpandaexpress")
 from libpandaexpress import *
 
 def Dtool_ObjectToDict(clas, name, obj):

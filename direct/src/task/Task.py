@@ -19,8 +19,10 @@ import fnmatch
 import string
 import signal
 try:
+    Dtool_PreloadDLL("libp3heapq")
     from libp3heapq import heappush, heappop, heapify
 except:
+    Dtool_PreloadDLL("libheapq")
     from libheapq import heappush, heappop, heapify
 import types
 

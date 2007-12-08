@@ -1,7 +1,9 @@
 from extension_native_helpers import *
 try:
+  Dtool_PreloadDLL("libp3direct")
   from libp3direct import *
 except:
+  Dtool_PreloadDLL("libdirect")
   from libdirect import *
 
 #####################################################################

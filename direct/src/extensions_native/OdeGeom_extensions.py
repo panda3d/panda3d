@@ -1,5 +1,5 @@
-
 from extension_native_helpers import *
+Dtool_PreloadDLL("libpanda")
 from libpanda import *
 
 ####################################################################

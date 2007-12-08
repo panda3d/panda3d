@@ -1,5 +1,5 @@
 import direct
-from libdirect import HttpRequest
+from pandac.PandaModules import HttpRequest
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 

@@ -235,7 +235,7 @@ Section -post
         Push "$INSTDIR\bin"
         Call AddToPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.4\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.5\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" RegPath 0
         StrCmp $0 "" RegPath 0
 
@@ -245,10 +245,10 @@ Section -post
 
         RegPath:
         DetailPrint "Adding registry keys for python..."
-        WriteRegStr HKLM "Software\Python\PythonCore\2.4\InstallPath" "" "$INSTDIR\python"
-        WriteRegStr HKLM "Software\Python\PythonCore\2.4\Help" "" ""
-        WriteRegStr HKLM "Software\Python\PythonCore\2.4\Help\Main Python Documentation" "" "$INSTDIR\python\Doc\Python24.chm"
-        WriteRegStr HKLM "Software\Python\PythonCore\2.4\Help\Pythonwin Reference" "" "$INSTDIR\python\Lib\site-packages\PyWin32.chm"
+        WriteRegStr HKLM "Software\Python\PythonCore\2.5\InstallPath" "" "$INSTDIR\python"
+        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help" "" ""
+        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help\Main Python Documentation" "" "$INSTDIR\python\Doc\Python24.chm"
+        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help\Pythonwin Reference" "" "$INSTDIR\python\Lib\site-packages\PyWin32.chm"
         SkipRegPath:
         !endif
 
@@ -273,9 +273,9 @@ Section Uninstall
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.4\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.5\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" 0 SkipUnReg
-        DeleteRegKey HKLM "Software\Python\PythonCore\2.4"
+        DeleteRegKey HKLM "Software\Python\PythonCore\2.5"
         SkipUnReg:
         !endif
 
