@@ -2699,7 +2699,9 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         if (uvset_name.find("not found") == -1) {
           primitive.add_texture(new_tex);
           color_def->_uvset_name.assign(uvset_name.c_str());
-          new_tex->set_uv_name(color_def->_uvset_name);
+          if (uvset_name != "map1") {
+            new_tex->set_uv_name(uvset_name);
+          }
           if (i == (int)shader._color.size()-1 && is_decal) {
             dummy_uvset_name.assign(color_def->_uvset_name);
           }
