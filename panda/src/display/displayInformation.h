@@ -77,6 +77,7 @@ PUBLISHED:
   PN_uint64 get_process_virtual_memory();
   PN_uint64 get_available_process_virtual_memory();
   int get_memory_load();
+  PN_uint64 get_page_fault_count();
   PN_uint64 get_process_memory();
   PN_uint64 get_peak_process_memory();
   PN_uint64 get_page_file_usage();
@@ -104,7 +105,8 @@ public:
   PN_uint64 _available_page_file_size;
   PN_uint64 _process_virtual_memory;
   PN_uint64 _available_process_virtual_memory;
-  
+
+  PN_uint64 _page_fault_count;
   PN_uint64 _process_memory;
   PN_uint64 _peak_process_memory;
   PN_uint64 _page_file_usage;

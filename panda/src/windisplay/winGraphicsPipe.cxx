@@ -88,6 +88,7 @@ void get_memory_information (DisplayInformation *display_information)
     process = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process_id);
     if (process) {
       if (GetProcessMemoryInfoFunction (process, &process_memory_counters, sizeof (PROCESS_MEMORY_COUNTERS))) {
+        display_information -> _page_fault_count =  process_memory_counters.PageFaultCount;
         display_information -> _process_memory =  process_memory_counters.WorkingSetSize;
         display_information -> _peak_process_memory = process_memory_counters.PeakWorkingSetSize;
         display_information -> _page_file_usage = process_memory_counters.PagefileUsage;

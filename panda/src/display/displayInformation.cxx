@@ -86,6 +86,7 @@ DisplayInformation() {
   _process_virtual_memory = 0;
   _available_process_virtual_memory = 0;
   _memory_load = 0;
+  _page_fault_count = 0;
   _process_memory = 0;
   _peak_process_memory = 0;
   _page_file_usage = 0;
@@ -341,6 +342,16 @@ get_available_process_virtual_memory() {
 int DisplayInformation::
 get_memory_load() {
   return _memory_load;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_page_fault_count
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_page_fault_count() {
+  return _page_fault_count;
 }
 
 ////////////////////////////////////////////////////////////////////
