@@ -522,8 +522,10 @@ filter_to_max(int max_lights) const {
        CompareLightPriorities());
 
   // Now lop off all of the lights after the first max_lights.
-  priority_lights.erase(priority_lights.begin() + max_lights,
-                        priority_lights.end());
+  if (priority_lights.size() > max_lights) { 
+    priority_lights.erase(priority_lights.begin() + max_lights,
+                          priority_lights.end());
+  }
 
   // Put the ambient lights back into the list.
   for (li = ambient_lights.begin(); li != ambient_lights.end(); ++li) {
