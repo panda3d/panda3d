@@ -1,4 +1,4 @@
-// Filename: shaderExpansion.h
+// Filename: shader.h
 // Created by:  jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef SHADEREXPANSION_H
-#define SHADEREXPANSION_H
+#ifndef SHADER_H
+#define SHADER_H
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
@@ -34,23 +34,21 @@ typedef struct _CGparameter *CGparameter;
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//       Class : ShaderExpansion
-//      Summary: A shader can contain context-sensitive macros.
-//               A ShaderExpansion is the output you get when you
-//               run the macro preprocessor on a shader.
-//               The ShaderExpansion contains the shader's 
-//               macroexpanded text, an analysis of the shader's
-//               parameters, and a map of ShaderContext
-//               objects.
+//       Class : Shader
+//      Summary: 
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA_GOBJ ShaderExpansion: public TypedReferenceCount {
+class EXPCL_PANDA_GOBJ Shader: public TypedReferenceCount {
 
 PUBLISHED:
   
-  INLINE const string &get_name() const;
-  INLINE const string &get_text() const;
-  INLINE const string &get_header() const;
+  static PT(Shader) load(const Filename &file);
+  static PT(Shader) load(const string &file);
+  static PT(Shader) make(const string &body);
+
+  INLINE const Filename &get_filename() const;
+  INLINE const string   &get_text() const;
+  INLINE const string   &get_header() const;
   INLINE bool get_error_flag() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
@@ -191,7 +189,7 @@ public:
     int _ultimate_fprofile;
     pset <ShaderBug> _bug_list;
 #endif
-    INLINE void clear();
+    void clear();
     INLINE bool operator == (const ShaderCaps &other) const;
     INLINE ShaderCaps();
   };
@@ -262,15 +260,20 @@ public:
   pvector <ShaderVarSpec> _var_spec;
   
  protected:
-  string         _name;
+  Filename       _filename;
   string         _text;
   string         _header;
   bool           _error_flag;
   int            _parse;
+  bool           _loaded;
   
-  typedef pair < string, string > ExpansionKey;
-  typedef pmap < ExpansionKey, ShaderExpansion * > ExpansionCache;
-  static ExpansionCache _expansion_cache;
+  static ShaderCaps _default_caps;
+
+  typedef phash_map < Filename , Shader * > LoadTable;
+  typedef phash_map < string   , Shader * > MakeTable;
+
+  static LoadTable _load_table;
+  static MakeTable _make_table;
 
   friend class ShaderContext;
   friend class PreparedGraphicsObjects;
@@ -278,17 +281,15 @@ public:
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
-  
  private:  
-  ShaderExpansion(const string &name, const string &text,
-                  const ShaderCaps &caps);
+  Shader(const Filename &name, const string &text);
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
  public:
-  static PT(ShaderExpansion) make(const string &name, const string &body,
-                                  const ShaderCaps &caps);
+  static void register_with_read_factory();
+  static PT(Shader) make(const string &name, const string &body);
   
-  ~ShaderExpansion();
+  ~Shader();
   
  public:
   static TypeHandle get_class_type() {
@@ -296,7 +297,7 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
-    register_type(_type_handle, "ShaderExpansion",
+    register_type(_type_handle, "Shader",
                   TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -308,6 +309,6 @@ public:
   static TypeHandle _type_handle;
 };
 
-#include "shaderExpansion.I"
+#include "shader.I"
 
 #endif

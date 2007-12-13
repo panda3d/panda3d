@@ -22,8 +22,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderContext::
-ShaderContext(ShaderExpansion *se) :
-  _expansion(se)
+ShaderContext(Shader *se) :
+  _shader(se)
 {
 }
 
@@ -32,7 +32,7 @@ ShaderContext(ShaderExpansion *se) :
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ShaderExpansion *ShaderContext::
-get_expansion() const {
-  return _expansion;
+INLINE Shader *ShaderContext::
+get_shader() const {
+  return _shader;
 }

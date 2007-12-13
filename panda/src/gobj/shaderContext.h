@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "internalName.h"
 #include "savedContext.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderContext
@@ -38,13 +38,13 @@
 
 class EXPCL_PANDA_GOBJ ShaderContext: public SavedContext {
 public:
-  INLINE ShaderContext(ShaderExpansion *se);
+  INLINE ShaderContext(Shader *se);
 
 PUBLISHED:
-  INLINE ShaderExpansion *get_expansion() const;
+  INLINE Shader *get_shader() const;
 
 public:  
-  ShaderExpansion *_expansion;
+  Shader *_shader;
 
 public:
   static TypeHandle get_class_type() {

@@ -23,7 +23,7 @@
 #include "pandabase.h"
 #include "string_utils.h"
 #include "internalName.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "shaderContext.h"
 
 
@@ -71,7 +71,7 @@ class EXPCL_PANDADX CLP(ShaderContext): public ShaderContext {
 public:
   typedef CLP(GraphicsStateGuardian) GSG;
   
-  CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
+  CLP(ShaderContext)(Shader *s, GSG *gsg);
   ~CLP(ShaderContext)();
 
   INLINE bool valid(GSG *gsg);

@@ -1,4 +1,4 @@
-// Filename: shaderExpansion.cxx
+// Filename: shader.cxx
 // Created by: jyelon (01Sep05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -17,23 +17,26 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "preparedGraphicsObjects.h"
+#include "virtualFileSystem.h"
 
 #ifdef HAVE_CG
 #include "Cg/cg.h"
 #endif
 
-TypeHandle ShaderExpansion::_type_handle;
-ShaderExpansion::ExpansionCache ShaderExpansion::_expansion_cache;
+TypeHandle Shader::_type_handle;
+Shader::LoadTable Shader::_load_table;
+Shader::MakeTable Shader::_make_table;
+Shader::ShaderCaps Shader::_default_caps;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_report_error
+//     Function: Shader::cp_report_error
 //       Access: Public
 //  Description: Generate an error message including a description
 //               of the specified parameter.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 cp_report_error(ShaderArgInfo &p, const string &msg)
 {
   string vstr;
@@ -59,19 +62,19 @@ cp_report_error(ShaderArgInfo &p, const string &msg)
   case SAT_unknown: tstr = "unknown "; break;
   }
 
-  string fn = get_name();
+  Filename fn = get_filename();
   p._cat->error() << fn << ": " << msg << " (" <<
     vstr << dstr << tstr << p._id._name << ")\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_words
+//     Function: Shader::cp_errchk_parameter_words
 //       Access: Public, Static
 //  Description: Make sure the provided parameter contains
 //               the specified number of words.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_words(ShaderArgInfo &p, int len)
 {
   vector_string words;
@@ -84,13 +87,13 @@ cp_errchk_parameter_words(ShaderArgInfo &p, int len)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_in
+//     Function: Shader::cp_errchk_parameter_in
 //       Access: Public, Static
 //  Description: Make sure the provided parameter has the
 //               'in' direction.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_in(ShaderArgInfo &p)
 {
   if (p._direction != SAD_in) {
@@ -101,13 +104,13 @@ cp_errchk_parameter_in(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_varying
+//     Function: Shader::cp_errchk_parameter_varying
 //       Access: Public, Static
 //  Description: Make sure the provided parameter has the
 //               correct variance.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_varying(ShaderArgInfo &p)
 {
   if (!p._varying) {
@@ -118,13 +121,13 @@ cp_errchk_parameter_varying(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_uniform
+//     Function: Shader::cp_errchk_parameter_uniform
 //       Access: Public, Static
 //  Description: Make sure the provided parameter has the
 //               correct variance.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_uniform(ShaderArgInfo &p)
 {
   if (p._varying) {
@@ -135,13 +138,13 @@ cp_errchk_parameter_uniform(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_float
+//     Function: Shader::cp_errchk_parameter_float
 //       Access: Public, Static
 //  Description: Make sure the provided parameter has
 //               a floating point type.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 {
   int nfloat;
@@ -162,13 +165,13 @@ cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_errchk_parameter_sampler
+//     Function: Shader::cp_errchk_parameter_sampler
 //       Access: Public, Static
 //  Description: Make sure the provided parameter has
 //               a texture type.  If not, print
 //               error message and return false.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_errchk_parameter_sampler(ShaderArgInfo &p)
 {
   if ((p._type!=SAT_sampler1d)&&
@@ -182,11 +185,11 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_parse_trans_clause
+//     Function: Shader::cp_parse_trans_clause
 //       Access: Public
 //  Description: Parses a single clause of a "trans" parameter.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec, 
                       int part, const vector_string &pieces,
                       int &next, ShaderMatInput ofop, ShaderMatInput op) {
@@ -208,7 +211,7 @@ cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cp_optimize_mat_spec
+//     Function: Shader::cp_optimize_mat_spec
 //       Access: Public
 //  Description: Analyzes a ShaderMatSpec and decides what it should
 //               use its cache for.  It can cache the results of any
@@ -216,7 +219,7 @@ cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec,
 //               routine needs to be smart enough to know which
 //               data items can be correctly cached, and which cannot.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   // If we're composing with identity, simplify.
@@ -263,7 +266,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::compile_parameter
+//     Function: Shader::compile_parameter
 //       Access: Public
 //  Description: Analyzes a parameter and decides how to
 //               bind the parameter to some part of panda's
@@ -273,7 +276,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 //               If there is an error, this routine will append
 //               an error message onto the error messages.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 compile_parameter(const ShaderArgId  &arg_id,
                   ShaderArgType       arg_type,
                   ShaderArgDir        arg_direction,
@@ -702,11 +705,11 @@ compile_parameter(const ShaderArgId  &arg_id,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::clear_parameters
+//     Function: Shader::clear_parameters
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 clear_parameters() {
   _mat_spec.clear();
   _var_spec.clear();
@@ -715,47 +718,47 @@ clear_parameters() {
 
 #ifdef HAVE_CG
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_parameter_type
+//     Function: Shader::cg_parameter_type
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ShaderExpansion::ShaderArgType ShaderExpansion::
+Shader::ShaderArgType Shader::
 cg_parameter_type(CGparameter p) {
   switch (cgGetParameterType(p)) {
-  case CG_FLOAT1:      return ShaderExpansion::SAT_float1;
-  case CG_FLOAT2:      return ShaderExpansion::SAT_float2;
-  case CG_FLOAT3:      return ShaderExpansion::SAT_float3;
-  case CG_FLOAT4:      return ShaderExpansion::SAT_float4;
-  case CG_FLOAT4x4:    return ShaderExpansion::SAT_float4x4;
-  case CG_SAMPLER1D:   return ShaderExpansion::SAT_sampler1d;
-  case CG_SAMPLER2D:   return ShaderExpansion::SAT_sampler2d;
-  case CG_SAMPLER3D:   return ShaderExpansion::SAT_sampler3d;
-  case CG_SAMPLERCUBE: return ShaderExpansion::SAT_samplercube;
-  default:           return ShaderExpansion::SAT_unknown;
+  case CG_FLOAT1:      return Shader::SAT_float1;
+  case CG_FLOAT2:      return Shader::SAT_float2;
+  case CG_FLOAT3:      return Shader::SAT_float3;
+  case CG_FLOAT4:      return Shader::SAT_float4;
+  case CG_FLOAT4x4:    return Shader::SAT_float4x4;
+  case CG_SAMPLER1D:   return Shader::SAT_sampler1d;
+  case CG_SAMPLER2D:   return Shader::SAT_sampler2d;
+  case CG_SAMPLER3D:   return Shader::SAT_sampler3d;
+  case CG_SAMPLERCUBE: return Shader::SAT_samplercube;
+  default:           return Shader::SAT_unknown;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_parameter_dir
+//     Function: Shader::cg_parameter_dir
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-ShaderExpansion::ShaderArgDir ShaderExpansion::
+Shader::ShaderArgDir Shader::
 cg_parameter_dir(CGparameter p) {
   switch (cgGetParameterDirection(p)) {
-  case CG_IN:    return ShaderExpansion::SAD_in;
-  case CG_OUT:   return ShaderExpansion::SAD_out;
-  case CG_INOUT: return ShaderExpansion::SAD_inout;
-  default:       return ShaderExpansion::SAD_unknown;
+  case CG_IN:    return Shader::SAD_in;
+  case CG_OUT:   return Shader::SAD_out;
+  case CG_INOUT: return Shader::SAD_inout;
+  default:       return Shader::SAD_unknown;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_release_resources
+//     Function: Shader::cg_release_resources
 //       Access: Private
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 cg_release_resources() {
   if (_cg_vprogram != 0) {
     cgDestroyProgram(_cg_vprogram);
@@ -772,11 +775,11 @@ cg_release_resources() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_compile_entry_point
+//     Function: Shader::cg_compile_entry_point
 //       Access: Private
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
-CGprogram ShaderExpansion::
+CGprogram Shader::
 cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
 {
   CGprogram prog;
@@ -818,11 +821,11 @@ cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
     for (int i=0; i<(int)errlines.size(); i++) {
       string line = trim(errlines[i]);
       if (line != "") {
-        gobj_cat.error() << _name << " " << errlines[i] << "\n";
+        gobj_cat.error() << get_filename() << ": " << errlines[i] << "\n";
       }
     }
   } else {
-    gobj_cat.error() << _name << ": " << cgGetErrorString(err) << "\n";
+    gobj_cat.error() << get_filename() << ": " << cgGetErrorString(err) << "\n";
   }
   if (prog != 0) {
     cgDestroyProgram(prog);
@@ -832,13 +835,13 @@ cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_compile_shader
+//     Function: Shader::cg_compile_shader
 //       Access: Private
 //  Description: Compiles a Cg shader for a given set of capabilities.
 //               If successful, the shader is stored in the instance
 //               variables _cg_context, _cg_vprogram, _cg_fprogram.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cg_compile_shader(const ShaderCaps &caps) {
 
   // If we already tried compiling for this set of caps, there's no point
@@ -872,11 +875,11 @@ cg_compile_shader(const ShaderCaps &caps) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_analyze_entry_point
+//     Function: Shader::cg_analyze_entry_point
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cg_analyze_entry_point(CGprogram prog, bool fshader) {
   CGparameter parameter;
   bool success = true;
@@ -901,7 +904,7 @@ cg_analyze_entry_point(CGprogram prog, bool fshader) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::cg_analyze_shader
+//     Function: Shader::cg_analyze_shader
 //       Access: Private
 //  Description: This subroutine analyzes the parameters of a Cg 
 //               shader. The output is stored in instance variables:
@@ -932,7 +935,7 @@ cg_analyze_entry_point(CGprogram prog, bool fshader) {
 //               profile.
 //
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cg_analyze_shader(const ShaderCaps &caps) {
 
   if (!cg_compile_shader(caps)) {
@@ -1059,14 +1062,14 @@ cg_analyze_shader(const ShaderCaps &caps) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: ShaderExpansion::cg_compile_for
+//  Function: Shader::cg_compile_for
 //  Access: Public
 //  Description: This routine is used by the ShaderContext constructor
 //               to compile the shader.  The CGprogram
 //               objects are turned over to the ShaderContext, we no
 //               longer own them.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 cg_compile_for(const ShaderCaps &caps,
                CGcontext &ctx,
                CGprogram &vprogram,
@@ -1079,10 +1082,11 @@ cg_compile_for(const ShaderCaps &caps,
   vprogram = 0;
   fprogram = 0;
   map.clear();
-
+  
   // Make sure the shader is compiled for the target caps.
   // Most of the time, it will already be - this is usually a no-op.
   
+  _default_caps = caps;
   if (!cg_compile_shader(caps)) {
     return false;
   }
@@ -1093,7 +1097,7 @@ cg_compile_for(const ShaderCaps &caps,
   
   if ((cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile)||
       (cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
-    gobj_cat.error() << "Cg program too complex for driver:" << get_name() << "\n";
+    gobj_cat.error() << "Cg program too complex for driver:" << get_filename() << "\n";
     return false;
   }
   
@@ -1143,14 +1147,13 @@ cg_compile_for(const ShaderCaps &caps,
 #endif  // HAVE_CG
 
 ////////////////////////////////////////////////////////////////////
-//  Function: ShaderExpansion::Constructor
+//  Function: Shader::Constructor
 //  Access: Private
-//  Description: Construct a ShaderExpansion.
+//  Description: Construct a Shader.
 ////////////////////////////////////////////////////////////////////
-ShaderExpansion::
-ShaderExpansion(const string &name, const string &text,
-                const ShaderCaps &caps) :
-  _name(name),
+Shader::
+Shader(const Filename &filename, const string &text) :
+  _filename(filename),
   _text(text),
   _header(""),
   _error_flag(true),
@@ -1164,8 +1167,14 @@ ShaderExpansion(const string &name, const string &text,
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
+  if (_default_caps._ultimate_vprofile == 0) {
+    _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._ultimate_vprofile = CG_PROFILE_VS_3_0;
+    _default_caps._ultimate_fprofile = CG_PROFILE_PS_3_0;
+  }
   if (_header == "//Cg") {
-    if (cg_analyze_shader(caps)) {
+    if (cg_analyze_shader(_default_caps)) {
       _error_flag = false;
     }
   } else {
@@ -1178,53 +1187,87 @@ ShaderExpansion(const string &name, const string &text,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::Destructor
+//     Function: Shader::Destructor
 //       Access: Public
 //  Description: Delete the compiled code, if it exists.
 ////////////////////////////////////////////////////////////////////
-ShaderExpansion::
-~ShaderExpansion() {
+Shader::
+~Shader() {
   release_all();
-  _expansion_cache.erase(ExpansionKey(_name,_text));
+  if (_loaded) {
+    _load_table.erase(_filename);
+  } else {
+    _make_table.erase(_text);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::make
-//       Access: Public, Static
-//  Description: Create a shader expansion (or reuse one from cache)
+//     Function: Shader::load
+//       Access: Published, Static
+//  Description:
 ////////////////////////////////////////////////////////////////////
-PT(ShaderExpansion) ShaderExpansion::
-make(const string &name, const string &text,
-     const ShaderCaps &caps) {
-  ExpansionKey key(name, text);
-  ExpansionCache::const_iterator i = _expansion_cache.find(key);
-  if (i != _expansion_cache.end()) {
+PT(Shader) Shader::
+load(const string &file) {
+  return load(Filename(file));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::load
+//       Access: Published, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(Shader) Shader::
+load(const Filename &file) {
+  LoadTable::const_iterator i = _load_table.find(file);
+  if (i != _load_table.end()) {
     return i->second;
   }
-  ShaderExpansion *result = new ShaderExpansion(name, text, caps);
-  _expansion_cache.insert(ExpansionCache::value_type(key,result));
+  string body;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->read_file(file, body, true)) {
+    gobj_cat.error() << "Could not read shader file: " << file << "\n";
+    return NULL;
+  }
+  PT(Shader) result = new Shader(file, body);
+  _load_table[file] = result;
   return result;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_init
+//     Function: Shader::make
+//       Access: Published, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(Shader) Shader::
+make(const string &body) {
+  MakeTable::const_iterator i = _make_table.find(body);
+  if (i != _make_table.end()) {
+    return i->second;
+  }
+  PT(Shader) result = new Shader("created-shader", body);
+  _make_table[body] = result;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::parse_init
 //       Access: Public
 //  Description: Set a 'parse pointer' to the beginning of the shader.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 parse_init() {
   _parse = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_line
+//     Function: Shader::parse_line
 //       Access: Public
 //  Description: Parse a line of text. If 'lt' is true, trim blanks
 //               from the left end of the line. If 'rt' is true, trim
 //               blanks from the right end (the newline is always
 //               trimmed).
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 parse_line(string &result, bool lt, bool rt) {
   int len = _text.size();
   int head = _parse;
@@ -1245,14 +1288,14 @@ parse_line(string &result, bool lt, bool rt) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_upto
+//     Function: Shader::parse_upto
 //       Access: Public
 //  Description: Parse lines until you read a line that matches the
 //               specified pattern.  Returns all the preceding lines,
 //               and if the include flag is set, returns the final
 //               line as well.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 parse_upto(string &result, string pattern, bool include) {
   GlobPattern endpat(pattern);
   int start = _parse;
@@ -1271,22 +1314,22 @@ parse_upto(string &result, string pattern, bool include) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_rest
+//     Function: Shader::parse_rest
 //       Access: Public
 //  Description: Returns the rest of the text from the current
 //               parse location.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 parse_rest(string &result) {
   result = _text.substr(_parse, _text.size() - _parse);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_lineno
+//     Function: Shader::parse_lineno
 //       Access: Public
 //  Description: Returns the line number of the current parse pointer.
 ////////////////////////////////////////////////////////////////////
-int ShaderExpansion::
+int Shader::
 parse_lineno() {
   int result = 1;
   for (int i=0; i<_parse; i++) {
@@ -1296,18 +1339,18 @@ parse_lineno() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::parse_eof
+//     Function: Shader::parse_eof
 //       Access: Public
 //  Description: Returns true if the parse pointer is at the end of
 //               the shader.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 parse_eof() {
   return (int)_text.size() == _parse;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::prepare
+//     Function: Shader::prepare
 //       Access: Published
 //  Description: Indicates that the shader should be enqueued to be
 //               prepared in the indicated prepared_objects at the
@@ -1318,19 +1361,19 @@ parse_eof() {
 //               Use this function instead of prepare_now() to preload
 //               textures from a user interface standpoint.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
   prepared_objects->enqueue_shader(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::is_prepared
+//     Function: Shader::is_prepared
 //       Access: Published
 //  Description: Returns true if the shader has already been prepared
 //               or enqueued for preparation on the indicated GSG,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1341,13 +1384,13 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::release
+//     Function: Shader::release
 //       Access: Published
 //  Description: Frees the texture context only on the indicated object,
 //               if it exists there.  Returns true if it was released,
 //               false if it had not been prepared.
 ////////////////////////////////////////////////////////////////////
-bool ShaderExpansion::
+bool Shader::
 release(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1366,7 +1409,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::prepare_now
+//     Function: Shader::prepare_now
 //       Access: Published
 //  Description: Creates a context for the texture on the particular
 //               GSG, if it does not already exist.  Returns the new
@@ -1381,7 +1424,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
 //               explicitly prepared by the user before it may be
 //               rendered.
 ////////////////////////////////////////////////////////////////////
-ShaderContext *ShaderExpansion::
+ShaderContext *Shader::
 prepare_now(PreparedGraphicsObjects *prepared_objects, 
             GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
@@ -1397,15 +1440,15 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::clear_prepared
+//     Function: Shader::clear_prepared
 //       Access: Private
 //  Description: Removes the indicated PreparedGraphicsObjects table
-//               from the ShaderExpansion's table, without actually releasing
+//               from the Shader's table, without actually releasing
 //               the texture.  This is intended to be called only from
 //               PreparedGraphicsObjects::release_texture(); it should
 //               never be called by user code.
 ////////////////////////////////////////////////////////////////////
-void ShaderExpansion::
+void Shader::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1419,13 +1462,13 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderExpansion::release_all
+//     Function: Shader::release_all
 //       Access: Published
 //  Description: Frees the context allocated on all objects for which
 //               the texture has been declared.  Returns the number of
 //               contexts which have been freed.
 ////////////////////////////////////////////////////////////////////
-int ShaderExpansion::
+int Shader::
 release_all() {
   // We have to traverse a copy of the _contexts list, because the
   // PreparedGraphicsObjects object will call clear_prepared() in response
@@ -1448,5 +1491,30 @@ release_all() {
   _contexts.clear();
 
   return num_freed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderCapabilities::clear()
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::ShaderCaps::
+clear() {
+#ifdef HAVE_CG
+  _active_vprofile = 0;
+  _active_fprofile = 0;
+  _ultimate_vprofile = 0;
+  _ultimate_fprofile = 0;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::register_with_read_factory
+//       Access: Public, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Shader::
+register_with_read_factory() {
+  // IMPLEMENT ME
 }
 

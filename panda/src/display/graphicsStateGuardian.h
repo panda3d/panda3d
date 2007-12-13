@@ -166,7 +166,7 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
+  virtual ShaderContext *prepare_shader(Shader *shader);
   virtual void release_shader(ShaderContext *sc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -195,8 +195,8 @@ public:
 
   void clear(DrawableRegion *clearable);
 
-  const LMatrix4f *fetch_specified_value(ShaderExpansion::ShaderMatSpec &spec, bool altered);
-  const LMatrix4f *fetch_specified_part(ShaderExpansion::ShaderMatInput input, InternalName *name, LMatrix4f &t);
+  const LMatrix4f *fetch_specified_value(Shader::ShaderMatSpec &spec, bool altered);
+  const LMatrix4f *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4f &t);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
@@ -418,7 +418,7 @@ protected:
 
   static PT(TextureStage) _alpha_scale_texture_stage;
 
-  ShaderExpansion::ShaderCaps _shader_caps;
+  Shader::ShaderCaps _shader_caps;
 
   float _gamma;
   

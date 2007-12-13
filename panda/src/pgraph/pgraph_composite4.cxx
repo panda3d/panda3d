@@ -9,7 +9,6 @@
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
 #include "shadeModelAttrib.cxx"
-#include "shader.cxx"
 #include "shaderInput.cxx"
 #include "shaderAttrib.cxx"
 #include "shaderPool.cxx"

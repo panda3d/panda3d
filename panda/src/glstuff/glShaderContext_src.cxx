@@ -31,11 +31,11 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
-CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
+CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 #ifdef HAVE_CG
   if (s->get_header() == "//Cg") {
     
-    // Ask the shader expansion to compile itself for us and 
+    // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
 
     if (!s->cg_compile_for(gsg->_shader_caps,
@@ -52,7 +52,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     CGerror verror = cgGetError();
     if (verror != CG_NO_ERROR) {
       const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-      GLCAT.error() << "Could not load Cg vertex program:" << s->get_name() << " (" << 
+      GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename() << " (" << 
         cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
       release_resources();
     }
@@ -60,7 +60,7 @@ CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
     CGerror ferror = cgGetError();
     if (ferror != CG_NO_ERROR) {
       const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-      GLCAT.error() << "Could not load Cg fragment program:" << s->get_name() << " (" << 
+      GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename() << " (" << 
         cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
       release_resources();
     }
@@ -142,7 +142,7 @@ unbind() {
 //     Function: GLShaderContext::issue_parameters
 //       Access: Public
 //  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the ShaderExpansion
+//               or TransformState has changed, but the Shader
 //               itself has not changed.  It loads new values into the
 //               shader's parameters.
 //
@@ -160,23 +160,23 @@ issue_parameters(GSG *gsg, bool altered) {
     return;
   }
 
-  for (int i=0; i<(int)_expansion->_mat_spec.size(); i++) {
-    if (altered || _expansion->_mat_spec[i]._trans_dependent) {
-      CGparameter p = _cg_parameter_map[_expansion->_mat_spec[i]._id._seqno];
-      const LMatrix4f *val = gsg->fetch_specified_value(_expansion->_mat_spec[i], altered);
+  for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
+    if (altered || _shader->_mat_spec[i]._trans_dependent) {
+      CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
+      const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
       if (val) {
         const float *data = val->get_data();
-        switch (_expansion->_mat_spec[i]._piece) {
-        case ShaderExpansion::SMP_whole: cgGLSetMatrixParameterfc(p, data); break;
-        case ShaderExpansion::SMP_transpose: cgGLSetMatrixParameterfr(p, data); break;
-        case ShaderExpansion::SMP_row0: cgGLSetParameter4fv(p, data+ 0); break;
-        case ShaderExpansion::SMP_row1: cgGLSetParameter4fv(p, data+ 4); break;
-        case ShaderExpansion::SMP_row2: cgGLSetParameter4fv(p, data+ 8); break;
-        case ShaderExpansion::SMP_row3: cgGLSetParameter4fv(p, data+12); break;
-        case ShaderExpansion::SMP_col0: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); break;
-        case ShaderExpansion::SMP_col1: cgGLSetParameter4f(p, data[1], data[5], data[ 9], data[13]); break;
-        case ShaderExpansion::SMP_col2: cgGLSetParameter4f(p, data[2], data[6], data[10], data[14]); break;
-        case ShaderExpansion::SMP_col3: cgGLSetParameter4f(p, data[3], data[7], data[11], data[15]); break;
+        switch (_shader->_mat_spec[i]._piece) {
+        case Shader::SMP_whole: cgGLSetMatrixParameterfc(p, data); break;
+        case Shader::SMP_transpose: cgGLSetMatrixParameterfr(p, data); break;
+        case Shader::SMP_row0: cgGLSetParameter4fv(p, data+ 0); break;
+        case Shader::SMP_row1: cgGLSetParameter4fv(p, data+ 4); break;
+        case Shader::SMP_row2: cgGLSetParameter4fv(p, data+ 8); break;
+        case Shader::SMP_row3: cgGLSetParameter4fv(p, data+12); break;
+        case Shader::SMP_col0: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); break;
+        case Shader::SMP_col1: cgGLSetParameter4f(p, data[1], data[5], data[ 9], data[13]); break;
+        case Shader::SMP_col2: cgGLSetParameter4f(p, data[2], data[6], data[10], data[14]); break;
+        case Shader::SMP_col3: cgGLSetParameter4f(p, data[3], data[7], data[11], data[15]); break;
         }
       }
     }
@@ -197,8 +197,8 @@ disable_shader_vertex_arrays(GSG *gsg) {
     return;
   }
 
-  for (int i=0; i<(int)_expansion->_var_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+  for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
+    CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
     if (p == 0) continue;
     cgGLDisableClientState(p);
   }
@@ -236,12 +236,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
     const GeomVertexArrayDataHandle *array_reader;
     Geom::NumericType numeric_type;
     int start, stride, num_values;
-    int nvarying = _expansion->_var_spec.size();
+    int nvarying = _shader->_var_spec.size();
     for (int i=0; i<nvarying; i++) {
-      CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+      CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
       if (p == 0) continue;
-      InternalName *name = _expansion->_var_spec[i]._name;
-      int texslot = _expansion->_var_spec[i]._append_uv;
+      InternalName *name = _shader->_var_spec[i]._name;
+      int texslot = _shader->_var_spec[i]._append_uv;
       if (texslot >= 0) {
         const Geom::ActiveTextureStages &active_stages =
           gsg->_state._texture->get_on_stages();
@@ -288,8 +288,8 @@ disable_shader_texture_bindings(GSG *gsg) {
     return;
   }
 
-  for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+  for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
     if (p == 0) continue;
     int texunit = cgGetParameterResourceIndex(p);
     gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
@@ -327,29 +327,29 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     return;
   }
 
-  for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+  for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
     if (p == 0) continue;
     Texture *tex = 0;
-    InternalName *id = _expansion->_tex_spec[i]._name;
+    InternalName *id = _shader->_tex_spec[i]._name;
     if (id != 0) {
       const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
       tex = input->get_texture();
     } else {
-      if (_expansion->_tex_spec[i]._stage >= gsg->_target._texture->get_num_on_stages()) {
+      if (_shader->_tex_spec[i]._stage >= gsg->_target._texture->get_num_on_stages()) {
         continue;
       }
-      TextureStage *stage = gsg->_target._texture->get_on_stage(_expansion->_tex_spec[i]._stage);
+      TextureStage *stage = gsg->_target._texture->get_on_stage(_shader->_tex_spec[i]._stage);
       tex = gsg->_target._texture->get_on_texture(stage);
     }
-    if (_expansion->_tex_spec[i]._suffix != 0) {
+    if (_shader->_tex_spec[i]._suffix != 0) {
       // The suffix feature is inefficient. It is a temporary hack.
       if (tex == 0) {
         continue;
       }
-      tex = tex->load_related(_expansion->_tex_spec[i]._suffix);
+      tex = tex->load_related(_shader->_tex_spec[i]._suffix);
     }
-    if ((tex == 0) || (tex->get_texture_type() != _expansion->_tex_spec[i]._desired_type)) {
+    if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
       continue;
     }
     TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
@@ -383,7 +383,7 @@ void CLP(ShaderContext)::
 cg_report_errors() {
   CGerror err = cgGetError();
   if (err != CG_NO_ERROR) {
-    GLCAT.error() << _expansion->get_name() << " " << cgGetErrorString(err) << "\n";
+    GLCAT.error() << _shader->get_filename() << " " << cgGetErrorString(err) << "\n";
   }
 }
 #endif

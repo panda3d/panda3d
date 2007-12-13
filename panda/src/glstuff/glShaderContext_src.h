@@ -19,7 +19,7 @@
 #include "pandabase.h"
 #include "string_utils.h"
 #include "internalName.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "shaderContext.h"
 #include "deletedChain.h"
 
@@ -34,7 +34,7 @@ class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
   typedef CLP(GraphicsStateGuardian) GSG;
 
-  CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg);
+  CLP(ShaderContext)(Shader *s, GSG *gsg);
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 

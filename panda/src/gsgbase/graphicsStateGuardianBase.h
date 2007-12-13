@@ -58,7 +58,7 @@ class GraphicsOutput;
 class Texture;
 class TextureContext;
 class ShaderContext;
-class ShaderExpansion;
+class Shader;
 class RenderState;
 class TransformState;
 class Material;
@@ -138,7 +138,7 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
 
-  virtual ShaderContext *prepare_shader(ShaderExpansion *shader)=0;
+  virtual ShaderContext *prepare_shader(Shader *shader)=0;
   virtual void release_shader(ShaderContext *sc)=0;
   
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data)=0;

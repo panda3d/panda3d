@@ -24,7 +24,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "reMutexHolder.h"
 #include "geomContext.h"
 #include "shaderContext.h"
@@ -487,7 +487,7 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
 //               do this (presumably at the next frame).
 ////////////////////////////////////////////////////////////////////
 void PreparedGraphicsObjects::
-enqueue_shader(ShaderExpansion *se) {
+enqueue_shader(Shader *se) {
   ReMutexHolder holder(_lock);
 
   _enqueued_shaders.insert(se);
@@ -500,10 +500,10 @@ enqueue_shader(ShaderExpansion *se) {
 //               GSG, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-is_shader_queued(const ShaderExpansion *shader) const {
+is_shader_queued(const Shader *shader) const {
   ReMutexHolder holder(_lock);
 
-  EnqueuedShaders::const_iterator qi = _enqueued_shaders.find((ShaderExpansion *)shader);
+  EnqueuedShaders::const_iterator qi = _enqueued_shaders.find((Shader *)shader);
   return (qi != _enqueued_shaders.end());
 }
 
@@ -522,7 +522,7 @@ is_shader_queued(const ShaderExpansion *shader) const {
 //               queued.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-dequeue_shader(ShaderExpansion *se) {
+dequeue_shader(Shader *se) {
   ReMutexHolder holder(_lock);
 
   EnqueuedShaders::iterator qi = _enqueued_shaders.find(se);
@@ -540,7 +540,7 @@ dequeue_shader(ShaderExpansion *se) {
 //               this GSG, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PreparedGraphicsObjects::
-is_shader_prepared(const ShaderExpansion *shader) const {
+is_shader_prepared(const Shader *shader) const {
   return shader->is_prepared((PreparedGraphicsObjects *)this);
 }
 
@@ -561,12 +561,12 @@ void PreparedGraphicsObjects::
 release_shader(ShaderContext *sc) {
   ReMutexHolder holder(_lock);
 
-  sc->_expansion->clear_prepared(this);
+  sc->_shader->clear_prepared(this);
 
   // We have to set the Shader pointer to NULL at this point, since
   // the Shader itself might destruct at any time after it has been
   // released.
-  sc->_expansion = (ShaderExpansion *)NULL;
+  sc->_shader = (Shader *)NULL;
 
   bool removed = (_prepared_shaders.erase(sc) != 0);
   nassertv(removed);
@@ -593,8 +593,8 @@ release_all_shaders() {
        sci != _prepared_shaders.end();
        ++sci) {
     ShaderContext *sc = (*sci);
-    sc->_expansion->clear_prepared(this);
-    sc->_expansion = (ShaderExpansion *)NULL;
+    sc->_shader->clear_prepared(this);
+    sc->_shader = (Shader *)NULL;
 
     _released_shaders.insert(sc);
   }
@@ -650,7 +650,7 @@ get_num_prepared_shaders() const {
 //               ShaderContext will be deleted.
 ////////////////////////////////////////////////////////////////////
 ShaderContext *PreparedGraphicsObjects::
-prepare_shader_now(ShaderExpansion *se, GraphicsStateGuardianBase *gsg) {
+prepare_shader_now(Shader *se, GraphicsStateGuardianBase *gsg) {
   ReMutexHolder holder(_lock);
 
   // Ask the GSG to create a brand new ShaderContext.  There might
@@ -1226,7 +1226,7 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   for (qsi = _enqueued_shaders.begin();
        qsi != _enqueued_shaders.end();
        ++qsi) {
-    ShaderExpansion *shader = (*qsi);
+    Shader *shader = (*qsi);
     shader->prepare_now(this, gsg);
   }
 

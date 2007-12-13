@@ -100,16 +100,7 @@ ns_load_shader(const string &str) {
 // ***** face_index ???
 
   if (shader == (CPT(Shader)) NULL) {
-    int preprocessor;
-
-    preprocessor = 0;
-    shader = Shader::load (filename, preprocessor);
-    if (shader) {
-      if (shader -> get_load_error ( )) {
-//        delete shader;
-        shader = (CPT(Shader)) NULL;
-      }
-    }
+    shader = Shader::load (filename);
   }
 
   if (shader == (CPT(Shader)) NULL) {

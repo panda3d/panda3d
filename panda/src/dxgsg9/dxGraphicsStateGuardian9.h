@@ -89,7 +89,7 @@ public:
   void apply_texture(int i, TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  ShaderContext *prepare_shader(ShaderExpansion *se);
+  ShaderContext *prepare_shader(Shader *se);
   void release_shader(ShaderContext *sc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
@@ -302,11 +302,11 @@ protected:
   CullFaceAttrib::Mode _cull_face_mode;
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
 
-  PT(ShaderExpansion)  _current_shader_expansion;
+  PT(Shader)  _current_shader;
   CLP(ShaderContext)  *_current_shader_context;
-  PT(ShaderExpansion)  _vertex_array_shader_expansion;
+  PT(Shader)  _vertex_array_shader;
   CLP(ShaderContext)  *_vertex_array_shader_context;
-  PT(ShaderExpansion)  _texture_binding_shader_expansion;
+  PT(Shader)  _texture_binding_shader;
   CLP(ShaderContext)  *_texture_binding_shader_context;
 
   const DXVertexBufferContext9 *_active_vbuffer;

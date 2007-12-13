@@ -32,6 +32,7 @@
 #include "cullTraverserData.h"
 #include "pStatCollector.h"
 #include "deletedChain.h"
+#include "graphicsStateGuardianBase.h"
 
 class CullTraverser;
 

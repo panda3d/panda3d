@@ -1,5 +1,5 @@
 // Filename: shader.I
-// Created by: jyelon (01Sep05)
+// Heavily Modified:  jyelon (Sep05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -17,63 +17,71 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_file
-//       Access: Published
-//  Description: Returns null string if shader was not loaded from
-//               a source file.
+//  Function: Shader::get_filename
+//  Access: Public
+//  Description: Return the Shader's filename.
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Shader::
-get_file() const {
-  return _file;
+get_filename() const {
+  return _filename;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_body
-//       Access: Published
-//  Description:
+//  Function: Shader::get_text
+//  Access: Public
+//  Description: Return the Shader's text.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Shader::
-get_body() const {
-  return _body;
+get_text() const {
+  return _text;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_name
-//       Access: Published
-//  Description:
+//  Function: Shader::get_header
+//  Access: Public
+//  Description: Return the Shader's header line.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Shader::
-get_name() const {
-  return _name;
+get_header() const {
+  return _header;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_loaded
-//       Access: Published
-//  Description:
+//  Function: Shader::get_error_flag
+//  Access: Public
+//  Description: Returns true if the shader contains a compile-time
+//               error.  This doesn't tell you whether or not the
+//               shader is supported on the current video card.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Shader::
-get_loaded() const {
-  return _loaded;
+get_error_flag() const {
+  return _error_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_load_error
-//       Access: Published
-//  Description:
+//  Function: Shader::ShaderCapabilities Constructor
+//  Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE bool Shader::
-get_load_error() const {
-  return _load_error;
+INLINE Shader::ShaderCaps::
+ShaderCaps() {
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::get_preprocessor
-//       Access: Published
-//  Description:
+//  Function: Shader::ShaderCapabilities::operator ==
+//  Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int Shader::
-get_preprocessor() const {
-  return _preprocessor;
+INLINE bool Shader::ShaderCaps::
+operator == (const ShaderCaps &other) const {
+#ifdef HAVE_CG
+  if ((_active_vprofile != other._active_vprofile) ||
+      (_active_fprofile != other._active_fprofile) ||
+      (_ultimate_vprofile != other._ultimate_vprofile) ||
+      (_ultimate_fprofile != other._ultimate_fprofile)) {
+     return false;
+  }
+#endif
+  return true;
 }
-

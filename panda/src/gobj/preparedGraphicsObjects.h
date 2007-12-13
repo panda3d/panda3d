@@ -25,7 +25,7 @@
 #include "geom.h"
 #include "geomVertexArrayData.h"
 #include "geomPrimitive.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -92,16 +92,16 @@ PUBLISHED:
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
-  void enqueue_shader(ShaderExpansion *shader);
-  bool is_shader_queued(const ShaderExpansion *shader) const;
-  bool dequeue_shader(ShaderExpansion *shader);
-  bool is_shader_prepared(const ShaderExpansion *shader) const;
+  void enqueue_shader(Shader *shader);
+  bool is_shader_queued(const Shader *shader) const;
+  bool dequeue_shader(Shader *shader);
+  bool is_shader_prepared(const Shader *shader) const;
   void release_shader(ShaderContext *sc);
   int release_all_shaders();
   int get_num_queued_shaders() const;
   int get_num_prepared_shaders() const;
 
-  ShaderContext *prepare_shader_now(ShaderExpansion *shader, GraphicsStateGuardianBase *gsg);
+  ShaderContext *prepare_shader_now(Shader *shader, GraphicsStateGuardianBase *gsg);
 
   void enqueue_vertex_buffer(GeomVertexArrayData *data);
   bool is_vertex_buffer_queued(const GeomVertexArrayData *data) const;
@@ -143,7 +143,7 @@ private:
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
   typedef phash_set<ShaderContext *, pointer_hash> Shaders;
-  typedef phash_set< PT(ShaderExpansion) > EnqueuedShaders;
+  typedef phash_set< PT(Shader) > EnqueuedShaders;
   typedef phash_set<BufferContext *, pointer_hash> Buffers;
   typedef phash_set< PT(GeomVertexArrayData) > EnqueuedVertexBuffers;
   typedef phash_set< PT(GeomPrimitive) > EnqueuedIndexBuffers;

@@ -8,7 +8,7 @@
 #include "queryContext.cxx"
 #include "savedContext.cxx"
 #include "shaderContext.cxx"
-#include "shaderExpansion.cxx"
+#include "shader.cxx"
 #include "simpleAllocator.cxx"
 #include "simpleLru.cxx"
 #include "sliderTable.cxx"

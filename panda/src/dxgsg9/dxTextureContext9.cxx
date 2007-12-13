@@ -145,14 +145,14 @@ create_texture(DXScreenData &scrn) {
   }
 
   // check for texture compression
-  Texture::CompressionMode compression_mode = Texture::CompressionMode::CM_off;
+  Texture::CompressionMode compression_mode = Texture::CM_off;
   bool texture_stored_compressed = false;
   bool texture_wants_compressed = false;
 
   compression_mode = get_texture()->get_ram_image_compression();
   // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
-  nassertr(((Texture::CompressionMode::CM_dxt1+1)==Texture::CompressionMode::CM_dxt2)&&((Texture::CompressionMode::CM_dxt2+1)==Texture::CompressionMode::CM_dxt3)&&((Texture::CompressionMode::CM_dxt3+1)==Texture::CompressionMode::CM_dxt4)&&((Texture::CompressionMode::CM_dxt4+1)==Texture::CompressionMode::CM_dxt5),false);
-  if ((compression_mode >= Texture::CompressionMode::CM_dxt1) && (compression_mode <= Texture::CompressionMode::CM_dxt5)) {
+  nassertr(((Texture::CM_dxt1+1)==Texture::CM_dxt2)&&((Texture::CM_dxt2+1)==Texture::CM_dxt3)&&((Texture::CM_dxt3+1)==Texture::CM_dxt4)&&((Texture::CM_dxt4+1)==Texture::CM_dxt5),false);
+  if ((compression_mode >= Texture::CM_dxt1) && (compression_mode <= Texture::CM_dxt5)) {
     texture_stored_compressed = true;
   }
   
@@ -160,11 +160,11 @@ create_texture(DXScreenData &scrn) {
     texture_wants_compressed = true;  
   }
   else {
-    if (get_texture()->get_compression() == Texture::CompressionMode::CM_off) {
+    if (get_texture()->get_compression() == Texture::CM_off) {
       // no compression
     }
     else {    
-      if (get_texture()->get_compression() == Texture::CompressionMode::CM_default) {
+      if (get_texture()->get_compression() == Texture::CM_default) {
         // default = use "compressed-textures" config setting
         if (compressed_textures) {
           texture_wants_compressed = true;
@@ -374,16 +374,16 @@ create_texture(DXScreenData &scrn) {
           // if the texture is already compressed, we need to choose the corresponding format, 
           // otherwise we might end up cross-compressing from e.g. DXT5 to DXT3
           switch (compression_mode){
-          case Texture::CompressionMode::CM_dxt2:
+          case Texture::CM_dxt2:
             CHECK_FOR_FMT(DXT2, Conv32toDXT2);
             break;
-          case Texture::CompressionMode::CM_dxt3:
+          case Texture::CM_dxt3:
             CHECK_FOR_FMT(DXT3, Conv32toDXT3);
             break;
-          case Texture::CompressionMode::CM_dxt4:
+          case Texture::CM_dxt4:
             CHECK_FOR_FMT(DXT4, Conv32toDXT4);
             break;
-          case Texture::CompressionMode::CM_dxt5:
+          case Texture::CM_dxt5:
             CHECK_FOR_FMT(DXT5, Conv32toDXT5);
             break;
           }

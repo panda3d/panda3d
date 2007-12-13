@@ -39,16 +39,16 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
-CLP(ShaderContext)(ShaderExpansion *s, GSG *gsg) : ShaderContext(s) {
+CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
   _vertex_size = 0;
   _vertex_element_array = 0;
-  _name = s->get_name ( );
+  _name = s->get_filename ( );
 
 #ifdef HAVE_CG
   if (s->get_header() == "//Cg") {
     
-    // Ask the shader expansion to compile itself for us and 
+    // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
 
     if (!s->cg_compile_for(gsg->_shader_caps,
@@ -277,7 +277,7 @@ unbind(GSG *gsg) {
 //     Function: DXShaderContext9::issue_parameters
 //       Access: Public
 //  Description: This function gets called whenever the RenderState
-//               or TransformState has changed, but the ShaderExpansion
+//               or TransformState has changed, but the Shader
 //               itself has not changed.  It loads new values into the
 //               shader's parameters.
 //
@@ -301,13 +301,13 @@ issue_parameters(GSG *gsg, bool altered)
 {
 #ifdef HAVE_CG
   if (_cg_context) {
-    for (int i=0; i<(int)_expansion->_mat_spec.size(); i++) {
-      if (altered || _expansion->_mat_spec[i]._trans_dependent) {
-        CGparameter p = _cg_parameter_map[_expansion->_mat_spec[i]._id._seqno];
+    for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
+      if (altered || _shader->_mat_spec[i]._trans_dependent) {
+        CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
         if (p == NULL) {
           continue;
         }        
-        const LMatrix4f *val = gsg->fetch_specified_value(_expansion->_mat_spec[i], altered);
+        const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
         if (val) {
           HRESULT hr;
           float v [4];
@@ -322,13 +322,13 @@ issue_parameters(GSG *gsg, bool altered)
           #if DEBUG_SHADER
           // DEBUG
           global_data = (float *) data;
-          global_shader_mat_spec = &_expansion->_mat_spec[i];
+          global_shader_mat_spec = &_shader->_mat_spec[i];
           global_internal_name_0 = global_shader_mat_spec -> _arg [0];
           global_internal_name_1 = global_shader_mat_spec -> _arg [1];
           #endif
 
-          switch (_expansion->_mat_spec[i]._piece) {
-          case ShaderExpansion::SMP_whole:
+          switch (_shader->_mat_spec[i]._piece) {
+          case Shader::SMP_whole:
             // TRANSPOSE REQUIRED
             temp_matrix.transpose_from (*val);
             data = temp_matrix.get_data();
@@ -336,7 +336,7 @@ issue_parameters(GSG *gsg, bool altered)
             hr = cgD3D9SetUniform (p, data);
 
             DBG_SH2
-              dxgsg9_cat.debug ( ) << "ShaderExpansion::SMP_whole MATRIX \n" <<
+              dxgsg9_cat.debug ( ) << "Shader::SMP_whole MATRIX \n" <<
                 data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
                 data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
                 data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
@@ -345,44 +345,44 @@ issue_parameters(GSG *gsg, bool altered)
 
             break;
 
-          case ShaderExpansion::SMP_transpose:
+          case Shader::SMP_transpose:
             // NO TRANSPOSE REQUIRED
             hr = cgD3D9SetUniform (p, data);
             break;
 
-          case ShaderExpansion::SMP_row0:
+          case Shader::SMP_row0:
             hr = cgD3D9SetUniform (p, data + 0);
             break;
-          case ShaderExpansion::SMP_row1:
+          case Shader::SMP_row1:
             hr = cgD3D9SetUniform (p, data + 4);
             break;
-          case ShaderExpansion::SMP_row2:
+          case Shader::SMP_row2:
             hr = cgD3D9SetUniform (p, data + 8);
             break;
-          case ShaderExpansion::SMP_row3:
+          case Shader::SMP_row3:
             hr = cgD3D9SetUniform (p, data + 12);
             break;
 
-          case ShaderExpansion::SMP_col0:
+          case Shader::SMP_col0:
             v[0] = data[0]; v[1] = data[4]; v[2] = data[8]; v[3] = data[12];
             hr = cgD3D9SetUniform (p, v);
             break;
-          case ShaderExpansion::SMP_col1:
+          case Shader::SMP_col1:
             v[0] = data[1]; v[1] = data[5]; v[2] = data[9]; v[3] = data[13];
             hr = cgD3D9SetUniform (p, v);
             break;
-          case ShaderExpansion::SMP_col2:
+          case Shader::SMP_col2:
             v[0] = data[2]; v[1] = data[6]; v[2] = data[10]; v[3] = data[14];
             hr = cgD3D9SetUniform (p, v);
             break;
-          case ShaderExpansion::SMP_col3:
+          case Shader::SMP_col3:
             v[0] = data[3]; v[1] = data[7]; v[2] = data[11]; v[3] = data[15];
             hr = cgD3D9SetUniform (p, v);
             break;
 
           default:
             dxgsg9_cat.error()
-              << "issue_parameters ( ) SMP parameter type not implemented " << _expansion->_mat_spec[i]._piece << "\n";
+              << "issue_parameters ( ) SMP parameter type not implemented " << _shader->_mat_spec[i]._piece << "\n";
             break;
           }
 
@@ -390,14 +390,14 @@ issue_parameters(GSG *gsg, bool altered)
 
             string name = "unnamed";
 
-            if (_expansion->_mat_spec[i]._arg [0]) {
-              name = _expansion->_mat_spec[i]._arg [0] -> get_basename ( );
+            if (_shader->_mat_spec[i]._arg [0]) {
+              name = _shader->_mat_spec[i]._arg [0] -> get_basename ( );
             }
 
             dxgsg9_cat.error()
               << "NAME  " << name << "\n"
               << "MAT TYPE  "
-              << _expansion->_mat_spec[i]._piece
+              << _shader->_mat_spec[i]._piece
               << " cgD3D9SetUniform failed "
               << D3DERRORSTRING(hr);
 
@@ -465,7 +465,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         const GeomVertexArrayDataHandle *array_reader;
         Geom::NumericType numeric_type;
         int start, stride, num_values;
-        int nvarying = _expansion->_var_spec.size();
+        int nvarying = _shader->_var_spec.size();
 
         int stream_index;
         VertexElementArray *vertex_element_array;
@@ -481,12 +481,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
         #endif
 
         for (int i=0; i<nvarying; i++) {
-          CGparameter p = _cg_parameter_map[_expansion->_var_spec[i]._id._seqno];
+          CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
           if (p == NULL) {
             continue;
           }        
-          InternalName *name = _expansion->_var_spec[i]._name;
-          int texslot = _expansion->_var_spec[i]._append_uv;
+          InternalName *name = _shader->_var_spec[i]._name;
+          int texslot = _shader->_var_spec[i]._append_uv;
           if (texslot >= 0) {
             const Geom::ActiveTextureStages &active_stages =
               gsg->_state._texture->get_on_stages();
@@ -688,8 +688,8 @@ disable_shader_texture_bindings(GSG *gsg)
 {
 #ifdef HAVE_CG
   if (_cg_context) {
-    for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
-      CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+    for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
         continue;
       }        
@@ -728,31 +728,31 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 
 #ifdef HAVE_CG
   if (_cg_context) {
-    for (int i=0; i<(int)_expansion->_tex_spec.size(); i++) {
-      CGparameter p = _cg_parameter_map[_expansion->_tex_spec[i]._id._seqno];
+    for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
         continue;
       }        
       Texture *tex = 0;
-      InternalName *id = _expansion->_tex_spec[i]._name;
+      InternalName *id = _shader->_tex_spec[i]._name;
       if (id != 0) {
         const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
         tex = input->get_texture();
       } else {
-        if (_expansion->_tex_spec[i]._stage >= gsg->_target._texture->get_num_on_stages()) {
+        if (_shader->_tex_spec[i]._stage >= gsg->_target._texture->get_num_on_stages()) {
           continue;
         }
-        TextureStage *stage = gsg->_target._texture->get_on_stage(_expansion->_tex_spec[i]._stage);
+        TextureStage *stage = gsg->_target._texture->get_on_stage(_shader->_tex_spec[i]._stage);
         tex = gsg->_target._texture->get_on_texture(stage);
       }
-      if (_expansion->_tex_spec[i]._suffix != 0) {
+      if (_shader->_tex_spec[i]._suffix != 0) {
         // The suffix feature is inefficient. It is a temporary hack.
         if (tex == 0) {
           continue;
         }
-        tex = tex->load_related(_expansion->_tex_spec[i]._suffix);
+        tex = tex->load_related(_shader->_tex_spec[i]._suffix);
       }
-      if ((tex == 0) || (tex->get_texture_type() != _expansion->_tex_spec[i]._desired_type)) {
+      if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
         continue;
       }
       TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);

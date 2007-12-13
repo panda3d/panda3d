@@ -133,7 +133,7 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual ShaderContext *prepare_shader(ShaderExpansion *shader);
+  virtual ShaderContext *prepare_shader(Shader *shader);
   virtual void release_shader(ShaderContext *sc);
 
   void record_deleted_display_list(GLuint index);
@@ -359,11 +359,11 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
 
-  PT(ShaderExpansion)  _current_shader_expansion;
+  PT(Shader)  _current_shader;
   CLP(ShaderContext)  *_current_shader_context;
-  PT(ShaderExpansion)  _vertex_array_shader_expansion;
+  PT(Shader)  _vertex_array_shader;
   CLP(ShaderContext)  *_vertex_array_shader_context;
-  PT(ShaderExpansion)  _texture_binding_shader_expansion;
+  PT(Shader)  _texture_binding_shader;
   CLP(ShaderContext)  *_texture_binding_shader_context;
 
 #ifdef SUPPORT_IMMEDIATE_MODE

@@ -351,7 +351,7 @@ release_texture(TextureContext *tc) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ShaderContext *DXGraphicsStateGuardian9::
-prepare_shader(ShaderExpansion *se) {
+prepare_shader(Shader *se) {
 #ifdef HAVE_CG
   CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
   return result;
@@ -1272,7 +1272,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
         update_shader_vertex_arrays(_vertex_array_shader_context,this);
     }
   }
-  _vertex_array_shader_expansion = _current_shader_expansion;
+  _vertex_array_shader = _current_shader;
   _vertex_array_shader_context = _current_shader_context;
 
   const GeomVertexFormat *format = _data_reader->get_format ( );
@@ -3016,11 +3016,11 @@ reset() {
   // must check (_screen->_d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon8500, no on TNT)
   set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-  _current_shader_expansion = (ShaderExpansion *)NULL;
+  _current_shader = (Shader *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
-  _vertex_array_shader_expansion = (ShaderExpansion *)NULL;
+  _vertex_array_shader = (Shader *)NULL;
   _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
-  _texture_binding_shader_expansion = (ShaderExpansion *)NULL;
+  _texture_binding_shader = (Shader *)NULL;
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
@@ -3157,25 +3157,21 @@ do_issue_shader() {
   DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: do_issue_shader\n"; DBG_E
 
   CLP(ShaderContext) *context = 0;
-  ShaderExpansion *expansion = _target_rs->get_shader_expansion();
-  if (expansion == 0) {
-    if (_target._shader->get_shader() != 0) {
-      expansion = _target._shader->get_shader()->macroexpand(_target_rs, _shader_caps);
-      // I am casting away the const-ness of this pointer, because
-      // the 'shader-expansion' field is just a cache.
-      ((RenderState *)((const RenderState*)_target_rs))->
-        set_shader_expansion(expansion);
-    }
+  const ShaderAttrib *attr = _target_rs->get_generated_shader();
+  if (attr == 0) {
+    attr = _target._shader;
+    // if (attr is auto) then generate a shader.
+    // store that shader using set_generated_shader.
   }
-
-  if (expansion) {
-    context = (CLP(ShaderContext) *)(expansion->prepare_now(get_prepared_objects(), this));
+  Shader *shader = (Shader *)(attr->get_shader());
+  if (shader) {
+    context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
   }
 
   if (context == 0 || (context && context -> valid (this) == false)) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind(this);
-      _current_shader_expansion = 0;
+      _current_shader = 0;
       _current_shader_context = 0;
       disable_standard_texture_bindings();
     }
@@ -3188,12 +3184,12 @@ do_issue_shader() {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind(this);
       _current_shader_context = 0;
-      _current_shader_expansion = 0;
+      _current_shader = 0;
       disable_standard_texture_bindings();
     }
     if (context != 0) {
       context->bind(this);
-      _current_shader_expansion = expansion;
+      _current_shader = shader;
       _current_shader_context = context;
     }
   } else {
@@ -3822,7 +3818,7 @@ do_issue_texture() {
         update_shader_texture_bindings(_texture_binding_shader_context,this);
     }
   }
-  _texture_binding_shader_expansion = _current_shader_expansion;
+  _texture_binding_shader = _current_shader;
   _texture_binding_shader_context = _current_shader_context;
 }
 

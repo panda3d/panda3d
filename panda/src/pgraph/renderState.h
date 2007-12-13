@@ -31,7 +31,6 @@
 #include "texMatrixAttrib.h"
 #include "geomMunger.h"
 #include "weakPointerTo.h"
-#include "shaderExpansion.h"
 #include "reMutex.h"
 #include "pmutex.h"
 #include "deletedChain.h"
@@ -159,8 +158,8 @@ public:
   void store_into_slots(AttribSlots *slots) const;
   
   static void bin_removed(int bin_index);
-  INLINE ShaderExpansion *get_shader_expansion() const;
-  INLINE void set_shader_expansion(ShaderExpansion *exp);
+  INLINE ShaderAttrib *get_generated_shader() const;
+  INLINE void set_generated_shader(ShaderAttrib *attr);
 
   INLINE static void flush_level();
 
@@ -300,10 +299,11 @@ private:
   int _bin_index;
   int _draw_order;
 
-  // If this renderstate contains a Shader, then the macroexpansion
-  // of the shader needs to be cached (to avoid having to regenerate
-  // it each time this RenderState is applied).
-  PT(ShaderExpansion) _shader_expansion;
+  // If this state contains an "auto" ShaderAttrib, then an explicit
+  // ShaderAttrib will be synthesized by the runtime and stored here.
+  // I can't declare this as a ShaderAttrib because that would create
+  // a circular include-file dependency problem.  Aaargh.
+  PT(RenderAttrib) _generated_shader;
   
   // We also cache the pointer to some critical attribs stored in the
   // state, if they exist.

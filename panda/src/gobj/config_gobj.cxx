@@ -44,7 +44,7 @@
 #include "texturePoolFilter.h"
 #include "textureStage.h"
 #include "textureContext.h"
-#include "shaderExpansion.h"
+#include "shader.h"
 #include "shaderContext.h"
 #include "transformBlend.h"
 #include "transformBlendTable.h"
@@ -356,7 +356,7 @@ ConfigureFn(config_gobj) {
   PerspectiveLens::init_type();
   QueryContext::init_type();
   ShaderContext::init_type();
-  ShaderExpansion::init_type();
+  Shader::init_type();
   SliderTable::init_type();
   Texture::init_type();
   TextureContext::init_type();
@@ -392,6 +392,7 @@ ConfigureFn(config_gobj) {
   MatrixLens::register_with_read_factory();
   OrthographicLens::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
+  Shader::register_with_read_factory();
   SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
