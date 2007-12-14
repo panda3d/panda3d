@@ -40,12 +40,18 @@ class DirectManipulationControl(DirectObject):
         self.optionalSkipFlags = 0
         self.unmovableTagList = []
 
+        # [gjeon] to enable selection while other manipulation is disabled
+        self.fAllowSelectionOnly = 0
+        
     def manipulationStart(self, modifiers):
         # Start out in select mode
         self.mode = 'select'
 
         if base.direct.cameraControl.useMayaCamControls and modifiers == 4:
             self.mode = 'camera'
+
+        if self.fAllowSelectionOnly:
+            return
 
         # Check for a widget hit point
         entry = base.direct.iRay.pickWidget()
@@ -162,10 +168,19 @@ class DirectManipulationControl(DirectObject):
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
-    def disableManipulation(self):
+        self.fAllowSelectionOnly = 0
+
+    def disableManipulation(self, allowSelectionOnly=False):
         # Ignore events
         for event in self.actionEvents:
             self.ignore(event[0])
+
+        # [gjeon] to enable selection while other manipulation is disabled
+        if allowSelectionOnly:
+            self.fAllowSelectionOnly = allowSelectionOnly
+            self.accept('DIRECT-mouse1', self.manipulationStart)
+            self.accept('DIRECT-mouse1Up', self.manipulationStop)
+
         self.removeManipulateObjectTask()
         taskMgr.remove('manipulateObject')
         taskMgr.remove('manip-move-wait')
