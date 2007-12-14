@@ -269,8 +269,8 @@ public:
   
   static ShaderCaps _default_caps;
 
-  typedef phash_map < Filename , Shader * > LoadTable;
-  typedef phash_map < string   , Shader * > MakeTable;
+  typedef pmap < Filename , Shader * > LoadTable;
+  typedef pmap < string   , Shader * > MakeTable;
 
   static LoadTable _load_table;
   static MakeTable _make_table;
