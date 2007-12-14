@@ -101,7 +101,6 @@
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
-    shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
@@ -211,7 +210,6 @@
     selectiveChildNode.cxx \
     sequenceNode.cxx \
     shadeModelAttrib.cxx \
-    shader.cxx \
     shaderAttrib.cxx \
     shaderInput.cxx \
     shaderPool.cxx \
@@ -318,7 +316,6 @@
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
-    shader.I shader.h \
     shaderAttrib.I shaderAttrib.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \

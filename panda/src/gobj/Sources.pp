@@ -48,8 +48,8 @@
     lens.h lens.I \
     queryContext.I queryContext.h \
     savedContext.I savedContext.h \
+    shader.I shader.h \
     shaderContext.h shaderContext.I \
-    shaderExpansion.h shaderExpansion.I \
     simpleAllocator.h simpleAllocator.I \
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
@@ -111,8 +111,8 @@
     lens.cxx  \
     queryContext.cxx \
     savedContext.cxx \
+    shader.cxx \
     shaderContext.cxx \
-    shaderExpansion.cxx \
     simpleAllocator.cxx \
     simpleLru.cxx \
     sliderTable.cxx \
@@ -174,8 +174,8 @@
     lens.h lens.I \
     queryContext.I queryContext.h \
     savedContext.I savedContext.h \
+    shader.I shader.h \
     shaderContext.h shaderContext.I \
-    shaderExpansion.h shaderExpansion.I \
     simpleAllocator.h simpleAllocator.I \
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
