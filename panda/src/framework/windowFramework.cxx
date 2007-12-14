@@ -237,7 +237,7 @@ close_window() {
 //               in the scene graph.  This node may be moved around to
 //               represent the viewpoint.
 ////////////////////////////////////////////////////////////////////
-const NodePath &WindowFramework::
+NodePath WindowFramework::
 get_camera_group() {
   if (_camera_group.is_empty()) {
     _camera_group = get_render().attach_new_node("camera_group");
@@ -250,7 +250,7 @@ get_camera_group() {
 //       Access: Public
 //  Description: Returns the root of the 3-d scene graph.
 ////////////////////////////////////////////////////////////////////
-const NodePath &WindowFramework::
+NodePath WindowFramework::
 get_render() {
   if (_render.is_empty()) {
     _render = NodePath("render");
@@ -269,7 +269,7 @@ get_render() {
 //       Access: Public
 //  Description: Returns the root of the 2-d scene graph.
 ////////////////////////////////////////////////////////////////////
-const NodePath &WindowFramework::
+NodePath WindowFramework::
 get_render_2d() {
   if (_render_2d.is_empty()) {
     _render_2d = NodePath("render_2d");
@@ -317,7 +317,7 @@ get_render_2d() {
 //  Description: Returns the node under the 2-d scene graph that is
 //               scaled to suit the window's aspect ratio.
 ////////////////////////////////////////////////////////////////////
-const NodePath &WindowFramework::
+NodePath WindowFramework::
 get_aspect_2d() {
   if (_aspect_2d.is_empty()) {
     PGTop *top = new PGTop("aspect_2d");
@@ -357,7 +357,7 @@ get_aspect_2d() {
 //  Description: Returns the node in the data graph corresponding to
 //               the mouse associated with this window.
 ////////////////////////////////////////////////////////////////////
-const NodePath &WindowFramework::
+NodePath WindowFramework::
 get_mouse() {
   if (_mouse.is_empty()) {
     NodePath mouse = _panda_framework->get_mouse(_window);

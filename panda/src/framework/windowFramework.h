@@ -71,15 +71,15 @@ protected:
 public:
   INLINE PandaFramework *get_panda_framework() const;
   INLINE GraphicsWindow *get_graphics_window() const;
-  const NodePath &get_camera_group();
+  NodePath get_camera_group();
 
   INLINE int get_num_cameras() const;
   INLINE Camera *get_camera(int n) const;
 
-  const NodePath &get_render();
-  const NodePath &get_render_2d();
-  const NodePath &get_aspect_2d();
-  const NodePath &get_mouse();
+  NodePath get_render();
+  NodePath get_render_2d();
+  NodePath get_aspect_2d();
+  NodePath get_mouse();
 
   void enable_keyboard();
   void setup_trackball();
