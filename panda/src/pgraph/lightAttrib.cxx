@@ -522,7 +522,7 @@ filter_to_max(int max_lights) const {
        CompareLightPriorities());
 
   // Now lop off all of the lights after the first max_lights.
-  if (priority_lights.size() > max_lights) { 
+  if ((int)priority_lights.size() > max_lights) { 
     priority_lights.erase(priority_lights.begin() + max_lights,
                           priority_lights.end());
   }
