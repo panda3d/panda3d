@@ -42,6 +42,7 @@ make_off() {
     ShaderAttrib *attrib = new ShaderAttrib;
     attrib->_shader = (Shader*)NULL;
     attrib->_shader_priority = 0;
+    attrib->_auto_shader = false;
     attrib->_has_shader = true;
     _off_attrib = return_new(attrib);
   }
@@ -61,6 +62,7 @@ make() {
     ShaderAttrib *attrib = new ShaderAttrib;
     attrib->_shader = (Shader*)NULL;
     attrib->_shader_priority = 0;
+    attrib->_auto_shader = false;
     attrib->_has_shader = false;
     _null_attrib = return_new(attrib);
   }
@@ -77,6 +79,7 @@ set_shader(const Shader *s, int priority) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   result->_shader = s;
   result->_shader_priority = priority;
+  result->_auto_shader = false;
   result->_has_shader = true;
   return return_new(result);
 }
@@ -91,6 +94,22 @@ set_shader_off(int priority) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   result->_shader = NULL;
   result->_shader_priority = priority;
+  result->_auto_shader = false;
+  result->_has_shader = true;
+  return return_new(result);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::set_shader_auto
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_auto(int priority) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  result->_shader = NULL;
+  result->_shader_priority = priority;
+  result->_auto_shader = true;
   result->_has_shader = true;
   return return_new(result);
 }
@@ -105,6 +124,7 @@ clear_shader() const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   result->_shader = NULL;
   result->_shader_priority = 0;
+  result->_auto_shader = false;
   result->_has_shader = false;
   return return_new(result);
 }
@@ -437,6 +457,7 @@ compose_impl(const RenderAttrib *other) const {
         (over->_shader_priority >= attr->_shader_priority)) {
       attr->_shader = over->_shader;
       attr->_shader_priority = over->_shader_priority;
+      attr->_auto_shader = over->_auto_shader;
       attr->_has_shader = over->_has_shader;
     }
   }

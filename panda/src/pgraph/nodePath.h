@@ -572,6 +572,7 @@ PUBLISHED:
 
   void set_shader(const Shader *sha, int priority = 0);
   void set_shader_off(int priority = 0);
+  void set_shader_auto(int priority = 0);
   void clear_shader();
   void set_shader_input(const ShaderInput *inp);
   void set_shader_input(InternalName *id, Texture *tex,       int priority=0);

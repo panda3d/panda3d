@@ -3204,6 +3204,29 @@ set_shader_off(int priority) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_auto
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_shader_auto(int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ShaderAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ShaderAttrib::get_class_type()));
+    const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
+    node()->set_attrib(sa->set_shader_auto(priority));
+  } else {
+    // Create a new ShaderAttrib for this node.
+    CPT(ShaderAttrib) sa = DCAST(ShaderAttrib, ShaderAttrib::make());
+    node()->set_attrib(sa->set_shader_auto(priority));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::clear_shader
 //       Access: Published
 //  Description: 

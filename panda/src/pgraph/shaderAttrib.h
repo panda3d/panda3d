@@ -39,12 +39,14 @@ private:
 PUBLISHED:
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_off();
-
+  
   INLINE bool               has_shader() const;
+  INLINE bool               auto_shader() const;
   INLINE int                get_shader_priority() const;
   
   CPT(RenderAttrib) set_shader(const Shader *s, int priority=0) const;
   CPT(RenderAttrib) set_shader_off(int priority=0) const;
+  CPT(RenderAttrib) set_shader_auto(int priority=0) const;
   CPT(RenderAttrib) clear_shader() const;
   CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
   CPT(RenderAttrib) set_shader_input(InternalName *id, Texture *tex,       int priority=0) const;
@@ -79,8 +81,10 @@ protected:
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   
 private:
+
   CPT(Shader) _shader;
   int         _shader_priority;
+  bool        _auto_shader;
   bool        _has_shader;
   typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
   Inputs _inputs;

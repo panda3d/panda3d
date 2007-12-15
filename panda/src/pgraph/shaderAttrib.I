@@ -35,6 +35,7 @@ INLINE ShaderAttrib::
 ShaderAttrib(const ShaderAttrib &copy) :
   _shader(copy._shader),
   _shader_priority(copy._shader_priority),
+  _auto_shader(copy._auto_shader),
   _has_shader(copy._has_shader),
   _inputs(copy._inputs)
 {
@@ -49,6 +50,18 @@ ShaderAttrib(const ShaderAttrib &copy) :
 INLINE bool ShaderAttrib::
 has_shader() const {
   return _has_shader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::auto_shader
+//       Access: Published
+//  Description: If true, then this ShaderAttrib does not contain an
+//               explicit shader - instead, it requests the automatic
+//               generation of a shader.
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+auto_shader() const {
+  return _auto_shader;
 }
 
 ////////////////////////////////////////////////////////////////////
