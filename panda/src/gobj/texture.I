@@ -1381,3 +1381,45 @@ is_txo_filename(const Filename &fullpath) {
 #endif  // HAVE_ZLIB
   return (extension == "txo");
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_textures_power_2
+//       Access: Published, Static
+//  Description: Set this flag to ATS_none, ATS_up, or ATS_down
+//               to control the scaling of textures.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_textures_power_2(AutoTextureScale scale) {
+  _textures_power_2 = scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_textures_power_2
+//       Access: Published, Static
+//  Description: This flag returns ATS_none, ATS_up, or ATS_down
+//               and controls the scaling of textures.  It is
+//               initialized from the config variable of the same
+//               name, but it can be subsequently adjusted.
+////////////////////////////////////////////////////////////////////
+INLINE AutoTextureScale Texture::
+get_textures_power_2() {
+  if (_textures_power_2 == ATS_UNSPECIFIED) {
+    return textures_power_2;
+  } else {
+    return _textures_power_2;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::have_textures_power_2
+//       Access: Published, Static
+//  Description: If true, then get_textures_power_2 has been
+//               set using set_textures_power_2.
+//               If false, then get_textures_power_2 simply
+//               returns the config variable of the same name.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+have_textures_power_2() {
+  return (_textures_power_2 != ATS_UNSPECIFIED);
+}
+

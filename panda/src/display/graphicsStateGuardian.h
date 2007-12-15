@@ -405,11 +405,11 @@ protected:
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
 
-  int _supported_geom_rendering;
+  int  _supported_geom_rendering;
   bool _color_scale_via_lighting;
   bool _alpha_scale_via_texture;
 
-  int _stereo_buffer_mask;
+  int  _stereo_buffer_mask;
 
   StencilRenderStates *_stencil_render_states;
 

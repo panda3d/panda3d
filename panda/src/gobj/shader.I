@@ -59,6 +59,49 @@ get_error_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Shader::set_shader_utilization
+//       Access: Published, Static
+//  Description: Set this flag to SUT_none, SUT_basic, or
+//               SUT_advanced to limit panda's automatic shader
+//               generation facilities.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::
+set_shader_utilization(ShaderUtilization sut) {
+  _shader_utilization = sut;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_shader_utilization
+//       Access: Published, Static
+//  Description: This flag returns SUT_none, SUT_basic, or
+//               SUT_advanced and controls the automatic generation
+//               of shaders.  It is initialized from the config
+//               variable of the same name, but it can be 
+//               subsequently adjusted.
+////////////////////////////////////////////////////////////////////
+INLINE ShaderUtilization Shader::
+get_shader_utilization() {
+  if (_shader_utilization == SUT_UNSPECIFIED) {
+    return shader_utilization;
+  } else {
+    return _shader_utilization;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::have_shader_utilization
+//       Access: Published, Static
+//  Description: If true, then get_shader_utilization has been
+//               set using set_shader_utilization.
+//               If false, then get_shader_utilization simply
+//               returns the config variable of the same name.
+////////////////////////////////////////////////////////////////////
+INLINE bool Shader::
+have_shader_utilization() {
+  return (_shader_utilization != SUT_UNSPECIFIED);
+}
+
+////////////////////////////////////////////////////////////////////
 //  Function: Shader::ShaderCapabilities Constructor
 //  Access: Public
 //  Description: 

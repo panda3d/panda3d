@@ -138,7 +138,7 @@ reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
   int x_size = width;
   int y_size = height;
 
-  if (textures_power_2 != ATS_none) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     x_size = up_to_power_2(width);
     y_size = up_to_power_2(height);
   }

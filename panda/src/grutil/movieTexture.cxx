@@ -236,7 +236,7 @@ recalculate_image_properties(CDWriter &cdata) {
 
   int x_size = x_max;
   int y_size = y_max;
-  if (textures_power_2 != ATS_none) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     x_max = up_to_power_2(x_max);
     y_max = up_to_power_2(y_max);
   }

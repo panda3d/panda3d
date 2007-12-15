@@ -19,6 +19,7 @@
 #include "graphicsEngine.h"
 #include "graphicsPipe.h"
 #include "parasiteBuffer.h"
+#include "config_gobj.h"
 #include "config_display.h"
 #include "pipeline.h"
 #include "drawCullHandler.h"
@@ -1761,7 +1762,8 @@ do_add_window(GraphicsOutput *window,
 //       Access: Private
 //  Description: An internal function called by make_output to add
 //               the newly-created gsg object to the engine's
-//               list of gsg's.
+//               list of gsg's.  It also adjusts various config
+//               variables based on the gsg's capabilities.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
@@ -1772,6 +1774,8 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
   gsg->_pipe = pipe;
   gsg->_engine = this;
 
+  auto_adjust_capabilities(gsg);
+  
   WindowRenderer *draw = 
     get_window_renderer(threading_model.get_draw_name(),
                         threading_model.get_draw_stage());
@@ -1833,6 +1837,155 @@ do_resort_windows() {
   }
 
   _windows.sort();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::auto_adjust_capabilities
+//       Access: Private
+//  Description: Video card capability flags are stored on a
+//               per-gsg basis.  However, there are a few cases
+//               where panda needs to know not the capabilities
+//               of an individual GSG, but rather, the
+//               collective capabilities of all the GSGs.
+//
+//               Non-power-of-two (NPOT) texture support is the
+//               classic example.  Panda makes a single global
+//               decision to either create NPOT textures, or not.
+//               Therefore, it doesn't need to know whether one GSG
+//               supports NPOT textures.  It needs to know whether ALL
+//               the GSGs support NPOT textures.
+//
+//               The purpose of this routine is to maintain global
+//               capability flags that summarize the collective
+//               capabilities of the computer as a whole.
+//
+//               These global capability flags are initialized from
+//               config variables.  Then, they can be auto-reconfigured
+//               using built-in heuristic mechanisms if the user so
+//               desires.  Whether auto-reconfiguration is enabled or
+//               not, the configured values are checked against
+//               the actual capabilities of the machine and error
+//               messages will be printed if there is a mismatch.
+//
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
+
+  // The rule we use when auto-reconfiguring is as follows.  The
+  // global capabilities must initially be set to conservative
+  // values.  When the first GSG comes into existence, its
+  // capabilities will be checked, and the global capabilities
+  // may be elevated to more aggressive values.
+  //
+  // At first glance, this might seem backward, and it might seem
+  // better to do it the other way: start with all global capabilities
+  // aggressively set, and then disable capabilities when you discover
+  // a gsg that doesn't support them.
+  //
+  // However, that approach doesn't work, because once a global
+  // capability is enabled, there is no going back.  If
+  // textures_power_2 has ever been set to 'none', there may be NPOT
+  // textures already floating about the system.  Ie, it's too late:
+  // you can't turn these global capability flags off, once they've
+  // been turned on.
+  //
+  // That's why we have to start with conservative settings, and then
+  // elevate those settings to more aggressive values later when
+  // we're fairly sure it's OK to do so.
+  //
+  // For each global capability, we must:
+  //   1. Make sure the initial setting is conservative.
+  //   2. Possibly elevate to a more aggressive value.
+  //   3. Check that we haven't over-elevated.
+  //
+
+  if (textures_auto_power_2 && (textures_power_2 == ATS_none)) {
+    display_cat.error()
+      << "Invalid panda config file: if you set the config-variable\n"
+      << "textures_auto_power_2 to true, you must set the config-variable"
+      << "textures_power_2 to 'up' or 'down'.\n";
+    textures_power_2 = ATS_down; // Not a fix.  Just suppresses further error messages.
+  }
+  
+  if (textures_auto_power_2 && !Texture::have_textures_power_2()) {
+    if (gsg->get_supports_tex_non_pow2()) {
+      Texture::set_textures_power_2(ATS_none);
+    } else {
+      Texture::set_textures_power_2(textures_power_2);
+    }
+  }
+  
+  if ((Texture::get_textures_power_2() == ATS_none) && 
+      (!gsg->get_supports_tex_non_pow2())) {
+    
+    // Overaggressive configuration detected
+    
+    display_cat.error() 
+      << "The 'textures_power_2' configuration is set to 'none', meaning \n"
+      << "that non-power-of-two texture support is required, but the video \n"
+      << "driver I'm trying to use does not support non-power-of-two textures.\n";
+
+    if (textures_power_2 != ATS_none) {
+      display_cat.error()
+        << "The 'none' did not come from the config file.  In other words,\n"
+        << "the variable 'textures_power_2' was altered procedurally.\n";
+    
+      if (textures_auto_power_2) {
+        display_cat.error()
+          << "It is possible that it was set by panda's automatic mechanisms,\n"
+          << "which are currently enabled, because 'textures_auto_power_2' is\n"
+          << "true.  Panda's automatic mechanisms assume that if one\n"
+          << "window supports non-power-of-two textures, then they all will.\n"
+          << "This assumption works for most games, but not all.\n"
+          << "In particular, it can fail if the game creates multiple windows\n"
+          << "on multiple displays with different video cards.\n";
+      }
+    }
+  }
+  
+  if (shader_auto_utilization && (shader_utilization != SUT_none)) {
+    display_cat.error()
+      << "Invalid panda config file: if you set the config-variable\n"
+      << "shader_auto_utilization to true, you must set the config-variable"
+      << "shader_utilization to 'none'.\n";
+    shader_utilization = SUT_none; // Not a fix.  Just suppresses further error messages.
+  }
+  
+  if (shader_auto_utilization && !Shader::have_shader_utilization()) {
+    if (gsg->get_supports_basic_shaders()) {
+      Shader::set_shader_utilization(SUT_basic);
+    } else {
+      Shader::set_shader_utilization(SUT_none);
+    }
+  }
+  
+  if ((Shader::get_shader_utilization() != SUT_none) && 
+      (!gsg->get_supports_basic_shaders())) {
+    
+    // Overaggressive configuration detected
+    
+    display_cat.error() 
+      << "The 'shader_utilization' config variable is set, meaning\n"
+      << "that panda may try to generate shaders.  However, the video \n"
+      << "driver I'm trying to use does not support shaders.\n";
+
+    if (shader_utilization == SUT_none) {
+      display_cat.error()
+        << "The 'shader_utilization' setting did not come from the config\n"
+        << "file.  In other words, it was altered procedurally.\n";
+    
+      if (shader_auto_utilization) {
+        display_cat.error()
+          << "It is possible that it was set by panda's automatic mechanisms,\n"
+          << "which are currently enabled, because 'shader_auto_utilization' is\n"
+          << "true.  Panda's automatic mechanisms assume that if one\n"
+          << "window supports shaders, then they all will.\n"
+          << "This assumption works for most games, but not all.\n"
+          << "In particular, it can fail if the game creates multiple windows\n"
+          << "on multiple displays with different video cards.\n";
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

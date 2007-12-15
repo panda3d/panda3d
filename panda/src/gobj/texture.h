@@ -323,6 +323,10 @@ PUBLISHED:
   void clear_aux_data(const string &key);
   TypedReferenceCount *get_aux_data(const string &key) const;
 
+  INLINE static void set_textures_power_2(AutoTextureScale scale);
+  INLINE static AutoTextureScale get_textures_power_2();
+  INLINE static bool have_textures_power_2();
+
 PUBLISHED:
   // These are published, but in general, you shouldn't be mucking
   // with these values; they are set automatically when a texture is
@@ -547,6 +551,7 @@ private:
   typedef pmap<string, PT(TypedReferenceCount) > AuxData;
   AuxData _aux_data;
 
+  static AutoTextureScale _textures_power_2;
   static PStatCollector _texture_read_pcollector;
 
   // Datagram stuff

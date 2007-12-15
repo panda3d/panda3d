@@ -51,6 +51,10 @@ PUBLISHED:
   INLINE const string   &get_header() const;
   INLINE bool get_error_flag() const;
 
+  INLINE static ShaderUtilization get_shader_utilization();
+  INLINE static void set_shader_utilization(ShaderUtilization utl);
+  INLINE static bool have_shader_utilization();
+  
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -268,6 +272,7 @@ public:
   bool           _loaded;
   
   static ShaderCaps _default_caps;
+  static ShaderUtilization _shader_utilization;
 
   typedef pmap < Filename , Shader * > LoadTable;
   typedef pmap < string   , Shader * > MakeTable;

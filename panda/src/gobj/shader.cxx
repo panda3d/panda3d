@@ -29,6 +29,7 @@ TypeHandle Shader::_type_handle;
 Shader::LoadTable Shader::_load_table;
 Shader::MakeTable Shader::_make_table;
 Shader::ShaderCaps Shader::_default_caps;
+ShaderUtilization Shader::_shader_utilization = SUT_UNSPECIFIED;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cp_report_error

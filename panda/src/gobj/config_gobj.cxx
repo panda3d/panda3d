@@ -228,6 +228,32 @@ ConfigVariableEnum<AutoTextureScale> textures_square
           "a square aspect ratio when they are loaded from disk.  Set this "
           "to 'none', 'down', or 'up'.  See textures-power-2."));
 
+ConfigVariableBool textures_auto_power_2
+("textures-auto-power-2", false,
+ PRC_DESC("If this is true, then panda will wait until you open a window, "
+          "and then ask the window if it supports non-power-of-two textures. "
+          "If so, then the config variable textures_power_2 will "
+          "automatically be adjusted.  The pitfall of doing this is that if "
+          "you then open a second window that doesn't support the same "
+          "capabilities, it will have no choice but to print an error message."));
+
+ConfigVariableEnum<ShaderUtilization> shader_utilization
+("shader-utilization", SUT_none,
+ PRC_DESC("At times, panda may generate shaders.  This variable controls what "
+          "kinds of shaders can be generated.  If you set it to SUT_none, "
+          "shader generation will be be disabled.  If you set it to SUT_basic, "
+          "then DX9 shaders may be generated, if you set it to SUT_advanced, "
+          "then DX10 shaders may be generated."));
+
+ConfigVariableBool shader_auto_utilization
+("shader-auto-utilization", false,
+ PRC_DESC("If this is true, then panda will wait until you open a window, "
+          "and then ask the window if it supports basic or advanced shaders. "
+          "If so, then the config variable shader-utilization will "
+          "automatically be adusted.  The pitfall of doing this is that if "
+          "you then open a second window that doesn't support the same "
+          "capabilities, it will have no choice but to print an error message."));
+
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
 ConfigVariableBool textures_header_only
 ("textures-header-only", false,
@@ -441,6 +467,50 @@ operator >> (istream &in, AutoTextureScale &ats) {
   } else {
     gobj_cat->error() << "Invalid AutoTextureScale value: " << word << "\n";
     ats = ATS_none;
+  }
+
+  return in;
+}
+
+ostream &
+operator << (ostream &out, ShaderUtilization sgc) {
+  switch (sgc) {
+  case SUT_none:
+    return out << "none";
+   
+  case SUT_basic:
+    return out << "basic";
+    
+  case SUT_advanced:
+    return out << "advanced";
+  }
+
+  return out << "**invalid ShaderUtilization (" << (int)sgc << ")**";
+}
+
+istream &
+operator >> (istream &in, ShaderUtilization &sgc) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "none") == 0 ||
+      cmp_nocase(word, "0") == 0 ||
+      cmp_nocase(word, "#f") == 0 ||
+      tolower(word[0] == 'f')) {
+    sgc = SUT_none;
+
+  } else if (cmp_nocase(word, "basic") == 0 ||
+          cmp_nocase(word, "1") == 0 ||
+          cmp_nocase(word, "#t") == 0 ||
+          tolower(word[0] == 't')) {
+    sgc = SUT_basic;
+
+  } else if (cmp_nocase(word, "advanced") == 0) {
+    sgc = SUT_advanced;
+
+  } else {
+    gobj_cat->error() << "Invalid ShaderUtilization value: " << word << "\n";
+    sgc = SUT_none;
   }
 
   return in;

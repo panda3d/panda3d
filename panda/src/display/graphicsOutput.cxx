@@ -268,6 +268,7 @@ clear_render_textures() {
 void GraphicsOutput::
 add_render_texture(Texture *tex, RenderTextureMode mode,
                    RenderTexturePlane plane) {
+  
   if (mode == RTM_none) {
     return;
   }
@@ -315,7 +316,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  if (textures_power_2 != ATS_none) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     tex->set_x_size(Texture::up_to_power_2(get_x_size()));
     tex->set_y_size(Texture::up_to_power_2(get_y_size()));
   } else {
@@ -590,7 +591,7 @@ create_texture_card_vdata(int x, int y)
   float xhi = 1.0;
   float yhi = 1.0;
 
-  if (textures_power_2 != ATS_none) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     int xru = Texture::up_to_power_2(x);
     int yru = Texture::up_to_power_2(y);
     xhi = (x * 1.0f) / xru;

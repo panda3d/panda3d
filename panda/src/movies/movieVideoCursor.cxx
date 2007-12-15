@@ -86,7 +86,7 @@ void MovieVideoCursor::
 setup_texture(Texture *tex) const {
   int fullx = size_x();
   int fully = size_y();
-  if (textures_power_2) {
+  if (Texture::get_textures_power_2()) {
     fullx = Texture::up_to_power_2(fullx);
     fully = Texture::up_to_power_2(fully);
   }

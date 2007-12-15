@@ -124,6 +124,7 @@ public:
   bool remove_callback(const string &thread_name, CallbackTime callback_time,
                        CallbackFunction *func, void *data);
 
+  
 private:
   class Callback {
   public:
@@ -172,6 +173,7 @@ private:
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
+  void auto_adjust_capabilities(GraphicsStateGuardian *gsg);
 
 #ifdef DO_PSTATS
   typedef map<TypeHandle, PStatCollector> CyclerTypeCounters;

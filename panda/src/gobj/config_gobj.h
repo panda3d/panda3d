@@ -33,10 +33,20 @@ NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 enum AutoTextureScale {
   ATS_none,
   ATS_down,
-  ATS_up
+  ATS_up,
+  ATS_UNSPECIFIED,
 };
+enum ShaderUtilization {
+  SUT_none,
+  SUT_basic,
+  SUT_advanced,
+  SUT_UNSPECIFIED,
+};
+
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, AutoTextureScale ats);
 EXPCL_PANDA_GOBJ istream &operator >> (istream &in, AutoTextureScale &ats);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, ShaderUtilization sut);
+EXPCL_PANDA_GOBJ istream &operator >> (istream &in, ShaderUtilization &sut);
 
 // Configure variables for gobj package.
 extern EXPCL_PANDA_GOBJ ConfigVariableInt max_texture_dimension;
@@ -59,7 +69,11 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool preserve_triangle_strips;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_square;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_auto_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
+
+extern EXPCL_PANDA_GOBJ ConfigVariableEnum<ShaderUtilization> shader_utilization;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool shader_auto_utilization;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt geom_cache_min_frames;

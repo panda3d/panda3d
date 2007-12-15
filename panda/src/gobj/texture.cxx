@@ -44,6 +44,7 @@
 
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
+AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::Constructor
@@ -2909,7 +2910,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
     new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
   }
 
-  switch (textures_power_2.get_value()) {
+  switch (get_textures_power_2()) {
   case ATS_down:
     new_x_size = down_to_power_2(new_x_size);
     new_y_size = down_to_power_2(new_y_size);
