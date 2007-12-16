@@ -97,6 +97,7 @@ WindowFramework(PandaFramework *panda_framework) :
   _two_sided_enabled = false;
   _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
+  _perpixel_enabled = false;
   _background_type = BT_default;
 }
 
@@ -123,6 +124,7 @@ WindowFramework(const WindowFramework &copy, DisplayRegion *display_region) :
   _two_sided_enabled = false;
   _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
+  _perpixel_enabled = false;
   _background_type = BT_default;
 
   set_background_type(copy._background_type);
@@ -223,6 +225,7 @@ close_window() {
   _two_sided_enabled = false;
   _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
+  _perpixel_enabled = false;
 
   if (_frame_rate_meter != (FrameRateMeter *)NULL) {
     _frame_rate_meter->clear_window();
@@ -964,6 +967,28 @@ set_lighting(bool enable) {
   }
 
   _lighting_enabled = enable;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::set_perpixel
+//       Access: Public
+//  Description: Turns per-pixel lighting on (true) or off (false).
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+set_perpixel(bool enable) {
+  if (enable == _perpixel_enabled) {
+    return;
+  }
+
+  NodePath render = get_render();
+
+  if (enable) {
+    render.set_shader_auto();
+  } else {
+    render.set_shader_off();
+  }
+
+  _perpixel_enabled = enable;
 }
 
 ////////////////////////////////////////////////////////////////////

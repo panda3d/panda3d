@@ -87,12 +87,14 @@ public:
   void set_texture(bool enable);
   void set_two_sided(bool enable);
   void set_lighting(bool enable);
+  void set_perpixel(bool enable);
   void set_background_type(WindowFramework::BackgroundType type);
 
   INLINE bool get_wireframe() const;
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
   INLINE bool get_lighting() const;
+  INLINE bool get_perpixel() const;
   INLINE WindowFramework::BackgroundType get_background_type() const;
 
   static int hide_collision_solids(NodePath node);
@@ -131,6 +133,7 @@ public:
   static void event_b(const Event *, void *data);
   static void event_i(const Event *, void *data);
   static void event_l(const Event *, void *data);
+  static void event_p(const Event *, void *data);
   static void event_c(const Event *, void *data);
   static void event_a(const Event *, void *data);
   static void event_C(const Event *, void *data);
@@ -177,6 +180,7 @@ private:
   bool _texture_enabled;
   bool _two_sided_enabled;
   bool _lighting_enabled;
+  bool _perpixel_enabled;
   WindowFramework::BackgroundType _background_type;
 
   NodePath _highlight;

@@ -124,6 +124,16 @@ get_lighting() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_perpixel
+//       Access: Public
+//  Description: Returns the current state of the perpixel flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowFramework::
+get_perpixel() const {
+  return _perpixel_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::get_background_type
 //       Access: Public
 //  Description: Returns the current background type setting.

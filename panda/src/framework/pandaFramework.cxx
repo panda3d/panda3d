@@ -377,6 +377,7 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
   wf->set_texture(get_texture());
   wf->set_two_sided(get_two_sided());
   wf->set_lighting(get_lighting());
+  wf->set_perpixel(get_perpixel());
   wf->set_background_type(get_background_type());
 
   GraphicsWindow *win = wf->open_window(props, get_graphics_engine(), 
@@ -618,6 +619,22 @@ set_lighting(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::set_perpixel
+//       Access: Public
+//  Description: Sets the perpixel state on all windows.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+set_perpixel(bool enable) {
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    WindowFramework *wf = (*wi);
+    wf->set_perpixel(enable);
+  }
+
+  _perpixel_enabled = enable;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BackgroundFramework::set_background_type
 //       Access: Public
 //  Description: Sets the background type of all windows.
@@ -843,6 +860,7 @@ do_enable_default_keys() {
   define_key("b", "toggle backface (double-sided) rendering", event_b, this);
   define_key("i", "invert (reverse) single-sided faces", event_i, this);
   define_key("l", "toggle lighting", event_l, this);
+  define_key("p", "toggle per-pixel lighting", event_p, this);
   define_key("c", "recenter view on object", event_c, this);
   define_key("a", "toggle animation controls", event_a, this);
   define_key("shift-c", "toggle collision surfaces", event_C, this);
@@ -1014,6 +1032,22 @@ event_l(const Event *event, void *) {
     DCAST_INTO_V(wf, param.get_ptr());
 
     wf->set_lighting(!wf->get_lighting());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_p
+//       Access: Public, Static
+//  Description: Default handler for p key: toggle per-pixel lighting.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_p(const Event *event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_perpixel(!wf->get_perpixel());
   }
 }
 

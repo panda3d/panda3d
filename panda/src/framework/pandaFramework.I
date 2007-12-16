@@ -144,6 +144,16 @@ get_lighting() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_perpixel
+//       Access: Public
+//  Description: Returns the current state of the perpixel flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaFramework::
+get_perpixel() const {
+  return _perpixel_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::get_background_type
 //       Access: Public
 //  Description: Returns the current background type setting.
