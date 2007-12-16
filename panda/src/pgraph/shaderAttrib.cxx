@@ -288,13 +288,17 @@ get_shader_input_nodepath(InternalName *id) const {
   static NodePath resfail;
   Inputs::const_iterator i = _inputs.find(id);
   if (i == _inputs.end()) {
-    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
-    nassertr(false, resfail);
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return resfail;
   } else {
     const ShaderInput *p = (*i).second;
     if (p->get_value_type() != ShaderInput::M_nodepath) {
-      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a nodepath.\n";
-      nassertr(false, resfail);
+      ostringstream strm;
+      strm << "Shader input " << id->get_name() << " is not a nodepath.\n";
+      nassert_raise(strm.str());
+      return resfail;
     }
     return p->get_nodepath();
   }
@@ -314,14 +318,16 @@ get_shader_input_vector(InternalName *id) const {
   static LVector4f resfail(0,0,0,0);
   Inputs::const_iterator i = _inputs.find(id);
   if (i == _inputs.end()) {
-    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
-    nassertr(false, resfail);
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
     return resfail;
   } else {
     const ShaderInput *p = (*i).second;
     if (p->get_value_type() != ShaderInput::M_vector) {
-      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a vector.\n";
-      nassertr(false, resfail);
+      ostringstream strm;
+      strm << "Shader input " << id->get_name() << " is not a vector.\n";
+      nassert_raise(strm.str());
       return resfail;
     }
     return p->get_vector();
@@ -338,14 +344,16 @@ Texture *ShaderAttrib::
 get_shader_input_texture(InternalName *id) const {
   Inputs::const_iterator i = _inputs.find(id);
   if (i == _inputs.end()) {
-    pgraph_cat.error() << "Shader input " << id->get_name() << " is not present.\n";
-    nassertr(false, NULL);
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
     return NULL;
   } else {
     const ShaderInput *p = (*i).second;
     if (p->get_value_type() != ShaderInput::M_texture) {
-      pgraph_cat.error() << "Shader input " << id->get_name() << " is not a texture.\n";
-      nassertr(false, NULL);
+      ostringstream strm;
+      strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
+      nassert_raise(strm.str());
       return NULL;
     }
     return p->get_texture();
@@ -417,6 +425,9 @@ compare_to_impl(const RenderAttrib *other) const {
   }
   if (this->_shader_priority != that->_shader_priority) {
     return (this->_shader_priority < that->_shader_priority) ? -1 : 1;
+  }
+  if (this->_auto_shader != that->_auto_shader) {
+    return (this->_auto_shader < that->_auto_shader) ? -1 : 1;
   }
   if (this->_has_shader != that->_has_shader) {
     return (this->_has_shader < that->_has_shader) ? -1 : 1;

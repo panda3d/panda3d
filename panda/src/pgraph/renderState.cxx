@@ -2118,3 +2118,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _attributes.push_back(Attribute(override));
   }
 }
+

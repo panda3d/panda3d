@@ -36,6 +36,7 @@
 #include "deletedChain.h"
 #include "simpleHashMap.h"
 #include "cacheStats.h"
+#include "shaderGenerator.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
@@ -154,13 +155,13 @@ PUBLISHED:
   
   int get_geom_rendering(int geom_rendering) const;
 
+  INLINE const ShaderAttrib *get_generated_shader() const;
+  
 public:
   void store_into_slots(AttribSlots *slots) const;
   
   static void bin_removed(int bin_index);
-  INLINE ShaderAttrib *get_generated_shader() const;
-  INLINE void set_generated_shader(ShaderAttrib *attr);
-
+  
   INLINE static void flush_level();
 
 private:
@@ -303,7 +304,7 @@ private:
   // ShaderAttrib will be synthesized by the runtime and stored here.
   // I can't declare this as a ShaderAttrib because that would create
   // a circular include-file dependency problem.  Aaargh.
-  PT(RenderAttrib) _generated_shader;
+  CPT(RenderAttrib) _generated_shader;
   
   // We also cache the pointer to some critical attribs stored in the
   // state, if they exist.

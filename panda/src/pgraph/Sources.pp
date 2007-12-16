@@ -102,6 +102,7 @@
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
+    shaderGenerator.I shaderGenerator.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
@@ -211,6 +212,7 @@
     sequenceNode.cxx \
     shadeModelAttrib.cxx \
     shaderAttrib.cxx \
+    shaderGenerator.cxx \
     shaderInput.cxx \
     shaderPool.cxx \
     showBoundsEffect.cxx \
@@ -317,6 +319,7 @@
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
+    shaderGenerator.I shaderGenerator.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \

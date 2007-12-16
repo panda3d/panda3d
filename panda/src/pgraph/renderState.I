@@ -602,26 +602,6 @@ compare_to(const Attribute &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_generated_shader
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE ShaderAttrib *RenderState::
-get_generated_shader() const {
-  return (ShaderAttrib*)(RenderAttrib*)_generated_shader;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::set_generated_shader
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void RenderState::
-set_generated_shader(ShaderAttrib *attr) {
-  _generated_shader = (RenderAttrib*)attr;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::flush_level
 //       Access: Public, Static
 //  Description: Flushes the PStatCollectors used during traversal.
@@ -671,3 +651,22 @@ CompositionCycleDescEntry(const RenderState *obj,
   _inverted(inverted)
 {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_generated_shader
+//       Access: Public
+//  Description: Generate a ShaderAttrib for this RenderState.  This
+//               generated ShaderAttrib can be thought of as a
+//               replacement for the regular ShaderAttrib that is a
+//               standard part of the RenderState.
+////////////////////////////////////////////////////////////////////
+INLINE const ShaderAttrib *RenderState::
+get_generated_shader() const {
+  if (_generated_shader != (RenderAttrib*)NULL) {
+    return DCAST(ShaderAttrib, _generated_shader);
+  }
+  ((RenderState*)this)->_generated_shader =
+    ShaderGenerator::synthesize_shader(this);
+  return DCAST(ShaderAttrib, _generated_shader);
+}
+
