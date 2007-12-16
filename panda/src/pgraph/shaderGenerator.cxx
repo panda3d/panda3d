@@ -25,45 +25,72 @@
 //       Access: Public, Static
 //  Description: This is the routine that implements the next-gen
 //               fixed function pipeline by synthesizing a shader.
+//
+//               Currently supports:
+//               - textures
+//               - materials
+//               - lights
+//
+//               Not yet supported:
+//               - vertex colors
+//               - texgen
+//               - texmatrix
+//               - separate normal and gloss
+//               - lots of other things
+//
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs) {
-
-  // Stub code: just return this shader.
+  AttribSlots attribs;
+  rs->store_into_slots(&attribs);
   
-  PT(Shader) shader = Shader::make(
-    "//Cg \n"
-    "// \n"
-    "//Cg profile arbvp1 arbfp1 \n"
-    " \n"
-    "void vshader(float4 vtx_position   : POSITION, \n"
-    "             float3 vtx_normal     : NORMAL, \n"
-    "             float4 vtx_color      : COLOR, \n"
-    "             out float4 l_position : POSITION, \n"
-    "             out float4 l_brite    : TEXCOORD0, \n"
-    "             out float4 l_color    : COLOR, \n"
-    "             uniform float4 mspos_light, \n"
-    "             uniform float4x4 mat_modelproj) \n"
-    "{ \n"
-    "  l_position = mul(mat_modelproj, vtx_position); \n"
-    "  float3 N = normalize(vtx_normal); \n"
-    "  float3 lightVector = normalize(mspos_light - vtx_position); \n"
-    "  l_brite = max(dot(N,lightVector), 0); \n"
-    "  l_color = vtx_color; \n"
-    "} \n"
-    " \n"
-    " \n"
-    "void fshader(float4 l_brite     : TEXCOORD0,  \n"
-    "             float4 l_color     : COLOR, \n"
-    "             out float4 o_color : COLOR) \n"
-    "{ \n"
-    "  if (l_brite.x<0.5) l_brite=0.8; \n"
-    "  else l_brite=1.2; \n"
-    "  o_color=l_brite * l_color; \n"
-    "} \n"
-    );
-  CPT(RenderAttrib) rattr = rs->get_shader();
-  if (rattr == 0) rattr = ShaderAttrib::make();
-  return DCAST(ShaderAttrib, rattr)->set_shader(shader);
+  int num_textures = 0;
+  if (attribs._texture) {
+    num_textures = attribs._texture->get_num_on_stages();
+  }
+  
+  ostringstream text;
+  CPT(RenderAttrib) rattrib = ShaderAttrib::make();
+
+  text << "//Cg\n";
+
+  text << "void vshader(\n";
+  for (int i=0; i<num_textures; i++) {
+    text << "\t float2 vtx_texcoord" << i << " : TEXCOORD" << i << ",\n";
+    text << "\t out float2 l_texcoord" << i << " : TEXCOORD" << i << ",\n";
+  }
+  text << "\t float4 vtx_position : POSITION,\n";
+  text << "\t out float4 l_position : POSITION,\n";
+  text << "\t uniform float4x4 mat_modelproj\n";
+  text << ") {\n";
+  
+  text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
+
+  for (int i=0; i<num_textures; i++) {
+    text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
+  }
+  
+  text << "}\n\n";
+
+  text << "void fshader(\n";
+  
+  for (int i=0; i<num_textures; i++) {
+    text << "\t in float2 l_texcoord" << i << " : TEXCOORD" << i << ",\n";
+    text << "\t uniform sampler2D tex_" << i << ",\n";
+  }
+  text << "\t out float4 o_color : COLOR\n";
+  text << ") {\n";
+  
+  text << "\t o_color = float4(1,1,1,1);\n";
+  for (int i=0; i<num_textures; i++) {
+    text << "\t o_color *= tex2D(tex_" << i << ", l_texcoord" << i << ");\n";
+  }
+  
+  text << "}\n";
+
+  // Insert the shader into the shader attrib.
+  PT(Shader) shader = Shader::make(text.str());
+  rattrib = DCAST(ShaderAttrib, rattrib)->set_shader(shader);
+  return rattrib;
 }
 
