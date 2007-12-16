@@ -3529,13 +3529,10 @@ do_issue_shade_model() {
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
   CLP(ShaderContext) *context = 0;
-  const ShaderAttrib *attr = _target_rs->get_generated_shader();
-  if (attr == 0) {
-    attr = _target._shader;
-    // if (attr is auto) then generate a shader.
-    // store that shader using set_generated_shader.
+  Shader *shader = 0;
+  if (_target._shader) {
+    shader = (Shader *)(_target._shader->get_shader());
   }
-  Shader *shader = (Shader *)(attr->get_shader());
   if (shader) {
     context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
   }
@@ -5840,6 +5837,10 @@ set_state_and_transform(const RenderState *target,
   _target.clear_to_defaults();
   target->store_into_slots(&_target);
   _state_rs = 0;
+
+  if (_target._shader && (_target._shader->auto_shader())) {
+    _target._shader = _target_rs->get_generated_shader();
+  }
   
   if (_target._alpha_test != _state._alpha_test) {
     PStatTimer timer(_draw_set_state_alpha_test_pcollector);

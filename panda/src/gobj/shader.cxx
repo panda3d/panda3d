@@ -23,6 +23,8 @@
 
 #ifdef HAVE_CG
 #include "Cg/cg.h"
+#define JCG_PROFILE_GLSLV ((CGprofile)7007)
+#define JCG_PROFILE_GLSLF ((CGprofile)7008)
 #endif
 
 TypeHandle Shader::_type_handle;
@@ -1171,8 +1173,8 @@ Shader(const Filename &filename, const string &text) :
   if (_default_caps._ultimate_vprofile == 0) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
-    _default_caps._ultimate_vprofile = CG_PROFILE_VS_3_0;
-    _default_caps._ultimate_fprofile = CG_PROFILE_PS_3_0;
+    _default_caps._ultimate_vprofile = JCG_PROFILE_GLSLV;
+    _default_caps._ultimate_fprofile = JCG_PROFILE_GLSLF;
   }
   if (_header == "//Cg") {
     if (cg_analyze_shader(_default_caps)) {

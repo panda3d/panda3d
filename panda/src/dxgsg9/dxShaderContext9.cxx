@@ -728,6 +728,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
 
 #ifdef HAVE_CG
   if (_cg_context) {
+
     for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == NULL) {
