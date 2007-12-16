@@ -861,6 +861,8 @@ cg_compile_shader(const ShaderCaps &caps) {
 
   _cg_context = cgCreateContext();
   
+  gobj_cat.debug() << "Compiling Shader: \n" << _text << "\n";
+
   if (_cg_context == 0) {
     gobj_cat.error() << "could not create a Cg context object.\n";
     return false;
@@ -1159,6 +1161,7 @@ Shader(const Filename &filename, const string &text) :
   _filename(filename),
   _text(text),
   _header(""),
+  _loaded(false),
   _error_flag(true),
   _parse(0)
 {
@@ -1232,6 +1235,7 @@ load(const Filename &file) {
     return NULL;
   }
   PT(Shader) result = new Shader(file, body);
+  result->_loaded = true;
   _load_table[file] = result;
   return result;
 }
