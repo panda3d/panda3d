@@ -395,7 +395,7 @@ class DoCollectionManager:
            oldParentId, oldZoneId = location
            oldParentObj = self.doId2do.get(oldParentId)
            if oldParentObj:
-               oldParentObj.handleChildLeave(object, oldZoneId)
+               oldParentObj.handleChildLeave(do, oldZoneId)
         self.deleteObjectLocation(do, do.parentId, do.zoneId)
         ## location = do.getLocation()
         ## if location is not None:
