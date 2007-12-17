@@ -651,22 +651,3 @@ CompositionCycleDescEntry(const RenderState *obj,
   _inverted(inverted)
 {
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_generated_shader
-//       Access: Public
-//  Description: Generate a ShaderAttrib for this RenderState.  This
-//               generated ShaderAttrib can be thought of as a
-//               replacement for the regular ShaderAttrib that is a
-//               standard part of the RenderState.
-////////////////////////////////////////////////////////////////////
-INLINE const ShaderAttrib *RenderState::
-get_generated_shader() const {
-  if (_generated_shader != (RenderAttrib*)NULL) {
-    return DCAST(ShaderAttrib, _generated_shader);
-  }
-  ((RenderState*)this)->_generated_shader =
-    ShaderGenerator::synthesize_shader(this);
-  return DCAST(ShaderAttrib, _generated_shader);
-}
-

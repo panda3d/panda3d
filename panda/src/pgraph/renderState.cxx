@@ -1127,6 +1127,28 @@ get_geom_rendering(int geom_rendering) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_generated_shader
+//       Access: Public
+//  Description: Generate a ShaderAttrib for this RenderState.  This
+//               generated ShaderAttrib can be thought of as a
+//               replacement for the regular ShaderAttrib that is a
+//               standard part of the RenderState.
+////////////////////////////////////////////////////////////////////
+const ShaderAttrib *RenderState::
+get_generated_shader() const {
+  // This method cannot be declared inline, because of the circular
+  // dependency on shaderAttrib.h.
+
+  if (_generated_shader != (RenderAttrib*)NULL) {
+    return DCAST(ShaderAttrib, _generated_shader);
+  }
+  ((RenderState*)this)->_generated_shader =
+    ShaderGenerator::synthesize_shader(this);
+  return DCAST(ShaderAttrib, _generated_shader);
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::store_into_slots
 //       Access: Public
 //  Description: Convert the attribute list into an AttribSlots.

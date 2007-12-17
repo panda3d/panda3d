@@ -155,7 +155,7 @@ PUBLISHED:
   
   int get_geom_rendering(int geom_rendering) const;
 
-  INLINE const ShaderAttrib *get_generated_shader() const;
+  const ShaderAttrib *get_generated_shader() const;
   
 public:
   void store_into_slots(AttribSlots *slots) const;
