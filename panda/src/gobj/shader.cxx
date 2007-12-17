@@ -1505,7 +1505,7 @@ release_all() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void Shader::ShaderCaps::
+void Shader::ShaderCaps::
 clear() {
 #ifdef HAVE_CG
   _active_vprofile = 0;
