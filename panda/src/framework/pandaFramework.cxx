@@ -53,6 +53,7 @@ PandaFramework() :
   _texture_enabled = true;
   _two_sided_enabled = false;
   _lighting_enabled = false;
+  _perpixel_enabled = false;
   _background_type = WindowFramework::BT_default;
   _default_keys_enabled = false;
   _exit_flag = false;
