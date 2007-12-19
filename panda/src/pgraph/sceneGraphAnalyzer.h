@@ -31,6 +31,7 @@ class PandaNode;
 class GeomNode;
 class Geom;
 class GeomVertexData;
+class GeomVertexFormat;
 class GeomVertexArrayData;
 class Texture;
 
