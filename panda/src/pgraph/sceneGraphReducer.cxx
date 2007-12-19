@@ -726,8 +726,8 @@ r_remove_column(PandaNode *node, const InternalName *column,
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 r_collect_vertex_data(PandaNode *node, int collect_bits,
-                      GeomTransformer &transformer) {
-  int num_created = 0;
+                      GeomTransformer &transformer, bool format_only) {
+  int num_adjusted = 0;
 
   int this_node_bits = 0;
   if (node->is_of_type(ModelNode::get_class_type())) {
@@ -746,37 +746,35 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
 
     if (node->is_geom_node()) {
       // When we come to a geom node, collect.
-      if (new_transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits)) {
-        ++num_created;
-      }
+      num_adjusted += new_transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits, format_only);
     }
 
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      num_created += 
-        r_collect_vertex_data(children.get_child(i), collect_bits, new_transformer);
+      num_adjusted += 
+        r_collect_vertex_data(children.get_child(i), collect_bits, new_transformer, format_only);
     }
+
+    num_adjusted += new_transformer.finish_collect(format_only);
 
   } else {
     // Keep the same collection.
 
     if (node->is_geom_node()) {
-      if (transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits)) {
-        ++num_created;
-      }
+      num_adjusted += transformer.collect_vertex_data(DCAST(GeomNode, node), collect_bits, format_only);
     }
     
     PandaNode::Children children = node->get_children();
     int num_children = children.get_num_children();
     for (int i = 0; i < num_children; ++i) {
-      num_created +=
-        r_collect_vertex_data(children.get_child(i), collect_bits, transformer);
+      num_adjusted +=
+        r_collect_vertex_data(children.get_child(i), collect_bits, transformer, format_only);
     }
   }
 
   Thread::consider_yield();
-  return num_created;
+  return num_adjusted;
 }
 
 ////////////////////////////////////////////////////////////////////

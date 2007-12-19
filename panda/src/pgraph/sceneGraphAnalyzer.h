@@ -67,6 +67,7 @@ PUBLISHED:
   INLINE int get_num_geom_nodes() const;
   INLINE int get_num_geoms() const;
   INLINE int get_num_geom_vertex_datas() const;
+  INLINE int get_num_geom_vertex_formats() const;
   INLINE int get_vertex_data_size() const;
 
   INLINE int get_num_vertices() const;
@@ -104,6 +105,7 @@ private:
 
   typedef pmap<PandaNode *, int> Nodes;
   typedef pmap<CPT(GeomVertexData), VDataTracker> VDatas;
+  typedef pset<CPT(GeomVertexFormat) > VFormats;
   typedef pset<CPT(GeomVertexArrayData) > VADatas;
   typedef pmap<const GeomVertexData *, int, IndirectCompareTo<GeomVertexData> > UniqueVDatas;
   typedef pmap<const GeomVertexArrayData *, int, IndirectCompareTo<GeomVertexArrayData> > UniqueVADatas;
@@ -113,6 +115,7 @@ private:
 
   Nodes _nodes;
   VDatas _vdatas;
+  VFormats _vformats;
   VADatas _vadatas;
   VADatas _prim_vadatas;
   UniqueVDatas _unique_vdatas;
@@ -129,6 +132,7 @@ private:
   int _num_geom_nodes;
   int _num_geoms;
   int _num_geom_vertex_datas;
+  int _num_geom_vertex_formats;
   size_t _vertex_data_size;
   size_t _prim_data_size;
 

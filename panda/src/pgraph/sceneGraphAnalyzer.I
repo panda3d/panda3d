@@ -118,6 +118,16 @@ get_num_geom_vertex_datas() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_num_geom_vertex_formats
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_num_geom_vertex_formats() const {
+  return _num_geom_vertex_formats;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::get_vertex_data_size
 //       Access: Published
 //  Description: 

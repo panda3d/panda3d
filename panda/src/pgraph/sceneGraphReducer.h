@@ -138,6 +138,7 @@ PUBLISHED:
 
   int remove_column(PandaNode *root, const InternalName *column);
 
+  INLINE int make_compatible_format(PandaNode *root, int collect_bits = ~0);
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
   void unify(PandaNode *root, bool preserve_order);
@@ -173,7 +174,7 @@ protected:
                       GeomTransformer &transformer);
 
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
-                            GeomTransformer &transformer);
+                            GeomTransformer &transformer, bool format_only);
   int r_make_nonindexed(PandaNode *node, int collect_bits);
   void r_unify(PandaNode *node, int max_indices, bool preserve_order);
 

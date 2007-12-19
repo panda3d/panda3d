@@ -65,6 +65,7 @@ void SceneGraphAnalyzer::
 clear() {
   _nodes.clear();
   _vdatas.clear();
+  _vformats.clear();
   _vadatas.clear();
   _unique_vdatas.clear();
   _unique_vadatas.clear();
@@ -78,6 +79,7 @@ clear() {
   _num_geom_nodes = 0;
   _num_geoms = 0;
   _num_geom_vertex_datas = 0;
+  _num_geom_vertex_formats = 0;
   _vertex_data_size = 0;
   _prim_data_size = 0;
 
@@ -138,7 +140,9 @@ write(ostream &out, int indent_level) const {
 
   indent(out, indent_level)
     << _num_geoms << " Geoms, with " << _num_geom_vertex_datas 
-    << " GeomVertexDatas, appear on " << _num_geom_nodes << " GeomNodes.\n";
+    << " GeomVertexDatas and " << _num_geom_vertex_formats 
+    << " GeomVertexFormats, appear on " << _num_geom_nodes
+    << " GeomNodes.\n";
 
   indent(out, indent_level)
     << _num_vertices << " vertices, " << _num_normals << " normals, "
@@ -373,6 +377,13 @@ collect_statistics(const Geom *geom) {
   if (result.second) {
     // This is the first time we've encountered this vertex data.
     ++_num_geom_vertex_datas;
+    
+    CPT(GeomVertexFormat) vformat = vdata->get_format();
+    bool format_inserted = _vformats.insert(vformat).second;
+    if (format_inserted) {
+      // This is the first time we've encountered this vertex format.
+      ++_num_geom_vertex_formats;
+    }
 
     int &dup_count = (*(_unique_vdatas.insert(UniqueVDatas::value_type(vdata, 0)).first)).second;
     ++dup_count;

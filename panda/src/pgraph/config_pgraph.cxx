@@ -49,6 +49,7 @@
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomNode.h"
+#include "geomTransformer.h"
 #include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
@@ -397,6 +398,7 @@ init_libpgraph() {
   Fog::init_type();
   FogAttrib::init_type();
   GeomNode::init_type();
+  GeomTransformer::init_type();
   LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();

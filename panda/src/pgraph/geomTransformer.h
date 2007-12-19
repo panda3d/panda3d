@@ -79,8 +79,9 @@ public:
   bool doubleside(GeomNode *node);
   bool reverse(GeomNode *node);
 
-  int collect_vertex_data(Geom *geom, int collect_bits);
-  int collect_vertex_data(GeomNode *node, int collect_bits);
+  int collect_vertex_data(Geom *geom, int collect_bits, bool format_only);
+  int collect_vertex_data(GeomNode *node, int collect_bits, bool format_only);
+  int finish_collect(bool format_only);
 
   PT(Geom) premunge_geom(const Geom *geom, GeomMunger *munger);
 
@@ -138,14 +139,6 @@ private:
   typedef pmap<CPT(GeomVertexData), CPT(GeomVertexData) > ReversedNormals;
   ReversedNormals _reversed_normals;
 
-  class AlreadyCollectedData {
-  public:
-    CPT(GeomVertexData) _data;
-    int _offset;
-  };
-  typedef pmap< CPT(GeomVertexData), AlreadyCollectedData> AlreadyCollected;
-  AlreadyCollected _already_collected;
-
   class NewCollectedKey {
   public:
     INLINE bool operator < (const NewCollectedKey &other) const;
@@ -155,14 +148,81 @@ private:
     Geom::UsageHint _usage_hint;
     Geom::AnimationType _animation_type;
   };
-  typedef pmap< NewCollectedKey, PT(GeomVertexData) > NewCollectedData;
-  NewCollectedData _new_collected_data;
+
+  class SourceData {
+  public:
+    const GeomVertexData *_vdata;
+    int _num_vertices;
+  };
+  typedef pvector<SourceData> SourceDatas;
+  class SourceGeom {
+  public:
+    Geom *_geom;
+    int _vertex_offset;
+  };
+  typedef pvector<SourceGeom> SourceGeoms;
+  class NewCollectedData {
+  public:
+    ALLOC_DELETED_CHAIN(NewCollectedData);
+
+    NewCollectedData(const GeomVertexData *source_data);
+    void add_source_data(const GeomVertexData *source_data);
+    int apply_format_only_changes();
+    int apply_collect_changes();
+
+    CPT(GeomVertexFormat) _new_format;
+    string _vdata_name;
+    GeomEnums::UsageHint _usage_hint;
+    SourceDatas _source_datas;
+    SourceGeoms _source_geoms;
+    int _num_vertices;
+
+  private:
+    // These are used just during apply_changes().
+    void append_vdata(const GeomVertexData *vdata, int vertex_offset);
+    void update_geoms();
+
+    typedef vector_int IndexMap;
+
+    PT(GeomVertexData) _new_data;
+    PT(TransformBlendTable) _new_btable;
+    SparseArray _new_btable_rows;
+
+    // We need a TypeHandle just for ALLOC_DELETED_CHAIN.
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "GeomTransformer::NewCollectedData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+  };
+  typedef pvector<NewCollectedData *> NewCollectedList;
+  typedef pmap<NewCollectedKey, NewCollectedData *> NewCollectedMap;
+  NewCollectedList _new_collected_list;
+  NewCollectedMap _new_collected_map;
+
+  class AlreadyCollectedData {
+  public:
+    NewCollectedData *_ncd;
+    int _vertex_offset;
+  };
+  typedef pmap<CPT(GeomVertexData), AlreadyCollectedData> AlreadyCollectedMap;
+  AlreadyCollectedMap _already_collected_map;
 
   static PStatCollector _apply_vertex_collector;
   static PStatCollector _apply_texcoord_collector;
   static PStatCollector _apply_set_color_collector;
   static PStatCollector _apply_scale_color_collector;
   static PStatCollector _apply_set_format_collector;
+    
+public:
+  static void init_type() {
+    NewCollectedData::init_type();
+  }
 };
 
 #include "geomTransformer.I"

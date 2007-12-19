@@ -38,6 +38,8 @@ PStatCollector GeomTransformer::_apply_set_color_collector("*:Flatten:apply:set 
 PStatCollector GeomTransformer::_apply_scale_color_collector("*:Flatten:apply:scale color");
 PStatCollector GeomTransformer::_apply_set_format_collector("*:Flatten:apply:set format");
 
+TypeHandle GeomTransformer::NewCollectedData::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Constructor
 //       Access: Public
@@ -68,6 +70,7 @@ GeomTransformer(const GeomTransformer &copy) :
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
 ~GeomTransformer() {
+  finish_collect(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -580,9 +583,18 @@ reverse(GeomNode *node) {
 //  Description: Collects together GeomVertexDatas from different
 //               geoms into one big (or several big) GeomVertexDatas.
 //               Returns the number of unique GeomVertexDatas created.
+//
+//               If format_only is true, this only makes
+//               GeomVertexFormats compatible; it does not otherwise
+//               combine vertices.
+//
+//               You should follow this up with a call to
+//               finish_collect(), but you probably don't want to call
+//               this method directly anyway.  Call
+//               SceneGraphReducer::collect_vertex_data() instead.
 ////////////////////////////////////////////////////////////////////
 int GeomTransformer::
-collect_vertex_data(Geom *geom, int collect_bits) {
+collect_vertex_data(Geom *geom, int collect_bits, bool format_only) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   if (vdata->get_num_rows() > _max_collect_vertices) {
     // Don't even bother.
@@ -609,245 +621,67 @@ collect_vertex_data(Geom *geom, int collect_bits) {
     key._animation_type = Geom::AT_none;
   }
 
-  AlreadyCollected::const_iterator ai;
-  ai = _already_collected.find(vdata);
-  if (ai != _already_collected.end()) {
+  AlreadyCollectedMap::const_iterator ai;
+  ai = _already_collected_map.find(vdata);
+  if (ai != _already_collected_map.end()) {
     // We've previously collected this vertex data; reuse it.
     const AlreadyCollectedData &acd = (*ai).second;
-    geom->offset_vertices(acd._data, acd._offset);
+    SourceGeom source_geom;
+    source_geom._geom = geom;
+    source_geom._vertex_offset = acd._vertex_offset;
+    acd._ncd->_source_geoms.push_back(source_geom);
     return 0;
   }
 
-  // We haven't collected this vertex data yet; append the vertices
-  // onto the new data.
-  int num_created = 0;
-
-  NewCollectedData::iterator ni = _new_collected_data.find(key);
-  PT(GeomVertexData) new_data;
-  if (ni != _new_collected_data.end()) {
-    new_data = (*ni).second;
+  // We haven't collected this vertex data yet; associate it with a
+  // new data.
+  NewCollectedMap::iterator ni = _new_collected_map.find(key);
+  NewCollectedData *ncd;
+  if (ni != _new_collected_map.end()) {
+    ncd = (*ni).second;
 
   } else {
     // We haven't encountered a compatible GeomVertexData before.
-    // Create a new one.
-    new_data = new GeomVertexData(vdata->get_name(), format, 
-				  vdata->get_usage_hint());
-    _new_collected_data[key] = new_data;
-    ++num_created;
+    // Create a new entry.
+    ncd = new NewCollectedData(vdata);
+    _new_collected_list.push_back(ncd);
+    _new_collected_map[key] = ncd;
   }
 
-  int offset = new_data->get_num_rows();
-  int new_num_vertices = offset + vdata->get_num_rows();
-  if (new_num_vertices > _max_collect_vertices) {
+  if (ncd->_new_format != format) {
+    ncd->_new_format = format->get_union_format(ncd->_new_format);
+  }
+
+  int this_num_vertices = vdata->get_num_rows();
+
+  if (!format_only &&
+      ncd->_num_vertices + this_num_vertices > _max_collect_vertices) {
     // Whoa, hold the phone!  Too many vertices going into this one
     // GeomVertexData object; we'd better start over.
-    new_data = new GeomVertexData(vdata->get_name(), format, 
-				  vdata->get_usage_hint());
-    _new_collected_data[key] = new_data;
-    offset = 0;
-    new_num_vertices = vdata->get_num_rows();
-    ++num_created;
+    ncd = new NewCollectedData(vdata);
+    _new_collected_list.push_back(ncd);
+    _new_collected_map[key] = ncd;
   }
 
-  if (new_data->get_format() != format) {
-    // We're combining two GeomVertexDatas of different formats.
-    // Therefore, we need to expand the format to include the union of
-    // both sets of columns.
-    CPT(GeomVertexFormat) new_format = format->get_union_format(new_data->get_format());
-    new_data->set_format(new_format);
-    nassertr(offset == new_data->get_num_rows(), 0);
+  int vertex_offset = ncd->_num_vertices;
 
-    // Also, convert (non-destructively) the current Geom's vertex
-    // data to the new format, so we can just blindly append the
-    // vertices to new_data, in the lines below.
-    vdata = vdata->convert_to(new_format);
-    format = new_format;
-  }
+  AlreadyCollectedData &acd = _already_collected_map[vdata];
+  acd._ncd = ncd;
+  acd._vertex_offset = vertex_offset;
 
-  new_data->set_num_rows(new_num_vertices);
+  SourceGeom source_geom;
+  source_geom._geom = geom;
+  source_geom._vertex_offset = vertex_offset;
+  ncd->_source_geoms.push_back(source_geom);
+  
+  SourceData source_data;
+  source_data._vdata = vdata;
+  source_data._num_vertices = this_num_vertices;
 
-  for (int i = 0; i < vdata->get_num_arrays(); ++i) {
-    PT(GeomVertexArrayData) new_array = new_data->modify_array(i);
-    CPT(GeomVertexArrayData) old_array = vdata->get_array(i);
-    int stride = format->get_array(i)->get_stride();
-    int start_byte = offset * stride;
-    int copy_bytes = old_array->get_data_size_bytes();
-    nassertr(start_byte + copy_bytes == new_array->get_data_size_bytes(), 0);
+  ncd->_source_datas.push_back(source_data);
+  ncd->_num_vertices += this_num_vertices;
 
-    new_array->modify_handle()->copy_subdata_from
-      (start_byte, copy_bytes, 
-       old_array->get_handle(), 0, copy_bytes);
-  }
-
-  // Also, copy the animation data (if any).  This means combining
-  // transform and/or slider tables, and might therefore mean
-  // remapping transform indices in the vertices.  Each of these has a
-  // slightly different way to handle the remapping, because they have
-  // slightly different kinds of data.
-  typedef vector_int IndexMap;
-
-  if (vdata->get_transform_table() != (TransformTable *)NULL ||
-      new_data->get_transform_table() != (TransformTable *)NULL) {
-    // The TransformTable.
-    CPT(TransformTable) old_table;
-    if (vdata->get_transform_table() != (TransformTable *)NULL) {
-      old_table = vdata->get_transform_table();
-    } else {
-      PT(TransformTable) temp_table = new TransformTable;
-      // There's an implicit identity transform for all nodes.
-      PT(VertexTransform) identity_transform = new UserVertexTransform("identity");
-      temp_table->add_transform(identity_transform);
-      old_table = TransformTable::register_table(temp_table);
-    }
-    
-    // First, build a mapping of the transforms we already have in the
-    // current table.  We must do this because the TransformTable
-    // doesn't automatically unquify index numbers for us (it doesn't
-    // store an index).
-    typedef pmap<const VertexTransform *, int> AddedTransforms;
-    AddedTransforms added_transforms;
-
-    int num_old_transforms = old_table->get_num_transforms();
-    for (int i = 0; i < num_old_transforms; i++) {
-      added_transforms[old_table->get_transform(i)] = i;
-    }
-
-    // Now create a new table.  We have to create a new table instead
-    // of modifying the existing one, since a registered
-    // TransformTable cannot be modified.
-    PT(TransformTable) new_table;
-    if (new_data->get_transform_table() != (TransformTable *)NULL) {
-      new_table = new TransformTable(*new_data->get_transform_table());
-    } else {
-      new_table = new TransformTable;
-    }
-
-    // Now walk through the old table and copy over its transforms.
-    // We will build up an IndexMap of old index numbers to new index
-    // numbers while we go, which we can use to modify the vertices.
-    IndexMap transform_map;
-
-    int num_transforms = old_table->get_num_transforms();
-    transform_map.reserve(num_transforms);
-    for (int ti = 0; ti < num_transforms; ++ti) {
-      const VertexTransform *transform = old_table->get_transform(ti);
-      AddedTransforms::iterator ai = added_transforms.find(transform);
-      if (ai != added_transforms.end()) {
-        // Already got this one in the table.
-        transform_map.push_back((*ai).second);
-      } else {
-        // This is a new one.
-        int tj = new_table->add_transform(transform);
-        transform_map.push_back(tj);
-        added_transforms[transform] = tj;
-      }
-    }
-    new_data->set_transform_table(TransformTable::register_table(new_table));
-
-    // And now modify the vertices to update the indices to their new
-    // values in the new table.  This requires a nested loop, since
-    // each column of transform_index might define multiple index
-    // values.
-    GeomVertexRewriter index(new_data, InternalName::get_transform_index());
-    if (index.has_column()) {
-      int num_values = index.get_column()->get_num_values();
-      int new_index[4];
-
-      index.set_row(offset);
-      while (!index.is_at_end()) {
-        const int *orig_index = index.get_data4i();
-        for (int i = 0; i < num_values; i++) {
-          nassertr(orig_index[i] >= 0 && orig_index[i] < (int)transform_map.size(), 0);
-          new_index[i] = transform_map[orig_index[i]];
-        }
-        index.set_data4i(new_index);
-      }
-    }
-  }
-
-  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL ||
-      new_data->get_transform_blend_table() != (TransformBlendTable *)NULL) {
-    // The TransformBlendTable.  This one is the easiest, because we
-    // can modify it directly, and it will uniquify blend objects for
-    // us.
-
-    CPT(TransformBlendTable) old_btable;
-    if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
-      old_btable = vdata->get_transform_blend_table();
-    } else {
-      PT(TransformBlendTable) temp_btable;
-      temp_btable = new TransformBlendTable;
-      temp_btable->add_blend(TransformBlend());
-      old_btable = temp_btable;
-    }
-
-    PT(TransformBlendTable) new_btable;
-    if (new_data->get_transform_blend_table() != (TransformBlendTable *)NULL) {
-      new_btable = new_data->modify_transform_blend_table();
-    } else {
-      new_btable = new TransformBlendTable;
-      new_btable->add_blend(TransformBlend());
-      new_data->set_transform_blend_table(new_btable);
-    }
-
-    SparseArray new_rows = old_btable->get_rows();
-    new_rows <<= offset;
-    new_rows |= new_btable->get_rows();
-    new_btable->set_rows(new_rows);
-
-    // We still need to build up the IndexMap.
-    IndexMap blend_map;
-
-    int num_blends = old_btable->get_num_blends();
-    blend_map.reserve(num_blends);
-    for (int bi = 0; bi < num_blends; ++bi) {
-      int bj = new_btable->add_blend(old_btable->get_blend(bi));
-      blend_map.push_back(bj);
-    }
-
-    // Modify the indices.  This is simpler than the transform_index,
-    // above, because each column of transform_blend may only define
-    // one index value.
-    GeomVertexRewriter index(new_data, InternalName::get_transform_blend());
-    if (index.has_column()) {
-      index.set_row(offset);
-      while (!index.is_at_end()) {
-        int orig_index = index.get_data1i();
-        nassertr(orig_index >= 0 && orig_index < (int)blend_map.size(), 0);
-        int new_index = blend_map[orig_index];
-        index.set_data1i(new_index);
-      }
-    }
-  }
-
-  if (vdata->get_slider_table() != (SliderTable *)NULL) {
-    // The SliderTable.  This one requires making a copy, like the
-    // TransformTable (since it can't be modified once registered
-    // either), but at least it uniquifies sliders added to it.  Also,
-    // it doesn't require indexing into it, so we don't have to build
-    // an IndexMap to modify the vertices with.
-    const SliderTable *old_sliders = vdata->get_slider_table();
-    PT(SliderTable) new_sliders;
-    if (new_data->get_slider_table() != (SliderTable *)NULL) {
-      new_sliders = new SliderTable(*new_data->get_slider_table());
-    } else {
-      new_sliders = new SliderTable;
-    }
-    int num_sliders = old_sliders->get_num_sliders();
-    for (int si = 0; si < num_sliders; ++si) {
-      SparseArray new_rows = old_sliders->get_slider_rows(si);
-      new_rows <<= offset;
-      new_sliders->add_slider(old_sliders->get_slider(si), new_rows);
-    }
-    new_data->set_slider_table(SliderTable::register_table(new_sliders));
-  }
-
-  AlreadyCollectedData &acd = _already_collected[vdata];
-  acd._data = new_data;
-  acd._offset = offset;
-  geom->offset_vertices(new_data, offset);
-
-  return num_created;
+  return 0;
 }
 
 
@@ -858,11 +692,19 @@ collect_vertex_data(Geom *geom, int collect_bits) {
 //               structures that share the same format into one big
 //               GeomVertexData structure.  This is intended to
 //               minimize context switches on the graphics card.
+//
+//               If format_only is true, this only makes
+//               GeomVertexFormats compatible; it does not otherwise
+//               combine vertices.
+//
+//               You should follow this up with a call to
+//               finish_collect(), but you probably don't want to call
+//               this method directly anyway.  Call
+//               SceneGraphReducer::collect_vertex_data() instead.
 ////////////////////////////////////////////////////////////////////
 int GeomTransformer::
-collect_vertex_data(GeomNode *node, int collect_bits) {
-  int num_created = 0;
-
+collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
+  int num_adjusted = 0;
   GeomTransformer *dynamic = NULL;
 
   GeomNode::CDWriter cdata(node->_cycler);
@@ -880,18 +722,57 @@ collect_vertex_data(GeomNode *node, int collect_bits) {
       if (dynamic == (GeomTransformer *)NULL) {
         dynamic = new GeomTransformer(*this);
       }
-      num_created += dynamic->collect_vertex_data(new_geom, collect_bits);
+      num_adjusted += dynamic->collect_vertex_data(new_geom, collect_bits, format_only);
       
     } else {
-      num_created += collect_vertex_data(new_geom, collect_bits);
+      num_adjusted += collect_vertex_data(new_geom, collect_bits, format_only);
     }
   }
 
   if (dynamic != (GeomTransformer *)NULL) {
+    num_adjusted += dynamic->finish_collect(format_only);
     delete dynamic;
   }
 
-  return num_created;
+  return num_adjusted;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::finish_collect
+//       Access: Public
+//  Description: This should be called after a call to
+//               collect_vertex_data() to finalize the changes and
+//               apply them to the vertices in the graph.  If this is
+//               not called, it will be called automatically by the
+//               GeomTransformer destructor.
+//
+//               If format_only is true, this returns the number of
+//               GeomVertexDatas modified to use a new format.  If
+//               false, it returns the number of GeomVertexDatas
+//               created.
+////////////////////////////////////////////////////////////////////
+int GeomTransformer::
+finish_collect(bool format_only) {
+  int num_adjusted = 0;
+
+  NewCollectedList::iterator nci;
+  for (nci = _new_collected_list.begin(); 
+       nci != _new_collected_list.end();
+       ++nci) {
+    NewCollectedData *ncd = (*nci);
+    if (format_only) {
+      num_adjusted += ncd->apply_format_only_changes();
+    } else {
+      num_adjusted += ncd->apply_collect_changes();
+    }
+    delete ncd;
+  }
+
+  _new_collected_list.clear();
+  _new_collected_map.clear();
+  _already_collected_map.clear();
+
+  return num_adjusted;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -919,4 +800,304 @@ premunge_geom(const Geom *geom, GeomMunger *munger) {
   geom_copy->set_vertex_data(vdata);
 
   return geom_copy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GeomTransformer::NewCollectedData::
+NewCollectedData(const GeomVertexData *source_data) {
+  _new_format = source_data->get_format();
+  _vdata_name = source_data->get_name();
+  _usage_hint = source_data->get_usage_hint();
+  _num_vertices = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedData::apply_format_only_changes
+//       Access: Public
+//  Description: Actually adjusts the GeomVertexDatas found in a
+//               collect_vertex_data() format-only call to have the
+//               same vertex format.  Returns the number of vdatas
+//               modified.
+////////////////////////////////////////////////////////////////////
+int GeomTransformer::NewCollectedData::
+apply_format_only_changes() {
+  int num_modified = 0;
+
+  // We probably don't need to use a map, since
+  // GeomVertexData::convert_to() already caches its result, but we do
+  // it anyway just in case there's danger of overflowing the cache.
+  // What the heck, it's easy to do.
+  typedef pmap< CPT(GeomVertexData), CPT(GeomVertexData) > VDataMap;
+  VDataMap vdata_map;
+
+  SourceGeoms::iterator sgi;
+  for (sgi = _source_geoms.begin(); sgi != _source_geoms.end(); ++sgi) {
+    SourceGeom &sg = (*sgi);
+    CPT(GeomVertexData) orig_data = sg._geom->get_vertex_data();
+
+    if (orig_data->get_format() != _new_format) {
+      VDataMap::iterator mi = vdata_map.find(orig_data);
+      if (mi != vdata_map.end()) {
+        // Already modified this vdata.
+        sg._geom->set_vertex_data((*mi).second);
+
+      } else {
+        // Modify this vdata to the new format.
+        CPT(GeomVertexData) new_data = orig_data->convert_to(_new_format);
+        vdata_map[orig_data] = new_data;
+        ++num_modified;
+
+        sg._geom->set_vertex_data(new_data);
+      }
+    }
+  }
+
+  return num_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedData::apply_collect_changes
+//       Access: Public
+//  Description: Actually combines all of the vertex datas found in a
+//               previous call to collect_vertex_data().
+////////////////////////////////////////////////////////////////////
+int GeomTransformer::NewCollectedData::
+apply_collect_changes() {
+  if (_num_vertices == 0) {
+    return 0;
+  }
+
+  _new_data =
+    new GeomVertexData(_vdata_name, _new_format, _usage_hint);
+
+  _new_data->unclean_set_num_rows(_num_vertices);
+
+  // Copy each source data into the new GeomVertexData, one at a time.
+  int vertex_offset = 0;
+  SourceDatas::iterator sdi;
+  for (sdi = _source_datas.begin(); sdi != _source_datas.end(); ++sdi) {
+    SourceData &sd = (*sdi);
+    CPT(GeomVertexData) vdata = sd._vdata;
+
+    if (_new_format != vdata->get_format()) {
+      // Convert (non-destructively) the current Geom's vertex
+      // data to the new format, so we can just blindly append the
+      // vertices to _new_data, within append_vdata().
+      vdata = vdata->convert_to(_new_format);
+    }
+
+    append_vdata(vdata, vertex_offset);
+    vertex_offset += sd._num_vertices;
+  }
+
+  nassertr(vertex_offset == _num_vertices, 0);
+
+  if (_new_btable != (TransformBlendTable *)NULL) {
+    _new_btable->set_rows(_new_btable_rows);
+    _new_data->set_transform_blend_table(_new_btable);
+  }
+
+  update_geoms();
+
+  _new_data.clear();
+  _new_btable.clear();
+  _new_btable_rows.clear();
+
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedData::append_vdata
+//       Access: Public
+//  Description: Appends the vertices from the indicated source
+//               GeomVertexData to the end of the working data.
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::NewCollectedData::
+append_vdata(const GeomVertexData *vdata, int vertex_offset) {
+  for (int i = 0; i < vdata->get_num_arrays(); ++i) {
+    PT(GeomVertexArrayData) new_array = _new_data->modify_array(i);
+    CPT(GeomVertexArrayData) old_array = vdata->get_array(i);
+    int stride = _new_format->get_array(i)->get_stride();
+    int start_byte = vertex_offset * stride;
+    int copy_bytes = old_array->get_data_size_bytes();
+    nassertv(start_byte + copy_bytes <= new_array->get_data_size_bytes());
+    
+    new_array->modify_handle()->copy_subdata_from
+      (start_byte, copy_bytes, 
+       old_array->get_handle(), 0, copy_bytes);
+  }
+
+  // Also, copy the animation data (if any).  This means combining
+  // transform and/or slider tables, and might therefore mean
+  // remapping transform indices in the vertices.  Each of these has a
+  // slightly different way to handle the remapping, because they have
+  // slightly different kinds of data.
+  
+  if (vdata->get_transform_table() != (TransformTable *)NULL ||
+      _new_data->get_transform_table() != (TransformTable *)NULL) {
+    // The TransformTable.
+    CPT(TransformTable) old_table;
+    if (vdata->get_transform_table() != (TransformTable *)NULL) {
+      old_table = vdata->get_transform_table();
+    } else {
+      PT(TransformTable) temp_table = new TransformTable;
+      // There's an implicit identity transform for all nodes.
+      PT(VertexTransform) identity_transform = new UserVertexTransform("identity");
+      temp_table->add_transform(identity_transform);
+      old_table = TransformTable::register_table(temp_table);
+    }
+    
+    // First, build a mapping of the transforms we already have in the
+    // current table.  We must do this because the TransformTable
+    // doesn't automatically unquify index numbers for us (it doesn't
+    // store an index).
+    typedef pmap<const VertexTransform *, int> AddedTransforms;
+    AddedTransforms added_transforms;
+    
+    int num_old_transforms = old_table->get_num_transforms();
+    for (int i = 0; i < num_old_transforms; i++) {
+      added_transforms[old_table->get_transform(i)] = i;
+    }
+    
+    // Now create a new table.  We have to create a new table instead
+    // of modifying the existing one, since a registered
+    // TransformTable cannot be modified.
+    PT(TransformTable) new_table;
+    if (_new_data->get_transform_table() != (TransformTable *)NULL) {
+      new_table = new TransformTable(*_new_data->get_transform_table());
+    } else {
+      new_table = new TransformTable;
+    }
+    
+    // Now walk through the old table and copy over its transforms.
+    // We will build up an IndexMap of old index numbers to new index
+    // numbers while we go, which we can use to modify the vertices.
+    IndexMap transform_map;
+    
+    int num_transforms = old_table->get_num_transforms();
+    transform_map.reserve(num_transforms);
+    for (int ti = 0; ti < num_transforms; ++ti) {
+      const VertexTransform *transform = old_table->get_transform(ti);
+      AddedTransforms::iterator ai = added_transforms.find(transform);
+      if (ai != added_transforms.end()) {
+        // Already got this one in the table.
+        transform_map.push_back((*ai).second);
+      } else {
+        // This is a new one.
+        int tj = new_table->add_transform(transform);
+        transform_map.push_back(tj);
+        added_transforms[transform] = tj;
+      }
+    }
+    _new_data->set_transform_table(TransformTable::register_table(new_table));
+
+    // And now modify the vertices to update the indices to their new
+    // values in the new table.  This requires a nested loop, since
+    // each column of transform_index might define multiple index
+    // values.
+    GeomVertexRewriter index(_new_data, InternalName::get_transform_index());
+    if (index.has_column()) {
+      int num_values = index.get_column()->get_num_values();
+      int num_rows = vdata->get_num_rows();
+      int new_index[4];
+      
+      index.set_row(vertex_offset);
+      for (int ci = 0; ci < num_rows; ++ci) {
+        const int *orig_index = index.get_data4i();
+        for (int i = 0; i < num_values; i++) {
+          nassertv(orig_index[i] >= 0 && orig_index[i] < (int)transform_map.size());
+          new_index[i] = transform_map[orig_index[i]];
+        }
+        index.set_data4i(new_index);
+      }
+    }
+  }
+
+  if (vdata->get_transform_blend_table() != (TransformBlendTable *)NULL) {
+    // The TransformBlendTable.  This one is the easiest, because we
+    // can modify it directly, and it will uniquify blend objects for
+    // us.
+
+    // We have few special optimizations to handle the
+    // TransformBlendTable, since it's a very common case and
+    // therefore worth spending a bit of effort to optimize deeply.
+    
+    CPT(TransformBlendTable) old_btable = vdata->get_transform_blend_table();
+    
+    if (_new_btable == (TransformBlendTable *)NULL) {
+      _new_btable = new TransformBlendTable;
+      _new_btable->add_blend(TransformBlend());
+    }
+
+    SparseArray new_rows = old_btable->get_rows();
+    new_rows <<= vertex_offset;
+    _new_btable_rows |= new_rows;
+
+    // We still need to build up the IndexMap.
+    IndexMap blend_map;
+
+    int num_blends = old_btable->get_num_blends();
+    blend_map.reserve(num_blends);
+    for (int bi = 0; bi < num_blends; ++bi) {
+      int bj = _new_btable->add_blend(old_btable->get_blend(bi));
+      blend_map.push_back(bj);
+    }
+
+    // Modify the indices.  This is simpler than the transform_index,
+    // above, because each column of transform_blend may only define
+    // one index value.
+    GeomVertexRewriter index(_new_data, InternalName::get_transform_blend());
+    if (index.has_column()) {
+      int num_rows = vdata->get_num_rows();
+      index.set_row(vertex_offset);
+
+      for (int ci = 0; ci < num_rows; ++ci) {
+        int orig_index = index.get_data1i();
+        nassertv(orig_index >= 0 && orig_index < (int)blend_map.size());
+        int new_index = blend_map[orig_index];
+        index.set_data1i(new_index);
+      }
+    }
+  }
+  
+  if (vdata->get_slider_table() != (SliderTable *)NULL) {
+    // The SliderTable.  This one requires making a copy, like the
+    // TransformTable (since it can't be modified once registered
+    // either), but at least it uniquifies sliders added to it.  Also,
+    // it doesn't require indexing into it, so we don't have to build
+    // an IndexMap to modify the vertices with.
+    const SliderTable *old_sliders = vdata->get_slider_table();
+    PT(SliderTable) new_sliders;
+    if (_new_data->get_slider_table() != (SliderTable *)NULL) {
+      new_sliders = new SliderTable(*_new_data->get_slider_table());
+    } else {
+      new_sliders = new SliderTable;
+    }
+    int num_sliders = old_sliders->get_num_sliders();
+    for (int si = 0; si < num_sliders; ++si) {
+      SparseArray new_rows = old_sliders->get_slider_rows(si);
+      new_rows <<= vertex_offset;
+      new_sliders->add_slider(old_sliders->get_slider(si), new_rows);
+    }
+    _new_data->set_slider_table(SliderTable::register_table(new_sliders));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::NewCollectedData::update_geoms
+//       Access: Public
+//  Description: Updates all of the source Geoms to reference the new
+//               vertex data.
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::NewCollectedData::
+update_geoms() {
+  SourceGeoms::iterator sgi;
+  for (sgi = _source_geoms.begin(); sgi != _source_geoms.end(); ++sgi) {
+    SourceGeom &sg = (*sgi);
+    sg._geom->offset_vertices(_new_data, sg._vertex_offset);
+  }
 }

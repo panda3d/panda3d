@@ -122,6 +122,37 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::make_compatible_format
+//       Access: Published
+//  Description: Walks through the tree at this node and below and
+//               unifies the GeomVertexFormat for any GeomVertexData
+//               objects that are found, so that all eligible vdatas
+//               (according to collect_bits; see collect_vertex_data)
+//               will share the same vertex format.
+//
+//               This will add unused columns where necessary to match
+//               formats.  It can result in suboptimal performance if
+//               used needlessly.
+//
+//               There is usually no reason to call this explicitly,
+//               since collect_vertex_data() will do this anyway if it
+//               has not been done already.  However, calling it ahead
+//               of time can make that future call to
+//               collect_vertex_data() run a little bit faster.
+//
+//               The return value is the number of vertex datas
+//               modified.
+////////////////////////////////////////////////////////////////////
+INLINE int SceneGraphReducer::
+make_compatible_format(PandaNode *root, int collect_bits) {
+  PStatTimer timer(_collect_collector);
+  int count = 0;
+  count += r_collect_vertex_data(root, collect_bits, _transformer, true);
+  count += _transformer.finish_collect(true);
+  return count;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::collect_vertex_data
 //       Access: Published
 //  Description: Collects all different GeomVertexData blocks that
@@ -140,7 +171,10 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 INLINE int SceneGraphReducer::
 collect_vertex_data(PandaNode *root, int collect_bits) {
   PStatTimer timer(_collect_collector);
-  return r_collect_vertex_data(root, collect_bits, _transformer);
+  int count = 0;
+  count += r_collect_vertex_data(root, collect_bits, _transformer, false);
+  count += _transformer.finish_collect(false);
+  return count;
 }
 
 ////////////////////////////////////////////////////////////////////
