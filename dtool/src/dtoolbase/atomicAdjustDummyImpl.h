@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustDummyImpl {
 public:
-  typedef int Integer;
+  typedef long Integer;
 
   INLINE static void inc(TVOLATILE Integer &var);
   INLINE static bool dec(TVOLATILE Integer &var);
