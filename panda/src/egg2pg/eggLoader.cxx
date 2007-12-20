@@ -432,7 +432,9 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
       CPT(RenderState) geom_state = render_state->_state;
       if (has_overall_color) {
-        geom_state = geom_state->add_attrib(ColorAttrib::make_flat(overall_color), -1);
+        if (!overall_color.almost_equal(Colorf(1.0f, 1.0f, 1.0f, 1.0f))) {
+          geom_state = geom_state->add_attrib(ColorAttrib::make_flat(overall_color), -1);
+        }
       } else {
         geom_state = geom_state->add_attrib(ColorAttrib::make_vertex(), -1);
       }
