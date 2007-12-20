@@ -136,7 +136,7 @@ set_int64_word(int n, PN_int64 value) {
   set_string_word(n, strm.str());
 
   _words[n]._flags |= (F_checked_int64 | F_valid_int64);
-  _words[n]._int64 = value;
+  _words[n]._int_64 = value;
   invalidate_cache();
 }
 
@@ -331,7 +331,7 @@ check_int64_word(int n) {
     if ((word._flags & F_checked_int64) == 0) {
       word._flags |= F_checked_int64;
 
-      word._int64 = 0;
+      word._int_64 = 0;
       bool overflow = false;
 
       string::const_iterator pi = word._str.begin();
@@ -339,24 +339,24 @@ check_int64_word(int n) {
         ++pi;
         // Negative number.
         while (pi != word._str.end() && isdigit(*pi)) {
-          PN_int64 next = word._int64 * 10 - (int)((*pi) - '0');
-          if ((PN_int64)(next / 10) != word._int64) {
+          PN_int64 next = word._int_64 * 10 - (int)((*pi) - '0');
+          if ((PN_int64)(next / 10) != word._int_64) {
             // Overflow.
             overflow = true;
           }
-          word._int64 = next;
+          word._int_64 = next;
           ++pi;
         }
 
       } else {
         // Positive number.
         while (pi != word._str.end() && isdigit(*pi)) {
-          PN_int64 next = word._int64 * 10 + (int)((*pi) - '0');
-          if ((PN_int64)(next / 10) != word._int64) {
+          PN_int64 next = word._int_64 * 10 + (int)((*pi) - '0');
+          if ((PN_int64)(next / 10) != word._int_64) {
             // Overflow.
             overflow = true;
           }
-          word._int64 = next;
+          word._int_64 = next;
           ++pi;
         }
       }

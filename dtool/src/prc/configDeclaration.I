@@ -238,7 +238,7 @@ get_int64_word(int n) const {
   // return a partial answer if there was one.
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_int64_word(n);
-    return _words[n]._int64;
+    return _words[n]._int_64;
   }
   return 0;
 }

@@ -111,7 +111,7 @@ private:
     string _str;
     bool _bool;
     int _int;
-    PN_int64 _int64;
+    PN_int64 _int_64;
     double _double;
     short _flags;
   };
