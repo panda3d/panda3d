@@ -2501,8 +2501,23 @@ class DelayedCall:
         if delay is None:
             delay = .01
         self._func = func
-        taskMgr.doMethodLater(delay, self._doCallback, 'DelayedCallback-%s' % name)
+        self._taskName = 'DelayedCallback-%s' % name
+        self._delay = delay
+        self._finished = False
+        self._addDoLater()
+    def destroy(self):
+        self._finished = True
+        self._removeDoLater()
+    def finish(self):
+        if not self._finished:
+            self._doCallback()
+        self.destroy()
+    def _addDoLater(self):
+        taskMgr.doMethodLater(self._delay, self._doCallback, self._taskName)
+    def _removeDoLater(self):
+        taskMgr.remove(self._taskName)
     def _doCallback(self, task):
+        self._finished = True
         func = self._func
         del self._func
         func()
@@ -2519,11 +2534,15 @@ class FrameDelayedCall:
         self._callback = callback
         self._cancelFunc = cancelFunc
         self._taskName = uniqueName('%s-%s' % (self.__class__.__name__, self._name))
+        self._finished = False
         self._startTask()
     def destroy(self):
+        self._finished = True
         self._stopTask()
     def finish(self):
-        self._callback()
+        if not self._finished:
+            self._finished = True
+            self._callback()
         self.destroy()
     def _startTask(self):
         taskMgr.add(self._frameTask, self._taskName)
