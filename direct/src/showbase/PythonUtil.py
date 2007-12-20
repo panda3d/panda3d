@@ -3180,6 +3180,10 @@ class MiniLogSentry:
         self.log.exitFunction()
         del self.log
 
+def logBlock(id, msg):
+    print '<< LOGBLOCK(%03d)' % id
+    print str(msg)
+    print '/LOGBLOCK(%03d) >>' % id
         
 import __builtin__
 __builtin__.Functor = Functor
@@ -3224,3 +3228,4 @@ __builtin__.choice = choice
 __builtin__.report = report
 __builtin__.MiniLog = MiniLog
 __builtin__.MiniLogSentry = MiniLogSentry
+__builtin__.logBlock = logBlock
