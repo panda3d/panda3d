@@ -36,6 +36,7 @@
 #include "configVariableDouble.h"
 #include "configVariableFilename.h"
 #include "configVariableInt.h"
+#include "configVariableInt64.h"
 #include "configVariableList.h"
 #include "configVariableManager.h"
 #include "configVariableSearchPath.h"

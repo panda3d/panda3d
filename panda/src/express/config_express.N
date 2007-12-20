@@ -26,6 +26,7 @@ forcetype ConfigVariableBool
 forcetype ConfigVariableDouble
 forcetype ConfigVariableFilename
 forcetype ConfigVariableInt
+forcetype ConfigVariableInt64
 forcetype ConfigVariableList
 forcetype ConfigVariableManager
 forcetype ConfigVariableSearchPath

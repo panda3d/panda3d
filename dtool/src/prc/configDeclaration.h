@@ -23,6 +23,7 @@
 #include "configFlags.h"
 #include "configPage.h"
 #include "vector_string.h"
+#include "numeric_types.h"
 
 #include <vector>
 
@@ -57,16 +58,19 @@ public:
   INLINE bool has_string_word(int n) const;
   INLINE bool has_bool_word(int n) const;
   INLINE bool has_int_word(int n) const;
+  INLINE bool has_int64_word(int n) const;
   INLINE bool has_double_word(int n) const;
 
   INLINE string get_string_word(int n) const;
   INLINE bool get_bool_word(int n) const;
   INLINE int get_int_word(int n) const;
+  INLINE PN_int64 get_int64_word(int n) const;
   INLINE double get_double_word(int n) const;
 
   void set_string_word(int n, const string &value);
   void set_bool_word(int n, bool value);
   void set_int_word(int n, int value);
+  void set_int64_word(int n, PN_int64 value);
   void set_double_word(int n, double value);
 
   INLINE int get_decl_seq() const;
@@ -82,6 +86,7 @@ private:
   void get_words();
   void check_bool_word(int n);
   void check_int_word(int n);
+  void check_int64_word(int n);
   void check_double_word(int n);
 
 private:
@@ -97,6 +102,8 @@ private:
     F_valid_int      = 0x0008,
     F_checked_double = 0x0010,
     F_valid_double   = 0x0020,
+    F_checked_int64  = 0x0040,
+    F_valid_int64    = 0x0080,
   };
 
   class Word {
@@ -104,6 +111,7 @@ private:
     string _str;
     bool _bool;
     int _int;
+    PN_int64 _int64;
     double _double;
     short _flags;
   };

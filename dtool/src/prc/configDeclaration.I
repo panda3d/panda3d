@@ -145,6 +145,21 @@ has_int_word(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigDeclaration::has_int64_word
+//       Access: Public
+//  Description: Returns true if the declaration's value has a valid
+//               int64 value for the nth word.
+////////////////////////////////////////////////////////////////////
+INLINE bool ConfigDeclaration::
+has_int64_word(int n) const {
+  if (has_string_word(n)) {
+    ((ConfigDeclaration *)this)->check_int64_word(n);
+    return (_words[n]._flags & F_valid_int64) != 0;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigDeclaration::has_double_word
 //       Access: Public
 //  Description: Returns true if the declaration's value has a valid
@@ -206,6 +221,24 @@ get_int_word(int n) const {
   if (has_string_word(n)) {
     ((ConfigDeclaration *)this)->check_int_word(n);
     return _words[n]._int;
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigDeclaration::get_int64_word
+//       Access: Public
+//  Description: Returns the int64 value of the nth word of the
+//               declaration's value, or 0 if there is no nth value.
+//               See also has_int64_word().
+////////////////////////////////////////////////////////////////////
+INLINE PN_int64 ConfigDeclaration::
+get_int64_word(int n) const {
+  // We use has_string_word() instead of has_int64_word(), so we can
+  // return a partial answer if there was one.
+  if (has_string_word(n)) {
+    ((ConfigDeclaration *)this)->check_int64_word(n);
+    return _words[n]._int64;
   }
   return 0;
 }

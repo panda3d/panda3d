@@ -42,6 +42,7 @@ PUBLISHED:
     VT_double,
     VT_enum,
     VT_search_path,
+    VT_int64,
   };
 
   enum VariableFlags {

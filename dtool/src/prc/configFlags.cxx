@@ -53,6 +53,9 @@ operator << (ostream &out, ConfigFlags::ValueType type) {
 
   case ConfigFlags::VT_search_path:
     return out << "search-path";
+
+  case ConfigFlags::VT_int64:
+    return out << "int64";
   }
 
   return out << "**invalid(" << (int)type << ")**";

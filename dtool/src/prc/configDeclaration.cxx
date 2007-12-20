@@ -124,6 +124,23 @@ set_int_word(int n, int value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigDeclaration::set_int64_word
+//       Access: Public
+//  Description: Changes the nth word to the indicated value without
+//               affecting the other words.
+////////////////////////////////////////////////////////////////////
+void ConfigDeclaration::
+set_int64_word(int n, PN_int64 value) {
+  ostringstream strm;
+  strm << value;
+  set_string_word(n, strm.str());
+
+  _words[n]._flags |= (F_checked_int64 | F_valid_int64);
+  _words[n]._int64 = value;
+  invalidate_cache();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigDeclaration::set_double_word
 //       Access: Public
 //  Description: Changes the nth word to the indicated value without
@@ -225,6 +242,10 @@ check_bool_word(int n) {
         } else {
           word._bool = false;
         }
+
+        prc_cat->warning()
+          << "Invalid bool value for ConfigVariable "
+          << get_variable()->get_name() << ": " << word._str << "\n";
         return;
       }
 
@@ -250,12 +271,102 @@ check_int_word(int n) {
     if ((word._flags & F_checked_int) == 0) {
       word._flags |= F_checked_int;
 
-      const char *nptr = word._str.c_str();
-      char *endptr;
-      word._int = strtol(nptr, &endptr, 0);
+      // We scan the word by hand, rather than relying on strtol(), so
+      // we can check for overflow of the 32-bit value.
+      word._int = 0;
+      bool overflow = false;
 
-      if (*endptr == '\0') {
+      string::const_iterator pi = word._str.begin();
+      if (pi != word._str.end() && (*pi) == '-') {
+        ++pi;
+        // Negative number.
+        while (pi != word._str.end() && isdigit(*pi)) {
+          int next = word._int * 10 - (int)((*pi) - '0');
+          if ((int)(next / 10) != word._int) {
+            // Overflow.
+            overflow = true;
+          }
+          word._int = next;
+          ++pi;
+        }
+
+      } else {
+        // Positive number.
+        while (pi != word._str.end() && isdigit(*pi)) {
+          int next = word._int * 10 + (int)((*pi) - '0');
+          if ((int)(next / 10) != word._int) {
+            // Overflow.
+            overflow = true;
+          }
+          word._int = next;
+          ++pi;
+        }
+      }
+
+      if (pi == word._str.end() && !overflow) {
         word._flags |= F_valid_int;
+      } else {
+        prc_cat->warning()
+          << "Invalid integer value for ConfigVariable "
+          << get_variable()->get_name() << ": " << word._str << "\n";
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigDeclaration::check_int64_word
+//       Access: Private
+//  Description: Checks whether the nth word can be interpreted as an
+//               integer value.
+////////////////////////////////////////////////////////////////////
+void ConfigDeclaration::
+check_int64_word(int n) {
+  if (!_got_words) {
+    get_words();
+  }
+
+  if (n >= 0 && n < (int)_words.size()) {
+    Word &word = _words[n];
+    if ((word._flags & F_checked_int64) == 0) {
+      word._flags |= F_checked_int64;
+
+      word._int64 = 0;
+      bool overflow = false;
+
+      string::const_iterator pi = word._str.begin();
+      if (pi != word._str.end() && (*pi) == '-') {
+        ++pi;
+        // Negative number.
+        while (pi != word._str.end() && isdigit(*pi)) {
+          PN_int64 next = word._int64 * 10 - (int)((*pi) - '0');
+          if ((PN_int64)(next / 10) != word._int64) {
+            // Overflow.
+            overflow = true;
+          }
+          word._int64 = next;
+          ++pi;
+        }
+
+      } else {
+        // Positive number.
+        while (pi != word._str.end() && isdigit(*pi)) {
+          PN_int64 next = word._int64 * 10 + (int)((*pi) - '0');
+          if ((PN_int64)(next / 10) != word._int64) {
+            // Overflow.
+            overflow = true;
+          }
+          word._int64 = next;
+          ++pi;
+        }
+      }
+
+      if (pi == word._str.end() && !overflow) {
+        word._flags |= F_valid_int64;
+      } else {
+        prc_cat->warning()
+          << "Invalid int64 value for ConfigVariable "
+          << get_variable()->get_name() << ": " << word._str << "\n";
       }
     }
   }
@@ -284,6 +395,10 @@ check_double_word(int n) {
 
       if (*endptr == '\0') {
         word._flags |= F_valid_double;
+      } else {
+        prc_cat->warning()
+          << "Invalid floating-point value for ConfigVariable "
+          << get_variable()->get_name() << ": " << word._str << "\n";
       }
     }
   }

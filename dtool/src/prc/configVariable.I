@@ -162,6 +162,19 @@ has_int_word(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariable::has_int64_word
+//       Access: Published
+//  Description: Returns true if the variable's value has a valid
+//               64-bit integer value for the nth word.
+////////////////////////////////////////////////////////////////////
+INLINE bool ConfigVariable::
+has_int64_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
+  const ConfigDeclaration *decl = _core->get_declaration(0);
+  return decl->has_int64_word(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariable::has_double_word
 //       Access: Published
 //  Description: Returns true if the variable's value has a valid
@@ -217,6 +230,20 @@ get_int_word(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariable::get_int64_word
+//       Access: Published
+//  Description: Returns the int64 value of the nth word of the
+//               variable's value, or 0 if there is no nth value.
+//               See also has_int_word().
+////////////////////////////////////////////////////////////////////
+INLINE PN_int64 ConfigVariable::
+get_int64_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
+  const ConfigDeclaration *decl = _core->get_declaration(0);
+  return decl->get_int64_word(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariable::get_double_word
 //       Access: Published
 //  Description: Returns the integer value of the nth word of the
@@ -262,6 +289,18 @@ set_bool_word(int n, bool value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_int_word(int n, int value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
+  _core->make_local_value()->set_int_word(n, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariable::set_int64_word
+//       Access: Published
+//  Description: Changes the nth word to the indicated value without
+//               affecting the other words.
+////////////////////////////////////////////////////////////////////
+INLINE void ConfigVariable::
+set_int64_word(int n, PN_int64 value) {
   nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_int_word(n, value);
 }

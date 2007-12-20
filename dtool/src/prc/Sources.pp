@@ -21,6 +21,7 @@
     configVariableEnum.I configVariableEnum.h \
     configVariableFilename.I configVariableFilename.h \
     configVariableInt.I configVariableInt.h \
+    configVariableInt64.I configVariableInt64.h \
     configVariableList.I configVariableList.h \
     configVariableManager.I configVariableManager.h \
     configVariableSearchPath.I configVariableSearchPath.h \
@@ -51,6 +52,7 @@
     configVariableEnum.cxx \
     configVariableFilename.cxx \
     configVariableInt.cxx \
+    configVariableInt64.cxx \
     configVariableList.cxx \
     configVariableManager.cxx \
     configVariableSearchPath.cxx \
@@ -80,6 +82,7 @@
     configVariableEnum.I configVariableEnum.h \
     configVariableFilename.I configVariableFilename.h \
     configVariableInt.I configVariableInt.h \
+    configVariableInt64.I configVariableInt64.h \
     configVariableList.I configVariableList.h \
     configVariableManager.I configVariableManager.h \
     configVariableSearchPath.I configVariableSearchPath.h \

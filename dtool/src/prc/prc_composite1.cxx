@@ -11,4 +11,5 @@
 #include "configVariableEnum.cxx"
 #include "configVariableFilename.cxx"
 #include "configVariableInt.cxx"
+#include "configVariableInt64.cxx"
 #include "configVariableList.cxx"
