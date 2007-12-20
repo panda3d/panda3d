@@ -280,7 +280,7 @@ set_color(Geom *geom, const Colorf &color) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::transform_texcoords
+//     Function: GeomTransformer::set_color
 //       Access: Public
 //  Description: Overrides the color indicated within the GeomNode
 //               with the given replacement color.  Returns true if

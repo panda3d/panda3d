@@ -80,6 +80,7 @@ PUBLISHED:
   INLINE void remove_all_geoms();
   bool check_valid() const;
 
+  void decompose();
   void unify(int max_indices, bool preserve_order);
 
   void write_geoms(ostream &out, int indent_level) const;

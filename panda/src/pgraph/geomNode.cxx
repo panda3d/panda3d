@@ -515,6 +515,38 @@ check_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::decompose
+//       Access: Published
+//  Description: Calls decompose() on each Geom with the GeomNode.
+//               This decomposes higher-order primitive types, like
+//               triangle strips, into lower-order types like indexed
+//               triangles.  Normally there is no reason to do this,
+//               but it can be useful as an early preprocessing step,
+//               to allow a later call to unify() to proceed more
+//               quickly.
+//
+//               See also SceneGraphReducer::decompose(), which is the
+//               normal way this is called.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+decompose() {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+
+    GeomList::iterator gi;
+    PT(GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
+      GeomEntry &entry = (*gi);
+      nassertv(entry._geom.test_ref_count_integrity());
+      PT(Geom) geom = entry._geom.get_write_pointer();
+      geom->decompose_in_place();
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::unify
 //       Access: Published
 //  Description: Attempts to unify all of the Geoms contained within

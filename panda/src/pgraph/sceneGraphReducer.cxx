@@ -25,6 +25,7 @@
 #include "plist.h"
 #include "pmap.h"
 #include "geomNode.h"
+#include "config_gobj.h"
 #include "thread.h"
 
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
@@ -164,6 +165,28 @@ unify(PandaNode *root, bool preserve_order) {
     max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
   r_unify(root, max_indices, preserve_order);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::decompose
+//       Access: Published
+//  Description: Calls decompose() on every GeomNode at this level and
+//               below.
+//
+//               There is usually no reason to call this explicitly,
+//               since unify() will do this anyway if it needs to be
+//               done.  However, calling it ahead of time can make
+//               that future call to unify() run a little bit faster.
+//
+//               This operation has no effect if the config variable
+//               preserve-triangle-strips has been set true.
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+decompose(PandaNode *root) {
+  if (!preserve_triangle_strips) {
+    PStatTimer timer(_unify_collector);
+    r_decompose(root);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -843,6 +866,25 @@ r_unify(PandaNode *node, int max_indices, bool preserve_order) {
     r_unify(children.get_child(i), max_indices, preserve_order);
   }
   Thread::consider_yield();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_decompose
+//       Access: Private
+//  Description: The recursive implementation of decompose().
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+r_decompose(PandaNode *node) {
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    geom_node->decompose();
+  }
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    r_decompose(children.get_child(i));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
