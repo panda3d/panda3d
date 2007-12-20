@@ -169,9 +169,19 @@ public:
 
   INLINE Geoms get_geoms(Thread *current_thread = Thread::get_current_thread()) const;
 
+  // This data is only needed when reading from a bam file.
+  class BamAuxData : public BamReader::AuxData {
+  public:
+    // We just hold a pointer to the RenderState that may otherwise
+    // lose its pointers before it can finalize.
+    CPT(RenderState) _hold_state;
+  };
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

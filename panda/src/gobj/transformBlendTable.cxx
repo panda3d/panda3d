@@ -116,9 +116,27 @@ add_blend(const TransformBlend &blend) {
     return (*bi).second;
   }
 
+  bool needs_realloc = (_blends.size() >= _blends.capacity());
   int new_position = (int)_blends.size();
   _blends.push_back(blend);
-  clear_index();
+
+  if (needs_realloc) {
+    // We just reallocated the blends vector, so we must rebuild the
+    // index.
+    clear_index();
+
+  } else {
+    // Since we didn't realloc the blends vector, just update it with
+    // the latest.
+    const TransformBlend &added_blend = _blends[new_position];
+    _blend_index[&added_blend] = new_position;
+    _max_simultaneous_transforms = max(_max_simultaneous_transforms,
+                                       blend.get_num_transforms());
+
+    // We can't compute this one as we go, so set it to a special
+    // value to indicate it needs to be recomputed.
+    _num_transforms = -1;
+  }
 
   return new_position;
 }

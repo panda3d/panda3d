@@ -652,6 +652,8 @@ NodePath WindowFramework::
 load_default_model(const NodePath &parent) {
   CPT(RenderState) state = RenderState::make_empty();
 
+  state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.5, 0.5, 1.0, 1.0)));
+
   // Get the default texture to apply to the triangle; it's compiled
   // into the code these days.
   string rock_floor_string((const char *)rock_floor, rock_floor_len);
@@ -673,7 +675,6 @@ load_default_model(const NodePath &parent) {
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
-  GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
@@ -683,10 +684,6 @@ load_default_model(const NodePath &parent) {
   normal.add_data3f(Normalf::back());
   normal.add_data3f(Normalf::back());
   normal.add_data3f(Normalf::back());
-
-  color.add_data4f(0.5, 0.5, 1.0, 1.0);
-  color.add_data4f(0.5, 0.5, 1.0, 1.0);
-  color.add_data4f(0.5, 0.5, 1.0, 1.0);
 
   texcoord.add_data2f(0.0, 0.0);
   texcoord.add_data2f(1.0, 0.0);

@@ -366,6 +366,10 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     EggVertexPool *vertex_pool = (*vpi);
     vertex_pool->remove_unused_vertices();
     //  vertex_pool->write(cerr, 0);
+
+    bool has_overall_color;
+    Colorf overall_color;
+    vertex_pool->check_overall_color(has_overall_color, overall_color);
     
     // Create a handful of GeomPrimitives corresponding to the various
     // types of primitives that reference this vertex pool.
@@ -375,7 +379,8 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
       EggPrimitive *egg_prim;
       DCAST_INTO_V(egg_prim, (*ci));
       if (egg_prim->get_pool() == vertex_pool) {
-        make_primitive(render_state, egg_prim, unique_primitives, primitives);
+        make_primitive(render_state, egg_prim, unique_primitives, primitives,
+                       has_overall_color, overall_color);
       }
     }
 
@@ -390,7 +395,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
       // Now convert this vertex pool to a GeomVertexData.
       PT(GeomVertexData) vertex_data = 
         make_vertex_data(render_state, vertex_pool, egg_bin, mat,
-                         is_dynamic, character_maker);
+                         is_dynamic, character_maker, has_overall_color);
       nassertv(vertex_data != (GeomVertexData *)NULL);
 
       // And create a Geom to hold the primitives.
@@ -425,7 +430,14 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
         }
       }
 
-      geom_node->add_geom(geom, render_state->_state);
+      CPT(RenderState) geom_state = render_state->_state;
+      if (has_overall_color) {
+        geom_state = geom_state->add_attrib(ColorAttrib::make_flat(overall_color), -1);
+      } else {
+        geom_state = geom_state->add_attrib(ColorAttrib::make_vertex(), -1);
+      }
+
+      geom_node->add_geom(geom, geom_state);
     }
   }
    
@@ -2044,7 +2056,8 @@ PT(GeomVertexData) EggLoader::
 make_vertex_data(const EggRenderState *render_state, 
                  EggVertexPool *vertex_pool, EggNode *primitive_home,
                  const LMatrix4d &transform,
-                 bool is_dynamic, CharacterMaker *character_maker) {
+                 bool is_dynamic, CharacterMaker *character_maker,
+                 bool ignore_color) {
   VertexPoolTransform vpt;
   vpt._vertex_pool = vertex_pool;
   vpt._bake_in_uvs = render_state->_bake_in_uvs;
@@ -2068,8 +2081,7 @@ make_vertex_data(const EggRenderState *render_state,
        Geom::NT_float32, Geom::C_vector);
   }
 
-  bool has_colors = vertex_pool->has_nonwhite_colors();
-  if (has_colors) {
+  if (!ignore_color) {
     array_format->add_column
       (InternalName::get_color(), 1, 
        Geom::NT_packed_dabc, Geom::C_color);
@@ -2149,7 +2161,7 @@ make_vertex_data(const EggRenderState *render_state,
                        InternalName::get_normal(), 3);
         }
       }
-      if (has_colors && vertex->has_color()) {
+      if (!ignore_color && vertex->has_color()) {
         EggMorphColorList::const_iterator mci;
         for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
           slider_names[(*mci).get_name()].set_bit(vertex->get_index());
@@ -2248,7 +2260,7 @@ make_vertex_data(const EggRenderState *render_state,
       }
     }
 
-    if (has_colors && vertex->has_color()) {
+    if (!ignore_color && vertex->has_color()) {
       gvw.set_column(InternalName::get_color());
       gvw.add_data4f(vertex->get_color());
 
@@ -2379,7 +2391,8 @@ record_morph(GeomVertexArrayFormat *array_format,
 void EggLoader::
 make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim, 
                EggLoader::UniquePrimitives &unique_primitives,
-               EggLoader::Primitives &primitives) {
+               EggLoader::Primitives &primitives,
+               bool has_overall_color, const Colorf &overall_color) {
   PT(GeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {

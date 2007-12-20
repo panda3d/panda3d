@@ -474,24 +474,36 @@ get_array_with(const InternalName *name) const {
 //               NULL if the name is not used.  Use get_array_with()
 //               to determine which array this column is associated
 //               with.
-//
-//               This may only be called after the format has been
-//               registered.
 ////////////////////////////////////////////////////////////////////
 const GeomVertexColumn *GeomVertexFormat::
 get_column(const InternalName *name) const {
-  nassertr(_is_registered, NULL);
+  if (!_is_registered) {
+    // If the format hasn't yet been registered, we have to search for
+    // the column the hard way.
+    Arrays::const_iterator ai;
+    for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+      const GeomVertexColumn *column = (*ai)->get_column(name);
+      if (column != (GeomVertexColumn *)NULL) {
+        return column;
+      }
+    }
+    return NULL;
 
-  DataTypesByName::const_iterator ai;
-  ai = _columns_by_name.find(name);
-  if (ai != _columns_by_name.end()) {
-    int array_index = (*ai).second._array_index;
-    int column_index = (*ai).second._column_index;
+  } else {
+    // If the format has been registered, we can just check the
+    // toplevel index.
 
-    nassertr(array_index >= 0 && array_index < (int)_arrays.size(), NULL);
-    return _arrays[array_index]->get_column(column_index);
+    DataTypesByName::const_iterator ai;
+    ai = _columns_by_name.find(name);
+    if (ai != _columns_by_name.end()) {
+      int array_index = (*ai).second._array_index;
+      int column_index = (*ai).second._column_index;
+      
+      nassertr(array_index >= 0 && array_index < (int)_arrays.size(), NULL);
+      return _arrays[array_index]->get_column(column_index);
+    }
+    return NULL;
   }
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

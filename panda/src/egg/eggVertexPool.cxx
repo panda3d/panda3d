@@ -273,6 +273,43 @@ has_nonwhite_colors() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::check_overall_color
+//       Access: Public
+//  Description: Scans the vertex pool for different colors on
+//               different vertices.  If all vertices are the same
+//               color, sets has_overall_color to true and fills the
+//               color into overall_color.  If no vertices have any
+//               color, set has_overall_color to true and fills white
+//               into overall_color.  If at least two vertices have
+//               different colors, sets has_overall_color to false.
+////////////////////////////////////////////////////////////////////
+void EggVertexPool::
+check_overall_color(bool &has_overall_color, Colorf &overall_color) const {
+  if (empty()) {
+    has_overall_color = true;
+    overall_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+    return;
+  }
+
+  IndexVertices::const_iterator ivi;
+  ivi = _index_vertices.begin();
+  EggVertex *vertex = (*ivi).second;
+  overall_color = vertex->get_color();
+
+  ++ivi;
+  while (ivi != _index_vertices.end()) {
+    vertex = (*ivi).second;
+    if (!vertex->get_color().almost_equal(overall_color)) {
+      has_overall_color = false;
+      return;
+    }
+    ++ivi;
+  }
+
+  has_overall_color = true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::has_uvs
 //       Access: Public
 //  Description: Returns true if any vertex in the pool has a uv

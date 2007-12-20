@@ -71,6 +71,14 @@ get_modified(Thread *current_thread) const {
 INLINE int TransformBlendTable::
 get_num_transforms() const {
   consider_rebuild_index();
+
+  if (_num_transforms < 0) {
+    // Even if our index is otherwise accurate, we might have recently
+    // added a blend or two, which would necessitate recomputing this
+    // value--which means we need to rebuild the index.
+    ((TransformBlendTable *)this)->rebuild_index();
+  }
+
   return _num_transforms;
 }
 

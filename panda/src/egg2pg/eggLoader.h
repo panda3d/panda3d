@@ -147,7 +147,7 @@ private:
   PT(GeomVertexData) make_vertex_data
   (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
    EggNode *primitive_home, const LMatrix4d &transform, bool is_dynamic, 
-   CharacterMaker *character_maker);
+   CharacterMaker *character_maker, bool ignore_color);
   void record_morph
   (GeomVertexArrayFormat *array_format,
    CharacterMaker *character_maker, const string &morph_name, 
@@ -156,7 +156,8 @@ private:
   void make_primitive(const EggRenderState *render_state, 
                       EggPrimitive *egg_prim, 
                       UniquePrimitives &unique_primitives,
-                      Primitives &primitives);
+                      Primitives &primitives,
+                      bool has_overall_color, const Colorf &overall_color);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   PT(EggPolygon) find_first_polygon(EggGroup *egg_group);
