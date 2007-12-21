@@ -816,6 +816,9 @@ class Actor(DirectObject, NodePath):
         specified return current anim of an arbitrary part in dictionary.
         NOTE: only returns info for an arbitrary LOD
         """
+        if len(self.__animControlDict.items()) == 0:
+            return
+        
         lodName, animControlDict = self.__animControlDict.items()[0]
         if partName == None:
             partName, animDict = animControlDict.items()[0]
