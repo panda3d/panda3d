@@ -473,6 +473,21 @@ compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::compute_and_apply_smooth_pos_hpr
+//       Access: Published
+//  Description: A further optimization to reduce Python calls.  This
+//               computes the smooth position and applies it to the
+//               indicated node or nodes in one call.  The pos_node
+//               and hpr_node might be the same NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+compute_and_apply_smooth_hpr(NodePath &hpr_node) {
+  if (compute_smooth_position()) {
+    apply_smooth_hpr(hpr_node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::compute_and_apply_smooth_mat
 //       Access: Published
 //  Description: A further optimization to reduce Python calls.  This

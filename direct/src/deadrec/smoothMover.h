@@ -107,6 +107,7 @@ PUBLISHED:
 
   INLINE void compute_and_apply_smooth_pos(NodePath &node);
   INLINE void compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node);
+  INLINE void compute_and_apply_smooth_hpr(NodePath &hpr_node);
   INLINE void compute_and_apply_smooth_mat(NodePath &node);
 
   INLINE float get_smooth_forward_velocity() const;
