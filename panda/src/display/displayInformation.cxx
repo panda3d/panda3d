@@ -30,6 +30,12 @@ DisplayInformation::
   if (_display_mode_array != NULL) {
     delete _display_mode_array;
   }
+  if (_cpu_id_data != NULL) {
+    delete _cpu_id_data;
+  }
+  if (_cpu_brand_string != NULL) {
+    delete _cpu_brand_string;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,8 +100,20 @@ DisplayInformation() {
 
   _vendor_id = 0;
   _device_id = 0;
-  
+
+  _cpu_id_version = 1;
+  _cpu_id_size = 0;
+  _cpu_id_data = 0;
+
+  _cpu_vendor_string = 0;
+  _cpu_brand_string = 0;
+  _cpu_version_information = 0;
+  _cpu_brand_index = 0;
+
+  _cpu_frequency = 0;
+
   _get_memory_information_function = 0;
+  _cpu_time_function = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,4 +430,124 @@ get_vendor_id() {
 int DisplayInformation::
 get_device_id() {
   return _device_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_id_version
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_cpu_id_version() {
+  return _cpu_id_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_id_size
+//       Access: Published
+//  Description: Returns the number of 32-bit values for cpu id 
+//               binary data.
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_cpu_id_size() {
+  return _cpu_id_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_id_data
+//       Access: Published
+//  Description: Returns part of cpu id binary data based on the 
+//               index.  
+////////////////////////////////////////////////////////////////////
+unsigned int DisplayInformation::
+get_cpu_id_data(int index) {
+  unsigned int data;
+
+  data = 0;
+  if (index >= 0 && index < _cpu_id_size) {
+    data = _cpu_id_data [index];
+  }
+  
+  return data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_vendor_string
+//       Access: Published
+//  Description:  
+////////////////////////////////////////////////////////////////////
+char *DisplayInformation::
+get_cpu_vendor_string() {  
+  char *string;
+  
+  string = _cpu_vendor_string;
+  if (string == 0) {
+    string = "";
+  }
+  
+  return string;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_brand_string
+//       Access: Published
+//  Description:  
+////////////////////////////////////////////////////////////////////
+char *DisplayInformation::
+get_cpu_brand_string() {  
+  char *string;
+  
+  string = _cpu_brand_string;
+  if (string == 0) {
+    string = "";
+  }
+  
+  return string;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_version_information
+//       Access: Published
+//  Description:  
+////////////////////////////////////////////////////////////////////
+unsigned int DisplayInformation::
+get_cpu_version_information() {  
+  return _cpu_version_information;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_brand_index
+//       Access: Published
+//  Description:  
+////////////////////////////////////////////////////////////////////
+unsigned int DisplayInformation::
+get_cpu_brand_index() {  
+  return _cpu_brand_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_frequency
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_cpu_frequency() {
+  return _cpu_frequency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_cpu_time
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_cpu_time() {
+  PN_uint64 cpu_time;
+  
+  cpu_time = 0;
+  if (_cpu_time_function) {
+    cpu_time = _cpu_time_function();
+  }
+  
+  return cpu_time;
 }

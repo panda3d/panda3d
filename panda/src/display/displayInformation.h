@@ -85,6 +85,18 @@ PUBLISHED:
 
   int get_vendor_id();
   int get_device_id();
+
+  int get_cpu_id_version();
+  int get_cpu_id_size();
+  unsigned int get_cpu_id_data(int index);
+
+  char *get_cpu_vendor_string();
+  char *get_cpu_brand_string();
+  unsigned int get_cpu_version_information();
+  unsigned int get_cpu_brand_index();
+  
+  PN_uint64 get_cpu_frequency();
+  PN_uint64 get_cpu_time();
   
 public:
   DetectionState _state;
@@ -116,8 +128,20 @@ public:
 
   int _vendor_id;
   int _device_id;
+
+  int _cpu_id_version;
+  int _cpu_id_size;
+  unsigned int *_cpu_id_data;
+
+  char *_cpu_vendor_string;
+  char *_cpu_brand_string;
+  unsigned int _cpu_version_information;
+  unsigned int _cpu_brand_index;
   
+  PN_uint64 _cpu_frequency;
+    
   void (*_get_memory_information_function) (DisplayInformation *display_information);
+  PN_uint64 (*_cpu_time_function) (void);
 };
 
 #endif
