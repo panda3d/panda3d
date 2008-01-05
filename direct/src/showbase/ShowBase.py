@@ -20,6 +20,7 @@ from direct.task.TaskManagerGlobal import *
 from JobManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
+from direct.showbase import PythonUtil
 from direct.particles.ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
 #from direct.interval.IntervalManager import ivalMgr
@@ -317,6 +318,9 @@ class ShowBase(DirectObject.DirectObject):
 
         ShowBase.notify.info('__dev__ == %s' % __dev__)
 
+        # set up recording of Functor creation stacks in __dev__
+        PythonUtil.recordFunctorCreationStacks()
+        
         if __dev__ or self.config.GetBool('want-e3-hacks', False):
             if self.config.GetBool('track-gui-items', True):
                 # dict of guiId to gui item, for tracking down leaks

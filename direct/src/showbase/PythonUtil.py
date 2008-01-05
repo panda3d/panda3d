@@ -2907,8 +2907,11 @@ def recordCreationStack(cls):
         return self.__moved_init__(*args, **kArgs)
     def getCreationStackTrace(self):
         return self._creationStackTrace
+    def printCreationStackTrace(self):
+        print self._creationStackTrace
     cls.__init__ = __recordCreationStack_init__
     cls.getCreationStackTrace = getCreationStackTrace
+    cls.printCreationStackTrace = printCreationStackTrace
     return cls
 
 
@@ -3204,6 +3207,14 @@ def logBlock(id, msg):
     print str(msg)
     print '/LOGBLOCK(%03d) >>' % id
         
+# __dev__ is not defined at import time, call this after it's defined
+def recordFunctorCreationStacks():
+    global Functor
+    if __dev__:
+        if not hasattr(Functor, '_functorCreationStacksRecorded'):
+            Functor = recordCreationStack(Functor)
+            Functor._functorCreationStacksRecorded = True
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
