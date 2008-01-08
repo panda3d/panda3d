@@ -1744,6 +1744,12 @@ int Triangulator::
 traverse_polygon(int mcur, int trnum, int from, int dir) {
   //  printf("traverse_polygon(%d, %d, %d, %d)\n", mcur, trnum, from, dir);
 
+  if (mcur < 0 || trnum <= 0)
+    return 0;
+
+  if (visited[trnum])
+    return 0;
+
   trap_t *t = &tr[trnum];
   //  int howsplit;
   int mnew;
@@ -1751,13 +1757,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
   int retval = 0;  //, tmp;
   int do_switch = false;
 
-  if (mcur < 0 || trnum <= 0)
-    return 0;
-
   //  printf("visited size = %d, visited[trnum] = %d\n", visited.size(), visited[trnum]);
-
-  if (visited[trnum])
-    return 0;
 
   visited[trnum] = true;
   
@@ -2169,24 +2169,27 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
         return;
       }
       if (ri > 0)		/* reflex chain is non-empty */
-	{
-	  if (CROSS(vert[v].pt, vert[rc[ri - 1]].pt, 
-		    vert[rc[ri]].pt) > 0)
-	    {			/* convex corner: cut if off */
-              _result.push_back(Triangle(this, rc[ri - 1], rc[ri], v));
-	      ri--;
+        {
+          float crossResult = CROSS(vert[v].pt, vert[rc[ri - 1]].pt,
+                                    vert[rc[ri]].pt);
+          if ( crossResult >= 0 )  /* could be convex corner or straight */
+            {
+              if ( crossResult > 0)  /* convex corner: cut it off */
+                _result.push_back(Triangle(this, rc[ri - 1], rc[ri], v));
+              /* else : perfectly straight, will be abandoned anyway */
+              ri--;
               rc.pop_back();
               nassertv(ri + 1 == (int)rc.size());
-	    }
-	  else		/* non-convex */
-	    {		/* add v to the chain */
-	      ri++;
+            }
+          else /* concave, add v to the chain */
+            {
+              ri++;
               rc.push_back(v);
               nassertv(ri + 1 == (int)rc.size());
-	      vpos = mchain[vpos].next;
-	      v = mchain[vpos].vnum;
-	    }
-	}
+              vpos = mchain[vpos].next;
+              v = mchain[vpos].vnum;
+            }
+        }
       else			/* reflex-chain empty: add v to the */
 	{			/* reflex chain and advance it  */
           ri++;
