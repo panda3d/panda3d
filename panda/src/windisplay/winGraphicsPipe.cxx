@@ -22,17 +22,34 @@
 #include "dtool_config.h"
 
 #include "psapi.h"
+#include "powrprof.h"
 
 TypeHandle WinGraphicsPipe::_type_handle;
 
+#define MAXIMUM_PROCESSORS 32
+
+typedef struct _PROCESSOR_POWER_INFORMATION 
+{  
+  ULONG Number;  
+  ULONG MaxMhz;  
+  ULONG CurrentMhz;  
+  ULONG MhzLimit;  
+  ULONG MaxIdleState;  
+  ULONG CurrentIdleState;
+} 
+PROCESSOR_POWER_INFORMATION,  *PPROCESSOR_POWER_INFORMATION;
+
 typedef BOOL (WINAPI *GetProcessMemoryInfoType) (HANDLE Process, PROCESS_MEMORY_COUNTERS *ppsmemCounters, DWORD cb);
 typedef BOOL (WINAPI *GlobalMemoryStatusExType) (LPMEMORYSTATUSEX lpBuffer);
+typedef long (__stdcall *CallNtPowerInformationType) (POWER_INFORMATION_LEVEL information_level, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength);
 
 static int initialize = false;
 static HMODULE psapi_dll = 0;
 static HMODULE kernel32_dll = 0;
+static HMODULE power_dll = 0;
 static GetProcessMemoryInfoType GetProcessMemoryInfoFunction = 0;
 static GlobalMemoryStatusExType GlobalMemoryStatusExFunction = 0;
+static CallNtPowerInformationType CallNtPowerInformationFunction = 0;
 
 void get_memory_information (DisplayInformation *display_information)
 {
@@ -641,6 +658,62 @@ int initialize_cpu_id (CPU_ID *cpu_id) {
   return state;
 }
 
+int update_cpu_frequency_function (int processor_number, DisplayInformation *display_information)
+{
+  int update;
+  
+  update = false;
+  display_information -> _maximum_cpu_frequency = 0;
+  display_information -> _current_cpu_frequency = 0;
+  
+  if (CallNtPowerInformationFunction) {
+
+    int i;
+    PVOID input_buffer;
+    PVOID output_buffer;
+    ULONG input_buffer_size;
+    ULONG output_buffer_size;
+    POWER_INFORMATION_LEVEL information_level;
+    PROCESSOR_POWER_INFORMATION *processor_power_information;
+    PROCESSOR_POWER_INFORMATION processor_power_information_array [MAXIMUM_PROCESSORS];
+ 
+    memset (processor_power_information_array, 0, sizeof (PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS);
+
+    processor_power_information = processor_power_information_array;
+    for (i = 0; i < MAXIMUM_PROCESSORS; i++) {
+      processor_power_information -> Number = 0xFFFFFFFF;
+      processor_power_information++;
+    }
+    
+    information_level = ProcessorInformation;
+    input_buffer = NULL;
+    output_buffer = processor_power_information_array;
+    input_buffer_size = 0;
+    output_buffer_size = sizeof (PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS;
+    if (CallNtPowerInformationFunction (information_level, input_buffer, input_buffer_size, output_buffer, output_buffer_size) == 0) {
+      processor_power_information = processor_power_information_array;
+      for (i = 0; i < MAXIMUM_PROCESSORS; i++) {
+        if (processor_power_information -> Number == processor_number) {
+          PN_uint64 value;
+
+          value = processor_power_information -> MaxMhz;
+          display_information -> _maximum_cpu_frequency = value * 1000000;
+
+          value = processor_power_information -> CurrentMhz;     
+          display_information -> _current_cpu_frequency = value * 1000000;
+          update = true;
+
+          break;
+        }
+
+        processor_power_information++;
+      }      
+    }
+  }
+
+  return update;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsPipe::Constructor
 //       Access: Public
@@ -781,6 +854,36 @@ WinGraphicsPipe() {
   }
 
   windisplay_cat.info() << "end CPU ID\n";
+
+  OSVERSIONINFO version_info;
+
+  version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+  if (GetVersionEx (&version_info)) {
+    sprintf (string, "OS version: %d.%d.%d.%d \n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
+    windisplay_cat.info() << string;
+    windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
+    
+    _display_information -> _os_version_major = version_info.dwMajorVersion;
+    _display_information -> _os_version_minor = version_info.dwMinorVersion;
+    _display_information -> _os_version_build = version_info.dwBuildNumber;     
+    _display_information -> _os_platform_id = version_info.dwPlatformId;
+  }
+
+  HMODULE power_dll;
+
+  power_dll = LoadLibrary ("PowrProf.dll");
+  if (power_dll) {    
+    CallNtPowerInformationFunction = (CallNtPowerInformationType) GetProcAddress (power_dll, "CallNtPowerInformation");
+    if (CallNtPowerInformationFunction) {    
+    
+      _display_information -> _update_cpu_frequency_function = update_cpu_frequency_function;
+      update_cpu_frequency_function(0, _display_information);
+
+      sprintf (string, "max Mhz %I64d, current Mhz %I64d \n", _display_information -> _maximum_cpu_frequency, _display_information -> _current_cpu_frequency);     
+
+      windisplay_cat.info() << string;    
+    }
+  }
   
   if (state) {
 
