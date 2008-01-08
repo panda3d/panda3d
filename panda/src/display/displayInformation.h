@@ -97,6 +97,15 @@ PUBLISHED:
   
   PN_uint64 get_cpu_frequency();
   PN_uint64 get_cpu_time();
+
+  PN_uint64 get_maximum_cpu_frequency();
+  PN_uint64 get_current_cpu_frequency();
+  void update_cpu_frequency(int processor_number);
+
+  int get_os_version_major();
+  int get_os_version_minor();
+  int get_os_version_build();
+  int get_os_platform_id();
   
 public:
   DetectionState _state;
@@ -139,9 +148,18 @@ public:
   unsigned int _cpu_brand_index;
   
   PN_uint64 _cpu_frequency;
-    
+  
+  PN_uint64 _maximum_cpu_frequency;
+  PN_uint64 _current_cpu_frequency;
+  
   void (*_get_memory_information_function) (DisplayInformation *display_information);
   PN_uint64 (*_cpu_time_function) (void);
+  int (*_update_cpu_frequency_function) (int processor_number, DisplayInformation *display_information);
+  
+  int _os_version_major;
+  int _os_version_minor;
+  int _os_version_build;
+  int _os_platform_id;
 };
 
 #endif

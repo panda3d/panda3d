@@ -112,8 +112,17 @@ DisplayInformation() {
 
   _cpu_frequency = 0;
 
+  _maximum_cpu_frequency = 0;
+  _current_cpu_frequency = 0;
+
   _get_memory_information_function = 0;
   _cpu_time_function = 0;
+  _update_cpu_frequency_function = 0;
+
+  _os_version_major = -1;
+  _os_version_minor = -1;
+  _os_version_build = -1;
+  _os_platform_id = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -550,4 +559,76 @@ get_cpu_time() {
   }
   
   return cpu_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_maximum_cpu_frequency
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_maximum_cpu_frequency() {
+  return _maximum_cpu_frequency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_current_cpu_frequency
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PN_uint64 DisplayInformation::
+get_current_cpu_frequency() {
+  return _current_cpu_frequency;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::update_cpu_frequency
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DisplayInformation::
+update_cpu_frequency(int processor_number) {
+  if (_update_cpu_frequency_function) {
+    _update_cpu_frequency_function (processor_number, this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_os_version_major
+//       Access: Published
+//  Description: Returns -1 if not set. 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_os_version_major() {  
+  return _os_version_major;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_os_version_minor
+//       Access: Published
+//  Description: Returns -1 if not set. 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_os_version_minor() {  
+  return _os_version_minor;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_os_version_build
+//       Access: Published
+//  Description: Returns -1 if not set. 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_os_version_build() {  
+  return _os_version_build;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_os_platform_id
+//       Access: Published
+//  Description: Returns -1 if not set.
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_os_platform_id() {  
+  return _os_platform_id;
 }
