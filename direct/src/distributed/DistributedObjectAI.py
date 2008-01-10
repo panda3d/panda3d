@@ -3,13 +3,12 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase import PythonUtil
-from direct.showbase.EnforcesCalldowns import EnforcesCalldowns, calldownEnforced
 from otp.ai.AIZoneData import AIZoneData
 from pandac.PandaModules import *
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
-class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
+class DistributedObjectAI(DistributedObjectBase):
     notify = directNotify.newCategory("DistributedObjectAI")
     QuietZone = 1
 
@@ -19,8 +18,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         except:
             self.DistributedObjectAI_initialized = 1
             DistributedObjectBase.__init__(self, air)
-
-            EnforcesCalldowns.__init__(self)
 
             self.accountName=''
             # Record the repository
@@ -90,7 +87,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         if delEvent:
             messenger.send(delEvent)
 
-    @calldownEnforced
     def delete(self):
         """
         Inheritors should redefine this to take appropriate action on delete
@@ -150,8 +146,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
                 del self.zoneId
             self.__generated = False
 
-            EnforcesCalldowns.EC_destroy(self)
-
     def isDeleted(self):
         """
         Returns true if the object has been deleted,
@@ -180,7 +174,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.doId = self.air.allocateChannel()
         self.__preallocDoId = 1
 
-    @calldownEnforced
     def announceGenerate(self):
         """
         Called after the object has been generated and all
@@ -416,7 +409,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         self.announceGenerate()
         self.postGenerateMessage()
 
-    @calldownEnforced
     def generate(self):
         """
         Inheritors should put functions that require self.zoneId or
@@ -425,7 +417,6 @@ class DistributedObjectAI(DistributedObjectBase, EnforcesCalldowns):
         assert self.notify.debugStateCall(self)
 
 
-    @calldownEnforced
     def generateInit(self, repository=None):
         """
         First generate (not from cache).
