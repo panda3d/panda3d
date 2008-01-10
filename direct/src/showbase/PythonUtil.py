@@ -1653,6 +1653,21 @@ def lerp(v0, v1, t):
     """
     return v0 + ((v1 - v0) * t)
 
+def getShortestRotation(start, end):
+    """
+    Given two heading values, return a tuple describing
+    the shortest interval from 'start' to 'end'.  This tuple
+    can be used to lerp a camera between two rotations
+    while avoiding the 'spin' problem.
+    """
+    start, end = start % 360, end % 360
+    if abs(end - start) > 180:
+        if end < start:
+            end += 360
+        else:
+            start += 360
+    return (start, end)
+
 def average(*args):
     """ returns simple average of list of values """
     val = 0.
