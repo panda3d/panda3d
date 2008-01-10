@@ -898,10 +898,21 @@ class Functor:
         del self.__name__
         del self.__doc__
     
-    def __call__(self, *args, **kargs):
+    def _do__call__(self, *args, **kargs):
         _kargs = self._kargs.copy()
         _kargs.update(kargs)
         return self._function(*(self._args + args), **_kargs)
+
+    # this method is used in place of __call__ if we are recording creation stacks
+    def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
+        try:
+            return self._do__call__(*args, **kargs)
+        except Exception, e:
+            appendStr(e, '\n-->Functor creation stack (%s): %s' % (
+                self.__name__, self.getCreationStackTraceCompactStr()))
+            raise
+
+    __call__ = _do__call__
 
     def __repr__(self):
         s = 'Functor(%s' % self._function.__name__
@@ -2907,10 +2918,30 @@ def recordCreationStack(cls):
         return self.__moved_init__(*args, **kArgs)
     def getCreationStackTrace(self):
         return self._creationStackTrace
+    def getCreationStackTraceCompactStr(self):
+        return self._creationStackTrace.compact()
     def printCreationStackTrace(self):
         print self._creationStackTrace
     cls.__init__ = __recordCreationStack_init__
     cls.getCreationStackTrace = getCreationStackTrace
+    cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
+    cls.printCreationStackTrace = printCreationStackTrace
+    return cls
+
+# like recordCreationStack but stores the stack as a compact stack string
+def recordCreationStackStr(cls):
+    if not hasattr(cls, '__init__'):
+        raise 'recordCreationStackStr: class \'%s\' must define __init__' % cls.__name__
+    cls.__moved_init__ = cls.__init__
+    def __recordCreationStackStr_init__(self, *args, **kArgs):
+        self._creationStackTraceStr = StackTrace(start=1).compact()
+        return self.__moved_init__(*args, **kArgs)
+    def getCreationStackTraceCompactStr(self):
+        return self._creationStackTraceStr
+    def printCreationStackTrace(self):
+        print self._creationStackTraceStr
+    cls.__init__ = __recordCreationStackStr_init__
+    cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
     cls.printCreationStackTrace = printCreationStackTrace
     return cls
 
@@ -3212,8 +3243,9 @@ def recordFunctorCreationStacks():
     global Functor
     if __dev__:
         if not hasattr(Functor, '_functorCreationStacksRecorded'):
-            Functor = recordCreationStack(Functor)
+            Functor = recordCreationStackStr(Functor)
             Functor._functorCreationStacksRecorded = True
+            Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
 
 import __builtin__
 __builtin__.Functor = Functor
