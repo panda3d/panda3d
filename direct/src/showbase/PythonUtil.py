@@ -27,7 +27,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'FrameDelayedCall', 'SubframeCall', 'ArgumentEater', 'ClassTree', 'getBase',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
-'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice', ]
+'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
+'printStack', 'printReverseStack', ]
 
 import types
 import string
@@ -140,6 +141,15 @@ class StackTrace:
             r = r[:-len(comma)]
         return r
 
+    def reverseCompact(self):
+        r = ''
+        comma = ','
+        for filename, lineNum, funcName, text in self.trace:
+            r = '%s.%s:%s%s%s' % (filename[:filename.rfind('.py')][filename.rfind('\\')+1:], funcName, lineNum, comma, r)
+        if len(r):
+            r = r[:-len(comma)]
+        return r
+
     def __str__(self):
         r = "Debug stack trace of %s (back %s frames):\n"%(
             self.label, len(self.trace),)
@@ -150,6 +160,9 @@ class StackTrace:
 
 def printStack():
     print StackTrace(start=1).compact()
+    return True
+def printReverseStack():
+    print StackTrace(start=1).reverseCompact()
     return True
 def printVerboseStack():
     print StackTrace(start=1)
@@ -3285,6 +3298,7 @@ __builtin__.clampScalar = clampScalar
 __builtin__.makeList = makeList
 __builtin__.makeTuple = makeTuple
 __builtin__.printStack = printStack
+__builtin__.printReverseStack = printReverseStack
 __builtin__.printVerboseStack = printVerboseStack
 __builtin__.DelayedCall = DelayedCall
 __builtin__.DelayedFunctor = DelayedFunctor
