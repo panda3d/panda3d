@@ -26,6 +26,7 @@ class ControlManager:
         assert self.notify.debugCall(id(self))
         self.passMessagesThrough = passMessagesThrough
         self.inputStateTokens = []
+        # Used to switch between strafe and turn. We will reset to whatever was last set.
         self.WASDTurnTokens = []
         self.__WASDTurn = True
         self.controls = {}
@@ -150,9 +151,9 @@ class ControlManager:
         for token in self.inputStateTokens:
             token.release()
 
-        if self.wantWASD:
-            for token in self.WASDTurnTokens:
-                token.release()
+        for token in self.WASDTurnTokens:
+            token.release()
+        self.WASDTurnTokens = []
 
         #self.monitorTask.remove()
 
@@ -224,8 +225,6 @@ class ControlManager:
             ist.append(inputState.watchWithModifiers("slideLeft", "q", inputSource=inputState.QE))
             ist.append(inputState.watchWithModifiers("slideRight", "e", inputSource=inputState.QE))
 
-            # Used to switch between strafe and turn. We will reset to whatever was last set.
-            self.WASDTurnTokens = []
             self.setWASDTurn(self.__WASDTurn)
         else:
             ist.append(inputState.watchWithModifiers("turnLeft", "arrow_left", inputSource=inputState.ArrowKeys))
@@ -253,10 +252,9 @@ class ControlManager:
             token.release()
         self.inputStateTokens = []
 
-        if self.wantWASD:
-            for token in self.WASDTurnTokens:
-                token.release()
-            self.WASDTurnTokens = []
+        for token in self.WASDTurnTokens:
+            token.release()
+        self.WASDTurnTokens = []
 
         if self.currentControls:
             self.currentControls.disableAvatarControls()
@@ -305,7 +303,6 @@ class ControlManager:
             onScreenDebug.add("InputState slideRight", "%d"%(inputState.isSet("slideRight")))
         return Task.cont
 
-
     def setWASDTurn(self, turn):
         self.__WASDTurn = turn
 
@@ -326,10 +323,8 @@ class ControlManager:
                 inputState.watchWithModifiers("turnRight", "d", inputSource=inputState.WASD),
                 )
 
-            if slideLeftWASDSet:
-                inputState.set("turnLeft", True, inputSource=inputState.WASD)
-            if slideRightWASDSet:
-                inputState.set("turnRight", True, inputSource=inputState.WASD)
+            inputState.set("turnLeft", slideLeftWASDSet, inputSource=inputState.WASD)
+            inputState.set("turnRight", slideRightWASDSet, inputSource=inputState.WASD)
 
             inputState.set("slideLeft", False, inputSource=inputState.WASD)
             inputState.set("slideRight", False, inputSource=inputState.WASD)
@@ -339,10 +334,9 @@ class ControlManager:
                 inputState.watchWithModifiers("slideLeft", "a", inputSource=inputState.WASD),
                 inputState.watchWithModifiers("slideRight", "d", inputSource=inputState.WASD),
                 )
-            if turnLeftWASDSet:
-                inputState.set("slideLeft", True, inputSource=inputState.WASD)
-            if turnRightWASDSet:
-                inputState.set("slideRight", True, inputSource=inputState.WASD)
+
+            inputState.set("slideLeft", turnLeftWASDSet, inputSource=inputState.WASD)
+            inputState.set("slideRight", turnRightWASDSet, inputSource=inputState.WASD)
                 
             inputState.set("turnLeft", False, inputSource=inputState.WASD)
             inputState.set("turnRight", False, inputSource=inputState.WASD)
