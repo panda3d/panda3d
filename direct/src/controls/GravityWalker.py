@@ -358,7 +358,6 @@ class GravityWalker(DirectObject.DirectObject):
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 if self.wantFloorSphere:
                     self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
-                self.cTrav.addCollider(self.cEventSphereNodePath, self.event)
                 # Add the lifter to the shadow traverser, which runs after
                 # our traverser. This prevents the "fall through wall and
                 # off ledge" bug. The problem was that we couldn't control
@@ -367,12 +366,15 @@ class GravityWalker(DirectObject.DirectObject):
                 # collided first, we'd start falling before getting pushed
                 # back behind the wall.
                 base.shadowTrav.addCollider(self.cRayNodePath, self.lifter)
+                # also put the event sphere in the shadowTrav, so we collide with
+                # event spheres from our final position for the frame
+                base.shadowTrav.addCollider(self.cEventSphereNodePath, self.event)
             else:
                 if hasattr(self, 'cTrav'):
                     self.cTrav.removeCollider(self.cWallSphereNodePath)
                     if self.wantFloorSphere:
                         self.cTrav.removeCollider(self.cFloorSphereNodePath)
-                    self.cTrav.removeCollider(self.cEventSphereNodePath)
+                base.shadowTrav.removeCollider(self.cEventSphereNodePath)
                 base.shadowTrav.removeCollider(self.cRayNodePath)
 
     def getCollisionsActive(self):
