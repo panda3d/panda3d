@@ -3265,7 +3265,18 @@ def logBlock(id, msg):
     print '<< LOGBLOCK(%03d)' % id
     print str(msg)
     print '/LOGBLOCK(%03d) >>' % id
-        
+
+class DeveloperException(Exception):
+    def __init__(self, owner, description):
+        self.owner = owner
+        self.desc = description
+
+    def __str__(self):
+        return '(%s): %s' % (self.owner, self.desc)
+
+    def __repr__(self):
+        return 'DeveloperException(%s)' % (self.owner, )
+    
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
     global Functor
@@ -3320,3 +3331,4 @@ __builtin__.report = report
 __builtin__.MiniLog = MiniLog
 __builtin__.MiniLogSentry = MiniLogSentry
 __builtin__.logBlock = logBlock
+__builtin__.DeveloperException = DeveloperException
