@@ -1039,6 +1039,7 @@ class LevelEditor(NodePath, DirectObject):
 
         # set up the collision traverser
         self.cTrav = CollisionTraverser("LevelEditor")
+        self.cTrav.setRespectPrevTransform(1)
 
         # activate the collider with the traverser and pusher
         #self.pusher.addCollider(self.cSphereNodePath, base.camera, base.drive.node())
