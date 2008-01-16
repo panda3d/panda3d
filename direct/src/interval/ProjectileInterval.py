@@ -195,8 +195,12 @@ class ProjectileInterval(Interval):
             # stop when we reach endZ
             self.startVel = calcStartVel(self.startPos, wayPoint,
                                          timeToWayPoint, self.zAcc)
-            self.duration = calcTimeOfLastImpactOnPlane(
+            time = calcTimeOfLastImpactOnPlane(
                 self.startPos[2], endZ, self.startVel[2], self.zAcc)
+            if time is None:
+                self.notify.error(
+                    'projectile never reaches plane Z=%s' % endZ)
+            self.duration = time
             self.endPos = None
         else:
             self.notify.error('invalid set of inputs to ProjectileInterval')
