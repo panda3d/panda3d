@@ -45,7 +45,7 @@
   #define USE_PACKAGES maya
   #define TARGET $[maya2egg]
   #define LOCAL_LIBS \
-    mayaegg maya eggbase progbase
+    maya mayaegg eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
@@ -175,7 +175,7 @@
   #define TARGET mayaloader
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    mayaegg ptloader converter pandatoolbase
+    maya mayaegg ptloader converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
