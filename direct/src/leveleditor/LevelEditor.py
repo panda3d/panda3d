@@ -29,6 +29,7 @@ import __builtin__
 # [gjeon] to control avatar movement in drive mode
 from direct.controls import ControlManager
 from direct.controls import GravityWalker
+from direct.controls import NonPhysicsWalker
 from direct.interval.LerpInterval import LerpFunctionInterval
 
 from otp.avatar import LocalAvatar
@@ -945,7 +946,8 @@ class LevelEditor(NodePath, DirectObject):
             floorOffset = OTPGlobals.FloorOffset
             reach = 4.0
 
-            walkControls=GravityWalker.GravityWalker(gravity = -32.1740 * 2.0)
+            #walkControls=GravityWalker.GravityWalker(gravity = -32.1740 * 2.0)
+            walkControls=NonPhysicsWalker.NonPhysicsWalker()
             walkControls.setWallBitMask(OTPGlobals.WallBitmask)
             walkControls.setFloorBitMask(OTPGlobals.FloorBitmask)
             walkControls.initializeCollisions(self.cTrav, self.avatar,
