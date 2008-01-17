@@ -93,7 +93,7 @@ as_integer() const {
 
   case RT_pointer:
     // We don't mind if this loses precision.
-    return reinterpret_cast<int>(_u._pointer);
+    return (int)reinterpret_cast<long>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
@@ -118,7 +118,7 @@ as_real() const {
 
   case RT_pointer:
     // We don't mind if this loses precision.
-    return (double)reinterpret_cast<int>(_u._pointer);
+    return (double)reinterpret_cast<long>(_u._pointer);
 
   default:
     cerr << "Invalid type\n";
