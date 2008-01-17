@@ -75,6 +75,10 @@ class ShowBase(DirectObject.DirectObject):
         self.mainDir = Filename.fromOsSpecific(maindir).getFullpath()
         ExecutionEnvironment.setEnvironmentVariable("MAIN_DIR", self.mainDir)
 
+
+        #debug running multiplier
+        self.debugRunningMultiplier = 4
+        
         # Get the dconfig object
         #self.config = ConfigConfigureGetConfigConfigShowbase
         self.config = config

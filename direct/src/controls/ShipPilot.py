@@ -413,12 +413,12 @@ class ShipPilot(PhysicsWalker):
         
         # Enable debug turbo modec
         debugRunning = inputState.isSet("debugRunning")
-        if debugRunning or base.localAvatar.getTurbo():
-            self.__speed*=4.0
-            self.__slideSpeed*=4.0
+        if(debugRunning and __dev__):
+            self.__speed*=base.debugRunningMultiplier
+            self.__slideSpeed*=base.debugRunningMultiplier
             self.__rotationSpeed*=1.25
-            maxSpeed = self.ship.maxSpeed * 4.0
-                
+            maxSpeed = self.ship.maxSpeed * base.debugRunningMultiplier
+
         #*#
         self.currentTurning += self.__rotationSpeed
         if self.currentTurning > self.ship.maxTurn:

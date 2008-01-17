@@ -53,9 +53,10 @@ class BattleWalker(GravityWalker.GravityWalker):
                 (turnRight and -self.avatarControlRotateSpeed))
 
         debugRunning = inputState.isSet("debugRunning")
-        if debugRunning:
-            self.speed*=4.0
-            self.slideSpeed*=4.0
+
+        if(debugRunning and __dev__):
+            self.speed*=base.debugRunningMultiplier
+            self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25
             
         if self.needToDeltaPos:

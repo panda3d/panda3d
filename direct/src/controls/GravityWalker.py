@@ -488,11 +488,15 @@ class GravityWalker(DirectObject.DirectObject):
                 (turnRight and -self.avatarControlRotateSpeed))
 
         debugRunning = inputState.isSet("debugRunning")
-        if debugRunning:
-            self.speed*=4.0
-            self.slideSpeed*=4.0
+        if debugRunning>1:
+            self.speed*=debugRunning
+            self.slideSpeed*=debugRunning
             self.rotationSpeed*=1.25
-
+        elif(debugRunning>0):
+            self.speed*=4
+            self.slideSpeed*=4
+            self.rotationSpeed*=1.25
+            
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0
