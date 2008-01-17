@@ -101,6 +101,15 @@ DisplayInformation() {
   _vendor_id = 0;
   _device_id = 0;
 
+  _driver_product = 0;
+  _driver_version = 0;
+  _driver_sub_version = 0;
+  _driver_build = 0;
+
+  _driver_date_month = 0;
+  _driver_date_day = 0;
+  _driver_date_year = 0;
+
   _cpu_id_version = 1;
   _cpu_id_size = 0;
   _cpu_id_data = 0;
@@ -439,6 +448,76 @@ get_vendor_id() {
 int DisplayInformation::
 get_device_id() {
   return _device_id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_product
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_product() {
+  return _driver_product;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_version
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_version() {
+  return _driver_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_sub_version
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_sub_version() {
+  return _driver_sub_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_build
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_build() {
+  return _driver_build;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_date_month
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_date_month() {
+  return _driver_date_month;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_date_day
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_date_day() {
+  return _driver_date_day;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_driver_date_year
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_driver_date_year() {
+  return _driver_date_year;
 }
 
 ////////////////////////////////////////////////////////////////////

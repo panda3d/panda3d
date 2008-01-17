@@ -24,6 +24,18 @@ typedef struct {
 }
 DISPLAY_FORMAT;
 
+typedef union
+{
+  struct
+  {
+    unsigned int day : 8;
+    unsigned int month : 8;
+    unsigned int year : 16;
+  };
+  DWORD whql;
+}
+WHQL;
+
 static DISPLAY_FORMAT display_format_array [ ] = {
   D3DFMT_X8R8G8B8,    32, FALSE,
   D3DFMT_R5G6B5,      16, FALSE,
@@ -79,6 +91,28 @@ static LRESULT CALLBACK window_procedure (HWND hwnd, UINT msg, WPARAM wparam, LP
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+static DWORD print_GetLastError (char *message_prefix)
+{
+  LPVOID ptr;
+  DWORD error;
+
+  ptr = 0;
+  error = GetLastError ( );
+  if (FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  error,
+                  MAKELANGID( LANG_ENGLISH, SUBLANG_ENGLISH_US ),
+                  (LPTSTR)&ptr,
+                  0, NULL))
+  {
+    cout << "ERROR: "<< message_prefix << " result = " << (char*) ptr << "\n";
+    LocalFree( ptr );
+  }
+
+  return error;
+}
+
 static int get_display_information (DisplaySearchParameters &display_search_parameters, DisplayInformation *display_information) {
 
   int debug = false;
@@ -111,6 +145,15 @@ static int get_display_information (DisplaySearchParameters &display_search_para
   int vendor_id;
   int device_id;
 
+  int product;
+  int version;
+  int sub_version;
+  int build;
+
+  int month;
+  int day;
+  int year;
+
   success = false;
   window_width = 0;
   window_height = 0;
@@ -138,6 +181,15 @@ static int get_display_information (DisplaySearchParameters &display_search_para
 
   vendor_id = 0;
   device_id = 0;
+
+  product = 0;
+  version = 0;
+  sub_version = 0;
+  build = 0;
+
+  month = 0;
+  day = 0;
+  year = 0;
   
   HMODULE d3d_dll;
   DIRECT_3D_CREATE Direct3DCreate;
@@ -196,17 +248,95 @@ static int get_display_information (DisplaySearchParameters &display_search_para
           d3d_adapter_identifier.Revision;
           d3d_adapter_identifier.DeviceIdentifier;
           d3d_adapter_identifier.WHQLLevel;
+          
+          if (debug) {
+            printf ("Driver: %s\n", d3d_adapter_identifier.Driver);
+            printf ("Description: %s\n", d3d_adapter_identifier.Description);
+          }
+          
+          char system_directory [MAX_PATH];
+          char dll_file_path [MAX_PATH];
+
+          // find the dll in the system directory if possible and get the date of the file
+          if (GetSystemDirectory (system_directory, MAX_PATH) > 0) {
+            if (debug) {
+              printf ("system_directory = %s \n", system_directory);
+            }
+            sprintf (dll_file_path, "%s\\%s", system_directory, d3d_adapter_identifier.Driver);
+
+            intptr_t find;
+            struct _finddata_t find_data;
+
+            find = _findfirst (dll_file_path, &find_data);
+            if (find != -1) {
+              struct tm *dll_time;
+
+              dll_time = localtime(&find_data.time_write);
+
+              month = dll_time -> tm_mon + 1;
+              day = dll_time -> tm_mday;
+              year = dll_time -> tm_year + 1900;
+
+              if (debug) {
+                printf ("Driver Date: %d/%d/%d\n",  month, day, year);
+              }
+              
+              _findclose (find);
+            }  
+          }
 
           /*
-          printf ("Driver = %s\n", d3d_adapter_identifier.Driver);
-          printf ("Description = %s\n", d3d_adapter_identifier.Description);
+          HMODULE driver_dll;
+          
+          driver_dll = LoadLibrary (d3d_adapter_identifier.Driver);
+          if (driver_dll)
+          {
+            DWORD length;
+            TCHAR file_path [MAX_PATH];
 
-          printf ("VendorId = 0x%x\n", d3d_adapter_identifier.VendorId);
-          printf ("DeviceId = 0x%x\n", d3d_adapter_identifier.DeviceId);
+            length = GetModuleFileName(driver_dll, file_path, MAX_PATH);
+            if (length > 0)
+            {
+              printf ("DLL file path = %s \n", file_path);
+            }
+            else
+            {
+              printf ("ERROR: could not get GetModuleFileName for %s \n", d3d_adapter_identifier.Driver);  
+            }
+
+            FreeLibrary (driver_dll);
+          }
+          else
+          {
+            print_GetLastError ("");
+            printf ("ERROR: could not load = %s \n", d3d_adapter_identifier.Driver);
+          }
           */
+
+          if (debug) {
+            printf ("VendorId = 0x%x\n", d3d_adapter_identifier.VendorId);
+            printf ("DeviceId = 0x%x\n", d3d_adapter_identifier.DeviceId);
+          }
           
           vendor_id = d3d_adapter_identifier.VendorId;
           device_id = d3d_adapter_identifier.DeviceId;
+
+          product = HIWORD(d3d_adapter_identifier.DriverVersion.HighPart);
+          version = LOWORD(d3d_adapter_identifier.DriverVersion.HighPart);
+          sub_version = HIWORD(d3d_adapter_identifier.DriverVersion.LowPart);
+          build = LOWORD(d3d_adapter_identifier.DriverVersion.LowPart);
+
+          if (debug) {
+            printf ("DRIVER VERSION: %d.%d.%d.%d \n", product, version, sub_version, build);
+          }
+          
+          WHQL whql;
+          
+          whql.whql= d3d_adapter_identifier.WHQLLevel;
+
+          if (debug) {
+            printf ("WHQL: %d %d %d \n", whql.day, whql.day, whql.year);
+          }
         }
 
         if (direct_3d -> GetDeviceCaps (adapter, device_type, &d3d_caps) == D3D_OK) {
@@ -535,6 +665,14 @@ static int get_display_information (DisplaySearchParameters &display_search_para
     display_information -> _texture_memory = texture_memory;
     display_information -> _vendor_id = vendor_id;
     display_information -> _device_id = device_id;
+    display_information -> _driver_product = product;
+    display_information -> _driver_version = version;
+    display_information -> _driver_sub_version = sub_version;
+    display_information -> _driver_build = build;
+
+    display_information -> _driver_date_month = month;
+    display_information -> _driver_date_day = day;
+    display_information -> _driver_date_year = year;
   }
 
   // memory

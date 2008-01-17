@@ -86,6 +86,15 @@ PUBLISHED:
   int get_vendor_id();
   int get_device_id();
 
+  int get_driver_product();
+  int get_driver_version();
+  int get_driver_sub_version();
+  int get_driver_build();
+
+  int get_driver_date_month();
+  int get_driver_date_day();
+  int get_driver_date_year();
+
   int get_cpu_id_version();
   int get_cpu_id_size();
   unsigned int get_cpu_id_data(int index);
@@ -137,6 +146,15 @@ public:
 
   int _vendor_id;
   int _device_id;
+
+  int _driver_product;
+  int _driver_version;
+  int _driver_sub_version;
+  int _driver_build;
+
+  int _driver_date_month;
+  int _driver_date_day;
+  int _driver_date_year;
 
   int _cpu_id_version;
   int _cpu_id_size;
