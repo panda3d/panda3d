@@ -36,7 +36,7 @@ private:
     
     friend struct Socket_Selector;
     SOCKET _maxid;
-    fd_set _the_set;
+    mutable fd_set _the_set;
 };
 
 ////////////////////////////////////////////////////////////////////

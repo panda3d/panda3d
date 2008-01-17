@@ -52,5 +52,7 @@ typedef long long int64_t;
 
 #define NULL ((void *)0)
 
+typedef int fd_set;
+
 #endif
 

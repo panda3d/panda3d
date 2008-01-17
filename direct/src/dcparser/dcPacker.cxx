@@ -762,7 +762,7 @@ pack_object(PyObject *object) {
     pack_int64(PyLong_AsLongLong(object));
   } else if (PyString_Check(object) || PyUnicode_Check(object)) {
     char *buffer;
-    int length;
+    Py_ssize_t length;
     PyString_AsStringAndSize(object, &buffer, &length);
     if (buffer) {
       pack_string(string(buffer, length));

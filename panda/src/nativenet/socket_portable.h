@@ -264,6 +264,8 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <arpa/inet.h>
 #include <unistd.h>
 
+typedef struct sockaddr_in AddressType; 
+
 typedef int SOCKET;
 const SOCKET BAD_SOCKET = -1;
 inline int DO_SELECT(SOCKET n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,struct timeval *timeout)

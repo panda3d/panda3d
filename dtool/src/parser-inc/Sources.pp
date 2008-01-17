@@ -15,7 +15,7 @@
     rtsp.h rtspcodes.h setjmp.h winsock2.h \
     ode/ode.h collision_trimesh.h  \
     netinet/tcp.h netinet/ip.h \
-    rfftw.h libtar.h malloc.h
+    rfftw.h libtar.h malloc.h ucontext.h 
 
 
 
