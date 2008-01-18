@@ -873,7 +873,7 @@ class LevelEditor(NodePath, DirectObject):
         # create avatar and set it's location to the camera
         if (self.avatar == None):
             #self.avatar = RobotToon.RobotToon()
-            self.avatar = LocalAvatar.LocalAvatar(None, None, None)
+            self.avatar = LEAvatar(None, None, None)
             base.localAvatar = self.avatar
             self.avatar.doId = 0
             self.avatar.robot = RobotToon.RobotToon()
@@ -895,6 +895,8 @@ class LevelEditor(NodePath, DirectObject):
         # t.uponDeath = self.switchToDriveMode
         self.switchToDriveMode(None)
         self.fDrive = True
+        #[gjeon] deselect
+        base.direct.selected.deselect(base.direct.selected.last)
 
     def switchToDriveMode(self, state):
         """ Disable direct camera manipulation and enable player drive mode """
@@ -978,7 +980,8 @@ class LevelEditor(NodePath, DirectObject):
     #--------------------------------------------------------------------------
     def avatarAnimate(self,task=None):
         if (self.controlManager):
-            if (self.controlManager.currentControls.moving and
+            moving = self.controlManager.currentControls.speed or self.controlManager.currentControls.slideSpeed or self.controlManager.currentControls.rotationSpeed
+            if (moving and
                 self.avatarMoving == 0):
                 self.clearPageUpDown()
                 # moving, play walk anim
@@ -988,7 +991,7 @@ class LevelEditor(NodePath, DirectObject):
                 else:
                     self.avatar.robot.loop('run')
                 self.avatarMoving = 1
-            elif (self.controlManager.currentControls.moving == 0 and
+            elif (moving == 0 and
                   self.avatarMoving == 1):
                 # no longer moving, play neutral anim
                 self.avatar.robot.loop('neutral')
@@ -6852,6 +6855,13 @@ class VisGroupsEditor(Pmw.MegaToplevel):
         else:
             self.balloon.configure(state = 'none')
 
+# [gjeon] for LevelEditor specific Avatar
+class LEAvatar(LocalAvatar.LocalAvatar):
+    def __init__(self, cr, chatMgr, chatAssistant, passMessagesThrough = False):
+        LocalAvatar.LocalAvatar.__init__(self,  cr, chatMgr, chatAssistant, passMessagesThrough)
+
+    def getAutoRun(self):
+        return 0
 
 l = LevelEditor()
 run()
