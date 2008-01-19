@@ -158,7 +158,9 @@ class ControlManager:
         #self.monitorTask.remove()
 
     def getSpeeds(self):
-        return self.currentControls.getSpeeds()
+        if self.currentControls:
+            return self.currentControls.getSpeeds()
+        return None
 
     def getIsAirborne(self):
         if self.currentControls:
