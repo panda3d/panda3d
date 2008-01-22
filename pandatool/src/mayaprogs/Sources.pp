@@ -45,7 +45,7 @@
   #define USE_PACKAGES maya
   #define TARGET $[maya2egg]
   #define LOCAL_LIBS \
-    maya mayaegg eggbase progbase
+    mayabase mayaegg eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
@@ -66,7 +66,7 @@
   #define USE_PACKAGES maya
   #define TARGET $[egg2maya]
   #define LOCAL_LIBS \
-    mayaegg maya eggbase progbase
+    mayabase mayaegg eggbase progbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
@@ -87,7 +87,7 @@
 #begin bin_target
   #define USE_PACKAGES maya
   #define TARGET $[mayacopy]
-  #define LOCAL_LIBS cvscopy maya progbase
+  #define LOCAL_LIBS cvscopy mayabase progbase
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
@@ -110,7 +110,7 @@
   #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
   #define USE_PACKAGES maya
   #define TARGET mayapview
-  #define LOCAL_LIBS mayaegg maya
+  #define LOCAL_LIBS mayabase mayaegg
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     framework:m \
@@ -150,7 +150,7 @@
   #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
   #define USE_PACKAGES maya
   #define TARGET mayaEggImport
-  #define LOCAL_LIBS mayaegg maya
+  #define LOCAL_LIBS mayabase mayaegg
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     framework:m \
@@ -175,7 +175,7 @@
   #define TARGET mayaloader
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    maya mayaegg ptloader converter pandatoolbase
+    mayabase mayaegg ptloader converter pandatoolbase
   #define OTHER_LIBS \
     egg2pg:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \

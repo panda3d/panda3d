@@ -4,7 +4,7 @@
   #define USE_PACKAGES maya
   #define TARGET mayaegg
   #define LOCAL_LIBS \
-    maya converter pandatoolbase
+    mayabase converter pandatoolbase
   #define OTHER_LIBS \
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \

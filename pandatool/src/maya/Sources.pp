@@ -2,7 +2,7 @@
 
 #begin ss_lib_target
   #define USE_PACKAGES maya
-  #define TARGET maya
+  #define TARGET mayabase
   #define LOCAL_LIBS \
     converter pandatoolbase
   #define OTHER_LIBS \
