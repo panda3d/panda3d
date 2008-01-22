@@ -75,13 +75,22 @@ AnimChannelScalarTable(AnimGroup *parent, const string &name) :
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelScalarTable::
-has_changed(double last_frame, double this_frame) {
-  if (last_frame != this_frame && _table.size() > 1) {
-    int last_i_frame = (int)floor(last_frame);
-    int next_i_frame = (int)ceil(this_frame);
-    if (_table[last_i_frame % _table.size()] !=
-        _table[next_i_frame % _table.size()]) {
-      return true;
+has_changed(int last_frame, double last_frac, 
+            int this_frame, double this_frac) {
+  if (_table.size() > 1) {
+    if (last_frame != this_frame) {
+      if (_table[last_frame % _table.size()] != 
+          _table[this_frame % _table.size()]) {
+        return true;
+      }
+    }
+    if (last_frac != this_frac) {
+      // If we have some fractional changes, also check the next
+      // subsequent frame (since we'll be blending with that).
+      if (_table[last_frame % _table.size()] != 
+          _table[(this_frame + 1) % _table.size()]) {
+        return true;
+      }
     }
   }
 

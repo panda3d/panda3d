@@ -46,7 +46,8 @@ protected:
 public:
   INLINE AnimChannelBase(AnimGroup *parent, const string &name);
 
-  virtual bool has_changed(double last_frame, double this_frame);
+  virtual bool has_changed(int last_frame, double last_frac, 
+                           int this_frame, double this_frac);
 
   virtual TypeHandle get_value_type() const=0;
 

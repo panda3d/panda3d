@@ -78,7 +78,7 @@ AnimChannelMatrixDynamic(const string &name)
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixDynamic::
-has_changed(double, double) {
+has_changed(int, double, int, double) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }

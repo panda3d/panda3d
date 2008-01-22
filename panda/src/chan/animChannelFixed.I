@@ -55,7 +55,7 @@ AnimChannelFixed(const string &name, const ValueType &value)
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 bool AnimChannelFixed<SwitchType>::
-has_changed(double, double) {
+has_changed(int, double, int, double) {
   return false;
 }
 

@@ -137,7 +137,7 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
 
   if (_forced_channel != (AnimChannelBase *)NULL) {
     if (!needs_update) {
-      needs_update = _forced_channel->has_changed(0.0, 0.0);
+      needs_update = _forced_channel->has_changed(0, 0.0, 0, 0.0);
     }
 
   } else {

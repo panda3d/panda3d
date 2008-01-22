@@ -38,7 +38,8 @@ protected:
 public:
   AnimChannelMatrixFixed(const string &name, const TransformState *transform);
 
-  virtual bool has_changed(double last_frame, double this_frame);
+  virtual bool has_changed(int last_frame, double last_frac, 
+                           int this_frame, double this_frac);
   virtual void get_value(int frame, LMatrix4f &value);
   virtual void get_value_no_scale_shear(int frame, LMatrix4f &value);
   virtual void get_scale(int frame, LVecBase3f &scale);

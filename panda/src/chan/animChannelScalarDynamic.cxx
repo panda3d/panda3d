@@ -80,7 +80,7 @@ AnimChannelScalarDynamic(const string &name)
 //               frame number.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelScalarDynamic::
-has_changed(double, double) {
+has_changed(int, double, int, double) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
     bool has_changed = (_value != _last_value);

@@ -44,7 +44,8 @@ protected:
 public:
   INLINE AnimChannelFixed(const string &name, const ValueType &value);
 
-  virtual bool has_changed(double last_frame, double this_frame);
+  virtual bool has_changed(int last_frame, double last_frac, 
+                           int this_frame, double this_frac);
   virtual void get_value(int frame, ValueType &value);
 
   virtual void output(ostream &out) const;

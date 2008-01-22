@@ -32,10 +32,12 @@ TypeHandle AnimChannelBase::_type_handle;
 //  Description: Returns true if the value has changed since the last
 //               call to has_changed().  last_frame is the frame
 //               number of the last call; this_frame is the current
-//               frame number.
+//               frame number.  last_frac and this_frac are the
+//               fractional steps into those frames, which will be 0.0
+//               unless we are running in frame_blend mode.
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelBase::
-has_changed(double, double) {
+has_changed(int, double, int, double) {
   return true;
 }
 

@@ -54,7 +54,7 @@ AnimChannelMatrixFixed(const string &name, const TransformState *transform) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool AnimChannelMatrixFixed::
-has_changed(double, double) {
+has_changed(int, double, int, double) {
   return false;
 }
 

@@ -74,7 +74,10 @@ private:
   int _channel_index;
 
   // This is the frame number as of the last call to mark_channels().
-  double _marked_frame;
+  // In frame_blend mode, we also record the fractional part of the
+  // frame number.
+  int _marked_frame;
+  double _marked_frac;
 
   // This is the bitmask of joints and/or sliders from the animation
   // that we have actually bound into this AnimControl.  See
