@@ -827,7 +827,9 @@ class LevelEditor(NodePath, DirectObject):
         """
         lerp the camera P over time (used by the battle)
         """
-        taskMgr.remove('cam-p-lerp-play')
+        taskMgr.remove('cam-p-lerp')
+        if self.avatar:
+            self.avatar.stopUpdateSmartCamera()
         def setCamP(p):
             base.camera.setP(p)
 
@@ -850,6 +852,9 @@ class LevelEditor(NodePath, DirectObject):
             self.isPageUp = 0
             #self.setCameraPositionByIndex(self.cameraIndex)
 
+        if self.avatar:
+            self.avatar.startUpdateSmartCamera()
+            
     def pageUp(self):
         if not self.isPageUp:
             self.lerpCameraP(36.8699, 0.6)
