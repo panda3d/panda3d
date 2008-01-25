@@ -52,6 +52,19 @@ INLINE Material::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Material::get_default
+//       Access: Published, Static
+//  Description: Returns the default material.
+////////////////////////////////////////////////////////////////////
+INLINE Material *Material::
+get_default() {
+  if (_default == 0) {
+    _default = new Material("default");
+  }
+  return _default;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Material::has_ambient
 //       Access: Published
 //  Description: Returns true if the ambient color has been explicitly

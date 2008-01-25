@@ -40,6 +40,8 @@ PUBLISHED:
   void operator = (const Material &copy);
   INLINE ~Material();
 
+  INLINE static Material *get_default();
+  
   INLINE bool has_ambient() const;
   INLINE const Colorf &get_ambient() const;
   void set_ambient(const Colorf &color);
@@ -84,6 +86,8 @@ private:
   Colorf _emission;
   float _shininess;
 
+  static PT(Material) _default;
+  
   enum Flags {
     F_ambient   = 0x001,
     F_diffuse   = 0x002,

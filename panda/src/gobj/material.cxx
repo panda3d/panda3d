@@ -25,6 +25,7 @@
 #include "bamWriter.h"
 
 TypeHandle Material::_type_handle;
+PT(Material) Material::_default;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Copy Assignment Operator
