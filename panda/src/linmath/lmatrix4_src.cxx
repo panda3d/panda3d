@@ -24,6 +24,18 @@ const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ident_mat =
                       0.0f, 0.0f, 1.0f, 0.0f,
                       0.0f, 0.0f, 0.0f, 1.0f);
 
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_ones_mat =
+  FLOATNAME(LMatrix4)(1.0f, 1.0f, 1.0f, 1.0f,
+                      1.0f, 1.0f, 1.0f, 1.0f,
+                      1.0f, 1.0f, 1.0f, 1.0f,
+                      1.0f, 1.0f, 1.0f, 1.0f);
+
+const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_zeros_mat =
+  FLOATNAME(LMatrix4)(0.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 0.0f);
+
 const FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::_y_to_z_up_mat =
   FLOATNAME(LMatrix4)(1.0f, 0.0f, 0.0f, 0.0f,
                       0.0f, 0.0f, 1.0f, 0.0f,

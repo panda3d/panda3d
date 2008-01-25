@@ -30,6 +30,26 @@ ident_mat() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::ones_mat
+//       Access: Public, Static
+//  Description: Returns an matrix filled with ones.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
+ones_mat() {
+  return _ones_mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::zeros_mat
+//       Access: Public, Static
+//  Description: Returns an matrix filled with zeros.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH const FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
+zeros_mat() {
+  return _zeros_mat;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Default Constructor
 //       Access: Public
 //  Description:

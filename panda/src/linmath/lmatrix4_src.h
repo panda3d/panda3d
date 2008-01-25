@@ -134,6 +134,8 @@ PUBLISHED:
   INLINE_LINMATH bool invert_in_place();
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ident_mat();
+  INLINE_LINMATH static const FLOATNAME(LMatrix4) &ones_mat();
+  INLINE_LINMATH static const FLOATNAME(LMatrix4) &zeros_mat();
 
   INLINE_LINMATH void
     set_translate_mat(const FLOATNAME(LVecBase3) &trans);
@@ -228,6 +230,8 @@ private:
   bool back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const;
 
   static const FLOATNAME(LMatrix4) _ident_mat;
+  static const FLOATNAME(LMatrix4) _ones_mat;
+  static const FLOATNAME(LMatrix4) _zeros_mat;
   static const FLOATNAME(LMatrix4) _y_to_z_up_mat;
   static const FLOATNAME(LMatrix4) _z_to_y_up_mat;
   static const FLOATNAME(LMatrix4) _flip_y_mat;
