@@ -137,13 +137,15 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       bool any_changed = false;
       
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-        if (geom_attribs._color != (const RenderAttrib *)NULL) {
-          const ColorAttrib *ca = DCAST(ColorAttrib, geom_attribs._color);
-          if (ca->get_color_type() == ColorAttrib::T_flat) {
-            if (transformer.set_color(new_geom, ca->get_color())) {
-              entry._state = entry._state->add_attrib(ColorAttrib::make_vertex());
-              any_changed = true;
-            }
+        const RenderAttrib *ra = geom_attribs._color;
+        if (ra == (const RenderAttrib *)NULL) {
+          ra = ColorAttrib::make_off();
+        }
+        const ColorAttrib *ca = DCAST(ColorAttrib, ra);
+        entry._state = entry._state->add_attrib(ca);
+        if (ca->get_color_type() != ColorAttrib::T_vertex) {
+          if (transformer.remove_column(new_geom, InternalName::get_color())) {
+            any_changed = true;
           }
         }
       }

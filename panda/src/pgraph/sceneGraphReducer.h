@@ -138,7 +138,7 @@ PUBLISHED:
 
   int remove_column(PandaNode *root, const InternalName *column);
 
-  int apply_colors(PandaNode *root);
+  int make_compatible_state(PandaNode *root);
   
   INLINE int make_compatible_format(PandaNode *root, int collect_bits = ~0);
   void decompose(PandaNode *root);
@@ -177,7 +177,7 @@ protected:
   int r_remove_column(PandaNode *node, const InternalName *column,
                       GeomTransformer &transformer);
 
-  int r_apply_colors(PandaNode *node, GeomTransformer &transformer);
+  int r_make_compatible_state(PandaNode *node, GeomTransformer &transformer);
 
   int r_collect_vertex_data(PandaNode *node, int collect_bits,
                             GeomTransformer &transformer, bool format_only);
@@ -195,7 +195,7 @@ private:
   static PStatCollector _flatten_collector;
   static PStatCollector _apply_collector;
   static PStatCollector _remove_column_collector;
-  static PStatCollector _apply_colors_collector;
+  static PStatCollector _compatible_state_collector;
   static PStatCollector _collect_collector;
   static PStatCollector _make_nonindexed_collector;
   static PStatCollector _unify_collector;

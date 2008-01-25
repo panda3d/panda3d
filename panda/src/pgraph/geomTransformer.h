@@ -75,7 +75,7 @@ public:
   bool remove_column(Geom *geom, const InternalName *column);
   bool remove_column(GeomNode *node, const InternalName *column);
 
-  bool apply_colors(GeomNode *node);
+  bool make_compatible_state(GeomNode *node);
 
   bool reverse_normals(Geom *geom);
   bool doubleside(GeomNode *node);

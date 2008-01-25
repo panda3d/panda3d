@@ -5862,6 +5862,7 @@ flatten_medium() {
   int num_removed = gr.flatten(node(), 0);
 
   if (flatten_geoms) {
+    gr.make_compatible_state(node());
     gr.collect_vertex_data(node());
     gr.unify(node(), true);
   }
@@ -5894,6 +5895,7 @@ flatten_strong() {
   int num_removed = gr.flatten(node(), ~0);
 
   if (flatten_geoms) {
+    gr.make_compatible_state(node());
     gr.collect_vertex_data(node(), ~(SceneGraphReducer::CVD_format | SceneGraphReducer::CVD_name | SceneGraphReducer::CVD_animation_type));
     gr.unify(node(), false);
   }

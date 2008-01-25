@@ -26,6 +26,8 @@
 #include "datagramIterator.h"
 
 TypeHandle ColorAttrib::_type_handle;
+CPT(RenderAttrib) ColorAttrib::_off;
+CPT(RenderAttrib) ColorAttrib::_vertex;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorAttrib::make_vertex
@@ -36,8 +38,12 @@ TypeHandle ColorAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
+  if (_vertex != 0) {
+    return _vertex;
+  }
   ColorAttrib *attrib = new ColorAttrib(T_vertex);
-  return return_new(attrib);
+  _vertex = return_new(attrib);
+  return _vertex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +67,12 @@ make_flat(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
+  if (_off != 0) {
+    return _off;
+  }
   ColorAttrib *attrib = new ColorAttrib(T_off);
-  return return_new(attrib);
+  _off = return_new(attrib);
+  return _off;
 }
 
 ////////////////////////////////////////////////////////////////////

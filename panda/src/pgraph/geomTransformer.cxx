@@ -478,41 +478,115 @@ remove_column(GeomNode *node, const InternalName *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomTransformer::apply_colors
+//     Function: GeomTransformer::make_compatible_state
 //       Access: Public
-//  Description: Checks if the GeomNode has differing ColorAttribs.
-//               If so, all the colors for all the Geoms are pushed
-//               down into the vertices, and the differing
-//               ColorAttribs are removed.
+//  Description: Checks if the different geoms in the GeomNode have
+//               different RenderStates.  If so, tries to make the 
+//               RenderStates the same.  It does this by
+//               canonicalizing the ColorAttribs, and in the future,
+//               possibly other attribs.
+//
+//               This implementation is not very smart yet.  It 
+//               unnecessarily canonicalizes ColorAttribs even if 
+//               this will not yield compatible RenderStates.  A
+//               better algorithm would:
+//
+//               - each geom already starts with an original
+//                 RenderState.  In addition to this, calculate for
+//                 each geom a canonical RenderState.
+//
+//               - maintain a table mapping canonical RenderState
+//                 to a list of geoms.
+//
+//               - for each group of geoms with the same 
+//                 canonical renderstate, see if they already have
+//                 matching RenderStates.
+//
+//               - If they have differing RenderStates, then
+//                 actually canonicalize the geoms.
+//               
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-apply_colors(GeomNode *node) {
+make_compatible_state(GeomNode *node) {
   if (node->get_num_geoms() < 2) {
     return false;
   }
   
-  bool need_apply = false;
-
+  bool has_incompatible = false;
+  
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+
+  // For each geom, calculate a canonicalized RenderState, and 
+  // classify all the geoms according to that.
   
-  const RenderAttrib *first = geoms[0]._state->get_attrib(ColorAttrib::get_class_type());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
-    GeomNode::GeomEntry &entry = (*gi);
-    if (entry._state->get_attrib(ColorAttrib::get_class_type()) != first) {
-      need_apply = true;
-      break;
+  typedef pmap <CPT(RenderState), pvector<int>> StateTable;
+  StateTable state_table;
+  
+  for (int i=0; i<geoms.size(); i++) {
+    GeomNode::GeomEntry &entry = geoms[i];
+    CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex());
+    state_table[canon].push_back(i);
+  }
+
+  // For each group of geoms, check for mismatch.
+  
+  bool any_changed = false;
+  StateTable::iterator si;
+  for (si = state_table.begin(); si != state_table.end(); si++) {
+    
+    // If the geoms in the group already have the same RenderStates,
+    // then nothing needs to be done to this group.
+    
+    pvector<int> &indices = (*si).second;
+    bool mismatch = false;
+    for (int i=1; i<indices.size(); i++) {
+      if (geoms[indices[i]]._state != geoms[indices[0]]._state) {
+        mismatch = true;
+        break;
+      }
+    }
+    if (!mismatch) {
+      continue;
+    }
+    
+    // The geoms do not have the same RenderState, but they could,
+    // since their canonicalized states are the same.  Canonicalize them.
+    
+    const RenderState *canon_state = (*si).first;
+    for (int i=0; i<indices.size(); i++) {
+      GeomNode::GeomEntry &entry = geoms[indices[i]];
+      const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_type());
+      if (ra == (RenderAttrib *)NULL) {
+        ra = ColorAttrib::make_off();
+      }
+      const ColorAttrib *ca = DCAST(ColorAttrib, ra);
+      if (ca->get_color_type() == ColorAttrib::T_vertex) {
+        // All we need to do is ensure that the geom has a color column.
+        if (!entry._geom.get_read_pointer()->get_vertex_data()->has_column(InternalName::get_color())) {
+          PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
+          if (set_color(new_geom, Colorf(1,1,1,1))) {
+            entry._geom = new_geom;
+            any_changed = true;
+          }
+        }
+      } else {
+        Colorf c(1,1,1,1);
+        if (ca->get_color_type() == ColorAttrib::T_flat) {
+          c = ca->get_color();
+        }
+        PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
+        if (set_color(new_geom, c)) {
+          entry._geom = new_geom;
+          any_changed = true;
+        }
+      }
+      entry._state = canon_state;
     }
   }
   
-  if (!need_apply) {
-    return false;
-  }
-
-  // NOT IMPLEMENTED YET.  DOESNT DO ANYTHING.
-  
-  return true;
+  return any_changed;
 }
 
 ////////////////////////////////////////////////////////////////////

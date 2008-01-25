@@ -63,6 +63,8 @@ private:
 private:
   Type _type;
   Colorf _color;
+  static CPT(RenderAttrib) _off;
+  static CPT(RenderAttrib) _vertex;
 
 public:
   static void register_with_read_factory();

@@ -31,7 +31,7 @@
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
 PStatCollector SceneGraphReducer::_remove_column_collector("*:Flatten:remove column");
-PStatCollector SceneGraphReducer::_apply_colors_collector("*:Flatten:apply colors");
+PStatCollector SceneGraphReducer::_compatible_state_collector("*:Flatten:compatible colors");
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
@@ -149,7 +149,7 @@ remove_column(PandaNode *root, const InternalName *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::apply_colors
+//     Function: SceneGraphReducer::make_compatible_state
 //       Access: Published
 //  Description: Searches for GeomNodes that contain multiple Geoms
 //               that differ only in their ColorAttribs.  If such a
@@ -158,9 +158,9 @@ remove_column(PandaNode *root, const InternalName *column) {
 //               the geoms to be unified later.
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
-apply_colors(PandaNode *root) {
-  PStatTimer timer(_apply_colors_collector);
-  return r_apply_colors(root, _transformer);
+make_compatible_state(PandaNode *root) {
+  PStatTimer timer(_compatible_state_collector);
+  return r_make_compatible_state(root, _transformer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -758,16 +758,16 @@ r_remove_column(PandaNode *node, const InternalName *column,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::r_apply_colors
+//     Function: SceneGraphReducer::r_make_compatible_state
 //       Access: Private
-//  Description: The recursive implementation of apply_colors().
+//  Description: The recursive implementation of make_compatible_state().
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
-r_apply_colors(PandaNode *node, GeomTransformer &transformer) {
+r_make_compatible_state(PandaNode *node, GeomTransformer &transformer) {
   int num_changed = 0;
 
   if (node->is_geom_node()) {
-    if (transformer.apply_colors(DCAST(GeomNode, node))) {
+    if (transformer.make_compatible_state(DCAST(GeomNode, node))) {
       ++num_changed;
     }
   }
@@ -776,7 +776,7 @@ r_apply_colors(PandaNode *node, GeomTransformer &transformer) {
   int num_children = children.get_num_children();
   for (int i = 0; i < num_children; ++i) {
     num_changed +=
-      r_apply_colors(children.get_child(i), transformer);
+      r_make_compatible_state(children.get_child(i), transformer);
   }
 
   return num_changed;
