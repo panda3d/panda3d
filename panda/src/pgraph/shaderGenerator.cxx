@@ -15,50 +15,407 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+//
+// Lighting calculations. These can be done either in tangent space
+// or model space.  Doing them in tangent space is necessary for
+// normal mapping.  However, it is only possible if tangents have
+// been computed.  If not, then model space is the only option.
+// The parameters needed for lighting are:
+//
+// Model Space:
+//
+//   vshader:
+//       model-space normal - varying
+//       model-space vertex position - varying
+//   fshader:
+//       model-space normal - varying
+//       model-space vertex position - varying
+//       model-space light position (spot or point) - uniform
+//       model-space light vector (directional) - uniform
+//       model-space eye position - uniform
+//
+// Tangent Space:
+//
+//   vshader:
+//       model-space normal - varying
+//       model-space tangent - varying
+//       model-space binormal - varying
+//       model-space light position (spot or point) - uniform
+//       model-space light vector (directional) - uniform
+//       model-space eye position - uniform
+//   fshader:
+//       model-space vertex position - varying
+//       tangent-space light vector, one per light - varying
+//       tangent-space eye vector - varying
+//       model-space light position (spot) - uniform
+//
+/////////////////////////////////////////////////////////////////////
+
 
 #include "renderState.h"
 #include "shaderAttrib.h"
 #include "shaderGenerator.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotLight.h"
+
+TypeHandle ShaderGenerator::_type_handle;
+PT(ShaderGenerator) ShaderGenerator::_default_generator;
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::Constructor
+//       Access: Published
+//  Description: Create a ShaderGenerator.  This has no state,
+//               except possibly to cache certain results.
+////////////////////////////////////////////////////////////////////
+ShaderGenerator::
+ShaderGenerator() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::Destructor
+//       Access: Published, Virtual
+//  Description: Destroy a ShaderGenerator.
+////////////////////////////////////////////////////////////////////
+ShaderGenerator::
+~ShaderGenerator() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::reset_register_allocator
+//       Access: Protected
+//  Description: Clears the register allocator.  Initially, the pool
+//               of available registers is empty.  You have to add
+//               some if you want there to be any.
+////////////////////////////////////////////////////////////////////
+void ShaderGenerator::
+reset_register_allocator() {
+  _vtregs_used = 0;
+  _vcregs_used = 0;
+  _ftregs_used = 0;
+  _fcregs_used = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::alloc_vreg
+//       Access: Protected
+//  Description: Allocate a vreg.  
+////////////////////////////////////////////////////////////////////
+INLINE char *ShaderGenerator::
+alloc_vreg() {
+  switch (_vtregs_used) {
+  case 0: _vtregs_used += 1; return "TEXCOORD0";
+  case 1: _vtregs_used += 1; return "TEXCOORD1";
+  case 2: _vtregs_used += 1; return "TEXCOORD2";
+  case 3: _vtregs_used += 1; return "TEXCOORD3";
+  case 4: _vtregs_used += 1; return "TEXCOORD4";
+  case 5: _vtregs_used += 1; return "TEXCOORD5";
+  case 6: _vtregs_used += 1; return "TEXCOORD6";
+  case 7: _vtregs_used += 1; return "TEXCOORD7";
+  }
+  switch (_vcregs_used) {
+  case 0: _vcregs_used += 1; return "COLOR0";
+  case 1: _vcregs_used += 1; return "COLOR1";
+  }
+  return "UNKNOWN";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::alloc_freg
+//       Access: Protected
+//  Description: Allocate a freg.
+////////////////////////////////////////////////////////////////////
+INLINE char *ShaderGenerator::
+alloc_freg() {
+  switch (_ftregs_used) {
+  case 0: _ftregs_used += 1; return "TEXCOORD0";
+  case 1: _ftregs_used += 1; return "TEXCOORD1";
+  case 2: _ftregs_used += 1; return "TEXCOORD2";
+  case 3: _ftregs_used += 1; return "TEXCOORD3";
+  case 4: _ftregs_used += 1; return "TEXCOORD4";
+  case 5: _ftregs_used += 1; return "TEXCOORD5";
+  case 6: _ftregs_used += 1; return "TEXCOORD6";
+  case 7: _ftregs_used += 1; return "TEXCOORD7";
+  }
+  switch (_fcregs_used) {
+  case 0: _fcregs_used += 1; return "COLOR0";
+  case 1: _fcregs_used += 1; return "COLOR1";
+  }
+  return "UNKNOWN";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::get_default
+//       Access: Published, Static
+//  Description: Get a pointer to the default shader generator.
+////////////////////////////////////////////////////////////////////
+ShaderGenerator *ShaderGenerator::
+get_default() {
+  if (_default_generator == (ShaderGenerator *)NULL) {
+    _default_generator = new ShaderGenerator;
+  }
+  return _default_generator;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::set_default
+//       Access: Published, Static
+//  Description: Set the default shader generator.
+////////////////////////////////////////////////////////////////////
+void ShaderGenerator::
+set_default(ShaderGenerator *generator) {
+  _default_generator = generator;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::analyze_renderstate
+//       Access: Protected
+//  Description: Analyzes the RenderState prior to shader generation.
+//               The results of the analysis are stored in instance
+//               variables of the Shader Generator.
+////////////////////////////////////////////////////////////////////
+void ShaderGenerator::
+analyze_renderstate(const RenderState *rs) {
+  clear_analysis();
+
+  rs->store_into_slots(&_attribs);
+
+  // Count number of textures.
+  _num_textures = 0;
+  if (_attribs._texture) {
+    _num_textures = _attribs._texture->get_num_on_stages();
+  }
+
+  // Determine whether or not vertex colors or flat colors are present.
+  if (_attribs._color != 0) {
+    if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
+      _vertex_colors = true;
+    } else if (_attribs._color->get_color_type() == ColorAttrib::T_flat) {
+      _flat_colors = true;
+    }
+  }
+
+  // Break out the lights by type.
+
+  const LightAttrib *la = _attribs._light;
+  for (int i=0; i<la->get_num_on_lights(); i++) {
+    NodePath light = la->get_on_light(i);
+    nassertv(!light.is_empty());
+    PandaNode *light_obj = light.node();
+    nassertv(light_obj != (PandaNode *)NULL);
+    
+    if (light_obj->get_type() == AmbientLight::get_class_type()) {
+      _alights_np.push_back(light);
+      _alights.push_back((AmbientLight*)light_obj);
+    }
+    else if (light_obj->get_type() == DirectionalLight::get_class_type()) {
+      _dlights_np.push_back(light);
+      _dlights.push_back((DirectionalLight*)light_obj);
+    }
+    else if (light_obj->get_type() == PointLight::get_class_type()) {
+      _plights_np.push_back(light);
+      _plights.push_back((PointLight*)light_obj);
+    }
+    else if (light_obj->get_type() == Spotlight::get_class_type()) {
+      _slights_np.push_back(light);
+      _slights.push_back((Spotlight*)light_obj);
+    }
+  }
+
+  // Determine whether model-space or tangent-space lighting is recommended.
+
+  if (_attribs._light->get_num_on_lights() > 0) {
+    _ms_lighting = true;
+  }
+
+  // Find the material.
+
+  if (!_attribs._material->is_off()) {
+    _material = _attribs._material->get_material();
+  } else {
+    _material = Material::get_default();
+  }
+  
+  // Decide which material modes need to be calculated.
+  
+  if (_alights.size() > 0) {
+    if (_material->has_ambient()) {
+      Colorf a = _material->get_ambient();
+      if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
+        _have_ambient = true;
+      }
+    } else {
+      _have_ambient = true;
+    }
+  }
+
+  if (_dlights.size() + _plights.size() + _slights.size()) {
+    if (_material->has_diffuse()) {
+      Colorf d = _material->get_diffuse();
+      if ((d[0]!=0.0)||(d[1]!=0.0)||(d[2]!=0.0)) {
+        _have_diffuse = true;
+      }
+    } else {
+      _have_diffuse = true;
+    }
+  }
+  
+  if (_material->has_emission()) {
+    Colorf e = _material->get_emission();
+    if ((e[0]!=0.0)||(e[1]!=0.0)||(e[2]!=0.0)) {
+      _have_emission = true;
+    }
+  }
+  
+  if (_dlights.size() + _plights.size() + _slights.size()) {
+    if (_material->has_specular()) {
+      Colorf s = _material->get_specular();
+      if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
+        _have_specular = true;
+      }
+    }
+  }
+  
+  // Does the shader need material properties as input?
+  
+  _need_material_props = 
+    (_have_ambient  && (_material->has_ambient()))||
+    (_have_diffuse  && (_material->has_diffuse()))||
+    (_have_emission && (_material->has_emission()))||
+    (_have_specular && (_material->has_specular()));
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::clear_analysis
+//       Access: Protected
+//  Description: Called after analyze_renderstate to discard all
+//               the results of the analysis.  This is generally done
+//               after shader generation is complete.
+////////////////////////////////////////////////////////////////////
+void ShaderGenerator::
+clear_analysis() {
+  _vertex_colors = false;
+  _flat_colors = false;
+  _ms_lighting = false;
+  _ts_lighting = false;
+  _have_ambient = false;
+  _have_diffuse = false;
+  _have_emission = false;
+  _have_specular = false;
+  _attribs.clear_to_defaults();
+  _material = (Material*)NULL;
+  _alights.clear();
+  _dlights.clear();
+  _plights.clear();
+  _slights.clear();
+  _alights_np.clear();
+  _dlights_np.clear();
+  _plights_np.clear();
+  _slights_np.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::create_shader_attrib
+//       Access: Protected
+//  Description: Creates a ShaderAttrib given a generated shader's
+//               body.  Also inserts the lights into the shader
+//               attrib.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderGenerator::
+create_shader_attrib(const string &txt) {
+  PT(Shader) shader = Shader::make(txt);
+  CPT(RenderAttrib) shattr = ShaderAttrib::make();
+  shattr=DCAST(ShaderAttrib, shattr)->set_shader(shader);
+  if (_ms_lighting) {
+    for (int i=0; i<(int)_alights.size(); i++) {
+      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("alight", i), _alights_np[i]);
+    }
+    for (int i=0; i<(int)_dlights.size(); i++) {
+      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlight", i), _dlights_np[i]);
+    }
+    for (int i=0; i<(int)_plights.size(); i++) {
+      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("plight", i), _plights_np[i]);
+    }
+    for (int i=0; i<(int)_slights.size(); i++) {
+      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slight", i), _slights_np[i]);
+    }
+  }
+  return shattr;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGenerator::synthesize_shader
-//       Access: Public, Static
+//       Access: Published, Virtual
 //  Description: This is the routine that implements the next-gen
 //               fixed function pipeline by synthesizing a shader.
 //
 //               Currently supports:
-//               - textures
-//               - materials
+//               - 2D textures
 //               - lights
+//               - vertex colors
+//               - flat colors
+//               - materials
 //
 //               Not yet supported:
-//               - vertex colors
+//               - 3D textures, cube textures
+//               - color scale attrib
 //               - texgen
 //               - texmatrix
-//               - separate normal and gloss
+//               - normal and gloss
 //               - lots of other things
 //
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs) {
-  AttribSlots attribs;
-  rs->store_into_slots(&attribs);
-  
-  int num_textures = 0;
-  if (attribs._texture) {
-    num_textures = attribs._texture->get_num_on_stages();
+  analyze_renderstate(rs);
+  reset_register_allocator();
+
+  // These variables will hold the results of register allocation.
+
+  char *pos_freg = 0;
+  char *normal_vreg = 0;
+  char *tangent_vreg = 0;
+  char *binormal_vreg = 0;
+  char *normal_freg = 0;
+  char *eyevec_freg = 0;
+  pvector<char *> texcoord_vreg;
+  pvector<char *> texcoord_freg;
+  pvector<char *> tslightvec_freg;
+
+  if (_vertex_colors) {
+    _vcregs_used = 1;
+    _fcregs_used = 1;
   }
   
-  ostringstream text;
-  CPT(RenderAttrib) rattrib = ShaderAttrib::make();
+  // Generate the shader's text.
 
+  ostringstream text;
+  
   text << "//Cg\n";
 
   text << "void vshader(\n";
-  for (int i=0; i<num_textures; i++) {
-    text << "\t float2 vtx_texcoord" << i << " : TEXCOORD" << i << ",\n";
-    text << "\t out float2 l_texcoord" << i << " : TEXCOORD" << i << ",\n";
+  for (int i=0; i<_num_textures; i++) {
+    texcoord_vreg.push_back(alloc_vreg());
+    texcoord_freg.push_back(alloc_freg());
+    text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
+    text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
   }
+  if (_vertex_colors) {
+    text << "\t in float4 vtx_color : COLOR,\n";
+    text << "\t out float4 l_color : COLOR,\n";
+  }
+  if (_ms_lighting) {
+    pos_freg = alloc_freg();
+    normal_vreg = alloc_vreg();
+    normal_freg = alloc_freg();
+    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
+    text << "\t out float4 l_normal : " << normal_freg << ",\n";
+    text << "\t out float4 l_pos : " << pos_freg << ",\n";
+  }
+
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
@@ -66,31 +423,195 @@ synthesize_shader(const RenderState *rs) {
   
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
 
-  for (int i=0; i<num_textures; i++) {
+  for (int i=0; i<_num_textures; i++) {
     text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
   }
-  
+  if (_vertex_colors) {
+    text << "\t l_color = vtx_color;\n";
+  }
+  if (_ms_lighting) {
+    text << "\t l_normal = vtx_normal;\n";
+    text << "\t l_pos = vtx_position;\n";
+  }
   text << "}\n\n";
 
   text << "void fshader(\n";
   
-  for (int i=0; i<num_textures; i++) {
-    text << "\t in float2 l_texcoord" << i << " : TEXCOORD" << i << ",\n";
+  for (int i=0; i<_num_textures; i++) {
+    text << "\t in float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
     text << "\t uniform sampler2D tex_" << i << ",\n";
+  }
+  if (_vertex_colors) {
+    text << "\t in float4 l_color : COLOR,\n";
+  } else {
+    text << "\t uniform float4 attr_color,\n";
+  }
+  if (_ms_lighting) {
+    text << "\t in float3 l_normal : " << normal_freg << ",\n";
+    text << "\t in float4 l_pos : " << pos_freg << ",\n";
+    for (int i=0; i<(int)_alights.size(); i++) {
+      text << "\t uniform float4 alight_alight" << i << ",\n";
+    }
+    for (int i=0; i<(int)_dlights.size(); i++) {
+      text << "\t uniform float4x4 dlight_dlight" << i << "_rel_model,\n";
+    }
+    for (int i=0; i<(int)_plights.size(); i++) {
+      text << "\t uniform float4x4 plight_plight" << i << "_rel_model,\n";
+    }
+    for (int i=0; i<(int)_slights.size(); i++) {
+      text << "\t uniform float4x4 slight_slight" << i << "_rel_model,\n";
+      text << "\t uniform float4   satten_slight" << i << ",\n";
+    }
+    if (_need_material_props) {
+      text << "\t uniform float4x4 attr_material,\n";
+    }
+    if (_have_specular) {
+      if (_material->get_local()) {
+        text << "\t uniform float4 mspos_view,\n";
+      } else {
+        text << "\t uniform float4 row1_view_to_model,\n";
+      }
+    }
   }
   text << "\t out float4 o_color : COLOR\n";
   text << ") {\n";
   
-  text << "\t o_color = float4(1,1,1,1);\n";
-  for (int i=0; i<num_textures; i++) {
-    text << "\t o_color *= tex2D(tex_" << i << ", l_texcoord" << i << ");\n";
-  }
-  
-  text << "}\n";
+  if (_ms_lighting) {
+    if (_have_ambient) {
+      text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
+    }
+    if (_have_diffuse) {
+      text << "\t float4 tot_diffuse = float4(0,0,0,0);\n";
+    }
+    if (_have_specular) {
+      text << "\t float4 tot_specular = float4(0,0,0,0);\n";
+    }
+    text << "\t l_normal = normalize(l_normal);\n";
+    text << "\t float ldist,lattenv,langle;\n";
+    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
+    for (int i=0; i<(int)_alights.size(); i++) {
+      text << "\t // Ambient Light " << i << "\n";
+      text << "\t lcolor = alight_alight" << i << ";\n";
+      text << "\t tot_ambient += lcolor;\n";
+    }
+    for (int i=0; i<(int)_dlights.size(); i++) {
+      text << "\t // Directional Light " << i << "\n";
+      text << "\t lcolor = dlight_dlight" << i << "_rel_model[0];\n";
+      text << "\t lspec  = dlight_dlight" << i << "_rel_model[1];\n";
+      text << "\t lvec   = dlight_dlight" << i << "_rel_model[2];\n";
+      text << "\t lcolor *= saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_specular) {
+        if (_material->get_local()) {
+          text << "\t lhalf  = normalize(normalize(mspos_view - l_pos) + lvec);\n";
+        } else {
+          text << "\t lhalf = dlight_dlight" << i << "_rel_model[3];\n";
+        }
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t tot_specular += lspec;\n";
+      }
+    }
+    for (int i=0; i<(int)_plights.size(); i++) {
+      text << "\t // Point Light " << i << "\n";
+      text << "\t lcolor = plight_plight" << i << "_rel_model[0];\n";
+      text << "\t lspec  = plight_plight" << i << "_rel_model[1];\n";
+      text << "\t lpoint = plight_plight" << i << "_rel_model[2];\n";
+      text << "\t latten = plight_plight" << i << "_rel_model[3];\n";
+      text << "\t lvec   = lpoint - l_pos;\n";
+      text << "\t ldist = length(lvec);\n";
+      text << "\t lvec /= ldist;\n";
+      text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_specular) {
+        if (_material->get_local()) {
+          text << "\t lhalf  = normalize(normalize(mspos_view - l_pos) + lvec);\n";
+        } else {
+          text << "\t lhalf = normalize(lvec - row1_view_to_model);\n";
+        }
+        text << "\t lspec *= lattenv;\n";
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t tot_specular += lspec;\n";
+      }
+    }
+    for (int i=0; i<(int)_slights.size(); i++) {
+      text << "\t // Spot Light " << i << "\n";
+      text << "\t lcolor = slight_slight" << i << "_rel_model[0];\n";
+      text << "\t lspec  = slight_slight" << i << "_rel_model[1];\n";
+      text << "\t lpoint = slight_slight" << i << "_rel_model[2];\n";
+      text << "\t ldir   = slight_slight" << i << "_rel_model[3];\n";
+      text << "\t latten = satten_slight" << i << ";\n";
+      text << "\t lvec   = lpoint - l_pos;\n";
+      text << "\t ldist  = length(lvec);\n";
+      text << "\t lvec /= ldist;\n";
+      text << "\t langle = saturate(dot(ldir.xyz, lvec.xyz));\n";
+      text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
+      text << "\t lattenv *= pow(langle, latten.w);\n";
+      text << "\t if (langle < ldir.w) lattenv = 0;\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_specular) {
+        if (_material->get_local()) {
+          text << "\t lhalf  = normalize(normalize(mspos_view - l_pos) + lvec);\n";
+        } else {
+          text << "\t lhalf = normalize(lvec - row1_view_to_model);\n";
+        }
+        text << "\t lspec *= lattenv;\n";
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t tot_specular += lspec;\n";
+      }
+    }
 
+    if (_have_emission) {
+      text << "\t o_color = attr_material[2];\n";
+    } else {
+      text << "\t o_color = float4(0,0,0,1);\n";
+    }
+    if (_have_ambient) {
+      if (_material->has_ambient()) {
+        text << "\t o_color += tot_ambient * attr_material[0];\n";
+      } else if (_vertex_colors) {
+        text << "\t o_color += tot_ambient * l_color;\n";
+      } else if (_flat_colors) {
+        text << "\t o_color += tot_ambient * attr_color;\n";
+      } else {
+        text << "\t o_color += tot_ambient;\n";
+      }
+    }
+    if (_have_diffuse) {
+      if (_material->has_diffuse()) {
+        text << "\t o_color += tot_diffuse * attr_material[1];\n";
+      } else if (_vertex_colors) {
+        text << "\t o_color += tot_diffuse * l_color;\n";
+      } else if (_flat_colors) {
+        text << "\t o_color += tot_diffuse * attr_color;\n";
+      } else {
+        text << "\t o_color += tot_diffuse;\n";
+      }
+    }
+  } else {
+    if (_vertex_colors) {
+      text << "\t o_color = l_color;\n";
+    } else if (_flat_colors) {
+      text << "\t o_color = attr_color;\n";
+    } else {
+      text << "\t o_color = float4(1,1,1,1);\n";
+    }
+  }
+  for (int i=0; i<_num_textures; i++) {
+    text << "\t o_color *= tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
+  }
+  if (_ms_lighting) {
+    if (_have_specular) {
+      text << "\t o_color += tot_specular;\n";
+    }
+  }
+  text << "}\n";
+  
   // Insert the shader into the shader attrib.
-  PT(Shader) shader = Shader::make(text.str());
-  rattrib = DCAST(ShaderAttrib, rattrib)->set_shader(shader);
-  return rattrib;
+  CPT(RenderAttrib) shattr = create_shader_attrib(text.str());
+  clear_analysis();
+  reset_register_allocator();
+  return shattr;
 }
 

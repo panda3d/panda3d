@@ -39,6 +39,7 @@
 #include "mutexHolder.h"
 #include "thread.h"
 #include "attribSlots.h"
+#include "shaderGenerator.h"
   
 ReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
@@ -1142,8 +1143,9 @@ get_generated_shader() const {
   if (_generated_shader != (RenderAttrib*)NULL) {
     return DCAST(ShaderAttrib, _generated_shader);
   }
+  ShaderGenerator *gen = ShaderGenerator::get_default();
   ((RenderState*)this)->_generated_shader =
-    ShaderGenerator::synthesize_shader(this);
+    gen->synthesize_shader(this);
   return DCAST(ShaderAttrib, _generated_shader);
 }
 

@@ -651,3 +651,4 @@ CompositionCycleDescEntry(const RenderState *obj,
   _inverted(inverted)
 {
 }
+

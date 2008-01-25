@@ -20,6 +20,14 @@
 #define SHADERGENERATOR_H
 
 #include "pandabase.h"
+#include "typedWritableReferenceCount.h"
+#include "nodePath.h"
+class AmbientLight;
+class DirectionalLight;
+class PointLight;
+class Spotlight;
+class LightAttrib;
+class ShaderAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderGenerator
@@ -30,6 +38,11 @@
 //               normal mapping, gloss mapping, cartoon lighting,
 //               and so forth.  It works by automatically generating
 //               a shader from a given RenderState.
+//
+//               Currently, there is a single default ShaderGenerator
+//               object.  It is our intent that in time, people will
+//               write classes that derive from ShaderGenerator but
+//               which yield slightly different results.
 //
 //               The ShaderGenerator owes its existence to the 
 //               'Bamboo Team' at Carnegie Mellon's Entertainment
@@ -49,13 +62,77 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA_PGRAPH ShaderGenerator {
+class EXPCL_PANDA_PGRAPH ShaderGenerator : public TypedWritableReferenceCount {
 private:
-  INLINE ShaderGenerator();
-  INLINE ~ShaderGenerator();
+  static PT(ShaderGenerator) _default_generator;
+
+PUBLISHED:
+  ShaderGenerator();
+  virtual ~ShaderGenerator();
+  static ShaderGenerator *get_default();
+  static void set_default(ShaderGenerator *generator);
+  virtual CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
+  
+protected:
+  CPT(RenderAttrib) create_shader_attrib(const string &txt);
+
+  // Shader register allocation:
+
+  int _vcregs_used;
+  int _fcregs_used;
+  int _vtregs_used;
+  int _ftregs_used;
+  void reset_register_allocator();
+  INLINE char *alloc_vreg();
+  INLINE char *alloc_freg();
+
+  // RenderState analysis information.  Created by analyze_renderstate:
+
+  AttribSlots _attribs;
+  Material *_material;
+  int _num_textures;
+  
+  pvector <AmbientLight *>     _alights;
+  pvector <DirectionalLight *> _dlights;
+  pvector <PointLight *>       _plights;
+  pvector <Spotlight *>        _slights;
+  pvector <NodePath>           _alights_np;
+  pvector <NodePath>           _dlights_np;
+  pvector <NodePath>           _plights_np;
+  pvector <NodePath>           _slights_np;
+  
+  bool _vertex_colors;
+  bool _flat_colors;
+  
+  bool _ms_lighting;
+  bool _ts_lighting;
+
+  bool _have_ambient;
+  bool _have_diffuse;
+  bool _have_emission;
+  bool _have_specular;
+
+  bool _need_material_props;
+  
+  void analyze_renderstate(const RenderState *rs);
+  void clear_analysis();
   
 public:
-  static CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "ShaderGenerator",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+ private:
+  static TypeHandle _type_handle;
 };
 
 #include "shaderGenerator.I"

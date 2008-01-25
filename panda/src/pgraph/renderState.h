@@ -36,7 +36,6 @@
 #include "deletedChain.h"
 #include "simpleHashMap.h"
 #include "cacheStats.h"
-#include "shaderGenerator.h"
 
 class GraphicsStateGuardianBase;
 class FogAttrib;
