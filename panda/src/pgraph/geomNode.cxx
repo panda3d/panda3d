@@ -141,6 +141,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           const ColorAttrib *ca = DCAST(ColorAttrib, geom_attribs._color);
           if (ca->get_color_type() == ColorAttrib::T_flat) {
             if (transformer.set_color(new_geom, ca->get_color())) {
+              entry._state = entry._state->add_attrib(ColorAttrib::make_vertex());
               any_changed = true;
             }
           }

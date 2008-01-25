@@ -478,6 +478,44 @@ remove_column(GeomNode *node, const InternalName *column) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::apply_colors
+//       Access: Public
+//  Description: Checks if the GeomNode has differing ColorAttribs.
+//               If so, all the colors for all the Geoms are pushed
+//               down into the vertices, and the differing
+//               ColorAttribs are removed.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+apply_colors(GeomNode *node) {
+  if (node->get_num_geoms() < 2) {
+    return false;
+  }
+  
+  bool need_apply = false;
+
+  GeomNode::CDWriter cdata(node->_cycler);
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  
+  const RenderAttrib *first = geoms[0]._state->get_attrib(ColorAttrib::get_class_type());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    GeomNode::GeomEntry &entry = (*gi);
+    if (entry._state->get_attrib(ColorAttrib::get_class_type()) != first) {
+      need_apply = true;
+      break;
+    }
+  }
+  
+  if (!need_apply) {
+    return false;
+  }
+
+  // NOT IMPLEMENTED YET.  DOESNT DO ANYTHING.
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::reverse_normals
 //       Access: Public
 //  Description: Reverses the lighting normals on the vertex data, if

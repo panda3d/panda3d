@@ -31,6 +31,7 @@
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
 PStatCollector SceneGraphReducer::_remove_column_collector("*:Flatten:remove column");
+PStatCollector SceneGraphReducer::_apply_colors_collector("*:Flatten:apply colors");
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
@@ -145,6 +146,21 @@ int SceneGraphReducer::
 remove_column(PandaNode *root, const InternalName *column) {
   PStatTimer timer(_remove_column_collector);
   return r_remove_column(root, column, _transformer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::apply_colors
+//       Access: Published
+//  Description: Searches for GeomNodes that contain multiple Geoms
+//               that differ only in their ColorAttribs.  If such a
+//               GeomNode is found, then all the colors are pushed
+//               down into the vertices.  This makes it feasible for
+//               the geoms to be unified later.
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+apply_colors(PandaNode *root) {
+  PStatTimer timer(_apply_colors_collector);
+  return r_apply_colors(root, _transformer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -736,6 +752,31 @@ r_remove_column(PandaNode *node, const InternalName *column,
   for (int i = 0; i < num_children; ++i) {
     num_changed +=
       r_remove_column(children.get_child(i), column, transformer);
+  }
+
+  return num_changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_apply_colors
+//       Access: Private
+//  Description: The recursive implementation of apply_colors().
+////////////////////////////////////////////////////////////////////
+int SceneGraphReducer::
+r_apply_colors(PandaNode *node, GeomTransformer &transformer) {
+  int num_changed = 0;
+
+  if (node->is_geom_node()) {
+    if (transformer.apply_colors(DCAST(GeomNode, node))) {
+      ++num_changed;
+    }
+  }
+  
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    num_changed +=
+      r_apply_colors(children.get_child(i), transformer);
   }
 
   return num_changed;

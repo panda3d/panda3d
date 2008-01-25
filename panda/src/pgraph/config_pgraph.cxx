@@ -98,6 +98,7 @@
 #include "transformState.h"
 #include "transparencyAttrib.h"
 #include "nodePathLerps.h"
+#include "shaderGenerator.h"
 
 #include "dconfig.h"
 
@@ -434,7 +435,7 @@ init_libpgraph() {
   ShadeModelAttrib::init_type();
   ShaderInput::init_type();
   ShaderAttrib::init_type();
-  Shader::init_type();
+  ShaderGenerator::init_type();
   ShowBoundsEffect::init_type();
   Spotlight::init_type();
   StateMunger::init_type();
