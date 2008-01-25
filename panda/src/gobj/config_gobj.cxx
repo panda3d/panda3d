@@ -213,6 +213,12 @@ ConfigVariableBool preserve_triangle_strips
           "effective at combining multiple Geoms together, but they will "
           "not implicitly decompose triangle strips."));
 
+ConfigVariableBool dump_generated_shaders
+("dump-generated-shaders", false,
+ PRC_DESC("Set this true to cause all generated shaders to be written "
+          "to disk.  This is useful for debugging broken shader "
+          "generators."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "
