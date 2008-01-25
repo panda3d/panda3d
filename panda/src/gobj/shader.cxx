@@ -20,6 +20,8 @@
 #include "shader.h"
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
+#include <iostream>
+#include <fstream>
 
 #ifdef HAVE_CG
 #include "Cg/cg.h"
@@ -31,6 +33,7 @@ TypeHandle Shader::_type_handle;
 Shader::LoadTable Shader::_load_table;
 Shader::MakeTable Shader::_make_table;
 Shader::ShaderCaps Shader::_default_caps;
+int Shader::_shaders_generated;
 ShaderUtilization Shader::_shader_utilization = SUT_UNSPECIFIED;
 
 ////////////////////////////////////////////////////////////////////
@@ -188,29 +191,136 @@ cp_errchk_parameter_sampler(ShaderArgInfo &p)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::cp_parse_trans_clause
+//     Function: Shader::cp_parse_eol
 //       Access: Public
-//  Description: Parses a single clause of a "trans" parameter.
+//  Description: Make sure the next thing on the word list is EOL
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-cp_parse_trans_clause(ShaderArgInfo &p, ShaderMatSpec &spec, 
-                      int part, const vector_string &pieces,
-                      int &next, ShaderMatInput ofop, ShaderMatInput op) {
-  if (pieces[next+1]=="of") {
-    if (pieces[next+2]=="") {
-      cp_report_error(p, "'of' should be followed by a name");
-      return false;
-    }
-    spec._part[part] = ofop;
-    spec._arg[part] = InternalName::make(pieces[next+2]);
-    next += 3;
-    return true;
-  } else {
-    spec._part[part] = op;
-    spec._arg[part] = NULL;
-    next += 1;
-    return true;
+cp_parse_eol(ShaderArgInfo &p, vector_string &words, int &next) {
+  if (words[next] != "") {
+    cp_report_error(p, "Too many words in parameter");
+    return false;
   }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cp_parse_delimiter
+//       Access: Public
+//  Description: Pop a delimiter ('to' or 'rel') from the word list.
+////////////////////////////////////////////////////////////////////
+bool Shader::
+cp_parse_delimiter(ShaderArgInfo &p, vector_string &words, int &next) {
+  if ((words[next] != "to")&&(words[next] != "rel")) {
+    cp_report_error(p, "Keyword 'to' or 'rel' expected");
+    return false;
+  }
+  next += 1;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cp_parse_non_delimiter
+//       Access: Public
+//  Description: Pop a non-delimiter word from the word list.
+//               Delimiters are 'to' and 'rel.'
+////////////////////////////////////////////////////////////////////
+string Shader::
+cp_parse_non_delimiter(vector_string &words, int &next) {
+  const string &nword = words[next];
+  if ((nword == "")||(nword == "to")||(nword == "rel")) {
+    return "";
+  }
+  next += 1;
+  return nword;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cp_parse_coord_sys
+//       Access: Public
+//  Description: Convert a single-word coordinate system name into
+//               a PART/ARG of a ShaderMatSpec.
+////////////////////////////////////////////////////////////////////
+bool Shader::
+cp_parse_coord_sys(ShaderArgInfo &p,
+                   vector_string &pieces, int &next,
+                   ShaderMatSpec &bind, bool fromflag) {
+
+  string word1 = cp_parse_non_delimiter(pieces, next);
+  string word2 = cp_parse_non_delimiter(pieces, next);
+
+  ShaderMatInput from_single;
+  ShaderMatInput from_double;
+  ShaderMatInput to_single;
+  ShaderMatInput to_double;
+
+  if (word1 == "") {
+    cp_report_error(p, "Could not parse coordinate system name");
+    return false;
+  } else if (word1 == "world") {
+    from_single = SMO_world_to_view;
+    from_double = SMO_INVALID;
+    to_single   = SMO_view_to_world;
+    to_double   = SMO_INVALID;
+  } else if (word1 == "model") {
+    from_single = SMO_model_to_view;
+    from_double = SMO_view_x_to_view;
+    to_single   = SMO_view_to_model;
+    to_double   = SMO_view_to_view_x;
+  } else if (word1 == "clip") {
+    from_single = SMO_clip_to_view;
+    from_double = SMO_clip_x_to_view;
+    to_single   = SMO_view_to_clip;
+    to_double   = SMO_view_to_clip_x;
+  } else if (word1 == "view") {
+    from_single = SMO_identity;
+    from_double = SMO_view_x_to_view;
+    to_single   = SMO_identity;
+    to_double   = SMO_view_to_view_x;
+  } else if (word1 == "apiview") {
+    from_single = SMO_apiview_to_view;
+    from_double = SMO_apiview_x_to_view;
+    to_single   = SMO_view_to_apiview;
+    to_double   = SMO_view_to_apiview_x;
+  } else if (word1 == "apiclip") {
+    from_single = SMO_apiclip_to_view;
+    from_double = SMO_apiclip_x_to_view;
+    to_single   = SMO_view_to_apiclip;
+    to_double   = SMO_view_to_apiclip_x;
+  } else {
+    from_single = SMO_view_x_to_view;
+    from_double = SMO_view_x_to_view;
+    to_single   = SMO_view_to_view_x;
+    to_double   = SMO_view_to_view_x;
+    word2 = word1;
+  }
+  
+  if (fromflag) {
+    if (word2 == "") {
+      bind._part[0] = from_single;
+      bind._arg[0] = NULL;
+    } else {
+      if (from_double == SMO_INVALID) {
+        cp_report_error(p, "Could not parse coordinate system name");
+        return false;
+      }
+      bind._part[0] = from_double;
+      bind._arg[0] = InternalName::make(word2);
+    }
+  } else {
+    if (word2 == "") {
+      bind._part[1] = to_single;
+      bind._arg[1] = NULL;
+    } else {
+      if (to_double == SMO_INVALID) {
+        cp_report_error(p, "Could not parse coordinate system name");
+        return false;
+      }
+      bind._part[1] = to_double;
+      bind._arg[1] = InternalName::make(word2);
+    }
+  }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -468,76 +578,16 @@ compile_parameter(const ShaderArgId  &arg_id,
       if (!cp_errchk_parameter_float(p, 4, 4)) return false;
     }
     
-    // Parse the first half of the clause.
-    bool ok = true;
-    if ((pieces[next]=="")||(pieces[next]=="of")||(pieces[next]=="to")){
-      cp_report_error(p, "argument missing");
-      return false;
-    } else if (pieces[next] == "world") {
-      bind._part[0] = SMO_world_to_view;
-      bind._arg[0] = NULL;
-      next += 1;
-    } else if (pieces[next] == "model") {
-      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_view_x_to_view, SMO_model_to_view);
-    } else if (pieces[next] == "clip") {
-      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_clip_x_to_view, SMO_clip_to_view);
-    } else if (pieces[next] == "view") {
-      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_view_x_to_view, SMO_identity);
-    } else if (pieces[next] == "apiview") {
-      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_apiview_x_to_view, SMO_apiview_to_view);
-    } else if (pieces[next] == "apiclip") {
-      ok &= cp_parse_trans_clause(p, bind, 0, pieces, next, SMO_apiclip_x_to_view, SMO_apiclip_to_view);
-    } else {
-      bind._part[0] = SMO_view_x_to_view;
-      bind._arg[0] = InternalName::make(pieces[next]);
-      next += 1;
-    }
-
-    // Check for errors in the first clause.
-    if (!ok) {
+    if (!cp_parse_coord_sys(p, pieces, next, bind, true)) {
       return false;
     }
-
-    // Check for syntactic well-formed-ness.
-    if (pieces[next] != "to") {
-      cp_report_error(p, "keyword 'to' expected");
-      return false;
-    } else {
-      next += 1;
-    }
-    
-    // Parse the second half of the clause.
-    if ((pieces[next]=="")||(pieces[next]=="of")||(pieces[next]=="to")){
-      cp_report_error(p, "argument missing");
-      return false;
-    } else if (pieces[next] == "world") {
-      bind._part[1] = SMO_view_to_world;
-      bind._arg[1] = NULL;
-      next += 1;
-    } else if (pieces[next] == "model") {
-      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_view_x, SMO_view_to_model);
-    } else if (pieces[next] == "clip") {
-      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_clip_x, SMO_view_to_clip);
-    } else if (pieces[next] == "view") {
-      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_view_x, SMO_identity);
-    } else if (pieces[next] == "apiview") {
-      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_apiview_x, SMO_view_to_apiview);
-    } else if (pieces[next] == "apiclip") {
-      ok &= cp_parse_trans_clause(p, bind, 1, pieces, next, SMO_view_to_apiclip_x, SMO_view_to_apiclip);
-    } else {
-      bind._part[1] = SMO_view_to_view_x;
-      bind._arg[1] = InternalName::make(pieces[next]);
-      next += 1;
-    }
-    
-    // Check for errors in the second clause.
-    if (!ok) {
+    if (!cp_parse_delimiter(p, pieces, next)) {
       return false;
     }
-
-    // Check for syntactic well-formed-ness.
-    if (pieces[next] != "") {
-      cp_report_error(p, "end of line expected");
+    if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
+      return false;
+    }
+    if (!cp_parse_eol(p, pieces, next)) {
       return false;
     }
     
@@ -546,6 +596,145 @@ compile_parameter(const ShaderArgId  &arg_id,
     return true;
   }
 
+  // Special parameter: attr_material or attr_color
+
+  if (pieces[0] == "attr") {
+    if ((!cp_errchk_parameter_words(p,2)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    if (pieces[1] == "material") {
+      if (!cp_errchk_parameter_float(p,16,16)) {
+        return false;
+      }
+      bind._id = arg_id;
+      bind._piece = SMP_transpose;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_material;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+    } else if (pieces[1] == "color") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_color;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
+    } else {
+      cp_report_error(p,"Unknown attr parameter.");
+      return false;
+    }
+    
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "color") {
+    if ((!cp_errchk_parameter_words(p,1)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  // Keywords to access light properties.
+
+  if (pieces[0] == "alight") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_alight_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "satten") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,4,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_satten_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if ((pieces[0]=="dlight")||(pieces[0]=="plight")||(pieces[0]=="slight")) {
+    if ((!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,16,16))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_transpose;
+    int next = 1;
+    pieces.push_back("");
+    if (pieces[next] == "") {
+      cp_report_error(p, "Light name expected");
+      return false;
+    }
+    if (pieces[0] == "dlight") {
+      bind._func = SMF_transform_dlight;
+      bind._part[0] = SMO_dlight_x;
+    } else if (pieces[0] == "plight") {
+      bind._func = SMF_transform_plight;
+      bind._part[0] = SMO_plight_x;
+    } else if (pieces[0] == "slight") {
+      bind._func = SMF_transform_slight;
+      bind._part[0] = SMO_slight_x;
+    }
+    bind._arg[0] = InternalName::make(pieces[next]);
+    next += 1;
+    if (!cp_parse_delimiter(p, pieces, next)) {
+      return false;
+    }
+    if (!cp_parse_coord_sys(p, pieces, next, bind, false)) {
+      return false;
+    }
+    if (!cp_parse_eol(p, pieces, next)) {
+      return false;
+    }
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+  
   // Keywords to access unusual parameters.
   
   if (pieces[0] == "sys") {
@@ -1253,6 +1442,17 @@ make(const string &body) {
   }
   PT(Shader) result = new Shader("created-shader", body);
   _make_table[body] = result;
+  if (dump_generated_shaders) {
+    ostringstream fns;
+    int index = _shaders_generated ++;
+    fns << "genshader" << index;
+    string fn = fns.str();
+    gobj_cat.warning() << "Dumping shader: " << fn << "\n";
+    ofstream s;
+    s.open(fn.c_str());
+    s << body;
+    s.close();
+  }
   return result;
 }
 

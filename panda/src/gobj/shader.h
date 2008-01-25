@@ -72,6 +72,15 @@ public:
     SMO_pixel_size,
     SMO_card_center,
     
+    SMO_attr_material,
+    SMO_attr_color,
+    
+    SMO_alight_x,
+    SMO_dlight_x,
+    SMO_plight_x,
+    SMO_slight_x,
+    SMO_satten_x,
+    
     SMO_mat_constant_x,
     SMO_vec_constant_x,
     
@@ -101,6 +110,12 @@ public:
 
     SMO_apiclip_x_to_view,
     SMO_view_to_apiclip_x,
+    
+    SMO_light_vector,
+    SMO_light_color,
+    SMO_light_spec,
+
+    SMO_INVALID
   };
 
   enum ShaderArgType {
@@ -139,11 +154,14 @@ public:
   enum ShaderBug {
     SBUG_ati_draw_buffers,
   };
-
+  
   enum ShaderMatFunc {
     SMF_compose,
     SMF_compose_cache_first,
     SMF_compose_cache_second,
+    SMF_transform_dlight,
+    SMF_transform_plight,
+    SMF_transform_slight,
     SMF_first,
   };
 
@@ -215,13 +233,14 @@ public:
   bool cp_errchk_parameter_uniform(ShaderArgInfo &arg);
   bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
   bool cp_errchk_parameter_sampler(ShaderArgInfo &arg);
-  bool cp_parse_trans_clause(ShaderArgInfo &arg,
-                             ShaderMatSpec &spec,
-                             int part,
-                             const vector_string &pieces,
-                             int &next,
-                             ShaderMatInput ofop,
-                             ShaderMatInput op);
+  bool cp_parse_eol(ShaderArgInfo &arg,
+                    vector_string &pieces, int &next);
+  bool cp_parse_delimiter(ShaderArgInfo &arg, 
+                          vector_string &pieces, int &next);
+  string cp_parse_non_delimiter(vector_string &pieces, int &next);
+  bool cp_parse_coord_sys(ShaderArgInfo &arg,
+                          vector_string &pieces, int &next,
+                          ShaderMatSpec &spec, bool fromflag);
   void cp_optimize_mat_spec(ShaderMatSpec &spec);
   
   bool compile_parameter(const ShaderArgId    &arg_id,
@@ -273,6 +292,7 @@ public:
   
   static ShaderCaps _default_caps;
   static ShaderUtilization _shader_utilization;
+  static int _shaders_generated;
 
   typedef pmap < Filename , Shader * > LoadTable;
   typedef pmap < string   , Shader * > MakeTable;

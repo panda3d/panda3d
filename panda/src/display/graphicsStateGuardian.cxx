@@ -40,6 +40,10 @@
 #include "graphicsOutput.h"
 #include "texturePool.h"
 #include "geomMunger.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotLight.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -825,6 +829,7 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, bool altered) {
   const LMatrix4f *val2;
   static LMatrix4f t1;
   static LMatrix4f t2;
+  LVecBase3f v;
 
   switch(spec._func) {
   case Shader::SMF_compose:
@@ -845,6 +850,38 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, bool altered) {
     }
     val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
     acc.multiply(*val1, spec._cache);
+    return &acc;
+  case Shader::SMF_transform_dlight:
+    if (altered) {
+      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
+    }
+    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
+    acc = spec._cache;
+    v = val2->xform_vec(spec._cache.get_row3(2));
+    v.normalize();
+    acc.set_row(2, v);
+    v = val2->xform_vec(spec._cache.get_row3(3));
+    v.normalize();
+    acc.set_row(3, v);
+    return &acc;
+  case Shader::SMF_transform_plight:
+    if (altered) {
+      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
+    }
+    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
+    acc = spec._cache;
+    acc.set_row(2, val2->xform_point(spec._cache.get_row3(2)));
+    return &acc;
+  case Shader::SMF_transform_slight:
+    if (altered) {
+      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
+    }
+    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
+    acc = spec._cache;
+    acc.set_row(2, val2->xform_point(spec._cache.get_row3(2)));
+    v = val2->xform_vec(spec._cache.get_row3(3));
+    v.normalize();
+    acc.set_row(3, v);
     return &acc;
   case Shader::SMF_first:
     return fetch_specified_part(spec._part[0], spec._arg[0], t1);
@@ -883,6 +920,101 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     t = LMatrix4f::translate_mat((px*0.5) / Texture::up_to_power_2(px),
                                  (py*0.5) / Texture::up_to_power_2(py),
                                  0.0);
+    return &t;
+  }
+  case Shader::SMO_attr_material: {
+    // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
+    if (_target._material->is_off()) {
+      t = LMatrix4f(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0);
+      return &t;
+    }
+    Material *m = _target._material->get_material();
+    LVecBase4f const &amb = m->get_ambient();
+    LVecBase4f const &dif = m->get_diffuse();
+    LVecBase4f const &emm = m->get_emission();
+    LVecBase4f spc = m->get_specular();
+    spc[3] = m->get_shininess();
+    t = LMatrix4f(amb[0],amb[1],amb[2],amb[3],
+                  dif[0],dif[1],dif[2],dif[3],
+                  emm[0],emm[1],emm[2],emm[3],
+                  spc[0],spc[1],spc[2],spc[3]);
+    return &t;
+  }
+  case Shader::SMO_attr_color: {
+    if (_target._color->get_color_type() != ColorAttrib::T_flat) {
+      return &LMatrix4f::ones_mat();
+    }
+    LVecBase4f c = _target._color->get_color();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
+    return &t;
+  }
+  case Shader::SMO_alight_x: {
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
+    AmbientLight *lt;
+    DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
+    Colorf const &c = lt->get_color();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
+    return &t;
+  }
+  case Shader::SMO_satten_x: {
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ones_mat());
+    Spotlight *lt;
+    DCAST_INTO_R(lt, np.node(), &LMatrix4f::ones_mat());
+    LVecBase3f const &a = lt->get_attenuation();
+    float x = lt->get_exponent();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,a[0],a[1],a[2],x);
+    return &t;
+  }
+  case Shader::SMO_dlight_x: {
+    // The dlight matrix contains COLOR, SPECULAR, DIRECTION, PSEUDOHALFANGLE
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
+    DirectionalLight *lt;
+    DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
+    Colorf const &c = lt->get_color();
+    Colorf const &s = lt->get_specular_color();
+    t = np.get_net_transform()->get_mat() *
+      get_scene()->get_world_transform()->get_mat();
+    LVecBase3f d = -(t.xform_vec(lt->get_direction()));
+    d.normalize();
+    LVecBase3f h = d + LVecBase3f(0,-1,0);
+    h.normalize();
+    t = LMatrix4f(c[0],c[1],c[2],c[3],s[0],s[1],s[2],c[3],d[0],d[1],d[2],0,h[0],h[1],h[2],0);
+    return &t;
+  }
+  case Shader::SMO_plight_x: {
+    // The plight matrix contains COLOR, SPECULAR, POINT, ATTENUATION
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::ones_mat());
+    PointLight *lt;
+    DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
+    Colorf const &c = lt->get_color();
+    Colorf const &s = lt->get_specular_color();
+    t = np.get_net_transform()->get_mat() *
+      get_scene()->get_world_transform()->get_mat();
+    LVecBase3f p = (t.xform_point(lt->get_point()));
+    LVecBase3f a = lt->get_attenuation();
+    t = LMatrix4f(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,a[0],a[1],a[2],0);
+    return &t;
+  }
+  case Shader::SMO_slight_x: {
+    // The slight matrix contains COLOR, SPECULAR, POINT, DIRECTION
+    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
+    Spotlight *lt;
+    DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
+    Lens *lens = lt->get_lens();
+    nassertr(lens != (Lens *)NULL, &LMatrix4f::zeros_mat());
+    Colorf const &c = lt->get_color();
+    Colorf const &s = lt->get_specular_color();
+    float cutoff = cos(deg_2_rad(lens->get_hfov() * 0.5f));
+    t = np.get_net_transform()->get_mat() *
+      get_scene()->get_world_transform()->get_mat();
+    LVecBase3f p = t.xform_point(lens->get_nodal_point());
+    LVecBase3f d = -(t.xform_vec(lens->get_view_vector()));
+    t = LMatrix4f(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
     return &t;
   }
   case Shader::SMO_mat_constant_x: {
