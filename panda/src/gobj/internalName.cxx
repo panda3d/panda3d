@@ -302,6 +302,19 @@ finalize(BamReader *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::make
+//       Access: Published, Static
+//  Description: Make using a string and an integer.  Concatenates
+//               the two.
+////////////////////////////////////////////////////////////////////
+PT(InternalName) InternalName::
+make(const string &name, int index) {
+  std::ostringstream full;
+  full << name << index;
+  return make(full.str());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory

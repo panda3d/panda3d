@@ -52,6 +52,7 @@ PUBLISHED:
   bool unref() const;
 
   INLINE static PT(InternalName) make(const string &name);
+  INLINE static PT(InternalName) make(const string &name, int index);
   PT(InternalName) append(const string &basename);
 
   INLINE InternalName *get_parent() const;
