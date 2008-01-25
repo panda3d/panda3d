@@ -61,6 +61,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
  public:
   CPT(AlphaTestAttrib)       _alpha_test;
   CPT(AntialiasAttrib)       _antialias;
+  CPT(AudioVolumeAttrib)     _audio_volume;
   CPT(ClipPlaneAttrib)       _clip_plane;
   CPT(ColorAttrib)           _color;
   CPT(ColorBlendAttrib)      _color_blend;
@@ -83,7 +84,6 @@ class EXPCL_PANDA_PGRAPH AttribSlots
   CPT(TexMatrixAttrib)       _tex_matrix;
   CPT(TextureAttrib)         _texture;
   CPT(TransparencyAttrib)    _transparency;
-  CPT(AudioVolumeAttrib)     _audio_volume;
 
  public:
   AttribSlots();

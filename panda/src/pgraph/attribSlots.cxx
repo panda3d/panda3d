@@ -34,6 +34,7 @@ initialize_defvals() {
 
   _defvals._alpha_test     = DCAST(AlphaTestAttrib,AlphaTestAttrib::make(AlphaTestAttrib::M_none, 0.0));
   _defvals._antialias      = DCAST(AntialiasAttrib,AntialiasAttrib::make(AntialiasAttrib::M_none));
+  _defvals._audio_volume   = DCAST(AudioVolumeAttrib,AudioVolumeAttrib::make_identity());
   _defvals._clip_plane     = DCAST(ClipPlaneAttrib,ClipPlaneAttrib::make_all_off());
   _defvals._color          = DCAST(ColorAttrib,ColorAttrib::make_off());
   _defvals._color_blend    = DCAST(ColorBlendAttrib,ColorBlendAttrib::make_off());
@@ -61,6 +62,7 @@ initialize_defvals() {
 
   _defvals._alpha_test     = DCAST(AlphaTestAttrib,_defvals._alpha_test->make_default());
   _defvals._antialias      = DCAST(AntialiasAttrib,_defvals._antialias->make_default());
+  _defvals._audio_volume   = DCAST(AudioVolumeAttrib,_defvals._audio_volume->make_default());
   _defvals._clip_plane     = DCAST(ClipPlaneAttrib,_defvals._clip_plane->make_default());
   _defvals._color          = DCAST(ColorAttrib,_defvals._color->make_default());
   _defvals._color_blend    = DCAST(ColorBlendAttrib,_defvals._color_blend->make_default());
@@ -103,6 +105,7 @@ AttribSlots::
 AttribSlots(const AttribSlots &copy) :
   _alpha_test(copy._alpha_test),
   _antialias(copy._antialias),
+  _audio_volume(copy._audio_volume),
   _clip_plane(copy._clip_plane),
   _color(copy._color),
   _color_blend(copy._color_blend),
@@ -137,6 +140,7 @@ void AttribSlots::
 operator =(const AttribSlots &src) {
   _alpha_test     = src._alpha_test;
   _antialias      = src._antialias;
+  _audio_volume   = src._audio_volume;
   _clip_plane     = src._clip_plane;
   _color          = src._color;
   _color_blend    = src._color_blend;
@@ -171,28 +175,29 @@ get_slot(int n) const {
   switch(n) {
   case  0: return DCAST(RenderAttrib, _alpha_test);
   case  1: return DCAST(RenderAttrib, _antialias);
-  case  2: return DCAST(RenderAttrib, _clip_plane);
-  case  3: return DCAST(RenderAttrib, _color);
-  case  4: return DCAST(RenderAttrib, _color_blend);
-  case  5: return DCAST(RenderAttrib, _color_scale);
-  case  6: return DCAST(RenderAttrib, _color_write);
-  case  7: return DCAST(RenderAttrib, _cull_bin);
-  case  8: return DCAST(RenderAttrib, _cull_face);
-  case  9: return DCAST(RenderAttrib, _depth_offset);
-  case 10: return DCAST(RenderAttrib, _depth_test);
-  case 11: return DCAST(RenderAttrib, _depth_write);
-  case 12: return DCAST(RenderAttrib, _fog);
-  case 13: return DCAST(RenderAttrib, _light);
-  case 14: return DCAST(RenderAttrib, _material);
-  case 15: return DCAST(RenderAttrib, _render_mode);
-  case 16: return DCAST(RenderAttrib, _rescale_normal);
-  case 17: return DCAST(RenderAttrib, _shade_model);
-  case 18: return DCAST(RenderAttrib, _shader);
-  case 19: return DCAST(RenderAttrib, _stencil);
-  case 20: return DCAST(RenderAttrib, _tex_gen);
-  case 21: return DCAST(RenderAttrib, _tex_matrix);
-  case 22: return DCAST(RenderAttrib, _texture);
-  case 23: return DCAST(RenderAttrib, _transparency);
+  case  2: return DCAST(RenderAttrib, _audio_volume);
+  case  3: return DCAST(RenderAttrib, _clip_plane);
+  case  4: return DCAST(RenderAttrib, _color);
+  case  5: return DCAST(RenderAttrib, _color_blend);
+  case  6: return DCAST(RenderAttrib, _color_scale);
+  case  7: return DCAST(RenderAttrib, _color_write);
+  case  8: return DCAST(RenderAttrib, _cull_bin);
+  case  9: return DCAST(RenderAttrib, _cull_face);
+  case 10: return DCAST(RenderAttrib, _depth_offset);
+  case 11: return DCAST(RenderAttrib, _depth_test);
+  case 12: return DCAST(RenderAttrib, _depth_write);
+  case 13: return DCAST(RenderAttrib, _fog);
+  case 14: return DCAST(RenderAttrib, _light);
+  case 15: return DCAST(RenderAttrib, _material);
+  case 16: return DCAST(RenderAttrib, _render_mode);
+  case 17: return DCAST(RenderAttrib, _rescale_normal);
+  case 18: return DCAST(RenderAttrib, _shade_model);
+  case 19: return DCAST(RenderAttrib, _shader);
+  case 20: return DCAST(RenderAttrib, _stencil);
+  case 21: return DCAST(RenderAttrib, _tex_gen);
+  case 22: return DCAST(RenderAttrib, _tex_matrix);
+  case 23: return DCAST(RenderAttrib, _texture);
+  case 24: return DCAST(RenderAttrib, _transparency);
   default:
     nassertr(false, NULL);
     return NULL;
@@ -209,28 +214,29 @@ set_slot(int n, const RenderAttrib *val) {
   switch(n) {
   case  0: _alpha_test     = DCAST(AlphaTestAttrib, val);     break;
   case  1: _antialias      = DCAST(AntialiasAttrib, val);     break;
-  case  2: _clip_plane     = DCAST(ClipPlaneAttrib, val);     break;
-  case  3: _color          = DCAST(ColorAttrib, val);         break;
-  case  4: _color_blend    = DCAST(ColorBlendAttrib, val);    break;
-  case  5: _color_scale    = DCAST(ColorScaleAttrib, val);    break;
-  case  6: _color_write    = DCAST(ColorWriteAttrib, val);    break;
-  case  7: _cull_bin       = DCAST(CullBinAttrib, val);       break;
-  case  8: _cull_face      = DCAST(CullFaceAttrib, val);      break;
-  case  9: _depth_offset   = DCAST(DepthOffsetAttrib, val);   break;
-  case 10: _depth_test     = DCAST(DepthTestAttrib, val);     break;
-  case 11: _depth_write    = DCAST(DepthWriteAttrib, val);    break;
-  case 12: _fog            = DCAST(FogAttrib, val);           break;
-  case 13: _light          = DCAST(LightAttrib, val);         break;
-  case 14: _material       = DCAST(MaterialAttrib, val);      break;
-  case 15: _render_mode    = DCAST(RenderModeAttrib, val);    break;
-  case 16: _rescale_normal = DCAST(RescaleNormalAttrib, val); break;
-  case 17: _shade_model    = DCAST(ShadeModelAttrib, val);    break;
-  case 18: _shader         = DCAST(ShaderAttrib, val);        break;
-  case 19: _stencil        = DCAST(StencilAttrib, val);       break;
-  case 20: _tex_gen        = DCAST(TexGenAttrib, val);        break;
-  case 21: _tex_matrix     = DCAST(TexMatrixAttrib, val);     break;
-  case 22: _texture        = DCAST(TextureAttrib, val);       break;
-  case 23: _transparency   = DCAST(TransparencyAttrib, val);  break;
+  case  2: _audio_volume   = DCAST(AudioVolumeAttrib, val);   break;
+  case  3: _clip_plane     = DCAST(ClipPlaneAttrib, val);     break;
+  case  4: _color          = DCAST(ColorAttrib, val);         break;
+  case  5: _color_blend    = DCAST(ColorBlendAttrib, val);    break;
+  case  6: _color_scale    = DCAST(ColorScaleAttrib, val);    break;
+  case  7: _color_write    = DCAST(ColorWriteAttrib, val);    break;
+  case  8: _cull_bin       = DCAST(CullBinAttrib, val);       break;
+  case  9: _cull_face      = DCAST(CullFaceAttrib, val);      break;
+  case 10: _depth_offset   = DCAST(DepthOffsetAttrib, val);   break;
+  case 11: _depth_test     = DCAST(DepthTestAttrib, val);     break;
+  case 12: _depth_write    = DCAST(DepthWriteAttrib, val);    break;
+  case 13: _fog            = DCAST(FogAttrib, val);           break;
+  case 14: _light          = DCAST(LightAttrib, val);         break;
+  case 15: _material       = DCAST(MaterialAttrib, val);      break;
+  case 16: _render_mode    = DCAST(RenderModeAttrib, val);    break;
+  case 17: _rescale_normal = DCAST(RescaleNormalAttrib, val); break;
+  case 18: _shade_model    = DCAST(ShadeModelAttrib, val);    break;
+  case 19: _shader         = DCAST(ShaderAttrib, val);        break;
+  case 20: _stencil        = DCAST(StencilAttrib, val);       break;
+  case 21: _tex_gen        = DCAST(TexGenAttrib, val);        break;
+  case 22: _tex_matrix     = DCAST(TexMatrixAttrib, val);     break;
+  case 23: _texture        = DCAST(TextureAttrib, val);       break;
+  case 24: _transparency   = DCAST(TransparencyAttrib, val);  break;
   default: nassertv(false);
   }
 }
