@@ -26,6 +26,7 @@ class GravityWalker(DirectObject.DirectObject):
     notify = directNotify.newCategory("GravityWalker")
     wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
+    earlyEventSphere = base.config.GetBool('early-event-sphere', 0)
 
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
@@ -366,14 +367,28 @@ class GravityWalker(DirectObject.DirectObject):
                 # collided first, we'd start falling before getting pushed
                 # back behind the wall.
                 base.shadowTrav.addCollider(self.cRayNodePath, self.lifter)
-                # also put the event sphere in the shadowTrav, so we collide with
-                # event spheres from our final position for the frame
-                base.shadowTrav.addCollider(self.cEventSphereNodePath, self.event)
+
+                if self.earlyEventSphere:
+                    # If we want to trigger the events at the same
+                    # time as we intersect walls (e.g. Toontown, for
+                    # backward compatibility issues), add the event
+                    # sphere to the main traverser.  This allows us to
+                    # hit door triggers that are just slightly behind
+                    # the door itself.
+                    self.cTrav.addCollider(self.cEventSphereNodePath, self.event)
+                else:
+                    # Normally, we'd rather trigger the events after
+                    # the pusher has had a chance to fix up our
+                    # position, so we never trigger things that are
+                    # behind other polygons.
+                    base.shadowTrav.addCollider(self.cEventSphereNodePath, self.event)
+                
             else:
                 if hasattr(self, 'cTrav'):
                     self.cTrav.removeCollider(self.cWallSphereNodePath)
                     if self.wantFloorSphere:
                         self.cTrav.removeCollider(self.cFloorSphereNodePath)
+                    self.cTrav.removeCollider(self.cEventSphereNodePath)
                 base.shadowTrav.removeCollider(self.cEventSphereNodePath)
                 base.shadowTrav.removeCollider(self.cRayNodePath)
 
