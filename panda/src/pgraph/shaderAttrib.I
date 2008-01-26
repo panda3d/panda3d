@@ -26,8 +26,8 @@ INLINE ShaderAttrib::
 ShaderAttrib() :
   _shader(NULL),
   _shader_priority(0),
-  _has_shader(false),
-  _auto_shader(false)
+  _auto_shader(false),
+  _has_shader(false)
 {
 }
 

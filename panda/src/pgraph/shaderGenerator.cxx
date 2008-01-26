@@ -58,7 +58,7 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
-#include "spotLight.h"
+#include "spotlight.h"
 
 TypeHandle ShaderGenerator::_type_handle;
 PT(ShaderGenerator) ShaderGenerator::_default_generator;
@@ -377,10 +377,10 @@ synthesize_shader(const RenderState *rs) {
 
   char *pos_freg = 0;
   char *normal_vreg = 0;
-  char *tangent_vreg = 0;
-  char *binormal_vreg = 0;
+  //  char *tangent_vreg = 0;
+  //  char *binormal_vreg = 0;
   char *normal_freg = 0;
-  char *eyevec_freg = 0;
+  //  char *eyevec_freg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;

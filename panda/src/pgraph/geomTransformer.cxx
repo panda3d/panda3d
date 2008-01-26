@@ -512,8 +512,6 @@ make_compatible_state(GeomNode *node) {
     return false;
   }
   
-  bool has_incompatible = false;
-  
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
   GeomNode::GeomList &geoms = *(cdata->modify_geoms());
@@ -521,10 +519,10 @@ make_compatible_state(GeomNode *node) {
   // For each geom, calculate a canonicalized RenderState, and 
   // classify all the geoms according to that.
   
-  typedef pmap <CPT(RenderState), pvector<int>> StateTable;
+  typedef pmap <CPT(RenderState), pvector<int> > StateTable;
   StateTable state_table;
   
-  for (int i=0; i<geoms.size(); i++) {
+  for (int i = 0; i < (int)geoms.size(); i++) {
     GeomNode::GeomEntry &entry = geoms[i];
     CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex());
     state_table[canon].push_back(i);
@@ -541,7 +539,7 @@ make_compatible_state(GeomNode *node) {
     
     pvector<int> &indices = (*si).second;
     bool mismatch = false;
-    for (int i=1; i<indices.size(); i++) {
+    for (int i = 1; i < (int)indices.size(); i++) {
       if (geoms[indices[i]]._state != geoms[indices[0]]._state) {
         mismatch = true;
         break;
@@ -555,7 +553,7 @@ make_compatible_state(GeomNode *node) {
     // since their canonicalized states are the same.  Canonicalize them.
     
     const RenderState *canon_state = (*si).first;
-    for (int i=0; i<indices.size(); i++) {
+    for (int i = 0; i < (int)indices.size(); i++) {
       GeomNode::GeomEntry &entry = geoms[indices[i]];
       const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_type());
       if (ra == (RenderAttrib *)NULL) {
