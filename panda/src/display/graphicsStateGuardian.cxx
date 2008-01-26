@@ -43,7 +43,7 @@
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
-#include "spotLight.h"
+#include "spotlight.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -2237,8 +2237,8 @@ create_gamma_table (float gamma, unsigned short *red_table, unsigned short *gree
     }
 
     g = x * 65535.0;    
-    red_table [i] = g;
-    green_table [i] = g;
-    blue_table [i] = g;
+    red_table [i] = (int)g;
+    green_table [i] = (int)g;
+    blue_table [i] = (int)g;
   }    
 }
