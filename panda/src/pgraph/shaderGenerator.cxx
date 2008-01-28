@@ -467,7 +467,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_normal = vtx_normal;\n";
     if (_map_index_normal) {
       text << "\t l_tangent = vtx_tangent" << _map_index_normal << ";\n";
-      text << "\t l_binormal = vtx_binormal" << _map_index_normal << ";\n";
+      text << "\t l_binormal = -vtx_binormal" << _map_index_normal << ";\n";
     }
   }
   text << "}\n\n";
