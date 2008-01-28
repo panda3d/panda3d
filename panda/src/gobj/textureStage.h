@@ -57,15 +57,18 @@ PUBLISHED:
     M_add,
     M_combine,
     M_blend_color_scale,
-    M_modulate_glow_map, // When fixed-function, equivalent to modulate.
+    
+    M_modulate_glow,  // When fixed-function, equivalent to modulate.
+    M_modulate_gloss, // When fixed-function, equivalent to modulate.
     
     // Modes that are only relevant to shader-based rendering.
     
-    M_normal_map,
-    M_gloss_map,
-    M_glow_map,
-    M_normal_gloss_map,
-    M_selector_map,
+    M_normal,
+    M_normal_height,
+    M_glow,         // Rarely used: modulate_glow  is more efficient.
+    M_gloss,        // Rarely used: modulate_gloss is more efficient.
+    M_height,       // Rarely used: normal_height  is more efficient.
+    M_selector,
   };
   
   enum CombineMode {

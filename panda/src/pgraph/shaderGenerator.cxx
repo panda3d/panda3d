@@ -186,7 +186,7 @@ analyze_renderstate(const RenderState *rs) {
   if (_attribs._texture) {
     _num_textures = _attribs._texture->get_num_on_stages();
   }
-
+  
   // Determine whether or not vertex colors or flat colors are present.
   if (_attribs._color != 0) {
     if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
@@ -223,10 +223,29 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
+  // See if there is a normal map, height map, gloss map, or glow map.
+  
+  for (int i=0; i<_num_textures; i++) {
+    TextureStage *stage = _attribs._texture->get_on_stage(i);
+    TextureStage::Mode mode = stage->get_mode();
+    if ((mode == TextureStage::M_normal)||(mode == TextureStage::M_normal_height)) {
+      _map_index_normal = i;
+    }
+    if ((mode == TextureStage::M_height)||(mode == TextureStage::M_normal_height)) {
+      _map_index_height = i;
+    }
+    if ((mode == TextureStage::M_glow)||(mode == TextureStage::M_modulate_glow)) {
+      _map_index_glow = i;
+    }
+    if ((mode == TextureStage::M_gloss)||(mode == TextureStage::M_modulate_gloss)) {
+      _map_index_gloss = i;
+    }
+  }
+  
   // Determine whether model-space or tangent-space lighting is recommended.
 
   if (_attribs._light->get_num_on_lights() > 0) {
-    _ms_lighting = true;
+    _lighting = true;
   }
 
   // Find the material.
@@ -299,12 +318,15 @@ void ShaderGenerator::
 clear_analysis() {
   _vertex_colors = false;
   _flat_colors = false;
-  _ms_lighting = false;
-  _ts_lighting = false;
+  _lighting = false;
   _have_ambient = false;
   _have_diffuse = false;
   _have_emission = false;
   _have_specular = false;
+  _map_index_normal = -1;
+  _map_index_height = -1;
+  _map_index_glow = -1;
+  _map_index_gloss = -1;
   _attribs.clear_to_defaults();
   _material = (Material*)NULL;
   _alights.clear();
@@ -329,7 +351,7 @@ create_shader_attrib(const string &txt) {
   PT(Shader) shader = Shader::make(txt);
   CPT(RenderAttrib) shattr = ShaderAttrib::make();
   shattr=DCAST(ShaderAttrib, shattr)->set_shader(shader);
-  if (_ms_lighting) {
+  if (_lighting) {
     for (int i=0; i<(int)_alights.size(); i++) {
       shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("alight", i), _alights_np[i]);
     }
@@ -377,10 +399,11 @@ synthesize_shader(const RenderState *rs) {
 
   char *pos_freg = 0;
   char *normal_vreg = 0;
-  //  char *tangent_vreg = 0;
-  //  char *binormal_vreg = 0;
   char *normal_freg = 0;
-  //  char *eyevec_freg = 0;
+  char *tangent_vreg = 0;
+  char *tangent_freg = 0;
+  char *binormal_vreg = 0;
+  char *binormal_freg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
@@ -407,15 +430,25 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR,\n";
   }
-  if (_ms_lighting) {
+  if (_lighting) {
     pos_freg = alloc_freg();
     normal_vreg = alloc_vreg();
     normal_freg = alloc_freg();
     text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
     text << "\t out float4 l_normal : " << normal_freg << ",\n";
     text << "\t out float4 l_pos : " << pos_freg << ",\n";
+    if (_map_index_normal >= 0) {
+      tangent_vreg = alloc_vreg();
+      tangent_freg = alloc_freg();
+      binormal_vreg = alloc_vreg();
+      binormal_freg = alloc_freg();
+      text << "\t in float4 vtx_tangent" << _map_index_normal << " : " << tangent_vreg << ",\n";
+      text << "\t in float4 vtx_binormal" << _map_index_normal << " : " << binormal_vreg << ",\n";
+      text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
+      text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
+    }
   }
-
+  
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
@@ -429,12 +462,16 @@ synthesize_shader(const RenderState *rs) {
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
   }
-  if (_ms_lighting) {
-    text << "\t l_normal = vtx_normal;\n";
+  if (_lighting) {
     text << "\t l_pos = vtx_position;\n";
+    text << "\t l_normal = vtx_normal;\n";
+    if (_map_index_normal) {
+      text << "\t l_tangent = vtx_tangent" << _map_index_normal << ";\n";
+      text << "\t l_binormal = vtx_binormal" << _map_index_normal << ";\n";
+    }
   }
   text << "}\n\n";
-
+  
   text << "void fshader(\n";
   
   for (int i=0; i<_num_textures; i++) {
@@ -446,8 +483,12 @@ synthesize_shader(const RenderState *rs) {
   } else {
     text << "\t uniform float4 attr_color,\n";
   }
-  if (_ms_lighting) {
+  if (_lighting) {
     text << "\t in float3 l_normal : " << normal_freg << ",\n";
+    if (_map_index_normal) {
+      text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
+      text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
+    }
     text << "\t in float4 l_pos : " << pos_freg << ",\n";
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t uniform float4 alight_alight" << i << ",\n";
@@ -475,8 +516,13 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "\t out float4 o_color : COLOR\n";
   text << ") {\n";
+  text << "\t // Fetch all textures.\n";
+  for (int i=0; i<_num_textures; i++) {
+    text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
+  }
   
-  if (_ms_lighting) {
+  if (_lighting) {
+    text << "\t // Begin model-space light calculations\n";
     if (_have_ambient) {
       text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
     }
@@ -486,7 +532,16 @@ synthesize_shader(const RenderState *rs) {
     if (_have_specular) {
       text << "\t float4 tot_specular = float4(0,0,0,0);\n";
     }
-    text << "\t l_normal = normalize(l_normal);\n";
+    if (_map_index_normal) {
+      text << "\t // Translate tangent-space normal in map to model-space.\n";
+      text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
+      text << "\t l_normal = l_normal * tsnormal.z;\n";
+      text << "\t l_normal+= l_tangent * tsnormal.x;\n";
+      text << "\t l_normal+= l_binormal * tsnormal.y;\n";
+      text << "\t l_normal = normalize(l_normal);\n";
+    } else {
+      text << "\t l_normal = normalize(l_normal);\n";
+    }
     text << "\t float ldist,lattenv,langle;\n";
     text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
     for (int i=0; i<(int)_alights.size(); i++) {
@@ -561,11 +616,12 @@ synthesize_shader(const RenderState *rs) {
         text << "\t tot_specular += lspec;\n";
       }
     }
+    text << "\t // Begin model-space light summation\n";
 
     if (_have_emission) {
       text << "\t o_color = attr_material[2];\n";
     } else {
-      text << "\t o_color = float4(0,0,0,1);\n";
+      text << "\t o_color = float4(0,0,0,0);\n";
     }
     if (_have_ambient) {
       if (_material->has_ambient()) {
@@ -589,6 +645,14 @@ synthesize_shader(const RenderState *rs) {
         text << "\t o_color += tot_diffuse;\n";
       }
     }
+    if (_vertex_colors) {
+      text << "\t o_color.a = l_color.a;\n";
+    } else if (_flat_colors) {
+      text << "\t o_color.a = attr_color.a;\n";
+    } else {
+      text << "\t o_color.a = 1;\n";
+    }
+    text << "\t // End model-space light calculations\n";
   } else {
     if (_vertex_colors) {
       text << "\t o_color = l_color;\n";
@@ -599,9 +663,12 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   for (int i=0; i<_num_textures; i++) {
-    text << "\t o_color *= tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
+    TextureStage *stage = _attribs._texture->get_on_stage(i);
+    if (stage->get_mode() != TextureStage::M_normal) {
+      text << "\t o_color *= tex" << i << ";\n";
+    }
   }
-  if (_ms_lighting) {
+  if (_lighting) {
     if (_have_specular) {
       text << "\t o_color += tot_specular;\n";
     }

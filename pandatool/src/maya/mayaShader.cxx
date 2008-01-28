@@ -175,13 +175,16 @@ collect_maps() {
   for (size_t i=0; i<_normal_maps.size(); i++) {
     _all_maps.push_back(_normal_maps[i]);
   }
-  for (size_t i=0; i<_gloss_maps.size(); i++) {
-    _all_maps.push_back(_gloss_maps[i]);
-  }
   for (size_t i=0; i<_glow_maps.size(); i++) {
     _all_maps.push_back(_glow_maps[i]);
   }
-
+  for (size_t i=0; i<_gloss_maps.size(); i++) {
+    _all_maps.push_back(_gloss_maps[i]);
+  }
+  for (size_t i=0; i<_height_maps.size(); i++) {
+    _all_maps.push_back(_height_maps[i]);
+  }
+  
   for (size_t i=0; i<_color.size(); i++) {
     if (_color[i]->_has_texture) {
       _all_maps.push_back(_color[i]);
@@ -235,6 +238,10 @@ find_textures_modern(MObject shader) {
   MayaShaderColorDef::find_textures_modern(n, _glow_maps,  shader_fn.findPlug("incandescence"), true);
   if (_glow_maps.size() == 0) {
     MayaShaderColorDef::find_textures_modern(n, _glow_maps,  shader_fn.findPlug("incandescenceR"), true);
+  }
+  MayaShaderColorDef::find_textures_modern(n, _height_maps,  shader_fn.findPlug("surfaceThickness"), true);
+  if (_height_maps.size() == 0) {
+    MayaShaderColorDef::find_textures_modern(n, _height_maps,  shader_fn.findPlug("surfaceThicknessR"), true);
   }
   
   collect_maps();
@@ -292,47 +299,82 @@ calculate_pairings() {
     _all_maps[i]->_opposite = 0;
   }
   
+  bool using_color_alpha = (_trans_maps.size() > 0);
+  for (size_t i=0; i<_color_maps.size(); i++) {
+    if ((_color_maps[i]->_blend_type != MayaShaderColorDef::BT_modulate)&&
+        (_color_maps[i]->_blend_type != MayaShaderColorDef::BT_unspecified)) {
+      using_color_alpha = true;
+    }
+  }
+  
   for (int retry=0; retry<2; retry++) {
     bool perfect=(retry==0);
     for (size_t i=0; i<_color_maps.size(); i++) {
-      if ((_color_maps[i]->_blend_type == MayaShaderColorDef::BT_modulate)||
-          (_color_maps[i]->_blend_type == MayaShaderColorDef::BT_unspecified)) {
+      if ((_color_maps[i]->_blend_type != MayaShaderColorDef::BT_modulate)&&
+          (_color_maps[i]->_blend_type != MayaShaderColorDef::BT_unspecified)) {
         for (size_t j=0; j<_trans_maps.size(); j++) {
           try_pair(_color_maps[i], _trans_maps[j], perfect);
         }
       }
     }
-    for (size_t i=0; i<_normal_maps.size(); i++) {
-      for (size_t j=0; j<_gloss_maps.size(); j++) {
-        try_pair(_normal_maps[i], _gloss_maps[j], perfect);
-      }
-    }
-    if (_trans_maps.size() == 0) {
+  }
+  
+  if (!using_color_alpha) {
+    for (int retry=0; retry<2; retry++) {
+      bool perfect=(retry==0);
       for (size_t i=0; i<_color_maps.size(); i++) {
         for (size_t j=0; j<_glow_maps.size(); j++) {
           try_pair(_color_maps[i], _glow_maps[j], perfect);
+        }
+        for (size_t j=0; j<_gloss_maps.size(); j++) {
+          try_pair(_color_maps[i], _gloss_maps[j], perfect);
         }
       }
     }
   }
   
-  for (size_t i=0; i<_normal_maps.size(); i++) {
-    _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal_map;
-  }
-  for (size_t i=0; i<_gloss_maps.size(); i++) {
-    if (_gloss_maps[i]->_opposite) {
-      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
-      _gloss_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_normal_gloss_map;
-    } else {
-      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_gloss_map;
+  for (int retry=0; retry<2; retry++) {
+    bool perfect=(retry==0);
+    for (size_t i=0; i<_normal_maps.size(); i++) {
+      for (size_t j=0; j<_height_maps.size(); j++) {
+        try_pair(_normal_maps[i], _height_maps[j], perfect);
+      }
     }
+  }
+  
+  for (size_t i=0; i<_normal_maps.size(); i++) {
+    _normal_maps[i]->_blend_type = MayaShaderColorDef::BT_normal;
   }
   for (size_t i=0; i<_glow_maps.size(); i++) {
     if (_glow_maps[i]->_opposite) {
       _glow_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
-      _glow_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_modulate_glow_map;
+      _glow_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_modulate_glow;
     } else {
-      _glow_maps[i]->_blend_type = MayaShaderColorDef::BT_glow_map;
+      _glow_maps[i]->_blend_type = MayaShaderColorDef::BT_glow;
+    }
+  }
+  for (size_t i=0; i<_gloss_maps.size(); i++) {
+    if (_gloss_maps[i]->_opposite) {
+      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+      _gloss_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_modulate_gloss;
+    } else {
+      _gloss_maps[i]->_blend_type = MayaShaderColorDef::BT_gloss;
+    }
+  }
+  for (size_t i=0; i<_height_maps.size(); i++) {
+    if (_height_maps[i]->_opposite) {
+      _height_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+      _height_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_normal_height;
+    } else {
+      _height_maps[i]->_blend_type = MayaShaderColorDef::BT_height;
+    }
+  }
+  for (size_t i=0; i<_trans_maps.size(); i++) {
+    if (_trans_maps[i]->_opposite) {
+      _trans_maps[i]->_blend_type = MayaShaderColorDef::BT_unspecified;
+      _trans_maps[i]->_opposite->_blend_type = MayaShaderColorDef::BT_modulate;
+    } else {
+      _trans_maps[i]->_blend_type = MayaShaderColorDef::BT_modulate;
     }
   }
 }
@@ -342,24 +384,24 @@ calculate_pairings() {
 //       Access: Private
 //  Description: Try to associate an RGB tex with an Alpha tex.
 ////////////////////////////////////////////////////////////////////
-void MayaShader::try_pair(MayaShaderColorDef *map1,
+bool MayaShader::try_pair(MayaShaderColorDef *map1,
                           MayaShaderColorDef *map2,
                           bool perfect) {
   if ((map1->_opposite)||(map2->_opposite)) {
     // one of the maps is already paired
-    return;
+    return false;
   }
   if (perfect) {
     if (map1->_texture_filename != map2->_texture_filename) {
       // perfect mode requires a filename match.
-      return;
+      return false;
     }
   } else {
     string pre1 = get_file_prefix(map1->_texture_filename);
     string pre2 = get_file_prefix(map2->_texture_filename);
     if (pre1 != pre2) {
       // imperfect mode requires a filename prefix match.
-      return;
+      return false;
     }
   }
   
@@ -375,11 +417,12 @@ void MayaShader::try_pair(MayaShaderColorDef *map1,
       (map1->_repeat_uv         != map2->_repeat_uv) ||
       (map1->_offset            != map2->_offset) ||
       (map1->_rotate_uv         != map2->_rotate_uv)) {
-    return;
+    return false;
   }
   // Pairing successful.
   map1->_opposite = map2;
   map2->_opposite = map1;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

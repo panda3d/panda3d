@@ -742,14 +742,18 @@ make_texture_layer(const NodePath &render,
   CPT(RenderAttrib) cba;
 
   switch (stage_info._stage->get_mode()) {
-  case TextureStage::M_normal_map:
-  case TextureStage::M_gloss_map:
-  case TextureStage::M_normal_gloss_map:
-  case TextureStage::M_selector_map:
+  case TextureStage::M_normal:
+  case TextureStage::M_normal_height:
+  case TextureStage::M_glow:
+  case TextureStage::M_gloss:
+  case TextureStage::M_height:
+  case TextureStage::M_selector:
     // Don't know what to do with these funny modes.  We should
     // probably raise an exception or something.  Fall through for
     // now.
 
+  case TextureStage::M_modulate_glow:
+  case TextureStage::M_modulate_gloss:
   case TextureStage::M_modulate:
     cba = ColorBlendAttrib::make
       (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,

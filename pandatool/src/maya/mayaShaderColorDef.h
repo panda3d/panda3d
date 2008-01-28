@@ -60,12 +60,14 @@ public:
     BT_replace,
     BT_add,
     BT_blend_color_scale,
-    BT_modulate_glow_map,
-    BT_normal_map,
-    BT_gloss_map,
-    BT_glow_map,
-    BT_normal_gloss_map,
-    BT_selector_map,
+    BT_modulate_glow,
+    BT_modulate_gloss,
+    BT_normal,
+    BT_normal_height,
+    BT_gloss,
+    BT_glow,
+    BT_height,
+    BT_selector,
   };
 
   enum ProjectionType {

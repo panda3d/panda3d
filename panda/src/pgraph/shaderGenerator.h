@@ -104,14 +104,18 @@ protected:
   bool _vertex_colors;
   bool _flat_colors;
   
-  bool _ms_lighting;
-  bool _ts_lighting;
+  bool _lighting;
 
   bool _have_ambient;
   bool _have_diffuse;
   bool _have_emission;
   bool _have_specular;
 
+  int _map_index_normal;
+  int _map_index_height;
+  int _map_index_glow;
+  int _map_index_gloss;
+  
   bool _need_material_props;
   
   void analyze_renderstate(const RenderState *rs);

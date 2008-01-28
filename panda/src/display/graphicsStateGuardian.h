@@ -195,9 +195,9 @@ public:
 
   void clear(DrawableRegion *clearable);
 
-  const LMatrix4f *fetch_specified_value(Shader::ShaderMatSpec &spec, bool altered);
+  const LMatrix4f *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
   const LMatrix4f *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4f &t);
-
+  
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 

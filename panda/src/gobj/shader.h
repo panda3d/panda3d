@@ -111,10 +111,6 @@ public:
     SMO_apiclip_x_to_view,
     SMO_view_to_apiclip_x,
     
-    SMO_light_vector,
-    SMO_light_color,
-    SMO_light_spec,
-
     SMO_INVALID
   };
 
@@ -150,6 +146,15 @@ public:
     SMP_col2,
     SMP_col3,
   };
+  
+  enum ShaderStateDep {
+    SSD_NONE          =  0,
+    SSD_general       =  1,
+    SSD_transform     =  2,
+    SSD_color         =  4,
+    SSD_material      =  8,
+    SSD_shaderinputs  = 16,
+  };
 
   enum ShaderBug {
     SBUG_ati_draw_buffers,
@@ -157,8 +162,6 @@ public:
   
   enum ShaderMatFunc {
     SMF_compose,
-    SMF_compose_cache_first,
-    SMF_compose_cache_second,
     SMF_transform_dlight,
     SMF_transform_plight,
     SMF_transform_slight,
@@ -176,9 +179,10 @@ public:
     ShaderMatFunc     _func;
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
-    LMatrix4f         _cache;
+    int               _dep[2];
+    LMatrix4f         _cache[2];
+    LMatrix4f         _value;
     ShaderMatPiece    _piece;
-    bool              _trans_dependent;
   };
 
   struct ShaderTexSpec {
@@ -241,6 +245,7 @@ public:
   bool cp_parse_coord_sys(ShaderArgInfo &arg,
                           vector_string &pieces, int &next,
                           ShaderMatSpec &spec, bool fromflag);
+  int cp_dependency(ShaderMatInput inp);
   void cp_optimize_mat_spec(ShaderMatSpec &spec);
   
   bool compile_parameter(const ShaderArgId    &arg_id,

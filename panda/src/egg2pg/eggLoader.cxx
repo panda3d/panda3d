@@ -1393,28 +1393,36 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_mode(TextureStage::M_blend_color_scale);
     break;
 
-  case EggTexture::ET_modulate_glow_map:
-    stage->set_mode(TextureStage::M_modulate_glow_map);
+  case EggTexture::ET_modulate_glow:
+    stage->set_mode(TextureStage::M_modulate_glow);
     break;
 
-  case EggTexture::ET_normal_map:
-    stage->set_mode(TextureStage::M_normal_map);
+  case EggTexture::ET_modulate_gloss:
+    stage->set_mode(TextureStage::M_modulate_gloss);
     break;
 
-  case EggTexture::ET_gloss_map:
-    stage->set_mode(TextureStage::M_gloss_map);
+  case EggTexture::ET_normal:
+    stage->set_mode(TextureStage::M_normal);
     break;
 
-  case EggTexture::ET_glow_map:
-    stage->set_mode(TextureStage::M_glow_map);
+  case EggTexture::ET_normal_height:
+    stage->set_mode(TextureStage::M_normal_height);
     break;
 
-  case EggTexture::ET_normal_gloss_map:
-    stage->set_mode(TextureStage::M_normal_gloss_map);
+  case EggTexture::ET_glow:
+    stage->set_mode(TextureStage::M_glow);
     break;
 
-  case EggTexture::ET_selector_map:
-    stage->set_mode(TextureStage::M_selector_map);
+  case EggTexture::ET_gloss:
+    stage->set_mode(TextureStage::M_gloss);
+    break;
+
+  case EggTexture::ET_height:
+    stage->set_mode(TextureStage::M_height);
+    break;
+
+  case EggTexture::ET_selector:
+    stage->set_mode(TextureStage::M_selector);
     break;
 
   case EggTexture::ET_unspecified:

@@ -3095,7 +3095,7 @@ do_issue_transform() {
 
   if (_current_shader_context) {
 //    _current_shader_context->issue_transform(this);
-    _current_shader_context->issue_parameters(this, false);
+    _current_shader_context->issue_parameters(this, Shader::SSD_transform);
 
 // ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM IS ONLY USED IN THE SHADER
     const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
@@ -3191,7 +3191,7 @@ do_issue_shader() {
     }
   } else {
     // Use the same shader as before, but with new input arguments.
-    context->issue_parameters(this, true);
+    context->issue_parameters(this, Shader::SSD_shaderinputs);
   }
 }
 
@@ -3469,6 +3469,9 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state._color = _target._color;
     _state._color_scale = _target._color_scale;
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_color);
+    }
   }
 
   if (_target._cull_face != _state._cull_face) {
@@ -3542,6 +3545,9 @@ set_state_and_transform(const RenderState *target,
   if (_target._material != _state._material) {
     do_issue_material();
     _state._material = _target._material;
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_material);
+    }
   }
 
   if (_target._light != _state._light) {
@@ -4614,7 +4620,8 @@ void DXGraphicsStateGuardian9::
 set_texture_blend_mode(int i, const TextureStage *stage) {
   switch (stage->get_mode()) {
   case TextureStage::M_modulate:
-  case TextureStage::M_modulate_glow_map:
+  case TextureStage::M_modulate_glow:
+  case TextureStage::M_modulate_gloss:
     // emulates GL_MODULATE glTexEnv mode
     set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_MODULATE);
     set_texture_stage_state(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);

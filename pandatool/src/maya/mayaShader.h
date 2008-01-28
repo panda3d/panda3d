@@ -61,14 +61,15 @@ public: // relevant only to modern mode.
   MayaShaderColorList _color_maps;
   MayaShaderColorList _trans_maps;
   MayaShaderColorList _normal_maps;
-  MayaShaderColorList _gloss_maps;
   MayaShaderColorList _glow_maps;
-
+  MayaShaderColorList _gloss_maps;
+  MayaShaderColorList _height_maps;
+  
   void bind_uvsets(MayaFileToUVSetMap &map);
   
 private:
   void calculate_pairings();
-  void try_pair(MayaShaderColorDef *map1,
+  bool try_pair(MayaShaderColorDef *map1,
                 MayaShaderColorDef *map2,
                 bool perfect);
   string get_file_prefix(const string &fn);

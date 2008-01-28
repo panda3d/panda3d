@@ -815,79 +815,59 @@ clear(DrawableRegion *clearable) {
 //               shoehorning them into a matrix.  In this way, we avoid
 //               the need for a separate routine to fetch these values.
 //
-//               If "altered" is false, that means you promise that
-//               this ShaderMatSpec has been evaluated before, and that
-//               since the last time this ShaderMatSpec was evaluated,
-//               that no part of the render state has changed except
-//               the external and internal transforms.
+//               The "altered" bits indicate what parts of the
+//               state_and_transform have changed since the last 
+//               time this particular ShaderMatSpec was evaluated.
+//               This may allow data to be cached and not reevaluated.
 //
 ////////////////////////////////////////////////////////////////////
 const LMatrix4f *GraphicsStateGuardian::
-fetch_specified_value(Shader::ShaderMatSpec &spec, bool altered) {
-  static LMatrix4f acc;
-  const LMatrix4f *val1;
-  const LMatrix4f *val2;
-  static LMatrix4f t1;
-  static LMatrix4f t2;
+fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3f v;
 
+  if (altered & spec._dep[0]) {
+    const LMatrix4f *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0]);
+    if (t != &spec._cache[0]) {
+      spec._cache[0] = *t;
+    }
+  }
+  if (altered & spec._dep[1]) {
+    const LMatrix4f *t = fetch_specified_part(spec._part[1], spec._arg[1], spec._cache[1]);
+    if (t != &spec._cache[1]) {
+      spec._cache[1] = *t;
+    }
+  }
+  
   switch(spec._func) {
   case Shader::SMF_compose:
-    val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    acc.multiply(*val1, *val2);
-    return &acc;
-  case Shader::SMF_compose_cache_first:
-    if (altered) {
-      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    }
-    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    acc.multiply(spec._cache, *val2);
-    return &acc;
-  case Shader::SMF_compose_cache_second:
-    if (altered) {
-      spec._cache = *fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    }
-    val1 = fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    acc.multiply(*val1, spec._cache);
-    return &acc;
+    spec._value.multiply(spec._cache[0], spec._cache[1]);
+    return &spec._value;
   case Shader::SMF_transform_dlight:
-    if (altered) {
-      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    }
-    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    acc = spec._cache;
-    v = val2->xform_vec(spec._cache.get_row3(2));
+    spec._value = spec._cache[0];
+    v = spec._cache[1].xform_vec(spec._cache[0].get_row3(2));
     v.normalize();
-    acc.set_row(2, v);
-    v = val2->xform_vec(spec._cache.get_row3(3));
+    spec._value.set_row(2, v);
+    v = spec._cache[1].xform_vec(spec._cache[0].get_row3(3));
     v.normalize();
-    acc.set_row(3, v);
-    return &acc;
+    spec._value.set_row(3, v);
+    return &spec._value;
   case Shader::SMF_transform_plight:
-    if (altered) {
-      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    }
-    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    acc = spec._cache;
-    acc.set_row(2, val2->xform_point(spec._cache.get_row3(2)));
-    return &acc;
+    spec._value = spec._cache[0];
+    spec._value.set_row(2, spec._cache[1].xform_point(spec._cache[0].get_row3(2)));
+    return &spec._value;
   case Shader::SMF_transform_slight:
-    if (altered) {
-      spec._cache = *fetch_specified_part(spec._part[0], spec._arg[0], t1);
-    }
-    val2 = fetch_specified_part(spec._part[1], spec._arg[1], t2);
-    acc = spec._cache;
-    acc.set_row(2, val2->xform_point(spec._cache.get_row3(2)));
-    v = val2->xform_vec(spec._cache.get_row3(3));
+    spec._value = spec._cache[0];
+    spec._value.set_row(2, spec._cache[1].xform_point(spec._cache[0].get_row3(2)));
+    v = spec._cache[1].xform_vec(spec._cache[0].get_row3(3));
     v.normalize();
-    acc.set_row(3, v);
-    return &acc;
+    spec._value.set_row(3, v);
+    return &spec._value;
   case Shader::SMF_first:
-    return fetch_specified_part(spec._part[0], spec._arg[0], t1);
+    return &spec._cache[0];
   default:
     // should never get here
-    return &LMatrix4f::ident_mat();
+    spec._value = LMatrix4f::ident_mat();
+    return &spec._value;
   }
 }
 

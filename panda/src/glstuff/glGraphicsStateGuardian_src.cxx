@@ -3494,7 +3494,7 @@ do_issue_transform() {
   }
 
   if (_current_shader_context) {
-    _current_shader_context->issue_parameters(this, false);
+    _current_shader_context->issue_parameters(this, Shader::SSD_transform);
   }
 
   report_my_gl_errors();
@@ -3555,7 +3555,7 @@ do_issue_shader() {
       _current_shader_context = context;
     } else {
       // Use the same shader as before, but with new input arguments.
-      context->issue_parameters(this, true);
+      context->issue_parameters(this, Shader::SSD_shaderinputs);
     }
   }
 
@@ -5284,7 +5284,8 @@ get_texture_apply_mode_type(TextureStage::Mode am) {
   case TextureStage::M_add: return GL_ADD;
   case TextureStage::M_combine: return GL_COMBINE;
   case TextureStage::M_blend_color_scale: return GL_BLEND;
-  case TextureStage::M_modulate_glow_map: return GL_MODULATE;
+  case TextureStage::M_modulate_glow: return GL_MODULATE;
+  case TextureStage::M_modulate_gloss: return GL_MODULATE;
   }
 
   GLCAT.error()
@@ -5867,6 +5868,9 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state._color = _target._color;
     _state._color_scale = _target._color_scale;
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_color);
+    }
   }
 
   if (_target._cull_face != _state._cull_face) {
@@ -5970,6 +5974,9 @@ set_state_and_transform(const RenderState *target,
     PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state._material = _target._material;
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_material);
+    }
   }
 
   if (_target._light != _state._light) {

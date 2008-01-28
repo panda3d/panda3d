@@ -624,7 +624,7 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
 
     MPlug inputsPlug = sourceFn.findPlug("inputs");
     size_t nlayers = inputsPlug.numElements();
-    for (int layer=0; layer<nlayers; layer++) {
+    for (size_t layer=0; layer<nlayers; layer++) {
       MPlug elt = inputsPlug.elementByPhysicalIndex(layer);
       MPlug color;
       MPlug blend;

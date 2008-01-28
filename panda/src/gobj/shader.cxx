@@ -324,6 +324,52 @@ cp_parse_coord_sys(ShaderArgInfo &p,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Shader::cp_dependency
+//       Access: Public
+//  Description: Given ShaderMatInput, returns an indication of what
+//               part or parts of the state_and_transform the
+//               ShaderMatInput depends upon.
+////////////////////////////////////////////////////////////////////
+int Shader::
+cp_dependency(ShaderMatInput inp) {
+
+  int dep = SSD_general;
+
+  if (inp == SMO_INVALID) {
+    return SSD_NONE;
+  }
+  if (inp == SMO_attr_material) {
+    dep |= SSD_material;
+  }
+  if (inp == SMO_attr_color) {
+    dep |= SSD_color;
+  }
+  if ((inp == SMO_model_to_view)||
+      (inp == SMO_view_to_model)) {
+    dep |= SSD_transform;
+  }
+  if ((inp == SMO_alight_x)||
+      (inp == SMO_dlight_x)||
+      (inp == SMO_plight_x)||
+      (inp == SMO_slight_x)||
+      (inp == SMO_satten_x)||
+      (inp == SMO_mat_constant_x)||
+      (inp == SMO_vec_constant_x)||
+      (inp == SMO_view_x_to_view)||
+      (inp == SMO_view_to_view_x)||
+      (inp == SMO_apiview_x_to_view)||
+      (inp == SMO_view_to_apiview_x)||
+      (inp == SMO_clip_x_to_view)||
+      (inp == SMO_view_to_clip_x)||
+      (inp == SMO_apiclip_x_to_view)||
+      (inp == SMO_view_to_apiclip_x)) {
+    dep |= SSD_shaderinputs;
+  }
+  
+  return dep;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Shader::cp_optimize_mat_spec
 //       Access: Public
 //  Description: Analyzes a ShaderMatSpec and decides what it should
@@ -336,6 +382,11 @@ void Shader::
 cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   // If we're composing with identity, simplify.
+  
+  if (spec._func == SMF_first) {
+    spec._part[1] = SMO_INVALID;
+    spec._arg[1] = 0;
+  }
   if (spec._func == SMF_compose) {
     if (spec._part[1] == SMO_identity) {
       spec._func = SMF_first;
@@ -349,33 +400,10 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
     }
   }
 
-  // See if either half can be cached.
-  bool can_cache_part0 = true;
-  bool can_cache_part1 = true;
-  if ((spec._part[0] == SMO_model_to_view)||
-      (spec._part[0] == SMO_view_to_model)) {
-    can_cache_part0 = false;
-  }
-  if ((spec._part[1] == SMO_model_to_view)||
-      (spec._part[1] == SMO_view_to_model)) {
-    can_cache_part1 = false;
-  }
+  // Calculate state and transform dependencies.
   
-  // See if we can use a compose-with-cache variant.
-  if (spec._func == SMF_compose) {
-    if (can_cache_part0) {
-      spec._func = SMF_compose_cache_first;
-    } else if (can_cache_part1) {
-      spec._func = SMF_compose_cache_second;
-    }
-  }
-  
-  // Determine transform-dependence.
-  if (can_cache_part0 && can_cache_part1) {
-    spec._trans_dependent = false;
-  } else {
-    spec._trans_dependent = true;
-  }
+  spec._dep[0] = cp_dependency(spec._part[0]);
+  spec._dep[1] = cp_dependency(spec._part[1]);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@ public:
   INLINE bool valid(void);
   void bind(GSG *gsg);
   void unbind();
-  void issue_parameters(GSG *gsg, bool all);
+  void issue_parameters(GSG *gsg, int altered);
   void disable_shader_vertex_arrays(GSG *gsg);
   bool update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
                                    bool force);

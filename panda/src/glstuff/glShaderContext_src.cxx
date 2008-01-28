@@ -110,7 +110,7 @@ bind(GSG *gsg) {
   if (_cg_context != 0) {
 
     // Pass in k-parameters and transform-parameters
-    issue_parameters(gsg, true);
+    issue_parameters(gsg, Shader::SSD_general);
 
     // Bind the shaders.
     cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
@@ -154,14 +154,14 @@ unbind() {
 //               transforms.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_parameters(GSG *gsg, bool altered) {
+issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
   if (_cg_context == 0) {
     return;
   }
 
   for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
-    if (altered || _shader->_mat_spec[i]._trans_dependent) {
+    if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
       CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
       const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
       if (val) {

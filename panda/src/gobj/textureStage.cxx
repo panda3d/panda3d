@@ -397,23 +397,29 @@ operator << (ostream &out, TextureStage::Mode mode) {
   case TextureStage::M_blend_color_scale:
     return out << "blend_color_scale";
 
-  case TextureStage::M_modulate_glow_map:
-    return out << "modulate_glow_map";
+  case TextureStage::M_modulate_glow:
+    return out << "modulate_glow";
   
-  case TextureStage::M_normal_map:
-    return out << "normal_map";
+  case TextureStage::M_modulate_gloss:
+    return out << "modulate_gloss";
+  
+  case TextureStage::M_normal:
+    return out << "normal";
 
-  case TextureStage::M_gloss_map:
-    return out << "gloss_map";
+  case TextureStage::M_normal_height:
+    return out << "normal_height";
 
-  case TextureStage::M_glow_map:
-    return out << "glow_map";
+  case TextureStage::M_glow:
+    return out << "glow";
+  
+  case TextureStage::M_gloss:
+    return out << "gloss";
 
-  case TextureStage::M_normal_gloss_map:
-    return out << "normal_gloss_map";
-
-  case TextureStage::M_selector_map:
-    return out << "selector_map";
+  case TextureStage::M_height:
+    return out << "height";
+  
+  case TextureStage::M_selector:
+    return out << "selector";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";

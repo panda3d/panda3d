@@ -77,7 +77,7 @@ public:
   INLINE bool valid(GSG *gsg);
   bool bind(GSG *gsg);
   void unbind(GSG *gsg);
-  void issue_parameters(GSG *gsg, bool altered);
+  void issue_parameters(GSG *gsg, int altered);
   void issue_transform(GSG *gsg);
   void disable_shader_vertex_arrays(GSG *gsg);
   void update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg);
