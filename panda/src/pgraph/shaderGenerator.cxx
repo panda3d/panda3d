@@ -182,12 +182,14 @@ analyze_renderstate(const RenderState *rs) {
   rs->store_into_slots(&_attribs);
 
   // Count number of textures.
+
   _num_textures = 0;
   if (_attribs._texture) {
     _num_textures = _attribs._texture->get_num_on_stages();
   }
   
   // Determine whether or not vertex colors or flat colors are present.
+
   if (_attribs._color != 0) {
     if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
       _vertex_colors = true;
@@ -375,19 +377,22 @@ create_shader_attrib(const string &txt) {
 //               fixed function pipeline by synthesizing a shader.
 //
 //               Currently supports:
-//               - 2D textures
-//               - lights
-//               - vertex colors
 //               - flat colors
-//               - materials
+//               - vertex colors
+//               - lighting
+//               - normal maps
+//               - materials, but not updates to materials
+//               - modulated 2D textures
 //
 //               Not yet supported:
-//               - 3D textures, cube textures
+//               - 3D textures
+//               - cube textures
+//               - texture stage modes: decal, blend, replace, add, etc.
 //               - color scale attrib
 //               - texgen
 //               - texmatrix
-//               - normal and gloss
-//               - lots of other things
+//               - gloss maps
+//               - glow maps
 //
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
@@ -664,7 +669,8 @@ synthesize_shader(const RenderState *rs) {
   }
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = _attribs._texture->get_on_stage(i);
-    if (stage->get_mode() != TextureStage::M_normal) {
+    if ((stage->get_mode() != TextureStage::M_normal)&&
+        (stage->get_mode() != TextureStage::M_normal_height)) {
       text << "\t o_color *= tex" << i << ";\n";
     }
   }
