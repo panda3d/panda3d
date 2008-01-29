@@ -137,12 +137,19 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       bool any_changed = false;
       
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-        const RenderAttrib *ra = geom_attribs._color;
+        CPT(RenderAttrib) ra = geom_attribs._color;
+        int override = geom_attribs._color_override;
         if (ra == (const RenderAttrib *)NULL) {
+          // If we don't have a color attrib, implicitly apply the
+          // "off" attrib.  But use an override of -1, so we don't
+          // replace a color attrib already on the Geom state.
           ra = ColorAttrib::make_off();
+          override = -1;
         }
+        entry._state = entry._state->add_attrib(ra, override);
+
+        ra = entry._state->get_attrib(ColorAttrib::get_class_type());
         const ColorAttrib *ca = DCAST(ColorAttrib, ra);
-        entry._state = entry._state->add_attrib(ca);
         if (ca->get_color_type() != ColorAttrib::T_vertex) {
           if (transformer.remove_column(new_geom, InternalName::get_color())) {
             any_changed = true;

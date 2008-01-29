@@ -524,7 +524,7 @@ make_compatible_state(GeomNode *node) {
   
   for (int i = 0; i < (int)geoms.size(); i++) {
     GeomNode::GeomEntry &entry = geoms[i];
-    CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex());
+    CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex(), -1);
     state_table[canon].push_back(i);
   }
 

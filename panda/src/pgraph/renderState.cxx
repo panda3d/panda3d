@@ -510,7 +510,8 @@ invert_compose(const RenderState *other) const {
 //  Description: Returns a new RenderState object that represents the
 //               same as the source state, with the new RenderAttrib
 //               added.  If there is already a RenderAttrib with the
-//               same type, it is replaced.
+//               same type, it is replaced (unless the override is
+//               lower).
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 add_attrib(const RenderAttrib *attrib, int override) const {
@@ -526,16 +527,31 @@ add_attrib(const RenderAttrib *attrib, int override) const {
     ++ai;
     ++result;
   }
-  *result = new_attribute;
-  ++result;
 
   if (ai != _attributes.end() && !(new_attribute < (*ai))) {
-    // At this point we know:
-    // !((*ai) < new_attribute) && !(new_attribute < (*ai))
-    // which means (*ai) == new_attribute--so we should leave it out,
-    // to avoid duplicating attributes in the set.
-    ++ai;
+    // At this point we know: !((*ai) < new_attribute) &&
+    // !(new_attribute < (*ai)) which means (*ai) == new_attribute, so
+    // there is another attribute of the same type already in the
+    // state.
+
+    if ((*ai)._override > override) {
+      // The existing attribute overrides.
+      *result = *ai;
+      ++ai;
+    } else {
+      // The new attribute overrides.
+      *result = new_attribute;
+      ++ai;
+      ++result;
+    }
+
+  } else {
+    // There is not another attribute of the same type already in the
+    // state.
+    *result = new_attribute;
+    ++result;
   }
+
 
   while (ai != _attributes.end()) {
     *result = *ai;

@@ -29,6 +29,70 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AccumulatedAttribs::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+AccumulatedAttribs::
+AccumulatedAttribs() {
+  _transform = TransformState::make_identity();
+  _color_override = 0;
+  _color_scale_override = 0;
+  _tex_matrix_override = 0;
+  _texture_override = 0;
+  _clip_plane_override = 0;
+  _cull_face_override = 0;
+  _other = RenderState::make_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AccumulatedAttribs::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+AccumulatedAttribs::
+AccumulatedAttribs(const AccumulatedAttribs &copy) :
+  _transform(copy._transform),
+  _color(copy._color),
+  _color_override(copy._color_override),
+  _color_scale(copy._color_scale),
+  _color_scale_override(copy._color_scale_override),
+  _tex_matrix(copy._tex_matrix),
+  _tex_matrix_override(copy._tex_matrix_override),
+  _texture(copy._texture),
+  _texture_override(copy._texture_override),
+  _clip_plane(copy._clip_plane),
+  _clip_plane_override(copy._clip_plane_override),
+  _cull_face(copy._cull_face),
+  _cull_face_override(copy._cull_face_override),
+  _other(copy._other)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AccumulatedAttribs::Copy Assignment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AccumulatedAttribs::
+operator = (const AccumulatedAttribs &copy) {
+  _transform = copy._transform;
+  _color = copy._color;
+  _color_override = copy._color_override;
+  _color_scale = copy._color_scale;
+  _color_scale_override = copy._color_scale_override;
+  _tex_matrix = copy._tex_matrix;
+  _tex_matrix_override = copy._tex_matrix_override;
+  _texture = copy._texture;
+  _texture_override = copy._texture_override;
+  _clip_plane = copy._clip_plane;
+  _clip_plane_override = copy._clip_plane_override;
+  _cull_face = copy._cull_face;
+  _cull_face_override = copy._cull_face_override;
+  _other = copy._other;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AccumulatedAttribs::write
 //       Access: Public
 //  Description:
@@ -95,136 +159,8 @@ collect(PandaNode *node, int attrib_types) {
     node->set_prev_transform(TransformState::make_identity());
   }
 
-  if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(ColorAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a color attribute; apply it.
-      if (_color == (const RenderAttrib *)NULL) {
-        _color = node_attrib;
-      } else {
-        _color = _color->compose(node_attrib);
-      }
-      node->clear_attrib(ColorAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(ColorScaleAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a color scale attribute; apply it.
-      if (_color_scale == (const RenderAttrib *)NULL) {
-        _color_scale = node_attrib;
-      } else {
-        _color_scale = _color_scale->compose(node_attrib);
-      }
-      node->clear_attrib(ColorScaleAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(TexMatrixAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a tex matrix attribute; apply it.
-      if (_tex_matrix == (const RenderAttrib *)NULL) {
-        _tex_matrix = node_attrib;
-      } else {
-        _tex_matrix = _tex_matrix->compose(node_attrib);
-      }
-      node->clear_attrib(TexMatrixAttrib::get_class_type());
-    }
-
-    // We also need to accumulate the texture state if we are
-    // accumulating texture matrix.
-    const RenderAttrib *tex_attrib = 
-      node->get_attrib(TextureAttrib::get_class_type());
-    if (tex_attrib != (const RenderAttrib *)NULL) {
-      if (_texture == (const RenderAttrib *)NULL) {
-        _texture = tex_attrib;
-      } else {
-        _texture = _texture->compose(tex_attrib);
-      }
-
-      // However, we don't remove the texture state from the node.
-      // We're just accumulating it so we can tell which texture
-      // coordinates are safe to flatten.
-    }
-  }
-
-  if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(ClipPlaneAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a clip plane attribute; apply it.
-      if (_clip_plane == (const RenderAttrib *)NULL) {
-        _clip_plane = node_attrib;
-      } else {
-        _clip_plane = _clip_plane->compose(node_attrib);
-      }
-      node->clear_attrib(ClipPlaneAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
-    const RenderAttrib *node_attrib = 
-      node->get_attrib(CullFaceAttrib::get_class_type());
-    if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a cull face attribute; apply it.
-      if (_cull_face == (const RenderAttrib *)NULL) {
-        _cull_face = node_attrib;
-      } else {
-        _cull_face = _cull_face->compose(node_attrib);
-      }
-      node->clear_attrib(CullFaceAttrib::get_class_type());
-    }
-  }
-
-  if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
-    // Collect everything else.
-    nassertv(_other != (RenderState *)NULL);
-    CPT(RenderState) collect_state = node->get_state();
-    CPT(RenderState) keep_state = RenderState::make_empty();
-
-    const RenderAttrib *attrib = collect_state->get_attrib(ColorAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(ColorAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(ColorAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-
-    attrib = collect_state->get_attrib(ColorScaleAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(ColorScaleAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(ColorScaleAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-
-    attrib = collect_state->get_attrib(TexMatrixAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(TexMatrixAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(TexMatrixAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-
-    attrib = collect_state->get_attrib(ClipPlaneAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(ClipPlaneAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(ClipPlaneAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-
-    attrib = collect_state->get_attrib(CullFaceAttrib::get_class_type());
-    if (attrib != (const RenderAttrib *)NULL) {
-      int override = collect_state->get_override(CullFaceAttrib::get_class_type());
-      collect_state = collect_state->remove_attrib(CullFaceAttrib::get_class_type());
-      keep_state = keep_state->add_attrib(attrib, override);
-    }
-    
-    _other = _other->compose(collect_state);
-    node->set_state(keep_state);
-  }
+  CPT(RenderState) new_state = collect(node->get_state(), attrib_types);
+  node->set_state(new_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -242,11 +178,15 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *node_attrib = 
       new_state->get_attrib(ColorAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      // The node has a color attribute; apply it.
-      if (_color == (const RenderAttrib *)NULL) {
-        _color = node_attrib;
-      } else {
-        _color = _color->compose(node_attrib);
+      int color_override = new_state->get_override(ColorAttrib::get_class_type());
+      if (color_override >= _color_override) {
+        // The node has a color attribute; apply it.
+        if (_color == (const RenderAttrib *)NULL) {
+          _color = node_attrib;
+        } else {
+          _color = _color->compose(node_attrib);
+        }
+        _color_override = color_override;
       }
       new_state = new_state->remove_attrib(ColorAttrib::get_class_type());
     }
@@ -256,10 +196,14 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *node_attrib = 
       new_state->get_attrib(ColorScaleAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      if (_color_scale == (const RenderAttrib *)NULL) {
-        _color_scale = node_attrib;
-      } else {
-        _color_scale = _color_scale->compose(node_attrib);
+      int color_scale_override = new_state->get_override(ColorScaleAttrib::get_class_type());
+      if (color_scale_override >= _color_scale_override) {
+        if (_color_scale == (const RenderAttrib *)NULL) {
+          _color_scale = node_attrib;
+        } else {
+          _color_scale = _color_scale->compose(node_attrib);
+        }
+        _color_scale_override = color_scale_override;
       }
       new_state = new_state->remove_attrib(ColorScaleAttrib::get_class_type());
     }
@@ -269,10 +213,14 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *node_attrib = 
       new_state->get_attrib(TexMatrixAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      if (_tex_matrix == (const RenderAttrib *)NULL) {
-        _tex_matrix = node_attrib;
-      } else {
-        _tex_matrix = _tex_matrix->compose(node_attrib);
+      int tex_matrix_override = new_state->get_override(TexMatrixAttrib::get_class_type());
+      if (tex_matrix_override >= _tex_matrix_override) {
+        if (_tex_matrix == (const RenderAttrib *)NULL) {
+          _tex_matrix = node_attrib;
+        } else {
+          _tex_matrix = _tex_matrix->compose(node_attrib);
+        }
+        _tex_matrix_override = tex_matrix_override;
       }
       new_state = new_state->remove_attrib(TexMatrixAttrib::get_class_type());
     }
@@ -282,10 +230,14 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *tex_attrib = 
       new_state->get_attrib(TextureAttrib::get_class_type());
     if (tex_attrib != (const RenderAttrib *)NULL) {
-      if (_texture == (const RenderAttrib *)NULL) {
-        _texture = tex_attrib;
-      } else {
-        _texture = _texture->compose(tex_attrib);
+      int texture_override = new_state->get_override(TextureAttrib::get_class_type());
+      if (texture_override >= _texture_override) {
+        if (_texture == (const RenderAttrib *)NULL) {
+          _texture = tex_attrib;
+        } else {
+          _texture = _texture->compose(tex_attrib);
+        }
+        _texture_override = texture_override;
       }
 
       // However, we don't remove the texture state from the node.
@@ -298,10 +250,14 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *node_attrib = 
       new_state->get_attrib(ClipPlaneAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      if (_clip_plane == (const RenderAttrib *)NULL) {
-        _clip_plane = node_attrib;
-      } else {
-        _clip_plane = _clip_plane->compose(node_attrib);
+      int clip_plane_override = new_state->get_override(ClipPlaneAttrib::get_class_type());
+      if (clip_plane_override >= _clip_plane_override) {
+        if (_clip_plane == (const RenderAttrib *)NULL) {
+          _clip_plane = node_attrib;
+        } else {
+          _clip_plane = _clip_plane->compose(node_attrib);
+        }
+        _clip_plane_override = clip_plane_override;
       }
       new_state = new_state->remove_attrib(ClipPlaneAttrib::get_class_type());
     }
@@ -311,10 +267,14 @@ collect(const RenderState *state, int attrib_types) {
     const RenderAttrib *node_attrib = 
       new_state->get_attrib(CullFaceAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      if (_cull_face == (const RenderAttrib *)NULL) {
-        _cull_face = node_attrib;
-      } else {
-        _cull_face = _cull_face->compose(node_attrib);
+      int cull_face_override = new_state->get_override(CullFaceAttrib::get_class_type());
+      if (cull_face_override >= _cull_face_override) {
+        if (_cull_face == (const RenderAttrib *)NULL) {
+          _cull_face = node_attrib;
+        } else {
+          _cull_face = _cull_face->compose(node_attrib);
+        }
+        _cull_face_override = cull_face_override;
       }
       new_state = new_state->remove_attrib(CullFaceAttrib::get_class_type());
     }

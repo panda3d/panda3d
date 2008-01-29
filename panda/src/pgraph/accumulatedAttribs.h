@@ -36,9 +36,9 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH AccumulatedAttribs {
 public:
-  INLINE AccumulatedAttribs();
-  INLINE AccumulatedAttribs(const AccumulatedAttribs &copy);
-  INLINE void operator = (const AccumulatedAttribs &copy);
+  AccumulatedAttribs();
+  AccumulatedAttribs(const AccumulatedAttribs &copy);
+  void operator = (const AccumulatedAttribs &copy);
   
   void write(ostream &out, int attrib_types, int indent_level) const;
   
@@ -48,11 +48,17 @@ public:
 
   CPT(TransformState) _transform;
   CPT(RenderAttrib) _color;
+  int _color_override;
   CPT(RenderAttrib) _color_scale;
+  int _color_scale_override;
   CPT(RenderAttrib) _tex_matrix;
+  int _tex_matrix_override;
   CPT(RenderAttrib) _texture;
+  int _texture_override;
   CPT(RenderAttrib) _clip_plane;
+  int _clip_plane_override;
   CPT(RenderAttrib) _cull_face;
+  int _cull_face_override;
   CPT(RenderState) _other;
 };
 
