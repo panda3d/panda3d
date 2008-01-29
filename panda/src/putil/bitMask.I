@@ -466,7 +466,7 @@ get_highest_on_bit() const {
     return -1;
   }
 
-  WordType w = flood_bits_down(_word);
+  WordType w = ::flood_bits_down(_word);
   return count_bits_in_word(w) - 1;
 }
 
@@ -918,4 +918,208 @@ flood_bits_down(PN_uint64 x) {
   x |= (x >> 16);
   x |= (x >> 32);
   return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: flood_bits_up
+//  Description: Returns a value such that every bit at or above the
+//               highest bit in x is 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint32
+flood_bits_up(PN_uint32 x) {
+  x |= (x << 1);
+  x |= (x << 2);
+  x |= (x << 4);
+  x |= (x << 8);
+  x |= (x << 16);
+  return x;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: flood_bits_up
+//  Description: Returns a value such that every bit at or above the
+//               highest bit in x is 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_uint64
+flood_bits_up(PN_uint64 x) {
+  x |= (x << 1);
+  x |= (x << 2);
+  x |= (x << 4);
+  x |= (x << 8);
+  x |= (x << 16);
+  x |= (x << 32);
+  return x;
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::flood_up_in_place
+//       Access: Published
+//  Description: Floods this bitmask's bits upwards.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE void BitMask<WType, nbits>::
+flood_up_in_place() {
+  _word = ::flood_bits_up(_word);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::flood_down_in_place
+//       Access: Published
+//  Description: Floods this bitmask's bits downwards.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE void BitMask<WType, nbits>::
+flood_down_in_place() {
+  _word = ::flood_bits_down(_word);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::flood_bits_up
+//       Access: Published
+//  Description: Returns a BitMask with the bits flooded upwards.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+flood_bits_up() const {
+  BitMask<WType, nbits> result(::flood_bits_up(_word));
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::flood_bits_down
+//       Access: Published
+//  Description: Returns a BitMask with the bits flooded down.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+flood_bits_down() const {
+  BitMask<WType, nbits> result(::flood_bits_down(_word));
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_highest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next highest
+//               bit above the indicated bit on, or all_off.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_highest_bit() const {
+  int low_bit = get_lowest_on_bit();
+  if (low_bit >= 0) {
+    return BitMask<WType, nbits>::bit(low_bit);
+  } else {
+    return BitMask<WType, nbits>::all_off();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_lowest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next lower
+//               bit below the indicated bit on, or all_off.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_lowest_bit() const {
+  int high_bit = get_highest_on_bit();
+  if (high_bit >= 0) {
+    return BitMask<WType, nbits>::bit(high_bit);
+  } else {
+    return BitMask<WType, nbits>::all_off();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_highest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next highest
+//               bit above the indicated bit on, or all.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_highest_bit(int index) const {
+  BitMask<WType, nbits> mask,temp;
+  nassertr(index >= 0 && index < num_bits, mask);
+  
+  mask.set_bit(index); 
+  mask.flood_down_in_place();
+  mask.invert_in_place();
+  mask &= *this;
+  temp = mask;
+
+  mask <<= 1;
+  mask.flood_up_in_place();
+  mask.invert_in_place();
+  mask &= temp;
+  
+  return mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_lowest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next lower
+//               bit below the indicated bit on, or all_off.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_lowest_bit(int index) const {
+  BitMask<WType, nbits> mask, temp;
+  nassertr(index >= 0 && index < num_bits, mask);
+  
+  mask.set_bit(index); 
+  mask.flood_up_in_place();
+  mask.invert_in_place();
+  mask &= *this;
+  temp = mask;
+
+  mask >>= 1;
+  mask.flood_down_in_place();
+  mask.invert_in_place();
+  mask &= temp;
+  
+  return mask;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_highest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next highest "on"
+//               bit above all "on" bits in the passed in bitmask, or 
+//               all_off. If there are no "on" bits in the passed in 
+//               bitmask, it will return keep_next_highest_bit().
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_highest_bit(const BitMask<WType, nbits> &other) const {
+  int high_bit = other.get_highest_on_bit();
+  if (high_bit >= 0) {
+    return keep_next_highest_bit(high_bit);
+  } else {
+    return keep_next_highest_bit();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BitMask::keep_next_lowest_bit
+//       Access: Published
+//  Description: Returns a BitMask with only the next lowest "on"
+//               bit below all "on" bits in the passed in bitmask, or 
+//               all_off. If there are no "on" bits in the passed in 
+//               bitmask, it will return keep_next_lowest_bit().
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+keep_next_lowest_bit(const BitMask<WType, nbits> &other) const {
+  int low_bit = other.get_lowest_on_bit();
+  if (low_bit >= 0) {
+    return keep_next_lowest_bit(low_bit);
+  } else {
+    return keep_next_lowest_bit();
+  }
 }

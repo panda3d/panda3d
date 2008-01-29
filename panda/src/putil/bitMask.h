@@ -122,6 +122,17 @@ PUBLISHED:
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
+  INLINE void flood_down_in_place();
+  INLINE void flood_up_in_place();
+  INLINE BitMask<WType, nbits> flood_bits_down() const;
+  INLINE BitMask<WType, nbits> flood_bits_up() const;
+  INLINE BitMask<WType, nbits> keep_next_highest_bit() const;
+  INLINE BitMask<WType, nbits> keep_next_lowest_bit() const;
+  INLINE BitMask<WType, nbits> keep_next_highest_bit(int index) const;
+  INLINE BitMask<WType, nbits> keep_next_lowest_bit(int index) const;
+  INLINE BitMask<WType, nbits> keep_next_highest_bit(const BitMask<WType, nbits> &other) const;
+  INLINE BitMask<WType, nbits> keep_next_lowest_bit(const BitMask<WType, nbits> &other) const;
+
   INLINE int get_key() const;
 
 public:
@@ -144,6 +155,8 @@ INLINE int count_bits_in_word(PN_uint32 x);
 INLINE int count_bits_in_word(PN_uint64 x);
 INLINE PN_uint32 flood_bits_down(PN_uint32 x);
 INLINE PN_uint64 flood_bits_down(PN_uint64 x);
+INLINE PN_uint32 flood_bits_up(PN_uint32 x);
+INLINE PN_uint64 flood_bits_up(PN_uint64 x);
 
 // This table precomputes the number of on bits in each 16-bit word.
 extern EXPCL_PANDA_PUTIL unsigned char num_bits_on[65536];
