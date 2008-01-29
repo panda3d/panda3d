@@ -124,6 +124,8 @@ public:
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
+  virtual bool begin_scene();
+  virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,

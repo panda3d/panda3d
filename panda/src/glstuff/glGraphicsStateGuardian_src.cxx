@@ -1415,6 +1415,56 @@ begin_frame(Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::begin_scene
+//       Access: Public, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the beginning of drawing commands for a "scene"
+//               (usually a particular DisplayRegion) within a frame.
+//               All 3-D drawing commands, except the clear operation,
+//               must be enclosed within begin_scene() .. end_scene().
+//
+//               The return value is true if successful (in which case
+//               the scene will be drawn and end_scene() will be
+//               called later), or false if unsuccessful (in which
+//               case nothing will be drawn and end_scene() will not
+//               be called).
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+begin_scene() {
+  return GraphicsStateGuardian::begin_scene();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::end_scene
+//       Access: Protected, Virtual
+//  Description: Called between begin_frame() and end_frame() to mark
+//               the end of drawing commands for a "scene" (usually a
+//               particular DisplayRegion) within a frame.  All 3-D
+//               drawing commands, except the clear operation, must be
+//               enclosed within begin_scene() .. end_scene().
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+end_scene() {
+  GraphicsStateGuardian::end_scene();
+
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_texture_binding_shader_context != 0) {
+    _texture_binding_shader_context->disable_shader_texture_bindings(this);
+    _texture_binding_shader = (Shader *)NULL;
+    _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_current_shader_context != 0) {
+    _current_shader_context->unbind();
+    _current_shader = (Shader *)NULL;
+    _current_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::end_frame
 //       Access: Public, Virtual
 //  Description: Called after each frame is rendered, to allow the

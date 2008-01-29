@@ -1093,6 +1093,22 @@ void DXGraphicsStateGuardian9::
 end_scene() {
   GraphicsStateGuardian::end_scene();
 
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_texture_binding_shader_context != 0) {
+    _texture_binding_shader_context->disable_shader_texture_bindings(this);
+    _texture_binding_shader = (Shader *)NULL;
+    _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_current_shader_context != 0) {
+    _current_shader_context->unbind(this);
+    _current_shader = (Shader *)NULL;
+    _current_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+
 DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 
 /*
