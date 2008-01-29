@@ -43,6 +43,7 @@ EggBase() {
   _normals_threshold = 0.0;
 
   _got_tbnall = false;
+  _got_tbnauto = false;
 
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
@@ -105,6 +106,11 @@ add_normals_options() {
      "Compute tangent and binormal for all texture coordinate "
      "sets.  This is equivalent to -tbn \"*\".",
      &EggBase::dispatch_none, &_got_tbnall);
+
+  add_option
+    ("tbnauto", "", 48,
+     "Compute tangent and binormal for all normal maps. ",
+     &EggBase::dispatch_none, &_got_tbnauto);
 }
 
 ////////////////////////////////////////////////////////////////////
