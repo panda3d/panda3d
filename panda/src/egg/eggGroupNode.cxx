@@ -719,7 +719,7 @@ strip_normals() {
 //               binormals computed.  Thus, it is a good idea to call
 //               remove_unused_vertices() after calling this.
 ////////////////////////////////////////////////////////////////////
-void EggGroupNode::
+bool EggGroupNode::
 recompute_tangent_binormal(const GlobPattern &uv_name) {
   // First, collect all the vertices together with their shared
   // polygons.
@@ -735,6 +735,58 @@ recompute_tangent_binormal(const GlobPattern &uv_name) {
 
     do_compute_tangent_binormal(value, group);
   }
+  
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::recompute_tangent_binormal
+//       Access: Published
+//  Description: This function recomputes the tangent and binormal for
+//               the named texture coordinate sets.
+//               Returns true if anything was done.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+recompute_tangent_binormal(const vector_string &names) {
+  bool changed = false;
+
+  for (vector_string::const_iterator si = names.begin();
+       si != names.end();
+       ++si) {
+    GlobPattern uv_name(*si);
+    nout << "Computing tangent and binormal for \"" << uv_name << "\"\n";
+    recompute_tangent_binormal(uv_name);
+    changed = true;
+  }
+  
+  return changed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::recompute_tangent_binormal_auto
+//       Access: Published
+//  Description: This function recomputes the tangent and binormal for
+//               any texture coordinate set that affects a normal map.
+//               Returns true if anything was done.
+////////////////////////////////////////////////////////////////////
+bool EggGroupNode::
+recompute_tangent_binormal_auto() {
+  vector_string names;
+  EggTextureCollection texs;
+  EggTextureCollection::iterator eti;
+  texs.find_used_textures(this);
+  for (eti = texs.begin(); eti != texs.end(); eti++) {
+    EggTexture *eggtex = (*eti);
+    if ((eggtex->get_env_type() == EggTexture::ET_normal)||
+        (eggtex->get_env_type() == EggTexture::ET_normal_height)) {
+      string uv = eggtex->get_uv_name();
+      vector_string::iterator it = find(names.begin(), names.end(), uv);
+      if (it == names.end()) {
+        names.push_back(uv);
+      }
+    }
+  }
+  return recompute_tangent_binormal(names);
 }
 
 ////////////////////////////////////////////////////////////////////

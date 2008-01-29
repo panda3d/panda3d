@@ -132,7 +132,9 @@ PUBLISHED:
   void recompute_polygon_normals(CoordinateSystem cs = CS_default);
   void strip_normals();
 
-  void recompute_tangent_binormal(const GlobPattern &uv_name);
+  bool recompute_tangent_binormal(const GlobPattern &uv_name);
+  bool recompute_tangent_binormal(const vector_string &names);
+  bool recompute_tangent_binormal_auto();
 
   enum TriangulateFlags {
     T_polygon     = 0x001,
