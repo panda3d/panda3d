@@ -29,6 +29,7 @@ def Dtool_PreloadDLL(module):
         lib = os.path.join(dir, module + ".dll")
         if (os.path.exists(lib)):
             target = dir
+            break
     if (target == None):
         raise "DLL loader cannot find "+module+"."
     imp.load_dynamic(module, os.path.join(target, module + ".dll"))
