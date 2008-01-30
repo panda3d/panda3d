@@ -187,7 +187,11 @@ underflow() {
         int os_error = errno;
 #endif  // WIN32_VC
 
-        _is_closed = !BIO_should_retry(*_source);
+        // if not EOF, there may be more data on the way even if BIO
+        // indicates that no retry is necessary
+        //_is_closed = !BIO_should_retry(*_source);
+        //_is_closed = !BIO_should_read(*_source);
+        _is_closed = BIO_eof(*_source);
         if (_is_closed) {
           downloader_cat.info()
             << "Lost connection to "
@@ -246,7 +250,16 @@ write_chars(const char *start, size_t length) {
     thread_consider_yield();
     while (write_count != (int)(length - wrote_so_far)) {
       if (write_count <= 0) {
-        _is_closed = !BIO_should_retry(*_source);
+        // http://www.openssl.org/docs/crypto/BIO_s_bio.html
+        // "Calls to BIO_write() will place data in the buffer or
+        // request a retry if the buffer is full."
+        //
+        // when the server is terminated, this seems to be the best
+        // way of detecting that case on the client: a BIO write error
+        // without a retry request
+        //_is_closed = !BIO_should_retry(*_source);
+        //_is_closed = BIO_eof(*_source);
+        _is_closed = !BIO_should_write(*_source);
         if (_is_closed) {
           return wrote_so_far;
         }
