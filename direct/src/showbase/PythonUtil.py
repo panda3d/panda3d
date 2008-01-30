@@ -921,8 +921,8 @@ class Functor:
         try:
             return self._do__call__(*args, **kargs)
         except Exception, e:
-            appendStr(e, '\n-->Functor creation stack (%s): %s' % (
-                self.__name__, self.getCreationStackTraceCompactStr()))
+            print '-->Functor creation stack (%s): %s' % (
+                self.__name__, self.getCreationStackTraceCompactStr())
             raise
 
     __call__ = _do__call__
