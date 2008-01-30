@@ -1076,7 +1076,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def makeCamera2d(self, win, sort = 10,
                      displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1),
-                     lens = None):
+                     lens = None, cameraName = None):
         """
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
@@ -1091,7 +1091,11 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        cam2dNode = Camera('cam2d')
+        if (cameraName):
+            cam2dNode = Camera('cam2d_' + cameraName)
+        else:
+            cam2dNode = Camera('cam2d')
+            
         if lens == None:
             lens = OrthographicLens()
             lens.setFilmSize(right - left, top - bottom)
@@ -1114,7 +1118,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def makeCamera2dp(self, win, sort = 20,
                       displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1),
-                      lens = None):
+                      lens = None, cameraName = None):
         """
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
@@ -1128,7 +1132,11 @@ class ShowBase(DirectObject.DirectObject):
         left, right, bottom, top = coords
 
         # Now make a new Camera node.
-        cam2dNode = Camera('cam2d')
+        if (cameraName):
+            cam2dNode = Camera('cam2dp_' + cameraName)
+        else:
+            cam2dNode = Camera('cam2dp')
+
         if lens == None:
             lens = OrthographicLens()
             lens.setFilmSize(right - left, top - bottom)
