@@ -571,6 +571,10 @@ class ClientRepositoryBase(ConnectionRepository):
             self.bootedText = None
             self.notify.warning(
                 "Server is booting us out with no explanation.")
+        
+        # disconnect now, don't wait for send/recv to fail
+        self.stopReaderPollTask()
+        self.lostConnection()
 
     def handleServerHeartbeat(self, di):
         # Got a heartbeat message from the server.
