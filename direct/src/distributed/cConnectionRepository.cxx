@@ -395,7 +395,7 @@ send_datagram(const Datagram &dg) {
 
   if (is_bundling_messages() && get_want_message_bundling()) {
     bundle_msg(dg);
-    return false;
+    return true;
   }
 
 #ifdef WANT_NATIVE_NET
