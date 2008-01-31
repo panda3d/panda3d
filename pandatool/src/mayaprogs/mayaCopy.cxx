@@ -308,31 +308,29 @@ copy_maya_file(const Filename &source, const Filename &dest,
 ////////////////////////////////////////////////////////////////////
 bool MayaCopy::
 extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
-  if (color_def._has_texture) {
-    Filename texture_filename = 
-      _path_replace->convert_path(color_def._texture_filename);
-    if (!texture_filename.exists()) {
-      nout << "*** Warning: texture " << texture_filename
-           << " does not exist.\n";
-    } else if (!texture_filename.is_regular_file()) {
-      nout << "*** Warning: texture " << texture_filename
-           << " is not a regular file.\n";
-    } else {
-      ExtraData ed;
-      ed._type = FT_texture;
-      
-      CVSSourceTree::FilePath texture_path =
-        import(texture_filename, &ed, _map_dir);
-
-      if (!texture_path.is_valid()) {
-        return false;
-      }
-      
-      // Update the texture reference to point to the new texture
-      // filename, relative to the maya file.
-      Filename new_filename = texture_path.get_rel_from(dir);
-      color_def.reset_maya_texture(new_filename);
+  Filename texture_filename = 
+    _path_replace->convert_path(color_def._texture_filename);
+  if (!texture_filename.exists()) {
+    nout << "*** Warning: texture " << texture_filename
+         << " does not exist.\n";
+  } else if (!texture_filename.is_regular_file()) {
+    nout << "*** Warning: texture " << texture_filename
+         << " is not a regular file.\n";
+  } else {
+    ExtraData ed;
+    ed._type = FT_texture;
+    
+    CVSSourceTree::FilePath texture_path =
+      import(texture_filename, &ed, _map_dir);
+    
+    if (!texture_path.is_valid()) {
+      return false;
     }
+    
+    // Update the texture reference to point to the new texture
+    // filename, relative to the maya file.
+    Filename new_filename = texture_path.get_rel_from(dir);
+    color_def.reset_maya_texture(new_filename);
   }
 
   return true;
