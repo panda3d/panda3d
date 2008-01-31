@@ -74,7 +74,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_channels;
   } else {}
 #else //][
   // Release build:
-  #define audio_debug(msg) ((void)0)
+  #define audio_debug(msg) ((void)0);
 #endif //]
 
 #define audio_info(msg) \
