@@ -102,8 +102,16 @@ ns_load_font(const string &str) {
     if (node != (PandaNode *)NULL) {
       // It is a model.  Elevate all the priorities by 1, and make a
       // font out of it.
+
+      // On second thought, why should we elevate the priorities?  The
+      // DynamicTextFont doesn't do this, and doing so for the
+      // StaticTextFont only causes problems (it changes the default
+      // ColorAttrib from pri -1 to pri 0).
+      /*
       NodePath np(node);
       np.adjust_all_priorities(1);
+      */
+
       font = new StaticTextFont(node);
     }
   }
