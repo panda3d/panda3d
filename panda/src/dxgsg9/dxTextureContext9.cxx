@@ -925,7 +925,7 @@ create_texture(DXScreenData &scrn) {
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
 
-  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation);
+  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation, scrn._d3d_device);
   if (FAILED(hr)) {
 
     dxgsg9_cat.debug ()
@@ -1410,7 +1410,7 @@ exit_FillMipmapSurf:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
-fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
+fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDevice9 *device) {
   if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
     return fill_d3d_volume_texture_pixels();
   }
@@ -1424,7 +1424,38 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
     // operations or something.
-    if (get_texture()->get_render_to_texture()) {
+    if (get_texture()->get_render_to_texture()) {   
+      HRESULT result;
+
+      // clear render to texture
+      IDirect3DSurface9 *surface;
+
+      result = _d3d_2d_texture -> GetSurfaceLevel (0, &surface);
+      if (result == D3D_OK) {
+        D3DSURFACE_DESC surface_description;
+
+        if (surface -> GetDesc (&surface_description) == D3D_OK) {
+          IDirect3DSurface9 *current_render_target;
+
+          if (device -> GetRenderTarget (0, &current_render_target) == D3D_OK) {
+            if (device -> SetRenderTarget (0, surface)  == D3D_OK) {
+              DWORD flags;
+              D3DCOLOR color;
+
+              color = 0xFF000000;
+              flags = D3DCLEAR_TARGET;
+              if (device -> Clear (NULL, NULL, flags, color, 0.0f, 0) == D3D_OK) {
+              }
+            }
+
+            device -> SetRenderTarget (0, current_render_target);
+            current_render_target -> Release();
+          }
+        }
+
+        surface -> Release();
+      }
+      
       return S_OK;
     }
     return E_FAIL;
