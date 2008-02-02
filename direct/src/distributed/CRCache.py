@@ -22,6 +22,10 @@ class CRCache:
         CRCache.notify.debug("Flushing the cache")
         for distObj in self.dict.values():
             distObj.deleteOrDelay()
+            if distObj.getDelayDeleteCount() != 0:
+                self.notify.warning(
+                    'CRCache.flush: could not delete %s (%s), delayDeleteCount=%s' %
+                    (safeRepr(distObj), itype(distObj), distObj.getDelayDeleteCount()))
         # Null out all references to the objects so they will get gcd
         self.dict = {}
         self.fifo = []
