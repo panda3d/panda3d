@@ -26,6 +26,7 @@
 #include "renderAttrib.h"
 #include "alphaTestAttrib.h"
 #include "antialiasAttrib.h"
+#include "audioVolumeAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "colorAttrib.h"
 #include "colorBlendAttrib.h"
@@ -38,6 +39,7 @@
 #include "depthWriteAttrib.h"
 #include "fogAttrib.h"
 #include "lightAttrib.h"
+#include "lightRampAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
@@ -48,7 +50,6 @@
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
-#include "audioVolumeAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AttribSlots
@@ -74,6 +75,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
   CPT(DepthWriteAttrib)      _depth_write;
   CPT(FogAttrib)             _fog;
   CPT(LightAttrib)           _light;
+  CPT(LightRampAttrib)       _light_ramp;
   CPT(MaterialAttrib)        _material;
   CPT(RenderModeAttrib)      _render_mode;
   CPT(RescaleNormalAttrib)   _rescale_normal;
@@ -95,9 +97,8 @@ class EXPCL_PANDA_PGRAPH AttribSlots
 
  public:
   // Each "array" reference requires a switch and a DCAST, so it's not overly fast.
-  enum { slot_count=24 };
+  enum { slot_count=26 };
   const RenderAttrib *get_slot(int n) const;
-  void set_slot(int n, const RenderAttrib *attrib);
 
  private:
   static AttribSlots _defvals;

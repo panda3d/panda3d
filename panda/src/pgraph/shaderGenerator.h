@@ -110,7 +110,9 @@ protected:
   bool _have_diffuse;
   bool _have_emission;
   bool _have_specular;
-
+  
+  bool _separate_ambient_diffuse;
+  
   int _map_index_normal;
   int _map_index_height;
   int _map_index_glow;

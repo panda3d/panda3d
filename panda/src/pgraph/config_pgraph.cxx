@@ -53,6 +53,7 @@
 #include "lensNode.h"
 #include "light.h"
 #include "lightAttrib.h"
+#include "lightRampAttrib.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
 #include "loader.h"
@@ -403,6 +404,7 @@ init_libpgraph() {
   LensNode::init_type();
   Light::init_type();
   LightAttrib::init_type();
+  LightRampAttrib::init_type();
   LightLensNode::init_type();
   LightNode::init_type();
   Loader::init_type();
@@ -482,6 +484,7 @@ init_libpgraph() {
   GeomNode::register_with_read_factory();
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
+  LightRampAttrib::register_with_read_factory();
   LODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   ModelNode::register_with_read_factory();

@@ -61,6 +61,7 @@
     lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
+    lightRampAttrib.I lightRampAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
     loader.I loader.h  \
@@ -172,6 +173,7 @@
     lensNode.cxx \
     light.cxx \
     lightAttrib.cxx \
+    lightRampAttrib.cxx \
     lightLensNode.cxx \
     lightNode.cxx \
     loader.cxx \
@@ -278,6 +280,7 @@
     lensNode.I lensNode.h \
     light.I light.h \
     lightAttrib.I lightAttrib.h \
+    lightRampAttrib.I lightRampAttrib.h \
     lightLensNode.I lightLensNode.h \
     lightNode.I lightNode.h \
     loader.I loader.h \

@@ -15,41 +15,6 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-//
-// Lighting calculations. These can be done either in tangent space
-// or model space.  Doing them in tangent space is necessary for
-// normal mapping.  However, it is only possible if tangents have
-// been computed.  If not, then model space is the only option.
-// The parameters needed for lighting are:
-//
-// Model Space:
-//
-//   vshader:
-//       model-space normal - varying
-//       model-space vertex position - varying
-//   fshader:
-//       model-space normal - varying
-//       model-space vertex position - varying
-//       model-space light position (spot or point) - uniform
-//       model-space light vector (directional) - uniform
-//       model-space eye position - uniform
-//
-// Tangent Space:
-//
-//   vshader:
-//       model-space normal - varying
-//       model-space tangent - varying
-//       model-space binormal - varying
-//       model-space light position (spot or point) - uniform
-//       model-space light vector (directional) - uniform
-//       model-space eye position - uniform
-//   fshader:
-//       model-space vertex position - varying
-//       tangent-space light vector, one per light - varying
-//       tangent-space eye vector - varying
-//       model-space light position (spot) - uniform
-//
-/////////////////////////////////////////////////////////////////////
 
 
 #include "renderState.h"
@@ -244,7 +209,7 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
   
-  // Determine whether model-space or tangent-space lighting is recommended.
+  // Determine whether lighting is needed.
 
   if (_attribs._light->get_num_on_lights() > 0) {
     _lighting = true;
@@ -295,9 +260,36 @@ analyze_renderstate(const RenderState *rs) {
       if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
         _have_specular = true;
       }
+    } else if (_map_index_gloss >= 0) {
+      _have_specular = true;
     }
   }
   
+  // Decide whether to separate ambient and diffuse calculations.
+
+  if (_have_ambient && _have_diffuse) {
+    if (_material->has_ambient()) {
+      if (_material->has_diffuse()) {
+        _separate_ambient_diffuse = _material->get_ambient() != _material->get_diffuse();
+      } else {
+        _separate_ambient_diffuse = true;
+      }
+    } else {
+      if (_material->has_diffuse()) {
+        _separate_ambient_diffuse = true;
+      } else {
+        _separate_ambient_diffuse = false;
+      }
+    }
+  }
+
+  if (_attribs._light_ramp->get_mode() != LightRampAttrib::LRT_identity) {
+    if (_separate_ambient_diffuse) {
+      pgraph_cat.error() << "Light Ramp incompatible with separate ambient/diffuse\n";
+      _separate_ambient_diffuse = false;
+    }
+  }
+
   // Does the shader need material properties as input?
   
   _need_material_props = 
@@ -325,6 +317,7 @@ clear_analysis() {
   _have_diffuse = false;
   _have_emission = false;
   _have_specular = false;
+  _separate_ambient_diffuse = false;
   _map_index_normal = -1;
   _map_index_height = -1;
   _map_index_glow = -1;
@@ -381,18 +374,22 @@ create_shader_attrib(const string &txt) {
 //               - vertex colors
 //               - lighting
 //               - normal maps
+//               - gloss maps
 //               - materials, but not updates to materials
 //               - modulated 2D textures
+//               - texture stage modes: modulate, decal, add
+//               - light ramps (for cartoon shading)
 //
 //               Not yet supported:
 //               - 3D textures
 //               - cube textures
-//               - texture stage modes: decal, blend, replace, add, etc.
+//               - texture stage modes: replace, blend
 //               - color scale attrib
 //               - texgen
 //               - texmatrix
-//               - gloss maps
-//               - glow maps
+//               - glow maps (not yet sure what these should do)
+//               - other TextureStage::Modes
+//               - cartoon thresholding and other special effects
 //
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
@@ -527,16 +524,6 @@ synthesize_shader(const RenderState *rs) {
   }
   
   if (_lighting) {
-    text << "\t // Begin model-space light calculations\n";
-    if (_have_ambient) {
-      text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
-    }
-    if (_have_diffuse) {
-      text << "\t float4 tot_diffuse = float4(0,0,0,0);\n";
-    }
-    if (_have_specular) {
-      text << "\t float4 tot_specular = float4(0,0,0,0);\n";
-    }
     if (_map_index_normal) {
       text << "\t // Translate tangent-space normal in map to model-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
@@ -545,14 +532,40 @@ synthesize_shader(const RenderState *rs) {
       text << "\t l_normal+= l_binormal * tsnormal.y;\n";
       text << "\t l_normal = normalize(l_normal);\n";
     } else {
+      text << "\t // Correct the surface normal for interpolation effects\n";
       text << "\t l_normal = normalize(l_normal);\n";
     }
+    text << "\t // Begin model-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
     text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
+    if (_separate_ambient_diffuse) {
+      if (_have_ambient) {
+        text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
+      }
+      if (_have_diffuse) {
+        text << "\t float4 tot_diffuse = float4(0,0,0,0);\n";
+      }
+    } else {
+      if (_have_ambient || _have_diffuse) {
+        text << "\t float4 tot_diffuse = float4(0,0,0,0);\n";
+      }
+    }
+    if (_have_specular) {
+      text << "\t float4 tot_specular = float4(0,0,0,0);\n";
+      if (_material->has_specular()) {
+        text << "\t float shininess = attr_material[3].w;\n";
+      } else {
+        text << "\t float shininess = 50; // no shininess specified, using default\n";
+      }
+    }
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t // Ambient Light " << i << "\n";
       text << "\t lcolor = alight_alight" << i << ";\n";
-      text << "\t tot_ambient += lcolor;\n";
+      if (_separate_ambient_diffuse) {
+        text << "\t tot_ambient += lcolor;\n";
+      } else {
+        text << "\t tot_diffuse += lcolor;\n";
+      }
     }
     for (int i=0; i<(int)_dlights.size(); i++) {
       text << "\t // Directional Light " << i << "\n";
@@ -567,7 +580,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t lhalf = dlight_dlight" << i << "_rel_model[3];\n";
         }
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -590,7 +603,7 @@ synthesize_shader(const RenderState *rs) {
           text << "\t lhalf = normalize(lvec - row1_view_to_model);\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -617,18 +630,47 @@ synthesize_shader(const RenderState *rs) {
           text << "\t lhalf = normalize(lvec - row1_view_to_model);\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), attr_material[3].w);\n";
+        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
+    switch (_attribs._light_ramp->get_mode()) {
+    case LightRampAttrib::LRT_identity:
+      break;
+    case LightRampAttrib::LRT_single_threshold:
+      {
+        float t = _attribs._light_ramp->get_threshold(0);
+        float l0 = _attribs._light_ramp->get_level(0);
+        float l1 = _attribs._light_ramp->get_level(1);
+        text << "\t // Single-threshold light ramp\n";
+        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+        text << "\t float lr_out = (lr_in < " << t << ") ? " << l0 << ":" << l1 << ";\n";
+        text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
+        break;
+      }
+    case LightRampAttrib::LRT_double_threshold:
+      {
+        float t0 = _attribs._light_ramp->get_threshold(0);
+        float t1 = _attribs._light_ramp->get_threshold(1);
+        float l0 = _attribs._light_ramp->get_level(0);
+        float l1 = _attribs._light_ramp->get_level(1);
+        float l2 = _attribs._light_ramp->get_level(2);
+        text << "\t // Double-threshold light ramp\n";
+        text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
+        text << "\t float lr_out = " << l0 << "\n";
+        text << "\t if (lr_in > " << t0 << ") lr_out=" << l1 << ";\n";
+        text << "\t if (lr_in > " << t1 << ") lr_out=" << l2 << ";\n";
+        text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
+        break;
+      }
+    }
     text << "\t // Begin model-space light summation\n";
-
     if (_have_emission) {
       text << "\t o_color = attr_material[2];\n";
     } else {
       text << "\t o_color = float4(0,0,0,0);\n";
     }
-    if (_have_ambient) {
+    if ((_have_ambient)&&(_separate_ambient_diffuse)) {
       if (_material->has_ambient()) {
         text << "\t o_color += tot_ambient * attr_material[0];\n";
       } else if (_vertex_colors) {
@@ -669,14 +711,44 @@ synthesize_shader(const RenderState *rs) {
   }
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = _attribs._texture->get_on_stage(i);
-    if ((stage->get_mode() != TextureStage::M_normal)&&
-        (stage->get_mode() != TextureStage::M_normal_height)) {
+    switch (stage->get_mode()) {
+    case TextureStage::M_modulate:
+    case TextureStage::M_modulate_glow:
+    case TextureStage::M_modulate_gloss:
       text << "\t o_color *= tex" << i << ";\n";
+      break;
+    case TextureStage::M_decal:
+      text << "\t o_color.rgb = lerp(o_color, tex" << i << ", tex" << i << ".a).rgb;\n";
+      break;
+    case TextureStage::M_blend:
+      pgraph_cat.error() << "TextureStage::Mode BLEND not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::M_replace:
+      pgraph_cat.error() << "TextureStage::Mode REPLACE not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::M_add:
+      text << "\t o_color.rbg = o_color.rgb + tex" << i << ".rgb;\n";
+      text << "\t o_color.a   = o_color.a * tex" << i << ".a;\n";
+      break;
+    case TextureStage::M_combine:
+      pgraph_cat.error() << "TextureStage::Mode COMBINE not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::M_blend_color_scale:
+      pgraph_cat.error() << "TextureStage::Mode BLEND_COLOR_SCALE not yet supported in per-pixel mode.\n";
+      break;
+    default:
+      break;
     }
   }
   if (_lighting) {
     if (_have_specular) {
-      text << "\t o_color += tot_specular;\n";
+      if (_material->has_specular()) {
+        text << "\t tot_specular *= attr_material[3];\n";
+      }
+      if (_map_index_gloss >= 0) {
+        text << "\t tot_specular *= tex" << _map_index_gloss << ".a;\n";
+      }
+      text << "\t o_color.rgb = o_color.rgb + tot_specular.rgb;\n";
     }
   }
   text << "}\n";

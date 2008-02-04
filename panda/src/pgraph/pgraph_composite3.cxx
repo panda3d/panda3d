@@ -2,6 +2,7 @@
 #include "lensNode.cxx"
 #include "light.cxx"
 #include "lightAttrib.cxx"
+#include "lightRampAttrib.cxx"
 #include "lightLensNode.cxx"
 #include "lightNode.cxx"
 #include "loader.cxx"
