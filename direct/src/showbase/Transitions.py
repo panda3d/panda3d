@@ -148,15 +148,16 @@ class Transitions:
         fadeIn or call noFade.
         lerp
         """
-        if base.config.GetBool('no-loading-screen',0):
-            return
-
         if (t == 0):
             # Fade out immediately with no lerp
             self.noTransitions()
             self.loadFade()
             self.fade.reparentTo(render2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
+        elif base.config.GetBool('no-loading-screen',0):
+            self.transitionIval = finishIval
+            if self.transitionIval:
+                self.transitionIval.start()       
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
