@@ -555,3 +555,7 @@ class DistributedObjectAI(DistributedObjectBase):
     def isGridParent(self):
         # If this distributed object is a DistributedGrid return 1.  0 by default
         return 0
+
+    def execCommand(self, string, mwMgrId, avId, zoneId):
+        pass
+    
