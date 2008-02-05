@@ -179,7 +179,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(ColorAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int color_override = new_state->get_override(ColorAttrib::get_class_type());
-      if (color_override >= _color_override) {
+      if (color_override >= _color_override || 
+          _color == (const RenderAttrib *)NULL) {
         // The node has a color attribute; apply it.
         if (_color == (const RenderAttrib *)NULL) {
           _color = node_attrib;
@@ -197,7 +198,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(ColorScaleAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int color_scale_override = new_state->get_override(ColorScaleAttrib::get_class_type());
-      if (color_scale_override >= _color_scale_override) {
+      if (color_scale_override >= _color_scale_override ||
+          _color_scale == (const RenderAttrib *)NULL) {
         if (_color_scale == (const RenderAttrib *)NULL) {
           _color_scale = node_attrib;
         } else {
@@ -214,7 +216,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(TexMatrixAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int tex_matrix_override = new_state->get_override(TexMatrixAttrib::get_class_type());
-      if (tex_matrix_override >= _tex_matrix_override) {
+      if (tex_matrix_override >= _tex_matrix_override ||
+          _tex_matrix == (const RenderAttrib *)NULL) {
         if (_tex_matrix == (const RenderAttrib *)NULL) {
           _tex_matrix = node_attrib;
         } else {
@@ -231,7 +234,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(TextureAttrib::get_class_type());
     if (tex_attrib != (const RenderAttrib *)NULL) {
       int texture_override = new_state->get_override(TextureAttrib::get_class_type());
-      if (texture_override >= _texture_override) {
+      if (texture_override >= _texture_override || 
+          _texture == (const RenderAttrib *)NULL) {
         if (_texture == (const RenderAttrib *)NULL) {
           _texture = tex_attrib;
         } else {
@@ -251,7 +255,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(ClipPlaneAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int clip_plane_override = new_state->get_override(ClipPlaneAttrib::get_class_type());
-      if (clip_plane_override >= _clip_plane_override) {
+      if (clip_plane_override >= _clip_plane_override || 
+          _clip_plane == (const RenderAttrib *)NULL) {
         if (_clip_plane == (const RenderAttrib *)NULL) {
           _clip_plane = node_attrib;
         } else {
@@ -268,7 +273,8 @@ collect(const RenderState *state, int attrib_types) {
       new_state->get_attrib(CullFaceAttrib::get_class_type());
     if (node_attrib != (const RenderAttrib *)NULL) {
       int cull_face_override = new_state->get_override(CullFaceAttrib::get_class_type());
-      if (cull_face_override >= _cull_face_override) {
+      if (cull_face_override >= _cull_face_override ||
+          _cull_face == (const RenderAttrib *)NULL) {
         if (_cull_face == (const RenderAttrib *)NULL) {
           _cull_face = node_attrib;
         } else {

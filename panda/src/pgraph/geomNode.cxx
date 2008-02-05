@@ -130,7 +130,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     for (size_t i = 0; i < num_geoms; ++i) {
       GeomEntry &entry = (*geoms)[i];
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
-      
+
       AccumulatedAttribs geom_attribs = attribs;
       entry._state = geom_attribs.collect(entry._state, attrib_types);
       
