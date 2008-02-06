@@ -2648,6 +2648,8 @@ class ArgumentEater:
     def __init__(self, numToEat, func):
         self._numToEat = numToEat
         self._func = func
+    def destroy(self):
+        del self._func
     def __call__(self, *args, **kwArgs):
         self._func(*args[self._numToEat:], **kwArgs)
 
