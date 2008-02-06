@@ -24,6 +24,11 @@ class DirectEntry(DirectFrame):
 
     directWtext = ConfigVariableBool('direct-wtext', 1)
 
+    AllowCapNamePrefixes = ("Al", "Ap", "Ben", "De", "Del", "Della", "Delle", "Der", "Di", "Du",
+                            "El", "Fitz", "La", "Las", "Le", "Les", "Lo", "Los",
+                            "Mac", "St", "Te", "Ten", "Van", "Von", )
+    ForceCapNamePrefixes = ("D'", "DeLa", "Dell'", "L'", "M'", "Mc", "O'", )
+
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:
@@ -68,6 +73,8 @@ class DirectEntry(DirectFrame):
             ('rolloverSound',   DGG.getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',      DGG.getDefaultClickSound(),    self.setClickSound),
             ('autoCapitalize',  0,                self.autoCapitalizeFunc),
+            ('autoCapitalizeAllowPrefixes', DirectEntry.AllowCapNamePrefixes, None),
+            ('autoCapitalizeForcePrefixes', DirectEntry.ForceCapNamePrefixes, None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -112,6 +119,11 @@ class DirectEntry(DirectFrame):
 
         # Call option initialization functions
         self.initialiseoptions(DirectEntry)
+
+        if not hasattr(self, 'autoCapitalizeAllowPrefixes'):
+            self.autoCapitalizeAllowPrefixes = DirectEntry.AllowCapNamePrefixes
+        if not hasattr(self, 'autoCapitalizeForcePrefixes'):
+            self.autoCapitalizeForcePrefixes = DirectEntry.ForceCapNamePrefixes
 
         # Update TextNodes for each state
         for i in range(self['numStates']):
@@ -196,38 +208,44 @@ class DirectEntry(DirectFrame):
 
     def _autoCapitalize(self):
         name = self.get().decode('utf-8')
-        # capitalize each word
+        # capitalize each word, allowing for things like McMutton
         capName = ''
-        # allow no more than two capital letters per word
-        capCount = 0
-        capMax = 2
+        # track each individual word to detect prefixes like Mc
+        wordSoFar = ''
+        # track whether the previous character was part of a word or not
+        wasNonWordChar = True
         for i in xrange(len(name)):
             character = name[i]
-            # is it a letter that can be capitalized?
-            # This assumes that string.lower and string.upper will return different
-            # values for all unicode letters.
-            canCapitalize = string.lower(character) != string.upper(character)
-            if not canCapitalize:
-                # this is a non-capitalize-able letter, assume we are between words.
-                # reset the per-word capital letter count
-                capCount = 0
+            # test to see if we are between words
+            # - Count characters that can't be capitalized as a break between words
+            #   This assumes that string.lower and string.upper will return different
+            #   values for all unicode letters.
+            # - Don't count apostrophes as a break between words
+            if ((string.lower(character) == string.upper(character)) and (character != "'")):
+                # we are between words
+                wordSoFar = ''
+                wasNonWordChar = True
             else:
                 capitalize = False
-                # if it's not preceded by a letter, capitalize it unconditionally;
-                # it's the first letter of a word
-                if (i == 0) or string.lower(name[i-1]) == string.upper(name[i-1]):
+                if wasNonWordChar:
+                    # first letter of a word, capitalize it unconditionally;
                     capitalize = True
-                elif capCount < capMax:
-                    # we haven't hit the per-word limit for capital letters yet
-                    # is it a capital letter?
-                    if (character == string.upper(character)):
-                        # allow this letter to remain capitalized
-                        capitalize = True
+                elif (character == string.upper(character) and
+                      len(self.autoCapitalizeAllowPrefixes) and
+                      wordSoFar in self.autoCapitalizeAllowPrefixes):
+                    # first letter after one of the prefixes, allow it to be capitalized
+                    capitalize = True
+                elif (len(self.autoCapitalizeForcePrefixes) and
+                      wordSoFar in self.autoCapitalizeForcePrefixes):
+                    # first letter after one of the force prefixes, force it to be capitalized
+                    capitalize = True
                 if capitalize:
+                    # allow this letter to remain capitalized
                     character = string.upper(character)
-                    capCount += 1
                 else:
                     character = string.lower(character)
+                wordSoFar += character
+                wasNonWordChar = False
             capName += character
         self.enterText(capName.encode('utf-8'))
 
