@@ -70,12 +70,14 @@ class GarbageReport(Job):
         if self._args.verbose:
             self.notify.info('found %s garbage items' % self.numGarbage)
 
+        """ spammy
         # print the types of the garbage first, in case the repr of an object
         # causes a crash
         if self.numGarbage > 0:
             self.notify.info('TYPES ONLY (this is only needed if a crash occurs before GarbageReport finishes):')
             for result in printNumberedTypesGen(self.garbage):
                 yield None
+                """
 
         self.referrersByReference = {}
         self.referrersByNumber = {}
