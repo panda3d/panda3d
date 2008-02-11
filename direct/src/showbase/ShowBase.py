@@ -279,12 +279,20 @@ class ShowBase(DirectObject.DirectObject):
         # Now we can make the TaskManager start using the new globalClock.
         taskMgr.globalClock = globalClock
 
+        # client CPU affinity is determined by, in order:
+        # - client-cpu-affinity-mask config
+        # - pcalt-# (# is CPU number, 0-based)
+        # - client-cpu-affinity config
         affinityMask = self.config.GetInt('client-cpu-affinity-mask', -1)
         if affinityMask != -1:
             TrueClock.getGlobalPtr().setCpuAffinity(affinityMask)
         else:
-            affinity = self.config.GetInt('client-cpu-affinity', -1)
-            if affinity != -1:
+            affinity = None
+            if 'clientIndex' in __builtin__.__dict__:
+                affinity = abs(int(__builtin__.clientIndex))
+            else:
+                affinity = self.config.GetInt('client-cpu-affinity', -1)
+            if affinity not in (None, -1):
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << affinity)
 
         __builtin__.base = self
