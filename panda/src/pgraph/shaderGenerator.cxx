@@ -146,6 +146,16 @@ analyze_renderstate(const RenderState *rs) {
 
   rs->store_into_slots(&_attribs);
 
+  // Figure out which bitplane should hold which output.
+  
+  int next = 0;
+  if (_attribs._aux_bitplane->get_outputs() & AuxBitplaneAttrib::ABO_color) {
+    _bitplane_color = next++;
+  }
+  if (_attribs._aux_bitplane->get_outputs() & AuxBitplaneAttrib::ABO_csnormal) {
+    _bitplane_normal = next++;
+  }
+
   // Count number of textures.
 
   _num_textures = 0;
@@ -155,7 +165,7 @@ analyze_renderstate(const RenderState *rs) {
   
   // Determine whether or not vertex colors or flat colors are present.
 
-  if (_attribs._color != 0) {
+  if ((_bitplane_color >= 0)&&(_attribs._color != 0)) {
     if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
       _vertex_colors = true;
     } else if (_attribs._color->get_color_type() == ColorAttrib::T_flat) {
@@ -211,10 +221,11 @@ analyze_renderstate(const RenderState *rs) {
   
   // Determine whether lighting is needed.
 
-  if (_attribs._light->get_num_on_lights() > 0) {
+  if ((_bitplane_color >= 0) &&
+      (_attribs._light->get_num_on_lights() > 0)) {
     _lighting = true;
   }
-
+  
   // Find the material.
 
   if (!_attribs._material->is_off()) {
@@ -225,7 +236,7 @@ analyze_renderstate(const RenderState *rs) {
   
   // Decide which material modes need to be calculated.
   
-  if (_alights.size() > 0) {
+  if (_lighting && (_alights.size() > 0)) {
     if (_material->has_ambient()) {
       Colorf a = _material->get_ambient();
       if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
@@ -236,7 +247,7 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  if (_dlights.size() + _plights.size() + _slights.size()) {
+  if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
     if (_material->has_diffuse()) {
       Colorf d = _material->get_diffuse();
       if ((d[0]!=0.0)||(d[1]!=0.0)||(d[2]!=0.0)) {
@@ -247,14 +258,14 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
   
-  if (_material->has_emission()) {
+  if (_lighting && (_material->has_emission())) {
     Colorf e = _material->get_emission();
     if ((e[0]!=0.0)||(e[1]!=0.0)||(e[2]!=0.0)) {
       _have_emission = true;
     }
   }
   
-  if (_dlights.size() + _plights.size() + _slights.size()) {
+  if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
     if (_material->has_specular()) {
       Colorf s = _material->get_specular();
       if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
@@ -283,13 +294,11 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
-  if (_attribs._light_ramp->get_mode() != LightRampAttrib::LRT_identity) {
-    if (_separate_ambient_diffuse) {
-      pgraph_cat.error() << "Light Ramp incompatible with separate ambient/diffuse\n";
-      _separate_ambient_diffuse = false;
-    }
+  if (_lighting && 
+      (_attribs._light_ramp->get_mode() != LightRampAttrib::LRT_identity)) {
+    _separate_ambient_diffuse = true;
   }
-
+  
   // Does the shader need material properties as input?
   
   _need_material_props = 
@@ -322,8 +331,11 @@ clear_analysis() {
   _map_index_height = -1;
   _map_index_glow = -1;
   _map_index_gloss = -1;
+  _bitplane_color = -1;
+  _bitplane_normal = -1;
   _attribs.clear_to_defaults();
   _material = (Material*)NULL;
+  _need_material_props = false;
   _alights.clear();
   _dlights.clear();
   _plights.clear();
@@ -391,6 +403,9 @@ create_shader_attrib(const string &txt) {
 //               - other TextureStage::Modes
 //               - cartoon thresholding and other special effects
 //
+//               Potential optimizations
+//               - omit attenuation calculations if attenuation off
+//
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderGenerator::
 synthesize_shader(const RenderState *rs) {
@@ -406,15 +421,16 @@ synthesize_shader(const RenderState *rs) {
   char *tangent_freg = 0;
   char *binormal_vreg = 0;
   char *binormal_freg = 0;
+  char *csnormal_freg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
-
+  
   if (_vertex_colors) {
     _vcregs_used = 1;
     _fcregs_used = 1;
   }
-  
+
   // Generate the shader's text.
 
   ostringstream text;
@@ -450,6 +466,15 @@ synthesize_shader(const RenderState *rs) {
       text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
     }
   }
+  if (_bitplane_normal >= 0) {
+    if (normal_vreg == 0) {
+      normal_vreg = alloc_vreg();
+      text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
+    }
+    csnormal_freg = alloc_freg();
+    text << "\t uniform float4x4 itp_modelview,\n";
+    text << "\t out float4 l_csnormal : " << csnormal_freg << ",\n";
+  }
   
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
@@ -467,10 +492,14 @@ synthesize_shader(const RenderState *rs) {
   if (_lighting) {
     text << "\t l_pos = vtx_position;\n";
     text << "\t l_normal = vtx_normal;\n";
-    if (_map_index_normal) {
+    if (_map_index_normal >= 0) {
       text << "\t l_tangent = vtx_tangent" << _map_index_normal << ";\n";
       text << "\t l_binormal = -vtx_binormal" << _map_index_normal << ";\n";
     }
+  }
+  if (_bitplane_normal >= 0) {
+    text << "\t l_csnormal.xyz = mul(itp_modelview, vtx_normal);\n";
+    text << "\t l_csnormal.w = 0;\n";
   }
   text << "}\n\n";
   
@@ -480,17 +509,14 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
     text << "\t uniform sampler2D tex_" << i << ",\n";
   }
-  if (_vertex_colors) {
-    text << "\t in float4 l_color : COLOR,\n";
-  } else {
-    text << "\t uniform float4 attr_color,\n";
-  }
   if (_lighting) {
     text << "\t in float3 l_normal : " << normal_freg << ",\n";
-    if (_map_index_normal) {
+    if (_map_index_normal >= 0) {
       text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
       text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
     }
+  }
+  if (_lighting) {
     text << "\t in float4 l_pos : " << pos_freg << ",\n";
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t uniform float4 alight_alight" << i << ",\n";
@@ -516,15 +542,28 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
-  text << "\t out float4 o_color : COLOR\n";
+  if (_bitplane_normal >= 0) {
+    text << "\t in float4 l_csnormal : " << csnormal_freg << ",\n";
+    text << "\t out float4 o_csnormal : COLOR" << _bitplane_normal << ",\n";
+  }
+  if (_bitplane_color >= 0) {
+    text << "\t out float4 o_color : COLOR" << _bitplane_color << ",\n";
+  }
+  if (_vertex_colors) {
+    text << "\t in float4 l_color : COLOR\n";
+  } else {
+    text << "\t uniform float4 attr_color\n";
+  }
   text << ") {\n";
+  if (_bitplane_color < 0) {
+    text << "float4 \t o_color;\n";
+  }
   text << "\t // Fetch all textures.\n";
   for (int i=0; i<_num_textures; i++) {
     text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
   }
-  
   if (_lighting) {
-    if (_map_index_normal) {
+    if (_map_index_normal >= 0) {
       text << "\t // Translate tangent-space normal in map to model-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
       text << "\t l_normal = l_normal * tsnormal.z;\n";
@@ -535,6 +574,12 @@ synthesize_shader(const RenderState *rs) {
       text << "\t // Correct the surface normal for interpolation effects\n";
       text << "\t l_normal = normalize(l_normal);\n";
     }
+  }
+  if (_bitplane_normal >= 0) {
+    text << "\t // Output the camera-space surface normal\n";
+    text << "\t o_csnormal = (normalize(l_csnormal)*0.5) + float4(0.5,0.5,0.5,0);\n";
+  }
+  if (_lighting) {
     text << "\t // Begin model-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
     text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
@@ -641,11 +686,10 @@ synthesize_shader(const RenderState *rs) {
       {
         float t = _attribs._light_ramp->get_threshold(0);
         float l0 = _attribs._light_ramp->get_level(0);
-        float l1 = _attribs._light_ramp->get_level(1);
         text << "\t // Single-threshold light ramp\n";
         text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-        text << "\t float lr_out = (lr_in < " << t << ") ? " << l0 << ":" << l1 << ";\n";
-        text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
+        text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
+        text << "\t tot_diffuse = tot_diffuse * lr_scale;\n";
         break;
       }
     case LightRampAttrib::LRT_double_threshold:
@@ -692,12 +736,13 @@ synthesize_shader(const RenderState *rs) {
         text << "\t o_color += tot_diffuse;\n";
       }
     }
+    // Use of lerp here is a workaround for a radeon driver bug.
     if (_vertex_colors) {
-      text << "\t o_color.a = l_color.a;\n";
+      text << "\t o_color = lerp(o_color, l_color, float4(0,0,0,1));\n";
     } else if (_flat_colors) {
-      text << "\t o_color.a = attr_color.a;\n";
+      text << "\t o_color = lerp(o_color, attr_color, float4(0,0,0,1));\n";
     } else {
-      text << "\t o_color.a = 1;\n";
+      text << "\t o_color.a = lerp(o_color, float4(1,1,1,1), float4(0,0,0,1));\n";
     }
     text << "\t // End model-space light calculations\n";
   } else {

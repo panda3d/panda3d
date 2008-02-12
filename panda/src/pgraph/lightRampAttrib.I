@@ -28,7 +28,6 @@ LightRampAttrib() {
   _mode = LRT_identity;
   _level[0] = 0.0;
   _level[1] = 0.0;
-  _level[2] = 0.0;
   _threshold[0] = 0.0;
   _threshold[1] = 0.0;
 }
@@ -50,7 +49,7 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float LightRampAttrib::
 get_level(int n) const {
-  if ((n<0)||(n>2)) return 0.0;
+  if ((n<0)||(n>1)) return 0.0;
   return _level[n];
 }
 

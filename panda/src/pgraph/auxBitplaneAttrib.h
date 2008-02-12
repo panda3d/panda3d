@@ -1,4 +1,4 @@
-// Filename: lightRampAttrib.h
+// Filename: auxBitplaneAttrib.h
 // Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef LIGHTRAMPATTRIB_H
-#define LIGHTRAMPATTRIB_H
+#ifndef AUXBITPLANEATTRIB_H
+#define AUXBITPLANEATTRIB_H
 
 #include "pandabase.h"
 #include "renderAttrib.h"
@@ -25,35 +25,30 @@
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : LightRampAttrib
-// Description : The LightRampAttrib alters the light level reaching
-//               the surface of the model by applying a "ramp" function.
-//               Typically, this is used for cartoon lighting, in which
-//               case the ramp is a step-function.  
+//       Class : AuxBitplaneAttrib
+// Description : Modern frame buffers can have 'aux' bitplanes, which
+//               are additional bitplanes above and beyond the
+//               standard depth and color.  This attrib controls what
+//               gets rendered into those additional bitplanes when
+//               using the standard shader generator.
 //
-//               LightRampAttrib is relevant only when lighting and
-//               shader generation are both enabled. Otherwise, it has
-//               no effect.  The light ramp only affects the diffuse
-//               contribution.  Ambient light is not ramped.
+//               AuxBitplaneAttrib is relevant only when shader
+//               generation is enabled. Otherwise, it has no effect.
 //
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH LightRampAttrib : public RenderAttrib {
+class EXPCL_PANDA_PGRAPH AuxBitplaneAttrib : public RenderAttrib {
 private:
-  INLINE LightRampAttrib();
+  INLINE AuxBitplaneAttrib(int outputs);
 
 PUBLISHED:
-  enum LightRampMode {
-    LRT_identity,
-    LRT_single_threshold,
-    LRT_double_threshold,
+  enum AuxBitplaneOutput {
+    ABO_color = 1,     // The usual.
+    ABO_csnormal = 2,  // Camera space normal.
   };
-  static CPT(RenderAttrib) make_identity();
-  static CPT(RenderAttrib) make_single_threshold(float thresh0, float lev0);
-  static CPT(RenderAttrib) make_double_threshold(float thresh0, float lev0, float thresh1, float lev1);
+  static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make(int outputs);
   
-  INLINE LightRampMode get_mode() const;
-  INLINE float get_level(int n) const;
-  INLINE float get_threshold(int n) const;
+  INLINE int get_outputs() const;
   
 public:
   virtual void output(ostream &out) const;
@@ -64,11 +59,9 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
   
 private:
-  LightRampMode _mode;
-  float _level[2];
-  float _threshold[2];
+  int _outputs;
 
-  static CPT(RenderAttrib) LightRampAttrib::_identity;
+  static CPT(RenderAttrib) AuxBitplaneAttrib::_default;
 
 public:
   static void register_with_read_factory();
@@ -84,7 +77,7 @@ public:
   }
   static void init_type() {
     RenderAttrib::init_type();
-    register_type(_type_handle, "LightRampAttrib",
+    register_type(_type_handle, "AuxBitplaneAttrib",
                   RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -96,7 +89,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "lightRampAttrib.I"
+#include "auxBitplaneAttrib.I"
 
 #endif
 

@@ -118,6 +118,9 @@ protected:
   int _map_index_glow;
   int _map_index_gloss;
   
+  int _bitplane_color;
+  int _bitplane_normal;
+  
   bool _need_material_props;
   
   void analyze_renderstate(const RenderState *rs);

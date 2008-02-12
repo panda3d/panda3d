@@ -70,7 +70,8 @@ public:
 
     SMO_window_size,
     SMO_pixel_size,
-    SMO_card_center,
+    SMO_texpad_x,
+    SMO_texpix_x,
     
     SMO_attr_material,
     SMO_attr_color,

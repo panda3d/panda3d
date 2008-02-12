@@ -27,6 +27,7 @@
 #include "alphaTestAttrib.h"
 #include "antialiasAttrib.h"
 #include "audioVolumeAttrib.h"
+#include "auxBitplaneAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "colorAttrib.h"
 #include "colorBlendAttrib.h"
@@ -63,6 +64,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
   CPT(AlphaTestAttrib)       _alpha_test;
   CPT(AntialiasAttrib)       _antialias;
   CPT(AudioVolumeAttrib)     _audio_volume;
+  CPT(AuxBitplaneAttrib)     _aux_bitplane;
   CPT(ClipPlaneAttrib)       _clip_plane;
   CPT(ColorAttrib)           _color;
   CPT(ColorBlendAttrib)      _color_blend;
@@ -97,7 +99,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
 
  public:
   // Each "array" reference requires a switch and a DCAST, so it's not overly fast.
-  enum { slot_count=26 };
+  enum { slot_count=27 };
   const RenderAttrib *get_slot(int n) const;
 
  private:

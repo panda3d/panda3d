@@ -1,4 +1,4 @@
-// Filename: lightRampAttrib.cxx
+// Filename: auxBitplaneAttrib.cxx
 // Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lightRampAttrib.h"
+#include "auxBitplaneAttrib.h"
 #include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
@@ -25,180 +25,132 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-TypeHandle LightRampAttrib::_type_handle;
-CPT(RenderAttrib) LightRampAttrib::_identity;
+TypeHandle AuxBitplaneAttrib::_type_handle;
+CPT(RenderAttrib) AuxBitplaneAttrib::_default;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::make_identity
+//     Function: AuxBitplaneAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
+//  Description: Constructs a default AuxBitplaneAttrib object.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) LightRampAttrib::
-make_identity() {
-  if (_identity == 0) {
-    LightRampAttrib *attrib = new LightRampAttrib();
-    _identity = return_new(attrib);
+CPT(RenderAttrib) AuxBitplaneAttrib::
+make() {
+  if (_default == 0) {
+    AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(ABO_color);
+    _default = return_new(attrib);
   }
-  return _identity;
+  return _default;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::make_single_threshold
+//     Function: AuxBitplaneAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
+//  Description: Constructs a specified AuxBitplaneAttrib object.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) LightRampAttrib::
-make_single_threshold(float thresh0, float val0) {
-  LightRampAttrib *attrib = new LightRampAttrib();
-  attrib->_mode = LRT_single_threshold;
-  attrib->_threshold[0] = thresh0;
-  attrib->_level[0] = val0;
+CPT(RenderAttrib) AuxBitplaneAttrib::
+make(int outputs) {
+  AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(outputs);
   return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::make_double_threshold
-//       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
-////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) LightRampAttrib::
-make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
-  LightRampAttrib *attrib = new LightRampAttrib();
-  attrib->_mode = LRT_single_threshold;
-  attrib->_threshold[0] = thresh0;
-  attrib->_level[0] = val0;
-  attrib->_threshold[1] = thresh1;
-  attrib->_level[1] = val1;
-  return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::output
+//     Function: AuxBitplaneAttrib::output
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void LightRampAttrib::
+void AuxBitplaneAttrib::
 output(ostream &out) const {
-  out << get_type() << ":";
-  switch (_mode) {
-  case LRT_identity:
-    out << "identity()";
-    break;
-  case LRT_single_threshold:
-    out << "single_threshold(" << _level[0] << "," << _level[1] << "," << _threshold[0] << ")";
-    break;
-  case LRT_double_threshold:
-    out << "double_threshold(" << _level[0] << "," << _level[1] << "," << _level[2] << "," << _threshold[0] << "," << _threshold[0] << ")";
-    break;
-  }
+  out << get_type() << "(" << _outputs << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::compare_to_impl
+//     Function: AuxBitplaneAttrib::compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived LightRampAttrib
+//  Description: Intended to be overridden by derived AuxBitplaneAttrib
 //               types to return a unique number indicating whether
-//               this LightRampAttrib is equivalent to the other one.
+//               this AuxBitplaneAttrib is equivalent to the other one.
 //
-//               This should return 0 if the two LightRampAttrib objects
+//               This should return 0 if the two AuxBitplaneAttrib objects
 //               are equivalent, a number less than zero if this one
 //               should be sorted before the other one, and a number
 //               greater than zero otherwise.
 //
-//               This will only be called with two LightRampAttrib
+//               This will only be called with two AuxBitplaneAttrib
 //               objects whose get_type() functions return the same.
 ////////////////////////////////////////////////////////////////////
-int LightRampAttrib::
+int AuxBitplaneAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const LightRampAttrib *ta;
+  const AuxBitplaneAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  int compare_result = ((int)_mode - (int)ta->_mode) ;
+  int compare_result = _outputs - ta->_outputs;
   if (compare_result!=0) {
     return compare_result;
-  }
-  for (int i=0; i<2; i++) {
-    compare_result = _level[i] - ta->_level[i];
-    if (compare_result!=0) {
-      return compare_result;
-    }
-  }
-  for (int i=0; i<2; i++) {
-    compare_result = _threshold[i] - ta->_threshold[i];
-    if (compare_result!=0) {
-      return compare_result;
-    }
   }
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::make_default_impl
+//     Function: AuxBitplaneAttrib::make_default_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived LightRampAttrib
+//  Description: Intended to be overridden by derived AuxBitplaneAttrib
 //               types to specify what the default property for a
-//               LightRampAttrib of this type should be.
+//               AuxBitplaneAttrib of this type should be.
 //
-//               This should return a newly-allocated LightRampAttrib of
+//               This should return a newly-allocated AuxBitplaneAttrib of
 //               the same type that corresponds to whatever the
-//               standard default for this kind of LightRampAttrib is.
+//               standard default for this kind of AuxBitplaneAttrib is.
 ////////////////////////////////////////////////////////////////////
-RenderAttrib *LightRampAttrib::
+RenderAttrib *AuxBitplaneAttrib::
 make_default_impl() const {
-  return new LightRampAttrib;
+  return new AuxBitplaneAttrib(ABO_color);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::store_into_slot
+//     Function: AuxBitplaneAttrib::store_into_slot
 //       Access: Public, Virtual
 //  Description: Stores this attrib into the appropriate slot of
 //               an object of class AttribSlots.
 ////////////////////////////////////////////////////////////////////
-void LightRampAttrib::
+void AuxBitplaneAttrib::
 store_into_slot(AttribSlots *slots) const {
-  slots->_light_ramp = this;
+  slots->_aux_bitplane = this;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::register_with_read_factory
+//     Function: AuxBitplaneAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               LightRampAttrib.
+//               AuxBitplaneAttrib.
 ////////////////////////////////////////////////////////////////////
-void LightRampAttrib::
+void AuxBitplaneAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::write_datagram
+//     Function: AuxBitplaneAttrib::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void LightRampAttrib::
+void AuxBitplaneAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
-  dg.add_int8(_mode);
-  for (int i=0; i<2; i++) {
-    dg.add_float32(_level[i]);
-  }
-  for (int i=0; i<2; i++) {
-    dg.add_float32(_threshold[i]);
-  }
+  dg.add_int32(_outputs);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::make_from_bam
+//     Function: AuxBitplaneAttrib::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type LightRampAttrib is encountered
-//               in the Bam file.  It should create the LightRampAttrib
+//               when a new object of type AuxBitplaneAttrib is encountered
+//               in the Bam file.  It should create the AuxBitplaneAttrib
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *LightRampAttrib::
+TypedWritable *AuxBitplaneAttrib::
 make_from_bam(const FactoryParams &params) {
-  LightRampAttrib *attrib = new LightRampAttrib;
+  AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -209,21 +161,15 @@ make_from_bam(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightRampAttrib::fillin
+//     Function: AuxBitplaneAttrib::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new LightRampAttrib.
+//               the new AuxBitplaneAttrib.
 ////////////////////////////////////////////////////////////////////
-void LightRampAttrib::
+void AuxBitplaneAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  _mode = (LightRampMode)scan.get_int8();
-  for (int i=0; i<2; i++) {
-    _level[i] = scan.get_float32();
-  }
-  for (int i=0; i<2; i++) {
-    _threshold[i] = scan.get_float32();
-  }
+  _outputs = scan.get_int32();
 }

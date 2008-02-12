@@ -348,7 +348,9 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_view_to_model)) {
     dep |= SSD_transform;
   }
-  if ((inp == SMO_alight_x)||
+  if ((inp == SMO_texpad_x)||
+      (inp == SMO_texpix_x)||
+      (inp == SMO_alight_x)||
       (inp == SMO_dlight_x)||
       (inp == SMO_plight_x)||
       (inp == SMO_slight_x)||
@@ -789,12 +791,6 @@ compile_parameter(const ShaderArgId  &arg_id,
       }
       bind._part[0] = SMO_window_size;
       bind._arg[0] = NULL;
-    } else if (pieces[1] == "cardcenter") {
-      if (!cp_errchk_parameter_float(p, 2, 2)) {
-        return false;
-      }
-      bind._part[0] = SMO_card_center;
-      bind._arg[0] = NULL;
     } else {
       cp_report_error(p,"unknown system parameter");
       return false;
@@ -906,6 +902,48 @@ compile_parameter(const ShaderArgId  &arg_id,
       cp_report_error(p, "Invalid type for a k-parameter");
       return false;
     }
+    return true;
+  }
+
+  // Keywords to fetch texture parameter data.
+  
+  if (pieces[0] == "texpad") {
+    if ((!cp_errchk_parameter_words(p,2)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,3,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texpad_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "texpix") {
+    if ((!cp_errchk_parameter_words(p,2)) ||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,2,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texpix_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
     return true;
   }
 

@@ -894,12 +894,25 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
                                  0.0);
     return &t;
   }
-  case Shader::SMO_card_center: {
-    int px = _current_display_region->get_pixel_width();
-    int py = _current_display_region->get_pixel_height();
-    t = LMatrix4f::translate_mat((px*0.5) / Texture::up_to_power_2(px),
-                                 (py*0.5) / Texture::up_to_power_2(py),
-                                 0.0);
+  case Shader::SMO_texpad_x: {
+    Texture *tex = _target._shader->get_shader_input_texture(name);
+    nassertr(tex != 0, &LMatrix4f::zeros_mat());
+    int sx = tex->get_x_size() - tex->get_pad_x_size();
+    int sy = tex->get_y_size() - tex->get_pad_y_size();
+    int sz = tex->get_z_size() - tex->get_pad_z_size();
+    double cx = (sx * 0.5) / tex->get_x_size();
+    double cy = (sy * 0.5) / tex->get_y_size();
+    double cz = (sz * 0.5) / tex->get_z_size();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,cx,cy,cz,0);
+    return &t;
+  }
+  case Shader::SMO_texpix_x: {
+    Texture *tex = _target._shader->get_shader_input_texture(name);
+    nassertr(tex != 0, &LMatrix4f::zeros_mat());
+    double px = 1.0 / tex->get_x_size();
+    double py = 1.0 / tex->get_y_size();
+    double pz = 1.0 / tex->get_z_size();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,px,py,pz,0);
     return &t;
   }
   case Shader::SMO_attr_material: {

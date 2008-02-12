@@ -20,6 +20,7 @@
 
 #include "alphaTestAttrib.h"
 #include "audioVolumeAttrib.h"
+#include "auxBitplaneAttrib.h"
 #include "ambientLight.h"
 #include "antialiasAttrib.h"
 #include "auxSceneData.h"
@@ -373,6 +374,7 @@ init_libpgraph() {
   AmbientLight::init_type();
   AntialiasAttrib::init_type();
   AudioVolumeAttrib::init_type();
+  AuxBitplaneAttrib::init_type();
   AuxSceneData::init_type();
   BillboardEffect::init_type();
   Camera::init_type();
@@ -462,6 +464,7 @@ init_libpgraph() {
   AmbientLight::register_with_read_factory();
   AntialiasAttrib::register_with_read_factory();
   AudioVolumeAttrib::register_with_read_factory();
+  AuxBitplaneAttrib::register_with_read_factory();
   BillboardEffect::register_with_read_factory();
   Camera::register_with_read_factory();
   ClipPlaneAttrib::register_with_read_factory();

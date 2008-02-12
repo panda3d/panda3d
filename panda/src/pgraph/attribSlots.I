@@ -27,6 +27,7 @@ clear_to_zero() {
   _alpha_test     = NULL;
   _antialias      = NULL;
   _audio_volume   = NULL;
+  _aux_bitplane   = NULL;
   _clip_plane     = NULL;
   _color          = NULL;
   _color_blend    = NULL;
