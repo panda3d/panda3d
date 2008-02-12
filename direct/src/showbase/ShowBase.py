@@ -293,7 +293,8 @@ class ShowBase(DirectObject.DirectObject):
             else:
                 affinity = self.config.GetInt('client-cpu-affinity', -1)
             if affinity not in (None, -1):
-                TrueClock.getGlobalPtr().setCpuAffinity(1 << affinity)
+                # Windows XP supports a 32-bit affinity mask
+                TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
         __builtin__.base = self
         __builtin__.render2d = self.render2d
