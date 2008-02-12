@@ -61,7 +61,7 @@ protected:
 private:
   int _outputs;
 
-  static CPT(RenderAttrib) AuxBitplaneAttrib::_default;
+  static CPT(RenderAttrib) _default;
 
 public:
   static void register_with_read_factory();

@@ -68,7 +68,7 @@ private:
   float _level[2];
   float _threshold[2];
 
-  static CPT(RenderAttrib) LightRampAttrib::_identity;
+  static CPT(RenderAttrib) _identity;
 
 public:
   static void register_with_read_factory();
