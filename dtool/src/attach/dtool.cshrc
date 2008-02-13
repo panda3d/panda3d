@@ -18,7 +18,7 @@ else if ( $OS == "IRIX64" ) then
              /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
              /usr/demos/bin /usr/local/bin )
   setenv LD_LIBRARY_PATH "/usr/local/lib:."
-else if (($OS == "CYGWIN_NT-5.1") || ($OS == "CYGWIN_NT-6.0")|| ($OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "WINNT" )) then
+else if (($OS == "CYGWIN_NT-5.1") || ($OS == "CYGWIN_NT-6.0") || ($OS == "CYGWIN_NT-5.2-WOW64") || ($OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "WINNT" )) then
   set path = ( /bin /usr/bin /usr/lib /usr/local/bin /contrib/bin $path . )
   if ( $?LIB ) then
     setenv LIB "$LIB;"`cygpath -w /usr/lib`
@@ -41,7 +41,7 @@ endif
 #setenv MANPATH "/usr/local/man:/usr/man/preformat:/usr/man:/usr/X11R6/man"
 #else if ( $OS == "IRIX64" ) then
 #setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
-#else if (( $OS == "CYGWIN_NT-5.1") || ( $OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
+#else if (( $OS == "CYGWIN_NT-5.1") || ( $OS == "CYGWIN_NT-5.2-WOW64" ) || ( $OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
 #setenv MANPATH "/usr/man:/contrib/man"
 #else
 #setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
