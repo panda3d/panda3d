@@ -1218,3 +1218,24 @@ operator << (ostream &out, GraphicsOutput::FrameMode fm) {
   return out << "(**invalid GraphicsOutput::FrameMode(" << (int)fm << ")**)";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::share_depth_buffer
+//       Access: Published, Virtual
+//  Description: Will attempt to use the depth buffer of the input
+//               graphics_output. The buffer sizes must be exactly 
+//               the same. 
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+share_depth_buffer(GraphicsOutput *graphics_output) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::unshare_depth_buffer
+//       Access: Published, Virtual
+//  Description: Discontinue sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+unshare_depth_buffer() {
+
+}

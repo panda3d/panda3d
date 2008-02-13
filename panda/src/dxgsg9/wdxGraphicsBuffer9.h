@@ -51,6 +51,12 @@ public:
   virtual void select_cube_map(int cube_map_index);
   virtual void process_events();
 
+  virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
+  virtual void unshare_depth_buffer();
+
+  void register_shared_depth_buffer(GraphicsOutput *graphics_output);
+  void unregister_shared_depth_buffer(GraphicsOutput *graphics_output);
+
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
@@ -72,6 +78,9 @@ private:
   int _backing_sizex;
   int _backing_sizey;
 
+  wdxGraphicsBuffer9 *_shared_depth_buffer;
+  list <wdxGraphicsBuffer9 *> _shared_depth_buffer_list;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -87,6 +96,7 @@ public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
+  bool _debug;
   static TypeHandle _type_handle;
 
   friend class DXGraphicsStateGuardian9;

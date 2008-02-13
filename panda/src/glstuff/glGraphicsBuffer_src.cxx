@@ -46,6 +46,8 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
     _rb[i] = 0;
     _tex[i] = 0;
   }
+
+  _shared_depth_buffer = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +57,24 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsBuffer)::
 ~CLP(GraphicsBuffer)() {
+  // unshare shared depth buffer if any
+  this -> unshare_depth_buffer();  
+
+  // unshare all buffers that are sharing this object's depth buffer
+  {
+    CLP(GraphicsBuffer) *graphics_buffer;
+    list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+
+    graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
+    while (graphics_buffer_iterator != _shared_depth_buffer_list.end( )) {
+      graphics_buffer = (*graphics_buffer_iterator);
+      if (graphics_buffer) {      
+        // this call removes the entry from the list
+        graphics_buffer -> unshare_depth_buffer();
+      }      
+      graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
+    }
+  }  
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -336,7 +356,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     
     // If a renderbuffer is already attached to the slot, and it's
     // the right size, then no update of this slot is needed.
-    if ((_rb[slot] != 0)&&(!rb_resize)) {
+    if (_shared_depth_buffer == 0 && (_rb[slot] != 0)&&(!rb_resize)) {
       return;
     }
     
@@ -352,16 +372,33 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
         glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
                                       _rb_size_x, _rb_size_y);
         glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+
+        GLuint rb;
+
+        rb = _rb[slot];
+        if (_shared_depth_buffer) {
+          rb = _shared_depth_buffer -> _rb[slot];
+        }
+        
         glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+                                          GL_RENDERBUFFER_EXT, rb);
+
         glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+                                          GL_RENDERBUFFER_EXT, rb);
       } else {
         glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
                                       _rb_size_x, _rb_size_y);
         glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+
+        GLuint rb;
+
+        rb = _rb[slot];
+        if (_shared_depth_buffer) {
+          rb = _shared_depth_buffer -> _rb[slot];
+        }
+
         glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rb[slot]);
+                                          GL_RENDERBUFFER_EXT, rb);
       }
     } else {
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA,
@@ -577,3 +614,92 @@ close_buffer() {
   _is_valid = false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::share_depth_buffer
+//       Access: Published 
+//  Description: Will attempt to use the depth buffer of the input
+//               graphics_output. The buffer sizes must be exactly 
+//               the same. 
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsBuffer)::
+share_depth_buffer(GraphicsOutput *graphics_output) {
+
+  bool state;
+  CLP(GraphicsBuffer) *input_graphics_output;
+  
+  state = false;
+  input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
+  if (this != input_graphics_output && input_graphics_output) {
+
+    state = true;
+    this -> unshare_depth_buffer();
+    
+    // check buffer sizes
+    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {    
+      GLCAT.error() << "share_depth_buffer: non matching width \n";
+      state = false;    
+    }
+
+    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {     
+      GLCAT.error() << "share_depth_buffer: non matching height \n";
+      state = false;    
+    }
+
+    if (state) {    
+      // let the input GraphicsOutput know that there is an object 
+      // sharing its depth buffer      
+      input_graphics_output -> register_shared_depth_buffer(this);
+      _shared_depth_buffer = input_graphics_output;
+      state = true;
+    }
+  }
+  
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::unshare_depth_buffer
+//       Access: Published 
+//  Description: Discontinue sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+unshare_depth_buffer() {
+  if (_shared_depth_buffer) {
+    // let the GraphicsOutput know that this object is no longer
+    // sharing its depth buffer
+    _shared_depth_buffer -> unregister_shared_depth_buffer(this);  
+    _shared_depth_buffer = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::register_shared_depth_buffer
+//       Access: Public
+//  Description: Register/save who is sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+register_shared_depth_buffer(GraphicsOutput *graphics_output) {
+  CLP(GraphicsBuffer) *input_graphics_output;
+  
+  input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
+  if (input_graphics_output) {
+    // add to list  
+    _shared_depth_buffer_list.push_back(input_graphics_output);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
+//       Access: Public
+//  Description: Unregister who is sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
+  CLP(GraphicsBuffer) *input_graphics_output;
+  
+  input_graphics_output = DCAST (CLP(GraphicsBuffer), graphics_output);
+  if (input_graphics_output) {
+    // remove from list  
+    _shared_depth_buffer_list.remove(input_graphics_output);
+  }
+}

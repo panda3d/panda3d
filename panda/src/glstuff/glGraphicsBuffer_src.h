@@ -70,6 +70,12 @@ public:
 
   virtual void select_cube_map(int cube_map_index);
 
+  virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
+  virtual void unshare_depth_buffer();
+
+  void register_shared_depth_buffer(GraphicsOutput *graphics_output);
+  void unregister_shared_depth_buffer(GraphicsOutput *graphics_output);
+
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
@@ -89,6 +95,9 @@ private:
   PT(Texture) _tex[RTP_COUNT];
   GLuint      _rb[RTP_COUNT];
   GLenum      _attach_point[RTP_COUNT];
+
+  CLP(GraphicsBuffer) *_shared_depth_buffer;
+  list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
   
 public:
   static TypeHandle get_class_type() {

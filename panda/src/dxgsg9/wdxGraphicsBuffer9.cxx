@@ -54,6 +54,9 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
 
+  _shared_depth_buffer = 0;
+  _debug = 0;
+  
   if (_gsg) {
     // save to GSG list to handle device lost issues
     DXGraphicsStateGuardian9 *dxgsg;
@@ -79,6 +82,29 @@ wdxGraphicsBuffer9::
     dxgsg -> _graphics_buffer_list.remove(this);
   }
 
+  // unshare shared depth buffer if any
+  this -> unshare_depth_buffer();  
+
+  // unshare all buffers that are sharing this object's depth buffer
+  {
+    wdxGraphicsBuffer9 *graphics_buffer;
+    list <wdxGraphicsBuffer9 *>::iterator graphics_buffer_iterator;
+
+    graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
+    while (graphics_buffer_iterator != _shared_depth_buffer_list.end( )) {
+      graphics_buffer = (*graphics_buffer_iterator);
+      if (graphics_buffer) {      
+        // this call removes the entry from the list
+        graphics_buffer -> unshare_depth_buffer();
+      }      
+      graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
+    }
+  }  
+
+  if (_debug) {
+    printf ("wdxGraphicsBuffer9 destructor \n");
+  }
+  
   this -> close_buffer ( );
 }
 
@@ -147,7 +173,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::save_bitplanes
+//     Function: wdxGraphicsBuffer9::save_bitplanes
 //       Access: Public
 //  Description: After rendering, d3d_device will need to be restored
 //               to its initial state.  This function saves the state.
@@ -170,7 +196,7 @@ save_bitplanes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::restore_bitplanes
+//     Function: wdxGraphicsBuffer9::restore_bitplanes
 //       Access: Public
 //  Description: After rendering, d3d_device will need to be restored
 //               to its initial state.  This function restores the state.
@@ -200,14 +226,13 @@ restore_bitplanes() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::rebuild_bitplanes
+//     Function: wdxGraphicsBuffer9::rebuild_bitplanes
 //       Access: Public
 //  Description: If necessary, reallocates (or allocates) the
 //               bitplanes for the buffer.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsBuffer9::
 rebuild_bitplanes() {
-
   HRESULT hr;
   Texture *color_tex = 0;
   Texture *depth_tex = 0;
@@ -300,30 +325,51 @@ rebuild_bitplanes() {
     }
   }
 
+  bool release_depth;
+  
+  release_depth = true;  
   if (depth_tex_index < 0) {
-    // Maintain the backing depth surface.
-    if ((_depth_backing_store)&&
-        ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
-      _depth_backing_store->Release();
-      _depth_backing_store = NULL;
-    }
-    if (!_depth_backing_store) {
-      hr = _dxgsg -> _d3d_device ->
-        CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
-                                   _saved_depth_desc.MultiSampleType, _saved_depth_desc.MultiSampleQuality,
-                                   false, &_depth_backing_store, NULL);
-      if (!SUCCEEDED(hr)) {
-        dxgsg9_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+    if (_shared_depth_buffer) {
+      if (_shared_depth_buffer -> _depth_backing_store) {
+        if (_debug) {
+          printf ("SHARE DEPTH BUFFER\n");
+        }
+        depth_surf = _shared_depth_buffer -> _depth_backing_store;
+        release_depth = false;
       }
     }
-    depth_surf = _depth_backing_store;
+    if (depth_surf == 0) {
+      // Maintain the backing depth surface.
+      if ((_depth_backing_store)&&
+          ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
+        _depth_backing_store->Release();
+        _depth_backing_store = NULL;
+      }
+      if (!_depth_backing_store) {
+        hr = _dxgsg -> _d3d_device ->
+          CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
+                                     _saved_depth_desc.MultiSampleType, _saved_depth_desc.MultiSampleQuality,
+                                     false, &_depth_backing_store, NULL);
+        if (!SUCCEEDED(hr)) {
+          dxgsg9_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+        }
+      }
+      depth_surf = _depth_backing_store;
+    }
   } else {
     // Maintain the depth texture.
     if (_depth_backing_store) {
       _depth_backing_store->Release();
       _depth_backing_store = NULL;
     }
-    depth_tex = get_texture(depth_tex_index);
+
+    if (_shared_depth_buffer) {      
+      depth_tex = _shared_depth_buffer -> get_texture(depth_tex_index);
+    }
+    if (depth_tex == 0) {        
+      depth_tex = get_texture(depth_tex_index);
+    }
+
     depth_tex->set_x_size(bitplane_x);
     depth_tex->set_y_size(bitplane_y);
     depth_tex->set_format(Texture::F_depth_stencil);
@@ -374,9 +420,13 @@ rebuild_bitplanes() {
   if ((color_surf != 0)&&(color_surf != _color_backing_store)) {
     color_surf->Release();
   }
-  if ((depth_surf != 0)&&(depth_surf != _depth_backing_store)) {
-    depth_surf->Release();
+
+  if (release_depth) {
+    if ((depth_surf != 0)&&(depth_surf != _depth_backing_store)) {
+      depth_surf->Release();
+    }
   }
+  
   return true;
 }
 
@@ -557,4 +607,109 @@ process_1_event() {
   TranslateMessage(&msg);
   // Call window_proc
   DispatchMessage(&msg);
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsBuffer9::share_depth_buffer
+//       Access: Published 
+//  Description: Will attempt to use the depth buffer of the input
+//               graphics_output. The buffer sizes must be exactly 
+//               the same. 
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsBuffer9::
+share_depth_buffer(GraphicsOutput *graphics_output) {
+
+  bool state;
+  wdxGraphicsBuffer9 *input_graphics_output;
+  
+  state = false;
+  input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
+  if (this != input_graphics_output && input_graphics_output) {
+
+    state = true;
+    this -> unshare_depth_buffer();
+
+    if (_debug) {
+      printf ("share_depth_buffer\n");
+    }
+    
+    // check buffer sizes
+    if (this -> get_x_size() != input_graphics_output -> get_x_size()) {    
+      if (_debug) {
+        printf ("ERROR: share_depth_buffer: non matching width \n");
+      }
+      state = false;    
+    }
+
+    if (this -> get_y_size() != input_graphics_output -> get_y_size()) {     
+      if (_debug) {
+        printf ("ERROR: share_depth_buffer: non matching height \n");
+      }
+      state = false;    
+    }
+
+    if (state) {    
+      // let the input GraphicsOutput know that there is an object 
+      // sharing its depth buffer      
+      input_graphics_output -> register_shared_depth_buffer(this);
+      _shared_depth_buffer = input_graphics_output;
+      state = true;
+    }
+  }
+  
+  return state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsBuffer9::unshare_depth_buffer
+//       Access: Published 
+//  Description: Discontinue sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsBuffer9::
+unshare_depth_buffer() {
+  if (_shared_depth_buffer) {
+    if (_debug) {
+      printf ("wdxGraphicsBuffer9 unshare_depth_buffer \n");
+    }
+    
+    // let the GraphicsOutput know that this object is no longer
+    // sharing its depth buffer
+    _shared_depth_buffer -> unregister_shared_depth_buffer(this);  
+    _shared_depth_buffer = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsBuffer9::register_shared_depth_buffer
+//       Access: Public
+//  Description: Register/save who is sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsBuffer9::
+register_shared_depth_buffer(GraphicsOutput *graphics_output) {
+  wdxGraphicsBuffer9 *input_graphics_output;
+  
+  input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
+  if (input_graphics_output) {
+    // add to list  
+    _shared_depth_buffer_list.push_back(input_graphics_output);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsBuffer9::unregister_shared_depth_buffer
+//       Access: Public
+//  Description: Unregister who is sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void wdxGraphicsBuffer9::
+unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
+  wdxGraphicsBuffer9 *input_graphics_output;
+  
+  input_graphics_output = DCAST (wdxGraphicsBuffer9, graphics_output);
+  if (input_graphics_output) {
+    // remove from list  
+    _shared_depth_buffer_list.remove(input_graphics_output);
+  }
 }

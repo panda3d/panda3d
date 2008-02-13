@@ -194,6 +194,9 @@ PUBLISHED:
 
   NodePath get_texture_card();
 
+  virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
+  virtual void unshare_depth_buffer();
+
 public:
   // These are not intended to be called directly by the user.
   INLINE bool flip_ready() const;
