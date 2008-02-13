@@ -21,6 +21,7 @@
     attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
+    auxBitplaneAttrib.I auxBitplaneAttrib.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     cacheStats.I cacheStats.h \
@@ -242,6 +243,7 @@
     attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
+    auxBitplaneAttrib.I auxBitplaneAttrib.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     cacheStats.I cacheStats.h \
