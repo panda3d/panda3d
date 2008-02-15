@@ -3257,10 +3257,12 @@ class MiniLog:
 class MiniLogSentry:
     def __init__(self, log, funcName, *args, **kw):
         self.log = log
-        self.log.enterFunction(funcName, *args, **kw)
+        if self.log:
+            self.log.enterFunction(funcName, *args, **kw)
 
     def __del__(self):
-        self.log.exitFunction()
+        if self.log:
+            self.log.exitFunction()
         del self.log
 
 def logBlock(id, msg):
@@ -3268,7 +3270,8 @@ def logBlock(id, msg):
     print str(msg)
     print '/LOGBLOCK(%03d) >>' % id
 
-class DeveloperException(Exception):
+class HierarchyException(Exception):
+    JOSWILSO = 0
     def __init__(self, owner, description):
         self.owner = owner
         self.desc = description
@@ -3277,7 +3280,7 @@ class DeveloperException(Exception):
         return '(%s): %s' % (self.owner, self.desc)
 
     def __repr__(self):
-        return 'DeveloperException(%s)' % (self.owner, )
+        return 'HierarchyException(%s)' % (self.owner, )
     
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
@@ -3333,4 +3336,5 @@ __builtin__.report = report
 __builtin__.MiniLog = MiniLog
 __builtin__.MiniLogSentry = MiniLogSentry
 __builtin__.logBlock = logBlock
-__builtin__.DeveloperException = DeveloperException
+__builtin__.HierarchyException = HierarchyException
+__builtin__.pdir = pdir
