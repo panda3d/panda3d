@@ -35,6 +35,10 @@ class MopathInterval(LerpInterval.LerpFunctionInterval):
         self.mopath = mopath 
         self.node = node
 
+    def destroy(self):
+        """Cleanup to avoid a garbage cycle."""
+        self.function = None
+
     def __doMopath(self, t):
         """
         Go to time t
