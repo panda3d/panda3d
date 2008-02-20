@@ -884,7 +884,18 @@ finalize(BamReader *manager) {
       for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
         GeomEntry &entry = (*gi);
         CPT(Geom) geom = entry._geom.get_read_pointer();
-        if (geom->get_vertex_data(current_thread)->has_column(color) &&
+
+        // Force the various GeomVertexArrayFormat objects to finalize
+        // themselves.  We have to do this before we can reliably call
+        // GeomVertexData::has_column().
+        CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
+        CPT(GeomVertexFormat) vformat = vdata->get_format();
+        for (int i = 0; i < vformat->get_num_arrays(); ++i) {
+          const GeomVertexArrayFormat *varray = vformat->get_array(i);
+          manager->finalize_now((GeomVertexArrayFormat *)varray);
+        }
+
+        if (vdata->has_column(color) &&
             entry._state->get_color() == (ColorAttrib *)NULL) {
           // We'll be reassigning the RenderState.  Therefore, save it
           // temporarily to increment its reference count.
