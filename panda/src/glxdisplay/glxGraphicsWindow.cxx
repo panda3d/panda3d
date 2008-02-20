@@ -156,7 +156,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   DCAST_INTO_R(glxgsg, _gsg, false);
   {
     ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
-    glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+
+    if (glXGetCurrentDisplay() == _display &&
+        glXGetCurrentDrawable() == _xwindow &&
+        glXGetCurrentContext() == glxgsg->_context) {
+      // No need to make the context current again.  Short-circuit
+      // this possibly-expensive call.
+    } else {
+      // Need to set the context.
+      glXMakeCurrent(_display, _xwindow, glxgsg->_context);
+    }
   }
   
   // Now that we have made the context current to a window, we can
