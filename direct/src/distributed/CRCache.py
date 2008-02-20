@@ -20,12 +20,28 @@ class CRCache:
         """
         assert self.checkCache()
         CRCache.notify.debug("Flushing the cache")
+        # give objects a chance to clean themselves up before checking for DelayDelete leaks
+        messenger.send('clientCleanup')
+        # some of these objects might be holding delayDeletes on others
+        # track each object that is delayDeleted after it gets its chance to delete,
+        # and check them after all objects have had a chance to delete
+        delayDeleted = []
         for distObj in self.dict.values():
             distObj.deleteOrDelay()
             if distObj.getDelayDeleteCount() != 0:
-                self.notify.warning(
-                    'CRCache.flush: could not delete %s (%s), delayDeleteCount=%s' %
-                    (safeRepr(distObj), itype(distObj), distObj.getDelayDeleteCount()))
+                delayDeleted.append(distObj)
+        # now that all objects have had a chance to delete, are there any objects left
+        # that are still delayDeleted?
+        delayDeleteLeaks = []
+        for distObj in delayDeleted:
+            if distObj.getDelayDeleteCount() != 0:
+                delayDeleteLeaks.append(distObj)
+        if len(delayDeleteLeaks):
+            s = 'CRCache.flush:'
+            for obj in delayDeleteLeaks:
+                s += ('\n  could not delete %s (%s), delayDeletes=%s' %
+                      (safeRepr(obj), itype(obj), obj.getDelayDeleteNames()))
+            self.notify.error(s)
         # Null out all references to the objects so they will get gcd
         self.dict = {}
         self.fifo = []

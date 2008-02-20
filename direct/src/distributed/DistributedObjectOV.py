@@ -29,13 +29,6 @@ class DistributedObjectOV(DistributedObjectBase):
             self.DistributedObjectOV_initialized = 1
             DistributedObjectBase.__init__(self, cr)
 
-            # This count tells whether the object can be deleted right away,
-            # or not.
-            self.delayDeleteCount = 0
-            # This flag tells whether a delete has been requested on this
-            # object.
-            self.deleteImminent = 0
-
             # Keep track of our state as a distributed object.  This
             # is only trustworthy if the inheriting class properly
             # calls up the chain for disable() and generate().
@@ -64,51 +57,19 @@ class DistributedObjectOV(DistributedObjectBase):
                 print
             except Exception, e: print "%serror printing status"%(spaces,), e
 
+
+    def getDelayDeleteCount(self):
+        # OV objects cannot be delayDeleted
+        return 0
+
     def deleteOrDelay(self):
-        if self.delayDeleteCount > 0:
-            self.deleteImminent = 1
-        else:
-            self.disableAnnounceAndDelete()
-
-    def delayDelete(self, flag):
-        # Flag should be 0 or 1, meaning increment or decrement count
-        # Also see DelayDelete.py
-
-        if (flag == 1):
-            self.delayDeleteCount += 1
-        elif (flag == 0):
-            self.delayDeleteCount -= 1
-        else:
-            self.notify.error("Invalid flag passed to delayDelete: " + str(flag))
-
-        if (self.delayDeleteCount < 0):
-            self.notify.error("Somebody decremented delayDelete for doId %s without incrementing"
-                              % (self.doId))
-        elif (self.delayDeleteCount == 0):
-            assert self.notify.debug(
-                "delayDeleteCount for doId %s now 0" %
-                (self.doId))
-            if self.deleteImminent:
-                assert self.notify.debug(
-                    "delayDeleteCount for doId %s -- deleteImminent" %
-                    (self.doId))
-                self.disableAnnounceAndDelete()
-        else:
-            self.notify.debug(
-                "delayDeleteCount for doId %s now %s" %
-                (self.doId, self.delayDeleteCount))
-
-        # Return the count just for kicks
-        return self.delayDeleteCount
+        self.disableAnnounceAndDelete()
 
     def disableAnnounceAndDelete(self):
         self.disableAndAnnounce()
         self.delete()
 
     def disableAndAnnounce(self):
-        """
-        Inheritors should *not* redefine this function.
-        """
         # We must send the disable announce message *before* we
         # actually disable the object.  That way, the various cleanup
         # tasks can run first and take care of restoring the object to

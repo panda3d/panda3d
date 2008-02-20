@@ -29,6 +29,8 @@ class DistributedObject(DistributedObjectBase):
     # even to the quiet zone.
     neverDisable = 0
 
+    DelayDeleteSerialGen = SerialNumGen()
+
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)
         try:
@@ -45,9 +47,7 @@ class DistributedObject(DistributedObjectBase):
             # it needs to be optimized in this way.
             self.setCacheable(0)
 
-            # This count tells whether the object can be deleted right away,
-            # or not.
-            self.delayDeleteCount = 0
+            self._token2delayDeleteName = {}
             # This flag tells whether a delete has been requested on this
             # object.
             self.deleteImminent = 0
@@ -143,43 +143,45 @@ class DistributedObject(DistributedObjectBase):
         return self.cacheable
 
     def deleteOrDelay(self):
-        if self.delayDeleteCount > 0:
+        if len(self._token2delayDeleteName) > 0:
             self.deleteImminent = 1
         else:
             self.disableAnnounceAndDelete()
 
     def getDelayDeleteCount(self):
-        return self.delayDeleteCount
+        return len(self._token2delayDeleteName)
 
-    def delayDelete(self, flag):
-        # Flag should be 0 or 1, meaning increment or decrement count
+    def acquireDelayDelete(self, name):
         # Also see DelayDelete.py
 
-        if (flag == 1):
-            self.delayDeleteCount += 1
-        elif (flag == 0):
-            self.delayDeleteCount -= 1
-        else:
-            self.notify.error("Invalid flag passed to delayDelete: " + str(flag))
+        if self.getDelayDeleteCount() == 0:
+            self.cr._addDelayDeletedDO(self)
 
-        if (self.delayDeleteCount < 0):
-            self.notify.error("Somebody decremented delayDelete for doId %s without incrementing"
-                              % (self.doId))
-        elif (self.delayDeleteCount == 0):
+        token = DistributedObject.DelayDeleteSerialGen.next()
+        self._token2delayDeleteName[token] = name
+
+        assert self.notify.debug(
+            "delayDelete count for doId %s now %s" %
+            (self.doId, len(self._token2delayDeleteName)))
+
+        # Return the token, user must pass token to releaseDelayDelete
+        return token
+
+    def releaseDelayDelete(self, token):
+        name = self._token2delayDeleteName.pop(token)
+        assert self.notify.debug("releasing delayDelete '%s'" % name)
+        if len(self._token2delayDeleteName) == 0:
             assert self.notify.debug(
-                "delayDeleteCount for doId %s now 0" % (self.doId))
+                "delayDelete count for doId %s now 0" % (self.doId))
+            self.cr._removeDelayDeletedDO(self)
             if self.deleteImminent:
                 assert self.notify.debug(
-                    "delayDeleteCount for doId %s -- deleteImminent" %
+                    "delayDelete count for doId %s -- deleteImminent" %
                     (self.doId))
                 self.disableAnnounceAndDelete()
-        else:
-            self.notify.debug(
-                "delayDeleteCount for doId %s now %s" %
-                (self.doId, self.delayDeleteCount))
 
-        # Return the count just for kicks
-        return self.delayDeleteCount
+    def getDelayDeleteNames(self):
+        return self._token2delayDeleteName.values()
 
     def disableAnnounceAndDelete(self):
         self.disableAndAnnounce()

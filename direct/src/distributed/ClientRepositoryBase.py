@@ -64,6 +64,8 @@ class ClientRepositoryBase(ConnectionRepository):
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
 
+        self._delayDeletedDOs = {}
+
     def setDeferInterval(self, deferInterval):
         """Specifies the minimum amount of time, in seconds, that must
         elapse before generating any two DistributedObjects whose
@@ -474,7 +476,8 @@ class ClientRepositoryBase(ConnectionRepository):
             # Only cache the object if it is a "cacheable" type
             # object; this way we don't clutter up the caches with
             # trivial objects that don't benefit from caching.
-            if distObj.getCacheable():
+            # also don't try to cache an object that is delayDeleted
+            if distObj.getCacheable() and distObj.getDelayDeleteCount() <= 0:
                 cache.cache(distObj)
             else:
                 distObj.deleteOrDelay()
@@ -683,3 +686,22 @@ class ClientRepositoryBase(ConnectionRepository):
         # By default, no ID's are local.  See also
         # ClientRepository.isLocalId().
         return 0
+
+    # methods for tracking delaydeletes
+    def _addDelayDeletedDO(self, do):
+        # use the id of the object, it's possible to have multiple DelayDeleted instances
+        # with identical doIds if an object gets deleted then re-generated
+        key = id(do)
+        assert key not in self._delayDeletedDOs
+        self._delayDeletedDOs[key] = do
+
+    def _removeDelayDeletedDO(self, do):
+        key = id(do)
+        del self._delayDeletedDOs[key]
+
+    def printDelayDeletes(self):
+        print 'DelayDeletes:'
+        print '============='
+        for obj in self._delayDeletedDOs.itervalues():
+            print '%s\t%s (%s)\tdelayDeletes=%s' % (
+                obj.doId, safeRepr(obj), itype(obj), obj.getDelayDeleteNames())

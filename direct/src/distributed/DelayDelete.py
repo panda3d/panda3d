@@ -25,9 +25,13 @@ class DelayDelete:
     DelayDelete object ceases to exist, it may be deleted.
     """
 
-    def __init__(self, distObj):
-        self.distObj = distObj
-        self.distObj.delayDelete(1)
+    def __init__(self, distObj, name):
+        self._distObj = distObj
+        self._token = self._distObj.acquireDelayDelete(name)
 
-    def __del__(self):
-        self.distObj.delayDelete(0)
+    def destroy(self):
+        token = self._token
+        # do this first to catch cases where releaseDelayDelete causes
+        # this method to be called again
+        del self._token
+        self._distObj.releaseDelayDelete(token)
