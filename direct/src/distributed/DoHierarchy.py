@@ -59,21 +59,11 @@ class DoHierarchy:
         return r
 
     def storeObjectLocation(self, do, parentId, zoneId):
-        if do.__class__.__name__ == 'DistributedToon':
-            if not base.cr.isLive():
-                from direct.showbase.PythonUtil import StackTrace
-                self.notify.info('storeObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace().compact()))
         doId = do.doId
-        # until we figure out why Toontown is crashing with duplicate Toon generates, don't do the check on LIVE
-        try:
-            isLive = base.cr.isLive()
-        except:
-            isLive = True
-        if not isLive:
-            if doId in self._allDoIds:
-                self.notify.error(
-                    'storeObjectLocation(%s %s) already in _allDoIds; duplicate generate()? or didn\'t clean up previous instance of DO?' % (
-                    do.__class__.__name__, do.doId))
+        if doId in self._allDoIds:
+            self.notify.error(
+                'storeObjectLocation(%s %s) already in _allDoIds; duplicate generate()? or didn\'t clean up previous instance of DO?' % (
+                do.__class__.__name__, do.doId))
         parentZoneDict = self._table.setdefault(parentId, {})
         zoneDoSet = parentZoneDict.setdefault(zoneId, set())
         zoneDoSet.add(doId)
@@ -82,21 +72,11 @@ class DoHierarchy:
             do.__class__.__name__, doId, parentId, zoneId))
 
     def deleteObjectLocation(self, do, parentId, zoneId):
-        if do.__class__.__name__ == 'DistributedToon':
-            if not base.cr.isLive():
-                from direct.showbase.PythonUtil import StackTrace
-                self.notify.info('deleteObjectLocation(DistributedToon %s)(%s, %s): %s' % (do.doId, parentId, zoneId, StackTrace().compact()))
         doId = do.doId
-        # until we figure out why Toontown is crashing with duplicate deletes, don't do the check on LIVE
-        try:
-            isLive = base.cr.isLive()
-        except:
-            isLive = True
-        if not isLive:
-            if doId not in self._allDoIds:
-                self.notify.error(
-                    'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()? or invalid previous location on a new object?' % (
-                    do.__class__.__name__, do.doId))
+        if doId not in self._allDoIds:
+            self.notify.error(
+                'deleteObjectLocation(%s %s) not in _allDoIds; duplicate delete()? or invalid previous location on a new object?' % (
+                do.__class__.__name__, do.doId))
         # jbutler: temp hack to get by the assert, this will be fixed soon
         if (doId not in self._allDoIds):
             return
