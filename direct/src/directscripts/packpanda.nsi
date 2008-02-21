@@ -170,32 +170,28 @@ Section "${SMDIRECTORY}" SecCore
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Website"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Program Manual.lnk" "$INSTDIR\Samples.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Sample Program Manual"
 
-            FindFirst $0 $1 $INSTDIR\samples\*--*
+            FindFirst $0 $1 $INSTDIR\samples\*
             loop:
                 StrCmp $1 "" done
+                StrCmp $1 "." next
+                StrCmp $1 ".." next
 		Push $1
-		Push "--"
-		Push "\"
-	        Call StrRep
 	        Push "-"
                 Push " "
                 Call StrRep
                 Pop $R0
                 StrCpy $READABLE $R0
 		Push $1
-		Push "--"
-		Push ":_"
-	        Call StrRep
 	        Push "-"
                 Push "_"
                 Call StrRep
                 Pop $R0
                 StrCpy $MANPAGE $R0
-                CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\$READABLE"
+                CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE"
                 SetOutPath $INSTDIR\samples\$1
-                WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/$MANPAGE"
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Manual Entry on this Sample Program"
-                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
+                WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/Sample_Programs:_$MANPAGE"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Manual Entry on this Sample Program"
+                CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
                 FindFirst $2 $3 $INSTDIR\samples\$1\Tut-*.py
                 iloop:
                     StrCmp $3 "" idone
@@ -206,7 +202,7 @@ Section "${SMDIRECTORY}" SecCore
                     Call StrRep
                     Pop $R0
                     StrCpy $TUTNAME $R0
-                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
                     CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
                     FindNext $2 $3
                     goto iloop
