@@ -42,8 +42,9 @@ private:
 
 PUBLISHED:
   enum AuxBitplaneOutput {
-    ABO_color = 1,     // The usual.
-    ABO_csnormal = 2,  // Camera space normal.
+    ABO_color = 1,     // Render an ordinary scene into the ordinary color buffer.
+    ABO_csnormal = 2,  // Render a camera-space normal into an aux bitplane.
+    ABO_glowalpha = 4, // Render all glow maps into the color buffer alpha channel.
   };
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make(int outputs);

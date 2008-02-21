@@ -26,26 +26,51 @@
 #include "datagramIterator.h"
 
 TypeHandle LightRampAttrib::_type_handle;
-CPT(RenderAttrib) LightRampAttrib::_identity;
+CPT(RenderAttrib) LightRampAttrib::_default;
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightRampAttrib::make_default
+//       Access: Published, Static
+//  Description: Constructs a new LightRampAttrib object.  This
+//               is the standard OpenGL lighting ramp, which clamps
+//               the final light total to the 0-1 range.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightRampAttrib::
+make_default() {
+  if (_default == 0) {
+    LightRampAttrib *attrib = new LightRampAttrib();
+    _default = return_new(attrib);
+  }
+  return _default;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LightRampAttrib::make_identity
 //       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
+//  Description: Constructs a new LightRampAttrib object.  This
+//               differs from the usual OpenGL lighting model in that
+//               it does not clamp the final lighting total to (0,1).
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_identity() {
-  if (_identity == 0) {
-    LightRampAttrib *attrib = new LightRampAttrib();
-    _identity = return_new(attrib);
-  }
-  return _identity;
+  LightRampAttrib *attrib = new LightRampAttrib();
+  attrib->_mode = LRT_identity;
+  return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LightRampAttrib::make_single_threshold
 //       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
+//  Description: Constructs a new LightRampAttrib object.  This 
+//               causes the luminance of the diffuse lighting
+//               contribution to be quantized using a single threshold:
+//
+//               if (original_luminance > threshold0) {
+//                 luminance = level0;
+//               } else {
+//                 luminance = 0.0;
+//               }
+//               
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_single_threshold(float thresh0, float val0) {
@@ -59,7 +84,18 @@ make_single_threshold(float thresh0, float val0) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LightRampAttrib::make_double_threshold
 //       Access: Published, Static
-//  Description: Constructs a new LightRampAttrib object.
+//  Description: Constructs a new LightRampAttrib object.  This 
+//               causes the luminance of the diffuse lighting
+//               contribution to be quantized using two thresholds:
+//
+//               if (original_luminance > threshold1) {
+//                 luminance = level1;
+//               } else if (original_luminance > threshold0) {
+//                 luminance = level0;
+//               } else {
+//                 luminance = 0.0;
+//               }
+//
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
 make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
@@ -69,6 +105,93 @@ make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
   attrib->_level[0] = val0;
   attrib->_threshold[1] = thresh1;
   attrib->_level[1] = val1;
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightRampAttrib::make_hdr0
+//       Access: Published, Static
+//  Description: Constructs a new LightRampAttrib object.  This causes
+//               an HDR tone mapping operation to be applied.
+//
+//               Normally, brightness values greater than 1 cannot be
+//               distinguished from each other, causing very brightly lit
+//               objects to wash out white and all detail to be erased.
+//               HDR tone mapping remaps brightness values in the range
+//               0-infinity into the range (0,1), making it possible to
+//               distinguish detail in scenes whose brightness exceeds 1.
+//
+//               However, the monitor has finite contrast.  Normally, all
+//               of that contrast is used to represent brightnesses in
+//               the range 0-1.  The HDR0 tone mapping operator 'steals'
+//               one quarter of that contrast to represent brightnesses in
+//               the range 1-infinity.
+//
+//               FINAL_RGB = (RGB^3 + RGB^2 + RGB) / (RGB^3 + RGB^2 + RGB + 1)
+//
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightRampAttrib::
+make_hdr0() {
+  LightRampAttrib *attrib = new LightRampAttrib();
+  attrib->_mode = LRT_hdr0;
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightRampAttrib::make_hdr1
+//       Access: Published, Static
+//  Description: Constructs a new LightRampAttrib object.  This causes
+//               an HDR tone mapping operation to be applied.
+//
+//               Normally, brightness values greater than 1 cannot be
+//               distinguished from each other, causing very brightly lit
+//               objects to wash out white and all detail to be erased.
+//               HDR tone mapping remaps brightness values in the range
+//               0-infinity into the range (0,1), making it possible to
+//               distinguish detail in scenes whose brightness exceeds 1.
+//
+//               However, the monitor has finite contrast.  Normally, all
+//               of that contrast is used to represent brightnesses in
+//               the range 0-1.  The HDR1 tone mapping operator 'steals'
+//               one third of that contrast to represent brightnesses in
+//               the range 1-infinity.
+//
+//               FINAL_RGB = (RGB^2 + RGB) / (RGB^2 + RGB + 1)
+//
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightRampAttrib::
+make_hdr1() {
+  LightRampAttrib *attrib = new LightRampAttrib();
+  attrib->_mode = LRT_hdr1;
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightRampAttrib::make_hdr2
+//       Access: Published, Static
+//  Description: Constructs a new LightRampAttrib object.  This causes
+//               an HDR tone mapping operation to be applied.
+//
+//               Normally, brightness values greater than 1 cannot be
+//               distinguished from each other, causing very brightly lit
+//               objects to wash out white and all detail to be erased.
+//               HDR tone mapping remaps brightness values in the range
+//               0-infinity into the range (0,1), making it possible to
+//               distinguish detail in scenes whose brightness exceeds 1.
+//
+//               However, the monitor has finite contrast.  Normally, all
+//               of that contrast is used to represent brightnesses in
+//               the range 0-1.  The HDR2 tone mapping operator 'steals'
+//               one half of that contrast to represent brightnesses in
+//               the range 1-infinity.
+//
+//               FINAL_RGB = (RGB) / (RGB + 1)
+//
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightRampAttrib::
+make_hdr2() {
+  LightRampAttrib *attrib = new LightRampAttrib();
+  attrib->_mode = LRT_hdr2;
   return return_new(attrib);
 }
 

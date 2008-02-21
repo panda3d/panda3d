@@ -26,16 +26,12 @@ class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LightRampAttrib
-// Description : The LightRampAttrib alters the light level reaching
-//               the surface of the model by applying a "ramp" function.
-//               Typically, this is used for cartoon lighting, in which
-//               case the ramp is a step-function.  
-//
-//               LightRampAttrib is relevant only when lighting and
-//               shader generation are both enabled. Otherwise, it has
-//               no effect.  The light ramp only affects the diffuse
-//               contribution.  Ambient light is not ramped.
-//
+// Description : A Light Ramp is any unary operator that takes a 
+//               rendered pixel as input, and adjusts the brightness
+//               of that pixel.  For example, gamma correction is a
+//               kind of light ramp.  So is HDR tone mapping.  So is
+//               cartoon shading.  See the constructors for an
+//               explanation of each kind of ramp.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH LightRampAttrib : public RenderAttrib {
 private:
@@ -43,14 +39,23 @@ private:
 
 PUBLISHED:
   enum LightRampMode {
+    LRT_default,
     LRT_identity,
     LRT_single_threshold,
     LRT_double_threshold,
+    LRT_hdr0,
+    LRT_hdr1,
+    LRT_hdr2,
   };
+  static CPT(RenderAttrib) make_default();
   static CPT(RenderAttrib) make_identity();
   static CPT(RenderAttrib) make_single_threshold(float thresh0, float lev0);
   static CPT(RenderAttrib) make_double_threshold(float thresh0, float lev0, float thresh1, float lev1);
+  static CPT(RenderAttrib) make_hdr0();
+  static CPT(RenderAttrib) make_hdr1();
+  static CPT(RenderAttrib) make_hdr2();
   
+
   INLINE LightRampMode get_mode() const;
   INLINE float get_level(int n) const;
   INLINE float get_threshold(int n) const;
@@ -68,7 +73,7 @@ private:
   float _level[2];
   float _threshold[2];
 
-  static CPT(RenderAttrib) _identity;
+  static CPT(RenderAttrib) _default;
 
 public:
   static void register_with_read_factory();

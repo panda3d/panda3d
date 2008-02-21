@@ -555,9 +555,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t uniform float4 attr_color\n";
   }
   text << ") {\n";
-  if (_bitplane_color < 0) {
-    text << "float4 \t o_color;\n";
-  }
+  text << "\t float4 result;\n";
   text << "\t // Fetch all textures.\n";
   for (int i=0; i<_num_textures; i++) {
     text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
@@ -680,8 +678,6 @@ synthesize_shader(const RenderState *rs) {
       }
     }
     switch (_attribs._light_ramp->get_mode()) {
-    case LightRampAttrib::LRT_identity:
-      break;
     case LightRampAttrib::LRT_single_threshold:
       {
         float t = _attribs._light_ramp->get_threshold(0);
@@ -710,60 +706,76 @@ synthesize_shader(const RenderState *rs) {
     }
     text << "\t // Begin model-space light summation\n";
     if (_have_emission) {
-      text << "\t o_color = attr_material[2];\n";
+      if (_map_index_glow >= 0) {
+        text << "\t result = attr_material[2] * tex" << _map_index_glow << ".a;\n";
+      } else {
+        text << "\t result = attr_material[2];\n";
+      }
     } else {
-      text << "\t o_color = float4(0,0,0,0);\n";
+      if (_map_index_glow >= 0) {
+        text << "\t result = tex" << _map_index_glow << ".aaaa;\n";
+      } else {
+        text << "\t result = float4(0,0,0,0);\n";
+      }
     }
     if ((_have_ambient)&&(_separate_ambient_diffuse)) {
       if (_material->has_ambient()) {
-        text << "\t o_color += tot_ambient * attr_material[0];\n";
+        text << "\t result += tot_ambient * attr_material[0];\n";
       } else if (_vertex_colors) {
-        text << "\t o_color += tot_ambient * l_color;\n";
+        text << "\t result += tot_ambient * l_color;\n";
       } else if (_flat_colors) {
-        text << "\t o_color += tot_ambient * attr_color;\n";
+        text << "\t result += tot_ambient * attr_color;\n";
       } else {
-        text << "\t o_color += tot_ambient;\n";
+        text << "\t result += tot_ambient;\n";
       }
     }
     if (_have_diffuse) {
       if (_material->has_diffuse()) {
-        text << "\t o_color += tot_diffuse * attr_material[1];\n";
+        text << "\t result += tot_diffuse * attr_material[1];\n";
       } else if (_vertex_colors) {
-        text << "\t o_color += tot_diffuse * l_color;\n";
+        text << "\t result += tot_diffuse * l_color;\n";
       } else if (_flat_colors) {
-        text << "\t o_color += tot_diffuse * attr_color;\n";
+        text << "\t result += tot_diffuse * attr_color;\n";
       } else {
-        text << "\t o_color += tot_diffuse;\n";
+        text << "\t result += tot_diffuse;\n";
       }
     }
-    // Use of lerp here is a workaround for a radeon driver bug.
-    if (_vertex_colors) {
-      text << "\t o_color = lerp(o_color, l_color, float4(0,0,0,1));\n";
-    } else if (_flat_colors) {
-      text << "\t o_color = lerp(o_color, attr_color, float4(0,0,0,1));\n";
-    } else {
-      text << "\t o_color.a = lerp(o_color, float4(1,1,1,1), float4(0,0,0,1));\n";
+    if (_attribs._light_ramp->get_mode() == LightRampAttrib::LRT_default) {
+      text << "\t result = saturate(result);\n";
     }
     text << "\t // End model-space light calculations\n";
+
+    // Combine in alpha, which bypasses lighting calculations.
+    // Use of lerp here is a workaround for a radeon driver bug.
+    if (_map_index_glow < 0) {
+      if (_vertex_colors) {
+        text << "\t result.a = l_color.a;\n";
+      } else if (_flat_colors) {
+        text << "\t result.a = attr_color.a;\n";
+      } else {
+        text << "\t result.a = 1;\n";
+      }
+    }
   } else {
     if (_vertex_colors) {
-      text << "\t o_color = l_color;\n";
+      text << "\t result = l_color;\n";
     } else if (_flat_colors) {
-      text << "\t o_color = attr_color;\n";
+      text << "\t result = attr_color;\n";
     } else {
-      text << "\t o_color = float4(1,1,1,1);\n";
+      text << "\t result = float4(1,1,1,1);\n";
     }
   }
+
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = _attribs._texture->get_on_stage(i);
     switch (stage->get_mode()) {
     case TextureStage::M_modulate:
     case TextureStage::M_modulate_glow:
     case TextureStage::M_modulate_gloss:
-      text << "\t o_color *= tex" << i << ";\n";
+      text << "\t result *= tex" << i << ";\n";
       break;
     case TextureStage::M_decal:
-      text << "\t o_color.rgb = lerp(o_color, tex" << i << ", tex" << i << ".a).rgb;\n";
+      text << "\t result.rgb = lerp(result, tex" << i << ", tex" << i << ".a).rgb;\n";
       break;
     case TextureStage::M_blend:
       pgraph_cat.error() << "TextureStage::Mode BLEND not yet supported in per-pixel mode.\n";
@@ -772,8 +784,8 @@ synthesize_shader(const RenderState *rs) {
       pgraph_cat.error() << "TextureStage::Mode REPLACE not yet supported in per-pixel mode.\n";
       break;
     case TextureStage::M_add:
-      text << "\t o_color.rbg = o_color.rgb + tex" << i << ".rgb;\n";
-      text << "\t o_color.a   = o_color.a * tex" << i << ".a;\n";
+      text << "\t result.rbg = result.rgb + tex" << i << ".rgb;\n";
+      text << "\t result.a   = result.a * tex" << i << ".a;\n";
       break;
     case TextureStage::M_combine:
       pgraph_cat.error() << "TextureStage::Mode COMBINE not yet supported in per-pixel mode.\n";
@@ -793,8 +805,25 @@ synthesize_shader(const RenderState *rs) {
       if (_map_index_gloss >= 0) {
         text << "\t tot_specular *= tex" << _map_index_gloss << ".a;\n";
       }
-      text << "\t o_color.rgb = o_color.rgb + tot_specular.rgb;\n";
+      text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
+  }
+  switch (_attribs._light_ramp->get_mode()) {
+  case LightRampAttrib::LRT_hdr0:
+    text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
+    break;
+  case LightRampAttrib::LRT_hdr1:
+    text << "\t result.rgb = (result*result + result) / (result*result + result + 1);\n";
+    break;
+  case LightRampAttrib::LRT_hdr2:
+    text << "\t result.rgb = result / (result + 1);\n";
+    break;
+  default: break;
+  }
+  if (_bitplane_color >= 0) {
+    // The multiply is a workaround for a radeon driver bug.
+    // It's annoying as heck, since it produces an extra instruction.
+    text << "\t o_color = result * 1.000001;\n"; 
   }
   text << "}\n";
   

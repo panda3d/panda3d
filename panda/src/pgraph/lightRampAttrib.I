@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE LightRampAttrib::
 LightRampAttrib() {
-  _mode = LRT_identity;
+  _mode = LRT_default;
   _level[0] = 0.0;
   _level[1] = 0.0;
   _threshold[0] = 0.0;
