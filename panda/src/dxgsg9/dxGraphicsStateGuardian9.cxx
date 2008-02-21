@@ -121,7 +121,6 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
   _d3d_ident_mat._11 = _d3d_ident_mat._22 = _d3d_ident_mat._33 = _d3d_ident_mat._44 = 1.0f;
 
   _cur_read_pixel_buffer = RenderBuffer::T_front;
-  set_color_clear_value(_color_clear_value);
 
   // DirectX drivers seem to consistently invert the texture when
   // they copy framebuffer-to-texture.  Ok.
@@ -767,43 +766,34 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::set_color_clear_value
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-set_color_clear_value(const Colorf& value) {
-  _color_clear_value = value;
-  _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::do_clear
+//     Function: DXGraphicsStateGuardian9::clear
 //       Access: Public, Virtual
 //  Description: Clears all of the indicated buffers to their assigned
 //               colors.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
-do_clear(const RenderBuffer &buffer) {
-  nassertv(buffer._gsg == this);
-  int buffer_type = buffer._buffer_type;
+clear(DrawableRegion *clearable) {
 
   DWORD main_flags = 0;
   DWORD aux_flags = 0;
 
+  D3DCOLOR color_clear_value = Colorf_to_D3DCOLOR(clearable->get_clear_color());
+  float depth_clear_value = clearable->get_clear_depth();
+  DWORD stencil_clear_value = (DWORD)(clearable->get_clear_stencil());
+
   DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
 
   //set appropriate flags
-  if (buffer_type & RenderBuffer::T_color) {
+  if (clearable->get_clear_color_active()) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
-  if (buffer_type & RenderBuffer::T_depth) {
+  if (clearable->get_clear_depth_active()) {
     aux_flags |=  D3DCLEAR_ZBUFFER;
     nassertv(_screen->_presentation_params.EnableAutoDepthStencil);
   }
 
-  if (buffer_type & RenderBuffer::T_stencil) {
+  if (clearable->get_clear_stencil_active()) {
     // clear only if there is a stencil buffer
     if (_screen->_presentation_params.EnableAutoDepthStencil &&
       IS_STENCIL_FORMAT(_screen->_presentation_params.AutoDepthStencilFormat)) {
@@ -811,7 +801,7 @@ do_clear(const RenderBuffer &buffer) {
 
       // DEBUG
       if (false) {
-        dxgsg9_cat.debug ( ) << "STENCIL CLEAR " << _stencil_clear_value << "\n";
+        dxgsg9_cat.debug ( ) << "STENCIL CLEAR " << stencil_clear_value << "\n";
       }
     }
   }
@@ -821,20 +811,20 @@ do_clear(const RenderBuffer &buffer) {
   DBG_S dxgsg9_cat.debug ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
   DBG_S dxgsg9_cat.debug ( ) << "clear flags: main " << main_flags << " aux :" << aux_flags << "\n"; DBG_E
 
-    HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, _d3dcolor_clear_value,
-                                    _depth_clear_value, (DWORD)_stencil_clear_value);
+    HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, color_clear_value,
+                                    depth_clear_value, stencil_clear_value);
     if (FAILED(hr) && main_flags == D3DCLEAR_TARGET && aux_flags != 0) {
       // Maybe there's a problem with the one or more of the auxiliary
       // buffers.
-      hr = _d3d_device->Clear(0, NULL, D3DCLEAR_TARGET, _d3dcolor_clear_value,
-                              _depth_clear_value, (DWORD)_stencil_clear_value);
+      hr = _d3d_device->Clear(0, NULL, D3DCLEAR_TARGET, color_clear_value,
+                              depth_clear_value, stencil_clear_value);
       if (!FAILED(hr)) {
         // Yep, it worked without them.  That's a problem.  Which buffer
         // poses the problem?
-        if (buffer_type & RenderBuffer::T_depth) {
+        if (clearable->get_clear_depth_active()) {
           aux_flags |=  D3DCLEAR_ZBUFFER;
-          HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_ZBUFFER, _d3dcolor_clear_value,
-                                           _depth_clear_value, (DWORD)_stencil_clear_value);
+          HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_ZBUFFER, color_clear_value,
+                                           depth_clear_value, stencil_clear_value);
           if (FAILED(hr2)) {
             dxgsg9_cat.error()
               << "Unable to clear depth buffer; removing.\n";
@@ -842,10 +832,10 @@ do_clear(const RenderBuffer &buffer) {
             ((FrameBufferProperties *)_current_properties)->set_depth_bits(0);
           }
         }
-        if (buffer_type & RenderBuffer::T_stencil) {
+        if (clearable->get_clear_stencil_active()) {
           aux_flags |=  D3DCLEAR_STENCIL;
-          HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, _d3dcolor_clear_value,
-                                           _stencil_clear_value, (DWORD)_stencil_clear_value);
+          HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_STENCIL, color_clear_value,
+                                           stencil_clear_value, stencil_clear_value);
           if (FAILED(hr2)) {
             dxgsg9_cat.error()
               << "Unable to clear stencil buffer; removing.\n";

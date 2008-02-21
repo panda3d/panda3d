@@ -252,10 +252,31 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_aux_mask
+//       Access: Published
+//  Description: Converts the aux bitplanes of the
+//               framebuffer into a RenderBuffer::Type.
+////////////////////////////////////////////////////////////////////
+int FrameBufferProperties::
+get_aux_mask() const {
+  int mask = 0;
+  for (int i=0; i<_property[FBP_aux_rgba]; i++) {
+    mask |= (RenderBuffer::T_aux_rgba_0 << i);
+  }
+  for (int i=0; i<_property[FBP_aux_hrgba]; i++) {
+    mask |= (RenderBuffer::T_aux_hrgba_0 << i);
+  }
+  for (int i=0; i<_property[FBP_aux_float]; i++) {
+    mask |= (RenderBuffer::T_aux_float_0 << i);
+  }
+  return mask;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_buffer_mask
 //       Access: Private
-//  Description: Converts the framebuffer properties into 
-//               a RenderBuffer::Type.
+//  Description: Converts the non-aux bitplanes of the
+//               framebuffer into a RenderBuffer::Type.
 ////////////////////////////////////////////////////////////////////
 int FrameBufferProperties::
 get_buffer_mask() const {
@@ -272,16 +293,6 @@ get_buffer_mask() const {
   if (_property[FBP_stencil_bits] > 0) {
     mask |= RenderBuffer::T_stencil;
   }
-  for (int aux_rgba=0; aux_rgba < _property[FBP_aux_rgba]; ++aux_rgba) {
-    mask |= (RenderBuffer::T_aux_rgba_0 << aux_rgba);
-  }
-  for (int aux_hrgba=0; aux_hrgba < _property[FBP_aux_hrgba]; ++aux_hrgba) {
-    mask |= (RenderBuffer::T_aux_hrgba_0 << aux_hrgba);
-  }
-  for (int aux_float=0; aux_float < _property[FBP_aux_float]; ++aux_float) {
-    mask |= (RenderBuffer::T_aux_float_0 << aux_float);
-  }
-  
   return mask;
 }
 

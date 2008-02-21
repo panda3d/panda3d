@@ -108,9 +108,7 @@ public:
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
-  virtual void set_color_clear_value(const Colorf &value);
-
-  virtual void do_clear(const RenderBuffer &buffer);
+  virtual void clear(DrawableRegion *clearable);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
@@ -279,8 +277,6 @@ protected:
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
-
-  D3DCOLOR _d3dcolor_clear_value;
 
   float _material_ambient;
   float _material_diffuse;

@@ -1224,45 +1224,89 @@ reset() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::do_clear
-//       Access: Public, Virtual
-//  Description: Clears all of the indicated buffers to their assigned
-//               colors.
+//     Function: GraphicsStateGuardian::clear
+//       Access: Public
+//  Description: Clears the framebuffer within the current
+//               DisplayRegion, according to the flags indicated by
+//               the given DrawableRegion object.
+//
+//               This does not set the DisplayRegion first.  You
+//               should call prepare_display_region() to specify the
+//               region you wish the clear operation to apply to.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-do_clear(const RenderBuffer &buffer) {
-  nassertv(buffer._gsg == this);
-  int buffer_type = buffer._buffer_type;
-  GLbitfield mask = 0;
+clear(DrawableRegion *clearable) {
+  PStatTimer timer(_clear_pcollector);
 
+  if ((!clearable->get_clear_color_active())&&
+      (!clearable->get_clear_depth_active())&&
+      (!clearable->get_clear_stencil_active())) {
+    return;
+  }
+  
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
-  if (buffer_type & RenderBuffer::T_color) {
-    GLP(ClearColor)(_color_clear_value[0],
-                    _color_clear_value[1],
-                    _color_clear_value[2],
-                    _color_clear_value[3]);
-    mask |= GL_COLOR_BUFFER_BIT;
-    set_draw_buffer(buffer);
-  }
+  int mask = 0;
 
-  if (buffer_type & RenderBuffer::T_depth) {
-    GLP(ClearDepth)(_depth_clear_value);
+  for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+    int layerid = GraphicsOutput::RTP_aux_rgba_0 + i;
+    int layerbit = RenderBuffer::T_aux_rgba_0 << i;
+    if (clearable->get_clear_active(layerid)) {
+      Colorf v = clearable->get_clear_value(layerid);
+      GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+      set_draw_buffer(layerbit);
+      GLP(Clear)(GL_COLOR_BUFFER_BIT);
+    }
+  }
+  for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
+    int layerid = GraphicsOutput::RTP_aux_hrgba_0 + i;
+    int layerbit = RenderBuffer::T_aux_hrgba_0 << i;
+    if (clearable->get_clear_active(layerid)) {
+      Colorf v = clearable->get_clear_value(layerid);
+      GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+      set_draw_buffer(layerbit);
+      GLP(Clear)(GL_COLOR_BUFFER_BIT);
+    }
+  }
+  for (int i=0; i<_current_properties->get_aux_float(); i++) {
+    int layerid = GraphicsOutput::RTP_aux_float_0 + i;
+    int layerbit = RenderBuffer::T_aux_float_0 << i;
+    if (clearable->get_clear_active(layerid)) {
+      Colorf v = clearable->get_clear_value(layerid);
+      GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+      set_draw_buffer(layerbit);
+      GLP(Clear)(GL_COLOR_BUFFER_BIT);
+    }
+  }
+  
+  if (clearable->get_clear_color_active()) {
+    Colorf v = clearable->get_clear_color();
+    GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+    mask |= GL_COLOR_BUFFER_BIT;
+    set_draw_buffer(clearable->get_draw_buffer_type());
+  }
+  
+  if (clearable->get_clear_depth_active()) {
+    GLP(ClearDepth)(clearable->get_clear_depth());
     mask |= GL_DEPTH_BUFFER_BIT;
   }
 
-  if (buffer_type & RenderBuffer::T_stencil) {
-    GLP(ClearStencil)(_stencil_clear_value);
+  if (clearable->get_clear_stencil_active()) {
+    GLP(ClearStencil)(clearable->get_clear_stencil());
     mask |= GL_STENCIL_BUFFER_BIT;
   }
-
-  if (buffer_type & RenderBuffer::T_accum) {
-    GLP(ClearAccum)(_accum_clear_value[0],
-                    _accum_clear_value[1],
-                    _accum_clear_value[2],
-                    _accum_clear_value[3]);
-    mask |= GL_ACCUM_BUFFER_BIT;
-  }
+  
+  GLP(Clear)(mask);
+  
+  // In the past, it was possible to set the draw buffer
+  // once in prepare_display_region and then forget about it.
+  // Now, with aux layers, it is necessary to occasionally
+  // change the draw buffer.  In time, I think there will need
+  // to be a draw buffer attrib.  Until then, this little hack
+  // to put things back the way they were after
+  // prepare_display_region will bdo.
+  
+  set_draw_buffer(_draw_buffer_type);
 
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "glClear(";
@@ -1281,7 +1325,6 @@ do_clear(const RenderBuffer &buffer) {
     GLCAT.spam(false) << ")" << endl;
   }
 
-  GLP(Clear)(mask);
   report_my_gl_errors();
 }
 
@@ -1306,8 +1349,10 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   GLsizei width = GLsizei(w);
   GLsizei height = GLsizei(h);
 
-  set_draw_buffer(get_render_buffer(dr->get_object()->get_draw_buffer_type(),
-                                    *_current_properties));
+  _draw_buffer_type = dr->get_object()->get_draw_buffer_type() & _current_properties->get_buffer_mask() & _stereo_buffer_mask;
+  _draw_buffer_type |= _current_properties->get_aux_mask();
+  set_draw_buffer(_draw_buffer_type);
+  
   enable_scissor(true);
   GLP(Scissor)(x, y, width, height);
   GLP(Viewport)(x, y, width, height);
@@ -3276,7 +3321,7 @@ void CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
   nassertv(tex != NULL && dr != NULL);
-  set_read_buffer(rb);
+  set_read_buffer(rb._buffer_type);
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -3363,7 +3408,7 @@ bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
-  set_read_buffer(rb);
+  set_read_buffer(rb._buffer_type);
   GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
@@ -4556,30 +4601,43 @@ get_extension_func(const char *, const char *) {
 //       Access: Protected
 //  Description: Sets up the GLP(DrawBuffer) to render into the buffer
 //               indicated by the RenderBuffer object.  This only sets
-//               up the color bits; it does not affect the depth,
+//               up the color and aux bits; it does not affect the depth,
 //               stencil, accum layers.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_draw_buffer(const RenderBuffer &rb) {
+set_draw_buffer(int rbtype) {
 
   if (_current_fbo) {
 
     GLuint buffers[16];
-    int nbuffers = 0;
-    if (rb._buffer_type & RenderBuffer::T_front) {
-      nbuffers += 1;
+    int nbuffers=0;
+    if (rbtype & RenderBuffer::T_color) {
+      buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT;
     }
-    nbuffers += _current_properties->get_aux_rgba();
-    nbuffers += _current_properties->get_aux_hrgba();
-    nbuffers += _current_properties->get_aux_float();
-    for (int i=0; i<nbuffers; i++) {
-      buffers[i] = GL_COLOR_ATTACHMENT0_EXT + i;
+    int index = 1;
+    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+      if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
+    }
+    for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
+      if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
+    }
+    for (int i=0; i<_current_properties->get_aux_float(); i++) {
+      if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      index += 1;
     }
     _glDrawBuffers(nbuffers, buffers);
 
   } else {
 
-    switch (rb._buffer_type & RenderBuffer::T_color) {
+    switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       GLP(DrawBuffer)(GL_FRONT);
       break;
@@ -4620,7 +4678,7 @@ set_draw_buffer(const RenderBuffer &rb) {
       break;
     }
   }
-
+  
   // Also ensure that any global color channels are masked out.
   if (CLP(color_mask)) {
     GLP(ColorMask)((_color_write_mask & ColorWriteAttrib::C_red) != 0,
@@ -4628,7 +4686,7 @@ set_draw_buffer(const RenderBuffer &rb) {
                    (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
                    (_color_write_mask & ColorWriteAttrib::C_alpha) != 0);
   }
-    
+  
   report_my_gl_errors();
 }
 
@@ -4641,26 +4699,26 @@ set_draw_buffer(const RenderBuffer &rb) {
 //               stencil, accum layers.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_read_buffer(const RenderBuffer &rb) {
+set_read_buffer(int rbtype) {
 
   if (_current_fbo) {
 
     GLuint buffer = GL_COLOR_ATTACHMENT0_EXT;
     int index = 1;
     for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
-      if (rb._buffer_type & (RenderBuffer::T_aux_rgba_0 << i)) {
+      if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
-      if (rb._buffer_type & (RenderBuffer::T_aux_hrgba_0 << i)) {
+      if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_float(); i++) {
-      if (rb._buffer_type & (RenderBuffer::T_aux_float_0 << i)) {
+      if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       index += 1;
@@ -4669,7 +4727,7 @@ set_read_buffer(const RenderBuffer &rb) {
 
   } else {
 
-    switch (rb._buffer_type & RenderBuffer::T_color) {
+    switch (rbtype & RenderBuffer::T_color) {
     case RenderBuffer::T_front:
       GLP(ReadBuffer)(GL_FRONT);
       break;

@@ -116,8 +116,6 @@ public:
 
   virtual void reset();
 
-  virtual void do_clear(const RenderBuffer &buffer);
-
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
@@ -185,6 +183,8 @@ public:
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
+  virtual void clear(DrawableRegion *region);
+  
   virtual void framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
@@ -293,8 +293,8 @@ protected:
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
 
-  void set_draw_buffer(const RenderBuffer &rb);
-  void set_read_buffer(const RenderBuffer &rb);
+  void set_draw_buffer(int rbtype);
+  void set_read_buffer(int rbtype);
 
   static GLenum get_numeric_type(Geom::NumericType numeric_type);
   GLenum get_texture_target(Texture::TextureType texture_type) const;
@@ -357,7 +357,7 @@ protected:
     MM_alpha_mask = 0x0004,
   };
 
-  int _multisample_mode;
+  int  _multisample_mode;
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool _polygon_smooth_enabled;
@@ -369,12 +369,13 @@ protected:
   bool _alpha_test_enabled;
   bool _polygon_offset_enabled;
   bool _flat_shade_model;
-  int _decal_level;
+  int  _decal_level;
 
   bool _dithering_enabled;
 
   int _viewport_width;
   int _viewport_height;
+  int _draw_buffer_type;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
   float _point_size;
@@ -400,7 +401,7 @@ protected:
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
   int _num_active_texture_stages;
-
+  
   int _error_count;
 
   string _gl_vendor;

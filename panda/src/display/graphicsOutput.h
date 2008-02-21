@@ -83,28 +83,6 @@ PUBLISHED:
     RTM_triggered_copy_ram,
   };
 
-  // It seems awkward to have this type, and also
-  // RenderBuffer::Type.  However, the fact that RenderBuffer::Type
-  // is a bitmask makes it awfully awkward to work with.
-  enum RenderTexturePlane {
-    RTP_depth_stencil=1,
-    RTP_depth=1,
-    RTP_color,
-    RTP_aux_rgba_0,
-    RTP_aux_rgba_1,
-    RTP_aux_rgba_2,
-    RTP_aux_rgba_3,
-    RTP_aux_hrgba_0,
-    RTP_aux_hrgba_1,
-    RTP_aux_hrgba_2,
-    RTP_aux_hrgba_3,
-    RTP_aux_float_0,
-    RTP_aux_float_1,
-    RTP_aux_float_2,
-    RTP_aux_float_3,
-    RTP_COUNT
-  };
-
   // There are many reasons to call begin_frame/end_frame.
   enum FrameMode {
     FM_render,   // We are rendering a frame.

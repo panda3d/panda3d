@@ -25,12 +25,13 @@
 INLINE DrawableRegion::
 DrawableRegion() :
   _screenshot_buffer_type(RenderBuffer::T_front),
-  _draw_buffer_type(RenderBuffer::T_back),
-  _flags(0),
-  _clear_color(0.0f, 0.0f, 0.0f, 0.0f),
-  _clear_depth(1.0f),
-  _clear_stencil(0)
+  _draw_buffer_type(RenderBuffer::T_back)
 {
+  for (int i=0; i<RTP_COUNT; i++) {
+    _clear_active[i] = false;
+    _clear_value[i] = Colorf(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  _clear_value[RTP_depth] = Colorf(1.0f,1.0f,1.0f,1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,12 +42,12 @@ DrawableRegion() :
 INLINE DrawableRegion::
 DrawableRegion(const DrawableRegion &copy) :
   _screenshot_buffer_type(copy._screenshot_buffer_type),
-  _draw_buffer_type(copy._draw_buffer_type),
-  _flags(copy._flags),
-  _clear_color(copy._clear_color),
-  _clear_depth(copy._clear_depth),
-  _clear_stencil(copy._clear_stencil)
+  _draw_buffer_type(copy._draw_buffer_type)
 {
+  for (int i=0; i<RTP_COUNT; i++) {
+    _clear_active[i] = copy._clear_active[i];
+    _clear_value[i] = copy._clear_value[i];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,10 +59,10 @@ INLINE void DrawableRegion::
 operator = (const DrawableRegion &copy) {
   _screenshot_buffer_type = copy._screenshot_buffer_type;
   _draw_buffer_type = copy._draw_buffer_type;
-  _flags = copy._flags;
-  _clear_color = copy._clear_color;
-  _clear_depth = copy._clear_depth;
-  _clear_stencil = copy._clear_stencil;
+  for (int i=0; i<RTP_COUNT; i++) {
+    _clear_active[i] = copy._clear_active[i];
+    _clear_value[i] = copy._clear_value[i];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,10 +73,10 @@ operator = (const DrawableRegion &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 copy_clear_settings(const DrawableRegion &copy) {
-  _flags = (_flags & ~F_clear_all) | (copy._flags & F_clear_all);
-  _clear_color = copy._clear_color;
-  _clear_depth = copy._clear_depth;
-  _clear_stencil = copy._clear_stencil;
+  for (int i=0; i<RTP_COUNT; i++) {
+    _clear_active[i] = copy._clear_active[i];
+    _clear_value[i] = copy._clear_value[i];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,11 +90,7 @@ copy_clear_settings(const DrawableRegion &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_color_active(bool clear_color_active) {
-  if (clear_color_active) {
-    _flags |= F_clear_color_active;
-  } else {
-    _flags &= ~F_clear_color_active;
-  }
+  _clear_active[RTP_color] = clear_color_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +102,7 @@ set_clear_color_active(bool clear_color_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_color_active() const {
-  return ((_flags & F_clear_color_active) != 0);
+  return _clear_active[RTP_color];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,11 +116,7 @@ get_clear_color_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_depth_active(bool clear_depth_active) {
-  if (clear_depth_active) {
-    _flags |= F_clear_depth_active;
-  } else {
-    _flags &= ~F_clear_depth_active;
-  }
+  _clear_active[RTP_depth] = clear_depth_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +128,7 @@ set_clear_depth_active(bool clear_depth_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_depth_active() const {
-  return ((_flags & F_clear_depth_active) != 0);
+  return _clear_active[RTP_depth];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,11 +142,7 @@ get_clear_depth_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_stencil_active(bool clear_stencil_active) {
-  if (clear_stencil_active) {
-    _flags |= F_clear_stencil_active;
-  } else {
-    _flags &= ~F_clear_stencil_active;
-  }
+  _clear_active[RTP_stencil] = clear_stencil_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,7 +154,29 @@ set_clear_stencil_active(bool clear_stencil_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_stencil_active() const {
-  return ((_flags & F_clear_stencil_active) != 0);
+  return _clear_active[RTP_stencil];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::set_clear_active
+//       Access: Published
+//  Description: Sets the clear-active flag for any bitplane.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+set_clear_active(int id, bool clear_active) {
+  nassertv((id >= 0)&&(id < RTP_COUNT));
+  _clear_active[id] = clear_active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_clear_active
+//       Access: Published
+//  Description: Gets the clear-active flag for any bitplane.
+////////////////////////////////////////////////////////////////////
+INLINE bool DrawableRegion::
+get_clear_active(int id) const {
+  nassertr((id >= 0)&&(id < RTP_COUNT), false);
+  return _clear_active[id];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,7 +190,7 @@ get_clear_stencil_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_color(const Colorf &color) {
-  _clear_color = color;
+  _clear_value[RTP_color] = color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +204,7 @@ set_clear_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &DrawableRegion::
 get_clear_color() const {
-  return _clear_color;
+  return _clear_value[RTP_color];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,7 +218,7 @@ get_clear_color() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_depth(float depth) {
-  _clear_depth = depth;
+  _clear_value[RTP_depth] = Colorf(depth,depth,depth,depth);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,7 +232,7 @@ set_clear_depth(float depth) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DrawableRegion::
 get_clear_depth() const {
-  return _clear_depth;
+  return _clear_value[RTP_depth][0];
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::set_clear_stencil
@@ -234,7 +245,7 @@ get_clear_depth() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_stencil(const unsigned int stencil) {
-  _clear_stencil = stencil;
+  _clear_value[RTP_stencil] = Colorf(stencil,stencil,stencil,stencil);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -248,7 +259,30 @@ set_clear_stencil(const unsigned int stencil) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int DrawableRegion::
 get_clear_stencil() const {
-  return _clear_stencil;
+  return (int)(_clear_value[RTP_stencil][0]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::set_clear_value
+//       Access: Published
+//  Description: Sets the clear value for any bitplane.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+set_clear_value(int id, const Colorf &color) {
+  nassertv((id >= 0) && (id < RTP_COUNT));
+  _clear_value[id] = color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_clear_value
+//       Access: Published
+//  Description: Returns the clear value for any bitplane.
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &DrawableRegion::
+get_clear_value(int id) const {
+  static Colorf blank(0.5,0.5,0.5,0.0);
+  nassertr((id >= 0) && (id < RTP_COUNT), blank);
+  return _clear_value[id];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -259,9 +293,9 @@ get_clear_stencil() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 disable_clears() {
-  set_clear_color_active(false);
-  set_clear_depth_active(false);
-  set_clear_stencil_active(false);
+  for (int i=0; i<RTP_COUNT; i++) {
+    _clear_active[i] = false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +308,10 @@ disable_clears() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 is_any_clear_active() const {
-  return (_flags & F_clear_all) != 0;
+  for (int i=0; i<RTP_COUNT; i++) {
+    if (_clear_active[i]) return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

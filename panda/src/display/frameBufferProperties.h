@@ -118,6 +118,7 @@ PUBLISHED:
   int get_quality(const FrameBufferProperties &reqs) const;
   bool is_any_specified() const;
   bool is_basic() const;
+  int get_aux_mask() const;
   int get_buffer_mask() const;
   bool verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const;
 };

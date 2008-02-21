@@ -18,16 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideo::get_name
-//       Access: Published
-//  Description: Returns the camera's name / description.
-////////////////////////////////////////////////////////////////////
-INLINE const string &WebcamVideo::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideo::get_size_x
 //       Access: Published
 //  Description: Returns the camera's size_x.

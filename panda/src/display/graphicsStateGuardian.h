@@ -189,12 +189,8 @@ public:
 
   virtual float compute_distance_to(const LPoint3f &point) const;
 
-  virtual void set_color_clear_value(const Colorf &value);
-  virtual void set_depth_clear_value(const float value);
-  virtual void do_clear(const RenderBuffer &buffer)=0;
-
-  void clear(DrawableRegion *clearable);
-
+  virtual void clear(DrawableRegion *clearable);
+  
   const LMatrix4f *fetch_specified_value(Shader::ShaderMatSpec &spec, int altered);
   const LMatrix4f *fetch_specified_part(Shader::ShaderMatInput input, InternalName *name, LMatrix4f &t);
   
@@ -263,9 +259,6 @@ public:
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id);
 
-  INLINE void set_stencil_clear_value(unsigned int stencil_clear_value);
-  INLINE unsigned int get_stencil_clear_value();
-
   static void create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
 #ifdef DO_PSTATS
@@ -320,10 +313,6 @@ protected:
   const GeomVertexDataPipelineReader *_data_reader;
 
   unsigned int _color_write_mask;
-  Colorf _color_clear_value;
-  float _depth_clear_value;
-  unsigned int _stencil_clear_value;
-  Colorf _accum_clear_value;
 
   CPT(DisplayRegion) _current_display_region;
   Lens::StereoChannel _current_stereo_channel;

@@ -333,10 +333,6 @@ reset() {
   _scene_setup = _scene_null;
 
   _color_write_mask = ColorWriteAttrib::C_all;
-  _color_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _depth_clear_value = 1.0f;
-  _stencil_clear_value = 0;
-  _accum_clear_value.set(0.0f, 0.0f, 0.0f, 0.0f);
 
   _has_scene_graph_color = false;
   _transform_stale = true;
@@ -387,6 +383,21 @@ reset() {
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear
+//       Access: Public
+//  Description: Clears the framebuffer within the current
+//               DisplayRegion, according to the flags indicated by
+//               the given DrawableRegion object.
+//
+//               This does not set the DisplayRegion first.  You
+//               should call prepare_display_region() to specify the
+//               region you wish the clear operation to apply to.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear(DrawableRegion *clearable) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -728,63 +739,6 @@ compute_distance_to(const LPoint3f &point) const {
       << "Invalid coordinate system in compute_distance_to: "
       << (int)_coordinate_system << "\n";
     return 0.0f;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_color_clear_value
-//       Access: Public
-//  Description: Sets the color that the next do_clear() command will set
-//               the color buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_color_clear_value(const Colorf& value) {
-  _color_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_depth_clear_value
-//       Access: Public
-//  Description: Sets the depth that the next do_clear() command will set
-//               the depth buffer to
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_depth_clear_value(const float value) {
-  _depth_clear_value = value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the current
-//               DisplayRegion, according to the flags indicated by
-//               the given DrawableRegion object.
-//
-//               This does not set the DisplayRegion first.  You
-//               should call prepare_display_region() to specify the
-//               region you wish the clear operation to apply to.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-clear(DrawableRegion *clearable) {
-  PStatTimer timer(_clear_pcollector);
-
-  int clear_buffer_type = 0;
-  if (clearable->get_clear_color_active()) {
-    clear_buffer_type |= clearable->get_draw_buffer_type();
-    set_color_clear_value(clearable->get_clear_color());
-  }
-  if (clearable->get_clear_depth_active()) {
-    clear_buffer_type |= RenderBuffer::T_depth;
-    set_depth_clear_value(clearable->get_clear_depth());
-  }
-  if (clearable->get_clear_stencil_active()) {
-    clear_buffer_type |= RenderBuffer::T_stencil;
-    set_stencil_clear_value(clearable->get_clear_stencil());
-  }
-
-  if (clear_buffer_type != 0) {
-    do_clear(get_render_buffer(clear_buffer_type,
-                               *_current_properties));
   }
 }
 

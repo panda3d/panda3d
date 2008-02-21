@@ -34,7 +34,6 @@ PUBLISHED:
   static int             get_num_options();
   static PT(WebcamVideo) get_option(int n);
   
-  INLINE const string &get_name() const;
   INLINE int get_size_x() const;
   INLINE int get_size_y() const;
   INLINE int get_fps() const;
@@ -43,10 +42,8 @@ PUBLISHED:
 
 public:
   static void find_all_webcams();
-  
 
 protected:
-  string _name;
   int _size_x;
   int _size_y;
   int _fps;

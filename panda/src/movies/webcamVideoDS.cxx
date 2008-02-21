@@ -329,14 +329,14 @@ add_device(WebcamVideoList &list, IMoniker *pMoniker, AM_MEDIA_TYPE *media) {
   PT(WebcamVideoDS) wc = new WebcamVideoDS;
   ostringstream name;
   name << "DirectShow: " << get_moniker_name(pMoniker) << " @ " << media_x(media) << " x " << media_y(media) << "  FPS:" << media_fps(media);
-  wc->_name = name.str();
+  wc->set_name(name.str());
   wc->_size_x = media_x(media);
   wc->_size_y = media_y(media);
   wc->_fps = media_fps(media);
   wc->_moniker = pMoniker;
   wc->_media = media;
   list.push_back(wc);
-  cerr << "Added device: " << wc->_name << "\n";
+  cerr << "Added device: " << wc->get_name() << "\n";
 }
 
 

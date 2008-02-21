@@ -44,6 +44,29 @@ public:
   INLINE void copy_clear_settings(const DrawableRegion &copy);
 
 PUBLISHED:
+  // It seems awkward to have this type, and also
+  // RenderBuffer::Type.  However, the fact that RenderBuffer::Type
+  // is a bitmask makes it awfully awkward to work with.
+  enum RenderTexturePlane {
+    RTP_stencil=0,
+    RTP_depth_stencil=1,
+    RTP_depth=1,
+    RTP_color,
+    RTP_aux_rgba_0,
+    RTP_aux_rgba_1,
+    RTP_aux_rgba_2,
+    RTP_aux_rgba_3,
+    RTP_aux_hrgba_0,
+    RTP_aux_hrgba_1,
+    RTP_aux_hrgba_2,
+    RTP_aux_hrgba_3,
+    RTP_aux_float_0,
+    RTP_aux_float_1,
+    RTP_aux_float_2,
+    RTP_aux_float_3,
+    RTP_COUNT
+  };
+
   INLINE void set_clear_color_active(bool clear_color_active);
   INLINE bool get_clear_color_active() const;
 
@@ -62,6 +85,12 @@ PUBLISHED:
   INLINE void set_clear_stencil(unsigned int stencil);
   INLINE unsigned int get_clear_stencil() const;
 
+  INLINE void set_clear_active(int n, bool clear_aux_active);
+  INLINE bool get_clear_active(int n) const;
+
+  INLINE void set_clear_value(int n, const Colorf &color);
+  INLINE const Colorf &get_clear_value(int n) const;
+  
   INLINE void disable_clears();
 
   INLINE bool is_any_clear_active() const;
@@ -75,20 +104,10 @@ protected:
   int _draw_buffer_type;
 
 private:
-  // This data needs to be cycled.
-  enum Flags {
-    F_clear_color_active   = 0x0001,
-    F_clear_depth_active   = 0x0002,
-    F_clear_stencil_active = 0x0004,
-    F_clear_all            = 0x0007, // = all of the above
-  };
-  int _flags;
-
-  Colorf _clear_color;
-  float _clear_depth;
-  unsigned int _clear_stencil;
-
+  bool    _clear_active[RTP_COUNT];
+  Colorf  _clear_value[RTP_COUNT];
 };
+
 
 #include "drawableRegion.I"
 
