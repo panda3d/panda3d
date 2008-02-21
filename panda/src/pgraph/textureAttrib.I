@@ -132,6 +132,22 @@ get_on_ff_stage(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::get_ff_tc_index
+//       Access: Published
+//  Description: For each TextureStage listed in get_on_ff_stage(),
+//               this returns a unique index number for the texture
+//               coordinate name used by that TextureStage.  It is
+//               guaranteed to remain the same index number for each
+//               texcoord name, even if the texture render order
+//               changes.
+////////////////////////////////////////////////////////////////////
+INLINE int TextureAttrib::
+get_ff_tc_index(int n) const {
+  nassertr(n >= 0 && n < (int)_ff_tc_index.size(), 0);
+  return _ff_tc_index[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::has_on_stage
 //       Access: Published
 //  Description: Returns true if the indicated stage is turned on by

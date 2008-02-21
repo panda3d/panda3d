@@ -133,37 +133,45 @@ munge_format_impl(const GeomVertexFormat *orig,
   }
 
   // To support multitexture, we will need to add all of the relevant
-  // texcoord types, and in the correct order.
+  // texcoord types, and in the order specified by the TextureAttrib.
 
   // Now set up each of the active texture coordinate stages--or at
   // least those for which we're not generating texture coordinates
   // automatically.
 
-  // Now copy all of the texture coordinates in, in order by stage
-  // index.  But we have to reuse previous columns.
   if (_filtered_texture != (TextureAttrib *)NULL) {
-    typedef pset<const InternalName *> UsedStages;
-    UsedStages used_stages;
+    int num_stages = _filtered_texture->get_num_on_ff_stages();
+    vector_int ff_tc_index(num_stages, 0);
 
-    int num_stages = _filtered_texture->get_num_on_stages();
-    for (int i = 0; i < num_stages; ++i) {
-      TextureStage *stage = _filtered_texture->get_on_stage(i);
+    // Be sure we add the texture coordinates in the right order, as
+    // specified by the attrib.  To ensure this, we first walk through
+    // the stages of the attrib and get the index numbers in the
+    // appropriate order.
+    int si, tc_index;
+    for (si = 0; si < num_stages; ++si) {
+      int tc_index = _filtered_texture->get_ff_tc_index(si);
+      ff_tc_index[tc_index] = si;
+    }
 
+    // Now walk through the texture coordinates in the order they will
+    // appear on the final geometry.  For each one, get the texture
+    // coordinate name from the associated stage.
+    for (tc_index = 0; tc_index < num_stages; ++tc_index) {
+      si = ff_tc_index[tc_index];
+      TextureStage *stage = _filtered_texture->get_on_ff_stage(si);
       InternalName *name = stage->get_texcoord_name();
-      if (used_stages.insert(name).second) {
-        // This is the first time we've encountered this texcoord name.
-        const GeomVertexColumn *texcoord_type = orig->get_column(name);
 
-        if (texcoord_type != (const GeomVertexColumn *)NULL) {
-          new_array_format->add_column
-            (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
-        } else {
-          // We have to add something as a placeholder, even if the
-          // texture coordinates aren't defined.
-          new_array_format->add_column(name, 2, NT_float32, C_texcoord);
-        }
-        new_format->remove_column(name);
+      const GeomVertexColumn *texcoord_type = orig->get_column(name);
+
+      if (texcoord_type != (const GeomVertexColumn *)NULL) {
+        new_array_format->add_column
+          (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+      } else {
+        // We have to add something as a placeholder, even if the
+        // texture coordinates aren't defined.
+        new_array_format->add_column(name, 2, NT_float32, C_texcoord);
       }
+      new_format->remove_column(name);
     }
   }
 
@@ -216,37 +224,45 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   }
 
   // To support multitexture, we will need to add all of the relevant
-  // texcoord types, and in the correct order.
+  // texcoord types, and in the order specified by the TextureAttrib.
 
   // Now set up each of the active texture coordinate stages--or at
   // least those for which we're not generating texture coordinates
   // automatically.
 
-  // Now copy all of the texture coordinates in, in order by stage
-  // index.  But we have to reuse previous columns.
   if (_filtered_texture != (TextureAttrib *)NULL) {
-    typedef pset<const InternalName *> UsedStages;
-    UsedStages used_stages;
+    int num_stages = _filtered_texture->get_num_on_ff_stages();
+    vector_int ff_tc_index(num_stages, 0);
 
-    int num_stages = _filtered_texture->get_num_on_stages();
-    for (int i = 0; i < num_stages; ++i) {
-      TextureStage *stage = _filtered_texture->get_on_stage(i);
+    // Be sure we add the texture coordinates in the right order, as
+    // specified by the attrib.  To ensure this, we first walk through
+    // the stages of the attrib and get the index numbers in the
+    // appropriate order.
+    int si, tc_index;
+    for (si = 0; si < num_stages; ++si) {
+      int tc_index = _filtered_texture->get_ff_tc_index(si);
+      ff_tc_index[tc_index] = si;
+    }
 
+    // Now walk through the texture coordinates in the order they will
+    // appear on the final geometry.  For each one, get the texture
+    // coordinate name from the associated stage.
+    for (tc_index = 0; tc_index < num_stages; ++tc_index) {
+      si = ff_tc_index[tc_index];
+      TextureStage *stage = _filtered_texture->get_on_ff_stage(si);
       InternalName *name = stage->get_texcoord_name();
-      if (used_stages.insert(name).second) {
-        // This is the first time we've encountered this texcoord name.
-        const GeomVertexColumn *texcoord_type = orig->get_column(name);
 
-        if (texcoord_type != (const GeomVertexColumn *)NULL) {
-          new_array_format->add_column
-            (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
-        } else {
-          // We have to add something as a placeholder, even if the
-          // texture coordinates aren't defined.
-          new_array_format->add_column(name, 2, NT_float32, C_texcoord);
-        }
-        new_format->remove_column(name);
+      const GeomVertexColumn *texcoord_type = orig->get_column(name);
+
+      if (texcoord_type != (const GeomVertexColumn *)NULL) {
+        new_array_format->add_column
+          (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+      } else {
+        // We have to add something as a placeholder, even if the
+        // texture coordinates aren't defined.
+        new_array_format->add_column(name, 2, NT_float32, C_texcoord);
       }
+      new_format->remove_column(name);
     }
   }
 

@@ -19,6 +19,7 @@
 #include "textureAttrib.h"
 #include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
+#include "internalName.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -846,15 +847,52 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void TextureAttrib::
 sort_on_stages() {
+  // First, we have to build up the tc_index mapping.  We need a
+  // unique number for each different texcoord name for the various
+  // TextureStages.
+
+  // It's important that this assignment not be based on the whims of
+  // render order--it mustn't change arbitrarily--so we must first
+  // sort the on_stages list into pointer order for this purpose.
+  sort(_on_stages.begin(), _on_stages.end());
+
+  typedef pmap<const InternalName *, int> UsedTexcoordIndex;
+  UsedTexcoordIndex used_texcoord_index;
+
+  typedef pmap<const TextureStage *, int> TexcoordMap;
+  TexcoordMap tc_map;
+
+  OnStages::const_iterator osi;
+  for (osi = _on_stages.begin(); osi != _on_stages.end(); ++osi) {
+    TextureStage *stage = (*osi);
+    if (stage->is_fixed_function()) {
+      const InternalName *name = stage->get_texcoord_name();
+
+      // This pair of lines will get the next consecutive texcoord index
+      // number if this is the first time we have referenced this
+      // particular texcoord name; otherwise, it will return the same
+      // index number it returned before.
+      UsedTexcoordIndex::iterator ti = used_texcoord_index.insert(UsedTexcoordIndex::value_type(name, (int)used_texcoord_index.size())).first;
+      int texcoord_index = (*ti).second;
+
+      tc_map[stage] = texcoord_index;
+    }
+  }
+
+  // Now we can sort the on_stages map into render order.
   sort(_on_stages.begin(), _on_stages.end(), IndirectLess<TextureStage>());
 
   _sort_seq = TextureStage::get_sort_seq();
 
   _on_ff_stages.clear();
-  OnStages::const_iterator osi;
+  _ff_tc_index.clear();
+
   for (osi = _on_stages.begin(); osi != _on_stages.end(); ++osi) {
-    if ((*osi)->is_fixed_function()) {
-      _on_ff_stages.push_back(*osi);
+    TextureStage *stage = (*osi);
+    if (stage->is_fixed_function()) {
+      _on_ff_stages.push_back(stage);
+      int texcoord_index = tc_map[stage];
+      _ff_tc_index.push_back(texcoord_index);
     }
   }
   

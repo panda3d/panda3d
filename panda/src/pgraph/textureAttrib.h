@@ -28,6 +28,7 @@
 #include "indirectLess.h"
 #include "geom.h"
 #include "ordered_vector.h"
+#include "vector_int.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureAttrib
@@ -60,6 +61,7 @@ PUBLISHED:
   INLINE TextureStage *get_on_stage(int n) const;
   INLINE int get_num_on_ff_stages() const;
   INLINE TextureStage *get_on_ff_stage(int n) const;
+  INLINE int get_ff_tc_index(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
 
@@ -103,6 +105,7 @@ private:
   typedef Geom::ActiveTextureStages OnStages;
   OnStages _on_stages;
   OnStages _on_ff_stages;
+  vector_int _ff_tc_index;
   
   typedef ov_set<TextureStage *> OffStages;
   OffStages _off_stages;

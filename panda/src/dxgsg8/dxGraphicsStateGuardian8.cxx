@@ -2609,32 +2609,21 @@ do_issue_texture() {
 
   // We have to match up the texcoord stage index to the order written
   // out by the DXGeomMunger.  This means the texcoord names are
-  // written in the order they are referenced by the TextureAttrib,
-  // except that if a name is repeated its index number is reused from
-  // the first time.
-  typedef pmap<const InternalName *, int> UsedTexcoordIndex;
-  UsedTexcoordIndex used_texcoord_index;
+  // written in the order indicated by the TextureAttrib.
 
-  int i;
-  for (i = 0; i < num_stages; i++) {
-    TextureStage *stage = _effective_texture->get_on_ff_stage(i);
+  int si;
+  for (si = 0; si < num_stages; si++) {
+    TextureStage *stage = _effective_texture->get_on_ff_stage(si);
+    int texcoord_index = _effective_texture->get_ff_tc_index(si);
+
     Texture *texture = _effective_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
-
-    const InternalName *name = stage->get_texcoord_name();
-
-    // This pair of lines will get the next consecutive texcoord index
-    // number if this is the first time we have referenced this
-    // particular texcoord name; otherwise, it will return the same
-    // index number it returned before.
-    UsedTexcoordIndex::iterator ti = used_texcoord_index.insert(UsedTexcoordIndex::value_type(name, (int)used_texcoord_index.size())).first;
-    int texcoord_index = (*ti).second;
 
     // We always reissue every stage in DX, just in case the texcoord
     // index or texgen mode or some other property has changed.
     TextureContext *tc = texture->prepare_now(_prepared_objects, this);
-    apply_texture(i, tc);
-    set_texture_blend_mode(i, stage);
+    apply_texture(si, tc);
+    set_texture_blend_mode(si, stage);
 
     int texcoord_dimensions = 2;
 
@@ -2650,12 +2639,12 @@ do_issue_texture() {
     switch (mode) {
     case TexGenAttrib::M_off:
     case TexGenAttrib::M_light_vector:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX, texcoord_index);
       break;
 
     case TexGenAttrib::M_eye_sphere_map:
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         // This texture matrix, applied on top of the texcoord
         // computed by D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR,
@@ -2676,7 +2665,7 @@ do_issue_texture() {
       // transform.  In the case of a vector, we should not apply the
       // pos component of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2685,7 +2674,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_cube_map:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEREFLECTIONVECTOR);
       tex_mat = tex_mat->compose(_inv_cs_transform);
       texcoord_dimensions = 3;
@@ -2697,7 +2686,7 @@ do_issue_texture() {
       // the case of a normal, we should not apply the pos component
       // of the transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2706,7 +2695,7 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_normal:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACENORMAL);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
@@ -2717,7 +2706,7 @@ do_issue_texture() {
       // coordinates to world coordinates; i.e. apply the
       // camera transform.
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
@@ -2726,14 +2715,14 @@ do_issue_texture() {
       break;
 
     case TexGenAttrib::M_eye_position:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX,
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX,
                                         texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
       texcoord_dimensions = 3;
       tex_mat = tex_mat->compose(_inv_cs_transform);
       break;
 
     case TexGenAttrib::M_point_sprite:
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, texcoord_index);
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX, texcoord_index);
       any_point_sprite = true;
       break;
 
@@ -2749,7 +2738,7 @@ do_issue_texture() {
       // that there are 3-d texture coordinates, because of the
       // 3-component texture coordinate in get_constant_value().
       {
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXCOORDINDEX, 
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXCOORDINDEX, 
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
 
@@ -2772,35 +2761,35 @@ do_issue_texture() {
               m(1, 0), m(1, 1), m(1, 3), 0.0f,
               m(3, 0), m(3, 1), m(3, 3), 0.0f,
               0.0f, 0.0f, 0.0f, 1.0f);
-        _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)m.get_data());
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           D3DTTFF_COUNT2);
       } else {
         LMatrix4f m = tex_mat->get_mat();
-        _d3d_device->SetTransform(get_tex_mat_sym(i), (D3DMATRIX *)m.get_data());
+        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)m.get_data());
         DWORD transform_flags = texcoord_dimensions;
         if (m.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
           // If we have a projected texture matrix, we also need to
           // set D3DTTFF_COUNT4.
           transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
         }
-        _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+        _d3d_device->SetTextureStageState(si, D3DTSS_TEXTURETRANSFORMFLAGS,
                                           transform_flags);
       }
 
     } else {
-      _d3d_device->SetTextureStageState(i, D3DTSS_TEXTURETRANSFORMFLAGS,
+      _d3d_device->SetTextureStageState(si, D3DTSS_TEXTURETRANSFORMFLAGS,
                                         D3DTTFF_DISABLE);
       // For some reason, "disabling" texture coordinate transforms
       // doesn't seem to be sufficient.  We'll load an identity matrix
       // to underscore the point.
-      _d3d_device->SetTransform(get_tex_mat_sym(i), &_d3d_ident_mat);
+      _d3d_device->SetTransform(get_tex_mat_sym(si), &_d3d_ident_mat);
     }
   }
 
   // Disable the texture stages that are no longer used.
-  for (i = num_stages; i < _num_active_texture_stages; i++) {
-    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+  for (si = num_stages; si < _num_active_texture_stages; si++) {
+    _d3d_device->SetTextureStageState(si, D3DTSS_COLOROP, D3DTOP_DISABLE);
   }
 
   // Save the count of texture stages for next time.
