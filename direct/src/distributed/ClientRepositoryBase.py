@@ -478,7 +478,9 @@ class ClientRepositoryBase(ConnectionRepository):
             # trivial objects that don't benefit from caching.
             # also don't try to cache an object that is delayDeleted
             if distObj.getCacheable() and distObj.getDelayDeleteCount() <= 0:
-                cache.cache(distObj)
+                cached = cache.cache(distObj)
+                if not cached:
+                    distObj.deleteOrDelay()
             else:
                 distObj.deleteOrDelay()
 

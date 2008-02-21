@@ -20,6 +20,7 @@ class CRCache:
         """
         assert self.checkCache()
         CRCache.notify.debug("Flushing the cache")
+        # NOTE: delayDeleted objects should no longer get into the cache in the first place
         # give objects a chance to clean themselves up before checking for DelayDelete leaks
         messenger.send('clientCleanup')
         # some of these objects might be holding delayDeletes on others
@@ -53,6 +54,7 @@ class CRCache:
         # Get the doId
         doId = distObj.getDoId()
         # Error check
+        success = False
         if self.dict.has_key(doId):
             CRCache.notify.warning("Double cache attempted for distObj "
                                    + str(doId))
@@ -64,6 +66,8 @@ class CRCache:
             self.fifo.append(distObj)
             self.dict[doId] = distObj
 
+            success = True
+
             if len(self.fifo) > self.maxCacheItems:
                 # if the cache is full, pop the oldest item
                 oldestDistObj = self.fifo.pop(0)
@@ -74,6 +78,7 @@ class CRCache:
 
         # Make sure that the fifo and the dictionary are sane
         assert len(self.dict) == len(self.fifo)
+        return success
 
     def retrieve(self, doId):
         assert self.checkCache()
