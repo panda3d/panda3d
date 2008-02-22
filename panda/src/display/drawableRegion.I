@@ -163,9 +163,9 @@ get_clear_stencil_active() const {
 //  Description: Sets the clear-active flag for any bitplane.
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
-set_clear_active(int id, bool clear_active) {
-  nassertv((id >= 0)&&(id < RTP_COUNT));
-  _clear_active[id] = clear_active;
+set_clear_active(int n, bool clear_active) {
+  nassertv((n >= 0)&&(n < RTP_COUNT));
+  _clear_active[n] = clear_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,9 +174,9 @@ set_clear_active(int id, bool clear_active) {
 //  Description: Gets the clear-active flag for any bitplane.
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
-get_clear_active(int id) const {
-  nassertr((id >= 0)&&(id < RTP_COUNT), false);
-  return _clear_active[id];
+get_clear_active(int n) const {
+  nassertr((n >= 0)&&(n < RTP_COUNT), false);
+  return _clear_active[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,9 +268,9 @@ get_clear_stencil() const {
 //  Description: Sets the clear value for any bitplane.
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
-set_clear_value(int id, const Colorf &color) {
-  nassertv((id >= 0) && (id < RTP_COUNT));
-  _clear_value[id] = color;
+set_clear_value(int n, const Colorf &color) {
+  nassertv((n >= 0) && (n < RTP_COUNT));
+  _clear_value[n] = color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,10 +279,10 @@ set_clear_value(int id, const Colorf &color) {
 //  Description: Returns the clear value for any bitplane.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &DrawableRegion::
-get_clear_value(int id) const {
+get_clear_value(int n) const {
   static Colorf blank(0.5,0.5,0.5,0.0);
-  nassertr((id >= 0) && (id < RTP_COUNT), blank);
-  return _clear_value[id];
+  nassertr((n >= 0) && (n < RTP_COUNT), blank);
+  return _clear_value[n];
 }
 
 ////////////////////////////////////////////////////////////////////
