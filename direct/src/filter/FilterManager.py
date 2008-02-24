@@ -119,7 +119,7 @@ class FilterManager:
 
         return winx,winy
 
-    def renderSceneInto(self, depthtex=False, colortex=False, normaltex=False, textures=None):
+    def renderSceneInto(self, depthtex=False, colortex=False, auxtex=False, auxbits=0, textures=None):
 
         """ Causes the scene to be rendered into the supplied textures
         instead of into the original window.  Puts a fullscreen quad
@@ -163,11 +163,11 @@ class FilterManager:
         if (textures):
             colortex = textures.get("color", None)
             depthtex = textures.get("depth", None)
-            normaltex = textures.get("normal", None)
+            auxtex = textures.get("aux", None)
 
         if (colortex == None): colortex = Texture("filter-base-color")
 
-        texgroup = (depthtex, colortex, normaltex, None)
+        texgroup = (depthtex, colortex, auxtex, None)
 
         # Choose the size of the offscreen buffer.
 
@@ -186,14 +186,11 @@ class FilterManager:
         quad.setTexture(colortex)
         quad.setColor(Vec4(1,0.5,0.5,1))
 
-        auxbits = AuxBitplaneAttrib.ABOColor;
-        if (normaltex != None):
-            auxbits += AuxBitplaneAttrib.ABOCsnormal;
-        
         cs = NodePath("dummy")
         cs.setState(self.caminit)
         cs.setShaderAuto();
-        cs.setAttrib(AuxBitplaneAttrib.make(auxbits))
+        if (auxbits):
+            cs.setAttrib(AuxBitplaneAttrib.make(auxbits))
         self.camera.node().setInitialState(cs.getState())
 
         quadcamnode = Camera("filter-quad-cam")
@@ -208,9 +205,9 @@ class FilterManager:
 
         dr = buffer.getDisplayRegion(0)
         self.setStackedClears(dr, self.rclears, self.wclears)
-        if (normaltex):
+        if (auxtex):
             dr.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
-            dr.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.0,0.0,0.0,0.0))
+            dr.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5,0.5,1.0,0.0))
         self.region.disableClears()
         if (self.isFullscreen()):
             self.win.disableClears()

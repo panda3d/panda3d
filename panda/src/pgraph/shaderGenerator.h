@@ -117,10 +117,18 @@ protected:
   int _map_index_height;
   int _map_index_glow;
   int _map_index_gloss;
+
+  bool _out_primary_alpha;
+  bool _out_primary_glow;
+  bool _out_aux_normal;
+  bool _out_aux_glow;
+  bool _out_aux_any;
+
+  bool _have_alpha_test;
+  bool _have_color_blend;
+  bool _have_transparency;
   
-  int _bitplane_color;
-  int _bitplane_normal;
-  
+  bool _need_clipspace_pos;
   bool _need_material_props;
   
   void analyze_renderstate(const RenderState *rs);

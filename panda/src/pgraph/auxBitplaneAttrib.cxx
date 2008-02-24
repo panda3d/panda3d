@@ -36,7 +36,7 @@ CPT(RenderAttrib) AuxBitplaneAttrib::_default;
 CPT(RenderAttrib) AuxBitplaneAttrib::
 make() {
   if (_default == 0) {
-    AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(ABO_color);
+    AuxBitplaneAttrib *attrib = new AuxBitplaneAttrib(0);
     _default = return_new(attrib);
   }
   return _default;
@@ -102,7 +102,7 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *AuxBitplaneAttrib::
 make_default_impl() const {
-  return new AuxBitplaneAttrib(ABO_color);
+  return new AuxBitplaneAttrib(0);
 }
 
 ////////////////////////////////////////////////////////////////////

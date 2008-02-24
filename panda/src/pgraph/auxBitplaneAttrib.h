@@ -29,8 +29,30 @@ class FactoryParams;
 // Description : Modern frame buffers can have 'aux' bitplanes, which
 //               are additional bitplanes above and beyond the
 //               standard depth and color.  This attrib controls what
-//               gets rendered into those additional bitplanes when
-//               using the standard shader generator.
+//               gets rendered into those additional bitplanes.  It
+//               can also affect what goes into the alpha channel
+//               of the primary color buffer.
+//
+//               ABO_glow: copy the glow map into the alpha channel
+//               of the primary frame buffer.  If there is no glow
+//               map, set it to zero.  Caveat: it is not
+//               possible to write glow or depth values to the
+//               framebuffer alpha channel at the same time as using
+//               alpha blending or alpha testing.  Any attempt to use
+//               transparency, blending, or alpha testing will cause
+//               this flag to be overridden.
+//
+//               ABO_aux_normal: put the camera-space normal into
+//               the into the R,G components of the first auxiliary
+//               bitplane.
+//
+//               ABO_aux_modelz: put the clip-space Z coordinate of
+//               the center of the model (after perspective divide)
+//               into the B channel of the first auxiliary bitplane.
+//
+//               ABO_aux_glow: put a copy of the glow map into the
+//               alpha channel of the first auxiliary bitplane.
+//               If there is no glow map, set it to zero.
 //
 //               AuxBitplaneAttrib is relevant only when shader
 //               generation is enabled. Otherwise, it has no effect.
@@ -42,9 +64,11 @@ private:
 
 PUBLISHED:
   enum AuxBitplaneOutput {
-    ABO_color = 1,     // Render an ordinary scene into the ordinary color buffer.
-    ABO_csnormal = 2,  // Render a camera-space normal into an aux bitplane.
-    ABO_glowalpha = 4, // Render all glow maps into the color buffer alpha channel.
+    ABO_glow = 1,
+    
+    ABO_aux_normal = 2,
+    ABO_aux_modelz = 4,
+    ABO_aux_glow = 8,
   };
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make(int outputs);

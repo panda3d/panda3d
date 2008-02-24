@@ -19,23 +19,23 @@ from FilterManager import FilterManager
 from pandac.PandaModules import Point3, Vec3, Vec4
 from pandac.PandaModules import NodePath, PandaNode
 from pandac.PandaModules import Filename
+from pandac.PandaModules import AuxBitplaneAttrib
 from pandac.PandaModules import RenderState, Texture, Shader
 import sys,os
 
 CARTOON_BODY="""
-float4 cartoondelta = k_cartoonseparation * texpix_txnormal.xwyw;
+float4 cartoondelta = k_cartoonseparation * texpix_txaux.xwyw;
 float4 cartoon_p0 = l_texcoordN + cartoondelta.xyzw;
-float4 cartoon_c0 = tex2D(k_txnormal, cartoon_p0.xy);
+float4 cartoon_c0 = tex2D(k_txaux, cartoon_p0.xy);
 float4 cartoon_p1 = l_texcoordN - cartoondelta.xyzw;
-float4 cartoon_c1 = tex2D(k_txnormal, cartoon_p1.xy);
+float4 cartoon_c1 = tex2D(k_txaux, cartoon_p1.xy);
 float4 cartoon_p2 = l_texcoordN + cartoondelta.wzyx;
-float4 cartoon_c2 = tex2D(k_txnormal, cartoon_p2.xy);
+float4 cartoon_c2 = tex2D(k_txaux, cartoon_p2.xy);
 float4 cartoon_p3 = l_texcoordN - cartoondelta.wzyx;
-float4 cartoon_c3 = tex2D(k_txnormal, cartoon_p3.xy);
+float4 cartoon_c3 = tex2D(k_txaux, cartoon_p3.xy);
 float4 cartoon_mx = max(cartoon_c0,max(cartoon_c1,max(cartoon_c2,cartoon_c3)));
 float4 cartoon_mn = min(cartoon_c0,min(cartoon_c1,min(cartoon_c2,cartoon_c3)));
-float4 cartoon_trigger = saturate(((cartoon_mx-cartoon_mn) * 3) - k_cartooncutoff.x);
-float  cartoon_thresh = dot(cartoon_trigger.xyz,float3(1,1,1));
+float cartoon_thresh = saturate(dot(cartoon_mx - cartoon_mn, float4(3,3,0,0)) - 0.5);
 o_color = lerp(o_color, float4(0,0,0,1), cartoon_thresh);
 """
 
@@ -76,20 +76,23 @@ class CommonFilters:
             if (len(configuration) == 0):
                 return
 
+            auxbits = 0
             needtex = {}
             needtex["color"] = True
             if (configuration.has_key("CartoonInk")):
-                needtex["normal"] = True
+                needtex["aux"] = True
+                auxbits |= AuxBitplaneAttrib.ABOAuxNormal
             if (configuration.has_key("Bloom")):
                 needtex["bloom0"] = True
                 needtex["bloom1"] = True
                 needtex["bloom2"] = True
                 needtex["bloom3"] = True
+                auxbits |= AuxBitplaneAttrib.ABOGlow
             for tex in needtex:
                 self.textures[tex] = Texture("scene-"+tex)
                 needtexpix = True
 
-            self.finalQuad = self.manager.renderSceneInto(textures = self.textures)
+            self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
     
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
@@ -126,8 +129,8 @@ class CommonFilters:
             text += " uniform float4 texpix_txcolor,\n"
             text += " out float4 l_texcoordC : TEXCOORD0,\n"
             if (configuration.has_key("CartoonInk")):
-                text += " uniform float4 texpad_txnormal,\n"
-                text += " uniform float4 texpix_txnormal,\n"
+                text += " uniform float4 texpad_txaux,\n"
+                text += " uniform float4 texpix_txaux,\n"
                 text += " out float4 l_texcoordN : TEXCOORD1,\n"
             if (configuration.has_key("Bloom")):
                 text += " uniform float4 texpad_txbloom3,\n"
@@ -137,13 +140,13 @@ class CommonFilters:
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
             text += " l_texcoordC=(vtx_position.xzxz * texpad_txcolor) + texpad_txcolor;\n"
             if (configuration.has_key("CartoonInk")):
-                text += " l_texcoordN=(vtx_position.xzxz * texpad_txnormal) + texpad_txnormal;\n"
+                text += " l_texcoordN=(vtx_position.xzxz * texpad_txaux) + texpad_txaux;\n"
             if (configuration.has_key("Bloom")):
                 text += " l_texcoordB=(vtx_position.xzxz * texpad_txbloom3) + texpad_txbloom3;\n"
             if (configuration.has_key("HalfPixelShift")):
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
                 if (configuration.has_key("CartoonInk")):
-                    text += " l_texcoordN+=texpix_txnormal*0.5;\n"
+                    text += " l_texcoordN+=texpix_txaux*0.5;\n"
             text += "}\n"
 
             text += "void fshader(\n"
@@ -151,14 +154,13 @@ class CommonFilters:
             text += "uniform float4 texpix_txcolor,\n"
             if (configuration.has_key("CartoonInk")):
                 text += "float4 l_texcoordN : TEXCOORD1,\n"
-                text += "uniform float4 texpix_txnormal,\n"
+                text += "uniform float4 texpix_txaux,\n"
             if (configuration.has_key("Bloom")):
                 text += "float4 l_texcoordB : TEXCOORD2,\n"
             for key in self.textures:
                 text += "uniform sampler2D k_tx" + key + ",\n"
             if (configuration.has_key("CartoonInk")):
                 text += "uniform float4 k_cartoonseparation,\n"
-                text += "uniform float4 k_cartooncutoff,\n"
             text += "out float4 o_color : COLOR)\n"
             text += "{\n"
             text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
@@ -177,9 +179,8 @@ class CommonFilters:
 
         if (changed == "CartoonInk") or fullrebuild:
             if (configuration.has_key("CartoonInk")):
-                (separation, cutoff) = configuration["CartoonInk"]
+                separation = configuration["CartoonInk"]
                 self.finalQuad.setShaderInput("cartoonseparation", Vec4(separation,0,separation,0))
-                self.finalQuad.setShaderInput("cartooncutoff", Vec4(cutoff,cutoff,cutoff,cutoff))
 
         if (changed == "Bloom") or fullrebuild:
             if (configuration.has_key("Bloom")):
@@ -190,9 +191,9 @@ class CommonFilters:
                 self.bloom[0].setShaderInput("desat", bloomconf.desat)
                 self.bloom[3].setShaderInput("intensity", intensity, intensity, intensity, intensity)
 
-    def setCartoonInk(self, separation=1, cutoff=0.3):
+    def setCartoonInk(self, separation=1):
         fullrebuild = (self.configuration.has_key("CartoonInk") == False)
-        self.configuration["CartoonInk"] = (separation, cutoff)
+        self.configuration["CartoonInk"] = separation
         self.reconfigure(fullrebuild, "CartoonInk")
 
     def delCartoonInk(self):

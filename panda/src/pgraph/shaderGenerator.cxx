@@ -146,15 +146,30 @@ analyze_renderstate(const RenderState *rs) {
 
   rs->store_into_slots(&_attribs);
 
-  // Figure out which bitplane should hold which output.
+  // Check if there's an alpha test, color blend, or transparency.
+
+  if ((_attribs._alpha_test->get_mode() != RenderAttrib::M_none)&&
+      (_attribs._alpha_test->get_mode() != RenderAttrib::M_always)) {
+    _have_alpha_test = true;
+  }
+  if (_attribs._color_blend->get_mode() != ColorBlendAttrib::M_none) {
+    _have_color_blend = true;
+  }
+  if (_attribs._transparency->get_mode() != TransparencyAttrib::M_none) {
+    _have_transparency = true;
+  }
   
-  int next = 0;
-  if (_attribs._aux_bitplane->get_outputs() & AuxBitplaneAttrib::ABO_color) {
-    _bitplane_color = next++;
+  // Determine what output values are desired.
+  
+  int outputs = _attribs._aux_bitplane->get_outputs();
+  if (_have_alpha_test || _have_color_blend || _have_transparency) {
+    _out_primary_alpha = true;
+  } else {
+    _out_primary_glow = (outputs & AuxBitplaneAttrib::ABO_glow) ? true:false;
   }
-  if (_attribs._aux_bitplane->get_outputs() & AuxBitplaneAttrib::ABO_csnormal) {
-    _bitplane_normal = next++;
-  }
+  _out_aux_normal = (outputs & AuxBitplaneAttrib::ABO_aux_normal) ? true:false;
+  _out_aux_glow = (outputs & AuxBitplaneAttrib::ABO_aux_glow) ? true:false;
+  _out_aux_any = (_out_aux_normal || _out_aux_glow);
 
   // Count number of textures.
 
@@ -165,12 +180,10 @@ analyze_renderstate(const RenderState *rs) {
   
   // Determine whether or not vertex colors or flat colors are present.
 
-  if ((_bitplane_color >= 0)&&(_attribs._color != 0)) {
-    if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
-      _vertex_colors = true;
-    } else if (_attribs._color->get_color_type() == ColorAttrib::T_flat) {
-      _flat_colors = true;
-    }
+  if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
+    _vertex_colors = true;
+  } else if (_attribs._color->get_color_type() == ColorAttrib::T_flat) {
+    _flat_colors = true;
   }
 
   // Break out the lights by type.
@@ -221,8 +234,7 @@ analyze_renderstate(const RenderState *rs) {
   
   // Determine whether lighting is needed.
 
-  if ((_bitplane_color >= 0) &&
-      (_attribs._light->get_num_on_lights() > 0)) {
+  if (_attribs._light->get_num_on_lights() > 0) {
     _lighting = true;
   }
   
@@ -331,11 +343,18 @@ clear_analysis() {
   _map_index_height = -1;
   _map_index_glow = -1;
   _map_index_gloss = -1;
-  _bitplane_color = -1;
-  _bitplane_normal = -1;
+  _have_alpha_test = false;
+  _have_color_blend = false;
+  _have_transparency = false;
+  _out_primary_alpha = false;
+  _out_primary_glow  = false;
+  _out_aux_normal = false;
+  _out_aux_glow   = false;
+  _out_aux_any    = false;
   _attribs.clear_to_defaults();
   _material = (Material*)NULL;
   _need_material_props = false;
+  _need_clipspace_pos = false;
   _alights.clear();
   _dlights.clear();
   _plights.clear();
@@ -387,21 +406,20 @@ create_shader_attrib(const string &txt) {
 //               - lighting
 //               - normal maps
 //               - gloss maps
+//               - glow maps
 //               - materials, but not updates to materials
-//               - modulated 2D textures
+//               - 2D textures
 //               - texture stage modes: modulate, decal, add
 //               - light ramps (for cartoon shading)
 //
 //               Not yet supported:
-//               - 3D textures
-//               - cube textures
+//               - 3D textures, cube textures
 //               - texture stage modes: replace, blend
 //               - color scale attrib
 //               - texgen
 //               - texmatrix
-//               - glow maps (not yet sure what these should do)
+//               - fog
 //               - other TextureStage::Modes
-//               - cartoon thresholding and other special effects
 //
 //               Potential optimizations
 //               - omit attenuation calculations if attenuation off
@@ -422,6 +440,7 @@ synthesize_shader(const RenderState *rs) {
   char *binormal_vreg = 0;
   char *binormal_freg = 0;
   char *csnormal_freg = 0;
+  char *clip_freg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
@@ -466,7 +485,11 @@ synthesize_shader(const RenderState *rs) {
       text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
     }
   }
-  if (_bitplane_normal >= 0) {
+  if (_need_clipspace_pos) {
+    clip_freg = alloc_freg();
+    text << "\t out float4 l_clip : " << clip_freg << ",\n";
+  }
+  if (_out_aux_normal) {
     if (normal_vreg == 0) {
       normal_vreg = alloc_vreg();
       text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
@@ -482,7 +505,9 @@ synthesize_shader(const RenderState *rs) {
   text << ") {\n";
   
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-
+  if (_need_clipspace_pos) {
+    text << "\t l_clip = l_position;\n";
+  }
   for (int i=0; i<_num_textures; i++) {
     text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
   }
@@ -497,7 +522,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t l_binormal = -vtx_binormal" << _map_index_normal << ";\n";
     }
   }
-  if (_bitplane_normal >= 0) {
+  if (_out_aux_normal) {
     text << "\t l_csnormal.xyz = mul(itp_modelview, vtx_normal);\n";
     text << "\t l_csnormal.w = 0;\n";
   }
@@ -542,13 +567,16 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
-  if (_bitplane_normal >= 0) {
+  if (_out_aux_normal) {
     text << "\t in float4 l_csnormal : " << csnormal_freg << ",\n";
-    text << "\t out float4 o_csnormal : COLOR" << _bitplane_normal << ",\n";
   }
-  if (_bitplane_color >= 0) {
-    text << "\t out float4 o_color : COLOR" << _bitplane_color << ",\n";
+  if (_need_clipspace_pos) {
+    text << "\t in float4 l_clip : " << clip_freg << ",\n";
   }
+  if (_out_aux_any) {
+    text << "\t out float4 o_aux : COLOR1,\n";
+  }
+  text << "\t out float4 o_color : COLOR0,\n";
   if (_vertex_colors) {
     text << "\t in float4 l_color : COLOR\n";
   } else {
@@ -556,6 +584,9 @@ synthesize_shader(const RenderState *rs) {
   }
   text << ") {\n";
   text << "\t float4 result;\n";
+  if (_out_aux_any) {
+    text << "\t o_aux = float4(0,0,0,0);\n";
+  }
   text << "\t // Fetch all textures.\n";
   for (int i=0; i<_num_textures; i++) {
     text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
@@ -573,9 +604,9 @@ synthesize_shader(const RenderState *rs) {
       text << "\t l_normal = normalize(l_normal);\n";
     }
   }
-  if (_bitplane_normal >= 0) {
+  if (_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
-    text << "\t o_csnormal = (normalize(l_csnormal)*0.5) + float4(0.5,0.5,0.5,0);\n";
+    text << "\t o_aux.rg = ((normalize(l_csnormal)*0.5) + float4(0.5,0.5,0.5,0)).rg;\n";
   }
   if (_lighting) {
     text << "\t // Begin model-space light calculations\n";
@@ -747,7 +778,7 @@ synthesize_shader(const RenderState *rs) {
 
     // Combine in alpha, which bypasses lighting calculations.
     // Use of lerp here is a workaround for a radeon driver bug.
-    if (_map_index_glow < 0) {
+    if (_out_primary_alpha) {
       if (_vertex_colors) {
         text << "\t result.a = l_color.a;\n";
       } else if (_flat_colors) {
@@ -785,7 +816,9 @@ synthesize_shader(const RenderState *rs) {
       break;
     case TextureStage::M_add:
       text << "\t result.rbg = result.rgb + tex" << i << ".rgb;\n";
-      text << "\t result.a   = result.a * tex" << i << ".a;\n";
+      if (_out_primary_alpha) {
+        text << "\t result.a   = result.a * tex" << i << ".a;\n";
+      }
       break;
     case TextureStage::M_combine:
       pgraph_cat.error() << "TextureStage::Mode COMBINE not yet supported in per-pixel mode.\n";
@@ -797,6 +830,22 @@ synthesize_shader(const RenderState *rs) {
       break;
     }
   }
+
+  if (_out_primary_glow) {
+    if (_map_index_glow >= 0) {
+      text << "\t result.a = tex" << _map_index_glow << ".a;\n";
+    } else {
+      text << "\t result.a = 0;\n";
+    }
+  }
+  if (_out_aux_glow) {
+    if (_map_index_glow >= 0) {
+      text << "\t o_aux.a = tex" << _map_index_glow << ".a;\n";
+    } else {
+      text << "\t o_aux.a = 0;\n";
+    }
+  }
+  
   if (_lighting) {
     if (_have_specular) {
       if (_material->has_specular()) {
@@ -808,6 +857,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
   }
+  
   switch (_attribs._light_ramp->get_mode()) {
   case LightRampAttrib::LRT_hdr0:
     text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
@@ -820,11 +870,10 @@ synthesize_shader(const RenderState *rs) {
     break;
   default: break;
   }
-  if (_bitplane_color >= 0) {
-    // The multiply is a workaround for a radeon driver bug.
-    // It's annoying as heck, since it produces an extra instruction.
-    text << "\t o_color = result * 1.000001;\n"; 
-  }
+  
+  // The multiply is a workaround for a radeon driver bug.
+  // It's annoying as heck, since it produces an extra instruction.
+  text << "\t o_color = result * 1.000001;\n"; 
   text << "}\n";
   
   // Insert the shader into the shader attrib.
