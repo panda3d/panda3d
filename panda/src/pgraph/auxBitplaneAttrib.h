@@ -67,8 +67,7 @@ PUBLISHED:
     ABO_glow = 1,
     
     ABO_aux_normal = 2,
-    ABO_aux_modelz = 4,
-    ABO_aux_glow = 8,
+    ABO_aux_glow = 4,
   };
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make(int outputs);

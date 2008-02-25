@@ -310,7 +310,7 @@ ConfigVariableBool sync_video
           "this request."));
 
 ConfigVariableBool basic_shaders_only
-("basic_shaders_only", false,
+("basic-shaders-only", false,
  PRC_DESC("Set this to true if you aren't interested in shader model three "
           "and beyond.  Setting this flag will cause panda to disable "
           "bleeding-edge shader functionality which tends to be unreliable "

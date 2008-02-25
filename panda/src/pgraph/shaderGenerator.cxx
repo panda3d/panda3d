@@ -148,7 +148,7 @@ analyze_renderstate(const RenderState *rs) {
 
   // Check if there's an alpha test, color blend, or transparency.
 
-  if ((_attribs._alpha_test->get_mode() != RenderAttrib::M_none)&&
+  if ((_attribs._alpha_test->get_mode() != RendetyrAttrib::M_none)&&
       (_attribs._alpha_test->get_mode() != RenderAttrib::M_always)) {
     _have_alpha_test = true;
   }

@@ -93,7 +93,10 @@ class CommonFilters:
                 needtexpix = True
 
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
-    
+            if (self.finalQuad == None):
+                self.cleanup()
+                return False
+
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
                 bloom0=self.textures["bloom0"]
@@ -172,7 +175,6 @@ class CommonFilters:
                 text += "o_color = 1-((1-bloom)*(1-o_color));\n"
             text += "}\n"
     
-            print "Using shader: ", text
             self.finalQuad.setShader(Shader.make(text))
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
@@ -190,16 +192,19 @@ class CommonFilters:
                 self.bloom[0].setShaderInput("trigger", bloomconf.mintrigger, 1.0/(bloomconf.maxtrigger-bloomconf.mintrigger), 0.0, 0.0)
                 self.bloom[0].setShaderInput("desat", bloomconf.desat)
                 self.bloom[3].setShaderInput("intensity", intensity, intensity, intensity, intensity)
+        
+        return True
 
     def setCartoonInk(self, separation=1):
         fullrebuild = (self.configuration.has_key("CartoonInk") == False)
         self.configuration["CartoonInk"] = separation
-        self.reconfigure(fullrebuild, "CartoonInk")
+        return self.reconfigure(fullrebuild, "CartoonInk")
 
     def delCartoonInk(self):
         if (self.configuration.has_key("CartoonInk")):
             del self.configuration["CartoonInk"]
-            self.reconfigure(True, "CartoonInk")
+            return self.reconfigure(True, "CartoonInk")
+        return True
 
     def setBloom(self, blend=(0.3,0.4,0.3,0.0), mintrigger=0.6, maxtrigger=1.0, desat=0.6, intensity=1.0, size="medium"):
         if (maxtrigger==None): maxtrigger=mintrigger+0.8
@@ -215,29 +220,32 @@ class CommonFilters:
         newconfig.intensity = intensity
         newconfig.size = size
         self.configuration["Bloom"] = newconfig
-        self.reconfigure(fullrebuild, "Bloom")
+        return self.reconfigure(fullrebuild, "Bloom")
 
     def delBloom(self):
         if (self.configuration.has_key("Bloom")):
             del self.configuration["Bloom"]
-            self.reconfigure(True, "Bloom")
+            return self.reconfigure(True, "Bloom")
+        return True
 
     def setHalfPixelShift(self):
         fullrebuild = (self.configuration.has_key("HalfPixelShift") == False)
         self.configuration["HalfPixelShift"] = 1
-        self.reconfigure(fullrebuild, "HalfPixelShift")
+        return self.reconfigure(fullrebuild, "HalfPixelShift")
 
     def delHalfPixelShift(self):
         if (self.configuration.has_key("HalfPixelShift")):
             del self.configuration["HalfPixelShift"]
-            self.reconfigure(True, "HalfPixelShift")
+            return self.reconfigure(True, "HalfPixelShift")
+        return True
 
     def setFSBloom(self):
         fullrebuild = (self.configuration.has_key("FSBloom") == False)
         self.configuration["FSBloom"] = 1
-        self.reconfigure(fullrebuild, "FSBloom")
+        return self.reconfigure(fullrebuild, "FSBloom")
 
     def delFSBloom(self):
         if (self.configuration.has_key("FSBloom")):
             del self.configuration["FSBloom"]
-            self.reconfigure(True, "FSBloom")
+            return self.reconfigure(True, "FSBloom")
+        return True

@@ -188,7 +188,7 @@ class FilterManager:
 
         cs = NodePath("dummy")
         cs.setState(self.caminit)
-        cs.setShaderAuto();
+        cs.setShaderAuto()
         if (auxbits):
             cs.setAttrib(AuxBitplaneAttrib.make(auxbits))
         self.camera.node().setInitialState(cs.getState())
@@ -262,7 +262,6 @@ class FilterManager:
     def createBuffer(self, name, xsize, ysize, texgroup, depthbits=1):
         """ Low-level buffer creation.  Not intended for public use. """
 
-        print "Creating buffer: ",xsize,ysize,texgroup,depthbits
         winprops = WindowProperties()
         winprops.setSize(xsize, ysize)
         props = FrameBufferProperties()
@@ -277,6 +276,8 @@ class FilterManager:
             self.win.getPipe(), name, -1,
             props, winprops, GraphicsPipe.BFRefuseWindow,
             self.win.getGsg(), self.win)
+        if (buffer == None):
+            return buffer
         if (depthtex):
             buffer.addRenderTexture(depthtex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPDepth)
         if (colortex):
