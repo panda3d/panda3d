@@ -54,7 +54,6 @@ class CommonFilters:
 
     def loadShader(self, name):
         fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
-        print "loading shader: ", dir
         return Shader.load(Filename.fromOsSpecific(fn))
 
     def cleanup(self):
