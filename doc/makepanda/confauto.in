@@ -7,16 +7,6 @@
 ###                                                     ###
 ###########################################################
 
-# Define the display types that have been compiled in.  Panda will
-# pick one of these by going through the list in this order until one
-# is found that works, unless the user specifically requests a
-# particular display type with the load-display directive.
-
-aux-display pandagl
-aux-display pandadx9
-aux-display pandadx8
-aux-display pandadx7
-
 # The egg loader is handy to have available by default.  This allows
 # clients to load egg files.  (The bam loader is built-in so bam files
 # are always loadable).
