@@ -71,7 +71,6 @@ wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
   } else {
     res = wglMakeCurrent(hdc, hglrc);
   }
-  cerr << "MakeCurrent: " << hdc << " " << hglrc << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
