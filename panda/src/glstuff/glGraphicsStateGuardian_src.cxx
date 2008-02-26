@@ -7116,8 +7116,6 @@ upload_texture_image(CLP(TextureContext) *gtc,
   }
 
   int highest_level = 0;
-  report_my_gl_errors();
-
 
   if (!gtc->_already_applied ||
       gtc->_uses_mipmaps != uses_mipmaps ||
@@ -7213,7 +7211,6 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       highest_level = n;
     }
-    report_my_gl_errors();
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
@@ -7292,16 +7289,13 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       highest_level = n;
     }
-    report_my_gl_errors();
   }
 
-  report_my_gl_errors();
   if (is_at_least_version(1, 2)) {
     if (load_ram_mipmaps) {
       // By the time we get here, we have successfully loaded a certain
       // number of mipmap levels.  Tell the GL that's all it's going to
       // get.
-      cerr << " 1 texture_target=" << texture_target << " hi level = " << highest_level << " mip bias = " <<  mipmap_bias << "\n";
       GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, highest_level - mipmap_bias);
       
     } else if (uses_mipmaps) {
@@ -7312,7 +7306,6 @@ upload_texture_image(CLP(TextureContext) *gtc,
       GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - mipmap_bias - 1);
     }
   }
-  report_my_gl_errors();
 
   // Report the error message explicitly if the GL texture creation
   // failed.
