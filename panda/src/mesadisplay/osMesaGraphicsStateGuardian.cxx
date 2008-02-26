@@ -63,7 +63,7 @@ OSMesaGraphicsStateGuardian::
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *OSMesaGraphicsStateGuardian::
-get_extension_func(const char *, const char *name) {
+get_extension_func(const char *prefix, const char *name) {
 #if (OSMESA_MAJOR_VERSION == 4 && OSMESA_MINOR_VERSION >= 1) || OSMESA_MAJOR_VERSION > 4
   // If we've got at least OSMesa version 4.1, then we can use
   // OSMesaGetProcAddress.
@@ -73,9 +73,30 @@ get_extension_func(const char *, const char *name) {
   // Mesa functions to "mgl", they're still stored as "gl" in the
   // OSMesaGetProcAddress() lookup table.
   string fullname = string("gl") + string(name);
-  return (void *)OSMesaGetProcAddress(fullname.c_str());
+  void *ptr = (void *)OSMesaGetProcAddress(fullname.c_str());
+  if (mesadisplay_cat.is_debug()) {
+    mesadisplay_cat.debug()
+      << "Looking for function " << fullname << ": " << ptr << "\n";
+  }
+  if (ptr == (void *)NULL) {
+    // Well, try for the more accurate name.
+    fullname = string(prefix) + name;
+    ptr = (void *)OSMesaGetProcAddress(fullname.c_str());
+    if (mesadisplay_cat.is_debug()) {
+      mesadisplay_cat.debug()
+        << "Looking for function " << fullname << ": " << ptr << "\n";
+    }
+  }
+
+  return ptr;
 
 #else
+  if (mesadisplay_cat.is_debug()) {
+    mesadisplay_cat.debug()
+      << "Couldn't look up extension function: compied with Mesa version "
+      << OSMESA_MAJOR_VERSION << "." << OSMESA_MINOR_VERSION << "\n";
+  }
+  
   // Otherwise, too bad.  No extension functions for you.  We could
   // try to write code that would dig around in the system interface
   // (using dlopen(), for instance) to find the extension functions,
