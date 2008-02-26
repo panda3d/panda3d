@@ -32,7 +32,7 @@ class SoundInterval(Interval.Interval):
     # use base.camera as the listener, node must not be None
     def __init__(self, sound, loop = 0, duration = 0.0, name = None,
                  volume = 1.0, startTime = 0.0, node=None,
-                 seamlessLoop=True, listenerNode = None):
+                 seamlessLoop=True, listenerNode = None, cutOff = None):
         """__init__(sound, loop, name)
         """
         # Generate unique name
@@ -49,6 +49,7 @@ class SoundInterval(Interval.Interval):
         self.startTime = startTime
         self.node = node
         self.listenerNode = listenerNode
+        self.cutOff = cutOff
         self._seamlessLoop = seamlessLoop
         if self._seamlessLoop:
             self._fLoop = True
@@ -108,7 +109,7 @@ class SoundInterval(Interval.Interval):
         if self.listenerNode and not self.listenerNode.isEmpty() and \
            self.node and not self.node.isEmpty():
             base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
-                                          self.listenerNode)
+                                          self.listenerNode, self.cutOff)
         
         self.state = CInterval.SStarted
         self.currT = t
@@ -124,7 +125,7 @@ class SoundInterval(Interval.Interval):
         if (self._seamlessLoop and self._soundPlaying and self.getLoop()
             and not hasattr(self, '_inFinish')):
             base.sfxPlayer.setFinalVolume(self.sound, self.node, self.volume,
-                                          self.listenerNode)
+                                          self.listenerNode, self.cutOff)
             return
         elif self.sound != None:
             self.sound.stop()
