@@ -1507,6 +1507,7 @@ end_scene() {
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2530,6 +2531,7 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
+  report_my_gl_errors();
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   GLP(DeleteTextures)(1, &gtc->_index);

@@ -79,6 +79,10 @@ public:
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();
+  
+  void check_host_valid();
+  
+  void report_my_errors(int line, const char *file);
 
 private:
   

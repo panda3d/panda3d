@@ -74,7 +74,7 @@ CLP(GraphicsBuffer)::
       }      
       graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     }
-  }  
+  }
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +90,8 @@ bool CLP(GraphicsBuffer)::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
 
+  check_host_valid();
+  
   if (!_is_valid) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
@@ -120,6 +122,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   _gsg->set_current_properties(&get_fb_properties());
+  report_my_gl_errors();
   return true;
 }
 
@@ -158,8 +161,10 @@ check_fbo() {
     }
     
     glgsg->bind_fbo(0);
+    report_my_gl_errors();
     return false;
   }
+  report_my_gl_errors();
   return true;
 }
 
@@ -173,6 +178,11 @@ check_fbo() {
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
 
+  check_host_valid();
+  if (_gsg == 0) {
+    return;
+  }
+  
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
@@ -181,7 +191,7 @@ rebuild_bitplanes() {
   if (_fbo == 0) {
     glgsg->_glGenFramebuffers(1, &_fbo);
     if (_fbo == 0) {
-      glgsg->report_my_gl_errors();
+      report_my_gl_errors();
       return;
     }
   }
@@ -274,7 +284,7 @@ rebuild_bitplanes() {
   }
   _cube_face_active = 0;
   
-  glgsg->report_my_gl_errors();
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -441,7 +451,7 @@ generate_mipmaps() {
       GLP(BindTexture)(target, 0);
     }
   }
-  glgsg->report_my_gl_errors();
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -478,7 +488,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
     }
     clear_cube_map_selection();
   }
-  glgsg->report_my_gl_errors();
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,6 +523,7 @@ select_cube_map(int cube_map_index) {
                                    GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index,
                                    gtc->_index, 0);
   }
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -570,6 +581,7 @@ open_buffer() {
   _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
   
   _is_valid = true;
+  report_my_gl_errors();
   return true;
 }
 
@@ -582,6 +594,8 @@ open_buffer() {
 void CLP(GraphicsBuffer)::
 close_buffer() {
 
+  check_host_valid();
+  
   _active = false;
   if (_gsg == 0) {
     return;
@@ -590,7 +604,8 @@ close_buffer() {
   // Get the glgsg.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
-  
+
+  report_my_gl_errors();
   // Delete the renderbuffers.
   for (int i=0; i<RTP_COUNT; i++) {
     if (_rb[i] != 0) {
@@ -601,13 +616,15 @@ close_buffer() {
   }
   _rb_size_x = 0;
   _rb_size_y = 0;
+  report_my_gl_errors();
   
   // Delete the FBO itself.
   if (_fbo != 0) {
     glgsg->_glDeleteFramebuffers(1, &_fbo);
     _fbo = 0;
   }
-  
+  report_my_gl_errors();
+
   // Release the Gsg
   _gsg.clear();
 
@@ -654,6 +671,7 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
     }
   }
   
+  report_my_gl_errors();
   return state;
 }
 
@@ -701,5 +719,40 @@ unregister_shared_depth_buffer(GraphicsOutput *graphics_output) {
   if (input_graphics_output) {
     // remove from list  
     _shared_depth_buffer_list.remove(input_graphics_output);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::unregister_shared_depth_buffer
+//       Access: Public
+//  Description: Unregister who is sharing the depth buffer.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+report_my_errors(int line, const char *file) {
+  if (_gsg == 0) {
+    GLenum error_code = glGetError();
+    if (error_code != GL_NO_ERROR) {
+      GLCAT.error() << file << ", line " << line << ": GL error " << error_code << "\n";
+    }
+  } else {
+    CLP(GraphicsStateGuardian) *glgsg;
+    DCAST_INTO_V(glgsg, _gsg);
+    glgsg->report_my_errors(line, file);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::check_host_valid
+//       Access: Public
+//  Description: If the host window has been closed, then
+//               this buffer is dead too.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+check_host_valid() {
+  if ((_host == 0)||(!_host->is_valid())) {
+    _is_valid = false;
+    _active = false;
+    _gsg.clear();
+    _host.clear();
   }
 }

@@ -247,6 +247,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
                    ShaderMatSpec &bind, bool fromflag) {
 
   string word1 = cp_parse_non_delimiter(pieces, next);
+  if (pieces[next] == "of") next++;
   string word2 = cp_parse_non_delimiter(pieces, next);
 
   ShaderMatInput from_single;

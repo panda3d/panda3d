@@ -64,6 +64,9 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
       release_resources();
     }
+    if (glGetError() != GL_NO_ERROR) {
+      GLCAT.error() << "GL error in ShaderContext constructor\n";
+    }
   }
 #endif
 }
@@ -94,6 +97,9 @@ release_resources() {
     _cg_fprogram = 0;
     _cg_parameter_map.clear();
   }
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext destructor\n";
+  }
 #endif
 }
 
@@ -118,6 +124,9 @@ bind(GSG *gsg) {
     cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
     cgGLBindProgram(_cg_fprogram);
     cg_report_errors();
+    if (glGetError() != GL_NO_ERROR) {
+      GLCAT.error() << "GL error in ShaderContext::bind\n";
+    }
   }
 #endif
 }
@@ -134,6 +143,9 @@ unbind() {
     cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
     cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
     cg_report_errors();
+    if (glGetError() != GL_NO_ERROR) {
+      GLCAT.error() << "GL error in ShaderContext::unbind\n";
+    }
   }
 #endif
 }
@@ -182,6 +194,9 @@ issue_parameters(GSG *gsg, int altered) {
     }
   }
   cg_report_errors();
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::issue_parameters\n";
+  }
 #endif
 }
 
@@ -203,6 +218,9 @@ disable_shader_vertex_arrays(GSG *gsg) {
     cgGLDisableClientState(p);
   }
   cg_report_errors();
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::disable_shader_vertex_arrays\n";
+  }
 #endif
 }
 
@@ -272,6 +290,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
     }
   }
   cg_report_errors();
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::update_shader_vertex_arrays\n";
+  }
 #endif // HAVE_CG
   return true;
 }
@@ -305,6 +326,9 @@ disable_shader_texture_bindings(GSG *gsg) {
     // cgGLDisableTextureParameter(p);
   }
   cg_report_errors();
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::disable_shader_texture_bindings\n";
+  }
 #endif
 }
 
@@ -370,6 +394,9 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     gsg->apply_texture(tc);
   }
   cg_report_errors();
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::update_shader_texture_bindings\n";
+  }
 #endif
 }
 
