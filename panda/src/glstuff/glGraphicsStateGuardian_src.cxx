@@ -2763,8 +2763,10 @@ extract_texture_data(Texture *tex) {
     // Also get the mipmap levels.
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
-    GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
-    highest_level = min(highest_level, num_expected_levels);
+    if (is_at_least_version(1, 2)) {
+      GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
+      highest_level = min(highest_level, num_expected_levels);
+    }
     for (int n = 1; n <= highest_level; ++n) {
       if (!extract_texture_image(image, page_size, tex, target, page_target,
                                  type, compression, n)) {
@@ -7114,6 +7116,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
   }
 
   int highest_level = 0;
+  report_my_gl_errors();
 
 
   if (!gtc->_already_applied ||
@@ -7210,6 +7213,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       highest_level = n;
     }
+    report_my_gl_errors();
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
@@ -7288,21 +7292,27 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       highest_level = n;
     }
+    report_my_gl_errors();
   }
 
-  if (load_ram_mipmaps) {
-    // By the time we get here, we have successfully loaded a certain
-    // number of mipmap levels.  Tell the GL that's all it's going to
-    // get.
-    GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, highest_level - mipmap_bias);
-
-  } else if (uses_mipmaps) {
-    // Since the mipmap levels were auto-generated and are therefore
-    // complete, make sure the GL doesn't remember some previous value
-    // for GL_TEXTURE_MAX_LEVEL from the above call--set it to the
-    // full count of mipmap levels.
-    GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - mipmap_bias - 1);
+  report_my_gl_errors();
+  if (is_at_least_version(1, 2)) {
+    if (load_ram_mipmaps) {
+      // By the time we get here, we have successfully loaded a certain
+      // number of mipmap levels.  Tell the GL that's all it's going to
+      // get.
+      cerr << " 1 texture_target=" << texture_target << " hi level = " << highest_level << " mip bias = " <<  mipmap_bias << "\n";
+      GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, highest_level - mipmap_bias);
+      
+    } else if (uses_mipmaps) {
+      // Since the mipmap levels were auto-generated and are therefore
+      // complete, make sure the GL doesn't remember some previous value
+      // for GL_TEXTURE_MAX_LEVEL from the above call--set it to the
+      // full count of mipmap levels.
+      GLP(TexParameteri)(texture_target, GL_TEXTURE_MAX_LEVEL, tex->get_expected_num_mipmap_levels() - mipmap_bias - 1);
+    }
   }
+  report_my_gl_errors();
 
   // Report the error message explicitly if the GL texture creation
   // failed.
