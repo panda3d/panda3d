@@ -1,8 +1,21 @@
-------------------------  RELEASE 1.4.3  ------------------------
+------------------------  RELEASE 1.5.0  ------------------------
 
-* New support for normal & gloss texture stages.
-  - actual normal mapping and gloss mapping not included yet.
-* Ability to use method move_pointer on a raw mouse.
+* Shader Generator means advanced rendering without
+  having to manually write shaders.  Includes:
+    - Per-Pixel Lighting
+    - Normal Maps
+    - Gloss Maps
+    - Glow (Self-Illumination) Maps
+    - HDR tone mapping
+    - Cartoon shading
+* Class 'CommonFilters' makes it easy to do image postprocessing:
+    - Bloom Filter
+    - Cartoon Inking
+    - More coming soon.
+* Maya exporter now supports normal maps, gloss maps, glow maps.
+* Now compiled for Python 2.5
+* Adds support for Maya 2008 export.
+* Lots of small tweaks, bugfixes, performance improvements, etc.
 
 ------------------------  RELEASE 1.4.2  ------------------------
 
