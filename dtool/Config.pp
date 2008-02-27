@@ -567,6 +567,21 @@
 // but is sometimes missing (e.g. the default FC5 installation).
 #defer HAVE_GLU $[libtest $[GL_LPATH],$[GLU_LIBS]]
 
+// If you are having trouble linking in OpenGL extension functions at
+// runtime for some reason, you can set this variable.  This defines
+// the minimum runtime version of OpenGL that Panda will require.
+// Setting it to a higher version will compile in hard references to
+// the extension functions provided by that OpenGL version and below,
+// which may reduce runtime portability to other systems, but it will
+// avoid issues with getting extension function pointers.  It also, of
+// course, requires you to install the OpenGL header files and
+// compile-time libraries appropriate to the version you want to
+// compile against.
+
+// The variable is the major, minor version of OpenGL, separated by a
+// space (instead of a dot).  Thus, "1 1" means OpenGL version 1.1.
+#define MIN_GL_VERSION 1 1
+
 // Is Mesa installed separately from OpenGL?  Mesa is an open-source
 // software-only OpenGL renderer.  Panda can link with it
 // independently from OpenGL (and if Mesa is built statically, and/or
@@ -597,6 +612,9 @@
 #define MESA_LIBS
 #define MESA_MGL
 #defer HAVE_MESA $[libtest $[MESA_LPATH],$[MESA_LIBS]]
+
+// Similar to MIN_GL_VERSION, above.
+#define MIN_MESA_VERSION 1 1
 
 
 // Is the Chromium remote-rendering library installed, and where?

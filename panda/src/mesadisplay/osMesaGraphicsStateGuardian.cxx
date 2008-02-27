@@ -80,7 +80,7 @@ get_extension_func(const char *prefix, const char *name) {
   }
   if (ptr == (void *)NULL) {
     // Well, try for the more accurate name.
-    fullname = string(prefix) + name;
+    fullname = string(prefix) + string(name);
     ptr = (void *)OSMesaGetProcAddress(fullname.c_str());
     if (mesadisplay_cat.is_debug()) {
       mesadisplay_cat.debug()
@@ -93,7 +93,7 @@ get_extension_func(const char *prefix, const char *name) {
 #else
   if (mesadisplay_cat.is_debug()) {
     mesadisplay_cat.debug()
-      << "Couldn't look up extension function: compied with Mesa version "
+      << "Couldn't look up extension function: compiled with Mesa version "
       << OSMESA_MAJOR_VERSION << "." << OSMESA_MINOR_VERSION << "\n";
   }
   

@@ -44,6 +44,30 @@
 #define EXPCL_GL EXPCL_PANDAMESA
 #define EXPTP_GL EXPTP_PANDAMESA
 
+#if MIN_MESA_VERSION_MAJOR > 1 || (MIN_MESA_VERSION_MAJOR == 1 && MIN_MESA_VERSION_MINOR >= 2)
+#define EXPECT_GL_VERSION_1_2
+#endif
+
+#if MIN_MESA_VERSION_MAJOR > 1 || (MIN_MESA_VERSION_MAJOR == 1 && MIN_MESA_VERSION_MINOR >= 3)
+#define EXPECT_GL_VERSION_1_3
+#endif
+
+#if MIN_MESA_VERSION_MAJOR > 1 || (MIN_MESA_VERSION_MAJOR == 1 && MIN_MESA_VERSION_MINOR >= 4)
+#define EXPECT_GL_VERSION_1_4
+#endif
+
+#if MIN_MESA_VERSION_MAJOR > 1 || (MIN_MESA_VERSION_MAJOR == 1 && MIN_MESA_VERSION_MINOR >= 5)
+#define EXPECT_GL_VERSION_1_5
+#endif
+
+#if MIN_MESA_VERSION_MAJOR > 2 || (MIN_MESA_VERSION_MAJOR == 2 && MIN_MESA_VERSION_MINOR >= 0)
+#define EXPECT_GL_VERSION_2_0
+#endif
+
+#if MIN_MESA_VERSION_MAJOR > 2 || (MIN_MESA_VERSION_MAJOR == 2 && MIN_MESA_VERSION_MINOR >= 1)
+#define EXPECT_GL_VERSION_2_1
+#endif
+
 // This prevents glext.h from getting included by gl.h
 // That way, we can provide our own, better version.
 #define __glext_h_

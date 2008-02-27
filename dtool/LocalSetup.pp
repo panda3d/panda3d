@@ -244,6 +244,10 @@ $[cdefine HAVE_ZLIB]
 /* Define if we have OpenGL installed and want to build for GL.  */
 $[cdefine HAVE_GL]
 $[cdefine HAVE_GLU]
+#if HAVE_GL
+# define MIN_GL_VERSION_MAJOR $[word 1,$[MIN_GL_VERSION]]
+# define MIN_GL_VERSION_MINOR $[word 2,$[MIN_GL_VERSION]]
+#endif
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]
@@ -257,6 +261,10 @@ $[cdefine HAVE_ODE]
 /* Define if we have Mesa installed and want to build mesadisplay.  */
 $[cdefine HAVE_MESA]
 $[cdefine MESA_MGL]
+#if HAVE_MESA
+# define MIN_MESA_VERSION_MAJOR $[word 1,$[MIN_MESA_VERSION]]
+# define MIN_MESA_VERSION_MINOR $[word 2,$[MIN_MESA_VERSION]]
+#endif
 
 /* Define if we want to build with SGI OpenGL extensions.  */
 $[cdefine HAVE_SGIGL]

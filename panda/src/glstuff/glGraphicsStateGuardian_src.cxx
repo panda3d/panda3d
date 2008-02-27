@@ -305,8 +305,16 @@ reset() {
 
   if (is_at_least_version(1, 4)) {
     _supports_point_parameters = true;
+#ifdef EXPECT_GL_VERSION_1_4
+    GLCAT.debug()
+      << "Getting compile-time PointParameter pointers\n";
+    _glPointParameterfv = (PFNGLPOINTPARAMETERFVPROC)&GLP(PointParameterfv);
+#else  // EXPECT_GL_VERSION_1_4
+    GLCAT.debug()
+      << "Getting run-time PointParameter pointers\n";
     _glPointParameterfv = (PFNGLPOINTPARAMETERFVPROC)
       get_extension_func(GLPREFIX_QUOTED, "PointParameterfv");
+#endif  // EXPECT_GL_VERSION_1_4
 
   } else if (has_extension("GL_ARB_point_parameters")) {
     _supports_point_parameters = true;
@@ -416,8 +424,16 @@ reset() {
 
   if (is_at_least_version(1, 2)) {
     _supports_draw_range_elements = true;
+#ifdef EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting compile-time DrawRangeElements pointers\n";
+    _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)&GLP(DrawRangeElements);
+#else  // EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting run-time DrawRangeElements pointers\n";
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawRangeElements");
+#endif  // EXPECT_GL_VERSION_1_2
 
   } else if (has_extension("GL_EXT_draw_range_elements")) {
     _supports_draw_range_elements = true;
@@ -449,10 +465,19 @@ reset() {
   if (is_at_least_version(1, 2)) {
     _supports_3d_texture = true;
 
+#ifdef EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting compile-time 3-D textures pointers\n";
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)&GLP(TexImage3D);
+    _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)&GLP(TexSubImage3D);
+#else  // EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting run-time 3-D textures pointers\n";
     _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
+#endif  // EXPECT_GL_VERSION_1_2
 
   } else if (has_extension("GL_EXT_texture3D")) {
     _supports_3d_texture = true;
@@ -478,6 +503,19 @@ reset() {
   if (is_at_least_version(1, 3)) {
     _supports_compressed_texture = true;
 
+#ifdef EXPECT_GL_VERSION_1_3
+    GLCAT.debug()
+      << "Getting compile-time compressed textures pointers\n";
+    _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)&GLP(CompressedTexImage1D);
+    _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)&GLP(CompressedTexImage2D);
+    _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)&GLP(CompressedTexImage3D);
+    _glCompressedTexSubImage1D = (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC)&GLP(CompressedTexSubImage1D);
+    _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)&GLP(CompressedTexSubImage2D);
+    _glCompressedTexSubImage3D = (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)&GLP(CompressedTexSubImage3D);
+    _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)&GLP(GetCompressedTexImage);
+#else  // EXPECT_GL_VERSION_1_3
+    GLCAT.debug()
+      << "Getting run-time compressed textures pointers\n";
     _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage1D");
     _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
@@ -492,6 +530,7 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage3D");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImage");
+#endif  // EXPECT_GL_VERSION_1_3
 
   } else if (has_extension("GL_ARB_texture_compression")) {
     _supports_compressed_texture = true;
@@ -586,6 +625,19 @@ reset() {
   if (is_at_least_version(1, 3)) {
     _supports_multitexture = true;
 
+#ifdef EXPECT_GL_VERSION_1_3
+    GLCAT.debug()
+      << "Getting compile-time multitexture pointers\n";
+    _glActiveTexture = (PFNGLACTIVETEXTUREPROC)&GLP(ActiveTexture);
+    _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)&GLP(ClientActiveTexture);
+    _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)&GLP(MultiTexCoord1f);
+    _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)&GLP(MultiTexCoord2f);
+    _glMultiTexCoord3f = (PFNGLMULTITEXCOORD3FPROC)&GLP(MultiTexCoord3f);
+    _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)&GLP(MultiTexCoord4f);
+
+#else  // EXPECT_GL_VERSION_1_3
+    GLCAT.debug() 
+      << "Getting run-time multitexture pointers\n";
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ActiveTexture");
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
@@ -598,6 +650,7 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3f");
     _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4f");
+#endif  // EXPECT_GL_VERSION_1_3
 
   } else if (has_extension("GL_ARB_multitexture")) {
     _supports_multitexture = true;
@@ -652,6 +705,17 @@ reset() {
   if (is_at_least_version(1, 5)) {
     _supports_buffers = true;
 
+#ifdef EXPECT_GL_VERSION_1_5
+    GLCAT.debug()
+      << "Getting compile-time buffer pointers\n";
+    _glGenBuffers = (PFNGLGENBUFFERSPROC)&GLP(GenBuffers);
+    _glBindBuffer = (PFNGLBINDBUFFERPROC)&GLP(BindBuffer);
+    _glBufferData = (PFNGLBUFFERDATAPROC)&GLP(BufferData);
+    _glBufferSubData = (PFNGLBUFFERSUBDATAPROC)&GLP(BufferSubData);
+    _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)&GLP(DeleteBuffers);
+#else  // EXPECT_GL_VERSION_1_5
+    GLCAT.debug()
+      << "Getting run-time buffer pointers\n";
     _glGenBuffers = (PFNGLGENBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "GenBuffers");
     _glBindBuffer = (PFNGLBINDBUFFERPROC)
@@ -662,6 +726,7 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "BufferSubData");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DeleteBuffers");
+#endif  // EXPECT_GL_VERSION_1_5
 
   } else if (has_extension("GL_ARB_vertex_buffer_object")) {
     _supports_buffers = true;
@@ -770,6 +835,20 @@ reset() {
   if (CLP(support_occlusion_query)) {
     if (is_at_least_version(1, 5)) {
       _supports_occlusion_query = true;
+
+#ifdef EXPECT_GL_VERSION_1_5
+      GLCAT.debug()
+        << "Getting compile-time occlusion pointers\n";
+      _glGenQueries = (PFNGLGENQUERIESPROC)&GLP(GenQueries);
+      _glBeginQuery = (PFNGLBEGINQUERYPROC)&GLP(BeginQuery);
+      _glEndQuery = (PFNGLENDQUERYPROC)&GLP(EndQuery);
+      _glDeleteQueries = (PFNGLDELETEQUERIESPROC)&GLP(DeleteQueries);
+      _glGetQueryiv = (PFNGLGETQUERYIVPROC)&GLP(GetQueryiv);
+      _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)&GLP(GetQueryObjectuiv);
+
+#else  // EXPECT_GL_VERSION_1_5
+      GLCAT.debug()
+        << "Getting run-time occlusion pointers\n";
       _glGenQueries = (PFNGLGENQUERIESPROC)
         get_extension_func(GLPREFIX_QUOTED, "GenQueries");
       _glBeginQuery = (PFNGLBEGINQUERYPROC)
@@ -782,6 +861,8 @@ reset() {
         get_extension_func(GLPREFIX_QUOTED, "GetQueryiv");
       _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
         get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuiv");
+#endif  // EXPECT_GL_VERSION_1_5
+
     } else if (has_extension("GL_ARB_occlusion_query")) {
       _supports_occlusion_query = true;
       _glGenQueries = (PFNGLGENQUERIESPROC)
@@ -823,8 +904,16 @@ reset() {
   bool supports_blend_equation = false;
   if (is_at_least_version(1, 2)) {
     supports_blend_equation = true;
+#ifdef EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting compile-time BlendEquation pointers\n";
+    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)&GLP(BlendEquation);
+#else  // EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting run-time blend pointers\n";
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquation");
+#endif  // EXPECT_GL_VERSION_1_2
   } else if (has_extension("GL_EXT_blend_minmax")) {
     supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
@@ -842,8 +931,16 @@ reset() {
   bool supports_blend_color = false;
   if (is_at_least_version(1, 2)) {
     supports_blend_color = true;
+#ifdef EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting compile-time BlendColor pointers\n";
+    _glBlendColor = (PFNGLBLENDCOLORPROC)&GLP(BlendColor);
+#else  // EXPECT_GL_VERSION_1_2
+    GLCAT.debug()
+      << "Getting run-time BlendColor pointers\n";
     _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendColor");
+#endif  // EXPECT_GL_VERSION_1_2
   } else if (has_extension("GL_EXT_blend_color")) {
     supports_blend_color = true;
     _glBlendColor = (PFNGLBLENDCOLORPROC)
@@ -1208,11 +1305,14 @@ reset() {
   vertex_profile = cgGLGetLatestProfile (CG_GL_VERTEX);
   pixel_profile = cgGLGetLatestProfile (CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
+    // Temp ifdef: this crashes Mesa.
+#ifndef OSMESA_MAJOR_VERSION
     GLCAT.debug()
       << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
       << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
       << "\nshader model = " << _shader_model
       << "\n";
+#endif
   }
 
 #endif
