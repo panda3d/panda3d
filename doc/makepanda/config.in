@@ -86,3 +86,7 @@ hardware-animated-vertices 0
 model-cache-dir $THIS_PRC_DIR/../modelcache
 model-cache-textures #f
 
+# Limit the use of advanced shader profiles.
+# Currently, advanced profiles are not reliable under Cg.
+
+basic-shaders-only #t
