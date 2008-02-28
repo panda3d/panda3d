@@ -148,9 +148,10 @@ munge_format_impl(const GeomVertexFormat *orig,
     // the stages of the attrib and get the index numbers in the
     // appropriate order.
     int si, tc_index;
-    int max_tc_index = 0;
+    int max_tc_index = -1;
     for (si = 0; si < num_stages; ++si) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
+      nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
       max_tc_index = max(tc_index, max_tc_index);
     }
@@ -241,9 +242,10 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     // the stages of the attrib and get the index numbers in the
     // appropriate order.
     int si, tc_index;
-    int max_tc_index = 0;
+    int max_tc_index = -1;
     for (si = 0; si < num_stages; ++si) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
+      nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
       max_tc_index = max(tc_index, max_tc_index);
     }
