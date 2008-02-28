@@ -74,6 +74,24 @@ ParasiteBuffer::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::set_size
+//       Access: Public, Virtual
+//  Description: This is called by the GraphicsEngine to request that
+//               the buffer resize itself.  Although calls to get the
+//               size will return the new value, much of the actual
+//               resizing work doesn't take place until the next
+//               begin_frame.  Not all buffers are resizeable.
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+set_size(int x, int y) {
+  if ((_creation_flags & GraphicsPipe::BF_resizeable) == 0) {
+    nassert_raise("Cannot resize buffer unless it is created with BF_resizeable flag");
+    return;
+  }
+  set_size_and_recalc(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParasiteBuffer::is_active
 //       Access: Published, Virtual
 //  Description: Returns true if the window is ready to be rendered

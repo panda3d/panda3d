@@ -162,14 +162,7 @@ bind_texture_to_pbuffer() {
       _pbuffer_bound->release(wglgsg->get_prepared_objects());
       _pbuffer_bound = 0;
     }
-    int tex_x = _x_size;
-    int tex_y = _y_size;
-    if (!wglgsg->get_supports_tex_non_pow2()) {
-      tex_x = Texture::up_to_power_2(tex_x);
-      tex_y = Texture::up_to_power_2(tex_y);
-    }
-    tex->set_x_size(tex_x);
-    tex->set_y_size(tex_y);
+    tex->set_size_padded(_x_size, _y_size);
     if (tex->get_match_framebuffer_format()) {
       if (_fb_properties.get_alpha_bits()) {
         tex->set_format(Texture::F_rgba);
@@ -421,7 +414,7 @@ rebuild_bitplanes() {
   // Determine what pbuffer attributes are needed
   // for currently-applicable textures.
 
-  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+  if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
     if ((_host->get_x_size() != _x_size)||
         (_host->get_y_size() != _y_size)) {
       set_size_and_recalc(_host->get_x_size(),
@@ -430,7 +423,7 @@ rebuild_bitplanes() {
   }
   int desired_x = _x_size;
   int desired_y = _y_size;
-  if ((bindtexture != 0)&&(!wglgsg->get_supports_tex_non_pow2())) {
+  if ((bindtexture != 0)&&(Texture::get_textures_power_2() != ATS_none)) {
     desired_x = Texture::up_to_power_2(desired_x);
     desired_y = Texture::up_to_power_2(desired_y);
   }

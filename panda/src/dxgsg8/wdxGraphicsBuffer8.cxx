@@ -226,9 +226,16 @@ rebuild_bitplanes() {
 
   // Decide how big the bitplanes should be.
 
+  if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
+    }
+  }
   int bitplane_x = _x_size;
   int bitplane_y = _y_size;
-  if (!_gsg->get_supports_tex_non_pow2()) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
   }

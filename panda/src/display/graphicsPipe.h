@@ -84,10 +84,11 @@ PUBLISHED:
     // Miscellaneous control flags.
     BF_can_bind_color      = 0x0040, // Need capability: bind the color bitplane to a tex.
     BF_can_bind_every      = 0x0080, // Need capability: bind all bitplanes to a tex.
-    BF_size_track_host     = 0x0100, // Buffer should track the host size.
-    BF_rtt_cumulative      = 0x0200, // Buffer supports cumulative render-to-texture.
-    BF_fb_props_optional   = 0x0400, // FrameBufferProperties can be ignored.
-    BF_size_square         = 0x0800, // x_size must equal y_size (e.g. for cube maps)
+    BF_resizeable          = 0x0100, // Buffer should allow set_size.
+    BF_size_track_host     = 0x0200, // Buffer should track the host size.
+    BF_rtt_cumulative      = 0x0400, // Buffer supports cumulative render-to-texture.
+    BF_fb_props_optional   = 0x0800, // FrameBufferProperties can be ignored.
+    BF_size_square         = 0x1000, // x_size must equal y_size (e.g. for cube maps)
   };
 
   INLINE bool is_valid() const;

@@ -95,6 +95,7 @@ make_output(const string &name,
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
+        ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)||
         ((flags&BF_rtt_cumulative)!=0)) {

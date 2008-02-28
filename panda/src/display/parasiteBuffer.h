@@ -61,6 +61,7 @@ PUBLISHED:
   virtual ~ParasiteBuffer();
 
   virtual bool is_active() const;
+  void set_size(int x, int y);
 
 public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);

@@ -109,11 +109,21 @@ make_output(const string &name,
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
+        ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
+    }
+    // Early failure - if we are sure that this buffer WONT
+    // meet specs, we can bail out early.
+    if ((flags & BF_fb_props_optional) == 0) {
+      if ((fb_prop.get_aux_rgba() > 0)||
+          (fb_prop.get_aux_rgba() > 0)||
+          (fb_prop.get_aux_float() > 0)) {
+        return NULL;
+      }
     }
     return new wdxGraphicsWindow9(this, name, fb_prop, win_prop,
                                   flags, gsg, host);
@@ -125,11 +135,26 @@ make_output(const string &name,
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
-        ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
+    // Early failure - if we are sure that this buffer WONT
+    // meet specs, we can bail out early.
+    if ((flags & BF_fb_props_optional) == 0) {
+      if ((fb_prop.get_aux_rgba() > 0)||
+          (fb_prop.get_aux_rgba() > 0)||
+          (fb_prop.get_aux_float() > 0)||
+          (fb_prop.get_indexed_color() > 0)||
+          (fb_prop.get_back_buffers() > 0)||
+          (fb_prop.get_accum_bits() > 0)||
+          (fb_prop.get_multisamples() > 0)) {
+        return NULL;
+      }
+    }
+    // Early success - if we are sure that this buffer WILL
+    // meet specs, we can precertify it.
+    // This looks rather overly optimistic -- ie, buggy.
     if ((gsg != 0)&&
         (gsg->is_valid())&&
         (!gsg->needs_reset())&&

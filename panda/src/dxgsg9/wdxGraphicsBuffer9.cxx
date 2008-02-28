@@ -247,13 +247,20 @@ rebuild_bitplanes() {
 
   // Decide how big the bitplanes should be.
 
+  if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
+    if ((_host->get_x_size() != _x_size)||
+        (_host->get_y_size() != _y_size)) {
+      set_size_and_recalc(_host->get_x_size(),
+                          _host->get_y_size());
+    }
+  }
   int bitplane_x = _x_size;
   int bitplane_y = _y_size;
-  if (!_gsg->get_supports_tex_non_pow2()) {
+  if (Texture::get_textures_power_2() != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
   }
-
+  
   // Find the color and depth textures.  Either may be present,
   // or neither.
   //
@@ -297,8 +304,7 @@ rebuild_bitplanes() {
       _color_backing_store = NULL;
     }
     color_tex = get_texture(color_tex_index);
-    color_tex->set_x_size(bitplane_x);
-    color_tex->set_y_size(bitplane_y);
+    color_tex->set_size_padded(_x_size, _y_size);
     color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext9,
@@ -370,8 +376,7 @@ rebuild_bitplanes() {
       depth_tex = get_texture(depth_tex_index);
     }
 
-    depth_tex->set_x_size(bitplane_x);
-    depth_tex->set_y_size(bitplane_y);
+    depth_tex->set_size_padded(_x_size, _y_size);
     depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext9,

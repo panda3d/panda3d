@@ -306,6 +306,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     if ((_tex[slot] == tex)&&
         (tex->get_x_size() == _rb_size_x)&&
         (tex->get_y_size() == _rb_size_y)) {
+      tex->set_pad_size(_rb_size_x - _x_size, _rb_size_y - _y_size);
       return;
     }
     
