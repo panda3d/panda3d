@@ -95,6 +95,8 @@ Section "${SMDIRECTORY}" SecCore
         File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\src\directscripts
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
+        SetOutPath $INSTDIR\direct\src\filter
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\filter\*.sha"
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\*.py"
         File "${PANDA}\direct\__init__.py"
