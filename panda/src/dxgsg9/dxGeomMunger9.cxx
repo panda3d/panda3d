@@ -241,15 +241,17 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     // the stages of the attrib and get the index numbers in the
     // appropriate order.
     int si, tc_index;
+    int max_tc_index = 0;
     for (si = 0; si < num_stages; ++si) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       ff_tc_index[tc_index] = si;
+      max_tc_index = max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will
     // appear on the final geometry.  For each one, get the texture
     // coordinate name from the associated stage.
-    for (tc_index = 0; tc_index < num_stages; ++tc_index) {
+    for (tc_index = 0; tc_index <= max_tc_index; ++tc_index) {
       si = ff_tc_index[tc_index];
       TextureStage *stage = _filtered_texture->get_on_ff_stage(si);
       InternalName *name = stage->get_texcoord_name();
