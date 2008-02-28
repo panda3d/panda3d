@@ -2881,6 +2881,28 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_size_padded
+//  Description: Changes the size of the texture, padding
+//               if necessary, and setting the pad region
+//               as well.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_size_padded(int x, int y, int z) {
+  if (get_textures_power_2() != ATS_none) {
+    set_x_size(up_to_power_2(x));
+    set_y_size(up_to_power_2(y));
+    set_z_size(up_to_power_2(z));
+  } else {
+    set_x_size(x);
+    set_y_size(y);
+    set_z_size(z);
+  }
+  set_pad_size(get_x_size() - x,
+               get_y_size() - y,
+               get_z_size() - z);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::consider_rescale
 //       Access: Private
 //  Description: Asks the PNMImage to change its scale when it reads
@@ -3893,3 +3915,4 @@ operator << (ostream &out, Texture::CompressionMode cm) {
 
   return out << "(**invalid Texture::CompressionMode(" << (int)cm << ")**)";
 }
+

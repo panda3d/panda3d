@@ -350,6 +350,7 @@ PUBLISHED:
   INLINE int get_pad_z_size() const;
   
   INLINE void set_pad_size(int x=0, int y=0, int z=0);
+  void set_size_padded(int x=1, int y=1, int z=1);
   
   void set_format(Format format);
   void set_component_type(ComponentType component_type);

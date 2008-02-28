@@ -1426,9 +1426,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   HRESULT hr;
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
-  tex->set_x_size(Texture::up_to_power_2(w));
-  tex->set_y_size(Texture::up_to_power_2(h));
-
+  tex->set_size_padded(w, h);
+  
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return;

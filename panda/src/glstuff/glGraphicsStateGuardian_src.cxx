@@ -3429,13 +3429,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
-  if (_supports_tex_non_pow2) {
-    tex->set_x_size(w);
-    tex->set_y_size(h);
-  } else {
-    tex->set_x_size(Texture::up_to_power_2(w));
-    tex->set_y_size(Texture::up_to_power_2(h));
-  }
+  tex->set_size_padded(w, h);
+
   if (tex->get_compression() == Texture::CM_default) {
     // Unless the user explicitly turned on texture compression, turn
     // it off for the copy-to-texture case.
