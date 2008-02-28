@@ -25,10 +25,11 @@ from pandac.PandaModules import Camera, DisplayRegion
 from pandac.PandaModules import OrthographicLens
 from pandac.PandaModules import AuxBitplaneAttrib
 from direct.directnotify.DirectNotifyGlobal import *
+from direct.showbase.DirectObject import DirectObject
 
 __all__ = ["FilterManager"]
 
-class FilterManager:
+class FilterManager(DirectObject):
 
     notify = None
 
@@ -70,6 +71,7 @@ class FilterManager:
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
+        self.accept("window-event", self.resizeBuffers)
 
 
     def getClears(self,region):
@@ -255,7 +257,7 @@ class FilterManager:
         buffer.getDisplayRegion(0).setActive(1)
 
         self.buffers.append(buffer)
-        self.sizes.append((1, 1, 1))
+        self.sizes.append((mul, div, align))
         
         return quad
 
@@ -274,7 +276,7 @@ class FilterManager:
             props.setAuxRgba(2)
         buffer=base.graphicsEngine.makeOutput(
             self.win.getPipe(), name, -1,
-            props, winprops, GraphicsPipe.BFRefuseWindow,
+            props, winprops, GraphicsPipe.BFRefuseWindow | GraphicsPipe.BFResizeable,
             self.win.getGsg(), self.win)
         if (buffer == None):
             return buffer
@@ -292,6 +294,16 @@ class FilterManager:
         self.nextsort += 1
         return buffer
 
+    def windowEvent(self, win):
+        """ When the window changes size, automatically resize all buffers """
+        self.resizeBuffers()
+
+    def resizeBuffers(self, win):
+        """ Resize all buffers to match the size of the window. """
+        for i in range(len(self.buffers)):
+            (mul, div, align) = self.sizes[i]
+            (xsize, ysize) = self.getScaledSize(mul, div, align)
+            self.buffers[i].setSize(xsize, ysize)
 
     def cleanup(self):
         """ Restore everything to its original state, deleting any
@@ -305,6 +317,7 @@ class FilterManager:
         self.setClears(self.win, self.wclears)
         self.setClears(self.region, self.rclears)
         self.camera.node().setInitialState(self.caminit)
+        self.region.setCamera(self.camera)
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0

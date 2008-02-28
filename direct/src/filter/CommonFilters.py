@@ -206,6 +206,13 @@ class CommonFilters:
         return True
 
     def setBloom(self, blend=(0.3,0.4,0.3,0.0), mintrigger=0.6, maxtrigger=1.0, desat=0.6, intensity=1.0, size="medium"):
+        if   (size==0): size="off"
+        elif (size==1): size="small"
+        elif (size==2): size="medium"
+        elif (size==3): size="large"
+        if (size=="off"):
+            self.delBloom()
+            return
         if (maxtrigger==None): maxtrigger=mintrigger+0.8
         oldconfig = self.configuration.get("Bloom", None)
         fullrebuild = True
