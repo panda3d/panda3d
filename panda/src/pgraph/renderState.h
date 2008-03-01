@@ -107,6 +107,7 @@ PUBLISHED:
   CPT(RenderState) invert_compose(const RenderState *other) const;
 
   CPT(RenderState) add_attrib(const RenderAttrib *attrib, int override = 0) const;
+  CPT(RenderState) set_attrib(const RenderAttrib *attrib) const;
   CPT(RenderState) remove_attrib(TypeHandle type) const;
 
   CPT(RenderState) adjust_all_priorities(int adjustment) const;

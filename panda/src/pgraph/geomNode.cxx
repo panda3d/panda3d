@@ -135,7 +135,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       entry._state = geom_attribs.collect(entry._state, attrib_types);
       
       bool any_changed = false;
-      
+
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
         CPT(RenderAttrib) ra = geom_attribs._color;
         int override = geom_attribs._color_override;
@@ -160,12 +160,40 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
           const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
           if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-            if (transformer.transform_colors(new_geom, csa->get_scale())) {
-              any_changed = true;
+
+            // Now, if we have an "off" or "flat" color attribute, we
+            // simply modify the color attribute, and leave the
+            // vertices alone.
+            const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_type());
+            if (ra != (const RenderAttrib *)NULL) {
+              const ColorAttrib *ca = DCAST(ColorAttrib, ra);
+              if (ca->get_color_type() == ColorAttrib::T_off) {
+                entry._state = entry._state->set_attrib(ColorAttrib::make_vertex());
+                // ColorAttrib::T_off means the color scale becomes
+                // the new color.
+                entry._state = entry._state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
+
+              } else if (ca->get_color_type() == ColorAttrib::T_flat) {
+                // ColorAttrib::T_off means the color scale modulates
+                // the specified color to produce a new color.
+                const Colorf &c1 = ca->get_color();
+                const LVecBase4f &c2 = csa->get_scale();
+                Colorf color(c1[0] * c2[0], c1[1] * c2[1], 
+                             c1[2] * c2[2], c1[3] * c2[3]);
+                entry._state = entry._state->set_attrib(ColorAttrib::make_flat(color));
+
+              } else {
+                // Otherwise, we have vertex color, and we just scale
+                // it normally.
+                if (transformer.transform_colors(new_geom, csa->get_scale())) {
+                  any_changed = true;
+                }
+              }
             }
           }
         }
       }
+
       if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
         if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
           // Determine which texture coordinate names are used more than
