@@ -26,6 +26,7 @@
   #define SYSTEM_IGATE_FLAGS -D_LP64
 #else
   #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile -Dmutable
+#endif
 
 // Is the platform big-endian (like an SGI workstation) or
 // little-endian (like a PC)?  Define this to the empty string to
