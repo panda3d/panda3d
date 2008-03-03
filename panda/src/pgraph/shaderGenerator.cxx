@@ -318,6 +318,21 @@ analyze_renderstate(const RenderState *rs) {
     (_have_diffuse  && (_material->has_diffuse()))||
     (_have_emission && (_material->has_emission()))||
     (_have_specular && (_material->has_specular()));
+
+  // Check for unimplemented features and issue warnings.
+
+  if (!_attribs._tex_matrix->is_empty()) {
+    pgraph_cat.error() << "Shader Generator does not support TexMatrix yet.\n";
+  }
+  if (!_attribs._tex_gen->is_empty()) {
+    pgraph_cat.error() << "Shader Generator does not support TexGen yet.\n";
+  }
+  if (!_attribs._color_scale->is_identity()) {
+    pgraph_cat.error() << "Shader Generator does not support ColorScale yet.\n";
+  }
+  if (!_attribs._fog->is_off()) {
+    pgraph_cat.error() << "Shader Generator does not support Fog yet.\n";
+  }
 }
 
 
