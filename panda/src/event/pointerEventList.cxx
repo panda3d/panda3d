@@ -138,11 +138,12 @@ encircles(int x, int y) const {
   if (tot_events < 3) {
     return false;
   }
-  double dx = _events[0]._xpos - x;
-  double dy = _events[0]._ypos - y;
+  int last = tot_events-1;
+  double dx = _events[last]._xpos - x;
+  double dy = _events[last]._ypos - y;
   double lastang = atan2(dy, dx) * (180.0/MathNumbers::pi);
   double total = 0.0;
-  for (int i=1; (i<tot_events) && (total < 360.0) && (total > -360.0); i++) {
+  for (int i=last; (i>=0) && (total < 360.0) && (total > -360.0); i--) {
     dx = _events[i]._xpos - x;
     dy = _events[i]._ypos - y;
     if ((dx==0.0)&&(dy==0.0)) {
