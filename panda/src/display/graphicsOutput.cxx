@@ -1007,8 +1007,13 @@ copy_to_textures() {
         display_cat.debug()
           << "cube_map_index = " << _cube_map_index << "\n";
       }
-      RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
-                                                    get_fb_properties());
+      int plane = get_texture_plane(i);
+      RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(plane));
+      if (plane == RTP_color) {
+        buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
+                                         get_fb_properties());
+      }
+      
       if (_cube_map_dr != (DisplayRegion *)NULL) {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
           _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,

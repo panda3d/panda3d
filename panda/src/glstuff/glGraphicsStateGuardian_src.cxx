@@ -3426,7 +3426,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
   nassertv(tex != NULL && dr != NULL);
   set_read_buffer(rb._buffer_type);
-
+  
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
   tex->set_size_padded(w, h);
@@ -4799,6 +4799,11 @@ set_draw_buffer(int rbtype) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(int rbtype) {
+
+  if (rbtype & (RenderBuffer::T_depth | RenderBuffer::T_stencil)) {
+    // Special case: don't have to call ReadBuffer for these.
+    return;
+  }
 
   if (_current_fbo) {
 

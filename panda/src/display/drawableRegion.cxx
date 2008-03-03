@@ -27,3 +27,33 @@
 DrawableRegion::
 ~DrawableRegion() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_renderbuffer_type
+//       Access: Static, Published
+//  Description: Returns the RenderBuffer::Type that corresponds
+//               to a RenderTexturePlane.
+////////////////////////////////////////////////////////////////////
+int DrawableRegion::
+get_renderbuffer_type(int rtp) {
+  switch(rtp) {
+  case RTP_stencil:        return RenderBuffer::T_stencil;
+  case RTP_depth:          return RenderBuffer::T_depth;
+  case RTP_color:          return RenderBuffer::T_color;
+  case RTP_aux_rgba_0:     return RenderBuffer::T_aux_rgba_0;
+  case RTP_aux_rgba_1:     return RenderBuffer::T_aux_rgba_1;
+  case RTP_aux_rgba_2:     return RenderBuffer::T_aux_rgba_2;
+  case RTP_aux_rgba_3:     return RenderBuffer::T_aux_rgba_3;
+  case RTP_aux_hrgba_0:    return RenderBuffer::T_aux_hrgba_0;
+  case RTP_aux_hrgba_1:    return RenderBuffer::T_aux_hrgba_1;
+  case RTP_aux_hrgba_2:    return RenderBuffer::T_aux_hrgba_2;
+  case RTP_aux_hrgba_3:    return RenderBuffer::T_aux_hrgba_3;
+  case RTP_aux_float_0:    return RenderBuffer::T_aux_float_0;
+  case RTP_aux_float_1:    return RenderBuffer::T_aux_float_1;
+  case RTP_aux_float_2:    return RenderBuffer::T_aux_float_2;
+  case RTP_aux_float_3:    return RenderBuffer::T_aux_float_3;
+  default:
+    display_cat.error() << "DrawableRegion::get_renderbuffer_type unexpected case!\n";
+    return 0;
+  };
+}

@@ -95,6 +95,8 @@ PUBLISHED:
 
   INLINE bool is_any_clear_active() const;
 
+  static int get_renderbuffer_type(int plane);
+  
 public:
   INLINE int get_screenshot_buffer_type() const;
   INLINE int get_draw_buffer_type() const;
