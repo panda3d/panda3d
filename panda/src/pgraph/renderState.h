@@ -108,6 +108,7 @@ PUBLISHED:
 
   CPT(RenderState) add_attrib(const RenderAttrib *attrib, int override = 0) const;
   CPT(RenderState) set_attrib(const RenderAttrib *attrib) const;
+  CPT(RenderState) set_attrib(const RenderAttrib *attrib, int override) const;
   CPT(RenderState) remove_attrib(TypeHandle type) const;
 
   CPT(RenderState) adjust_all_priorities(int adjustment) const;

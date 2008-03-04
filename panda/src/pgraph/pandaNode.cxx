@@ -1055,7 +1055,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     
-    CPT(RenderState) new_state = cdata->_state->add_attrib(attrib, override);
+    CPT(RenderState) new_state = cdata->_state->set_attrib(attrib, override);
     if (cdata->_state != new_state) {
       cdata->_state = new_state;
       cdata->set_fancy_bit(FB_state, true);

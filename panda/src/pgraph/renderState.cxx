@@ -614,6 +614,57 @@ set_attrib(const RenderAttrib *attrib) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::set_attrib
+//       Access: Published
+//  Description: Returns a new RenderState object that represents the
+//               same as the source state, with the new RenderAttrib
+//               added.  If there is already a RenderAttrib with the
+//               same type, it is replaced unconditionally.  The
+//               override is also replaced unconditionally.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+set_attrib(const RenderAttrib *attrib, int override) const {
+  RenderState *new_state = new RenderState;
+  back_insert_iterator<Attributes> result = 
+    back_inserter(new_state->_attributes);
+
+  Attribute new_attribute(attrib, override);
+  Attributes::const_iterator ai = _attributes.begin();
+
+  while (ai != _attributes.end() && (*ai) < new_attribute) {
+    *result = *ai;
+    ++ai;
+    ++result;
+  }
+
+  if (ai != _attributes.end() && !(new_attribute < (*ai))) {
+    // At this point we know: !((*ai) < new_attribute) &&
+    // !(new_attribute < (*ai)) which means (*ai) == new_attribute, so
+    // there is another attribute of the same type already in the
+    // state.
+
+    (*result) = Attribute(attrib, override);
+    ++ai;
+    ++result;
+
+  } else {
+    // There is not another attribute of the same type already in the
+    // state.
+    *result = new_attribute;
+    ++result;
+  }
+
+
+  while (ai != _attributes.end()) {
+    *result = *ai;
+    ++ai;
+    ++result;
+  }
+
+  return return_new(new_state);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::remove_attrib
 //       Access: Published
 //  Description: Returns a new RenderState object that represents the
