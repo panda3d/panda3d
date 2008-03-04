@@ -28,7 +28,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
-'printStack', 'printReverseStack', ]
+'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index', ]
 
 import types
 import string
@@ -53,21 +53,23 @@ from libpandaexpress import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
-def enumerate(L):
-    """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:
-    for i, item in enumerate(L):
-       ...
-
-    enumerate is a built-in feature in Python 2.3, which implements it
-    using an iterator. For now, we can use this quick & dirty
-    implementation that returns a list of tuples that is completely
-    constructed every time enumerate() is called.
-    """
-    return zip(xrange(len(L)), L)
-
 import __builtin__
 if not hasattr(__builtin__, 'enumerate'):
+    def enumerate(L):
+        """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:
+        for i, item in enumerate(L):
+           ...
+
+        enumerate is a built-in feature in Python 2.3, which implements it
+        using an iterator. For now, we can use this quick & dirty
+        implementation that returns a list of tuples that is completely
+        constructed every time enumerate() is called.
+        """
+        return zip(xrange(len(L)), L)
+
     __builtin__.enumerate = enumerate
+else:
+    enumerate = __builtin__.enumerate
 
 def unique(L1, L2):
     """Return a list containing all items in 'L1' that are not in 'L2'"""
@@ -614,6 +616,25 @@ def makeTuple(x):
 def list2dict(L, value=None):
     """creates dict using elements of list, all assigned to same value"""
     return dict([(k, value) for k in L])
+
+def listToIndex2item(L):
+    """converts list to dict of list index->list item"""
+    d = {}
+    for i, item in enumerate(L):
+        d[i] = item
+    return d
+
+assert listToIndex2item(['a','b']) == {0: 'a', 1: 'b',}
+    
+def listToItem2index(L):
+    """converts list to dict of list item->list index
+    This is lossy if there are duplicate list items"""
+    d = {}
+    for i, item in enumerate(L):
+        d[item] = i
+    return d
+
+assert listToItem2index(['a','b']) == {'a': 0, 'b': 1,}
 
 def invertDict(D, lossy=False):
     """creates a dictionary by 'inverting' D; keys are placed in the new
