@@ -95,6 +95,13 @@ begin_frame(FrameMode mode, Thread *current_thread) {
                                     &_make_current_pcollector);
   
   if (mode == FM_render) {
+    for (int i=0; i<count_textures(); i++) {
+      if (get_texture_plane(i) != RTP_color) {
+        if (get_rtm_mode(i) == RTM_bind_or_copy) {
+          _textures[i]._rtm_mode = RTM_copy_texture;
+        }
+      }
+    }
     clear_cube_map_selection();
   }
 
@@ -115,8 +122,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
   if (mode == FM_render) {
-    bind_texture_to_pbuffer();
     copy_to_textures();
+    bind_texture_to_pbuffer();
   }
   
   _gsg->end_frame(current_thread);
@@ -146,16 +153,12 @@ bind_texture_to_pbuffer() {
 
   int tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
-          (tex_index < 0)) {
-        tex_index = i;
-      } else {
-        _textures[i]._rtm_mode = RTM_copy_texture;
-      }
+    if (get_texture_plane(i) == RTP_color) {
+      tex_index = i;
+      break;
     }
   }
-  
+
   if (tex_index >= 0) {
     Texture *tex = get_texture(tex_index);
     if ((_pbuffer_bound != 0)&&(_pbuffer_bound != tex)) {

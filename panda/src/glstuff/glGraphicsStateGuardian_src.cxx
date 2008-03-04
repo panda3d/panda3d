@@ -692,7 +692,11 @@ reset() {
       has_extension("GL_ARB_fragment_program_shadow")) {
     _supports_shadow_filter = true;
   }
-
+  if (_gl_vendor.substr(0,3)=="ATI") {
+    // ATI drivers have never provided correct shadow support.
+    _supports_shadow_filter = false;
+  }
+  
   _supports_texture_combine =
     has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
   _supports_texture_saved_result =

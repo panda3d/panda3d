@@ -80,7 +80,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   if (mode == FM_render) 
   {
-    // begin_render_texture();
+    for (int i=0; i<count_textures(); i++) {
+      if (get_rtm_mode(i) == RTM_bind_or_copy) {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+      }
+    }
     clear_cube_map_selection();
   }
   _gsg->set_current_properties(&get_fb_properties());
@@ -101,7 +105,6 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   if (mode == FM_render) 
   {
-    // end_render_texture();
     copy_to_textures();
   }
 

@@ -198,15 +198,6 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
-  // These entry points have been removed. Use begin_frame/end_frame instead.
-  //  virtual void begin_render_texture();
-  //  virtual void end_render_texture();
-  //  INLINE bool needs_context() const;
-  //  bool _needs_context;
-  //  virtual bool make_context();
-  //  virtual void make_current();
-  //  virtual void auto_resize();
-
   void change_scenes(DisplayRegionPipelineReader *new_dr);
   virtual void select_cube_map(int cube_map_index);
 
