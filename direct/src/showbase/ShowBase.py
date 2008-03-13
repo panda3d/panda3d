@@ -90,7 +90,8 @@ class ShowBase(DirectObject.DirectObject):
 
         self.nextWindowIndex = 1
         self.__directStarted = False
-
+        self.__deadInputs = None
+        
         # Store dconfig variables
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
@@ -374,8 +375,6 @@ class ShowBase(DirectObject.DirectObject):
         if self.windowType != 'none':
             self.__doStartDirect()
 
-        self.__deadInputs = None
-        
         # Start IGLOOP
         self.restart()
         
