@@ -90,7 +90,7 @@ class ShowBase(DirectObject.DirectObject):
 
         self.nextWindowIndex = 1
         self.__directStarted = False
-        self.__deadInputs = None
+        self.__deadInputs = 0
         
         # Store dconfig variables
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
@@ -1184,7 +1184,6 @@ class ShowBase(DirectObject.DirectObject):
         using the indicated window.  If the mouse has already been set
         up for a different window, those structures are deleted first.
         """
-        self.reviveInput()
         if self.buttonThrowers != None:
             for bt in self.buttonThrowers:
                 mw = bt.getParent()
@@ -1557,6 +1556,7 @@ class ShowBase(DirectObject.DirectObject):
         # give the dataLoop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.__dataLoop, 'dataLoop', priority = -50)
+        self.__deadInputs = 0
         # spawn the ivalLoop with a later priority, so that it will
         # run after most tasks, but before igLoop.
         self.taskMgr.add(self.__ivalLoop, 'ivalLoop', priority = 20)
@@ -1697,8 +1697,7 @@ class ShowBase(DirectObject.DirectObject):
         all inputs.  Bring them back with reviveInput().
         """
         if not self.__deadInputs:
-            self.__deadInputs = self.dataRoot.getChildren()
-            self.dataRoot.removeChildren()
+            self.__deadInputs = taskMgr.remove('dataLoop')
 
     def reviveInput(self):
         """
@@ -1706,11 +1705,11 @@ class ShowBase(DirectObject.DirectObject):
         """
         if self.__deadInputs:
             self.eventMgr.doEvents()
-            self.__deadInputs.reparentTo(self.dataRoot)
-            self.__deadInputs = None
             self.dgTrav.traverse(base.dataRootNode)
             self.eventMgr.eventQueue.clear()
-        
+            self.taskMgr.add(self.__dataLoop, 'dataLoop', priority = -50)
+            self.__deadInputs = 0
+
     def setMouseOnNode(self, newNode):
         if self.mouse2cam:
             self.mouse2cam.node().setNode(newNode)
