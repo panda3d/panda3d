@@ -373,10 +373,12 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.windowType != 'none':
             self.__doStartDirect()
-            
+
+        self.__deadInputs = None
+        
         # Start IGLOOP
         self.restart()
-
+        
     # add a collision traverser via pushCTrav and remove it via popCTrav
     # that way the owner of the new cTrav doesn't need to hold onto the
     # previous one in order to put it back
@@ -1177,14 +1179,13 @@ class ShowBase(DirectObject.DirectObject):
         self.dataRootNode = self.dataRoot.node()
         self.dataUnused = NodePath('dataUnused')
 
-
     def setupMouse(self, win):
         """
         Creates the structures necessary to monitor the mouse input,
         using the indicated window.  If the mouse has already been set
         up for a different window, those structures are deleted first.
         """
-
+        self.reviveInput()
         if self.buttonThrowers != None:
             for bt in self.buttonThrowers:
                 mw = bt.getParent()
@@ -1192,7 +1193,6 @@ class ShowBase(DirectObject.DirectObject):
                 bt.removeNode()
                 mw.removeNode()
                 mk.removeNode()
-
         # For each mouse/keyboard device, we create
         #  - MouseAndKeyboard
         #  - MouseWatcher
@@ -1692,6 +1692,26 @@ class ShowBase(DirectObject.DirectObject):
         if self.mouse2cam:
             self.mouse2cam.reparentTo(self.mouseInterface)
 
+    def silenceInput(self):
+        """
+        This is a heavy-handed way of temporarily turning off
+        all inputs.  Bring them back with reviveInput().
+        """
+        if not self.__deadInputs:
+            self.__deadInputs = self.dataRoot.getChildren()
+            self.dataRoot.removeChildren()
+
+    def reviveInput(self):
+        """
+        Restores inputs after a previous call to silenceInput.
+        """
+        if self.__deadInputs:
+            self.eventMgr.doEvents()
+            self.__deadInputs.reparentTo(self.dataRoot)
+            self.__deadInputs = None
+            self.dgTrav.traverse(base.dataRootNode)
+            self.eventMgr.eventQueue.clear()
+        
     def setMouseOnNode(self, newNode):
         if self.mouse2cam:
             self.mouse2cam.node().setNode(newNode)
