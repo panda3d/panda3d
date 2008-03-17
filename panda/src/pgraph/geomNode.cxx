@@ -174,7 +174,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                 entry._state = entry._state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
 
               } else if (ca->get_color_type() == ColorAttrib::T_flat) {
-                // ColorAttrib::T_off means the color scale modulates
+                // ColorAttrib::T_flat means the color scale modulates
                 // the specified color to produce a new color.
                 const Colorf &c1 = ca->get_color();
                 const LVecBase4f &c2 = csa->get_scale();
