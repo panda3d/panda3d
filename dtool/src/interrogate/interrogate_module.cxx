@@ -333,7 +333,7 @@ int main(int argc, char *argv[])
       Filename pathname = argv[i];
       pathname.set_type(Filename::T_dso);
       nout << "Loading " << pathname << "\n";
-      void *dl = load_dso(pathname);
+      void *dl = load_dso(DSearchPath(), pathname);
       if (dl == NULL) {
         nout << "Unable to load: " << load_dso_error() << "\n";
         exit(1);

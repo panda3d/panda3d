@@ -326,7 +326,7 @@ load_file_types() {
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         loader_cat.info()
           << "loading file type module: " << name << endl;
-        void *tmp = load_dso(dlname);
+        void *tmp = load_dso(plugin_path.get_value(), dlname);
         if (tmp == (void *)NULL) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()

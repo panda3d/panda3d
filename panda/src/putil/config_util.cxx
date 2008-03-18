@@ -80,6 +80,11 @@ ConfigVariableSearchPath texture_path
 ConfigVariableSearchPath sound_path
 ("sound-path", 
  PRC_DESC("The directories to search for sound and music files to be loaded."));
+ConfigVariableSearchPath plugin_path
+("plugin-path", 
+ PRC_DESC("The directories to search for plugin shared libraries."));
+
+
 
 ConfigureFn(config_util) {
   init_libputil();
@@ -111,6 +116,11 @@ get_texture_path() {
 ConfigVariableSearchPath &
 get_sound_path() {
   return sound_path;
+}
+
+ConfigVariableSearchPath &
+get_plugin_path() {
+  return plugin_path;
 }
 
 ConfigVariableDouble sleep_precision

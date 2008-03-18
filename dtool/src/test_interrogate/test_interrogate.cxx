@@ -534,7 +534,7 @@ main(int argc, char *argv[]) {
       // Otherwise, assume it's a shared library, and try to load it.
       Filename pathname = Filename::dso_filename(argv[i]);
       cerr << "Loading " << pathname << "\n";
-      void *dl = load_dso(pathname);
+      void *dl = load_dso(DSearchPath(), pathname);
       if (dl == NULL) {
         cerr << "Unable to load: " << load_dso_error() << "\n";
         return_status++;

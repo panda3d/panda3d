@@ -46,6 +46,7 @@ extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath model_path;
 extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath texture_path;
 extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath sound_path;
+extern EXPCL_PANDA_PUTIL ConfigVariableSearchPath plugin_path;
 
 // The above variables are also shadowed by these functions, so that
 // they can easily be accessed in the interpreter (e.g. Python).
@@ -53,6 +54,7 @@ BEGIN_PUBLISH
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_model_path();
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_texture_path();
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_sound_path();
+EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_plugin_path();
 END_PUBLISH
 
 extern ConfigVariableDouble clock_frame_rate;

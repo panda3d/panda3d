@@ -20,14 +20,16 @@
 #define LOAD_DSO_H
 
 #include "dtoolbase.h"
-
+#include "dSearchPath.h"
 #include "filename.h"
 
 // Loads in a dynamic library like an .so or .dll.  Returns NULL if
-// failure, otherwise on success.
+// failure, otherwise on success.  If the filename is not absolute,
+// searches the path.  If the path is empty, searches the dtool
+// directory.
 
 EXPCL_DTOOL void *
-load_dso(const Filename &filename);
+load_dso(const DSearchPath &path, const Filename &filename);
 
 // true indicates success
 EXPCL_DTOOL bool

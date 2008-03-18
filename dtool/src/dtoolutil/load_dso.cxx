@@ -18,6 +18,21 @@
 
 #include "load_dso.h"
 
+static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
+  if (filename.is_local()) {
+    if (path.is_empty()||
+        ((path.get_num_directories()==1)&&(path.get_directory(0)=="."))) {
+      Filename dtoolpath = ExecutionEnvironment::get_dtool_name();
+      DSearchPath spath(dtoolpath.get_dirname());
+      return spath.find_file(filename);
+    } else {
+      return path.find_file(filename);
+    }
+  } else {
+    return filename;
+  }
+}
+
 #if defined(WIN32)
 /* begin Win32-specific code */
 
@@ -25,9 +40,30 @@
 #include <windows.h>
 #undef WINDOWS_LEAN_AND_MEAN
 
+// Loads in a dynamic library like an .so or .dll.  Returns NULL if
+// failure, otherwise on success.  If the filename is not absolute,
+// searches the path.  If the path is empty, searches the dtool
+// directory.
+
 void *
-load_dso(const Filename &filename) {
-  string os_specific = filename.to_os_specific();
+load_dso(const DSearchPath &path, const Filename &filename) {
+  Filename abspath = resolve_dso(path, filename);
+  if (!abspath.is_regular_file()) {
+    return NULL;
+  }
+  string os_specific = abspath.to_os_specific();
+  
+  // Try using LoadLibraryEx, if possible.
+  typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCTSTR, HANDLE, DWORD);
+  tLoadLibraryEx pLoadLibraryEx;
+  HINSTANCE hLib = LoadLibrary("kernel32.dll");
+  if (hLib) {
+    pLoadLibraryEx = (tLoadLibraryEx)GetProcAddress(hLib, "LoadLibraryExA");
+    if (pLoadLibraryEx) {
+      return pLoadLibraryEx(os_specific.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+    }
+  }
+  
   return LoadLibrary(os_specific.c_str());
 }
 
@@ -67,15 +103,15 @@ load_dso_error() {
 #include <mach-o/dyld.h>
 #include <dlfcn.h>
 
-void * load_dso(const Filename &filename) 
+void * load_dso(const DSearchPath &path, const Filename &filename) 
 {
-
-	std::string fname = filename.to_os_specific();
-	void * answer = dlopen(fname.c_str(),RTLD_NOW| RTLD_LOCAL);
-	//void * answer = dlopen(fname.c_str(),RTLD_NOW);
-
-	return answer;
-
+  Filename abspath = resolve_dso(path, filename);
+  if (!abspath.is_regular_file()) {
+    return NULL;
+  }
+  string fname = abspath.to_os_specific();
+  void * answer = dlopen(fname.c_str(),RTLD_NOW| RTLD_LOCAL);
+  return answer;
 }
 
 string
@@ -90,8 +126,12 @@ load_dso_error() {
 #include <dlfcn.h>
 
 void *
-load_dso(const Filename &filename) {
-  string os_specific = filename.to_os_specific();
+load_dso(const DSearchPath &path, const Filename &filename) {
+  Filename abspath = resolve_dso(path, filename);
+  if (!abspath.is_regular_file()) {
+    return NULL;
+  }
+  string os_specific = abspath.to_os_specific();
   return dlopen(os_specific.c_str(), RTLD_NOW | RTLD_GLOBAL);
 }
 

@@ -407,7 +407,7 @@ load_named_module(const string &name) {
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
     << "loading display module: " << dlname.to_os_specific() << endl;
-  void *tmp = load_dso(dlname);
+  void *tmp = load_dso(plugin_path.get_value(), dlname);
   if (tmp == (void *)NULL) {
     display_cat.info()
       << "Unable to load: " << load_dso_error() << endl;

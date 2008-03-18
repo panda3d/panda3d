@@ -942,7 +942,7 @@ load_filters() {
     Filename dlname = Filename::dso_filename("lib" + name + ".so");
     gobj_cat->info()
       << "loading texture filter: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(dlname);
+    void *tmp = load_dso(plugin_path.get_value(), dlname);
     if (tmp == (void *)NULL) {
       gobj_cat.info()
         << "Unable to load: " << load_dso_error() << endl;

@@ -62,7 +62,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
           "lib"+string(audio_library_name)+".so");
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
-      void* lib = load_dso(dl_name);
+      void* lib = load_dso(plugin_path.get_value(), dl_name);
       if (!lib) {
         audio_error("  LoadLibrary() failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
