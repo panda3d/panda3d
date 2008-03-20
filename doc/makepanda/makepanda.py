@@ -320,7 +320,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("NVIDIACG")==0):  IncDirectory("NVIDIACG",   'thirdparty/linux-libs-a/nvidiacg/include')
     if (PkgSkip("FFMPEG")==0):    IncDirectory("FFMPEG",     'thirdparty/linux-libs-a/ffmpeg/include')
     if (PkgSkip("ARTOOLKIT")==0): IncDirectory("ARTOOLKIT",  'thirdparty/linux-libs-a/artoolkit/include')
-    if (PkgSkip("FREETYPE")==0):  IncDirectory("FREETYPE2",  '/usr/include/freetype2')
+    if (PkgSkip("FREETYPE")==0):  IncDirectory("FREETYPE",   '/usr/include/freetype2')
     IncDirectory("GTK2", "/usr/include/gtk-2.0")
     IncDirectory("GTK2", "/usr/include/cairo")
     IncDirectory("GTK2", "/usr/include/glib-2.0")
@@ -337,7 +337,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
     if (PkgSkip("NVIDIACG")==0): LibDirectory("NVIDIACG", "thirdparty/linux-libs-a/nvidiacg/lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCgGL")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
     if (PkgSkip("FFMPEG")==0):   LibDirectory("FFMPEG", "thirdparty/linux-libs-a/ffmpeg/lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
@@ -348,7 +348,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("PNG")==0):      LibName("PNG", "-lpng")
     if (PkgSkip("JPEG")==0):     LibName("JPEG", "-ljpeg")
     if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
-    if (PkgSkip("SSL")==0):      LibName("SSL",  "-lssl")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lssl")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "-lfreetype")
     if (PkgSkip("VRPN")==0):     LibDirectory("VRPN", "thirdparty/linux-libs-a/vrpn/lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lvrpn")
@@ -357,9 +357,9 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lrfftw")
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lfftw")
     if (PkgSkip("ARTOOLKIT")==0):LibDirectory("ARTOOLKIT", "thirdparty/linux-libs-a/artoolkit/lib")
-    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lar")
-    if (PkgSkip("GLUT")==0):     LibName("GLUT", "-lGL")
-    if (PkgSkip("GLUT")==0):     LibName("GLUT", "-lGLU")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lAR")
+    LibName("GLUT", "-lGL")
+    LibName("GLUT", "-lGLU")
 
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
@@ -397,8 +397,8 @@ def CompileCxx(obj,src,opts):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
         else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I"' + expansion + '"'
-        for (opt,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I"' + dir + '"'
+        for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
         for x in ipath: cmd = cmd + ' -I' + x
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
@@ -595,7 +595,7 @@ def CompileLink(dll, obj, opts):
                 else:
                     cmd = cmd + ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + name + '"'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + dir + '"'
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         cmd = cmd + " -lpthread -ldl"
@@ -1722,9 +1722,9 @@ if (PkgSkip("VRPN")==0):
 # DIRECTORY: panda/metalibs/panda/
 #
 
-OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG', 'TIFF', 'ZLIB',
-      'NVIDIACG', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM',
-      'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT']
+OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
+      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
