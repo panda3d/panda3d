@@ -36,11 +36,10 @@ GENMAN=0
 VERBOSE=1
 COMPRESSOR="zlib"
 THREADCOUNT=0
-DXVERSIONS=["DX8","DX9"]
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
-  "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","MILES",
+  "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW",
   "ARTOOLKIT","DIRECTCAM","FFMPEG","PANDATOOL","PANDAAPP"
 ])
 
@@ -180,16 +179,6 @@ else:
 #
 ##########################################################################################
 
-if (PkgSkip("MILES")==0):
-    WARNINGS.append("makepanda currently does not support miles sound system")
-    WARNINGS.append("I have automatically added this command-line option: --no-miles")
-    PkgDisable("MILES")
-
-if (sys.platform != "win32"):
-    PkgDisable("DX8")
-    PkgDisable("DX9")
-    PkgDisable("DIRECTCAM")
-
 if (sys.platform == "win32"):
      os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
 
@@ -233,32 +222,167 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 
 ########################################################################
 ##
+## External includes, external libraries, and external defsyms.
+##
+########################################################################
+
+if (COMPILER=="MSVC"):
+    if (PkgSkip("PYTHON")==0):
+        IncDirectory("ALWAYS", "thirdparty/win-python/include")
+        LibDirectory("ALWAYS", "thirdparty/win-python/libs")
+    for pkg in PkgListGet():
+        if (PkgSkip(pkg)==0):
+            if (pkg[:4]=="MAYA"):
+                IncDirectory(pkg, SDK[pkg]      + "/include")
+                DefSymbol(pkg, "MAYAVERSION", pkg)
+            elif (pkg[:3]=="MAX"):
+                IncDirectory(pkg, SDK[pkg]      + "/include")
+                IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
+                DefSymbol(pkg, "MAX", pkg)
+            elif (pkg[:2]=="DX"):
+                IncDirectory(pkg, SDK[pkg]      + "/include")
+            else:
+                IncDirectory(pkg, "thirdparty/win-libs-vc8/" + pkg.lower() + "/include")
+    for pkg in DXVERSIONS:
+        if (PkgSkip(pkg)==0):
+            vnum=pkg[2:]
+            LibDirectory(pkg, SDK[pkg] + '/lib/x86')
+            LibDirectory(pkg, SDK[pkg] + '/lib')
+            LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
+            LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
+            LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
+            LibName(pkg, 'ddraw.lib')
+            LibName(pkg, 'dxguid.lib')
+    LibName("WINSOCK", "wsock32.lib")
+    LibName("WINSOCK2", "wsock32.lib")
+    LibName("WINSOCK2", "ws2_32.lib")
+    LibName("WINCOMCTL", "comctl32.lib")
+    LibName("WINCOMDLG", "comdlg32.lib")
+    LibName("WINUSER", "user32.lib")
+    LibName("WINMM", "winmm.lib")
+    LibName("WINIMM", "imm32.lib")
+    LibName("WINKERNEL", "kernel32.lib")
+    LibName("WINOLDNAMES", "oldnames.lib")
+    LibName("WINSHELL", "shell32.lib")
+    LibName("WINGDI", "gdi32.lib")
+    LibName("ADVAPI", "advapi32.lib")
+    LibName("GLUT", "opengl32.lib")
+    LibName("GLUT", "glu32.lib")
+    if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "strmiids.lib")
+    if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
+    if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
+    if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
+    if (PkgSkip("PNG")==0):      LibName("PNG",      "thirdparty/win-libs-vc8/png/lib/libpandapng.lib")
+    if (PkgSkip("JPEG")==0):     LibName("JPEG",     "thirdparty/win-libs-vc8/jpeg/lib/libpandajpeg.lib")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF",     "thirdparty/win-libs-vc8/tiff/lib/libpandatiff.lib")
+    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     "thirdparty/win-libs-vc8/zlib/lib/libpandazlib1.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc8/vrpn/lib/vrpn.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc8/vrpn/lib/quat.lib")
+    if (PkgSkip("FMOD")==0):     LibName("FMOD",     "thirdparty/win-libs-vc8/fmod/lib/fmod.lib")
+    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   "thirdparty/win-libs-vc8/fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   "thirdparty/win-libs-vc8/openal/lib/pandaopenal32.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     "thirdparty/win-libs-vc8/nvidiacg/lib/cgGL.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    "thirdparty/win-libs-vc8/nvidiacg/lib/cgD3D9.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "thirdparty/win-libs-vc8/nvidiacg/lib/cg.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc8/openssl/lib/libpandassl.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc8/openssl/lib/libpandaeay.lib")
+    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "thirdparty/win-libs-vc8/freetype/lib/freetype.lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc8/fftw/lib/rfftw.lib")        
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc8/fftw/lib/fftw.lib")        
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avcodec-51-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avformat-50-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avutil-49-panda.lib")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc8/artoolkit/lib/libAR.lib")
+    for pkg in MAYAVERSIONS:
+        if (PkgSkip(pkg)==0):
+            LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
+            LibName(pkg, SDK[pkg] + '/lib/OpenMaya.lib')
+            LibName(pkg, SDK[pkg] + '/lib/OpenMayaAnim.lib')
+            LibName(pkg, SDK[pkg] + '/lib/OpenMayaUI.lib')
+    for pkg in MAXVERSIONS:
+        if (PkgSkip(pkg)==0):
+            LibName(pkg, SDK[pkg] +  '/lib/core.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/edmodel.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/gfx.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/geom.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/mesh.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
+
+if (COMPILER=="LINUX"):
+    if (PkgSkip("PYTHON")==0):
+        IncDirectory("ALWAYS", SDK["PYTHON"])
+    if (PkgSkip("VRPN")==0):      IncDirectory("VRPN",       'thirdparty/linux-libs-a/vrpn/include')
+    if (PkgSkip("FFTW")==0):      IncDirectory("FFTW",       'thirdparty/linux-libs-a/fftw/include')
+    if (PkgSkip("FMOD")==0):      IncDirectory("FMOD",       'thirdparty/linux-libs-a/fmod/include')
+    if (PkgSkip("FMODEX")==0):    IncDirectory("FMODEX",     'thirdparty/linux-libs-a/fmodex/include')
+    if (PkgSkip("OPENAL")==0):    IncDirectory("OPENAL",     'thirdparty/linux-libs-a/openal/include')
+    if (PkgSkip("NVIDIACG")==0):  IncDirectory("NVIDIACG",   'thirdparty/linux-libs-a/nvidiacg/include')
+    if (PkgSkip("FFMPEG")==0):    IncDirectory("FFMPEG",     'thirdparty/linux-libs-a/ffmpeg/include')
+    if (PkgSkip("ARTOOLKIT")==0): IncDirectory("ARTOOLKIT",  'thirdparty/linux-libs-a/artoolkit/include')
+    if (PkgSkip("FREETYPE")==0):  IncDirectory("FREETYPE2",  '/usr/include/freetype2')
+    IncDirectory("GTK2", "/usr/include/gtk-2.0")
+    IncDirectory("GTK2", "/usr/include/cairo")
+    IncDirectory("GTK2", "/usr/include/glib-2.0")
+    IncDirectory("GTK2", "/usr/lib/glib-2.0/include")
+    IncDirectory("GTK2", "/usr/include/pango-1.0")
+    IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
+    IncDirectory("GTK2", "/usr/include/atk-1.0")
+    LibName("GTK2", "-lgtk-x11-2.0")
+    if (PkgSkip("FMOD")==0):     LibDirectory("FMOD", "thirdparty/linux-libs-a/fmod/lib")
+    if (PkgSkip("FMOD")==0):     LibName("FMOD", "-lfmod")
+    if (PkgSkip("FMODEX")==0):   LibDirectory("FMODEX", "thirdparty/linux-libs-a/fmodex/lib")
+    if (PkgSkip("FMODEX")==0):   LibName("FMODEX", "-lfmodex")
+    if (PkgSkip("OPENAL")==0):   LibDirectory("OPENAL", "thirdparty/linux-libs-a/openal/lib")
+    if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
+    if (PkgSkip("NVIDIACG")==0): LibDirectory("NVIDIACG", "thirdparty/linux-libs-a/nvidiacg/lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCgGL")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
+    if (PkgSkip("FFMPEG")==0):   LibDirectory("FFMPEG", "thirdparty/linux-libs-a/ffmpeg/lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavcodec")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
+    if (PkgSkip("ZLIB")==0):     LibName("ZLIB", "-lz")
+    if (PkgSkip("PNG")==0):      LibName("PNG", "-lpng")
+    if (PkgSkip("JPEG")==0):     LibName("JPEG", "-ljpeg")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
+    if (PkgSkip("SSL")==0):      LibName("SSL",  "-lssl")
+    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "-lfreetype")
+    if (PkgSkip("VRPN")==0):     LibDirectory("VRPN", "thirdparty/linux-libs-a/vrpn/lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lvrpn")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lquat")
+    if (PkgSkip("FFTW")==0):     LibDirectory("FFTW", "thirdparty/linux-libs-a/fftw/lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lrfftw")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lfftw")
+    if (PkgSkip("ARTOOLKIT")==0):LibDirectory("ARTOOLKIT", "thirdparty/linux-libs-a/artoolkit/lib")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lar")
+    if (PkgSkip("GLUT")==0):     LibName("GLUT", "-lGL")
+    if (PkgSkip("GLUT")==0):     LibName("GLUT", "-lGLU")
+
+
+DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
+IncDirectory("ALWAYS", "built/tmp")
+IncDirectory("ALWAYS", "built/include")
+
+########################################################################
+##
 ## CompileCxx
 ##
 ########################################################################
 
 def CompileCxx(obj,src,opts):
-    ipath = ["built/tmp"] + GetListOption(opts, "DIR:") + ["built/include"]
+    ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
         cmd = "cl /wd4996 /Fo" + obj + " /nologo /c "
-        if (PkgSkip("PYTHON")==0): cmd = cmd + " /Ithirdparty/win-python/include"
-        for ver in DXVERSIONS:
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' /I"' + SDK[ver] + '/include"'
-        for ver in MAYAVERSIONS:
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' /I"' + SDK[ver] + '/include"'
-                cmd = cmd + ' /DMAYAVERSION=' + ver  
-        for ver in MAXVERSIONS:
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' /I"' + SDK[ver] + '/include" /I"' + SDK[ver+"CS"] + '" /DMAX' + ver
-        for pkg in PkgListGet():
-            if (pkg[:4] != "MAYA") and (pkg[:3]!="MAX") and (pkg[:2]!="DX") and PkgSelected(opts,pkg):
-                cmd = cmd + " /I" + THIRDPARTYLIBS + pkg.lower() + "/include"
         for x in ipath: cmd = cmd + " /I" + x
+        for (opt,dir) in INCDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I"' + dir + '"'
+        for (opt,var,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /D' + var + "=" + val
         if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
-        if (opts.count("WITHINPANDA")): cmd = cmd + ' /DWITHIN_PANDA'
-        if (opts.count("MSFORSCOPE")): cmd = cmd + ' /Zc:forScope-'
+        if (opts.count('MSFORSCOPE')): cmd = cmd + ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
         if (optlevel==2): cmd = cmd + " /MD /Zi "
@@ -272,19 +396,11 @@ def CompileCxx(obj,src,opts):
     if (COMPILER=="LINUX"):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
         else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
-        if (PkgSkip("PYTHON")==0): cmd = cmd + ' -I"' + SDK["PYTHON"] + '"'
-        if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'vrpn/include'
-        if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fftw/include'
-        if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmod/include'
-        if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'fmodex/include'
-        if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -I' + THIRDPARTYLIBS + 'openal/include'
-        if (PkgSelected(opts,"NVIDIACG")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'nvidiacg/include'
-        if (PkgSelected(opts,"FFMPEG")):    cmd = cmd + ' -I' + THIRDPARTYLIBS + 'ffmpeg/include'
-        if (PkgSelected(opts,"ARTOOLKIT")): cmd = cmd + ' -I' + THIRDPARTYLIBS + 'artoolkit/include'
-        if (PkgSelected(opts,"FREETYPE")): cmd = cmd + ' -I/usr/include/freetype2'
-        if (opts.count("GTK2")): cmd = cmd + ' -I/usr/include/gtk-2.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pango-1.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0'
+        for (opt, dir) in INCDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I"' + expansion + '"'
+        for (opt,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
         for x in ipath: cmd = cmd + ' -I' + x
-        if (opts.count("WITHINPANDA")): cmd = cmd + ' -DWITHIN_PANDA'
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " -g"
         if (optlevel==2): cmd = cmd + " -O1"
@@ -348,7 +464,7 @@ def CompileIgate(woutd,wsrc,opts):
     srcdir = GetValueOption(opts, "SRCDIR:")
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
-    ipath = ["built/tmp"] + GetListOption(opts, "DIR:") + ["built/include"]
+    ipath = GetListOption(opts, "DIR:")
     if (PkgSkip("PYTHON")):
         WriteFile(woutc,"")
         WriteFile(woutd,"")
@@ -359,61 +475,29 @@ def CompileIgate(woutd,wsrc,opts):
         cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
-        optlevel=GetOptimizeOption(opts,OPTIMIZE)
-        if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' '
-        if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
-        if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
-        cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
-        cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        cmd = cmd + ' -Sbuilt/include/parser-inc'
-        for x in ipath: cmd = cmd + ' -I' + x
-        cmd = cmd + ' -Sthirdparty/win-python/include'
-        for ver in DXVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,ver)):
-                cmd = cmd + ' -S"' + SDK[ver] + '/include"'
-        for ver in MAYAVERSIONS:
-            if ((COMPILER=="MSVC") and PkgSelected(opts,ver)):
-                cmd = cmd + ' -S"' + SDK[ver] + '/include"'
-        for pkg in PkgListGet():
-            if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -S" + THIRDPARTYLIBS + pkg.lower() + "/include"
-        building = GetValueOption(opts, "BUILDING:")
-        if (building): cmd = cmd + " -DBUILDING_"+building
-        if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
-        cmd = cmd + ' -module ' + module + ' -library ' + library
-        for x in wsrc: cmd = cmd + ' ' + os.path.basename(x)
-        oscmd(cmd)
-        CompileCxx(wobj,woutc,opts)
-        return
     if (COMPILER=="LINUX"):
-        cmd = 'built/bin/interrogate -srcdir '+srcdir
+        cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
-        optlevel = GetOptimizeOption(opts,OPTIMIZE)
-        if (optlevel==1): cmd = cmd + ' '
-        if (optlevel==2): cmd = cmd + ' '
-        if (optlevel==3): cmd = cmd + ' '
-        if (optlevel==4): cmd = cmd + ' -DNDEBUG '
-        cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
-        cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-        cmd = cmd + ' -Sbuilt/include/parser-inc'
-        for x in ipath: cmd = cmd + ' -I' + x
-        cmd = cmd + ' -S'+SDK["PYTHON"]
-        for pkg in PkgListGet():
-            if (PkgSelected(opts,pkg)):
-                cmd = cmd + " -S" + THIRDPARTYLIBS + pkg.lower() + "/include"
-        cmd = cmd + ' -S/usr/include'
-        building = GetValueOption(opts, "BUILDING:")
-        if (building): cmd = cmd + " -DBUILDING_"+building
-        if (opts.count("WITHINPANDA")): cmd = cmd + " -DWITHIN_PANDA"
-        cmd = cmd + ' -module ' + module + ' -library ' + library
-        for ver in MAYAVERSIONS:
-            if (PkgSelected(opts, ver)):
-                cmd = cmd + ' -I"' + SDK[ver] + '/include"'
-        for x in wsrc: cmd = cmd + ' ' + os.path.basename(x)
-        oscmd(cmd)
-        CompileCxx(wobj,woutc,opts)
-        return
+    optlevel=GetOptimizeOption(opts,OPTIMIZE)
+    if (optlevel==1): cmd = cmd + ' '
+    if (optlevel==2): cmd = cmd + ' '
+    if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
+    if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
+    cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
+    cmd = cmd + ' -fnames -string -refcount -assert -python-native'
+    cmd = cmd + ' -Sbuilt/include/parser-inc'
+    for x in ipath: cmd = cmd + ' -I' + x
+    for (opt,dir) in INCDIRECTORIES:
+        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -S"' + dir + '"'
+    for (opt,var,val) in DEFSYMBOLS:
+        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
+    building = GetValueOption(opts, "BUILDING:")
+    if (building): cmd = cmd + " -DBUILDING_"+building
+    cmd = cmd + ' -module ' + module + ' -library ' + library
+    for x in wsrc: cmd = cmd + ' ' + os.path.basename(x)
+    oscmd(cmd)
+    CompileCxx(wobj,woutc,opts)
+    return
 
 ########################################################################
 ##
@@ -430,20 +514,14 @@ def CompileImod(wobj, wsrc, opts):
         return
     if (COMPILER=="MSVC"):
 	woutc = wobj[:-4]+".cxx"
-        cmd = 'built/bin/interrogate_module '
-        cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
-        for x in wsrc: cmd = cmd + ' ' + x
-        oscmd(cmd)
-        CompileCxx(wobj,woutc,opts)
-        return
     if (COMPILER=="LINUX"):
 	woutc = wobj[:-2]+".cxx"
-        cmd = 'built/bin/interrogate_module '
-        cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
-        for x in wsrc: cmd = cmd + ' ' + x
-        oscmd(cmd)
-        CompileCxx(wobj,woutc,opts)
-        return
+    cmd = 'built/bin/interrogate_module '
+    cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
+    for x in wsrc: cmd = cmd + ' ' + x
+    oscmd(cmd)
+    CompileCxx(wobj,woutc,opts)
+    return
 
 ########################################################################
 ##
@@ -481,7 +559,8 @@ def CompileLink(dll, obj, opts):
         cmd = cmd + ' /OUT:' + dll
         if (dll.endswith(".dll")):
             cmd = cmd + ' /IMPLIB:built/lib/'+dll[10:-4]+".lib"
-        if (PkgSkip("PYTHON")==0): cmd = cmd + ' /LIBPATH:thirdparty/win-python/libs '
+        for (opt, dir) in LIBDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:"' + dir + '"'
         for x in obj:
             if (x.endswith(".dll")):
                 cmd = cmd + ' built/lib/' + x[10:-4] + ".lib"
@@ -497,76 +576,8 @@ def CompileLink(dll, obj, opts):
             else: cmd = cmd + ' ' + x
         if (GetOrigExt(dll)==".exe"):
 	    cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
-        for ver in DXVERSIONS:
-	    vnum=ver[2:]
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' /LIBPATH:"' + SDK[ver] + '/lib/x86"'
-                cmd = cmd + ' /LIBPATH:"' + SDK[ver] + '/lib"'
-                cmd = cmd + ' d3dVNUM.lib d3dxVNUM.lib dxerrVNUM.lib ddraw.lib dxguid.lib'.replace("VNUM",vnum)
-        if (opts.count("WINSOCK")):     cmd = cmd + " wsock32.lib"
-        if (opts.count("WINSOCK2")):    cmd = cmd + " wsock32.lib ws2_32.lib"
-        if (opts.count("WINCOMCTL")):   cmd = cmd + ' comctl32.lib'
-        if (opts.count("WINCOMDLG")):   cmd = cmd + ' comdlg32.lib'
-        if (opts.count("WINUSER")):     cmd = cmd + " user32.lib"
-        if (opts.count("WINMM")):       cmd = cmd + " winmm.lib"
-        if (opts.count("WINIMM")):      cmd = cmd + " imm32.lib"
-        if (opts.count("WINKERNEL")):   cmd = cmd + " kernel32.lib"
-        if (opts.count("WINOLDNAMES")): cmd = cmd + " oldnames.lib"
-        if (opts.count("WINSHELL")):    cmd = cmd + " shell32.lib"
-        if (opts.count("WINGDI")):      cmd = cmd + " gdi32.lib"
-        if (opts.count("ADVAPI")):      cmd = cmd + " advapi32.lib"
-        if (opts.count("GLUT")):        cmd = cmd + " opengl32.lib glu32.lib"
-        if (PkgSelected(opts,"DIRECTCAM")): cmd = cmd + " strmiids.lib quartz.lib odbc32.lib odbccp32.lib"
-        if (PkgSelected(opts,"PNG")):       cmd = cmd + ' ' + THIRDPARTYLIBS + 'png/lib/libpandapng.lib'
-        if (PkgSelected(opts,"JPEG")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'jpeg/lib/libpandajpeg.lib'
-        if (PkgSelected(opts,"TIFF")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'tiff/lib/libpandatiff.lib'
-        if (PkgSelected(opts,"ZLIB")):      cmd = cmd + ' ' + THIRDPARTYLIBS + 'zlib/lib/libpandazlib1.lib'
-        if (PkgSelected(opts,"VRPN")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/vrpn.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'vrpn/lib/quat.lib'
-        if (PkgSelected(opts,"FMOD")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmod/lib/fmod.lib'
-        if (PkgSelected(opts,"FMODEX")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fmodex/lib/fmodex_vc.lib'
-        if (PkgSelected(opts,"OPENAL")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openal/lib/pandaopenal32.lib'
-        if (PkgSelected(opts,"MILES")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'miles/lib/mss32.lib'
-        if (PkgSelected(opts,"NVIDIACG")):
-            if (opts.count("CGGL")):
-                cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgGL.lib'
-            if (opts.count("CGDX9")):
-                cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cgD3D9.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'nvidiacg/lib/cg.lib'
-        if (PkgSelected(opts,"OPENSSL")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandassl.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'openssl/lib/libpandaeay.lib'
-        if (PkgSelected(opts,"FREETYPE")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'freetype/lib/freetype.lib'
-        if (PkgSelected(opts,"FFTW")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/rfftw.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'fftw/lib/fftw.lib'
-        if (PkgSelected(opts,"FFMPEG")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avcodec-51-panda.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avformat-50-panda.lib'
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'ffmpeg/lib/avutil-49-panda.lib'
-        if (PkgSelected(opts,"ARTOOLKIT")):
-            cmd = cmd + ' ' + THIRDPARTYLIBS + 'artoolkit/lib/libAR.lib'
-        for ver in MAYAVERSIONS:
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/Foundation.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMaya.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMayaAnim.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/OpenMayaUI.lib"'
-        for ver in MAXVERSIONS:
-            if (PkgSelected(opts,ver)):
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/core.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/edmodel.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/gfx.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/geom.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/mesh.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/maxutil.lib"'
-                cmd = cmd + ' "' + SDK[ver] +  '/lib/paramblk2.lib"'
+        for (opt, name) in LIBNAMES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         oscmd(cmd)
         SetVC80CRTVersion(dll+".manifest", VC80CRTVERSION)
         mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
@@ -583,26 +594,10 @@ def CompileLink(dll, obj, opts):
                     cmd = cmd + ' -l' + base[3:-3]
                 else:
                     cmd = cmd + ' ' + x
-        #if (PkgSelected(opts,"FMOD")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmod/lib -lfmod'
-        if (PkgSelected(opts,"FMODEX")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fmodex/lib -lfmodex'
-        #if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lopenal'
-        if (PkgSelected(opts,"NVIDIACG")):
-            cmd = cmd + ' -Lthirdparty/nvidiacg/lib '
-            if (opts.count("CGGL")):  cmd = cmd + " -lCgGL"
-            cmd = cmd + " -lCg "
-        if (PkgSelected(opts,"FFMPEG")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'ffmpeg/lib -lavformat -lavcodec -lavformat -lavutil'
-        if (PkgSelected(opts,"OPENAL")):   cmd = cmd + ' -L' + THIRDPARTYLIBS + 'openal/lib -lpandaopenal'
-        if (PkgSelected(opts,"ZLIB")):     cmd = cmd + " -lz"
-        if (PkgSelected(opts,"PNG")):      cmd = cmd + " -lpng"
-        if (PkgSelected(opts,"JPEG")):     cmd = cmd + " -ljpeg"
-        if (PkgSelected(opts,"TIFF")):     cmd = cmd + " -ltiff"
-        if (PkgSelected(opts,"OPENSSL")):  cmd = cmd + " -lssl"
-        if (PkgSelected(opts,"FREETYPE")): cmd = cmd + " -lfreetype"
-        if (opts.count("GTK2")):           cmd = cmd + ' -lgtk-x11-2.0'
-        if (PkgSelected(opts,"VRPN")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'vrpn/lib -lvrpn -lquat'
-        if (PkgSelected(opts,"FFTW")):     cmd = cmd + ' -L' + THIRDPARTYLIBS + 'fftw/lib -lrfftw -lfftw'
-	if (PkgSelected(opts,"ARTOOLKIT")):cmd = cmd + ' -L' + THIRDPARTYLIBS + 'artoolkit/lib -lAR'
-        if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
+        for (opt, dir) in LIBDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + name + '"'
+        for (opt, name) in LIBNAMES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         cmd = cmd + " -lpthread -ldl"
         oscmd(cmd)
 
@@ -650,82 +645,6 @@ def CompileAnything(target, inputs, opts):
         elif (infile.endswith(".in")):
             return CompileImod(target, inputs, opts)
     exit("Don't know how to compile: "+target)
-
-##########################################################################################
-#
-# If the 'make depend' process discovers an 'include'
-# directive that includes one of the following files,
-# the specified file is not added as a dependency,
-# nor is it traversed.
-#
-##########################################################################################
-
-CxxIgnoreHeader["Python.h"] = 1
-CxxIgnoreHeader["Python/Python.h"] = 1
-CxxIgnoreHeader["Cg/cg.h"] = 1
-CxxIgnoreHeader["Cg/cgGL.h"] = 1
-CxxIgnoreHeader["alloc.h"] = 1
-CxxIgnoreHeader["ctype.h"] = 1
-CxxIgnoreHeader["stdlib.h"] = 1
-CxxIgnoreHeader["ipc_thread.h"] = 1
-CxxIgnoreHeader["platform/symbian/symbian_print.h"] = 1
-CxxIgnoreHeader["hxtypes.h"] = 1
-CxxIgnoreHeader["hxcom.h"] = 1
-CxxIgnoreHeader["hxiids.h"] = 1
-CxxIgnoreHeader["hxpiids.h"] = 1
-CxxIgnoreHeader["dsound.h"] = 1
-CxxIgnoreHeader["hlxosstr.h"] = 1
-CxxIgnoreHeader["ddraw.h"] = 1
-CxxIgnoreHeader["mss.h"] = 1
-CxxIgnoreHeader["MacSocket.h"] = 1
-CxxIgnoreHeader["textureTransition.h"] = 1
-CxxIgnoreHeader["transformTransition.h"] = 1
-CxxIgnoreHeader["billboardTransition.h"] = 1
-CxxIgnoreHeader["transformTransition.h"] = 1
-CxxIgnoreHeader["transparencyTransition.h"] = 1
-CxxIgnoreHeader["allTransitionsWrapper.h"] = 1
-CxxIgnoreHeader["allTransitionsWrapper.h"] = 1
-CxxIgnoreHeader["namedNode.h"] = 1
-CxxIgnoreHeader["renderRelation.h"] = 1
-CxxIgnoreHeader["renderTraverser.h"] = 1
-CxxIgnoreHeader["get_rel_pos.h"] = 1
-
-# Ignore Windows headers.
-CxxIgnoreHeader["windows.h"] = 1
-CxxIgnoreHeader["windef.h"] = 1
-CxxIgnoreHeader["afxres.h"] = 1
-
-# Ignore MAX headers
-CxxIgnoreHeader["Max.h"] = 1
-CxxIgnoreHeader["iparamb2.h"] = 1
-CxxIgnoreHeader["iparamm2.h"] = 1
-CxxIgnoreHeader["istdplug.h"] = 1
-CxxIgnoreHeader["iskin.h"] = 1
-CxxIgnoreHeader["stdmat.h"] = 1
-CxxIgnoreHeader["phyexp.h"] = 1
-CxxIgnoreHeader["bipexp.h"] = 1
-CxxIgnoreHeader["modstack.h"] = 1
-CxxIgnoreHeader["decomp.h"] = 1
-CxxIgnoreHeader["shape.h"] = 1
-CxxIgnoreHeader["simpobj.h"] = 1
-CxxIgnoreHeader["surf_api.h"] = 1
-
-# OpenSSL headers
-CxxIgnoreHeader["openssl/evp.h"] = 1
-CxxIgnoreHeader["openssl/rand.h"] = 1
-CxxIgnoreHeader["openssl/md5.h"] = 1
-CxxIgnoreHeader["openssl/err.h"] = 1
-CxxIgnoreHeader["openssl/ssl.h"] = 1
-CxxIgnoreHeader["openssl/pem.h"] = 1
-CxxIgnoreHeader["openssl/rsa.h"] = 1
-CxxIgnoreHeader["openssl/bio.h"] = 1
-CxxIgnoreHeader["openssl/x509.h"] = 1
-
-# STD headers
-CxxIgnoreHeader["map"] = 1
-CxxIgnoreHeader["vector"] = 1
-CxxIgnoreHeader["set"] = 1
-CxxIgnoreHeader["algorithm"] = 1
 
 ##########################################################################################
 #
@@ -2014,13 +1933,6 @@ if PkgSkip("OPENAL") == 0:
   TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite.obj')
   TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3openal_audio.dll', opts=['ADVAPI', 'WINUSER', 'WINMM', 'OPENAL'])
-
-if PkgSkip("MILES") == 0:
-  OPTS=['DIR:panda/src/audiotraits', 'BUILDING:MILES_AUDIO',  'MILES']
-  TargetAdd('miles_audio_miles_audio_composite.obj', opts=OPTS, input='miles_audio_composite.cxx')
-  TargetAdd('libp3miles_audio.dll', input='miles_audio_miles_audio_composite.obj')
-  TargetAdd('libp3miles_audio.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3miles_audio.dll', opts=['ADVAPI', 'WINUSER', 'WINMM', 'MILES'])
 
 #
 # DIRECTORY: panda/src/downloadertools/

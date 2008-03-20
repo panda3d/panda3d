@@ -39,6 +39,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
 
 MAYAVERSIONS=[]
 MAXVERSIONS=[]
+DXVERSIONS=["DX8","DX9"]
 
 for (ver,key) in MAYAVERSIONINFO:
     MAYAVERSIONS.append(ver)
@@ -228,8 +229,7 @@ def NeedsBuild(files,others):
         else:
             oldothers = BUILTFROMCACHE[key][0]
             if (oldothers != others):
-                for f in files:
-                    print "CAUTION: file dependencies changed: "+f
+                print "CAUTION: file dependencies changed: "+str(files)
     return 1
 
 ########################################################################
@@ -373,15 +373,11 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
     dep[srcfile] = 1
     includes = CxxGetIncludes(srcfile)
     for include in includes:
-        if (CxxIgnoreHeader.has_key(include)==0):
-            header = CxxFindHeader(srcfile, include, ipath)
-            if (header!=0):
-                if (ignore.count(header)==0):
-                    hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
-                    for x in hdeps: dep[x] = 1
-            else:
-                pass
-#               print "CAUTION: header file "+include+" cannot be found in "+srcfile+" IPATH="+str(ipath)
+        header = CxxFindHeader(srcfile, include, ipath)
+        if (header!=0):
+            if (ignore.count(header)==0):
+                hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
+                for x in hdeps: dep[x] = 1
     result = dep.keys()
     CxxDependencyCache[srcfile] = result
     return result
@@ -657,6 +653,8 @@ def SdkLocateDirectX():
                     (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
                     (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
                    SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+    if (SDK.has_key("DX9")):
+        SDK["DIRECTCAM"] = SDK["DX9"]
 
 def SdkLocateMaya():
     if (sys.platform != "win32"): return
@@ -728,7 +726,7 @@ def SdkLocateMSPlatform():
 ########################################################################
 
 def SdkAutoDisableDirectX():
-    for ver in ["DX8","DX9"]:
+    for ver in ["DX8","DX9","DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (SDK.has_key(ver)==0):
                 WARNINGS.append("I cannot locate SDK for "+ver)
@@ -789,6 +787,35 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("LIB",     SDK["MSPLATFORM"] + "lib")
+
+########################################################################
+#
+# Include and Lib directories.
+#
+# These allow you to add include and lib directories to the
+# compiler search paths.  These methods accept a "package"
+# parameter, which specifies which package the directory is
+# associated with.  The include/lib directory is not used
+# if the package is not selected.  The package can be 'ALWAYS'.
+#
+########################################################################
+
+INCDIRECTORIES = []
+LIBDIRECTORIES = []
+LIBNAMES = []
+DEFSYMBOLS = []
+
+def IncDirectory(opt, dir):
+    INCDIRECTORIES.append((opt, dir))
+
+def LibDirectory(opt, dir):
+    LIBDIRECTORIES.append((opt, dir))
+
+def LibName(opt, name):
+    LIBNAMES.append((opt, name))
+
+def DefSymbol(opt, sym, val):
+    DEFSYMBOLS.append((opt, sym, val))
 
 ########################################################################
 #
