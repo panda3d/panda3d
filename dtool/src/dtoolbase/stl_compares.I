@@ -124,6 +124,17 @@ is_equal(const Key &a, const Key &b) const {
 template<class Key, class Compare>
 INLINE size_t integer_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
+  PN_uint32 key32 = (PN_uint32)(key);
+  return AddHash::add_hash(hash, &key32, 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: pointer_hash::add_hash
+//       Access: Public, Static
+//  Description: Adds the indicated key into a running hash.
+////////////////////////////////////////////////////////////////////
+INLINE size_t pointer_hash::
+add_hash(size_t hash, void *key) {
   // We don't mind if this loses precision.
   PN_uint32 key32 = (PN_uint32)reinterpret_cast<unsigned long>(key);
   return AddHash::add_hash(hash, &key32, 1);

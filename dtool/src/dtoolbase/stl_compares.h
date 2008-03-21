@@ -145,6 +145,17 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
+//       Class : pointer_hash
+// Description : This is the default hash_compare class, which assumes
+//               the Key is a pointer value.  It is the same as the
+//               system-provided hash_compare.
+////////////////////////////////////////////////////////////////////
+class pointer_hash : public stl_hash_compare<void *, less<void *> > {
+public:
+  INLINE static size_t add_hash(size_t start, void *key);
+};
+
+////////////////////////////////////////////////////////////////////
 //       Class : floating_point_hash
 // Description : This hash_compare class hashes a float or a double.
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +220,6 @@ public:
 
 typedef floating_point_hash<float> float_hash;
 typedef floating_point_hash<double> double_hash;
-typedef integer_hash<const void *> pointer_hash;
 typedef integer_hash<int> int_hash;
 typedef integer_hash<size_t> size_t_hash;
 typedef sequence_hash<string> string_hash;
