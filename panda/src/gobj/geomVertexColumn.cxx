@@ -1821,11 +1821,21 @@ get_data4f(const unsigned char *pointer) {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexColumn::Packer_argb_packed::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
+  // when packing an argb, we want to make sure we cap 
+  // the input values at 1 since going above one will cause 
+  // the value to be truncated.
+  float newData[4];
+  for (int i = 0; i < 4; i++) {
+    if (data[i] > 1.0)
+      newData[i] = 1.0;
+    else
+      newData[i] = data[i];
+  }
   *(PN_uint32 *)pointer = GeomVertexData::pack_abcd
-    ((unsigned int)(data[3] * 255.0f),
-     (unsigned int)(data[0] * 255.0f),
-     (unsigned int)(data[1] * 255.0f),
-     (unsigned int)(data[2] * 255.0f));
+    ((unsigned int)(newData[3] * 255.0f),
+     (unsigned int)(newData[0] * 255.0f),
+     (unsigned int)(newData[1] * 255.0f),
+     (unsigned int)(newData[2] * 255.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
