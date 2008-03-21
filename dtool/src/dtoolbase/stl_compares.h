@@ -150,9 +150,9 @@ public:
 //               the Key is a pointer value.  It is the same as the
 //               system-provided hash_compare.
 ////////////////////////////////////////////////////////////////////
-class pointer_hash : public stl_hash_compare<void *, less<void *> > {
+class pointer_hash : public stl_hash_compare<const void *, less<const void *> > {
 public:
-  INLINE static size_t add_hash(size_t start, void *key);
+  INLINE static size_t add_hash(size_t start, const void *key);
 };
 
 ////////////////////////////////////////////////////////////////////
