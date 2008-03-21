@@ -124,7 +124,8 @@ is_equal(const Key &a, const Key &b) const {
 template<class Key, class Compare>
 INLINE size_t integer_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
-  PN_uint32 key32 = (PN_uint32)key;
+  // We don't mind if this loses precision.
+  PN_uint32 key32 = (PN_uint32)reinterpret_cast<unsigned long>(key);
   return AddHash::add_hash(hash, &key32, 1);
 }
 
