@@ -699,13 +699,17 @@ open_window() {
   // nicer if we could support fancy IM's that want preedit callbacks,
   // etc., but that can wait until we have an X server that actually
   // supports these to test it on.
-  _ic = XCreateIC
-    (glx_pipe->get_im(),
-     XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-     NULL);
-  if (_ic == (XIC)NULL) {
-    glxdisplay_cat.warning()
-      << "Couldn't create input context.\n";
+  XIM im = glx_pipe->get_im();
+  _ic = NULL;
+  if (im) {
+    _ic = XCreateIC
+      (im,
+       XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+       NULL);
+    if (_ic == (XIC)NULL) {
+      glxdisplay_cat.warning()
+        << "Couldn't create input context.\n";
+    }
   }
 
   if (_properties.get_cursor_hidden()) {
@@ -1205,21 +1209,30 @@ void glxGraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
 
-  // First, get the keystroke as a wide-character sequence.
-  static const int buffer_size = 256;
-  wchar_t buffer[buffer_size];
-  Status status;
-  int len = XwcLookupString(_ic, &event, buffer, buffer_size, NULL,
-                            &status);
-  if (status == XBufferOverflow) {
-    glxdisplay_cat.error()
-      << "Overflowed input buffer.\n";
-  }
-  
-  // Now each of the returned wide characters represents a
-  // keystroke.
-  for (int i = 0; i < len; i++) {
-    _input_devices[0].keystroke(buffer[i]);
+  if (_ic) {
+    // First, get the keystroke as a wide-character sequence.
+    static const int buffer_size = 256;
+    wchar_t buffer[buffer_size];
+    Status status;
+    int len = XwcLookupString(_ic, &event, buffer, buffer_size, NULL,
+                              &status);
+    if (status == XBufferOverflow) {
+      glxdisplay_cat.error()
+        << "Overflowed input buffer.\n";
+    }
+    
+    // Now each of the returned wide characters represents a
+    // keystroke.
+    for (int i = 0; i < len; i++) {
+      _input_devices[0].keystroke(buffer[i]);
+    }
+
+  } else {
+    // Without an input context, just get the ascii keypress.
+    ButtonHandle button = get_button(event);
+    if (button.has_ascii_equivalent()) {
+      _input_devices[0].keystroke(button.get_ascii_equivalent());
+    }
   }
 }
 
