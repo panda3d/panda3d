@@ -853,15 +853,18 @@ intersects_parabola(double &t, const Parabolaf &parabola,
   // point and comparing its distance from the linear intervening
   // point.
   double tmid = (t1 + t2) * 0.5;
-  LPoint3f pmid = parabola.calc_point(tmid);
-  LPoint3f pmid2 = (p1 + p2) * 0.5f;
 
-  if ((pmid - pmid2).length_squared() > 0.001f) {
-    // Subdivide.
-    if (intersects_parabola(t, parabola, t1, tmid, p1, pmid)) {
-      return true;
+  if (tmid != t1 && tmid != t2) {
+    LPoint3f pmid = parabola.calc_point(tmid);
+    LPoint3f pmid2 = (p1 + p2) * 0.5f;
+
+    if ((pmid - pmid2).length_squared() > 0.001f) {
+      // Subdivide.
+      if (intersects_parabola(t, parabola, t1, tmid, p1, pmid)) {
+        return true;
+      }
+      return intersects_parabola(t, parabola, tmid, t2, pmid, p2);
     }
-    return intersects_parabola(t, parabola, tmid, t2, pmid, p2);
   }
 
   // The line segment is sufficiently close; compare the segment itself.
