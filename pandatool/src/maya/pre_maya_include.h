@@ -22,6 +22,12 @@
 // itself from multiple inclusion with #ifdef .. #endif, since it must
 // be used each time it is included.
 
+// Maya 2008 will declare some VS2005-specific hacks unless we define
+// this.
+#if defined(_MSC_VER) && _MSC_VER < 1400
+#define MLIBRARY_DONTUSE_MFC_MANIFEST
+#endif
+
 // Maya will try to typedef bool unless this symbol is defined.
 #ifndef _BOOL
 #define _BOOL 1
