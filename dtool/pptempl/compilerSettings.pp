@@ -122,8 +122,7 @@
 
   // Added to avoid old iostream reference problems
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
-  // Added to make pandatool function in VS 8
-  #if $[or $[eq $[USE_COMPILER],MSVC8], $[eq $[USE_COMPILER],MSVC9]]
+  #if $[eq $[USE_COMPILER],MSVC8]
     #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
   #endif
 //  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcprt.lib
@@ -209,10 +208,8 @@
 
   // Added to avoid old iostream reference problems
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
-  // Added to make pandatool function in VS 8
-  #if $[or $[eq $[USE_COMPILER],MSVC8], $[eq $[USE_COMPILER],MSVC9]]
-    #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
-  #endif
+  // Added to make pandatool function in VS 9
+  #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC90.LIB /NOD:libcmtd /NOD:libc
 //  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcprt.lib
 
 // in case we have mixed intel/msvc build
