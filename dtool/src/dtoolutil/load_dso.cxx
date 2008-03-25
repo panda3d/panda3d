@@ -116,8 +116,11 @@ void * load_dso(const DSearchPath &path, const Filename &filename)
 
 string
 load_dso_error() {
-  return std::string(dlerror());
-  //return "No DSO loading yet!";
+  char *message = dlerror();
+  if (message != (char *)NULL) {
+    return std::string(message);
+  }
+  return "No error.";
 }
 
 #else
@@ -142,7 +145,11 @@ unload_dso(void *dso_handle) {
 
 string
 load_dso_error() {
-  return dlerror();
+   char *message = dlerror();
+   if (message != (char *)NULL) {
+    return std::string(message);
+  }
+  return "No error.";
 }
 
 #endif
