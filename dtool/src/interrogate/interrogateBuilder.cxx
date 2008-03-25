@@ -182,6 +182,28 @@ do_command(const string &command, const string &params) {
       _ignoretype.insert(type->get_local_name(&parser));
     }
 
+  } else if (command == "defconstruct") {
+    // defining the parameters that are implicitly supplied to the
+    // generated default constructor.  Especially useful for linmath
+    // objects, whose default constructor in C++ is uninitialized, but
+    // whose Python-level constructor should initialize to 0.
+
+    size_t space = params.find(' ');
+    if (space == string::npos) {
+      nout << "No constructor specified for defconstruct " << params << "\n";
+    } else {
+      string class_name = params.substr(0, space);
+      string constructor = params.substr(space + 1);
+
+      CPPType *type = parser.parse_type(class_name);
+      if (type == (CPPType *)NULL) {
+        nout << "Unknown type: defconstruct " << class_name << "\n";
+      } else {
+        type = type->resolve_type(&parser, &parser);
+        _defconstruct[type->get_local_name(&parser)] = constructor;
+      }
+    }
+
   } else if (command == "ignoreinvolved") {
     _ignoreinvolved.insert(params);
 
@@ -781,6 +803,23 @@ in_renametype(const string &name) const {
 bool InterrogateBuilder::
 in_ignoretype(const string &name) const {
   return (_ignoretype.count(name) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::in_defconstruct
+//       Access: Private
+//  Description: If the user requested an explicit default constructor
+//               for this type via the defconstruct command, returns
+//               that string; otherwise, returns the empty string.
+////////////////////////////////////////////////////////////////////
+string InterrogateBuilder::
+in_defconstruct(const string &name) const {
+  CommandParams::const_iterator pi;
+  pi = _defconstruct.find(name);
+  if (pi != _defconstruct.end()) {
+    return (*pi).second;
+  }
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -80,6 +80,7 @@ public:
   bool in_forcetype(const string &name) const;
   string in_renametype(const string &name) const;
   bool in_ignoretype(const string &name) const;
+  string in_defconstruct(const string &name) const;
   bool in_ignoreinvolved(const string &name) const;
   bool in_ignoreinvolved(CPPType *type) const;
   bool in_ignorefile(const string &name) const;
@@ -141,6 +142,7 @@ public:
   Commands _forcetype;
   CommandParams _renametype;
   Commands _ignoretype;
+  CommandParams _defconstruct;
   Commands _ignoreinvolved;
   Commands _ignorefile;
   Commands _ignoremember;

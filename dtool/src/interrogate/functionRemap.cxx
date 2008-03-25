@@ -158,7 +158,12 @@ string FunctionRemap::call_function(ostream &out, int indent_level, bool convert
 
   } else if (_type == T_constructor) {
     // A special case for constructors.
-    return_expr = "new " + get_call_str(container, pexprs);
+    string defconstruct = builder.in_defconstruct(_cpptype->get_local_name(&parser));
+    if (pexprs.empty() && !defconstruct.empty()) {
+      return_expr = defconstruct;
+    } else {
+      return_expr = "new " + get_call_str(container, pexprs);
+    }
     if (_void_return) {
       nout << "Error, constructor for " << *_cpptype << " returning void.\n";
       return_expr = "";
