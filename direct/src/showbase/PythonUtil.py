@@ -2979,18 +2979,20 @@ def recordCreationStack(cls):
     cls.printCreationStackTrace = printCreationStackTrace
     return cls
 
-# like recordCreationStack but stores the stack as a compact stack string
+# like recordCreationStack but stores the stack as a compact stack list-of-strings
+# scales well for memory usage
 def recordCreationStackStr(cls):
     if not hasattr(cls, '__init__'):
         raise 'recordCreationStackStr: class \'%s\' must define __init__' % cls.__name__
     cls.__moved_init__ = cls.__init__
     def __recordCreationStackStr_init__(self, *args, **kArgs):
-        self._creationStackTraceStr = StackTrace(start=1).compact()
+        # store as list of strings to conserve memory
+        self._creationStackTraceStrLst = StackTrace(start=1).compact().split(',')
         return self.__moved_init__(*args, **kArgs)
     def getCreationStackTraceCompactStr(self):
-        return self._creationStackTraceStr
+        return string.join(self._creationStackTraceStrLst, ',')
     def printCreationStackTrace(self):
-        print self._creationStackTraceStr
+        print string.join(self._creationStackTraceStrLst, ',')
     cls.__init__ = __recordCreationStackStr_init__
     cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
     cls.printCreationStackTrace = printCreationStackTrace

@@ -12,7 +12,7 @@ from direct.directtools.DirectUtil import ROUND_TO
 from direct.showbase import DirectObject
 from direct.task import Task
 from direct.showbase import ShowBase
-from direct.showbase.PythonUtil import recordCreationStack
+from direct.showbase.PythonUtil import recordCreationStackStr
 from pandac.PandaModules import PStatCollector
 import string, types
 
@@ -657,7 +657,7 @@ def setGuiGridSpacing(spacing):
 if config.GetBool('record-gui-creation-stack', __debug__):
     # this will help track down the code that created DirectGui objects
     # call obj.getCreationStackTrace() to figure out what code created it
-    DirectGuiBase = recordCreationStack(DirectGuiBase)
+    DirectGuiBase = recordCreationStackStr(DirectGuiBase)
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
     # Toggle if you wish widget's to snap to grid when draggin
