@@ -687,7 +687,9 @@ MayaAnimData *MayaEggLoader::GetAnimData(EggSAnimData *pool, EggXfmSAnim *parent
 
 void MayaAnimData::PrintData(void)
 {
-  mayaloader_cat.debug() << "anim on joint : " << _joint->get_name() << endl;
+  if (mayaloader_cat.is_debug()) {
+    mayaloader_cat.debug() << "anim on joint : " << _joint->get_name() << endl;
+  }
   _pool->write(mayaloader_cat.debug(), 0);
 }
 
@@ -852,11 +854,15 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
   } else if (node->is_of_type(EggComment::get_class_type())) {
     string comment = (DCAST(EggComment, node))->get_comment();
     if (comment.find("2egg") != string::npos) {
-      //mayaloader_cat.debug() << delim+delstring << "found an EggComment: " << comment << endl;
+      if (mayaloader_cat.is_debug()) {
+        mayaloader_cat.debug() << delim+delstring << "found an EggComment: " << comment << endl;
+      }
       ParseFrameInfo(comment);
     }
   } else if (node->is_of_type(EggSAnimData::get_class_type())) {
-    mayaloader_cat.debug() << delim+delstring << "found an EggSAnimData: " << node->get_name() << endl;
+    if (mayaloader_cat.is_debug()) {
+      mayaloader_cat.debug() << delim+delstring << "found an EggSAnimData: " << node->get_name() << endl;
+    }
     EggSAnimData *anim = DCAST(EggSAnimData, node);
     MayaAnimData *animData = GetAnimData(anim, DCAST(EggXfmSAnim, node->get_parent()));
     //animData->PrintData();
@@ -874,9 +880,13 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       }
     } else if (node->is_of_type(EggTable::get_class_type())) {
       //EggTable *anim = DCAST(EggTable, node);
-      mayaloader_cat.debug() << delim+delstring << "found an EggTable: " << node->get_name() << endl;
+      if (mayaloader_cat.is_debug()) {
+        mayaloader_cat.debug() << delim+delstring << "found an EggTable: " << node->get_name() << endl;
+      }
     } else if (node->is_of_type(EggXfmSAnim::get_class_type())) {
-      mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;
+      if (mayaloader_cat.is_debug()) {
+        mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;
+      }
     }
     
     EggGroupNode::const_iterator ci;
@@ -979,8 +989,10 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     delete (*ti).second;
   }
   
-  mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
-                         << " -ef: " << _end_frame << endl;
+  if (mayaloader_cat.is_debug()) {
+    mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
+                           << " -ef: " << _end_frame << endl;
+  }
 
   // masad: TODO: perhaps we can now just go through each joint and find
   // corresponding EggSAnimData and apply proper MayaLink to the keyframe.
