@@ -540,6 +540,13 @@ $[cdefine USE_MEMORY_NOWRAPPERS]
 // If we are to build the native net interfaces.
 $[cdefine WANT_NATIVE_NET]
 
+/* Turn off warnings for using scanf and such */
+#if $[eq $[USE_COMPILER],MSVC9]
+        #print Will ignore CRT_SECURE warnings for MSVC9
+        $[cdefine _CRT_SECURE_NO_WARNINGS]
+        # pragma warning( disable : 4996 4275 )
+#endif
+
 
 /* Can we define a modern-style STL allocator? */
 $[cdefine USE_STL_ALLOCATOR]
