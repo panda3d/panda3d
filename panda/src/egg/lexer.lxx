@@ -727,6 +727,22 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return EGG_NUMBER; 
 }
 
+"1.#inf" { 
+  // infinity, on Win32.  As above.
+  accept(); 
+  eggyylval._number = HUGE_VAL;
+  eggyylval._string = yytext;
+  return EGG_NUMBER; 
+}
+
+"-1.#inf" {
+  // minus infinity, on Win32.  As above.
+  accept(); 
+  eggyylval._number = -HUGE_VAL;
+  eggyylval._string = yytext;
+  return EGG_NUMBER; 
+}
+
 
 ["] {
   // Quoted string.
