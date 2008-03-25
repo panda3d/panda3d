@@ -125,6 +125,12 @@ class DistributedObject(DistributedObjectBase):
                     cls.autoInterests = autoInterests
             return set(autoInterests)
         autoInterests = _getAutoInterests(self.__class__)
+        # if the server starts supporting multiple auto-interest per class, this check
+        # should be removed
+        if len(autoInterests) > 1:
+            self.notify.error(
+                'only one auto-interest allowed per DC class, %s has %s autoInterests (%s)' %
+                (self.dclass.getName(), len(autoInterests), list(autoInterests)))
         _getAutoInterests = None
         return list(autoInterests)
 
