@@ -170,6 +170,15 @@ open_api(string program_name) {
 
     string runtime_version = MGlobal::mayaVersion().asChar();
     string simple_runtime_version = runtime_version;
+    runtime_version = trim(runtime_version);
+
+    // If the version number contains a space, stop there (that would
+    // be "service pack 1" or whatever).
+    size_t space = runtime_version.find(' ');
+    if (space != string::npos) {
+      runtime_version = runtime_version.substr(0, space);
+    }
+
     int rtver_a, rtver_b;
     size_t dot1 = runtime_version.find('.');
     if (dot1 == string::npos) {
@@ -198,7 +207,7 @@ open_api(string program_name) {
         << runtime_version << ".\n";
     }
 
-    if (MAYA_API_VERSION != runtime_version_int) {
+    if (MAYA_API_VERSION / 10 != runtime_version_int / 10) {
       maya_cat.warning()
         << "This program was compiled using Maya version " 
         << (MAYA_API_VERSION / 100) << "." << (MAYA_API_VERSION / 10) % 10
