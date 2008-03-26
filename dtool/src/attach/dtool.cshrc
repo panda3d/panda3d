@@ -19,7 +19,7 @@ else if ( $OS == "IRIX64" ) then
              /usr/demos/bin /usr/local/bin )
   setenv LD_LIBRARY_PATH "/usr/local/lib:."
 else if (($OS == "CYGWIN_NT-5.1") || ($OS == "CYGWIN_NT-6.0") || ($OS == "CYGWIN_NT-5.2-WOW64") || ($OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "WINNT" )) then
-  set path = ( /bin /usr/bin /usr/lib /usr/local/bin /contrib/bin $path . )
+  set path = ( /bin /usr/bin /usr/lib /usr/local/bin $path . )
   if ( $?LIB ) then
     setenv LIB "$LIB;"`cygpath -w /usr/lib`
   else 
