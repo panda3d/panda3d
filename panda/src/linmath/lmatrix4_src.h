@@ -26,8 +26,8 @@ public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
-  INLINE_LINMATH FLOATNAME(LMatrix4)();
 PUBLISHED:
+  INLINE_LINMATH FLOATNAME(LMatrix4)();
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);

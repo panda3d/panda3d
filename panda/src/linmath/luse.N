@@ -33,6 +33,40 @@ renametype LQuaterniond LQuaterniond
 renametype LRotationd LRotationd
 renametype LOrientationd LOrientationd
 
+defconstruct LPoint2f new LPoint2f(0.0f)
+defconstruct LPoint3f new LPoint3f(0.0f)
+defconstruct LPoint4f new LPoint4f(0.0f)
+defconstruct LPoint2d new LPoint2d(0.0f)
+defconstruct LPoint3d new LPoint3d(0.0f)
+defconstruct LPoint4d new LPoint4d(0.0f)
+
+defconstruct LVecBase2f new LVecBase2f(0.0f)
+defconstruct LVecBase3f new LVecBase3f(0.0f)
+defconstruct LVecBase4f new LVecBase4f(0.0f)
+defconstruct LVecBase2d new LVecBase2d(0.0f)
+defconstruct LVecBase3d new LVecBase3d(0.0f)
+defconstruct LVecBase4d new LVecBase4d(0.0f)
+
+defconstruct LVector2f new LVector2f(0.0f)
+defconstruct LVector3f new LVector3f(0.0f)
+defconstruct LVector4f new LVector4f(0.0f)
+defconstruct LVector2d new LVector2d(0.0f)
+defconstruct LVector3d new LVector3d(0.0f)
+defconstruct LVector4d new LVector4d(0.0f)
+
+defconstruct LMatrix3f new LMatrix3f(LMatrix3f::ident_mat())
+defconstruct LMatrix4f new LMatrix4f(LMatrix4f::ident_mat())
+defconstruct LMatrix3d new LMatrix3d(LMatrix3d::ident_mat())
+defconstruct LMatrix4d new LMatrix4d(LMatrix4d::ident_mat())
+
+defconstruct LQuaternionf new LQuaternionf(LQuaternionf::ident_quat())
+defconstruct LRotationf new LRotationf(LQuaternionf::ident_quat())
+defconstruct LOrientationf new LOrientationf(LQuaternionf::ident_quat())
+
+defconstruct LQuaterniond new LQuaterniond(LQuaterniond::ident_quat())
+defconstruct LRotationd new LRotationd(LQuaterniond::ident_quat())
+defconstruct LOrientationd new LOrientationd(LQuaterniond::ident_quat())
+
 # We don't want to accidentally include any of the _src files in the
 # generated output, since these files aren't intended to be included by
 # anything but their associated .h file.
