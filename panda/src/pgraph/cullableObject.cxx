@@ -37,6 +37,7 @@
 
 CullableObject::FormatMap CullableObject::_format_map;
 
+PStatCollector CullableObject::_munge_geom_pcollector("*:Munge:Geom");
 PStatCollector CullableObject::_munge_sprites_pcollector("*:Munge:Sprites");
 PStatCollector CullableObject::_munge_sprites_verts_pcollector("*:Munge:Sprites:Verts");
 PStatCollector CullableObject::_munge_sprites_prims_pcollector("*:Munge:Sprites:Prims");
@@ -61,6 +62,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser,
            bool force) {
   Thread *current_thread = traverser->get_current_thread();
+  PStatTimer timer(_munge_geom_pcollector, current_thread);
   if (_geom != (Geom *)NULL) {
     _munger = munger;
 
@@ -127,7 +129,7 @@ munge_geom(GraphicsStateGuardianBase *gsg,
     if (!munger->munge_geom(_geom, _munged_data, force, current_thread)) {
       return false;
     }
-    
+
     StateMunger *state_munger;
     DCAST_INTO_R(state_munger, munger, false);
     _state = state_munger->munge_state(_state);

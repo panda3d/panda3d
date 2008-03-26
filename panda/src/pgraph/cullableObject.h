@@ -113,6 +113,7 @@ private:
   typedef pmap<CPT(GeomVertexFormat), CPT(GeomVertexFormat) > FormatMap;
   static FormatMap _format_map;
 
+  static PStatCollector _munge_geom_pcollector;
   static PStatCollector _munge_sprites_pcollector;
   static PStatCollector _munge_sprites_verts_pcollector;
   static PStatCollector _munge_sprites_prims_pcollector;
