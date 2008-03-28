@@ -142,7 +142,7 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
 ////////////////////////////////////////////////////////////////////
 char *SoftNodeTree::
 GetRootName( const char *name ) {
-  char *hyphen;
+  const char *hyphen;
   char *root;
   int len;
   
