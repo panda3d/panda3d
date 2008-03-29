@@ -65,6 +65,7 @@
 #include <maya/MTransformationMatrix.h>
 #include <maya/MFnIkJoint.h>
 #include <maya/MFnSkinCluster.h>
+#include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
 #include "mayaEggLoader.h"
@@ -73,7 +74,7 @@ class MayaEggMesh;
 class MayaEggJoint;
 class MayaEggTex;
 
-class MayaAnimData;
+class MayaAnim;
 
 NotifyCategoryDeclNoExport(mayaloader);
 NotifyCategoryDef(mayaloader, "");
@@ -92,10 +93,11 @@ public:
   MayaEggTex   *GetTex(const string &name, const string &fn);
   void          CreateSkinCluster(MayaEggMesh *M);
 
-  MayaAnimData *GetAnimData(EggSAnimData *pool, EggXfmSAnim * parent);
+  MayaAnim *GetAnim(EggXfmSAnim *pool);
+  MObject MayaEggLoader::GetDependencyNode(string givenName);
 
   typedef phash_map<EggVertexPool *, MayaEggMesh *, pointer_hash> MeshTable;
-  typedef phash_map<EggSAnimData *, MayaAnimData *, pointer_hash> AnimTable;
+  typedef phash_map<EggXfmSAnim *, MayaAnim *, pointer_hash> AnimTable;
   typedef phash_map<EggGroup *, MayaEggJoint *, pointer_hash> JointTable;
   typedef phash_map<string, MayaEggTex *, string_hash> TexTable;
 
@@ -107,6 +109,7 @@ public:
   int _start_frame;
   int _end_frame;
   int _frame_rate;
+  MTime::Unit     _timeUnit;
 
   void ParseFrameInfo(string comment);
 };
@@ -380,6 +383,7 @@ void MayaEggJoint::CreateMayaBone()
     trans = trans * _parent->_joint_abs.inverse();
   }
   MTransformationMatrix mtm(trans);
+
   MFnIkJoint ikj;
   if (_parent) {
     ikj.create(_parent->_joint);
@@ -388,6 +392,7 @@ void MayaEggJoint::CreateMayaBone()
     ikj.create();
   }
   ikj.set(mtm);
+  
   _joint = ikj.object();
   ikj.getPath(_joint_dag_path);
 }
@@ -656,42 +661,42 @@ EggGroup *MayaEggMesh::GetControlJoint(void)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// MayaAnimData: 
+// MayaAnim: 
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-class MayaAnimData
+class MayaAnim
 {
 public:
   string  _name;
   EggTable *_joint;
-  EggXfmSAnim *_parent;
-  EggSAnimData * _pool;
+  EggXfmSAnim *_pool;
   void PrintData(void);
 };
 
-MayaAnimData *MayaEggLoader::GetAnimData(EggSAnimData *pool, EggXfmSAnim *parent)
+MayaAnim *MayaEggLoader::GetAnim(EggXfmSAnim *pool)
 {
-  MayaAnimData *result = _anim_tab[pool];
+  MayaAnim *result = _anim_tab[pool];
   if (result == 0) {
-    result = new MayaAnimData;
+    result = new MayaAnim;
     result->_pool = pool;
-    result->_parent = parent;
     result->_name = pool->get_name();
     _anim_tab[pool] = result;
-    EggNode *jointNode = (DCAST(EggNode, parent))->get_parent();
+    EggNode *jointNode = (DCAST(EggNode, pool))->get_parent();
     EggTable *joint = DCAST(EggTable, jointNode);
     result->_joint = joint;
+
   }
   return result;
 }
 
-void MayaAnimData::PrintData(void)
+void MayaAnim::PrintData(void)
 {
   if (mayaloader_cat.is_debug()) {
     mayaloader_cat.debug() << "anim on joint : " << _joint->get_name() << endl;
   }
   _pool->write(mayaloader_cat.debug(), 0);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -857,18 +862,20 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << delim+delstring << "found an EggComment: " << comment << endl;
       }
-      ParseFrameInfo(comment);
+      if (comment.find("chan") != string::npos) {
+        ParseFrameInfo(comment);
+      }
     }
   } else if (node->is_of_type(EggSAnimData::get_class_type())) {
     if (mayaloader_cat.is_debug()) {
       mayaloader_cat.debug() << delim+delstring << "found an EggSAnimData: " << node->get_name() << endl;
     }
-    EggSAnimData *anim = DCAST(EggSAnimData, node);
-    MayaAnimData *animData = GetAnimData(anim, DCAST(EggXfmSAnim, node->get_parent()));
+    //EggSAnimData *anim = DCAST(EggSAnimData, node);
+    //MayaAnimData *animData = GetAnimData(anim, DCAST(EggXfmSAnim, node->get_parent()));
     //animData->PrintData();
-    if (_end_frame < animData->_pool->get_num_rows()) {
-      _end_frame = animData->_pool->get_num_rows();
-    }
+    //if (_end_frame < animData->_pool->get_num_rows()) {
+    //  _end_frame = animData->_pool->get_num_rows();
+    //}
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group = DCAST(EggGroupNode, node);
 
@@ -884,9 +891,12 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
         mayaloader_cat.debug() << delim+delstring << "found an EggTable: " << node->get_name() << endl;
       }
     } else if (node->is_of_type(EggXfmSAnim::get_class_type())) {
+      MayaAnim *anim = GetAnim(DCAST(EggXfmSAnim, node));
+      //anim->PrintData();
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << delim+delstring << "found an EggXfmSAnim: " << node->get_name() << endl;
       }
+
     }
     
     EggGroupNode::const_iterator ci;
@@ -925,13 +935,14 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   //mayaloader_cat.debug() << "root node: " << data->get_type() << endl;
   TraverseEggNode(data, NULL, "");
 
+  MStatus status;
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci).second;
     if (mesh->_face_count==0) {
       continue;
     }
 
-    MStatus status;
+    //    MStatus status;
     MFnMesh mfn;
     MString cset;
     
@@ -979,6 +990,101 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) {
     (*ti).second->AssignNames();
   }
+
+ 
+  if (mayaloader_cat.is_debug()) {
+    mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
+                           << " -ef: " << _end_frame << endl;
+  }
+
+  for (ei = _anim_tab.begin(); ei != _anim_tab.end(); ++ei) {
+    MayaAnim *anim = (*ei).second;
+    MObject node = GetDependencyNode(anim->_joint->get_name());
+    MFnDagNode mfnNode(node, &status);
+
+    MMatrix mMat = mfnNode.transformationMatrix(&status);
+
+    MObject attrTX = mfnNode.attribute("translateX", &status);
+    MObject attrTY = mfnNode.attribute("translateY", &status);
+    MObject attrTZ = mfnNode.attribute("translateZ", &status);
+    MObject attrRX = mfnNode.attribute("rotateX", &status);
+    MObject attrRY = mfnNode.attribute("rotateY", &status);
+    MObject attrRZ = mfnNode.attribute("rotateZ", &status);
+    MObject attrSX = mfnNode.attribute("scaleX", &status);
+    MObject attrSY = mfnNode.attribute("scaleY", &status);
+    MObject attrSZ = mfnNode.attribute("scaleZ", &status);
+
+    MFnAnimCurve mfnAnimCurveTX;
+    MFnAnimCurve mfnAnimCurveTY;
+    MFnAnimCurve mfnAnimCurveTZ;
+    MFnAnimCurve mfnAnimCurveRX;
+    MFnAnimCurve mfnAnimCurveRY;
+    MFnAnimCurve mfnAnimCurveRZ;
+    MFnAnimCurve mfnAnimCurveSX;
+    MFnAnimCurve mfnAnimCurveSY;
+    MFnAnimCurve mfnAnimCurveSZ;
+
+    mfnAnimCurveTX.create(node, attrTX, MFnAnimCurve::kAnimCurveTL, NULL, &status);
+    mfnAnimCurveTY.create(node, attrTY, MFnAnimCurve::kAnimCurveTL, NULL, &status);
+    mfnAnimCurveTZ.create(node, attrTZ, MFnAnimCurve::kAnimCurveTL, NULL, &status);
+    mfnAnimCurveRX.create(node, attrRX, MFnAnimCurve::kAnimCurveTA, NULL, &status);
+    mfnAnimCurveRY.create(node, attrRY, MFnAnimCurve::kAnimCurveTA, NULL, &status);
+    mfnAnimCurveRZ.create(node, attrRZ, MFnAnimCurve::kAnimCurveTA, NULL, &status);
+    mfnAnimCurveSX.create(node, attrSX, MFnAnimCurve::kAnimCurveTU, NULL, &status);
+    mfnAnimCurveSY.create(node, attrSY, MFnAnimCurve::kAnimCurveTU, NULL, &status);
+    mfnAnimCurveSZ.create(node, attrSZ, MFnAnimCurve::kAnimCurveTU, NULL, &status);
+
+    MTransformationMatrix matrix( mMat );
+    MVector trans = matrix.translation(MSpace::kTransform, &status);
+      
+    double rot[3];
+    MTransformationMatrix::RotationOrder order = MTransformationMatrix::kXYZ;
+    status = matrix.getRotation(rot, order);
+
+    double scale[3];
+    status = matrix.getScale(scale, MSpace::kTransform);
+    MFnAnimCurve::TangentType tangent = MFnAnimCurve::kTangentClamped;
+    MTime time(_start_frame - 1, _timeUnit);
+
+    mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, NULL, &status);
+    mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, NULL, &status);
+    mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, NULL, &status);
+    mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, NULL, &status);
+    mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, NULL, &status);
+    mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, NULL, &status);
+    mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, NULL, &status);
+    mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, NULL, &status);
+    mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, NULL, &status);
+
+    for (int frame = 0; frame < anim->_pool->get_num_rows(); frame++)
+    {
+      LMatrix4d tMat;
+      anim->_pool->get_value(frame, tMat);
+
+      double matData[4][4] = {{tMat.get_cell(0,0), tMat.get_cell(0,1), tMat.get_cell(0,2), tMat.get_cell(0,3)},
+                  {tMat.get_cell(1,0), tMat.get_cell(1,1), tMat.get_cell(1,2), tMat.get_cell(1,3)},
+                  {tMat.get_cell(2,0), tMat.get_cell(2,1), tMat.get_cell(2,2), tMat.get_cell(2,3)},
+                  {tMat.get_cell(3,0), tMat.get_cell(3,1), tMat.get_cell(3,2), tMat.get_cell(3,3)}};
+      MMatrix mat(matData);
+
+      matrix = MTransformationMatrix(mat);
+      trans = matrix.translation(MSpace::kTransform, &status);
+      status = matrix.getRotation(rot, order);
+      status = matrix.getScale(scale, MSpace::kTransform);
+      time = MTime(frame + _start_frame, _timeUnit);
+
+      mfnAnimCurveTX.addKey(time, trans.x, tangent, tangent, NULL, &status);
+      mfnAnimCurveTY.addKey(time, trans.y, tangent, tangent, NULL, &status);
+      mfnAnimCurveTZ.addKey(time, trans.z, tangent, tangent, NULL, &status);
+      mfnAnimCurveRX.addKey(time, rot[0], tangent, tangent, NULL, &status);
+      mfnAnimCurveRY.addKey(time, rot[1], tangent, tangent, NULL, &status);
+      mfnAnimCurveRZ.addKey(time, rot[2], tangent, tangent, NULL, &status);
+      mfnAnimCurveSX.addKey(time, scale[0], tangent, tangent, NULL, &status);
+      mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, NULL, &status);
+      mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, NULL, &status);
+    }
+  }
+
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) {
     delete (*ci).second;
   }
@@ -988,14 +1094,9 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) {
     delete (*ti).second;
   }
-  
-  if (mayaloader_cat.is_debug()) {
-    mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
-                           << " -ef: " << _end_frame << endl;
+  for (ei = _anim_tab.begin();  ei != _anim_tab.end();  ++ei) {
+    delete (*ei).second;
   }
-
-  // masad: TODO: perhaps we can now just go through each joint and find
-  // corresponding EggSAnimData and apply proper MayaLink to the keyframe.
 
   //  ResumeSetKeyMode();
   //  ResumeAnimate();
@@ -1008,38 +1109,115 @@ void MayaEggLoader::ParseFrameInfo(string comment)
 {
   int length = 0;
   int pos, ls, le;
-  _frame_rate = -1;
+  _frame_rate = 24;
   _start_frame = 0;
   _end_frame = -1;
+  _timeUnit = MTime::kFilm;
+
   pos = comment.find("-fri");
   if (pos != string::npos) {
     ls = comment.find(" ", pos+4);
     le = comment.find(" ", ls+1);
-    _frame_rate = atoi(comment.substr(ls,le-ls).data());
+    mayaloader_cat.debug() <<    comment.substr(ls+1, le-ls-1) << endl;
+    _frame_rate = atoi(comment.substr(ls+1,le-ls-1).data());
     //mayaloader_cat.debug() << "le = " << le << "; and ls = " << ls << "; frame_rate = " << _frame_rate << endl;
+
+    switch (_frame_rate) {
+    case 15:
+      _timeUnit = MTime::kGames;
+      break;
+    case 24:
+      _timeUnit = MTime::kFilm;
+      break;
+    case 25:
+      _timeUnit = MTime::kPALFrame;
+      break;
+    case 30:
+      _timeUnit = MTime::kNTSCFrame;
+      break;
+    case 48:
+      _timeUnit = MTime::kShowScan;
+      break;
+    case 50:
+      _timeUnit = MTime::kPALField;
+      break;
+    case 60:
+      _timeUnit = MTime::kNTSCField;
+      break;
+    case 2:
+      _timeUnit = MTime::k2FPS;
+      break;
+    case 3:
+      _timeUnit = MTime::k3FPS;
+      break;
+    case 4:
+      _timeUnit = MTime::k4FPS;
+      break;
+    case 5:
+      _timeUnit = MTime::k5FPS;
+      break;
+    case 6:
+      _timeUnit = MTime::k6FPS;
+      break;
+    case 8:
+      _timeUnit = MTime::k8FPS;
+      break;
+    case 10:
+      _timeUnit = MTime::k10FPS;
+      break;
+    case 12:
+      _timeUnit = MTime::k12FPS;
+      break;
+    case 16:
+      _timeUnit = MTime::k16FPS;
+      break;
+    case 20:
+      _timeUnit = MTime::k20FPS;
+      break;
+    case 40:
+      _timeUnit = MTime::k40FPS;
+      break;
+    case 75:
+      _timeUnit = MTime::k75FPS;
+      break;
+    case 80:
+      _timeUnit = MTime::k80FPS;
+      break;
+    case 100:
+      _timeUnit = MTime::k100FPS;
+      break;
+    default:
+      _timeUnit = MTime::kFilm;
+    }
+
   }
+
   pos = comment.find("-sf");
   if (pos != string::npos) {
-    ls = comment.find(" ", pos+4);
+    ls = comment.find(" ", pos+3);
     le = comment.find(" ", ls+1);
+    mayaloader_cat.debug() <<    comment.substr(ls+1, le-ls-1) << endl;
     if (le == string::npos) {
-      _start_frame = atoi(comment.substr(ls,le).data());
+      _start_frame = atoi(comment.substr(ls+1,le).data());
     } else {
-      _start_frame = atoi(comment.substr(ls,le-ls).data());
+      _start_frame = atoi(comment.substr(ls+1,le-ls-1).data());
     }
     //mayaloader_cat.debug() << "le = " << le << "; and ls = " << ls << "; start_frame = " << _start_frame << endl;
   }
   pos = comment.find("-ef");
   if (pos != string::npos) {
-    ls = comment.find(" ", pos+4);
+    ls = comment.find(" ", pos+3);
     le = comment.find(" ", ls+1);
+    mayaloader_cat.debug() <<    comment.substr(ls+1, le-ls-1) << endl;
     if (le == string::npos) {
-      _end_frame = atoi(comment.substr(ls,le).data());
+      _end_frame = atoi(comment.substr(ls+1,le).data());
     } else {
-      _end_frame = atoi(comment.substr(ls,le-ls).data());
+      _end_frame = atoi(comment.substr(ls+1,le-ls-1).data());
     }
     //mayaloader_cat.debug() << "le = " << le << "; and ls = " << ls << "; end_frame = " << _end_frame << endl;
   }
+
+
 }
 
 bool MayaEggLoader::ConvertEggFile(const char *name, bool merge, bool model, bool anim)
@@ -1051,6 +1229,49 @@ bool MayaEggLoader::ConvertEggFile(const char *name, bool merge, bool model, boo
     return false;
   }
   return ConvertEggData(&data, merge, model, anim);
+}
+
+MObject MayaEggLoader::GetDependencyNode(string givenName)
+{
+  MObject node;
+  int pos;
+  string name;
+
+  pos = givenName.find(":");
+  if (pos != string::npos) {
+    name = givenName.substr(pos+1);
+  } else
+    name = givenName;
+
+  MeshTable::const_iterator ci;
+  JointTable::const_iterator ji;
+  for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
+    MayaEggMesh *mesh = (*ci).second;
+    
+    string meshName = mesh->_pool->get_name();
+    int nsize = meshName.size();
+    if ((nsize > 6) && (meshName.rfind(".verts")==(nsize-6))) {
+      meshName.resize(nsize-6);
+    }
+    if (meshName == name)
+    {
+      node = mesh->_transNode;
+      return node;
+    }
+  }
+
+  for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
+    MayaEggJoint *joint = (*ji).second;
+    //mayaloader_cat.debug() << "creating a joint: " << joint->_egg_joint->get_name() << endl;
+    string jointName = joint->_egg_joint->get_name();
+    if (jointName == name)
+    {
+      node = joint->_joint;
+      return node;
+    }
+  }  
+  
+  return node;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
