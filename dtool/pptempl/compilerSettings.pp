@@ -1,5 +1,9 @@
 #print Generating for $[USE_COMPILER]
 
+
+//////////////////////////////
+// MICROSOFT VISUAL C++ 6.0 //
+//////////////////////////////
 #if $[eq $[USE_COMPILER], MSVC]
   #define COMPILER cl
   #define LINKER link
@@ -48,6 +52,10 @@
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
 
+
+////////////////////////////////////////////////////////////////////
+// MICROSOFT VISUAL C++ 7.0, 7.1, & 8.0 (.NET, .NET 2003, & 2005) //
+////////////////////////////////////////////////////////////////////
 #elif $[or $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]], $[eq $[USE_COMPILER],MSVC8]]
   #define COMPILER cl
   #define LINKER link
@@ -134,10 +142,15 @@
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
 
+
+/////////////////////////////////////
+// MICROSOFT VISUAL C++ 9.0 (2008) //
+/////////////////////////////////////
 #elif $[eq $[USE_COMPILER], MSVC9]
   #define COMPILER cl
   #define LINKER link
   #define LIBBER lib
+  #define MT_BIN mt
 
   #if $[eq $[NO_CROSSOBJ_OPT],]
      #define DO_CROSSOBJ_OPT 1
@@ -162,7 +175,6 @@
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB
   #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF
   #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF $[LDFLAGS_OPT4]
-//  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
 
@@ -175,8 +187,6 @@
   #define OPT1FLAGS /RTCs /GS
 
   #define WARNING_LEVEL_FLAG /W3   // WL
-  //#define WARNING_LEVEL_FLAG /Wall
-  //#define WARNING_LEVEL_FLAG /W4 /WX
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb, $[target]]]"
@@ -210,15 +220,14 @@
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
   // Added to make pandatool function in VS 9
   #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC90.LIB /NOD:libcmtd /NOD:libc
-//  #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcprt.lib
-
-// in case we have mixed intel/msvc build
-//  #define EXTRA_LIBPATH /ia32/lib
-//  #define EXTRA_INCPATH /ia32/include
 
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
 
+
+////////////////////
+// INTEL COMPILER //
+////////////////////
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
   #define LINKER xilink

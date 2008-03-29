@@ -375,11 +375,12 @@ $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from 
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++] $[VER_RESOURCE]
+$[TAB] $[shared_lib_c++]
   #else
-$[TAB] $[shared_lib_c] $[VER_RESOURCE]
+$[TAB] $[shared_lib_c]
   #endif
 #else
+  #define VER_RESOURCE
 .NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[shared_lib_c++]
@@ -506,11 +507,12 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #define sources $($[varname])
+#define $[VER_RESOURCE] $[COMPILED_RESOURCES]
 $[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++] $[COMPILED_RESOURCES]
+$[TAB] $[shared_lib_c++]
 #else
-$[TAB] $[shared_lib_c] $[COMPILED_RESOURCES]
+$[TAB] $[shared_lib_c]
 #endif
 
 #if $[build_dlls]
