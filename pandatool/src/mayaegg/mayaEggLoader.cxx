@@ -85,6 +85,7 @@ public:
   bool ConvertEggData(EggData *data,    bool merge, bool model, bool anim);
   bool ConvertEggFile(const char *name, bool merge, bool model, bool anim);
   
+  
 public:
   void          TraverseEggNode(EggNode *node, EggGroup *context, string delim);
   MayaEggMesh  *GetMesh(EggVertexPool *pool);
@@ -920,6 +921,11 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   }
   */
 
+  _start_frame = 0;
+  _end_frame = 0;
+  _frame_rate = 24;
+  _timeUnit = MTime::kFilm;
+
   MeshTable::const_iterator ci;
   JointTable::const_iterator ji;
   TexTable::const_iterator ti;
@@ -1109,10 +1115,6 @@ void MayaEggLoader::ParseFrameInfo(string comment)
 {
   int length = 0;
   int pos, ls, le;
-  _frame_rate = 24;
-  _start_frame = 0;
-  _end_frame = -1;
-  _timeUnit = MTime::kFilm;
 
   pos = comment.find("-fri");
   if (pos != string::npos) {
