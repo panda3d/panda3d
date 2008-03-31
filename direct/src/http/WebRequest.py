@@ -45,6 +45,9 @@ class WebRequest(object):
         resp = "<html><body>Error 504: Request timed out</body></html>\r\n"
         self.respondHTTP("504 Gateway Timeout",resp)
 
+    def getSourceAddress(self):
+        return self.connection.GetSourceAddress()
+
 
 # --------------------------------------------------------------------------------
     
@@ -103,6 +106,7 @@ class WebRequestDispatcher(object):
     def invalidURI(self,replyTo,**kw):
         resp = "<html><body>Error 404</body></html>\r\n"
         replyTo.respondHTTP("404 Not Found",resp)
+        self.notify.warning("%s - %s - 404" % (replyTo.getSourceAddress(),replyTo.getURI()))
 
     def handleGET(self,req):
         """
@@ -112,7 +116,12 @@ class WebRequestDispatcher(object):
         assert req.getRequestType() == "GET"
         uri = req.getURI()
         args = req.dictFromGET()
-        callable,returnsResponse = self.uriToHandler.get(uri,[self.invalidURI,False])
+        
+        callable,returnsResponse = self.uriToHandler.get(uri, [self.invalidURI,False])
+
+        if callable != self.invalidURI:
+            self.notify.info("%s - %s - %s - 200" % (req.getSourceAddress(), uri, args))
+        
         if returnsResponse:
             result = apply(callable,(),args)
             req.respond(result)
@@ -133,7 +142,8 @@ class WebRequestDispatcher(object):
             if wreq.getRequestType() == "GET":
                 self.handleGET(wreq)
             else:
-                self.notify.warning("Ignoring a non-GET request: %s" % request.GetRawRequest())
+                self.notify.warning("Ignoring a non-GET request from %s: %s" % (request.GetSourceAddress(),request.GetRawRequest()))
+                self.invalidURI(wreq)
 
             request = HttpRequest.HttpManagerGetARequest()
 
