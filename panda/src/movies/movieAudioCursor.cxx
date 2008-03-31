@@ -36,6 +36,7 @@ MovieAudioCursor(MovieAudio *src) :
   _length(1.0E10),
   _can_seek(true),
   _can_seek_fast(true),
+  _ready(0x40000000),
   _aborted(false),
   _samples_read(0)
 {

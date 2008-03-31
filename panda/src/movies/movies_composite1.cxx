@@ -15,6 +15,9 @@
 
 #include "ffmpegVirtualFile.cxx"
 
+#include "userDataAudio.cxx"
+#include "userDataAudioCursor.cxx"
+
 #include "webcamVideo.cxx"
 #include "webcamVideoDS.cxx"
 

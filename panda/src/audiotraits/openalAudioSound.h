@@ -125,7 +125,7 @@ private:
   void restart_stalled_audio();
   void delete_queued_buffers();
   ALuint make_buffer(int samples, int channels, int rate, unsigned char *data);
-  void queue_buffer(ALuint buffer, int loop_index, double time_offset);
+  void queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset);
   int  read_stream_data(int bytelen, unsigned char *data);
   void pull_used_buffers();
   void push_fresh_buffers();
@@ -139,6 +139,7 @@ private:
 
   struct QueuedBuffer {
     ALuint _buffer;
+    int    _samples;
     int    _loop_index;
     double _time_offset;
   };

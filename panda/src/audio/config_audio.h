@@ -48,10 +48,11 @@ extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
 
 // Config vars for OpenAL:
 
-extern EXPCL_PANDA ConfigVariableDouble audio_doppler_factor; 	 
-extern EXPCL_PANDA ConfigVariableDouble audio_distance_factor; 	 
-extern EXPCL_PANDA ConfigVariableDouble audio_drop_off_factor; 	 
-extern EXPCL_PANDA ConfigVariableDouble audio_buffering_seconds;
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_doppler_factor; 	 
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_distance_factor; 	 
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_drop_off_factor; 	 
+extern EXPCL_PANDA_AUDIO ConfigVariableDouble audio_buffering_seconds;
+extern EXPCL_PANDA_AUDIO ConfigVariableInt    audio_preload_threshold;
 
 // Config vars for Miles:
 

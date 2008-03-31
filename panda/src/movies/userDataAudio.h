@@ -1,0 +1,72 @@
+// Filename: userDataAudio.h
+// Created by: jyelon (02Jul07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef USERDATAAUDIO_H
+#define USERDATAAUDIO_H
+
+#include "movieAudio.h"
+class MovieAudioCursor;
+class UserDataAudioCursor;
+
+////////////////////////////////////////////////////////////////////
+//       Class : UserDataAudio
+// Description : A UserDataAudio is a way for the user to manually
+//               supply raw audio samples. 
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
+
+ PUBLISHED:
+  UserDataAudio(int rate, int channels);
+  virtual ~UserDataAudio();
+  virtual PT(MovieAudioCursor) open();
+
+  void append(PN_int16 *data, int len);
+  void append(int value); // Not fast enough, but useful for debugging.
+  void done(); // A promise not to write any more samples.  
+
+ private:
+  void read_samples(int n, PN_int16 *data);
+  void update_cursor();
+  int _desired_rate;
+  int _desired_channels;
+  UserDataAudioCursor *_cursor;
+  pdeque<PN_int16> _data;
+  bool _aborted;
+  friend class UserDataAudioCursor;
+  
+ public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    MovieAudio::init_type();
+    register_type(_type_handle, "UserDataAudio",
+                  MovieAudio::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+ private:
+  static TypeHandle _type_handle;
+};
+
+#include "userDataAudio.I"
+
+#endif

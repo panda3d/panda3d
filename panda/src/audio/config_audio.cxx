@@ -75,6 +75,14 @@ ConfigVariableDouble audio_buffering_seconds
           "correctness over efficiency, but for a commercial application "
           "you may wish to lower this."));
 
+ConfigVariableInt audio_preload_threshold
+("audio-preload-threshold", 1000000,
+ PRC_DESC("If the decompressed size of a sound file exceeds this amount, "
+          "then Panda3D will not attempt to store that sound file in RAM. "
+          "Instead, it will stream the sound file from disk.  It is not "
+          "practical to stream multiple sound-files from disk at the same "
+          "time - the hard drive seek time makes it stutter."));
+
 // Unknown
 
 ConfigVariableInt audio_min_hw_channels 	 

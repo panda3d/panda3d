@@ -244,13 +244,13 @@ can_load_audio(MovieAudioCursor *source) {
   if (source->get_source()->get_filename().empty()) {
     return false;
   }
-  if (source->length() > 60.0) {
+  if ((source->length() > 3600.0)||(source->ready() != 0x40000000)) {
     return false;
   }
   int channels = source->audio_channels();
   int samples = (int)(source->length() * source->audio_rate());
   int bytes = samples * channels * 2;
-  if (bytes > 200000) {
+  if (bytes > audio_preload_threshold) {
     return false;
   }
   return true;
@@ -344,12 +344,30 @@ get_sound_data(MovieAudio *movie) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::get_sound()
+//     Function: OpenALAudioManager::get_sound
 //       Access: Public
 //  Description: This is what creates a sound instance.
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) OpenALAudioManager::
-get_sound(const string &file_name, bool positional) {
+get_sound(MovieAudio *sound, bool positional, int mode) {
+  if(!is_valid()) {
+    return get_null_sound();
+  }
+  PT(OpenALAudioSound) oas = 
+    new OpenALAudioSound(this, sound, positional);
+  
+  _all_sounds.insert(oas);
+  PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
+  return res;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenALAudioManager::get_sound
+//       Access: Public
+//  Description: This is what creates a sound instance.
+////////////////////////////////////////////////////////////////////
+PT(AudioSound) OpenALAudioManager::
+get_sound(const string &file_name, bool positional, int mode) {
   if(!is_valid()) {
     return get_null_sound();
   }
@@ -363,7 +381,7 @@ get_sound(const string &file_name, bool positional) {
     audio_error("get_sound - invalid filename");
     return NULL;
   }
-  
+
   PT(MovieAudio) mva = MovieAudio::get(path);
   
   PT(OpenALAudioSound) oas = 
@@ -844,7 +862,7 @@ update() {
     sound->push_fresh_buffers();
     sound->restart_stalled_audio();
     sound->cache_time(rtc);
-    if (sound->status()!=AudioSound::PLAYING) {
+    if ((sound->_source == 0)||(sound->_loops_completed >= sound->_playing_loops)) {
       sounds_finished.insert(*i);
     }
   }

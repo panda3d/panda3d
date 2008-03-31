@@ -53,6 +53,7 @@ PUBLISHED:
   INLINE bool aborted() const;
   INLINE double tell() const;
   INLINE void skip_samples(int n);
+  INLINE int ready() const;
   virtual void seek(double offset);
 
 public:
@@ -62,6 +63,7 @@ protected:
   PT(MovieAudio) _source;
   int _audio_rate;
   int _audio_channels;
+  int _ready;
   double _length;
   bool _can_seek;
   bool _can_seek_fast;

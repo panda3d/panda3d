@@ -63,7 +63,17 @@ is_valid() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) NullAudioManager::
-get_sound(const string&, bool positional) {
+get_sound(const string&, bool positional, int mode) {
+  return get_null_sound();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::get_sound
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(AudioSound) NullAudioManager::
+get_sound(MovieAudio *sound, bool positional, int mode) {
   return get_null_sound();
 }
 

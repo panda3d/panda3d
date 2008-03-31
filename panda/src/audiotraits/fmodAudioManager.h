@@ -103,7 +103,8 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 
   virtual bool is_valid();
           
-  virtual PT(AudioSound) get_sound(const string&, bool positional = false);
+  virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
     
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);

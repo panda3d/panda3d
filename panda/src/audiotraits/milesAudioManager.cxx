@@ -139,7 +139,7 @@ is_valid() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
-get_sound(const string &file_name, bool) {
+get_sound(const string &file_name, bool, int) {
   ReMutexHolder holder(_lock);
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
@@ -221,6 +221,17 @@ get_sound(const string &file_name, bool) {
   audio_debug("  returning 0x" << (void*)audioSound);
   nassertr(do_is_valid(), NULL);
   return audioSound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::get_sound
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+PT(AudioSound) MilesAudioManager::
+get_sound(MovieAudio *sound, bool, int) {
+  nassert_raise("Miles audio manager does not support MovieAudio sources.");
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
