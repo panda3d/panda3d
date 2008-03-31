@@ -37,6 +37,10 @@ class WebRequest(object):
     def respond(self,body):
         self.respondHTTP("200 OK",body)
 
+    def respondXML(self,body):
+        msg = "HTTP/1.0 200 OK\r\nContent-Type: text/xml\r\n\r\n%s" % body
+        self.connection.SendThisResponse(msg)
+
     def timeout(self):
         resp = "<html><body>Error 504: Request timed out</body></html>\r\n"
         self.respondHTTP("504 Gateway Timeout",resp)
