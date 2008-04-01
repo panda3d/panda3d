@@ -1,3 +1,11 @@
+# classes for event-driven programming
+# http://en.wikipedia.org/wiki/Event-driven_programming
+
+__all__ = ['StateVar', 'FunctionCall', 'EnterExit', 'Pulse', 'EventPulse',
+           'EventArgument', ]
+
+from direct.showbase.DirectObject import DirectObject
+
 class PushesStateChanges:
     # base class for objects that broadcast state changes to a set of subscriber objects
     def __init__(self, value):
@@ -154,6 +162,8 @@ if __debug__:
     sv.destroy()
     del fc
     del sv
+    del handler
+    del l
 
 class EnterExit(StateChangeNode):
     # call enterFunc when our state becomes true, exitFunc when it becomes false
@@ -198,3 +208,95 @@ if __debug__:
     assert l == [1,0,1,]
     sv.set(False)
     assert l == [1,0,1,0,]
+    ee.destroy()
+    sv.destroy()
+    del ee
+    del sv
+    del enter
+    del exit
+    del l
+
+class Pulse(PushesStateChanges):
+    # changes state to True then immediately to False whenever sendPulse is called
+    def __init__(self):
+        PushesStateChanges.__init__(self, False)
+
+    def sendPulse(self):
+        self._handlePotentialStateChange(True)
+        self._handlePotentialStateChange(False)
+    
+if __debug__:
+    l = []
+    def handler(value, l=l):
+        l.append(value)
+    p = Pulse()
+    fc = FunctionCall(p, handler)
+    assert l == []
+    p.sendPulse()
+    assert l == [True, False, ]
+    p.sendPulse()
+    assert l == [True, False, True, False, ]
+    fc.destroy()
+    p.destroy()
+    del fc
+    del p
+    del l
+    del handler
+
+class EventPulse(Pulse, DirectObject):
+    # sends a pulse whenever a specific messenger message is sent
+    def __init__(self, event):
+        Pulse.__init__(self)
+        self.accept(event, self.sendPulse)
+
+    def destroy(self):
+        self.ignoreAll()
+        Pulse.destroy(self)
+
+if __debug__:
+    l = []
+    def handler(value, l=l):
+        l.append(value)
+    ep = EventPulse('testEvent')
+    fc = FunctionCall(ep, handler)
+    assert l == []
+    messenger.send('testEvent')
+    assert l == [True, False, ]
+    messenger.send('testEvent')
+    assert l == [True, False, True, False, ]
+    fc.destroy()
+    ep.destroy()
+    del fc
+    del ep
+    del l
+    del handler
+    
+class EventArgument(PushesStateChanges, DirectObject):
+    # pushes a particular argument of a particular messenger event
+    def __init__(self, event, index=0):
+        PushesStateChanges.__init__(self, None)
+        self._index = index
+        self.accept(event, self._handleEvent)
+
+    def destroy(self):
+        self.ignoreAll()
+        del self._index
+        PushesStateChanges.destroy(self)
+        
+    def _handleEvent(self, *args):
+        self._handlePotentialStateChange(args[self._index])
+
+if __debug__:
+    l = []
+    def handler(value, l=l):
+        l.append(value)
+    ea = EventArgument('testEvent', index=1)
+    fc = FunctionCall(ea, handler)
+    messenger.send('testEvent', ['a', 'b'])
+    assert l == ['b',]
+    fc.destroy()
+    ea.destroy()
+    del fc
+    del ea
+    del l
+
