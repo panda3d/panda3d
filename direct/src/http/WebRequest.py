@@ -98,10 +98,11 @@ class WebRequestDispatcher(object):
         Singleton server, so ignore multiple listen requests.
         """
         if self.listenPort is None:
+            self.listenPort = listenPort
             HttpRequest.HttpManagerInitialize(listenPort)
-            self.notify.info("Web server is listening on port %d" % listenPort)
+            self.notify.info("Listening on port %d" % listenPort)
         else:
-            self.notify.warning("Web server is already listening on port %d.  Ignoring request to listen on port %d." % (self.listenPort,listenPort))
+            self.notify.warning("Already listening on port %d.  Ignoring request to listen on port %d." % (self.listenPort,listenPort))
 
     def invalidURI(self,replyTo,**kw):
         resp = "<html><body>Error 404</body></html>\r\n"
