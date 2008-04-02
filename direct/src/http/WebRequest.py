@@ -2,6 +2,7 @@ import direct
 from pandac.PandaModules import HttpRequest
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.task import Task
 
 notify = directNotify.newCategory('WebRequestDispatcher')
 
@@ -184,3 +185,17 @@ class WebRequestDispatcher(object):
             uri = "/" + uri
         self.uriToHandler.pop(uri,None)
         
+
+    # -- Poll task wrappers
+
+    def pollHTTPTask(self,task):
+        self.poll()
+        return Task.again
+        
+    def startCheckingIncomingHTTP(self, interval=0.3):
+        taskMgr.remove('pollHTTPTask')
+        taskMgr.doMethodLater(interval,self.pollHTTPTask,'pollHTTPTask')
+
+    def stopCheckingIncomingHTTP(self):
+        taskMgr.remove('pollHTTPTask')
+
