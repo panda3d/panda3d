@@ -186,7 +186,7 @@ class WebRequestDispatcher(object):
         self.uriToHandler.pop(uri,None)
         
 
-    # -- Poll task wrappers
+    # -- Poll task wrappers --
 
     def pollHTTPTask(self,task):
         self.poll()
