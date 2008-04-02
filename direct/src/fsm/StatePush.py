@@ -244,7 +244,7 @@ if __debug__:
     del handler
 
 class EventPulse(Pulse, DirectObject):
-    # sends a pulse whenever a specific messenger message is sent
+    # sends a True-False "pulse" whenever a specific messenger message is sent
     def __init__(self, event):
         Pulse.__init__(self)
         self.accept(event, self.sendPulse)
@@ -272,7 +272,7 @@ if __debug__:
     del handler
     
 class EventArgument(PushesStateChanges, DirectObject):
-    # pushes a particular argument of a particular messenger event
+    # tracks a particular argument to a particular messenger event
     def __init__(self, event, index=0):
         PushesStateChanges.__init__(self, None)
         self._index = index
@@ -294,6 +294,8 @@ if __debug__:
     fc = FunctionCall(ea, handler)
     messenger.send('testEvent', ['a', 'b'])
     assert l == ['b',]
+    messenger.send('testEvent', [1, 2, 3, ])
+    assert l == ['b', 2, ]
     fc.destroy()
     ea.destroy()
     del fc
