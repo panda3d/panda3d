@@ -25,6 +25,7 @@ class PushesStateChanges:
 
     def _addSubscription(self, subscriber):
         self._subscribers.add(subscriber)
+        subscriber._recvStatePush(self)
 
     def _removeSubscription(self, subscriber):
         self._subscribers.remove(subscriber)
@@ -48,26 +49,33 @@ if __debug__:
 
 class ReceivesStateChanges:
     # base class for objects that subscribe to state changes from PushesStateChanges objects
-    def __init__(self, other):
-        self._other = None
-        self._subscribeTo(other)
+    def __init__(self, source):
+        self._source = None
+        self._initSource = source
+
+    def _finishInit(self):
+        # initialization is split across two functions to allow objects that derive from this
+        # class to set everything up so that they can respond appropriately to the initial
+        # state push from the state source
+        self._subscribeTo(self._initSource)
+        del self._initSource
 
     def destroy(self):
         self._unsubscribe()
-        del self._other
+        del self._source
 
-    def _subscribeTo(self, other):
+    def _subscribeTo(self, source):
         self._unsubscribe()
-        self._other = other
-        if self._other:
-            self._other._addSubscription(self)
+        self._source = source
+        if self._source:
+            self._source._addSubscription(self)
 
     def _unsubscribe(self):
-        if self._other:
-            self._other._removeSubscription(self)
-            self._other = None
+        if self._source:
+            self._source._removeSubscription(self)
+            self._source = None
 
-    def _recvStatePush(self, other):
+    def _recvStatePush(self, source):
         pass
 
 if __debug__:
@@ -94,17 +102,18 @@ if __debug__:
 
 class StateChangeNode(PushesStateChanges, ReceivesStateChanges):
     # base class that can be used to create a state-change notification chain
-    def __init__(self, other):
-        ReceivesStateChanges.__init__(self, other)
-        PushesStateChanges.__init__(self, other.getState())
+    def __init__(self, source):
+        ReceivesStateChanges.__init__(self, source)
+        PushesStateChanges.__init__(self, source.getState())
+        ReceivesStateChanges._finishInit(self)
 
     def destroy(self):
         PushesStateChanges.destroy(self)
         ReceivesStateChanges.destroy(self)
 
-    def _recvStatePush(self, other):
+    def _recvStatePush(self, source):
         # got a state push, apply new state to self
-        self._handlePotentialStateChange(other._value)
+        self._handlePotentialStateChange(source._value)
 
 if __debug__:
     sv = StateVar(0)
@@ -134,9 +143,9 @@ if __debug__:
 
 class FunctionCall(StateChangeNode):
     # calls func with new state whenever state changes
-    def __init__(self, other, func):
+    def __init__(self, source, func):
         self._func = func
-        StateChangeNode.__init__(self, other)
+        StateChangeNode.__init__(self, source)
 
     def destroy(self):
         StateChangeNode.destroy(self)
@@ -167,10 +176,10 @@ if __debug__:
 
 class EnterExit(StateChangeNode):
     # call enterFunc when our state becomes true, exitFunc when it becomes false
-    def __init__(self, other, enterFunc, exitFunc):
+    def __init__(self, source, enterFunc, exitFunc):
         self._enterFunc = enterFunc
         self._exitFunc = exitFunc
-        StateChangeNode.__init__(self, other)
+        StateChangeNode.__init__(self, source)
 
     def destroy(self):
         StateChangeNode.destroy(self)
