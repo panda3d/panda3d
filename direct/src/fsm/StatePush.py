@@ -146,6 +146,7 @@ class FunctionCall(StateChangeNode):
     def __init__(self, source, func):
         self._func = func
         StateChangeNode.__init__(self, source)
+        self._handleStateChange()
 
     def destroy(self):
         StateChangeNode.destroy(self)
@@ -162,11 +163,11 @@ if __debug__:
     assert l == []
     sv = StateVar(0)
     fc = FunctionCall(sv, handler)
-    assert l == []
+    assert l == [0,]
     sv.set(1)
-    assert l == [1,]
+    assert l == [0,1,]
     sv.set(2)
-    assert l == [1,2,]
+    assert l == [0,1,2,]
     fc.destroy()
     sv.destroy()
     del fc
@@ -240,11 +241,11 @@ if __debug__:
         l.append(value)
     p = Pulse()
     fc = FunctionCall(p, handler)
-    assert l == []
+    assert l == [False, ]
     p.sendPulse()
-    assert l == [True, False, ]
+    assert l == [False, True, False, ]
     p.sendPulse()
-    assert l == [True, False, True, False, ]
+    assert l == [False, True, False, True, False, ]
     fc.destroy()
     p.destroy()
     del fc
@@ -268,11 +269,11 @@ if __debug__:
         l.append(value)
     ep = EventPulse('testEvent')
     fc = FunctionCall(ep, handler)
-    assert l == []
+    assert l == [False, ]
     messenger.send('testEvent')
-    assert l == [True, False, ]
+    assert l == [False, True, False, ]
     messenger.send('testEvent')
-    assert l == [True, False, True, False, ]
+    assert l == [False, True, False, True, False, ]
     fc.destroy()
     ep.destroy()
     del fc
@@ -302,12 +303,37 @@ if __debug__:
     ea = EventArgument('testEvent', index=1)
     fc = FunctionCall(ea, handler)
     messenger.send('testEvent', ['a', 'b'])
-    assert l == ['b',]
+    assert l == [None, 'b', ]
     messenger.send('testEvent', [1, 2, 3, ])
-    assert l == ['b', 2, ]
+    assert l == [None, 'b', 2, ]
     fc.destroy()
     ea.destroy()
     del fc
     del ea
     del l
 
+class AttrSetter(StateChangeNode):
+    def __init__(self, source, object, attrName):
+        self._object = object
+        self._attrName = attrName
+        StateChangeNode.__init__(self, source)
+        self._handleStateChange()
+
+    def _handleStateChange(self):
+        setattr(self._object, self._attrName, self._value)
+        StateChangeNode._handleStateChange(self)
+
+if __debug__:
+    o = ScratchPad()
+    sv = StateVar(0)
+    as = AttrSetter(sv, o, 'testAttr')
+    assert hasattr(o, 'testAttr')
+    assert o.testAttr == 0
+    sv.set('red')
+    assert o.testAttr == 'red'
+    as.destroy()
+    sv.destroy()
+    o.destroy()
+    del as
+    del sv
+    del o
