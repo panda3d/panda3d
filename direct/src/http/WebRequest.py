@@ -3,6 +3,7 @@ from pandac.PandaModules import HttpRequest
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.task import Task
+from LandingPage import LandingPage
 
 notify = directNotify.newCategory('WebRequestDispatcher')
 
@@ -90,8 +91,8 @@ class WebRequestDispatcher(object):
         obj.__dict__ = self._shared_state
         return obj
 
-    def __init__(self):
-        pass
+    def __init__(self, wantLandingPage = True, landingPageTitle = None):
+        self.enableLandingPage(wantLandingPage, landingPageTitle)
 
     def listenOnPort(self,listenPort):
         """
@@ -199,3 +200,28 @@ class WebRequestDispatcher(object):
     def stopCheckingIncomingHTTP(self):
         taskMgr.remove('pollHTTPTask')
 
+
+    # -- Landing page convenience functions --
+
+    def enableLandingPage(self, enable, title):
+        if enable:
+            if not self.__dict__.has_key("landingPage"):
+                self.landingPage = LandingPage()
+                if title is None:
+                    title = self.__class__.__name__
+                self.landingPage.title = title
+                self.registerGETHandler("/", self.landingPage.main, returnsResponse = True)
+                #self.registerGETHandler("/main", self.landingPage.main, returnsResponse = True)
+                self.registerGETHandler("/list", self._listHandlers, returnsResponse = True)
+                self.landingPage.addTab("Main", "/")
+                self.landingPage.addTab("Services", "/list")
+        else:
+            self.landingPage = None
+            self.unregisterGETHandler("/")
+            #self.unregisterGETHandler("/main")
+            self.unregisterGETHandler("/list")
+        
+
+    def _listHandlers(self):
+        return self.landingPage.listHandlerPage(self.uriToHandler)
+        
