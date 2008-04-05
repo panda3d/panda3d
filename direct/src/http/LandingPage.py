@@ -5,12 +5,13 @@ class LandingPage:
         self.headerTemplate = LandingPageHTML.header
         self.footerTemplate = LandingPageHTML.footer
         
-        #self.title = LandingPageHTML.title
-        #self.contactInfo = LandingPageHTML.contactInfo
-
         self.menu = {}
 
         self.uriToTitle = {}
+
+        self.quickStats = [[],{}]
+
+        self.addQuickStat("Pages Served", 0, 0)
 
     def addTab(self, title, uri):
         self.menu[title] = uri
@@ -54,10 +55,16 @@ class LandingPage:
         LandingPageHTML.mainPageBody = body
 
     def setTitle(self, title):
-        LandingPageHTML.title = title
+        if LandingPageHTML.title == LandingPageHTML.defaultTitle:
+            LandingPageHTML.title = title
+        else:
+            LandingPageHTML.title = LandingPageHTML.title + " + " + title
 
     def setDescription(self,desc):
-        LandingPageHTML.description = desc
+        if LandingPageHTML.description == LandingPageHTML.defaultDesc:
+            LandingPageHTML.description = desc
+        else:
+            LandingPageHTML.description = LandingPageHTML.description + "</P>\n<P>" + desc
 
     def setContactInfo(self,info):
         LandingPageHTML.contactInfo = info
@@ -65,12 +72,31 @@ class LandingPage:
     def getDescription(self):
         return LandingPageHTML.description
 
+    def getQuickStatsTable(self):
+        return LandingPageHTML.getQuickStatsTable(self.quickStats)
+
     def getMainPage(self):
-        return LandingPageHTML.mainPageBody
-
-    def getQuickStatsTable(self, quickStats):
-        return LandingPageHTML.getQuickStatsTable(quickStats)
-
+        return LandingPageHTML.mainPageBody % {"description" : self.getDescription(),
+                                               "quickstats" : self.getQuickStatsTable()}
+    
     def skin(self, body, uri):
         title = self.uriToTitle.get(uri,"Services")
         return self.getHeader(title) + body + self.getFooter()
+
+    def addQuickStat(self,item,value,position):
+        if item in self.quickStats[1]:
+            self.notify.warning("Ignoring duplicate addition of quickstat %s." % item)
+            return
+                                
+        self.quickStats[0].insert(position,item)
+        self.quickStats[1][item] = value
+        
+    def updateQuickStat(self,item,value):
+        assert item in self.quickStats[1]
+
+        self.quickStats[1][item] = value
+
+    def incrementQuickStat(self,item):
+        assert item in self.quickStats[1]
+
+        self.quickStats[1][item] += 1

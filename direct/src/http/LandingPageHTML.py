@@ -1,7 +1,11 @@
 # -- Text content for the landing page.  You should change these for yours! --
 
 title = "Landing Page"
+defaultTitle = title
+
 description = "To set this description, call WebRequestDispatcher.setDescription!<BR><BR>You can also add stats to the table below by calling WebRequestDispatcher.addQuickStat(Name,Value,PositionInTable)."
+defaultDesc = description
+
 contactInfo = "M. Ian Graham - ian.graham@dig.com - 818-623-3219"
 
 

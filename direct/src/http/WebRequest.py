@@ -86,9 +86,6 @@ class WebRequestDispatcher(object):
     
     notify = notify
 
-    quickStats = [["Pages Served"],
-                  {"Pages Served" : 0}]
-
     def __new__(self, *a, **kw):
         obj = object.__new__(self, *a, **kw)
         obj.__dict__ = self._shared_state
@@ -121,7 +118,7 @@ class WebRequestDispatcher(object):
         """
         assert req.getRequestType() == "GET"
 
-        self.incrementQuickStat("Pages Served")
+        self.landingPage.incrementQuickStat("Pages Served")
         
         uri = req.getURI()
         args = req.dictFromGET()
@@ -216,13 +213,10 @@ class WebRequestDispatcher(object):
         if enable:
             if not self.__dict__.has_key("landingPage"):
                 self.landingPage = LandingPage()
-                self.setTitle(self.__class__.__name__)
                 self.registerGETHandler("/", self._main, returnsResponse = True, autoSkin = True)
                 self.registerGETHandler("/services", self._services, returnsResponse = True, autoSkin = True)
                 self.landingPage.addTab("Main", "/")
                 self.landingPage.addTab("Services", "/services")
-            else:
-                self.setTitle(self.__class__.__name__)
         else:
             self.landingPage = None
             self.unregisterGETHandler("/")
@@ -230,35 +224,7 @@ class WebRequestDispatcher(object):
 
         
     def _main(self):
-        return self.landingPage.getMainPage() % {"description" : self.landingPage.getDescription(),
-                                                 "quickstats" : self.landingPage.getQuickStatsTable(self.quickStats)}
+        return self.landingPage.getMainPage()
 
     def _services(self):
         return self.landingPage.getServicesPage(self.uriToHandler)
-
-    def setTitle(self,title):
-        self.landingPage.setTitle(title)
-
-    def setDescription(self,desc):
-        self.landingPage.setDescription(desc)
-
-    def setContactInfo(self,info):
-        self.landingPage.setContactInfo(info)
-
-    def addQuickStat(self,item,value,position):
-        if item in self.quickStats[1]:
-            self.notify.warning("Ignoring duplicate addition of quickstat %s." % item)
-            return
-                                
-        self.quickStats[0].insert(position,item)
-        self.quickStats[1][item] = value
-        
-    def updateQuickStat(self,item,value):
-        assert item in self.quickStats[1]
-
-        self.quickStats[1][item] = value
-
-    def incrementQuickStat(self,item):
-        assert item in self.quickStats[1]
-
-        self.quickStats[1][item] += 1
