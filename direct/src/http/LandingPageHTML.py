@@ -1,6 +1,7 @@
 # -- Text content for the landing page.  You should change these for yours! --
 
 title = "Landing Page"
+description = "To set this description, call WebRequestDispatcher.setDescription!<BR><BR>You can also add stats to the table below by calling WebRequestDispatcher.addQuickStat(Name,Value,PositionInTable)."
 contactInfo = "M. Ian Graham - ian.graham@dig.com - 818-623-3219"
 
 
@@ -269,8 +270,9 @@ header = '''
 <center>
 '''
 
-mainMenu = '''
-<p>Whee!</p>
+mainPageBody = '''
+<P>%(description)s</P>
+<P>%(quickstats)s</P>
 '''
 
 footer = '''
@@ -289,3 +291,74 @@ def getRowClassString(rowNum):
         return ""
     else:
         return " class=\"odd\""
+
+def getURITable(title,uriList,uriToHandler):
+    output = "<P><table>\n<caption>%s</caption><thead><tr><th scope=col>URI</th><th scope=col>Handler</th></tr></thead>\n\n" % title
+    output += "<tbody>\n"
+
+    rowNum = 0
+    for uri in uriList:
+        handlerFunc = str(uriToHandler[uri][0]).split(" ")[2]
+
+        output += "<tr%s><td><a href=%s>%s</a></td><td>%s</td></tr>\n" % \
+                  (getRowClassString(rowNum),
+                   uri,
+                   uri,
+                   handlerFunc)
+        rowNum += 1
+            
+    output += "</tbody></table></P>\n"
+
+    return output
+
+def getTabs(menu,activeTab):
+    tabList = menu.keys()
+    if "Main" in tabList:
+        tabList.remove("Main")
+    if "Services" in tabList:
+        tabList.remove("Services")
+        
+    tabList.sort()
+    
+    if "Main" in menu.keys():
+        tabList.insert(0, "Main")
+    if "Services" in menu.keys():
+        tabList.insert(1, "Services")
+
+    s = ""
+    tabNum = 0
+
+    for tab in tabList:
+        if tabNum == 0:
+            if tab == activeTab:
+                s += "<li id=\"active\" class=\"first\"><a href=\"%s\" id=\"current\">%s</a></li>\n" % \
+                     (menu[tab], tab)
+            else:
+                s += "<li class=\"first\"><a href=\"%s\">%s</a></li>\n" % \
+                     (menu[tab], tab)
+        else:
+            if tab == activeTab:
+                s += "<li id=\"active\"><a href=\"%s\" id=\"current\">%s</a></li>\n" % \
+                     (menu[tab], tab)
+            else:
+                s += "<li><a href=\"%s\">%s</a></li>\n" % \
+                     (menu[tab], tab)
+        tabNum += 1
+
+    return s    
+
+def getQuickStatsTable(quickStats):
+    output = "<P><table>\n<caption>Quick Stats</caption><thead><tr><th scope=col>Item</th><th scope=col>Value</th></tr></thead>\n\n"
+    output += "<tbody>\n"
+
+    rowNum = 0
+    for item in quickStats[0]:
+        output += "<tr%s><td>%s</td><td>%s</td></tr>\n" % \
+                  (getRowClassString(rowNum),
+                   item,
+                   quickStats[1][item])
+        rowNum += 1
+            
+    output += "</tbody></table></P>\n"
+
+    return output        

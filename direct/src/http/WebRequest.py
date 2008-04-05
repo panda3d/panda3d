@@ -86,13 +86,16 @@ class WebRequestDispatcher(object):
     
     notify = notify
 
+    quickStats = [["Pages Served"],
+                  {"Pages Served" : 0}]
+
     def __new__(self, *a, **kw):
         obj = object.__new__(self, *a, **kw)
         obj.__dict__ = self._shared_state
         return obj
 
-    def __init__(self, wantLandingPage = True, landingPageTitle = None):
-        self.enableLandingPage(wantLandingPage, landingPageTitle)
+    def __init__(self, wantLandingPage = True):
+        self.enableLandingPage(wantLandingPage)
 
     def listenOnPort(self,listenPort):
         """
@@ -117,17 +120,23 @@ class WebRequestDispatcher(object):
         Expects to receive a WebRequest object.
         """
         assert req.getRequestType() == "GET"
+
+        self.incrementQuickStat("Pages Served")
+        
         uri = req.getURI()
         args = req.dictFromGET()
         
-        callable,returnsResponse = self.uriToHandler.get(uri, [self.invalidURI,False])
+        callable,returnsResponse,autoSkin = self.uriToHandler.get(uri, [self.invalidURI,False,False])
 
         if callable != self.invalidURI:
             self.notify.info("%s - %s - %s - 200" % (req.getSourceAddress(), uri, args))
         
         if returnsResponse:
             result = apply(callable,(),args)
-            req.respond(result)
+            if autoSkin:
+                req.respond(self.landingPage.skin(result,uri))
+            else:
+                req.respond(result)
         else:
             args["replyTo"] = req
             apply(callable,(),args)
@@ -151,7 +160,7 @@ class WebRequestDispatcher(object):
             request = HttpRequest.HttpManagerGetARequest()
 
 
-    def registerGETHandler(self,uri,handler,returnsResponse=False):
+    def registerGETHandler(self,uri,handler,returnsResponse=False, autoSkin=False):
         """
         Call this function to register a handler function to
         be called in response to a query to the given URI.
@@ -177,7 +186,7 @@ class WebRequestDispatcher(object):
 
         if self.uriToHandler.get(uri,None) is None:
             self.notify.info("Registered handler %s for URI %s." % (handler,uri))
-            self.uriToHandler[uri] = [handler,returnsResponse]
+            self.uriToHandler[uri] = [handler, returnsResponse, autoSkin]
         else:
             self.notify.warning("Attempting to register a duplicate handler for URI %s.  Ignoring." % uri)
 
@@ -203,25 +212,53 @@ class WebRequestDispatcher(object):
 
     # -- Landing page convenience functions --
 
-    def enableLandingPage(self, enable, title):
+    def enableLandingPage(self, enable):
         if enable:
             if not self.__dict__.has_key("landingPage"):
                 self.landingPage = LandingPage()
-                if title is None:
-                    title = self.__class__.__name__
-                self.landingPage.title = title
-                self.registerGETHandler("/", self.landingPage.main, returnsResponse = True)
-                #self.registerGETHandler("/main", self.landingPage.main, returnsResponse = True)
-                self.registerGETHandler("/list", self._listHandlers, returnsResponse = True)
+                self.setTitle(self.__class__.__name__)
+                self.registerGETHandler("/", self._main, returnsResponse = True, autoSkin = True)
+                self.registerGETHandler("/services", self._services, returnsResponse = True, autoSkin = True)
                 self.landingPage.addTab("Main", "/")
-                self.landingPage.addTab("Services", "/list")
+                self.landingPage.addTab("Services", "/services")
+            else:
+                self.setTitle(self.__class__.__name__)
         else:
             self.landingPage = None
             self.unregisterGETHandler("/")
-            #self.unregisterGETHandler("/main")
-            self.unregisterGETHandler("/list")
-        
+            self.unregisterGETHandler("/services")
 
-    def _listHandlers(self):
-        return self.landingPage.listHandlerPage(self.uriToHandler)
         
+    def _main(self):
+        return self.landingPage.getMainPage() % {"description" : self.landingPage.getDescription(),
+                                                 "quickstats" : self.landingPage.getQuickStatsTable(self.quickStats)}
+
+    def _services(self):
+        return self.landingPage.getServicesPage(self.uriToHandler)
+
+    def setTitle(self,title):
+        self.landingPage.setTitle(title)
+
+    def setDescription(self,desc):
+        self.landingPage.setDescription(desc)
+
+    def setContactInfo(self,info):
+        self.landingPage.setContactInfo(info)
+
+    def addQuickStat(self,item,value,position):
+        if item in self.quickStats[1]:
+            self.notify.warning("Ignoring duplicate addition of quickstat %s." % item)
+            return
+                                
+        self.quickStats[0].insert(position,item)
+        self.quickStats[1][item] = value
+        
+    def updateQuickStat(self,item,value):
+        assert item in self.quickStats[1]
+
+        self.quickStats[1][item] = value
+
+    def incrementQuickStat(self,item):
+        assert item in self.quickStats[1]
+
+        self.quickStats[1][item] += 1
