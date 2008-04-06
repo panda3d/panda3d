@@ -35,7 +35,7 @@
 // there's no real reason this can't be set arbitrarily large,
 // although there's not much point in making it larger than the system
 // MTU, which also limits the maximum size of a UDP packet.
-static const int maximum_udp_datagram = 1024;
+static const int maximum_udp_datagram = 1500;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NetDatagram
