@@ -1,49 +1,16 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
-#define maya2egg maya2egg
-#define egg2maya egg2maya
-#define mayacopy mayacopy
-
-#if $[UNIX_PLATFORM]
-  // On Unix, we need maya2egg to be a script that sets the
-  // LD_LIBRARY_PATH variable and then invokes the application.  On
-  // Windows, this path seems to get built into the executable so
-  // there's no need.  (Don't know why they didn't decide to compile
-  // it in also on Unix.)
-
-#set maya2egg maya2egg_bin
-#set egg2maya egg2maya_bin
-#set mayacopy mayacopy_bin
-
-#begin sed_bin_target
+#begin bin_target
   #define TARGET maya2egg
-
-  #define SOURCE mayapath_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s+zzz+$[MAYA_LICENSE_FILE]+g;
-
-#end sed_bin_target
-
-#begin sed_bin_target
-  #define TARGET egg2maya
-
-  #define SOURCE mayapath_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s+zzz+$[MAYA_LICENSE_FILE]+g;
-
-#end sed_bin_target
-
-#begin sed_bin_target
-  #define TARGET mayacopy
-
-  #define SOURCE mayapath_script
-  #define COMMAND s:xxx:$[MAYA_LOCATION]:g;s:yyy:$[TARGET]:g;s+zzz+$[MAYA_LICENSE_FILE]+g;
-
-#end sed_bin_target
-
-#endif   // $[UNIX_PLATFORM]
+  #define OTHER_LIBS \
+    dtoolbase:c dtoolutil:c dtool:m
+  #define SOURCES \
+    mayapath.cxx
+#end bin_target
 
 #begin bin_target
   #define USE_PACKAGES maya
-  #define TARGET $[maya2egg]
+  #define TARGET maya2egg_bin
   #define LOCAL_LIBS \
     mayabase mayaegg eggbase progbase
   #define OTHER_LIBS \
@@ -63,8 +30,16 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET egg2maya
+  #define OTHER_LIBS \
+    dtoolbase:c dtoolutil:c dtool:m
+  #define SOURCES \
+    mayapath.cxx
+#end bin_target
+
+#begin bin_target
   #define USE_PACKAGES maya
-  #define TARGET $[egg2maya]
+  #define TARGET egg2maya_bin
   #define LOCAL_LIBS \
     mayabase mayaegg eggbase progbase
   #define OTHER_LIBS \
@@ -85,8 +60,16 @@
 
 
 #begin bin_target
+  #define TARGET mayacopy
+  #define OTHER_LIBS \
+    dtoolbase:c dtoolutil:c dtool:m
+  #define SOURCES \
+    mayapath.cxx
+#end bin_target
+
+#begin bin_target
   #define USE_PACKAGES maya
-  #define TARGET $[mayacopy]
+  #define TARGET mayacopy_bin
   #define LOCAL_LIBS cvscopy mayabase progbase
 
   #define OTHER_LIBS \
