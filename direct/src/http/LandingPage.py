@@ -45,6 +45,10 @@ class LandingPage:
             uriList.remove("/services")
             autoList.append("/services")
 
+        if "/default.css" in uriList:
+            uriList.remove("/default.css")
+            autoList.append("/default.css")
+
         output += LandingPageHTML.getURITable(title="Application",uriList=uriList,uriToHandler=uriToHandler)
 
         output += LandingPageHTML.getURITable(title="Admin",uriList=autoList,uriToHandler=uriToHandler)
@@ -78,6 +82,9 @@ class LandingPage:
     def getMainPage(self):
         return LandingPageHTML.mainPageBody % {"description" : self.getDescription(),
                                                "quickstats" : self.getQuickStatsTable()}
+
+    def getStyleSheet(self):
+        return LandingPageHTML.stylesheet
     
     def skin(self, body, uri):
         title = self.uriToTitle.get(uri,"Services")

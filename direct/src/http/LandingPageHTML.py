@@ -9,19 +9,14 @@ defaultDesc = description
 contactInfo = "M. Ian Graham - ian.graham@dig.com - 818-623-3219"
 
 
-
-
 # -- Begin fancy layout stuff, change at your own risk --
 
-header = '''
-<html><head>
-<title>%(titlestring)s</title>
-<style>
+stylesheet = '''
   body
   {
   margin: 0;
   padding: 0;
-  font-size: 90%%;
+  font-size: 90%;
   font-family: Verdana, sans-serif;
   background-color: #fff;
   color: #333;
@@ -36,7 +31,7 @@ header = '''
 
   h2
   {
-  font-size: 140%%;
+  font-size: 140%;
   color: #666;
   background-color: #fff;
   width: 22em;
@@ -236,7 +231,7 @@ header = '''
   display: block;
   padding: 0px;
   margin: 0px;
-  width: 100%%;
+  width: 100%;
   text-decoration: none;
   color: #333;
   }
@@ -258,30 +253,46 @@ header = '''
   font-weight: bold;
   border-bottom: 1px solid #cccccc;
   border-top: 1px solid #DFDFDF;
-  }  
-</style>
+  }
+\r\n'''
+
+header = '''
+<html>
+<head>
+<title>%(titlestring)s</title>
+<link rel="stylesheet" type="text/css" href="/default.css">
 </head>
+
 <body>
+
+<!-- HEADER -->
+
 <div id="header">
 <h2>%(titlestring)s</h2>
 <div id="navcontainer">
 <ul id="navlist">
-%(menustring)s
-</ul>
+%(menustring)s</ul>
 </div>
 </div>
+
+<!-- CONTENT -->
+
 <div id="contents">
 <center>
 '''
 
 mainPageBody = '''
 <P>%(description)s</P>
+
 <P>%(quickstats)s</P>
 '''
 
 footer = '''
 </center>
 </div>
+
+<!-- FOOTER -->
+
 <div id="footer">
 Contact: %(contact)s
 </div>
@@ -297,7 +308,7 @@ def getRowClassString(rowNum):
         return " class=\"odd\""
 
 def getURITable(title,uriList,uriToHandler):
-    output = "<P><table>\n<caption>%s</caption><thead><tr><th scope=col>URI</th><th scope=col>Handler</th></tr></thead>\n\n" % title
+    output = "\n<P>\n<table>\n<caption>%s</caption><thead><tr><th scope=col>URI</th><th scope=col>Handler</th></tr></thead>\n" % title
     output += "<tbody>\n"
 
     rowNum = 0
@@ -311,7 +322,7 @@ def getURITable(title,uriList,uriToHandler):
                    handlerFunc)
         rowNum += 1
             
-    output += "</tbody></table></P>\n"
+    output += "</tbody>\n</table>\n</P>\n"
 
     return output
 
@@ -352,7 +363,7 @@ def getTabs(menu,activeTab):
     return s    
 
 def getQuickStatsTable(quickStats):
-    output = "<P><table>\n<caption>Quick Stats</caption><thead><tr><th scope=col>Item</th><th scope=col>Value</th></tr></thead>\n\n"
+    output = "\n<table>\n<caption>Quick Stats</caption>\n<thead><tr><th scope=col>Item</th><th scope=col>Value</th></tr></thead>\n"
     output += "<tbody>\n"
 
     rowNum = 0
@@ -363,6 +374,6 @@ def getQuickStatsTable(quickStats):
                    quickStats[1][item])
         rowNum += 1
             
-    output += "</tbody></table></P>\n"
+    output += "</tbody>\n</table>\n"
 
     return output        

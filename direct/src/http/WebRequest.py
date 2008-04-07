@@ -43,6 +43,15 @@ class WebRequest(object):
         msg = "HTTP/1.0 200 OK\r\nContent-Type: text/xml\r\n\r\n%s" % body
         self.connection.SendThisResponse(msg)
 
+    def respondCustom(self,contentType,body):
+        msg = "HTTP/1.0 200 OK\r\nContent-Type: %s\n" % contentType
+
+        if contentType in ["text/css",]:
+            msg += "Cache-Control: max-age=313977290\nExpires: Tue, 02 May 2017 04:08:44 GMT\n"
+
+        msg += "\r\n\r\n%s" % (body)
+        self.connection.SendThisResponse(msg)
+
     def timeout(self):
         resp = "<html><body>Error 504: Request timed out</body></html>\r\n"
         self.respondHTTP("504 Gateway Timeout",resp)
@@ -215,6 +224,7 @@ class WebRequestDispatcher(object):
                 self.landingPage = LandingPage()
                 self.registerGETHandler("/", self._main, returnsResponse = True, autoSkin = True)
                 self.registerGETHandler("/services", self._services, returnsResponse = True, autoSkin = True)
+                self.registerGETHandler("/default.css", self._stylesheet)
                 self.landingPage.addTab("Main", "/")
                 self.landingPage.addTab("Services", "/services")
         else:
@@ -228,3 +238,11 @@ class WebRequestDispatcher(object):
 
     def _services(self):
         return self.landingPage.getServicesPage(self.uriToHandler)
+
+    def _stylesheet(self,**kw):
+        replyTo = kw.get("replyTo",None)
+        assert replyTo is not None
+        body = self.landingPage.getStyleSheet()
+        replyTo.respondCustom("text/css",body)
+
+        
