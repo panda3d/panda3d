@@ -48,10 +48,19 @@ PUBLISHED:
   INLINE ConfigVariableSearchPath(const string &name, 
                                   const string &description = string(), 
                                   int flags = 0);
+  INLINE ConfigVariableSearchPath(const string &name, 
+                                  const DSearchPath &default_value,
+                                  const string &description, 
+                                  int flags = 0);
+  INLINE ConfigVariableSearchPath(const string &name, 
+                                  const string &default_value,
+                                  const string &description, 
+                                  int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
   INLINE operator const DSearchPath & () const;
   INLINE const DSearchPath &get_value() const;
+  INLINE const DSearchPath &get_default_value() const;
 
   INLINE bool clear_local_value();
 
@@ -77,6 +86,7 @@ PUBLISHED:
 private:
   void reload_search_path();
 
+  DSearchPath _default_value;
   DSearchPath _prefix, _postfix;
 
   AtomicAdjust::Integer _local_modified;

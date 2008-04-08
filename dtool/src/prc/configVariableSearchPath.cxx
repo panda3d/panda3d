@@ -46,10 +46,11 @@ reload_search_path() {
       _cache.append_directory(Filename::from_os_specific(expanded));
     }
   }
-  _cache.append_path(_postfix);
 
-  if (_cache.is_empty()) {
-    // An empty search path implicitly has "." on it.
-    _cache.append_directory(".");
+  if (num_unique_references == 0) {
+    // An empty search path implicitly has the default value.
+    _cache = _default_value;
   }
+
+  _cache.append_path(_postfix);
 }

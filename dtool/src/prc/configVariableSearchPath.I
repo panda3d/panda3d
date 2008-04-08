@@ -30,6 +30,59 @@ ConfigVariableSearchPath(const string &name,
 #else
   ConfigVariableBase(name, VT_search_path, string(), flags),
 #endif
+  _default_value(Filename(".")),
+  _local_modified(initial_invalid_cache())
+{
+  // A SearchPath variable implicitly defines a default value of the empty
+  // string.  This is just to prevent the core variable from
+  // complaining should anyone ask for its solitary value.
+  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+    _core->set_default_value("");
+  }
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableSearchPath::
+ConfigVariableSearchPath(const string &name, 
+                         const DSearchPath &default_value,
+                         const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariableBase(name, VT_search_path, description, flags),
+#else
+  ConfigVariableBase(name, VT_search_path, string(), flags),
+#endif
+  _default_value(default_value),
+  _local_modified(initial_invalid_cache())
+{
+  // A SearchPath variable implicitly defines a default value of the empty
+  // string.  This is just to prevent the core variable from
+  // complaining should anyone ask for its solitary value.
+  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+    _core->set_default_value("");
+  }
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableSearchPath::
+ConfigVariableSearchPath(const string &name, 
+                         const string &default_value,
+                         const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariableBase(name, VT_search_path, description, flags),
+#else
+  ConfigVariableBase(name, VT_search_path, string(), flags),
+#endif
+  _default_value(Filename(default_value)),
   _local_modified(initial_invalid_cache())
 {
   // A SearchPath variable implicitly defines a default value of the empty
@@ -72,6 +125,16 @@ get_value() const {
     ((ConfigVariableSearchPath *)this)->reload_search_path();
   }
   return _cache;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableSearchPath::get_default_value
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const DSearchPath &ConfigVariableSearchPath::
+get_default_value() const {
+  return _default_value;
 }
 
 ////////////////////////////////////////////////////////////////////
