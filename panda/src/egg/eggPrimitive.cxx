@@ -1172,6 +1172,42 @@ do_apply_flat_attribute(int vertex_index, EggAttributes *attrib) {
 void EggPrimitive::
 set_connected_shading(EggPrimitive::Shading shading, 
                       const EggAttributes *neighbor) {
+  ConnectedShadingNodes connected_nodes;
+
+  r_set_connected_shading(0, shading, neighbor, connected_nodes);
+  
+  // Pick up any additional nodes we couldn't visit because of the
+  // stack depth restrictions.
+  while (!connected_nodes.empty()) {
+    ConnectedShadingNodes next_nodes;
+    next_nodes.swap(connected_nodes);
+
+    ConnectedShadingNodes::iterator ni;
+    for (ni = next_nodes.begin(); ni != next_nodes.end(); ++ni) {
+      r_set_connected_shading(0, (*ni)._shading, (*ni)._neighbor, connected_nodes);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::r_set_connected_shading
+//       Access: Private
+//  Description: Implements set_connected_shading, with some
+//               restrictions to prevent stack overflow.
+////////////////////////////////////////////////////////////////////
+void EggPrimitive::
+r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading, 
+                        const EggAttributes *neighbor, 
+                        ConnectedShadingNodes &next_nodes) {
+  if (stack_depth > 10000) {
+    // Too deep.  Limit recursion.
+    ConnectedShadingNode next;
+    next._shading = shading;
+    next._neighbor = neighbor;
+    next_nodes.push_back(next);
+    return;
+  }
+
   bool propagate = false;
 
   if (_connected_shading == S_unknown) {
@@ -1218,7 +1254,8 @@ set_connected_shading(EggPrimitive::Shading shading,
       for (pi = vertex->pref_begin();
            pi != vertex->pref_end();
            ++pi) {
-        (*pi)->set_connected_shading(_connected_shading, this);
+        (*pi)->r_set_connected_shading(stack_depth + 1, _connected_shading, this,
+                                       next_nodes);
       }
     }
   }
