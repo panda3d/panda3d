@@ -78,15 +78,13 @@ generate() {
 						    GeomEnums::NT_float32, GeomEnums::C_point,
 						    InternalName::get_normal(), 3,
 						    GeomEnums::NT_float32, GeomEnums::C_vector,
-						    InternalName::get_color(), 1,
-						    GeomEnums::NT_packed_dabc, GeomEnums::C_color,
 						    InternalName::get_texcoord(), 3,
 						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
       } else {
-	format = GeomVertexFormat::get_v3n3cpt2();
+	format = GeomVertexFormat::get_v3n3t2();
       }
     } else {
-      format = GeomVertexFormat::get_v3n3cp();
+      format = GeomVertexFormat::get_v3n3();
     }
   } else {
     if (_has_uvs) {
@@ -94,32 +92,24 @@ generate() {
 	format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
 						   (InternalName::get_vertex(), 3,
 						    GeomEnums::NT_float32, GeomEnums::C_point,
-						    InternalName::get_color(), 1,
-						    GeomEnums::NT_packed_dabc, GeomEnums::C_color,
 						    InternalName::get_texcoord(), 3,
 						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
       } else {
-	format = GeomVertexFormat::get_v3cpt2();
+	format = GeomVertexFormat::get_v3t2();
       }
     } else {
-      format = GeomVertexFormat::get_v3cp();
+      format = GeomVertexFormat::get_v3();
     }
   }
   
   PT(GeomVertexData) vdata = new GeomVertexData
     ("card", format, Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  GeomVertexWriter color(vdata, InternalName::get_color());
   
   vertex.add_data3f(_ul_pos);
   vertex.add_data3f(_ll_pos);
   vertex.add_data3f(_ur_pos);
   vertex.add_data3f(_lr_pos);
-  
-  color.add_data4f(_color);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
   
   if (_has_uvs) {
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
@@ -153,8 +143,13 @@ generate() {
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
+
+  CPT(RenderState) state = RenderState::make_empty();
+  if (_has_color) {
+    state = RenderState::make(ColorAttrib::make_flat(_color));
+  }
   
-  gnode->add_geom(geom);
+  gnode->add_geom(geom, state);
   
   return gnode.p();
 }
