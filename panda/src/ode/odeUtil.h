@@ -46,6 +46,9 @@ PUBLISHED:
 	                             const int joint_type);
 
   static dReal OC_infinity;  
+
+  // RAU we can't access OC_infinity as constants are not exposed in python
+  static dReal get_infinity() {return OC_infinity;};
 };
 
 #endif
