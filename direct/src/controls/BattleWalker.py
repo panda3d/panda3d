@@ -54,7 +54,7 @@ class BattleWalker(GravityWalker.GravityWalker):
 
         debugRunning = inputState.isSet("debugRunning")
 
-        if(debugRunning and __dev__):
+        if(debugRunning):
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25

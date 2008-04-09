@@ -666,13 +666,12 @@ class ShipPilot2(PhysicsWalker):
          
         # Enable debug turbo mode
         maxSpeed = self.ship.maxSpeed * straightSailBonus
-        if __debug__:
-            debugRunning = inputState.isSet("debugRunning")
-            if debugRunning or base.localAvatar.getTurbo():
-                self.__speed*=4.0
-                self.__slideSpeed*=4.0
-                self.__rotationSpeed*=1.25
-                maxSpeed = self.ship.maxSpeed * 4.0
+        debugRunning = inputState.isSet("debugRunning")
+        if debugRunning or base.localAvatar.getTurbo():
+            self.__speed*=4.0
+            self.__slideSpeed*=4.0
+            self.__rotationSpeed*=1.25
+            maxSpeed = self.ship.maxSpeed * 4.0
 
         #self.__speed*=4.0
         #self.__slideSpeed*=4.0
