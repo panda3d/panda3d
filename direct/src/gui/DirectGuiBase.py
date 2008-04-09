@@ -656,7 +656,7 @@ def setGuiGridSpacing(spacing):
 # production AI doesn't create any GUI.
 if config.GetBool('record-gui-creation-stack', __debug__):
     # this will help track down the code that created DirectGui objects
-    # call obj.getCreationStackTrace() to figure out what code created it
+    # call obj.printCreationStackTrace() to figure out what code created it
     DirectGuiBase = recordCreationStackStr(DirectGuiBase)
 
 class DirectGuiWidget(DirectGuiBase, NodePath):
