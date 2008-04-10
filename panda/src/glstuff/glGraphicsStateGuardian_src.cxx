@@ -253,6 +253,13 @@ CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
   // since we know this works properly in OpenGL, and we want the
   // performance benefit it gives us.
   _prepared_objects->_support_released_buffer_cache = true;
+
+#ifdef DO_PSTATS
+  if (CLP(finish)) {
+    GLCAT.warning()
+      << "The config variable gl-finish is set True.  This may have a substantial negative impact your render performance.\n";
+  }
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1686,6 +1693,7 @@ end_frame(Thread *current_thread) {
   // will be finished drawing before we return to the application.
   // It's not clear what effect this has on our total frame time.
   gl_flush();
+  maybe_gl_finish();
 
   report_my_gl_errors();
 }
@@ -2567,6 +2575,7 @@ end_draw_primitives() {
   }
 
   GraphicsStateGuardian::end_draw_primitives();
+  maybe_gl_finish();
   report_my_gl_errors();
 }
 
@@ -3032,6 +3041,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     gvbc->mark_loaded(reader);
   }
 
+  maybe_gl_finish();
   report_my_gl_errors();
   return true;
 }
@@ -3217,6 +3227,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     gibc->mark_loaded(reader);
   }
 
+  maybe_gl_finish();
   report_my_gl_errors();
   return true;
 }
@@ -6206,6 +6217,8 @@ set_state_and_transform(const RenderState *target,
   }
 
   _state_rs = _target_rs;
+  maybe_gl_finish();
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7078,6 +7091,8 @@ upload_texture(CLP(TextureContext) *gtc) {
        internal_format, external_format, component_type,
        false, 0, image_compression);
   }
+
+  maybe_gl_finish();
 
   if (success) {
     gtc->_already_applied = true;

@@ -38,6 +38,7 @@ extern ConfigVariableBool CLP(parallel_arrays);
 extern ConfigVariableInt CLP(max_errors);
 extern ConfigVariableEnum<GeomEnums::UsageHint> CLP(min_buffer_usage_hint);
 extern ConfigVariableBool CLP(debug_buffers);
+extern ConfigVariableBool CLP(finish);
 
 extern EXPCL_GL void CLP(init_classes)();
 

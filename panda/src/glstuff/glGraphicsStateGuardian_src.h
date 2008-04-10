@@ -245,6 +245,7 @@ protected:
   void do_issue_stencil();
 
   virtual void gl_flush() const;
+  INLINE void maybe_gl_finish() const;
   virtual GLenum gl_get_error() const;
 
   static bool report_errors_loop(int line, const char *source_file,

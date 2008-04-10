@@ -146,6 +146,21 @@ get_gl_version_release() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::maybe_gl_finish
+//       Access: Protected
+//  Description: Calls glFinish() if the config variable gl-finish is
+//               set True.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+maybe_gl_finish() const {
+#ifdef DO_PSTATS
+  if (CLP(finish)) {
+    GLP(Finish)();
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::enable_multisample_antialias
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for

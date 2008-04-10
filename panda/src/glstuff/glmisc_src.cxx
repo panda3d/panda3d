@@ -121,6 +121,14 @@ ConfigVariableBool CLP(debug_buffers)
             "glgsg, to enable debug messages about the creation and "
             "destruction of OpenGL vertex buffers."));
 
+ConfigVariableBool CLP(finish)
+  ("gl-finish", false,
+   PRC_DESC("Set this true to force a call to glFinish() after every major "
+            "graphics operation.  This is likely to slow down rendering "
+            "performance substantially, but it will make PStats graphs "
+            "more accurately reflect where the graphics bottlenecks are.  "
+            "This variable is enabled only if PStats is compiled in."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {
