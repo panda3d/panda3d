@@ -756,13 +756,13 @@ class Actor(DirectObject, NodePath):
         If no anim is given, find the current anim for the part.
         NOTE: Returns info only for an arbitrary LOD
         """
-        # use the first lod
-        lodName = self.__animControlDict.keys()[0]
-        controls = self.getAnimControls(animName, partName)
-        if len(controls) == 0:
-            return None
-
-        return controls[0].getPlayRate()
+        if self.__animControlDict:
+            # use the first lod
+            lodName = self.__animControlDict.keys()[0]
+            controls = self.getAnimControls(animName, partName)
+            if controls:
+                return controls[0].getPlayRate()
+        return None
 
     def setPlayRate(self, rate, animName, partName=None):
         """setPlayRate(self, float, string, string=None)
