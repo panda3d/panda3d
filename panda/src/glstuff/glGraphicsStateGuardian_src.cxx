@@ -1988,16 +1988,11 @@ update_standard_vertex_arrays(bool force) {
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
     // automatically.
-    const Geom::ActiveTextureStages &active_stages =
-      _effective_texture->get_on_ff_stages();
-    const Geom::NoTexCoordStages &no_texcoords =
-      _effective_tex_gen->get_no_texcoords();
-
-    int max_stage_index = (int)active_stages.size();
+    int max_stage_index = _effective_texture->get_num_on_ff_stages();
     int stage_index = 0;
     while (stage_index < max_stage_index) {
-      TextureStage *stage = active_stages[stage_index];
-      if (no_texcoords.find(stage) == no_texcoords.end()) {
+      TextureStage *stage = _effective_texture->get_on_ff_stage(stage_index);
+      if (!_effective_tex_gen->has_gen_texcoord_stage(stage)) {
         // This stage is not one of the stages that doesn't need
         // texcoords issued for it.
         const InternalName *name = stage->get_texcoord_name();
@@ -2089,17 +2084,12 @@ update_standard_vertex_arrays(bool force) {
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
     // automatically.
-    const Geom::ActiveTextureStages &active_stages =
-      _effective_texture->get_on_ff_stages();
-    const Geom::NoTexCoordStages &no_texcoords =
-      _effective_tex_gen->get_no_texcoords();
-    
-    int max_stage_index = (int)active_stages.size();
+    int max_stage_index = _effective_texture->get_num_on_ff_stages();
     int stage_index = 0;
     while (stage_index < max_stage_index) {
       _glClientActiveTexture(GL_TEXTURE0 + stage_index);
-      TextureStage *stage = active_stages[stage_index];
-      if (no_texcoords.find(stage) == no_texcoords.end()) {
+      TextureStage *stage = _effective_texture->get_on_ff_stage(stage_index);
+      if (!_effective_tex_gen->has_gen_texcoord_stage(stage)) {
         // This stage is not one of the stages that doesn't need
         // texcoords issued for it.
         const InternalName *name = stage->get_texcoord_name();

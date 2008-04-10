@@ -217,6 +217,20 @@ get_mode(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::has_gen_texcoord_stage
+//       Access: Published
+//  Description: Returns true if the indicated TextureStage will have
+//               texture coordinates generated for it automatically
+//               (and thus there is no need to upload the texture
+//               coordinates encoded in the vertices).
+////////////////////////////////////////////////////////////////////
+bool TexGenAttrib::
+has_gen_texcoord_stage(TextureStage *stage) const {
+  NoTexCoordStages::const_iterator mi = _no_texcoords.find(stage);
+  return (mi != _no_texcoords.end());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::get_source_name
 //       Access: Published
 //  Description: Returns the source name associated with the named

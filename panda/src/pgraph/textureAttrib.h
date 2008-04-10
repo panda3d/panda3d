@@ -25,16 +25,14 @@
 #include "texture.h"
 #include "textureStage.h"
 #include "updateSeq.h"
-#include "indirectLess.h"
-#include "geom.h"
 #include "ordered_vector.h"
 #include "vector_int.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureAttrib
-// Description : Indicates which texture should be applied as the
-//               primary texture.  Also see TextureAttrib2 for the
-//               secondary texture.
+// Description : Indicates the set of TextureStages and their
+//               associated Textures that should be applied to (or
+//               removed from) a node.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH TextureAttrib : public RenderAttrib {
 protected:
@@ -81,8 +79,6 @@ PUBLISHED:
   CPT(RenderAttrib) unify_texture_stages(TextureStage *stage) const;
 
 public:
-  INLINE const Geom::ActiveTextureStages &get_on_stages() const;
-  INLINE const Geom::ActiveTextureStages &get_on_ff_stages() const;
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;
 
   virtual void output(ostream &out) const;
@@ -102,10 +98,25 @@ private:
   void sort_on_stages();
 
 private:
-  typedef Geom::ActiveTextureStages OnStages;
+  class OnStageNode {
+  public:
+    INLINE OnStageNode(TextureStage *stage, unsigned int implicit_sort);
+    INLINE bool operator < (const OnStageNode &other) const;
+
+    PT(TextureStage) _stage;
+    unsigned int _implicit_sort;
+  };
+
+  class CompareTextureStagePriorities {
+  public:
+    bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+  };
+
+  typedef pvector<OnStageNode> OnStages;
   OnStages _on_stages;
   OnStages _on_ff_stages;
   vector_int _ff_tc_index;
+  unsigned int _next_implicit_sort;
   
   typedef ov_set<TextureStage *> OffStages;
   OffStages _off_stages;
@@ -118,8 +129,6 @@ private:
   Filtered _filtered;
 
   UpdateSeq _sort_seq;
-
-  int _num_on_textures;  //temporary count to complete_pointers from fill_in
 
   static CPT(RenderAttrib) _empty_attrib;
   static CPT(RenderAttrib) _all_off_attrib;

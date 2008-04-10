@@ -25,6 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TextureAttrib::
 TextureAttrib() {
+  _next_implicit_sort = 0;
   _off_all_stages = false;
   _sort_seq = UpdateSeq::old();
 }
@@ -39,6 +40,9 @@ TextureAttrib() {
 INLINE TextureAttrib::
 TextureAttrib(const TextureAttrib &copy) :
   _on_stages(copy._on_stages),
+  _on_ff_stages(copy._on_ff_stages),
+  _ff_tc_index(copy._ff_tc_index),
+  _next_implicit_sort(copy._next_implicit_sort),
   _off_stages(copy._off_stages),
   _off_all_stages(copy._off_all_stages),
   _on_textures(copy._on_textures),
@@ -101,7 +105,7 @@ get_num_on_stages() const {
 INLINE TextureStage *TextureAttrib::
 get_on_stage(int n) const {
   nassertr(n >= 0 && n < (int)_on_stages.size(), (TextureStage *)NULL);
-  return _on_stages[n];
+  return _on_stages[n]._stage;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +132,7 @@ get_num_on_ff_stages() const {
 INLINE TextureStage *TextureAttrib::
 get_on_ff_stage(int n) const {
   nassertr(n >= 0 && n < (int)_on_ff_stages.size(), (TextureStage *)NULL);
-  return _on_ff_stages[n];
+  return _on_ff_stages[n]._stage;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,32 +236,6 @@ is_identity() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::get_on_stages
-//       Access: Public
-//  Description: Returns the complete list of stages defined within
-//               this TextureAttrib, suitable for passing to
-//               Geom::setup_multitexcoord_iterator().
-////////////////////////////////////////////////////////////////////
-INLINE const Geom::ActiveTextureStages &TextureAttrib::
-get_on_stages() const {
-  return _on_stages;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::get_on_ff_stages
-//       Access: Public
-//  Description: Returns the complete list of stages defined within
-//               this TextureAttrib, including only those which are
-//               relevant to the classic fixed-function pipeline.
-//               The result is suitable for passing to
-//               Geom::setup_multitexcoord_iterator().
-////////////////////////////////////////////////////////////////////
-INLINE const Geom::ActiveTextureStages &TextureAttrib::
-get_on_ff_stages() const {
-  return _on_ff_stages;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::check_sorted
 //       Access: Private
 //  Description: Confirms whether the _on_stages list is still sorted.
@@ -273,3 +251,29 @@ check_sorted() const {
     ((TextureAttrib *)this)->sort_on_stages();
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::OnStageNode::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TextureAttrib::OnStageNode::
+OnStageNode(TextureStage *stage, unsigned int implicit_sort) :
+  _stage(stage),
+  _implicit_sort(implicit_sort)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::OnStageNode::Comparison Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureAttrib::OnStageNode::
+operator < (const TextureAttrib::OnStageNode &other) const {
+  if (_stage->get_sort() != other._stage->get_sort()) {
+    return _stage->get_sort() < other._stage->get_sort();
+  }
+  return _implicit_sort < other._implicit_sort;
+}
+

@@ -260,17 +260,13 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
       if (p == 0) continue;
       InternalName *name = _shader->_var_spec[i]._name;
       int texslot = _shader->_var_spec[i]._append_uv;
-      if (texslot >= 0) {
-        const Geom::ActiveTextureStages &active_stages =
-          gsg->_state._texture->get_on_stages();
-        if (texslot < (int)active_stages.size()) {
-          TextureStage *stage = active_stages[texslot];
-          InternalName *texname = stage->get_texcoord_name();
-          if (name == InternalName::get_texcoord()) {
-            name = texname;
-          } else if (texname != InternalName::get_texcoord()) {
-            name = name->append(texname->get_basename());
-          }
+      if (texslot >= 0 && texslot < gsg->_state._texture->get_num_on_stages()) {
+        TextureStage *stage = gsg->_state._texture->get_on_stage(texslot);
+        InternalName *texname = stage->get_texcoord_name();
+        if (name == InternalName::get_texcoord()) {
+          name = texname;
+        } else if (texname != InternalName::get_texcoord()) {
+          name = name->append(texname->get_basename());
         }
       }
       if (gsg->_data_reader->get_array_info(name,

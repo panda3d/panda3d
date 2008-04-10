@@ -26,6 +26,10 @@
 #include "pandabase.h"
 #include "config_mesadisplay.h"
 
+// This stuff seems to crash with Mesa.
+#undef HAVE_CG
+#undef HAVE_CGGL
+
 #ifdef MESA_MGL
   #define GLP(name) mgl##name
   #define GLUP(name) mglu##name

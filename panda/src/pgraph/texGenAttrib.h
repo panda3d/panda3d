@@ -64,6 +64,7 @@ PUBLISHED:
   bool is_empty() const;
   bool has_stage(TextureStage *stage) const;
   Mode get_mode(TextureStage *stage) const;
+  bool has_gen_texcoord_stage(TextureStage *stage) const;
   string get_source_name(TextureStage *stage) const;
   NodePath get_light(TextureStage *stage) const;
   const TexCoord3f &get_constant_value(TextureStage *stage) const;
@@ -71,8 +72,6 @@ PUBLISHED:
   INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
-  INLINE const Geom::NoTexCoordStages &get_no_texcoords() const;
-
   typedef pset<TextureStage *> LightVectors;
   INLINE const LightVectors &get_light_vectors() const;
 
@@ -106,7 +105,8 @@ private:
   // coordinates will not be needed from the Geom.  It's redundant;
   // it's almost the same set that is listed in _stages, above.  It's
   // just here as an optimization during rendering.
-  Geom::NoTexCoordStages _no_texcoords;
+  typedef pset<TextureStage *> NoTexCoordStages;
+  NoTexCoordStages _no_texcoords;
 
   // This is another optimization during rendering; it lists the
   // texture stages (if any) that use M_light_vector.

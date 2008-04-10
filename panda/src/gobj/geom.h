@@ -158,10 +158,6 @@ public:
 
   static UpdateSeq get_next_modified();
 
-public:
-  typedef pvector< PT(TextureStage) > ActiveTextureStages;
-  typedef pset<TextureStage *> NoTexCoordStages;
-
 private:
   class CData;
 
