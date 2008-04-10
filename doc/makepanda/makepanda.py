@@ -170,7 +170,10 @@ if (sys.platform == "win32"):
 else:
     CheckLinkerLibraryPath()
     COMPILER="LINUX"
-    THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+    if (platform.architecture()[0] == "64bit"):
+        THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
+    else:
+        THIRDPARTYLIBS="thirdparty/linux-libs-a/"
     VC80CRTVERSION = 0
 
 ##########################################################################################
@@ -312,14 +315,6 @@ if (COMPILER=="MSVC"):
 if (COMPILER=="LINUX"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
-    if (PkgSkip("VRPN")==0):      IncDirectory("VRPN",       'thirdparty/linux-libs-a/vrpn/include')
-    if (PkgSkip("FFTW")==0):      IncDirectory("FFTW",       'thirdparty/linux-libs-a/fftw/include')
-    if (PkgSkip("FMOD")==0):      IncDirectory("FMOD",       'thirdparty/linux-libs-a/fmod/include')
-    if (PkgSkip("FMODEX")==0):    IncDirectory("FMODEX",     'thirdparty/linux-libs-a/fmodex/include')
-    if (PkgSkip("OPENAL")==0):    IncDirectory("OPENAL",     'thirdparty/linux-libs-a/openal/include')
-    if (PkgSkip("NVIDIACG")==0):  IncDirectory("NVIDIACG",   'thirdparty/linux-libs-a/nvidiacg/include')
-    if (PkgSkip("FFMPEG")==0):    IncDirectory("FFMPEG",     'thirdparty/linux-libs-a/ffmpeg/include')
-    if (PkgSkip("ARTOOLKIT")==0): IncDirectory("ARTOOLKIT",  'thirdparty/linux-libs-a/artoolkit/include')
     if (PkgSkip("FREETYPE")==0):  IncDirectory("FREETYPE",   '/usr/include/freetype2')
     IncDirectory("GTK2", "/usr/include/gtk-2.0")
     IncDirectory("GTK2", "/usr/include/cairo")
@@ -329,17 +324,32 @@ if (COMPILER=="LINUX"):
     IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
     IncDirectory("GTK2", "/usr/include/atk-1.0")
     LibName("GTK2", "-lgtk-x11-2.0")
-    if (PkgSkip("FMOD")==0):     LibDirectory("FMOD", "thirdparty/linux-libs-a/fmod/lib")
+
+    if (PkgSkip("VRPN")==0):      IncDirectory("VRPN",       THIRDPARTYLIBS+'vrpn/include')
+    if (PkgSkip("FFTW")==0):      IncDirectory("FFTW",       THIRDPARTYLIBS+'fftw/include')
+    if (PkgSkip("FMOD")==0):      IncDirectory("FMOD",       THIRDPARTYLIBS+'fmod/include')
+    if (PkgSkip("FMODEX")==0):    IncDirectory("FMODEX",     THIRDPARTYLIBS+'fmodex/include')
+    if (PkgSkip("OPENAL")==0):    IncDirectory("OPENAL",     THIRDPARTYLIBS+'openal/include')
+    if (PkgSkip("NVIDIACG")==0):  IncDirectory("NVIDIACG",   THIRDPARTYLIBS+'nvidiacg/include')
+    if (PkgSkip("FFMPEG")==0):    IncDirectory("FFMPEG",     THIRDPARTYLIBS+'ffmpeg/include')
+    if (PkgSkip("ARTOOLKIT")==0): IncDirectory("ARTOOLKIT",  THIRDPARTYLIBS+'artoolkit/include')
+    
+    if (PkgSkip("FMOD")==0):      LibDirectory("FMOD",       THIRDPARTYLIBS+"fmod/lib")
+    if (PkgSkip("FMODEX")==0):    LibDirectory("FMODEX",     THIRDPARTYLIBS+"fmodex/lib")
+    if (PkgSkip("OPENAL")==0):    LibDirectory("OPENAL",     THIRDPARTYLIBS+"openal/lib")
+    if (PkgSkip("NVIDIACG")==0):  LibDirectory("NVIDIACG",   THIRDPARTYLIBS+"nvidiacg/lib")
+    if (PkgSkip("FFMPEG")==0):    LibDirectory("FFMPEG",     THIRDPARTYLIBS+"ffmpeg/lib")
+    if (PkgSkip("VRPN")==0):      LibDirectory("VRPN",       THIRDPARTYLIBS+"vrpn/lib")
+    if (PkgSkip("FFTW")==0):      LibDirectory("FFTW",       THIRDPARTYLIBS+"fftw/lib")
+    if (PkgSkip("ARTOOLKIT")==0): LibDirectory("ARTOOLKIT",  THIRDPARTYLIBS+"artoolkit/lib")
+
+    
     if (PkgSkip("FMOD")==0):     LibName("FMOD", "-lfmod")
-    if (PkgSkip("FMODEX")==0):   LibDirectory("FMODEX", "thirdparty/linux-libs-a/fmodex/lib")
     if (PkgSkip("FMODEX")==0):   LibName("FMODEX", "-lfmodex")
-    if (PkgSkip("OPENAL")==0):   LibDirectory("OPENAL", "thirdparty/linux-libs-a/openal/lib")
     if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
-    if (PkgSkip("NVIDIACG")==0): LibDirectory("NVIDIACG", "thirdparty/linux-libs-a/nvidiacg/lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
     if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
-    if (PkgSkip("FFMPEG")==0):   LibDirectory("FFMPEG", "thirdparty/linux-libs-a/ffmpeg/lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavcodec")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
@@ -350,13 +360,10 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
     if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lssl")
     if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "-lfreetype")
-    if (PkgSkip("VRPN")==0):     LibDirectory("VRPN", "thirdparty/linux-libs-a/vrpn/lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lvrpn")
     if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lquat")
-    if (PkgSkip("FFTW")==0):     LibDirectory("FFTW", "thirdparty/linux-libs-a/fftw/lib")
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lrfftw")
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lfftw")
-    if (PkgSkip("ARTOOLKIT")==0):LibDirectory("ARTOOLKIT", "thirdparty/linux-libs-a/artoolkit/lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lAR")
     LibName("GLUT", "-lGL")
     LibName("GLUT", "-lGLU")
@@ -471,17 +478,14 @@ def CompileIgate(woutd,wsrc,opts):
         CompileCxx(wobj,woutc,opts)
         ConditionalWriteFile(woutd,"")
         return
+    cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
     if (COMPILER=="MSVC"):
-        cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
-    if (COMPILER=="LINUX"):
-        cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const'
-        if (platform.machine()=="x86_64"):
-            cmd = cmd + ' -D_LP64'
-        else:
-            cmd = cmd + ' -D__i386__'
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const -D_LP64'
+    if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + ' '
     if (optlevel==2): cmd = cmd + ' '
@@ -3190,7 +3194,7 @@ if (PkgSkip("PANDAAPP")==0):
 # DIRECTORY: pandaapp/src/httpbackup/
 #
 
-if (PkgSkip("OPENSSL")==0) and (PkgSkip("PANDAAPP")==0):
+if (PkgSkip("OPENSSL")==0) and (PkgSkip("PANDAAPP")==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandaapp/src/httpbackup', 'DIR:pandaapp/src/pandaappbase', 'OPENSSL']
     TargetAdd('httpbackup_backupCatalog.obj', opts=OPTS, input='backupCatalog.cxx')
     TargetAdd('httpbackup_httpBackup.obj', opts=OPTS, input='httpBackup.cxx')
@@ -3207,7 +3211,7 @@ if (PkgSkip("OPENSSL")==0) and (PkgSkip("PANDAAPP")==0):
 # DIRECTORY: pandaapp/src/indexify/
 #
 
-if (PkgSkip("FREETYPE")==0) and (PkgSkip("PANDAAPP")==0):
+if (PkgSkip("FREETYPE")==0) and (PkgSkip("PANDAAPP")==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandaapp/src/indexify', 'FREETYPE']
     TargetAdd('font-samples_default_font.obj', opts=OPTS, input='default_font.cxx')
     TargetAdd('font-samples_fontSamples.obj', opts=OPTS, input='fontSamples.cxx')
