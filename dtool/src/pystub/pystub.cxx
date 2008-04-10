@@ -106,6 +106,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyUnicode_Type(...);
   EXPCL_DTOOLCONFIG int Py_BuildValue(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4(...);
+  EXPCL_DTOOLCONFIG int Py_InitModule4_64(...);
   EXPCL_DTOOLCONFIG int Py_InitModule4TraceRefs(...);
   EXPCL_DTOOLCONFIG int _PyObject_DebugFree(...);
   EXPCL_DTOOLCONFIG int _PyObject_Del(...);
@@ -206,6 +207,7 @@ int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
+int Py_InitModule4_64(...) { return 0; }
 int Py_InitModule4TraceRefs(...) { return 0; };
 int _PyObject_DebugFree(...) { return 0; };
 int _PyObject_Del(...) { return 0; };

@@ -94,7 +94,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   // Align the buffer to a 16-byte boundary
   // The ffmpeg codec likes this, because it uses SSE/SSE2.
   _buffer = _buffer_alloc;
-  while (((int)_buffer) & 15) {
+  while (((size_t)_buffer) & 15) {
     _buffer += 1;
   }
   

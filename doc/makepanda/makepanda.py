@@ -12,7 +12,7 @@
 #
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
+import sys,os,platform,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
 
 from makepandacore import *
 
@@ -477,7 +477,11 @@ def CompileIgate(woutd,wsrc,opts):
         cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="LINUX"):
         cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__i386__ -D__const=const'
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const'
+        if (platform.machine()=="x86_64"):
+            cmd = cmd + ' -D_LP64'
+        else:
+            cmd = cmd + ' -D__i386__'
     optlevel=GetOptimizeOption(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + ' '
     if (optlevel==2): cmd = cmd + ' '
@@ -3426,7 +3430,7 @@ Package: panda3d
 Version: VERSION
 Section: libdevel
 Priority: optional
-Architecture: i386
+Architecture: ARCH
 Essential: no
 Depends: PYTHONV
 Provides: panda3d
@@ -3503,7 +3507,7 @@ def MakeInstallerLinux():
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
 
     if (os.path.exists("/usr/bin/dpkg-deb")):
-        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV)
+        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH)
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
