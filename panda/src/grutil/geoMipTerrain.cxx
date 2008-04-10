@@ -28,6 +28,7 @@
 #include "geomTriangles.h"
 #include "geom.h"
 #include "geomNode.h"
+#include "config_grutil.h"
 
 #include "sceneGraphReducer.h"
 

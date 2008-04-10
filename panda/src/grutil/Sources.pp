@@ -19,6 +19,7 @@
     movieTexture.I movieTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
+    geoMipTerrain.I geoMipTerrain.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
@@ -34,6 +35,7 @@
     fisheyeMaker.cxx \
     config_grutil.cxx \
     frameRateMeter.cxx \
+    geoMipTerrain.cxx \
     heightfieldTesselator.cxx \
     nodeVertexTransform.cxx \
     openCVTexture.cxx \    	 
@@ -48,6 +50,7 @@
     movieTexture.I movieTexture.h \
     fisheyeMaker.I fisheyeMaker.h \
     frameRateMeter.I frameRateMeter.h \
+    geoMipTerrain.I geoMipTerrain.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
