@@ -98,6 +98,7 @@ create_texture(DXScreenData &scrn) {
   DWORD target_bpp = get_bits_per_pixel(get_texture()->get_format(), &num_alpha_bits);
   DWORD num_color_channels = get_texture()->get_num_components();
 
+//  printf ("format = %d \n", get_texture()->get_format());
 //  printf ("target_bpp %d, num_color_channels %d num_alpha_bits %d \n", target_bpp, num_color_channels, num_alpha_bits);
 
   //PRINT_REFCNT(dxgsg9, scrn._d3d9);
@@ -1427,33 +1428,35 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
     if (get_texture()->get_render_to_texture()) {   
       HRESULT result;
 
-      // clear render to texture
-      IDirect3DSurface9 *surface;
+      if (_d3d_2d_texture) {
+        // clear render to texture
+        IDirect3DSurface9 *surface;
 
-      result = _d3d_2d_texture -> GetSurfaceLevel (0, &surface);
-      if (result == D3D_OK) {
-        D3DSURFACE_DESC surface_description;
+        result = _d3d_2d_texture -> GetSurfaceLevel (0, &surface);
+        if (result == D3D_OK) {
+          D3DSURFACE_DESC surface_description;
 
-        if (surface -> GetDesc (&surface_description) == D3D_OK) {
-          IDirect3DSurface9 *current_render_target;
+          if (surface -> GetDesc (&surface_description) == D3D_OK) {
+            IDirect3DSurface9 *current_render_target;
 
-          if (device -> GetRenderTarget (0, &current_render_target) == D3D_OK) {
-            if (device -> SetRenderTarget (0, surface)  == D3D_OK) {
-              DWORD flags;
-              D3DCOLOR color;
+            if (device -> GetRenderTarget (0, &current_render_target) == D3D_OK) {
+              if (device -> SetRenderTarget (0, surface)  == D3D_OK) {
+                DWORD flags;
+                D3DCOLOR color;
 
-              color = 0xFF000000;
-              flags = D3DCLEAR_TARGET;
-              if (device -> Clear (NULL, NULL, flags, color, 0.0f, 0) == D3D_OK) {
+                color = 0xFF000000;
+                flags = D3DCLEAR_TARGET;
+                if (device -> Clear (NULL, NULL, flags, color, 0.0f, 0) == D3D_OK) {
+                }
               }
+
+              device -> SetRenderTarget (0, current_render_target);
+              current_render_target -> Release();
             }
-
-            device -> SetRenderTarget (0, current_render_target);
-            current_render_target -> Release();
           }
-        }
 
-        surface -> Release();
+          surface -> Release();
+        }
       }
       
       return S_OK;
