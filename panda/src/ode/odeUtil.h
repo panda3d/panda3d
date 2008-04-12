@@ -49,6 +49,10 @@ PUBLISHED:
 
   // RAU we can't access OC_infinity as constants are not exposed in python
   static dReal get_infinity() {return OC_infinity;};
+
+  static int rand_get_seed() {return dRandGetSeed();};
+
+  static void rand_set_seed(int s) {dRandSetSeed(s);};
 };
 
 #endif
