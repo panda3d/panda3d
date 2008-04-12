@@ -371,7 +371,7 @@ reset() {
   if (_supports_vertex_blend) {
     GLP(Enable)(GL_WEIGHT_SUM_UNITY_ARB);
 
-    GLint max_vertex_units;
+    GLint max_vertex_units = 0;
     GLP(GetIntegerv)(GL_MAX_VERTEX_UNITS_ARB, &max_vertex_units);
     _max_vertex_transforms = max_vertex_units;
     if (GLCAT.is_debug()) {
@@ -418,7 +418,7 @@ reset() {
   }
 
   if (_supports_matrix_palette) {
-    GLint max_palette_matrices;
+    GLint max_palette_matrices = 0;
     GLP(GetIntegerv)(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
     _max_vertex_transform_indices = max_palette_matrices;
     if (GLCAT.is_debug()) {
@@ -575,7 +575,7 @@ reset() {
   if (_supports_compressed_texture) {
     _compressed_texture_formats.set_bit(Texture::CM_on);
 
-    GLint num_compressed_formats;
+    GLint num_compressed_formats = 0;
     GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
     GLint *formats = (GLint *)PANDA_MALLOC_ARRAY(num_compressed_formats * sizeof(GLint));
     GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
@@ -837,7 +837,7 @@ reset() {
   }
   _max_draw_buffers = 1;
   if (_glDrawBuffers != 0) {
-    GLint max_draw_buffers;
+    GLint max_draw_buffers = 0;
     GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_draw_buffers = max_draw_buffers;
   }
@@ -994,7 +994,7 @@ reset() {
   }
 
   if (_supports_multisample) {
-    GLint sample_buffers;
+    GLint sample_buffers = 0;
     GLP(GetIntegerv)(GL_SAMPLE_BUFFERS, &sample_buffers);
     if (sample_buffers != 1) {
       // Even if the API supports multisample, we might have ended up
@@ -1007,9 +1007,9 @@ reset() {
     }
   }
 
-  GLint max_texture_size;
-  GLint max_3d_texture_size;
-  GLint max_cube_map_size;
+  GLint max_texture_size = 0;
+  GLint max_3d_texture_size = 0;
+  GLint max_cube_map_size = 0;
 
   GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   _max_texture_dimension = max_texture_size;
@@ -1028,7 +1028,7 @@ reset() {
     _max_cube_map_dimension = 0;
   }
 
-  GLint max_elements_vertices, max_elements_indices;
+  GLint max_elements_vertices = 0, max_elements_indices = 0;
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
   if (max_elements_vertices > 0) {
@@ -1071,7 +1071,7 @@ reset() {
         << "Texture compression is not supported.\n";
 
     } else {
-      GLint num_compressed_formats;
+      GLint num_compressed_formats = 0;
       GLP(GetIntegerv)(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_formats);
       if (num_compressed_formats == 0) {
         GLCAT.debug()
@@ -1176,7 +1176,7 @@ reset() {
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
 
   // Count the max number of lights
-  GLint max_lights;
+  GLint max_lights = 0;
   GLP(GetIntegerv)(GL_MAX_LIGHTS, &max_lights);
   _max_lights = max_lights;
 
@@ -1186,7 +1186,7 @@ reset() {
   }
 
   // Count the max number of clipping planes
-  GLint max_clip_planes;
+  GLint max_clip_planes = 0;
   GLP(GetIntegerv)(GL_MAX_CLIP_PLANES, &max_clip_planes);
   _max_clip_planes = max_clip_planes;
 
@@ -1196,7 +1196,7 @@ reset() {
   }
 
   if (_supports_multitexture) {
-    GLint max_texture_stages;
+    GLint max_texture_stages = 0;
     GLP(GetIntegerv)(GL_MAX_TEXTURE_UNITS, &max_texture_stages);
     _max_texture_stages = max_texture_stages;
 
@@ -1226,7 +1226,7 @@ reset() {
   // use per-vertex fog if per-pixel fog requires SW renderer
   GLP(Hint)(GL_FOG_HINT, GL_DONT_CARE);
 
-  GLint num_red_bits;
+  GLint num_red_bits = 0;
   GLP(GetIntegerv)(GL_RED_BITS, &num_red_bits);
   if (num_red_bits < 8) {
     GLP(Enable)(GL_DITHER);
