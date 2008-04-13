@@ -204,8 +204,8 @@ Section "${SMDIRECTORY}" SecCore
                     Call StrRep
                     Pop $R0
                     StrCpy $TUTNAME $R0
-                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "$3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
-                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\ppython.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\Run $TUTNAME.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
+                    CreateShortCut "$INSTDIR\samples\$1\Run $TUTNAME.lnk" "$INSTDIR\python\python.exe" "-E $3" "$INSTDIR\bin\eggcacher.exe" 0 SW_SHOWMINIMIZED "" "Run $TUTNAME"
                     FindNext $2 $3
                     goto iloop
                 idone:
