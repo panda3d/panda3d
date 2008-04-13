@@ -325,24 +325,15 @@ if (COMPILER=="LINUX"):
     IncDirectory("GTK2", "/usr/include/atk-1.0")
     LibName("GTK2", "-lgtk-x11-2.0")
 
-    if (PkgSkip("VRPN")==0):      IncDirectory("VRPN",       THIRDPARTYLIBS+'vrpn/include')
-    if (PkgSkip("FFTW")==0):      IncDirectory("FFTW",       THIRDPARTYLIBS+'fftw/include')
-    if (PkgSkip("FMOD")==0):      IncDirectory("FMOD",       THIRDPARTYLIBS+'fmod/include')
-    if (PkgSkip("FMODEX")==0):    IncDirectory("FMODEX",     THIRDPARTYLIBS+'fmodex/include')
-    if (PkgSkip("OPENAL")==0):    IncDirectory("OPENAL",     THIRDPARTYLIBS+'openal/include')
-    if (PkgSkip("NVIDIACG")==0):  IncDirectory("NVIDIACG",   THIRDPARTYLIBS+'nvidiacg/include')
-    if (PkgSkip("FFMPEG")==0):    IncDirectory("FFMPEG",     THIRDPARTYLIBS+'ffmpeg/include')
-    if (PkgSkip("ARTOOLKIT")==0): IncDirectory("ARTOOLKIT",  THIRDPARTYLIBS+'artoolkit/include')
-    
-    if (PkgSkip("FMOD")==0):      LibDirectory("FMOD",       THIRDPARTYLIBS+"fmod/lib")
-    if (PkgSkip("FMODEX")==0):    LibDirectory("FMODEX",     THIRDPARTYLIBS+"fmodex/lib")
-    if (PkgSkip("OPENAL")==0):    LibDirectory("OPENAL",     THIRDPARTYLIBS+"openal/lib")
-    if (PkgSkip("NVIDIACG")==0):  LibDirectory("NVIDIACG",   THIRDPARTYLIBS+"nvidiacg/lib")
-    if (PkgSkip("FFMPEG")==0):    LibDirectory("FFMPEG",     THIRDPARTYLIBS+"ffmpeg/lib")
-    if (PkgSkip("VRPN")==0):      LibDirectory("VRPN",       THIRDPARTYLIBS+"vrpn/lib")
-    if (PkgSkip("FFTW")==0):      LibDirectory("FFTW",       THIRDPARTYLIBS+"fftw/lib")
-    if (PkgSkip("ARTOOLKIT")==0): LibDirectory("ARTOOLKIT",  THIRDPARTYLIBS+"artoolkit/lib")
-
+    for pkg in ["VRPN", "FFTW", "FMOD", "FMODEX", "OPENAL", "NVIDIACG", "FFMPEG", "ARTOOLKIT"]:
+        if (PkgSkip(pkg)==0):
+            if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
+                IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
+                LibDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/lib")
+            else:
+                WARNINGS.append("I cannot locate SDK for " + pkg + " in thirdparty directory.")
+                WARNINGS.append("I have automatically added this command-line option: --no-"+pkg.lower())
+                PkgDisable(ver)
     
     if (PkgSkip("FMOD")==0):     LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):   LibName("FMODEX", "-lfmodex")
