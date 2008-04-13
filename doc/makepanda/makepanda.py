@@ -190,41 +190,6 @@ if (INSTALLER) and (PkgSkip("PYTHON")):
 
 ########################################################################
 ##
-## Give a Status Report on Command-Line Options
-##
-########################################################################
-
-def printStatus(header,warnings):
-    global VERBOSE
-    if VERBOSE >= -2:
-        print ""
-        print "-------------------------------------------------------------------"
-        print header
-        tkeep = ""
-        tomit = ""
-        for x in PkgListGet():
-            if (PkgSkip(x)==0): tkeep = tkeep + x + " "
-            else:                  tomit = tomit + x + " "
-        print "Makepanda: Compiler:",COMPILER
-        print "Makepanda: Optimize:",OPTIMIZE
-        print "Makepanda: Keep Pkg:",tkeep
-        print "Makepanda: Omit Pkg:",tomit
-        print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
-        if (GENMAN): print "Makepanda: Generate API reference manual"
-        else       : print "Makepanda: Don't generate API reference manual"
-        if (sys.platform == "win32"):
-            if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
-            else        :  print "Makepanda: Don't build installer"
-        print "Makepanda: Version ID: "+VERSION
-        for x in warnings: print "Makepanda: "+x
-        print "-------------------------------------------------------------------"
-        print ""
-        sys.stdout.flush()
-
-printStatus("Makepanda Initial Status Report", WARNINGS)
-
-########################################################################
-##
 ## External includes, external libraries, and external defsyms.
 ##
 ########################################################################
@@ -363,6 +328,41 @@ if (COMPILER=="LINUX"):
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", "built/tmp")
 IncDirectory("ALWAYS", "built/include")
+
+########################################################################
+##
+## Give a Status Report on Command-Line Options
+##
+########################################################################
+
+def printStatus(header,warnings):
+    global VERBOSE
+    if VERBOSE >= -2:
+        print ""
+        print "-------------------------------------------------------------------"
+        print header
+        tkeep = ""
+        tomit = ""
+        for x in PkgListGet():
+            if (PkgSkip(x)==0): tkeep = tkeep + x + " "
+            else:                  tomit = tomit + x + " "
+        print "Makepanda: Compiler:",COMPILER
+        print "Makepanda: Optimize:",OPTIMIZE
+        print "Makepanda: Keep Pkg:",tkeep
+        print "Makepanda: Omit Pkg:",tomit
+        print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
+        if (GENMAN): print "Makepanda: Generate API reference manual"
+        else       : print "Makepanda: Don't generate API reference manual"
+        if (sys.platform == "win32"):
+            if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
+            else        :  print "Makepanda: Don't build installer"
+        print "Makepanda: Version ID: "+VERSION
+        for x in warnings: print "Makepanda: "+x
+        print "-------------------------------------------------------------------"
+        print ""
+        sys.stdout.flush()
+
+printStatus("Makepanda Initial Status Report", WARNINGS)
 
 ########################################################################
 ##
