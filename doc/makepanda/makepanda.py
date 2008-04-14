@@ -298,7 +298,7 @@ if (COMPILER=="LINUX"):
             else:
                 WARNINGS.append("I cannot locate SDK for " + pkg + " in thirdparty directory.")
                 WARNINGS.append("I have automatically added this command-line option: --no-"+pkg.lower())
-                PkgDisable(ver)
+                PkgDisable(pkg)
     
     if (PkgSkip("FMOD")==0):     LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):   LibName("FMODEX", "-lfmodex")
