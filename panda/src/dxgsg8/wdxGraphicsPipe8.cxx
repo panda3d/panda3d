@@ -622,17 +622,21 @@ search_for_valid_displaymode(DXScreenData &scrn,
       continue;
     }
 
-    if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-      // dont want refresh rates under 60Hz, but 0 or 1 might indicate
-      // a default refresh rate, which is usually > = 60
-      if (bVerboseMode) {
-        wdxdisplay8_cat.info()
-          << "skipping mode[" << i << "], bad refresh rate: "
-          << dispmode.RefreshRate << endl;
+    // disable refresh rate checking since SLI video cards may use 
+    // refresh rates less than 60
+    if (0) {
+      if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
+        // dont want refresh rates under 60Hz, but 0 or 1 might indicate
+        // a default refresh rate, which is usually > = 60
+        if (bVerboseMode) {
+          wdxdisplay8_cat.info()
+            << "skipping mode[" << i << "], bad refresh rate: "
+            << dispmode.RefreshRate << endl;
+        }
+        continue;
       }
-      continue;
     }
-
+    
     // Note no attempt is made to verify if format will work at
     // requested size, so even if this call succeeds, could still get
     // an out-of-video-mem error

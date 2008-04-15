@@ -2043,8 +2043,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     }
     
     if ((dm.dmPelsWidth == dwWidth) && (dm.dmPelsHeight == dwHeight) &&
-        (dm.dmBitsPerPel == bpp) && 
-        ACCEPTABLE_REFRESH_RATE(dm.dmDisplayFrequency)) {
+        (dm.dmBitsPerPel == bpp)) {
       return true;
     }
     modenum++;
