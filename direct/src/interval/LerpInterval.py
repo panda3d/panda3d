@@ -157,12 +157,19 @@ class LerpHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpQuatInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, quat,
+    def __init__(self, nodePath, duration, quat = None, hpr = None,
                  startHpr = None, startQuat = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
+
+        if not quat:
+            # If we didn't specify a quat, we're allowed to specify a
+            # hpr instead, which is converted to the equivalent quat.
+            assert hpr
+            quat = LOrientationf()
+            quat.setHpr(hpr)
 
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(quat, startHpr, startQuat)
