@@ -157,10 +157,10 @@ class LerpHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpQuatInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, quat = None, hpr = None,
+    def __init__(self, nodePath, duration, quat = None,
                  startHpr = None, startQuat = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 bakeInStart = 1, fluid = 0, name = None, hpr = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
 
@@ -282,12 +282,20 @@ class LerpPosHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosQuatInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, pos, quat,
+    def __init__(self, nodePath, duration, pos, quat = None,
                  startPos = None, startHpr = None, startQuat = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 bakeInStart = 1, fluid = 0, name = None, hpr = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
+
+        if not quat:
+            # If we didn't specify a quat, we're allowed to specify a
+            # hpr instead, which is converted to the equivalent quat.
+            assert hpr
+            quat = LOrientationf()
+            quat.setHpr(hpr)
+
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr, startQuat)
         if self.paramSetup:
@@ -357,12 +365,22 @@ class LerpHprScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpQuatScaleInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, quat, scale,
+    def __init__(self, nodePath, duration, quat = None, scale = None,
+                 hpr = None,
                  startHpr = None, startQuat = None, startScale = None,
                  other = None, blendType = 'noBlend',
                  bakeInStart = 1, fluid = 0, name = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
+
+        if not quat:
+            # If we didn't specify a quat, we're allowed to specify a
+            # hpr instead, which is converted to the equivalent quat.
+            assert hpr
+            quat = LOrientationf()
+            quat.setHpr(hpr)
+
+        assert scale
 
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(quat, startHpr, startQuat, scale, startScale)
@@ -441,13 +459,23 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosQuatScaleInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, pos, quat, scale,
+    def __init__(self, nodePath, duration, pos, quat = None, scale = None,
                  startPos = None, startHpr = None, startQuat = None,
                  startScale = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 bakeInStart = 1, fluid = 0, name = None, hpr = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
+
+        if not quat:
+            # If we didn't specify a quat, we're allowed to specify a
+            # hpr instead, which is converted to the equivalent quat.
+            assert hpr
+            quat = LOrientationf()
+            quat.setHpr(hpr)
+
+        assert scale
+
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr,
                                            startQuat, scale, startScale)
@@ -541,13 +569,25 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
         LerpNodePathInterval.privDoEvent(self, t, event)
 
 class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
-    def __init__(self, nodePath, duration, pos, quat, scale, shear,
+    def __init__(self, nodePath, duration, pos, quat = None, scale = None,
+                 shear = None,
                  startPos = None, startHpr = None, startQuat = None,
                  startScale = None, startShear = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, fluid = 0, name = None):
+                 bakeInStart = 1, fluid = 0, name = None, hpr = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, fluid, nodePath, other)
+
+        if not quat:
+            # If we didn't specify a quat, we're allowed to specify a
+            # hpr instead, which is converted to the equivalent quat.
+            assert hpr
+            quat = LOrientationf()
+            quat.setHpr(hpr)
+
+        assert scale
+        assert shear
+
         # Check for functors in the input parameters.
         self.paramSetup = self.anyCallable(pos, startPos, quat, startHpr,
                                            startQuat, scale, startScale,
