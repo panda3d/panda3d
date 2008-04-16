@@ -264,16 +264,49 @@ OnStageNode(TextureStage *stage, unsigned int implicit_sort) :
 {
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::OnStageNode::Comparison Operator
+//     Function: TextureAttrib::CompareTextureStagePriorities::operator ()
 //       Access: Public
-//  Description: 
+//  Description: This STL function object is used to sort a list of
+//               texture stages in reverse order by priority, and
+//               within priority, within order by sort.
 ////////////////////////////////////////////////////////////////////
-INLINE bool TextureAttrib::OnStageNode::
-operator < (const TextureAttrib::OnStageNode &other) const {
-  if (_stage->get_sort() != other._stage->get_sort()) {
-    return _stage->get_sort() < other._stage->get_sort();
+INLINE bool TextureAttrib::CompareTextureStagePriorities::
+operator () (const TextureAttrib::OnStageNode &a, 
+             const TextureAttrib::OnStageNode &b) const {
+  if (a._stage->get_priority() != b._stage->get_priority()) {
+    return a._stage->get_priority() > b._stage->get_priority();
   }
-  return _implicit_sort < other._implicit_sort;
+  if (a._stage->get_sort() != b._stage->get_sort()) {
+    return a._stage->get_sort() > b._stage->get_sort();
+  }
+  return a._implicit_sort < b._implicit_sort;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::CompareTextureStageSort::operator ()
+//       Access: Public
+//  Description: This STL function object is used to sort a list of
+//               texture stages in order by sort.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureAttrib::CompareTextureStageSort::
+operator () (const TextureAttrib::OnStageNode &a, 
+             const TextureAttrib::OnStageNode &b) const {
+  if (a._stage->get_sort() != b._stage->get_sort()) {
+    return a._stage->get_sort() > b._stage->get_sort();
+  }
+  return a._implicit_sort < b._implicit_sort;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::CompareTextureStagePointer::operator ()
+//       Access: Public
+//  Description: This STL function object is used to sort a list of
+//               texture stages in order by pointer.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureAttrib::CompareTextureStagePointer::
+operator () (const TextureAttrib::OnStageNode &a, 
+             const TextureAttrib::OnStageNode &b) const {
+  return a._stage < b._stage;
+}

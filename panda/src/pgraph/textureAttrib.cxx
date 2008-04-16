@@ -30,21 +30,6 @@ CPT(RenderAttrib) TextureAttrib::_empty_attrib;
 CPT(RenderAttrib) TextureAttrib::_all_off_attrib;
 TypeHandle TextureAttrib::_type_handle;
 
-// This STL Function object is used in filter_to_max(), below, to sort
-// a list of TextureStages in reverse order by priority and, within
-// priority, in order by sort.
-bool TextureAttrib::CompareTextureStagePriorities::
-operator () (const TextureAttrib::OnStageNode &a, 
-             const TextureAttrib::OnStageNode &b) const {
-  if (a._stage->get_priority() != b._stage->get_priority()) {
-    return a._stage->get_priority() > b._stage->get_priority();
-  }
-  if (a._stage->get_sort() != b._stage->get_sort()) {
-    return a._stage->get_sort() > b._stage->get_sort();
-  }
-  return a._implicit_sort < b._implicit_sort;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureAttrib::make
@@ -960,7 +945,7 @@ sort_on_stages() {
   // It's important that this assignment not be based on the whims of
   // render order--it mustn't change arbitrarily--so we must first
   // sort the on_stages list into pointer order for this purpose.
-  sort(_on_stages.begin(), _on_stages.end());
+  sort(_on_stages.begin(), _on_stages.end(), CompareTextureStagePointer());
 
   typedef pmap<const InternalName *, int> UsedTexcoordIndex;
   UsedTexcoordIndex used_texcoord_index;
@@ -986,7 +971,7 @@ sort_on_stages() {
   }
 
   // Now we can sort the on_stages map into render order.
-  sort(_on_stages.begin(), _on_stages.end());
+  sort(_on_stages.begin(), _on_stages.end(), CompareTextureStageSort());
 
   _sort_seq = TextureStage::get_sort_seq();
 

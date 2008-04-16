@@ -101,7 +101,6 @@ private:
   class OnStageNode {
   public:
     INLINE OnStageNode(TextureStage *stage, unsigned int implicit_sort);
-    INLINE bool operator < (const OnStageNode &other) const;
 
     PT(TextureStage) _stage;
     unsigned int _implicit_sort;
@@ -109,7 +108,17 @@ private:
 
   class CompareTextureStagePriorities {
   public:
-    bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+  };
+
+  class CompareTextureStageSort {
+  public:
+    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
+  };
+
+  class CompareTextureStagePointer {
+  public:
+    INLINE bool operator () (const TextureAttrib::OnStageNode &a, const TextureAttrib::OnStageNode &b) const;
   };
 
   typedef pvector<OnStageNode> OnStages;
