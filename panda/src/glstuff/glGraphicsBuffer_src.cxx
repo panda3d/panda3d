@@ -339,7 +339,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
         }
       }
     } else {
-      tex->set_format(Texture::F_rgba);
+//      tex->set_format(Texture::F_rgba);
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
