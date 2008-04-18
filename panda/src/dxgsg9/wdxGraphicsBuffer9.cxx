@@ -181,8 +181,11 @@ end_frame(FrameMode mode, Thread *current_thread) {
 bool wdxGraphicsBuffer9::
 save_bitplanes() {
   HRESULT hr;
+  DWORD render_target_index;
+  
+  render_target_index = 0;
 
-  hr = _dxgsg -> _d3d_device -> GetRenderTarget (0, &_saved_color_buffer);
+  hr = _dxgsg -> _d3d_device -> GetRenderTarget (render_target_index, &_saved_color_buffer);
   if (!SUCCEEDED (hr)) {
     dxgsg9_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
     return false;
@@ -207,9 +210,12 @@ restore_bitplanes() {
   DCAST_INTO_V(dxgsg, _gsg);
 
   HRESULT hr;
+  DWORD render_target_index;
+  
+  render_target_index = 0;
 
   hr = dxgsg -> _d3d_device ->
-    SetRenderTarget (0, _saved_color_buffer);
+    SetRenderTarget (render_target_index, _saved_color_buffer);
   if (!SUCCEEDED (hr)) {
     dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
   }
@@ -244,7 +250,10 @@ rebuild_bitplanes() {
   IDirect3DCubeTexture9 *depth_cube = 0;
   IDirect3DSurface9 *color_surf = 0;
   IDirect3DSurface9 *depth_surf = 0;
-
+  DWORD render_target_index;
+  
+  render_target_index = 0;
+  
   // Decide how big the bitplanes should be.
 
   if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
@@ -305,7 +314,7 @@ rebuild_bitplanes() {
     }
     color_tex = get_texture(color_tex_index);
     color_tex->set_size_padded(_x_size, _y_size);
-    color_tex->set_format(Texture::F_rgba);
+//    color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext9,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
@@ -404,9 +413,8 @@ rebuild_bitplanes() {
   _backing_sizey = bitplane_y;
 
   // Load up the bitplanes.
-
   if (color_surf) {
-    hr = _dxgsg -> _d3d_device -> SetRenderTarget (0, color_surf);
+    hr = _dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, color_surf);
     if (!SUCCEEDED (hr)) {
       dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
     }
