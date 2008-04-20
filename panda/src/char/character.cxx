@@ -126,7 +126,7 @@ dupe_for_flatten() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::combine_with
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Collapses this node with the other node, if possible,
 //               and returns a pointer to the combined node, or NULL
 //               if the two nodes cannot safely be combined.
