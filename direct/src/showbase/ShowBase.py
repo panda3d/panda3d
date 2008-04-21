@@ -2215,6 +2215,14 @@ class ShowBase(DirectObject.DirectObject):
     def finalizeExit(self):
         sys.exit()
 
+    # [gjeon] start wxPyhton
+    def startWx(self, fWantWx = 1):
+        self.wantWx = fWantWx
+        if self.wantWx:
+            import WxGlobal
+            taskMgr.remove('wxLoop')
+            WxGlobal.spawnWxLoop()
+
     def startTk(self, fWantTk = 1):
         self.wantTk = fWantTk
         if self.wantTk:
@@ -2222,8 +2230,9 @@ class ShowBase(DirectObject.DirectObject):
             taskMgr.remove('tkLoop')
             TkGlobal.spawnTkLoop()
 
-    def startDirect(self, fWantDirect = 1, fWantTk = 1):
+    def startDirect(self, fWantDirect = 1, fWantTk = 1, fWantWx = 0):
         self.startTk(fWantTk)
+        self.startWx(fWantWx)
         self.wantDirect = fWantDirect
         if self.wantDirect:
             from direct.directtools import DirectSession
@@ -2236,13 +2245,14 @@ class ShowBase(DirectObject.DirectObject):
             return
         self.__directStarted = False
         
-        # Start Tk and DIRECT if specified by Config.prc
+        # Start Tk, Wx and DIRECT if specified by Config.prc
         fTk = self.config.GetBool('want-tk', 0)
+        fWx = self.config.GetBool('want-wx', 0)
         # Start DIRECT if specified in Config.prc or in cluster mode
         fDirect = (self.config.GetBool('want-directtools', 0) or
                    (self.config.GetString("cluster-mode", '') != ''))
         # Set fWantTk to 0 to avoid starting Tk with this call
-        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
+        self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def profileFrames(self, num=1):
         # profile the next 'num' frames and log the results
