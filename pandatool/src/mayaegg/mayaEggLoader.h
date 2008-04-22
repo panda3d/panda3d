@@ -21,8 +21,8 @@
 
 class EggData;
 
-bool MayaLoadEggData(EggData *data,    bool merge, bool model, bool anim);
-bool MayaLoadEggFile(const char *name, bool merge, bool model, bool anim);
+bool MayaLoadEggData(EggData *data,    bool merge, bool model, bool anim, bool respect_normals);
+bool MayaLoadEggFile(const char *name, bool merge, bool model, bool anim, bool respect_normals);
 
 #endif
 

@@ -44,8 +44,8 @@ EggToMaya() :
   set_binary_output(true);
   set_program_description
     ("egg2maya converts files from egg format to Maya .mb or .ma "
-     "format.  At the moment, it contains support for basic geometry "
-     "(polygons with textures).");
+     "format.  It contains support for basic geometry (polygons with textures)."
+     "It also supports animation for joints.");
 
   add_option
     ("a", "", 0,
@@ -57,6 +57,11 @@ EggToMaya() :
      "Convert polygon models.  You may specify both -a and -m at the same "
      "time.  If you specify neither, the default is -m.",
      &EggToMaya::dispatch_none, &_convert_model);
+
+  add_option
+    ("nv", "", 0,
+     "respect vertex and polygon normals.",
+     &EggToMaya::dispatch_none, &_respect_normals);
 
   // Maya files always store centimeters.
   _output_units = DU_centimeters;
@@ -93,7 +98,7 @@ run() {
   }
 
   // Now convert the data.
-  if (!MayaLoadEggData(_data, true, _convert_model, _convert_anim)) {
+  if (!MayaLoadEggData(_data, true, _convert_model, _convert_anim, _respect_normals)) {
     nout << "Unable to convert egg file.\n";
     exit(1);
   }

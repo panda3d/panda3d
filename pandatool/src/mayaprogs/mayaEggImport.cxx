@@ -123,7 +123,7 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
   bool merge = (mode == kImportAccessMode);
   std::ostringstream log;
   Notify::ptr()->set_ostream_ptr(&log, false);
-  bool ok = MayaLoadEggFile(fileName.asChar(), merge, model, anim);
+  bool ok = MayaLoadEggFile(fileName.asChar(), merge, model, anim, false);
   string txt = log.str();
   if (txt != "") {
     MGlobal::displayError(txt.c_str());

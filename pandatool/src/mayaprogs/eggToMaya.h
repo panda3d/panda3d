@@ -36,6 +36,7 @@ public:
 private:
   bool _convert_anim;
   bool _convert_model;
+  bool _respect_normals;
 };
 
 #endif
