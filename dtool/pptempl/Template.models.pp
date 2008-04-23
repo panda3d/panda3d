@@ -42,7 +42,7 @@
 #defer source_prefix $[SOURCE_DIR:%=%/]
 
 #if $[LANGUAGES]
-  #define exlanguage_sources $[notdir $[filter %.flt %.mb %.ma %.lwo %.LWO %.egg,$[wildcard $[TOPDIR]/$[DIRPREFIX]*_$[LANGUAGE].*]]]
+  #define exlanguage_sources $[notdir $[filter %.flt %.mb %.ma %.lwo %.LWO %.egg %.dna,$[wildcard $[TOPDIR]/$[DIRPREFIX]*_$[LANGUAGE].*]]]
 
   #defun lang_add_files sources, src_ext, local_extra
     #define default_filter
@@ -110,6 +110,12 @@
       #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], egg, $[build_eggs]]]
     #endif
   #end install_egg filter_egg
+
+  #forscopes install_dna
+    #if $[SOURCES]
+      #set SOURCES $[sort $[SOURCES] $[lang_add_files $[SOURCES], dna, ]]
+    #endif
+  #end install_dna
 #endif
 
 // Get the list of egg files that are to be installed
