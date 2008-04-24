@@ -27,16 +27,23 @@
 typedef bool BOOL;
 typedef long DWORD;
 typedef long LONG;
+typedef long UINT;
 typedef unsigned long ULONG;
 typedef long HRESULT;
 typedef int CRITICAL_SECTION;
 typedef int HANDLE;
+typedef int HGLOBAL;
+typedef int HWAVEIN;
+typedef void *LPSTR;
+typedef void *LPWAVEHDR;
 typedef void *LPVOID;
+typedef void *DWORD_PTR;
 typedef unsigned short WCHAR;
 typedef WCHAR *BSTR;
 typedef struct _MediaType AM_MEDIA_TYPE;
 typedef struct _VIDEO_STREAM_CONFIG_CAPS VIDEO_STREAM_CONFIG_CAPS;
 typedef struct _GUID GUID;
+#define CALLBACK 
 
 #define WINAPI
 
