@@ -123,14 +123,14 @@ OpenALAudioManager() {
     if (!_device) {
       // this is a unique kind of error
       audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
-   } else {
+    } else {
       alcGetError(_device); // clear errors
       _context=alcCreateContext(_device,NULL);
       alc_audio_errcheck("alcCreateContext(_device,NULL)",_device);
       if (_context!=NULL) {
         _openal_active = true;
       }
-   }
+    }
   }
   // We increment _active_managers regardless of possible errors above.
   // The shutdown call will do the right thing when it's called,
@@ -151,7 +151,6 @@ OpenALAudioManager() {
     audio_3d_set_distance_factor(audio_distance_factor);
     audio_3d_set_drop_off_factor(audio_drop_off_factor);
   }
-  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,25 +231,36 @@ can_use_audio(MovieAudioCursor *source) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::can_load_audio
+//     Function: OpenALAudioManager::should_load_audio
 //       Access: Private
-//  Description: Returns true if the specified MovieAudio can be
-//               cached into RAM.  To be cached, the data must have
-//               a filename (otherwise, we have no cache key), and it
-//               must not take too many bytes.
+//  Description: Returns true if the specified MovieAudio should be
+//               cached into RAM.  A lot of conditions have to be met
+//               in order to allow caching - if any are not met,
+//               the file will be streamed.
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioManager::
-can_load_audio(MovieAudioCursor *source) {
-  if (source->get_source()->get_filename().empty()) {
+should_load_audio(MovieAudioCursor *source, int mode) {
+  if (mode == SM_stream) {
+    // If the user asked for streaming, give him streaming.
     return false;
   }
-  if ((source->length() > 3600.0)||(source->ready() != 0x40000000)) {
+  if (source->get_source()->get_filename().empty()) {
+    // Non-files cannot be preloaded.
+    return false;
+  }
+  if (source->ready() != 0x40000000) {
+    // Streaming sources cannot be preloaded.
+    return false;
+  }
+  if (source->length() > 3600.0) {
+    // Anything longer than an hour cannot be preloaded.
     return false;
   }
   int channels = source->audio_channels();
   int samples = (int)(source->length() * source->audio_rate());
   int bytes = samples * channels * 2;
-  if (bytes > audio_preload_threshold) {
+  if ((mode == SM_heuristic)&&(bytes > audio_preload_threshold)) {
+    // In heuristic mode, if file is long, stream it.
     return false;
   }
   return true;
@@ -265,25 +275,29 @@ can_load_audio(MovieAudioCursor *source) {
 //               to decrement the client count.
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData *OpenALAudioManager::
-get_sound_data(MovieAudio *movie) {
+get_sound_data(MovieAudio *movie, int mode) {
   const Filename &path = movie->get_filename();
   
   // Search for an already-cached sample or an already-opened stream.
   if (!path.empty()) {
     
-    SampleCache::iterator lsmi=_sample_cache.find(path);
-    if (lsmi != _sample_cache.end()) {
-      SoundData *sd = (*lsmi).second;
-      increment_client_count(sd);
-      return sd;
-    }
-
-    ExpirationQueue::iterator exqi;
-    for (exqi=_expiring_streams.begin(); exqi!=_expiring_streams.end(); exqi++) {
-      SoundData *sd = (SoundData*)(*exqi);
-      if (sd->_movie->get_filename() == path) {
+    if (mode != SM_stream) {
+      SampleCache::iterator lsmi=_sample_cache.find(path);
+      if (lsmi != _sample_cache.end()) {
+        SoundData *sd = (*lsmi).second;
         increment_client_count(sd);
         return sd;
+      }
+    }
+
+    if (mode != SM_sample) {
+      ExpirationQueue::iterator exqi;
+      for (exqi=_expiring_streams.begin(); exqi!=_expiring_streams.end(); exqi++) {
+        SoundData *sd = (SoundData*)(*exqi);
+        if (sd->_movie->get_filename() == path) {
+          increment_client_count(sd);
+          return sd;
+        }
       }
     }
   }
@@ -306,10 +320,12 @@ get_sound_data(MovieAudio *movie) {
   sd->_rate     = stream->audio_rate();
   sd->_channels = stream->audio_channels();
   sd->_length   = stream->length();
-
   audio_debug("Creating: " << sd->_movie->get_filename().get_basename());
+  audio_debug("  - Rate: " << sd->_rate);
+  audio_debug("  - Channels: " << sd->_channels);
+  audio_debug("  - Length: " << sd->_length);
 
-  if (can_load_audio(stream)) {
+  if (should_load_audio(stream, mode)) {
     audio_debug(path.get_basename() << ": loading as sample");
     make_current();
     alGetError(); // clear errors
@@ -354,7 +370,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
     return get_null_sound();
   }
   PT(OpenALAudioSound) oas = 
-    new OpenALAudioSound(this, sound, positional);
+    new OpenALAudioSound(this, sound, positional, mode);
   
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -385,7 +401,7 @@ get_sound(const string &file_name, bool positional, int mode) {
   PT(MovieAudio) mva = MovieAudio::get(path);
   
   PT(OpenALAudioSound) oas = 
-    new OpenALAudioSound(this, mva, positional);
+    new OpenALAudioSound(this, mva, positional, mode);
   
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -783,11 +799,11 @@ starting_sound(OpenALAudioSound* audio) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 stopping_sound(OpenALAudioSound* audio) {
-  _sounds_playing.erase(audio);
   if (audio->_source) {
     _al_sources->insert(audio->_source);
     audio->_source = 0;
   }
+  _sounds_playing.erase(audio); // This could cause the sound to destruct.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -825,7 +841,14 @@ reduce_sounds_playing_to(unsigned int count) {
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
     assert(sound != _sounds_playing.end());
-    (**sound).stop();
+    // When the user stops a sound, there is still a PT in the
+    // user's hand.  When we stop a sound here, however, 
+    // this can remove the last PT.  This can cause an ugly
+    // recursion where stop calls the destructor, and the
+    // destructor calls stop.  To avoid this, we create
+    // a temporary PT, stop the sound, and then release the PT.
+    PT(OpenALAudioSound) s = (*sound);
+    s->stop();
   }
 }
 
@@ -862,7 +885,9 @@ update() {
     sound->push_fresh_buffers();
     sound->restart_stalled_audio();
     sound->cache_time(rtc);
-    if ((sound->_source == 0)||(sound->_loops_completed >= sound->_playing_loops)) {
+    if ((sound->_source == 0)||
+        ((sound->_stream_queued.size() == 0)&&
+         (sound->_loops_completed >= sound->_playing_loops))) {
       sounds_finished.insert(*i);
     }
   }
@@ -887,6 +912,8 @@ cleanup() {
     return;
   }
 
+  stop_all_sounds();
+  
   AllSounds sounds(_all_sounds);
   AllSounds::iterator ai;
   for (ai = sounds.begin(); ai != sounds.end(); ++ai) {

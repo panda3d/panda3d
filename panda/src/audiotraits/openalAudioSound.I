@@ -57,7 +57,7 @@ get_calibrated_clock(double rtc) const {
 void OpenALAudioSound::
 require_sound_data() {
   if (_sd==0) {
-    _sd = _manager->get_sound_data(_movie);
+    _sd = _manager->get_sound_data(_movie, _desired_mode);
     if (_sd==0) {
       audio_error("Could not open audio " << _movie->get_filename());
       cleanup();

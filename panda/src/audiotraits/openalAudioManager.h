@@ -117,9 +117,9 @@ private:
   void make_current() const;
 
   bool can_use_audio(MovieAudioCursor *source);
-  bool can_load_audio(MovieAudioCursor *source);
+  bool should_load_audio(MovieAudioCursor *source, int mode);
   
-  SoundData *get_sound_data(MovieAudio *source);
+  SoundData *get_sound_data(MovieAudio *source, int mode);
 
   // Tell the manager that the sound dtor was called.
   void release_sound(OpenALAudioSound* audioSound);
@@ -129,7 +129,7 @@ private:
   
   void starting_sound(OpenALAudioSound* audio);
   void stopping_sound(OpenALAudioSound* audio);
-
+  
   void cleanup();
   
 private:

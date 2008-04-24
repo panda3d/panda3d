@@ -116,7 +116,8 @@ public:
 private:
   OpenALAudioSound(OpenALAudioManager* manager, 
                    MovieAudio *movie,
-                   bool positional);
+                   bool positional,
+                   int mode);
   INLINE void   set_calibrated_clock(double rtc, double t, double playrate);
   INLINE double get_calibrated_clock(double rtc) const;
   void          correct_calibrated_clock(double rtc, double t);
@@ -133,6 +134,8 @@ private:
   INLINE void release_sound_data();
   
 private:
+  
+  void do_stop();
   
   PT(MovieAudio) _movie;
   OpenALAudioManager::SoundData *_sd;
@@ -167,6 +170,8 @@ private:
   
   double _length;
   int    _loop_count;
+
+  int    _desired_mode;
 
   // The calibrated clock is initialized when the
   // sound starts playing, and is periodically corrected

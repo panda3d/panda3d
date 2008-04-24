@@ -46,7 +46,8 @@ TypeHandle OpenALAudioSound::_type_handle;
 OpenALAudioSound::
 OpenALAudioSound(OpenALAudioManager* manager,
                  MovieAudio *movie,
-                 bool positional) :
+                 bool positional,
+                 int mode) :
   _movie(movie),
   _sd(NULL),
   _loops_completed(0),
@@ -63,7 +64,8 @@ OpenALAudioSound(OpenALAudioManager* manager,
   _play_rate(1.0),
   _current_time(0.0),
   _active(true),
-  _paused(false)
+  _paused(false),
+  _desired_mode(mode)
 {
   _location[0] = 0;
   _location[1] = 0;
@@ -143,7 +145,7 @@ play() {
   require_sound_data();
   if (_manager == 0) return;
   _manager->starting_sound(this);
-  
+
   if (!_source) {
     return;
   }
@@ -408,7 +410,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     }
     cursor->read_samples(samples, (PN_int16 *)buffer);
     size_t hval = AddHash::add_hash(0, (PN_uint8*)buffer, samples*channels*2);
-    audio_debug("Streaming " << cursor->get_source()->get_filename().get_basename() << " at " << t << " hash " << hval);
+    audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
     fill += samples;
     space -= samples;
     buffer += (samples * channels * 2);
@@ -881,7 +883,7 @@ status() const {
   if (_source==0) {
     return AudioSound::READY;
   }
-  if (_loops_completed >= _playing_loops) {
+  if ((_loops_completed >= _playing_loops)&&(_stream_queued.size()==0)) {
     return AudioSound::READY;
   } else {
     return AudioSound::PLAYING;
