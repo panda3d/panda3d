@@ -427,6 +427,9 @@ class Loader(DirectObject):
             # We were given a single sound pathname.
             soundList = [soundPath]
             gotList = False
+        elif isinstance(soundPath, MovieAudio):
+            soundList = [soundPath]
+            gotList = False
         else:
             # Assume we were given a list of sound pathnames.
             soundList = soundPath
