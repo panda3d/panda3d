@@ -455,12 +455,12 @@ root_flattened() {
       if (_blocks[tx][ty].get_node(1) != _root.node()) {
         grutil_cat.error() << "GeoMipTerrain: root node unexpectedly mangled!\n";
         return true;
-        total += 1;
       }
+      total += 1;
     }
   }
   if (total != _root.node()->get_num_children()) {
-    grutil_cat.error() << "GeoMipTerrain: root node unexpectedly mangled!\n";
+    grutil_cat.error() << "GeoMipTerrain: root node unexpectedly mangled: " << total << " vs " << (_root.node()->get_num_children()) << "\n";
     return true;
   }    
   
