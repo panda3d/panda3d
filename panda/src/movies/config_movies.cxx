@@ -56,6 +56,7 @@ init_libmovies() {
   UserDataAudio::init_type();
   UserDataAudioCursor::init_type();
   WebcamVideo::init_type();
+  MicrophoneAudio::init_type();
 #ifdef HAVE_FFMPEG
   FfmpegVideo::init_type();
   FfmpegVideoCursor::init_type();

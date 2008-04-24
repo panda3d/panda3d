@@ -33,7 +33,6 @@ UserDataAudioCursor(UserDataAudio *src) :
   _audio_channels = src->_desired_channels;
   _can_seek = false;
   _can_seek_fast = false;
-  _ready = 0;
   _aborted = false;
 }
 
@@ -60,4 +59,18 @@ void UserDataAudioCursor::
 read_samples(int n, PN_int16 *data) {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
   source->read_samples(n, data);
+  _samples_read += n;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UserDataAudioCursor::ready
+//       Access: Private
+//  Description: Returns the number of audio samples ready to be
+//               read.
+////////////////////////////////////////////////////////////////////
+int UserDataAudioCursor::
+ready() const {
+  UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
+  ((UserDataAudioCursor*)this)->_aborted = source->_aborted;
+  return (source->_data.size()) / _audio_channels;
 }

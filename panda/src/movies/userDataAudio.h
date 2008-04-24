@@ -20,6 +20,7 @@
 #define USERDATAAUDIO_H
 
 #include "movieAudio.h"
+#include "datagramIterator.h"
 class MovieAudioCursor;
 class UserDataAudioCursor;
 
@@ -35,8 +36,9 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   virtual ~UserDataAudio();
   virtual PT(MovieAudioCursor) open();
 
-  void append(PN_int16 *data, int len);
-  void append(int value); // Not fast enough, but useful for debugging.
+  void append(PN_int16 *data, int n);
+  void append(DatagramIterator *src, int len=0x40000000);
+  void append(const string &str);
   void done(); // A promise not to write any more samples.  
 
  private:

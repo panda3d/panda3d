@@ -36,7 +36,6 @@ MovieAudioCursor(MovieAudio *src) :
   _length(1.0E10),
   _can_seek(true),
   _can_seek_fast(true),
-  _ready(0x40000000),
   _aborted(false),
   _samples_read(0)
 {
@@ -69,11 +68,68 @@ read_samples(int n, PN_int16 *data) {
     return;
   }
 
-  for (int i=0; i<n; i++) {
+  int desired = n * _audio_channels;
+  for (int i=0; i<desired; i++) {
     data[i] = 0;
   }
   _samples_read += n;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudioCursor::read_samples
+//       Access: Published
+//  Description: Read audio samples from the stream into a 
+//               Datagram.  N is the number of samples you wish
+//               to read. Multiple-channel audio will be interleaved. 
+//
+//               This is not particularly efficient, but it may be
+//               a convenient way to manipulate samples in python.
+////////////////////////////////////////////////////////////////////
+void MovieAudioCursor::
+read_samples(int n, Datagram *dg) {
+  PN_int16 tmp[4096];
+  while (n > 0) {
+    int blocksize = (4096 / _audio_channels);
+    if (blocksize > n) blocksize = n;
+    int words = blocksize * _audio_channels;
+    read_samples(blocksize, tmp);
+    for (int i=0; i<words; i++) {
+      dg->add_int16(tmp[i]);
+    }
+    n -= blocksize;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudioCursor::read_samples
+//       Access: Published
+//  Description: Read audio samples from the stream and returns
+//               them as a string.  The samples are stored little-endian
+//               in the string.  N is the number of samples you wish
+//               to read.  Multiple-channel audio will be interleaved. 
+//
+//               This is not particularly efficient, but it may be
+//               a convenient way to manipulate samples in python.
+////////////////////////////////////////////////////////////////////
+string MovieAudioCursor::
+read_samples(int n) {
+  ostringstream result;
+  PN_int16 tmp[4096];
+  while (n > 0) {
+    int blocksize = (4096 / _audio_channels);
+    if (blocksize > n) blocksize = n;
+    int words = blocksize * _audio_channels;
+    read_samples(blocksize, tmp);
+    for (int i=0; i<words; i++) {
+      PN_int16 word = tmp[i];
+      result.put((char)(word & 255));
+      result.put((char)((word>>8) & 255));
+    }
+    n -= blocksize;
+  }
+  return result.str();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieAudioCursor::seek
@@ -101,5 +157,39 @@ void MovieAudioCursor::
 seek(double offset) {
   _last_seek = offset;
   _samples_read = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieAudioCursor::ready
+//       Access: Public
+//  Description: Returns the number of audio samples that are ready
+//               to read.  This is primarily relevant for sources like
+//               microphones which produce samples at a fixed rate.
+//               If you try to read more samples than are ready, the
+//               result will be silent samples.  
+//
+//               Some audio streams do not have a limit on how fast 
+//               they can produce samples.  Such streams will always
+//               return 0x40000000 as the ready-count.  This may well
+//               exceed the length of the audio stream.  You therefore
+//               need to check length separately.
+//
+//               If the aborted flag is set, that means the ready count
+//               is no longer being replenished.  For example, a
+//               MovieAudioCursor might be reading from an internet
+//               radio station, and it might buffer data to avoid 
+//               underruns.  If it loses connection to the radio
+//               station, it will set the aborted flag to indicate that
+//               the buffer is no longer being replenished.  But it is
+//               still ok to read the samples that are in the buffer,
+//               at least until they run out.  Once those are gone,
+//               there will be no more.
+//
+//               An audio consumer needs to check the length, the
+//               ready status, and the aborted flag.
+////////////////////////////////////////////////////////////////////
+int MovieAudioCursor::
+ready() const {
+  return 0x40000000;
 }
 

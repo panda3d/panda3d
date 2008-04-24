@@ -1,4 +1,4 @@
-// Filename: userDataAudioCursor.h
+// Filename: microphoneAudio.h
 // Created by: jyelon (02Jul07)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,50 +16,58 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef USERDATAAUDIOCURSOR_H
-#define USERDATAAUDIOCURSOR_H
+#ifndef MICROPHONEAUDIO_H
+#define MICROPHONEAUDIO_H
 
-#include "pandabase.h"
-#include "luse.h"
-#include "pointerTo.h"
-#include "pointerToArray.h"
-class UserDataAudio;
+#include "movieAudio.h"
+class MovieAudio;
+class MovieAudioCursor;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : UserDataAudioCursor
-// Description : A UserDataAudioCursor is a means to manually
-//               supply a sequence of raw audio samples.
+//       Class : MicrophoneAudio
+// Description : Class MicrophoneAudio provides the means to read
+//               raw audio samples from a microphone.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES UserDataAudioCursor : public MovieAudioCursor {
+class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
 
-PUBLISHED:
-  UserDataAudioCursor(UserDataAudio *src);
-  virtual ~UserDataAudioCursor();
+ PUBLISHED:
+  virtual ~MicrophoneAudio();
+
+  static int                 get_num_options();
+  static PT(MicrophoneAudio) get_option(int n);
   
-public:
-  virtual void read_samples(int n, PN_int16 *data);
-  virtual int ready() const;
-  friend class UserDataAudio;
+  INLINE int get_channels() const;
+  INLINE int get_rate() const;
+  
+  virtual PT(MovieAudioCursor) open() = 0;
 
 public:
+  static void find_all_microphones();
+
+protected:
+  int _channels;
+  int _rate;
+
+  static pvector<PT(MicrophoneAudio)> _all_microphones;
+
+ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    MovieAudioCursor::init_type();
-    register_type(_type_handle, "UserDataAudioCursor",
-                  MovieAudioCursor::get_class_type());
+    TypedWritableReferenceCount::init_type();
+    register_type(_type_handle, "MicrophoneAudio",
+                  MovieAudio::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
-private:
+ private:
   static TypeHandle _type_handle;
 };
 
-#include "userDataAudioCursor.I"
-#include "userDataAudio.h"
+#include "microphoneAudio.I"
 
 #endif

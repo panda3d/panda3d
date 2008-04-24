@@ -75,40 +75,6 @@ length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieAudioCursor::ready
-//       Access: Public
-//  Description: Returns the number of audio samples that are ready
-//               to read.  This is primarily relevant for sources like
-//               microphones which produce samples at a fixed rate.
-//               If you try to read more samples than are ready, the
-//               result will be silent samples.  
-//
-//               Some audio streams do not have a limit on how fast 
-//               they can produce samples.  Such streams will always
-//               return 0x40000000 as the ready-count.  This may well
-//               exceed the length of the audio stream.  You therefore
-//               need to check length separately.
-//
-//               If the aborted flag is set, that means the ready count
-//               is no longer being replenished.  For example, a
-//               MovieAudioCursor might be reading from an internet
-//               radio station, and it might buffer data to avoid 
-//               underruns.  If it loses connection to the radio
-//               station, it will set the aborted flag to indicate that
-//               the buffer is no longer being replenished.  But it is
-//               still ok to read the samples that are in the buffer,
-//               at least until they run out.  Once those are gone,
-//               there will be no more.
-//
-//               An audio consumer needs to check the length, the
-//               ready status, and the aborted flag.
-////////////////////////////////////////////////////////////////////
-INLINE int MovieAudioCursor::
-ready() const {
-  return _ready;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieAudioCursor::can_seek
 //       Access: Public
 //  Description: Returns true if the movie can seek.  If this is
@@ -165,6 +131,6 @@ tell() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MovieAudioCursor::
 skip_samples(int n) {
-  read_samples(n, 0);
+  read_samples(n, (PN_int16*)0);
 }
  

@@ -1,0 +1,38 @@
+// Filename: microphoneAudio.I
+// Created by: jyelon (02Jul07)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: MicrophoneAudio::get_channels
+//       Access: Published
+//  Description: Returns the number of channels.
+////////////////////////////////////////////////////////////////////
+INLINE int MicrophoneAudio::
+get_channels() const {
+  return _channels;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MicrophoneAudio::get_rate
+//       Access: Published
+//  Description: Returns the sample rate.
+////////////////////////////////////////////////////////////////////
+INLINE int MicrophoneAudio::
+get_rate() const {
+  return _rate;
+}
+

@@ -1,4 +1,4 @@
-// Filename: webcamVideoDX.cxx
+// Filename: webcamVideoDS.cxx
 // Created by: jyelon (01Nov2007)
 //
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    MovieVideo::init_type();
+    WebcamVideo::init_type();
     register_type(_type_handle, "WebcamVideoDS",
                   WebcamVideo::get_class_type());
   }
@@ -294,12 +294,6 @@ get_moniker_name(IMoniker *pMoniker) {
   propBag->Release();
   return res;
 }
-
-struct DeviceInfo {
-  string _name;
-  IMoniker *_moniker;
-  AM_MEDIA_TYPE *_media;
-};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WebcamVideoDS::add_device

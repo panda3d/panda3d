@@ -47,19 +47,6 @@ UserDataAudio::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: UserDataAudio::update_cursor
-//       Access: Private
-//  Description: Make sure that the UserDataAudioCursor's ready
-//               and aborted status flags are correct.
-////////////////////////////////////////////////////////////////////
-void UserDataAudio::
-update_cursor() {
-  if (_cursor == 0) return;
-  _cursor->_ready = _data.size();
-  _cursor->_aborted = _aborted;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: UserDataAudio::open
 //       Access: Published, Virtual
 //  Description: Open this audio, returning a UserDataAudioCursor.  A
@@ -73,7 +60,6 @@ open() {
     return NULL;
   }
   _cursor = new UserDataAudioCursor(this);
-  update_cursor();
   return _cursor;
 }
 
@@ -87,48 +73,73 @@ open() {
 ////////////////////////////////////////////////////////////////////
 void UserDataAudio::
 read_samples(int n, PN_int16 *data) {
-  int nread = n;
-  if (nread > (int)_data.size()) {
-    nread = _data.size();
-  }
-  for (int i=0; i<nread; i++) {
+  int ready = (_data.size() / _desired_channels);
+  int desired = n * _desired_channels;
+  int avail = ready * _desired_channels;
+  if (avail > desired) avail = desired;
+  for (int i=0; i<avail; i++) {
     data[i] = _data[i];
   }
-  for (int i=nread; i<n; i++) {
+  for (int i=avail; i<desired; i++) {
     data[i] = 0;
   }
-  for (int i=0; i<nread; i++) {
+  for (int i=0; i<avail; i++) {
     _data.pop_front();
   }
-  update_cursor();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UserDataAudio::append
-//       Access: Published
+//       Access: Public
 //  Description: Appends audio samples to the buffer.
 ////////////////////////////////////////////////////////////////////
 void UserDataAudio::
-append(PN_int16 *data, int len) {
+append(PN_int16 *data, int n) {
   nassertv(!_aborted);
-  for (int i=0; i<len; i++) {
+  int words = n * _desired_channels;
+  for (int i=0; i<words; i++) {
     _data.push_back(data[i]);
   }
-  update_cursor();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UserDataAudio::append
 //       Access: Published
-//  Description: Appends audio samples to the buffer.
+//  Description: Appends audio samples to the buffer from a 
+//               datagram.  This is intended to make it easy to 
+//               send streaming raw audio over a network.
 ////////////////////////////////////////////////////////////////////
 void UserDataAudio::
-append(int val) {
+append(DatagramIterator *src, int n) {
   nassertv(!_aborted);
-  PN_int16 truncated = (PN_int16)val;
-  nassertv(truncated == val);
-  _data.push_back(truncated);
-  update_cursor();
+  int maxlen = src->get_remaining_size() / (2 * _desired_channels);
+  if (n > maxlen) n = maxlen;
+  int words = n * _desired_channels;
+  for (int i=0; i<words; i++) {
+    _data.push_back(src->get_int16());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UserDataAudio::append
+//       Access: Published
+//  Description: Appends audio samples to the buffer from a 
+//               string.  The samples must be stored little-endian
+//               in the string.  This is not particularly efficient,
+//               but it may be convenient to deal with samples in
+//               python.
+////////////////////////////////////////////////////////////////////
+void UserDataAudio::
+append(const string &str) {
+  nassertv(!_aborted);
+  int samples = str.size() / (2 * _desired_channels);
+  int words = samples * _desired_channels;
+  for (int i=0; i<words; i++) {
+    int c1 = ((unsigned char)str[i*2+0]);
+    int c2 = ((unsigned char)str[i*2+1]);
+    PN_int16 n = (c1 | (c2 << 8));
+    _data.push_back(n);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,5 +151,4 @@ append(int val) {
 void UserDataAudio::
 done() {
   _aborted = true;
-  update_cursor();
 }
