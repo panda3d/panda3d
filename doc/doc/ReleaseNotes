@@ -1,3 +1,19 @@
+------------------------  RELEASE 1.5.1  ------------------------
+
+Mostly a bugfix release, but adds some minor features too.
+
+- The x-file parser now is back to being case-insensitive, as it should be.
+- Panda plugins now use an explicit plugin-path.
+- Better DLL-hell protection under windows.
+- Added GeoMipTerrain (but no docs yet)
+- Using python -E in the start menu - really, this time.
+- Linmath classes now initialized when using python.
+- ConfigVariableSearch
+- Implicit sort order for texture attribs.
+- OpenAL audio manager now gives control over streaming vs preloaded sounds.
+- Preliminary support for 64-bit linux (but thirdparty libs missing).
+- Fixes a dozen or so assorted bugs.
+
 ------------------------  RELEASE 1.5.0  ------------------------
 
 * Shader Generator means advanced rendering without
