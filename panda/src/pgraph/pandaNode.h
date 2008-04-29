@@ -77,6 +77,8 @@ class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritable, public Namable,
 PUBLISHED:
   PandaNode(const string &name);
   virtual ~PandaNode();
+  //published so that characters can be combined. 
+  virtual PandaNode *combine_with(PandaNode *other); 
 
 protected:
   PandaNode(const PandaNode &copy);
@@ -99,7 +101,7 @@ public:
                                          int attrib_types,
                                          GeomTransformer &transformer);
   virtual void xform(const LMatrix4f &mat);
-  virtual PandaNode *combine_with(PandaNode *other); 
+
   virtual CPT(TransformState)
     calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                       bool &found_any,
