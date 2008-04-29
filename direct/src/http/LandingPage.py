@@ -1,6 +1,8 @@
+from direct.directnotify.DirectNotifyGlobal import directNotify
 import LandingPageHTML
 
 class LandingPage:
+    notify  = directNotify.newCategory("LandingPage")
     def __init__(self):
         self.headerTemplate = LandingPageHTML.header
         self.footerTemplate = LandingPageHTML.footer
@@ -92,7 +94,7 @@ class LandingPage:
 
     def addQuickStat(self,item,value,position):
         if item in self.quickStats[1]:
-            self.notify.warning("Ignoring duplicate addition of quickstat %s." % item)
+            assert self.notify.warning("Ignoring duplicate addition of quickstat %s." % item)
             return
                                 
         self.quickStats[0].insert(position,item)
