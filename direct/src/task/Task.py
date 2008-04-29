@@ -1105,6 +1105,22 @@ class TaskManager:
         str += "End of taskMgr info\n"
         return str
 
+    def getTasks(self):
+        # returns list of all tasks in arbitrary order
+        tasks = []
+        for taskPriList in self.taskList:
+            for task in taskPriList:
+                if task is not None:
+                    tasks.append(task)
+        for pri, taskList in self.pendingTaskDict.iteritems():
+            for task in taskList:
+                tasks.append(task)
+        return tasks
+
+    def getDoLaters(self):
+        # returns list of all doLaters in arbitrary order
+        return self.__doLaterList[:]
+
     def resetStats(self):
         # WARNING: this screws up your do-later timings
         if self.taskTimerVerbose:

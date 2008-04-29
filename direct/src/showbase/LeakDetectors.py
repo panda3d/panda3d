@@ -10,9 +10,15 @@ class LeakDetector:
         # ContainerLeakDetector will find it quickly
         if not hasattr(__builtin__, "leakDetectors"):
             __builtin__.leakDetectors = {}
-        leakDetectors[id(self)] = self
+        self._leakDetectorsKey = self.getLeakDetectorKey()
+        leakDetectors[self._leakDetectorsKey] = self
     def destroy(self):
-        del leakDetectors[id(self)]
+        del leakDetectors[self._leakDetectorsKey]
+
+    def getLeakDetectorKey(self):
+        # this string will be shown to the end user and should ideally contain enough information to
+        # point to what is leaking
+        return '%s-%s' % (self.__class__.__name__, id(self))
 
 class GarbageLeakDetector(LeakDetector):
     # are we accumulating Python garbage?
@@ -60,3 +66,58 @@ class CppMemoryUsage(LeakDetector):
             return int(MemoryUsage.getCppSize())
         else:
             return 0
+
+class TaskLeakDetectorBase:
+    def _getTaskNamePattern(self, taskName):
+        # get a generic string pattern from a task name by removing numeric characters
+        for i in xrange(10):
+            taskName = taskName.replace('%s' % i, '')
+        return taskName
+    
+class _TaskNamePatternLeakDetector(LeakDetector, TaskLeakDetectorBase):
+    # tracks the number of each individual task type
+    # e.g. are we leaking 'examine-<doId>' tasks
+    def __init__(self, taskNamePattern):
+        self._taskNamePattern = taskNamePattern
+        LeakDetector.__init__(self)
+
+    def __len__(self):
+        # count the number of tasks that match our task name pattern
+        numTasks = 0
+        for task in taskMgr.getTasks():
+            if self._getTaskNamePattern(task.name) == self._taskNamePattern:
+                numTasks += 1
+        for task in taskMgr.getDoLaters():
+            if self._getTaskNamePattern(task.name) == self._taskNamePattern:
+                numTasks += 1
+        return numTasks
+
+    def getLeakDetectorKey(self):
+        return '%s-%s' % (self._taskNamePattern, LeakDetector.getLeakDetectorKey(self))
+
+class TaskLeakDetector(LeakDetector, TaskLeakDetectorBase):
+    # tracks the number task 'types' and creates leak detectors for each task type
+    def __init__(self):
+        LeakDetector.__init__(self)
+        self._taskName2collector = {}
+
+    def destroy(self):
+        for taskName, collector in self._taskName2collector.iteritems():
+            collector.destroy()
+        del self._taskName2collector
+        LeakDetector.destroy(self)
+
+    def _processTaskName(self, taskName):
+        # if this is a new task name pattern, create a leak detector for that pattern
+        namePattern = self._getTaskNamePattern(taskName)
+        if namePattern not in self._taskName2collector:
+            self._taskName2collector[namePattern] = _TaskNamePatternLeakDetector(namePattern)
+
+    def __len__(self):
+        # update our table of task leak detectors
+        for task in taskMgr.getTasks():
+            self._processTaskName(task.name)
+        for task in taskMgr.getDoLaters():
+            self._processTaskName(task.name)
+        # are we leaking task types?
+        return len(self._taskName2collector)

@@ -27,6 +27,22 @@ def _createContainerLeak():
             return task.done
     leakContainer()
 
+def _createTaskLeak():
+    leakTaskName = uniqueName('leakedTask')
+    leakDoLaterName = uniqueName('leakedDoLater')
+    def nullTask(task=None):
+        return task.cont
+    def nullDoLater(task=None):
+        return task.done
+    def leakTask(task=None, leakTaskName=leakTaskName):
+        base = getBase()
+        taskMgr.add(nullTask, uniqueName(leakTaskName))
+        taskMgr.doMethodLater(1 << 31, nullDoLater, uniqueName(leakDoLaterName))
+        taskMgr.doMethodLater(10, leakTask, 'doLeakTask-%s' % serialNum())
+        if task:
+            return task.done
+    leakTask()
+
 class NoDictKey:
     pass
 
@@ -336,7 +352,8 @@ class FindContainers(Job):
         # if it's an internal object, ignore it
         if id(obj) in ContainerLeakDetector.PrivateIds:
             return True
-        if objName in ('im_self', 'im_class'):
+        # prevent crashes in objects that define __cmp__ and don't handle strings
+        if type(objName) == types.StringType and objName in ('im_self', 'im_class'):
             return True
         try:
             className = obj.__class__.__name__
@@ -818,6 +835,8 @@ class ContainerLeakDetector(Job):
 
         if config.GetBool('leak-container', 0):
             _createContainerLeak()
+        if config.GetBool('leak-tasks', 0):
+            _createTaskLeak()
 
         # don't check our own tables for leaks
         ContainerLeakDetector.addPrivateObj(ContainerLeakDetector.PrivateIds)
