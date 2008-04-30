@@ -282,7 +282,7 @@ fetch_time(double time) {
     // Time is in the present: already have the frame.
   } else if (time < _next_start + _min_fseek) {
     // Time is in the near future.
-    while (_packet_time <= time) {
+    while ((_packet_time <= time) && (_packet->data)) {
       fetch_frame();
     }
   } else {
