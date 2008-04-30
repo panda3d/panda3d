@@ -36,6 +36,7 @@ CPT(RenderAttrib) MaterialAttrib::
 make(Material *material) {
   MaterialAttrib *attrib = new MaterialAttrib;
   attrib->_material = material;
+  material->set_attrib_lock();
   return return_new(attrib);
 }
 
@@ -181,7 +182,6 @@ make_from_bam(const FactoryParams &params) {
 
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
-
   return attrib;
 }
 

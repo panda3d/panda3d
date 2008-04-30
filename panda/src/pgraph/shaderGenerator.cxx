@@ -755,13 +755,13 @@ synthesize_shader(const RenderState *rs) {
     text << "\t // Begin model-space light summation\n";
     if (_have_emission) {
       if (_map_index_glow >= 0) {
-        text << "\t result = attr_material[2] * tex" << _map_index_glow << ".a;\n";
+        text << "\t result = attr_material[2] * saturate(2 * (tex" << _map_index_glow << ".a - 0.5));\n";
       } else {
         text << "\t result = attr_material[2];\n";
       }
     } else {
       if (_map_index_glow >= 0) {
-        text << "\t result = tex" << _map_index_glow << ".aaaa;\n";
+        text << "\t result = saturate(2 * (tex" << _map_index_glow << ".a - 0.5));\n";
       } else {
         text << "\t result = float4(0,0,0,0);\n";
       }
