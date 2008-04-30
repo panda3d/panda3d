@@ -127,6 +127,13 @@
   #define gl_framework $[GL_FRAMEWORK]
 #endif
 
+#if $[HAVE_TINYSDGL]
+  #define tinysdgl_ipath $[wildcard $[TINYSDGL_IPATH]]
+  #define tinysdgl_lpath $[wildcard $[TINYSDGL_LPATH]]
+  #define tinysdgl_cflags $[TINYSDGL_CFLAGS]
+  #define tinysdgl_libs $[TINYSDGL_LIBS]
+#endif
+
 #if $[HAVE_MESA]
   #define mesa_ipath $[wildcard $[MESA_IPATH]]
   #define mesa_lpath $[wildcard $[MESA_LPATH]]

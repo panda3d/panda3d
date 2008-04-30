@@ -688,7 +688,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
 
   // Nothing in the map; create a new entry.
   PT(GeomMunger) munger = make_geom_munger(nc_state, current_thread);
-  nassertr(munger->is_registered(), munger);
+  nassertr(munger != (GeomMunger *)NULL && munger->is_registered(), munger);
 
   mi = nc_state->_mungers.insert(RenderState::Mungers::value_type(this, munger)).first;
   nc_state->_last_mi = mi;

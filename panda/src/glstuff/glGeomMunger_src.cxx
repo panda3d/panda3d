@@ -27,7 +27,7 @@ ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(GeomMunger)::
+CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
   _texture(state->get_texture()),
