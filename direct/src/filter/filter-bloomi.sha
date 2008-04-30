@@ -60,22 +60,22 @@ void fshader(float2 l_texcoordNW : TEXCOORD0,
              uniform float4 k_desat
              )
 {
-  float4 inputNW = tex2D(k_src, l_texcoordNW);
+  float4 inputNW = tex2D(k_src, l_texcoordNW) - float4(0,0,0,0.5);
   float briteNW = dot(inputNW, k_blend);
   float scaleNW = saturate((briteNW - k_trigger.x) * k_trigger.y);
   float4 colorNW = scaleNW * lerp(inputNW, float4(1,1,1,1), k_desat.x);
 
-  float4 inputNE = tex2D(k_src, l_texcoordNE);
+  float4 inputNE = tex2D(k_src, l_texcoordNE) - float4(0,0,0,0.5);
   float briteNE = dot(inputNE, k_blend);
   float scaleNE = saturate((briteNE - k_trigger.x) * k_trigger.y);
   float4 colorNE = scaleNE * lerp(inputNE, float4(1,1,1,1), k_desat.x);
 
-  float4 inputSW = tex2D(k_src, l_texcoordSW);
+  float4 inputSW = tex2D(k_src, l_texcoordSW) - float4(0,0,0,0.5);
   float briteSW = dot(inputSW, k_blend);
   float scaleSW = saturate((briteSW - k_trigger.x) * k_trigger.y);
   float4 colorSW = scaleSW * lerp(inputSW, float4(1,1,1,1), k_desat.x);
 
-  float4 inputSE = tex2D(k_src, l_texcoordSE);
+  float4 inputSE = tex2D(k_src, l_texcoordSE) - float4(0,0,0,0.5);
   float briteSE = dot(inputSE, k_blend);
   float scaleSE = saturate((briteSE - k_trigger.x) * k_trigger.y);
   float4 colorSE = scaleSE * lerp(inputSE, float4(1,1,1,1), k_desat.x);

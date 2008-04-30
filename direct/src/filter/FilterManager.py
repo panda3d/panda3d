@@ -33,7 +33,7 @@ class FilterManager(DirectObject):
 
     notify = None
 
-    def __init__(self, win, cam):
+    def __init__(self, win, cam, forcex=0, forcey=0):
 
         """ The FilterManager constructor requires you to provide
         a window which is rendering a scene, and the camera which is
@@ -60,6 +60,8 @@ class FilterManager(DirectObject):
         # Instance Variables.
 
         self.win = win
+        self.forcex = forcex
+        self.forcey = forcey
         self.engine = win.getGsg().getEngine()
         self.region = region
         self.wclears = self.getClears(self.win)
@@ -106,8 +108,10 @@ class FilterManager(DirectObject):
 
         """ Calculate the size of the desired window. Not public. """
 
-        winx = self.win.getXSize()
-        winy = self.win.getYSize()
+        winx = self.forcex
+        winy = self.forcey
+        if (winx == 0): winx = self.win.getXSize()
+        if (winy == 0): winy = self.win.getYSize()
 
         if (div != 1):
             winx = ((winx+align-1) / align) * align
@@ -121,7 +125,7 @@ class FilterManager(DirectObject):
 
         return winx,winy
 
-    def renderSceneInto(self, depthtex=False, colortex=False, auxtex=False, auxbits=0, textures=None):
+    def renderSceneInto(self, depthtex=None, colortex=None, auxtex=None, auxbits=0, textures=None):
 
         """ Causes the scene to be rendered into the supplied textures
         instead of into the original window.  Puts a fullscreen quad
@@ -167,14 +171,14 @@ class FilterManager(DirectObject):
             depthtex = textures.get("depth", None)
             auxtex = textures.get("aux", None)
 
-        if (colortex == None): colortex = Texture("filter-base-color")
+        if (colortex == None):
+            colortex = Texture("filter-base-color")
 
         texgroup = (depthtex, colortex, auxtex, None)
 
         # Choose the size of the offscreen buffer.
 
-        winx = self.win.getXSize()
-        winy = self.win.getYSize()
+        (winx, winy) = self.getScaledSize(1,1,1)
         buffer = self.createBuffer("filter-base", winx, winy, texgroup)
 
         if (buffer == None):
