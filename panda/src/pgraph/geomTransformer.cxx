@@ -906,7 +906,7 @@ premunge_geom(const Geom *geom, GeomMunger *munger) {
   CPT(Geom) pgeom = geom;
   munger->premunge_geom(pgeom, vdata);
 
-  PT(Geom) geom_copy = geom->make_copy();
+  PT(Geom) geom_copy = pgeom->make_copy();
   geom_copy->set_vertex_data(vdata);
 
   return geom_copy;

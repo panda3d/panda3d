@@ -61,6 +61,7 @@ bool CullableObject::
 munge_geom(GraphicsStateGuardianBase *gsg,
            GeomMunger *munger, const CullTraverser *traverser,
            bool force) {
+  nassertr(munger != (GeomMunger *)NULL, false);
   Thread *current_thread = traverser->get_current_thread();
   PStatTimer timer(_munge_geom_pcollector, current_thread);
   if (_geom != (Geom *)NULL) {
