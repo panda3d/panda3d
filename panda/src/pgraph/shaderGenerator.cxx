@@ -144,6 +144,8 @@ void ShaderGenerator::
 analyze_renderstate(const RenderState *rs) {
   clear_analysis();
 
+  //  verify_enforce_attrib_lock();
+
   rs->store_into_slots(&_attribs);
 
   // Check if there's an alpha test, color blend, or transparency.
@@ -850,14 +852,14 @@ synthesize_shader(const RenderState *rs) {
     if (_map_index_glow >= 0) {
       text << "\t result.a = tex" << _map_index_glow << ".a;\n";
     } else {
-      text << "\t result.a = 0;\n";
+      text << "\t result.a = 0.5;\n";
     }
   }
   if (_out_aux_glow) {
     if (_map_index_glow >= 0) {
       text << "\t o_aux.a = tex" << _map_index_glow << ".a;\n";
     } else {
-      text << "\t o_aux.a = 0;\n";
+      text << "\t o_aux.a = 0.5;\n";
     }
   }
   
