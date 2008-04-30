@@ -177,6 +177,14 @@ process_events() {
     case SDL_MOUSEMOTION:
       _input_devices[0].set_pointer_in_window(evt.motion.x, evt.motion.y);
       break;
+     
+    case SDL_VIDEORESIZE:
+      properties.set_size(evt.resize.w, evt.resize.h);
+      system_changed_properties(properties);
+      _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, _flags);
+      ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+      _pitch = _screen->pitch * TGL_FEATURE_RENDER_BITS / _screen->format->BitsPerPixel;
+      break;
       
     case SDL_QUIT:
       // The window was closed by the user.
@@ -222,6 +230,7 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsWindow::
 close_window() {
+  glClose();
   GraphicsWindow::close_window();
 }
 
@@ -245,8 +254,18 @@ open_window() {
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
   }
-  
-  _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, SDL_SWSURFACE);
+
+  _flags = SDL_SWSURFACE;
+  if (_properties.get_fullscreen()) {
+    _flags |= SDL_FULLSCREEN;
+  }
+  if (!_properties.get_fixed_size()) {
+    _flags |= SDL_RESIZABLE;
+  }
+  if (_properties.get_undecorated()) {
+    _flags |= SDL_NOFRAME;
+  }
+  _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, _flags);
 
   if (_screen == NULL) {
     tinydisplay_cat.error()
@@ -254,33 +273,13 @@ open_window() {
     return false;
   }
 
-  // initialize TinyGL:
-  int mode;
-  switch (_screen->format->BitsPerPixel) {
-  case  8:
+  create_frame_buffer();
+  if (_frame_buffer == NULL) {
     tinydisplay_cat.error()
-      << "SDL Palettes are currently not supported.\n";
+      << "Could not create frame buffer.\n";
     return false;
-
-  case 16:
-    _pitch = _screen->pitch;
-    mode = ZB_MODE_5R6G5B;
-    break;
-  case 24:
-    _pitch = (_screen->pitch * 2) / 3;
-    mode = ZB_MODE_RGB24;
-    break;
-  case 32:
-    _pitch = _screen->pitch / 2;
-    mode = ZB_MODE_RGBA;
-    break;
-
-  default:
-    return false;
-    break;
   }
 
-  _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
   glInit(_frame_buffer);
 
   // Now that we have made the context current to a window, we can
@@ -290,6 +289,45 @@ open_window() {
   tinygsg->reset_if_new();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsWindow::create_frame_buffer
+//       Access: Private
+//  Description: Creates a suitable frame buffer for the current
+//               window size.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsWindow::
+create_frame_buffer() {
+  if (_frame_buffer != NULL) {
+    ZB_close(_frame_buffer);
+    _frame_buffer = NULL;
+  }
+
+  int mode;
+  switch (_screen->format->BitsPerPixel) {
+  case  8:
+    tinydisplay_cat.error()
+      << "SDL Palettes are currently not supported.\n";
+    return;
+
+  case 16:
+    mode = ZB_MODE_5R6G5B;
+    break;
+  case 24:
+    mode = ZB_MODE_RGB24;
+    break;
+  case 32:
+    mode = ZB_MODE_RGBA;
+    break;
+
+  default:
+    return;
+  }
+
+  _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
+
+  _pitch = _screen->pitch * TGL_FEATURE_RENDER_BITS / _screen->format->BitsPerPixel;
 }
 
 ////////////////////////////////////////////////////////////////////

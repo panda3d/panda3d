@@ -58,12 +58,14 @@ protected:
   virtual bool open_window();
 
 private:
+  void create_frame_buffer();
   static ButtonHandle get_keyboard_button(SDLKey sym);
   static ButtonHandle get_mouse_button(Uint8 button);
 
 private:
   SDL_Surface *_screen;
   ZBuffer *_frame_buffer;
+  unsigned int _flags;
   unsigned int _pitch;
 
 public:
