@@ -398,7 +398,7 @@ begin_scene() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_scene
+//     Function: TinyGraphicsStateGuardian::end_scene
 //       Access: Protected, Virtual
 //  Description: Called between begin_frame() and end_frame() to mark
 //               the end of drawing commands for a "scene" (usually a
@@ -412,7 +412,7 @@ end_scene() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_frame
+//     Function: TinyGraphicsStateGuardian::end_frame
 //       Access: Public, Virtual
 //  Description: Called after each frame is rendered, to allow the
 //               GSG a chance to do any internal cleanup after
@@ -428,7 +428,7 @@ end_frame(Thread *current_thread) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::begin_draw_primitives
+//     Function: TinyGraphicsStateGuardian::begin_draw_primitives
 //       Access: Public, Virtual
 //  Description: Called before a sequence of draw_primitive()
 //               functions are called, this should prepare the vertex
@@ -498,7 +498,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_triangles
+//     Function: TinyGraphicsStateGuardian::draw_triangles
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected triangles.
 ////////////////////////////////////////////////////////////////////
@@ -517,7 +517,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_lines
+//     Function: TinyGraphicsStateGuardian::draw_lines
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
 ////////////////////////////////////////////////////////////////////
@@ -535,7 +535,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_points
+//     Function: TinyGraphicsStateGuardian::draw_points
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected points.
 ////////////////////////////////////////////////////////////////////
@@ -553,7 +553,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::end_draw_primitives()
+//     Function: TinyGraphicsStateGuardian::end_draw_primitives()
 //       Access: Public, Virtual
 //  Description: Called after a sequence of draw_primitive()
 //               functions are called, this should do whatever cleanup
