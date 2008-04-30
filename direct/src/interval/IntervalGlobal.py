@@ -27,14 +27,21 @@ from pandac.PandaModules import WaitInterval
 def cleanupDelayDeletes(interval):
     if hasattr(interval, 'delayDelete'):
         delayDelete = interval.delayDelete
-        # get rid of the reference before calling destroy in case destroy causes
+        # get rid of all references before calling destroy in case destroy causes
         # this function to be called again
         del interval.delayDelete
-        delayDelete.destroy()
+        if type(delayDelete) == type([]):
+            for i in delayDelete:
+                i.destroy()
+        else:
+            delayDelete.destroy()
     if hasattr(interval, 'delayDeletes'):
         delayDeletes = interval.delayDeletes
         # get rid of the reference before calling destroy in case destroy causes
         # this function to be called again
         del interval.delayDeletes
-        for i in delayDeletes:
-            i.destroy()
+        if type(delayDeletes) == type([]):
+            for i in delayDeletes:
+                i.destroy()
+        else:
+            delayDeletes.destroy()
