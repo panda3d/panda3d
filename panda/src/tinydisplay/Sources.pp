@@ -20,15 +20,14 @@
     tinyGraphicsStateGuardian.cxx \
     tinyImmediateModeSender.h tinyImmediateModeSender.I \
     tinyImmediateModeSender.cxx \
-    tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h 
-
-  #define INSTALL_HEADERS \
-    tinyGeomMunger.I tinyGeomMunger.h \
-    tinyGraphicsPipe.I tinyGraphicsPipe.h \
-    tinyGraphicsWindow.I tinyGraphicsWindow.h \
-    tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
-    tinyImmediateModeSender.h tinyImmediateModeSender.I \
-    tinyTextureContext.I tinyTextureContext.h 
+    tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
+    api.c arrays.c clear.c clip.c error.c get.c \
+    glu.c image_util.c init.c light.c list.c \
+    matrix.c memory.c misc.c msghandling.c msghandling.h \
+    opinfo.h oscontext.c oscontext.h select.c specbuf.c \
+    specbuf.h texture.c tinygl.h tinyglu.h vertex.c \
+    zbuffer.c zbuffer.h zdither.c zfeatures.h zgl.h zline.c \
+    zline.h zmath.c zmath.h ztriangle.c ztriangle.h
 
 #end lib_target
 

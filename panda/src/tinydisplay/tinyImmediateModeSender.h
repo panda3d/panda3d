@@ -21,9 +21,7 @@
 
 #include "pandabase.h"
 #include "geomVertexReader.h"
-
-// These are actually the TinyGL headers, not the system OpenGL headers.
-#include "GL/gl.h"
+#include "tinygl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyImmediateModeSender

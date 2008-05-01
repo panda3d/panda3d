@@ -22,9 +22,7 @@
 #include "pandabase.h"
 #include "textureContext.h"
 #include "deletedChain.h"
-
-// These are actually the TinyGL headers, not the system OpenGL headers.
-#include "GL/gl.h"
+#include "tinygl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyTextureContext

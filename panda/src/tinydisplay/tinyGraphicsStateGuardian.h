@@ -24,9 +24,7 @@
 #include "graphicsStateGuardian.h"
 #include "tinyGraphicsPipe.h"
 #include "tinyImmediateModeSender.h"
-
-// These are actually the TinyGL headers, not the system OpenGL headers.
-#include "GL/gl.h"
+#include "tinygl.h"
 
 class TinyTextureContext;
 

@@ -23,9 +23,7 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "graphicsPipe.h"
-
-// These are actually the TinyGL headers, not the system OpenGL headers.
-#include "GL/gl.h"
+#include "tinygl.h"
 
 TypeHandle TinyGraphicsWindow::_type_handle;
 
