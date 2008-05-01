@@ -15,6 +15,16 @@ ESDisabled     = 4  # values here and lower are considered "disabled"
 ESGenerating   = 5  # values here and greater are considered "generated"
 ESGenerated    = 6
 
+# update this table if the values above change
+ESNum2Str = {
+    ESNew: 'ESNew',
+    ESDeleted: 'ESDeleted',
+    ESDisabling: 'ESDisabling',
+    ESDisabled: 'ESDisabed',
+    ESGenerating: 'ESGenerating',
+    ESGenerated: 'ESGenerated',
+    }
+
 class DistributedObject(DistributedObjectBase):
     """
     The Distributed Object class is the base class for all network based
@@ -166,6 +176,10 @@ class DistributedObject(DistributedObjectBase):
 
     def acquireDelayDelete(self, name):
         # Also see DelayDelete.py
+        if self.activeState not in (ESGenerating, ESGenerated):
+            self.notify.error(
+                'cannot acquire DelayDelete "%s" on %s because it is in state %s' % (
+                name, self.__class__.__name__, ESNum2Str[self.activeState]))
 
         if self.getDelayDeleteCount() == 0:
             self.cr._addDelayDeletedDO(self)
