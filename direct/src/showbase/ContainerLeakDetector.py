@@ -860,6 +860,7 @@ class ContainerLeakDetector(Job):
         del self._index2delay
 
     def getLeakEvent(self):
+        # sent when a leak is detected
         # passes description string as argument
         return 'containerLeakDetected-%s' % self._serialNum
 
