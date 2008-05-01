@@ -279,7 +279,7 @@ operator () (const TextureAttrib::OnStageNode &a,
     return a._stage->get_priority() > b._stage->get_priority();
   }
   if (a._stage->get_sort() != b._stage->get_sort()) {
-    return a._stage->get_sort() > b._stage->get_sort();
+    return a._stage->get_sort() < b._stage->get_sort();
   }
   return a._implicit_sort < b._implicit_sort;
 }
@@ -294,7 +294,7 @@ INLINE bool TextureAttrib::CompareTextureStageSort::
 operator () (const TextureAttrib::OnStageNode &a, 
              const TextureAttrib::OnStageNode &b) const {
   if (a._stage->get_sort() != b._stage->get_sort()) {
-    return a._stage->get_sort() > b._stage->get_sort();
+    return a._stage->get_sort() < b._stage->get_sort();
   }
   return a._implicit_sort < b._implicit_sort;
 }
