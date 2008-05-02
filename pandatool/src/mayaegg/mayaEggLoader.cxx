@@ -136,50 +136,6 @@ MColor MakeMayaColor(const Colorf &vec)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// MayaEggGroup
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-class MayaEggGroup
-{
-public:
-  string  _name;
-  MObject _parent;
-  MObject _group;
-};
-
-MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
-{
-  MStatus status;
-  MayaEggGroup *pg = FindGroup(context);
-  MayaEggGroup *result = new MayaEggGroup;
-  MFnDagNode dgn;
-
-  MObject parent = MObject::kNullObj;
-  if (pg) {
-    parent = pg->_group;
-  }
-
-  result->_name = group->get_name();
-  result->_group = dgn.create("transform", MString(result->_name.c_str()), parent, &status);
-
-  if (status != MStatus::kSuccess) {
-    status.perror("MFnDagNode:create failed!");
-  }
-  _group_tab[group] = result;
-  return result;
-}
-
-MayaEggGroup *MayaEggLoader::FindGroup(EggGroup *group)
-{
-  if (group==0) {
-    return 0;
-  }
-  return _group_tab[group];
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 // MayaEggTex
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -271,6 +227,53 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
   
   _tex_tab[fn] = res;
   return res;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// MayaEggGroup
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class MayaEggGroup
+{
+public:
+  string  _name;
+  MObject _parent;
+  MObject _group;
+};
+
+MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
+{
+  MStatus status;
+  MayaEggGroup *pg = FindGroup(context);
+  MayaEggGroup *result = new MayaEggGroup;
+  MFnDagNode dgn;
+
+  MObject parent = MObject::kNullObj;
+  if (pg) {
+    parent = pg->_group;
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "parent (group) :" << ((MFnDagNode)parent).name() << endl;
+    }
+  }
+
+  result->_name = group->get_name();
+  result->_group = dgn.create("transform", MString(result->_name.c_str()), parent, &status);
+
+  if (status != MStatus::kSuccess) {
+    status.perror("MFnDagNode:create failed!");
+  }
+  _group_tab[group] = result;
+  return result;
+}
+
+MayaEggGroup *MayaEggLoader::FindGroup(EggGroup *group)
+{
+  if (group==0) {
+    return 0;
+  }
+  return _group_tab[group];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -959,7 +962,9 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     }
     for (unsigned int i=1; i<vertIndices.size()-1; i++) {
       if (poly->has_color()) {
-        mayaloader_cat.info() << "found a face color\n";
+        if (mayaloader_cat.is_spam()) {
+          mayaloader_cat.spam() << "found a face color\n";
+        }
         mesh->_faceIndices.append(mesh->_face_count);
         mesh->_faceColorArray.append(MakeMayaColor(poly->get_color()));
       }
@@ -1080,9 +1085,13 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     MObject parent = MObject::kNullObj;
     if (parentNode) {
       parent = parentNode->_group;
-    }
-    if (mayaloader_cat.is_debug()) {
-      mayaloader_cat.debug() << parentNode->_name << ":" << parent.apiTypeStr() << endl;
+      if (mayaloader_cat.is_debug()) {
+        mayaloader_cat.debug() << "mesh's parent (group) : " << parentNode->_name << endl;
+      }
+    } else {
+      if (mayaloader_cat.is_debug()) {
+        mayaloader_cat.debug() << "mesh's parent (null) : " << endl;
+      }
     }
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
