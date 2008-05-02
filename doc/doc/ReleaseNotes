@@ -1,3 +1,8 @@
+------------------------  RELEASE 1.5.2  ------------------------
+
+This fixes just one serious bug: release 1.5.1 accidentally
+reversed the TextureStage sort order.
+
 ------------------------  RELEASE 1.5.1  ------------------------
 
 Mostly a bugfix release, but adds some minor features too.
