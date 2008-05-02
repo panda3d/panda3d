@@ -57,8 +57,8 @@
 
 
 //#define TGL_FEATURE_RENDER_BITS    15
-#define TGL_FEATURE_RENDER_BITS    16
+//#define TGL_FEATURE_RENDER_BITS    16
 //#define TGL_FEATURE_RENDER_BITS    24
-//#define TGL_FEATURE_RENDER_BITS    32
+#define TGL_FEATURE_RENDER_BITS    32
 
 #endif /* _tgl_features_h_ */

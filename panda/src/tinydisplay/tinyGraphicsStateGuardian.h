@@ -26,7 +26,14 @@
 #include "tinyImmediateModeSender.h"
 #include "tinygl.h"
 
+extern "C" {
+  #include "zmath.h"
+}
+
 class TinyTextureContext;
+struct GLContext;
+struct GLVertex;
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGraphicsStateGuardian
@@ -41,6 +48,7 @@ public:
   virtual ~TinyGraphicsStateGuardian();
 
   virtual void reset();
+  virtual void free_pointers();
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
@@ -98,12 +106,18 @@ private:
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
 
-  void draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode);
+  static void load_matrix(M4 *matrix, const TransformState *transform);
 
   INLINE static GLenum get_light_id(int index);
 
 private:
-  TinyImmediateModeSender _sender;
+  GLContext *_c;
+
+  // Used during being_draw_primitives() .. end_draw_primitives().
+  int _min_vertex;
+  int _max_vertex;
+  GLVertex *_vertices;
+  int _vertices_size;
 
   static PStatCollector _vertices_immediate_pcollector;
 

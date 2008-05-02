@@ -28,9 +28,27 @@ void gl_convertRGB_to_8A8R8G8B(unsigned int *pixmap, unsigned char *rgb,
     n=xsize*ysize;
     for(i=0;i<n;i++) {
         pixmap[i]=(((unsigned int)p[0])<<16) | 
-            (((unsigned int)p[1])<<8) | 
-            (((unsigned int)p[2])); 
+          (((unsigned int)p[1])<<8) | 
+          ((unsigned int)p[2]) | 
+          0xff000000; 
         p+=3;
+    }
+}
+
+void gl_convertRGBA_to_8A8R8G8B(unsigned int *pixmap, unsigned char *rgb,
+                               int xsize, int ysize)
+{
+    int i,n;
+    unsigned char *p;
+    
+    p=rgb;
+    n=xsize*ysize;
+    for(i=0;i<n;i++) {
+        pixmap[i]=(((unsigned int)p[0])<<16) | 
+          (((unsigned int)p[1])<<8) | 
+          ((unsigned int)p[2]) |
+          (((unsigned int)p[3])<<24);
+        p+=4;
     }
 }
 

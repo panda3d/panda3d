@@ -34,6 +34,9 @@
 
 #define RGB_TO_PIXEL(r,g,b) \
   ((((r) >> 1) & 0x7c00) | (((g) >> 6) & 0x03e0) | ((b) >> 11))
+#define PIXEL_R(p) (((p) & 0x7c00) << 1)
+#define PIXEL_G(p) (((p) & 0x03e0) << 6)
+#define PIXEL_B(p) (((p) & 0x001f) << 11)
 typedef unsigned short PIXEL;
 /* bytes per pixel */
 #define PSZB 2 
@@ -45,6 +48,9 @@ typedef unsigned short PIXEL;
 /* 16 bit mode */
 #define RGB_TO_PIXEL(r,g,b) \
   (((r) & 0xF800) | (((g) >> 5) & 0x07E0) | ((b) >> 11))
+#define PIXEL_R(p) (((p) & 0xf800))
+#define PIXEL_G(p) (((p) & 0x07e0) << 5)
+#define PIXEL_B(p) (((p) & 0x001f) << 11)
 typedef unsigned short PIXEL;
 #define PSZB 2 
 #define PSZSH 4 
@@ -61,6 +67,9 @@ typedef unsigned char PIXEL;
 
 #define RGB_TO_PIXEL(r,g,b) \
   ((((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
+#define PIXEL_R(p) (((p) & 0xff0000) >> 8)
+#define PIXEL_G(p) ((p) & 0xff00)
+#define PIXEL_B(p) (((p) & 0x00ff) << 8)
 typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5
@@ -70,6 +79,12 @@ typedef unsigned int PIXEL;
 #error Incorrect number of bits per pixel
 
 #endif
+
+#define PIXEL_MULT(p1, p2) \
+  RGB_TO_PIXEL((PIXEL_R(p1) * PIXEL_R(p2)) >> 16, \
+               (PIXEL_G(p1) * PIXEL_G(p2)) >> 16, \
+               (PIXEL_B(p1) * PIXEL_B(p2)) >> 16)
+
 
 typedef struct {
     int xsize,ysize;
@@ -139,6 +154,8 @@ void ZB_fillTriangleMapping(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
 void ZB_fillTriangleMappingPerspective(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingSmooth(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
 

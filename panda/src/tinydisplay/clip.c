@@ -23,19 +23,12 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   v->zp.z= (int) ( v->pc.Z * winv * c->viewport.scale.Z 
                    + c->viewport.trans.Z );
   /* color */
-  if (c->lighting_enabled) {
-      v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
-                    + ZB_POINT_RED_MIN);
-      v->zp.g=(int)(v->color.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN) 
-                    + ZB_POINT_GREEN_MIN);
-      v->zp.b=(int)(v->color.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
-                    + ZB_POINT_BLUE_MIN);
-  } else {
-      /* no need to convert to integer if no lighting : take current color */
-      v->zp.r = c->longcurrent_color[0];
-      v->zp.g = c->longcurrent_color[1];
-      v->zp.b = c->longcurrent_color[2];
-  }
+  v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
+                + ZB_POINT_RED_MIN);
+  v->zp.g=(int)(v->color.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN) 
+                + ZB_POINT_GREEN_MIN);
+  v->zp.b=(int)(v->color.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
+                + ZB_POINT_BLUE_MIN);
   
   /* texture */
 
@@ -295,7 +288,7 @@ static void gl_draw_triangle_clip(GLContext *c,
   int co,c_and,co1,cc[3],edge_flag_tmp,clip_mask;
   GLVertex tmp1,tmp2,*q[3];
   float tt;
-  
+
   cc[0]=p0->clip_code;
   cc[1]=p1->clip_code;
   cc[2]=p2->clip_code;
@@ -405,7 +398,8 @@ void gl_draw_triangle_fill(GLContext *c,
     count_triangles_textured++;
 #endif
     ZB_setTexture(c->zb,c->current_texture->images[0].pixmap);
-    ZB_fillTriangleMappingPerspective(c->zb,&p0->zp,&p1->zp,&p2->zp);
+    //ZB_fillTriangleMappingPerspective(c->zb,&p0->zp,&p1->zp,&p2->zp);
+    ZB_fillTriangleMappingSmooth(c->zb,&p0->zp,&p1->zp,&p2->zp);
   } else if (c->current_shade_model == GL_SMOOTH) {
     ZB_fillTriangleSmooth(c->zb,&p0->zp,&p1->zp,&p2->zp);
   } else {

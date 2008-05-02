@@ -310,6 +310,9 @@ void glInitTextures(GLContext *c);
 void glEndTextures(GLContext *c);
 GLTexture *alloc_texture(GLContext *c,int h);
 
+/* vertex.c */
+void gl_eval_viewport(GLContext *c);
+
 /* image_util.c */
 void gl_convertRGB_to_5R6G5B(unsigned short *pixmap,unsigned char *rgb,
                              int xsize,int ysize);

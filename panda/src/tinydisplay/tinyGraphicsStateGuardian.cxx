@@ -22,6 +22,11 @@
 #include "config_tinydisplay.h"
 #include "pStatTimer.h"
 
+extern "C" {
+#include "zgl.h"
+#include "zmath.h"
+}
+
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
@@ -160,6 +165,67 @@ restructure_image(Texture *tex) {
   return new_image;
 }
 
+static inline void tgl_vertex_transform(GLContext * c, GLVertex * v)
+{
+    float *m;
+    V4 *n;
+
+    if (c->lighting_enabled) {
+	/* eye coordinates needed for lighting */
+
+	m = &c->matrix_stack_ptr[0]->m[0][0];
+	v->ec.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
+		   v->coord.Z * m[2] + m[3]);
+	v->ec.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
+		   v->coord.Z * m[6] + m[7]);
+	v->ec.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
+		   v->coord.Z * m[10] + m[11]);
+	v->ec.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
+		   v->coord.Z * m[14] + m[15]);
+
+	/* projection coordinates */
+	m = &c->matrix_stack_ptr[1]->m[0][0];
+	v->pc.X = (v->ec.X * m[0] + v->ec.Y * m[1] +
+		   v->ec.Z * m[2] + v->ec.W * m[3]);
+	v->pc.Y = (v->ec.X * m[4] + v->ec.Y * m[5] +
+		   v->ec.Z * m[6] + v->ec.W * m[7]);
+	v->pc.Z = (v->ec.X * m[8] + v->ec.Y * m[9] +
+		   v->ec.Z * m[10] + v->ec.W * m[11]);
+	v->pc.W = (v->ec.X * m[12] + v->ec.Y * m[13] +
+		   v->ec.Z * m[14] + v->ec.W * m[15]);
+
+	m = &c->matrix_model_view_inv.m[0][0];
+	n = &c->current_normal;
+
+	v->normal.X = (n->X * m[0] + n->Y * m[1] + n->Z * m[2]);
+	v->normal.Y = (n->X * m[4] + n->Y * m[5] + n->Z * m[6]);
+	v->normal.Z = (n->X * m[8] + n->Y * m[9] + n->Z * m[10]);
+
+	if (c->normalize_enabled) {
+	    gl_V3_Norm(&v->normal);
+	}
+    } else {
+	/* no eye coordinates needed, no normal */
+	/* NOTE: W = 1 is assumed */
+	m = &c->matrix_model_projection.m[0][0];
+
+	v->pc.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
+		   v->coord.Z * m[2] + m[3]);
+	v->pc.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
+		   v->coord.Z * m[6] + m[7]);
+	v->pc.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
+		   v->coord.Z * m[10] + m[11]);
+	if (c->matrix_model_projection_no_w_transform) {
+	    v->pc.W = m[15];
+	} else {
+	    v->pc.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
+		       v->coord.Z * m[14] + m[15]);
+	}
+    }
+
+    v->clip_code = gl_clipcode(v->pc.X, v->pc.Y, v->pc.Z, v->pc.W);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -170,6 +236,9 @@ TinyGraphicsStateGuardian(GraphicsPipe *pipe,
 			 TinyGraphicsStateGuardian *share_with) :
   GraphicsStateGuardian(CS_yup_right, pipe)
 {
+  _c = NULL;
+  _vertices = NULL;
+  _vertices_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -192,6 +261,11 @@ reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
+  _c = gl_get_context();
+
+  _c->draw_triangle_front = gl_draw_triangle_fill;
+  _c->draw_triangle_back = gl_draw_triangle_fill;
+
   _supported_geom_rendering =
     Geom::GR_point | 
     Geom::GR_indexed_other |
@@ -210,6 +284,21 @@ reset() {
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::free_pointers
+//       Access: Protected, Virtual
+//  Description: Frees some memory that was explicitly allocated
+//               within the glgsg.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+free_pointers() {
+  if (_vertices != (GLVertex *)NULL) {
+    PANDA_FREE_ARRAY(_vertices);
+    _vertices = NULL;
+  }
+  _vertices_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,12 +366,31 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 
   int l, b, w, h;
   dr->get_region_pixels(l, b, w, h);
-  GLint x = GLint(l);
-  GLint y = GLint(b);
-  GLsizei width = GLsizei(w);
-  GLsizei height = GLsizei(h);
+  int xmin = GLint(l);
+  int ymin = GLint(b);
+  int xsize = GLsizei(w);
+  int ysize = GLsizei(h);
   
-  glViewport(x, y, width, height);
+  int xsize_req=xmin+xsize;
+  int ysize_req=ymin+ysize;
+  
+  if (_c->gl_resize_viewport && 
+      _c->gl_resize_viewport(_c,&xsize_req,&ysize_req) != 0) {
+    gl_fatal_error("glViewport: error while resizing display");
+  }
+  
+  xsize=xsize_req-xmin;
+  ysize=ysize_req-ymin;
+  if (xsize <= 0 || ysize <= 0) {
+    gl_fatal_error("glViewport: size too small");
+  }
+  
+  _c->viewport.xmin=xmin;
+  _c->viewport.ymin=ymin;
+  _c->viewport.xsize=xsize;
+  _c->viewport.ysize=ysize;
+  
+  gl_eval_viewport(_c);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,13 +449,7 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
 prepare_lens() {
-  if (tinydisplay_cat.is_spam()) {
-    tinydisplay_cat.spam()
-      << "glLoadMatrix(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
-  }
-  glMatrixMode(GL_PROJECTION);
-  glLoadMatrixf(_projection_mat->get_mat().get_data());
-
+  _transform_stale = true;
   return true;
 }
 
@@ -451,47 +553,191 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
-  // We must use immediate mode to render primitives.
-  _sender.clear();
-
-  _sender.add_column(_data_reader, InternalName::get_normal(),
-                     NULL, NULL, glNormal3f, NULL);
-  if (!_sender.add_column(_data_reader, InternalName::get_color(),
-                          NULL, NULL, glColor3f, glColor4f)) {
-    // If we didn't have a color column, the item color is white.
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-  }
-
-  // TinyGL only supports single-texturing, so only bother with the
-  // first texture stage.
-  int max_stage_index = _effective_texture->get_num_on_ff_stages();
-  if (max_stage_index > 0) {
-    TextureStage *stage = _effective_texture->get_on_ff_stage(0);
-    const InternalName *name = stage->get_texcoord_name();
-    _sender.add_column(_data_reader, name,
-                       NULL, glTexCoord2f, NULL, NULL);
-  }
-
-  // We must add vertex last, because glVertex3f() is the key
-  // function call that actually issues the vertex.
-  _sender.add_column(_data_reader, InternalName::get_vertex(),
-                     NULL, glVertex2f, glVertex3f, glVertex4f);
-
-  if (_transform_stale) {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(_internal_transform->get_mat().get_data());
-  }
-
+  // Set up the proper transform.
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview
     // matrix (so we don't attempt to transform it again).
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
+    const TransformState *ident = TransformState::make_identity();
+    load_matrix(_c->matrix_stack_ptr[0], ident);
+    load_matrix(_c->matrix_stack_ptr[1], ident);
+    load_matrix(&_c->matrix_model_view_inv, ident);
+    load_matrix(&_c->matrix_model_projection, ident);
+    _c->matrix_model_projection_no_w_transform = 1;
+    _transform_stale = true;
+
+  } else if (_transform_stale) {
+    // Load the actual transform.
+
+    if (_c->lighting_enabled) {
+      // With the lighting equation, we need to keep the modelview and
+      // projection matrices separate.
+
+      load_matrix(_c->matrix_stack_ptr[0], _internal_transform);
+      load_matrix(_c->matrix_stack_ptr[1], _projection_mat);
+
+      /* precompute inverse modelview */
+      M4 tmp;
+      gl_M4_Inv(&tmp, _c->matrix_stack_ptr[0]);
+      gl_M4_Transpose(&_c->matrix_model_view_inv, &tmp);
+
+    } else {
+      // If we're not using lighting, go ahead and compose the
+      // modelview and projection matrices.
+      load_matrix(&_c->matrix_model_projection, 
+                  _projection_mat->compose(_internal_transform));
+
+      /* test to accelerate computation */
+      _c->matrix_model_projection_no_w_transform = 0;
+      float *m = &_c->matrix_model_projection.m[0][0];
+      if (m[12] == 0.0 && m[13] == 0.0 && m[14] == 0.0) {
+        _c->matrix_model_projection_no_w_transform = 1;
+      }
+    }
+    _transform_stale = false;
+  }
+   
+  /* test if the texture matrix is not Identity */
+  //  _c->apply_texture_matrix = !gl_M4_IsId(_c->matrix_stack_ptr[2]);
+
+  // Figure out the subset of vertices we will be using in this
+  // operation.
+  int num_vertices = data_reader->get_num_rows();
+  _min_vertex = num_vertices;
+  _max_vertex = 0;
+  int num_prims = geom_reader->get_num_primitives();
+  int i;
+  for (i = 0; i < num_prims; ++i) {
+    CPT(GeomPrimitive) prim = geom_reader->get_primitive(i);
+    int nv = prim->get_min_vertex();
+    _min_vertex = min(_min_vertex, nv);
+    int xv = prim->get_max_vertex();
+    _max_vertex = max(_max_vertex, xv);
+  }
+  if (_min_vertex > _max_vertex) {
+    return false;
+  }
+
+  // Now copy all of those vertices into our working table,
+  // transforming into screen space them as we go.
+  int num_used_vertices = _max_vertex - _min_vertex + 1;
+  if (_vertices_size < num_used_vertices) {
+    if (_vertices_size == 0) {
+      _vertices_size = 1;
+    }
+    while (_vertices_size < num_used_vertices) {
+      _vertices_size *= 2;
+    }
+    if (_vertices != (GLVertex *)NULL) {
+      PANDA_FREE_ARRAY(_vertices);
+    }
+    _vertices = (GLVertex *)PANDA_MALLOC_ARRAY(_vertices_size * sizeof(GLVertex));
+  }
+
+  GeomVertexReader rtexcoord, rcolor, rnormal;
+
+  // We only support single-texturing, so only bother with the first
+  // texture stage.
+  bool needs_texcoord = false;
+  const InternalName *texcoord_name = InternalName::get_texcoord();
+  int max_stage_index = _effective_texture->get_num_on_ff_stages();
+  if (max_stage_index > 0) {
+    TextureStage *stage = _effective_texture->get_on_ff_stage(0);
+    rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name());
+    rtexcoord.set_row(_min_vertex);
+    needs_texcoord = rtexcoord.has_column();
+  }
+
+  bool needs_color = false;
+  if (_vertex_colors_enabled) {
+    rcolor = GeomVertexReader(data_reader, InternalName::get_color());
+    rcolor.set_row(_min_vertex);
+    needs_color = rcolor.has_column();
+  }
+
+  if (!needs_color) {
+    if (_has_scene_graph_color) {
+      cerr << "sg color\n";
+      const Colorf &d = _scene_graph_color;
+      _c->current_color.X = d[0];
+      _c->current_color.Y = d[1];
+      _c->current_color.Z = d[2];
+      _c->current_color.W = d[3];
+      
+    } else {
+      _c->current_color.X = 1.0f;
+      _c->current_color.Y = 1.0f;
+      _c->current_color.Z = 1.0f;
+      _c->current_color.W = 1.0f;
+    }
+  }
+
+  bool needs_normal = false;
+  if (_c->lighting_enabled) {
+    rnormal = GeomVertexReader(data_reader, InternalName::get_normal());
+    rnormal.set_row(_min_vertex);
+    needs_normal = rnormal.has_column();
+  }
+
+  GeomVertexReader rvertex(data_reader, InternalName::get_vertex()); 
+  rvertex.set_row(_min_vertex);
+
+  for (i = 0; i < num_used_vertices; ++i) {
+    GLVertex *v = &_vertices[i];
+    const LVecBase4f &d = rvertex.get_data4f();
+    
+    v->coord.X = d[0];
+    v->coord.Y = d[1];
+    v->coord.Z = d[2];
+    v->coord.W = d[3];
+
+    if (needs_texcoord) {
+      const LVecBase2f &d = rtexcoord.get_data2f();
+      v->tex_coord.X = d[0];
+      v->tex_coord.Y = d[1];
+    }
+
+    if (needs_color) {
+      const Colorf &d = rcolor.get_data4f();
+      _c->current_color.X = d[0];
+      _c->current_color.Y = d[1];
+      _c->current_color.Z = d[2];
+      _c->current_color.W = d[3];
+
+      if (_c->color_material_enabled) {
+	GLParam q[7];
+	q[0].op = OP_Material;
+	q[1].i = _c->current_color_material_mode;
+	q[2].i = _c->current_color_material_type;
+	q[3].f = d[0];
+	q[4].f = d[1];
+	q[5].f = d[2];
+	q[6].f = d[3];
+	glopMaterial(_c, q);
+      }
+    }
+
+    v->color = _c->current_color;
+
+    if (needs_normal) {
+      const LVecBase3f &d = rnormal.get_data3f();
+      _c->current_normal.X = d[0];
+      _c->current_normal.Y = d[1];
+      _c->current_normal.Z = d[2];
+      _c->current_normal.W = 0.0f;
+    }
+
+    tgl_vertex_transform(_c, v);
+
+    if (_c->lighting_enabled) {
+      gl_shade_vertex(_c, v);
+    }
+
+    if (v->clip_code == 0) {
+      gl_transform_to_viewport(_c, v);
+    }
+
+    v->edge_flag = 0;
   }
 
   return true;
@@ -512,7 +758,27 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 #endif  // NDEBUG
 
-  draw_immediate_simple_primitives(reader, GL_TRIANGLES);
+  int num_vertices = reader->get_num_vertices();
+  _vertices_immediate_pcollector.add_level(num_vertices);
+
+  if (reader->is_indexed()) {
+    for (int i = 0; i < num_vertices; i += 3) {
+      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
+      GLVertex *v1 = &_vertices[reader->get_vertex(i + 1) - _min_vertex];
+      GLVertex *v2 = &_vertices[reader->get_vertex(i + 2) - _min_vertex];
+      gl_draw_triangle(_c, v0, v1, v2);
+    }
+
+  } else {
+    int delta = reader->get_first_vertex() - _min_vertex;
+    for (int vi = 0; vi < num_vertices; vi += 3) {
+      GLVertex *v0 = &_vertices[vi + delta];
+      GLVertex *v1 = &_vertices[vi + delta + 1];
+      GLVertex *v2 = &_vertices[vi + delta + 2];
+      gl_draw_triangle(_c, v0, v1, v2);
+    }
+  }
+
   return true;
 }
 
@@ -530,7 +796,25 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 #endif  // NDEBUG
 
-  draw_immediate_simple_primitives(reader, GL_LINES);
+  int num_vertices = reader->get_num_vertices();
+  _vertices_immediate_pcollector.add_level(num_vertices);
+
+  if (reader->is_indexed()) {
+    for (int i = 0; i < num_vertices; i += 2) {
+      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
+      GLVertex *v1 = &_vertices[reader->get_vertex(i + 1) - _min_vertex];
+      gl_draw_line(_c, v0, v1);
+    }
+
+  } else {
+    int delta = reader->get_first_vertex() - _min_vertex;
+    for (int vi = 0; vi < num_vertices; vi += 2) {
+      GLVertex *v0 = &_vertices[vi + delta];
+      GLVertex *v1 = &_vertices[vi + delta + 1];
+      gl_draw_line(_c, v0, v1);
+    }
+  }
+
   return true;
 }
 
@@ -548,7 +832,23 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 #endif  // NDEBUG
 
-  draw_immediate_simple_primitives(reader, GL_POINTS);
+  int num_vertices = reader->get_num_vertices();
+  _vertices_immediate_pcollector.add_level(num_vertices);
+
+  if (reader->is_indexed()) {
+    for (int i = 0; i < num_vertices; ++i) {
+      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
+      gl_draw_point(_c, v0);
+    }
+
+  } else {
+    int delta = reader->get_first_vertex() - _min_vertex;
+    for (int vi = 0; vi < num_vertices; ++vi) {
+      GLVertex *v0 = &_vertices[vi + delta];
+      gl_draw_point(_c, v0);
+    }
+  }
+
   return true;
 }
 
@@ -561,19 +861,6 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 end_draw_primitives() {
-  if (_transform_stale) {
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(_internal_transform->get_mat().get_data());
-  }
-
-  if (_data_reader->is_vertex_transformed()) {
-    // Restore the matrices that we pushed above.
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-  }
-
   GraphicsStateGuardian::end_draw_primitives();
 }
 
@@ -854,9 +1141,11 @@ begin_bind_lights() {
   CPT(TransformState) render_transform =
     _cs_transform->compose(_scene_setup->get_world_transform());
 
+  /*
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadMatrixf(render_transform->get_mat().get_data());
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -872,9 +1161,11 @@ void TinyGraphicsStateGuardian::
 end_bind_lights() {
   static PStatCollector _draw_set_state_light_end_bind_pcollector("Draw:Set State:Light:End bind");
   PStatTimer timer(_draw_set_state_light_end_bind_pcollector);
-  
+
+  /*
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -888,16 +1179,8 @@ end_bind_lights() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_transform() {
-  const TransformState *transform = _internal_transform;
-  if (tinydisplay_cat.is_spam()) {
-    tinydisplay_cat.spam()
-      << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
-  }
-
   _transform_state_pcollector.add_level(1);
-  glMatrixMode(GL_MODELVIEW);
-  glLoadMatrixf(transform->get_mat().get_data());
-  _transform_stale = false;
+  _transform_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -931,15 +1214,18 @@ do_issue_render_mode() {
   switch (attrib->get_mode()) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    _c->draw_triangle_front = gl_draw_triangle_fill;
+    _c->draw_triangle_back = gl_draw_triangle_fill;
     break;
 
   case RenderModeAttrib::M_wireframe:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    _c->draw_triangle_front = gl_draw_triangle_line;
+    _c->draw_triangle_back = gl_draw_triangle_line;
     break;
 
   case RenderModeAttrib::M_point:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+    _c->draw_triangle_front = gl_draw_triangle_point;
+    _c->draw_triangle_back = gl_draw_triangle_point;
     break;
 
   default:
@@ -1281,29 +1567,19 @@ upload_texture(TinyTextureContext *gtc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::draw_immediate_simple_primitives
-//       Access: Private
-//  Description: Uses the ImmediateModeSender to draw a series of
-//               primitives of the indicated type.
+//     Function: TinyGraphicsStateGuardian::load_matrix
+//       Access: Private, Static
+//  Description: Copies the Panda matrix stored in the indicated
+//               TransformState object into the indicated TinyGL
+//               matrix.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode) {
-  int num_vertices = reader->get_num_vertices();
-  _vertices_immediate_pcollector.add_level(num_vertices);
-  glBegin(mode);
-
-  if (reader->is_indexed()) {
-    for (int v = 0; v < num_vertices; ++v) {
-      _sender.set_vertex(reader->get_vertex(v));
-      _sender.issue_vertex();
-    }
-
-  } else {
-    _sender.set_vertex(reader->get_first_vertex());
-    for (int v = 0; v < num_vertices; ++v) {
-      _sender.issue_vertex();
-    }
+load_matrix(M4 *matrix, const TransformState *transform) {
+  const LMatrix4f &pm = transform->get_mat();
+  for (int i = 0; i < 4; ++i) {
+    matrix->m[0][i] = pm.get_cell(i, 0);
+    matrix->m[1][i] = pm.get_cell(i, 1);
+    matrix->m[2][i] = pm.get_cell(i, 2);
+    matrix->m[3][i] = pm.get_cell(i, 3);
   }
-
-  glEnd();
 }
