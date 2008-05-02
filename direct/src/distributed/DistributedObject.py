@@ -74,6 +74,8 @@ class DistributedObject(DistributedObjectBase):
             # This is used by doneBarrier().
             self.__barrierContext = None
 
+            self._delayDeleteForceAllow = False
+
             ## TODO: This should probably be move to a derived class for CMU
             ## #zone of the distributed object, default to 0
             ## self.zone = 0
@@ -174,9 +176,16 @@ class DistributedObject(DistributedObjectBase):
     def getDelayDeleteCount(self):
         return len(self._token2delayDeleteName)
 
+    def forceAllowDelayDelete(self):
+        # Toontown has code that creates a DistributedObject manually and then
+        # DelayDeletes it. That code should call this method, otherwise the
+        # DelayDelete system will crash because the object is not generated
+        self._delayDeleteForceAllow = True
+
     def acquireDelayDelete(self, name):
         # Also see DelayDelete.py
-        if self.activeState not in (ESGenerating, ESGenerated):
+        if ((not self._delayDeleteForceAllow) and
+            (self.activeState not in (ESGenerating, ESGenerated))):
             self.notify.error(
                 'cannot acquire DelayDelete "%s" on %s because it is in state %s' % (
                 name, self.__class__.__name__, ESNum2Str[self.activeState]))
