@@ -67,6 +67,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool display_list_animation;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool connect_triangle_strips;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool preserve_triangle_strips;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool dump_generated_shaders;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool enforce_attrib_lock;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_square;

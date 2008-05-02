@@ -40,7 +40,7 @@ operator = (const Material &copy) {
   _specular = copy._specular;
   _emission = copy._emission;
   _shininess = copy._shininess;
-  _flags = copy._flags;
+  _flags = copy._flags & (~F_attrib_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +57,11 @@ operator = (const Material &copy) {
 ////////////////////////////////////////////////////////////////////
 void Material::
 set_ambient(const Colorf &color) {
+  if (enforce_attrib_lock) {
+    if ((_flags & F_ambient)==0) {
+      nassertv(!is_attrib_locked());
+    }
+  }
   _ambient = color;
   _flags |= F_ambient;
 }
@@ -77,6 +82,11 @@ set_ambient(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void Material::
 set_diffuse(const Colorf &color) {
+  if (enforce_attrib_lock) {
+    if ((_flags & F_diffuse)==0) {
+      nassertv(!is_attrib_locked());
+    }
+  }
   _diffuse = color;
   _flags |= F_diffuse;
 }
@@ -96,6 +106,11 @@ set_diffuse(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void Material::
 set_specular(const Colorf &color) {
+  if (enforce_attrib_lock) {
+    if ((_flags & F_specular)==0) {
+      nassertv(!is_attrib_locked());
+    }
+  }
   _specular = color;
   _flags |= F_specular;
 }
@@ -116,6 +131,11 @@ set_specular(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void Material::
 set_emission(const Colorf &color) {
+  if (enforce_attrib_lock) {
+    if ((_flags & F_emission)==0) {
+      nassertv(!is_attrib_locked());
+    }
+  }
   _emission = color;
   _flags |= F_emission;
 }

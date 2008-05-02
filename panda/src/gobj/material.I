@@ -94,6 +94,9 @@ get_ambient() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_ambient() {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   _flags &= ~F_ambient;
   _ambient.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -128,6 +131,9 @@ get_diffuse() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_diffuse() {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   _flags &= ~F_diffuse;
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
@@ -162,6 +168,9 @@ get_specular() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_specular() {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   _flags &= ~F_specular;
   _specular.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -196,6 +205,9 @@ get_emission() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 clear_emission() {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   _flags &= ~F_emission;
   _emission.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -246,6 +258,9 @@ get_local() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_local(bool local) {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   if (local) {
     _flags |= F_local;
   } else {
@@ -275,6 +290,9 @@ get_twoside() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
 set_twoside(bool twoside) {
+  if (enforce_attrib_lock) {
+    nassertv(!is_attrib_locked());
+  }
   if (twoside) {
     _flags |= F_twoside;
   } else {
@@ -310,4 +328,24 @@ operator != (const Material &other) const {
 INLINE bool Material::
 operator < (const Material &other) const {
   return compare_to(other) < 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::is_attrib_locked
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool Material::
+is_attrib_locked() const {
+  return (_flags & F_attrib_lock) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Material::set_attrib_lock
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Material::
+set_attrib_lock() {
+  _flags |= F_attrib_lock;
 }

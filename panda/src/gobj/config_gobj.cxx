@@ -219,6 +219,18 @@ ConfigVariableBool dump_generated_shaders
           "to disk.  This is useful for debugging broken shader "
           "generators."));
 
+ConfigVariableBool enforce_attrib_lock
+("enforce-attrib-lock", true,
+ PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "
+          "constructed, the corresponding Material, Texture, or Light "
+          "is 'attrib locked.'  The attrib lock prevents qualitative "
+          "changes to the object.  This makes it possible to hardwire "
+          "information about material, light, and texture properties "
+          "into generated shaders.  This config variable can disable "
+          "the attrib lock.  Disabling the lock will break the shader "
+          "generator, but doing so may be necessary for backward "
+          "compatibility with old code."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "

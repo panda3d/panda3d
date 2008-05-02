@@ -24,6 +24,7 @@
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "luse.h"
+#include "config_gobj.h"
 
 class FactoryParams;
 
@@ -79,6 +80,9 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent) const;
 
+  INLINE bool is_attrib_locked() const;
+  INLINE void set_attrib_lock();
+
 private:
   Colorf _ambient;
   Colorf _diffuse;
@@ -89,12 +93,13 @@ private:
   static PT(Material) _default;
   
   enum Flags {
-    F_ambient   = 0x001,
-    F_diffuse   = 0x002,
-    F_specular  = 0x004,
-    F_emission  = 0x008,
-    F_local     = 0x010,
-    F_twoside   = 0x020,
+    F_ambient     = 0x001,
+    F_diffuse     = 0x002,
+    F_specular    = 0x004,
+    F_emission    = 0x008,
+    F_local       = 0x010,
+    F_twoside     = 0x020,
+    F_attrib_lock = 0x040
   };
   int _flags;
 
