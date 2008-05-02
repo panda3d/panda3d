@@ -249,10 +249,9 @@ class DistributedObject(DistributedObjectBase):
         # after this is called, the object is no longer an active DistributedObject
         # and it may be placed in the cache
         self.__callbacks = {}
-        if self.cr:
-            self.cr.closeAutoInterests(self)
-            self.setLocation(0,0)
-            self.cr.deleteObjectLocation(self, self.parentId, self.zoneId)
+        self.cr.closeAutoInterests(self)
+        self.setLocation(0,0)
+        self.cr.deleteObjectLocation(self, self.parentId, self.zoneId)
 
     def _destroyDO(self):
         # after this is called, the object is no longer a DistributedObject
