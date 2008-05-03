@@ -49,6 +49,14 @@ typedef unsigned int PIXEL;
                (PIXEL_G(p1) * PIXEL_G(p2)) >> 16, \
                (PIXEL_B(p1) * PIXEL_B(p2)) >> 16)
 
+#define PIXEL_BLEND(r1, g1, b1, r2, g2, b2, a2) \
+  RGBA_TO_PIXEL(((r1) * (0xff00 - (a2)) + (r2) * (a2)) >> 16,   \
+                ((g1) * (0xff00 - (a2)) + (g2) * (a2)) >> 16,   \
+                ((b1) * (0xff00 - (a2)) + (b2) * (a2)) >> 16,   \
+                a2)
+#define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
+  PIXEL_BLEND(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
+
 
 typedef struct {
     int xsize,ysize;
@@ -63,6 +71,7 @@ typedef struct {
     unsigned char *dctable;
     int *ctable;
     PIXEL *current_texture;
+    unsigned int reference_alpha;
 } ZBuffer;
 
 typedef struct {
@@ -106,80 +115,688 @@ void ZB_line_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2);
 
 /* ztriangle.c */
 
-void ZB_fillTriangleFlat_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleFlat_xx_zon_noblend_anone_znone(ZBuffer *zb,
 		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleSmooth_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleSmooth_xx_zon_noblend_anone_znone(ZBuffer *zb,
 		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMapping_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMapping_xx_zon_noblend_anone_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingFlat_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingSmooth_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMappingPerspective_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveFlat_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveSmooth_anone_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
-void ZB_fillTriangleFlat_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleFlat_xx_zon_noblend_anone_zless(ZBuffer *zb,
 		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleSmooth_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleSmooth_xx_zon_noblend_anone_zless(ZBuffer *zb,
 		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMapping_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMapping_xx_zon_noblend_anone_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingFlat_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingSmooth_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMappingPerspective_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveFlat_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveSmooth_anone_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
-void ZB_fillTriangleFlat_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleFlat_xx_zon_noblend_aless_znone(ZBuffer *zb,
 		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleSmooth_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleSmooth_xx_zon_noblend_aless_znone(ZBuffer *zb,
 		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMapping_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMapping_xx_zon_noblend_aless_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingFlat_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingSmooth_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMappingPerspective_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveFlat_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveSmooth_abin_znone(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
-void ZB_fillTriangleFlat_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleFlat_xx_zon_noblend_aless_zless(ZBuffer *zb,
 		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleSmooth_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleSmooth_xx_zon_noblend_aless_zless(ZBuffer *zb,
 		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMapping_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMapping_xx_zon_noblend_aless_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingFlat_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-void ZB_fillTriangleMappingSmooth_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_zless(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMappingPerspective_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveFlat_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingPerspectiveSmooth_abin_zless(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_noblend_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_noblend_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_noblend_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_noblend_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_anone_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_anone_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_aless_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_aless_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_aless_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_aless_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_blend_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_blend_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_anone_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_anone_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_aless_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_aless_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_aless_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_aless_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_blend_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_blend_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
 

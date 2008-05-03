@@ -34,56 +34,458 @@ PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertic
 
 
 static const ZB_fillTriangleFunc fill_tri_funcs
-[2 /* alpha test: anone, abin (binary) */]
+[2 /* depth write: zon, zoff */]
+[3 /* color write: noblend, blend, nocolor */]
+[3 /* alpha test: anone, aless, amore */]
 [2 /* ztest: znone, zless */]
 [3 /* white, flat, smooth */]
 [3 /* untextured, textured, perspective textured */] = {
-  { // alpha test anone
-    {
-      { ZB_fillTriangleFlat_anone_znone,
-        ZB_fillTriangleMapping_anone_znone,
-        ZB_fillTriangleMappingPerspective_anone_znone },
-      { ZB_fillTriangleFlat_anone_znone,
-        ZB_fillTriangleMappingFlat_anone_znone,
-        ZB_fillTriangleMappingPerspectiveFlat_anone_znone },
-      { ZB_fillTriangleSmooth_anone_znone,
-        ZB_fillTriangleMappingSmooth_anone_znone,
-        ZB_fillTriangleMappingPerspectiveSmooth_anone_znone },
+  { // depth write zon
+    { // color write noblend
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMapping_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_znone },
+          { ZB_fillTriangleFlat_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMapping_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_zless },
+          { ZB_fillTriangleFlat_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMapping_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_znone },
+          { ZB_fillTriangleFlat_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMapping_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_zless },
+          { ZB_fillTriangleFlat_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMapping_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_znone },
+          { ZB_fillTriangleFlat_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMapping_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_zless },
+          { ZB_fillTriangleFlat_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_zless },
+        },
+      },
     },
-    {
-      { ZB_fillTriangleFlat_anone_zless,
-        ZB_fillTriangleMapping_anone_zless,
-        ZB_fillTriangleMappingPerspective_anone_zless },
-      { ZB_fillTriangleFlat_anone_zless,
-        ZB_fillTriangleMappingFlat_anone_zless,
-        ZB_fillTriangleMappingPerspectiveFlat_anone_zless },
-      { ZB_fillTriangleSmooth_anone_zless,
-        ZB_fillTriangleMappingSmooth_anone_zless,
-        ZB_fillTriangleMappingPerspectiveSmooth_anone_zless },
+    { // color write blend
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMapping_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_znone },
+          { ZB_fillTriangleFlat_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMapping_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_zless },
+          { ZB_fillTriangleFlat_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMapping_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_znone },
+          { ZB_fillTriangleFlat_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMapping_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_zless },
+          { ZB_fillTriangleFlat_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMapping_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_znone },
+          { ZB_fillTriangleFlat_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMapping_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_zless },
+          { ZB_fillTriangleFlat_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_zless },
+        },
+      },
+    },
+    { // color write nocolor
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMapping_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_znone },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMapping_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_zless },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMapping_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_znone },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMapping_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_zless },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMapping_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_znone },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMapping_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_zless },
+          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_zless },
+        },
+      },
     },
   },
-  { // alpha test abin
-    {
-      { ZB_fillTriangleFlat_abin_znone,
-        ZB_fillTriangleMapping_abin_znone,
-        ZB_fillTriangleMappingPerspective_abin_znone },
-      { ZB_fillTriangleFlat_abin_znone,
-        ZB_fillTriangleMappingFlat_abin_znone,
-        ZB_fillTriangleMappingPerspectiveFlat_abin_znone },
-      { ZB_fillTriangleSmooth_abin_znone,
-        ZB_fillTriangleMappingSmooth_abin_znone,
-        ZB_fillTriangleMappingPerspectiveSmooth_abin_znone },
+  { // depth write zoff
+    { // color write noblend
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMapping_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_znone },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMapping_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_zless },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMapping_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_znone },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMapping_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_zless },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMapping_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_znone },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMapping_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_zless },
+          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_zless },
+        },
+      },
     },
-    {
-      { ZB_fillTriangleFlat_abin_zless,
-        ZB_fillTriangleMapping_abin_zless,
-        ZB_fillTriangleMappingPerspective_abin_zless },
-      { ZB_fillTriangleFlat_abin_zless,
-        ZB_fillTriangleMappingFlat_abin_zless,
-        ZB_fillTriangleMappingPerspectiveFlat_abin_zless },
-      { ZB_fillTriangleSmooth_abin_zless,
-        ZB_fillTriangleMappingSmooth_abin_zless,
-        ZB_fillTriangleMappingPerspectiveSmooth_abin_zless },
+    { // color write blend
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMapping_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_znone },
+          { ZB_fillTriangleFlat_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMapping_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_zless },
+          { ZB_fillTriangleFlat_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMapping_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_znone },
+          { ZB_fillTriangleFlat_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMapping_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_zless },
+          { ZB_fillTriangleFlat_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMapping_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_znone },
+          { ZB_fillTriangleFlat_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMapping_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_zless },
+          { ZB_fillTriangleFlat_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_zless },
+        },
+      },
+    },
+    { // color write nocolor
+      { // alpha test anone
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_znone },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_zless },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_zless },
+        },
+      },
+      { // alpha test aless
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_znone },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_zless },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_zless },
+        },
+      },
+      { // alpha test amore
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_znone },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_znone },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_znone,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_znone },
+        },
+        {
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMapping_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_zless },
+          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_zless },
+          { ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_zless,
+            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_zless },
+        },
+      },
     },
   },
 };
@@ -223,6 +625,19 @@ free_pointers() {
     _vertices = NULL;
   }
   _vertices_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::depth_offset_decals
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG can implement decals using a
+//               DepthOffsetAttrib, or false if that is unreliable
+//               and the three-step rendering process should be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+bool TinyGraphicsStateGuardian::
+depth_offset_decals() {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,9 +1095,49 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // Set up the appropriate function callback for filling triangles,
   // according to the current state.
 
+  int depth_write_state = 0;
+  if (_target._depth_write->get_mode() != DepthWriteAttrib::M_on) {
+    depth_write_state = 1;
+  }
+
+  int color_write_state = 0;
+  switch (_target._transparency->get_mode()) {
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_dual:
+    color_write_state = 1;
+    break;
+
+  default:
+    break;
+  }
+
+  unsigned int color_channels =
+    _target._color_write->get_channels() & _color_write_mask;
+  if (color_channels == ColorWriteAttrib::C_off) {
+    color_write_state = 2;
+  }
+
   int alpha_test_state = 0;
-  if (_target._transparency->get_mode() != TransparencyAttrib::M_none) {
+  switch (_target._alpha_test->get_mode()) {
+  case AlphaTestAttrib::M_none:
+  case AlphaTestAttrib::M_never:
+  case AlphaTestAttrib::M_always:
+  case AlphaTestAttrib::M_equal:
+  case AlphaTestAttrib::M_not_equal:
+    alpha_test_state = 0;
+    break;
+
+  case AlphaTestAttrib::M_less:
+  case AlphaTestAttrib::M_less_equal:
     alpha_test_state = 1;
+    _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
+    break;
+
+  case AlphaTestAttrib::M_greater:
+  case AlphaTestAttrib::M_greater_equal:
+    alpha_test_state = 2;
+    _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
+    break;
   }
 
   int depth_test_state = 1;
@@ -715,7 +1170,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-  _c->zb_fill_tri = fill_tri_funcs[alpha_test_state][depth_test_state][color_state][texture_state];
+  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][color_state][texture_state];
   //_c->zb_fill_tri = ZB_fillTriangleFlat_zless;
   
   return true;

@@ -50,6 +50,8 @@ public:
   virtual void reset();
   virtual void free_pointers();
 
+  virtual bool depth_offset_decals();
+
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
 
