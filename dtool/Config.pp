@@ -616,12 +616,13 @@
 // Similar to MIN_GL_VERSION, above.
 #define MIN_MESA_VERSION 1 1
 
-// Experimental: TinySDGL, a variant on TinyGL ported to SDL.  Used
-// for fast but cheesy software rendering.
-#define TINYSDGL_IPATH
-#define TINYSDGL_LPATH
-#define TINYSDGL_LIBS TinySDGL TinyGLU SDL
-#defer HAVE_TINYSDGL $[libtest $[TINYSDGL_LPATH],$[TINYSDGL_LIBS]]
+// We are experimenting with integrating TinyGL for fast but cheesy
+// software rendering.  Presently, this requires SDL for window
+// management.
+#define SDL_IPATH
+#define SDL_LPATH
+#define SDL_LIBS SDL
+#defer HAVE_SDL $[libtest $[SDL_LPATH],$[SDL_LIBS]]
 
 // Is the Chromium remote-rendering library installed, and where?
 // This should include libcr_opengl32.
