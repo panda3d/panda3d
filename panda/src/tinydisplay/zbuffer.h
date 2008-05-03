@@ -33,13 +33,13 @@
 #define ZB_NB_COLORS    225 /* number of colors for 8 bit display */
 
 #define RGB_TO_PIXEL(r,g,b) \
-  ((((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
+  ((((unsigned int)(r) << 8) & 0xff0000) | ((unsigned int)(g) & 0xff00) | ((unsigned int)(b) >> 8))
 #define RGBA_TO_PIXEL(r,g,b,a)                                   \
-  ((((a) << 16) & 0xff000000) | (((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
-#define PIXEL_R(p) (((p) & 0xff0000) >> 8)
-#define PIXEL_G(p) ((p) & 0xff00)
-#define PIXEL_B(p) (((p) & 0x00ff) << 8)
-#define PIXEL_A(p) (((p) & 0xff000000) >> 16)
+  ((((unsigned int)(a) << 16) & 0xff000000) | (((unsigned int)(r) << 8) & 0xff0000) | ((unsigned int)(g) & 0xff00) | ((unsigned int)(b) >> 8))
+#define PIXEL_R(p) (((unsigned int)(p) & 0xff0000) >> 8)
+#define PIXEL_G(p) ((unsigned int)(p) & 0xff00)
+#define PIXEL_B(p) (((unsigned int)(p) & 0x00ff) << 8)
+#define PIXEL_A(p) (((unsigned int)(p) & 0xff000000) >> 16)
 typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5

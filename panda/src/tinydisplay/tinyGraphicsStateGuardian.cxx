@@ -21,6 +21,7 @@
 #include "tinyTextureContext.h"
 #include "config_tinydisplay.h"
 #include "pStatTimer.h"
+#include "geomVertexReader.h"
 
 extern "C" {
 #include "zgl.h"
@@ -202,6 +203,7 @@ reset() {
 
   _color_scale_via_lighting = false;
   _alpha_scale_via_texture = false;
+  _runtime_color_scale = true;
 
   // Now that the GSG has been initialized, make it available for
   // optimizations.
@@ -578,7 +580,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   if (!needs_color) {
     if (_has_scene_graph_color) {
-      cerr << "sg color\n";
       const Colorf &d = _scene_graph_color;
       _c->current_color.X = d[0];
       _c->current_color.Y = d[1];
@@ -602,6 +603,21 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   GeomVertexReader rvertex(data_reader, InternalName::get_vertex()); 
   rvertex.set_row(_min_vertex);
+
+  if (!needs_color) {
+    if (_c->color_material_enabled) {
+      float *d = _c->current_color.v;
+      GLParam q[7];
+      q[0].op = OP_Material;
+      q[1].i = _c->current_color_material_mode;
+      q[2].i = _c->current_color_material_type;
+      q[3].f = d[0];
+      q[4].f = d[1];
+      q[5].f = d[2];
+      q[6].f = d[3];
+      glopMaterial(_c, q);
+    }
+  }
 
   for (i = 0; i < num_used_vertices; ++i) {
     GLVertex *v = &_vertices[i];
