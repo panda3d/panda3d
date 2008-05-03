@@ -425,6 +425,7 @@ convert_maya() {
     end_frame = get_end_frame();
   } else {
     end_frame = MAnimControl::maxTime().value();
+    //end_frame = MAnimControl::animationEndTime().value(); //masad: we could use this
   }
   if (has_frame_inc()) {
     frame_inc = get_frame_inc();

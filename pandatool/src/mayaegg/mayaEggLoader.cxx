@@ -65,6 +65,7 @@
 #include <maya/MTransformationMatrix.h>
 #include <maya/MFnIkJoint.h>
 #include <maya/MFnSkinCluster.h>
+#include <maya/MAnimControl.h>
 #include <maya/MFnAnimCurve.h>
 #include "post_maya_include.h"
 
@@ -954,7 +955,10 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
-      TexCoordd uv = vtx->get_uv();
+      TexCoordd uv(0,0);
+      if (vtx->has_uv()) {
+        uv = vtx->get_uv();
+      }
       vertIndices.push_back(mesh->GetVert(vtx, context));
       tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));
@@ -1177,6 +1181,9 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
                            << " -ef: " << _end_frame << endl;
   }
 
+  // masad: keep track of maximum frames of animation on all these joints
+  MTime maxFrame(_start_frame - 1, _timeUnit);
+
   for (ei = _anim_tab.begin(); ei != _anim_tab.end(); ++ei) {
     MayaAnim *anim = (*ei).second;
     MObject node = GetDependencyNode(anim->_joint->get_name());
@@ -1263,6 +1270,13 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       mfnAnimCurveSY.addKey(time, scale[1], tangent, tangent, NULL, &status);
       mfnAnimCurveSZ.addKey(time, scale[2], tangent, tangent, NULL, &status);
     }
+    if (maxFrame < time) {
+      maxFrame = time;
+    }
+  }
+  if (anim) {
+    // masad: set the control's max time with maxFrame
+    MAnimControl::setMaxTime(maxFrame);
   }
 
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) {
