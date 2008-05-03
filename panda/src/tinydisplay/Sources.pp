@@ -27,7 +27,7 @@
     opinfo.h oscontext.c oscontext.h select.c specbuf.c \
     specbuf.h texture.c tinygl.h tinyglu.h vertex.c \
     zbuffer.c zbuffer.h zdither.c zfeatures.h zgl.h zline.c \
-    zline.h zmath.c zmath.h ztriangle.c ztriangle.h
+    zline.h zmath.c zmath.h ztriangle.c ztriangle.h ztriangle_two.h
 
 #end lib_target
 

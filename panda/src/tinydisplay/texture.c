@@ -151,12 +151,10 @@ void glopTexImage2D(GLContext *c,GLParam *p)
       pixels1=pixels;
     }
 
-#if TGL_FEATURE_RENDER_BITS == 32
   } else if ((target == GL_TEXTURE_2D && level == 0 && components == 4 && 
        border == 0 && format == GL_RGBA &&
        type == GL_UNSIGNED_BYTE && width == 256 && height == 256)) {
     // RGBA format is acceptable if we have 32 render bits.
-#endif
 
   } else {
     gl_fatal_error("glTexImage2D: combinaison of parameters not handled");
@@ -166,12 +164,6 @@ void glopTexImage2D(GLContext *c,GLParam *p)
   im->xsize=width;
   im->ysize=height;
   if (im->pixmap!=NULL) gl_free(im->pixmap);
-#if TGL_FEATURE_RENDER_BITS == 24 
-  im->pixmap=gl_malloc(width*height*3);
-  if(im->pixmap) {
-      memcpy(im->pixmap,pixels1,width*height*3);
-  }
-#elif TGL_FEATURE_RENDER_BITS == 32
   im->pixmap=gl_malloc(width*height*4);
   if(im->pixmap) {
     if (components == 4) {
@@ -180,14 +172,6 @@ void glopTexImage2D(GLContext *c,GLParam *p)
       gl_convertRGB_to_8A8R8G8B(im->pixmap,pixels1,width,height);
     }
   }
-#elif TGL_FEATURE_RENDER_BITS == 16
-  im->pixmap=gl_malloc(width*height*2);
-  if(im->pixmap) {
-      gl_convertRGB_to_5R6G5B(im->pixmap,pixels1,width,height);
-  }
-#else
-#error TODO
-#endif
   if (do_free) gl_free(pixels1);
 }
 

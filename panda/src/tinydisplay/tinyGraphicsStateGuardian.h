@@ -33,6 +33,7 @@ extern "C" {
 class TinyTextureContext;
 struct GLContext;
 struct GLVertex;
+struct GLImage;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -98,13 +99,19 @@ private:
   void do_issue_transform();
   void do_issue_render_mode();
   void do_issue_cull_face();
-  void do_issue_shade_model();
   void do_issue_material();
   void do_issue_texture();
   void do_issue_blending();
 
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
+
+  static void copy_lum_image(GLImage *im, Texture *tex);
+  static void copy_alpha_image(GLImage *im, Texture *tex);
+  static void copy_one_channel_image(GLImage *im, Texture *tex, int channel);
+  static void copy_la_image(GLImage *im, Texture *tex);
+  static void copy_rgb_image(GLImage *im, Texture *tex);
+  static void copy_rgba_image(GLImage *im, Texture *tex);
 
   static void load_matrix(M4 *matrix, const TransformState *transform);
 

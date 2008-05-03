@@ -26,5 +26,15 @@ INLINE TinyTextureContext::
 TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   TextureContext(pgo, tex)
 {
-  _index = 0;
+  _gltex = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyTextureContext::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE TinyTextureContext::
+~TinyTextureContext() {
+  nassertv(_gltex == NULL);
 }

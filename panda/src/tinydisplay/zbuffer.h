@@ -16,12 +16,14 @@
 #define ZB_POINT_T_MIN ( (1<<21) )
 #define ZB_POINT_T_MAX ( (1<<30)-(1<<21) )
 
-#define ZB_POINT_RED_MIN ( (1<<10) )
-#define ZB_POINT_RED_MAX ( (1<<16)-(1<<10) )
-#define ZB_POINT_GREEN_MIN ( (1<<9) )
-#define ZB_POINT_GREEN_MAX ( (1<<16)-(1<<9) )
-#define ZB_POINT_BLUE_MIN ( (1<<10) )
-#define ZB_POINT_BLUE_MAX ( (1<<16)-(1<<10) )
+#define ZB_POINT_RED_MIN   0x0000
+#define ZB_POINT_RED_MAX   0xff00
+#define ZB_POINT_GREEN_MIN 0x0000
+#define ZB_POINT_GREEN_MAX 0xff00
+#define ZB_POINT_BLUE_MIN  0x0000
+#define ZB_POINT_BLUE_MAX  0xff00
+#define ZB_POINT_ALPHA_MIN 0x0000
+#define ZB_POINT_ALPHA_MAX 0xff00
 
 /* display modes */
 #define ZB_MODE_5R6G5B  1  /* true color 16 bits */
@@ -30,55 +32,17 @@
 #define ZB_MODE_RGB24   4  /* 24 bit rgb mode */
 #define ZB_NB_COLORS    225 /* number of colors for 8 bit display */
 
-#if TGL_FEATURE_RENDER_BITS == 15
-
-#define RGB_TO_PIXEL(r,g,b) \
-  ((((r) >> 1) & 0x7c00) | (((g) >> 6) & 0x03e0) | ((b) >> 11))
-#define PIXEL_R(p) (((p) & 0x7c00) << 1)
-#define PIXEL_G(p) (((p) & 0x03e0) << 6)
-#define PIXEL_B(p) (((p) & 0x001f) << 11)
-typedef unsigned short PIXEL;
-/* bytes per pixel */
-#define PSZB 2 
-/* bits per pixel = (1 << PSZH) */
-#define PSZSH 4 
-
-#elif TGL_FEATURE_RENDER_BITS == 16
-
-/* 16 bit mode */
-#define RGB_TO_PIXEL(r,g,b) \
-  (((r) & 0xF800) | (((g) >> 5) & 0x07E0) | ((b) >> 11))
-#define PIXEL_R(p) (((p) & 0xf800))
-#define PIXEL_G(p) (((p) & 0x07e0) << 5)
-#define PIXEL_B(p) (((p) & 0x001f) << 11)
-typedef unsigned short PIXEL;
-#define PSZB 2 
-#define PSZSH 4 
-
-#elif TGL_FEATURE_RENDER_BITS == 24
-
 #define RGB_TO_PIXEL(r,g,b) \
   ((((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
-typedef unsigned char PIXEL;
-#define PSZB 3
-#define PSZSH 5
-
-#elif TGL_FEATURE_RENDER_BITS == 32
-
-#define RGB_TO_PIXEL(r,g,b) \
-  ((((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
+#define RGBA_TO_PIXEL(r,g,b,a)                                   \
+  ((((a) << 16) & 0xff000000) | (((r) << 8) & 0xff0000) | ((g) & 0xff00) | ((b) >> 8))
 #define PIXEL_R(p) (((p) & 0xff0000) >> 8)
 #define PIXEL_G(p) ((p) & 0xff00)
 #define PIXEL_B(p) (((p) & 0x00ff) << 8)
+#define PIXEL_A(p) (((p) & 0xff000000) >> 16)
 typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5
-
-#else
-
-#error Incorrect number of bits per pixel
-
-#endif
 
 #define PIXEL_MULT(p1, p2) \
   RGB_TO_PIXEL((PIXEL_R(p1) * PIXEL_R(p2)) >> 16, \
@@ -104,7 +68,7 @@ typedef struct {
 typedef struct {
   int x,y,z;     /* integer coordinates in the zbuffer */
   int s,t;       /* coordinates for the mapping */
-  int r,g,b;     /* color indexes */
+  int r,g,b,a;     /* color indexes */
   
   float sz,tz;   /* temporary coordinates for mapping */
 } ZBufferPoint;
@@ -142,20 +106,80 @@ void ZB_line_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2);
 
 /* ztriangle.c */
 
-void ZB_setTexture(ZBuffer *zb, PIXEL *texture);
-
-void ZB_fillTriangleFlat(ZBuffer *zb,
+void ZB_fillTriangleFlat_anone_znone(ZBuffer *zb,
 		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
-
-void ZB_fillTriangleSmooth(ZBuffer *zb,
+void ZB_fillTriangleSmooth_anone_znone(ZBuffer *zb,
 		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMapping(ZBuffer *zb,
+void ZB_fillTriangleMapping_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_anone_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_anone_znone(ZBuffer *zb,
 		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
 
-void ZB_fillTriangleMappingPerspective(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspective_anone_znone(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
-void ZB_fillTriangleMappingSmooth(ZBuffer *zb,
+void ZB_fillTriangleMappingPerspectiveFlat_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_anone_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_anone_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_anone_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_anone_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_anone_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_abin_znone(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_abin_znone(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_abin_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_abin_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_abin_znone(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_abin_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_abin_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_abin_znone(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void ZB_fillTriangleFlat_abin_zless(ZBuffer *zb,
+		 ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleSmooth_abin_zless(ZBuffer *zb,
+		   ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMapping_abin_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingFlat_abin_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+void ZB_fillTriangleMappingSmooth_abin_zless(ZBuffer *zb,
+		    ZBufferPoint *p1,ZBufferPoint *p2,ZBufferPoint *p3);
+
+void ZB_fillTriangleMappingPerspective_abin_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveFlat_abin_zless(ZBuffer *zb,
+                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+void ZB_fillTriangleMappingPerspectiveSmooth_abin_zless(ZBuffer *zb,
                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
 
 

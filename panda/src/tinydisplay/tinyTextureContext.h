@@ -24,6 +24,8 @@
 #include "deletedChain.h"
 #include "tinygl.h"
 
+struct GLTexture;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyTextureContext
 // Description :
@@ -33,8 +35,9 @@ public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(TinyTextureContext);
 
-  // This is the GL "name" of the texture object.
-  GLuint _index;
+  INLINE ~TinyTextureContext();
+
+  GLTexture *_gltex;
 
 public:
   static TypeHandle get_class_type() {

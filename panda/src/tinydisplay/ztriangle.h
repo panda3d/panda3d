@@ -23,6 +23,7 @@
   int r1,drdx,drdy,drdl_min,drdl_max;
   int g1,dgdx,dgdy,dgdl_min,dgdl_max;
   int b1,dbdx,dbdy,dbdl_min,dbdl_max;
+  int a1,dadx,dady,dadl_min,dadl_max;
 #endif
 #ifdef INTERP_ST
   int s1,dsdx,dsdy,dsdl_min,dsdl_max;
@@ -90,6 +91,11 @@
   d2 = p2->b - p0->b;
   dbdx = (int) (fdy2 * d1 - fdy1 * d2);
   dbdy = (int) (fdx1 * d2 - fdx2 * d1);
+
+  d1 = p1->a - p0->a;
+  d2 = p2->a - p0->a;
+  dadx = (int) (fdy2 * d1 - fdy1 * d2);
+  dady = (int) (fdx1 * d2 - fdx2 * d1);
 
 #endif
   
@@ -203,6 +209,10 @@
       b1=l1->b;
       dbdl_min=(dbdy + dbdx * dxdy_min);
       dbdl_max=dbdl_min + dbdx;
+      
+      a1=l1->a;
+      dadl_min=(dady + dadx * dxdy_min);
+      dadl_max=dadl_min + dadx;
 #endif
 #ifdef INTERP_ST
       s1=l1->s;
@@ -250,7 +260,7 @@
           register unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB
-          register unsigned int or1,og1,ob1;
+          register unsigned int or1,og1,ob1,oa1;
 #endif
 #ifdef INTERP_ST
           register unsigned int s,t;
@@ -269,6 +279,7 @@
           or1 = r1;
           og1 = g1;
           ob1 = b1;
+          oa1 = a1;
 #endif
 #ifdef INTERP_ST
           s=s1;
@@ -314,6 +325,7 @@
 	r1+=drdl_max;
 	g1+=dgdl_max;
 	b1+=dbdl_max;
+	a1+=dadl_max;
 #endif
 #ifdef INTERP_ST
 	s1+=dsdl_max;

@@ -29,6 +29,8 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
                 + ZB_POINT_GREEN_MIN);
   v->zp.b=(int)(v->color.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
                 + ZB_POINT_BLUE_MIN);
+  v->zp.a=(int)(v->color.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN) 
+                + ZB_POINT_ALPHA_MIN);
   
   /* texture */
 
@@ -78,6 +80,7 @@ static inline void interpolate(GLVertex *q,GLVertex *p0,GLVertex *p1,float t)
   q->color.v[0]=p0->color.v[0] + (p1->color.v[0]-p0->color.v[0])*t;
   q->color.v[1]=p0->color.v[1] + (p1->color.v[1]-p0->color.v[1])*t;
   q->color.v[2]=p0->color.v[2] + (p1->color.v[2]-p0->color.v[2])*t;
+  q->color.v[3]=p0->color.v[3] + (p1->color.v[3]-p0->color.v[3])*t;
 }
 
 /*
@@ -212,10 +215,12 @@ static inline void updateTmp(GLContext *c,
     q->color.v[0]=p0->color.v[0] + (p1->color.v[0]-p0->color.v[0])*t;
     q->color.v[1]=p0->color.v[1] + (p1->color.v[1]-p0->color.v[1])*t;
     q->color.v[2]=p0->color.v[2] + (p1->color.v[2]-p0->color.v[2])*t;
+    q->color.v[3]=p0->color.v[3] + (p1->color.v[3]-p0->color.v[3])*t;
   } else {
     q->color.v[0]=p0->color.v[0];
     q->color.v[1]=p0->color.v[1];
     q->color.v[2]=p0->color.v[2];
+    q->color.v[3]=p0->color.v[3];
   }
 
   if (c->texture_2d_enabled) {
@@ -393,18 +398,13 @@ void gl_draw_triangle_fill(GLContext *c,
   }
 #endif
     
-  if (c->texture_2d_enabled) {
 #ifdef PROFILE
+  if (c->texture_2d_enabled) {
     count_triangles_textured++;
-#endif
-    ZB_setTexture(c->zb,c->current_texture->images[0].pixmap);
-    //ZB_fillTriangleMappingPerspective(c->zb,&p0->zp,&p1->zp,&p2->zp);
-    ZB_fillTriangleMappingSmooth(c->zb,&p0->zp,&p1->zp,&p2->zp);
-  } else if (c->current_shade_model == GL_SMOOTH) {
-    ZB_fillTriangleSmooth(c->zb,&p0->zp,&p1->zp,&p2->zp);
-  } else {
-    ZB_fillTriangleFlat(c->zb,&p0->zp,&p1->zp,&p2->zp);
   }
+#endif
+
+  (*c->zb_fill_tri)(c->zb,&p0->zp,&p1->zp,&p2->zp);
 }
 
 /* Render a clipped triangle in line mode */  

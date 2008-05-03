@@ -181,7 +181,7 @@ process_events() {
       system_changed_properties(properties);
       _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, _flags);
       ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
-      _pitch = _screen->pitch * TGL_FEATURE_RENDER_BITS / _screen->format->BitsPerPixel;
+      _pitch = _screen->pitch * 32 / _screen->format->BitsPerPixel;
       break;
       
     case SDL_QUIT:
@@ -325,7 +325,7 @@ create_frame_buffer() {
 
   _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
 
-  _pitch = _screen->pitch * TGL_FEATURE_RENDER_BITS / _screen->format->BitsPerPixel;
+  _pitch = _screen->pitch * 32 / _screen->format->BitsPerPixel;
 }
 
 ////////////////////////////////////////////////////////////////////

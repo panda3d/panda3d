@@ -31,139 +31,61 @@ TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
 
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_bgr_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               BGR to RGB arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_bgr_to_rgb(unsigned char *dest, const unsigned char *source,
-                 int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[2];
-    dest[1] = source[1];
-    dest[2] = source[0];
-    dest += 3;
-    source += 3;
-  }
-}
 
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_bgra_to_rgba
-//  Description: Recopies the given array of pixels, converting from
-//               BGRA to RGBA arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_bgra_to_rgba(unsigned char *dest, const unsigned char *source,
-                   int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[2];
-    dest[1] = source[1];
-    dest[2] = source[0];
-    dest[3] = source[3];
-    dest += 4;
-    source += 4;
-  }
-}
-*/
-
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_bgra_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               BGRA to RGB arrangement, dropping alpha.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_bgra_to_rgb(unsigned char *dest, const unsigned char *source,
-                  int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[2] * source[3] / 255;
-    dest[1] = source[1] * source[3] / 255;
-    dest[2] = source[0] * source[3] / 255;
-    dest += 3;
-    source += 4;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_lum_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               luminance to RGB arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_lum_to_rgb(unsigned char *dest, const unsigned char *source,
-                 int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[0] = source[0];
-    dest[1] = source[0];
-    dest[2] = source[0];
-    dest += 3;
-    source += 1;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: uchar_la_to_rgb
-//  Description: Recopies the given array of pixels, converting from
-//               luminance-alpha to RGB arrangement.
-////////////////////////////////////////////////////////////////////
-static void
-uchar_la_to_rgb(unsigned char *dest, const unsigned char *source,
-                 int num_pixels) {
-  for (int i = 0; i < num_pixels; i++) {
-    dest[2] = dest[1] = dest[0] = source[0] * source[1] / 255;
-    dest += 3;
-    source += 2;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: restructure_image
-//  Description: Converts the pixels of the image to the appropriate
-//               format for TinyGL (i.e. GL_RGB).
-////////////////////////////////////////////////////////////////////
-static PTA_uchar
-restructure_image(Texture *tex) {
-  int num_pixels = tex->get_x_size() * tex->get_y_size();
-  CPTA_uchar orig_image = tex->get_ram_image();
-  PTA_uchar new_image = PTA_uchar::empty_array(num_pixels * 3);
-
-  switch (tex->get_format()) {
-  case Texture::F_rgb:
-  case Texture::F_rgb5:
-  case Texture::F_rgb8:
-  case Texture::F_rgb12:
-  case Texture::F_rgb332:
-    uchar_bgr_to_rgb(new_image, orig_image, num_pixels);
-    break;
-
-  case Texture::F_rgba:
-  case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
-  case Texture::F_rgba8:
-  case Texture::F_rgba12:
-  case Texture::F_rgba16:
-  case Texture::F_rgba32:
-    uchar_bgra_to_rgb(new_image, orig_image, num_pixels);
-    break;
-
-  case Texture::F_luminance:
-  case Texture::F_alpha:
-    uchar_lum_to_rgb(new_image, orig_image, num_pixels);
-    break;
-
-  case Texture::F_luminance_alphamask:
-  case Texture::F_luminance_alpha:
-    uchar_la_to_rgb(new_image, orig_image, num_pixels);
-    break;
-
-  default:
-    break;
-  }
-
-  return new_image;
-}
+static const ZB_fillTriangleFunc fill_tri_funcs
+[2 /* alpha test: anone, abin (binary) */]
+[2 /* ztest: znone, zless */]
+[3 /* white, flat, smooth */]
+[3 /* untextured, textured, perspective textured */] = {
+  { // alpha test anone
+    {
+      { ZB_fillTriangleFlat_anone_znone,
+        ZB_fillTriangleMapping_anone_znone,
+        ZB_fillTriangleMappingPerspective_anone_znone },
+      { ZB_fillTriangleFlat_anone_znone,
+        ZB_fillTriangleMappingFlat_anone_znone,
+        ZB_fillTriangleMappingPerspectiveFlat_anone_znone },
+      { ZB_fillTriangleSmooth_anone_znone,
+        ZB_fillTriangleMappingSmooth_anone_znone,
+        ZB_fillTriangleMappingPerspectiveSmooth_anone_znone },
+    },
+    {
+      { ZB_fillTriangleFlat_anone_zless,
+        ZB_fillTriangleMapping_anone_zless,
+        ZB_fillTriangleMappingPerspective_anone_zless },
+      { ZB_fillTriangleFlat_anone_zless,
+        ZB_fillTriangleMappingFlat_anone_zless,
+        ZB_fillTriangleMappingPerspectiveFlat_anone_zless },
+      { ZB_fillTriangleSmooth_anone_zless,
+        ZB_fillTriangleMappingSmooth_anone_zless,
+        ZB_fillTriangleMappingPerspectiveSmooth_anone_zless },
+    },
+  },
+  { // alpha test abin
+    {
+      { ZB_fillTriangleFlat_abin_znone,
+        ZB_fillTriangleMapping_abin_znone,
+        ZB_fillTriangleMappingPerspective_abin_znone },
+      { ZB_fillTriangleFlat_abin_znone,
+        ZB_fillTriangleMappingFlat_abin_znone,
+        ZB_fillTriangleMappingPerspectiveFlat_abin_znone },
+      { ZB_fillTriangleSmooth_abin_znone,
+        ZB_fillTriangleMappingSmooth_abin_znone,
+        ZB_fillTriangleMappingPerspectiveSmooth_abin_znone },
+    },
+    {
+      { ZB_fillTriangleFlat_abin_zless,
+        ZB_fillTriangleMapping_abin_zless,
+        ZB_fillTriangleMappingPerspective_abin_zless },
+      { ZB_fillTriangleFlat_abin_zless,
+        ZB_fillTriangleMappingFlat_abin_zless,
+        ZB_fillTriangleMappingPerspectiveFlat_abin_zless },
+      { ZB_fillTriangleSmooth_abin_zless,
+        ZB_fillTriangleMappingSmooth_abin_zless,
+        ZB_fillTriangleMappingPerspectiveSmooth_abin_zless },
+    },
+  },
+};
 
 static inline void tgl_vertex_transform(GLContext * c, GLVertex * v)
 {
@@ -581,18 +503,17 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       gl_M4_Inv(&tmp, _c->matrix_stack_ptr[0]);
       gl_M4_Transpose(&_c->matrix_model_view_inv, &tmp);
 
-    } else {
-      // If we're not using lighting, go ahead and compose the
-      // modelview and projection matrices.
-      load_matrix(&_c->matrix_model_projection, 
-                  _projection_mat->compose(_internal_transform));
+    }
 
-      /* test to accelerate computation */
-      _c->matrix_model_projection_no_w_transform = 0;
-      float *m = &_c->matrix_model_projection.m[0][0];
-      if (m[12] == 0.0 && m[13] == 0.0 && m[14] == 0.0) {
-        _c->matrix_model_projection_no_w_transform = 1;
-      }
+    // Compose the modelview and projection matrices.
+    load_matrix(&_c->matrix_model_projection, 
+                _projection_mat->compose(_internal_transform));
+
+    /* test to accelerate computation */
+    _c->matrix_model_projection_no_w_transform = 0;
+    float *m = &_c->matrix_model_projection.m[0][0];
+    if (m[12] == 0.0 && m[13] == 0.0 && m[14] == 0.0) {
+      _c->matrix_model_projection_no_w_transform = 1;
     }
     _transform_stale = false;
   }
@@ -740,6 +661,47 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     v->edge_flag = 0;
   }
 
+  // Set up the appropriate function callback for filling triangles,
+  // according to the current state.
+
+  int alpha_test_state = 0;
+  if (_target._transparency->get_mode() != TransparencyAttrib::M_none) {
+    alpha_test_state = 1;
+  }
+
+  int depth_test_state = 1;
+  if (_target._depth_test->get_mode() == DepthTestAttrib::M_none) {
+    depth_test_state = 0;
+  }
+  
+  ShadeModelAttrib::Mode shade_model = _target._shade_model->get_mode();
+  if (!needs_normal && !needs_color) {
+    // With no per-vertex lighting, and no per-vertex colors, we might
+    // as well use the flat shading model.
+    shade_model = ShadeModelAttrib::M_flat;
+  }
+  int color_state = 2;  // smooth
+  if (shade_model == ShadeModelAttrib::M_flat) {
+    color_state = 1;  // flat
+    if (_c->current_color.X == 1.0f &&
+        _c->current_color.Y == 1.0f &&
+        _c->current_color.Z == 1.0f &&
+        _c->current_color.W == 1.0f) {
+      color_state = 0;  // white
+    }
+  }
+
+  int texture_state = 0;  // untextured
+  if (_c->texture_2d_enabled) {
+    texture_state = 2;  // perspective-correct textures
+    if (_c->matrix_model_projection_no_w_transform) {
+      texture_state = 1;  // non-perspective-correct textures
+    }
+  }
+
+  _c->zb_fill_tri = fill_tri_funcs[alpha_test_state][depth_test_state][color_state][texture_state];
+  //_c->zb_fill_tri = ZB_fillTriangleFlat_zless;
+  
   return true;
 }
 
@@ -962,12 +924,6 @@ set_state_and_transform(const RenderState *target,
     _state._render_mode = _target._render_mode;
   }
 
-  if (_target._shade_model != _state._shade_model) {
-    PStatTimer timer(_draw_set_state_shade_model_pcollector);
-    do_issue_shade_model();
-    _state._shade_model = _target._shade_model;
-  }
-
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
       (_target._color_blend != _state._color_blend)) {
@@ -1035,7 +991,7 @@ prepare_texture(Texture *tex) {
   }
 
   TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
-  glGenTextures(1, &gtc->_index);
+  gtc->_gltex = (GLTexture *)gl_zalloc(sizeof(GLTexture));
 
   apply_texture(gtc);
   return gtc;
@@ -1053,9 +1009,22 @@ void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
-  glDeleteTextures(1, &gtc->_index);
+  if (_c->current_texture == gtc->_gltex) {
+    _c->current_texture = NULL;
+    _c->zb->current_texture = NULL;
+    _c->texture_2d_enabled = false;
+  }
 
-  gtc->_index = 0;
+  for (int i = 0; i < MAX_TEXTURE_LEVELS; i++) {
+    GLImage *im = &gtc->_gltex->images[i];
+    if (im->pixmap != NULL) {
+      gl_free(im->pixmap);
+    }
+  }
+
+  gl_free(gtc->_gltex);
+  gtc->_gltex = NULL;
+
   delete gtc;
 }
 
@@ -1181,25 +1150,6 @@ void TinyGraphicsStateGuardian::
 do_issue_transform() {
   _transform_state_pcollector.add_level(1);
   _transform_stale = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::do_issue_shade_model
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
-do_issue_shade_model() {
-  const ShadeModelAttrib *attrib = _target._shade_model;
-  switch (attrib->get_mode()) {
-  case ShadeModelAttrib::M_smooth:
-    glShadeModel(GL_SMOOTH);
-    break;
-
-  case ShadeModelAttrib::M_flat:
-    glShadeModel(GL_FLAT);
-    break;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1339,7 +1289,7 @@ do_issue_material() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_texture() {
-  glDisable(GL_TEXTURE_2D);
+  _c->texture_2d_enabled = false;
 
   int num_stages = _effective_texture->get_num_on_ff_stages();
   if (num_stages == 0) {
@@ -1359,7 +1309,6 @@ do_issue_texture() {
   }
     
   // Then, turn on the current texture mode.
-  glEnable(GL_TEXTURE_2D);
   apply_texture(tc);
 
   /*
@@ -1508,12 +1457,13 @@ apply_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   gtc->set_active(true);
-  glBindTexture(GL_TEXTURE_2D, gtc->_index);
+  _c->current_texture = gtc->_gltex;
+  _c->texture_2d_enabled = true;
 
   if (gtc->was_image_modified()) {
     // If the texture image was modified, reload the texture.
     if (!upload_texture(gtc)) {
-      glDisable(GL_TEXTURE_2D);
+      _c->texture_2d_enabled = false;
     }
     gtc->mark_loaded();
 
@@ -1522,6 +1472,8 @@ apply_texture(TextureContext *tc) {
     // reload the texture.
     gtc->mark_loaded();
   }
+
+  _c->zb->current_texture = (PIXEL *)gtc->_gltex->images[0].pixmap;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1541,29 +1493,408 @@ upload_texture(TinyTextureContext *gtc) {
     tinydisplay_cat.debug()
       << "loading texture " << tex->get_name() << "\n";
   }
-  CPTA_uchar image = tex->get_ram_image();
-  nassertr(!image.is_null(), false)
-
-  int width = tex->get_x_size();
-  int height = tex->get_y_size();
-
-  PTA_uchar new_image = restructure_image(tex);
-  const unsigned char *image_ptr = new_image.p();
-
 #ifdef DO_PSTATS
-  _data_transferred_pcollector.add_level(new_image.size());
+  _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
-  glTexImage2D(GL_TEXTURE_2D, 0, 3,
-               width, height, 0,
-               GL_RGB, GL_UNSIGNED_BYTE, (void *)image_ptr);
+
+  // Internal texture size is always 256 x 256 x 4.
+  static const int iwidth = 256;
+  static const int iheight = 256;
+  static const int ibytecount = iwidth * iheight * 4;
+
+  GLImage *im = &gtc->_gltex->images[0];
+  im->xsize = iwidth;
+  im->ysize = iheight;
+  if (im->pixmap == NULL) {
+    im->pixmap = gl_malloc(ibytecount);
+  }
+
+  switch (tex->get_format()) {
+  case Texture::F_rgb:
+  case Texture::F_rgb5:
+  case Texture::F_rgb8:
+  case Texture::F_rgb12:
+  case Texture::F_rgb332:
+    copy_rgb_image(im, tex);
+    break;
+
+  case Texture::F_rgba:
+  case Texture::F_rgbm:
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
+  case Texture::F_rgba8:
+  case Texture::F_rgba12:
+  case Texture::F_rgba16:
+  case Texture::F_rgba32:
+    copy_rgba_image(im, tex);
+    break;
+
+  case Texture::F_luminance:
+    copy_lum_image(im, tex);
+    break;
+
+  case Texture::F_red:
+    copy_one_channel_image(im, tex, 0);
+    break;
+
+  case Texture::F_green:
+    copy_one_channel_image(im, tex, 1);
+    break;
+
+  case Texture::F_blue:
+    copy_one_channel_image(im, tex, 2);
+    break;
+
+  case Texture::F_alpha:
+    copy_alpha_image(im, tex);
+    break;
+
+  case Texture::F_luminance_alphamask:
+  case Texture::F_luminance_alpha:
+    copy_la_image(im, tex);
+    break;
+  }
   
 #ifdef DO_PSTATS 
-  gtc->update_data_size_bytes(256 * 256 * 3);
+  gtc->update_data_size_bytes(ibytecount);
 #endif
   
   tex->texture_uploaded();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_lum_image
+//       Access: Private, Static
+//  Description: Copies and scales the one-channel luminance image
+//               from the texture into the indicated GLImage pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_lum_image(GLImage *im, Texture *tex) {
+  nassertv(tex->get_num_components() == 1);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
+      
+      dpix[0] = spix[co];
+      dpix[1] = spix[co];
+      dpix[2] = spix[co];
+      dpix[3] = 0xff;
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_alpha_image
+//       Access: Private, Static
+//  Description: Copies and scales the one-channel alpha image
+//               from the texture into the indicated GLImage pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_alpha_image(GLImage *im, Texture *tex) {
+  nassertv(tex->get_num_components() == 1);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
+      
+      dpix[0] = 0xff;
+      dpix[1] = 0xff;
+      dpix[2] = 0xff;
+      dpix[3] = spix[co];
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_one_channel_image
+//       Access: Private, Static
+//  Description: Copies and scales the one-channel image (with a
+//               single channel, e.g. red, green, or blue) from
+//               the texture into the indicated GLImage pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_one_channel_image(GLImage *im, Texture *tex, int channel) {
+  nassertv(tex->get_num_components() == 1);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
+
+      dpix[0] = 0;
+      dpix[1] = 0;
+      dpix[2] = 0;
+      dpix[3] = 0xff;
+      dpix[channel] = spix[co];
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_la_image
+//       Access: Private, Static
+//  Description: Copies and scales the two-channel luminance-alpha
+//               image from the texture into the indicated GLImage
+//               pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_la_image(GLImage *im, Texture *tex) {
+  nassertv(tex->get_num_components() == 2);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 2 * cw;
+      
+      dpix[0] = spix[co];
+      dpix[1] = spix[co];
+      dpix[2] = spix[co];
+      dpix[3] = spix[cw + co];
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_rgb_image
+//       Access: Private, Static
+//  Description: Copies and scales the three-channel RGB image from
+//               the texture into the indicated GLImage pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_rgb_image(GLImage *im, Texture *tex) {
+  nassertv(tex->get_num_components() == 3);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 3 * cw;
+      
+      dpix[0] = spix[co];
+      dpix[1] = spix[cw + co];
+      dpix[2] = spix[cw + cw + co];
+      dpix[3] = 0xff;
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::copy_rgba_image
+//       Access: Private, Static
+//  Description: Copies and scales the four-channel RGBA image from
+//               the texture into the indicated GLImage pixmap.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+copy_rgba_image(GLImage *im, Texture *tex) {
+  nassertv(tex->get_num_components() == 4);
+
+  int xsize_src = tex->get_x_size();
+  int ysize_src = tex->get_y_size();
+  CPTA_uchar src_image = tex->get_ram_image();
+  nassertv(!src_image.is_null());
+  const unsigned char *src = src_image.p();
+
+  // Component width, and offset to the high-order byte.
+  int cw = tex->get_component_width();
+#ifdef WORDS_BIGENDIAN
+  // Big-endian: the high-order byte is always first.
+  static const int co = 0;
+#else
+  // Little-endian: the high-order byte is last.
+  int co = cw - 1;
+#endif
+
+  int xsize_dest = im->xsize;
+  int ysize_dest = im->xsize;
+  unsigned char *dest = (unsigned char *)im->pixmap;
+  nassertv(dest != NULL);
+
+  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
+  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
+
+  unsigned char *dpix = dest;
+  int syn = 0;
+  for (int dy = 0; dy < ysize_dest; dy++) {
+    int sy = syn / ysize_dest;
+    int sxn = 0;
+    for (int dx = 0; dx < xsize_dest; dx++) {
+      int sx = sxn / xsize_dest;
+      const unsigned char *spix = src + (sy * xsize_src + sx) * 4 * cw;
+      
+      dpix[0] = spix[co];
+      dpix[1] = spix[cw + co];
+      dpix[2] = spix[cw + cw + co];
+      dpix[3] = spix[cw + cw + cw + co];
+      
+      dpix += 4;
+      sxn += xsize_src;
+    }
+    syn += ysize_src;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
