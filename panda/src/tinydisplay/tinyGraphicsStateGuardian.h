@@ -23,7 +23,6 @@
 
 #include "graphicsStateGuardian.h"
 #include "tinyGraphicsPipe.h"
-#include "tinyImmediateModeSender.h"
 #include "tinygl.h"
 
 extern "C" {

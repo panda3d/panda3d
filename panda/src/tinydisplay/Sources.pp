@@ -1,9 +1,9 @@
-#define BUILD_DIRECTORY $[HAVE_TINYSDGL]
-//#define BUILDING_DLL BUILDING_PANDATINYSDGL
+#define BUILD_DIRECTORY $[HAVE_SDL]
+//#define BUILDING_DLL BUILDING_TINYDISPLAY
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES tinysdgl
+#define USE_PACKAGES sdl
 
 #begin lib_target
   #define TARGET tinydisplay
@@ -18,8 +18,6 @@
     tinyGraphicsWindow.h tinyGraphicsWindow.I tinyGraphicsWindow.cxx \
     tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
     tinyGraphicsStateGuardian.cxx \
-    tinyImmediateModeSender.h tinyImmediateModeSender.I \
-    tinyImmediateModeSender.cxx \
     tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
     api.c arrays.c clear.c clip.c error.c get.c \
     glu.c image_util.c init.c light.c list.c \

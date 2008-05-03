@@ -613,6 +613,19 @@ get_alpha_scale_texture_stage() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_runtime_color_scale
+//       Access: Published
+//  Description: Returns true if this particular GSG can implement (or
+//               would prefer to implement) set color and/or color
+//               scale directly, without requiring any munging of
+//               vertices or tricks with lighting.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_runtime_color_scale() const {
+  return _runtime_color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_coordinate_system
 //       Access: Published
 //  Description: Returns the coordinate system in effect on this

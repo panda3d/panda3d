@@ -48,46 +48,49 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _munge_color = false;
   _munge_color_scale = false;
 
-  CPT(ColorAttrib) color_attrib = state->get_color();
-  CPT(ColorScaleAttrib) color_scale_attrib = state->get_color_scale();
+  if (!get_gsg()->get_runtime_color_scale()) {
+    // We might need to munge the colors.
+    CPT(ColorAttrib) color_attrib = state->get_color();
+    CPT(ColorScaleAttrib) color_scale_attrib = state->get_color_scale();
 
-  if (color_attrib != (ColorAttrib *)NULL && 
-      color_attrib->get_color_type() == ColorAttrib::T_flat) {
-
-    if (!get_gsg()->get_color_scale_via_lighting()) {
-      // We only need to munge the color directly if the GSG says it
-      // can't cheat the color via lighting (presumably, in this case,
-      // by applying a material).
-      _color = color_attrib->get_color();
-      if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
-          color_scale_attrib->has_scale()) {
-        const LVecBase4f &cs = color_scale_attrib->get_scale();
-        _color.set(_color[0] * cs[0],
-                   _color[1] * cs[1],
-                   _color[2] * cs[2],
-                   _color[3] * cs[3]);
+    if (color_attrib != (ColorAttrib *)NULL && 
+        color_attrib->get_color_type() == ColorAttrib::T_flat) {
+      
+      if (!get_gsg()->get_color_scale_via_lighting()) {
+        // We only need to munge the color directly if the GSG says it
+        // can't cheat the color via lighting (presumably, in this case,
+        // by applying a material).
+        _color = color_attrib->get_color();
+        if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+            color_scale_attrib->has_scale()) {
+          const LVecBase4f &cs = color_scale_attrib->get_scale();
+          _color.set(_color[0] * cs[0],
+                     _color[1] * cs[1],
+                     _color[2] * cs[2],
+                     _color[3] * cs[3]);
+        }
+        _munge_color = true;
       }
-      _munge_color = true;
+      
+    } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
+               color_scale_attrib->has_scale()) {
+      _color_scale = color_scale_attrib->get_scale();
+      
+      CPT(TextureAttrib) tex_attrib = state->get_texture();
+      
+      // If the GSG says it can't cheat this RGB or alpha scale, we have
+      // to apply the color scale directly.
+      if ((color_scale_attrib->has_rgb_scale() && !get_gsg()->get_color_scale_via_lighting()) ||
+          (color_scale_attrib->has_alpha_scale() && !get_gsg()->get_alpha_scale_via_texture(tex_attrib))) {
+        _munge_color_scale = true;
+      }
+      
+      // Known bug: if there is a material on an object that would
+      // obscure the effect of color_scale, we scale the lighting
+      // anyway, thus applying the effect even if it should be obscured.
+      // It doesn't seem worth the effort to detect this contrived
+      // situation and handle it correctly.
     }
-
-  } else if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
-             color_scale_attrib->has_scale()) {
-    _color_scale = color_scale_attrib->get_scale();
-
-    CPT(TextureAttrib) tex_attrib = state->get_texture();
-
-    // If the GSG says it can't cheat this RGB or alpha scale, we have
-    // to apply the color scale directly.
-    if ((color_scale_attrib->has_rgb_scale() && !get_gsg()->get_color_scale_via_lighting()) ||
-        (color_scale_attrib->has_alpha_scale() && !get_gsg()->get_alpha_scale_via_texture(tex_attrib))) {
-      _munge_color_scale = true;
-    }
-
-    // Known bug: if there is a material on an object that would
-    // obscure the effect of color_scale, we scale the lighting
-    // anyway, thus applying the effect even if it should be obscured.
-    // It doesn't seem worth the effort to detect this contrived
-    // situation and handle it correctly.
   }
 }
 

@@ -103,7 +103,7 @@ PUBLISHED:
   virtual INLINE int get_max_vertices_per_primitive() const;
 
   INLINE int get_max_texture_stages() const;
-  INLINE int get_max_texture_dimension() const;
+  virtual INLINE int get_max_texture_dimension() const;
   INLINE int get_max_3d_texture_dimension() const;
   INLINE int get_max_cube_map_dimension() const;
 
@@ -142,6 +142,7 @@ PUBLISHED:
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
   INLINE bool get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const;
+  INLINE bool get_runtime_color_scale() const;
 
   INLINE static TextureStage *get_alpha_scale_texture_stage();
 
@@ -397,6 +398,7 @@ protected:
   int  _supported_geom_rendering;
   bool _color_scale_via_lighting;
   bool _alpha_scale_via_texture;
+  bool _runtime_color_scale;
 
   int  _stereo_buffer_mask;
 

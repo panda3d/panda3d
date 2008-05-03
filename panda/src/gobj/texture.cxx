@@ -2960,9 +2960,20 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
     break;
   }
 
-  if (max_texture_dimension > 0 && !exclude) {
-    new_x_size = min(new_x_size, (int)max_texture_dimension);
-    new_y_size = min(new_y_size, (int)max_texture_dimension);
+  if (!exclude) {
+    int max_dimension = max_texture_dimension;
+    
+    if (max_dimension < 0) {
+      GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
+      if (gsg != (GraphicsStateGuardianBase *)NULL) {
+        max_dimension = gsg->get_max_texture_dimension();
+      }
+    }
+
+    if (max_dimension > 0) {
+      new_x_size = min(new_x_size, (int)max_dimension);
+      new_y_size = min(new_y_size, (int)max_dimension);
+    }
   }
 
   if (pnmimage.get_x_size() != new_x_size ||

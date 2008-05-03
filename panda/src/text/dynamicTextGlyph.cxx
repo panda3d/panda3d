@@ -28,6 +28,7 @@
 #include "geomVertexWriter.h"
 #include "textureAttrib.h"
 #include "transparencyAttrib.h"
+#include "colorAttrib.h"
 #include "renderState.h"
 #include "config_gobj.h"
 
@@ -163,6 +164,7 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   
   _state = RenderState::make(TextureAttrib::make(_page),
                              TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  _state = _state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)), -1);
   
   _advance = advance / font_pixels_per_unit;
 }

@@ -73,7 +73,9 @@ ConfigVariableInt max_texture_dimension
           "texture sizes for limited graphics cards.  When this is greater "
           "than zero, each texture image loaded from a file (but only those "
           "loaded from a file) will be automatically scaled down, if "
-          "necessary, so that neither dimension is larger than this value."));
+          "necessary, so that neither dimension is larger than this value.  "
+          "If this is less than zero, the size limit is taken from the "
+          "primary GSG.  If this is exactly zero, there is no limit."));
 
 ConfigVariableDouble texture_scale
 ("texture-scale", 1.0,

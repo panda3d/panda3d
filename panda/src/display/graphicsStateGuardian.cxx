@@ -201,6 +201,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // scaling.
   _alpha_scale_via_texture = alpha_scale_via_texture;
 
+  // Few GSG's can do this, since it requires touching each vertex as
+  // it is rendered.
+  _runtime_color_scale = false;
+
   _stencil_render_states = 0;
 
   // The default is no shader support.

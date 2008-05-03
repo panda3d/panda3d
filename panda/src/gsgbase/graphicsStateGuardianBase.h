@@ -116,6 +116,8 @@ PUBLISHED:
   virtual int get_max_vertices_per_array() const=0;
   virtual int get_max_vertices_per_primitive() const=0;
 
+  virtual int get_max_texture_dimension() const=0;
+
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_occlusion_query() const=0;
