@@ -1,4 +1,4 @@
-// Filename: tinyGraphicsPipe.cxx
+// Filename: tinySDLGraphicsPipe.cxx
 // Created by:  drose (24Apr08)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,21 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "tinyGraphicsPipe.h"
-#include "tinyGraphicsWindow.h"
+#include "tinySDLGraphicsPipe.h"
+#include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
 
-TypeHandle TinyGraphicsPipe::_type_handle;
+TypeHandle TinySDLGraphicsPipe::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsPipe::Constructor
+//     Function: TinySDLGraphicsPipe::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TinyGraphicsPipe::
-TinyGraphicsPipe() {
+TinySDLGraphicsPipe::
+TinySDLGraphicsPipe() {
   _is_valid = true;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -41,12 +41,12 @@ TinyGraphicsPipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsPipe::Destructor
+//     Function: TinySDLGraphicsPipe::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TinyGraphicsPipe::
-~TinyGraphicsPipe() {
+TinySDLGraphicsPipe::
+~TinySDLGraphicsPipe() {
   if (SDL_WasInit(SDL_INIT_VIDEO)) {
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
   }
@@ -55,7 +55,7 @@ TinyGraphicsPipe::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsPipe::get_interface_name
+//     Function: TinySDLGraphicsPipe::get_interface_name
 //       Access: Published, Virtual
 //  Description: Returns the name of the rendering interface
 //               associated with this GraphicsPipe.  This is used to
@@ -64,29 +64,29 @@ TinyGraphicsPipe::
 //               particular platform, so the name should be meaningful
 //               and unique for a given platform.
 ////////////////////////////////////////////////////////////////////
-string TinyGraphicsPipe::
+string TinySDLGraphicsPipe::
 get_interface_name() const {
   return "TinyGL";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsPipe::pipe_constructor
+//     Function: TinySDLGraphicsPipe::pipe_constructor
 //       Access: Public, Static
 //  Description: This function is passed to the GraphicsPipeSelection
 //               object to allow the user to make a default
-//               TinyGraphicsPipe.
+//               TinySDLGraphicsPipe.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsPipe) TinyGraphicsPipe::
+PT(GraphicsPipe) TinySDLGraphicsPipe::
 pipe_constructor() {
-  return new TinyGraphicsPipe;
+  return new TinySDLGraphicsPipe;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsPipe::make_output
+//     Function: TinySDLGraphicsPipe::make_output
 //       Access: Protected, Virtual
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsOutput) TinyGraphicsPipe::
+PT(GraphicsOutput) TinySDLGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
@@ -99,12 +99,12 @@ make_output(const string &name,
     return NULL;
   }
 
-  TinyGraphicsStateGuardian *glxgsg = 0;
+  TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(glxgsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, NULL);
   }
 
-  // First thing to try: a TinyGraphicsWindow
+  // First thing to try: a TinySDLGraphicsWindow
 
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
@@ -116,8 +116,8 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new TinyGraphicsWindow(this, name, fb_prop, win_prop,
-                                  flags, gsg, host);
+    return new TinySDLGraphicsWindow(this, name, fb_prop, win_prop,
+                                     flags, gsg, host);
   }
   
   // Nothing else left to try.

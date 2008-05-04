@@ -1,4 +1,4 @@
-// Filename: tinyGraphicsPipe.h
+// Filename: tinySDLGraphicsPipe.h
 // Created by:  drose (24Apr08)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TINYGRAPHICSPIPE_H
-#define TINYGRAPHICSPIPE_H
+#ifndef TINYSDLGRAPHICSPIPE_H
+#define TINYSDLGRAPHICSPIPE_H
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
@@ -26,14 +26,14 @@
 class FrameBufferProperties;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TinyGraphicsPipe
-// Description : This graphics pipe represents the interface for
-//               to TinySDGL (an implementation of TinyGL over SDL).
+//       Class : TinySDLGraphicsPipe
+// Description : This graphics pipe manages SDL windows for rendering
+//               TinyGL software buffers.
 ////////////////////////////////////////////////////////////////////
-class TinyGraphicsPipe : public GraphicsPipe {
+class TinySDLGraphicsPipe : public GraphicsPipe {
 public:
-  TinyGraphicsPipe();
-  virtual ~TinyGraphicsPipe();
+  TinySDLGraphicsPipe();
+  virtual ~TinySDLGraphicsPipe();
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
@@ -54,7 +54,7 @@ public:
   }
   static void init_type() {
     GraphicsPipe::init_type();
-    register_type(_type_handle, "TinyGraphicsPipe",
+    register_type(_type_handle, "TinySDLGraphicsPipe",
                   GraphicsPipe::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -66,6 +66,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "tinyGraphicsPipe.I"
+#include "tinySDLGraphicsPipe.I"
 
 #endif

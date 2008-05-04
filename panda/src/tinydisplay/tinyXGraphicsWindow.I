@@ -1,5 +1,5 @@
-// Filename: config_tinydisplay.h
-// Created by:  drose (24Apr08)
+// Filename: tinyXGraphicsWindow.I
+// Created by:  drose (03May08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,22 +16,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_TINYDISPLAY_H
-#define CONFIG_TINYDISPLAY_H
-
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-#include "configVariableString.h"
-#include "configVariableBool.h"
-#include "configVariableInt.h"
-
-NotifyCategoryDecl(tinydisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
-
-extern EXPCL_PANDAGL void init_libtinydisplay();
-
-extern ConfigVariableString display_cfg;
-extern ConfigVariableBool x_error_abort;
-extern ConfigVariableInt x_wheel_up_button;
-extern ConfigVariableInt x_wheel_down_button;
-
-#endif

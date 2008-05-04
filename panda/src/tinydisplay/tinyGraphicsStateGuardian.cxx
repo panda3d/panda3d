@@ -37,9 +37,9 @@ static const ZB_fillTriangleFunc fill_tri_funcs
 [2 /* depth write: zon, zoff */]
 [3 /* color write: noblend, blend, nocolor */]
 [3 /* alpha test: anone, aless, amore */]
-[2 /* ztest: znone, zless */]
-[3 /* white, flat, smooth */]
-[3 /* untextured, textured, perspective textured */] = {
+[2 /* depth test: znone, zless */]
+[3 /* shading: white, flat, smooth */]
+[3 /* texturing: untextured, textured, perspective textured */] = {
   { // depth write zon
     { // color write noblend
       { // alpha test anone
@@ -586,6 +586,8 @@ reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
+  glInit(_current_frame_buffer);
+
   _c = gl_get_context();
 
   _c->draw_triangle_front = gl_draw_triangle_fill;
@@ -810,6 +812,8 @@ begin_frame(Thread *current_thread) {
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
+
+  _c->zb = _current_frame_buffer;
 
 #ifdef DO_PSTATS
   _vertices_immediate_pcollector.clear_level();
@@ -1151,26 +1155,26 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // as well use the flat shading model.
     shade_model = ShadeModelAttrib::M_flat;
   }
-  int color_state = 2;  // smooth
+  int shading_state = 2;  // smooth
   if (shade_model == ShadeModelAttrib::M_flat) {
-    color_state = 1;  // flat
+    shading_state = 1;  // flat
     if (_c->current_color.X == 1.0f &&
         _c->current_color.Y == 1.0f &&
         _c->current_color.Z == 1.0f &&
         _c->current_color.W == 1.0f) {
-      color_state = 0;  // white
+      shading_state = 0;  // white
     }
   }
 
-  int texture_state = 0;  // untextured
+  int texturing_state = 0;  // untextured
   if (_c->texture_2d_enabled) {
-    texture_state = 2;  // perspective-correct textures
+    texturing_state = 2;  // perspective-correct textures
     if (_c->matrix_model_projection_no_w_transform) {
-      texture_state = 1;  // non-perspective-correct textures
+      texturing_state = 1;  // non-perspective-correct textures
     }
   }
 
-  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][color_state][texture_state];
+  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][shading_state][texturing_state];
   //_c->zb_fill_tri = ZB_fillTriangleFlat_zless;
   
   return true;

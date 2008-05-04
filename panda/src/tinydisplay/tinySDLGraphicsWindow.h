@@ -1,4 +1,4 @@
-// Filename: tinyGraphicsWindow.h
+// Filename: tinySDLGraphicsWindow.h
 // Created by:  drose (24Apr08)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,12 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TINYGRAPHICSWINDOW_H
-#define TINYGRAPHICSWINDOW_H
+#ifndef TINYSDLGRAPHICSWINDOW_H
+#define TINYSDLGRAPHICSWINDOW_H
 
 #include "pandabase.h"
 
-#include "tinyGraphicsPipe.h"
+#include "tinySDLGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
@@ -31,20 +31,19 @@ extern "C" {
 }
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TinyGraphicsWindow
-// Description : An interface to TinySDGL (an implementation of TinyGL
-//               over SDL).
+//       Class : TinySDLGraphicsWindow
+// Description : This graphics window class is implemented via SDL.
 ////////////////////////////////////////////////////////////////////
-class TinyGraphicsWindow : public GraphicsWindow {
+class TinySDLGraphicsWindow : public GraphicsWindow {
 public:
-  TinyGraphicsWindow(GraphicsPipe *pipe, 
-                     const string &name,
-                     const FrameBufferProperties &fb_prop,
-                     const WindowProperties &win_prop,
-                     int flags,
-                     GraphicsStateGuardian *gsg,
-                     GraphicsOutput *host);
-  virtual ~TinyGraphicsWindow();
+  TinySDLGraphicsWindow(GraphicsPipe *pipe, 
+                        const string &name,
+                        const FrameBufferProperties &fb_prop,
+                        const WindowProperties &win_prop,
+                        int flags,
+                        GraphicsStateGuardian *gsg,
+                        GraphicsOutput *host);
+  virtual ~TinySDLGraphicsWindow();
 
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
@@ -74,7 +73,7 @@ public:
   }
   static void init_type() {
     GraphicsWindow::init_type();
-    register_type(_type_handle, "TinyGraphicsWindow",
+    register_type(_type_handle, "TinySDLGraphicsWindow",
                   GraphicsWindow::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -86,6 +85,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "tinyGraphicsWindow.I"
+#include "tinySDLGraphicsWindow.I"
 
 #endif

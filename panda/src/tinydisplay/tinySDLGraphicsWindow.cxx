@@ -1,4 +1,4 @@
-// Filename: tinyGraphicsWindow.cxx
+// Filename: tinySDLGraphicsWindow.cxx
 // Created by:  drose (24Apr08)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,24 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "tinyGraphicsWindow.h"
+#include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "config_tinydisplay.h"
-#include "tinyGraphicsPipe.h"
+#include "tinySDLGraphicsPipe.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "graphicsPipe.h"
 #include "tinygl.h"
 
-TypeHandle TinyGraphicsWindow::_type_handle;
+TypeHandle TinySDLGraphicsWindow::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::Constructor
+//     Function: TinySDLGraphicsWindow::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-TinyGraphicsWindow::
-TinyGraphicsWindow(GraphicsPipe *pipe, 
+TinySDLGraphicsWindow::
+TinySDLGraphicsWindow(GraphicsPipe *pipe, 
                    const string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
@@ -52,16 +52,16 @@ TinyGraphicsWindow(GraphicsPipe *pipe,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::Destructor
+//     Function: TinySDLGraphicsWindow::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-TinyGraphicsWindow::
-~TinyGraphicsWindow() {
+TinySDLGraphicsWindow::
+~TinySDLGraphicsWindow() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::begin_frame
+//     Function: TinySDLGraphicsWindow::begin_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               before beginning rendering for a given frame.  It
@@ -69,27 +69,52 @@ TinyGraphicsWindow::
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool TinyGraphicsWindow::
+bool TinySDLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
-  return true;
+  begin_frame_spam(mode);
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+
+  TinyGraphicsStateGuardian *tinygsg;
+  DCAST_INTO_R(tinygsg, _gsg, false);
+
+  tinygsg->_current_frame_buffer = _frame_buffer;
+  tinygsg->reset_if_new();
+  
+  _gsg->set_current_properties(&get_fb_properties());
+  return _gsg->begin_frame(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::end_frame
+//     Function: TinySDLGraphicsWindow::end_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               after rendering is completed for a given frame.  It
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
+  end_frame_spam(mode);
+  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+
+  if (mode == FM_render) {
+    // end_render_texture();
+    copy_to_textures();
+  }
+
+  _gsg->end_frame(current_thread);
+
   if (mode == FM_render) {
     trigger_flip();
+    if (_one_shot) {
+      prepare_for_deletion();
+    }
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::begin_flip
+//     Function: TinySDLGraphicsWindow::begin_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               after end_frame() has been called on all windows, to
@@ -102,7 +127,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 //               end_flip(), to make it easier to flip all of the
 //               windows at the same time.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 begin_flip() {
   if (SDL_MUSTLOCK(_screen)) {
     if (SDL_LockSurface(_screen) < 0) {
@@ -120,7 +145,7 @@ begin_flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::process_events
+//     Function: TinySDLGraphicsWindow::process_events
 //       Access: Public, Virtual
 //  Description: Do whatever processing is necessary to ensure that
 //               the window responds to user events.  Also, honor any
@@ -129,7 +154,7 @@ begin_flip() {
 //               This function is called only within the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 
@@ -195,7 +220,7 @@ process_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::set_properties_now
+//     Function: TinySDLGraphicsWindow::set_properties_now
 //       Access: Public, Virtual
 //  Description: Applies the requested set of properties to the
 //               window, if possible, for instance to request a change
@@ -211,7 +236,7 @@ process_events() {
 //               derived classes to implement extensions to this
 //               function.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
@@ -221,25 +246,25 @@ set_properties_now(WindowProperties &properties) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::close_window
+//     Function: TinySDLGraphicsWindow::close_window
 //       Access: Protected, Virtual
 //  Description: Closes the window right now.  Called from the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 close_window() {
   glClose();
   GraphicsWindow::close_window();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::open_window
+//     Function: TinySDLGraphicsWindow::open_window
 //       Access: Protected, Virtual
 //  Description: Opens the window right now.  Called from the window
 //               thread.  Returns true if the window is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool TinyGraphicsWindow::
+bool TinySDLGraphicsWindow::
 open_window() {
 
   // GSG Creation/Initialization
@@ -278,7 +303,7 @@ open_window() {
     return false;
   }
 
-  glInit(_frame_buffer);
+  tinygsg->_current_frame_buffer = _frame_buffer;
 
   // Now that we have made the context current to a window, we can
   // reset the GSG state if this is the first time it has been used.
@@ -290,12 +315,12 @@ open_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::create_frame_buffer
+//     Function: TinySDLGraphicsWindow::create_frame_buffer
 //       Access: Private
 //  Description: Creates a suitable frame buffer for the current
 //               window size.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsWindow::
+void TinySDLGraphicsWindow::
 create_frame_buffer() {
   if (_frame_buffer != NULL) {
     ZB_close(_frame_buffer);
@@ -329,12 +354,12 @@ create_frame_buffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::get_keyboard_button
+//     Function: TinySDLGraphicsWindow::get_keyboard_button
 //       Access: Private, Static
 //  Description: Maps from an SDL keysym to the corresponding Panda
 //               ButtonHandle.
 ////////////////////////////////////////////////////////////////////
-ButtonHandle TinyGraphicsWindow::
+ButtonHandle TinySDLGraphicsWindow::
 get_keyboard_button(SDLKey sym) {
   switch (sym) {
   case SDLK_BACKSPACE: return KeyboardButton::backspace();
@@ -478,12 +503,12 @@ get_keyboard_button(SDLKey sym) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsWindow::get_mouse_button
+//     Function: TinySDLGraphicsWindow::get_mouse_button
 //       Access: Private, Static
 //  Description: Maps from an SDL mouse button index to the
 //               corresponding Panda ButtonHandle.
 ////////////////////////////////////////////////////////////////////
-ButtonHandle TinyGraphicsWindow::
+ButtonHandle TinySDLGraphicsWindow::
 get_mouse_button(Uint8 button) {
   switch (button) {
   case SDL_BUTTON_LEFT:

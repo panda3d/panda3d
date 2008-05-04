@@ -1,6 +1,6 @@
 /*
 
- * Z buffer: 16 bits Z / 16 bits color
+ * Z buffer: 16 bits Z / 32 bits color
  * 
  */
 #include <stdlib.h>
@@ -161,6 +161,33 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
     }
 }
 
+/* XXX: not optimized */
+static void ZB_copyFrameBufferRGB24(ZBuffer * zb, 
+                                    void *buf, int linesize) 
+{
+    PIXEL *q;
+    unsigned char *p, *p1;
+    int y, n;
+
+    fprintf(stderr, "copyFrameBufferRGB24\n");
+    
+    q = zb->pbuf;
+    p1 = (unsigned char *) buf;
+
+    for (y = 0; y < zb->ysize; y++) {
+	p = p1;
+	n = zb->xsize;
+	do {
+          p[0] = q[0];
+          p[1] = q[1];
+          p[2] = q[2];
+          q += 4;
+          p += 3;
+	} while (--n > 0);
+	p1 += linesize;
+    }
+}
+
 void ZB_copyFrameBuffer(ZBuffer * zb, void *buf,
 			int linesize)
 {
@@ -168,6 +195,11 @@ void ZB_copyFrameBuffer(ZBuffer * zb, void *buf,
 #ifdef TGL_FEATURE_16_BITS
     case ZB_MODE_5R6G5B:
 	ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
+	break;
+#endif
+#ifdef TGL_FEATURE_24_BITS
+    case ZB_MODE_RGB24:
+	ZB_copyFrameBufferRGB24(zb, buf, linesize);
 	break;
 #endif
 #ifdef TGL_FEATURE_32_BITS

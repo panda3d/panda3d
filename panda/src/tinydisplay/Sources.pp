@@ -14,11 +14,13 @@
   #define SOURCES \
     config_tinydisplay.cxx config_tinydisplay.h \
     tinyGeomMunger.I tinyGeomMunger.cxx tinyGeomMunger.h \
-    tinyGraphicsPipe.I tinyGraphicsPipe.cxx tinyGraphicsPipe.h \
-    tinyGraphicsWindow.h tinyGraphicsWindow.I tinyGraphicsWindow.cxx \
+    tinySDLGraphicsPipe.I tinySDLGraphicsPipe.cxx tinySDLGraphicsPipe.h \
+    tinySDLGraphicsWindow.h tinySDLGraphicsWindow.I tinySDLGraphicsWindow.cxx \
     tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
     tinyGraphicsStateGuardian.cxx \
     tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
+    tinyXGraphicsPipe.I tinyXGraphicsPipe.cxx tinyXGraphicsPipe.h \
+    tinyXGraphicsWindow.h tinyXGraphicsWindow.I tinyXGraphicsWindow.cxx \
     api.c arrays.c clear.c clip.c error.c get.c \
     glu.c image_util.c init.c light.c list.c \
     matrix.c memory.c misc.c msghandling.c msghandling.h \

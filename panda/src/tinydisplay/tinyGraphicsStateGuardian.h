@@ -22,11 +22,12 @@
 #include "pandabase.h"
 
 #include "graphicsStateGuardian.h"
-#include "tinyGraphicsPipe.h"
+#include "tinySDLGraphicsPipe.h"
 #include "tinygl.h"
 
 extern "C" {
   #include "zmath.h"
+  #include "zbuffer.h"
 }
 
 class TinyTextureContext;
@@ -34,11 +35,10 @@ struct GLContext;
 struct GLVertex;
 struct GLImage;
 
-
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGraphicsStateGuardian
-// Description : An interface to TinySDGL (an implementation of TinyGL
-//               over SDL).
+// Description : An interface to the TinyGL software rendering code
+//               within this module.
 ////////////////////////////////////////////////////////////////////
 class TinyGraphicsStateGuardian : public GraphicsStateGuardian {
 public:
@@ -117,6 +117,10 @@ private:
   static void load_matrix(M4 *matrix, const TransformState *transform);
 
   INLINE static GLenum get_light_id(int index);
+
+public:
+  // Filled in by the Tiny*GraphicsWindow at begin_frame().
+  ZBuffer *_current_frame_buffer;
 
 private:
   GLContext *_c;

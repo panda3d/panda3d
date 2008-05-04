@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_tinydisplay.h"
-#include "tinyGraphicsPipe.h"
-#include "tinyGraphicsWindow.h"
+#include "tinySDLGraphicsPipe.h"
+#include "tinySDLGraphicsWindow.h"
+#include "tinyXGraphicsPipe.h"
+#include "tinyXGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
 #include "tinyTextureContext.h"
@@ -32,6 +34,29 @@ NotifyCategoryDef(tinydisplay, "display");
 ConfigureFn(config_tinydisplay) {
   init_libtinydisplay();
 }
+
+ConfigVariableString display_cfg
+("display", "",
+ PRC_DESC("Specify the X display string for the default display.  If this "
+          "is not specified, $DISPLAY is used."));
+
+ConfigVariableBool x_error_abort
+("x-error-abort", false,
+ PRC_DESC("Set this true to trigger and abort (and a stack trace) on receipt "
+          "of an error from the X window system.  This can make it easier "
+          "to discover where these errors are generated."));
+
+ConfigVariableInt x_wheel_up_button
+("x-wheel-up-button", 4,
+ PRC_DESC("This is the mouse button index of the wheel_up event: which "
+          "mouse button number does the system report when the mouse wheel "
+          "is rolled one notch up?"));
+
+ConfigVariableInt x_wheel_down_button
+("x-wheel-down-button", 5,
+ PRC_DESC("This is the mouse button index of the wheel_down event: which "
+          "mouse button number does the system report when the mouse wheel "
+          "is rolled one notch down?"));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libtinydisplay
@@ -49,15 +74,23 @@ init_libtinydisplay() {
   }
   initialized = true;
 
-  TinyGraphicsPipe::init_type();
-  TinyGraphicsWindow::init_type();
   TinyGraphicsStateGuardian::init_type();
   TinyGeomMunger::init_type();
   TinyTextureContext::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->add_pipe_type(TinyGraphicsPipe::get_class_type(),
-                           TinyGraphicsPipe::pipe_constructor);
+
+#ifdef IS_LINUX
+  TinyXGraphicsPipe::init_type();
+  TinyXGraphicsWindow::init_type();
+  selection->add_pipe_type(TinyXGraphicsPipe::get_class_type(),
+                           TinyXGraphicsPipe::pipe_constructor);
+#endif
+
+  TinySDLGraphicsPipe::init_type();
+  TinySDLGraphicsWindow::init_type();
+  selection->add_pipe_type(TinySDLGraphicsPipe::get_class_type(),
+                           TinySDLGraphicsPipe::pipe_constructor);
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("TinyGL");

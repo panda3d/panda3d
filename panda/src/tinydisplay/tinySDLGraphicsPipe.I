@@ -1,4 +1,4 @@
-// Filename: tinyGraphicsWindow.I
+// Filename: tinySDLGraphicsPipe.I
 // Created by:  drose (24Apr08)
 //
 ////////////////////////////////////////////////////////////////////
