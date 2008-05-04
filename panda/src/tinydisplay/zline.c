@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "zbuffer.h"
 
 #define ZCMP(z,zpix) ((z) >= (zpix))

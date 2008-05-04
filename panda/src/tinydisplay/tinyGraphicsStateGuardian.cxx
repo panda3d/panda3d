@@ -1107,7 +1107,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       gl_transform_to_viewport(_c, v);
     }
 
-    v->edge_flag = 0;
+    v->edge_flag = 1;
   }
 
   // Set up the appropriate function callback for filling triangles,
@@ -1159,8 +1159,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   int depth_test_state = 1;
+  _c->depth_test = 1;  // set this for ZB_line
   if (_target._depth_test->get_mode() == DepthTestAttrib::M_none) {
     depth_test_state = 0;
+    _c->depth_test = 0;
   }
   
   ShadeModelAttrib::Mode shade_model = _target._shade_model->get_mode();
