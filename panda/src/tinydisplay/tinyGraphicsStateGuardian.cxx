@@ -1191,7 +1191,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][shading_state][texturing_state];
-  //_c->zb_fill_tri = ZB_fillTriangleFlat_zless;
   
   return true;
 }

@@ -11,19 +11,41 @@
 
 #define ZB_POINT_Z_FRAC_BITS 14
 
-#define ZB_POINT_S_MIN ( (1<<13) )
-#define ZB_POINT_S_MAX ( (1<<22)-(1<<13) )
-#define ZB_POINT_T_MIN ( (1<<21) )
-#define ZB_POINT_T_MAX ( (1<<30)-(1<<21) )
+/* The number of bits for lookup for S and T texture coords.  This is
+   based on a fixed texture size of 256x256. */
+#define ZB_POINT_ST_BITS 8
+
+/* The number of fractional bits below the S and T texture coords.
+   The more we have, the more precise the texel calculation will be
+   when we zoom into small details of a texture; but the greater
+   chance we'll overflow our 32-bit integer if the T texcoord gets
+   large. */
+#define ZB_POINT_ST_FRAC_BITS 10
+
+/* Various parameters and accessors based on the above bits. */
+#define ZB_POINT_S_LOW ZB_POINT_ST_FRAC_BITS
+#define ZB_POINT_S_MIN 0
+#define ZB_POINT_S_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_S_LOW))
+#define ZB_POINT_S_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_S_LOW)) - (1 << ZB_POINT_S_LOW))
+
+#define ZB_POINT_T_LOW (ZB_POINT_ST_BITS + ZB_POINT_S_LOW)
+#define ZB_POINT_T_MIN 0
+#define ZB_POINT_T_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_T_LOW))
+#define ZB_POINT_T_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_T_LOW)) - (1 << ZB_POINT_T_LOW))
+
+// Returns the index within a 256x256 texture for the given (s, t)
+//   texel.
+#define ZB_TEXEL(s, t) \
+  ((((t) & ZB_POINT_T_MASK) | ((s) & ZB_POINT_S_MASK)) >> ZB_POINT_ST_FRAC_BITS)
 
 #define ZB_POINT_RED_MIN   0x0000
-#define ZB_POINT_RED_MAX   0xff00
+#define ZB_POINT_RED_MAX   0xffff
 #define ZB_POINT_GREEN_MIN 0x0000
-#define ZB_POINT_GREEN_MAX 0xff00
+#define ZB_POINT_GREEN_MAX 0xffff
 #define ZB_POINT_BLUE_MIN  0x0000
-#define ZB_POINT_BLUE_MAX  0xff00
+#define ZB_POINT_BLUE_MAX  0xffff
 #define ZB_POINT_ALPHA_MIN 0x0000
-#define ZB_POINT_ALPHA_MAX 0xff00
+#define ZB_POINT_ALPHA_MAX 0xffff
 
 /* display modes */
 #define ZB_MODE_5R6G5B  1  /* true color 16 bits */

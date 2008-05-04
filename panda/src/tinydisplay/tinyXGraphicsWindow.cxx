@@ -224,6 +224,7 @@ begin_flip() {
 
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
             _properties.get_x_size(), _properties.get_y_size());
+  XFlush(_display);
 }
 
 ////////////////////////////////////////////////////////////////////

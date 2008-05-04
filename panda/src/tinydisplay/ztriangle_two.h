@@ -82,7 +82,7 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
+      tmp = texture[ZB_TEXEL(s, t)];                              \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -118,7 +118,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
+      tmp = texture[ZB_TEXEL(s, t)];                              \
       int a = oa * PIXEL_A(tmp) >> 16;                                  \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -159,7 +159,7 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
+      tmp = texture[ZB_TEXEL(s, t)];                                    \
       int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -216,8 +216,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = *(PIXEL *)((char *)texture+                                 \
-                       (((t & 0x3FC00000) | (s & 0x003FC000)) >> (17 - PSZSH))); \
+      tmp = texture[ZB_TEXEL(s, t)];                                    \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -322,8 +321,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=*(PIXEL *)((char *)texture+                                   \
-                     (((t & 0x3FC00000) | (s & 0x003FC000)) >> (17 - PSZSH))); \
+      tmp = texture[ZB_TEXEL(s, t)];                                    \
       int a = oa * PIXEL_A(tmp) >> 16;                                  \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -436,8 +434,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=*(PIXEL *)((char *)texture+                                   \
-                     (((t & 0x3FC00000) | (s & 0x003FC000)) >> (17 - PSZSH))); \
+      tmp = texture[ZB_TEXEL(s, t)];                                    \
       int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
