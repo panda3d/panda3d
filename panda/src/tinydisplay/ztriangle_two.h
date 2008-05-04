@@ -78,19 +78,19 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
     texture=zb->current_texture;                \
   }
 
-#define PUT_PIXEL(_a)                                   \
-  {                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                       \
-    if (ZCMP(pz[_a], zz)) {				\
-      tmp=texture[((t & 0x3FC00000) | s) >> 14];        \
-      if (ACMP(zb, PIXEL_A(tmp))) {                     \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
+      if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
-        STORE_Z(pz[_a], zz);                            \
-      }                                                 \
-    }                                                   \
-    z+=dzdx;                                            \
-    s+=dsdx;                                            \
-    t+=dtdx;                                            \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    s+=dsdx;                                                            \
+    t+=dtdx;                                                            \
   }
 
 #include "ztriangle.h"
@@ -118,7 +118,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=texture[((t & 0x3FC00000) | s) >> 14];                        \
+      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
       int a = oa * PIXEL_A(tmp) >> 16;                                  \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -159,7 +159,7 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp=texture[((t & 0x3FC00000) | s) >> 14];                        \
+      tmp=texture[((t & 0x3FC00000) | (s & 0x3fc000)) >> 14];           \
       int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \

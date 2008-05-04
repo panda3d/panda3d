@@ -981,6 +981,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // We only support single-texturing, so only bother with the first
   // texture stage.
   bool needs_texcoord = false;
+  bool needs_texmat = false;
+  LMatrix4f texmat;
   const InternalName *texcoord_name = InternalName::get_texcoord();
   int max_stage_index = _effective_texture->get_num_on_ff_stages();
   if (max_stage_index > 0) {
@@ -988,6 +990,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name());
     rtexcoord.set_row(_min_vertex);
     needs_texcoord = rtexcoord.has_column();
+
+    if (needs_texcoord && _target._tex_matrix->has_stage(stage)) {
+      needs_texmat = true;
+      texmat = _target._tex_matrix->get_mat(stage);
+    }
   }
 
   bool needs_color = false;
@@ -1047,7 +1054,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     v->coord.Z = d[2];
     v->coord.W = d[3];
 
-    if (needs_texcoord) {
+    if (needs_texmat) {
+      // Transform texcoords as a four-component vector for most generality.
+      LVecBase4f d = rtexcoord.get_data4f() * texmat;
+      v->tex_coord.X = d[0];
+      v->tex_coord.Y = d[1];
+
+    } else if (needs_texcoord) {
+      // No need to transform, so just extract as two-component.
       const LVecBase2f &d = rtexcoord.get_data2f();
       v->tex_coord.X = d[0];
       v->tex_coord.Y = d[1];
