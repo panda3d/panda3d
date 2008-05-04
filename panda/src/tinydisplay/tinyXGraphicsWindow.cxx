@@ -314,6 +314,9 @@ process_events() {
         // A normal window may be resized by the user at will.
         properties.set_size(event.xconfigure.width, event.xconfigure.height);
         system_changed_properties(properties);
+        ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+        _pitch = _properties.get_x_size() * _bytes_per_pixel;
+        create_ximage();
       }
       break;
 
