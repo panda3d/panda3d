@@ -416,13 +416,23 @@ class TaskManager:
         self.fVerbose = value
         messenger.send('TaskManager-setVerbose', sentArgs = [value])
 
+    def invokeDefaultHandler(self, signalNumber, stackFrame):
+        print '*** allowing mid-frame keyboard interrupt.'
+        # Restore default interrupt handler
+        signal.signal(signal.SIGINT, signal.default_int_handler)
+        # and invoke it
+        raise KeyboardInterrupt
+
     def keyboardInterruptHandler(self, signalNumber, stackFrame):
         self.fKeyboardInterrupt = 1
         self.interruptCount += 1
-        if self.interruptCount == 2:
+        if self.interruptCount == 1:
+            print '* interrupt by keyboard'
+        elif self.interruptCount == 2:
+            print '** waiting for end of frame before interrupting...'
             # The user must really want to interrupt this process
-            # Next time around use the default interrupt handler
-            signal.signal(signal.SIGINT, signal.default_int_handler)
+            # Next time around invoke the default handler
+            signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
     def hasTaskNamed(self, taskName):
         # TODO: check pending task list
