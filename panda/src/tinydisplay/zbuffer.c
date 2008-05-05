@@ -320,20 +320,21 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
   int y;
   PIXEL *pp;
   unsigned short *zz;
-  
+  int ytop;
+
   if (clear_z) {
-    zz = zb->zbuf + xmin;
-    for (y = ymin; y < ymin + ysize; ++y) {
+    zz = zb->zbuf + xmin + ymin * zb->xsize;
+    for (y = 0; y < ysize; ++y) {
       memset_s(zz, z, xsize);
       zz += zb->xsize;
     }
   }
   if (clear_color) {
     color = RGBA_TO_PIXEL(r, g, b, a);
-    pp = zb->pbuf + xmin;
-    for (y = ymin; y < ymin + ysize; ++y) {
+    pp = zb->pbuf + xmin + ymin * zb->xsize;
+    for (y = 0; y < ysize; ++y) {
       memset_l(pp, color, xsize);
-      pp = (PIXEL *) ((char *) pp + zb->linesize);
+      pp += zb->xsize;
     }
   }
 }

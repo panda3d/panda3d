@@ -720,33 +720,16 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
-  int l, b, w, h;
-  dr->get_region_pixels(l, b, w, h);
-  int xmin = GLint(l);
-  int ymin = GLint(b);
-  int xsize = GLsizei(w);
-  int ysize = GLsizei(h);
-  
-  int xsize_req = xmin + xsize;
-  int ysize_req = ymin + ysize;
-  
-  if (_c->gl_resize_viewport && 
-      _c->gl_resize_viewport(_c, &xsize_req, &ysize_req) != 0) {
-    gl_fatal_error("glViewport: error while resizing display");
-  }
-  
-  xsize = xsize_req - xmin;
-  ysize = ysize_req - ymin;
-  if (xsize <= 0 || ysize <= 0) {
-    gl_fatal_error("glViewport: size too small");
-  }
+  int xmin, ymin, xsize, ysize;
+  dr->get_region_pixels_i(xmin, ymin, xsize, ysize);
   
   _c->viewport.xmin = xmin;
   _c->viewport.ymin = ymin;
   _c->viewport.xsize = xsize;
   _c->viewport.ysize = ysize;
-  
   gl_eval_viewport(_c);
+
+  GLViewport *v = &_c->viewport;
 }
 
 ////////////////////////////////////////////////////////////////////
