@@ -719,7 +719,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 
   int xmin, ymin, xsize, ysize;
   dr->get_region_pixels_i(xmin, ymin, xsize, ysize);
-  
+
   _c->viewport.xmin = xmin;
   _c->viewport.ymin = ymin;
   _c->viewport.xsize = xsize;
@@ -1421,6 +1421,32 @@ end_draw_primitives() {
 void TinyGraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
+  nassertv(tex != NULL && dr != NULL);
+  
+  int xo, yo, w, h;
+  dr->get_region_pixels_i(xo, yo, w, h);
+
+  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
+
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertv(tc != (TextureContext *)NULL);
+  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
+
+  GLTexture *gltex = gtc->_gltex;
+  setup_gltex(gltex, tex->get_x_size(), tex->get_y_size());
+
+  PIXEL *ip = gltex->pixmap;
+  PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
+  for (int y = 0; y < gltex->ysize; ++y) {
+    memcpy(ip, fo, gltex->xsize * PSZB);
+    ip += gltex->xsize;
+    fo += _c->zb->linesize / PSZB;
+  }
+
+#ifdef DO_PSTATS 
+  gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
+#endif
+  gtc->mark_loaded();
 }
 
 
@@ -1437,7 +1463,51 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
-  return false;
+  nassertr(tex != NULL && dr != NULL, false);
+  
+  int xo, yo, w, h;
+  dr->get_region_pixels_i(xo, yo, w, h);
+
+  Texture::TextureType texture_type;
+  int z_size;
+  if (z >= 0) {
+    texture_type = Texture::TT_cube_map;
+    z_size = 6;
+  } else {
+    texture_type = Texture::TT_2d_texture;
+    z_size = 1;
+  }
+
+  Texture::ComponentType component_type = Texture::T_unsigned_byte;
+  Texture::Format format = Texture::F_rgba;
+
+  if (tex->get_x_size() != w || tex->get_y_size() != h ||
+      tex->get_z_size() != z_size ||
+      tex->get_component_type() != component_type ||
+      tex->get_format() != format ||
+      tex->get_texture_type() != texture_type) {
+    // Re-setup the texture; its properties have changed.
+    tex->setup_texture(texture_type, w, h, z_size,
+                       component_type, format);
+  }
+
+  unsigned char *image_ptr = tex->modify_ram_image();
+  size_t image_size = tex->get_ram_image_size();
+  if (z >= 0) {
+    nassertr(z < tex->get_z_size(), false);
+    image_size = tex->get_expected_ram_page_size();
+    image_ptr += z * image_size;
+  }
+
+  PIXEL *ip = (PIXEL *)(image_ptr + image_size);
+  PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
+  for (int y = 0; y < h; ++y) {
+    ip -= w;
+    memcpy(ip, fo, w * PSZB);
+    fo += _c->zb->linesize / PSZB;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1560,7 +1630,6 @@ prepare_texture(Texture *tex) {
   TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
   gtc->_gltex = (GLTexture *)gl_zalloc(sizeof(GLTexture));
 
-  apply_texture(gtc);
   return gtc;
 }
 
@@ -2054,6 +2123,11 @@ upload_texture(TinyTextureContext *gtc) {
   Texture *tex = gtc->get_texture();
   PStatTimer timer(_load_texture_pcollector);
 
+  CPTA_uchar src_image = tex->get_ram_image();
+  if (src_image.is_null()) {
+    return false;
+  }
+
   if (tinydisplay_cat.is_debug()) {
     tinydisplay_cat.debug()
       << "loading texture " << tex->get_name() << "\n";
@@ -2061,30 +2135,8 @@ upload_texture(TinyTextureContext *gtc) {
 #ifdef DO_PSTATS
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
-
-  // Ensure we have a power of two size, no more than our max.
-  int s_size, s_bits;
-  choose_tex_size(s_size, s_bits, tex->get_x_size());
-
-  int t_size, t_bits;
-  choose_tex_size(t_size, t_bits, tex->get_y_size());
-
-  int bytecount = s_size * t_size * 4;
-
   GLTexture *gltex = gtc->_gltex;
-  gltex->xsize = s_size;
-  gltex->ysize = t_size;
-
-  if (gltex->pixmap != NULL) {
-    gl_free(gltex->pixmap);
-  }
-  gltex->pixmap = (PIXEL *)gl_malloc(bytecount);
-
-  gltex->s_max = 1 << (s_bits + ZB_POINT_ST_FRAC_BITS);
-  gltex->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
-  gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
-  gltex->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
-  gltex->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
+  setup_gltex(gltex, tex->get_x_size(), tex->get_y_size());
 
   switch (tex->get_format()) {
   case Texture::F_rgb:
@@ -2133,12 +2185,45 @@ upload_texture(TinyTextureContext *gtc) {
   }
   
 #ifdef DO_PSTATS 
-  gtc->update_data_size_bytes(bytecount);
+  gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
 #endif
   
   tex->texture_uploaded();
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::setup_gltex
+//       Access: Private
+//  Description: Sets the GLTexture size, bits, and masks appropriate,
+//               and allocates space for a pixmap.  Does not fill the
+//               pixmap contents.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+setup_gltex(GLTexture *gltex, int orig_x_size, int orig_y_size) {
+  // Ensure we have a power of two size, no more than our max.
+  int s_size, s_bits;
+  choose_tex_size(s_size, s_bits, orig_x_size);
+
+  int t_size, t_bits;
+  choose_tex_size(t_size, t_bits, orig_y_size);
+
+  int bytecount = s_size * t_size * 4;
+
+  gltex->xsize = s_size;
+  gltex->ysize = t_size;
+
+  if (gltex->pixmap != NULL) {
+    gl_free(gltex->pixmap);
+  }
+  gltex->pixmap = (PIXEL *)gl_malloc(bytecount);
+
+  gltex->s_max = 1 << (s_bits + ZB_POINT_ST_FRAC_BITS);
+  gltex->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+  gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
+  gltex->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+  gltex->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
 }
 
 ////////////////////////////////////////////////////////////////////

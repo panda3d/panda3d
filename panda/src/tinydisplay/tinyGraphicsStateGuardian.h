@@ -107,6 +107,7 @@ private:
 
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
+  void setup_gltex(GLTexture *gltex, int orig_x_size, int orig_y_size);
   void choose_tex_size(int &size, int &bits, int orig_size);
 
   static void copy_lum_image(GLTexture *gltex, Texture *tex);
