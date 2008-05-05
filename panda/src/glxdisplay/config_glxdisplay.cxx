@@ -33,10 +33,15 @@ ConfigureFn(config_glxdisplay) {
 }
 
 ConfigVariableString display_cfg
-("display", "");
+("display", "",
+ PRC_DESC("Specify the X display string for the default display.  If this "
+          "is not specified, $DISPLAY is used."));
 
-ConfigVariableBool glx_error_abort
-("glx-error-abort", false);
+ConfigVariableBool x_error_abort
+("x-error-abort", false,
+ PRC_DESC("Set this true to trigger and abort (and a stack trace) on receipt "
+          "of an error from the X window system.  This can make it easier "
+          "to discover where these errors are generated."));
 
 ConfigVariableBool glx_get_proc_address
 ("glx-get-proc-address", true,
@@ -52,14 +57,14 @@ ConfigVariableBool glx_get_os_address
 	  "addresses of extension functions.  This will be done only "
 	  "if glxGetProcAddress() cannot be used for some reason."));
 
-ConfigVariableInt glx_wheel_up_button
-("glx-wheel-up-button", 4,
+ConfigVariableInt x_wheel_up_button
+("x-wheel-up-button", 4,
  PRC_DESC("This is the mouse button index of the wheel_up event: which "
           "mouse button number does the system report when the mouse wheel "
           "is rolled one notch up?"));
 
-ConfigVariableInt glx_wheel_down_button
-("glx-wheel-down-button", 5,
+ConfigVariableInt x_wheel_down_button
+("x-wheel-down-button", 5,
  PRC_DESC("This is the mouse button index of the wheel_down event: which "
           "mouse button number does the system report when the mouse wheel "
           "is rolled one notch down?"));

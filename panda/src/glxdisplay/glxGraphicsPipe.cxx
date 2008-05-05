@@ -372,7 +372,7 @@ error_handler(Display *display, XErrorEvent *error) {
   glxdisplay_cat.error()
     << msg << "\n";
 
-  if (glx_error_abort) {
+  if (x_error_abort) {
     abort();
   }
 

@@ -1563,9 +1563,9 @@ get_button(XKeyEvent &key_event) {
 ButtonHandle glxGraphicsWindow::
 get_mouse_button(XButtonEvent &button_event) {
   int index = button_event.button;
-  if (index == glx_wheel_up_button) {
+  if (index == x_wheel_up_button) {
     return MouseButton::wheel_up();
-  } else if (index == glx_wheel_down_button) {
+  } else if (index == x_wheel_down_button) {
     return MouseButton::wheel_down();
   } else {
     return MouseButton::button(index - 1);

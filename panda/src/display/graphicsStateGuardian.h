@@ -251,7 +251,7 @@ public:
   void do_issue_clip_plane();
   void do_issue_color();
   void do_issue_color_scale();
-  void do_issue_light();
+  virtual void do_issue_light();
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);

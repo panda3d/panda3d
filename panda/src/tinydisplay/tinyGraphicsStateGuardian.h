@@ -90,11 +90,13 @@ public:
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void release_texture(TextureContext *tc);
 
-  virtual void enable_lighting(bool enable);
-  virtual void set_ambient_light(const Colorf &color);
-  virtual void enable_light(int light_id, bool enable);
-  virtual void begin_bind_lights();
-  virtual void end_bind_lights();
+  virtual void do_issue_light();
+  virtual void bind_light(PointLight *light_obj, const NodePath &light,
+                          int light_id);
+  virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,
+                          int light_id);
+  virtual void bind_light(Spotlight *light_obj, const NodePath &light,
+                          int light_id);
 
 private:
   void do_issue_transform();

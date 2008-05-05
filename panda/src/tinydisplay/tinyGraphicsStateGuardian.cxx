@@ -22,6 +22,10 @@
 #include "config_tinydisplay.h"
 #include "pStatTimer.h"
 #include "geomVertexReader.h"
+#include "ambientLight.h"
+#include "pointLight.h"
+#include "directionalLight.h"
+#include "spotlight.h"
 
 extern "C" {
 #include "zgl.h"
@@ -600,10 +604,10 @@ reset() {
 
   _max_texture_dimension = 256;
 
-  // Count the max number of lights
-  GLint max_lights;
-  glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
-  _max_lights = max_lights;
+  // Actually, this number is completely arbitrary, since we allocate
+  // lights dynamically.  But we probably want some limit anyway to
+  // protect users from accidentally enabling a thousand lights.
+  _max_lights = 8;
 
   _color_scale_via_lighting = false;
   _alpha_scale_via_texture = false;
@@ -1424,16 +1428,6 @@ set_state_and_transform(const RenderState *target,
     _state._render_mode = _target._render_mode;
   }
 
-  if ((_target._transparency != _state._transparency)||
-      (_target._color_write != _state._color_write)||
-      (_target._color_blend != _state._color_blend)) {
-    PStatTimer timer(_draw_set_state_blending_pcollector);
-    do_issue_blending();
-    _state._transparency = _target._transparency;
-    _state._color_write = _target._color_write;
-    _state._color_blend = _target._color_blend;
-  }
-
   if (_target._texture != _state._texture) {
     PStatTimer timer(_draw_set_state_texture_pcollector);
     determine_effective_texture();
@@ -1529,112 +1523,235 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::enable_lighting
+//     Function: TinyGraphicsStateGuardian::do_issue_light
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable or disable the use of lighting overall.  This
-//               is called by do_issue_light() according to whether any
-//               lights are in use or not.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-enable_lighting(bool enable) {
-  static PStatCollector _draw_set_state_light_enable_lighting_pcollector("Draw:Set State:Light:Enable lighting");
-  PStatTimer timer(_draw_set_state_light_enable_lighting_pcollector);
-  
-  if (enable) {
-    glEnable(GL_LIGHTING);
-  } else {
-    glDisable(GL_LIGHTING);
+do_issue_light() {
+  // Initialize the current ambient light total and newly enabled
+  // light list
+  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
+  int i;
+
+  int num_enabled = 0;
+  int num_on_lights = 0;
+
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "do_issue_light: " << _target._light << "\n";
   }
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::set_ambient_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               indicate the color of the ambient light that should
-//               be in effect.  This is called by do_issue_light() after
-//               all other lights have been enabled or disabled.
-////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
-set_ambient_light(const Colorf &color) {
-  static PStatCollector _draw_set_state_light_ambient_pcollector("Draw:Set State:Light:Ambient");
-  PStatTimer timer(_draw_set_state_light_ambient_pcollector);
-  
-  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (float *)color.get_data());
-}
+  // First, release all of the previously-assigned lights.
+  _c->lighting_enabled = false;
 
-////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::enable_light
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by a derived class to
-//               enable the indicated light id.  A specific Light will
-//               already have been bound to this id via bind_light().
-////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
-enable_light(int light_id, bool enable) {
-  static PStatCollector _draw_set_state_light_enable_light_pcollector("Draw:Set State:Light:Enable light");
-  PStatTimer timer(_draw_set_state_light_enable_light_pcollector);
-  
-  if (enable) {
-    glEnable(get_light_id(light_id));
-  } else {
-    glDisable(get_light_id(light_id));
+  GLLight *light = _c->first_light;
+  while (light != (GLLight *)NULL) {
+    GLLight *next = light->next;
+    PANDA_FREE_SINGLE(light);
+    light = next;
   }
+  _c->first_light = NULL;
+
+  // Now, assign new lights.
+  if (_target._light != (LightAttrib *)NULL) {
+    CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
+    if (display_cat.is_spam()) {
+      new_light->write(display_cat.spam(false), 2);
+    }
+
+    num_on_lights = new_light->get_num_on_lights();
+    for (int li = 0; li < num_on_lights; li++) {
+      NodePath light = new_light->get_on_light(li);
+      nassertv(!light.is_empty());
+      Light *light_obj = light.node()->as_light();
+      nassertv(light_obj != (Light *)NULL);
+
+      _lighting_enabled = true;
+      _c->lighting_enabled = true;
+
+      if (light_obj->get_type() == AmbientLight::get_class_type()) {
+        // Accumulate all of the ambient lights together into one.
+        cur_ambient_light += light_obj->get_color();
+
+      } else {
+        // Other kinds of lights each get their own GLLight object.
+        GLLight *gl_light = (GLLight *)PANDA_MALLOC_SINGLE(sizeof(GLLight));
+        memset(gl_light, 0, sizeof(GLLight));
+        gl_light->enabled = true;
+
+        gl_light->next = _c->first_light;
+        _c->first_light = gl_light;
+
+        const Colorf &diffuse = light_obj->get_color();
+        gl_light->diffuse.X = diffuse[0];
+        gl_light->diffuse.Y = diffuse[1];
+        gl_light->diffuse.Z = diffuse[2];
+        gl_light->diffuse.W = diffuse[3];
+
+        light_obj->bind(this, light, num_enabled);
+        num_enabled++;
+      }
+    }
+  }
+
+  _c->ambient_light_model.X = cur_ambient_light[0];
+  _c->ambient_light_model.Y = cur_ambient_light[1];
+  _c->ambient_light_model.Z = cur_ambient_light[2];
+  _c->ambient_light_model.W = cur_ambient_light[3];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::begin_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called immediately before bind_light() is called,
-//               this is intended to provide the derived class a hook
-//               in which to set up some state (like transform) that
-//               might apply to several lights.
-//
-//               The sequence is: begin_bind_lights() will be called,
-//               then one or more bind_light() calls, then
-//               end_bind_lights().
+//     Function: TinyGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-begin_bind_lights() {
-  static PStatCollector _draw_set_state_light_begin_bind_pcollector("Draw:Set State:Light:Begin bind");
-  PStatTimer timer(_draw_set_state_light_begin_bind_pcollector);
-  
-  // We need to temporarily load a new matrix so we can define the
-  // light in a known coordinate system.  We pick the transform of the
-  // root.  (Alternatively, we could leave the current transform where
-  // it is and compute the light position relative to that transform
-  // instead of relative to the root, by composing with the matrix
-  // computed by _internal_transform->invert_compose(render_transform).
-  // But I think loading a completely new matrix is simpler.)
+bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
+  GLLight *gl_light = _c->first_light;
+  nassertv(gl_light != (GLLight *)NULL);
+
+  const Colorf &specular = light_obj->get_specular_color();
+  gl_light->specular.X = specular[0];
+  gl_light->specular.Y = specular[1];
+  gl_light->specular.Z = specular[2];
+  gl_light->specular.W = specular[3];
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
   CPT(TransformState) render_transform =
     _cs_transform->compose(_scene_setup->get_world_transform());
 
-  /*
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadMatrixf(render_transform->get_mat().get_data());
-  */
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+  CPT(TransformState) net_transform = render_transform->compose(transform);
+
+  LPoint3f pos = light_obj->get_point() * net_transform->get_mat();
+  gl_light->position.X = pos[0];
+  gl_light->position.Y = pos[1];
+  gl_light->position.Z = pos[2];
+  gl_light->position.W = 1.0f;
+
+  // Exponent == 0 implies uniform light distribution
+  gl_light->spot_exponent = 0.0f;
+
+  // Cutoff == 180 means uniform point light source
+  gl_light->spot_cutoff = 180.0f;
+
+  const LVecBase3f &att = light_obj->get_attenuation();
+  gl_light->attenuation[0] = att[0];
+  gl_light->attenuation[1] = att[1];
+  gl_light->attenuation[2] = att[2];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::end_bind_lights
-//       Access: Protected, Virtual
-//  Description: Called after before bind_light() has been called one
-//               or more times (but before any geometry is issued or
-//               additional state is changed), this is intended to
-//               clean up any temporary changes to the state that may
-//               have been made by begin_bind_lights().
+//     Function: TinyGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-end_bind_lights() {
-  static PStatCollector _draw_set_state_light_end_bind_pcollector("Draw:Set State:Light:End bind");
-  PStatTimer timer(_draw_set_state_light_end_bind_pcollector);
+bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
+  GLLight *gl_light = _c->first_light;
+  nassertv(gl_light != (GLLight *)NULL);
 
-  /*
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
-  */
+  const Colorf &specular = light_obj->get_specular_color();
+  gl_light->specular.X = specular[0];
+  gl_light->specular.Y = specular[1];
+  gl_light->specular.Z = specular[2];
+  gl_light->specular.W = specular[3];
+
+  // Position needs to specify x, y, z, and w
+  // w == 0 implies light is at infinity
+  CPT(TransformState) render_transform =
+    _cs_transform->compose(_scene_setup->get_world_transform());
+
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+  CPT(TransformState) net_transform = render_transform->compose(transform);
+
+  LVector3f dir = light_obj->get_direction() * net_transform->get_mat();
+  gl_light->position.X = -dir[0];
+  gl_light->position.Y = -dir[1];
+  gl_light->position.Z = -dir[2];
+  gl_light->position.W = 0.0f;
+
+  gl_light->norm_position.X = -dir[0];
+  gl_light->norm_position.Y = -dir[1];
+  gl_light->norm_position.Z = -dir[2];
+  gl_V3_Norm(&gl_light->norm_position);
+
+  // Exponent == 0 implies uniform light distribution
+  gl_light->spot_exponent = 0.0f;
+
+  // Cutoff == 180 means uniform point light source
+  gl_light->spot_cutoff = 180.0f;
+
+  // Default attenuation values (only spotlight and point light can
+  // modify these)
+  gl_light->attenuation[0] = 1.0f;
+  gl_light->attenuation[1] = 0.0f;
+  gl_light->attenuation[2] = 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
+  GLLight *gl_light = _c->first_light;
+  nassertv(gl_light != (GLLight *)NULL);
+
+  const Colorf &specular = light_obj->get_specular_color();
+  gl_light->specular.X = specular[0];
+  gl_light->specular.Y = specular[1];
+  gl_light->specular.Z = specular[2];
+  gl_light->specular.W = specular[3];
+  
+  Lens *lens = light_obj->get_lens();
+  nassertv(lens != (Lens *)NULL);
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  CPT(TransformState) render_transform =
+    _cs_transform->compose(_scene_setup->get_world_transform());
+
+  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+  CPT(TransformState) net_transform = render_transform->compose(transform);
+
+  const LMatrix4f &light_mat = net_transform->get_mat();
+  LPoint3f pos = lens->get_nodal_point() * light_mat;
+  LVector3f dir = lens->get_view_vector() * light_mat;
+
+  gl_light->position.X = pos[0];
+  gl_light->position.Y = pos[1];
+  gl_light->position.Z = pos[2];
+  gl_light->position.W = 1.0f;
+
+  gl_light->spot_direction.X = dir[0];
+  gl_light->spot_direction.Y = dir[1];
+  gl_light->spot_direction.Z = dir[2];
+
+  gl_light->norm_spot_direction.X = dir[0];
+  gl_light->norm_spot_direction.Y = dir[1];
+  gl_light->norm_spot_direction.Z = dir[2];
+  gl_V3_Norm(&gl_light->norm_spot_direction);
+
+  gl_light->spot_exponent = light_obj->get_exponent();
+  gl_light->spot_cutoff = lens->get_hfov() * 0.5f;
+
+  const LVecBase3f &att = light_obj->get_attenuation();
+  gl_light->attenuation[0] = att[0];
+  gl_light->attenuation[1] = att[1];
+  gl_light->attenuation[2] = att[2];
 }
 
 ////////////////////////////////////////////////////////////////////

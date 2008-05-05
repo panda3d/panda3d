@@ -1628,7 +1628,7 @@ do_issue_color_scale() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::do_issue_light
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: This implementation of do_issue_light() assumes
 //               we have a limited number of hardware lights
 //               available.  This function assigns each light to a
