@@ -3613,8 +3613,8 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       << ")" << endl;
   }
 
-  size_t image_size = tex->get_ram_image_size();
   unsigned char *image_ptr = tex->modify_ram_image();
+  size_t image_size = tex->get_ram_image_size();
   if (z >= 0) {
     nassertr(z < tex->get_z_size(), false);
     image_size = tex->get_expected_ram_page_size();
