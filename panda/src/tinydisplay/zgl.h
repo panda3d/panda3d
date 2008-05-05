@@ -125,21 +125,14 @@ typedef struct GLVertex {
   ZBufferPoint zp;      /* integer coordinates for the rasterization */
 } GLVertex;
 
-typedef struct GLImage {
-  void *pixmap;
-  int xsize,ysize;
-} GLImage;
-
 /* textures */
 
-#define TEXTURE_HASH_TABLE_SIZE 256
-
 typedef struct GLTexture {
-  GLImage images[MAX_TEXTURE_LEVELS];
-  int handle;
-  struct GLTexture *next,*prev;
+  PIXEL *pixmap;
+  int xsize, ysize;
+  int s_mask, t_mask, t_shift;
+  int s_max, t_max;
 } GLTexture;
-
 
 /* shared state */
 
@@ -306,10 +299,6 @@ void glopTranslate(GLContext *c,GLParam *p);*/
 void gl_add_select(GLContext *c,unsigned int zmin,unsigned int zmax);
 void gl_enable_disable_light(GLContext *c,int light,int v);
 void gl_shade_vertex(GLContext *c,GLVertex *v);
-
-void glInitTextures(GLContext *c);
-void glEndTextures(GLContext *c);
-GLTexture *alloc_texture(GLContext *c,int h);
 
 /* vertex.c */
 void gl_eval_viewport(GLContext *c);

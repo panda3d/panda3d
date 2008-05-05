@@ -68,14 +68,14 @@ void FNAME(ZB_fillTriangleSmooth) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
                                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
 
 #define INTERP_Z
 #define INTERP_ST
 
 #define DRAW_INIT()				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;                \
   }
 
 #define PUT_PIXEL(_a)                                                   \
@@ -99,7 +99,7 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
                                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
   int or, og, ob, oa;
 
 #define INTERP_Z
@@ -107,7 +107,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;                \
     or = p2->r;                                 \
     og = p2->g;                                 \
     ob = p2->b;                                 \
@@ -144,7 +144,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
                                           ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -152,7 +152,7 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;                \
   }
 
 #define PUT_PIXEL(_a)                                                   \
@@ -194,7 +194,7 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
                                                ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -204,7 +204,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;                \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -295,7 +295,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
                                                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
   int or, og, ob, oa;
 
@@ -306,7 +306,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 
 #define DRAW_INIT() 				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;                \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -414,7 +414,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
                                                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  PIXEL *texture;
+  ZTexture *texture;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -423,7 +423,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
 
 #define DRAW_INIT() 				\
   {						\
-    texture=zb->current_texture;                \
+    texture = &zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \

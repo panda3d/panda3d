@@ -33,7 +33,7 @@ extern "C" {
 class TinyTextureContext;
 struct GLContext;
 struct GLVertex;
-struct GLImage;
+struct GLTexture;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGraphicsStateGuardian
@@ -107,13 +107,14 @@ private:
 
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
+  void choose_tex_size(int &size, int &bits, int orig_size);
 
-  static void copy_lum_image(GLImage *im, Texture *tex);
-  static void copy_alpha_image(GLImage *im, Texture *tex);
-  static void copy_one_channel_image(GLImage *im, Texture *tex, int channel);
-  static void copy_la_image(GLImage *im, Texture *tex);
-  static void copy_rgb_image(GLImage *im, Texture *tex);
-  static void copy_rgba_image(GLImage *im, Texture *tex);
+  static void copy_lum_image(GLTexture *gltex, Texture *tex);
+  static void copy_alpha_image(GLTexture *gltex, Texture *tex);
+  static void copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel);
+  static void copy_la_image(GLTexture *gltex, Texture *tex);
+  static void copy_rgb_image(GLTexture *gltex, Texture *tex);
+  static void copy_rgba_image(GLTexture *gltex, Texture *tex);
 
   static void load_matrix(M4 *matrix, const TransformState *transform);
 

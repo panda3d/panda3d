@@ -2,31 +2,6 @@
 
 GLContext *gl_ctx;
 
-
-void initSharedState(GLContext *c)
-{
-  GLSharedState *s=&c->shared_state;
-  s->lists=gl_zalloc(sizeof(GLList *) * MAX_DISPLAY_LISTS);
-  s->texture_hash_table=
-      gl_zalloc(sizeof(GLTexture *) * TEXTURE_HASH_TABLE_SIZE);
-
-  alloc_texture(c,0);
-}
-
-void endSharedState(GLContext *c)
-{
-  GLSharedState *s=&c->shared_state;
-  int i;
-
-  for(i=0;i<MAX_DISPLAY_LISTS;i++) {
-    /* TODO */
-  }
-  gl_free(s->lists);
-
-  gl_free(s->texture_hash_table);
-}
-
-
 void glInit(void *zbuffer1)
 {
   ZBuffer *zbuffer=(ZBuffer *)zbuffer1;
@@ -50,9 +25,6 @@ void glInit(void *zbuffer1)
   v->xsize=zbuffer->xsize;
   v->ysize=zbuffer->ysize;
   v->updated=1;
-
-  /* shared state */
-  initSharedState(c);
 
   /* lists */
 
@@ -97,9 +69,6 @@ void glInit(void *zbuffer1)
   c->current_color_material_mode=GL_FRONT_AND_BACK;
   c->current_color_material_type=GL_AMBIENT_AND_DIFFUSE;
   c->color_material_enabled=0;
-
-  /* textures */
-  glInitTextures(c);
 
   /* default state */
   c->current_color.X=1.0;
@@ -184,6 +153,5 @@ void glInit(void *zbuffer1)
 void glClose(void)
 {
   GLContext *c=gl_get_context();
-  endSharedState(c);
   gl_free(c);
 }

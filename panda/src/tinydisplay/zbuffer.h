@@ -18,22 +18,18 @@
 /* The number of fractional bits below the S and T texture coords.
    The more we have, the more precise the texel calculation will be
    when we zoom into small details of a texture; but the greater
-   chance we might overflow our 32-bit integer. */
+   chance we might overflow our 32-bit integer when texcoords get
+   large.  This also limits our greatest texture size (its T dimension
+   cannot exceed this number of bits).*/
 #define ZB_POINT_ST_FRAC_BITS 12
 
-/* Various parameters and accessors based on the above bits. */
-#define ZB_POINT_ST_MIN 0
-#define ZB_POINT_ST_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_ST_FRAC_BITS))
-#define ZB_POINT_ST_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS))
-
-/* Returns the index within a 256x256 texture for the given (s, t)
-   texel. */
-#define ZB_TEXEL(s, t) \
-  ((((t) & ZB_POINT_ST_MASK) >> (ZB_POINT_ST_FRAC_BITS - ZB_POINT_ST_BITS)) | \
-   (((s) & ZB_POINT_ST_MASK) >> ZB_POINT_ST_FRAC_BITS))
+/* Returns the index within a texture for the given (s, t) texel. */
+#define ZB_TEXEL(texture, s, t)                                         \
+  ((((t) & (texture)->t_mask) >> (texture)->t_shift) |                  \
+   (((s) & (texture)->s_mask) >> ZB_POINT_ST_FRAC_BITS))
 
 #define ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t) \
-  (texture)[ZB_TEXEL(s, t)]
+  (texture)->pixmap[ZB_TEXEL(texture, s, t)]
 
 #if 1
 /* Use no texture filtering by default.  It's faster, even though it
@@ -90,6 +86,10 @@ typedef unsigned int PIXEL;
 #define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
   PIXEL_BLEND(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
 
+typedef struct {
+  PIXEL *pixmap;
+  int s_mask, t_mask, t_shift;
+} ZTexture;
 
 typedef struct {
     int xsize,ysize;
@@ -103,7 +103,7 @@ typedef struct {
     int nb_colors;
     unsigned char *dctable;
     int *ctable;
-    PIXEL *current_texture;
+    ZTexture current_texture;
     unsigned int reference_alpha;
 } ZBuffer;
 
@@ -133,7 +133,7 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
                        int clear_color, int r, int g, int b, int a,
                        int xmin, int ymin, int xsize, int ysize);
 
-PIXEL lookup_texture_bilinear(PIXEL *texture, int s, int t);
+PIXEL lookup_texture_bilinear(ZTexture *texture, int s, int t);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);

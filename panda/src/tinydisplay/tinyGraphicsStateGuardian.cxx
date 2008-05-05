@@ -26,6 +26,7 @@
 #include "pointLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
+#include "bitMask.h"
 
 extern "C" {
 #include "zgl.h"
@@ -603,7 +604,7 @@ reset() {
     Geom::GR_indexed_other |
     Geom::GR_flat_last_vertex;
 
-  _max_texture_dimension = 256;
+  _max_texture_dimension = (1 << ZB_POINT_ST_FRAC_BITS);
   _max_lights = MAX_LIGHTS;
 
   _color_scale_via_lighting = false;
@@ -1575,21 +1576,19 @@ void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
-  if (_c->current_texture == gtc->_gltex) {
+  GLTexture *gltex = gtc->_gltex;
+  gtc->_gltex = NULL;
+
+  if (_c->current_texture == gltex) {
     _c->current_texture = NULL;
-    _c->zb->current_texture = NULL;
     _c->texture_2d_enabled = false;
   }
 
-  for (int i = 0; i < MAX_TEXTURE_LEVELS; i++) {
-    GLImage *im = &gtc->_gltex->images[i];
-    if (im->pixmap != NULL) {
-      gl_free(im->pixmap);
-    }
+  if (gltex->pixmap != NULL) {
+    gl_free(gltex->pixmap);
   }
 
-  gl_free(gtc->_gltex);
-  gtc->_gltex = NULL;
+  gl_free(gltex);
 
   delete gtc;
 }
@@ -2035,7 +2034,11 @@ apply_texture(TextureContext *tc) {
     gtc->mark_loaded();
   }
 
-  _c->zb->current_texture = (PIXEL *)gtc->_gltex->images[0].pixmap;
+  GLTexture *gltex = gtc->_gltex;
+  _c->zb->current_texture.pixmap = gltex->pixmap;
+  _c->zb->current_texture.s_mask = gltex->s_mask;
+  _c->zb->current_texture.t_mask = gltex->t_mask;
+  _c->zb->current_texture.t_shift = gltex->t_shift;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2059,17 +2062,29 @@ upload_texture(TinyTextureContext *gtc) {
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
 
-  // Internal texture size is always 256 x 256 x 4.
-  static const int iwidth = 256;
-  static const int iheight = 256;
-  static const int ibytecount = iwidth * iheight * 4;
+  // Ensure we have a power of two size, no more than our max.
+  int s_size, s_bits;
+  choose_tex_size(s_size, s_bits, tex->get_x_size());
 
-  GLImage *im = &gtc->_gltex->images[0];
-  im->xsize = iwidth;
-  im->ysize = iheight;
-  if (im->pixmap == NULL) {
-    im->pixmap = gl_malloc(ibytecount);
+  int t_size, t_bits;
+  choose_tex_size(t_size, t_bits, tex->get_y_size());
+
+  int bytecount = s_size * t_size * 4;
+
+  GLTexture *gltex = gtc->_gltex;
+  gltex->xsize = s_size;
+  gltex->ysize = t_size;
+
+  if (gltex->pixmap != NULL) {
+    gl_free(gltex->pixmap);
   }
+  gltex->pixmap = (PIXEL *)gl_malloc(bytecount);
+
+  gltex->s_max = 1 << (s_bits + ZB_POINT_ST_FRAC_BITS);
+  gltex->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+  gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
+  gltex->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+  gltex->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
 
   switch (tex->get_format()) {
   case Texture::F_rgb:
@@ -2077,7 +2092,7 @@ upload_texture(TinyTextureContext *gtc) {
   case Texture::F_rgb8:
   case Texture::F_rgb12:
   case Texture::F_rgb332:
-    copy_rgb_image(im, tex);
+    copy_rgb_image(gltex, tex);
     break;
 
   case Texture::F_rgba:
@@ -2088,37 +2103,37 @@ upload_texture(TinyTextureContext *gtc) {
   case Texture::F_rgba12:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
-    copy_rgba_image(im, tex);
+    copy_rgba_image(gltex, tex);
     break;
 
   case Texture::F_luminance:
-    copy_lum_image(im, tex);
+    copy_lum_image(gltex, tex);
     break;
 
   case Texture::F_red:
-    copy_one_channel_image(im, tex, 0);
+    copy_one_channel_image(gltex, tex, 0);
     break;
 
   case Texture::F_green:
-    copy_one_channel_image(im, tex, 1);
+    copy_one_channel_image(gltex, tex, 1);
     break;
 
   case Texture::F_blue:
-    copy_one_channel_image(im, tex, 2);
+    copy_one_channel_image(gltex, tex, 2);
     break;
 
   case Texture::F_alpha:
-    copy_alpha_image(im, tex);
+    copy_alpha_image(gltex, tex);
     break;
 
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
-    copy_la_image(im, tex);
+    copy_la_image(gltex, tex);
     break;
   }
   
 #ifdef DO_PSTATS 
-  gtc->update_data_size_bytes(ibytecount);
+  gtc->update_data_size_bytes(bytecount);
 #endif
   
   tex->texture_uploaded();
@@ -2127,13 +2142,36 @@ upload_texture(TinyTextureContext *gtc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::choose_tex_size
+//       Access: Private
+//  Description: Chooses the suitable texture size that is the closest
+//               power-of-2 match to the indicated original size.
+//               Also calculates the bit shift count, such that (1 <<
+//               bits) == size.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+choose_tex_size(int &size, int &bits, int orig_size) {
+  unsigned int filled = flood_bits_down((unsigned int)orig_size);
+  size = filled + 1;
+  if (size > orig_size) {
+    // Round down, not up, to next lowest power of 2.
+    size >>= 1;
+  }
+  if (size > _max_texture_dimension) {
+    size = _max_texture_dimension;
+  }
+
+  bits = count_bits_in_word((unsigned int)size - 1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::copy_lum_image
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel luminance image
-//               from the texture into the indicated GLImage pixmap.
+//               from the texture into the indicated GLTexture.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_lum_image(GLImage *im, Texture *tex) {
+copy_lum_image(GLTexture *gltex, Texture *tex) {
   nassertv(tex->get_num_components() == 1);
 
   int xsize_src = tex->get_x_size();
@@ -2152,9 +2190,9 @@ copy_lum_image(GLImage *im, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
@@ -2185,10 +2223,10 @@ copy_lum_image(GLImage *im, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_alpha_image
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel alpha image
-//               from the texture into the indicated GLImage pixmap.
+//               from the texture into the indicated GLTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_alpha_image(GLImage *im, Texture *tex) {
+copy_alpha_image(GLTexture *gltex, Texture *tex) {
   nassertv(tex->get_num_components() == 1);
 
   int xsize_src = tex->get_x_size();
@@ -2207,9 +2245,9 @@ copy_alpha_image(GLImage *im, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
@@ -2241,10 +2279,10 @@ copy_alpha_image(GLImage *im, Texture *tex) {
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel image (with a
 //               single channel, e.g. red, green, or blue) from
-//               the texture into the indicated GLImage pixmap.
+//               the texture into the indicated GLTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_one_channel_image(GLImage *im, Texture *tex, int channel) {
+copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel) {
   nassertv(tex->get_num_components() == 1);
 
   int xsize_src = tex->get_x_size();
@@ -2263,9 +2301,9 @@ copy_one_channel_image(GLImage *im, Texture *tex, int channel) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
@@ -2297,11 +2335,11 @@ copy_one_channel_image(GLImage *im, Texture *tex, int channel) {
 //     Function: TinyGraphicsStateGuardian::copy_la_image
 //       Access: Private, Static
 //  Description: Copies and scales the two-channel luminance-alpha
-//               image from the texture into the indicated GLImage
+//               image from the texture into the indicated GLTexture
 //               pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_la_image(GLImage *im, Texture *tex) {
+copy_la_image(GLTexture *gltex, Texture *tex) {
   nassertv(tex->get_num_components() == 2);
 
   int xsize_src = tex->get_x_size();
@@ -2320,9 +2358,9 @@ copy_la_image(GLImage *im, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
@@ -2353,10 +2391,10 @@ copy_la_image(GLImage *im, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_rgb_image
 //       Access: Private, Static
 //  Description: Copies and scales the three-channel RGB image from
-//               the texture into the indicated GLImage pixmap.
+//               the texture into the indicated GLTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgb_image(GLImage *im, Texture *tex) {
+copy_rgb_image(GLTexture *gltex, Texture *tex) {
   nassertv(tex->get_num_components() == 3);
 
   int xsize_src = tex->get_x_size();
@@ -2375,9 +2413,9 @@ copy_rgb_image(GLImage *im, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
@@ -2408,10 +2446,10 @@ copy_rgb_image(GLImage *im, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_rgba_image
 //       Access: Private, Static
 //  Description: Copies and scales the four-channel RGBA image from
-//               the texture into the indicated GLImage pixmap.
+//               the texture into the indicated GLTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgba_image(GLImage *im, Texture *tex) {
+copy_rgba_image(GLTexture *gltex, Texture *tex) {
   nassertv(tex->get_num_components() == 4);
 
   int xsize_src = tex->get_x_size();
@@ -2430,9 +2468,9 @@ copy_rgba_image(GLImage *im, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = im->xsize;
-  int ysize_dest = im->xsize;
-  unsigned char *dest = (unsigned char *)im->pixmap;
+  int xsize_dest = gltex->xsize;
+  int ysize_dest = gltex->ysize;
+  unsigned char *dest = (unsigned char *)gltex->pixmap;
   nassertv(dest != NULL);
 
   int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));

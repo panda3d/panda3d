@@ -67,7 +67,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	zb->pbuf = frame_buffer;
     }
 
-    zb->current_texture = NULL;
+    zb->current_texture.pixmap = NULL;
 
     return zb;
   error:
@@ -344,7 +344,7 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
 #define ZB_ST_FRAC_HIGH (1 << ZB_POINT_ST_FRAC_BITS)
 #define ZB_ST_FRAC_MASK (ZB_ST_FRAC_HIGH - 1)
 
-PIXEL lookup_texture_bilinear(PIXEL *texture, int s, int t)
+PIXEL lookup_texture_bilinear(ZTexture *texture, int s, int t)
 {
   PIXEL p1, p2, p3, p4;
   int sf, tf;
