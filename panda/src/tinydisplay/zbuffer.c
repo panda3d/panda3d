@@ -340,3 +340,36 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
     }
   }
 }
+
+#define ZB_ST_FRAC_HIGH (1 << ZB_POINT_ST_FRAC_BITS)
+#define ZB_ST_FRAC_MASK (ZB_ST_FRAC_HIGH - 1)
+
+PIXEL lookup_texture_bilinear(PIXEL *texture, int s, int t)
+{
+  PIXEL p1, p2, p3, p4;
+  int sf, tf;
+  int r, g, b, a;
+
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s + ZB_ST_FRAC_HIGH, t);
+  sf = s & ZB_ST_FRAC_MASK;
+
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t + ZB_ST_FRAC_HIGH);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
+  tf = t & ZB_ST_FRAC_MASK;
+  
+  r = (((PIXEL_R(p4) * sf + PIXEL_R(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
+       ((PIXEL_R(p2) * sf + PIXEL_R(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
+
+  g = (((PIXEL_G(p4) * sf + PIXEL_G(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
+       ((PIXEL_G(p2) * sf + PIXEL_G(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
+  
+  b = (((PIXEL_B(p4) * sf + PIXEL_B(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
+       ((PIXEL_B(p2) * sf + PIXEL_B(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
+  
+  a = (((PIXEL_A(p4) * sf + PIXEL_A(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
+       ((PIXEL_A(p2) * sf + PIXEL_A(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
+
+  return RGBA_TO_PIXEL(r, g, b, a);
+}
+

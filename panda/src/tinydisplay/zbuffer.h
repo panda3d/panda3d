@@ -18,25 +18,36 @@
 /* The number of fractional bits below the S and T texture coords.
    The more we have, the more precise the texel calculation will be
    when we zoom into small details of a texture; but the greater
-   chance we'll overflow our 32-bit integer if the T texcoord gets
-   large. */
-#define ZB_POINT_ST_FRAC_BITS 10
+   chance we might overflow our 32-bit integer. */
+#define ZB_POINT_ST_FRAC_BITS 12
 
 /* Various parameters and accessors based on the above bits. */
-#define ZB_POINT_S_LOW ZB_POINT_ST_FRAC_BITS
-#define ZB_POINT_S_MIN 0
-#define ZB_POINT_S_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_S_LOW))
-#define ZB_POINT_S_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_S_LOW)) - (1 << ZB_POINT_S_LOW))
+#define ZB_POINT_ST_MIN 0
+#define ZB_POINT_ST_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_ST_FRAC_BITS))
+#define ZB_POINT_ST_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS))
 
-#define ZB_POINT_T_LOW (ZB_POINT_ST_BITS + ZB_POINT_S_LOW)
-#define ZB_POINT_T_MIN 0
-#define ZB_POINT_T_MAX (1 << (ZB_POINT_ST_BITS + ZB_POINT_T_LOW))
-#define ZB_POINT_T_MASK ((1 << (ZB_POINT_ST_BITS + ZB_POINT_T_LOW)) - (1 << ZB_POINT_T_LOW))
-
-// Returns the index within a 256x256 texture for the given (s, t)
-//   texel.
+/* Returns the index within a 256x256 texture for the given (s, t)
+   texel. */
 #define ZB_TEXEL(s, t) \
-  ((((t) & ZB_POINT_T_MASK) | ((s) & ZB_POINT_S_MASK)) >> ZB_POINT_ST_FRAC_BITS)
+  ((((t) & ZB_POINT_ST_MASK) >> (ZB_POINT_ST_FRAC_BITS - ZB_POINT_ST_BITS)) | \
+   (((s) & ZB_POINT_ST_MASK) >> ZB_POINT_ST_FRAC_BITS))
+
+#define ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t) \
+  (texture)[ZB_TEXEL(s, t)]
+
+#if 1
+/* Use no texture filtering by default.  It's faster, even though it
+   looks terrible. */
+#define ZB_LOOKUP_TEXTURE(texture, s, t) \
+  ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t)
+
+#else
+/* Experiment with bilinear filtering.  Looks great, but seems to run
+   about 25% slower. */
+#define ZB_LOOKUP_TEXTURE(texture, s, t) \
+  lookup_texture_bilinear((texture), (s), (t))
+
+#endif
 
 #define ZB_POINT_RED_MIN   0x0000
 #define ZB_POINT_RED_MAX   0xffff
@@ -121,6 +132,8 @@ void ZB_clear(ZBuffer *zb,int clear_z,int z,
 void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
                        int clear_color, int r, int g, int b, int a,
                        int xmin, int ymin, int xsize, int ysize);
+
+PIXEL lookup_texture_bilinear(PIXEL *texture, int s, int t);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);
