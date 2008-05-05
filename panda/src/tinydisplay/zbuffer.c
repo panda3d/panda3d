@@ -293,21 +293,47 @@ void memset_RGB24(void *adr,int r, int v, int b,long count)
 }
 
 void ZB_clear(ZBuffer * zb, int clear_z, int z,
-	      int clear_color, int r, int g, int b)
+	      int clear_color, int r, int g, int b, int a)
 {
-    int color;
-    int y;
-    PIXEL *pp;
+  int color;
+  int y;
+  PIXEL *pp;
+  
+  if (clear_z) {
+    memset_s(zb->zbuf, z, zb->xsize * zb->ysize);
+  }
+  if (clear_color) {
+    color = RGBA_TO_PIXEL(r, g, b, a);
+    pp = zb->pbuf;
+    for (y = 0; y < zb->ysize; y++) {
+      memset_l(pp, color, zb->xsize);
+      pp = (PIXEL *) ((char *) pp + zb->linesize);
+    }
+  }
+}
 
-    if (clear_z) {
-	memset_s(zb->zbuf, z, zb->xsize * zb->ysize);
+void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
+                       int clear_color, int r, int g, int b, int a,
+                       int xmin, int ymin, int xsize, int ysize)
+{
+  int color;
+  int y;
+  PIXEL *pp;
+  unsigned short *zz;
+  
+  if (clear_z) {
+    zz = zb->zbuf + xmin;
+    for (y = ymin; y < ymin + ysize; ++y) {
+      memset_s(zz, z, xsize);
+      zz += zb->xsize;
     }
-    if (clear_color) {
-	pp = zb->pbuf;
-	for (y = 0; y < zb->ysize; y++) {
-            color = RGB_TO_PIXEL(r, g, b);
-	    memset_l(pp, color, zb->xsize);
-	    pp = (PIXEL *) ((char *) pp + zb->linesize);
-	}
+  }
+  if (clear_color) {
+    color = RGBA_TO_PIXEL(r, g, b, a);
+    pp = zb->pbuf + xmin;
+    for (y = ymin; y < ymin + ysize; ++y) {
+      memset_l(pp, color, xsize);
+      pp = (PIXEL *) ((char *) pp + zb->linesize);
     }
+  }
 }

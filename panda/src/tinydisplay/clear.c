@@ -25,6 +25,6 @@ void glopClear(GLContext *c,GLParam *p)
   /* TODO : correct value of Z */
 
   ZB_clear(c->zb,mask & GL_DEPTH_BUFFER_BIT,z,
-	   mask & GL_COLOR_BUFFER_BIT,r,g,b);
+	   mask & GL_COLOR_BUFFER_BIT,r,g,b,0);
 }
 

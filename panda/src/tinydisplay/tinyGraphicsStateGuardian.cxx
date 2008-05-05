@@ -677,20 +677,30 @@ clear(DrawableRegion *clearable) {
   
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
-  int mask = 0;
-  
+  bool clear_color = false;
+  int r, g, b, a;
   if (clearable->get_clear_color_active()) {
     Colorf v = clearable->get_clear_color();
-    glClearColor(v[0],v[1],v[2],v[3]);
-    mask |= GL_COLOR_BUFFER_BIT;
+    r = (int)(v[0] * 0xffff);
+    g = (int)(v[1] * 0xffff);
+    b = (int)(v[2] * 0xffff);
+    a = (int)(v[3] * 0xffff);
+    clear_color = true;
   }
   
+  bool clear_z = false;
+  int z;
   if (clearable->get_clear_depth_active()) {
-    glClearDepth(clearable->get_clear_depth());
-    mask |= GL_DEPTH_BUFFER_BIT;
+    // We ignore the specified depth clear value, since we don't
+    // support alternate depth compare functions anyway.
+    z = 0;
+    clear_z = true;
   }
-  
-  glClear(mask);
+
+  ZB_clear_viewport(_c->zb, clear_z, z,
+                    clear_color, r, g, b, a,
+                    _c->viewport.xmin, _c->viewport.ymin,
+                    _c->viewport.xsize, _c->viewport.ysize);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -712,24 +722,24 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   int xsize = GLsizei(w);
   int ysize = GLsizei(h);
   
-  int xsize_req=xmin+xsize;
-  int ysize_req=ymin+ysize;
+  int xsize_req = xmin + xsize;
+  int ysize_req = ymin + ysize;
   
   if (_c->gl_resize_viewport && 
-      _c->gl_resize_viewport(_c,&xsize_req,&ysize_req) != 0) {
+      _c->gl_resize_viewport(_c, &xsize_req, &ysize_req) != 0) {
     gl_fatal_error("glViewport: error while resizing display");
   }
   
-  xsize=xsize_req-xmin;
-  ysize=ysize_req-ymin;
+  xsize = xsize_req - xmin;
+  ysize = ysize_req - ymin;
   if (xsize <= 0 || ysize <= 0) {
     gl_fatal_error("glViewport: size too small");
   }
   
-  _c->viewport.xmin=xmin;
-  _c->viewport.ymin=ymin;
-  _c->viewport.xsize=xsize;
-  _c->viewport.ysize=ysize;
+  _c->viewport.xmin = xmin;
+  _c->viewport.ymin = ymin;
+  _c->viewport.xsize = xsize;
+  _c->viewport.ysize = ysize;
   
   gl_eval_viewport(_c);
 }

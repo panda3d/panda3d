@@ -117,7 +117,11 @@ void ZB_close(ZBuffer *zb);
 
 void ZB_resize(ZBuffer *zb,void *frame_buffer,int xsize,int ysize);
 void ZB_clear(ZBuffer *zb,int clear_z,int z,
-	      int clear_color,int r,int g,int b);
+	      int clear_color,int r,int g,int b,int a);
+void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
+                       int clear_color, int r, int g, int b, int a,
+                       int xmin, int ymin, int xsize, int ysize);
+
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);
 
