@@ -22,6 +22,9 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
     if (zb == NULL)
 	return NULL;
 
+    /* xsize must be a multiple of 4 */
+    xsize = xsize & ~3;
+
     zb->xsize = xsize;
     zb->ysize = ysize;
     zb->mode = mode;
@@ -98,7 +101,6 @@ void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
     zb->linesize = (xsize * PSZB + 3) & ~3;
 
     size = zb->xsize * zb->ysize * sizeof(unsigned short);
-
     gl_free(zb->zbuf);
     zb->zbuf = gl_malloc(size);
 
@@ -331,7 +333,7 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
   }
   if (clear_color) {
     color = RGBA_TO_PIXEL(r, g, b, a);
-    pp = zb->pbuf + xmin + ymin * zb->xsize;
+    pp = zb->pbuf + xmin + ymin * (zb->linesize / PSZB);
     for (y = 0; y < ysize; ++y) {
       memset_l(pp, color, xsize);
       pp += zb->xsize;

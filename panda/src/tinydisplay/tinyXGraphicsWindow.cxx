@@ -223,7 +223,7 @@ begin_flip() {
   }
 
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
-            _properties.get_x_size(), _properties.get_y_size());
+            _frame_buffer->xsize, _frame_buffer->ysize);
   XFlush(_display);
 }
 
@@ -316,7 +316,7 @@ process_events() {
         properties.set_size(event.xconfigure.width, event.xconfigure.height);
         system_changed_properties(properties);
         ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
-        _pitch = _properties.get_x_size() * _bytes_per_pixel;
+        _pitch = (_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
         create_ximage();
       }
       break;
@@ -1588,7 +1588,7 @@ create_frame_buffer() {
   }
 
   _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
-  _pitch = _properties.get_x_size() * _bytes_per_pixel;
+  _pitch = (_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
 }
 
 
@@ -1609,15 +1609,15 @@ create_ximage() {
     _ximage = NULL;
   }
 
-  int image_size = _properties.get_x_size() * _properties.get_y_size() * _bytes_per_pixel;
+  int image_size = _frame_buffer->ysize * _pitch;
   char *data = NULL;
   if (_bytes_per_pixel != 4) {
     data = (char *)PANDA_MALLOC_ARRAY(image_size);
   }
 
   _ximage = XCreateImage(_display, _visual, _depth, ZPixmap, 0, data,
-                         _properties.get_x_size(), _properties.get_y_size(),
-                         8, 0);
+                         _frame_buffer->xsize, _frame_buffer->ysize,
+                         32, 0);
 }
 
 #endif  // IS_LINUX
