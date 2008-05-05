@@ -402,7 +402,7 @@ class TaskManager:
         self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
 
 
-    def stepping(self, value):
+    def setStepping(self, value):
         self.stepping = value
 
     def setVerbose(self, value):
@@ -1111,16 +1111,18 @@ class TaskManager:
         tasks = []
         for taskPriList in self.taskList:
             for task in taskPriList:
-                if task is not None:
+                if task is not None and not task._removed:
                     tasks.append(task)
         for pri, taskList in self.pendingTaskDict.iteritems():
             for task in taskList:
-                tasks.append(task)
+                if not task._removed:
+                    tasks.append(task)
         return tasks
 
     def getDoLaters(self):
         # returns list of all doLaters in arbitrary order
-        return self.__doLaterList[:]
+        return [doLater for doLater in self.__doLaterList
+                if not doLater._removed]
 
     def resetStats(self):
         # WARNING: this screws up your do-later timings
