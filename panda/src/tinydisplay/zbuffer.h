@@ -72,9 +72,9 @@ typedef unsigned int PIXEL;
                (PIXEL_B(p1) * PIXEL_B(p2)) >> 16)
 
 #define PIXEL_BLEND(r1, g1, b1, r2, g2, b2, a2) \
-  RGBA_TO_PIXEL(((r1) * (0xff00 - (a2)) + (r2) * (a2)) >> 16,   \
-                ((g1) * (0xff00 - (a2)) + (g2) * (a2)) >> 16,   \
-                ((b1) * (0xff00 - (a2)) + (b2) * (a2)) >> 16,   \
+  RGBA_TO_PIXEL(((r1) * (0xffff - (a2)) + (r2) * (a2)) >> 16,   \
+                ((g1) * (0xffff - (a2)) + (g2) * (a2)) >> 16,   \
+                ((b1) * (0xffff - (a2)) + (b2) * (a2)) >> 16,   \
                 a2)
 #define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
   PIXEL_BLEND(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)
