@@ -770,6 +770,7 @@ class TaskManager:
                 # because finishTask is safe to call twice
                 task.finishTask(self.fVerbose)
                 taskPriList.remove(i)
+                self.__removeTaskFromNameDict(task)
                 # Do not increment the iterator
                 continue
             # Now actually execute the task
