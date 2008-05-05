@@ -35,6 +35,7 @@ extern "C" {
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
+PStatCollector TinyGraphicsStateGuardian::_draw_transform_pcollector("Draw:Transform");
 
 
 static const ZB_fillTriangleFunc fill_tri_funcs
@@ -910,6 +911,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
+  PStatTimer timer(_draw_transform_pcollector);
+
   // Set up the proper transform.
   if (_data_reader->is_vertex_transformed()) {
     // If the vertex data claims to be already transformed into clip
@@ -1228,11 +1231,45 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   _vertices_immediate_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
-    for (int i = 0; i < num_vertices; i += 3) {
-      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
-      GLVertex *v1 = &_vertices[reader->get_vertex(i + 1) - _min_vertex];
-      GLVertex *v2 = &_vertices[reader->get_vertex(i + 2) - _min_vertex];
-      gl_draw_triangle(_c, v0, v1, v2);
+    switch (reader->get_index_type()) {
+    case Geom::NT_uint8:
+      {
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 3) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          GLVertex *v2 = &_vertices[index[i + 2] - _min_vertex];
+          gl_draw_triangle(_c, v0, v1, v2);
+        }
+      }
+      break;
+
+    case Geom::NT_uint16:
+      {
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 3) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          GLVertex *v2 = &_vertices[index[i + 2] - _min_vertex];
+          gl_draw_triangle(_c, v0, v1, v2);
+        }
+      }
+      break;
+
+    case Geom::NT_uint32:
+      {
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 3) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          GLVertex *v2 = &_vertices[index[i + 2] - _min_vertex];
+          gl_draw_triangle(_c, v0, v1, v2);
+        }
+      }
+      break;
+
+    default:
+      break;
     }
 
   } else {
@@ -1266,10 +1303,42 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
   _vertices_immediate_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
-    for (int i = 0; i < num_vertices; i += 2) {
-      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
-      GLVertex *v1 = &_vertices[reader->get_vertex(i + 1) - _min_vertex];
-      gl_draw_line(_c, v0, v1);
+    switch (reader->get_index_type()) {
+    case Geom::NT_uint8:
+      {
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 2) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          gl_draw_line(_c, v0, v1);
+        }
+      }
+      break;
+
+    case Geom::NT_uint16:
+      {
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 2) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          gl_draw_line(_c, v0, v1);
+        }
+      }
+      break;
+
+    case Geom::NT_uint32:
+      {
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; i += 2) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
+          gl_draw_line(_c, v0, v1);
+        }
+      }
+      break;
+
+    default:
+      break;
     }
 
   } else {
@@ -1302,9 +1371,39 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
   _vertices_immediate_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
-    for (int i = 0; i < num_vertices; ++i) {
-      GLVertex *v0 = &_vertices[reader->get_vertex(i) - _min_vertex];
-      gl_draw_point(_c, v0);
+    switch (reader->get_index_type()) {
+    case Geom::NT_uint8:
+      {
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; ++i) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          gl_draw_point(_c, v0);
+        }
+      }
+      break;
+
+    case Geom::NT_uint16:
+      {
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; ++i) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          gl_draw_point(_c, v0);
+        }
+      }
+      break;
+
+    case Geom::NT_uint32:
+      {
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        for (int i = 0; i < num_vertices; ++i) {
+          GLVertex *v0 = &_vertices[index[i] - _min_vertex];
+          gl_draw_point(_c, v0);
+        }
+      }
+      break;
+
+    default:
+      break;
     }
 
   } else {

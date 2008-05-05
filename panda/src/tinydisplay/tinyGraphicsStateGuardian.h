@@ -133,6 +133,7 @@ private:
   int _vertices_size;
 
   static PStatCollector _vertices_immediate_pcollector;
+  static PStatCollector _draw_transform_pcollector;
 
 public:
   static TypeHandle get_class_type() {
