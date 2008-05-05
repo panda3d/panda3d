@@ -102,7 +102,6 @@ private:
   void do_issue_cull_face();
   void do_issue_material();
   void do_issue_texture();
-  void do_issue_blending();
 
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
