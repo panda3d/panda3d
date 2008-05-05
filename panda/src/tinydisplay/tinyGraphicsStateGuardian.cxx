@@ -604,11 +604,7 @@ reset() {
     Geom::GR_flat_last_vertex;
 
   _max_texture_dimension = 256;
-
-  // Actually, this number is completely arbitrary, since we allocate
-  // lights dynamically.  But we probably want some limit anyway to
-  // protect users from accidentally enabling a thousand lights.
-  _max_lights = 8;
+  _max_lights = MAX_LIGHTS;
 
   _color_scale_via_lighting = false;
   _alpha_scale_via_texture = false;
@@ -1608,7 +1604,6 @@ do_issue_light() {
   // Initialize the current ambient light total and newly enabled
   // light list
   Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 0.0f);
-  int i;
 
   int num_enabled = 0;
   int num_on_lights = 0;
@@ -1621,11 +1616,12 @@ do_issue_light() {
   // First, release all of the previously-assigned lights.
   _c->lighting_enabled = false;
 
-  GLLight *light = _c->first_light;
-  while (light != (GLLight *)NULL) {
-    GLLight *next = light->next;
-    PANDA_FREE_SINGLE(light);
-    light = next;
+  GLLight *gl_light = _c->first_light;
+  while (gl_light != (GLLight *)NULL) {
+    GLLight *next = gl_light->next;
+    gl_light->enabled = false;
+    gl_light->next = NULL;
+    gl_light = next;
   }
   _c->first_light = NULL;
 
@@ -1652,7 +1648,8 @@ do_issue_light() {
 
       } else {
         // Other kinds of lights each get their own GLLight object.
-        GLLight *gl_light = (GLLight *)PANDA_MALLOC_SINGLE(sizeof(GLLight));
+        nassertv(num_enabled < MAX_LIGHTS);
+        GLLight *gl_light = &_c->lights[num_enabled];
         memset(gl_light, 0, sizeof(GLLight));
         gl_light->enabled = true;
 
