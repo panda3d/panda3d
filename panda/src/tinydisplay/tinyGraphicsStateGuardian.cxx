@@ -1559,12 +1559,6 @@ prepare_texture(Texture *tex) {
       << tex->get_ram_image_compression() << "\n";
     return NULL;
   }
-  if (tex->get_component_type() != Texture::T_unsigned_byte) {
-    tinydisplay_cat.info()
-      << "not loading texture " << tex->get_name() << ": "
-      << tex->get_component_type() << "\n";
-    return NULL;
-  }
 
   TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
   gtc->_gltex = (GLTexture *)gl_zalloc(sizeof(GLTexture));
