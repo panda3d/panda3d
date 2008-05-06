@@ -235,7 +235,6 @@ void gl_draw_triangle(GLContext *c,
       if (norm == 0) return;
 
       front = norm < 0.0;
-      front = front ^ c->current_front_face;
   
       /* back face culling */
       if (c->cull_face_enabled) {

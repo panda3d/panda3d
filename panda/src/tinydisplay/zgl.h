@@ -171,7 +171,6 @@ typedef struct GLContext {
   GLViewport viewport;
 
   /* current state */
-  int current_front_face;
   int smooth_shade_model;
   int cull_face_enabled;
   int cull_clockwise;
@@ -179,21 +178,10 @@ typedef struct GLContext {
   gl_draw_triangle_func draw_triangle_front,draw_triangle_back;
   ZB_fillTriangleFunc zb_fill_tri;
 
-  /* clear */
-  float clear_depth;
-  V4 clear_color;
-
   /* current vertex state */
   V4 current_color;
-  unsigned int longcurrent_color[3]; /* precomputed integer color */
   V4 current_normal;
   V4 current_tex_coord;
-  int current_edge_flag;
-  
-  /* opengl 1.1 polygon offset */
-  float offset_factor;
-  float offset_units;
-  int offset_states;
 
   /* depth test */
   int depth_test;

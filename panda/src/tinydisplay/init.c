@@ -39,34 +39,18 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   c->current_color.Y=1.0;
   c->current_color.Z=1.0;
   c->current_color.W=1.0;
-  c->longcurrent_color[0] = 65535;
-  c->longcurrent_color[1] = 65535;
-  c->longcurrent_color[2] = 65535;
 
   c->current_normal.X=1.0;
   c->current_normal.Y=0.0;
   c->current_normal.Z=0.0;
   c->current_normal.W=0.0;
 
-  c->current_edge_flag=1;
-  
   c->current_tex_coord.X=0;
   c->current_tex_coord.Y=0;
   c->current_tex_coord.Z=0;
   c->current_tex_coord.W=1;
 
-  c->current_front_face=0; /* 0 = GL_CCW  1 = GL_CW */
   c->cull_face_enabled=0;
-  
-  /* clear */
-  c->clear_color.v[0]=0;
-  c->clear_color.v[1]=0;
-  c->clear_color.v[2]=0;
-  c->clear_color.v[3]=0;
-  c->clear_depth=0;
-  
-  /* opengl 1.1 polygon offset */
-  c->offset_states = 0;
   
   /* specular buffer */
   c->specbuf_first = NULL;
