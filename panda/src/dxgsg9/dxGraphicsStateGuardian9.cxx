@@ -3138,16 +3138,19 @@ do_issue_transform() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_alpha_test() {
-  const AlphaTestAttrib *attrib = _target._alpha_test;
-  AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
-  if (mode == AlphaTestAttrib::M_none) {
+  if (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
-
   } else {
-    //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
-    set_render_state(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
-    set_render_state(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
-    set_render_state(D3DRS_ALPHATESTENABLE, TRUE);
+    const AlphaTestAttrib *attrib = _target._alpha_test;
+    AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+    if (mode == AlphaTestAttrib::M_none) {
+      set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
+    } else {
+      //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
+      set_render_state(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
+      set_render_state(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
+      set_render_state(D3DRS_ALPHATESTENABLE, TRUE);
+    }
   }
 }
 
@@ -3453,7 +3456,9 @@ set_state_and_transform(const RenderState *target,
     _target._shader = _target_rs->get_generated_shader();
   }
   
-  if (_target._alpha_test != _state._alpha_test) {
+  if ((_target._alpha_test != _state._alpha_test)||
+      (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test) != 
+       _state._shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
   }
@@ -3521,7 +3526,9 @@ set_state_and_transform(const RenderState *target,
 
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
-      (_target._color_blend != _state._color_blend)) {
+      (_target._color_blend != _state._color_blend)||
+      (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+       _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
     do_issue_blending();
     _state._transparency = _target._transparency;
     _state._color_write = _target._color_write;
@@ -4085,6 +4092,9 @@ do_issue_blending() {
   // to effectively disable color write.
   unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
+  if (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
+    color_channels &= ~(ColorWriteAttrib::C_alpha);
+  }
   if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       if (_screen->_can_direct_disable_color_writes) {
@@ -4098,7 +4108,9 @@ do_issue_blending() {
     }
     return;
   } else {
-    if (_target._color_write != _state._color_write) {
+    if ((_target._color_write != _state._color_write)||
+        (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+         _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
       if (_screen->_can_direct_disable_color_writes) {
         set_render_state(D3DRS_COLORWRITEENABLE, color_channels);
       }

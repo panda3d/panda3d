@@ -44,6 +44,8 @@ make_off() {
     attrib->_shader_priority = 0;
     attrib->_auto_shader = false;
     attrib->_has_shader = true;
+    attrib->_flags = 0;
+    attrib->_has_flags = 0;
     _off_attrib = return_new(attrib);
   }
   return _off_attrib;
@@ -64,6 +66,8 @@ make() {
     attrib->_shader_priority = 0;
     attrib->_auto_shader = false;
     attrib->_has_shader = false;
+    attrib->_flags = 0;
+    attrib->_has_flags = 0;
     _null_attrib = return_new(attrib);
   }
   return _null_attrib;
@@ -126,6 +130,38 @@ clear_shader() const {
   result->_shader_priority = 0;
   result->_auto_shader = false;
   result->_has_shader = false;
+  return return_new(result);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::set_flag
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+set_flag(int flag, bool value) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  int bit = 1<<flag;
+  if (value) {
+    result->_flags |= bit;
+  } else {
+    result->_flags &= ~bit;
+  }
+  result->_has_flags |= bit;
+  return return_new(result);
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::clear_flag
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+clear_flag(int flag) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  int bit = 1<<flag;
+  result->_flags &= ~bit;
+  result->_has_flags &= ~bit;
   return return_new(result);
 }
 
@@ -432,6 +468,12 @@ compare_to_impl(const RenderAttrib *other) const {
   if (this->_has_shader != that->_has_shader) {
     return (this->_has_shader < that->_has_shader) ? -1 : 1;
   }
+  if (this->_flags != that->_flags) {
+    return (this->_flags < that->_flags) ? -1 : 1;
+  }
+  if (this->_has_flags != that->_has_flags) {
+    return (this->_has_flags < that->_has_flags) ? -1 : 1;
+  }
   
   Inputs::const_iterator i1 = this->_inputs.begin();
   Inputs::const_iterator i2 = that->_inputs.begin();
@@ -487,6 +529,10 @@ compose_impl(const RenderAttrib *other) const {
       }
     }
   }
+  // Update the flags.
+  attr->_flags &= ~(over->_has_flags);
+  attr->_flags |= over->_flags;
+  attr->_has_flags |= (over->_has_flags);
   return return_new(attr);
 }
 

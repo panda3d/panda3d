@@ -147,32 +147,46 @@ analyze_renderstate(const RenderState *rs) {
   //  verify_enforce_attrib_lock();
 
   rs->store_into_slots(&_attribs);
+  int outputs = _attribs._aux_bitplane->get_outputs();
 
-  // Check if there's an alpha test, color blend, or transparency.
-
+  // Decide whether or not we need alpha testing or alpha blending.
+  
   if ((_attribs._alpha_test->get_mode() != RenderAttrib::M_none)&&
       (_attribs._alpha_test->get_mode() != RenderAttrib::M_always)) {
     _have_alpha_test = true;
   }
   if (_attribs._color_blend->get_mode() != ColorBlendAttrib::M_none) {
-    _have_color_blend = true;
+    _have_alpha_blend = true;
   }
-  if (_attribs._transparency->get_mode() != TransparencyAttrib::M_none) {
-    _have_transparency = true;
+  if ((_attribs._transparency->get_mode() == TransparencyAttrib::M_alpha)||
+      (_attribs._transparency->get_mode() == TransparencyAttrib::M_dual)) {
+    _have_alpha_blend = true;
   }
   
-  // Determine what output values are desired.
+  // Decide what to send to the framebuffer alpha, if anything.
   
-  int outputs = _attribs._aux_bitplane->get_outputs();
-  if (_have_alpha_test || _have_color_blend || _have_transparency) {
-    _out_primary_alpha = true;
+  if (outputs & AuxBitplaneAttrib::ABO_glow) {
+    if (_have_alpha_blend) {
+      _calc_primary_alpha = true;
+      _out_primary_glow = false;
+      _disable_alpha_write = true;
+    } else if (_have_alpha_test) {
+      _calc_primary_alpha = true;
+      _out_primary_glow = true;
+      _subsume_alpha_test = true;
+    }
   } else {
-    _out_primary_glow = (outputs & AuxBitplaneAttrib::ABO_glow) ? true:false;
+    if (_have_alpha_blend || _have_alpha_test) {
+      _calc_primary_alpha = true;
+    }
   }
+  
+  // Determine what to put into the aux bitplane.
+
   _out_aux_normal = (outputs & AuxBitplaneAttrib::ABO_aux_normal) ? true:false;
   _out_aux_glow = (outputs & AuxBitplaneAttrib::ABO_aux_glow) ? true:false;
   _out_aux_any = (_out_aux_normal || _out_aux_glow);
-
+  
   // Count number of textures.
 
   _num_textures = 0;
@@ -360,10 +374,11 @@ clear_analysis() {
   _map_index_height = -1;
   _map_index_glow = -1;
   _map_index_gloss = -1;
+  _calc_primary_alpha = false;
   _have_alpha_test = false;
-  _have_color_blend = false;
-  _have_transparency = false;
-  _out_primary_alpha = false;
+  _have_alpha_blend = false;
+  _subsume_alpha_test = false;
+  _disable_alpha_write = false;
   _out_primary_glow  = false;
   _out_aux_normal = false;
   _out_aux_glow   = false;
@@ -795,7 +810,7 @@ synthesize_shader(const RenderState *rs) {
 
     // Combine in alpha, which bypasses lighting calculations.
     // Use of lerp here is a workaround for a radeon driver bug.
-    if (_out_primary_alpha) {
+    if (_calc_primary_alpha) {
       if (_vertex_colors) {
         text << "\t result.a = l_color.a;\n";
       } else if (_flat_colors) {
@@ -833,7 +848,7 @@ synthesize_shader(const RenderState *rs) {
       break;
     case TextureStage::M_add:
       text << "\t result.rbg = result.rgb + tex" << i << ".rgb;\n";
-      if (_out_primary_alpha) {
+      if (_calc_primary_alpha) {
         text << "\t result.a   = result.a * tex" << i << ".a;\n";
       }
       break;
@@ -848,6 +863,20 @@ synthesize_shader(const RenderState *rs) {
     }
   }
 
+  if (_subsume_alpha_test) {
+    text << "\t // Shader includes alpha test:\n";
+    double ref = _attribs._alpha_test->get_reference_alpha();
+    switch (_attribs._alpha_test->get_mode()) {
+    case RenderAttrib::M_never:          text<<"\t discard;\n";
+    case RenderAttrib::M_less:           text<<"\t if (result.a >= "<<ref<<") discard;\n";
+    case RenderAttrib::M_equal:          text<<"\t if (result.a != "<<ref<<") discard;\n";
+    case RenderAttrib::M_less_equal:     text<<"\t if (result.a >  "<<ref<<") discard;\n";
+    case RenderAttrib::M_greater:        text<<"\t if (result.a <= "<<ref<<") discard;\n";
+    case RenderAttrib::M_not_equal:      text<<"\t if (result.a == "<<ref<<") discard;\n";
+    case RenderAttrib::M_greater_equal:  text<<"\t if (result.a <  "<<ref<<") discard;\n";
+    }
+  }
+  
   if (_out_primary_glow) {
     if (_map_index_glow >= 0) {
       text << "\t result.a = tex" << _map_index_glow << ".a;\n";
@@ -891,10 +920,22 @@ synthesize_shader(const RenderState *rs) {
   // The multiply is a workaround for a radeon driver bug.
   // It's annoying as heck, since it produces an extra instruction.
   text << "\t o_color = result * 1.000001;\n"; 
+  if (_subsume_alpha_test) {
+    text << "\t // Shader subsumes normal alpha test.\n";
+  }
+  if (_disable_alpha_write) {
+    text << "\t // Shader disables alpha write.\n";
+  }
   text << "}\n";
   
   // Insert the shader into the shader attrib.
   CPT(RenderAttrib) shattr = create_shader_attrib(text.str());
+  if (_subsume_alpha_test) {
+    shattr=DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+  }
+  if (_disable_alpha_write) {
+    shattr=DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+  }
   clear_analysis();
   reset_register_allocator();
   return shattr;

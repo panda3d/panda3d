@@ -118,15 +118,16 @@ protected:
   int _map_index_glow;
   int _map_index_gloss;
 
-  bool _out_primary_alpha;
   bool _out_primary_glow;
   bool _out_aux_normal;
   bool _out_aux_glow;
   bool _out_aux_any;
 
   bool _have_alpha_test;
-  bool _have_color_blend;
-  bool _have_transparency;
+  bool _have_alpha_blend;
+  bool _calc_primary_alpha;
+  bool _subsume_alpha_test;
+  bool _disable_alpha_write;
   
   bool _need_clipspace_pos;
   bool _need_material_props;

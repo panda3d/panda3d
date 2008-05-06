@@ -40,6 +40,11 @@ PUBLISHED:
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_off();
   
+  enum {
+    F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
+    F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
+  };
+
   INLINE bool               has_shader() const;
   INLINE bool               auto_shader() const;
   INLINE int                get_shader_priority() const;
@@ -59,9 +64,15 @@ PUBLISHED:
   CPT(RenderAttrib) set_shader_input(const string &id, const LVector4f &v, int priority=0) const;
   CPT(RenderAttrib) set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1,
                                      int priority=0) const;
+
+  CPT(RenderAttrib) set_flag(int flag, bool value) const;
+  CPT(RenderAttrib) clear_flag(int flag) const;
+
   CPT(RenderAttrib) clear_shader_input(InternalName *id) const;
   CPT(RenderAttrib) clear_shader_input(const string &id) const;
 
+  INLINE bool        get_flag(int flag) const;
+  
   const Shader      *get_shader() const;
   const ShaderInput *get_shader_input(InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
@@ -86,6 +97,8 @@ private:
   int         _shader_priority;
   bool        _auto_shader;
   bool        _has_shader;
+  int         _flags;
+  int         _has_flags;
   typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
   Inputs _inputs;
 

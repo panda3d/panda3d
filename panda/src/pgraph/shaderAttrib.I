@@ -42,6 +42,8 @@ ShaderAttrib(const ShaderAttrib &copy) :
   _shader_priority(copy._shader_priority),
   _auto_shader(copy._auto_shader),
   _has_shader(copy._has_shader),
+  _flags(_flags),
+  _has_flags(_has_flags),
   _inputs(copy._inputs)
 {
 }
@@ -77,5 +79,15 @@ auto_shader() const {
 INLINE int ShaderAttrib::
 get_shader_priority() const {
   return _shader_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_flag
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool ShaderAttrib::
+get_flag(int index) const {
+  return (_flags & (1<<index)) ? true:false;
 }
 

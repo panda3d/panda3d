@@ -272,7 +272,7 @@ rebuild_bitplanes() {
   int next = GL_COLOR_ATTACHMENT1_EXT;
   for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
     bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
-    next += 1;
+	next += 1;
   }
   for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
     bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
@@ -339,7 +339,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
         }
       }
     } else {
-//      tex->set_format(Texture::F_rgba);
+      tex->set_format(Texture::F_rgba);
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -412,7 +412,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
                                           GL_RENDERBUFFER_EXT, rb);
       }
     } else {
-      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA,
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA8_EXT,
                                     _rb_size_x, _rb_size_y);
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,

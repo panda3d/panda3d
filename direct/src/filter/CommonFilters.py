@@ -187,7 +187,7 @@ class CommonFilters:
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
                 intensity = bloomconf.intensity * 3.0
-                self.bloom[0].setShaderInput("blend", bloomconf.blendx, bloomconf.blendy, bloomconf.blendz, bloomconf.blendw)
+                self.bloom[0].setShaderInput("blend", bloomconf.blendx, bloomconf.blendy, bloomconf.blendz, bloomconf.blendw * 2.0)
                 self.bloom[0].setShaderInput("trigger", bloomconf.mintrigger, 1.0/(bloomconf.maxtrigger-bloomconf.mintrigger), 0.0, 0.0)
                 self.bloom[0].setShaderInput("desat", bloomconf.desat)
                 self.bloom[3].setShaderInput("intensity", intensity, intensity, intensity, intensity)

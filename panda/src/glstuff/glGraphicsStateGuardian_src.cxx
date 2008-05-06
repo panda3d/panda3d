@@ -3937,14 +3937,18 @@ do_issue_depth_test() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_alpha_test() {
-  const AlphaTestAttrib *attrib = _target._alpha_test;
-  AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
-  if (mode == AlphaTestAttrib::M_none) {
+  if (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     enable_alpha_test(false);
   } else {
-    assert(GL_NEVER==(AlphaTestAttrib::M_never-1+0x200));
-    GLP(AlphaFunc)(PANDA_TO_GL_COMPAREFUNC(mode), attrib->get_reference_alpha());
-    enable_alpha_test(true);
+    const AlphaTestAttrib *attrib = _target._alpha_test;
+    AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+    if (mode == AlphaTestAttrib::M_none) {
+      enable_alpha_test(false);
+    } else {
+      assert(GL_NEVER==(AlphaTestAttrib::M_never-1+0x200));
+      GLP(AlphaFunc)(PANDA_TO_GL_COMPAREFUNC(mode), attrib->get_reference_alpha());
+      enable_alpha_test(true);
+    }
   }
 }
 
@@ -4122,6 +4126,9 @@ do_issue_blending() {
   // to effectively disable color write.
   unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
+  if (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
+    color_channels &= ~(ColorWriteAttrib::C_alpha);
+  }
   if (color_channels == ColorWriteAttrib::C_off) {
     if (_target._color_write != _state._color_write) {
       enable_multisample_alpha_one(false);
@@ -4137,7 +4144,9 @@ do_issue_blending() {
     }
     return;
   } else {
-    if (_target._color_write != _state._color_write) {
+    if ((_target._color_write != _state._color_write)||
+        (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+         _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
       if (CLP(color_mask)) {
         GLP(ColorMask)((color_channels & ColorWriteAttrib::C_red) != 0,
                        (color_channels & ColorWriteAttrib::C_green) != 0,
@@ -4146,6 +4155,7 @@ do_issue_blending() {
       }
     }
   }
+
 
   CPT(ColorBlendAttrib) color_blend = _target._color_blend;
   ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
@@ -6064,7 +6074,9 @@ set_state_and_transform(const RenderState *target,
     _target._shader = _target_rs->get_generated_shader();
   }
   
-  if (_target._alpha_test != _state._alpha_test) {
+  if ((_target._alpha_test != _state._alpha_test)||
+      (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test) != 
+       _state._shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
     PStatTimer timer(_draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
@@ -6138,7 +6150,9 @@ set_state_and_transform(const RenderState *target,
 
   if ((_target._transparency != _state._transparency)||
       (_target._color_write != _state._color_write)||
-      (_target._color_blend != _state._color_blend)) {
+      (_target._color_blend != _state._color_blend)||
+      (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+       _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
     PStatTimer timer(_draw_set_state_blending_pcollector);
     do_issue_blending();
     _state._transparency = _target._transparency;
