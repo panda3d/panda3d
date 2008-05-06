@@ -1433,7 +1433,8 @@ if __debug__:
         tm.doMethodLater(.01, _testDoLater1, 'testDoLater1')
         tm.doMethodLater(.02, _testDoLater2, 'testDoLater2')
         doLaterTests[0] += 1
-        tm.add(_monitorDoLater, 'monitorDoLater')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLater, 'monitorDoLater', priority=10)
         _testDoLater1 = None
         _testDoLater2 = None
         _monitorDoLater = None
@@ -1455,7 +1456,8 @@ if __debug__:
         tm.doMethodLater(.01, _testDoLaterPri1, 'testDoLaterPri1', priority=1)
         tm.doMethodLater(.01, _testDoLaterPri2, 'testDoLaterPri2', priority=2)
         doLaterTests[0] += 1
-        tm.add(_monitorDoLaterPri, 'monitorDoLaterPri')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLaterPri, 'monitorDoLaterPri', priority=10)
         _testDoLaterPri1 = None
         _testDoLaterPri2 = None
         _monitorDoLaterPri = None
@@ -1474,7 +1476,8 @@ if __debug__:
             return task.cont
         tm.doMethodLater(.01, _testDoLaterExtraArgs, 'testDoLaterExtraArgs', extraArgs=[3,])
         doLaterTests[0] += 1
-        tm.add(_monitorDoLaterExtraArgs, 'monitorDoLaterExtraArgs')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLaterExtraArgs, 'monitorDoLaterExtraArgs', priority=10)
         _testDoLaterExtraArgs = None
         _monitorDoLaterExtraArgs = None
         # don't check until all the doLaters are finished
@@ -1494,7 +1497,8 @@ if __debug__:
         tm.doMethodLater(.01, _testDoLaterAppendTask, 'testDoLaterAppendTask',
                          extraArgs=[4,], appendTask=True)
         doLaterTests[0] += 1
-        tm.add(_monitorDoLaterAppendTask, 'monitorDoLaterAppendTask')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLaterAppendTask, 'monitorDoLaterAppendTask', priority=10)
         _testDoLaterAppendTask = None
         _monitorDoLaterAppendTask = None
         # don't check until all the doLaters are finished
@@ -1516,7 +1520,8 @@ if __debug__:
         tm.doMethodLater(.01, _testDoLaterUponDeath, 'testDoLaterUponDeath',
                          uponDeath=_testUponDeathFunc)
         doLaterTests[0] += 1
-        tm.add(_monitorDoLaterUponDeath, 'monitorDoLaterUponDeath')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLaterUponDeath, 'monitorDoLaterUponDeath', priority=10)
         _testUponDeathFunc = None
         _testDoLaterUponDeath = None
         _monitorDoLaterUponDeath = None
@@ -1542,7 +1547,8 @@ if __debug__:
         tm.doMethodLater(.01, _testDoLaterOwner, 'testDoLaterOwner',
                          owner=doLaterOwner)
         doLaterTests[0] += 1
-        tm.add(_monitorDoLaterOwner, 'monitorDoLaterOwner')
+        # make sure we run this task after the doLaters if they all occur on the same frame
+        tm.add(_monitorDoLaterOwner, 'monitorDoLaterOwner', priority=10)
         _testDoLaterOwner = None
         _monitorDoLaterOwner = None
         del doLaterOwner
