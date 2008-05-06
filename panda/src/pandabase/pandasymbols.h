@@ -188,6 +188,14 @@
   #define EXPTP_SHADER extern
 #endif
 
+#ifdef BUILDING_TINYDISPLAY
+  #define EXPCL_TINYDISPLAY __declspec(dllexport)
+  #define EXPTP_TINYDISPLAY
+#else
+  #define EXPCL_TINYDISPLAY __declspec(dllimport)
+  #define EXPTP_TINYDISPLAY extern
+#endif
+
 #else   /* !WIN32_VC */
 
 #define EXPCL_FRAMEWORK
@@ -249,6 +257,9 @@
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER
+
+#define EXPCL_TINYDISPLAY
+#define EXPTP_TINYDISPLAY
 
 #endif  /* WIN32_VC */
 
