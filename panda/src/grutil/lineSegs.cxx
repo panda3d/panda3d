@@ -214,7 +214,8 @@ GeomNode *LineSegs::
 create(GeomNode *previous, bool dynamic) {
   if (!_list.empty()) {
     CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
-    CPT(RenderState) state = RenderState::make(thick);
+    CPT(RenderAttrib) vtxcolor = ColorAttrib::make_vertex();
+    CPT(RenderState) state = RenderState::make(thick, vtxcolor);
 
     _created_data = new GeomVertexData
       ("lineSegs", GeomVertexFormat::get_v3cp(),
