@@ -20,6 +20,9 @@
 #define TINYSDLGRAPHICSPIPE_H
 
 #include "pandabase.h"
+
+#ifdef HAVE_SDL
+
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 
@@ -67,5 +70,7 @@ private:
 };
 
 #include "tinySDLGraphicsPipe.I"
+
+#endif  // HAVE_SDL
 
 #endif

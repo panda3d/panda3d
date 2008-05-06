@@ -616,9 +616,15 @@
 // Similar to MIN_GL_VERSION, above.
 #define MIN_MESA_VERSION 1 1
 
-// We are experimenting with integrating TinyGL for fast but cheesy
-// software rendering.  Presently, this requires SDL for window
-// management.
+// Do you want to build tinydisplay, a cheesy software renderer built
+// into Panda, based on TinyGL?  On some platforms, this presently
+// requires SDL for window management.
+#define HAVE_TINYDISPLAY
+
+// The SDL library is at the moment required only for support of
+// tinydisplay.  It may not even be required for that, as we are in
+// the process of porting tinydisplay to direct OS-native window
+// creation.
 #define SDL_IPATH
 #define SDL_LPATH
 #define SDL_LIBS SDL

@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+
+#ifdef HAVE_SDL
+
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
@@ -123,3 +127,5 @@ make_output(const string &name,
   // Nothing else left to try.
   return NULL;
 }
+
+#endif  // HAVE_SDL

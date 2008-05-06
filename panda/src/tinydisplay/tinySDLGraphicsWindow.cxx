@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+
+#ifdef HAVE_SDL
+
 #include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "config_tinydisplay.h"
@@ -529,3 +533,5 @@ get_mouse_button(Uint8 button) {
 
   return ButtonHandle::none();
 }
+
+#endif  // HAVE_SDL

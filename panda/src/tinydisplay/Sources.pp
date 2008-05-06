@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[HAVE_SDL]
+#define BUILD_DIRECTORY $[HAVE_TINYDISPLAY]
 #define BUILDING_DLL BUILDING_TINYDISPLAY
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \

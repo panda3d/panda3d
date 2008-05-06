@@ -116,6 +116,21 @@
 #else
 #print - Did not find DirectX9
 #endif
+#if $[HAVE_TINYDISPLAY]
+#print + Tinydisplay
+#else
+#print - Not building Tinydisplay
+#endif
+#if $[HAVE_SDL]
+#print + SDL
+#else
+#print - Did not find SDL
+#endif
+#if $[HAVE_MESA]
+#print + Mesa
+#else
+#print - Did not find Mesa
+#endif
 #if $[HAVE_OPENCV]
 #print + OpenCV
 #else
@@ -280,6 +295,12 @@ $[cdefine HAVE_DX8]
 
 /* Define if we have DirectX installed and want to build for DX.  */
 $[cdefine HAVE_DX9]
+
+/* Define if we want to build tinydisplay. */
+$[cdefine HAVE_TINYDISPLAY]
+
+/* Define if we have the SDL library. */
+$[cdefine HAVE_SDL]
 
 /* Define if we have Chromium installed and want to use it.  */
 $[cdefine HAVE_CHROMIUM]

@@ -97,10 +97,12 @@ init_libtinydisplay() {
                            TinyXGraphicsPipe::pipe_constructor);
 #endif
 
+#ifdef HAVE_SDL
   TinySDLGraphicsPipe::init_type();
   TinySDLGraphicsWindow::init_type();
   selection->add_pipe_type(TinySDLGraphicsPipe::get_class_type(),
                            TinySDLGraphicsPipe::pipe_constructor);
+#endif
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("TinyGL");

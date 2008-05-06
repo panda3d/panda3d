@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_SDL
+
 #include "tinySDLGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
@@ -83,5 +85,7 @@ private:
 };
 
 #include "tinySDLGraphicsWindow.I"
+
+#endif  // HAVE_SDL
 
 #endif
