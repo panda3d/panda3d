@@ -17,10 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "tinyTextureContext.h"
-
-extern "C" {
 #include "zgl.h"
-}
 
 TypeHandle TinyTextureContext::_type_handle;
 

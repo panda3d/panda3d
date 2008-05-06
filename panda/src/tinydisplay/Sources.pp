@@ -1,5 +1,5 @@
 #define BUILD_DIRECTORY $[HAVE_SDL]
-//#define BUILDING_DLL BUILDING_TINYDISPLAY
+#define BUILDING_DLL BUILDING_TINYDISPLAY
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
@@ -21,13 +21,13 @@
     tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
     tinyXGraphicsPipe.I tinyXGraphicsPipe.cxx tinyXGraphicsPipe.h \
     tinyXGraphicsWindow.h tinyXGraphicsWindow.I tinyXGraphicsWindow.cxx \
-    clip.c error.c \
-    image_util.c init.c light.c \
-    memory.c msghandling.c msghandling.h \
-    specbuf.c \
-    texture.c vertex.c \
-    zbuffer.c zbuffer.h zdither.c zfeatures.h zgl.h zline.c \
-    zline.h zmath.c zmath.h ztriangle.c ztriangle.h ztriangle_two.h
+    clip.cxx error.cxx \
+    image_util.cxx init.cxx light.cxx \
+    memory.cxx msghandling.cxx msghandling.h \
+    specbuf.cxx \
+    texture.cxx vertex.cxx \
+    zbuffer.cxx zbuffer.h zdither.cxx zfeatures.h zgl.h zline.cxx \
+    zline.h zmath.cxx zmath.h ztriangle.cxx ztriangle.h ztriangle_two.h
 
 #end lib_target
 

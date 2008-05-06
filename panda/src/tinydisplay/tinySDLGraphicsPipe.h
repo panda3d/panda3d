@@ -30,7 +30,7 @@ class FrameBufferProperties;
 // Description : This graphics pipe manages SDL windows for rendering
 //               TinyGL software buffers.
 ////////////////////////////////////////////////////////////////////
-class TinySDLGraphicsPipe : public GraphicsPipe {
+class EXPCL_TINYDISPLAY TinySDLGraphicsPipe : public GraphicsPipe {
 public:
   TinySDLGraphicsPipe();
   virtual ~TinySDLGraphicsPipe();

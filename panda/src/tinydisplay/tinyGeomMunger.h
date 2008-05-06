@@ -30,7 +30,7 @@
 //               for TinyGL rendering.  In particular, it makes sure
 //               colors aren't stored in DirectX's packed_argb format.
 ////////////////////////////////////////////////////////////////////
-class TinyGeomMunger : public StandardMunger {
+class EXPCL_TINYDISPLAY TinyGeomMunger : public StandardMunger {
 public:
   TinyGeomMunger(GraphicsStateGuardian *gsg, const RenderState *state);
   virtual ~TinyGeomMunger();

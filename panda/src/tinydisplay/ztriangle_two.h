@@ -283,7 +283,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0 / fz;                                      \
+    zinv=1.0f / fz;                                      \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -299,7 +299,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0 / fz;                                  \
+        zinv=1.0f / fz;                                  \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \
@@ -402,7 +402,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0 / fz;                                      \
+    zinv=1.0f / fz;                                      \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -422,7 +422,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0 / fz;                                  \
+        zinv=1.0f / fz;                                  \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \
@@ -537,7 +537,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0 / fz;                                      \
+    zinv=1.0f / fz;                                      \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -557,7 +557,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0 / fz;                                  \
+        zinv=1.0f / fz;                                  \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \

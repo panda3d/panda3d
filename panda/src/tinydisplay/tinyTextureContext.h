@@ -30,7 +30,7 @@ struct GLTexture;
 //       Class : TinyTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
-class TinyTextureContext : public TextureContext, public SimpleLruPage {
+class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext, public SimpleLruPage {
 public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(TinyTextureContext);

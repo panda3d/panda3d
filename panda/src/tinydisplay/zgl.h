@@ -9,9 +9,6 @@
 #include "zmath.h"
 #include "zfeatures.h"
 
-#define DEBUG
-/* #define NDEBUG */
-
 /* initially # of allocated GLVertexes (will grow when necessary) */
 #define POLYGON_MAX_VERTEX 16
 
@@ -228,33 +225,16 @@ void gl_fatal_error(char *format, ...);
 GLSpecBuf *specbuf_get_buffer(GLContext *c, const int shininess_i, 
                               const float shininess);
 
-#ifdef __BEOS__
-void dprintf(const char *, ...);
-
-#else /* !BEOS */
-
-#ifdef DEBUG
-
-#define dprintf(format, args...)  \
-  fprintf(stderr,"In '%s': " format "\n",__FUNCTION__, ##args);
-
-#else
-
-#define dprintf(format, args...)
-
-#endif
-#endif /* !BEOS */
-
 /* this clip epsilon is needed to avoid some rounding errors after
    several clipping stages */
 
-#define CLIP_EPSILON (1E-5)
+#define CLIP_EPSILON (1E-5f)
 
 static inline int gl_clipcode(float x,float y,float z,float w1)
 {
   float w;
 
-  w=w1 * (1.0 + CLIP_EPSILON);
+  w = w1 * (1.0f + CLIP_EPSILON);
   return (x<-w) |
     ((x>w)<<1) |
     ((y<-w)<<2) |

@@ -8,13 +8,13 @@ void gl_eval_viewport(GLContext * c)
 
     v = &c->viewport;
 
-    v->trans.X = ((v->xsize - 0.5) / 2.0) + v->xmin;
-    v->trans.Y = ((v->ysize - 0.5) / 2.0) + v->ymin;
-    v->trans.Z = ((zsize - 0.5) / 2.0) + ((1 << ZB_POINT_Z_FRAC_BITS)) / 2;
+    v->trans.X = ((v->xsize - 0.5f) / 2.0f) + v->xmin;
+    v->trans.Y = ((v->ysize - 0.5f) / 2.0f) + v->ymin;
+    v->trans.Z = ((zsize - 0.5f) / 2.0f) + ((1 << ZB_POINT_Z_FRAC_BITS)) / 2;
 
-    v->scale.X = (v->xsize - 0.5) / 2.0;
-    v->scale.Y = -(v->ysize - 0.5) / 2.0;
-    v->scale.Z = -((zsize - 0.5) / 2.0);
+    v->scale.X = (v->xsize - 0.5f) / 2.0f;
+    v->scale.Y = -(v->ysize - 0.5f) / 2.0f;
+    v->scale.Z = -((zsize - 0.5f) / 2.0f);
 }
 
 /* coords, tranformation , clip code and projection */

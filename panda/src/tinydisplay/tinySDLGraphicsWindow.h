@@ -24,17 +24,14 @@
 #include "tinySDLGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
-
-extern "C" { 
-  #include "SDL.h"
-  #include "zbuffer.h"
-}
+#include "SDL.h"
+#include "zbuffer.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinySDLGraphicsWindow
 // Description : This graphics window class is implemented via SDL.
 ////////////////////////////////////////////////////////////////////
-class TinySDLGraphicsWindow : public GraphicsWindow {
+class EXPCL_TINYDISPLAY TinySDLGraphicsWindow : public GraphicsWindow {
 public:
   TinySDLGraphicsWindow(GraphicsPipe *pipe, 
                         const string &name,

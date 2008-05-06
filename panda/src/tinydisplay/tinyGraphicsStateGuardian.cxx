@@ -27,11 +27,8 @@
 #include "directionalLight.h"
 #include "spotlight.h"
 #include "bitMask.h"
-
-extern "C" {
 #include "zgl.h"
 #include "zmath.h"
-}
 
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 

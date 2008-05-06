@@ -1,5 +1,6 @@
 #include "zgl.h"
 #include "msghandling.h"
+#include <math.h>
 
 static inline float clampf(float a,float min,float max)
 {
@@ -48,7 +49,7 @@ void gl_shade_vertex(GLContext *c,GLVertex *v)
       d.X=l->position.v[0]-v->ec.v[0];
       d.Y=l->position.v[1]-v->ec.v[1];
       d.Z=l->position.v[2]-v->ec.v[2];
-      dist=sqrt(d.X*d.X+d.Y*d.Y+d.Z*d.Z);
+      dist = sqrtf(d.X*d.X+d.Y*d.Y+d.Z*d.Z);
       if (dist>1E-3) {
         tmp=1/dist;
         d.X*=tmp;
@@ -97,7 +98,7 @@ void gl_shade_vertex(GLContext *c,GLVertex *v)
       } else {
         s.X=d.X;
         s.Y=d.Y;
-        s.Z=d.Z+1.0;
+        s.Z=d.Z+1.0f;
       }
       dot_spec=n.X*s.X+n.Y*s.Y+n.Z*s.Z;
       if (twoside && dot_spec < 0) dot_spec = -dot_spec;

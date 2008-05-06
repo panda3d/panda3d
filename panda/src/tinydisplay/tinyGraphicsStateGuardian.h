@@ -24,11 +24,8 @@
 #include "graphicsStateGuardian.h"
 #include "tinySDLGraphicsPipe.h"
 #include "simpleLru.h"
-
-extern "C" {
-  #include "zmath.h"
-  #include "zbuffer.h"
-}
+#include "zmath.h"
+#include "zbuffer.h"
 
 class TinyTextureContext;
 struct GLContext;
@@ -41,7 +38,7 @@ struct GLTexture;
 // Description : An interface to the TinyGL software rendering code
 //               within this module.
 ////////////////////////////////////////////////////////////////////
-class TinyGraphicsStateGuardian : public GraphicsStateGuardian {
+class EXPCL_TINYDISPLAY TinyGraphicsStateGuardian : public GraphicsStateGuardian {
 public:
   TinyGraphicsStateGuardian(GraphicsPipe *pipe,
                             TinyGraphicsStateGuardian *share_with);

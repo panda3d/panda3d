@@ -55,16 +55,16 @@
 
   /* we compute dXdx and dXdy for all interpolated values */
   
-  fdx1 = p1->x - p0->x;
-  fdy1 = p1->y - p0->y;
+  fdx1 = (float) (p1->x - p0->x);
+  fdy1 = (float) (p1->y - p0->y);
 
-  fdx2 = p2->x - p0->x;
-  fdy2 = p2->y - p0->y;
+  fdx2 = (float) (p2->x - p0->x);
+  fdy2 = (float) (p2->y - p0->y);
 
   fz = fdx1 * fdy2 - fdx2 * fdy1;
   if (fz == 0)
     return;
-  fz = 1.0 / fz;
+  fz = 1.0f / fz;
 
   fdx1 *= fz;
   fdy1 *= fz;
@@ -72,43 +72,43 @@
   fdy2 *= fz;
 
 #ifdef INTERP_Z
-  d1 = p1->z - p0->z;
-  d2 = p2->z - p0->z;
+  d1 = (float) (p1->z - p0->z);
+  d2 = (float) (p2->z - p0->z);
   dzdx = (int) (fdy2 * d1 - fdy1 * d2);
   dzdy = (int) (fdx1 * d2 - fdx2 * d1);
 #endif
 
 #ifdef INTERP_RGB
-  d1 = p1->r - p0->r;
-  d2 = p2->r - p0->r;
+  d1 = (float) (p1->r - p0->r);
+  d2 = (float) (p2->r - p0->r);
   drdx = (int) (fdy2 * d1 - fdy1 * d2);
   drdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = p1->g - p0->g;
-  d2 = p2->g - p0->g;
+  d1 = (float) (p1->g - p0->g);
+  d2 = (float) (p2->g - p0->g);
   dgdx = (int) (fdy2 * d1 - fdy1 * d2);
   dgdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = p1->b - p0->b;
-  d2 = p2->b - p0->b;
+  d1 = (float) (p1->b - p0->b);
+  d2 = (float) (p2->b - p0->b);
   dbdx = (int) (fdy2 * d1 - fdy1 * d2);
   dbdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = p1->a - p0->a;
-  d2 = p2->a - p0->a;
+  d1 = (float) (p1->a - p0->a);
+  d2 = (float) (p2->a - p0->a);
   dadx = (int) (fdy2 * d1 - fdy1 * d2);
   dady = (int) (fdx1 * d2 - fdx2 * d1);
 
 #endif
   
 #ifdef INTERP_ST
-  d1 = p1->s - p0->s;
-  d2 = p2->s - p0->s;
+  d1 = (float) (p1->s - p0->s);
+  d2 = (float) (p2->s - p0->s);
   dsdx = (int) (fdy2 * d1 - fdy1 * d2);
   dsdy = (int) (fdx1 * d2 - fdx2 * d1);
   
-  d1 = p1->t - p0->t;
-  d2 = p2->t - p0->t;
+  d1 = (float) (p1->t - p0->t);
+  d2 = (float) (p2->t - p0->t);
   dtdx = (int) (fdy2 * d1 - fdy1 * d2);
   dtdy = (int) (fdx1 * d2 - fdx2 * d1);
 #endif

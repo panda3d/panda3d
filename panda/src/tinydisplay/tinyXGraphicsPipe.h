@@ -53,7 +53,7 @@ typedef int XIC;
 //               creating OpenGL graphics windows on an X-based
 //               (e.g. Unix) client.
 ////////////////////////////////////////////////////////////////////
-class TinyXGraphicsPipe : public GraphicsPipe {
+class EXPCL_TINYDISPLAY TinyXGraphicsPipe : public GraphicsPipe {
 public:
   TinyXGraphicsPipe(const string &display = string());
   virtual ~TinyXGraphicsPipe();

@@ -25,9 +25,9 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl(tinydisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
+NotifyCategoryDecl(tinydisplay, EXPCL_TINYDISPLAY, EXPTP_TINYDISPLAY);
 
-extern EXPCL_PANDAGL void init_libtinydisplay();
+extern EXPCL_TINYDISPLAY void init_libtinydisplay();
 
 extern ConfigVariableString display_cfg;
 extern ConfigVariableBool x_error_abort;

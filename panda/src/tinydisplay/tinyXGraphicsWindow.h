@@ -32,7 +32,7 @@
 // Description : Opens a window on X11 to display the TinyGL software
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-class TinyXGraphicsWindow : public GraphicsWindow {
+class EXPCL_TINYDISPLAY TinyXGraphicsWindow : public GraphicsWindow {
 public:
   TinyXGraphicsWindow(GraphicsPipe *pipe, 
                     const string &name,

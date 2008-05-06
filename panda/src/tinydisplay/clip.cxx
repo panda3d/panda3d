@@ -15,7 +15,7 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   float winv;
 
   /* coordinates */
-  winv=1.0/v->pc.W;
+  winv = 1.0f / v->pc.W;
   v->zp.x= (int) ( v->pc.X * winv * c->viewport.scale.X 
                    + c->viewport.trans.X );
   v->zp.y= (int) ( v->pc.Y * winv * c->viewport.scale.Y 

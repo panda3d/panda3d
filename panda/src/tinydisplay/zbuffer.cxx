@@ -18,7 +18,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
     ZBuffer *zb;
     int size;
 
-    zb = gl_malloc(sizeof(ZBuffer));
+    zb = (ZBuffer *)gl_malloc(sizeof(ZBuffer));
     if (zb == NULL)
 	return NULL;
 
@@ -51,12 +51,12 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 
     size = zb->xsize * zb->ysize * sizeof(unsigned short);
 
-    zb->zbuf = gl_malloc(size);
+    zb->zbuf = (unsigned short *)gl_malloc(size);
     if (zb->zbuf == NULL)
 	goto error;
 
     if (frame_buffer == NULL) {
-	zb->pbuf = gl_malloc(zb->ysize * zb->linesize);
+	zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
 	if (zb->pbuf == NULL) {
 	    gl_free(zb->zbuf);
 	    goto error;
@@ -64,7 +64,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	zb->frame_buffer_allocated = 1;
     } else {
 	zb->frame_buffer_allocated = 0;
-	zb->pbuf = frame_buffer;
+	zb->pbuf = (PIXEL *)frame_buffer;
     }
 
     zb->current_texture.pixmap = NULL;
@@ -102,16 +102,16 @@ void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
 
     size = zb->xsize * zb->ysize * sizeof(unsigned short);
     gl_free(zb->zbuf);
-    zb->zbuf = gl_malloc(size);
+    zb->zbuf = (unsigned short *)gl_malloc(size);
 
     if (zb->frame_buffer_allocated)
 	gl_free(zb->pbuf);
 
     if (frame_buffer == NULL) {
-	zb->pbuf = gl_malloc(zb->ysize * zb->linesize);
+	zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
 	zb->frame_buffer_allocated = 1;
     } else {
-	zb->pbuf = frame_buffer;
+	zb->pbuf = (PIXEL *)frame_buffer;
 	zb->frame_buffer_allocated = 0;
     }
 }
@@ -125,7 +125,7 @@ static void ZB_copyBuffer(ZBuffer * zb,
     int y, n;
 
     q = zb->pbuf;
-    p1 = buf;
+    p1 = (unsigned char *)buf;
     n = zb->xsize * PSZB;
     for (y = 0; y < zb->ysize; y++) {
 	memcpy(p1, q, n);
@@ -224,7 +224,7 @@ void memset_s(void *adr, int val, int count)
     unsigned int *p;
     unsigned short *q;
 
-    p = adr;
+    p = (unsigned int *)adr;
     v = val | (val << 16);
 
     n = count >> 3;
@@ -247,7 +247,7 @@ void memset_l(void *adr, int val, int count)
     int i, n, v;
     unsigned int *p;
 
-    p = adr;
+    p = (unsigned int *)adr;
     v = val;
     n = count >> 2;
     for (i = 0; i < n; i++) {
