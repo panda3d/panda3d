@@ -132,6 +132,7 @@
   #define sdl_lpath $[wildcard $[SDL_LPATH]]
   #define sdl_cflags $[SDL_CFLAGS]
   #define sdl_libs $[SDL_LIBS]
+  #define sdl_framework $[SDL_FRAMEWORK]
 #endif
 
 #if $[HAVE_MESA]
