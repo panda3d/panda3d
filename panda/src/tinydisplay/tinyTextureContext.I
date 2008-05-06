@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TinyTextureContext::
 TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
-  TextureContext(pgo, tex)
+  TextureContext(pgo, tex), SimpleLruPage(0)
 {
   _gltex = NULL;
 }
@@ -37,4 +37,17 @@ TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
 INLINE TinyTextureContext::
 ~TinyTextureContext() {
   nassertv(_gltex == NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyTextureContext::update_data_size_bytes
+//       Access: Public
+//  Description: This is overloaded (non-virtually) to update both the
+//               BufferContext and the LRU page with the same
+//               information.
+////////////////////////////////////////////////////////////////////
+INLINE void TinyTextureContext::
+update_data_size_bytes(size_t new_data_size_bytes) {
+  TextureContext::update_data_size_bytes(new_data_size_bytes);
+  SimpleLruPage::set_lru_size(new_data_size_bytes);
 }

@@ -23,6 +23,7 @@
 
 #include "graphicsStateGuardian.h"
 #include "tinySDLGraphicsPipe.h"
+#include "simpleLru.h"
 
 extern "C" {
   #include "zmath.h"
@@ -133,6 +134,8 @@ private:
     CMF_diffuse   = 0x002,
   };
   int _color_material_flags;
+
+  SimpleLru _textures_lru;
 
   // Used during being_draw_primitives() .. end_draw_primitives().
   int _min_vertex;

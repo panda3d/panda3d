@@ -504,7 +504,8 @@ static const ZB_fillTriangleFunc fill_tri_funcs
 TinyGraphicsStateGuardian::
 TinyGraphicsStateGuardian(GraphicsPipe *pipe,
 			 TinyGraphicsStateGuardian *share_with) :
-  GraphicsStateGuardian(CS_yup_right, pipe)
+  GraphicsStateGuardian(CS_yup_right, pipe),
+  _textures_lru("textures_lru", td_texture_ram)
 {
   _c = NULL;
   _vertices = NULL;
@@ -825,6 +826,9 @@ end_frame(Thread *current_thread) {
 
   // Flush any PCollectors specific to this kind of GSG.
   _vertices_immediate_pcollector.flush_level();
+
+  // Evict any textures that exceed our texture memory.
+  _textures_lru.begin_epoch();
 }
 
 
@@ -1399,10 +1403,9 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     fo += _c->zb->linesize / PSZB;
   }
 
-#ifdef DO_PSTATS 
   gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
-#endif
   gtc->mark_loaded();
+  gtc->enqueue_lru(&_textures_lru);
 }
 
 
@@ -1614,6 +1617,7 @@ release_texture(TextureContext *tc) {
   }
 
   gl_free(gltex);
+  gtc->dequeue_lru();
 
   delete gtc;
 }
@@ -1998,20 +2002,17 @@ apply_texture(TextureContext *tc) {
   _c->current_texture = gtc->_gltex;
   _c->texture_2d_enabled = true;
 
-  if (gtc->was_image_modified()) {
+  GLTexture *gltex = gtc->_gltex;
+
+  if (gtc->was_image_modified() || gltex->pixmap == NULL) {
     // If the texture image was modified, reload the texture.
     if (!upload_texture(gtc)) {
       _c->texture_2d_enabled = false;
     }
     gtc->mark_loaded();
-
-  } else if (gtc->was_properties_modified()) {
-    // If only the properties have been modified, we don't need to
-    // reload the texture.
-    gtc->mark_loaded();
   }
+  gtc->enqueue_lru(&_textures_lru);
 
-  GLTexture *gltex = gtc->_gltex;
   _c->zb->current_texture.pixmap = gltex->pixmap;
   _c->zb->current_texture.s_mask = gltex->s_mask;
   _c->zb->current_texture.t_mask = gltex->t_mask;
@@ -2091,10 +2092,9 @@ upload_texture(TinyTextureContext *gtc) {
     copy_la_image(gltex, tex);
     break;
   }
-  
-#ifdef DO_PSTATS 
-  gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
-#endif
+
+  int bytecount = gltex->xsize * gltex->ysize * 4;
+  gtc->update_data_size_bytes(bytecount);
   
   tex->texture_uploaded();
 

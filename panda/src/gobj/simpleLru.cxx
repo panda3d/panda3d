@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "simpleLru.h"
+#include "clockObject.h"
 
 // We define this as a reference to an allocated object, instead of as
 // a concrete object, so that it won't get destructed when the program
@@ -71,6 +72,10 @@ enqueue_lru(SimpleLru *lru) {
   MutexHolder holder(SimpleLru::_global_lock);
 
   if (_lru == lru) {
+    if (_lru != (SimpleLru *)NULL) {
+      remove_from_list();
+      insert_before(_lru);
+    }
     return;
   }
 
@@ -116,7 +121,8 @@ count_active_size() const {
 //     Function: SimpleLru::do_evict
 //       Access: Private
 //  Description: Evicts pages until the LRU is within tolerance.
-//               Assumes the lock is already held.
+//               Assumes the lock is already held.  Does not evict
+//               "active" pages that were added within this epoch.
 ////////////////////////////////////////////////////////////////////
 void SimpleLru::
 do_evict() {
@@ -142,6 +148,11 @@ do_evict() {
 
     if (node == end || node == _prev) {
       // If we reach the original tail of the list, stop.
+      return;
+    }
+    if (node == _active_marker) {
+      // Also stop if we reach the active marker.  Nodes beyond this
+      // were added within this epoch.
       return;
     }
     node = next;

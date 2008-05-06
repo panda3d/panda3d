@@ -155,6 +155,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Clear",                       { 0.0, 0.8, 0.6 } },
   { 1, "Draw:Flush",                       { 0.9, 0.2, 0.7 } },
   { 1, "Draw:Sync",                        { 0.5, 0.7, 0.7 } },
+  { 0, "Draw:Transform",                   { 0.0, 0.5, 0.0 } },
   { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
   { 0, "Draw:Set State",                   { 0.2, 0.6, 0.8 } },
   { 1, "Draw:Wait occlusion",              { 1.0, 0.5, 0.0 } },

@@ -34,4 +34,6 @@ extern ConfigVariableBool x_error_abort;
 extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
 
+extern ConfigVariableInt td_texture_ram;
+
 #endif

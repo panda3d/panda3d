@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "textureContext.h"
 #include "deletedChain.h"
+#include "simpleLru.h"
 
 struct GLTexture;
 
@@ -29,12 +30,15 @@ struct GLTexture;
 //       Class : TinyTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
-class TinyTextureContext : public TextureContext {
+class TinyTextureContext : public TextureContext, public SimpleLruPage {
 public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(TinyTextureContext);
 
   INLINE ~TinyTextureContext();
+
+  INLINE void update_data_size_bytes(size_t new_data_size_bytes);
+  virtual void evict_lru();
 
   GLTexture *_gltex;
 
