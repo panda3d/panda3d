@@ -240,15 +240,13 @@ compare_to_impl(const RenderAttrib *other) const {
     return compare_result;
   }
   for (int i=0; i<2; i++) {
-    compare_result = _level[i] - ta->_level[i];
-    if (compare_result!=0) {
-      return compare_result;
+    if (_level[i] != ta->_level[i]) {
+      return (_level[i] < ta->_level[i]) ? -1 : 1;
     }
   }
   for (int i=0; i<2; i++) {
-    compare_result = _threshold[i] - ta->_threshold[i];
-    if (compare_result!=0) {
-      return compare_result;
+    if (_threshold[i] != ta->_threshold[i]) {
+      return (_threshold[i] < ta->_threshold[i]) ? -1 : 1;
     }
   }
   return 0;
