@@ -2,7 +2,7 @@ void FNAME(ZB_fillTriangleFlat) (ZBuffer *zb,
                                  ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   int color;
-  int or, og, ob, oa;
+  int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 
@@ -15,21 +15,21 @@ void FNAME(ZB_fillTriangleFlat) (ZBuffer *zb,
     if (!ACMP(zb, p2->a)) {                     \
       return;                                   \
     }                                           \
-    or = p2->r;                                 \
-    og = p2->g;                                 \
-    ob = p2->b;                                 \
-    oa = p2->a;                                 \
-    color=RGBA_TO_PIXEL(or, og, ob, oa);        \
+    or0 = p2->r;                                \
+    og0 = p2->g;                                \
+    ob0 = p2->b;                                \
+    oa0 = p2->a;                                \
+    color=RGBA_TO_PIXEL(or0, og0, ob0, oa0);    \
   }
  
-#define PUT_PIXEL(_a)                           \
-  {                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;               \
-    if (ZCMP(pz[_a], zz)) {                     \
-      STORE_PIX(pp[_a], color, or, og, ob, oa); \
-      STORE_Z(pz[_a], zz);                      \
-    }                                           \
-    z+=dzdx;                                    \
+#define PUT_PIXEL(_a)                                   \
+  {                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                       \
+    if (ZCMP(pz[_a], zz)) {                             \
+      STORE_PIX(pp[_a], color, or0, og0, ob0, oa0);     \
+      STORE_Z(pz[_a], zz);                              \
+    }                                                   \
+    z+=dzdx;                                            \
   }
 
 #include "ztriangle.h"
@@ -121,7 +121,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
                                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTexture *texture;
-  int or, og, ob, oa;
+  int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -133,10 +133,10 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 #define DRAW_INIT()				\
   {						\
     texture = &zb->current_texture;             \
-    or = p2->r;                                 \
-    og = p2->g;                                 \
-    ob = p2->b;                                 \
-    oa = p2->a;                                 \
+    or0 = p2->r;                                \
+    og0 = p2->g;                                \
+    ob0 = p2->b;                                \
+    oa0 = p2->a;                                \
   }
 
 #define PUT_PIXEL(_a)                                           \
@@ -144,16 +144,16 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
       tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
-      int a = oa * PIXEL_A(tmp) >> 16;                          \
+      int a = oa0 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,        \
-                                og * PIXEL_G(tmp) >> 16,        \
-                                ob * PIXEL_B(tmp) >> 16,        \
+                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,       \
+                                og0 * PIXEL_G(tmp) >> 16,       \
+                                ob0 * PIXEL_B(tmp) >> 16,       \
                                 a),                             \
-                  or * PIXEL_R(tmp) >> 16,                      \
-                  og * PIXEL_G(tmp) >> 16,                      \
-                  ob * PIXEL_B(tmp) >> 16,                      \
+                  or0 * PIXEL_R(tmp) >> 16,                     \
+                  og0 * PIXEL_G(tmp) >> 16,                     \
+                  ob0 * PIXEL_B(tmp) >> 16,                     \
                   a);                                           \
         STORE_Z(pz[_a], zz);                                    \
       }                                                         \
@@ -186,7 +186,7 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
       if (c0 == 0xffffffff) {                                   \
         /* Actually, it's a white triangle. */                  \
         FNAME(ZB_fillTriangleMapping)(zb, p0, p1, p2);          \
-        return; \
+        return;                                                 \
       }                                                         \
       FNAME(ZB_fillTriangleMappingFlat)(zb, p0, p1, p2);        \
       return;                                                   \
@@ -283,7 +283,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                      \
+    zinv=1.0f / fz;                                     \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -299,7 +299,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                  \
+        zinv=1.0f / fz;                                 \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \
@@ -344,7 +344,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 {
   ZTexture *texture;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
-  int or, og, ob, oa;
+  int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_STZ
@@ -362,10 +362,10 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
     ndtzdx=NB_INTERP * dtzdx;                   \
-    or = p2->r;                                 \
-    og = p2->g;                                 \
-    ob = p2->b;                                 \
-    oa = p2->a;                                 \
+    or0 = p2->r;                                \
+    og0 = p2->g;                                \
+    ob0 = p2->b;                                \
+    oa0 = p2->a;                                \
   }
 
 #define PUT_PIXEL(_a)                                           \
@@ -373,16 +373,16 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
       tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
-      int a = oa * PIXEL_A(tmp) >> 16;                          \
+      int a = oa0 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,        \
-                                og * PIXEL_G(tmp) >> 16,        \
-                                ob * PIXEL_B(tmp) >> 16,        \
+                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,       \
+                                og0 * PIXEL_G(tmp) >> 16,       \
+                                ob0 * PIXEL_B(tmp) >> 16,       \
                                 a),                             \
-                  or * PIXEL_R(tmp) >> 16,                      \
-                  og * PIXEL_G(tmp) >> 16,                      \
-                  ob * PIXEL_B(tmp) >> 16,                      \
+                  or0 * PIXEL_R(tmp) >> 16,                     \
+                  og0 * PIXEL_G(tmp) >> 16,                     \
+                  ob0 * PIXEL_B(tmp) >> 16,                     \
                   a);                                           \
         STORE_Z(pz[_a], zz);                                    \
       }                                                         \
@@ -402,7 +402,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                      \
+    zinv=1.0f / fz;                                     \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -422,7 +422,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                  \
+        zinv=1.0f / fz;                                 \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \
@@ -537,7 +537,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                      \
+    zinv=1.0f / fz;                                     \
     pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
     pz=pz1+x1;                                          \
     z=z1;						\
@@ -557,7 +557,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                  \
+        zinv=1.0f / fz;                                 \
       }                                                 \
       PUT_PIXEL(0);                                     \
       PUT_PIXEL(1);                                     \
