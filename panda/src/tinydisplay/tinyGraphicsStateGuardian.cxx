@@ -1949,15 +1949,15 @@ do_issue_cull_face() {
 
   switch (mode) {
   case CullFaceAttrib::M_cull_none:
-    glDisable(GL_CULL_FACE);
+    _c->cull_face_enabled = false;
     break;
   case CullFaceAttrib::M_cull_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    _c->cull_face_enabled = true;
+    _c->current_cull_face = GL_BACK;
     break;
   case CullFaceAttrib::M_cull_counter_clockwise:
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    _c->cull_face_enabled = true;
+    _c->current_cull_face = GL_FRONT;
     break;
   default:
     tinydisplay_cat.error()
@@ -2022,11 +2022,6 @@ do_issue_texture() {
     
   // Then, turn on the current texture mode.
   apply_texture(tc);
-
-  /*
-  GLint glmode = get_texture_apply_mode_type(stage->get_mode());
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
