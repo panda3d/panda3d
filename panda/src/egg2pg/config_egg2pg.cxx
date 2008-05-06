@@ -88,7 +88,7 @@ ConfigVariableBool egg_flat_shading
 	  "ShadeModelAttrib::M_flat attribute set.  It will do this only "
 	  "for geometry that has per-polygon normals and/or colors.  This "
 	  "allows the egg loader to avoid duplicating vertices when they "
-	  "are shared between connect polygons with different normals or "
+ 	  "are shared between connected polygons with different normals or "
 	  "colors, but it prevents the flat-shaded geometry from being "
 	  "combined with any adjacent smooth-shaded geometry (for instance, "
 	  "as the result of a flatten_strong operation).  It is false by "
