@@ -3552,18 +3552,22 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   Texture::TextureType texture_type;
+  int z_size;
   if (z >= 0) {
     texture_type = Texture::TT_cube_map;
+    z_size = 6;
   } else {
     texture_type = Texture::TT_2d_texture;
+    z_size = 1;
   }
 
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
+      tex->get_z_size() != z_size ||
       tex->get_component_type() != component_type ||
       tex->get_format() != format ||
       tex->get_texture_type() != texture_type) {
     // Re-setup the texture; its properties have changed.
-    tex->setup_texture(texture_type, w, h, tex->get_z_size(),
+    tex->setup_texture(texture_type, w, h, z_size,
                        component_type, format);
   }
 
