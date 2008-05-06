@@ -23,7 +23,6 @@
 
 #include "graphicsStateGuardian.h"
 #include "tinySDLGraphicsPipe.h"
-#include "tinygl.h"
 
 extern "C" {
   #include "zmath.h"
@@ -50,6 +49,7 @@ public:
 
   virtual void reset();
   virtual void free_pointers();
+  virtual void close_gsg();
 
   virtual bool depth_offset_decals();
 
@@ -120,8 +120,6 @@ private:
 
   void setup_material(GLMaterial *gl_material, const Material *material);
   static void load_matrix(M4 *matrix, const TransformState *transform);
-
-  INLINE static GLenum get_light_id(int index);
 
 public:
   // Filled in by the Tiny*GraphicsWindow at begin_frame().

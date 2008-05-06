@@ -22,7 +22,6 @@
 #include "pandabase.h"
 #include "textureContext.h"
 #include "deletedChain.h"
-#include "tinygl.h"
 
 struct GLTexture;
 

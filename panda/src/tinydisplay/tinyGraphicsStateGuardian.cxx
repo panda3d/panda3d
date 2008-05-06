@@ -496,67 +496,6 @@ static const ZB_fillTriangleFunc fill_tri_funcs
   },
 };
 
-static inline void tgl_vertex_transform(GLContext * c, GLVertex * v)
-{
-    float *m;
-    V4 *n;
-
-    if (c->lighting_enabled) {
-	/* eye coordinates needed for lighting */
-
-	m = &c->matrix_stack_ptr[0]->m[0][0];
-	v->ec.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
-		   v->coord.Z * m[2] + m[3]);
-	v->ec.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
-		   v->coord.Z * m[6] + m[7]);
-	v->ec.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
-		   v->coord.Z * m[10] + m[11]);
-	v->ec.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
-		   v->coord.Z * m[14] + m[15]);
-
-	/* projection coordinates */
-	m = &c->matrix_stack_ptr[1]->m[0][0];
-	v->pc.X = (v->ec.X * m[0] + v->ec.Y * m[1] +
-		   v->ec.Z * m[2] + v->ec.W * m[3]);
-	v->pc.Y = (v->ec.X * m[4] + v->ec.Y * m[5] +
-		   v->ec.Z * m[6] + v->ec.W * m[7]);
-	v->pc.Z = (v->ec.X * m[8] + v->ec.Y * m[9] +
-		   v->ec.Z * m[10] + v->ec.W * m[11]);
-	v->pc.W = (v->ec.X * m[12] + v->ec.Y * m[13] +
-		   v->ec.Z * m[14] + v->ec.W * m[15]);
-
-	m = &c->matrix_model_view_inv.m[0][0];
-	n = &c->current_normal;
-
-	v->normal.X = (n->X * m[0] + n->Y * m[1] + n->Z * m[2]);
-	v->normal.Y = (n->X * m[4] + n->Y * m[5] + n->Z * m[6]);
-	v->normal.Z = (n->X * m[8] + n->Y * m[9] + n->Z * m[10]);
-
-	if (c->normalize_enabled) {
-	    gl_V3_Norm(&v->normal);
-	}
-    } else {
-	/* no eye coordinates needed, no normal */
-	/* NOTE: W = 1 is assumed */
-	m = &c->matrix_model_projection.m[0][0];
-
-	v->pc.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
-		   v->coord.Z * m[2] + m[3]);
-	v->pc.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
-		   v->coord.Z * m[6] + m[7]);
-	v->pc.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
-		   v->coord.Z * m[10] + m[11]);
-	if (c->matrix_model_projection_no_w_transform) {
-	    v->pc.W = m[15];
-	} else {
-	    v->pc.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
-		       v->coord.Z * m[14] + m[15]);
-	}
-    }
-
-    v->clip_code = gl_clipcode(v->pc.X, v->pc.Y, v->pc.Z, v->pc.W);
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -592,9 +531,13 @@ reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
-  glInit(_current_frame_buffer);
+  if (_c != (GLContext *)NULL) {
+    glClose(_c);
+    _c = NULL;
+  }
 
-  _c = gl_get_context();
+  _c = (GLContext *)gl_zalloc(sizeof(GLContext));
+  glInit(_c, _current_frame_buffer);
 
   _c->draw_triangle_front = gl_draw_triangle_fill;
   _c->draw_triangle_back = gl_draw_triangle_fill;
@@ -629,6 +572,24 @@ free_pointers() {
     _vertices = NULL;
   }
   _vertices_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::close_gsg
+//       Access: Protected, Virtual
+//  Description: This is called by the associated GraphicsWindow when
+//               close_window() is called.  It should null out the
+//               _win pointer and possibly free any open resources
+//               associated with the GSG.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+close_gsg() {
+  GraphicsStateGuardian::close_gsg();
+
+  if (_c != (GLContext *)NULL) {
+    glClose(_c);
+    _c = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -899,8 +860,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // coordinates, wipe out the current projection and modelview
     // matrix (so we don't attempt to transform it again).
     const TransformState *ident = TransformState::make_identity();
-    load_matrix(_c->matrix_stack_ptr[0], ident);
-    load_matrix(_c->matrix_stack_ptr[1], ident);
+    load_matrix(&_c->matrix_model_view, ident);
+    load_matrix(&_c->matrix_projection, ident);
     load_matrix(&_c->matrix_model_view_inv, ident);
     load_matrix(&_c->matrix_model_projection, ident);
     _c->matrix_model_projection_no_w_transform = 1;
@@ -913,12 +874,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       // With the lighting equation, we need to keep the modelview and
       // projection matrices separate.
 
-      load_matrix(_c->matrix_stack_ptr[0], _internal_transform);
-      load_matrix(_c->matrix_stack_ptr[1], _projection_mat);
+      load_matrix(&_c->matrix_model_view, _internal_transform);
+      load_matrix(&_c->matrix_projection, _projection_mat);
 
       /* precompute inverse modelview */
       M4 tmp;
-      gl_M4_Inv(&tmp, _c->matrix_stack_ptr[0]);
+      gl_M4_Inv(&tmp, &_c->matrix_model_view);
       gl_M4_Transpose(&_c->matrix_model_view_inv, &tmp);
 
     }
@@ -935,9 +896,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
     _transform_stale = false;
   }
-   
-  /* test if the texture matrix is not Identity */
-  //  _c->apply_texture_matrix = !gl_M4_IsId(_c->matrix_stack_ptr[2]);
 
   // Figure out the subset of vertices we will be using in this
   // operation.
@@ -1089,7 +1047,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _c->current_normal.W = 0.0f;
     }
 
-    tgl_vertex_transform(_c, v);
+    gl_vertex_transform(_c, v);
 
     if (_c->lighting_enabled) {
       gl_shade_vertex(_c, v);
@@ -1164,7 +1122,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     shade_model = ShadeModelAttrib::M_flat;
   }
   int shading_state = 2;  // smooth
+  _c->smooth_shade_model = true;
+
   if (shade_model == ShadeModelAttrib::M_flat) {
+    _c->smooth_shade_model = false;
     shading_state = 1;  // flat
     if (_c->current_color.X == 1.0f &&
         _c->current_color.Y == 1.0f &&
@@ -1953,11 +1914,11 @@ do_issue_cull_face() {
     break;
   case CullFaceAttrib::M_cull_clockwise:
     _c->cull_face_enabled = true;
-    _c->current_cull_face = GL_BACK;
+    _c->cull_clockwise = true;
     break;
   case CullFaceAttrib::M_cull_counter_clockwise:
     _c->cull_face_enabled = true;
-    _c->current_cull_face = GL_FRONT;
+    _c->cull_clockwise = false;
     break;
   default:
     tinydisplay_cat.error()

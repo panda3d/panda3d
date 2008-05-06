@@ -23,7 +23,6 @@
 #include "mouseButton.h"
 #include "keyboardButton.h"
 #include "graphicsPipe.h"
-#include "tinygl.h"
 
 TypeHandle TinySDLGraphicsWindow::_type_handle;
 
@@ -253,7 +252,6 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void TinySDLGraphicsWindow::
 close_window() {
-  glClose();
   GraphicsWindow::close_window();
 }
 

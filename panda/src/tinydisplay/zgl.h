@@ -5,21 +5,12 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#include "tinygl.h"
 #include "zbuffer.h"
 #include "zmath.h"
 #include "zfeatures.h"
 
 #define DEBUG
 /* #define NDEBUG */
-
-enum {
-
-#define ADD_OP(a,b,c) OP_ ## a ,
-
-#include "opinfo.h"
-
-};
 
 /* initially # of allocated GLVertexes (will grow when necessary) */
 #define POLYGON_MAX_VERTEX 16
@@ -162,29 +153,14 @@ typedef struct GLContext {
 
   /* materials */
   GLMaterial materials[2];
-  int color_material_enabled;
-  int current_color_material_mode;
-  int current_color_material_type;
 
   /* textures */
   GLTexture *current_texture;
   int texture_2d_enabled;
 
-  /* shared state */
-  GLSharedState shared_state;
-
-  /* current list */
-  GLParamBuffer *current_op_buffer;
-  int current_op_buffer_index;
-  int exec_flag,compile_flag,print_flag;
-
   /* matrix */
-
-  int matrix_mode;
-  M4 *matrix_stack[3];
-  M4 *matrix_stack_ptr[3];
-  int matrix_stack_depth_max[3];
-
+  M4 matrix_projection;
+  M4 matrix_model_view;
   M4 matrix_model_view_inv;
   M4 matrix_model_projection;
   int matrix_model_projection_updated;
@@ -195,28 +171,13 @@ typedef struct GLContext {
   GLViewport viewport;
 
   /* current state */
-  int polygon_mode_back;
-  int polygon_mode_front;
-
   int current_front_face;
-  int current_shade_model;
-  int current_cull_face;
+  int smooth_shade_model;
   int cull_face_enabled;
+  int cull_clockwise;
   int normalize_enabled;
   gl_draw_triangle_func draw_triangle_front,draw_triangle_back;
   ZB_fillTriangleFunc zb_fill_tri;
-
-  /* selection */
-  int render_mode;
-  unsigned int *select_buffer;
-  int select_size;
-  unsigned int *select_ptr,*select_hit;
-  int select_overflow;
-  int select_hits;
-
-  /* names */
-  unsigned int name_stack[MAX_NAME_STACK_DEPTH];
-  int name_stack_size;
 
   /* clear */
   float clear_depth;
@@ -228,51 +189,25 @@ typedef struct GLContext {
   V4 current_normal;
   V4 current_tex_coord;
   int current_edge_flag;
-
-  /* glBegin / glEnd */
-  int in_begin;
-  int begin_type;
-  int vertex_n,vertex_cnt;
-  int vertex_max;
-  GLVertex *vertex;
-
-  /* opengl 1.1 arrays  */
-  float *vertex_array;
-  int vertex_array_size;
-  int vertex_array_stride;
-  float *normal_array;
-  int normal_array_stride;
-  float *color_array;
-  int color_array_size;
-  int color_array_stride;
-  float *texcoord_array;
-  int texcoord_array_size;
-  int texcoord_array_stride;
-  int client_states;
   
   /* opengl 1.1 polygon offset */
   float offset_factor;
   float offset_units;
   int offset_states;
+
+  /* depth test */
+  int depth_test;
   
   /* specular buffer. could probably be shared between contexts, 
     but that wouldn't be 100% thread safe */
   GLSpecBuf *specbuf_first;
   int specbuf_used_counter;
   int specbuf_num_buffers;
-
-  /* opaque structure for user's use */
-  void *opaque;
-  /* resize viewport function */
-  int (*gl_resize_viewport)(struct GLContext *c,int *xsize,int *ysize);
-
-  /* depth test */
-  int depth_test;
 } GLContext;
 
-extern GLContext *gl_ctx;
-
-void gl_add_op(GLParam *p);
+/* init.c */
+void glInit(GLContext *c, ZBuffer *zbuffer);
+void glClose(GLContext *c);
 
 /* clip.c */
 void gl_transform_to_viewport(GLContext *c,GLVertex *v);
@@ -286,22 +221,14 @@ void gl_draw_triangle_line(GLContext *c,
                            GLVertex *p0,GLVertex *p1,GLVertex *p2);
 void gl_draw_triangle_fill(GLContext *c,
                            GLVertex *p0,GLVertex *p1,GLVertex *p2);
-void gl_draw_triangle_select(GLContext *c,
-                             GLVertex *p0,GLVertex *p1,GLVertex *p2);
-
-/* matrix.c */
-void gl_print_matrix(const float *m);
-/*
-void glopLoadIdentity(GLContext *c,GLParam *p);
-void glopTranslate(GLContext *c,GLParam *p);*/
 
 /* light.c */
-void gl_add_select(GLContext *c,unsigned int zmin,unsigned int zmax);
 void gl_enable_disable_light(GLContext *c,int light,int v);
 void gl_shade_vertex(GLContext *c,GLVertex *v);
 
 /* vertex.c */
 void gl_eval_viewport(GLContext *c);
+void gl_vertex_transform(GLContext * c, GLVertex * v);
 
 /* image_util.c */
 void gl_convertRGB_to_5R6G5B(unsigned short *pixmap,unsigned char *rgb,
@@ -338,11 +265,6 @@ void dprintf(const char *, ...);
 
 #endif
 #endif /* !BEOS */
-
-/* glopXXX functions */
-
-#define ADD_OP(a,b,c) void glop ## a (GLContext *,GLParam *);
-#include "opinfo.h"
 
 /* this clip epsilon is needed to avoid some rounding errors after
    several clipping stages */
