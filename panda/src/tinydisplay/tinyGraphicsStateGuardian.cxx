@@ -1027,18 +1027,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   GeomVertexReader rvertex(data_reader, InternalName::get_vertex()); 
   rvertex.set_row(_min_vertex);
 
-  if (!needs_color) {
-    if (_c->color_material_enabled) {
-      float *d = _c->current_color.v;
-      GLParam q[7];
-      q[0].op = OP_Material;
-      q[1].i = _c->current_color_material_mode;
-      q[2].i = _c->current_color_material_type;
-      q[3].f = d[0];
-      q[4].f = d[1];
-      q[5].f = d[2];
-      q[6].f = d[3];
-      glopMaterial(_c, q);
+  if (!needs_color && _color_material_flags) {
+    if (_color_material_flags & CMF_ambient) {
+      _c->materials[0].ambient = _c->current_color;
+      _c->materials[1].ambient = _c->current_color;
+    }
+    if (_color_material_flags & CMF_diffuse) {
+      _c->materials[0].diffuse = _c->current_color;
+      _c->materials[1].diffuse = _c->current_color;
     }
   }
 
@@ -1070,17 +1066,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _c->current_color.Y = d[1];
       _c->current_color.Z = d[2];
       _c->current_color.W = d[3];
-
-      if (_c->color_material_enabled) {
-	GLParam q[7];
-	q[0].op = OP_Material;
-	q[1].i = _c->current_color_material_mode;
-	q[2].i = _c->current_color_material_type;
-	q[3].f = d[0];
-	q[4].f = d[1];
-	q[5].f = d[2];
-	q[6].f = d[3];
-	glopMaterial(_c, q);
+      
+      if (_color_material_flags) {
+        if (_color_material_flags & CMF_ambient) {
+          _c->materials[0].ambient = _c->current_color;
+          _c->materials[1].ambient = _c->current_color;
+        }
+        if (_color_material_flags & CMF_diffuse) {
+          _c->materials[0].diffuse = _c->current_color;
+          _c->materials[1].diffuse = _c->current_color;
+        }
       }
     }
 
@@ -1987,57 +1982,16 @@ do_issue_material() {
     material = _target._material->get_material();
   }
 
-  GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
+  // Apply the material parameters to the front face.
+  setup_material(&_c->materials[0], material);
 
-  glMaterialfv(face, GL_SPECULAR, (GLfloat *)material->get_specular().get_data());
-  glMaterialfv(face, GL_EMISSION, (GLfloat *)material->get_emission().get_data());
-  glMaterialf(face, GL_SHININESS, material->get_shininess());
-
-  if (material->has_ambient() && material->has_diffuse()) {
-    // The material has both an ambient and diffuse specified.  This
-    // means we do not need glMaterialColor().
-    glDisable(GL_COLOR_MATERIAL);
-    glMaterialfv(face, GL_AMBIENT, (GLfloat *)material->get_ambient().get_data());
-    glMaterialfv(face, GL_DIFFUSE, (GLfloat *)material->get_diffuse().get_data());
-
-  } else if (material->has_ambient()) {
-    // The material specifies an ambient, but not a diffuse component.
-    // The diffuse component comes from the object's color.
-    glMaterialfv(face, GL_AMBIENT, (GLfloat *)material->get_ambient().get_data());
-    if (_has_material_force_color) {
-      glDisable(GL_COLOR_MATERIAL);
-      glMaterialfv(face, GL_DIFFUSE, (GLfloat *)_material_force_color.get_data());
-    } else {
-      glColorMaterial(face, GL_DIFFUSE);
-      glEnable(GL_COLOR_MATERIAL);
-    }
-
-  } else if (material->has_diffuse()) {
-    // The material specifies a diffuse, but not an ambient component.
-    // The ambient component comes from the object's color.
-    glMaterialfv(face, GL_DIFFUSE, (GLfloat *)material->get_diffuse().get_data());
-    if (_has_material_force_color) {
-      glDisable(GL_COLOR_MATERIAL);
-      glMaterialfv(face, GL_AMBIENT, (GLfloat *)_material_force_color.get_data());
-    } else {
-      glColorMaterial(face, GL_AMBIENT);
-      glEnable(GL_COLOR_MATERIAL);
-    }
-
-  } else {
-    // The material specifies neither a diffuse nor an ambient
-    // component.  Both components come from the object's color.
-    if (_has_material_force_color) {
-      glDisable(GL_COLOR_MATERIAL);
-      glMaterialfv(face, GL_AMBIENT, (GLfloat *)_material_force_color.get_data());
-      glMaterialfv(face, GL_DIFFUSE, (GLfloat *)_material_force_color.get_data());
-    } else {
-      glColorMaterial(face, GL_AMBIENT_AND_DIFFUSE);
-      glEnable(GL_COLOR_MATERIAL);
-    }
+  if (material->get_twoside()) {
+    // Also apply the material parameters to the back face.
+    setup_material(&_c->materials[1], material);
   }
 
-  glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
+  _c->local_light_model = material->get_local();
+  _c->light_model_two_side = material->get_twoside();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2579,6 +2533,52 @@ copy_rgba_image(GLTexture *gltex, Texture *tex) {
       sxn += xsize_src;
     }
     syn += ysize_src;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::setup_material
+//       Access: Private
+//  Description: Applies the desired parametesr to the indicated
+//               GLMaterial object.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+setup_material(GLMaterial *gl_material, const Material *material) {
+  const Colorf &specular = material->get_specular();
+  gl_material->specular.X = specular[0];
+  gl_material->specular.Y = specular[1];
+  gl_material->specular.Z = specular[2];
+  gl_material->specular.W = specular[3];
+
+  const Colorf &emission = material->get_emission();
+  gl_material->emission.X = emission[0];
+  gl_material->emission.Y = emission[1];
+  gl_material->emission.Z = emission[2];
+  gl_material->emission.W = emission[3];
+
+  gl_material->shininess = material->get_shininess();
+  gl_material->shininess_i = (int)((material->get_shininess() / 128.0f) * SPECULAR_BUFFER_RESOLUTION);
+
+  _color_material_flags = CMF_ambient | CMF_diffuse;
+
+  if (material->has_ambient()) {
+    const Colorf &ambient = material->get_ambient();
+    gl_material->ambient.X = ambient[0];
+    gl_material->ambient.Y = ambient[1];
+    gl_material->ambient.Z = ambient[2];
+    gl_material->ambient.W = ambient[3];
+
+    _color_material_flags &= ~CMF_ambient;
+  }
+
+  if (material->has_diffuse()) {
+    const Colorf &diffuse = material->get_diffuse();
+    gl_material->diffuse.X = diffuse[0];
+    gl_material->diffuse.Y = diffuse[1];
+    gl_material->diffuse.Z = diffuse[2];
+    gl_material->diffuse.W = diffuse[3];
+
+    _color_material_flags &= ~CMF_diffuse;
   }
 }
 

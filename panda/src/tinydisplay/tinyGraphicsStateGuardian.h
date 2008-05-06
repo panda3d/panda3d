@@ -33,6 +33,7 @@ extern "C" {
 class TinyTextureContext;
 struct GLContext;
 struct GLVertex;
+struct GLMaterial;
 struct GLTexture;
 
 ////////////////////////////////////////////////////////////////////
@@ -117,6 +118,7 @@ private:
   static void copy_rgb_image(GLTexture *gltex, Texture *tex);
   static void copy_rgba_image(GLTexture *gltex, Texture *tex);
 
+  void setup_material(GLMaterial *gl_material, const Material *material);
   static void load_matrix(M4 *matrix, const TransformState *transform);
 
   INLINE static GLenum get_light_id(int index);
@@ -127,6 +129,12 @@ public:
 
 private:
   GLContext *_c;
+
+  enum ColorMaterialFlags {
+    CMF_ambient   = 0x001,
+    CMF_diffuse   = 0x002,
+  };
+  int _color_material_flags;
 
   // Used during being_draw_primitives() .. end_draw_primitives().
   int _min_vertex;
