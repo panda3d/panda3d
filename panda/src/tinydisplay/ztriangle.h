@@ -34,6 +34,8 @@
   float tz1,dtzdx,dtzdy,dtzdl_min,dtzdl_max;
 #endif
 
+  EARLY_OUT();
+
   /* we sort the vertex with increasing y */
   if (p1->y < p0->y) {
     t = p0;
@@ -370,6 +372,7 @@
 #undef INTERP_ST
 #undef INTERP_STZ
 
+#undef EARLY_OUT
 #undef DRAW_INIT
 #undef DRAW_LINE  
 #undef PUT_PIXEL

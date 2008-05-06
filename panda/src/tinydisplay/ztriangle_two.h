@@ -6,16 +6,20 @@ void FNAME(ZB_fillTriangleFlat) (ZBuffer *zb,
 
 #define INTERP_Z
 
-#define DRAW_INIT()                                     \
-  {                                                     \
-    if (!ACMP(zb, p2->a)) {                             \
-      return;                                           \
-    }                                                   \
-    or = p2->r;                                         \
-    og = p2->g;                                         \
-    ob = p2->b;                                         \
-    oa = p2->a;                                         \
-    color=RGBA_TO_PIXEL(or, og, ob, oa);                \
+#define EARLY_OUT() 				\
+  {						\
+  }
+
+#define DRAW_INIT()                             \
+  {                                             \
+    if (!ACMP(zb, p2->a)) {                     \
+      return;                                   \
+    }                                           \
+    or = p2->r;                                 \
+    og = p2->g;                                 \
+    ob = p2->b;                                 \
+    oa = p2->a;                                 \
+    color=RGBA_TO_PIXEL(or, og, ob, oa);        \
   }
  
 #define PUT_PIXEL(_a)                           \
@@ -42,24 +46,37 @@ void FNAME(ZB_fillTriangleSmooth) (ZBuffer *zb,
 #define INTERP_Z
 #define INTERP_RGB
 
+#define EARLY_OUT()                                     \
+  {                                                     \
+    int c0, c1, c2;                                     \
+    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
+    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
+    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
+    if (c0 == c1 && c0 == c2) {                         \
+      /* It's really a flat-shaded triangle. */         \
+      FNAME(ZB_fillTriangleFlat)(zb, p0, p1, p2);       \
+      return;                                           \
+    }                                                   \
+  }
+  
 #define DRAW_INIT() 				\
   {						\
   }
 
-#define PUT_PIXEL(_a)                                           \
-  {                                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
-    if (ZCMP(pz[_a], zz)) {                                     \
-      if (ACMP(zb, oa1)) {                                      \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      if (ACMP(zb, oa1)) {                                              \
         STORE_PIX(pp[_a], RGBA_TO_PIXEL(or1, og1, ob1, oa1), or1, og1, ob1, oa1); \
-        STORE_Z(pz[_a], zz);                                    \
-      }                                                         \
-    }                                                           \
-    z+=dzdx;                                                    \
-    og1+=dgdx;                                                  \
-    or1+=drdx;                                                  \
-    ob1+=dbdx;                                                  \
-    oa1+=dadx;                                                  \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    og1+=dgdx;                                                          \
+    or1+=drdx;                                                          \
+    ob1+=dbdx;                                                          \
+    oa1+=dadx;                                                          \
   }
 
 #include "ztriangle.h"
@@ -73,16 +90,20 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
 #define INTERP_Z
 #define INTERP_ST
 
+#define EARLY_OUT() 				\
+  {						\
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;                \
+    texture = &zb->current_texture;             \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                              \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                           \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -105,37 +126,41 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 #define INTERP_Z
 #define INTERP_ST
 
+#define EARLY_OUT() 				\
+  {						\
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;                \
+    texture = &zb->current_texture;             \
     or = p2->r;                                 \
     og = p2->g;                                 \
     ob = p2->b;                                 \
     oa = p2->a;                                 \
   }
 
-#define PUT_PIXEL(_a)                                                   \
-  {                                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
-    if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                              \
-      int a = oa * PIXEL_A(tmp) >> 16;                                  \
-      if (ACMP(zb, a)) {                                                \
-        STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,                \
-                                og * PIXEL_G(tmp) >> 16,                \
-                                ob * PIXEL_B(tmp) >> 16,                \
-                                a),                                     \
-                  or * PIXEL_R(tmp) >> 16,                              \
-                  og * PIXEL_G(tmp) >> 16,                              \
-                  ob * PIXEL_B(tmp) >> 16,                              \
-                  a);                                                   \
-        STORE_Z(pz[_a], zz);                                            \
-      }                                                                 \
-    }                                                                   \
-    z+=dzdx;                                                            \
-    s+=dsdx;                                                            \
-    t+=dtdx;                                                            \
+#define PUT_PIXEL(_a)                                           \
+  {                                                             \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
+    if (ZCMP(pz[_a], zz)) {                                     \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      int a = oa * PIXEL_A(tmp) >> 16;                          \
+      if (ACMP(zb, a)) {                                        \
+        STORE_PIX(pp[_a],                                       \
+                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,        \
+                                og * PIXEL_G(tmp) >> 16,        \
+                                ob * PIXEL_B(tmp) >> 16,        \
+                                a),                             \
+                  or * PIXEL_R(tmp) >> 16,                      \
+                  og * PIXEL_G(tmp) >> 16,                      \
+                  ob * PIXEL_B(tmp) >> 16,                      \
+                  a);                                           \
+        STORE_Z(pz[_a], zz);                                    \
+      }                                                         \
+    }                                                           \
+    z+=dzdx;                                                    \
+    s+=dsdx;                                                    \
+    t+=dtdx;                                                    \
   }
 
 #include "ztriangle.h"
@@ -150,37 +175,55 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
 #define INTERP_ST
 #define INTERP_RGB
 
-#define DRAW_INIT()				\
-  {						\
-    texture = &zb->current_texture;                \
+#define EARLY_OUT()                                             \
+  {                                                             \
+    int c0, c1, c2;                                             \
+    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);             \
+    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);             \
+    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);             \
+    if (c0 == c1 && c0 == c2) {                                 \
+      /* It's really a flat-shaded triangle. */                 \
+      if (c0 == 0xffffffff) {                                   \
+        /* Actually, it's a white triangle. */                  \
+        FNAME(ZB_fillTriangleMapping)(zb, p0, p1, p2);          \
+        return; \
+      }                                                         \
+      FNAME(ZB_fillTriangleMappingFlat)(zb, p0, p1, p2);        \
+      return;                                                   \
+    }                                                           \
   }
 
-#define PUT_PIXEL(_a)                                                   \
-  {                                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
-    if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                                    \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
-      if (ACMP(zb, a)) {                                                \
-        STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
-                                og1 * PIXEL_G(tmp) >> 16,               \
-                                ob1 * PIXEL_B(tmp) >> 16,               \
-                                a),                                     \
-                  or1 * PIXEL_R(tmp) >> 16,                             \
-                  og1 * PIXEL_G(tmp) >> 16,                             \
-                  ob1 * PIXEL_B(tmp) >> 16,                             \
-                  a);                                                   \
-        STORE_Z(pz[_a], zz);                                            \
-      }                                                                 \
-    }                                                                   \
-    z+=dzdx;                                                            \
-    og1+=dgdx;                                                          \
-    or1+=drdx;                                                          \
-    ob1+=dbdx;                                                          \
-    oa1+=dadx;                                                          \
-    s+=dsdx;                                                            \
-    t+=dtdx;                                                            \
+#define DRAW_INIT()                             \
+  {                                             \
+    texture = &zb->current_texture;             \
+  }
+
+#define PUT_PIXEL(_a)                                           \
+  {                                                             \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
+    if (ZCMP(pz[_a], zz)) {                                     \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      int a = oa1 * PIXEL_A(tmp) >> 16;                         \
+      if (ACMP(zb, a)) {                                        \
+        STORE_PIX(pp[_a],                                       \
+                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,       \
+                                og1 * PIXEL_G(tmp) >> 16,       \
+                                ob1 * PIXEL_B(tmp) >> 16,       \
+                                a),                             \
+                  or1 * PIXEL_R(tmp) >> 16,                     \
+                  og1 * PIXEL_G(tmp) >> 16,                     \
+                  ob1 * PIXEL_B(tmp) >> 16,                     \
+                  a);                                           \
+        STORE_Z(pz[_a], zz);                                    \
+      }                                                         \
+    }                                                           \
+    z+=dzdx;                                                    \
+    og1+=dgdx;                                                  \
+    or1+=drdx;                                                  \
+    ob1+=dbdx;                                                  \
+    oa1+=dadx;                                                  \
+    s+=dsdx;                                                    \
+    t+=dtdx;                                                    \
   }
 
 #include "ztriangle.h"
@@ -202,9 +245,13 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
 
 #define NB_INTERP 8
 
+#define EARLY_OUT() 				\
+  {						\
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;                \
+    texture = &zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -216,7 +263,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                                    \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                           \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -304,9 +351,13 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 #define INTERP_RGB
 
 
+#define EARLY_OUT() 				\
+  {						\
+  }
+
 #define DRAW_INIT() 				\
   {						\
-    texture = &zb->current_texture;                \
+    texture = &zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -317,28 +368,28 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
     oa = p2->a;                                 \
   }
 
-#define PUT_PIXEL(_a)                                                   \
-  {                                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
-    if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                                    \
-      int a = oa * PIXEL_A(tmp) >> 16;                                  \
-      if (ACMP(zb, a)) {                                                \
-        STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,                \
-                                og * PIXEL_G(tmp) >> 16,                \
-                                ob * PIXEL_B(tmp) >> 16,                \
-                                a),                                     \
-                  or * PIXEL_R(tmp) >> 16,                              \
-                  og * PIXEL_G(tmp) >> 16,                              \
-                  ob * PIXEL_B(tmp) >> 16,                              \
-                  a);                                                   \
-        STORE_Z(pz[_a], zz);                                            \
-      }                                                                 \
-    }                                                                   \
-    z+=dzdx;                                                            \
-    s+=dsdx;                                                            \
-    t+=dtdx;                                                            \
+#define PUT_PIXEL(_a)                                           \
+  {                                                             \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
+    if (ZCMP(pz[_a], zz)) {                                     \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      int a = oa * PIXEL_A(tmp) >> 16;                          \
+      if (ACMP(zb, a)) {                                        \
+        STORE_PIX(pp[_a],                                       \
+                  RGBA_TO_PIXEL(or * PIXEL_R(tmp) >> 16,        \
+                                og * PIXEL_G(tmp) >> 16,        \
+                                ob * PIXEL_B(tmp) >> 16,        \
+                                a),                             \
+                  or * PIXEL_R(tmp) >> 16,                      \
+                  og * PIXEL_G(tmp) >> 16,                      \
+                  ob * PIXEL_B(tmp) >> 16,                      \
+                  a);                                           \
+        STORE_Z(pz[_a], zz);                                    \
+      }                                                         \
+    }                                                           \
+    z+=dzdx;                                                    \
+    s+=dsdx;                                                    \
+    t+=dtdx;                                                    \
   }
 
 #define DRAW_LINE()                                     \
@@ -421,6 +472,24 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
 #define INTERP_STZ
 #define INTERP_RGB
 
+#define EARLY_OUT()                                                     \
+  {                                                                     \
+    int c0, c1, c2;                                                     \
+    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);                     \
+    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);                     \
+    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);                     \
+    if (c0 == c1 && c0 == c2) {                                         \
+      /* It's really a flat-shaded triangle. */                         \
+      if (c0 == 0xffffffff) {                                           \
+        /* Actually, it's a white triangle. */                          \
+        FNAME(ZB_fillTriangleMappingPerspective)(zb, p0, p1, p2);       \
+        return;                                                         \
+      }                                                                 \
+      FNAME(ZB_fillTriangleMappingPerspectiveFlat)(zb, p0, p1, p2);     \
+      return;                                                           \
+    }                                                                   \
+  }
+
 #define DRAW_INIT() 				\
   {						\
     texture = &zb->current_texture;             \
@@ -430,32 +499,32 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
     ndtzdx=NB_INTERP * dtzdx;                   \
   }
 
-#define PUT_PIXEL(_a)                                                   \
-  {                                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
-    if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                           \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
-      if (ACMP(zb, a)) {                                                \
-        STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
-                                og1 * PIXEL_G(tmp) >> 16,               \
-                                ob1 * PIXEL_B(tmp) >> 16,               \
-                                a),                                     \
-                  or1 * PIXEL_R(tmp) >> 16,                             \
-                  og1 * PIXEL_G(tmp) >> 16,                             \
-                  ob1 * PIXEL_B(tmp) >> 16,                             \
-                  a);                                                   \
-        STORE_Z(pz[_a], zz);                                            \
-      }                                                                 \
-    }                                                                   \
-    z+=dzdx;                                                            \
-    og1+=dgdx;                                                          \
-    or1+=drdx;                                                          \
-    ob1+=dbdx;                                                          \
-    oa1+=dadx;                                                          \
-    s+=dsdx;                                                            \
-    t+=dtdx;                                                            \
+#define PUT_PIXEL(_a)                                           \
+  {                                                             \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
+    if (ZCMP(pz[_a], zz)) {                                     \
+      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      int a = oa1 * PIXEL_A(tmp) >> 16;                         \
+      if (ACMP(zb, a)) {                                        \
+        STORE_PIX(pp[_a],                                       \
+                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,       \
+                                og1 * PIXEL_G(tmp) >> 16,       \
+                                ob1 * PIXEL_B(tmp) >> 16,       \
+                                a),                             \
+                  or1 * PIXEL_R(tmp) >> 16,                     \
+                  og1 * PIXEL_G(tmp) >> 16,                     \
+                  ob1 * PIXEL_B(tmp) >> 16,                     \
+                  a);                                           \
+        STORE_Z(pz[_a], zz);                                    \
+      }                                                         \
+    }                                                           \
+    z+=dzdx;                                                    \
+    og1+=dgdx;                                                  \
+    or1+=drdx;                                                  \
+    ob1+=dbdx;                                                  \
+    oa1+=dadx;                                                  \
+    s+=dsdx;                                                    \
+    t+=dtdx;                                                    \
   }
 
 #define DRAW_LINE()                                     \
