@@ -1643,7 +1643,6 @@ do_issue_light() {
   GLLight *gl_light = _c->first_light;
   while (gl_light != (GLLight *)NULL) {
     GLLight *next = gl_light->next;
-    gl_light->enabled = false;
     gl_light->next = NULL;
     gl_light = next;
   }
@@ -1675,7 +1674,6 @@ do_issue_light() {
         nassertv(num_enabled < MAX_LIGHTS);
         GLLight *gl_light = &_c->lights[num_enabled];
         memset(gl_light, 0, sizeof(GLLight));
-        gl_light->enabled = true;
 
         gl_light->next = _c->first_light;
         _c->first_light = gl_light;

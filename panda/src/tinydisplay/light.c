@@ -8,23 +8,7 @@ static inline float clampf(float a,float min,float max)
   else return a;
 }
 
-void gl_enable_disable_light(GLContext *c,int light,int v)
-{
-  GLLight *l=&c->lights[light];
-  if (v && !l->enabled) {
-    l->enabled=1;
-    l->next=c->first_light;
-    c->first_light=l;
-    l->prev=NULL;
-  } else if (!v && l->enabled) {
-    l->enabled=0;
-    if (l->prev == NULL) c->first_light=l->next;
-    else l->prev->next=l->next;
-    if (l->next != NULL) l->next->prev=l->prev;
-  }
-}
-
-/* non optimized lightening model */
+/* non optimized lighting model */
 void gl_shade_vertex(GLContext *c,GLVertex *v)
 {
   float R,G,B,A;

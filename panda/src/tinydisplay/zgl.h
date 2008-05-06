@@ -59,9 +59,7 @@ typedef struct GLLight {
   float cos_spot_cutoff;
   V3 norm_spot_direction;
   V3 norm_position;
-  /* we use a linked list to know which are the enabled lights */
-  int enabled;
-  struct GLLight *next,*prev;
+  struct GLLight *next;
 } GLLight;
 
 typedef struct GLMaterial {
@@ -124,13 +122,6 @@ typedef struct GLTexture {
   int s_mask, t_mask, t_shift;
   int s_max, t_max;
 } GLTexture;
-
-/* shared state */
-
-typedef struct GLSharedState {
-  GLList **lists;
-  GLTexture **texture_hash_table;
-} GLSharedState;
 
 struct GLContext;
 
