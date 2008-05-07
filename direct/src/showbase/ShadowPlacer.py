@@ -142,6 +142,10 @@ class ShadowPlacer(DirectObject.DirectObject):
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
+    def resetToOrigin(self):
+        if self.shadowNodePath:
+            self.shadowNodePath.setPos(0,0,0)
+        
     if __debug__:
         def debugDisplay(self):
             """for debugging"""
