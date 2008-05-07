@@ -3,6 +3,7 @@
 from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
+from direct.showbase.PythonUtil import StackTrace
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
 
@@ -257,6 +258,11 @@ class DistributedObject(DistributedObjectBase):
     def _deactivate(self):
         # after this is called, the object is no longer an active DistributedObject
         # and it may be placed in the cache
+        if not self.cr:
+            # we are going to crash, output the destroyDo stacktrace
+            self.notify.warning('self.cr is none in _deactivate %d' % self.doId)
+            if hasattr(self, 'destroyDoStackTrace'):
+                print self.destroyDoStackTrace
         self.__callbacks = {}
         self.cr.closeAutoInterests(self)
         self.setLocation(0,0)
@@ -265,6 +271,7 @@ class DistributedObject(DistributedObjectBase):
     def _destroyDO(self):
         # after this is called, the object is no longer a DistributedObject
         # but may still be used as a DelayDeleted object
+        self.destroyDoStackTrace = StackTrace()
         self.cr = None
         self.dclass = None
 
