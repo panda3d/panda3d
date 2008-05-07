@@ -1392,11 +1392,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   GLTexture *gltex = gtc->_gltex;
   setup_gltex(gltex, tex->get_x_size(), tex->get_y_size());
 
-  PIXEL *ip = gltex->pixmap;
+  PIXEL *ip = gltex->pixmap + gltex->xsize * gltex->ysize;
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
   for (int y = 0; y < gltex->ysize; ++y) {
+    ip -= gltex->xsize;
     memcpy(ip, fo, gltex->xsize * PSZB);
-    ip += gltex->xsize;
     fo += _c->zb->linesize / PSZB;
   }
 

@@ -574,7 +574,7 @@ void TinyXGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     TinyGraphicsStateGuardian *tinygsg;
-    DCAST_INTO_R(tinygsg, _gsg, false);
+    DCAST_INTO_V(tinygsg, _gsg);
     tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
     _active = false;
