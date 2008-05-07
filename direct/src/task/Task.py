@@ -503,7 +503,7 @@ class TaskManager:
         return cont
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
-            priority=0, uponDeath=None, appendTask=False, owner = None):
+                      priority=0, uponDeath=None, appendTask=False, owner = None):
         if delayTime < 0:
             self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
@@ -512,6 +512,7 @@ class TaskManager:
             task = Task(funcOrTask, priority)
         else:
             self.notify.error('doMethodLater: Tried to add a task that was not a Task or a func')
+        assert isinstance(name, str), 'Name must be a string type'
         task.setPriority(priority)
         task.name = name
         task.owner = owner
@@ -562,6 +563,7 @@ class TaskManager:
         else:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')
+        assert isinstance(name, str), 'Name must be a string type'
         task.setPriority(priority)
         task.name = name
         task.owner = owner
