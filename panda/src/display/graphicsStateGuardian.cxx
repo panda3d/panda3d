@@ -339,6 +339,7 @@ reset() {
   _color_write_mask = ColorWriteAttrib::C_all;
 
   _has_scene_graph_color = false;
+  _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _transform_stale = true;
   _color_blend_involves_color_scale = false;
   _texture_involves_color_scale = false;
@@ -1560,6 +1561,7 @@ do_issue_color() {
   case ColorAttrib::T_off:
     // Color attribute off: it specifies that no scene graph color is
     // in effect, and vertex color is not important either.
+    _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
     _has_scene_graph_color = false;
     _vertex_colors_enabled = false;
     break;
@@ -1567,6 +1569,7 @@ do_issue_color() {
   case ColorAttrib::T_vertex:
     // Color attribute vertex: it specifies that vertex color should
     // be revealed.
+    _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
     _has_scene_graph_color = false;
     _vertex_colors_enabled = true;
     break;

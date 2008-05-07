@@ -961,19 +961,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   if (!needs_color) {
-    if (_has_scene_graph_color) {
-      const Colorf &d = _scene_graph_color;
-      _c->current_color.X = d[0];
-      _c->current_color.Y = d[1];
-      _c->current_color.Z = d[2];
-      _c->current_color.W = d[3];
-      
-    } else {
-      _c->current_color.X = 1.0f;
-      _c->current_color.Y = 1.0f;
-      _c->current_color.Z = 1.0f;
-      _c->current_color.W = 1.0f;
-    }
+    const Colorf &d = _scene_graph_color;
+    const Colorf &s = _current_color_scale;
+    _c->current_color.X = d[0] * s[0];
+    _c->current_color.Y = d[1] * s[1];
+    _c->current_color.Z = d[2] * s[2];
+    _c->current_color.W = d[3] * s[3];
   }
 
   bool needs_normal = false;
@@ -1021,10 +1014,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (needs_color) {
       const Colorf &d = rcolor.get_data4f();
-      _c->current_color.X = d[0];
-      _c->current_color.Y = d[1];
-      _c->current_color.Z = d[2];
-      _c->current_color.W = d[3];
+      const Colorf &s = _current_color_scale;
+      _c->current_color.X = d[0] * s[0];
+      _c->current_color.Y = d[1] * s[1];
+      _c->current_color.Z = d[2] * s[2];
+      _c->current_color.W = d[3] * s[3];
       
       if (_color_material_flags) {
         if (_color_material_flags & CMF_ambient) {
