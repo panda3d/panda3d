@@ -573,7 +573,9 @@ set_properties_now(WindowProperties &properties) {
 void TinyXGraphicsWindow::
 close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    //    glXMakeCurrent(_display, None, NULL);
+    TinyGraphicsStateGuardian *tinygsg;
+    DCAST_INTO_R(tinygsg, _gsg, false);
+    tinygsg->_current_frame_buffer = NULL;
     _gsg.clear();
     _active = false;
   }

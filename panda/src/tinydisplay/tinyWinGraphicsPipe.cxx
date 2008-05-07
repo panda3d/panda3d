@@ -1,5 +1,5 @@
-// Filename: tinySDLGraphicsPipe.cxx
-// Created by:  drose (24Apr08)
+// Filename: tinyWinGraphicsPipe.cxx
+// Created by:  drose (06May08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,48 +18,35 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_SDL
+#ifdef WIN32
 
-#include "tinySDLGraphicsPipe.h"
-#include "tinySDLGraphicsWindow.h"
-#include "tinyGraphicsStateGuardian.h"
+#include "tinyWinGraphicsPipe.h"
 #include "config_tinydisplay.h"
-#include "frameBufferProperties.h"
+#include "config_windisplay.h"
+#include "tinyWinGraphicsWindow.h"
 
-TypeHandle TinySDLGraphicsPipe::_type_handle;
-
+TypeHandle TinyWinGraphicsPipe::_type_handle;
+  
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::Constructor
+//     Function: TinyWinGraphicsPipe::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TinySDLGraphicsPipe::
-TinySDLGraphicsPipe() {
-  _is_valid = true;
-
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    tinydisplay_cat.error()
-      << "Cannot initialize SDL video.\n";
-    _is_valid = false;
-  }
+TinyWinGraphicsPipe::
+TinyWinGraphicsPipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::Destructor
+//     Function: TinyWinGraphicsPipe::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-TinySDLGraphicsPipe::
-~TinySDLGraphicsPipe() {
-  if (SDL_WasInit(SDL_INIT_VIDEO)) {
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
-  }
-
-  SDL_Quit();
+TinyWinGraphicsPipe::
+~TinyWinGraphicsPipe() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::get_interface_name
+//     Function: TinyWinGraphicsPipe::get_interface_name
 //       Access: Published, Virtual
 //  Description: Returns the name of the rendering interface
 //               associated with this GraphicsPipe.  This is used to
@@ -68,29 +55,30 @@ TinySDLGraphicsPipe::
 //               particular platform, so the name should be meaningful
 //               and unique for a given platform.
 ////////////////////////////////////////////////////////////////////
-string TinySDLGraphicsPipe::
+string TinyWinGraphicsPipe::
 get_interface_name() const {
-  return "TinyGL SDL";
+  return "TinyGL Windows";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::pipe_constructor
+//     Function: TinyWinGraphicsPipe::pipe_constructor
 //       Access: Public, Static
 //  Description: This function is passed to the GraphicsPipeSelection
 //               object to allow the user to make a default
-//               TinySDLGraphicsPipe.
+//               TinyWinGraphicsPipe.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsPipe) TinySDLGraphicsPipe::
+PT(GraphicsPipe) TinyWinGraphicsPipe::
 pipe_constructor() {
-  return new TinySDLGraphicsPipe;
+  return new TinyWinGraphicsPipe;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsPipe::make_output
+//     Function: TinyWinGraphicsPipe::make_output
 //       Access: Protected, Virtual
-//  Description: Creates a new window on the pipe, if possible.
+//  Description: Creates a new window or buffer on the pipe, if possible.
+//               This routine is only called from GraphicsEngine::make_output.
 ////////////////////////////////////////////////////////////////////
-PT(GraphicsOutput) TinySDLGraphicsPipe::
+PT(GraphicsOutput) TinyWinGraphicsPipe::
 make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
@@ -99,6 +87,7 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
+  
   if (!_is_valid) {
     return NULL;
   }
@@ -108,7 +97,7 @@ make_output(const string &name,
     DCAST_INTO_R(tinygsg, gsg, NULL);
   }
 
-  // First thing to try: a TinySDLGraphicsWindow
+  // First thing to try: a TinyWinGraphicsWindow
 
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
@@ -120,7 +109,14 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new TinySDLGraphicsWindow(this, name, fb_prop, win_prop,
+    if ((flags & BF_fb_props_optional)==0) {
+      if ((fb_prop.get_aux_rgba() > 0)||
+          (fb_prop.get_aux_hrgba() > 0)||
+          (fb_prop.get_aux_float() > 0)) {
+        return NULL;
+      }
+    }
+    return new TinyWinGraphicsWindow(this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
   
@@ -128,4 +124,4 @@ make_output(const string &name,
   return NULL;
 }
 
-#endif  // HAVE_SDL
+#endif  // WIN32

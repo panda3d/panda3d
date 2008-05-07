@@ -10,7 +10,7 @@
   #define TARGET tinydisplay
   #define LOCAL_LIBS \
     gsgmisc gsgbase gobj display \
-    putil linmath mathutil pnmimage
+    putil linmath mathutil pnmimage windisplay
 
   #define SOURCES \
     config_tinydisplay.cxx config_tinydisplay.h \
@@ -20,6 +20,8 @@
     tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
     tinyGraphicsStateGuardian.cxx \
     tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
+    tinyWinGraphicsPipe.I tinyWinGraphicsPipe.cxx tinyWinGraphicsPipe.h \
+    tinyWinGraphicsWindow.h tinyWinGraphicsWindow.I tinyWinGraphicsWindow.cxx \
     tinyXGraphicsPipe.I tinyXGraphicsPipe.cxx tinyXGraphicsPipe.h \
     tinyXGraphicsWindow.h tinyXGraphicsWindow.I tinyXGraphicsWindow.cxx \
     clip.cxx error.cxx \

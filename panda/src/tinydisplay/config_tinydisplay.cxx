@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_tinydisplay.h"
-#include "tinySDLGraphicsPipe.h"
-#include "tinySDLGraphicsWindow.h"
 #include "tinyXGraphicsPipe.h"
 #include "tinyXGraphicsWindow.h"
+#include "tinyWinGraphicsPipe.h"
+#include "tinyWinGraphicsWindow.h"
+#include "tinySDLGraphicsPipe.h"
+#include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
 #include "tinyTextureContext.h"
@@ -88,6 +90,9 @@ init_libtinydisplay() {
   TinyGeomMunger::init_type();
   TinyTextureContext::init_type();
 
+  PandaSystem *ps = PandaSystem::get_global_ptr();
+  ps->add_system("TinyGL");
+
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
 
 #ifdef IS_LINUX
@@ -95,6 +100,15 @@ init_libtinydisplay() {
   TinyXGraphicsWindow::init_type();
   selection->add_pipe_type(TinyXGraphicsPipe::get_class_type(),
                            TinyXGraphicsPipe::pipe_constructor);
+  ps->set_system_tag("TinyGL", "native_window_system", "X");
+#endif
+
+#ifdef WIN32
+  TinyWinGraphicsPipe::init_type();
+  TinyWinGraphicsWindow::init_type();
+  selection->add_pipe_type(TinyWinGraphicsPipe::get_class_type(),
+                           TinyWinGraphicsPipe::pipe_constructor);
+  ps->set_system_tag("TinyGL", "native_window_system", "Win");
 #endif
 
 #ifdef HAVE_SDL
@@ -102,8 +116,6 @@ init_libtinydisplay() {
   TinySDLGraphicsWindow::init_type();
   selection->add_pipe_type(TinySDLGraphicsPipe::get_class_type(),
                            TinySDLGraphicsPipe::pipe_constructor);
+  ps->set_system_tag("TinyGL", "SDL", "SDL");
 #endif
-
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("TinyGL");
 }
