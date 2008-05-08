@@ -132,16 +132,31 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void TinySDLGraphicsWindow::
 begin_flip() {
-  if (SDL_MUSTLOCK(_screen)) {
-    if (SDL_LockSurface(_screen) < 0) {
-      tinydisplay_cat.error()
-        << "Can't lock screen: " << SDL_GetError() << "\n";
-    }
-  }
-  ZB_copyFrameBuffer(_frame_buffer, _screen->pixels, _pitch);
+  int fb_xsize = get_fb_x_size();
+  int fb_ysize = get_fb_y_size();
 
-  if (SDL_MUSTLOCK(_screen)) {
-    SDL_UnlockSurface(_screen); 
+  if (fb_xsize == _frame_buffer->xsize) {
+    // No zooming is necessary--copy directly to the screen.
+    if (SDL_MUSTLOCK(_screen)) {
+      if (SDL_LockSurface(_screen) < 0) {
+        tinydisplay_cat.error()
+          << "Can't lock screen: " << SDL_GetError() << "\n";
+      }
+    }
+    ZB_copyFrameBuffer(_frame_buffer, _screen->pixels, _pitch);
+    
+    if (SDL_MUSTLOCK(_screen)) {
+      SDL_UnlockSurface(_screen); 
+    }
+
+  } else {
+    // Copy to another surface, then scale it onto the screen.
+    SDL_Surface *temp = 
+      SDL_CreateRGBSurfaceFrom(_frame_buffer->pbuf, _frame_buffer->xsize, _frame_buffer->ysize,
+                               32, _frame_buffer->linesize, 0xff0000, 0x00ff00, 0x0000ff, 0xff000000);
+    SDL_SetAlpha(temp, SDL_RLEACCEL, 0);
+    SDL_BlitSurface(temp, NULL, _screen, NULL);
+    SDL_FreeSurface(temp);
   }
 
   SDL_Flip(_screen);
@@ -246,6 +261,25 @@ set_properties_now(WindowProperties &properties) {
     // The base class has already handled this case.
     return;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinySDLGraphicsWindow::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool TinySDLGraphicsWindow::
+supports_pixel_zoom() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
