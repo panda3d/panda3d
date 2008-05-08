@@ -279,8 +279,8 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   if (!remove.empty()) {
     Regions only_a, only_b, both;
     intersect_regions(only_a, only_b, both,
-                      _current_regions, remove);
-    _current_regions.swap(only_a);
+                      _regions, remove);
+    _regions.swap(only_a);
 
     if (has_region_in(both, _preferred_region)) {
       if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -297,8 +297,8 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   if (!add.empty()) {
     Regions new_list;
     intersect_regions(new_list, new_list, new_list,
-                      _current_regions, add);
-    _current_regions.swap(new_list);
+                      _regions, add);
+    _regions.swap(new_list);
   }
 
   // Add the new group, if it's not already there.
