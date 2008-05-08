@@ -173,10 +173,18 @@ ConfigVariableInt dx_lru_maximum_page_updates_per_frame
 ConfigVariableBool dx_lru_debug
 ("dx-lru-debug", false);
 
-// valid only if dx_lru_debug == true && notify-level-dxgsg9 == debug
+// valid only if dx_lru_debug == true 
 // number of frames to wait until printing out the LRU status
 ConfigVariableInt dx_lru_debug_frames_til_output
 ("dx-lru-debug-frames-til-output", 500);
+
+// valid only if dx_lru_debug == true 
+ConfigVariableBool dx_lru_debug_textures
+("dx-lru-debug-textures", false);
+
+// valid only if dx_lru_debug == true 
+ConfigVariableBool dx_lru_debug_vertex_buffers
+("dx-lru-debug-vertex-buffers", false);
 
 ConfigVariableBool dx_use_dynamic_textures
 ("dx-use-dynamic-textures", true);

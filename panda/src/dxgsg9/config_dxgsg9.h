@@ -72,6 +72,8 @@ extern ConfigVariableInt dx_lru_maximum_page_updates_per_frame;
 // LRU debug variables
 extern ConfigVariableBool dx_lru_debug;
 extern ConfigVariableInt dx_lru_debug_frames_til_output;
+extern ConfigVariableBool dx_lru_debug_textures;
+extern ConfigVariableBool dx_lru_debug_vertex_buffers;
 
 extern ConfigVariableBool dx_use_dynamic_textures;
 
