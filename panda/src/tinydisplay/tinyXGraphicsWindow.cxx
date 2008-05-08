@@ -213,7 +213,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 begin_flip() {
-  if (_bytes_per_pixel == 4) {
+  if (_bytes_per_pixel == 4 && _pitch == _frame_buffer->linesize) {
     // If we match the expected bpp, we don't need an intervening copy
     // operation.  Just point the XImage directly at the framebuffer
     // data.
@@ -225,6 +225,25 @@ begin_flip() {
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
             _frame_buffer->xsize, _frame_buffer->ysize);
   XFlush(_display);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyXGraphicsWindow::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool TinyXGraphicsWindow::
+supports_pixel_zoom() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
