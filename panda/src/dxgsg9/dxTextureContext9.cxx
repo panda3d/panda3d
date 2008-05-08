@@ -950,6 +950,7 @@ create_texture(DXScreenData &scrn) {
         if (lru_page) {
           lru_page -> _m.v.type = GPT_Texture;
           lru_page -> _m.lru_page_type.pointer = this;
+          lru_page -> _m.name = get_texture()->get_filename();
 
           lru -> add_cached_page (LPP_New, lru_page);
           _lru_page = lru_page;

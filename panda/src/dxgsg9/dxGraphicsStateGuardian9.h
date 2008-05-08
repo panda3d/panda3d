@@ -94,7 +94,7 @@ public:
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   bool apply_vertex_buffer(VertexBufferContext *vbc, CLP(ShaderContext) *shader_context,
-                           const GeomVertexArrayDataHandle *reader, bool force);
+                           const GeomVertexArrayDataHandle *reader, bool force, string name);
   virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual IndexBufferContext *prepare_index_buffer(GeomPrimitive *data);

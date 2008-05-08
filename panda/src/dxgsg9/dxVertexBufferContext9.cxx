@@ -374,6 +374,9 @@ allocate_vbuffer(DXScreenData &scrn,
   if (FAILED(hr)) {
     dxgsg9_cat.warning()
       << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+      
+    printf ("data_size %d \n", data_size);
+    
     _vbuffer = NULL;
   } else {
     if (DEBUG_VERTEX_BUFFER && dxgsg9_cat.is_debug()) {
@@ -393,7 +396,8 @@ allocate_vbuffer(DXScreenData &scrn,
 ////////////////////////////////////////////////////////////////////
 void DXVertexBufferContext9::
 create_vbuffer(DXScreenData &scrn,
-               const GeomVertexArrayDataHandle *reader) {
+               const GeomVertexArrayDataHandle *reader,
+               string name) {
   nassertv(reader->get_object() == get_data());
   Thread *current_thread = reader->get_current_thread();
 
@@ -426,6 +430,7 @@ create_vbuffer(DXScreenData &scrn,
         if (lru_page) {
           lru_page -> _m.v.type = GPT_VertexBuffer;
           lru_page -> _m.lru_page_type.pointer = this;
+          lru_page -> _m.name = name;
 
           lru -> add_cached_page (LPP_New, lru_page);
           _lru_page = lru_page;

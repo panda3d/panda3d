@@ -397,7 +397,9 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 bool DXGraphicsStateGuardian9::
 apply_vertex_buffer(VertexBufferContext *vbc,
                     CLP(ShaderContext) *shader_context,
-                    const GeomVertexArrayDataHandle *reader, bool force) {
+                    const GeomVertexArrayDataHandle *reader, 
+                    bool force,
+                    string name) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
 
   DBG_SH3 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
@@ -419,7 +421,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     // Attempt to create a new vertex buffer.
     if (vertex_buffers &&
         reader->get_usage_hint() != Geom::UH_client) {
-      dvbc->create_vbuffer(*_screen, reader);
+      dvbc->create_vbuffer(*_screen, reader, name);
     }
 
     if (dvbc->_vbuffer != NULL) {
@@ -440,7 +442,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       if (dvbc->changed_size(reader)) {
         // We have to destroy the old vertex buffer and create a new
         // one.
-        dvbc->create_vbuffer(*_screen, reader);
+        dvbc->create_vbuffer(*_screen, reader, name);
       }
 
       if (!dvbc->upload_data(reader, force)) {
@@ -1215,7 +1217,19 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
               "  out " << page_type_statistics -> total_pages_out <<
               "  size " << page_type_statistics -> total_memory_out <<
               "\n";
+        }
 
+        void display_lru (int type, int priority, Lru *lru);
+
+        int type;
+
+        if (dx_lru_debug_textures) {
+          type = GPT_Texture;
+          display_lru (type, -1, _lru);
+        }       
+        if (dx_lru_debug_vertex_buffers) {
+          type = GPT_VertexBuffer;
+          display_lru (type, -1, _lru);
         }
       }
     }
@@ -1260,6 +1274,22 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
 
   DBG_SH5 dxgsg9_cat.debug ( ) << "begin_draw_primitives\n"; DBG_E
+
+  string name;
+  const Geom *geom;
+  
+  name = "";
+  geom = geom_reader -> get_object ( );
+  if (geom)
+  {
+    CPT(GeomVertexData) geom_vertex_data;
+    geom_vertex_data = geom -> get_vertex_data();
+    
+    name = geom_vertex_data -> get_name();
+    
+//    cout << name << "\n";
+  }
+
 
 // SHADER
   if (_vertex_array_shader_context==0) {
@@ -1391,7 +1421,7 @@ vertex_element_array -> vertex_element_type_array;
 
   VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
-  if (!apply_vertex_buffer(vbc, _current_shader_context, data, force)) {
+  if (!apply_vertex_buffer(vbc, _current_shader_context, data, force, name)) {
     return false;
   }
 
@@ -2630,6 +2660,12 @@ reset() {
     _shader_caps._active_fprofile = (int)cgD3D9GetLatestPixelProfile();
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_3_0;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_3_0;
+/*
+    _shader_caps._active_vprofile = (int)CG_PROFILE_VS_2_0;
+    _shader_caps._active_fprofile = (int)CG_PROFILE_PS_2_0;
+    _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VS_2_0;
+    _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_2_0;
+*/
   }
   
   if (dxgsg9_cat.is_debug()) {
@@ -2667,6 +2703,8 @@ reset() {
   _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
   _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
 
+  _maximum_simultaneuous_render_targets = d3d_caps.NumSimultaneousRTs;
+
   _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
 
   _supports_gamma_calibration = ((d3d_caps.Caps2 & D3DCAPS2_CANCALIBRATEGAMMA) != 0);
@@ -2675,7 +2713,7 @@ reset() {
   hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, NULL);
   _supports_occlusion_query = !FAILED(hr);
 
-  if (dxgsg9_cat.is_debug()) {
+  if (dxgsg9_cat.is_error()) {
     dxgsg9_cat.debug()
       << "\nHwTransformAndLight = " << ((d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0)
       << "\nMaxTextureWidth = " << d3d_caps.MaxTextureWidth
@@ -2710,10 +2748,12 @@ reset() {
       << "\nsupports_occlusion_query = " << _supports_occlusion_query
       << "\nsupports_gamma_calibration = " << _supports_gamma_calibration
       << "\nMaxAnisotropy = " << d3d_caps.MaxAnisotropy
+      << "\nNumSimultaneousRTs = " << d3d_caps.NumSimultaneousRTs
+      << "\nD3DPMISCCAPS_MRTPOSTPIXELSHADERBLENDING = " << ((d3d_caps.PrimitiveMiscCaps & D3DPMISCCAPS_MRTPOSTPIXELSHADERBLENDING) != 0)
       << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
   }
-
+  
   // OVERRIDE SUPPORT SINCE IT DOES NOT WORK WELL
   _screen->_supports_automatic_mipmap_generation = false;
 
@@ -3334,12 +3374,21 @@ do_issue_cull_face() {
   switch (_cull_face_mode) {
   case CullFaceAttrib::M_cull_none:
     set_render_state(D3DRS_CULLMODE, D3DCULL_NONE);
+
+// printf ("------------------- D3DCULL_NONE\n");
+
     break;
   case CullFaceAttrib::M_cull_clockwise:
     set_render_state(D3DRS_CULLMODE, D3DCULL_CW);
+
+// printf ("------------------- D3DCULL_CW -- CLOCKWISE \n");
+
     break;
   case CullFaceAttrib::M_cull_counter_clockwise:
     set_render_state(D3DRS_CULLMODE, D3DCULL_CCW);
+
+// printf ("------------------- D3DCULL_CCW\n");
+
     break;
   default:
     dxgsg9_cat.error()
@@ -5807,4 +5856,223 @@ restore_gamma() {
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
   static_set_gamma(true, 1.0f);
+}
+
+
+
+
+
+typedef string KEY;
+
+typedef struct _KEY_ELEMENT
+{
+  KEY key;
+  int count;
+  int secondary_count;
+
+  struct _KEY_ELEMENT *next;
+}
+KEY_ELEMENT;
+
+typedef struct _KEY_LIST
+{
+  int total_key_elements;
+  KEY_ELEMENT *key_element;
+}
+KEY_LIST;
+
+KEY_ELEMENT *new_key_element (KEY key, KEY_LIST *key_list)
+{
+  KEY_ELEMENT *key_element;
+
+  key_element = new KEY_ELEMENT;
+  key_element -> key = key;
+  key_element -> count = 1;
+  key_element -> secondary_count = 0;
+  key_element -> next = 0;
+
+  key_list -> total_key_elements++;
+
+  return key_element;
+}
+
+KEY_ELEMENT *first_key_element (KEY_LIST *key_list)
+{
+  return key_list -> key_element;
+}
+
+KEY_ELEMENT *next_key_element (KEY_ELEMENT *key_element)
+{
+  return key_element -> next;
+}
+
+void delete_key_list (KEY_LIST *key_list)
+{
+  if (key_list)
+  {
+    KEY_ELEMENT *key_element;
+    KEY_ELEMENT *key_element_next;
+
+    key_element = first_key_element (key_list);
+    while (key_element)
+    {
+      key_element_next = next_key_element (key_element);
+      delete key_element;
+      key_element = key_element_next;
+    }
+
+    delete key_list;
+  }
+}
+
+KEY_LIST *new_key_list (void)
+{
+  KEY_LIST *key_list;
+
+  key_list = new KEY_LIST;
+  memset (key_list, 0, sizeof (KEY_LIST));
+
+  return key_list;
+}
+
+KEY_ELEMENT *add_to_key_list (KEY key, KEY_LIST *key_list)
+{
+  KEY_ELEMENT *key_element;
+  KEY_ELEMENT *last_key_element;
+  KEY_ELEMENT *current_key_element;
+
+  key_element = 0;
+  last_key_element = 0;
+  current_key_element = key_list -> key_element;
+  if (current_key_element == 0)
+  {
+    key_element = new_key_element (key, key_list);
+    key_list -> key_element = key_element;
+  }
+  else
+  {
+    while (current_key_element)
+    {
+      if (key < current_key_element -> key)
+      {
+        key_element = new_key_element (key, key_list);
+        key_element -> next = current_key_element;
+
+        if (last_key_element == 0)
+        {
+          key_list -> key_element = key_element;
+        }
+        else
+        {
+          last_key_element -> next = key_element;
+        }
+        break;
+      }
+      else
+      {
+        if (key > current_key_element -> key)
+        {
+          if (current_key_element -> next == 0)
+          {
+            key_element = new_key_element (key, key_list);
+            current_key_element -> next = key_element;
+            break;
+          }
+          else
+          {
+
+          }
+        }
+        else
+        {
+          current_key_element -> count++;
+          break;
+        }
+      }
+
+      last_key_element = current_key_element;
+      current_key_element = current_key_element -> next;
+    }
+  }
+
+  return key_element;
+}
+
+void display_lru (int type, int priority, Lru *lru)
+{
+  int index;
+  KEY_LIST *all_key_list;
+
+  all_key_list = new_key_list ( );
+
+  for (index = 0; index < LPP_TotalPriorities; index++) 
+  {
+    if (priority == -1 || index == priority)
+    {
+      LruPage *lru_page;
+      LruPage *next_lru_page;
+
+      lru_page = lru -> _m.lru_page_array[index];
+
+      KEY_LIST *key_list;
+
+      key_list = new_key_list ( );
+      
+      while (lru_page) 
+      {
+        if (type == lru_page -> _m.v.type)
+        {          
+//          cout << "  " << lru_page -> _m.name << "\n";
+          KEY_ELEMENT *key_element;
+
+          key_element = add_to_key_list (lru_page -> _m.name, key_list);
+
+          key_element = add_to_key_list (lru_page -> _m.name, all_key_list);
+        }
+
+        next_lru_page = lru_page -> _m.next;
+        lru_page = next_lru_page;
+      }
+
+      if (key_list -> total_key_elements > 0)
+      {
+          cout << "priority " << index << "\n";
+
+          KEY_ELEMENT *key_element;
+          KEY_ELEMENT *key_element_next;
+
+          key_element = first_key_element (key_list);
+          while (key_element)
+          {
+            key_element_next = next_key_element (key_element);
+
+            cout << "  " << key_element -> count << "  " << key_element -> key << "\n";
+                       
+            key_element = key_element_next;
+          }
+      }
+      
+      delete_key_list (key_list);
+    }
+  }
+
+  if (all_key_list -> total_key_elements > 0)
+  {
+      KEY_ELEMENT *key_element;
+      KEY_ELEMENT *key_element_next;
+
+      cout << "ALL KEYS \n";
+
+      key_element = first_key_element (all_key_list);
+      while (key_element)
+      {
+        key_element_next = next_key_element (key_element);
+
+        cout << "  " << key_element -> count << "  " << key_element -> key << "\n";
+
+        key_element = key_element_next;
+      }
+  }
+
+  delete_key_list (all_key_list);
 }
