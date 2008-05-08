@@ -121,6 +121,8 @@ public:
     LruPage *previous;
     LruPage *next;
     Lru *lru;
+    
+    string name;
   }
   LruPageVariables;
 

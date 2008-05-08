@@ -150,6 +150,7 @@ LruPage::LruPage ( )
 {
   if(this) {
     memset(&this->_m, 0, sizeof (LruPageVariables));
+    _m.name = "";   
   }
 }
 
