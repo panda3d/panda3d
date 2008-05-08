@@ -5,7 +5,7 @@
 {
   ZBufferPoint *t,*pr1,*pr2,*l1,*l2;
   float fdx1, fdx2, fdy1, fdy2, fz, d1, d2;
-  unsigned short *pz1;
+  ZPOINT *pz1;
   PIXEL *pp1;
   int part,update_left,update_right;
 
@@ -258,7 +258,7 @@
           register PIXEL *pp;
           register int n;
 #ifdef INTERP_Z
-          register unsigned short *pz;
+          register ZPOINT *pz;
           register unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB

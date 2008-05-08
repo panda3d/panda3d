@@ -632,11 +632,14 @@ set_size_and_recalc(int x, int y) {
   _y_size = y;
   _has_size = true;
 
+  int fb_x_size = get_fb_x_size();
+  int fb_y_size = get_fb_y_size();
+
   TotalDisplayRegions::iterator dri;
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
        ++dri) {
-    (*dri)->compute_pixels_all_stages(x, y);
+    (*dri)->compute_pixels_all_stages(fb_x_size, fb_y_size);
   }
 
   if (_texture_card != 0) {
@@ -918,6 +921,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 end_frame(FrameMode mode, Thread *current_thread) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::pixel_factor_changed
+//       Access: Published, Virtual
+//  Description: Called internally when the pixel factor changes.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+pixel_factor_changed() {
+  if (_has_size) {
+    set_size_and_recalc(_x_size, _y_size);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

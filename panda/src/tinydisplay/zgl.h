@@ -207,7 +207,7 @@ void gl_eval_viewport(GLContext *c);
 void gl_vertex_transform(GLContext * c, GLVertex * v);
 
 /* image_util.c */
-void gl_convertRGB_to_5R6G5B(unsigned short *pixmap,unsigned char *rgb,
+void gl_convertRGB_to_5R6G5B(unsigned char *pixmap,unsigned char *rgb,
                              int xsize,int ysize);
 void gl_convertRGB_to_8A8R8G8B(unsigned int *pixmap, unsigned char *rgb,
                                int xsize, int ysize);

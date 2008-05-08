@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include "zbuffer.h"
 
-#define ZCMP(z,zpix) ((z) >= (zpix))
+#define ZCMP(z,zpix) ((ZPOINT)(z) >= (ZPOINT)(zpix))
 
 void ZB_plot(ZBuffer * zb, ZBufferPoint * p)
 {
-    unsigned short *pz;
+    ZPOINT *pz;
     PIXEL *pp;
-    int zz;
+    unsigned int zz;
 
     pz = zb->zbuf + (p->y * zb->xsize + p->x);
     pp = (PIXEL *) ((char *) zb->pbuf + zb->linesize * p->y + p->x * PSZB);
@@ -21,7 +21,7 @@ void ZB_plot(ZBuffer * zb, ZBufferPoint * p)
 
 #define INTERP_Z
 static void ZB_line_flat_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2, 
-                           int color)
+                           unsigned int color)
 {
 #include "zline.h"
 }
@@ -37,7 +37,7 @@ static void ZB_line_interp_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2)
 /* no Z interpolation */
 
 static void ZB_line_flat(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2, 
-                             int color)
+                         unsigned int color)
 {
 #include "zline.h"
 }
@@ -50,7 +50,7 @@ static void ZB_line_interp(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2)
 
 void ZB_line_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2)
 {
-    int color1, color2;
+    unsigned int color1, color2;
 
     color1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);
     color2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);
@@ -65,7 +65,7 @@ void ZB_line_z(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2)
 
 void ZB_line(ZBuffer * zb, ZBufferPoint * p1, ZBufferPoint * p2)
 {
-    int color1, color2;
+    unsigned int color1, color2;
 
     color1 = RGB_TO_PIXEL(p1->r, p1->g, p1->b);
     color2 = RGB_TO_PIXEL(p2->r, p2->g, p2->b);

@@ -136,7 +136,7 @@ set_dimensions(float l, float r, float b, float t) {
   cdata->_t = t;
 
   if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
-    do_compute_pixels(_window->get_x_size(), _window->get_y_size(), cdata);
+    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), cdata);
   }
 }
 
@@ -296,7 +296,7 @@ compute_pixels() {
 
   if (_window != (GraphicsOutput *)NULL) {
     CDWriter cdata(_cycler);
-    do_compute_pixels(_window->get_x_size(), _window->get_y_size(), 
+    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
                       cdata);
   }
 }
@@ -316,7 +316,7 @@ compute_pixels_all_stages() {
   if (_window != (GraphicsOutput *)NULL) {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);
-      do_compute_pixels(_window->get_x_size(), _window->get_y_size(), 
+      do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
                         cdata);
     }
     CLOSE_ITERATE_ALL_STAGES(_cycler);
@@ -552,6 +552,30 @@ make_cull_result_graph() {
     return NULL;
   }
   return cull_result->make_result_graph();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool DisplayRegion::
+supports_pixel_zoom() const {
+  if (_window != (GraphicsOutput *)NULL) {
+    if (_window->supports_pixel_zoom()) {
+      return get_clear_color_active() && get_clear_depth_active();
+    }
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

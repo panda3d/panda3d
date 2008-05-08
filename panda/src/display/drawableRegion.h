@@ -95,11 +95,20 @@ PUBLISHED:
 
   INLINE bool is_any_clear_active() const;
 
+  INLINE void set_pixel_zoom(float pixel_zoom);
+  INLINE float get_pixel_zoom() const;
+  INLINE float get_pixel_factor() const;
+  virtual bool supports_pixel_zoom() const;
+
   static int get_renderbuffer_type(int plane);
   
 public:
   INLINE int get_screenshot_buffer_type() const;
   INLINE int get_draw_buffer_type() const;
+
+protected:
+  INLINE void update_pixel_factor();
+  virtual void pixel_factor_changed();
 
 protected:
   int _screenshot_buffer_type;
@@ -108,6 +117,9 @@ protected:
 private:
   bool    _clear_active[RTP_COUNT];
   Colorf  _clear_value[RTP_COUNT];
+
+  float _pixel_zoom;
+  float _pixel_factor;
 };
 
 

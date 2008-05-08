@@ -124,6 +124,10 @@ public:
   ZBuffer *_current_frame_buffer;
 
 private:
+  // Allocated by prepare_display_region when necessary for a zoomed
+  // display region.
+  ZBuffer *_aux_frame_buffer;
+
   GLContext *_c;
 
   enum ColorMaterialFlags {

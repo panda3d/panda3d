@@ -128,6 +128,8 @@ PUBLISHED:
   PT(PandaNode) make_cull_result_graph();
 
 public:
+  virtual bool supports_pixel_zoom() const;
+
   INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
                               Thread *current_thread);
   INLINE CullResult *get_cull_result(Thread *current_thread) const;

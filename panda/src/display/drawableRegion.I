@@ -32,6 +32,8 @@ DrawableRegion() :
     _clear_value[i] = Colorf(0.0f, 0.0f, 0.0f, 0.0f);
   }
   _clear_value[RTP_depth] = Colorf(1.0f,1.0f,1.0f,1.0f);
+  _pixel_zoom = 1.0f;
+  _pixel_factor = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +44,9 @@ DrawableRegion() :
 INLINE DrawableRegion::
 DrawableRegion(const DrawableRegion &copy) :
   _screenshot_buffer_type(copy._screenshot_buffer_type),
-  _draw_buffer_type(copy._draw_buffer_type)
+  _draw_buffer_type(copy._draw_buffer_type),
+  _pixel_zoom(copy._pixel_zoom),
+  _pixel_factor(copy._pixel_factor)
 {
   for (int i=0; i<RTP_COUNT; i++) {
     _clear_active[i] = copy._clear_active[i];
@@ -63,6 +67,8 @@ operator = (const DrawableRegion &copy) {
     _clear_active[i] = copy._clear_active[i];
     _clear_value[i] = copy._clear_value[i];
   }
+  _pixel_zoom = copy._pixel_zoom;
+  _pixel_factor = copy._pixel_factor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +83,7 @@ copy_clear_settings(const DrawableRegion &copy) {
     _clear_active[i] = copy._clear_active[i];
     _clear_value[i] = copy._clear_value[i];
   }
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,6 +98,7 @@ copy_clear_settings(const DrawableRegion &copy) {
 INLINE void DrawableRegion::
 set_clear_color_active(bool clear_color_active) {
   _clear_active[RTP_color] = clear_color_active;
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,6 +125,7 @@ get_clear_color_active() const {
 INLINE void DrawableRegion::
 set_clear_depth_active(bool clear_depth_active) {
   _clear_active[RTP_depth] = clear_depth_active;
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,6 +175,7 @@ INLINE void DrawableRegion::
 set_clear_active(int n, bool clear_active) {
   nassertv((n >= 0)&&(n < RTP_COUNT));
   _clear_active[n] = clear_active;
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -296,6 +306,7 @@ disable_clears() {
   for (int i=0; i<RTP_COUNT; i++) {
     _clear_active[i] = false;
   }
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,6 +323,66 @@ is_any_clear_active() const {
     if (_clear_active[i]) return true;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::set_pixel_zoom
+//       Access: Published
+//  Description: Sets the amount by which the pixels of the region are
+//               scaled internally when filling the image interally.
+//               Setting this number larger makes the pixels blockier,
+//               but may make the rendering faster, particularly for
+//               software renderers.  Setting this number to 2.0
+//               reduces the number of pixels that have to be filled
+//               by the renderer by a factor of 2.0.  It doesn't make
+//               sense to set this lower than 1.0.
+//
+//               It is possible to set this on either individual
+//               DisplayRegions or on overall GraphicsWindows, but you
+//               will get better performance for setting it on the
+//               window rather than its individual DisplayRegions.
+//               Also, you may not set it on a DisplayRegion that
+//               doesn't have both clear_color() and clear_depth()
+//               enabled.
+//
+//               This property is only supported on renderers for
+//               which it is particularly useful--currently, this is
+//               the tinydisplay software renderer.  Other kinds of
+//               renderers allow you to set this property, but ignore
+//               it.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+set_pixel_zoom(float pixel_zoom) {
+  _pixel_zoom = pixel_zoom;
+  update_pixel_factor();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_pixel_zoom
+//       Access: Published
+//  Description: Returns the value set by set_pixel_zoom(), regardless
+//               of whether it is being respected or not.  Also see
+//               get_pixel_factor().
+////////////////////////////////////////////////////////////////////
+INLINE float DrawableRegion::
+get_pixel_zoom() const {
+  return _pixel_zoom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::get_pixel_factor
+//       Access: Published
+//  Description: Returns the amount by which the height and width of
+//               the region will be scaled internally, based on the
+//               zoom factor set by set_pixel_zoom().  This will
+//               return 1.0 if the pixel_zoom was not set or if it is
+//               not being respected (for instance, because the
+//               underlying renderer doesn't support it--see
+//               supports_pixel_zoom).
+////////////////////////////////////////////////////////////////////
+INLINE float DrawableRegion::
+get_pixel_factor() const {
+  return _pixel_factor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,4 +408,24 @@ get_screenshot_buffer_type() const {
 INLINE int DrawableRegion::
 get_draw_buffer_type() const {
   return _draw_buffer_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::update_pixel_factor
+//       Access: Protected
+//  Description: Internal function to reset pixel_factor after it may
+//               have changed.
+////////////////////////////////////////////////////////////////////
+INLINE void DrawableRegion::
+update_pixel_factor() {
+  float new_pixel_factor;
+  if (supports_pixel_zoom()) {
+    new_pixel_factor = 1.0f / sqrt(max(_pixel_zoom, 1.0f));
+  } else {
+    new_pixel_factor = 1.0f;
+  }
+  if (new_pixel_factor != _pixel_factor) {
+    _pixel_factor = new_pixel_factor;
+    pixel_factor_changed();
+  }
 }

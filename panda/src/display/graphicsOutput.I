@@ -139,8 +139,8 @@ get_rtm_mode(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_x_size
 //       Access: Published
-//  Description: Returns the width of the graphics frame buffer, if it
-//               is known.  In certain cases (e.g. fullscreen
+//  Description: Returns the visible width of the window or buffer, if
+//               it is known.  In certain cases (e.g. fullscreen
 //               windows), the size may not be known until after the
 //               object has been fully created.  Check has_size()
 //               first.
@@ -158,8 +158,8 @@ get_x_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_y_size
 //       Access: Published
-//  Description: Returns the height of the graphics frame buffer, if it
-//               is known.  In certain cases (e.g. fullscreen
+//  Description: Returns the visible height of the window or buffer,
+//               if it is known.  In certain cases (e.g. fullscreen
 //               windows), the size may not be known until after the
 //               object has been fully created.  Check has_size()
 //               first.
@@ -172,6 +172,32 @@ get_x_size() const {
 INLINE int GraphicsOutput::
 get_y_size() const {
   return _y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_fb_x_size
+//       Access: Published
+//  Description: Returns the internal width of the window or buffer.
+//               This is almost always the same as get_x_size(),
+//               except when a pixel_zoom is in effect--see
+//               set_pixel_zoom().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_fb_x_size() const {
+  return max(int(_x_size * get_pixel_factor()), 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_fb_y_size
+//       Access: Published
+//  Description: Returns the internal height of the window or buffer.
+//               This is almost always the same as get_y_size(),
+//               except when a pixel_zoom is in effect--see
+//               set_pixel_zoom().
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsOutput::
+get_fb_y_size() const {
+  return max(int(_y_size * get_pixel_factor()), 1);
 }
 
 ////////////////////////////////////////////////////////////////////

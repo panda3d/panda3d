@@ -108,6 +108,8 @@ PUBLISHED:
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
+  INLINE int get_fb_x_size() const;
+  INLINE int get_fb_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
 
@@ -214,7 +216,7 @@ public:
   INLINE PStatCollector &get_draw_window_pcollector();
 
 protected:
-
+  virtual void pixel_factor_changed();
   void prepare_for_deletion();
   void copy_to_textures();
   

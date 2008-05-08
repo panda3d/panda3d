@@ -9,7 +9,7 @@
     register unsigned int rinc, ginc, binc;
 #endif
 #ifdef INTERP_Z
-    register unsigned short *pz;
+    register ZPOINT *pz;
     int zinc;
     register int z, zz;
 #endif

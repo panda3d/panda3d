@@ -71,6 +71,7 @@ GraphicsWindow(GraphicsPipe *pipe,
   request_properties(win_prop);
 
   _window_event = "window-event";
+  set_pixel_zoom(pixel_zoom);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,6 +29,25 @@ DrawableRegion::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool DrawableRegion::
+supports_pixel_zoom() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::get_renderbuffer_type
 //       Access: Static, Published
 //  Description: Returns the RenderBuffer::Type that corresponds
@@ -56,4 +75,13 @@ get_renderbuffer_type(int rtp) {
     display_cat.error() << "DrawableRegion::get_renderbuffer_type unexpected case!\n";
     return 0;
   };
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DrawableRegion::pixel_factor_changed
+//       Access: Published, Virtual
+//  Description: Called internally when the pixel factor changes.
+////////////////////////////////////////////////////////////////////
+void DrawableRegion::
+pixel_factor_changed() {
 }

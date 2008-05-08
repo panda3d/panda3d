@@ -4,13 +4,13 @@
 void gl_eval_viewport(GLContext * c)
 {
     GLViewport *v;
-    float zsize = (1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
+    float zsize = ((long long)1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
 
     v = &c->viewport;
 
     v->trans.X = ((v->xsize - 0.5f) / 2.0f) + v->xmin;
     v->trans.Y = ((v->ysize - 0.5f) / 2.0f) + v->ymin;
-    v->trans.Z = ((zsize - 0.5f) / 2.0f) + ((1 << ZB_POINT_Z_FRAC_BITS)) / 2;
+    v->trans.Z = ((zsize - 0.5f) / 2.0f);
 
     v->scale.X = (v->xsize - 0.5f) / 2.0f;
     v->scale.Y = -(v->ysize - 0.5f) / 2.0f;

@@ -46,6 +46,7 @@ public:
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   virtual void begin_flip();
+  virtual bool supports_pixel_zoom() const;
 
 protected:
   virtual void close_window();

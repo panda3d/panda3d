@@ -12,7 +12,7 @@
 ZBuffer *ZB_open(int xsize, int ysize, int mode,
 		 int nb_colors,
 		 unsigned char *color_indexes,
-		 int *color_table,
+		 unsigned int *color_table,
 		 void *frame_buffer)
 {
     ZBuffer *zb;
@@ -49,9 +49,9 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	goto error;
     }
 
-    size = zb->xsize * zb->ysize * sizeof(unsigned short);
+    size = zb->xsize * zb->ysize * sizeof(ZPOINT);
 
-    zb->zbuf = (unsigned short *)gl_malloc(size);
+    zb->zbuf = (ZPOINT *)gl_malloc(size);
     if (zb->zbuf == NULL)
 	goto error;
 
@@ -100,9 +100,9 @@ void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
     zb->ysize = ysize;
     zb->linesize = (xsize * PSZB + 3) & ~3;
 
-    size = zb->xsize * zb->ysize * sizeof(unsigned short);
+    size = zb->xsize * zb->ysize * sizeof(ZPOINT);
     gl_free(zb->zbuf);
-    zb->zbuf = (unsigned short *)gl_malloc(size);
+    zb->zbuf = (ZPOINT *)gl_malloc(size);
 
     if (zb->frame_buffer_allocated)
 	gl_free(zb->pbuf);
@@ -142,11 +142,11 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
                                      void *buf, int linesize) 
 {
     PIXEL *q;
-    unsigned short *p, *p1;
+    unsigned char *p, *p1;
     int y, n;
 
     q = zb->pbuf;
-    p1 = (unsigned short *) buf;
+    p1 = (unsigned char *) buf;
 
     for (y = 0; y < zb->ysize; y++) {
 	p = p1;
@@ -159,7 +159,7 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
 	    q += 4;
 	    p += 4;
 	} while (--n > 0);
-	p1 = (unsigned short *)((char *)p1 + linesize);
+	p1 = (unsigned char *)((char *)p1 + linesize);
     }
 }
 
@@ -222,7 +222,7 @@ void memset_s(void *adr, int val, int count)
 {
     int i, n, v;
     unsigned int *p;
-    unsigned short *q;
+    unsigned char *q;
 
     p = (unsigned int *)adr;
     v = val | (val << 16);
@@ -236,7 +236,7 @@ void memset_s(void *adr, int val, int count)
 	p += 4;
     }
 
-    q = (unsigned short *) p;
+    q = (unsigned char *) p;
     n = count & 7;
     for (i = 0; i < n; i++)
 	*q++ = val;
@@ -294,15 +294,15 @@ void memset_RGB24(void *adr,int r, int v, int b,long count)
     }
 }
 
-void ZB_clear(ZBuffer * zb, int clear_z, int z,
-	      int clear_color, int r, int g, int b, int a)
+void ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
+	      int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
-  int color;
+  unsigned int color;
   int y;
   PIXEL *pp;
   
   if (clear_z) {
-    memset_s(zb->zbuf, z, zb->xsize * zb->ysize);
+    memset(zb->zbuf, 0, zb->xsize * zb->ysize * sizeof(ZPOINT));
   }
   if (clear_color) {
     color = RGBA_TO_PIXEL(r, g, b, a);
@@ -314,20 +314,19 @@ void ZB_clear(ZBuffer * zb, int clear_z, int z,
   }
 }
 
-void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
-                       int clear_color, int r, int g, int b, int a,
+void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
+                       int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize)
 {
-  int color;
+  unsigned int color;
   int y;
   PIXEL *pp;
-  unsigned short *zz;
-  int ytop;
+  ZPOINT *zz;
 
   if (clear_z) {
     zz = zb->zbuf + xmin + ymin * zb->xsize;
     for (y = 0; y < ysize; ++y) {
-      memset_s(zz, z, xsize);
+      memset(zz, 0, xsize * sizeof(ZPOINT));
       zz += zb->xsize;
     }
   }
@@ -344,11 +343,11 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
 #define ZB_ST_FRAC_HIGH (1 << ZB_POINT_ST_FRAC_BITS)
 #define ZB_ST_FRAC_MASK (ZB_ST_FRAC_HIGH - 1)
 
-PIXEL lookup_texture_bilinear(ZTexture *texture, int s, int t)
+PIXEL lookup_texture_bilinear(ZTexture *texture, unsigned int s, unsigned int t)
 {
   PIXEL p1, p2, p3, p4;
-  int sf, tf;
-  int r, g, b, a;
+  unsigned int sf, tf;
+  unsigned int r, g, b, a;
 
   p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t);
   p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s + ZB_ST_FRAC_HIGH, t);

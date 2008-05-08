@@ -504,6 +504,8 @@ TinyGraphicsStateGuardian(GraphicsPipe *pipe,
   GraphicsStateGuardian(CS_yup_right, pipe),
   _textures_lru("textures_lru", td_texture_ram)
 {
+  _current_frame_buffer = NULL;
+  _aux_frame_buffer = NULL;
   _c = NULL;
   _vertices = NULL;
   _vertices_size = 0;
@@ -565,6 +567,11 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 free_pointers() {
+  if (_aux_frame_buffer != (ZBuffer *)NULL) {
+    ZB_close(_aux_frame_buffer);
+    _aux_frame_buffer = NULL;
+  }
+
   if (_vertices != (GLVertex *)NULL) {
     PANDA_FREE_ARRAY(_vertices);
     _vertices = NULL;
@@ -678,6 +685,31 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 
   int xmin, ymin, xsize, ysize;
   dr->get_region_pixels_i(xmin, ymin, xsize, ysize);
+
+  float pixel_factor = _current_display_region->get_pixel_factor();
+  if (pixel_factor != 1.0) {
+    // Render into an aux buffer, and zoom it up into the main
+    // frame buffer later.
+    xmin = 0;
+    ymin = 0;
+    xsize = int(xsize * pixel_factor);
+    ysize = int(ysize * pixel_factor);
+    if (_aux_frame_buffer == (ZBuffer *)NULL) {
+      // We add 3 to xsize, since ZB_open may resize the frame buffer
+      // down by up to 3 pixels to make it fit within the
+      // word-alignment rule.
+      _aux_frame_buffer = ZB_open(xsize + 3, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
+    } else if (_aux_frame_buffer->xsize < xsize || _aux_frame_buffer->ysize < ysize) {
+      ZB_resize(_aux_frame_buffer, NULL, 
+                max(_aux_frame_buffer->xsize, xsize) + 3,
+                max(_aux_frame_buffer->ysize, ysize));
+    }
+    _c->zb = _aux_frame_buffer;
+
+  } else {
+    // Render directly into the main frame buffer.
+    _c->zb = _current_frame_buffer;
+  }
 
   _c->viewport.xmin = xmin;
   _c->viewport.ymin = ymin;
@@ -807,6 +839,39 @@ begin_scene() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 end_scene() {
+  if (_c->zb == _aux_frame_buffer) {
+    // Copy the aux frame buffer into the main scene now, zooming it
+    // up to the appropriate size.
+    int xmin, ymin, xsize, ysize;
+    _current_display_region->get_region_pixels_i(xmin, ymin, xsize, ysize);
+    float pixel_factor = _current_display_region->get_pixel_factor();
+
+    int fb_xsize = int(xsize * pixel_factor);
+    int fb_ysize = int(ysize * pixel_factor);
+
+    int tyinc = _current_frame_buffer->linesize / PSZB;
+    int fyinc = _aux_frame_buffer->linesize / PSZB;
+
+    int fyt = 0;
+    for (int ty = 0; ty < ysize; ++ty) {
+      int fy = fyt / ysize;
+      fyt += fb_ysize;
+
+      PIXEL *tp = _current_frame_buffer->pbuf + xmin + (ymin + ty) * tyinc;
+      PIXEL *fp = _aux_frame_buffer->pbuf + fy * fyinc;
+      ZPOINT *tz = _current_frame_buffer->zbuf + xmin + (ymin + ty) * _current_frame_buffer->xsize;
+      ZPOINT *fz = _aux_frame_buffer->zbuf + fy * _aux_frame_buffer->xsize;
+      int fxt = 0;
+      for (int tx = 0; tx < xsize; ++tx) {
+        int fx = fxt / xsize;
+        fxt += fb_xsize;
+
+        tp[tx] = fp[fx];
+        tz[tx] = fz[fx];
+      }
+    }
+    _c->zb = _current_frame_buffer;
+  }
   GraphicsStateGuardian::end_scene();
 }
 

@@ -48,6 +48,7 @@ TinyWinGraphicsWindow(GraphicsPipe *pipe,
 {
   _frame_buffer = NULL;
   _hdc = (HDC)0;
+  update_pixel_factor();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,15 +134,44 @@ begin_flip() {
   HDC bmdc = CreateCompatibleDC(_hdc);
   SelectObject(bmdc, bm);
 
-  SetDIBits(_hdc, bm, 0, _frame_buffer->ysize, _frame_buffer->pbuf,
+  int fb_xsize = get_fb_x_size();
+  int fb_ysize = get_fb_y_size();
+  int fb_ytop = _frame_buffer->ysize - fb_ysize;
+
+  SetDIBits(_hdc, bm, fb_ytop, fb_ysize, _frame_buffer->pbuf,
             &_bitmap_info, DIB_RGB_COLORS);
 
-  BitBlt(_hdc, 0, 0, _frame_buffer->xsize, _frame_buffer->ysize,
-         bmdc, 0, 0, SRCCOPY);
-
+  if (fb_xsize == _frame_buffer->xsize) {
+    BitBlt(_hdc, 0, 0, fb_xsize, fb_ysize,
+           bmdc, 0, 0, SRCCOPY);
+  } else {
+    StretchBlt(_hdc, 0, 0, _frame_buffer->xsize, _frame_buffer->ysize,
+               bmdc, 0, 0,fb_xsize, fb_ysize,
+               SRCCOPY);
+  }
+    
   DeleteDC(bmdc);
   DeleteObject(bm);
   GdiFlush();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyWinGraphicsWindow::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool TinyWinGraphicsWindow::
+supports_pixel_zoom() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

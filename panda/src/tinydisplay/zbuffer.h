@@ -7,13 +7,9 @@
 
 #include "zfeatures.h"
 
+typedef unsigned int ZPOINT;
 #define ZB_Z_BITS 16
-
 #define ZB_POINT_Z_FRAC_BITS 14
-
-/* The number of bits for lookup for S and T texture coords.  This is
-   based on a fixed texture size of 256x256. */
-#define ZB_POINT_ST_BITS 8
 
 /* The number of fractional bits below the S and T texture coords.
    The more we have, the more precise the texel calculation will be
@@ -88,7 +84,7 @@ typedef unsigned int PIXEL;
 
 typedef struct {
   PIXEL *pixmap;
-  int s_mask, t_mask, t_shift;
+  unsigned int s_mask, t_mask, t_shift;
 } ZTexture;
 
 typedef struct {
@@ -96,7 +92,7 @@ typedef struct {
     int linesize; /* line size, in bytes */
     int mode;
     
-    unsigned short *zbuf;
+    ZPOINT *zbuf;
     PIXEL *pbuf;
     int frame_buffer_allocated;
     
@@ -120,20 +116,20 @@ typedef struct {
 ZBuffer *ZB_open(int xsize,int ysize,int mode,
 		 int nb_colors,
 		 unsigned char *color_indexes,
-		 int *color_table,
+		 unsigned int *color_table,
 		 void *frame_buffer);
 
 
 void ZB_close(ZBuffer *zb);
 
 void ZB_resize(ZBuffer *zb,void *frame_buffer,int xsize,int ysize);
-void ZB_clear(ZBuffer *zb,int clear_z,int z,
-	      int clear_color,int r,int g,int b,int a);
-void ZB_clear_viewport(ZBuffer * zb, int clear_z, int z,
-                       int clear_color, int r, int g, int b, int a,
+void ZB_clear(ZBuffer *zb, int clear_z, ZPOINT z,
+	      int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
+void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
+                       int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize);
 
-PIXEL lookup_texture_bilinear(ZTexture *texture, int s, int t);
+PIXEL lookup_texture_bilinear(ZTexture *texture, unsigned int s, unsigned int t);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);

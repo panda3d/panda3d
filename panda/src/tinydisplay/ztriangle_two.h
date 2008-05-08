@@ -276,7 +276,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register unsigned short *pz;                        \
+    register ZPOINT *pz;                        \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -294,8 +294,8 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(int) ss;                                     \
-        t=(int) tt;                                     \
+        s=(unsigned int) ss;                                     \
+        t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
@@ -319,8 +319,8 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(int) ss;                                       \
-      t=(int) tt;                                       \
+      s=(unsigned int) ss;                                       \
+      t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
     }                                                   \
@@ -394,7 +394,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register unsigned short *pz;                        \
+    register ZPOINT *pz;                        \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -417,8 +417,8 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(int) ss;                                     \
-        t=(int) tt;                                     \
+        s=(unsigned int) ss;                                     \
+        t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
@@ -442,8 +442,8 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(int) ss;                                       \
-      t=(int) tt;                                       \
+      s=(unsigned int) ss;                                       \
+      t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
     }                                                   \
@@ -529,7 +529,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register unsigned short *pz;                        \
+    register ZPOINT *pz;                        \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -552,8 +552,8 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(int) ss;                                     \
-        t=(int) tt;                                     \
+        s=(unsigned int) ss;                                     \
+        t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         fz+=fndzdx;                                     \
@@ -577,8 +577,8 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(int) ss;                                       \
-      t=(int) tt;                                       \
+      s=(unsigned int) ss;                                       \
+      t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
     }                                                   \

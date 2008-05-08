@@ -88,6 +88,8 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableInt stencil_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt multisamples;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt back_buffers;
 
+extern EXPCL_PANDA_DISPLAY ConfigVariableDouble pixel_zoom;
+
 extern EXPCL_PANDA_DISPLAY ConfigVariableDouble background_color;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_video;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool basic_shaders_only;
