@@ -190,6 +190,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_stencil_wrap = false;
   _supports_two_sided_stencil = false;
 
+  _maximum_simultaneuous_render_targets = 1;
+
   _supported_geom_rendering = 0;
 
   // If this is true, then we can apply a color and/or color scale by

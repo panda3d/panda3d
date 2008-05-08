@@ -530,6 +530,17 @@ get_supports_two_sided_stencil() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_maximum_simultaneuous_render_targets
+//       Access: Published
+//  Description: Returns the maximum simultaneuous render targets 
+//               supported.
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_maximum_simultaneuous_render_targets() const {
+  return _maximum_simultaneuous_render_targets;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_shader_model
 //       Access: Published
 //  Description: Returns the ShaderModel

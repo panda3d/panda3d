@@ -840,6 +840,7 @@ reset() {
     GLint max_draw_buffers = 0;
     GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_draw_buffers = max_draw_buffers;
+    _maximum_simultaneuous_render_targets = max_draw_buffers;
   }
 
   _supports_occlusion_query = false;
