@@ -278,6 +278,27 @@ get_average_frame_rate(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_max_frame_duration
+//       Access: Published
+//  Description: Returns the maximum frame duration over the last
+//               get_average_frame_rate_interval() seconds.
+////////////////////////////////////////////////////////////////////
+double ClockObject::
+get_max_frame_duration(Thread *current_thread) const {
+  CDStageReader cdata(_cycler, 0, current_thread);
+  double max_duration = 0.0;
+  double cur_duration = 0.0;
+  size_t i;
+  for (i = 0; i < _ticks.size() - 1; i++) {
+    cur_duration = _ticks[i + 1] - _ticks[i];
+    if (cur_duration > max_duration) {
+      max_duration = cur_duration;
+    }
+  }
+  return max_duration;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::calc_frame_time_deviation
 //       Access: Published
 //  Description: Returns the standard deviation of the frame times of
