@@ -320,7 +320,10 @@ get_next_token0() {
   if (token._token == '#') {
     // Stringify.
     token = internal_get_next_token();
-    if (token._token == SIMPLE_IDENTIFIER || token._token == STRING) {
+    if (token._token == SIMPLE_IDENTIFIER || 
+        token._token == INTEGER ||
+        token._token == REAL ||
+        token._token == STRING) {
       token._token = STRING;
     } else {
       // Stringify nothing.
@@ -370,7 +373,9 @@ get_next_token0() {
         // The token-pasting operator creates one continuous
         // identifier across whitespace.
         token = internal_get_next_token();
-        if (token._token == SIMPLE_IDENTIFIER) {
+        if (token._token == SIMPLE_IDENTIFIER ||
+            token._token == INTEGER ||
+            token._token == REAL) {
           name += token._lval.str;
           ident->_names.back().append_name(token._lval.str);
 
