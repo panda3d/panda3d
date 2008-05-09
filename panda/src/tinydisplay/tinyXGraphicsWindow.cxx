@@ -84,6 +84,7 @@ TinyXGraphicsWindow(GraphicsPipe *pipe,
 
   _frame_buffer = NULL;
   _ximage = NULL;
+  update_pixel_factor();
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");

@@ -7,7 +7,7 @@
 
 #include "zfeatures.h"
 
-typedef unsigned int ZPOINT;
+typedef unsigned short ZPOINT;
 #define ZB_Z_BITS 16
 #define ZB_POINT_Z_FRAC_BITS 14
 
