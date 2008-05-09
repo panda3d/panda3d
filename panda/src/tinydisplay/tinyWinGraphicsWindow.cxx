@@ -145,6 +145,7 @@ begin_flip() {
     BitBlt(_hdc, 0, 0, fb_xsize, fb_ysize,
            bmdc, 0, 0, SRCCOPY);
   } else {
+    //    SetStretchBltMode(_hdc, HALFTONE);
     StretchBlt(_hdc, 0, 0, _frame_buffer->xsize, _frame_buffer->ysize,
                bmdc, 0, 0,fb_xsize, fb_ysize,
                SRCCOPY);
