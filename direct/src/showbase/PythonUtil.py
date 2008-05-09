@@ -28,7 +28,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
-'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index', ]
+'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
+'pandaBreak','pandaTrace']
 
 import types
 import string
@@ -3313,6 +3314,58 @@ def recordFunctorCreationStacks():
             Functor = recordCreationStackStr(Functor)
             Functor._functorCreationStacksRecorded = True
             Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
+
+globalPdb = None
+
+traceCalled = False
+
+def setupPdb():
+    import pdb;
+    class pandaPdb(pdb.Pdb):
+        def stop_here(self, frame):
+            global traceCalled
+            if(traceCalled):
+                result = pdb.Pdb.stop_here(self, frame)
+                if(result == True):
+                    traceCalled = False
+                return result
+            if frame is self.stopframe:
+                return True
+            return False
+    global globalPdb
+    globalPdb = pandaPdb()
+    globalPdb.reset()
+    sys.settrace(globalPdb.trace_dispatch)
+    
+def pandaTrace():
+    if __dev__:
+        if not globalPdb:
+            setupPdb()
+        global traceCalled
+        globalPdb.set_trace(sys._getframe().f_back)
+        traceCalled = True
+
+packageMap = {
+    "toontown":"$TOONTOWN",
+    "direct":"$DIRECT",
+    "otp":"$OTP",
+    "pirates":"$PIRATES",
+}
+    
+
+#assuming . dereferncing for nice linking to imports
+def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
+    if __dev__:
+        from pandac.PandaModules import Filename
+        if not globalPdb:
+            setupPdb()
+        dirs = dotpath.split(".")
+        root = Filename.expandFrom(packageMap[dirs[0]]).toOsSpecific()
+        filename = root + "\\src"
+        for d in dirs[1:]:
+            filename="%s\\%s"%(filename,d)
+        globalPdb.set_break(filename+".py", linenum, temporary, cond)
+            
 
 import __builtin__
 __builtin__.Functor = Functor
