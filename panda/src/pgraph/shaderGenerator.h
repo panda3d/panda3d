@@ -129,7 +129,6 @@ protected:
   bool _subsume_alpha_test;
   bool _disable_alpha_write;
   
-  bool _need_clipspace_pos;
   bool _need_material_props;
   
   void analyze_renderstate(const RenderState *rs);
