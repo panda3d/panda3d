@@ -117,7 +117,7 @@ bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
   MutexHolder holder(_lock);
 
-  remove_region_from(_current_regions, region);
+  remove_region_from(_regions, region);
   if (region == _preferred_region) {
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
       exit_region(_preferred_region, MouseWatcherParameter());
@@ -205,8 +205,8 @@ remove_group(MouseWatcherGroup *group) {
 
   Regions only_a, only_b, both;
   intersect_regions(only_a, only_b, both,
-                    _current_regions, group->_regions);
-  _current_regions.swap(only_a);
+                    _regions, group->_regions);
+  _regions.swap(only_a);
 
   if (has_region_in(both, _preferred_region)) {
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -761,8 +761,14 @@ clear_current_regions() {
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      old_region->exit_region(param);
-      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      without_region(old_region, param);
+
+      if (!_enter_multiple)
+      {
+        old_region->exit_region(param);
+        throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      }
+	  
       ++old_ri;
     }
     
