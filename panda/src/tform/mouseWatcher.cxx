@@ -1402,12 +1402,16 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
     if (_display_region != (DisplayRegion *)NULL) {
       // If we've got a display region, constrain the mouse to it.
-      int xo, yo, width, height;
       DisplayRegionPipelineReader dr_reader(_display_region, current_thread);
-      dr_reader.get_region_pixels_i(xo, yo, width, height);
+      float left, right, bottom, top;
+      dr_reader.get_dimensions(left, right, bottom, top);
 
-      if (p[0] < xo || p[0] >= xo + width || 
-          p[1] < yo || p[1] >= yo + height) {
+      // Need to translate this into DisplayRegion [0, 1] space
+      float x = (f[0] + 1.0f) / 2.0f;
+      float y = (f[1] + 1.0f) / 2.0f;
+      
+      if (x < left || x >= right || 
+          y < bottom || y >= top) {
         // The mouse is outside the display region, even though it's
         // within the window.  This is considered not having a mouse.
         set_no_mouse();
@@ -1417,22 +1421,20 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
       } else {
         // The mouse is within the display region; rescale it.
-        float left, right, bottom, top;
-        dr_reader.get_dimensions(left, right, bottom, top);
 
-        // Need to translate this into DisplayRegion [0, 1] space
-        float x = (f[0] + 1.0f) / 2.0f;
         // Scale in DR space
         float xp = (x - left) / (right - left);
         // Translate back into [-1, 1] space
         float xpp = (xp * 2.0f) - 1.0f;
 
-        float y = (f[1] + 1.0f) / 2.0f;
         float yp = (y - bottom) / (top - bottom);
         float ypp = (yp * 2.0f) - 1.0f;
 
+        int xo, yo, w, h;
+        dr_reader.get_region_pixels_i(xo, yo, w, h);
+
         LVecBase2f new_f(xpp, ypp);
-        LVecBase2f new_p(p[0] - xo, p[1] - xo);
+        LVecBase2f new_p(p[0] - xo, p[1] - yo);
 
         set_mouse(new_f, new_p);
       }
