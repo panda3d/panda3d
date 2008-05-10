@@ -142,11 +142,11 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
                                      void *buf, int linesize) 
 {
     PIXEL *q;
-    unsigned char *p, *p1;
+    unsigned short *p, *p1;
     int y, n;
 
     q = zb->pbuf;
-    p1 = (unsigned char *) buf;
+    p1 = (unsigned short *) buf;
 
     for (y = 0; y < zb->ysize; y++) {
 	p = p1;
@@ -159,7 +159,7 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
 	    q += 4;
 	    p += 4;
 	} while (--n > 0);
-	p1 = (unsigned char *)((char *)p1 + linesize);
+	p1 = (unsigned short *)((char *)p1 + linesize);
     }
 }
 
@@ -222,7 +222,7 @@ void memset_s(void *adr, int val, int count)
 {
     int i, n, v;
     unsigned int *p;
-    unsigned char *q;
+    unsigned short *q;
 
     p = (unsigned int *)adr;
     v = val | (val << 16);
@@ -236,7 +236,7 @@ void memset_s(void *adr, int val, int count)
 	p += 4;
     }
 
-    q = (unsigned char *) p;
+    q = (unsigned short *) p;
     n = count & 7;
     for (i = 0; i < n; i++)
 	*q++ = val;
