@@ -9,9 +9,6 @@ static void FNAME(white_untextured) (ZBuffer *zb,
 
 #define DRAW_INIT()                             \
   {                                             \
-    if (!ACMP(zb, p2->a)) {                     \
-      return;                                   \
-    }                                           \
   }
  
 #define PUT_PIXEL(_a)                                   \
