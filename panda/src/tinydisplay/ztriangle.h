@@ -69,8 +69,6 @@
     return;
   fz = 1.0f / fz;
 
-  EARLY_OUT_FZ();
-
   fdx1 *= fz;
   fdy1 *= fz;
   fdx2 *= fz;

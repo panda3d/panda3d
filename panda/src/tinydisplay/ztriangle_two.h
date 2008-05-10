@@ -7,10 +7,6 @@ static void FNAME(white_untextured) (ZBuffer *zb,
   {						\
   }
 
-#define EARLY_OUT_FZ() 				\
-  {						\
-  }
-
 #define DRAW_INIT()                             \
   {                                             \
   }
@@ -37,10 +33,6 @@ static void FNAME(flat_untextured) (ZBuffer *zb,
 #define INTERP_Z
 
 #define EARLY_OUT() 				\
-  {						\
-  }
-
-#define EARLY_OUT_FZ() 				\
   {						\
   }
 
@@ -92,10 +84,6 @@ static void FNAME(smooth_untextured) (ZBuffer *zb,
       return;                                           \
     }                                                   \
   }
-
-#define EARLY_OUT_FZ() 				\
-  {						\
-  }
   
 #define DRAW_INIT() 				\
   {						\
@@ -132,10 +120,6 @@ static void FNAME(white_textured) (ZBuffer *zb,
   {						\
   }
 
-#define EARLY_OUT_FZ() 				\
-  {						\
-  }
-
 #define DRAW_INIT()				\
   {						\
     texture_levels = zb->current_texture;       \
@@ -169,10 +153,6 @@ static void FNAME(flat_textured) (ZBuffer *zb,
 #define INTERP_ST
 
 #define EARLY_OUT() 				\
-  {						\
-  }
-
-#define EARLY_OUT_FZ() 				\
   {						\
   }
 
@@ -243,10 +223,6 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
     }                                                   \
   }
 
-#define EARLY_OUT_FZ() 				\
-  {						\
-  }
-
 #define DRAW_INIT()                             \
   {                                             \
     texture_levels = zb->current_texture;       \
@@ -301,16 +277,6 @@ static void FNAME(white_perspective) (ZBuffer *zb,
 
 #define EARLY_OUT() 				\
   {						\
-  }
-
-#define EARLY_OUT_FZ()                                                  \
-  {                                                                     \
-    if (fz > 0.001 || fz < -.001) {                                     \
-      /* This triangle is small enough not to worry about perspective   \
-         correction. */                                                 \
-      FNAME(white_textured)(zb, p0, p1, p2);                            \
-      return;                                                           \
-    }                                                                   \
   }
 
 #define DRAW_INIT()				\
@@ -419,16 +385,6 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
 
 #define EARLY_OUT() 				\
   {						\
-  }
-
-#define EARLY_OUT_FZ()                                                  \
-  {                                                                     \
-    if (fz > 0.001 || fz < -.001) {                                     \
-      /* This triangle is small enough not to worry about perspective   \
-         correction. */                                                 \
-      FNAME(flat_textured)(zb, p0, p1, p2);                             \
-      return;                                                           \
-    }                                                                   \
   }
 
 #define DRAW_INIT() 				\
@@ -570,16 +526,6 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
       FNAME(flat_perspective)(zb, p0, p1, p2);          \
       return;                                           \
     }                                                   \
-  }
-
-#define EARLY_OUT_FZ()                                                  \
-  {                                                                     \
-    if (fz > 0.001 || fz < -.001) {                                     \
-      /* This triangle is small enough not to worry about perspective   \
-         correction. */                                                 \
-      FNAME(smooth_textured)(zb, p0, p1, p2);                           \
-      return;                                                           \
-    }                                                                   \
   }
 
 #define DRAW_INIT() 				\
