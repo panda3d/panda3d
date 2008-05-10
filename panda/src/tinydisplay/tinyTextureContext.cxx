@@ -40,10 +40,14 @@ void TinyTextureContext::
 evict_lru() {
   dequeue_lru();
 
-  if (_gltex->pixmap != NULL) {
-    gl_free(_gltex->pixmap);
-    _gltex->pixmap = NULL;
+  for (int i = 0; i < _gltex->num_levels; ++i) {
+    gl_free(_gltex->levels[i].pixmap);
   }
+  if (_gltex->levels != NULL) {
+    gl_free(_gltex->levels);
+    _gltex->levels = NULL;
+  }
+  _gltex->num_levels = 0;
 
   set_resident(false);
 }

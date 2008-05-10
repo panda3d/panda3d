@@ -1,5 +1,34 @@
-void FNAME(ZB_fillTriangleFlat) (ZBuffer *zb,
-                                 ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(white_untextured) (ZBuffer *zb,
+                                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+{
+#define INTERP_Z
+
+#define EARLY_OUT() 				\
+  {						\
+  }
+
+#define DRAW_INIT()                             \
+  {                                             \
+    if (!ACMP(zb, p2->a)) {                     \
+      return;                                   \
+    }                                           \
+  }
+ 
+#define PUT_PIXEL(_a)                                   \
+  {                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                       \
+    if (ZCMP(pz[_a], zz)) {                             \
+      STORE_PIX(pp[_a], 0xffffffffUL, 0xffffUL, 0xffffUL, 0xffffUL, 0xffffUL);     \
+      STORE_Z(pz[_a], zz);                              \
+    }                                                   \
+    z+=dzdx;                                            \
+  }
+
+#include "ztriangle.h"
+}
+
+static void FNAME(flat_untextured) (ZBuffer *zb,
+                                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   int color;
   int or0, og0, ob0, oa0;
@@ -40,8 +69,8 @@ void FNAME(ZB_fillTriangleFlat) (ZBuffer *zb,
  * The code below is very tricky :)
  */
 
-void FNAME(ZB_fillTriangleSmooth) (ZBuffer *zb,
-                                   ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(smooth_untextured) (ZBuffer *zb,
+                                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
 #define INTERP_Z
 #define INTERP_RGB
@@ -54,7 +83,7 @@ void FNAME(ZB_fillTriangleSmooth) (ZBuffer *zb,
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      FNAME(ZB_fillTriangleFlat)(zb, p0, p1, p2);       \
+      FNAME(flat_untextured)(zb, p0, p1, p2);       \
       return;                                           \
     }                                                   \
   }
@@ -82,10 +111,10 @@ void FNAME(ZB_fillTriangleSmooth) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
-                                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(white_textured) (ZBuffer *zb,
+                                   ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -96,14 +125,14 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                           \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                           \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -117,10 +146,10 @@ void FNAME(ZB_fillTriangleMapping) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
-                                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(flat_textured) (ZBuffer *zb,
+                                  ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
   int or0, og0, ob0, oa0;
 
 #define INTERP_Z
@@ -132,7 +161,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
     or0 = p2->r;                                \
     og0 = p2->g;                                \
     ob0 = p2->b;                                \
@@ -143,7 +172,7 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
   {                                                             \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
       int a = oa0 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
@@ -166,10 +195,10 @@ void FNAME(ZB_fillTriangleMappingFlat) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
-                                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(smooth_textured) (ZBuffer *zb,
+                                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -185,24 +214,24 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
       /* It's really a flat-shaded triangle. */                 \
       if (c0 == 0xffffffff) {                                   \
         /* Actually, it's a white triangle. */                  \
-        FNAME(ZB_fillTriangleMapping)(zb, p0, p1, p2);          \
+        FNAME(white_textured)(zb, p0, p1, p2);          \
         return;                                                 \
       }                                                         \
-      FNAME(ZB_fillTriangleMappingFlat)(zb, p0, p1, p2);        \
+      FNAME(flat_textured)(zb, p0, p1, p2);        \
       return;                                                   \
     }                                                           \
   }
 
 #define DRAW_INIT()                             \
   {                                             \
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
   }
 
 #define PUT_PIXEL(_a)                                           \
   {                                                             \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
       int a = oa1 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
@@ -234,10 +263,10 @@ void FNAME(ZB_fillTriangleMappingSmooth) (ZBuffer *zb,
  * We use the gradient method to make less divisions.
  * TODO: pipeline the division
  */
-void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
-                                               ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(white_perspective) (ZBuffer *zb,
+                                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -251,7 +280,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -263,7 +292,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                           \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                           \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -298,6 +327,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
         t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
+        CALC_MIPMAP_LEVEL; \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -323,6 +353,7 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
       t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
+      CALC_MIPMAP_LEVEL; \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \
@@ -339,10 +370,10 @@ void FNAME(ZB_fillTriangleMappingPerspective) (ZBuffer *zb,
  * Flat shaded triangle, with perspective-correct mapping.
  */
 
-void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
-                                                   ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(flat_perspective) (ZBuffer *zb,
+                                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
   int or0, og0, ob0, oa0;
 
@@ -357,7 +388,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
 
 #define DRAW_INIT() 				\
   {						\
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -372,7 +403,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
   {                                                             \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
       int a = oa0 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
@@ -421,6 +452,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
         t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
+        CALC_MIPMAP_LEVEL; \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -446,6 +478,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
       t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
+      CALC_MIPMAP_LEVEL; \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \
@@ -462,10 +495,10 @@ void FNAME(ZB_fillTriangleMappingPerspectiveFlat) (ZBuffer *zb,
  * Smooth filled triangle, with perspective-correct mapping.
  */
 
-void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
-                                                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+static void FNAME(smooth_perspective) (ZBuffer *zb,
+                                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTexture *texture;
+  ZTextureLevel *texture_levels;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -482,17 +515,17 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
       /* It's really a flat-shaded triangle. */                         \
       if (c0 == 0xffffffff) {                                           \
         /* Actually, it's a white triangle. */                          \
-        FNAME(ZB_fillTriangleMappingPerspective)(zb, p0, p1, p2);       \
+        FNAME(white_perspective)(zb, p0, p1, p2);       \
         return;                                                         \
       }                                                                 \
-      FNAME(ZB_fillTriangleMappingPerspectiveFlat)(zb, p0, p1, p2);     \
+      FNAME(flat_perspective)(zb, p0, p1, p2);     \
       return;                                                           \
     }                                                                   \
   }
 
 #define DRAW_INIT() 				\
   {						\
-    texture = &zb->current_texture;             \
+    texture_levels = zb->current_texture;             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -503,7 +536,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
   {                                                             \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
     if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture, s, t);                   \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
       int a = oa1 * PIXEL_A(tmp) >> 16;                         \
       if (ACMP(zb, a)) {                                        \
         STORE_PIX(pp[_a],                                       \
@@ -556,6 +589,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
         t=(unsigned int) tt;                                     \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
+        CALC_MIPMAP_LEVEL; \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -581,6 +615,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
       t=(unsigned int) tt;                                       \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
+      CALC_MIPMAP_LEVEL; \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \
@@ -598,3 +633,7 @@ void FNAME(ZB_fillTriangleMappingPerspectiveSmooth) (ZBuffer *zb,
 #undef STORE_PIX
 #undef STORE_Z
 #undef FNAME
+#undef INTERP_MIPMAP
+#undef CALC_MIPMAP_LEVEL
+#undef ZB_LOOKUP_TEXTURE
+

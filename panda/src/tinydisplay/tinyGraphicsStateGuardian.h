@@ -106,15 +106,15 @@ private:
 
   void apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
-  void setup_gltex(GLTexture *gltex, int orig_x_size, int orig_y_size);
-  void choose_tex_size(int &size, int &bits, int orig_size);
+  bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels);
+  int get_tex_shift(int orig_size);
 
-  static void copy_lum_image(GLTexture *gltex, Texture *tex);
-  static void copy_alpha_image(GLTexture *gltex, Texture *tex);
-  static void copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel);
-  static void copy_la_image(GLTexture *gltex, Texture *tex);
-  static void copy_rgb_image(GLTexture *gltex, Texture *tex);
-  static void copy_rgba_image(GLTexture *gltex, Texture *tex);
+  static void copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
+  static void copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
+  static void copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level, int channel);
+  static void copy_la_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
+  static void copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
+  static void copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
 
   void setup_material(GLMaterial *gl_material, const Material *material);
   static void load_matrix(M4 *matrix, const TransformState *transform);
@@ -135,6 +135,7 @@ private:
     CMF_diffuse   = 0x002,
   };
   int _color_material_flags;
+  int _texfilter_state;
 
   SimpleLru _textures_lru;
 

@@ -33,6 +33,9 @@
   float sz1,dszdx,dszdy,dszdl_min,dszdl_max;
   float tz1,dtzdx,dtzdy,dtzdl_min,dtzdl_max;
 #endif
+#if defined(INTERP_MIPMAP) && (defined(INTERP_ST) || defined(INTERP_STZ))
+  int mipmap_level;
+#endif
 
   EARLY_OUT();
 
@@ -111,6 +114,8 @@
   d2 = (float) (p2->t - p0->t);
   dtdx = (int) (fdy2 * d1 - fdy1 * d2);
   dtdy = (int) (fdx1 * d2 - fdx2 * d1);
+
+  CALC_MIPMAP_LEVEL;
 #endif
 
 #ifdef INTERP_STZ

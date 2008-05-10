@@ -29,469 +29,12 @@
 #include "bitMask.h"
 #include "zgl.h"
 #include "zmath.h"
+#include "ztriangle_table.h"
 
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
 PStatCollector TinyGraphicsStateGuardian::_draw_transform_pcollector("Draw:Transform");
-
-
-static const ZB_fillTriangleFunc fill_tri_funcs
-[2 /* depth write: zon, zoff */]
-[3 /* color write: noblend, blend, nocolor */]
-[3 /* alpha test: anone, aless, amore */]
-[2 /* depth test: znone, zless */]
-[3 /* shading: white, flat, smooth */]
-[3 /* texturing: untextured, textured, perspective textured */] = {
-  { // depth write zon
-    { // color write noblend
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMapping_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_znone },
-          { ZB_fillTriangleFlat_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMapping_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_anone_zless },
-          { ZB_fillTriangleFlat_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMapping_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_znone },
-          { ZB_fillTriangleFlat_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMapping_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_aless_zless },
-          { ZB_fillTriangleFlat_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMapping_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_znone },
-          { ZB_fillTriangleFlat_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMapping_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_noblend_amore_zless },
-          { ZB_fillTriangleFlat_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_noblend_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_noblend_amore_zless },
-        },
-      },
-    },
-    { // color write blend
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMapping_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_znone },
-          { ZB_fillTriangleFlat_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMapping_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_anone_zless },
-          { ZB_fillTriangleFlat_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMapping_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_znone },
-          { ZB_fillTriangleFlat_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMapping_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_aless_zless },
-          { ZB_fillTriangleFlat_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMapping_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_znone },
-          { ZB_fillTriangleFlat_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMapping_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_blend_amore_zless },
-          { ZB_fillTriangleFlat_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_blend_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_blend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_blend_amore_zless },
-        },
-      },
-    },
-    { // color write nocolor
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMapping_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_znone },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMapping_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_anone_zless },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMapping_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_znone },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMapping_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_aless_zless },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMapping_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_znone },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMapping_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zon_nocolor_amore_zless },
-          { ZB_fillTriangleFlat_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zon_nocolor_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zon_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zon_nocolor_amore_zless },
-        },
-      },
-    },
-  },
-  { // depth write zoff
-    { // color write noblend
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMapping_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_znone },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMapping_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_anone_zless },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMapping_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_znone },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMapping_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_aless_zless },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMapping_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_znone },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMapping_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_noblend_amore_zless },
-          { ZB_fillTriangleFlat_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_noblend_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_noblend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_noblend_amore_zless },
-        },
-      },
-    },
-    { // color write blend
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMapping_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_znone },
-          { ZB_fillTriangleFlat_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMapping_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_anone_zless },
-          { ZB_fillTriangleFlat_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMapping_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_znone },
-          { ZB_fillTriangleFlat_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMapping_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_aless_zless },
-          { ZB_fillTriangleFlat_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMapping_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_znone },
-          { ZB_fillTriangleFlat_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMapping_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_blend_amore_zless },
-          { ZB_fillTriangleFlat_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_blend_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_blend_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_blend_amore_zless },
-        },
-      },
-    },
-    { // color write nocolor
-      { // alpha test anone
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_znone },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_anone_zless },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_anone_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_anone_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_anone_zless },
-        },
-      },
-      { // alpha test aless
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_znone },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_aless_zless },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_aless_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_aless_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_aless_zless },
-        },
-      },
-      { // alpha test amore
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_znone },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_znone },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_znone,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_znone },
-        },
-        {
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMapping_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspective_xx_zoff_nocolor_amore_zless },
-          { ZB_fillTriangleFlat_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMappingFlat_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspectiveFlat_xx_zoff_nocolor_amore_zless },
-          { ZB_fillTriangleSmooth_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMappingSmooth_xx_zoff_nocolor_amore_zless,
-            ZB_fillTriangleMappingPerspectiveSmooth_xx_zoff_nocolor_amore_zless },
-        },
-      },
-    },
-  },
-};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
@@ -1196,14 +739,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   int texturing_state = 0;  // untextured
+  int texfilter_state = 0;  // nearest
   if (_c->texture_2d_enabled) {
+    texfilter_state = _texfilter_state;
     texturing_state = 2;  // perspective-correct textures
     if (_c->matrix_model_projection_no_w_transform) {
       texturing_state = 1;  // non-perspective-correct textures
     }
   }
 
-  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][shading_state][texturing_state];
+  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][texfilter_state][shading_state][texturing_state];
   
   return true;
 }
@@ -1449,9 +994,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   GLTexture *gltex = gtc->_gltex;
-  setup_gltex(gltex, tex->get_x_size(), tex->get_y_size());
+  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
+    return;
+  }
 
-  PIXEL *ip = gltex->pixmap + gltex->xsize * gltex->ysize;
+  PIXEL *ip = gltex->levels[0].pixmap + gltex->xsize * gltex->ysize;
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
   for (int y = 0; y < gltex->ysize; ++y) {
     ip -= gltex->xsize;
@@ -1668,8 +1215,12 @@ release_texture(TextureContext *tc) {
     _c->texture_2d_enabled = false;
   }
 
-  if (gltex->pixmap != NULL) {
-    gl_free(gltex->pixmap);
+  for (int i = 0; i < gltex->num_levels; ++i) {
+    gl_free(gltex->levels[i].pixmap);
+  }
+  if (gltex->levels != NULL) {
+    gl_free(gltex->levels);
+    gltex->levels = NULL;
   }
 
   gl_free(gltex);
@@ -2058,21 +1609,26 @@ apply_texture(TextureContext *tc) {
   _c->current_texture = gtc->_gltex;
   _c->texture_2d_enabled = true;
 
+  _texfilter_state = 0;
+  if (gtc->get_texture()->uses_mipmaps()) {
+    _texfilter_state = 1;
+  }
+
   GLTexture *gltex = gtc->_gltex;
 
-  if (gtc->was_image_modified() || gltex->pixmap == NULL) {
+  if (gtc->was_image_modified() || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
     if (!upload_texture(gtc)) {
+      tinydisplay_cat.error()
+        << "Could not load " << *gtc->get_texture()
+        << ": inappropriate size.\n";
       _c->texture_2d_enabled = false;
     }
     gtc->mark_loaded();
   }
   gtc->enqueue_lru(&_textures_lru);
 
-  _c->zb->current_texture.pixmap = gltex->pixmap;
-  _c->zb->current_texture.s_mask = gltex->s_mask;
-  _c->zb->current_texture.t_mask = gltex->t_mask;
-  _c->zb->current_texture.t_shift = gltex->t_shift;
+  _c->zb->current_texture = gltex->levels;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2101,55 +1657,77 @@ upload_texture(TinyTextureContext *gtc) {
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
   GLTexture *gltex = gtc->_gltex;
-  setup_gltex(gltex, tex->get_x_size(), tex->get_y_size());
 
-  switch (tex->get_format()) {
-  case Texture::F_rgb:
-  case Texture::F_rgb5:
-  case Texture::F_rgb8:
-  case Texture::F_rgb12:
-  case Texture::F_rgb332:
-    copy_rgb_image(gltex, tex);
-    break;
-
-  case Texture::F_rgba:
-  case Texture::F_rgbm:
-  case Texture::F_rgba4:
-  case Texture::F_rgba5:
-  case Texture::F_rgba8:
-  case Texture::F_rgba12:
-  case Texture::F_rgba16:
-  case Texture::F_rgba32:
-    copy_rgba_image(gltex, tex);
-    break;
-
-  case Texture::F_luminance:
-    copy_lum_image(gltex, tex);
-    break;
-
-  case Texture::F_red:
-    copy_one_channel_image(gltex, tex, 0);
-    break;
-
-  case Texture::F_green:
-    copy_one_channel_image(gltex, tex, 1);
-    break;
-
-  case Texture::F_blue:
-    copy_one_channel_image(gltex, tex, 2);
-    break;
-
-  case Texture::F_alpha:
-    copy_alpha_image(gltex, tex);
-    break;
-
-  case Texture::F_luminance_alphamask:
-  case Texture::F_luminance_alpha:
-    copy_la_image(gltex, tex);
-    break;
+  int num_levels = 1;
+  if (tex->uses_mipmaps()) {
+    if (!tex->has_all_ram_mipmap_images()) {
+      tex->generate_ram_mipmap_images();
+    }
+    num_levels = tex->get_num_ram_mipmap_images();
   }
 
-  int bytecount = gltex->xsize * gltex->ysize * 4;
+  if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), num_levels)) {
+    return false;
+  }
+
+  int bytecount = 0;
+  int xsize = gltex->xsize;
+  int ysize = gltex->ysize;
+
+  for (int level = 0; level < gltex->num_levels; ++level) {
+    ZTextureLevel *dest = &gltex->levels[level];
+
+    switch (tex->get_format()) {
+    case Texture::F_rgb:
+    case Texture::F_rgb5:
+    case Texture::F_rgb8:
+    case Texture::F_rgb12:
+    case Texture::F_rgb332:
+      copy_rgb_image(dest, xsize, ysize, tex, level);
+      break;
+
+    case Texture::F_rgba:
+    case Texture::F_rgbm:
+    case Texture::F_rgba4:
+    case Texture::F_rgba5:
+    case Texture::F_rgba8:
+    case Texture::F_rgba12:
+    case Texture::F_rgba16:
+    case Texture::F_rgba32:
+      copy_rgba_image(dest, xsize, ysize, tex, level);
+      break;
+
+    case Texture::F_luminance:
+      copy_lum_image(dest, xsize, ysize, tex, level);
+      break;
+
+    case Texture::F_red:
+      copy_one_channel_image(dest, xsize, ysize, tex, level, 0);
+      break;
+
+    case Texture::F_green:
+      copy_one_channel_image(dest, xsize, ysize, tex, level, 1);
+      break;
+
+    case Texture::F_blue:
+      copy_one_channel_image(dest, xsize, ysize, tex, level, 2);
+      break;
+
+    case Texture::F_alpha:
+      copy_alpha_image(dest, xsize, ysize, tex, level);
+      break;
+
+    case Texture::F_luminance_alphamask:
+    case Texture::F_luminance_alpha:
+      copy_la_image(dest, xsize, ysize, tex, level);
+      break;
+    }
+
+    bytecount += xsize * ysize * 4;
+    xsize = max(xsize >> 1, 1);
+    ysize = max(ysize >> 1, 1);
+  }
+
   gtc->update_data_size_bytes(bytecount);
   
   tex->texture_uploaded();
@@ -2162,70 +1740,96 @@ upload_texture(TinyTextureContext *gtc) {
 //       Access: Private
 //  Description: Sets the GLTexture size, bits, and masks appropriate,
 //               and allocates space for a pixmap.  Does not fill the
-//               pixmap contents.
+//               pixmap contents.  Returns true if the texture is a
+//               valid size, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
-setup_gltex(GLTexture *gltex, int orig_x_size, int orig_y_size) {
-  // Ensure we have a power of two size, no more than our max.
-  int s_size, s_bits;
-  choose_tex_size(s_size, s_bits, orig_x_size);
-
-  int t_size, t_bits;
-  choose_tex_size(t_size, t_bits, orig_y_size);
-
-  int bytecount = s_size * t_size * 4;
-
-  gltex->xsize = s_size;
-  gltex->ysize = t_size;
-
-  if (gltex->pixmap != NULL) {
-    gl_free(gltex->pixmap);
+bool TinyGraphicsStateGuardian::
+setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
+  int s_bits = get_tex_shift(x_size);
+  int t_bits = get_tex_shift(y_size);
+  
+  if (s_bits < 0 || t_bits < 0) {
+    return false;
   }
-  gltex->pixmap = (PIXEL *)gl_malloc(bytecount);
+
+  gltex->xsize = x_size;
+  gltex->ysize = y_size;
 
   gltex->s_max = 1 << (s_bits + ZB_POINT_ST_FRAC_BITS);
-  gltex->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
   gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
-  gltex->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
-  gltex->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
+
+  for (int i = 0; i < gltex->num_levels; ++i) {
+    gl_free(gltex->levels[i].pixmap);
+  }
+  if (gltex->levels != NULL) {
+    gl_free(gltex->levels);
+    gltex->levels = NULL;
+  }
+
+  gltex->levels = (ZTextureLevel *)gl_malloc(sizeof(ZTextureLevel) * MAX_MIPMAP_LEVELS);
+  gltex->num_levels = num_levels;
+
+  int level = 0;
+  ZTextureLevel *dest = NULL;
+  while (level < num_levels) {
+    dest = &gltex->levels[level];
+    int bytecount = x_size * y_size * 4;
+    dest->pixmap = (PIXEL *)gl_malloc(bytecount);
+
+    dest->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+    dest->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
+    dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
+    
+    x_size = max((x_size >> 1), 1);
+    y_size = max((y_size >> 1), 1);
+    s_bits = max(s_bits - 1, 0);
+    t_bits = max(t_bits - 1, 0);
+
+    ++level;
+  }
+
+  // Fill out the remaining mipmap arrays with copies of the last
+  // level, so we don't have to be concerned with running off the end
+  // of this array while scanning out triangles.
+  while (level < MAX_MIPMAP_LEVELS) {
+    gltex->levels[level] = *dest;
+    ++level;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyGraphicsStateGuardian::choose_tex_size
+//     Function: TinyGraphicsStateGuardian::get_tex_shift
 //       Access: Private
-//  Description: Chooses the suitable texture size that is the closest
-//               power-of-2 match to the indicated original size.
-//               Also calculates the bit shift count, such that (1 <<
-//               bits) == size.
+//  Description: Calculates the bit shift count, such that (1 << shift)
+//               == size.  Returns -1 if the size is not a power of 2
+//               or is larger than our largest allowable size.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
-choose_tex_size(int &size, int &bits, int orig_size) {
-  unsigned int filled = flood_bits_down((unsigned int)orig_size);
-  size = filled + 1;
-  if (size > orig_size) {
-    // Round down, not up, to next lowest power of 2.
-    size >>= 1;
-  }
-  if (size > _max_texture_dimension) {
-    size = _max_texture_dimension;
+int TinyGraphicsStateGuardian::
+get_tex_shift(int orig_size) {
+  unsigned int filled = flood_bits_down((unsigned int)(orig_size - 1));
+  int size = filled + 1;
+  if (size != orig_size || size > _max_texture_dimension) {
+    return -1;
   }
 
-  bits = count_bits_in_word((unsigned int)size - 1);
+  return count_bits_in_word((unsigned int)size - 1);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::copy_lum_image
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel luminance image
-//               from the texture into the indicated GLTexture.
+//               from the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_lum_image(GLTexture *gltex, Texture *tex) {
+copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
   nassertv(tex->get_num_components() == 1);
+  nassertv(tex->get_expected_mipmap_x_size(level) == xsize &&
+           tex->get_expected_mipmap_y_size(level) == ysize);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2239,32 +1843,18 @@ copy_lum_image(GLTexture *gltex, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = spix[co];
+    dpix[1] = spix[co];
+    dpix[2] = spix[co];
+    dpix[3] = 0xff;
       
-      dpix[0] = spix[co];
-      dpix[1] = spix[co];
-      dpix[2] = spix[co];
-      dpix[3] = 0xff;
-      
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += cw;
   }
 }
 
@@ -2272,15 +1862,13 @@ copy_lum_image(GLTexture *gltex, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_alpha_image
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel alpha image
-//               from the texture into the indicated GLTexture pixmap.
+//               from the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_alpha_image(GLTexture *gltex, Texture *tex) {
+copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
   nassertv(tex->get_num_components() == 1);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2294,32 +1882,18 @@ copy_alpha_image(GLTexture *gltex, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = 0xff;
+    dpix[1] = 0xff;
+    dpix[2] = 0xff;
+    dpix[3] = spix[co];
       
-      dpix[0] = 0xff;
-      dpix[1] = 0xff;
-      dpix[2] = 0xff;
-      dpix[3] = spix[co];
-      
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += cw;
   }
 }
 
@@ -2328,15 +1902,13 @@ copy_alpha_image(GLTexture *gltex, Texture *tex) {
 //       Access: Private, Static
 //  Description: Copies and scales the one-channel image (with a
 //               single channel, e.g. red, green, or blue) from
-//               the texture into the indicated GLTexture pixmap.
+//               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel) {
+copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level, int channel) {
   nassertv(tex->get_num_components() == 1);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2350,33 +1922,19 @@ copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 1 * cw;
-
-      dpix[0] = 0;
-      dpix[1] = 0;
-      dpix[2] = 0;
-      dpix[3] = 0xff;
-      dpix[channel] = spix[co];
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = 0;
+    dpix[1] = 0;
+    dpix[2] = 0;
+    dpix[3] = 0xff;
+    dpix[channel] = spix[co];
       
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += cw;
   }
 }
 
@@ -2384,16 +1942,14 @@ copy_one_channel_image(GLTexture *gltex, Texture *tex, int channel) {
 //     Function: TinyGraphicsStateGuardian::copy_la_image
 //       Access: Private, Static
 //  Description: Copies and scales the two-channel luminance-alpha
-//               image from the texture into the indicated GLTexture
+//               image from the texture into the indicated ZTexture
 //               pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_la_image(GLTexture *gltex, Texture *tex) {
+copy_la_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
   nassertv(tex->get_num_components() == 2);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2407,32 +1963,18 @@ copy_la_image(GLTexture *gltex, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 2 * cw;
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = spix[co];
+    dpix[1] = spix[co];
+    dpix[2] = spix[co];
+    dpix[3] = spix[cw + co];
       
-      dpix[0] = spix[co];
-      dpix[1] = spix[co];
-      dpix[2] = spix[co];
-      dpix[3] = spix[cw + co];
-      
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += 2 * cw;
   }
 }
 
@@ -2440,15 +1982,13 @@ copy_la_image(GLTexture *gltex, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_rgb_image
 //       Access: Private, Static
 //  Description: Copies and scales the three-channel RGB image from
-//               the texture into the indicated GLTexture pixmap.
+//               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgb_image(GLTexture *gltex, Texture *tex) {
+copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
   nassertv(tex->get_num_components() == 3);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2462,32 +2002,18 @@ copy_rgb_image(GLTexture *gltex, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 3 * cw;
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = spix[co];
+    dpix[1] = spix[cw + co];
+    dpix[2] = spix[cw + cw + co];
+    dpix[3] = 0xff;
       
-      dpix[0] = spix[co];
-      dpix[1] = spix[cw + co];
-      dpix[2] = spix[cw + cw + co];
-      dpix[3] = 0xff;
-      
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += 3 * cw;
   }
 }
 
@@ -2495,15 +2021,13 @@ copy_rgb_image(GLTexture *gltex, Texture *tex) {
 //     Function: TinyGraphicsStateGuardian::copy_rgba_image
 //       Access: Private, Static
 //  Description: Copies and scales the four-channel RGBA image from
-//               the texture into the indicated GLTexture pixmap.
+//               the texture into the indicated ZTexture pixmap.
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
-copy_rgba_image(GLTexture *gltex, Texture *tex) {
+copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level) {
   nassertv(tex->get_num_components() == 4);
 
-  int xsize_src = tex->get_x_size();
-  int ysize_src = tex->get_y_size();
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_ram_mipmap_image(level);
   nassertv(!src_image.is_null());
   const unsigned char *src = src_image.p();
 
@@ -2517,32 +2041,18 @@ copy_rgba_image(GLTexture *gltex, Texture *tex) {
   int co = cw - 1;
 #endif
 
-  int xsize_dest = gltex->xsize;
-  int ysize_dest = gltex->ysize;
-  unsigned char *dest = (unsigned char *)gltex->pixmap;
-  nassertv(dest != NULL);
-
-  int sx_inc = (int)((float)(xsize_src) / (float)(xsize_dest));
-  int sy_inc = (int)((float)(ysize_src) / (float)(ysize_dest));
-
-  unsigned char *dpix = dest;
-  int syn = 0;
-  for (int dy = 0; dy < ysize_dest; dy++) {
-    int sy = syn / ysize_dest;
-    int sxn = 0;
-    for (int dx = 0; dx < xsize_dest; dx++) {
-      int sx = sxn / xsize_dest;
-      const unsigned char *spix = src + (sy * xsize_src + sx) * 4 * cw;
+  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  nassertv(dpix != NULL);
+  const unsigned char *spix = src;
+  int pixel_count = xsize * ysize;
+  while (pixel_count-- > 0) {
+    dpix[0] = spix[co];
+    dpix[1] = spix[cw + co];
+    dpix[2] = spix[cw + cw + co];
+    dpix[3] = spix[cw + cw + cw + co];
       
-      dpix[0] = spix[co];
-      dpix[1] = spix[cw + co];
-      dpix[2] = spix[cw + cw + co];
-      dpix[3] = spix[cw + cw + cw + co];
-      
-      dpix += 4;
-      sxn += xsize_src;
-    }
-    syn += ysize_src;
+    dpix += 4;
+    spix += 4 * cw;
   }
 }
 

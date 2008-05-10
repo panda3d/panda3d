@@ -6,6 +6,7 @@
  */
 
 #include "zfeatures.h"
+#include "bitMask.h"
 
 typedef unsigned short ZPOINT;
 #define ZB_Z_BITS 16
@@ -19,25 +20,30 @@ typedef unsigned short ZPOINT;
    cannot exceed this number of bits).*/
 #define ZB_POINT_ST_FRAC_BITS 12
 
-/* Returns the index within a texture for the given (s, t) texel. */
-#define ZB_TEXEL(texture, s, t)                                         \
-  ((((t) & (texture)->t_mask) >> (texture)->t_shift) |                  \
-   (((s) & (texture)->s_mask) >> ZB_POINT_ST_FRAC_BITS))
+/* This is the theoretical max number of bits we have available to
+   shift down to achieve each next mipmap level, based on the size of
+   a 32-bit int.  We need to preallocate mipmap arrays of this size. */
+#define MAX_MIPMAP_LEVELS (32 - ZB_POINT_ST_FRAC_BITS)
 
-#define ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t) \
-  (texture)->pixmap[ZB_TEXEL(texture, s, t)]
+/* Returns the index within a texture level for the given (s, t) texel. */
+#define ZB_TEXEL(level, s, t)                                         \
+  ((((t) & (level)->t_mask) >> (level)->t_shift) |                  \
+   (((s) & (level)->s_mask) >> ZB_POINT_ST_FRAC_BITS))
 
-#if 1
-/* Use no texture filtering by default.  It's faster, even though it
-   looks terrible. */
-#define ZB_LOOKUP_TEXTURE(texture, s, t) \
-  ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t)
+#define ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t) \
+  (texture_levels)->pixmap[ZB_TEXEL(texture_levels, s, t)]
 
-#else
+#define ZB_LOOKUP_TEXTURE_NEAREST_MIPMAP(texture_levels, s, t, level) \
+  ZB_LOOKUP_TEXTURE_NEAREST((texture_levels) + (level), (s) >> (level), (t) >> (level))
+
+#define DO_CALC_MIPMAP_LEVEL \
+    mipmap_level = count_bits_in_word(flood_bits_down((unsigned int)max(abs(dsdx), abs(dtdx)) >> ZB_POINT_ST_FRAC_BITS))
+
+#if 0
 /* Experiment with bilinear filtering.  Looks great, but seems to run
    about 25% slower. */
-#define ZB_LOOKUP_TEXTURE(texture, s, t) \
-  lookup_texture_bilinear((texture), (s), (t))
+#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level) \
+  lookup_texture_bilinear((texture_levels), (s), (t))
 
 #endif
 
@@ -85,22 +91,22 @@ typedef unsigned int PIXEL;
 typedef struct {
   PIXEL *pixmap;
   unsigned int s_mask, t_mask, t_shift;
-} ZTexture;
+} ZTextureLevel;
 
 typedef struct {
-    int xsize,ysize;
-    int linesize; /* line size, in bytes */
-    int mode;
-    
-    ZPOINT *zbuf;
-    PIXEL *pbuf;
-    int frame_buffer_allocated;
-    
-    int nb_colors;
-    unsigned char *dctable;
-    int *ctable;
-    ZTexture current_texture;
-    unsigned int reference_alpha;
+  int xsize,ysize;
+  int linesize; /* line size, in bytes */
+  int mode;
+  
+  ZPOINT *zbuf;
+  PIXEL *pbuf;
+  int frame_buffer_allocated;
+  
+  int nb_colors;
+  unsigned char *dctable;
+  int *ctable;
+  ZTextureLevel *current_texture;  // This is actually an array of texture levels.
+  unsigned int reference_alpha;
 } ZBuffer;
 
 typedef struct {
@@ -129,7 +135,7 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
                        int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize);
 
-PIXEL lookup_texture_bilinear(ZTexture *texture, unsigned int s, unsigned int t);
+PIXEL lookup_texture_bilinear(ZTextureLevel *base_level, int s, int t);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);

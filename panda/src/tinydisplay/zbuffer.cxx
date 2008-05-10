@@ -67,7 +67,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	zb->pbuf = (PIXEL *)frame_buffer;
     }
 
-    zb->current_texture.pixmap = NULL;
+    zb->current_texture = NULL;
 
     return zb;
   error:
@@ -343,18 +343,18 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
 #define ZB_ST_FRAC_HIGH (1 << ZB_POINT_ST_FRAC_BITS)
 #define ZB_ST_FRAC_MASK (ZB_ST_FRAC_HIGH - 1)
 
-PIXEL lookup_texture_bilinear(ZTexture *texture, unsigned int s, unsigned int t)
+PIXEL lookup_texture_bilinear(ZTextureLevel *base_level, int s, int t)
 {
   PIXEL p1, p2, p3, p4;
-  unsigned int sf, tf;
-  unsigned int r, g, b, a;
+  int sf, tf;
+  int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t);
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s + ZB_ST_FRAC_HIGH, t);
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t);
   sf = s & ZB_ST_FRAC_MASK;
 
-  p3 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s, t + ZB_ST_FRAC_HIGH);
-  p4 = ZB_LOOKUP_TEXTURE_NEAREST(texture, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t + ZB_ST_FRAC_HIGH);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
   tf = t & ZB_ST_FRAC_MASK;
   
   r = (((PIXEL_R(p4) * sf + PIXEL_R(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
@@ -371,4 +371,3 @@ PIXEL lookup_texture_bilinear(ZTexture *texture, unsigned int s, unsigned int t)
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }
-
