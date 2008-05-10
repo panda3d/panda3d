@@ -69,6 +69,8 @@
     return;
   fz = 1.0f / fz;
 
+  EARLY_OUT_FZ();
+
   fdx1 *= fz;
   fdy1 *= fz;
   fdx2 *= fz;
@@ -378,6 +380,7 @@
 #undef INTERP_STZ
 
 #undef EARLY_OUT
+#undef EARLY_OUT_FZ
 #undef DRAW_INIT
 #undef DRAW_LINE  
 #undef PUT_PIXEL

@@ -6,7 +6,7 @@
  */
 
 #include "zfeatures.h"
-#include "bitMask.h"
+#include "pbitops.h"
 
 typedef unsigned short ZPOINT;
 #define ZB_Z_BITS 16
@@ -23,7 +23,7 @@ typedef unsigned short ZPOINT;
 /* This is the theoretical max number of bits we have available to
    shift down to achieve each next mipmap level, based on the size of
    a 32-bit int.  We need to preallocate mipmap arrays of this size. */
-#define MAX_MIPMAP_LEVELS (32 - ZB_POINT_ST_FRAC_BITS)
+#define MAX_MIPMAP_LEVELS (32 - ZB_POINT_ST_FRAC_BITS + 1)
 
 /* Returns the index within a texture level for the given (s, t) texel. */
 #define ZB_TEXEL(level, s, t)                                         \
@@ -36,8 +36,15 @@ typedef unsigned short ZPOINT;
 #define ZB_LOOKUP_TEXTURE_NEAREST_MIPMAP(texture_levels, s, t, level) \
   ZB_LOOKUP_TEXTURE_NEAREST((texture_levels) + (level), (s) >> (level), (t) >> (level))
 
+/* A special abs() function which doesn't require any branching
+   instructions.  Might not work on some exotic hardware. */
+
+/* Also doesn't appear to be any faster in practice.  Guess gcc is
+   already doing the right thing.  Is msvc? */
+//#define FAST_ABS(v) (((v) ^ ((v) >> (sizeof(v) * 8 - 1))) - ((v) >> (sizeof(v) * 8 - 1)))
+
 #define DO_CALC_MIPMAP_LEVEL \
-    mipmap_level = count_bits_in_word(flood_bits_down((unsigned int)max(abs(dsdx), abs(dtdx)) >> ZB_POINT_ST_FRAC_BITS))
+  mipmap_level = get_next_higher_bit(((unsigned int)abs(dsdx) + (unsigned int)abs(dtdx)) >> ZB_POINT_ST_FRAC_BITS)
 
 #if 0
 /* Experiment with bilinear filtering.  Looks great, but seems to run

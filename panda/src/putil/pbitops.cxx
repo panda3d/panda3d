@@ -1,5 +1,5 @@
-// Filename: bitMask.cxx
-// Created by:  drose (08Jun00)
+// Filename: pbitops.cxx
+// Created by:  drose (10May08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,9 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "bitMask.h"
+#include "pbitops.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
+unsigned char num_bits_on[65536];

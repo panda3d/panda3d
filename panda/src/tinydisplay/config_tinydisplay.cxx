@@ -70,6 +70,17 @@ ConfigVariableInt td_texture_ram
           "frame, even if this means this limit remains exceeded.)  "
           "Set it to -1 for no limit."));
 
+ConfigVariableBool td_ignore_mipmaps
+  ("td-ignore-mipmaps", false,
+   PRC_DESC("Configure this true to disable use of mipmaps on the "
+            "tinydisplay software renderer."));
+
+ConfigVariableBool td_perspective_textures
+  ("td-perspective-textures", true,
+   PRC_DESC("Configure this false to disable use of perspective-correct "
+            "textures on the tinydisplay software renderer, for a small "
+            "performance gain."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libtinydisplay
 //  Description: Initializes the library.  This must be called at

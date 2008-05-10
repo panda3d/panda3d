@@ -7,18 +7,22 @@ static void FNAME(white_untextured) (ZBuffer *zb,
   {						\
   }
 
+#define EARLY_OUT_FZ() 				\
+  {						\
+  }
+
 #define DRAW_INIT()                             \
   {                                             \
   }
  
-#define PUT_PIXEL(_a)                                   \
-  {                                                     \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                       \
-    if (ZCMP(pz[_a], zz)) {                             \
-      STORE_PIX(pp[_a], 0xffffffffUL, 0xffffUL, 0xffffUL, 0xffffUL, 0xffffUL);     \
-      STORE_Z(pz[_a], zz);                              \
-    }                                                   \
-    z+=dzdx;                                            \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      STORE_PIX(pp[_a], 0xffffffffUL, 0xffffUL, 0xffffUL, 0xffffUL, 0xffffUL); \
+      STORE_Z(pz[_a], zz);                                              \
+    }                                                                   \
+    z+=dzdx;                                                            \
   }
 
 #include "ztriangle.h"
@@ -33,6 +37,10 @@ static void FNAME(flat_untextured) (ZBuffer *zb,
 #define INTERP_Z
 
 #define EARLY_OUT() 				\
+  {						\
+  }
+
+#define EARLY_OUT_FZ() 				\
   {						\
   }
 
@@ -80,9 +88,13 @@ static void FNAME(smooth_untextured) (ZBuffer *zb,
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      FNAME(flat_untextured)(zb, p0, p1, p2);       \
+      FNAME(flat_untextured)(zb, p0, p1, p2);           \
       return;                                           \
     }                                                   \
+  }
+
+#define EARLY_OUT_FZ() 				\
+  {						\
   }
   
 #define DRAW_INIT() 				\
@@ -120,16 +132,20 @@ static void FNAME(white_textured) (ZBuffer *zb,
   {						\
   }
 
+#define EARLY_OUT_FZ() 				\
+  {						\
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                           \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -156,37 +172,41 @@ static void FNAME(flat_textured) (ZBuffer *zb,
   {						\
   }
 
+#define EARLY_OUT_FZ() 				\
+  {						\
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
     or0 = p2->r;                                \
     og0 = p2->g;                                \
     ob0 = p2->b;                                \
     oa0 = p2->a;                                \
   }
 
-#define PUT_PIXEL(_a)                                           \
-  {                                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
-    if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
-      int a = oa0 * PIXEL_A(tmp) >> 16;                         \
-      if (ACMP(zb, a)) {                                        \
-        STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,       \
-                                og0 * PIXEL_G(tmp) >> 16,       \
-                                ob0 * PIXEL_B(tmp) >> 16,       \
-                                a),                             \
-                  or0 * PIXEL_R(tmp) >> 16,                     \
-                  og0 * PIXEL_G(tmp) >> 16,                     \
-                  ob0 * PIXEL_B(tmp) >> 16,                     \
-                  a);                                           \
-        STORE_Z(pz[_a], zz);                                    \
-      }                                                         \
-    }                                                           \
-    z+=dzdx;                                                    \
-    s+=dsdx;                                                    \
-    t+=dtdx;                                                    \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
+      if (ACMP(zb, a)) {                                                \
+        STORE_PIX(pp[_a],                                               \
+                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,               \
+                                og0 * PIXEL_G(tmp) >> 16,               \
+                                ob0 * PIXEL_B(tmp) >> 16,               \
+                                a),                                     \
+                  or0 * PIXEL_R(tmp) >> 16,                             \
+                  og0 * PIXEL_G(tmp) >> 16,                             \
+                  ob0 * PIXEL_B(tmp) >> 16,                             \
+                  a);                                                   \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    s+=dsdx;                                                            \
+    t+=dtdx;                                                            \
   }
 
 #include "ztriangle.h"
@@ -201,55 +221,59 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
 #define INTERP_ST
 #define INTERP_RGB
 
-#define EARLY_OUT()                                             \
-  {                                                             \
-    int c0, c1, c2;                                             \
-    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);             \
-    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);             \
-    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);             \
-    if (c0 == c1 && c0 == c2) {                                 \
-      /* It's really a flat-shaded triangle. */                 \
-      if (c0 == 0xffffffff) {                                   \
-        /* Actually, it's a white triangle. */                  \
+#define EARLY_OUT()                                     \
+  {                                                     \
+    int c0, c1, c2;                                     \
+    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
+    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
+    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
+    if (c0 == c1 && c0 == c2) {                         \
+      /* It's really a flat-shaded triangle. */         \
+      if (c0 == 0xffffffff) {                           \
+        /* Actually, it's a white triangle. */          \
         FNAME(white_textured)(zb, p0, p1, p2);          \
-        return;                                                 \
-      }                                                         \
-      FNAME(flat_textured)(zb, p0, p1, p2);        \
-      return;                                                   \
-    }                                                           \
+        return;                                         \
+      }                                                 \
+      FNAME(flat_textured)(zb, p0, p1, p2);             \
+      return;                                           \
+    }                                                   \
+  }
+
+#define EARLY_OUT_FZ() 				\
+  {						\
   }
 
 #define DRAW_INIT()                             \
   {                                             \
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
   }
 
-#define PUT_PIXEL(_a)                                           \
-  {                                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
-    if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                         \
-      if (ACMP(zb, a)) {                                        \
-        STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,       \
-                                og1 * PIXEL_G(tmp) >> 16,       \
-                                ob1 * PIXEL_B(tmp) >> 16,       \
-                                a),                             \
-                  or1 * PIXEL_R(tmp) >> 16,                     \
-                  og1 * PIXEL_G(tmp) >> 16,                     \
-                  ob1 * PIXEL_B(tmp) >> 16,                     \
-                  a);                                           \
-        STORE_Z(pz[_a], zz);                                    \
-      }                                                         \
-    }                                                           \
-    z+=dzdx;                                                    \
-    og1+=dgdx;                                                  \
-    or1+=drdx;                                                  \
-    ob1+=dbdx;                                                  \
-    oa1+=dadx;                                                  \
-    s+=dsdx;                                                    \
-    t+=dtdx;                                                    \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
+      if (ACMP(zb, a)) {                                                \
+        STORE_PIX(pp[_a],                                               \
+                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
+                                og1 * PIXEL_G(tmp) >> 16,               \
+                                ob1 * PIXEL_B(tmp) >> 16,               \
+                                a),                                     \
+                  or1 * PIXEL_R(tmp) >> 16,                             \
+                  og1 * PIXEL_G(tmp) >> 16,                             \
+                  ob1 * PIXEL_B(tmp) >> 16,                             \
+                  a);                                                   \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    og1+=dgdx;                                                          \
+    or1+=drdx;                                                          \
+    ob1+=dbdx;                                                          \
+    oa1+=dadx;                                                          \
+    s+=dsdx;                                                            \
+    t+=dtdx;                                                            \
   }
 
 #include "ztriangle.h"
@@ -275,9 +299,19 @@ static void FNAME(white_perspective) (ZBuffer *zb,
   {						\
   }
 
+#define EARLY_OUT_FZ()                                                  \
+  {                                                                     \
+    if (fz > 0.001 || fz < -.001) {                                     \
+      /* This triangle is small enough not to worry about perspective   \
+         correction. */                                                 \
+      FNAME(white_textured)(zb, p0, p1, p2);                            \
+      return;                                                           \
+    }                                                                   \
+  }
+
 #define DRAW_INIT()				\
   {						\
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -289,7 +323,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                           \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -302,7 +336,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register ZPOINT *pz;                        \
+    register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -320,11 +354,11 @@ static void FNAME(white_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                                     \
-        t=(unsigned int) tt;                                     \
+        s=(unsigned int) ss;                            \
+        t=(unsigned int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL; \
+        CALC_MIPMAP_LEVEL;                              \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -346,11 +380,11 @@ static void FNAME(white_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                                       \
-      t=(unsigned int) tt;                                       \
+      s=(unsigned int) ss;                              \
+      t=(unsigned int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL; \
+      CALC_MIPMAP_LEVEL;                                \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \
@@ -383,9 +417,19 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
   {						\
   }
 
+#define EARLY_OUT_FZ()                                                  \
+  {                                                                     \
+    if (fz > 0.001 || fz < -.001) {                                     \
+      /* This triangle is small enough not to worry about perspective   \
+         correction. */                                                 \
+      FNAME(flat_textured)(zb, p0, p1, p2);                             \
+      return;                                                           \
+    }                                                                   \
+  }
+
 #define DRAW_INIT() 				\
   {						\
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -396,33 +440,33 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
     oa0 = p2->a;                                \
   }
 
-#define PUT_PIXEL(_a)                                           \
-  {                                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
-    if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
-      int a = oa0 * PIXEL_A(tmp) >> 16;                         \
-      if (ACMP(zb, a)) {                                        \
-        STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,       \
-                                og0 * PIXEL_G(tmp) >> 16,       \
-                                ob0 * PIXEL_B(tmp) >> 16,       \
-                                a),                             \
-                  or0 * PIXEL_R(tmp) >> 16,                     \
-                  og0 * PIXEL_G(tmp) >> 16,                     \
-                  ob0 * PIXEL_B(tmp) >> 16,                     \
-                  a);                                           \
-        STORE_Z(pz[_a], zz);                                    \
-      }                                                         \
-    }                                                           \
-    z+=dzdx;                                                    \
-    s+=dsdx;                                                    \
-    t+=dtdx;                                                    \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
+      if (ACMP(zb, a)) {                                                \
+        STORE_PIX(pp[_a],                                               \
+                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,               \
+                                og0 * PIXEL_G(tmp) >> 16,               \
+                                ob0 * PIXEL_B(tmp) >> 16,               \
+                                a),                                     \
+                  or0 * PIXEL_R(tmp) >> 16,                             \
+                  og0 * PIXEL_G(tmp) >> 16,                             \
+                  ob0 * PIXEL_B(tmp) >> 16,                             \
+                  a);                                                   \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    s+=dsdx;                                                            \
+    t+=dtdx;                                                            \
   }
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register ZPOINT *pz;                        \
+    register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -445,11 +489,11 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                                     \
-        t=(unsigned int) tt;                                     \
+        s=(unsigned int) ss;                            \
+        t=(unsigned int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL; \
+        CALC_MIPMAP_LEVEL;                              \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -471,11 +515,11 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                                       \
-      t=(unsigned int) tt;                                       \
+      s=(unsigned int) ss;                              \
+      t=(unsigned int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL; \
+      CALC_MIPMAP_LEVEL;                                \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \
@@ -502,64 +546,74 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
 #define INTERP_STZ
 #define INTERP_RGB
 
-#define EARLY_OUT()                                                     \
-  {                                                                     \
-    int c0, c1, c2;                                                     \
-    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);                     \
-    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);                     \
-    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);                     \
-    if (c0 == c1 && c0 == c2) {                                         \
-      /* It's really a flat-shaded triangle. */                         \
-      if (c0 == 0xffffffff) {                                           \
-        /* Actually, it's a white triangle. */                          \
+#define EARLY_OUT()                                     \
+  {                                                     \
+    int c0, c1, c2;                                     \
+    c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
+    c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
+    c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
+    if (c0 == c1 && c0 == c2) {                         \
+      /* It's really a flat-shaded triangle. */         \
+      if (c0 == 0xffffffff) {                           \
+        /* Actually, it's a white triangle. */          \
         FNAME(white_perspective)(zb, p0, p1, p2);       \
-        return;                                                         \
-      }                                                                 \
-      FNAME(flat_perspective)(zb, p0, p1, p2);     \
+        return;                                         \
+      }                                                 \
+      FNAME(flat_perspective)(zb, p0, p1, p2);          \
+      return;                                           \
+    }                                                   \
+  }
+
+#define EARLY_OUT_FZ()                                                  \
+  {                                                                     \
+    if (fz > 0.001 || fz < -.001) {                                     \
+      /* This triangle is small enough not to worry about perspective   \
+         correction. */                                                 \
+      FNAME(smooth_textured)(zb, p0, p1, p2);                           \
       return;                                                           \
     }                                                                   \
   }
 
 #define DRAW_INIT() 				\
   {						\
-    texture_levels = zb->current_texture;             \
+    texture_levels = zb->current_texture;       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
     ndtzdx=NB_INTERP * dtzdx;                   \
   }
 
-#define PUT_PIXEL(_a)                                           \
-  {                                                             \
-    zz=z >> ZB_POINT_Z_FRAC_BITS;                               \
-    if (ZCMP(pz[_a], zz)) {                                     \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);                   \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                         \
-      if (ACMP(zb, a)) {                                        \
-        STORE_PIX(pp[_a],                                       \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,       \
-                                og1 * PIXEL_G(tmp) >> 16,       \
-                                ob1 * PIXEL_B(tmp) >> 16,       \
-                                a),                             \
-                  or1 * PIXEL_R(tmp) >> 16,                     \
-                  og1 * PIXEL_G(tmp) >> 16,                     \
-                  ob1 * PIXEL_B(tmp) >> 16,                     \
-                  a);                                           \
-        STORE_Z(pz[_a], zz);                                    \
-      }                                                         \
-    }                                                           \
-    z+=dzdx;                                                    \
-    og1+=dgdx;                                                  \
-    or1+=drdx;                                                  \
-    ob1+=dbdx;                                                  \
-    oa1+=dadx;                                                  \
-    s+=dsdx;                                                    \
-    t+=dtdx;                                                    \
+#define PUT_PIXEL(_a)                                                   \
+  {                                                                     \
+    zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
+    if (ZCMP(pz[_a], zz)) {                                             \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
+      if (ACMP(zb, a)) {                                                \
+        STORE_PIX(pp[_a],                                               \
+                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
+                                og1 * PIXEL_G(tmp) >> 16,               \
+                                ob1 * PIXEL_B(tmp) >> 16,               \
+                                a),                                     \
+                  or1 * PIXEL_R(tmp) >> 16,                             \
+                  og1 * PIXEL_G(tmp) >> 16,                             \
+                  ob1 * PIXEL_B(tmp) >> 16,                             \
+                  a);                                                   \
+        STORE_Z(pz[_a], zz);                                            \
+      }                                                                 \
+    }                                                                   \
+    z+=dzdx;                                                            \
+    og1+=dgdx;                                                          \
+    or1+=drdx;                                                          \
+    ob1+=dbdx;                                                          \
+    oa1+=dadx;                                                          \
+    s+=dsdx;                                                            \
+    t+=dtdx;                                                            \
   }
 
 #define DRAW_LINE()                                     \
   {                                                     \
-    register ZPOINT *pz;                        \
+    register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
     register unsigned int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
@@ -582,11 +636,11 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                                     \
-        t=(unsigned int) tt;                                     \
+        s=(unsigned int) ss;                            \
+        t=(unsigned int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL; \
+        CALC_MIPMAP_LEVEL;                              \
         fz+=fndzdx;                                     \
         zinv=1.0f / fz;                                 \
       }                                                 \
@@ -608,11 +662,11 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                                       \
-      t=(unsigned int) tt;                                       \
+      s=(unsigned int) ss;                              \
+      t=(unsigned int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL; \
+      CALC_MIPMAP_LEVEL;                                \
     }                                                   \
     while (n>=0) {                                      \
       PUT_PIXEL(0);                                     \

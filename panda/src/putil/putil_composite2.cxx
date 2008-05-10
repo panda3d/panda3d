@@ -8,6 +8,7 @@
 #include "mouseData.cxx"
 #include "nameUniquifier.cxx"
 #include "nodeCachedReferenceCount.cxx"
+#include "pbitops.cxx"
 #include "pta_double.cxx"
 #include "pta_float.cxx"
 #include "pta_int.cxx"

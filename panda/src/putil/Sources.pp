@@ -51,6 +51,7 @@
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
+    pbitops.I pbitops.h \
     portalMask.h \
     pta_double.h \
     pta_float.h pta_int.h \
@@ -98,6 +99,7 @@
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
+    pbitops.cxx \
     pta_double.cxx pta_float.cxx \
     pta_int.cxx pta_ushort.cxx \
     simpleHashMap.cxx \
@@ -156,6 +158,7 @@
     nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     portalMask.h \
+    pbitops.I pbitops.h \
     pta_double.h \
     pta_float.h pta_int.h pta_ushort.h \
     simpleHashMap.I simpleHashMap.h \

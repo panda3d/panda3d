@@ -136,6 +136,7 @@ private:
   };
   int _color_material_flags;
   int _texfilter_state;
+  bool _texture_replace;
 
   SimpleLru _textures_lru;
 

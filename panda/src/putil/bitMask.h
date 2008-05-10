@@ -20,7 +20,7 @@
 #define BITMASK_H
 
 #include "pandabase.h"
-
+#include "pbitops.h"
 #include "numeric_types.h"
 #include "typedObject.h"
 #include "indent.h"
@@ -150,16 +150,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-INLINE int count_bits_in_word(PN_uint32 x);
-INLINE int count_bits_in_word(PN_uint64 x);
-INLINE PN_uint32 flood_bits_down(PN_uint32 x);
-INLINE PN_uint64 flood_bits_down(PN_uint64 x);
-INLINE PN_uint32 flood_bits_up(PN_uint32 x);
-INLINE PN_uint64 flood_bits_up(PN_uint64 x);
-
-// This table precomputes the number of on bits in each 16-bit word.
-extern EXPCL_PANDA_PUTIL unsigned char num_bits_on[65536];
 
 #include "bitMask.I"
 

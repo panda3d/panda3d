@@ -30,7 +30,7 @@ Options = [
 # The various combinations of these options are explicit within
 # ztriangle_two.h.
 ExtraOptions = [
-    # shading
+    # shade model
     [ 'white', 'flat', 'smooth' ],
 
     # texturing

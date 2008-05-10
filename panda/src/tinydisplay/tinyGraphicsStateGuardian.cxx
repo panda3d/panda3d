@@ -598,6 +598,15 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
+  if (_c->texture_2d_enabled && _texture_replace) {
+    // We don't need the vertex color or lighting calculation after
+    // all, since the current texture will just hide all of that.
+    needs_color = false;
+    needs_normal = false;
+  }
+
+  bool lighting_enabled = (needs_normal && _c->lighting_enabled);
+
   for (i = 0; i < num_used_vertices; ++i) {
     GLVertex *v = &_vertices[i];
     const LVecBase4f &d = rvertex.get_data4f();
@@ -642,18 +651,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     v->color = _c->current_color;
 
-    if (needs_normal) {
+    if (lighting_enabled) {
       const LVecBase3f &d = rnormal.get_data3f();
       _c->current_normal.X = d[0];
       _c->current_normal.Y = d[1];
       _c->current_normal.Z = d[2];
       _c->current_normal.W = 0.0f;
-    }
 
-    gl_vertex_transform(_c, v);
-
-    if (_c->lighting_enabled) {
+      gl_vertex_transform(_c, v);
       gl_shade_vertex(_c, v);
+
+    } else {
+      gl_vertex_transform(_c, v);
     }
 
     if (v->clip_code == 0) {
@@ -666,16 +675,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // Set up the appropriate function callback for filling triangles,
   // according to the current state.
 
-  int depth_write_state = 0;
+  int depth_write_state = 0;  // zon
   if (_target._depth_write->get_mode() != DepthWriteAttrib::M_on) {
-    depth_write_state = 1;
+    depth_write_state = 1;  // zoff
   }
 
-  int color_write_state = 0;
+  int color_write_state = 0;  // noblend
   switch (_target._transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
-    color_write_state = 1;
+    color_write_state = 1;    // blend
     break;
 
   default:
@@ -685,36 +694,36 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
-    color_write_state = 2;
+    color_write_state = 2;    // nocolor
   }
 
-  int alpha_test_state = 0;
+  int alpha_test_state = 0;   // anone
   switch (_target._alpha_test->get_mode()) {
   case AlphaTestAttrib::M_none:
   case AlphaTestAttrib::M_never:
   case AlphaTestAttrib::M_always:
   case AlphaTestAttrib::M_equal:
   case AlphaTestAttrib::M_not_equal:
-    alpha_test_state = 0;
+    alpha_test_state = 0;    // anone
     break;
 
   case AlphaTestAttrib::M_less:
   case AlphaTestAttrib::M_less_equal:
-    alpha_test_state = 1;
+    alpha_test_state = 1;    // aless
     _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
     break;
 
   case AlphaTestAttrib::M_greater:
   case AlphaTestAttrib::M_greater_equal:
-    alpha_test_state = 2;
+    alpha_test_state = 2;    // amore
     _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
     break;
   }
 
-  int depth_test_state = 1;
+  int depth_test_state = 1;    // zless
   _c->depth_test = 1;  // set this for ZB_line
   if (_target._depth_test->get_mode() == DepthTestAttrib::M_none) {
-    depth_test_state = 0;
+    depth_test_state = 0;      // zless
     _c->depth_test = 0;
   }
   
@@ -724,17 +733,17 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // as well use the flat shading model.
     shade_model = ShadeModelAttrib::M_flat;
   }
-  int shading_state = 2;  // smooth
+  int shade_model_state = 2;  // smooth
   _c->smooth_shade_model = true;
 
   if (shade_model == ShadeModelAttrib::M_flat) {
     _c->smooth_shade_model = false;
-    shading_state = 1;  // flat
+    shade_model_state = 1;  // flat
     if (_c->current_color.X == 1.0f &&
         _c->current_color.Y == 1.0f &&
         _c->current_color.Z == 1.0f &&
         _c->current_color.W == 1.0f) {
-      shading_state = 0;  // white
+      shade_model_state = 0;  // white
     }
   }
 
@@ -743,12 +752,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (_c->texture_2d_enabled) {
     texfilter_state = _texfilter_state;
     texturing_state = 2;  // perspective-correct textures
-    if (_c->matrix_model_projection_no_w_transform) {
+    if (_c->matrix_model_projection_no_w_transform || !td_perspective_textures) {
       texturing_state = 1;  // non-perspective-correct textures
+    }
+
+    if (_texture_replace) {
+      // If we're completely replacing the underlying color, then it
+      // doesn't matter what the color is.
+      shade_model_state = 0;
     }
   }
 
-  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][texfilter_state][shading_state][texturing_state];
+  _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][texfilter_state][shade_model_state][texturing_state];
   
   return true;
 }
@@ -1592,6 +1607,16 @@ do_issue_texture() {
     
   // Then, turn on the current texture mode.
   apply_texture(tc);
+
+  // Set a few state cache values.
+  _texfilter_state = 0;    // nearest
+  if (texture->uses_mipmaps() && !td_ignore_mipmaps) {
+    _texfilter_state = 1;  // mipmap
+  }
+
+  // M_replace means M_replace; anything else is treated the same as
+  // M_modulate.
+  _texture_replace = (stage->get_mode() == TextureStage::M_replace);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1608,11 +1633,6 @@ apply_texture(TextureContext *tc) {
   gtc->set_active(true);
   _c->current_texture = gtc->_gltex;
   _c->texture_2d_enabled = true;
-
-  _texfilter_state = 0;
-  if (gtc->get_texture()->uses_mipmaps()) {
-    _texfilter_state = 1;
-  }
 
   GLTexture *gltex = gtc->_gltex;
 
@@ -1808,13 +1828,15 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 ////////////////////////////////////////////////////////////////////
 int TinyGraphicsStateGuardian::
 get_tex_shift(int orig_size) {
-  unsigned int filled = flood_bits_down((unsigned int)(orig_size - 1));
-  int size = filled + 1;
-  if (size != orig_size || size > _max_texture_dimension) {
+  if ((orig_size & (orig_size - 1)) != 0) {
+    // Not a power of 2.
+    return -1;
+  }
+  if (orig_size > _max_texture_dimension) {
     return -1;
   }
 
-  return count_bits_in_word((unsigned int)size - 1);
+  return count_bits_in_word((unsigned int)orig_size - 1);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -462,12 +462,7 @@ get_lowest_off_bit() const {
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_highest_on_bit() const {
-  if (_word == 0) {
-    return -1;
-  }
-
-  WordType w = ::flood_bits_down(_word);
-  return count_bits_in_word(w) - 1;
+  return ::get_highest_on_bit(_word);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -870,88 +865,6 @@ init_type() {
   str << "BitMask" << num_bits;
   register_type(_type_handle, str.str());
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: count_bits_in_word
-//  Description: Returns the number of 1 bits in the indicated word.
-////////////////////////////////////////////////////////////////////
-INLINE int
-count_bits_in_word(PN_uint32 x) {
-  return (int)num_bits_on[x & 0xffff] + (int)num_bits_on[(x >> 16) & 0xffff];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: count_bits_in_word
-//  Description: Returns the number of 1 bits in the indicated word.
-////////////////////////////////////////////////////////////////////
-INLINE int
-count_bits_in_word(PN_uint64 x) {
-  return count_bits_in_word((PN_uint32)x) + count_bits_in_word((PN_uint32)(x >> 32));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_down
-//  Description: Returns a value such that every bit at or below the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
-INLINE PN_uint32
-flood_bits_down(PN_uint32 x) {
-  x |= (x >> 1);
-  x |= (x >> 2);
-  x |= (x >> 4);
-  x |= (x >> 8);
-  x |= (x >> 16);
-  return x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_down
-//  Description: Returns a value such that every bit at or below the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
-INLINE PN_uint64
-flood_bits_down(PN_uint64 x) {
-  x |= (x >> 1);
-  x |= (x >> 2);
-  x |= (x >> 4);
-  x |= (x >> 8);
-  x |= (x >> 16);
-  x |= (x >> 32);
-  return x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_up
-//  Description: Returns a value such that every bit at or above the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
-INLINE PN_uint32
-flood_bits_up(PN_uint32 x) {
-  x |= (x << 1);
-  x |= (x << 2);
-  x |= (x << 4);
-  x |= (x << 8);
-  x |= (x << 16);
-  return x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: flood_bits_up
-//  Description: Returns a value such that every bit at or above the
-//               highest bit in x is 1.
-////////////////////////////////////////////////////////////////////
-INLINE PN_uint64
-flood_bits_up(PN_uint64 x) {
-  x |= (x << 1);
-  x |= (x << 2);
-  x |= (x << 4);
-  x |= (x << 8);
-  x |= (x << 16);
-  x |= (x << 32);
-  return x;
-}
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::flood_up_in_place
