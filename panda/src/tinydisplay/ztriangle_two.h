@@ -178,6 +178,10 @@ static void FNAME(flat_textured) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
+    if (p2->a == 0 && !ACMP(zb, p2->a)) {       \
+      /* This alpha is zero, and we'll never get other than 0. */       \
+      return;                                   \
+    }                                           \
     texture_levels = zb->current_texture;       \
     or0 = p2->r;                                \
     og0 = p2->g;                                \
@@ -429,6 +433,10 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
 
 #define DRAW_INIT() 				\
   {						\
+    if (p2->a == 0 && !ACMP(zb, p2->a)) {       \
+      /* This alpha is zero, and we'll never get other than 0. */       \
+      return;                                   \
+    }                                           \
     texture_levels = zb->current_texture;       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
