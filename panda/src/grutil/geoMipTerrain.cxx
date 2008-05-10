@@ -335,9 +335,7 @@ get_normal(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 void GeoMipTerrain::
 generate() {
-  if (!_bruteforce) {
-    calc_levels();
-  }
+  calc_levels();
   _root.node()->remove_all_children();
   _blocks.clear();
   _old_levels.clear();
@@ -347,7 +345,11 @@ generate() {
     _old_levels[mx].resize(int((_ysize - 1) / _block_size));
     pvector<NodePath> tvector; //create temporary row
     for (unsigned int my = 0; my < (_ysize - 1) / _block_size; my++) {
-      tvector.push_back(generate_block(mx, my, _levels[mx][my]));
+      if (_bruteforce) {
+        tvector.push_back(generate_block(mx, my, 0));
+      } else {
+        tvector.push_back(generate_block(mx, my, _levels[mx][my]));
+      }
       tvector[my].reparent_to(_root);
       tvector[my].set_pos((mx + 0.5) * _block_size, (my + 0.5) * _block_size, 0);
     }
@@ -505,14 +507,15 @@ auto_flatten() {
 void GeoMipTerrain::
 calc_levels() {
   _levels.clear();
-  unsigned short t;
   for (unsigned int mx = 0; mx < (_xsize - 1) / _block_size; mx++) {
     pvector<unsigned short> tvector; //create temporary row
-    pvector<unsigned short> tvector2; //create temporary row
     for (unsigned int my = 0; my < (_ysize - 1) / _block_size; my++) {
-      t = min(short(max(_min_level, lod_decide(mx, my))),
-              short(log(float(_block_size)) / log(2.0)));
-      tvector.push_back(t);
+      if(_bruteforce) {
+        tvector.push_back(0);
+      } else {
+        tvector.push_back(min(short(max(_min_level, lod_decide(mx, my))),
+                              short(log(float(_block_size)) / log(2.0))));
+      }
     }
     _levels.push_back(tvector); //push the new row of levels into the 2d vector
     tvector.clear();
