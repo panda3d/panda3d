@@ -21,6 +21,8 @@
 
 #include "movieAudio.h"
 #include "datagramIterator.h"
+#include "pdeque.h"
+
 class MovieAudioCursor;
 class UserDataAudioCursor;
 
