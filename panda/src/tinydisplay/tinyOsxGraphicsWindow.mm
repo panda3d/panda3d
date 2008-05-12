@@ -736,11 +736,12 @@ void TinyOsxGraphicsWindow::begin_flip()
   QDErr err;
 
   // blit rendered framebuffer into window backing store
-  long width  = _frame_buffer->xsize;
-  long height  = _frame_buffer->ysize;
-  
-  Rect src_rect = {0, 0, height, width};
-  Rect ddrc_rect = {0, 0, height, width};
+  Rect src_rect = {0, 0, _frame_buffer->ysize, _frame_buffer->xsize};
+  Rect ddrc_rect = {0, 0, _frame_buffer->ysize, _frame_buffer->xsize};
+  if (get_pixel_factor() != 1.0) {
+    src_rect.right = get_fb_x_size();
+    src_rect.bottom = get_fb_y_size();
+  }
   
   // create a GWorld containing our image
   GWorldPtr pGWorld;
@@ -1112,6 +1113,25 @@ void TinyOsxGraphicsWindow::process_events()
 	   }
     }
 };
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyOsxGraphicsWindow::supports_pixel_zoom
+//       Access: Published, Virtual
+//  Description: Returns true if a call to set_pixel_zoom() will be
+//               respected, false if it will be ignored.  If this
+//               returns false, then get_pixel_factor() will always
+//               return 1.0, regardless of what value you specify for
+//               set_pixel_zoom().
+//
+//               This may return false if the underlying renderer
+//               doesn't support pixel zooming, or if you have called
+//               this on a DisplayRegion that doesn't have both
+//               set_clear_color() and set_clear_depth() enabled.
+////////////////////////////////////////////////////////////////////
+bool TinyOsxGraphicsWindow::
+supports_pixel_zoom() const {
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyOsxGraphicsWindow::handleKeyInput()

@@ -52,6 +52,7 @@ public:
   virtual void begin_flip();
   virtual void end_flip();
   virtual void process_events();
+  virtual bool supports_pixel_zoom() const;
   
   virtual bool do_reshape_request(int x_origin, int y_origin, bool has_origin,
                                   int x_size, int y_size);
