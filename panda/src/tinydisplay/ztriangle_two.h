@@ -308,7 +308,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
   {                                                     \
     register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
-    register unsigned int s,t,z,zz;                     \
+    register int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
@@ -324,8 +324,8 @@ static void FNAME(white_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                            \
-        t=(unsigned int) tt;                            \
+        s=(int) ss;                            \
+        t=(int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         CALC_MIPMAP_LEVEL;                              \
@@ -350,8 +350,8 @@ static void FNAME(white_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                              \
-      t=(unsigned int) tt;                              \
+      s=(int) ss;                              \
+      t=(int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
       CALC_MIPMAP_LEVEL;                                \
@@ -432,9 +432,9 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
   {                                                     \
     register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
-    register unsigned int s,t,z,zz;                     \
+    register int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
-    register unsigned int or1,og1,ob1,oa1;              \
+    register int or1,og1,ob1,oa1;              \
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
@@ -453,8 +453,8 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                            \
-        t=(unsigned int) tt;                            \
+        s=(int) ss;                            \
+        t=(int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         CALC_MIPMAP_LEVEL;                              \
@@ -479,8 +479,8 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                              \
-      t=(unsigned int) tt;                              \
+      s=(int) ss;                              \
+      t=(int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
       CALC_MIPMAP_LEVEL;                                \
@@ -569,9 +569,9 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
   {                                                     \
     register ZPOINT *pz;                                \
     register PIXEL *pp;                                 \
-    register unsigned int s,t,z,zz;                     \
+    register int s,t,z,zz;                     \
     register int n,dsdx,dtdx;                           \
-    register unsigned int or1,og1,ob1,oa1;              \
+    register int or1,og1,ob1,oa1;              \
     float sz,tz,fz,zinv;                                \
     n=(x2>>16)-x1;                                      \
     fz=(float)z1;                                       \
@@ -590,8 +590,8 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
         float ss,tt;                                    \
         ss=(sz * zinv);                                 \
         tt=(tz * zinv);                                 \
-        s=(unsigned int) ss;                            \
-        t=(unsigned int) tt;                            \
+        s=(int) ss;                            \
+        t=(int) tt;                            \
         dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
         dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
         CALC_MIPMAP_LEVEL;                              \
@@ -616,8 +616,8 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
       float ss,tt;                                      \
       ss=(sz * zinv);                                   \
       tt=(tz * zinv);                                   \
-      s=(unsigned int) ss;                              \
-      t=(unsigned int) tt;                              \
+      s=(int) ss;                              \
+      t=(int) tt;                              \
       dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
       dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
       CALC_MIPMAP_LEVEL;                                \
