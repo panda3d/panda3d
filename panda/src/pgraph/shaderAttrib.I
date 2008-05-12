@@ -27,7 +27,9 @@ ShaderAttrib() :
   _shader(NULL),
   _shader_priority(0),
   _auto_shader(false),
-  _has_shader(false)
+  _has_shader(false),
+  _flags(0),
+  _has_flags(0)
 {
 }
 

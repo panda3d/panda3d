@@ -40,12 +40,7 @@ make_off() {
   static CPT(RenderAttrib) _off_attrib;
   if (_off_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
-    attrib->_shader = (Shader*)NULL;
-    attrib->_shader_priority = 0;
-    attrib->_auto_shader = false;
     attrib->_has_shader = true;
-    attrib->_flags = 0;
-    attrib->_has_flags = 0;
     _off_attrib = return_new(attrib);
   }
   return _off_attrib;
@@ -62,12 +57,6 @@ make() {
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
-    attrib->_shader = (Shader*)NULL;
-    attrib->_shader_priority = 0;
-    attrib->_auto_shader = false;
-    attrib->_has_shader = false;
-    attrib->_flags = 0;
-    attrib->_has_flags = 0;
     _null_attrib = return_new(attrib);
   }
   return _null_attrib;
