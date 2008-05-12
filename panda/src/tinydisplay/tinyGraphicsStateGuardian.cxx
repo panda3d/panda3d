@@ -434,6 +434,11 @@ end_frame(Thread *current_thread) {
 
   // Evict any textures that exceed our texture memory.
   _textures_lru.begin_epoch();
+
+  // Clear these pointers so we don't have floating pointers between
+  // frames.
+  _current_frame_buffer = NULL;
+  _c->zb = NULL;
 }
 
 

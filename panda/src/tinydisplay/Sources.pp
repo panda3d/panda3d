@@ -1,6 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_TINYDISPLAY]
 #define BUILDING_DLL BUILDING_TINYDISPLAY
 
+#define OSX_SYS_FRAMEWORKS ApplicationServices Carbon CoreServices Cocoa  
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c 
 
@@ -24,6 +25,9 @@
     tinyWinGraphicsWindow.h tinyWinGraphicsWindow.I tinyWinGraphicsWindow.cxx \
     tinyXGraphicsPipe.I tinyXGraphicsPipe.cxx tinyXGraphicsPipe.h \
     tinyXGraphicsWindow.h tinyXGraphicsWindow.I tinyXGraphicsWindow.cxx \
+    tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.cxx tinyOsxGraphicsPipe.h \
+    tinyOsxGraphicsWindow.h tinyOsxGraphicsWindow.I \
+    $[if $[IS_OSX],tinyOsxGraphicsWindow.mm,] \
     clip.cxx error.cxx \
     image_util.cxx init.cxx light.cxx \
     memory.cxx msghandling.cxx msghandling.h \

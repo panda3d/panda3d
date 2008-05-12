@@ -34,6 +34,10 @@ extern ConfigVariableBool x_error_abort;
 extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
 
+extern ConfigVariableBool show_resize_box;
+extern ConfigVariableBool osx_disable_event_loop;
+extern ConfigVariableInt osx_mouse_wheel_scale;
+
 extern ConfigVariableInt td_texture_ram;
 extern ConfigVariableBool td_ignore_mipmaps;
 extern ConfigVariableBool td_perspective_textures;

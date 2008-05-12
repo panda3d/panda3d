@@ -21,6 +21,8 @@
 #include "tinyXGraphicsWindow.h"
 #include "tinyWinGraphicsPipe.h"
 #include "tinyWinGraphicsWindow.h"
+#include "tinyOsxGraphicsPipe.h"
+#include "tinyOsxGraphicsWindow.h"
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
@@ -59,6 +61,26 @@ ConfigVariableInt x_wheel_down_button
  PRC_DESC("This is the mouse button index of the wheel_down event: which "
           "mouse button number does the system report when the mouse wheel "
           "is rolled one notch down?"));
+
+ConfigVariableBool show_resize_box
+("show-resize-box", true,
+ PRC_DESC("When this variable is true, then resizable OSX Panda windows will "
+          "be rendered with a resize control in the lower-right corner.  "
+          "This is specially handled by Panda, since otherwise the 3-d "
+          "window would completely hide any resize control drawn by the "
+          "OS.  Set this variable false to allow this control to be hidden."));
+
+ConfigVariableBool osx_disable_event_loop
+("osx-disable-event-loop", false,
+ PRC_DESC("Set this true to disable the window event loop for the Panda "
+          "windows.  This makes sense only in a publish environment where "
+          "the window event loop is already handled by another part of the "
+          "app."));
+
+ConfigVariableInt osx_mouse_wheel_scale
+("osx-mouse-wheel-scale", 1,
+ PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
+          "represent a single wheel_up or wheel_down message."));
 
 ConfigVariableInt td_texture_ram
 ("td-texture-ram", -1,
@@ -120,6 +142,14 @@ init_libtinydisplay() {
   selection->add_pipe_type(TinyWinGraphicsPipe::get_class_type(),
                            TinyWinGraphicsPipe::pipe_constructor);
   ps->set_system_tag("TinyGL", "native_window_system", "Win");
+#endif
+
+#ifdef IS_OSX
+  TinyOsxGraphicsPipe::init_type();
+  TinyOsxGraphicsWindow::init_type();
+  selection->add_pipe_type(TinyOsxGraphicsPipe::get_class_type(),
+                           TinyOsxGraphicsPipe::pipe_constructor);
+  ps->set_system_tag("TinyGL", "OSX", "OSX");
 #endif
 
 #ifdef HAVE_SDL
