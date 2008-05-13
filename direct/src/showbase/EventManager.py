@@ -13,11 +13,13 @@ from direct.task.Task import Task
 # downloaded.
 #from pandac.PandaModules import *
 
-from pandac.PandaModules import PStatCollector
-
 class EventManager:
 
     notify = None
+
+    # delayed import, since this is imported by the Toontown Launcher
+    # before the complete PandaModules have been downloaded.
+    PStatCollector = None
 
     # for efficiency, only call import once per module
     EventStorePandaNode = None
@@ -43,6 +45,8 @@ class EventManager:
         """
         if self._wantPstats is None:
             self._wantPstats = config.GetBool('pstats-eventmanager', 0)
+            from pandac.PandaModules import PStatCollector
+            EventManager.PStatCollector = PStatCollector
         # use different methods for handling events with and without pstats tracking
         # for efficiency
         if self._wantPstats:
@@ -155,10 +159,10 @@ class EventManager:
                 hyphen = name.find('-')
                 if hyphen >= 0:
                     name = name[0:hyphen]
-                pstatCollector = PStatCollector('App:Show code:eventManager:' + name)
+                pstatCollector = EventManager.PStatCollector('App:Show code:eventManager:' + name)
                 pstatCollector.start()
                 if self.eventHandler:
-                    cppPstatCollector = PStatCollector(
+                    cppPstatCollector = EventManager.PStatCollector(
                         'App:Show code:eventManager:' + name + ':C++')
 
             if paramList:
