@@ -39,8 +39,8 @@ THREADCOUNT=0
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
-  "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW",
-  "ARTOOLKIT","DIRECTCAM","FFMPEG","PANDATOOL","PANDAAPP"
+  "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","ARTOOLKIT",
+  "ODE","DIRECTCAM","FFMPEG","PANDATOOL","PANDAAPP"
 ])
 
 CheckPandaSourceTree()
@@ -261,6 +261,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avformat-50-panda.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avutil-49-panda.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc8/artoolkit/lib/libAR.lib")
+    if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc8/ode/lib/ode.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
@@ -290,7 +291,7 @@ if (COMPILER=="LINUX"):
     IncDirectory("GTK2", "/usr/include/atk-1.0")
     LibName("GTK2", "-lgtk-x11-2.0")
 
-    for pkg in ["VRPN", "FFTW", "FMOD", "FMODEX", "OPENAL", "NVIDIACG", "FFMPEG", "ARTOOLKIT"]:
+    for pkg in ["VRPN", "FFTW", "FMOD", "FMODEX", "OPENAL", "NVIDIACG", "FFMPEG", "ARTOOLKIT", "ODE"]:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
                 IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
@@ -321,6 +322,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lrfftw")
     if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lfftw")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lAR")
+    if (PkgSkip("ODE")==0):      LibName("ODE", "-lode")
     LibName("GLUT", "-lGL")
     LibName("GLUT", "-lGLU")
 
@@ -471,12 +473,13 @@ def CompileIgate(woutd,wsrc,opts):
         return
     cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
     if (COMPILER=="MSVC"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
-        cmd = cmd + ' -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
+        #NOTE: this 1400 value is the version number for VC2005.
+        cmd = cmd + ' -D_MSC_VER=1400 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const -D_LP64'
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__const=const -D__i386__'
+        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts,OPTIMIZE)
     if (optlevel==1): cmd = cmd + ' '
     if (optlevel==2): cmd = cmd + ' '
@@ -752,6 +755,7 @@ DTOOL_CONFIG=[
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
+    ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
@@ -1046,6 +1050,8 @@ CopyAllHeaders('panda/src/recorder')
 CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/glgsg')
 CopyAllHeaders('panda/src/wgldisplay')
+CopyAllHeaders('panda/src/ode')
+CopyAllHeaders('panda/metalibs/pandaode')
 CopyAllHeaders('panda/src/physics')
 CopyAllHeaders('panda/src/particlesystem')
 CopyAllHeaders('panda/metalibs/panda')
@@ -2221,6 +2227,42 @@ if (sys.platform == "win32"):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
     TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagl.dll', opts=['WINGDI', 'GLUT', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
+
+#
+# DIRECTORY: panda/src/ode/
+#
+if (PkgSkip("ODE")==0):
+    OPTS=['DIR:panda/src/ode', 'BUILDING:PANDAODE', 'ODE']
+    TargetAdd('pode_composite1.obj', opts=OPTS, input='pode_composite1.cxx')
+    TargetAdd('pode_composite2.obj', opts=OPTS, input='pode_composite2.cxx')
+    TargetAdd('pode_composite3.obj', opts=OPTS, input='pode_composite3.cxx')
+    IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite.cxx"])
+    IGATEFILES.remove("odeConvexGeom.h")
+    IGATEFILES.remove("odeHeightFieldGeom.h")
+    IGATEFILES.remove("odeHelperStructs.h")
+    TargetAdd('libpandaode.in', opts=OPTS, input=IGATEFILES)
+    TargetAdd('libpandaode.in', opts=['IMOD:pandaode', 'ILIB:libpandaode', 'SRCDIR:panda/src/ode'])
+    TargetAdd('libpandaode_igate.obj', input='libpandaode.in', opts=["DEPENDENCYONLY"])
+
+#
+# DIRECTORY: panda/metalibs/pandaode/
+#
+if (PkgSkip("ODE")==0):
+    OPTS=['DIR:panda/metalibs/pandaode', 'BUILDING:PANDAODE', 'ODE']
+    TargetAdd('pandaode_pandaode.obj', opts=OPTS, input='pandaode.cxx')
+    
+    TargetAdd('libpandaode_module.obj', input='libpandaode.in')
+    TargetAdd('libpandaode_module.obj', opts=OPTS)
+    TargetAdd('libpandaode_module.obj', opts=['IMOD:pandaode', 'ILIB:libpandaode'])
+    
+    TargetAdd('libpandaode.dll', input='pandaode_pandaode.obj')
+    TargetAdd('libpandaode.dll', input='libpandaode_module.obj')
+    TargetAdd('libpandaode.dll', input='pode_composite1.obj')
+    TargetAdd('libpandaode.dll', input='pode_composite2.obj')
+    TargetAdd('libpandaode.dll', input='pode_composite3.obj')
+    TargetAdd('libpandaode.dll', input='libpandaode_igate.obj')
+    TargetAdd('libpandaode.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libpandaode.dll', opts=['WINUSER', 'ODE'])
 
 #
 # DIRECTORY: panda/src/physics/
