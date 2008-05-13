@@ -162,6 +162,13 @@ PUBLISHED:
 
     TG_point_sprite,
   };
+  enum QualityLevel {
+    QL_unspecified,
+    QL_default,
+    QL_fastest,
+    QL_normal,
+    QL_best,
+  };
 
   INLINE void set_texture_type(TextureType texture_type);
   INLINE TextureType get_texture_type() const;
@@ -214,6 +221,9 @@ PUBLISHED:
 
   INLINE void set_tex_gen(TexGen tex_gen);
   INLINE TexGen get_tex_gen() const;
+
+  INLINE void set_quality_level(QualityLevel quality_level);
+  INLINE QualityLevel get_quality_level() const;
 
   INLINE void set_stage_name(const string &stage_name);
   INLINE void clear_stage_name();
@@ -281,6 +291,7 @@ PUBLISHED:
   static CombineSource string_combine_source(const string &string);
   static CombineOperand string_combine_operand(const string &string);
   static TexGen string_tex_gen(const string &string);
+  static QualityLevel string_quality_level(const string &string);
 
 public:
   virtual EggTransform *as_transform();
@@ -314,6 +325,7 @@ private:
   EnvType _env_type;
   bool _saved_result;
   TexGen _tex_gen;
+  QualityLevel _quality_level;
   string _stage_name;
   int _priority;
   Colorf _color;
@@ -399,6 +411,7 @@ EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineChannel cc
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineSource cs);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineOperand co);
 EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::TexGen tex_gen);
+EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::QualityLevel quality_level);
 
 #include "eggTexture.I"
 

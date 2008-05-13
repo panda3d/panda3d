@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include "zbuffer.h"
+#include "pnotify.h"
 
 ZBuffer *ZB_open(int xsize, int ysize, int mode,
 		 int nb_colors,
@@ -343,8 +344,26 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
 #define ZB_ST_FRAC_HIGH (1 << ZB_POINT_ST_FRAC_BITS)
 #define ZB_ST_FRAC_MASK (ZB_ST_FRAC_HIGH - 1)
 
-PIXEL lookup_texture_bilinear(ZTextureLevel *base_level, int s, int t)
+#define LINEAR_FILTER_BITSIZE(c1, c2, f, bitsize) \
+  ((((c2) * (f)) >> bitsize) + (((c1) * ((1 << bitsize) - (f))) >> bitsize))
+
+#define LINEAR_FILTER(c1, c2, f) \
+  LINEAR_FILTER_BITSIZE(c1, c2, f, ZB_POINT_ST_FRAC_BITS)
+
+#define BILINEAR_FILTER(c1, c2, c3, c4, sf, tf) \
+  (LINEAR_FILTER(LINEAR_FILTER(c1, c2, sf), LINEAR_FILTER(c3, c4, sf), tf))
+
+// Grab the nearest texel from the base level.  This is also
+// implemented inline as ZB_LOOKUP_TEXTURE_NEAREST.
+PIXEL lookup_texture_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
 {
+  return ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t);
+}
+
+// Bilinear filter four texels in the base level.
+PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+{
+  ZTextureLevel *base_level = texture_levels;
   PIXEL p1, p2, p3, p4;
   int sf, tf;
   int r, g, b, a;
@@ -356,18 +375,127 @@ PIXEL lookup_texture_bilinear(ZTextureLevel *base_level, int s, int t)
   p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t + ZB_ST_FRAC_HIGH);
   p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
   tf = t & ZB_ST_FRAC_MASK;
-  
-  r = (((PIXEL_R(p4) * sf + PIXEL_R(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
-       ((PIXEL_R(p2) * sf + PIXEL_R(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
 
-  g = (((PIXEL_G(p4) * sf + PIXEL_G(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
-       ((PIXEL_G(p2) * sf + PIXEL_G(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
-  
-  b = (((PIXEL_B(p4) * sf + PIXEL_B(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
-       ((PIXEL_B(p2) * sf + PIXEL_B(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
-  
-  a = (((PIXEL_A(p4) * sf + PIXEL_A(p3) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * tf +
-       ((PIXEL_A(p2) * sf + PIXEL_A(p1) * (ZB_ST_FRAC_HIGH - sf)) >> ZB_POINT_ST_FRAC_BITS) * (ZB_ST_FRAC_HIGH - tf)) >> ZB_POINT_ST_FRAC_BITS;
+  r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
+  g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
+  b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
+  a = BILINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), PIXEL_A(p3), PIXEL_A(p4), sf, tf);
+
+  return RGBA_TO_PIXEL(r, g, b, a);
+}
+
+// Grab the nearest texel from the nearest mipmap level.  This is also
+// implemented inline as ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST.
+PIXEL lookup_texture_mipmap_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+{
+  return ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_levels, s, t, level);
+}
+
+// Linear filter the two texels from the two nearest mipmap levels.
+PIXEL lookup_texture_mipmap_linear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+{
+  PIXEL p1, p2;
+  int r, g, b, a;
+
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture_levels + level - 1, s >> (level - 1), t >> (level - 1));
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture_levels + level, s >> level, t >> level);
+
+  unsigned int bitsize = (level - 1) + ZB_POINT_ST_FRAC_BITS;
+  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p1), PIXEL_R(p2), level_dx, bitsize);
+  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p1), PIXEL_G(p2), level_dx, bitsize);
+  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p1), PIXEL_B(p2), level_dx, bitsize);
+  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p1), PIXEL_A(p2), level_dx, bitsize); 
+
+  return RGBA_TO_PIXEL(r, g, b, a);
+}
+
+// Bilinear filter four texels in the nearest mipmap level.
+PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+{
+  ZTextureLevel *base_level = texture_levels + level;
+  s >>= level;
+  t >>= level;
+
+  PIXEL p1, p2, p3, p4;
+  int sf, tf;
+  int r, g, b, a;
+
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t);
+  sf = s & ZB_ST_FRAC_MASK;
+
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t + ZB_ST_FRAC_HIGH);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
+  tf = t & ZB_ST_FRAC_MASK;
+
+  r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
+  g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
+  b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
+  a = BILINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), PIXEL_A(p3), PIXEL_A(p4), sf, tf);
+
+  return RGBA_TO_PIXEL(r, g, b, a);
+}
+
+// Bilinear filter four texels in each of the nearest two mipmap
+// levels, then linear filter them together.
+PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+{
+  PIXEL p1a, p2a;
+
+  {
+    ZTextureLevel *base_level = texture_levels + level - 1;
+    int sl = s >> (level - 1);
+    int tl = t >> (level - 1);
+    
+    PIXEL p1, p2, p3, p4;
+    int sf, tf;
+    int r, g, b, a;
+    
+    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
+    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl);
+    sf = sl & ZB_ST_FRAC_MASK;
+    
+    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl + ZB_ST_FRAC_HIGH);
+    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl + ZB_ST_FRAC_HIGH);
+    tf = tl & ZB_ST_FRAC_MASK;
+    
+    r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
+    g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
+    b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
+    a = BILINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), PIXEL_A(p3), PIXEL_A(p4), sf, tf);
+    p1a = RGBA_TO_PIXEL(r, g, b, a);
+  }
+
+  {
+    ZTextureLevel *base_level = texture_levels + level;
+    int sl = s >> level;
+    int tl = t >> level;
+    
+    PIXEL p1, p2, p3, p4;
+    int sf, tf;
+    int r, g, b, a;
+    
+    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
+    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl);
+    sf = sl & ZB_ST_FRAC_MASK;
+    
+    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl + ZB_ST_FRAC_HIGH);
+    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl + ZB_ST_FRAC_HIGH);
+    tf = tl & ZB_ST_FRAC_MASK;
+    
+    r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
+    g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
+    b = BILINEAR_FILTER(PIXEL_B(p1), PIXEL_B(p2), PIXEL_B(p3), PIXEL_B(p4), sf, tf);
+    a = BILINEAR_FILTER(PIXEL_A(p1), PIXEL_A(p2), PIXEL_A(p3), PIXEL_A(p4), sf, tf);
+    p2a = RGBA_TO_PIXEL(r, g, b, a);
+  }
+
+  int r, g, b, a;
+  unsigned int bitsize = (level - 1) + ZB_POINT_ST_FRAC_BITS;
+  r = LINEAR_FILTER_BITSIZE(PIXEL_R(p1a), PIXEL_R(p2a), level_dx, bitsize);
+  g = LINEAR_FILTER_BITSIZE(PIXEL_G(p1a), PIXEL_G(p2a), level_dx, bitsize);
+  b = LINEAR_FILTER_BITSIZE(PIXEL_B(p1a), PIXEL_B(p2a), level_dx, bitsize);
+  a = LINEAR_FILTER_BITSIZE(PIXEL_A(p1a), PIXEL_A(p2a), level_dx, bitsize); 
 
   return RGBA_TO_PIXEL(r, g, b, a);
 }

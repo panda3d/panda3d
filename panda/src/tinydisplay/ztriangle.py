@@ -24,7 +24,7 @@ Options = [
     [ 'znone', 'zless' ],
 
     # texture filters
-    [ 'nearest', 'mipmap' ],
+    [ 'tnearest', 'tmipmap', 'tgeneral' ],
     ]
 
 # The various combinations of these options are explicit within
@@ -60,8 +60,9 @@ CodeTable = {
     'zless' : '#define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))',
 
     # texture filters
-    'nearest' : '#define CALC_MIPMAP_LEVEL\n#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)',
-    'mipmap' : '#define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL\n#define INTERP_MIPMAP\n#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level) ZB_LOOKUP_TEXTURE_NEAREST_MIPMAP(texture_levels, s, t, level)',
+    'tnearest' : '#define CALC_MIPMAP_LEVEL\n#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)',
+    'tmipmap' : '#define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL\n#define INTERP_MIPMAP\n#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_levels, s, t, level)',
+    'tgeneral' : '#define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL\n#define INTERP_MIPMAP\n#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ((level == 0) ? zb->tex_magfilter_func(texture_levels, s, t, level, level_dx) : zb->tex_minfilter_func(texture_levels, s, t, level, level_dx))',
 }
 
 ops = [0] * len(Options)

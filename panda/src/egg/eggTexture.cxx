@@ -48,6 +48,7 @@ EggTexture(const string &tref_name, const string &filename)
   _env_type = ET_unspecified;
   _saved_result = false;
   _tex_gen = TG_unspecified;
+  _quality_level = QL_unspecified;
   _priority = 0;
   _color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
@@ -93,6 +94,7 @@ operator = (const EggTexture &copy) {
   _env_type = copy._env_type;
   _saved_result = copy._saved_result;
   _tex_gen = copy._tex_gen;
+  _quality_level = copy._quality_level;
   _stage_name = copy._stage_name;
   _priority = copy._priority;
   _color = copy._color;
@@ -235,6 +237,11 @@ write(ostream &out, int indent_level) const {
   if (get_tex_gen() != TG_unspecified) {
     indent(out, indent_level + 2)
       << "<Scalar> tex-gen { " << get_tex_gen() << " }\n";
+  }
+
+  if (get_quality_level() != QL_unspecified) {
+    indent(out, indent_level + 2)
+      << "<Scalar> quality-level { " << get_quality_level() << " }\n";
   }
 
   if (has_stage_name()) {
@@ -1051,6 +1058,35 @@ string_tex_gen(const string &string) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::string_quality_level
+//       Access: Published, Static
+//  Description: Returns the TexGen value associated with the given
+//               string representation, or ET_unspecified if the string
+//               does not match any known TexGen value.
+////////////////////////////////////////////////////////////////////
+EggTexture::QualityLevel EggTexture::
+string_quality_level(const string &string) {
+  if (cmp_nocase_uh(string, "unspecified") == 0) {
+    return QL_unspecified;
+
+  } else if (cmp_nocase_uh(string, "default") == 0) {
+    return QL_default;
+
+  } else if (cmp_nocase_uh(string, "fastest") == 0) {
+    return QL_fastest;
+
+  } else if (cmp_nocase_uh(string, "normal") == 0) {
+    return QL_normal;
+
+  } else if (cmp_nocase_uh(string, "best") == 0) {
+    return QL_best;
+
+  } else {
+    return QL_unspecified;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::as_transform
 //       Access: Public, Virtual
 //  Description: Returns this object cross-cast to an EggTransform
@@ -1468,4 +1504,22 @@ operator << (ostream &out, EggTexture::TexGen tex_gen) {
   }
 
   return out << "**invalid TexGen(" << (int)tex_gen << ")**";
+}
+
+ostream &
+operator << (ostream &out, EggTexture::QualityLevel quality_level) {
+  switch (quality_level) {
+  case EggTexture::QL_unspecified:
+    return out << "unspecified";
+  case EggTexture::QL_default:
+    return out << "default";
+  case EggTexture::QL_fastest:
+    return out << "fastest";
+  case EggTexture::QL_normal:
+    return out << "normal";
+  case EggTexture::QL_best:
+    return out << "best";
+  }
+
+  return out << "**invalid QualityLevel(" << (int)quality_level << ")**";
 }

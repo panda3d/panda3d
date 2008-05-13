@@ -537,9 +537,17 @@ texture_body:
   } else if (cmp_nocase_uh(name, "tex_gen") == 0) {
     EggTexture::TexGen tex_gen = EggTexture::string_tex_gen(strval);
     if (tex_gen == EggTexture::TG_unspecified) {
-      eggyywarning("Unknown texture env type " + strval);
+      eggyywarning("Unknown tex-gen " + strval);
     } else {
       texture->set_tex_gen(tex_gen);
+    }
+
+  } else if (cmp_nocase_uh(name, "quality_level") == 0) {
+    EggTexture::QualityLevel quality_level = EggTexture::string_quality_level(strval);
+    if (quality_level == EggTexture::QL_unspecified) {
+      eggyywarning("Unknown quality-level " + strval);
+    } else {
+      texture->set_quality_level(quality_level);
     }
 
   } else if (cmp_nocase_uh(name, "stage_name") == 0) {

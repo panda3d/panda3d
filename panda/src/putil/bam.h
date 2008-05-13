@@ -36,7 +36,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 5 on 5/6/05 for new Geom implementation.
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
-static const unsigned short _bam_minor_ver = 15;
+static const unsigned short _bam_minor_ver = 16;
 // Bumped to minor version 1 on 3/12/06 to add Texture::_compression.
 // Bumped to minor version 2 on 3/17/06 to add PandaNode::_draw_control_mask.
 // Bumped to minor version 3 on 3/21/06 to add Texture::_ram_images.
@@ -52,6 +52,7 @@ static const unsigned short _bam_minor_ver = 15;
 // Bumped to minor version 13 on 8/15/07 to reverse CollisionPolygon vertices.
 // Bumped to minor version 14 on 12/19/07 to change default ColorAttrib.
 // Bumped to minor version 15 on 4/9/08 to add TextureAttrib::_implicit_sort.
+// Bumped to minor version 16 on 5/13/08 to add Texture::_quality_level.
 
 
 #endif

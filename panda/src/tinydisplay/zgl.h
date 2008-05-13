@@ -146,7 +146,7 @@ typedef struct GLContext {
   /* textures */
   GLTexture *current_texture;
   int texture_2d_enabled;
-
+ 
   /* matrix */
   M4 matrix_projection;
   M4 matrix_model_view;

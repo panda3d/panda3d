@@ -406,6 +406,7 @@ run() {
   PT(EggData) egg_data = new EggData;
   _group = new EggGroup();
   egg_data->add_child(_group);
+  append_command_comment(egg_data);
 
   _vpool = new EggVertexPool("vpool");
   _group->add_child(_vpool);
@@ -446,7 +447,7 @@ run() {
       texture->write(texture->read_source_image());
     }
 
-    write_egg_file();
+    egg_data->write_egg(get_output());
 
   } else {
     // Pass the generated egg structure through egg-palettize, without
@@ -641,6 +642,7 @@ make_tref(PNMTextGlyph *glyph, int character) {
   tref->set_wrap_mode(EggTexture::WM_clamp);
   tref->set_minfilter(EggTexture::FT_linear_mipmap_linear);
   tref->set_magfilter(EggTexture::FT_linear);
+  tref->set_quality_level(EggTexture::QL_best);
 
   return tref;
 }

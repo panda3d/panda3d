@@ -744,6 +744,17 @@ uses_mipmaps() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_quality_level
+//       Access: Public
+//  Description: Returns the current quality_level hint.  See
+//               set_quality_level().
+////////////////////////////////////////////////////////////////////
+INLINE Texture::QualityLevel Texture::
+get_quality_level() const {
+  return _quality_level;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::might_have_ram_image
 //       Access: Published
 //  Description: Returns true if the texture's image contents are

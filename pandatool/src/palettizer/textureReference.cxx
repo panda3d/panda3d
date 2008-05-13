@@ -106,6 +106,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _properties._format = _egg_tex->get_format();
   _properties._minfilter = _egg_tex->get_minfilter();
   _properties._magfilter = _egg_tex->get_magfilter();
+  _properties._quality_level = _egg_tex->get_quality_level();
   _properties._anisotropic_degree = _egg_tex->get_anisotropic_degree();
 
   string name = filename.get_basename_wo_extension();

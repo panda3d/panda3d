@@ -447,6 +447,23 @@ appear before they are referenced.
     the polygon itself.  See the description for draw_order under
     polygon attributes.
 
+  <Scalar> quality-level { quality }
+
+    Sets a hint to the renderer about the desired performance /
+    quality tradeoff for this particular texture.  This is most useful
+    for the tinydisplay software renderer; for normal,
+    hardware-accelerated renderers, this may have little or no effect.
+
+    This may be one of:
+
+      DEFAULT
+      FASTEST
+      NORMAL
+      BEST
+
+    "Default" means to use whatever quality level is specified by the
+    global texture-quality-level config variable.
+
   <Transform> { transform-definition }
 
     This specifies a 2-d or 3-d transformation that is applied to the

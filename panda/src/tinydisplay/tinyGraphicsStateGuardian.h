@@ -104,7 +104,7 @@ private:
   void do_issue_material();
   void do_issue_texture();
 
-  void apply_texture(TextureContext *tc);
+  bool apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
   bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels);
   int get_tex_shift(int orig_size);
@@ -119,6 +119,7 @@ private:
   void setup_material(GLMaterial *gl_material, const Material *material);
   static void load_matrix(M4 *matrix, const TransformState *transform);
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
+  static ZB_lookupTextureFunc get_tex_filter_func(Texture::FilterType filter);
 
 public:
   // Filled in by the Tiny*GraphicsWindow at begin_frame().
@@ -136,6 +137,7 @@ private:
     CMF_diffuse   = 0x002,
   };
   int _color_material_flags;
+  int _texturing_state;
   int _texfilter_state;
   bool _texture_replace;
 

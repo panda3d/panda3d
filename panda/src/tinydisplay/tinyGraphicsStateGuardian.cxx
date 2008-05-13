@@ -599,7 +599,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-  if (_c->texture_2d_enabled && _texture_replace) {
+  if (_texturing_state != 0 && _texture_replace) {
     // We don't need the vertex color or lighting calculation after
     // all, since the current texture will just hide all of that.
     needs_color = false;
@@ -763,13 +763,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
   }
 
-  int texturing_state = 0;  // untextured
-  int texfilter_state = 0;  // nearest
-  if (_c->texture_2d_enabled) {
+  int texturing_state = _texturing_state;
+  int texfilter_state = 0;  // tnearest
+  if (texturing_state > 0) {
     texfilter_state = _texfilter_state;
-    texturing_state = 2;  // perspective-correct textures
-    if (_c->matrix_model_projection_no_w_transform || !td_perspective_textures) {
-      texturing_state = 1;  // non-perspective-correct textures
+    if (_c->matrix_model_projection_no_w_transform) {
+      // Don't bother with the perspective-correct algorithm if we're
+      // under an orthonormal lens, e.g. render2d.
+      texturing_state = 1;    // textured (not perspective correct)
     }
 
     if (_texture_replace) {
@@ -1241,10 +1242,7 @@ release_texture(TextureContext *tc) {
   GLTexture *gltex = gtc->_gltex;
   gtc->_gltex = NULL;
 
-  if (_c->current_texture == gltex) {
-    _c->current_texture = NULL;
-    _c->texture_2d_enabled = false;
-  }
+  _texturing_state = 0;  // just in case
 
   for (int i = 0; i < gltex->num_levels; ++i) {
     gl_free(gltex->levels[i].pixmap);
@@ -1602,6 +1600,7 @@ do_issue_material() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_texture() {
+  _texturing_state = 0;   // untextured
   _c->texture_2d_enabled = false;
 
   int num_stages = _effective_texture->get_num_on_ff_stages();
@@ -1622,12 +1621,53 @@ do_issue_texture() {
   }
     
   // Then, turn on the current texture mode.
-  apply_texture(tc);
+  if (!apply_texture(tc)) {
+    return;
+  }
 
   // Set a few state cache values.
-  _texfilter_state = 0;    // nearest
-  if (texture->uses_mipmaps() && !td_ignore_mipmaps) {
-    _texfilter_state = 1;  // mipmap
+  _c->texture_2d_enabled = true;
+
+  _texturing_state = 2;   // perspective (perspective-correct texturing)
+  if (!td_perspective_textures) {
+    _texturing_state = 1;    // textured (not perspective correct)
+  }
+
+  Texture::QualityLevel quality_level = texture->get_quality_level();
+  if (quality_level == Texture::QL_default) {
+    quality_level = texture_quality_level;
+  }
+
+  if (quality_level == Texture::QL_best) {
+    // This is the most generic texture filter.  Slow, but pretty.
+    _texfilter_state = 2;  // tgeneral
+    _c->zb->tex_minfilter_func = get_tex_filter_func(texture->get_minfilter());
+    _c->zb->tex_magfilter_func = get_tex_filter_func(texture->get_magfilter());
+
+    if (texture->get_minfilter() == Texture::FT_nearest &&
+        texture->get_magfilter() == Texture::FT_nearest) {
+      // This case is inlined.
+      _texfilter_state = 0;    // tnearest
+    } else if (texture->get_minfilter() == Texture::FT_nearest_mipmap_nearest &&
+               texture->get_magfilter() == Texture::FT_nearest) {
+      // So is this case.
+      _texfilter_state = 1;  // tmipmap
+    }
+
+  } else if (quality_level == Texture::QL_fastest) {
+    // This is the cheapest texture filter.  We disallow mipmaps and
+    // perspective correctness.
+    _texfilter_state = 0;    // tnearest
+    _texturing_state = 1;    // textured (not perspective correct)
+  
+  } else {
+    // This is the default texture filter.  We use nearest sampling if
+    // there are no mipmaps, and mipmap_nearest if there are any
+    // mipmaps--these are the two inlined filters.
+    _texfilter_state = 0;    // tnearest
+    if (texture->uses_mipmaps() && !td_ignore_mipmaps) {
+      _texfilter_state = 1;  // tmipmap
+    }
   }
 
   // M_replace means M_replace; anything else is treated the same as
@@ -1642,29 +1682,32 @@ do_issue_texture() {
 //               texture, and makes it the current texture available
 //               for rendering.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
+bool TinyGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   gtc->set_active(true);
-  _c->current_texture = gtc->_gltex;
-  _c->texture_2d_enabled = true;
 
   GLTexture *gltex = gtc->_gltex;
 
   if (gtc->was_image_modified() || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
-    if (!upload_texture(gtc)) {
+    bool okflag = upload_texture(gtc);
+    if (!okflag) {
       tinydisplay_cat.error()
         << "Could not load " << *gtc->get_texture()
         << ": inappropriate size.\n";
-      _c->texture_2d_enabled = false;
     }
     gtc->mark_loaded();
+    if (!okflag) {
+      return false;
+    }
   }
   gtc->enqueue_lru(&_textures_lru);
 
+  _c->current_texture = gltex;
   _c->zb->current_texture = gltex->levels;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2211,3 +2254,48 @@ get_color_blend_op(ColorBlendAttrib::Operand operand) {
   }
   return 0;
 }
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::get_tex_filter_func
+//       Access: Private, Static
+//  Description: Returns the pointer to the appropriate filter
+//               function according to the texture's filter type.
+////////////////////////////////////////////////////////////////////
+ZB_lookupTextureFunc TinyGraphicsStateGuardian::
+get_tex_filter_func(Texture::FilterType filter) {
+  switch (filter) {
+  case Texture::FT_nearest:
+    return &lookup_texture_nearest;
+
+  case Texture::FT_linear:
+    return &lookup_texture_bilinear;
+
+  case Texture::FT_nearest_mipmap_nearest:
+    if (td_ignore_mipmaps) {
+      return &lookup_texture_nearest;
+    }
+    return &lookup_texture_mipmap_nearest;
+
+  case Texture::FT_nearest_mipmap_linear:
+    if (td_ignore_mipmaps) {
+      return &lookup_texture_nearest;
+    }
+    return &lookup_texture_mipmap_linear;
+      
+  case Texture::FT_linear_mipmap_nearest:
+    if (td_ignore_mipmaps) {
+      return &lookup_texture_bilinear;
+    }
+    return &lookup_texture_mipmap_bilinear;
+
+  case Texture::FT_linear_mipmap_linear:
+    if (td_ignore_mipmaps) {
+      return &lookup_texture_bilinear;
+    }
+    return &lookup_texture_mipmap_trilinear;
+
+  default:
+    return &lookup_texture_nearest;
+  }
+}
+

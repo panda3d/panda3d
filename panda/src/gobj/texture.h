@@ -175,6 +175,13 @@ PUBLISHED:
     CM_dxt5,
   };
 
+  enum QualityLevel {
+    QL_default,   // according to texture-quality-level
+    QL_fastest,
+    QL_normal,
+    QL_best,
+  };
+
 PUBLISHED:
   Texture(const string &name = string());
 protected:
@@ -270,6 +277,9 @@ PUBLISHED:
   INLINE CompressionMode get_compression() const;
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
+
+  void set_quality_level(QualityLevel quality_level);
+  INLINE QualityLevel get_quality_level() const;
 
   int get_expected_num_mipmap_levels() const;
   int get_expected_mipmap_x_size(int n) const;
@@ -515,6 +525,7 @@ protected:
   CompressionMode _compression;
   bool _render_to_texture;
   bool _match_framebuffer_format;
+  QualityLevel _quality_level;
 
   int _pad_x_size;
   int _pad_y_size;
@@ -587,6 +598,8 @@ private:
   friend class TexturePool;
 };
 
+extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;
+
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::TextureType tt);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::ComponentType ct);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::Format f);
@@ -598,6 +611,8 @@ EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::WrapMode wm);
 EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::WrapMode &wm);
 
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::CompressionMode cm);
+EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::QualityLevel tql);
+EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::QualityLevel &tql);
 
 #include "texture.I"
 

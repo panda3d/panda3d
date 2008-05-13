@@ -34,7 +34,7 @@
   float tz1,dtzdx,dtzdy,dtzdl_min,dtzdl_max;
 #endif
 #if defined(INTERP_MIPMAP) && (defined(INTERP_ST) || defined(INTERP_STZ))
-  int mipmap_level;
+  unsigned int mipmap_dx, mipmap_level;
 #endif
 
   EARLY_OUT();

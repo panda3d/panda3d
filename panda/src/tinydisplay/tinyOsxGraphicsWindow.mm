@@ -509,6 +509,9 @@ TinyOsxGraphicsWindow::TinyOsxGraphicsWindow(GraphicsPipe *pipe,
   _cursor_hidden = false;
   _display_hide_cursor = false;
   _wheel_delta = 0;
+
+  _frame_buffer = NULL;
+  update_pixel_factor();
   
   if (tinydisplay_cat.is_debug())	
     tinydisplay_cat.debug() << "TinyOsxGraphicsWindow::TinyOsxGraphicsWindow() -" <<_ID << "\n";

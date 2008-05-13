@@ -129,7 +129,7 @@ static void FNAME(white_textured) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -173,7 +173,7 @@ static void FNAME(flat_textured) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -232,7 +232,7 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -293,7 +293,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -408,7 +408,7 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -541,7 +541,7 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
       int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \

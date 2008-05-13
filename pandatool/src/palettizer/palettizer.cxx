@@ -41,7 +41,7 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 17;
+int Palettizer::_pi_version = 18;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
@@ -52,6 +52,7 @@ int Palettizer::_pi_version = 17;
 // Updated to version 15 on 8/01/05 to make TextureImages be case-insensitive.
 // Updated to version 16 on 4/03/06 to add Palettizer::_cutout_mode et al.
 // Updated to version 17 on 3/02/07 to add TextureImage::_txa_wrap_u etc.
+// Updated to version 18 on 5/13/08 to add TextureProperties::_quality_level.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.

@@ -42,6 +42,16 @@
 
 #include <stddef.h>
 
+ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
+("texture-quality-level", Texture::QL_normal,
+ PRC_DESC("This specifies a global quality level for all textures.  You "
+          "may specify either fastest, normal, or best.  This actually "
+          "affects the meaning of Texture::set_quality_level(TQL_default), "
+          "so it may be overridden on a per-texture basis.  This generally "
+          "only has an effect when using the tinydisplay software renderer; "
+          "it has little or no effect on normal, hardware-accelerated "
+          "renderers.  See Texture::set_quality_level()."));
+
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
@@ -72,6 +82,7 @@ Texture(const string &name) :
   _ram_image_compression = CM_off;
   _render_to_texture = false;
   _match_framebuffer_format = false;
+  _quality_level = QL_default;
 
   _texture_type = TT_2d_texture;
   _x_size = 0;
@@ -129,6 +140,7 @@ Texture(const Texture &copy) :
   _border_color(copy._border_color),
   _compression(copy._compression),
   _match_framebuffer_format(copy._match_framebuffer_format),
+  _quality_level(copy._quality_level),
   _pad_x_size(copy._pad_x_size),
   _pad_y_size(copy._pad_y_size),
   _pad_z_size(copy._pad_z_size),
@@ -179,6 +191,7 @@ operator = (const Texture &copy) {
   _border_color = copy._border_color;
   _compression = copy._compression;
   _match_framebuffer_format = copy._match_framebuffer_format;
+  _quality_level = copy._quality_level;
   _ram_image_compression = copy._ram_image_compression;
   _ram_images = copy._ram_images;
   ++_properties_modified;
@@ -836,6 +849,23 @@ set_compression(Texture::CompressionMode compression) {
 void Texture::
 set_render_to_texture(bool render_to_texture) {
   _render_to_texture = render_to_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_quality_level
+//       Access: Public
+//  Description: Sets a hint to the renderer about the desired
+//               performance / quality tradeoff for this particular
+//               texture.  This is most useful for the tinydisplay
+//               software renderer; for normal, hardware-accelerated
+//               renderers, this may have little or no effect.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_quality_level(Texture::QualityLevel quality_level) {
+  if (_quality_level != quality_level) {
+    ++_properties_modified;
+    _quality_level = quality_level;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3539,6 +3569,9 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   if (manager->get_file_minor_ver() >= 1) {
     set_compression((CompressionMode)scan.get_uint8());
   }
+  if (manager->get_file_minor_ver() >= 16) {
+    set_quality_level((QualityLevel)scan.get_uint8());
+  }
 
   Format format = (Format)scan.get_uint8();
   int num_components = scan.get_uint8();
@@ -3696,6 +3729,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_int16(_anisotropic_degree);
   _border_color.write_datagram(me);
   me.add_uint8(_compression);
+  me.add_uint8(_quality_level);
 
   me.add_uint8(_format);
   me.add_uint8(_num_components);
@@ -3927,3 +3961,51 @@ operator << (ostream &out, Texture::CompressionMode cm) {
   return out << "(**invalid Texture::CompressionMode(" << (int)cm << ")**)";
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::QualityLevel output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::QualityLevel tql) {
+  switch (tql) {
+  case Texture::QL_default:
+    return out << "default";
+  case Texture::QL_fastest:
+    return out << "fastest";
+  case Texture::QL_normal:
+    return out << "normal";
+  case Texture::QL_best:
+    return out << "best";
+  }
+
+  return out << "**invalid Texture::QualityLevel (" << (int)tql << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::QualityLevel input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, Texture::QualityLevel &tql) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "default") == 0) {
+    tql = Texture::QL_default;
+
+  } else if (cmp_nocase(word, "fastest") == 0) {
+    tql = Texture::QL_fastest;
+
+  } else if (cmp_nocase(word, "normal") == 0) {
+    tql = Texture::QL_normal;
+
+  } else if (cmp_nocase(word, "best") == 0) {
+    tql = Texture::QL_best;
+
+  } else {
+    gobj_cat->error() << "Invalid Texture::QualityLevel value: " << word << "\n";
+    tql = Texture::QL_default;
+  }
+
+  return in;
+}

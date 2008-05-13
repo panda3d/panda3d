@@ -33,7 +33,7 @@ typedef unsigned short ZPOINT;
 #define ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t) \
   (texture_levels)->pixmap[ZB_TEXEL(texture_levels, s, t)]
 
-#define ZB_LOOKUP_TEXTURE_NEAREST_MIPMAP(texture_levels, s, t, level) \
+#define ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_levels, s, t, level) \
   ZB_LOOKUP_TEXTURE_NEAREST((texture_levels) + (level), (s) >> (level), (t) >> (level))
 
 /* A special abs() function which doesn't require any branching
@@ -44,15 +44,11 @@ typedef unsigned short ZPOINT;
 //#define FAST_ABS(v) (((v) ^ ((v) >> (sizeof(v) * 8 - 1))) - ((v) >> (sizeof(v) * 8 - 1)))
 
 #define DO_CALC_MIPMAP_LEVEL \
-  mipmap_level = get_next_higher_bit(((unsigned int)abs(dsdx) + (unsigned int)abs(dtdx)) >> ZB_POINT_ST_FRAC_BITS)
-
-#if 0
-/* Experiment with bilinear filtering.  Looks great, but seems to run
-   about 25% slower. */
-#define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level) \
-  lookup_texture_bilinear((texture_levels), (s), (t))
-
-#endif
+  { \
+    mipmap_dx = ((unsigned int)abs(dsdx) + (unsigned int)abs(dtdx)); \
+    mipmap_level = get_next_higher_bit(mipmap_dx >> ZB_POINT_ST_FRAC_BITS); \
+    mipmap_dx &= ((1 << ((mipmap_level - 1) + ZB_POINT_ST_FRAC_BITS)) - 1); \
+  }
 
 #define ZB_POINT_RED_MIN   0x0000
 #define ZB_POINT_RED_MAX   0xffff
@@ -106,7 +102,9 @@ typedef struct ZBufferPoint ZBufferPoint;
 typedef void (*ZB_fillTriangleFunc)(ZBuffer  *,
                                     ZBufferPoint *,ZBufferPoint *,ZBufferPoint *);
 
-typedef void (*ZB_storePixelFunc) (ZBuffer *zb, PIXEL &result, int r, int g, int b, int a);
+typedef void (*ZB_storePixelFunc)(ZBuffer *zb, PIXEL &result, int r, int g, int b, int a);
+
+typedef PIXEL (*ZB_lookupTextureFunc)(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
 
 struct ZBuffer {
   int xsize,ysize;
@@ -124,6 +122,8 @@ struct ZBuffer {
   int reference_alpha;
   int blend_r, blend_g, blend_b, blend_a;
   ZB_storePixelFunc store_pix_func;
+  ZB_lookupTextureFunc tex_minfilter_func;
+  ZB_lookupTextureFunc tex_magfilter_func;
 };
 
 struct ZBufferPoint {
@@ -152,7 +152,12 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
                        int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize);
 
-PIXEL lookup_texture_bilinear(ZTextureLevel *base_level, int s, int t);
+PIXEL lookup_texture_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_linear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);

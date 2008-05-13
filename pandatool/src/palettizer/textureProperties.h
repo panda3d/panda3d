@@ -66,6 +66,7 @@ public:
   bool _generic_format; // true if 'generic' keyword, meaning rgba8 -> rgba.
   bool _keep_format;   // true if 'keep-format' keyword.
   EggTexture::FilterType _minfilter, _magfilter;
+  EggTexture::QualityLevel _quality_level;
   int _anisotropic_degree;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;
@@ -82,6 +83,8 @@ private:
 
   static EggTexture::FilterType union_filter(EggTexture::FilterType a,
                                              EggTexture::FilterType b);
+  static EggTexture::QualityLevel union_quality_level(EggTexture::QualityLevel a,
+                                                      EggTexture::QualityLevel b);
 
   bool _got_num_channels;
   int _num_channels;

@@ -1261,6 +1261,25 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 4-component texture " << egg_tex->get_name() << "\n";
     }
   }
+
+  switch (egg_tex->get_quality_level()) {
+  case EggTexture::QL_unspecified:
+  case EggTexture::QL_default:
+    tex->set_quality_level(Texture::QL_default);
+    break;
+
+  case EggTexture::QL_fastest:
+    tex->set_quality_level(Texture::QL_fastest);
+    break;
+
+  case EggTexture::QL_normal:
+    tex->set_quality_level(Texture::QL_normal);
+    break;
+
+  case EggTexture::QL_best:
+    tex->set_quality_level(Texture::QL_best);
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

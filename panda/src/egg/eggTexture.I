@@ -442,6 +442,26 @@ get_tex_gen() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::set_quality_level
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggTexture::
+set_quality_level(QualityLevel quality_level) {
+  _quality_level = quality_level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::get_quality_level
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture::QualityLevel EggTexture::
+get_quality_level() const {
+  return _quality_level;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_stage_name
 //       Access: Published
 //  Description: Specifies the particular TextureStage this texture
