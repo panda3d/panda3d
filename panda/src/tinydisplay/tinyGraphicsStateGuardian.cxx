@@ -30,6 +30,7 @@
 #include "zgl.h"
 #include "zmath.h"
 #include "ztriangle_table.h"
+#include "store_pixel_table.h"
 
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
@@ -680,21 +681,36 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     depth_write_state = 1;  // zoff
   }
 
-  int color_write_state = 0;  // noblend
+  int color_write_state = 0;  // cstore
   switch (_target._transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
-    color_write_state = 1;    // blend
+    color_write_state = 1;    // cblend
     break;
 
   default:
     break;
   }
 
+  if (_target._color_blend->get_mode() == ColorBlendAttrib::M_add) {
+    // If we have a color blend set that we can support, it overrides
+    // the transparency set.
+    int op_a = get_color_blend_op(_target._color_blend->get_operand_a());
+    int op_b = get_color_blend_op(_target._color_blend->get_operand_b());
+    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b];
+    Colorf c = _target._color_blend->get_color();
+    _c->zb->blend_r = (int)(c[0] * ZB_POINT_RED_MAX);
+    _c->zb->blend_g = (int)(c[1] * ZB_POINT_GREEN_MAX);
+    _c->zb->blend_b = (int)(c[2] * ZB_POINT_BLUE_MAX);
+    _c->zb->blend_a = (int)(c[3] * ZB_POINT_ALPHA_MAX);
+
+    color_write_state = 2;     // cgeneral
+  }
+
   unsigned int color_channels =
     _target._color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
-    color_write_state = 2;    // nocolor
+    color_write_state = 3;    // coff
   }
 
   int alpha_test_state = 0;   // anone
@@ -710,13 +726,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   case AlphaTestAttrib::M_less:
   case AlphaTestAttrib::M_less_equal:
     alpha_test_state = 1;    // aless
-    _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
+    _c->zb->reference_alpha = (int)_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX;
     break;
 
   case AlphaTestAttrib::M_greater:
   case AlphaTestAttrib::M_greater_equal:
     alpha_test_state = 2;    // amore
-    _c->zb->reference_alpha = (unsigned int)_target._alpha_test->get_reference_alpha() * 0xff00;
+    _c->zb->reference_alpha = (int)_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX;
     break;
   }
 
@@ -2140,4 +2156,58 @@ load_matrix(M4 *matrix, const TransformState *transform) {
     matrix->m[2][i] = pm.get_cell(i, 2);
     matrix->m[3][i] = pm.get_cell(i, 3);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::get_color_blend_op
+//       Access: Private, Static
+//  Description: Returns the integer element of store_pixel_funcs (as
+//               defined by store_pixel.py) that corresponds to the
+//               indicated ColorBlendAttrib operand code.
+////////////////////////////////////////////////////////////////////
+int TinyGraphicsStateGuardian::
+get_color_blend_op(ColorBlendAttrib::Operand operand) {
+  switch (operand) {
+  case ColorBlendAttrib::O_zero:
+    return 0;
+  case ColorBlendAttrib::O_one:
+    return 1;
+  case ColorBlendAttrib::O_incoming_color:
+    return 2;
+  case ColorBlendAttrib::O_one_minus_incoming_color:
+    return 3;
+  case ColorBlendAttrib::O_fbuffer_color:
+    return 4;
+  case ColorBlendAttrib::O_one_minus_fbuffer_color:
+    return 5;
+  case ColorBlendAttrib::O_incoming_alpha:
+    return 6;
+  case ColorBlendAttrib::O_one_minus_incoming_alpha:
+    return 7;
+  case ColorBlendAttrib::O_fbuffer_alpha:
+    return 8;
+  case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
+    return 9;
+  case ColorBlendAttrib::O_constant_color:
+    return 10;
+  case ColorBlendAttrib::O_one_minus_constant_color:
+    return 11;
+  case ColorBlendAttrib::O_constant_alpha:
+    return 12;
+  case ColorBlendAttrib::O_one_minus_constant_alpha:
+    return 13;
+
+  case ColorBlendAttrib::O_incoming_color_saturate:
+    return 1;
+
+  case ColorBlendAttrib::O_color_scale:
+    return 10;
+  case ColorBlendAttrib::O_one_minus_color_scale:
+    return 11;
+  case ColorBlendAttrib::O_alpha_scale:
+    return 12;
+  case ColorBlendAttrib::O_one_minus_alpha_scale:
+    return 13;
+  }
+  return 0;
 }

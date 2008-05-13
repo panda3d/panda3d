@@ -22,7 +22,7 @@
 #include "pandabase.h"
 
 #include "graphicsStateGuardian.h"
-#include "tinySDLGraphicsPipe.h"
+#include "colorBlendAttrib.h"
 #include "simpleLru.h"
 #include "zmath.h"
 #include "zbuffer.h"
@@ -118,6 +118,7 @@ private:
 
   void setup_material(GLMaterial *gl_material, const Material *material);
   static void load_matrix(M4 *matrix, const TransformState *transform);
+  static int get_color_blend_op(ColorBlendAttrib::Operand operand);
 
 public:
   // Filled in by the Tiny*GraphicsWindow at begin_frame().

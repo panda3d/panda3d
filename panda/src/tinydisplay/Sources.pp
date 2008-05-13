@@ -34,8 +34,10 @@
     specbuf.cxx \
     texture.cxx vertex.cxx \
     zbuffer.cxx zbuffer.h zdither.cxx zfeatures.h zgl.h zline.cxx \
-    zline.h zmath.cxx zmath.h ztriangle.cxx ztriangle.h ztriangle_two.h \
-    ztriangle_code.h ztriangle_table.h 
+    zline.h zmath.cxx zmath.h \
+    ztriangle.cxx ztriangle.h ztriangle_two.h \
+    ztriangle_code.h ztriangle_table.h \
+    store_pixel.cxx store_pixel.h store_pixel_code.h store_pixel_table.h
 
 #end lib_target
 

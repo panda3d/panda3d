@@ -15,7 +15,7 @@ Options = [
     [ 'zon', 'zoff' ],
 
     # color write
-    [ 'noblend', 'blend', 'nocolor' ],
+    [ 'cstore', 'cblend', 'cgeneral', 'coff' ],
 
     # alpha test
     [ 'anone', 'aless', 'amore' ],
@@ -45,9 +45,10 @@ CodeTable = {
     'zoff' : '#define STORE_Z(zpix, z)',
 
     # color write
-    'noblend' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)',
-    'blend' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)',
-    'nocolor' : '#define STORE_PIX(pix, rgb, r, g, b, a)',
+    'cstore' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)',
+    'cblend' : '#define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)',
+    'cgeneral' : '#define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)',
+    'coff' : '#define STORE_PIX(pix, rgb, r, g, b, a)',
 
     # alpha test
     'anone' : '#define ACMP(zb, a) 1',
