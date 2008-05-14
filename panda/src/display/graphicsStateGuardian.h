@@ -158,6 +158,9 @@ PUBLISHED:
   virtual bool set_gamma(float gamma);
   float get_gamma(float gamma);
   virtual void restore_gamma();
+
+  INLINE void set_texture_quality_override(Texture::QualityLevel quality_level);
+  INLINE Texture::QualityLevel get_texture_quality_override() const;
   
 public:
   bool set_scene(SceneSetup *scene_setup);
@@ -418,6 +421,7 @@ protected:
   Shader::ShaderCaps _shader_caps;
 
   float _gamma;
+  Texture::QualityLevel _texture_quality_override;
   
 public:
   // Statistics

@@ -215,6 +215,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _shader_model = SM_00;
   
   _gamma = 1.0f;
+  _texture_quality_override = Texture::QL_default;
 }
 
 ////////////////////////////////////////////////////////////////////

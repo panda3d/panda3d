@@ -1633,9 +1633,12 @@ do_issue_texture() {
     _texturing_state = 1;    // textured (not perspective correct)
   }
 
-  Texture::QualityLevel quality_level = texture->get_quality_level();
+  Texture::QualityLevel quality_level = _texture_quality_override;
   if (quality_level == Texture::QL_default) {
-    quality_level = texture_quality_level;
+    quality_level = texture->get_quality_level();
+    if (quality_level == Texture::QL_default) {
+      quality_level = texture_quality_level;
+    }
   }
 
   if (quality_level == Texture::QL_best) {

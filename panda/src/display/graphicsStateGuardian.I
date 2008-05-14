@@ -662,6 +662,38 @@ get_coordinate_system() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_texture_quality_override
+//       Access: Published
+//  Description: Specifies the global quality_level to be imposed for
+//               all Textures rendered by this GSG.  This overrides
+//               the value set on individual textures via
+//               Texture::set_quality_level().  Set this to
+//               Texture::QL_default in order to allow the individual
+//               texture quality levels to be respected.
+//
+//               This is mainly useful for the tinydisplay software
+//               renderer.  See Texture::set_quality_level().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_texture_quality_override(Texture::QualityLevel quality_level) {
+  _texture_quality_override = quality_level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_texture_quality_override
+//       Access: Published
+//  Description: Returns the global quality_level override specified
+//               by set_texture_quality_override.
+//
+//               This is mainly useful for the tinydisplay software
+//               renderer.  See Texture::set_quality_level().
+////////////////////////////////////////////////////////////////////
+INLINE Texture::QualityLevel GraphicsStateGuardian::
+get_texture_quality_override() const {
+  return _texture_quality_override;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::reset_if_new
 //       Access: Public
 //  Description: Calls reset() to initialize the GSG, but only if it
