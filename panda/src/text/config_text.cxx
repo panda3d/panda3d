@@ -181,6 +181,9 @@ ConfigVariableEnum<Texture::FilterType> text_magfilter
 ConfigVariableEnum<Texture::WrapMode> text_wrap_mode
 ("text-wrap-mode", Texture::WM_border_color,
  PRC_DESC("The default wrap mode for dynamic text fonts"));
+ConfigVariableEnum<Texture::QualityLevel> text_quality_level
+("text-quality-level", Texture::QL_best,
+ PRC_DESC("The default quality level for dynamic text fonts; see Texture::set_quality_level()."));
 
 ConfigVariableEnum<TextFont::RenderMode> text_render_mode
 ("text-render-mode", TextFont::RM_texture,

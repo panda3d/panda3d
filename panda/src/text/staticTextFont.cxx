@@ -26,6 +26,10 @@
 #include "renderState.h"
 #include "dcast.h"
 
+// Temporary
+#include "textureCollection.h"
+#include "nodePath.h"
+
 TypeHandle StaticTextFont::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,6 +44,19 @@ StaticTextFont(PandaNode *font_def) {
   nassertv(font_def != (PandaNode *)NULL);
   _font = font_def;
   _glyphs.clear();
+
+  // This bit is a temporary hack.  We find all of the textures
+  // referenced by the font, and hard-set them to the specified
+  // quality level for text.  This should not remain more than a
+  // couple of weeks; after that time, we'll remove this and require
+  // users to set their desired quality level in static fonts
+  // explicitly.
+  NodePath np(font_def);
+  TextureCollection tc = np.find_all_textures();
+  int num_textures = tc.get_num_textures();
+  for (int i = 0; i < num_textures; ++i) {
+    tc.get_texture(i)->set_quality_level(text_quality_level);
+  }
 
   find_characters(font_def, RenderState::make_empty());
   _is_valid = !_glyphs.empty();

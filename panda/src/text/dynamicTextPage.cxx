@@ -39,7 +39,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 
   // It's usually pretty important for text to look its best, and it
   // doesn't usually have a high fill factor.
-  set_quality_level(Texture::QL_best);
+  set_quality_level(text_quality_level);
 
   _x_size = _font->get_page_x_size();
   _y_size = _font->get_page_y_size();
