@@ -142,6 +142,18 @@ get_threading_model() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::is_hardware
+//       Access: Published
+//  Description: Returns true if this GSG appears to be
+//               hardware-accelerated, or false if it is known to be
+//               software only.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+is_hardware() const {
+  return _is_hardware;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prefers_triangle_strips
 //       Access: Published, Virtual
 //  Description: Returns true if this GSG strongly prefers triangle

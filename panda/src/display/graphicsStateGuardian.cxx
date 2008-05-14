@@ -136,6 +136,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _prepared_objects = new PreparedGraphicsObjects;
   _stereo_buffer_mask = ~0;
 
+  _is_hardware = false;
   _prefers_triangle_strips = false;
   _max_vertices_per_array = INT_MAX;
   _max_vertices_per_primitive = INT_MAX;

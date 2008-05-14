@@ -98,6 +98,7 @@ PUBLISHED:
   INLINE GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
+  INLINE bool is_hardware() const;
   virtual INLINE bool prefers_triangle_strips() const;
   virtual INLINE int get_max_vertices_per_array() const;
   virtual INLINE int get_max_vertices_per_primitive() const;
@@ -356,6 +357,7 @@ protected:
 
   PT(PreparedGraphicsObjects) _prepared_objects;
 
+  bool _is_hardware;
   bool _prefers_triangle_strips;
   int _max_vertices_per_array;
   int _max_vertices_per_primitive;

@@ -254,6 +254,10 @@ CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
   // performance benefit it gives us.
   _prepared_objects->_support_released_buffer_cache = true;
 
+  // Assume that we will get a hardware-accelerated context, unless
+  // the window tells us otherwise.
+  _is_hardware = true;
+
 #ifdef DO_PSTATS
   if (CLP(finish)) {
     GLCAT.warning()

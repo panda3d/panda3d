@@ -37,6 +37,9 @@ OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
   }
 
   _context = OSMesaCreateContext(OSMESA_RGBA, share_context);
+
+  // OSMesa is never hardware-accelerated.
+  _is_hardware = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -85,6 +85,10 @@ DXGraphicsStateGuardian8::
 DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
   GraphicsStateGuardian(CS_yup_left, pipe)
 {
+  // Assume that we will get a hardware-accelerated context, unless
+  // the window tells us otherwise.
+  _is_hardware = true;
+
   _screen = NULL;
   _d3d_device = NULL;
 

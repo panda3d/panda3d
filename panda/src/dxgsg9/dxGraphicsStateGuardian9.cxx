@@ -103,6 +103,10 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
       << "DXGraphicsStateGuardian9 " << this << " constructing\n";
   }
 
+  // Assume that we will get a hardware-accelerated context, unless
+  // the window tells us otherwise.
+  _is_hardware = true;
+
   _screen = NULL;
   _d3d_device = NULL;
 
