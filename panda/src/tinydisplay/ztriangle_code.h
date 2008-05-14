@@ -60,7 +60,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -69,7 +69,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -79,7 +79,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -89,7 +89,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -98,7 +98,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -108,7 +108,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -118,7 +118,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -127,7 +127,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -137,7 +137,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -147,7 +147,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -156,7 +156,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -166,7 +166,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -234,7 +234,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -243,7 +243,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -253,7 +253,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -263,7 +263,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -272,7 +272,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -282,7 +282,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -292,7 +292,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -301,7 +301,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -311,7 +311,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -321,7 +321,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -330,7 +330,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -340,7 +340,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -408,7 +408,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -417,7 +417,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -427,7 +427,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -437,7 +437,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -446,7 +446,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -456,7 +456,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -466,7 +466,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -475,7 +475,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -485,7 +485,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -495,7 +495,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -504,7 +504,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -514,7 +514,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -582,7 +582,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -591,7 +591,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -601,7 +601,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -611,7 +611,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -620,7 +620,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -630,7 +630,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -640,7 +640,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -649,7 +649,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -659,7 +659,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -669,7 +669,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -678,7 +678,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -688,7 +688,7 @@
 
 #define STORE_Z(zpix, z) (zpix) = (z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -756,7 +756,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -765,7 +765,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -775,7 +775,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -785,7 +785,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -794,7 +794,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -804,7 +804,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -814,7 +814,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -823,7 +823,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -833,7 +833,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -843,7 +843,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -852,7 +852,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -862,7 +862,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = (rgb)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -930,7 +930,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -939,7 +939,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -949,7 +949,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -959,7 +959,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -968,7 +968,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -978,7 +978,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -988,7 +988,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -997,7 +997,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1007,7 +1007,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1017,7 +1017,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1026,7 +1026,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1036,7 +1036,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) (pix) = PIXEL_BLEND_RGB(pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1104,7 +1104,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1113,7 +1113,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1123,7 +1123,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1133,7 +1133,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1142,7 +1142,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1152,7 +1152,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1162,7 +1162,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1171,7 +1171,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1181,7 +1181,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1191,7 +1191,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1200,7 +1200,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1210,7 +1210,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a) zb->store_pix_func(zb, pix, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1278,7 +1278,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1287,7 +1287,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1297,7 +1297,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1307,7 +1307,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1316,7 +1316,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1326,7 +1326,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1336,7 +1336,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1345,7 +1345,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1355,7 +1355,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) 1
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1365,7 +1365,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL
 #define ZB_LOOKUP_TEXTURE(texture_levels, s, t, level, level_dx) ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t)
@@ -1374,7 +1374,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP
@@ -1384,7 +1384,7 @@
 
 #define STORE_Z(zpix, z)
 #define STORE_PIX(pix, rgb, r, g, b, a)
-#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)
+#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)
 #define ZCMP(zpix, z) ((ZPOINT)(zpix) < (ZPOINT)(z))
 #define CALC_MIPMAP_LEVEL DO_CALC_MIPMAP_LEVEL
 #define INTERP_MIPMAP

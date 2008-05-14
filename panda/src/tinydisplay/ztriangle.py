@@ -52,8 +52,8 @@ CodeTable = {
 
     # alpha test
     'anone' : '#define ACMP(zb, a) 1',
-    'aless' : '#define ACMP(zb, a) (((unsigned int)(a)) < (zb)->reference_alpha)',
-    'amore' : '#define ACMP(zb, a) (((unsigned int)(a)) > (zb)->reference_alpha)',
+    'aless' : '#define ACMP(zb, a) (((int)(a)) < (zb)->reference_alpha)',
+    'amore' : '#define ACMP(zb, a) (((int)(a)) > (zb)->reference_alpha)',
 
     # depth test
     'znone' : '#define ZCMP(zpix, z) 1',
