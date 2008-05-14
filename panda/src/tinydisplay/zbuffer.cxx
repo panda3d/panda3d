@@ -368,12 +368,12 @@ PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsig
   int sf, tf;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t);
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t - ZB_ST_FRAC_HIGH);
   sf = s & ZB_ST_FRAC_MASK;
 
-  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t + ZB_ST_FRAC_HIGH);
-  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
   tf = t & ZB_ST_FRAC_MASK;
 
   r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
@@ -420,12 +420,12 @@ PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t
   int sf, tf;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t);
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t - ZB_ST_FRAC_HIGH);
   sf = s & ZB_ST_FRAC_MASK;
 
-  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t + ZB_ST_FRAC_HIGH);
-  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s + ZB_ST_FRAC_HIGH, t + ZB_ST_FRAC_HIGH);
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
   tf = t & ZB_ST_FRAC_MASK;
 
   r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
@@ -450,13 +450,13 @@ PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int 
     PIXEL p1, p2, p3, p4;
     int sf, tf;
     int r, g, b, a;
-    
-    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
-    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl);
+
+    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl - ZB_ST_FRAC_HIGH);
+    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl - ZB_ST_FRAC_HIGH);
     sf = sl & ZB_ST_FRAC_MASK;
     
-    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl + ZB_ST_FRAC_HIGH);
-    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl + ZB_ST_FRAC_HIGH);
+    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl);
+    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
     tf = tl & ZB_ST_FRAC_MASK;
     
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
@@ -474,13 +474,13 @@ PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int 
     PIXEL p1, p2, p3, p4;
     int sf, tf;
     int r, g, b, a;
-    
-    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
-    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl);
+
+    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl - ZB_ST_FRAC_HIGH);
+    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl - ZB_ST_FRAC_HIGH);
     sf = sl & ZB_ST_FRAC_MASK;
     
-    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl + ZB_ST_FRAC_HIGH);
-    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl + ZB_ST_FRAC_HIGH, tl + ZB_ST_FRAC_HIGH);
+    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl);
+    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
     tf = tl & ZB_ST_FRAC_MASK;
     
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
