@@ -660,7 +660,7 @@ class ObjectHandles(NodePath, DirectObject):
         useDirectRenderStyle(self)
 
     def coaModeColor(self):
-        self.setColor(.5, .5, .5, 1)
+        self.setColor(.5, .5, .5, 0.5, 1)
 
     def manipModeColor(self):
         self.clearColor()
