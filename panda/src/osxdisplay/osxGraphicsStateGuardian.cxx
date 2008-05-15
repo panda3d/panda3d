@@ -106,6 +106,10 @@ void osxGraphicsStateGuardian::reset()
   */
 
   GLGraphicsStateGuardian::reset();
+
+  // Apply the video-sync setting.
+  GLint value = sync_video ? 1 : 0;
+  aglSetInteger(_aglcontext, AGL_SWAP_INTERVAL, &value);
  }
 
 ////////////////////////////////////////////////////////////////////
