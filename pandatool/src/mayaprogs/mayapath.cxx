@@ -84,6 +84,23 @@ main(int argc, char *argv[]) {
     }
   }
 
+  // Also put the Maya bin directory on the PATH.
+  Filename bin = Filename(maya_location, "bin");
+  if (bin.is_directory()) {
+    char *path = getenv("PATH");
+    if (path == NULL) {
+      path = "";
+    }
+#ifdef WIN32
+    string sep = ";";
+#else
+    string sep = ":";
+#endif
+    string putenv_str = "PATH=" + bin.to_os_specific() + sep + path;
+    char *putenv_cstr = strdup(putenv_str.c_str());
+    putenv(putenv_cstr);
+  }
+
   // Now that we have set up the environment variables properly, chain
   // to the actual maya2egg_bin (or whichever) executable.
 
@@ -101,9 +118,17 @@ main(int argc, char *argv[]) {
                               &process_info);
   if (result) {
     WaitForSingleObject(process_info.hProcess, INFINITE);
+    DWORD exit_code = 0;
+
+    if (GetExitCodeProcess(process_info.hProcess, &exit_code)) {
+      if (exit_code != 0) {
+        cerr << "Program exited with status " << exit_code << "\n";
+      }
+    }
+
     CloseHandle(process_info.hProcess);
     CloseHandle(process_info.hThread);
-    exit(0);
+    exit(exit_code);
   }
   cerr << "Couldn't execute " << command << ": " << GetLastError() << "\n";
 
