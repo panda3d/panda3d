@@ -70,6 +70,11 @@ MayaShader(MObject engine) {
         if (found_shader) {
           _legacy_mode = true;
         }
+      } else if (shader.hasFn(MFn::kSurfaceShader)) {
+        found_shader = find_textures_legacy(shader);
+        if (found_shader) {
+          _legacy_mode = true;
+        }
       } else {
         maya_cat.warning() <<
           "Unrecognized shader type: only lambert and phong supported (lambert deprecated).\n";
