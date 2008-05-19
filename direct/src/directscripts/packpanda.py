@@ -221,8 +221,7 @@ if OPTIONS["bam"]:
 
 EGG2BAM=os.path.join(PANDA,"bin","egg2bam.exe")
 
-def egg2bam(file):
-    bam = file[:-4]+'.bam'
+def egg2bam(file,bam):
     present = os.path.exists(bam)
     if (present): bam = "packpanda-TMP.bam";
     cmd = 'egg2bam -noabs -ps rel -pd . "'+file+'" -o "'+bam+'"'
@@ -248,9 +247,11 @@ def py2pyc(file):
 
 def CompileFiles(file):
     if (os.path.isfile(file)):
-        if (string.lower(file[-4:])==".egg"):
-            egg2bam(file)
-        elif (string.lower(file[-3:])==".py"):
+        if (string.endswith(".egg")):
+            egg2bam(file, file[:-4]+'.bam')
+        elif (string.endswith(".egg.pz")):
+            egg2bam(file, file[:-7]+'.bam')
+        elif (string.endswith(".py")):
             py2pyc(file)
         else: pass
     elif (os.path.isdir(file)):
