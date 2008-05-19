@@ -1,3 +1,12 @@
+------------------------  RELEASE 1.5.3  ------------------------
+
+* Fixes x-file parser for real, this time.
+* Fixes serious bug in shader generator
+* Adds MSVCR71 and MSVCP71 back to the distro (for python)
+* Fixed a bug in GeoMipTerrain
+* Adds support for .egg.pz to packpanda --bam
+* Turns on libpandaode support
+
 ------------------------  RELEASE 1.5.2  ------------------------
 
 This fixes just one serious bug: release 1.5.1 accidentally
