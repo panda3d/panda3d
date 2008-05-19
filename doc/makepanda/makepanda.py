@@ -2963,7 +2963,7 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/xfile', 'ZLIB', 'BISONPREFIX_xyy']
+    OPTS=['DIR:pandatool/src/xfile', 'ZLIB', 'BISONPREFIX_xyy', 'FLEXDASHI']
     CreateFile("built/include/xParser.h")
     TargetAdd('xfile_xParser.obj', opts=OPTS, input='xParser.yxx')
     TargetAdd('xParser.h', input='xfile_xParser.obj', opts=['DEPENDENCYONLY'])
