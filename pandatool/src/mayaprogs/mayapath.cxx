@@ -59,12 +59,24 @@ main(int argc, char *argv[]) {
     cerr << "The directory referred to by $MAYA_LOCATION does not exist!\n";
     exit(1);
   }
+
+  // Reset maya_location to its full long name, since Maya seems to
+  // require that.
+  maya_location.make_canonical();
+  maya_location = Filename::from_os_specific(maya_location.to_os_long_name());
   
   // Look for OpenMaya.dll as a sanity check.
   Filename openMaya = Filename::dso_filename(Filename(maya_location, "bin/OpenMaya.so"));
   if (!openMaya.is_regular_file()) {
     cerr << "Could not find $MAYA_LOCATION/bin/" << Filename(openMaya.get_basename()).to_os_specific() << "!\n";
     exit(1);
+  }
+
+  // Re-set MAYA_LOCATION to its properly sanitized form.
+  {
+    string putenv_str = "MAYA_LOCATION=" + maya_location.to_os_specific();
+    char *putenv_cstr = strdup(putenv_str.c_str());
+    putenv(putenv_cstr);
   }
 
   // Now set PYTHONHOME & PYTHONPATH.  Maya2008 requires this to be
