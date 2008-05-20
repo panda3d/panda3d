@@ -623,7 +623,7 @@ int MayaEggMesh::GetVert(EggVertex *vert, EggGroup *context)
     _vertNormalIndices.append(vtx._index);
   }
   if (vert->has_color()) {
-    mayaloader_cat.info() << "found a vertex color\n";
+    mayaloader_cat.spam() << "found a vertex color\n";
     _vertColorArray.append(MakeMayaColor(vert->get_color()));
     _vertColorIndices.append(vtx._index);
   }
@@ -823,7 +823,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
     for (unsigned int i=0; i<vert->_weights.size(); i++) {
       double strength = vert->_weights[i].first;
       MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
-      if (!joint->_inskin) {
+      if (joint && !joint->_inskin) {
         joint->_inskin = true;
         joint->_index = joints.size();
         joints.push_back(joint);
@@ -833,7 +833,11 @@ void MayaEggLoader::CreateSkinCluster(MayaEggMesh *M)
   cmd += maxInfluences;
 
   mayaloader_cat.spam() << joints.size() << " joints have weights on " << M->_pool->get_name() << endl;
-  
+  if (joints.size() == 0) {
+    // no need to cluster; there are no weights
+    return;
+  }
+
   for (unsigned int i=0; i<joints.size(); i++) {
     MFnDependencyNode joint(joints[i]->_joint);
     cmd = cmd + " ";
@@ -1097,15 +1101,38 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
         mayaloader_cat.debug() << "mesh's parent (null) : " << endl;
       }
     }
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "mesh pointer : " << mesh << " and parent_ponter: " << &parent << endl;
+      mayaloader_cat.spam() << "mesh vert_count : " << mesh->_vert_count << endl;
+      mayaloader_cat.spam() << "mesh face_count : " << mesh->_face_count << endl;
+      mayaloader_cat.spam() << "mesh vertexArray : " << mesh->_vertexArray << endl;
+      mayaloader_cat.spam() << "mesh polygonCounts : " << mesh->_polygonCounts << endl;
+      mayaloader_cat.spam() << "mesh polygonConnects : " << mesh->_polygonConnects << endl;
+      mayaloader_cat.spam() << "mesh uarray : " << mesh->_uarray << endl;
+      mayaloader_cat.spam() << "mesh varray : " << mesh->_varray << endl;
+    }
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
                                   mesh->_uarray, mesh->_varray,
                                   parent, &status);
+
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "transNode created." << endl;
+    }
     mesh->_shapeNode = mfn.object();
     mfn.getPath(mesh->_shape_dag_path);
     mesh->ConnectTextures();
+
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "textures connected." << endl;
+    }
+
     mfn.getCurrentUVSetName(cset);
     mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset);
+
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "uvs assigned." << endl;
+    }
 
     // lets try to set normals per vertex 
     if (respect_normals) {
@@ -1113,6 +1140,10 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       if (status != MStatus::kSuccess) {
         status.perror("setVertexNormals failed!");
       }
+    }
+
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "vertex normals set." << endl;
     }
    
     // lets try to set colors per vertex

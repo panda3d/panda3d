@@ -262,8 +262,29 @@ read(const Filename &filename) {
   // even on Windows.
   string os_filename = filename.to_os_generic();
 
+  Filename cwd = ExecutionEnvironment::get_cwd();
+  string dirname = cwd.to_os_specific();
+  if (maya_cat.is_debug()) {
+    maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << endl;
+  }
+
   MFileIO::newFile(true);
   MStatus stat = MFileIO::open(os_filename.c_str());
+  // Beginning with Maya2008, the call to read seem to change
+  // the current directory specially if there is a refrence file!  Yikes!
+
+  // Furthermore, the current directory may change during the call to
+  // any Maya function!  Egad!
+  if (chdir(dirname.c_str()) < 0) {
+    maya_cat.warning()
+      << "Unable to restore current directory after ::read to " << cwd
+      << " after initializing Maya.\n";
+  } else {
+    if (maya_cat.is_debug()) {
+      maya_cat.debug()
+        << "Restored current directory after ::read to " << cwd << "\n";
+    }
+  }
   if (!stat) {
     stat.perror(os_filename.c_str());
     return false;

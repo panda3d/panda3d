@@ -196,7 +196,7 @@ copy_maya_file(const Filename &source, const Filename &dest,
   // Get the set of externally referenced Maya files.
   MStringArray refs;
   MStatus status = MFileIO::getReferences(refs);
-  if (!status) {
+  if (status != MStatus::kSuccess) {
     status.perror("MItDag constructor");
     return false;
   }
@@ -207,21 +207,13 @@ copy_maya_file(const Filename &source, const Filename &dest,
   unsigned int ref_index;
   maya_cat.info() << "num_refs = " << num_refs << endl;
   for (ref_index = 0; ref_index < num_refs; ref_index++) {
-    // one thing we need to do is rename the path to the base file
-    // that it is referencing to. This will guarantee that the
-    // refencing will stay in the copied directory. Only way I could
-    // make it work properly is through following MEL command. the
-    // pear character is used as an example. The maya API calls of
-    // removeReference and reference didn't work for the animations
-    // file -loadReference "mtpRN" -type "mayaBinary" -options "v=0"
-    // "m_t_pear_zero.mb";
+    maya_cat.info() << "curr_idx " << _curr_idx << endl;
     string lookup = refs[ref_index].asChar();
-
     string blah = "file -q -referenceNode \"" + lookup + "\";";
-    //maya_cat.info() << blah << endl;
+    maya_cat.info() << blah << endl;
     MString result;
     status = MGlobal::executeCommand(MString(blah.c_str()), result);
-    //maya_cat.info() << "result = " << result.asChar() << endl;
+    maya_cat.info() << "result = " << result.asChar() << endl;
 
     // for multiple reference of the same model. maya throws in a {#} at the end, ignore that
     size_t dup = lookup.find('{');
@@ -236,14 +228,46 @@ copy_maya_file(const Filename &source, const Filename &dest,
       _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
     Filename new_filename = path.get_rel_from(dir);
 
-    //maya_cat.info() << "curr_idx " << _curr_idx << endl;
+    if (maya_cat.is_spam()) {
+      maya_cat.spam() << "cvs dir " << dir->get_fullpath().to_os_generic() << endl;
+      maya_cat.spam() << "cvs path " << path.get_fullpath().to_os_generic() << endl;
+    }
+    MString result2;
+
+    if (maya_cat.is_debug()) {
+      string cmdStr = "pwd";
+      MString result3;
+      status  = MGlobal::executeCommand(MString(cmdStr.c_str()), result3);
+      maya_cat.debug() << "result = " << result3.asChar() << "\n";
+    }
     _exec_string.push_back("file -loadReference \"" + string(result.asChar()) + "\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";");
-    maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
+    maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
     status  = MGlobal::executeCommand(MString(_exec_string[ref_index].c_str()));
-    if (!status) {
+    if (status != MStatus::kSuccess) {
       status.perror("loadReference failed");
     }
+    /*
+    Filename filename = 
+      _path_replace->convert_path(Filename::from_os_specific(lookup));
+
+    CVSSourceTree::FilePath path =
+      _tree.choose_directory(filename.get_basename(), dir, _force, _interactive);
+    Filename new_filename = path.get_rel_from(dir);
+
+    maya_cat.info() << "lookup filename: " << filename.to_os_generic() << "\n";
+    string cmdStr = "chdir " + string(dir->get_fullpath().to_os_generic().c_str()) + ";";
+    maya_cat.info() << "new filename (relative): " << new_filename.to_os_generic() << "\n";
+    //maya_cat.info() << "new filename (absolute): " << path.get_fullpath().to_os_generic() << "\n";
+    MString loadedFilename = MFileIO::loadReference(MString(new_filename.to_os_generic().c_str()), &status);
+    //MString loadedFilename = MFileIO::loadReference(MString(path.get_fullpath().to_os_generic().c_str()), &status);
+    //MString loadedFilename = MFileIO::loadReferenceByNode(result, &status);
+    maya_cat.info() << "loaded filename: " << loadedFilename << "\n";
+
+    if (status != MStatus::kSuccess) {
+      status.perror("loadReference failed");
+    }
+    */
     _curr_idx++;
   }
 
@@ -362,7 +386,7 @@ collect_shaders() {
   MStatus status;
 
   MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
-  if (!status) {
+  if (status != MStatus::kSuccess) {
     status.perror("MItDag constructor");
     return false;
   }
@@ -374,7 +398,7 @@ collect_shaders() {
   while (!dag_iterator.isDone()) {
     MDagPath dag_path;
     status = dag_iterator.getPath(dag_path);
-    if (!status) {
+    if (status != MStatus::kSuccess) {
       status.perror("MItDag::getPath");
     } else {
       if (!collect_shader_for_node(dag_path)) {
@@ -403,7 +427,7 @@ bool MayaCopy::
 collect_shader_for_node(const MDagPath &dag_path) {
   MStatus status;
   MFnDagNode dag_node(dag_path, &status);
-  if (!status) {
+  if (status != MStatus::kSuccess) {
     status.perror("MFnDagNode constructor");
     return false;
   }

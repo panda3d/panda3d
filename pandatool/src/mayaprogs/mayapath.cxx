@@ -51,6 +51,7 @@ main(int argc, char *argv[]) {
   // Now look up $MAYA_LOCATION.  We insist that it be set and
   // pointing to an actual Maya installation.
   Filename maya_location = Filename::expand_from("$MAYA_LOCATION");
+  cerr << "MAYA_LOCATION: " << maya_location << endl;
   if (maya_location.empty()) {
     cerr << "$MAYA_LOCATION is not set!\n";
     exit(1);

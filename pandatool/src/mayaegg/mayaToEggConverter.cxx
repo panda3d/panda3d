@@ -77,6 +77,7 @@
 #include <maya/MSelectionList.h>
 #include "post_maya_include.h"
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::Constructor
 //       Access: Public
