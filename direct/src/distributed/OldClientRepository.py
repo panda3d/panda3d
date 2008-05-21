@@ -58,6 +58,7 @@ class OldClientRepository(ClientRepositoryBase):
         obj.doId = id
         self.doId2do[id] = obj
         obj.generateInit()
+        obj._retrieveCachedData()
         obj.generate()
         obj.announceGenerate()
         datagram = dclass.clientFormatGenerate(obj, id, zoneId, optionalFields)

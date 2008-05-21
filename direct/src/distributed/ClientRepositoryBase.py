@@ -3,6 +3,7 @@ from MsgTypes import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 import CRCache
+from direct.distributed.CRDataCache import CRDataCache
 from direct.distributed.ConnectionRepository import ConnectionRepository
 from direct.showbase import PythonUtil
 import ParentMgr
@@ -44,6 +45,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
         self.readDCFile(dcFileNames)
         self.cache=CRCache.CRCache()
+        self.doDataCache = CRDataCache()
         self.cacheOwner=CRCache.CRCache()
         self.serverDelta = 0
 
@@ -365,6 +367,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self.doId2do[doId] = distObj
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
+            distObj._retrieveCachedData()
             distObj.generate()
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredFields(dclass, di)
@@ -412,6 +415,7 @@ class ClientRepositoryBase(ConnectionRepository):
             self.doId2do[doId] = distObj
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
+            distObj._retrieveCachedData()
             distObj.generate()
             distObj.setLocation(parentId, zoneId)
             distObj.updateRequiredOtherFields(dclass, di)

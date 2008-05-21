@@ -58,6 +58,7 @@ class ClientRepository(ClientRepositoryBase):
         obj.doId = id
         self.doId2do[id] = obj
         obj.generateInit()
+        obj._retrieveCachedData()
         obj.generate()
         obj.announceGenerate()
         datagram = dclass.clientFormatGenerate(obj, id, zoneId, optionalFields)
@@ -201,6 +202,7 @@ class ClientRepository(ClientRepositoryBase):
             self.doId2do[doId] = distObj
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
+            distObj._retrieveCachedData()
             distObj.generate()
             distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate

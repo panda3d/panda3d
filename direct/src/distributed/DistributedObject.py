@@ -154,6 +154,35 @@ class DistributedObject(DistributedObjectBase):
     def getNeverDisable(self):
         return self.neverDisable
 
+    def _retrieveCachedData(self):
+        # once we know our doId, grab any data that might be stored in the data cache
+        # from the last time we were on the client
+        if self.cr.doDataCache.hasCachedData(self.doId):
+            self._cachedData = self.cr.doDataCache.popCachedData(self.doId)
+
+    def setCachedData(self, name, data):
+        assert type(name) == type('')
+        # ownership of the data passes to the repository data cache
+        self.cr.doDataCache.setCachedData(self.doId, name, data)
+
+    def hasCachedData(self, name):
+        assert type(name) == type('')
+        if not hasattr(self, '_cachedData'):
+            return False
+        return name in self._cachedData
+
+    def getCachedData(self, name):
+        assert type(name) == type('')
+        # ownership of the data passes to the caller of this method
+        data = self._cachedData[name]
+        del self._cachedData[name]
+        return data
+
+    def flushCachedData(self, name):
+        assert type(name) == type('')
+        # call this to throw out cached data from a previous instantiation
+        self._cachedData[name].flush()
+
     def setCacheable(self, bool):
         assert bool == 1 or bool == 0
         self.cacheable = bool
@@ -272,6 +301,13 @@ class DistributedObject(DistributedObjectBase):
         # after this is called, the object is no longer a DistributedObject
         # but may still be used as a DelayDeleted object
         self.destroyDoStackTrace = StackTrace()
+        # check for leftover cached data that was not retrieved or flushed by this object
+        # this will catch typos in the data name in calls to get/setCachedData
+        if hasattr(self, '_cachedData'):
+            for name, cachedData in self._cachedData.iteritems():
+                self.notify.warning('flushing unretrieved cached data: %s' % name)
+                cachedData.flush()
+            del self._cachedData
         self.cr = None
         self.dclass = None
 
