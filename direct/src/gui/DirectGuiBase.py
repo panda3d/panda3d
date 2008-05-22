@@ -651,10 +651,7 @@ def toggleGuiGridSnap():
 def setGuiGridSpacing(spacing):
     DirectGuiWidget.gridSpacing = spacing
 
-# this should trigger off of __dev__, but it's not available at this point.
-# __debug__ works because the production client is not __debug__ and the
-# production AI doesn't create any GUI.
-if config.GetBool('record-gui-creation-stack', __debug__):
+if config.GetBool('record-gui-creation-stack', 0):
     # this will help track down the code that created DirectGui objects
     # call obj.printCreationStackTrace() to figure out what code created it
     DirectGuiBase = recordCreationStackStr(DirectGuiBase)
