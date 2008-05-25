@@ -71,7 +71,7 @@ generate_block(unsigned short mx,
 
   // Create vertex data and writers
   PT(GeomVertexData) vdata = new GeomVertexData(_root.get_name(),
-                   GeomVertexFormat::register_format(format), Geom::UH_dynamic);
+                   GeomVertexFormat::register_format(format), Geom::UH_static);
   GeomVertexWriter cwriter;
   if (_has_color_map) {
     cwriter=GeomVertexWriter(vdata, "color"  );
@@ -79,7 +79,7 @@ generate_block(unsigned short mx,
   GeomVertexWriter vwriter (vdata, "vertex"  );
   GeomVertexWriter twriter (vdata, "texcoord");
   GeomVertexWriter nwriter (vdata, "normal"  );
-  PT(GeomTriangles) prim = new GeomTriangles(Geom::UH_dynamic);
+  PT(GeomTriangles) prim = new GeomTriangles(Geom::UH_static);
 
   if (_bruteforce) {
     // LOD Level when rendering bruteforce is always 0 (no lod)
