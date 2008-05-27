@@ -87,6 +87,8 @@ class CommonFilters:
                 needtex["bloom2"] = True
                 needtex["bloom3"] = True
                 auxbits |= AuxBitplaneAttrib.ABOGlow
+            if (configuration.has_key("ViewGlow")):
+                auxbits |= AuxBitplaneAttrib.ABOGlow
             for tex in needtex:
                 self.textures[tex] = Texture("scene-"+tex)
                 needtexpix = True
@@ -172,6 +174,8 @@ class CommonFilters:
                 text += "o_color = saturate(o_color);\n";
                 text += "float4 bloom = 0.5*tex2D(k_txbloom3, l_texcoordB.xy);\n"
                 text += "o_color = 1-((1-bloom)*(1-o_color));\n"
+            if (configuration.has_key("ViewGlow")):
+                text += "o_color.r = o_color.a;\n"
             text += "}\n"
     
             self.finalQuad.setShader(Shader.make(text))
@@ -245,13 +249,16 @@ class CommonFilters:
             return self.reconfigure(True, "HalfPixelShift")
         return True
 
-    def setFSBloom(self):
-        fullrebuild = (self.configuration.has_key("FSBloom") == False)
-        self.configuration["FSBloom"] = 1
-        return self.reconfigure(fullrebuild, "FSBloom")
+    def setViewGlow(self):
+        fullrebuild = (self.configuration.has_key("ViewGlow") == False)
+        self.configuration["ViewGlow"] = 1
+        return self.reconfigure(fullrebuild, "ViewGlow")
 
-    def delFSBloom(self):
-        if (self.configuration.has_key("FSBloom")):
-            del self.configuration["FSBloom"]
-            return self.reconfigure(True, "FSBloom")
+    def delViewGlow(self):
+        if (self.configuration.has_key("ViewGlow")):
+            del self.configuration["ViewGlow"]
+            return self.reconfigure(True, "ViewGlow")
         return True
+
+        
+
