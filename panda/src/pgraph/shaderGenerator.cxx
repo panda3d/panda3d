@@ -174,6 +174,9 @@ analyze_renderstate(const RenderState *rs) {
       _calc_primary_alpha = true;
       _out_primary_glow = true;
       _subsume_alpha_test = true;
+    } else {
+      _calc_primary_alpha = false;
+      _out_primary_glow = true;
     }
   } else {
     if (_have_alpha_blend || _have_alpha_test) {
