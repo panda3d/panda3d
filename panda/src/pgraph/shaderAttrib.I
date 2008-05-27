@@ -44,8 +44,8 @@ ShaderAttrib(const ShaderAttrib &copy) :
   _shader_priority(copy._shader_priority),
   _auto_shader(copy._auto_shader),
   _has_shader(copy._has_shader),
-  _flags(_flags),
-  _has_flags(_has_flags),
+  _flags(copy._flags),
+  _has_flags(copy._has_flags),
   _inputs(copy._inputs)
 {
 }
