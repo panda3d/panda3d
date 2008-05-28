@@ -229,8 +229,8 @@ PUBLISHED:
   INLINE DrawMask get_draw_control_mask() const;
   INLINE DrawMask get_draw_show_mask() const;
 
-  CollideMask get_net_draw_control_mask() const;
-  CollideMask get_net_draw_show_mask() const;
+  DrawMask get_net_draw_control_mask() const;
+  DrawMask get_net_draw_show_mask() const;
 
   void set_into_collide_mask(CollideMask mask);
   INLINE CollideMask get_into_collide_mask() const;
