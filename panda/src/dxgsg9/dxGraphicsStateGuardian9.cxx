@@ -6036,7 +6036,7 @@ void display_lru (int type, int priority, Lru *lru)
 
       if (key_list -> total_key_elements > 0)
       {
-          cout << "priority " << index << "\n";
+          dxgsg9_cat.error() << "priority " << index << "\n";
 
           KEY_ELEMENT *key_element;
           KEY_ELEMENT *key_element_next;
@@ -6046,7 +6046,7 @@ void display_lru (int type, int priority, Lru *lru)
           {
             key_element_next = next_key_element (key_element);
 
-            cout << "  " << key_element -> count << "  " << key_element -> key << "\n";
+            dxgsg9_cat.error() << "  " << key_element -> count << "  " << key_element -> key << "\n";
                        
             key_element = key_element_next;
           }
@@ -6061,14 +6061,14 @@ void display_lru (int type, int priority, Lru *lru)
       KEY_ELEMENT *key_element;
       KEY_ELEMENT *key_element_next;
 
-      cout << "ALL KEYS \n";
+      dxgsg9_cat.error() << "ALL KEYS \n";
 
       key_element = first_key_element (all_key_list);
       while (key_element)
       {
         key_element_next = next_key_element (key_element);
 
-        cout << "  " << key_element -> count << "  " << key_element -> key << "\n";
+        dxgsg9_cat.error() << "  " << key_element -> count << "  " << key_element -> key << "\n";
 
         key_element = key_element_next;
       }
