@@ -90,6 +90,7 @@ class ProjectileInterval(Interval):
             self.trajectoryArgs = args
             self.implicitStartPos = 1
         else:
+            self.trajectoryArgs = args
             self.__calcTrajectory(*args)
 
         Interval.__init__(self, name, self.duration)
@@ -146,11 +147,11 @@ class ProjectileInterval(Interval):
             if type(time) == type([]):
                 # projectile hits plane once going up, once going down
                 # assume they want the one on the way down
-                self.notify.debug('projectile hits plane twice at times: %s' %
+                assert self.notify.debug('projectile hits plane twice at times: %s' %
                                   time)
                 time = max(*time)
             else:
-                self.notify.debug('projectile hits plane once at time: %s' %
+                assert self.notify.debug('projectile hits plane once at time: %s' %
                                   time)
             return time
 
@@ -213,17 +214,24 @@ class ProjectileInterval(Interval):
             self.endPos = self.__calcPos(self.duration)
             
         # these are the parameters that we need to know:
-        self.notify.debug('startPos: %s' % `self.startPos`)
-        self.notify.debug('endPos:   %s' % `self.endPos`)
-        self.notify.debug('duration: %s' % self.duration)
-        self.notify.debug('startVel: %s' % `self.startVel`)
-        self.notify.debug('z-accel:  %s' % self.zAcc)
-            
+        assert self.notify.debug('startPos: %s' % `self.startPos`)
+        assert self.notify.debug('endPos:   %s' % `self.endPos`)
+        assert self.notify.debug('duration: %s' % self.duration)
+        assert self.notify.debug('startVel: %s' % `self.startVel`)
+        assert self.notify.debug('z-accel:  %s' % self.zAcc)            
 
     def __initialize(self):
         if self.implicitStartPos:
             self.__calcTrajectory(*self.trajectoryArgs)
 
+    def testTrajectory(self):
+        try:
+            self.__calcTrajectory(*self.trajectoryArgs)
+        except StandardError:
+            assert self.notify.error('invalid projectile parameters')
+            return False
+        return True
+            
     def privInitialize(self, t):
         self.__initialize()
         if self.collNode:
