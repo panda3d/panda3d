@@ -3,3 +3,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef STRING_H
+#define STRING_H
+
+#include <stdtypedefs.h>
+
+template<class ctype>
+class basic_string {
+public:
+  basic_string();
+  basic_string(const basic_string &copy);
+  void operator = (const basic_string &copy);
+  basic_string(const ctype *string);
+  ~basic_string();
+
+  const ctype *c_str() const;
+  size_t length() const;
+
+  ctype at(size_t pos) const;
+  ctype operator[](size_t pos) const;
+  ctype &operator[](size_t pos);
+};
+
+typedef basic_string<char> string;
+typedef basic_string<wchar_t> wstring;
+
+#endif
