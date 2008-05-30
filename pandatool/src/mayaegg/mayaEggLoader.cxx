@@ -250,8 +250,8 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
   MObject parent = MObject::kNullObj;
   if (pg) {
     parent = pg->_group;
-    if (mayaloader_cat.is_spam()) {
-      mayaloader_cat.spam() << "parent (group) :" << ((MFnDagNode)parent).name() << endl;
+    if (mayaloader_cat.is_debug()) {
+      mayaloader_cat.debug() << "parent (group) :" << ((MFnDagNode)parent).name().asChar() << endl;
     }
   }
 
@@ -932,6 +932,11 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
   string delstring = " ";
   
   if (node->is_of_type(EggPolygon::get_class_type())) {
+    /*
+    if (mayaloader_cat.is_debug()) {
+      mayaloader_cat.debug() << delim+delstring << "found an EggMesh: " << node->get_name() << endl;
+    }
+    */
     EggPolygon *poly = DCAST(EggPolygon, node);
 
     MayaEggTex *tex = 0;
@@ -1098,14 +1103,14 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       }
     }
     if (mayaloader_cat.is_spam()) {
-      mayaloader_cat.spam() << "mesh pointer : " << mesh << " and parent_ponter: " << &parent << endl;
+      mayaloader_cat.spam() << "mesh pointer : " << mesh << " and parent_pointer: " << &parent << endl;
       mayaloader_cat.spam() << "mesh vert_count : " << mesh->_vert_count << endl;
       mayaloader_cat.spam() << "mesh face_count : " << mesh->_face_count << endl;
-      mayaloader_cat.spam() << "mesh vertexArray : " << mesh->_vertexArray << endl;
-      mayaloader_cat.spam() << "mesh polygonCounts : " << mesh->_polygonCounts << endl;
-      mayaloader_cat.spam() << "mesh polygonConnects : " << mesh->_polygonConnects << endl;
-      mayaloader_cat.spam() << "mesh uarray : " << mesh->_uarray << endl;
-      mayaloader_cat.spam() << "mesh varray : " << mesh->_varray << endl;
+      //mayaloader_cat.spam() << "mesh vertexArray : " << mesh->_vertexArray << endl;
+      //mayaloader_cat.spam() << "mesh polygonCounts : " << mesh->_polygonCounts << endl;
+      //mayaloader_cat.spam() << "mesh polygonConnects : " << mesh->_polygonConnects << endl;
+      //mayaloader_cat.spam() << "mesh uarray : " << mesh->_uarray << endl;
+      //mayaloader_cat.spam() << "mesh varray : " << mesh->_varray << endl;
     }
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
@@ -1456,7 +1461,7 @@ bool MayaEggLoader::ConvertEggFile(const char *name, bool merge, bool model, boo
 
 MObject MayaEggLoader::GetDependencyNode(string givenName)
 {
-  MObject node;
+  MObject node = MObject::kNullObj;
   int pos;
   string name;
 
@@ -1466,8 +1471,10 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
   } else
     name = givenName;
 
+  /* 
+  //masad: I do not think you want to return a mesh node 
+  //because keyframes should only apply to joint nodes.
   MeshTable::const_iterator ci;
-  JointTable::const_iterator ji;
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci).second;
     
@@ -1479,10 +1486,13 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
     if (meshName == name)
     {
       node = mesh->_transNode;
+      cerr << "foo get dependency node returning a mesh's transNode? why? : " << givenName << endl;
       return node;
     }
   }
+  */
 
+  JointTable::const_iterator ji;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MayaEggJoint *joint = (*ji).second;
     mayaloader_cat.spam() << "traversing a joint: " << joint->_egg_joint->get_name() << endl;
@@ -1506,7 +1516,8 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
 bool MayaLoadEggData(EggData *data, bool merge, bool model, bool anim, bool respect_normals)
 {
   MayaEggLoader loader;
-  return loader.ConvertEggData(data, merge, model, anim, respect_normals);
+  bool temp = loader.ConvertEggData(data, merge, model, anim, respect_normals);
+  return temp;
 }
 
 bool MayaLoadEggFile(const char *name, bool merge, bool model, bool anim, bool respect_normals)

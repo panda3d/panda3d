@@ -99,6 +99,12 @@ run() {
     exit(1);
   }
 
+  if (!maya->write(_output_filename)) {
+    status.perror("Could not save file");
+    exit(1);
+  }
+    
+  /*
   // And write out the resulting Maya file.
   string os_specific = _output_filename.to_os_generic();
   const char *file_type = NULL;
@@ -110,6 +116,7 @@ run() {
     status.perror("Could not save file");
     exit(1);
   }
+  */
 }
 
 int main(int argc, char *argv[]) {

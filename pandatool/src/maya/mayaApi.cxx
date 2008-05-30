@@ -299,6 +299,12 @@ write(const Filename &filename) {
   maya_cat.info() << "Writing " << filename << "\n";
   string os_filename = filename.to_os_generic();
 
+  Filename cwd = ExecutionEnvironment::get_cwd();
+  string dirname = cwd.to_os_specific();
+  if (maya_cat.is_debug()) {
+    maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << endl;
+  }
+
   const char *type = "mayaBinary";
   string extension = filename.get_extension();
   if (extension == "ma") {
@@ -310,6 +316,23 @@ write(const Filename &filename) {
     stat.perror(os_filename.c_str());
     return false;
   }
+
+  // Beginning with Maya2008, the call to read seem to change
+  // the current directory specially if there is a refrence file!  Yikes!
+
+  // Furthermore, the current directory may change during the call to
+  // any Maya function!  Egad!
+  if (chdir(dirname.c_str()) < 0) {
+    maya_cat.warning()
+      << "Unable to restore current directory after ::write to " << cwd
+      << " after initializing Maya.\n";
+  } else {
+    if (maya_cat.is_debug()) {
+      maya_cat.debug()
+        << "Restored current directory after ::write to " << cwd << "\n";
+    }
+  }
+
   return true;
 }
 
