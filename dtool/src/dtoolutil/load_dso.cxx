@@ -50,6 +50,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
     return NULL;
   }
   string os_specific = abspath.to_os_specific();
+  SetErrorMode(0);
   
   // Try using LoadLibraryEx, if possible.
   typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCTSTR, HANDLE, DWORD);
@@ -76,6 +77,22 @@ unload_dso(void *dso_handle) {
 string
 load_dso_error() {
   DWORD last_error = GetLastError();
+
+  /*
+  LPVOID ptr;
+  if (FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                     FORMAT_MESSAGE_FROM_SYSTEM,
+                     NULL,
+                     last_error,
+                     MAKELANGID( LANG_ENGLISH, SUBLANG_ENGLISH_US ),
+                     (LPTSTR)&ptr,
+                     0, NULL))
+    {
+      cout << "ERROR: " << " result = " << (char*) ptr << "\n";
+      LocalFree( ptr );
+    }
+  */
+
   switch (last_error) {
     case 2: return "File not found";
     case 3: return "Path not found";
@@ -84,6 +101,7 @@ load_dso_error() {
     case 14: return "Out of memory";
     case 18: return "No more files";
     case 126: return "Module not found";
+    case 127: return "The specified procedure could not be found";
     case 998: return "Invalid access to memory location";
   }
 
