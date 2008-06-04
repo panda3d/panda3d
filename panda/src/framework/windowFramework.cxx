@@ -1126,9 +1126,11 @@ setup_lights() {
   AmbientLight *alight = new AmbientLight("ambient");
   alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));
   DirectionalLight *dlight = new DirectionalLight("directional");
+  dlight->set_color(Colorf(0.8f, 0.8f, 0.8f, 1.0f));
 
   _alight = light_group.attach_new_node(alight);
   _dlight = light_group.attach_new_node(dlight);
+  _dlight.set_hpr(-10, -20, 0);
 
   _got_lights = true;
 }
