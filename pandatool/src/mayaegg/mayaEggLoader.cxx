@@ -436,14 +436,20 @@ void MayaEggJoint::ChooseEndPos(double thickness)
 void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
 {
   LVector3d rxv, ryv, rzv;
-  GetRotation(rxv, ryv, rzv);
+  //GetRotation(rxv, ryv, rzv);
+  // [gjeon] I think we shouldn't need to use this GetRotation function here
+  // since this function removes scale information from the matrix.
+  // Let's just use the matrix directly.
+  rxv = _trans.get_row3(0);
+  ryv = _trans.get_row3(1);
+  rzv = _trans.get_row3(2);
+
   MFloatPoint xv(MakeMayaPoint(rxv));
   MFloatPoint yv(MakeMayaPoint(ryv));
   MFloatPoint zv(MakeMayaPoint(rzv));
   MFloatPoint pos(MakeMayaPoint(GetPos()));
   MFloatPoint endpos(MakeMayaPoint(_endpos));
   MFloatPoint tzv(MakeMayaPoint(_perp));
-  
   double m[4][4];
   m[0][0]=xv.x;  m[0][1]=xv.y;  m[0][2]=xv.z;  m[0][3]=0;
   m[1][0]=yv.x;  m[1][1]=yv.y;  m[1][2]=yv.z;  m[1][3]=0;
