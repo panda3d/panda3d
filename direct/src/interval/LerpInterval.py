@@ -9,7 +9,7 @@ __all__ = [
     'LerpPosHprScaleShearInterval', 'LerpPosQuatScaleShearInterval',
     'LerpColorInterval', 'LerpColorScaleInterval',
     'LerpTexOffsetInterval', 'LerpTexRotateInterval', 'LerpTexScaleInterval',
-    'LerpFunctionInterval', 'LerpFunc'
+    'LerpFunctionInterval', 'LerpFunc','LerpFunctionNoStateInterval','LerpFuncNS'
     ]
 
 from pandac.PandaModules import *
@@ -119,11 +119,15 @@ class LerpPosInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
+        print "doing pos",t
         if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
+    #def privStep(self,t):
+
+    #    print "doing pos",t
 
 class LerpHprInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, hpr,
@@ -694,6 +698,85 @@ class LerpTexScaleInterval(LerpNodePathInterval):
             self.setTextureStage(textureStage)
 
 
+
+
+class LerpFunctionNoStateInterval(Interval.Interval):
+    """
+    Class used to execute a function over time.  Function can access fromData
+    and toData to perform blend.  If fromData and toData not specified, will
+    execute the given function passing in values ranging from 0 to 1
+    """
+    
+    # Interval counter
+    lerpFunctionIntervalNum = 1
+    # create LerpFunctionInterval DirectNotify category
+    notify = directNotify.newCategory('LerpFunctionNoStateInterval')
+    # Class methods
+    def __init__(self, function, duration = 0.0, fromData = 0, toData = 1,
+                 blendType = 'noBlend', extraArgs = [], name = None):
+        """__init__(function, duration, fromData, toData, name)
+        """
+        # Record instance variables
+        self.function = function
+        self.fromData = fromData
+        self.toData = toData
+        self.blendType = LerpBlendHelpers.getBlend(blendType)
+        self.extraArgs = extraArgs
+        # Generate unique name if necessary
+        if (name == None):
+            name = ('LerpFunctionInterval-%d' %
+                    LerpFunctionNoStateInterval.lerpFunctionIntervalNum)
+            LerpFunctionNoStateInterval.lerpFunctionIntervalNum += 1
+        else:
+            # Allow the user to pass in a %d in the name and we'll go ahead
+            # and uniquify the name for them.
+            if "%d" in name:
+                name = name % LerpFunctionNoStateInterval.lerpFunctionIntervalNum
+                LerpFunctionNoStateInterval.lerpFunctionIntervalNum += 1
+
+        # Initialize superclass
+        Interval.Interval.__init__(self, name, duration)
+
+    #def privDoEvent(self,t,event):
+
+        #print "doing event",t,event
+        #bt = self.blendType(t/self.duration)
+        #data = (self.fromData * (1 - bt)) + (self.toData * bt)
+        ## Evaluate function
+        #apply(self.function, [data] + self.extraArgs)
+        #self.state = CInterval.SStarted
+        #self.currT = t        
+
+    def privStep(self, t):
+        # Evaluate the function
+        #print "doing priv step",t
+        if (t >= self.duration):
+            # Set to end value
+            if (t > self.duration):
+                print "after end"
+            #apply(self.function, [self.toData] + self.extraArgs)
+        elif self.duration == 0.0:
+            # Zero duration, just use endpoint
+            apply(self.function, [self.toData] + self.extraArgs)
+        else:
+            # In the middle of the lerp, compute appropriate blended value
+            bt = self.blendType(t/self.duration)
+            data = (self.fromData * (1 - bt)) + (self.toData * bt)
+            # Evaluate function
+            apply(self.function, [data] + self.extraArgs)
+
+        # Print debug information
+#        assert self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
+
+        self.state = CInterval.SStarted
+        self.currT = t
+
+# New interface
+class LerpFuncNS(LerpFunctionNoStateInterval):
+    def __init__(self, *args, **kw):
+        LerpFunctionNoStateInterval.__init__(self, *args, **kw)
+
+
 #
 # The remaining intervals defined in this module are the old-school
 # Python-based intervals.
@@ -738,6 +821,7 @@ class LerpFunctionInterval(Interval.Interval):
 
     def privStep(self, t):
         # Evaluate the function
+        #print "doing priv step",t
         if (t >= self.duration):
             # Set to end value
             apply(self.function, [self.toData] + self.extraArgs)
