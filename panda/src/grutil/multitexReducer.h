@@ -135,7 +135,7 @@ private:
                           const StageInfo &stage_info, 
                           const GeomList &geom_list,
 			  const TexCoordf &min_uv, const TexCoordf &max_uv,
-                          bool force_use_geom);
+                          bool force_use_geom, bool transparent_base);
   void transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
                      const GeomList &geom_list, bool preserve_color);
 

@@ -220,11 +220,22 @@ flatten(GraphicsOutput *window) {
       }
     }
   }
-
   Stages::const_iterator mi;
   for (mi = _stages.begin(); mi != _stages.end(); ++mi) {
     const StageList &stage_list = (*mi).first;
     const GeomList &geom_list = (*mi).second;
+
+    //determine whether this texture needs a white or transparent background
+    bool use_transparent_bg = false;
+    if(stage_list.size() > 0) {
+      if(stage_list[0]._stage->get_mode() == TextureStage::M_decal)
+        use_transparent_bg = true;
+      else
+        use_transparent_bg = false;
+    }
+    grutil_cat.debug(false) << "use transparent bg = " << use_transparent_bg << "\n";
+
+
 
     // Create an offscreen buffer in which to render the new texture.
 
@@ -300,25 +311,31 @@ flatten(GraphicsOutput *window) {
     // might prefer not to).
     bool force_use_geom = _use_geom;
     bool bake_in_color = _use_geom;
-
     Colorf geom_color(1.0f, 1.0f, 1.0f, 1.0f);
+    
+    //override the base color in the transparent pass down case.
+    if(use_transparent_bg)
+      geom_color = Colorf(0.0f,0.0f,0.0f,0.0f);
+
     if (!force_use_geom) {
       bool uses_decal = scan_decal(stage_list);
       if (uses_decal) {
         // If we have M_decal, we need to bake in the flat color
         // even if there is no vertex color.
         bake_in_color = true;
-
+        
+        /*
         int num_colors = 0;
         scan_color(geom_list, geom_color, num_colors);
+
         if (num_colors > 1) {
           // But if there is also vertex color, then we need to render
           // with the geometry.
           force_use_geom = true;
-        }
+          }*/
       }
     }
-    
+
     if (!force_use_geom) {
       // Put one plain white (or flat-colored) card in the background
       // for the first texture layer to apply onto.
@@ -345,7 +362,7 @@ flatten(GraphicsOutput *window) {
       const StageInfo &stage_info = (*si);
 
       make_texture_layer(render, stage_info, geom_list, 
-			 min_uv, max_uv, force_use_geom);
+                           min_uv, max_uv, force_use_geom, use_transparent_bg);
     }
 
     // Now modify the geometry to apply the new texture, instead of
@@ -734,7 +751,7 @@ make_texture_layer(const NodePath &render,
                    const MultitexReducer::StageInfo &stage_info, 
                    const MultitexReducer::GeomList &geom_list,
 		   const TexCoordf &min_uv, const TexCoordf &max_uv,
-                   bool force_use_geom) {
+                   bool force_use_geom, bool transparent_base) {
   CPT(RenderAttrib) cba;
 
   switch (stage_info._stage->get_mode()) {
@@ -757,9 +774,14 @@ make_texture_layer(const NodePath &render,
     break;
 
   case TextureStage::M_decal:
-    cba = ColorBlendAttrib::make
-      (ColorBlendAttrib::M_add, ColorBlendAttrib::O_incoming_alpha,
-       ColorBlendAttrib::O_one_minus_incoming_alpha);
+    if(transparent_base) {
+      cba = AlphaTestAttrib::make
+        (AlphaTestAttrib::M_greater, 0.0f);
+    } else {
+      cba = ColorBlendAttrib::make
+        (ColorBlendAttrib::M_add, ColorBlendAttrib::O_incoming_alpha,
+         ColorBlendAttrib::O_one_minus_incoming_alpha);      
+    }
     break;
 
   case TextureStage::M_blend:
@@ -865,8 +887,6 @@ make_texture_layer(const NodePath &render,
     
     geom = render.attach_new_node(geom_node);
 
-    // Make sure we override the vertex color, so we don't pollute
-    // the texture with geometry color.
     geom.set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   }
 
