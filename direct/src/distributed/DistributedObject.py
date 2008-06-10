@@ -192,14 +192,15 @@ class DistributedObject(DistributedObjectBase):
 
     def deleteOrDelay(self):
         if len(self._token2delayDeleteName) > 0:
-            self.deleteImminent = 1
-            # Object is delayDeleted. Clean up distributedObject state,
-            # remove from repository tables, so that we won't crash if
-            # another instance of the same object gets generated while
-            # this instance is still delayDeleted.
-            messenger.send(self.getDisableEvent())
-            self.activeState = ESDisabled
-            self._deactivate()
+            if not self.deleteImminent:
+                self.deleteImminent = 1
+                # Object is delayDeleted. Clean up DistributedObject state,
+                # remove from repository tables, so that we won't crash if
+                # another instance of the same object gets generated while
+                # this instance is still delayDeleted.
+                messenger.send(self.getDelayDeleteEvent())
+                self.delayDelete()
+                self._deactivateDO()
         else:
             self.disableAnnounceAndDelete()
 
@@ -240,13 +241,12 @@ class DistributedObject(DistributedObjectBase):
             assert self.notify.debug(
                 "delayDelete count for doId %s now 0" % (self.doId))
             self.cr._removeDelayDeletedDO(self)
+            # do we have a pending delete?
             if self.deleteImminent:
                 assert self.notify.debug(
                     "delayDelete count for doId %s -- deleteImminent" %
                     (self.doId))
-                self.disable()
-                self.delete()
-                self._destroyDO()
+                self.disableAnnounceAndDelete()
 
     def getDelayDeleteNames(self):
         return self._token2delayDeleteName.values()
@@ -255,6 +255,9 @@ class DistributedObject(DistributedObjectBase):
         self.disableAndAnnounce()
         self.delete()
         self._destroyDO()
+
+    def getDelayDeleteEvent(self):
+        return self.uniqueName("delayDelete")
 
     def getDisableEvent(self):
         return self.uniqueName("disable")
@@ -274,7 +277,10 @@ class DistributedObject(DistributedObjectBase):
             messenger.send(self.getDisableEvent())
             self.disable()
             self.activeState = ESDisabled
-            self._deactivate()
+            if not self.deleteImminent:
+                # if deleteImminent was set, it was DelayDeleted and _deactivateDO was
+                # already called
+                self._deactivateDO()
 
     def announceGenerate(self):
         """
@@ -284,12 +290,12 @@ class DistributedObject(DistributedObjectBase):
         assert self.notify.debug('announceGenerate(): %s' % (self.doId))
 
 
-    def _deactivate(self):
+    def _deactivateDO(self):
         # after this is called, the object is no longer an active DistributedObject
         # and it may be placed in the cache
         if not self.cr:
             # we are going to crash, output the destroyDo stacktrace
-            self.notify.warning('self.cr is none in _deactivate %d' % self.doId)
+            self.notify.warning('self.cr is none in _deactivateDO %d' % self.doId)
             if hasattr(self, 'destroyDoStackTrace'):
                 print self.destroyDoStackTrace
         self.__callbacks = {}
@@ -310,6 +316,12 @@ class DistributedObject(DistributedObjectBase):
             del self._cachedData
         self.cr = None
         self.dclass = None
+
+    def delayDelete(self):
+        """
+        Inheritors should redefine this to take appropriate action on delayDelete
+        """
+        pass
 
     def disable(self):
         """
