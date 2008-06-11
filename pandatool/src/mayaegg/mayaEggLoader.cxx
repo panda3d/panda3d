@@ -602,11 +602,23 @@ int MayaEggMesh::GetVert(EggVertex *vert, EggGroup *context)
   vtx._index = 0;
 
   EggVertex::GroupRef::const_iterator gri;
+  double remaining_weight = 1.0;
   for (gri = vert->gref_begin(); gri != vert->gref_end(); ++gri) {
     EggGroup *egg_joint = (*gri);
     double membership = egg_joint->get_vertex_membership(vert);
+    remaining_weight -= membership;
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
   }
+  
+  // some soft models came up short of 1.0 on vertex membership
+  // add the remainder of the weight on first joint in the membership
+  if ((remaining_weight) > 0.01) {
+    gri = vert->gref_begin();
+    EggGroup *egg_joint = (*gri);
+    double membership = egg_joint->get_vertex_membership(vert);
+    vtx._weights.push_back(MayaEggWeight(membership+remaining_weight, egg_joint));
+  }
+
   if (vtx._weights.size()==0) {
     if (context != 0) {
       vtx._weights.push_back(MayaEggWeight(1.0, context));
@@ -615,10 +627,18 @@ int MayaEggMesh::GetVert(EggVertex *vert, EggGroup *context)
   
   VertTable::const_iterator vti = _vert_tab.find(vtx);
   if (vti != _vert_tab.end()) {
+    if ((remaining_weight) > 0.01) {
+      mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
+    }    
     return vti->_index;
   }
   
   vtx._index = _vert_count++;
+
+  if ((remaining_weight) > 0.01) {
+    mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
+  }    
+
   _vertexArray.append(MakeMayaPoint(vtx._pos));
   if (vert->has_normal()) {
     _normalArray.append(MakeMayaVector(vtx._normal));
