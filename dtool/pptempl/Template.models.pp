@@ -28,6 +28,16 @@
 
 #define texattrib_file $[texattrib_dir]/textures.txa
 
+#if $[eq $[BUILD_TYPE], nmake]
+  #define TOUCH_CMD echo.
+  #define COPY_CMD xcopy /I/Y
+  #define DEL_CMD del /f/s/q
+#else
+  #define TOUCH_CMD touch
+  #define COPY_CMD cp
+  #define DEL_CMD rm -rf
+#endif
+
 //////////////////////////////////////////////////////////////////////
 #if $[eq $[DIR_TYPE], models]
 //////////////////////////////////////////////////////////////////////
@@ -220,40 +230,52 @@ uninstall : uninstall-other uninstall-bam
 
 clean-bam :
 #if $[bam_targets]
-$[TAB]rm -rf $[bam_dir]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[bam_dir]]
+ #else
+$[TAB]$[DEL_CMD] $[bam_dir]
+ #endif
 #endif
 
 clean-pal : clean-bam
 #if $[pal_egg_targets]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[pal_egg_dir]]
+ #else
 $[TAB]rm -rf $[pal_egg_dir]
+ #endif
 #endif
 
 clean-flt :
 #if $[build_flt_eggs]
-$[TAB]rm -f $[build_flt_eggs]
+$[TAB]$[DEL_CMD] $[build_flt_eggs]
 #endif
 
 clean-lwo :
 #if $[build_lwo_eggs]
-$[TAB]rm -f $[build_lwo_eggs]
+$[TAB]$[DEL_CMD] $[build_lwo_eggs]
 #endif
 
 clean-maya :
 #if $[build_maya_eggs]
-$[TAB]rm -f $[build_maya_eggs]
+$[TAB]$[DEL_CMD] $[build_maya_eggs]
 #endif
 
 clean-soft :
 #if $[build_soft_eggs]
-$[TAB]rm -f $[build_soft_eggs]
+$[TAB]$[DEL_CMD] $[build_soft_eggs]
 #endif
 
 clean : clean-pal
 #if $[build_eggs]
-$[TAB]rm -f $[build_eggs] *.pt
+$[TAB]$[DEL_CMD] $[build_eggs] *.pt
 #endif
 #if $[filter_dirs]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[filter_dirs]]
+ #else
 $[TAB]rm -rf $[filter_dirs]
+ #endif
 #endif
 
 // We need a rule for each directory we might need to make.  This
@@ -270,16 +292,26 @@ $[TAB]rm -rf $[filter_dirs]
     $[install_other_dirs] \
     ]
 $[directory] :
+#if $[eq $[BUILD_TYPE], nmake]
+$[TAB] if not exist $[osfilename $[directory]] mkdir $[osfilename $[directory]]
+#else
 $[TAB]@test -d $[directory] || echo mkdir -p $[directory]
 $[TAB]@test -d $[directory] || mkdir -p $[directory]
+#endif
 
 // Sometimes we need a target to depend on the directory existing, without
 // being fooled by the directory's modification times.  We use this
 // phony timestamp file to achieve that.
 $[directory]/stamp :
+#if $[eq $[BUILD_TYPE], nmake]
+$[TAB] if not exist $[osfilename $[directory]] mkdir $[osfilename $[directory]]
+$[TAB]$[TOUCH_CMD] $[osfilename $[directory]/stamp]
+#else
 $[TAB]@test -d $[directory] || echo mkdir -p $[directory]
 $[TAB]@test -d $[directory] || mkdir -p $[directory]
-$[TAB]@touch $[directory]/stamp
+$[TAB]$[TOUCH_CMD] $[directory]/stamp
+#endif
+
 #end directory
 
 // Decompressing compressed files.
@@ -288,7 +320,7 @@ $[TAB]@touch $[directory]/stamp
     #define target $[gz:%.gz=%]
     #define source $[gz]
 $[target] : $[source]
-$[TAB]rm -f $[target]
+$[TAB]$[DEL_CMD] $[osfilename $[target]]
 $[TAB]gunzip $[GUNZIP_OPTS] < $[source] > $[target]
 
   #end gz
@@ -410,7 +442,11 @@ $[TAB]$[SOFT2EGG] $[SOFT2EGG_OPTS] $[if $[SOFTIMAGE_RSRC],-r "$[osfilename $[SOF
     #define source $[word $[i],$[SOURCES]]
     #define target $[word $[i],$[TARGETS]]
 $[target] : $[source]
-$[TAB]cp $[source] $[target]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[COPY_CMD] $[osfilename $[source]] $[osfilename $[target]]
+ #else
+$[TAB]$[COPY_CMD] $[source] $[target]
+ #endif
   #end i
 #end copy_egg
 
@@ -435,7 +471,11 @@ $[TAB]$[COMMAND]
    // first one.
   #foreach egg $[notdir $[wordlist 2,9999,$[SOURCES]]]
 $[TARGET_DIR]/$[egg] : $[target] $[TARGET_DIR]/stamp
-$[TAB]touch $[TARGET_DIR]/$[egg]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[TOUCH_CMD] $[osfilename $[TARGET_DIR]/$[egg]]
+ #else
+$[TAB]$[TOUCH_CMD] $[TARGET_DIR]/$[egg]
+ #endif 
   #end egg
 
    // And this is the actual optchar pass.
@@ -453,7 +493,11 @@ $[TAB]$[COMMAND]
    // first one.
   #foreach egg $[notdir $[wordlist 2,9999,$[SOURCES]]]
 $[TARGET_DIR]/$[egg] : $[target] $[TARGET_DIR]/stamp
-$[TAB]touch $[TARGET_DIR]/$[egg]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[TOUCH_CMD] $[osfilename $[TARGET_DIR]/$[egg]]
+ #else
+$[TAB]$[TOUCH_CMD] $[TARGET_DIR]/$[egg]
+ #endif
   #end egg
 
    // And this is the actual optchar pass.
@@ -476,7 +520,7 @@ $[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dr $[install_dir] -
     #endif
 
 $[pt] :
-$[TAB]touch $[pt]
+$[TAB]$[TOUCH_CMD] $[pt]
 
   #end egg
 #end install_egg
@@ -516,8 +560,13 @@ $[TAB]egg2bam $[EGG2BAM_OPTS] -NC -o $[target] $[source]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
 //      cd ./$[sourcedir] && $[INSTALL]
-$[TAB]rm -f $[dest]/$[local]
-$[TAB]cp $[sourcedir]/$[local] $[dest]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[local]]
+$[TAB]$[COPY_CMD] $[osfilename $[sourcedir]/$[local]] $[osfilename $[dest]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[local]
+$[TAB]$[COPY_CMD] $[sourcedir]/$[local] $[dest]
+ #endif
 
   #end egg
   #if $[LANGUAGES]
@@ -536,8 +585,13 @@ $[TAB]cp $[sourcedir]/$[local] $[dest]
       #define dest $[install_model_dir]
 $[dest]/$[remote] : $[sourcedir]/$[local]
 //      cd ./$[sourcedir] && $[INSTALL]
-$[TAB]rm -f $[dest]/$[remote]
-$[TAB]cp $[sourcedir]/$[local] $[dest]/$[remote]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[remote]]
+$[TAB]$[COPY_CMD] $[osfilename $[sourcedir]/$[local]] $[osfilename $[dest]/$[remote]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[remote]
+$[TAB]$[COPY_CMD] $[sourcedir]/$[local] $[dest]/$[remote]
+ #endif
 
     #end egg
   #endif
@@ -553,7 +607,11 @@ uninstall-bam :
   #endif
   #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[generic_egglist] $[language_egglist]]
   #if $[files]
-$[TAB]rm -f $[files]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[files]]
+ #else
+$[TAB]$[DEL_CMD] $[files]
+ #endif
   #endif
 #end install_egg
 
@@ -566,8 +624,13 @@ $[TAB]rm -f $[files]
     #define dest $[install_model_dir]
 $[dest]/$[remote] : $[local]
 //      $[INSTALL]
-$[TAB]rm -f $[dest]/$[remote]
-$[TAB]cp $[local] $[dest]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[remote]]
+$[TAB]$[COPY_CMD] $[osfilename $[local]] $[osfilename $[dest]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[remote]
+$[TAB]$[COPY_CMD] $[local] $[dest]
+ #endif
 
   #end file
   #if $[LANGUAGES]
@@ -585,8 +648,13 @@ $[TAB]cp $[local] $[dest]
       #define dest $[install_model_dir]
 $[dest]/$[remote] : $[local]
 //      cd ./$[sourcedir] && $[INSTALL]
-$[TAB]rm -f $[dest]/$[remote]
-$[TAB]cp $[local] $[dest]/$[remote]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[remote]]
+$[TAB]$[COPY_CMD] $[osfilename $[local]] $[osfilename $[dest]/$[remote]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[remote]
+$[TAB]$[COPY_CMD] $[local] $[dest]/$[remote]
+ #endif
 
     #end file
   #endif
@@ -602,7 +670,11 @@ uninstall-other:
   #endif
   #define files $[patsubst %,$[install_model_dir]/%,$[generic_sources] $[language_sources]]
   #if $[files]
-$[TAB]rm -f $[files]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[files]]
+ #else
+$[TAB]$[DEL_CMD] $[files]
+ #endif
   #endif
 #end install_dna
 
@@ -616,8 +688,13 @@ $[TAB]rm -f $[files]
     #define dest $[install_model_dir]
 $[dest]/$[remote] : $[local]
 //      $[INSTALL]
-$[TAB]rm -f $[dest]/$[remote]
-$[TAB]cp $[local] $[dest]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[dest]/$[remote]]
+$[TAB]$[COPY_CMD] $[osfilename $[local]] $[osfilename $[dest]]
+ #else
+$[TAB]$[DEL_CMD] $[dest]/$[remote]
+$[TAB]$[COPY_CMD] $[local] $[dest]
+ #endif
 
   #end file
 #end install_audio install_icons install_shader install_misc
@@ -627,7 +704,11 @@ uninstall-other:
 #forscopes install_audio install_icons install_shader install_misc
   #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES]]
   #if $[files]
-$[TAB]rm -f $[files]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[files]]
+ #else
+$[TAB]$[DEL_CMD] $[files]
+ #endif
   #endif
 #end install_audio install_icons install_shader install_misc
 
@@ -714,7 +795,11 @@ $[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%
 # undo-pal : blow away all the palettization information and start fresh.
 #
 undo-pal : clean-pal
-$[TAB]rm -f $[texattrib_file:%.txa=%.boo]
+ #if $[eq $[BUILD_TYPE], nmake]
+$[TAB]$[DEL_CMD] $[osfilename $[texattrib_file:%.txa=%.boo]]
+ #else
+$[TAB]$[DEL_CMD] $[texattrib_file:%.txa=%.boo]
+ #endif
 
 #
 # pi : report the palettization information to standard output for the
