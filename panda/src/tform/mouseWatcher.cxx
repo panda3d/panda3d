@@ -113,7 +113,7 @@ bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
   MutexHolder holder(_lock);
 
-  remove_region_from(_regions, region);
+  remove_region_from(_current_regions, region);
   if (region == _preferred_region) {
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
       exit_region(_preferred_region, MouseWatcherParameter());
@@ -201,8 +201,8 @@ remove_group(MouseWatcherGroup *group) {
 
   Regions only_a, only_b, both;
   intersect_regions(only_a, only_b, both,
-                    _regions, group->_regions);
-  _regions.swap(only_a);
+                    _current_regions, group->_regions);
+  _current_regions.swap(only_a);
 
   if (has_region_in(both, _preferred_region)) {
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -275,8 +275,8 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   if (!remove.empty()) {
     Regions only_a, only_b, both;
     intersect_regions(only_a, only_b, both,
-                      _regions, remove);
-    _regions.swap(only_a);
+                      _current_regions, remove);
+    _current_regions.swap(only_a);
 
     if (has_region_in(both, _preferred_region)) {
       if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -293,8 +293,8 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   if (!add.empty()) {
     Regions new_list;
     intersect_regions(new_list, new_list, new_list,
-                      _regions, add);
-    _regions.swap(new_list);
+                      _current_regions, add);
+    _current_regions.swap(new_list);
   }
 
   // Add the new group, if it's not already there.
@@ -757,14 +757,8 @@ clear_current_regions() {
     while (old_ri != _current_regions.end()) {
       // Here's a region we don't have any more.
       MouseWatcherRegion *old_region = (*old_ri);
-      without_region(old_region, param);
-
-      if (!_enter_multiple)
-      {
-        old_region->exit_region(param);
-        throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
-      }
-	  
+      old_region->exit_region(param);
+      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
       ++old_ri;
     }
     
