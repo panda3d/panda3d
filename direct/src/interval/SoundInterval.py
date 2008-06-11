@@ -93,7 +93,7 @@ class SoundInterval(Interval.Interval):
         if (t1 < self.soundDuration) and not (self._seamlessLoop and self._soundPlaying):
             base.sfxPlayer.playSfx(
                 self.sound, self.fLoop, 1, self.volume, t1, self.node,
-                listenerNode = self.listenerNode)
+                listenerNode = self.listenerNode, cutoff = self.cutOff)
             self._soundPlaying = True
         self.state = CInterval.SStarted
         self.currT = t
