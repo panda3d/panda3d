@@ -202,7 +202,7 @@ remove_group(MouseWatcherGroup *group) {
   Regions only_a, only_b, both;
   intersect_regions(only_a, only_b, both,
                     _current_regions, group->_regions);
-  _current_regions.swap(only_a);
+  set_current_regions(only_a);
 
   if (has_region_in(both, _preferred_region)) {
     if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -271,12 +271,16 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   intersect_regions(remove, add, keep,
                     old_group->_regions, new_group->_regions);
 
+  Regions new_current_regions;
+  bool any_new_current_regions = false;
+
   // Remove the old regions
   if (!remove.empty()) {
     Regions only_a, only_b, both;
     intersect_regions(only_a, only_b, both,
                       _current_regions, remove);
-    _current_regions.swap(only_a);
+    new_current_regions.swap(only_a);
+    any_new_current_regions = true;
 
     if (has_region_in(both, _preferred_region)) {
       if (_preferred_region != (MouseWatcherRegion *)NULL) {
@@ -292,9 +296,19 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
   // And add the new regions
   if (!add.empty()) {
     Regions new_list;
-    intersect_regions(new_list, new_list, new_list,
-                      _current_regions, add);
-    _current_regions.swap(new_list);
+    if (any_new_current_regions) {
+      intersect_regions(new_list, new_list, new_list,
+                        new_current_regions, add);
+    } else {
+      intersect_regions(new_list, new_list, new_list,
+                        _current_regions, add);
+    }
+    new_current_regions.swap(new_list);
+    any_new_current_regions = true;
+  }
+
+  if (any_new_current_regions) {
+    set_current_regions(new_current_regions);
   }
 
   // Add the new group, if it's not already there.
