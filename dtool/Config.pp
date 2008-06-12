@@ -475,7 +475,9 @@
 #define FFTW_LPATH /usr/local/lib
 #define FFTW_LIBS rfftw fftw
 #defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
-
+// This is because darwinport's version of the fftw lib is called
+// drfftw instead of rfftw.
+#defer HAVE_DRFFTW_H $[libtest $[FFTW_LPATH],drfftw]
 
 // Is Berkeley DB installed, and where?  Presently, this is only used
 // for some applications (egg-optchar in particular) in Pandatool, and

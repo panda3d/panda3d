@@ -506,6 +506,9 @@ $[cdefine HAVE_GLOB_H]
 /* Define if you have the <dirent.h> header file.  */
 $[cdefine HAVE_DIRENT_H]
 
+/* Define if you have the <drfftw.h> header file.  */
+$[cdefine HAVE_DRFFTW_H]
+
 /* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
    interface)? */
 $[cdefine HAVE_SYS_SOUNDCARD_H]
