@@ -30,7 +30,12 @@
 #ifdef howmany
 #undef howmany
 #endif
-#include "rfftw.h"
+
+#ifdef IS_OSX
+  #include "drfftw.h"
+#else
+  #include "rfftw.h"
+#endif
 
 // These FFTW support objects can only be defined if we actually have
 // the FFTW library available.
