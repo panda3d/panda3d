@@ -629,7 +629,7 @@
 // creation.
 #define SDL_IPATH
 #define SDL_LPATH
-#define SDL_LIBS SDL
+#define SDL_LIBS
 #defer HAVE_SDL $[libtest $[SDL_LPATH],$[SDL_LIBS]]
 
 // Is the Chromium remote-rendering library installed, and where?
