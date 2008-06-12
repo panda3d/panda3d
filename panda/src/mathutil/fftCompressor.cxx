@@ -31,7 +31,7 @@
 #undef howmany
 #endif
 
-#ifdef IS_OSX
+#ifdef HAVE_DRFFTW_H
   #include "drfftw.h"
 #else
   #include "rfftw.h"
