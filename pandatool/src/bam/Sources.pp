@@ -5,7 +5,7 @@
   dgraph:c downloader:c recorder:c \
   pnmimagetypes:c pnmimage:c pgraph:c gobj:c putil:c \
   lerp:c mathutil:c linmath:c event:c pstatclient:c \
-  gsgbase:c grutil:c display:c text:c cull:c 
+  gsgbase:c grutil:c display:c text:c cull:c \
   tform:c device:c movies:c \
   $[if $[HAVE_FREETYPE],pnmtext:c] \
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
