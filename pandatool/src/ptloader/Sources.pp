@@ -12,8 +12,9 @@
     gobj:c chan:c parametrics:c pgraph:c \
     pnmimage:c grutil:c collide:c tform:c text:c \
     char:c dgraph:c display:c device:c cull:c \
-    downloader:c pipeline:c pnmtext:c \
+    downloader:c pipeline:c \
     event:c gsgbase:c lerp:c movies:c \
+    $[if $[HAVE_FREETYPE],pnmtext:c] \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     $[if $[HAVE_AUDIO],audio:c] \
     panda:m \

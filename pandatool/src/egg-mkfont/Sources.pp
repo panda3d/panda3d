@@ -6,10 +6,11 @@
   palettizer eggbase progbase
 #define OTHER_LIBS \
   egg:c pandaegg:m \
-  display:c pnmtext:c pnmimagetypes:c pnmimage:c \
+  display:c pnmimagetypes:c pnmimage:c \
   linmath:c putil:c pgraph:c pipeline:c cull:c \
   gsgbase:c gobj:c event:c mathutil:c pstatclient:c \
   lerp:c \
+  $[if $[HAVE_FREETYPE],pnmtext:c] \
   $[if $[HAVE_NET],net:c] \
   panda:m \
   downloader:c pandabase:c express:c pandaexpress:m \

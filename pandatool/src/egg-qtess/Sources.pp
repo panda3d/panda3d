@@ -8,10 +8,11 @@
     egg2pg:c egg:c pandaegg:m \
     chan:c char:c downloader:c event:c lerp:c \
     tform:c grutil:c text:c dgraph:c display:c gsgbase:c \
-    collide:c gobj:c cull:c device:c pnmtext:c \
+    collide:c gobj:c cull:c device:c \
     parametrics:c pgraph:c pipeline:c pstatclient:c chan:c \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
     movies:c \
+    $[if $[HAVE_FREETYPE],pnmtext:c] \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
     $[if $[HAVE_AUDIO],audio:c] \
     panda:m \
