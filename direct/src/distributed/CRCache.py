@@ -8,6 +8,7 @@ class CRCache:
 
     def __init__(self, maxCacheItems=10):
         self.maxCacheItems = maxCacheItems
+        self.storedCacheItems = maxCacheItems
         self.dict = {}
         self.fifo = []
 
@@ -117,3 +118,11 @@ class CRCache:
             if isinstance(obj, NodePath):
                 assert not obj.isEmpty() and obj.getTopNode() != render.node()
         return 1
+
+    def turnOff(self):
+        self.flush()
+        self.storedMaxCache = self.maxCacheItems
+        self.maxCacheItems = 0
+
+    def turnOn(self):
+        self.maxCacheItems = self.storedMaxCache
