@@ -689,7 +689,17 @@ reposition() {
   float t = get_ratio();
   
   if (_thumb_button != (PGButton *)NULL) {
-    _thumb_button->set_transform(TransformState::make_pos((t * _range_x) * _axis + _thumb_start));
+    LPoint3f pos = (t * _range_x) * _axis + _thumb_start;
+    CPT(TransformState) transform = TransformState::make_pos(pos);
+    CPT(TransformState) orig_transform = _thumb_button->get_transform();
+
+    // It's important not to update the transform frivolously, or
+    // we'll get caught in an update loop.
+    if (transform == orig_transform) {
+      // No change.
+    } else if (*transform < *orig_transform || *orig_transform < *transform) {
+      _thumb_button->set_transform(transform);
+    }
   }
 }
 
