@@ -119,15 +119,11 @@ class LerpPosInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        print "doing pos",t
         if self.paramSetup and event == CInterval.ETInitialize:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
         LerpNodePathInterval.privDoEvent(self, t, event)
 
-    #def privStep(self,t):
-
-    #    print "doing pos",t
 
 class LerpHprInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, hpr,
