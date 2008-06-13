@@ -176,7 +176,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Primitive batches:Triangle fans",  { 0.8, 0.5, 0.2 } },
   { 1, "Primitive batches:Triangle strips",{ 0.2, 0.5, 0.8 } },
   { 1, "Primitive batches:Display lists",  { 0.8, 0.5, 1.0 } },
-  { 1, "SW Sprites",                       { 0.2, 0.7, 0.3 },  "K", 1000 },
+  { 1, "SW Sprites",                       { 0.2, 0.7, 0.3 },  "K", 10, 1000 },
   { 1, "Vertices",                         { 0.5, 0.2, 0.0 },  "K", 10, 1000 },
   { 1, "Vertices:Other",                   { 0.2, 0.2, 0.2 } },
   { 1, "Vertices:Triangles",               { 0.8, 0.8, 0.8 } },
