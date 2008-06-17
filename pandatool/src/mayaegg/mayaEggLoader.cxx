@@ -611,21 +611,22 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     vtx._weights.push_back(MayaEggWeight(membership, egg_joint));
   }
   
-  // some soft models came up short of 1.0 on vertex membership
-  // add the remainder of the weight on first joint in the membership
-  if ((remaining_weight) > 0.01) {
-    gri = vert->gref_begin();
-    EggGroup *egg_joint = (*gri);
-    double membership = egg_joint->get_vertex_membership(vert);
-    vtx._weights.push_back(MayaEggWeight(membership+remaining_weight, egg_joint));
-  }
-
   if (vtx._weights.size()==0) {
     if (context != 0) {
       vtx._weights.push_back(MayaEggWeight(1.0, context));
     }
+    remaining_weight = 0.0;
+  } else {
+    // some soft models came up short of 1.0 on vertex membership
+    // add the remainder of the weight on first joint in the membership
+    if ((remaining_weight) > 0.01) {
+      gri = vert->gref_begin();
+      EggGroup *egg_joint = (*gri);
+      double membership = egg_joint->get_vertex_membership(vert);
+      vtx._weights.push_back(MayaEggWeight(membership+remaining_weight, egg_joint));
+    }
   }
-  
+
   VertTable::const_iterator vti = _vert_tab.find(vtx);
   if (vti != _vert_tab.end()) {
     if ((remaining_weight) > 0.01) {
@@ -646,7 +647,9 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     _vertNormalIndices.append(vtx._index);
   }
   if (vert->has_color()) {
-    mayaloader_cat.spam() << "found a vertex color\n";
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "found a vertex color\n";
+    }
     _vertColorArray.append(MakeMayaColor(vert->get_color()));
     _vertColorIndices.append(vtx._index);
   }
@@ -983,7 +986,9 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
   cmd += maxInfluences;
 
-  mayaloader_cat.spam() << joints.size() << " joints have weights on " << M->_pool->get_name() << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << joints.size() << " joints have weights on " << M->_pool->get_name() << endl;
+  }
   if (joints.size() == 0) {
     // no need to cluster; there are no weights
     return;
@@ -1191,20 +1196,20 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
 
     // [gjeon] building cvArray
     EggVertexPool *pool = eggNurbsSurface->get_pool();
-    for (int ui = 0; ui < surface->_uNumCvs; ui++) {
-      for (int vi = 0; vi < surface->_vNumCvs; vi++) {
+    for (uint ui = 0; ui < surface->_uNumCvs; ui++) {
+      for (uint vi = 0; vi < surface->_vNumCvs; vi++) {
         EggVertex *vtx = eggNurbsSurface->get_vertex(eggNurbsSurface->get_vertex_index(ui, vi));
         surface->_cvArray.append(MakeMPoint(vtx->get_pos3()));
       }
     }
     
     // [gjeon] building u knotArray
-    for (unsigned i = 1; i < eggNurbsSurface->get_num_u_knots()-1; i++) {
+    for (int i = 1; i < eggNurbsSurface->get_num_u_knots()-1; i++) {
       surface->_uKnotArray.append(eggNurbsSurface->get_u_knot(i));
     }
 
     // [gjeon] building v knotArray
-    for (unsigned i = 1; i < eggNurbsSurface->get_num_v_knots()-1; i++) {
+    for (int i = 1; i < eggNurbsSurface->get_num_v_knots()-1; i++) {
       surface->_vKnotArray.append(eggNurbsSurface->get_v_knot(i));
     }
 
@@ -1457,11 +1462,15 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   thickness = thickness * 0.025;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MayaEggJoint *joint = (*ji).second;
-    mayaloader_cat.spam() << "creating a joint: " << joint->_egg_joint->get_name() << endl;
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "creating a joint: " << joint->_egg_joint->get_name() << endl;
+    }
     joint->ChooseEndPos(thickness);
     joint->CreateMayaBone(FindGroup(joint->_egg_parent));
   }
-  mayaloader_cat.spam() << "went past all the joints" << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "went past all the joints" << endl;
+  }
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci).second;
     EggGroup *joint = mesh->GetControlJoint();
@@ -1476,22 +1485,30 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       CreateSkinCluster(surface);
     }
   }
-  mayaloader_cat.spam() << "went past creating skin cluster" << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "went past creating skin cluster" << endl;
+  }
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) {
     (*ci).second->AssignNames();
   }
   for (si = _surface_tab.begin();  si != _surface_tab.end();  ++si) {
     (*si).second->AssignNames();
   }
-  mayaloader_cat.spam() << "went past mesh AssignNames" << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "went past mesh AssignNames" << endl;
+  }
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     (*ji).second->AssignNames();
   }
-  mayaloader_cat.spam() << "went past joint AssignNames" << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "went past joint AssignNames" << endl;
+  }
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) {
     (*ti).second->AssignNames();
   }
-  mayaloader_cat.spam() << "went past tex AssignNames" << endl;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "went past tex AssignNames" << endl;
+  }
  
   if (mayaloader_cat.is_debug()) {
     mayaloader_cat.debug() << "-fri: " << _frame_rate << " -sf: " << _start_frame 
@@ -1780,7 +1797,9 @@ MObject MayaEggLoader::GetDependencyNode(string givenName)
   JointTable::const_iterator ji;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     MayaEggJoint *joint = (*ji).second;
-    mayaloader_cat.spam() << "traversing a joint: " << joint->_egg_joint->get_name() << endl;
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "traversing a joint: " << joint->_egg_joint->get_name() << endl;
+    }
     string jointName = joint->_egg_joint->get_name();
     if (jointName == name)
     {
