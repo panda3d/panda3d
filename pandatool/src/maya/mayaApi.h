@@ -52,6 +52,7 @@ public:
 private:
   bool _is_valid;
   bool _plug_in;
+  Filename _cwd;
   static MayaApi *_global_api;
 };
 

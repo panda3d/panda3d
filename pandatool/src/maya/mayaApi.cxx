@@ -63,19 +63,19 @@ MayaApi(const string &program_name) {
 
   // Furthermore, the current directory may change during the call to
   // any Maya function!  Egad!
-  Filename cwd = ExecutionEnvironment::get_cwd();
+  _cwd = ExecutionEnvironment::get_cwd();
   MStatus stat = MLibrary::initialize((char *)program_name.c_str());
   
   // Restore the current directory.
-  string dirname = cwd.to_os_specific();
+  string dirname = _cwd.to_os_specific();
   if (chdir(dirname.c_str()) < 0) {
     maya_cat.warning()
-      << "Unable to restore current directory to " << cwd
+      << "Unable to restore current directory to " << _cwd
       << " after initializing Maya.\n";
   } else {
     if (maya_cat.is_debug()) {
       maya_cat.debug()
-        << "Restored current directory to " << cwd << "\n";
+        << "Restored current directory to " << _cwd << "\n";
     }
   }
 
@@ -258,8 +258,7 @@ read(const Filename &filename) {
   // even on Windows.
   string os_filename = filename.to_os_generic();
 
-  Filename cwd = ExecutionEnvironment::get_cwd();
-  string dirname = cwd.to_os_specific();
+  string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
     maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << endl;
   }
@@ -273,12 +272,12 @@ read(const Filename &filename) {
   // any Maya function!  Egad!
   if (chdir(dirname.c_str()) < 0) {
     maya_cat.warning()
-      << "Unable to restore current directory after ::read to " << cwd
+      << "Unable to restore current directory after ::read to " << _cwd
       << " after initializing Maya.\n";
   } else {
     if (maya_cat.is_debug()) {
       maya_cat.debug()
-        << "Restored current directory after ::read to " << cwd << "\n";
+        << "Restored current directory after ::read to " << _cwd << "\n";
     }
   }
   if (!stat) {
@@ -299,8 +298,7 @@ write(const Filename &filename) {
   maya_cat.info() << "Writing " << filename << "\n";
   string os_filename = filename.to_os_generic();
 
-  Filename cwd = ExecutionEnvironment::get_cwd();
-  string dirname = cwd.to_os_specific();
+  string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
     maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << endl;
   }
@@ -316,7 +314,6 @@ write(const Filename &filename) {
     stat.perror(os_filename.c_str());
     return false;
   }
-
   // Beginning with Maya2008, the call to read seem to change
   // the current directory specially if there is a refrence file!  Yikes!
 
@@ -324,15 +321,14 @@ write(const Filename &filename) {
   // any Maya function!  Egad!
   if (chdir(dirname.c_str()) < 0) {
     maya_cat.warning()
-      << "Unable to restore current directory after ::write to " << cwd
+      << "Unable to restore current directory after ::write to " << _cwd
       << " after initializing Maya.\n";
   } else {
     if (maya_cat.is_debug()) {
       maya_cat.debug()
-        << "Restored current directory after ::write to " << cwd << "\n";
+        << "Restored current directory after ::write to " << _cwd << "\n";
     }
   }
-
   return true;
 }
 
