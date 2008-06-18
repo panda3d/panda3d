@@ -107,6 +107,11 @@ get_surface(PN_uint8 surface1, PN_uint8 surface2)
     {
         true_pos = (surface2 * _num_surfaces) + surface1;
     }
+    if((_num_surfaces <= surface1) || (_num_surfaces <= surface2))
+    {
+        odeworld_cat.error() << "surface position exceeds size of surface table, set num_surface in initSurfaceTable higher." << "\n";
+        //nassertr_always((_num_surfaces > surface1 && _num_surfaces > surface2), _surface_table[true_pos]);
+    }
     return _surface_table[true_pos];
 }
 
