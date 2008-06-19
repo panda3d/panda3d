@@ -29,7 +29,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
-'pandaBreak','pandaTrace']
+'pandaBreak','pandaTrace','formatTimeCompact']
 
 import types
 import string
@@ -3314,6 +3314,26 @@ def recordFunctorCreationStacks():
             Functor = recordCreationStackStr(Functor)
             Functor._functorCreationStacksRecorded = True
             Functor.__call__ = Functor._exceptionLoggedCreationStack__call__
+
+def formatTimeCompact(seconds):
+    # returns string in format '1d3h22m43s'
+    result = ''
+    a = int(seconds)
+    seconds = a % 60
+    a /= 60
+    if a > 0:
+        minutes = a % 60
+        a /= 60
+        if a > 0:
+            hours = a % 24
+            a /= 24
+            if a > 0:
+                days = a
+                result += '%sd' % days
+            result += '%sh' % hours
+        result += '%sm' % minutes
+    result += '%ss' % seconds
+    return result
 
 globalPdb = None
 
