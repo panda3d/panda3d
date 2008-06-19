@@ -127,6 +127,8 @@ class DistributedObjectAI(DistributedObjectBase):
                 barrier.cleanup()
             self.__barriers = {}
 
+            self.air.stopTrackRequestDeletedDO(self)
+
             # DCR: I've re-enabled this block of code so that Toontown's
             # AI won't leak channels.
             # Let me know if it causes trouble.
@@ -465,6 +467,7 @@ class DistributedObjectAI(DistributedObjectBase):
                 (self.__class__, doId))
             return
         self.air.requestDelete(self)
+        self.air.startTrackRequestDeletedDO(self)
         self._DOAI_requestedDelete = True
 
     def taskName(self, taskString):
