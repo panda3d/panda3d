@@ -21,18 +21,18 @@
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"
 
+#include "eggBin.h"
 #include "eggData.h"
 #include "eggTable.h"
+#include "eggVertex.h"
+#include "eggPolygon.h"
 #include "eggComment.h"
 #include "eggXfmSAnim.h"
 #include "eggSAnimData.h"
-#include "eggVertexPool.h"
-#include "eggVertex.h"
-#include "eggPolygon.h"
 #include "eggPrimitive.h"
 #include "eggGroupNode.h"
+#include "eggVertexPool.h"
 #include "eggPolysetMaker.h"
-#include "eggBin.h"
 #include "eggNurbsSurface.h"
 
 #include "pre_maya_include.h"
@@ -124,6 +124,7 @@ public:
   MTime::Unit     _timeUnit;
 
   void ParseFrameInfo(string comment);
+  void PrintData(MayaEggMesh *mesh);
 };
 
 MPoint MakeMPoint(const LVector3d &vec)
@@ -190,7 +191,10 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
   MFnLambertShader shader;
   MFnDependencyNode filetex;
   MFnSet sgroup;
+  MPlugArray oldplugs;
+  MDGModifier dgmod;
 
+  /*
   if (fn=="") {
     MSelectionList selection;
     MObject initGroup;
@@ -199,9 +203,8 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
     selection.getDependNode(0, initGroup);
     sgroup.setObject(initGroup);
   } else {
-    MPlugArray oldplugs;
-    MDGModifier dgmod;
-    
+  */
+  if (1) {
     shader.create(true,&status);
     sgroup.create(MSelectionList(), MFnSet::kRenderableOnly, &status);
     MPlug surfplug = sgroup.findPlug("surfaceShader");
@@ -337,14 +340,23 @@ void MayaEggJoint::AssignNames(void)
   string name = _egg_joint->get_name();
   MFnDependencyNode joint(_joint);
   joint.setName(name.c_str());
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "joint " << joint.name().asChar() << ": -> " << name << endl;
+  }
 }
 
 MayaEggJoint *MayaEggLoader::FindJoint(EggGroup *joint)
 {
   if (joint==(EggGroup *)NULL) {
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "joint:" << joint->get_name() << " is null: " << endl;
+    }
     return 0;
   }
   if (!joint->is_joint()) {
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "joint:" << joint->get_name() << " is not a joint: " << endl;
+    }
     return 0;
   }
   return _joint_tab[joint];
@@ -508,6 +520,7 @@ struct MayaEggVertex
 {
   Vertexd               _pos;
   Normald               _normal;
+  TexCoordd             _uv;
   vector<MayaEggWeight> _weights;
   int                   _index;
 };
@@ -528,6 +541,13 @@ struct MEV_Compare: public stl_hash_compare<MayaEggVertex>
       return false;
     }
     n = k1._normal.compare_to(k2._normal);
+    if (n < 0) {
+      return true;
+    }
+    if (n > 0) {
+      return false;
+    }
+    n = k1._uv.compare_to(k2._uv);
     if (n < 0) {
       return true;
     }
@@ -600,6 +620,9 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
   if (vert->has_normal()) {
     vtx._normal = vert->get_normal();
   }
+  if (vert->has_uv()) {
+    vtx._uv = vert->get_uv();
+  }
   vtx._index = 0;
 
   EggVertex::GroupRef::const_iterator gri;
@@ -632,6 +655,20 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     if ((remaining_weight) > 0.01) {
       mayaloader_cat.warning() << "weight munged to 1.0 by " << remaining_weight << " on: " << context->get_name() << " idx:" << vti->_index << endl;
     }    
+    if (mayaloader_cat.is_spam()) {
+      ostringstream stream;
+      stream << "(" << vti->_pos << " " << vti->_normal << " " << vti->_uv << ")\n";
+      stream << "[" << vtx._pos << " " << vtx._normal << " " << vtx._uv << "]\n";
+      stream << "{" << vert->get_pos3() << " ";
+      if (vert->has_normal()) {
+        stream << vert->get_normal() << " ";
+      }
+      if (vert->has_uv()) {
+        stream << vert->get_uv();
+      }
+      stream << "}";
+      mayaloader_cat.spam() << "found a matching vertex: " << *vert << endl << stream.str() << endl;
+    }
     return vti->_index;
   }
   
@@ -741,6 +778,9 @@ int MayaEggMesh::GetTVert(TexCoordd uv)
 {
   if (_tvert_tab.count(uv)) {
     return _tvert_tab[uv];
+  }
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "found uv coords\n";
   }
   int idx = _tvert_count++;
   _uarray.append(uv.get_x());
@@ -886,9 +926,28 @@ MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *pa
 
 void MayaEggNurbsSurface::ConnectTextures(void)
 {
-   MFnSet sg(_tex->_shading_group);
-   sg.addMember(_shapeNode);
-   return;
+  // masad: since nurbs surfaces do not support vertex colors
+  // I am infusing the surface's first vertex color (if any)
+  // into the shader to achive the color.
+  // masad: check if there is any vertex color for this surface
+  MStatus status;
+  MColor firstColor(0.5,0.5,0.5,1.0);
+  if (_vertColorArray.length() > 0) {
+    firstColor = _vertColorArray[0];
+    MFnLambertShader sh(_tex->_shader);
+    status = sh.setColor(firstColor);
+    if (status != MStatus::kSuccess) {
+      mayaloader_cat.error() << "setColor failed on " << _name;
+      status.perror("shader setColor failed!");
+    }
+  }
+  MFnSet sg(_tex->_shading_group);
+  status = sg.addMember(_shapeNode);
+  if (status != MStatus::kSuccess) {
+    mayaloader_cat.error() << "addMember failed on " << _name;
+    status.perror("shader addMember failed!");
+  }
+  return;
 }
 
 void MayaEggNurbsSurface::PrintData(void)
@@ -975,20 +1034,26 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
       maxInfluences = vert->_weights.size();
     }
     for (unsigned int i=0; i<vert->_weights.size(); i++) {
-      double strength = vert->_weights[i].first;
       MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
       if (joint && !joint->_inskin) {
         joint->_inskin = true;
         joint->_index = joints.size();
         joints.push_back(joint);
+        /*
+        if (mayaloader_cat.is_spam()) {
+          mayaloader_cat.spam() << joints[i]->_egg_joint->get_name() << ": adding to skin\n";
+        }
+        */
       }
     }
   }
   cmd += maxInfluences;
 
+  /*
   if (mayaloader_cat.is_spam()) {
     mayaloader_cat.spam() << joints.size() << " joints have weights on " << M->_pool->get_name() << endl;
   }
+  */
   if (joints.size() == 0) {
     // no need to cluster; there are no weights
     return;
@@ -1006,6 +1071,15 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   
   MStatus status;
   MDGModifier dgmod;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << cmd.asChar() << endl;
+    string spamCmd = M->_pool->get_name();
+    for (unsigned int i=0; i<joints.size(); i++) {
+      spamCmd = spamCmd + " ";
+      spamCmd = spamCmd + joints[i]->_egg_joint->get_name();
+    }
+    mayaloader_cat.spam() << spamCmd << ": total = " << joints.size() << endl;
+  }
   status = dgmod.commandToExecute(cmd);
   if (status != MStatus::kSuccess) { 
     perror("skinCluster commandToExecute");
@@ -1089,6 +1163,11 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, NULL);
 
   for (unsigned int i=0; i<joints.size(); i++) {
+    /*
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << joints[i]->_egg_joint->get_name() << ": clearing skin\n";
+    }
+    */
     joints[i]->_inskin = false;
     joints[i]->_index = -1;
   }
@@ -1133,10 +1212,13 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     
     EggPolygon::const_iterator ci;
     MayaEggMesh *mesh = GetMesh(poly->get_pool(), context);
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "traverse mesh pointer " << mesh << "\n";
+    }
     vertIndices.clear();
     tvertIndices.clear();
     cvertIndices.clear();
-    int numPolys = 0;
+    int numVertices = 0;
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
@@ -1147,7 +1229,10 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       vertIndices.push_back(mesh->GetVert(vtx, context));
       tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));
-      numPolys++;
+      numVertices++;
+    }
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "num vertices: " << vertIndices.size() << "\n";
     }
     for (unsigned int i=1; i<vertIndices.size()-1; i++) {
       if (poly->has_color()) {
@@ -1167,7 +1252,8 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     EggNurbsSurface *eggNurbsSurface = DCAST(EggNurbsSurface, node);
 
     EggNurbsSurface::const_iterator ci;
-    MayaEggNurbsSurface *surface = GetSurface(eggNurbsSurface->get_pool(), context);
+    EggVertexPool *pool = eggNurbsSurface->get_pool();
+    MayaEggNurbsSurface *surface = GetSurface(pool, context);
 
     for (ci = eggNurbsSurface->begin(); ci != eggNurbsSurface->end(); ++ci) {
       EggVertex *vtx = (*ci);
@@ -1195,7 +1281,6 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     surface->_vNumCvs = eggNurbsSurface->get_num_v_cvs();
 
     // [gjeon] building cvArray
-    EggVertexPool *pool = eggNurbsSurface->get_pool();
     for (uint ui = 0; ui < surface->_uNumCvs; ui++) {
       for (uint vi = 0; vi < surface->_vNumCvs; vi++) {
         EggVertex *vtx = eggNurbsSurface->get_vertex(eggNurbsSurface->get_vertex_index(ui, vi));
@@ -1326,6 +1411,9 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   TraverseEggNode(data, NULL, "");
   
   MStatus status;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "num meshes : " << _mesh_tab.size() << endl;
+  }
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MayaEggMesh *mesh = (*ci).second;
     if (mesh->_face_count==0) {
@@ -1352,11 +1440,11 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       mayaloader_cat.spam() << "mesh pointer : " << mesh << " and parent_pointer: " << &parent << endl;
       mayaloader_cat.spam() << "mesh vert_count : " << mesh->_vert_count << endl;
       mayaloader_cat.spam() << "mesh face_count : " << mesh->_face_count << endl;
-      //mayaloader_cat.spam() << "mesh vertexArray : " << mesh->_vertexArray << endl;
-      //mayaloader_cat.spam() << "mesh polygonCounts : " << mesh->_polygonCounts << endl;
-      //mayaloader_cat.spam() << "mesh polygonConnects : " << mesh->_polygonConnects << endl;
-      //mayaloader_cat.spam() << "mesh uarray : " << mesh->_uarray << endl;
-      //mayaloader_cat.spam() << "mesh varray : " << mesh->_varray << endl;
+      mayaloader_cat.spam() << "mesh vertexArray size: " << mesh->_vertexArray.length() << endl;
+      mayaloader_cat.spam() << "mesh polygonCounts size: " << mesh->_polygonCounts.length() << endl;
+      mayaloader_cat.spam() << "mesh polygonConnects size: " << mesh->_polygonConnects.length() << endl;
+      mayaloader_cat.spam() << "mesh uarray size: " << mesh->_uarray.length() << endl;
+      mayaloader_cat.spam() << "mesh varray size: " << mesh->_varray.length() << endl;
     }
     mesh->_transNode = mfn.create(mesh->_vert_count, mesh->_face_count,
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
@@ -1375,10 +1463,18 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     }
 
     mfn.getCurrentUVSetName(cset);
-    mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset);
+    status = mfn.assignUVs(mesh->_polygonCounts, mesh->_uvIds, &cset);
 
-    if (mayaloader_cat.is_spam()) {
-      mayaloader_cat.spam() << "uvs assigned." << endl;
+    if (status != MStatus::kSuccess) {
+      status.perror("assignUVs failed");
+      if (mayaloader_cat.is_spam()) {
+        PrintData(mesh);
+      }
+    }
+    else {
+      if (mayaloader_cat.is_spam()) {
+        mayaloader_cat.spam() << "uvs assigned." << endl;
+      }
     }
 
     // lets try to set normals per vertex 
@@ -1631,6 +1727,45 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   
   mayaloader_cat.info() << "Egg import successful\n";
   return true;
+}
+
+void MayaEggLoader::PrintData(MayaEggMesh *mesh)
+{
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "num uvCounts: " << mesh->_polygonCounts.length() << endl;
+      ostringstream stream1;
+      for (unsigned int i=0; i < mesh->_polygonCounts.length(); ++i) {
+        if ((i%10)==0) {
+          stream1 << endl;
+        }
+        stream1 << mesh->_polygonCounts[i] << ",";
+      }
+      mayaloader_cat.spam() << "uvCounts: " << stream1.str() << endl;
+      mayaloader_cat.spam() << "num uvIds: " << mesh->_uvIds.length() << endl;
+      ostringstream stream2;
+      for (unsigned int i=0; i < mesh->_uvIds.length(); ++i) {
+        if ((i%30)==0) {
+          stream2 << endl;
+        }
+        stream2 << mesh->_uvIds[i] << ",";
+      }
+      mayaloader_cat.spam() << "uvIds: " << stream2.str() << endl;
+      mayaloader_cat.spam() << "num vertexArray: " << mesh->_vertexArray.length() << endl;
+      ostringstream stream3;
+      for (unsigned int i=0; i < mesh->_vertexArray.length(); ++i) {
+        stream3 << "[" << mesh->_vertexArray[i].x << " " << mesh->_vertexArray[i].y << " " << mesh->_vertexArray[i].z << "]" << endl;
+      }
+      mayaloader_cat.spam() << "vertexArray: \n" << stream3.str() << endl;
+      mayaloader_cat.spam() << "num polygonConnects: " << mesh->_polygonConnects.length() << endl;
+      ostringstream stream4;
+      for (unsigned int i=0; i < mesh->_polygonConnects.length(); ++i) {
+        if ((i%30)==0) {
+          stream4 << endl;
+        }
+        stream4 << mesh->_polygonConnects[i] << ",";
+      }
+      mayaloader_cat.spam() << "polygonConnects: " << stream4.str() << endl;
+    }
 }
 
 void MayaEggLoader::ParseFrameInfo(string comment)

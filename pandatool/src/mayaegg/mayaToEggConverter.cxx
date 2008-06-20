@@ -872,8 +872,9 @@ process_model_node(MayaNodeDesc *node_desc) {
     
     // Extract some interesting Camera data
     if (mayaegg_cat.is_spam()) {
-      mayaegg_cat.spam() << "  eyePoint: "
-                         << camera.eyePoint(MSpace::kWorld) << endl;
+      MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+      mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " " 
+                         << eyePoint.y << " " << eyePoint.z << endl;
       mayaegg_cat.spam() << "  upDirection: "
                          << camera.upDirection(MSpace::kWorld) << endl;
       mayaegg_cat.spam() << "  viewDirection: "
@@ -917,7 +918,7 @@ process_model_node(MayaNodeDesc *node_desc) {
          << color.b << "]\n";
     
     cout << "  intensity: " << light.intensity() << endl;
-
+    */
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);
@@ -933,7 +934,6 @@ process_model_node(MayaNodeDesc *node_desc) {
         make_nurbs_surface(node_desc, dag_path, surface, egg_group);
       }
     }
-    */
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
     // Only convert NurbsCurves if we aren't making an animated model.
     // Animated models, as a general rule, don't want these sorts of
@@ -1995,7 +1995,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                                   c.b * poly_color[2], c.a * poly_color[3]));
 
             if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "maya_color = " << c << endl;
+              mayaegg_cat.spam() << "maya_color = " << c.r << " " << c.g << " " << c.b << " " << c.a << endl;
               mayaegg_cat.spam() << "vert_color = " << vert.get_color() << endl;
             }
           }
@@ -2706,7 +2706,9 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         }
       } else {
         primitive.add_texture(new_tex);
-        new_tex->set_uv_name(color_def->_uvset_name);
+        if (color_def->_uvset_name != "map1") {
+          new_tex->set_uv_name(color_def->_uvset_name);
+        }
       }
     }
   }
