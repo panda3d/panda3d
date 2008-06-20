@@ -28,6 +28,18 @@
 #define dtool_ver_dir $[osfilename $[dtool_ver_dir_cyg]]
 #endif
 
+//
+// Correct LDFLAGS_OPT 3,4 here to get around early evaluation of, even
+// if deferred
+//
+#defer nodefaultlib_cstatic \
+  $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],], \
+     /NODEFAULTLIB:MSVCRT.LIB, \
+     /NODEFAULTLIB:LIBCMT.LIB \
+   ]
+#defer LDFLAGS_OPT3 $[LDFLAGS_OPT3] $[nodefaultlib_cstatic]
+#defer LDFLAGS_OPT4 $[LDFLAGS_OPT4] $[nodefaultlib_cstatic]
+
 //////////////////////////////////////////////////////////////////////
 #if $[or $[eq $[DIR_TYPE], src],$[eq $[DIR_TYPE], metalib]]
 //////////////////////////////////////////////////////////////////////
@@ -554,7 +566,7 @@ $[TAB] $[VERHEADER_GENERATOR_RULE]
 $[VERHEADER_DEPENDENTS] : $[verhdr_to_gen]
 #endif
 
-#define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl
+#define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl $[IDL_CDEFS:%=/D%]
 
 #define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
 #if $[idl_to_gen]
