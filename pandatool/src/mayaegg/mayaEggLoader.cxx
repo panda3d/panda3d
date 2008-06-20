@@ -1092,7 +1092,6 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
   
   MPlugArray oldplugs;
-
   MPlug inPlug;
   if (shape.typeName() == "mesh") {
     inPlug = shape.findPlug("inMesh");
@@ -1109,20 +1108,22 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
   }
   MFnSkinCluster skinCluster(oldplugs[0].node());
   MIntArray influenceIndices;
-  MFnComponent component;
+  MFnComponent *pComponent;
   if (shape.typeName() == "mesh") {
-    MFnSingleIndexedComponent component;
-    component.create(MFn::kMeshVertComponent);
-    component.setCompleteData(M->_vert_count);
+    MFnSingleIndexedComponent *pSingleComponent = new MFnSingleIndexedComponent();
+    pSingleComponent->create(MFn::kMeshVertComponent);
+    pSingleComponent->setCompleteData(M->_vert_count);
+    pComponent = pSingleComponent;
   } else if (shape.typeName() == "nurbsSurface") {
-    MFnDoubleIndexedComponent component;
-    component.create(MFn::kSurfaceCVComponent);
-    component.setCompleteData(M->_uNumCvs, M->_vNumCvs);
+    MFnDoubleIndexedComponent *pDoubleComponent = new MFnDoubleIndexedComponent();
+    pDoubleComponent->create(MFn::kSurfaceCVComponent);
+    pDoubleComponent->setCompleteData(M->_uNumCvs, M->_vNumCvs);
+    pComponent = pDoubleComponent;
   } else {
     // we only support mesh and nurbsSurface    
     return;
   }
-  
+
   for (unsigned int i=0; i<joints.size(); i++) {
     unsigned int index = skinCluster.indexForInfluenceObject(joints[i]->_joint_dag_path, &status);
     if (status != MStatus::kSuccess) {
@@ -1144,7 +1145,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
       perror("skinCluster index");
       return;
     }
-    skinCluster.setWeights(M->_shape_dag_path, component.object(), index, 0.0, false, NULL);
+    skinCluster.setWeights(M->_shape_dag_path, pComponent->object(), index, 0.0, false, NULL);
   }
 
   MFloatArray values;
@@ -1160,7 +1161,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
       values[vert->_index * joints.size() + joint->_index] = (float)strength;
     }
   }
-  skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, NULL);
+  skinCluster.setWeights(M->_shape_dag_path, pComponent->object(), influenceIndices, values, false, NULL);
 
   for (unsigned int i=0; i<joints.size(); i++) {
     /*
