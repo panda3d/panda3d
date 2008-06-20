@@ -23,8 +23,8 @@
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB
-  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF
-  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF $[LDFLAGS_OPT4]
+  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
   #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES
 
@@ -82,9 +82,8 @@
 
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB
-  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF
-  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF $[LDFLAGS_OPT4]
-//  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
+  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
 
@@ -103,12 +102,8 @@
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb, $[target]]]"
 
-  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
-  //
   // if LINK_FORCE_STATIC_C_RUNTIME is defined, it always links with static c runtime (release version
   // for both Opt1 and Opt4!) instead of the msvcrt dlls
-  //
-  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
 
   #defer DEBUGFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MTd, /MDd] $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
@@ -173,8 +168,8 @@
 
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB
-  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF
-  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF $[LDFLAGS_OPT4]
+  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
 
@@ -191,12 +186,8 @@
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
   #defer DEBUGPDBFLAGS /Zi /Fd"$[osfilename $[patsubst %.obj,%.pdb, $[target]]]"
 
-  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
-  //
   // if LINK_FORCE_STATIC_C_RUNTIME is defined, it always links with static c runtime (release version
   // for both Opt1 and Opt4!) instead of the msvcrt dlls
-  //
-  // 2007/05  THIS IS ACTUALLY BROKEN and for a very long time!!! if you try setting it in Sources/Config.pp
 
   #defer DEBUGFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MTd, /MDd] $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
@@ -238,7 +229,7 @@
   #defer DEBUGPDBFLAGS /Zi /Qinline_debug_info /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[target]]]"
   // Oy- needed for MS debugger
   #defer DEBUGFLAGS /Oy- /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
-  #defer RELEASEFLAGS /MD
+  #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
   #define WARNING_LEVEL_FLAG /W3
 
   #if $[DO_CROSSOBJ_OPT]
@@ -249,8 +240,8 @@
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB
-  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF
-  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /NODEFAULTLIB:LIBCMT.LIB /OPT:REF $[LDFLAGS_OPT4]
+  #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
+  #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
 //  #define OPTFLAGS /O3 /Qipo /QaxW /Qvec_report1
   #define OPTFLAGS /O3 /Qip
@@ -284,7 +275,7 @@
   #define OPTFLAGS /O2 /Ogity /G6
   #define OPT1FLAGS /GZ
   #defer DEBUGPDBFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[target]]]"
-  #define RELEASEFLAGS /MD
+  #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH
   #if $[BOUNDS_TRUETIME] // NuMega BoundsChecker TrueTime Profiler
@@ -306,7 +297,7 @@
   #define OPTFLAGS /O2 /Ogity /G6
   #define OPT1FLAGS /GZ
   #defer DEBUGPDBFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[patsubst %.obj,%.pdb,$[target]]]"
-  #define RELEASEFLAGS /MD
+  #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
   #define EXTRA_LIBPATH
   #define EXTRA_INCPATH
 #else
