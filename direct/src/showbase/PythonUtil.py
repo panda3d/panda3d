@@ -29,7 +29,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
-'pandaBreak','pandaTrace','formatTimeCompact']
+'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad']
 
 import types
 import string
@@ -2364,12 +2364,29 @@ except:
 class ScratchPad:
     """empty class to stick values onto"""
     def __init__(self, **kArgs):
-        for key, value in kArgs.items():
+        for key, value in kArgs.iteritems():
             setattr(self, key, value)
-        self._keys = kArgs.keys()
+        self._keys = set(kArgs.keys())
+    def add(self, **kArgs):
+        for key, value in kArgs.iteritems():
+            setattr(self, key, value)
+        self._keys.update(kArgs.keys())
     def destroy(self):
         for key in self._keys:
             delattr(self, key)
+
+class DestructiveScratchPad(ScratchPad):
+    # automatically calls destroy() on elements passed to __init__
+    def add(self, **kArgs):
+        for key, value in kArgs.iteritems():
+            if hasattr(self, key):
+                getattr(self, key).destroy()
+            setattr(self, key, value)
+        self._keys.update(kArgs.keys())
+    def destroy(self):
+        for key in self._keys:
+            getattr(self, key).destroy()
+        ScratchPad.destroy(self)
 
 class Sync:
     _SeriesGen = SerialNumGen()
@@ -3394,6 +3411,7 @@ __builtin__.Queue = Queue
 __builtin__.Enum = Enum
 __builtin__.SerialNumGen = SerialNumGen
 __builtin__.ScratchPad = ScratchPad
+__builtin__.DestructiveScratchPad = DestructiveScratchPad
 __builtin__.uniqueName = uniqueName
 __builtin__.serialNum = serialNum
 __builtin__.profiled = profiled
