@@ -75,7 +75,7 @@ class Transitions:
                 guiId = 'fade',
                 relief = None,
                 image = self.fadeModel,
-                image_scale = 2,
+                image_scale = (4, 2, 2),
                 state = DGG.NORMAL,
                 )
             self.fade.setBin('unsorted', 0)
@@ -89,7 +89,7 @@ class Transitions:
         """
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
-        transitionIval = Sequence(Func(self.fade.reparentTo, render2d, FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
                                                 # self.alphaOn,
@@ -109,7 +109,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        transitionIval = Sequence(Func(self.fade.reparentTo,render2d,FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo,aspect2d,FADE_SORT_INDEX),
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
                                                 # self.alphaOff,
@@ -152,7 +152,7 @@ class Transitions:
             # Fade out immediately with no lerp
             self.noTransitions()
             self.loadFade()
-            self.fade.reparentTo(render2d, FADE_SORT_INDEX)
+            self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif base.config.GetBool('no-loading-screen',0):
             self.transitionIval = finishIval
@@ -176,7 +176,7 @@ class Transitions:
         #print "transitiosn: fadeScreen"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(render2d, FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
         self.fade.setColor(self.alphaOn[0],
                            self.alphaOn[1],
                            self.alphaOn[2],
@@ -191,7 +191,7 @@ class Transitions:
         #print "transitiosn: fadeScreenColor"
         self.noTransitions()
         self.loadFade()
-        self.fade.reparentTo(render2d, FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
         self.fade.setColor(color)
 
     def noFade(self):
