@@ -16,6 +16,13 @@
   #include "config.h"
 #endif
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #ifdef __cplusplus
 #ifdef HAVE_IOSTREAM
 #include <iostream>
