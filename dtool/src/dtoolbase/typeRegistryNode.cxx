@@ -15,6 +15,7 @@
 #include "typeRegistryNode.h"
 
 #include <algorithm>
+#include <string.h>
 
 bool TypeRegistryNode::_paranoid_inheritance = false;
 
