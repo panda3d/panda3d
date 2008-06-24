@@ -2120,6 +2120,7 @@ lookup_key(WPARAM wparam) const {
   case VK_CAPITAL: return KeyboardButton::caps_lock();
   case VK_NUMLOCK: return KeyboardButton::num_lock();
   case VK_SCROLL: return KeyboardButton::scroll_lock();
+  case VK_PAUSE: return KeyboardButton::pause();
   case VK_SNAPSHOT: return KeyboardButton::print_screen();
 
   case VK_SHIFT: return KeyboardButton::shift();
