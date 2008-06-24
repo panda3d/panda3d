@@ -89,6 +89,7 @@ DEFINE_KEYBD_BUTTON_HANDLE(shift_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(scroll_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(num_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(print_screen)
+DEFINE_KEYBD_BUTTON_HANDLE(pause)
 DEFINE_KEYBD_BUTTON_HANDLE(shift)
 DEFINE_KEYBD_BUTTON_HANDLE(control)
 DEFINE_KEYBD_BUTTON_HANDLE(alt)
@@ -159,6 +160,7 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_num_lock, "num_lock");
   ButtonRegistry::ptr()->register_button(_scroll_lock, "scroll_lock");
   ButtonRegistry::ptr()->register_button(_print_screen, "print_screen");
+  ButtonRegistry::ptr()->register_button(_pause, "pause");
 
   ButtonRegistry::ptr()->register_button(_lshift, "lshift", _shift);
   ButtonRegistry::ptr()->register_button(_rshift, "rshift", _shift);

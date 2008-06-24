@@ -76,6 +76,7 @@ PUBLISHED:
   static ButtonHandle num_lock();
   static ButtonHandle scroll_lock();
   static ButtonHandle print_screen();
+  static ButtonHandle pause();
 
   static ButtonHandle lshift();
   static ButtonHandle rshift();

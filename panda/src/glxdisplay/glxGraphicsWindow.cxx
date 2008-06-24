@@ -1529,6 +1529,14 @@ get_button(XKeyEvent &key_event) {
   case XK_KP_Delete:
   case XK_Delete:
     return KeyboardButton::del();
+  case XK_Num_Lock:
+    return KeyboardButton::num_lock();
+  case XK_Scroll_Lock:
+    return KeyboardButton::scroll_lock();
+  case XK_Print:
+    return KeyboardButton::print_screen();
+  case XK_Pause:
+    return KeyboardButton::pause();
   case XK_Shift_L:
   case XK_Shift_R:
     return KeyboardButton::shift();
