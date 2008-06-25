@@ -62,6 +62,7 @@ private:
   void handle_keyrelease(XKeyEvent &event);
 
   ButtonHandle get_button(XKeyEvent &key_event);
+  ButtonHandle map_button(KeySym key);
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
   static Bool check_event(Display *display, XEvent *event, char *arg);
