@@ -112,7 +112,6 @@ apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
     EggMaterial temp("");
     temp.set_diff(_face_color);
     if (got_spec) {
-      cerr << "shininess = " << _power << "\n";
       temp.set_shininess(_power);
       temp.set_spec(Colorf(_specular_color[0], _specular_color[1],
                            _specular_color[2], 1.0));

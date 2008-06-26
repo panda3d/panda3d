@@ -127,8 +127,7 @@ finalize_parse_data() {
   }
 
   if (index != _parse_data_list._list.size()) {
-    xyyerror("Too many data elements in structure.");
-    return false;
+    xyywarning("Too many data elements in structure.");
   }
   
   return true;

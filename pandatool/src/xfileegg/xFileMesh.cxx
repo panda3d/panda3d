@@ -292,9 +292,9 @@ create_polygons(XFileToEggConverter *converter) {
       int vertex_index = (*vi)._vertex_index;
       int normal_index = (*vi)._normal_index;
       if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
-        xfile_cat.error()
-          << "Vertex index out of range in Mesh.\n";
-        return false;
+        xfile_cat.warning()
+          << "Vertex index out of range in Mesh " << get_name() << "\n";
+        continue;
       }
       XFileVertex *vertex = _vertices[vertex_index];
       XFileNormal *normal = (XFileNormal *)NULL;
@@ -763,23 +763,25 @@ fill_normals(XFileDataNode *obj) {
 
   const XFileDataObject &faceNormals = (*obj)["faceNormals"];
   if (faceNormals.size() != (int)_faces.size()) {
-    xfile_cat.error()
-      << "Incorrect number of faces in MeshNormals.\n";
-    return false;
+    xfile_cat.warning()
+      << "Incorrect number of faces in MeshNormals within " 
+      << get_name() << "\n";
   }
 
-  for (i = 0; i < faceNormals.size(); i++) {
+  int num_normals = min(faceNormals.size(), (int)_faces.size());
+  for (i = 0; i < num_normals; i++) {
     XFileFace *face = _faces[i];
 
     const XFileDataObject &faceIndices = faceNormals[i]["faceVertexIndices"];
 
     if (faceIndices.size() != (int)face->_vertices.size()) {
-      xfile_cat.error() 
-        << "Incorrect number of vertices for face in MeshNormals.\n";
-      return false;
+      xfile_cat.warning() 
+        << "Incorrect number of vertices for face in MeshNormals within "
+        << get_name() << "\n";
     }
 
-    for (j = 0; j < faceIndices.size(); j++) {
+    int num_vertices = min(faceIndices.size(), (int)face->_vertices.size());
+    for (j = 0; j < num_vertices; j++) {
       face->_vertices[j]._normal_index = faceIndices[j].i();
     }
   }
@@ -799,9 +801,10 @@ fill_colors(XFileDataNode *obj) {
   for (int i = 0; i < vertexColors.size(); i++) {
     int vertex_index = vertexColors[i]["index"].i();
     if (vertex_index < 0 || vertex_index >= (int)_vertices.size()) {
-      xfile_cat.error()
-        << "Vertex index out of range in MeshVertexColors.\n";
-      return false;
+      xfile_cat.warning()
+        << "Vertex index out of range in MeshVertexColors within " 
+        << get_name() << "\n";
+      continue;
     }
 
     XFileVertex *vertex = _vertices[vertex_index];
@@ -822,12 +825,13 @@ bool XFileMesh::
 fill_uvs(XFileDataNode *obj) {
   const XFileDataObject &textureCoords = (*obj)["textureCoords"];
   if (textureCoords.size() != (int)_vertices.size()) {
-    xfile_cat.error()
-      << "Wrong number of vertices in MeshTextureCoords.\n";
-    return false;
+    xfile_cat.warning()
+      << "Wrong number of vertices in MeshTextureCoords within " 
+      << get_name() << "\n";
   }
 
-  for (int i = 0; i < textureCoords.size(); i++) {
+  int num_texcoords = min(textureCoords.size(), (int)_vertices.size());
+  for (int i = 0; i < num_texcoords; i++) {
     XFileVertex *vertex = _vertices[i];
     vertex->_uv = textureCoords[i].vec2();
     vertex->_has_uv = true;
@@ -855,20 +859,20 @@ fill_skin_weights(XFileDataNode *obj) {
   const XFileDataObject &weights = (*obj)["weights"];
 
   if (weights.size() != vertexIndices.size()) {
-    xfile_cat.error()
-      << "Inconsistent number of vertices in SkinWeights.\n";
-    return false;
+    xfile_cat.warning()
+      << "Inconsistent number of vertices in SkinWeights within " << get_name() << "\n";
   }
 
   // Unpack the weight for each vertex.
-  for (int i = 0; i < weights.size(); i++) {
+  size_t num_weights = min(weights.size(), vertexIndices.size());
+  for (size_t i = 0; i < num_weights; i++) {
     int vindex = vertexIndices[i].i();
     double weight = weights[i].d();
 
     if (vindex < 0 || vindex > (int)_vertices.size()) {
-      xfile_cat.error()
+      xfile_cat.warning()
         << "Illegal vertex index " << vindex << " in SkinWeights.\n";
-      return false;
+      continue;
     }
     data._weight_map[vindex] = weight;
   }
@@ -889,14 +893,13 @@ bool XFileMesh::
 fill_material_list(XFileDataNode *obj) {
   const XFileDataObject &faceIndexes = (*obj)["faceIndexes"];
   if (faceIndexes.size() > (int)_faces.size()) {
-    xfile_cat.error()
-      << "Too many faces in MeshMaterialList.\n";
-    return false;
+    xfile_cat.warning()
+      << "Too many faces in MeshMaterialList within " << get_name() << "\n";
   }
 
   int material_index = -1;
   int i = 0;
-  while (i < faceIndexes.size()) {
+  while (i < faceIndexes.size() && i < (int)_faces.size()) {
     XFileFace *face = _faces[i];
     material_index = faceIndexes[i].i();
     face->_material_index = material_index;
