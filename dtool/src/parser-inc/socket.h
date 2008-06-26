@@ -1,3 +1,5 @@
+typedef int SOCKET ;
+
 struct sockaddr_in
 {
 };
