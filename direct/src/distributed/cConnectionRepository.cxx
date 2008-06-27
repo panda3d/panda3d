@@ -939,16 +939,17 @@ describe_message(ostream &out, const string &prefix,
 
 bool CConnectionRepository::network_based_reader_and_yielder(PyObject *PycallBackFunction,ClockObject &clock, float returnBy)
 {
-    bool KeepRunning = true;
-    while(KeepRunning)
+    while(is_connected())
     {
         check_datagram_ai(PycallBackFunction);
-        _bdc.Flush();
+        if(is_connected())
+            _bdc.Flush();
         float currentTime = clock.get_real_time();
         float dif_time = returnBy - currentTime;
         if(dif_time <= 0.001) // to avoi over runs..
             break;
-        _bdc.WaitForNetworkReadEvent(dif_time);
+        if(is_connected())
+            _bdc.WaitForNetworkReadEvent(dif_time);
     }
     return false;
 }
