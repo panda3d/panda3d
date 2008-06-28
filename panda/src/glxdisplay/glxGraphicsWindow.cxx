@@ -1244,7 +1244,6 @@ handle_keypress(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event);
-  cerr << button << "\n";
   if (button != ButtonHandle::none()) {
     _input_devices[0].button_down(button);
   }
