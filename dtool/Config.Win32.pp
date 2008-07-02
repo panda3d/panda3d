@@ -123,6 +123,15 @@
 // Do we have <locale.h>?
 #define HAVE_LOCALE_H
 
+// Do we have <string.h>?
+#define HAVE_STRING_H 1
+
+// Do we have <stdlib.h>?
+#define HAVE_STDLIB_H
+
+// Do we have <limits.h>?
+#define HAVE_LIMITS_H
+
 // Do we have <minmax.h>?
 #define HAVE_MINMAX_H 1
 

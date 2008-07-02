@@ -479,6 +479,15 @@ $[cdefine HAVE_ALLOCA_H]
 /* Define if you have the <locale.h> header file.  */
 $[cdefine HAVE_LOCALE_H]
 
+/* Define if you have the <string.h> header file.  */
+$[cdefine HAVE_STRING_H]
+
+/* Define if you have the <stdlib.h> header file.  */
+$[cdefine HAVE_STDLIB_H]
+
+/* Define if you have the <limits.h> header file.  */
+$[cdefine HAVE_LIMITS_H]
+
 /* Define if you have the <minmax.h> header file.  */
 $[cdefine HAVE_MINMAX_H]
 
