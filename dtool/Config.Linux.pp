@@ -125,7 +125,7 @@
 
 // Do we have <locale.h>?
 #define HAVE_LOCALE_H 1
-a
+
 // Do we have <string.h>?
 #define HAVE_STRING_H 1
 
