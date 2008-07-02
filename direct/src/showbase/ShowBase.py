@@ -1348,15 +1348,19 @@ class ShowBase(DirectObject.DirectObject):
     def createStats(self, hostname=None, port=None):
         # You can specify pstats-host in your Config.prc or use ~pstats/~aipstats
         # The default is localhost
-        if self.wantStats:
-            if PStatClient.isConnected():
-                PStatClient.disconnect()
-            # these default values match the C++ default values
-            if hostname is None:
-                hostname = ''
-            if port is None:
-                port = -1
-            PStatClient.connect(hostname, port)
+        if not self.wantStats:
+            return False
+
+        if PStatClient.isConnected():
+            PStatClient.disconnect()
+        # these default values match the C++ default values
+        if hostname is None:
+            hostname = ''
+        if port is None:
+            port = -1
+        PStatClient.connect(hostname, port)
+        return PStatClient.isConnected()
+                
 
     def addSfxManager(self, extraSfxManager):
         # keep a list of sfx manager objects to apply settings to,
