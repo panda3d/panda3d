@@ -829,6 +829,8 @@ def profiled(category=None, terse=False):
     """
     assert type(category) in (types.StringType, types.NoneType), "must provide a category name for @profiled"
 
+    # allow profiling in published versions
+    """
     try:
         null = not __dev__
     except:
@@ -840,6 +842,7 @@ def profiled(category=None, terse=False):
         def nullDecorator(f):
             return f
         return nullDecorator
+    """
 
     def profileDecorator(f):
         def _profiled(*args, **kArgs):
