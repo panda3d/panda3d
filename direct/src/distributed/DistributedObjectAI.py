@@ -294,9 +294,10 @@ class DistributedObjectAI(DistributedObjectBase):
                        [newZoneId, oldZoneId])
 
     def getZoneData(self):
-        # Call this to get an AIZoneData object for the current zone. This class
-        # will hold onto 
-        # setLocation destroys self._zoneData if we move away to a different zone
+        # Call this to get an AIZoneData object for the current zone.
+        # This class will hold onto it as self._zoneData
+        # setLocation destroys self._zoneData if we move away to
+        # a different zone
         if self._zoneData is None:
             self._zoneData = AIZoneData(self.air, self.parentId, self.zoneId)
         return self._zoneData
