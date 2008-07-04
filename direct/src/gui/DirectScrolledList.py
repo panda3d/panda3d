@@ -409,7 +409,10 @@ class DirectScrolledList(DirectFrame):
 
     def getSelectedText(self):
         assert self.notify.debugStateCall(self)
-        return self['items'][self.index]['text']
+        if self['items'][self.index].__class__.__name__ == 'str':
+          return self['items'][self.index]
+        else:
+          return self['items'][self.index]['text']
 
 
 
