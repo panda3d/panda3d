@@ -864,7 +864,10 @@ WinGraphicsPipe() {
     _display_information -> _os_version_build = version_info.dwBuildNumber;     
     _display_information -> _os_platform_id = version_info.dwPlatformId;
   }
-
+  // Screen size
+  _display_width = GetSystemMetrics(SM_CXSCREEN);
+  _display_height = GetSystemMetrics(SM_CYSCREEN);
+  
   HMODULE power_dll;
 
   power_dll = LoadLibrary ("PowrProf.dll");
