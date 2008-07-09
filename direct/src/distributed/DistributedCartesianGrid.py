@@ -7,6 +7,7 @@ from direct.task import Task
 from direct.gui import DirectGuiGlobals
 from direct.showbase.EventGroup import EventGroup
 from direct.showbase.PythonUtil import report
+from direct.distributed.GridParent import GridParent
 
 if __debug__:
     # For grid drawing
@@ -76,6 +77,31 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
     def getCenterPos(self):
         return self.centerPos
 
+    def handleChildArrive(self, child, zoneId):
+        DistributedNode.handleChildArrive(self, child, zoneId)
+        if (zoneId >= self.startingZone):
+            if not child.gridParent:
+                child.gridParent = GridParent(child)
+            child.gridParent.setGridParent(self, zoneId)
+        elif child.gridParent:
+            child.gridParent.delete()
+            child.gridParent = None
+
+    def handleChildArriveZone(self, child, zoneId):
+        DistributedNode.handleChildArrive(self, child, zoneId)
+        if (zoneId >= self.startingZone):
+            if not child.gridParent:
+                child.gridParent = GridParent(child)
+            child.gridParent.setGridParent(self, zoneId)
+        elif child.gridParent:
+            child.gridParent.delete()
+            child.gridParent = None
+
+    def handleChildLeave(self, child, zoneId):
+        if child.gridParent:
+            child.gridParent.delete()
+            child.gridParent = None
+            
     @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['want-connector-report','want-shipboard-report'])
     def startProcessVisibility(self, avatar):
         if not self._onOffState:
@@ -234,7 +260,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         # zones.
         # Make sure this is a valid zone
         if not self.isValidZone(zoneId):
-            self.notify.warning("handleAvatarZoneChange: not a valid zone (%s)" % zoneId)
+            assert self.notify.warning("handleAvatarZoneChange: not a valid zone (%s)" % zoneId)
             return
 
         # Set the location on the server

@@ -505,7 +505,7 @@ class TaskManager:
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
                       priority=0, uponDeath=None, appendTask=False, owner = None):
         if delayTime < 0:
-            self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
+            assert self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
             task = funcOrTask
         elif callable(funcOrTask):
@@ -747,7 +747,7 @@ class TaskManager:
         # warn if the task took too long
         if self.warnTaskDuration:
             if dt >= self.taskDurationWarningThreshold:
-                TaskManager.notify.warning('task %s ran for %.2f seconds' % (
+                assert TaskManager.notify.warning('task %s ran for %.2f seconds' % (
                     task.name, dt))
             
         return ret

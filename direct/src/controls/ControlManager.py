@@ -22,7 +22,6 @@ class ControlManager:
     wantWASD = config.GetBool('want-WASD', 0)
 
     def __init__(self, enable=True, passMessagesThrough = False):
-        print ("init control manager %s" % (passMessagesThrough))
         assert self.notify.debugCall(id(self))
         self.passMessagesThrough = passMessagesThrough
         self.inputStateTokens = []

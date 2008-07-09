@@ -259,8 +259,8 @@ class DoInterestManager(DirectObject.DirectObject):
                     # we're not pending a removal, but we have outstanding events?
                     # probably we are waiting for an add/alter complete.
                     # should we send those events now?
-                    self.notify.warning('removeInterest: abandoning events: %s' %
-                                        intState.events)
+                    assert self.notify.warning('removeInterest: abandoning events: %s' %
+                                               intState.events)
                     intState.clearEvents()
                 intState.state = InterestState.StatePendingDel
                 contextId = self._getNextContextId()
