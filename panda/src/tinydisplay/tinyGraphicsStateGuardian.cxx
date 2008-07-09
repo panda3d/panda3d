@@ -809,7 +809,10 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 3) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -821,7 +824,10 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 3) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -833,7 +839,10 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 3) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -881,7 +890,10 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 2) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -892,7 +904,10 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 2) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -903,7 +918,10 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; i += 2) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           GLVertex *v1 = &_vertices[index[i + 1] - _min_vertex];
@@ -949,7 +967,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
     switch (reader->get_index_type()) {
     case Geom::NT_uint8:
       {
-        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(true);
+        PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; ++i) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           gl_draw_point(_c, v0);
@@ -959,7 +980,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint16:
       {
-        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(true);
+        PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; ++i) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           gl_draw_point(_c, v0);
@@ -969,7 +993,10 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 
     case Geom::NT_uint32:
       {
-        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(true);
+        PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+        if (index == NULL) {
+          return false;
+        }
         for (int i = 0; i < num_vertices; ++i) {
           GLVertex *v0 = &_vertices[index[i] - _min_vertex];
           gl_draw_point(_c, v0);
