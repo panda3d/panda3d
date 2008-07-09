@@ -887,6 +887,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(plane_point);
+  new_entry->set_t(t);
 
   return new_entry;
 }
