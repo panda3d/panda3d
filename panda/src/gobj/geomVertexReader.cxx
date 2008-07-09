@@ -92,6 +92,7 @@ initialize() {
   _pointer_end = NULL;
   _pointer = NULL;
   _start_row = 0;
+  _force = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,9 +121,7 @@ set_vertex_column(int array, const GeomVertexColumn *column,
   _stride = _handle->get_array_format()->get_stride();
 
   _packer = column->_packer;
-  set_pointer(_start_row);
-  
-  return true;
+  return set_pointer(_start_row);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +143,5 @@ set_array_column(const GeomVertexColumn *column) {
   _stride = _handle->get_array_format()->get_stride();
 
   _packer = column->_packer;
-  set_pointer(_start_row);
-  
-  return true;
+  return set_pointer(_start_row);
 }

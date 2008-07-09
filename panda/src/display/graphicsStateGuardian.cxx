@@ -1383,7 +1383,7 @@ bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomMunger *munger,
                       const GeomVertexDataPipelineReader *data_reader,
-                      bool) {
+                      bool force) {
   _munger = munger;
   _data_reader = data_reader;
   return _data_reader->has_vertex();

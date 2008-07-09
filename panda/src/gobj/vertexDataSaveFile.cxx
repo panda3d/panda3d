@@ -199,20 +199,24 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     memset(&overlapped, 0, sizeof(overlapped));
     overlapped.Offset = block->get_start();
 
-    WriteFile(_handle, data, size, NULL, &overlapped);
-    DWORD bytes_written;
-    while (!GetOverlappedResult(_handle, &overlapped, &bytes_written, false)) {
-      if (GetLastError() == ERROR_IO_INCOMPLETE) {
+    DWORD bytes_written = 0;
+    BOOL success = WriteFile(_handle, data, size, &bytes_written, &overlapped);
+    while (!success) {
+      DWORD error = GetLastError();
+      if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
         // Wait for more later.
         Thread::force_yield();
       } else {
         gobj_cat.error()
-          << "Error writing " << size << " bytes to save file.  Disk full?\n";
+          << "Error writing " << size
+          << " bytes to save file, windows error code 0x" << hex
+          << error << dec << ".  Disk full?\n";
         return NULL;
       }
+      success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
     }
     nassertr(bytes_written == size, NULL);
-
+    
 #else
     // Posix case.
     if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
@@ -259,25 +263,35 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
 
   nassertr(size == block->get_size(), false);
 
+  /*
+  static ConfigVariableBool allow_mainthread_read("allow-mainthread-read", 1);
+  if (!allow_mainthread_read) {
+    nassertr(Thread::get_current_thread() != Thread::get_main_thread(), false);
+  }
+  */
+
 #ifdef _WIN32
   OVERLAPPED overlapped;
   memset(&overlapped, 0, sizeof(overlapped));
   overlapped.Offset = block->get_start();
 
-  ReadFile(_handle, data, size, NULL, &overlapped);
-  DWORD bytes_read;
-  while (!GetOverlappedResult(_handle, &overlapped, &bytes_read, false)) {
-    if (GetLastError() == ERROR_IO_INCOMPLETE) {
+  DWORD bytes_read = 0;
+  BOOL success = ReadFile(_handle, data, size, &bytes_read, &overlapped);
+  while (!success) {
+    DWORD error = GetLastError();
+    if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
       // Wait for more later.
       Thread::force_yield();
     } else {
       gobj_cat.error()
-        << "Error reading " << size << " bytes from save file.\n";
+        << "Error reading " << size
+        << " bytes from save file, windows error code 0x" << hex
+        << error << dec << ".\n";
       return NULL;
     }
+    success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
   nassertr(bytes_read == size, NULL);
-  
 #else
   // Posix case.
   if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {

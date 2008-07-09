@@ -548,7 +548,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   int max_stage_index = _effective_texture->get_num_on_ff_stages();
   if (max_stage_index > 0) {
     TextureStage *stage = _effective_texture->get_on_ff_stage(0);
-    rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name());
+    rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name(),
+                                 force);
     rtexcoord.set_row(_min_vertex);
     needs_texcoord = rtexcoord.has_column();
 
@@ -560,7 +561,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   bool needs_color = false;
   if (_vertex_colors_enabled) {
-    rcolor = GeomVertexReader(data_reader, InternalName::get_color());
+    rcolor = GeomVertexReader(data_reader, InternalName::get_color(), force);
     rcolor.set_row(_min_vertex);
     needs_color = rcolor.has_column();
   }
@@ -576,13 +577,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   bool needs_normal = false;
   if (_c->lighting_enabled) {
-    rnormal = GeomVertexReader(data_reader, InternalName::get_normal());
+    rnormal = GeomVertexReader(data_reader, InternalName::get_normal(), force);
     rnormal.set_row(_min_vertex);
     needs_normal = rnormal.has_column();
   }
 
-  GeomVertexReader rvertex(data_reader, InternalName::get_vertex()); 
+  GeomVertexReader rvertex(data_reader, InternalName::get_vertex(), force); 
   rvertex.set_row(_min_vertex);
+
+  if (!rvertex.has_column()) {
+    // Whoops, guess the vertex data isn't resident.
+    return false;
+  }
 
   if (!needs_color && _color_material_flags) {
     if (_color_material_flags & CMF_ambient) {

@@ -119,11 +119,12 @@ GeomVertexReader(const GeomVertexArrayData *array_data, int column,
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexReader::
 GeomVertexReader(const GeomVertexDataPipelineReader *data_reader,
-                 const InternalName *name) :
+                 const InternalName *name, bool force) :
   _vertex_data(data_reader->get_object()),
   _current_thread(data_reader->get_current_thread())
 {
   initialize();
+  _force = force;
   const GeomVertexFormat *format = data_reader->get_format();
   set_vertex_column(format->get_array_with(name),
                     format->get_column(name),
@@ -147,7 +148,8 @@ GeomVertexReader(const GeomVertexReader &copy) :
   _pointer_begin(copy._pointer_begin),
   _pointer_end(copy._pointer_end),
   _pointer(copy._pointer),
-  _start_row(copy._start_row)
+  _start_row(copy._start_row),
+  _force(copy._force)
 {
 }
 
@@ -169,6 +171,7 @@ operator = (const GeomVertexReader &copy) {
   _pointer_end = copy._pointer_end;
   _pointer = copy._pointer;
   _start_row = copy._start_row;
+  _force = copy._force;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,6 +215,38 @@ get_array_data() const {
 INLINE Thread *GeomVertexReader::
 get_current_thread() const {
   return _current_thread;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::set_force
+//       Access: Published
+//  Description: Sets the value of the force flag.  When this is true
+//               (the default), vertex data will be paged in from disk
+//               if necessary.  When this is false, the GeomVertexData
+//               will simply return a failure code when attempting to
+//               read vertex data that is not resident (but will put
+//               it on the queue to become resident later).
+//
+//               Normally, vertex data is always resident, so this
+//               will not be an issue.  It is only possible for vertex
+//               data to be nonresident if you have enabled vertex
+//               paging via the GeomVertexArrayData and VertexDataPage
+//               interfaces.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexReader::
+set_force(bool force) {
+  _force = force;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_force
+//       Access: Published
+//  Description: Returns the value of the force flag.  See
+//               set_force().
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomVertexReader::
+get_force() const {
+  return _force;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +341,8 @@ clear() {
 //       Access: Published
 //  Description: Returns true if a valid data type has been
 //               successfully set, or false if the data type does not
-//               exist.
+//               exist (or if get_force() is false and the vertex data
+//               is nonresident).
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomVertexReader::
 has_column() const {
@@ -511,12 +547,24 @@ get_packer() const {
 //  Description: Sets up the array pointers freshly from the source
 //               object (in case they have been reallocated recently),
 //               and sets the internal pointer to the indicated row.
+//
+//               Returns true if successful, or false if the vertex
+//               data is not resident.  If it returns false, the
+//               reader's internal column spec is cleared.  It is only
+//               possible to return false if get_force() is false.
 ////////////////////////////////////////////////////////////////////
-INLINE void GeomVertexReader::
+INLINE bool GeomVertexReader::
 set_pointer(int row) {
-  _pointer_begin = _handle->get_read_pointer(true);
+  _pointer_begin = _handle->get_read_pointer(_force);
+  if (_pointer_begin == NULL) {
+    // Vertex data is not resident.
+    set_column(0, NULL);
+    return false;
+  }
+
   _pointer_end = _pointer_begin + _handle->get_data_size_bytes();
   quick_set_pointer(row);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -528,7 +576,7 @@ set_pointer(int row) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexReader::
 quick_set_pointer(int row) {
-  nassertv(has_column());
+  nassertv(has_column() && _pointer_begin != NULL);
 
 #if defined(_DEBUG)
   // Make sure we still have the same pointer as stored in the array.

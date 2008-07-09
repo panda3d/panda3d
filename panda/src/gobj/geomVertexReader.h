@@ -72,7 +72,8 @@ PUBLISHED:
 
 public:
   INLINE GeomVertexReader(const GeomVertexDataPipelineReader *data_reader,
-                          const InternalName *name);
+                          const InternalName *name,
+                          bool force = true);
 
 PUBLISHED:
   INLINE GeomVertexReader(const GeomVertexReader &copy);
@@ -82,6 +83,9 @@ PUBLISHED:
   INLINE const GeomVertexData *get_vertex_data() const;
   INLINE const GeomVertexArrayData *get_array_data() const;
   INLINE Thread *get_current_thread() const;
+
+  INLINE void set_force(bool force);
+  INLINE bool get_force() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);
@@ -117,7 +121,7 @@ protected:
 private:
   void initialize();
 
-  INLINE void set_pointer(int row);
+  INLINE bool set_pointer(int row);
   INLINE void quick_set_pointer(int row);
   INLINE const unsigned char *inc_pointer();
 
@@ -144,6 +148,7 @@ private:
   const unsigned char *_pointer;
 
   int _start_row;
+  bool _force;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL
