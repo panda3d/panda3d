@@ -359,13 +359,13 @@ ConfigVariableInt vertex_data_small_size
           "is deemed too small to pay the overhead of paging it in and out, "
           "and it is permanently retained resident."));
 
-ConfigVariableBool vertex_data_threaded_paging
-("vertex-data-threaded-paging", true,
- PRC_DESC("When this is true (and Panda has been compiled with thread "
-          "support) then a sub-thread will be spawned to evict vertex pages "
-          "to disk and read them back again.  When this is false, this "
-          "work will be done in the main thread, which may introduce "
-          "occasional random chugs in rendering."));
+ConfigVariableInt vertex_data_page_threads
+("vertex-data-page-threads", 1,
+ PRC_DESC("When this is nonzero (and Panda has been compiled with thread "
+          "support) then this number of sub-threads will be spawned to "
+          "evict vertex pages to disk and read them back again.  When this "
+          "is 0, this work will be done in the main thread, which may "
+          "introduce occasional random chugs in rendering."));
 
 ConfigureFn(config_gobj) {
   BufferContext::init_type();

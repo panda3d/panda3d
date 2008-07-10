@@ -509,8 +509,8 @@ remove_all_windows() {
   BamCache *cache = BamCache::get_global_ptr();
   cache->flush_index();
 
-  // And, hey, let's stop the vertex paging thread, if any.
-  VertexDataPage::stop_thread();
+  // And, hey, let's stop the vertex paging threads, if any.
+  VertexDataPage::stop_threads();
 
   // Well, and why not clean up all threads here?
   Thread::prepare_for_exit();

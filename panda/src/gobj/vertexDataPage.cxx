@@ -52,7 +52,7 @@ ConfigVariableInt max_disk_vertex_data
           "that is allowed to be written to disk.  Set it to -1 for no "
           "limit."));
 
-PT(VertexDataPage::PageThread) VertexDataPage::_thread;
+PT(VertexDataPage::PageThreadManager) VertexDataPage::_thread_mgr;
 Mutex VertexDataPage::_tlock;
 
 SimpleLru VertexDataPage::_resident_lru("resident", max_resident_vertex_data);
@@ -140,8 +140,8 @@ VertexDataPage::
   {
     MutexHolder holder2(_tlock);
     if (_pending_ram_class != _ram_class) {
-      nassertv(_thread != (PageThread *)NULL);
-      _thread->remove_page(this);
+      nassertv(_thread_mgr != (PageThreadManager *)NULL);
+      _thread_mgr->remove_page(this);
     }
   }
 
@@ -152,25 +152,25 @@ VertexDataPage::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::stop_thread
+//     Function: VertexDataPage::stop_threads
 //       Access: Published, Static
 //  Description: Call this to stop the paging thread, if it was
 //               started.  This may block until all of the thread's
 //               pending tasks have been completed.
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
-stop_thread() {
-  PT(PageThread) thread;
+stop_threads() {
+  PT(PageThreadManager) thread_mgr;
   {
     MutexHolder holder(_tlock);
-    thread = _thread;
-    _thread.clear();
+    thread_mgr = _thread_mgr;
+    _thread_mgr.clear();
   }
 
-  if (thread != (PageThread *)NULL) {
+  if (thread_mgr != (PageThreadManager *)NULL) {
     gobj_cat.info()
-      << "Stopping vertex paging thread.\n";
-    thread->stop_thread();
+      << "Stopping vertex paging threads.\n";
+    thread_mgr->stop_threads();
   }
 }
 
@@ -284,8 +284,8 @@ void VertexDataPage::
 make_resident_now() {
   MutexHolder holder(_tlock);
   if (_pending_ram_class != _ram_class) {
-    nassertv(_thread != (PageThread *)NULL);
-    _thread->remove_page(this);
+    nassertv(_thread_mgr != (PageThreadManager *)NULL);
+    _thread_mgr->remove_page(this);
   }
 
   make_resident();
@@ -559,7 +559,8 @@ adjust_book_size() {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 request_ram_class(RamClass ram_class) {
-  if (!vertex_data_threaded_paging || !Thread::is_threading_supported()) {
+  int num_threads = vertex_data_page_threads;
+  if (num_threads == 0 || !Thread::is_threading_supported()) {
     // No threads.  Do it immediately.
     switch (ram_class) {
     case RC_resident:
@@ -582,15 +583,14 @@ request_ram_class(RamClass ram_class) {
   }
 
   MutexHolder holder(_tlock);
-  if (_thread == (PageThread *)NULL) {
-    // Allocate and start a new global thread.
+  if (_thread_mgr == (PageThreadManager *)NULL) {
+    // Create the thread manager.
     gobj_cat.info()
-      << "Spawning vertex paging thread.\n";
-    _thread = new PageThread;
-    _thread->start(TP_low, true);
+      << "Spawning " << num_threads << " vertex paging threads.\n";
+    _thread_mgr = new PageThreadManager(num_threads);
   }
 
-  _thread->add_page(this, ram_class);
+  _thread_mgr->add_page(this, ram_class);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -630,17 +630,37 @@ free_page_data(unsigned char *page_data, size_t page_size) const {
   _alloc_pages_pcollector.sub_level_now(page_size);
   memory_hook->mmap_free(page_data, page_size);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::Constructor
+//       Access: Public
+//  Description: Assumes _tlock is held.
+////////////////////////////////////////////////////////////////////
+VertexDataPage::PageThreadManager::
+PageThreadManager(int num_threads) :
+  _shutdown(false),
+  _pending_cvar(_tlock)
+{
+  _threads.reserve(num_threads);
+  for (int i = 0; i < num_threads; ++i) {
+    ostringstream name_strm;
+    name_strm << "VertexDataPage" << i;
+    PT(PageThread) thread = new PageThread(this, name_strm.str());
+    thread->start(TP_low, true);
+    _threads.push_back(thread);
+  }
+}
  
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::PageThread::add_page
+//     Function: VertexDataPage::PageThreadManager::add_page
 //       Access: Public
-//  Description: Enqueues the indicated page on the thread to convert
-//               it to the specified ram class.  
+//  Description: Enqueues the indicated page on the thread queue to
+//               convert it to the specified ram class.
 //
 //               It is assumed the page's lock is already held, and
-//               the thread's tlock is already held.
+//               that _tlock is already held.
 ////////////////////////////////////////////////////////////////////
-void VertexDataPage::PageThread::
+void VertexDataPage::PageThreadManager::
 add_page(VertexDataPage *page, RamClass ram_class) {
   if (page->_pending_ram_class == ram_class) {
     // It's already queued.
@@ -671,26 +691,31 @@ add_page(VertexDataPage *page, RamClass ram_class) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::PageThread::remove_page
+//     Function: VertexDataPage::PageThreadManager::remove_page
 //       Access: Public
 //  Description: Dequeues the indicated page and removes it from the
 //               pending task list.
 //
 //               It is assumed the page's lock is already held, and
-//               the thread's tlock is already held.
+//               that _tlock is already held.
 ////////////////////////////////////////////////////////////////////
-void VertexDataPage::PageThread::
+void VertexDataPage::PageThreadManager::
 remove_page(VertexDataPage *page) {
   nassertv(page != (VertexDataPage *)NULL);
-  if (page == _working_page) {
-    // Oops, the thread is currently working on this one.  We'll have
-    // to wait for the thread to finish.
-    page->_lock.release();
-    while (page == _working_page) {
-      _working_cvar.wait();
+
+  PageThreads::iterator ti;
+  for (ti = _threads.begin(); ti != _threads.begin(); ++ti) {
+    PageThread *thread = (*ti);
+    if (page == thread->_working_page) {
+      // Oops, this thread is currently working on this one.  We'll have
+      // to wait for the thread to finish.
+      page->_lock.release();
+      while (page == thread->_working_page) {
+        thread->_working_cvar.wait();
+      }
+      page->_lock.lock();
+      return;
     }
-    page->_lock.lock();
-    return;
   }
 
   if (page->_pending_ram_class == RC_resident) {
@@ -712,9 +737,55 @@ remove_page(VertexDataPage *page) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::get_num_threads
+//       Access: Public
+//  Description: Returns the number of threads active on the thread
+//               manager.  Assumes _tlock is held.
+////////////////////////////////////////////////////////////////////
+int VertexDataPage::PageThreadManager::
+get_num_threads() const {
+  return (int)_threads.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::stop_threads
+//       Access: Public
+//  Description: Signals all the threads to stop and waits for them.
+//               Does not return until the threads have finished.
+//               Assumes _tlock is *not* held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThreadManager::
+stop_threads() {
+  {
+    MutexHolder holder(_tlock);
+    _shutdown = true;
+    _pending_cvar.signal_all();
+  }
+
+  PageThreads::iterator ti;
+  for (ti = _threads.begin(); ti != _threads.begin(); ++ti) {
+    PageThread *thread = (*ti);
+    thread->join();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThread::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+VertexDataPage::PageThread::
+PageThread(PageThreadManager *manager, const string &name) : 
+  Thread(name, name),
+  _manager(manager),
+  _working_cvar(_tlock)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::PageThread::thread_main
 //       Access: Protected, Virtual
-//  Description: The main processing loop for the sub-thread.
+//  Description: The main processing loop for each sub-thread.
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThread::
 thread_main() {
@@ -723,22 +794,23 @@ thread_main() {
   while (true) {
     PStatClient::thread_tick(get_sync_name());
 
-    while (_pending_reads.empty() && _pending_writes.empty()) {
-      if (_shutdown) {
+    while (_manager->_pending_reads.empty() && 
+           _manager->_pending_writes.empty()) {
+      if (_manager->_shutdown) {
         _tlock.release();
         return;
       }
       PStatTimer timer(_thread_wait_pcollector);
-      _pending_cvar.wait();
+      _manager->_pending_cvar.wait();
     }
 
     // Reads always have priority.
-    if (!_pending_reads.empty()) {
-      _working_page = _pending_reads.front();
-      _pending_reads.pop_front();
+    if (!_manager->_pending_reads.empty()) {
+      _working_page = _manager->_pending_reads.front();
+      _manager->_pending_reads.pop_front();
     } else {
-      _working_page = _pending_writes.front();
-      _pending_writes.pop_front();
+      _working_page = _manager->_pending_writes.front();
+      _manager->_pending_writes.pop_front();
     }
 
     RamClass ram_class = _working_page->_pending_ram_class;
@@ -771,20 +843,4 @@ thread_main() {
 
     Thread::consider_yield();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::PageThread::stop_thread
-//       Access: Public
-//  Description: Signals the thread to stop and waits for it.  Does
-//               not return until the thread has finished.
-////////////////////////////////////////////////////////////////////
-void VertexDataPage::PageThread::
-stop_thread() {
-  {
-    MutexHolder holder(_tlock);
-    _shutdown = true;
-    _pending_cvar.signal();
-  }
-  join();
 }

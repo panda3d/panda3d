@@ -88,7 +88,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_keystone;
 extern EXPCL_PANDA_GOBJ ConfigVariableFilename vertex_save_file_directory;
 extern EXPCL_PANDA_GOBJ ConfigVariableString vertex_save_file_prefix;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_small_size;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_data_threaded_paging;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_page_threads;
 
 #endif
 

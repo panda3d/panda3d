@@ -147,18 +147,22 @@ save_to_disk() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::has_thread
+//     Function: VertexDataPage::get_num_threads
 //       Access: Published, Static
-//  Description: Returns true if a thread has been spawned to service
-//               vertex paging requests, or false if it has not (which
-//               may mean either that all paging requests will be
-//               handled by the main thread, or simply that no paging
-//               requests have yet been issued).
+//  Description: Returns the number of threads that have been spawned
+//               to service vertex paging requests, or 0 if no threads
+//               have been spawned (which may mean either that all
+//               paging requests will be handled by the main thread,
+//               or simply that no paging requests have yet been
+//               issued).
 ////////////////////////////////////////////////////////////////////
-INLINE bool VertexDataPage::
-has_thread() {
+INLINE int VertexDataPage::
+get_num_threads() {
   MutexHolder holder(_tlock);
-  return !_thread.is_null();
+  if (_thread_mgr == (PageThreadManager *)NULL) {
+    return 0;
+  }
+  return _thread_mgr->get_num_threads();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -236,18 +240,4 @@ set_ram_class(RamClass rclass) {
 INLINE size_t VertexDataPage::
 round_up(size_t page_size) const {
   return ((page_size + _block_size - 1) / _block_size) * _block_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VertexDataPage::PageThread::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE VertexDataPage::PageThread::
-PageThread() : 
-  Thread("VertexDataPage", "VertexDataPage"),
-  _shutdown(false),
-  _working_cvar(_tlock),
-  _pending_cvar(_tlock)
-{
 }

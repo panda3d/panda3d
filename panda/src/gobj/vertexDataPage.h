@@ -22,6 +22,7 @@
 #include "vertexDataSaveFile.h"
 #include "pmutex.h"
 #include "conditionVar.h"
+#include "conditionVarFull.h"
 #include "thread.h"
 #include "mutexHolder.h"
 #include "pdeque.h"
@@ -69,8 +70,8 @@ PUBLISHED:
 
   INLINE bool save_to_disk();
 
-  INLINE static bool has_thread();
-  static void stop_thread();
+  INLINE static int get_num_threads();
+  static void stop_threads();
 
 public:
   INLINE unsigned char *get_page_data(bool force);
@@ -106,27 +107,49 @@ private:
 
   typedef pdeque<VertexDataPage *> PendingPages;
 
+  class PageThreadManager;
   class PageThread : public Thread {
   public:
-    INLINE PageThread();
-    
-    void add_page(VertexDataPage *page, RamClass ram_class);
-    void remove_page(VertexDataPage *page);
-    void stop_thread();
+    PageThread(PageThreadManager *manager, const string &name);
 
   protected:
     virtual void thread_main();
 
   private:
+    PageThreadManager *_manager;
     VertexDataPage *_working_page;
+    
+    // Signaled when _working_page is set to NULL after finishing a
+    // task.
+    ConditionVar _working_cvar;
+    friend class PageThreadManager;
+  };
+  typedef pvector<PT(PageThread) > PageThreads;
+
+  class PageThreadManager : public ReferenceCount {
+  public:
+    PageThreadManager(int num_threads);
+    void add_page(VertexDataPage *page, RamClass ram_class);
+    void remove_page(VertexDataPage *page);
+    int get_num_threads() const;
+    void stop_threads();
+
+  private:
     PendingPages _pending_writes;
     PendingPages _pending_reads;
     bool _shutdown;
-    ConditionVar _working_cvar;
-    ConditionVar _pending_cvar;
+
+    // Signaled when anything new is added to either of the above
+    // queues, or when _shutdown is set true.  This wakes up any
+    // pending thread.
+    ConditionVarFull _pending_cvar;
+
+    PageThreads _threads;
+    friend class PageThread;
   };
-  static PT(PageThread) _thread;
-  static Mutex _tlock;  // Protects the thread members.
+
+  static PT(PageThreadManager) _thread_mgr;
+  static Mutex _tlock;  // Protects _thread_mgr and all of its members.
 
   unsigned char *_page_data;
   size_t _size, _allocated_size, _uncompressed_size;
