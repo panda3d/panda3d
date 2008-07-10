@@ -2,20 +2,23 @@
  * Memory allocator for TinyGL
  */
 #include "zgl.h"
+#include "memoryHook.h"
 
 /* modify these functions so that they suit your needs */
 
 void gl_free(void *p)
 {
-    free(p);
+    PANDA_FREE_ARRAY(p);
 }
 
 void *gl_malloc(int size)
 {
-    return malloc(size);
+    return PANDA_MALLOC_ARRAY(size);
 }
 
 void *gl_zalloc(int size)
 {
-    return calloc(1, size);
+    void *buffer = PANDA_MALLOC_ARRAY(size);
+    memset(buffer, 0, size);
+    return buffer;
 }
