@@ -136,6 +136,6 @@ class ParticleInterval(Interval):
     def privFinalize(self):
         Interval.privFinalize(self)
         if self.cleanup and self.particleEffect:
-            self.particleEffect.cleanup()
+            self.particleEffect.disable()
             self.particleEffect = None
             
