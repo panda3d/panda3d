@@ -37,9 +37,6 @@ class TwoDWalker(GravityWalker):
                 assert self.debugPrint("isAirborne 0 due to isOnGround() true")
                 impact = self.lifter.getImpactVelocity()
                 messenger.send("jumpLand")
-                if impact < -5.0:
-                    self.startJumpDelay(0.2)
-                # else, ignore the little potholes.
             assert self.isAirborne == 0
             self.priorParent = Vec3.zero()
         else:
