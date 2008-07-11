@@ -61,6 +61,7 @@ class EventManager:
         Process all the events on the C++ event queue
         """
         self.doEvents()
+        messenger.send("event-loop-done")
         return Task.cont
 
     def parseEventParameter(self, eventParameter):
