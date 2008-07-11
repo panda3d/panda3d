@@ -426,6 +426,8 @@ class ClientRepositoryBase(ConnectionRepository):
         if self.doId2ownerView.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
+            self.notify.error('duplicate owner generate for %s (%s)' % (
+                doId, dclass.getName()))
             distObj = self.doId2ownerView[doId]
             assert distObj.dclass == dclass
             distObj.generate()
