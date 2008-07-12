@@ -1721,24 +1721,6 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 void MayaEggLoader::PrintData(MayaEggMesh *mesh)
 {
     if (mayaloader_cat.is_spam()) {
-      mayaloader_cat.spam() << "num uvCounts: " << mesh->_polygonCounts.length() << endl;
-      ostringstream stream1;
-      for (unsigned int i=0; i < mesh->_polygonCounts.length(); ++i) {
-        if ((i%10)==0) {
-          stream1 << endl;
-        }
-        stream1 << mesh->_polygonCounts[i] << ",";
-      }
-      mayaloader_cat.spam() << "uvCounts: " << stream1.str() << endl;
-      mayaloader_cat.spam() << "num uvIds: " << mesh->_uvIds.length() << endl;
-      ostringstream stream2;
-      for (unsigned int i=0; i < mesh->_uvIds.length(); ++i) {
-        if ((i%30)==0) {
-          stream2 << endl;
-        }
-        stream2 << mesh->_uvIds[i] << ",";
-      }
-      mayaloader_cat.spam() << "uvIds: " << stream2.str() << endl;
       mayaloader_cat.spam() << "num vertexArray: " << mesh->_vertexArray.length() << endl;
       ostringstream stream3;
       for (unsigned int i=0; i < mesh->_vertexArray.length(); ++i) {
@@ -1746,14 +1728,22 @@ void MayaEggLoader::PrintData(MayaEggMesh *mesh)
       }
       mayaloader_cat.spam() << "vertexArray: \n" << stream3.str() << endl;
       mayaloader_cat.spam() << "num polygonConnects: " << mesh->_polygonConnects.length() << endl;
-      ostringstream stream4;
-      for (unsigned int i=0; i < mesh->_polygonConnects.length(); ++i) {
-        if ((i%30)==0) {
-          stream4 << endl;
+      mayaloader_cat.spam() << "num uvCounts: " << mesh->_polygonCounts.length() << endl;
+      mayaloader_cat.spam() << "num uvIds: " << mesh->_uvIds.length() << endl;
+      ostringstream stream1, stream4;
+      unsigned int k=0;
+      for (unsigned int i=0; i < mesh->_polygonCounts.length(); ++i) {
+        stream1 << mesh->_polygonCounts[i] << ":->";
+        stream4 << mesh->_polygonCounts[i] << ":->";
+        for (int j=0; j < mesh->_polygonCounts[i]; ++j, ++k) {
+          stream1 << mesh->_uvIds[k] << ",";
+          stream4 << mesh->_polygonConnects[k] << ",";
         }
-        stream4 << mesh->_polygonConnects[i] << ",";
+        stream1 << endl;
+        stream4 << endl;
       }
-      mayaloader_cat.spam() << "polygonConnects: " << stream4.str() << endl;
+      mayaloader_cat.spam() << "uvCounts:->uvIds " << endl << stream1.str() << endl;
+      mayaloader_cat.spam() << "vertexCount:->polygonConnects" << endl << stream4.str() << endl;
     }
 }
 
