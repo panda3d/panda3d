@@ -34,9 +34,9 @@ ConfigVariableInt max_independent_vertex_data
           "may change size or be created and destroyed frequently."));
 
 ConfigVariableInt vertex_data_page_size
-("vertex-data-page-size", 512,
+("vertex-data-page-size", 262144,
  PRC_DESC("The number of bytes to allocate at a time for vertex data.  "
-          "This also controls the page size that is compressed and written "
+          "This also controls the page size that is compressed or written "
           "to disk when vertex data pages are evicted from memory."));
 
 SimpleLru GeomVertexArrayData::_independent_lru("independent", max_independent_vertex_data);
