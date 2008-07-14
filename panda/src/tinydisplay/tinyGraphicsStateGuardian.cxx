@@ -1054,7 +1054,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   nassertv(tc != (TextureContext *)NULL);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
-  GLTexture *gltex = gtc->_gltex;
+  GLTexture *gltex = &gtc->_gltex;
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
     return;
   }
@@ -1251,7 +1251,6 @@ prepare_texture(Texture *tex) {
   }
 
   TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
-  gtc->_gltex = (GLTexture *)gl_zalloc(sizeof(GLTexture));
 
   return gtc;
 }
@@ -1268,11 +1267,9 @@ void TinyGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
-  GLTexture *gltex = gtc->_gltex;
-  gtc->_gltex = NULL;
-
   _texturing_state = 0;  // just in case
 
+  GLTexture *gltex = &gtc->_gltex;
   for (int i = 0; i < gltex->num_levels; ++i) {
     gl_free(gltex->levels[i].pixmap);
   }
@@ -1281,7 +1278,6 @@ release_texture(TextureContext *tc) {
     gltex->levels = NULL;
   }
 
-  gl_free(gltex);
   gtc->dequeue_lru();
 
   delete gtc;
@@ -1720,7 +1716,7 @@ apply_texture(TextureContext *tc) {
 
   gtc->set_active(true);
 
-  GLTexture *gltex = gtc->_gltex;
+  GLTexture *gltex = &gtc->_gltex;
 
   if (gtc->was_image_modified() || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
@@ -1767,7 +1763,7 @@ upload_texture(TinyTextureContext *gtc) {
 #ifdef DO_PSTATS
   _data_transferred_pcollector.add_level(tex->get_ram_image_size());
 #endif
-  GLTexture *gltex = gtc->_gltex;
+  GLTexture *gltex = &gtc->_gltex;
 
   int num_levels = 1;
   if (tex->uses_mipmaps()) {

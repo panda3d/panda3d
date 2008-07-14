@@ -19,8 +19,7 @@
 #include "textureContext.h"
 #include "deletedChain.h"
 #include "simpleLru.h"
-
-struct GLTexture;
+#include "zgl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyTextureContext
@@ -36,7 +35,7 @@ public:
   INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   virtual void evict_lru();
 
-  GLTexture *_gltex;
+  GLTexture _gltex;
 
 public:
   static TypeHandle get_class_type() {
