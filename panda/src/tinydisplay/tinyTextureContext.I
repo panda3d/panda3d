@@ -22,6 +22,7 @@ INLINE TinyTextureContext::
 TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   TextureContext(pgo, tex), SimpleLruPage(0)
 {
+  _gltex.num_levels = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
 ////////////////////////////////////////////////////////////////////
 INLINE TinyTextureContext::
 ~TinyTextureContext() {
-  nassertv(_gltex.levels == NULL);
+  nassertv(_gltex.num_levels == 0);
 }
 
 ////////////////////////////////////////////////////////////////////

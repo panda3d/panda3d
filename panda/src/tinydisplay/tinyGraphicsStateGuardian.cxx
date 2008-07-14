@@ -1272,11 +1272,9 @@ release_texture(TextureContext *tc) {
   GLTexture *gltex = &gtc->_gltex;
   for (int i = 0; i < gltex->num_levels; ++i) {
     gl_free(gltex->levels[i].pixmap);
+    gltex->levels[i].pixmap = NULL;
   }
-  if (gltex->levels != NULL) {
-    gl_free(gltex->levels);
-    gltex->levels = NULL;
-  }
+  gltex->num_levels = 0;
 
   gtc->dequeue_lru();
 
@@ -1867,21 +1865,32 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   for (int i = 0; i < gltex->num_levels; ++i) {
     gl_free(gltex->levels[i].pixmap);
-  }
-  if (gltex->levels != NULL) {
-    gl_free(gltex->levels);
-    gltex->levels = NULL;
+    gltex->levels[i].pixmap = NULL;
   }
 
-  gltex->levels = (ZTextureLevel *)gl_malloc(sizeof(ZTextureLevel) * MAX_MIPMAP_LEVELS);
   gltex->num_levels = num_levels;
+  
+  // We allocate one big buffer, large enough to include all the
+  // mipmap levels, and index into that buffer for each level.  This
+  // cuts down on the number of individual alloc calls we have to make
+  // for each texture.
+  gltex->total_bytecount = (x_size * y_size * 4);
+  if (num_levels > 1) {
+    gltex->total_bytecount = (gltex->total_bytecount * 4 + 3) / 3;
+  }
+
+  gltex->allocated_buffer = (void *)gl_malloc(gltex->total_bytecount);
+  char *next_buffer = (char *)gltex->allocated_buffer;
+  char *end_of_buffer = next_buffer + gltex->total_bytecount;
 
   int level = 0;
   ZTextureLevel *dest = NULL;
   while (level < num_levels) {
     dest = &gltex->levels[level];
     int bytecount = x_size * y_size * 4;
-    dest->pixmap = (PIXEL *)gl_malloc(bytecount);
+    dest->pixmap = (PIXEL *)next_buffer;
+    next_buffer += bytecount;
+    nassertr(next_buffer <= end_of_buffer, false);
 
     dest->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
     dest->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);

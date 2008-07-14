@@ -38,10 +38,7 @@ evict_lru() {
 
   for (int i = 0; i < _gltex.num_levels; ++i) {
     gl_free(_gltex.levels[i].pixmap);
-  }
-  if (_gltex.levels != NULL) {
-    gl_free(_gltex.levels);
-    _gltex.levels = NULL;
+    _gltex.levels[i].pixmap = NULL;
   }
   _gltex.num_levels = 0;
 
