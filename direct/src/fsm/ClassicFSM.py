@@ -167,6 +167,15 @@ class ClassicFSM(DirectObject):
             ClassicFSM.notify.warning("[%s]: getStateNamed: %s, no such state" %
                                       (self.__name, stateName))
 
+    def hasStateNamed(self, stateName):
+        """
+        Return True if stateName is a valid state, False otherwise.
+        """
+        result = False
+        state = self.__states.get(stateName)
+        if state:
+            result = True
+        return result
 
     # basic ClassicFSM functionality
 
