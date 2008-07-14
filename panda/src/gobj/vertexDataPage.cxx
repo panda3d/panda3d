@@ -662,6 +662,8 @@ PageThreadManager(int num_threads) :
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThreadManager::
 add_page(VertexDataPage *page, RamClass ram_class) {
+  nassertv(!_shutdown);
+
   if (page->_pending_ram_class == ram_class) {
     // It's already queued.
     nassertv(page->get_lru() == &_pending_lru);
@@ -704,7 +706,7 @@ remove_page(VertexDataPage *page) {
   nassertv(page != (VertexDataPage *)NULL);
 
   PageThreads::iterator ti;
-  for (ti = _threads.begin(); ti != _threads.begin(); ++ti) {
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     PageThread *thread = (*ti);
     if (page == thread->_working_page) {
       // Oops, this thread is currently working on this one.  We'll have
@@ -763,10 +765,12 @@ stop_threads() {
   }
 
   PageThreads::iterator ti;
-  for (ti = _threads.begin(); ti != _threads.begin(); ++ti) {
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     PageThread *thread = (*ti);
     thread->join();
   }
+
+  nassertv(_pending_reads.empty() && _pending_writes.empty());
 }
 
 ////////////////////////////////////////////////////////////////////

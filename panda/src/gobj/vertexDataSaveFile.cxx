@@ -200,12 +200,15 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     overlapped.Offset = block->get_start();
 
     DWORD bytes_written = 0;
+    double start_time = ClockObject::get_global_clock()->get_real_time();
+    int num_passes = 0;
     BOOL success = WriteFile(_handle, data, size, &bytes_written, &overlapped);
     while (!success) {
       DWORD error = GetLastError();
       if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
         // Wait for more later.
         Thread::force_yield();
+        ++num_passes;
       } else {
         gobj_cat.error()
           << "Error writing " << size
@@ -216,7 +219,11 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
       success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
     }
     nassertr(bytes_written == size, NULL);
-    
+    double finish_time = ClockObject::get_global_clock()->get_real_time();
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Wrote " << size << " bytes in " << *Thread::get_current_thread() << " over " << floor((finish_time - start_time) * 1000.0) << " ms and " << num_passes << " passes.\n";
+    }
 #else
     // Posix case.
     if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
@@ -276,12 +283,15 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
   overlapped.Offset = block->get_start();
 
   DWORD bytes_read = 0;
+  double start_time = ClockObject::get_global_clock()->get_real_time();
+  int num_passes = 0;
   BOOL success = ReadFile(_handle, data, size, &bytes_read, &overlapped);
   while (!success) {
     DWORD error = GetLastError();
     if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
       // Wait for more later.
       Thread::force_yield();
+      ++num_passes;
     } else {
       gobj_cat.error()
         << "Error reading " << size
@@ -292,6 +302,12 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
   nassertr(bytes_read == size, NULL);
+  double finish_time = ClockObject::get_global_clock()->get_real_time();
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Read " << size << " bytes in " << *Thread::get_current_thread() << " over " << floor((finish_time - start_time) * 1000.0) << " ms and " << num_passes << " passes.\n";
+  }
+
 #else
   // Posix case.
   if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
