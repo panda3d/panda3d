@@ -36,11 +36,17 @@ void TinyTextureContext::
 evict_lru() {
   dequeue_lru();
 
-  for (int i = 0; i < _gltex.num_levels; ++i) {
-    gl_free(_gltex.levels[i].pixmap);
-    _gltex.levels[i].pixmap = NULL;
+  GLTexture *gltex = &_gltex;
+  if (gltex->allocated_buffer != NULL) {
+    nassertv(gltex->num_levels != 0);
+    TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+    gl_free(gltex->allocated_buffer);
+    gltex->allocated_buffer = NULL;
+    gltex->total_bytecount = 0;
+    gltex->num_levels = 0;
+  } else {
+    nassertv(gltex->num_levels == 0);
   }
-  _gltex.num_levels = 0;
 
   set_resident(false);
 }

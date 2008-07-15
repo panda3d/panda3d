@@ -1270,11 +1270,16 @@ release_texture(TextureContext *tc) {
   _texturing_state = 0;  // just in case
 
   GLTexture *gltex = &gtc->_gltex;
-  for (int i = 0; i < gltex->num_levels; ++i) {
-    gl_free(gltex->levels[i].pixmap);
-    gltex->levels[i].pixmap = NULL;
+  if (gltex->allocated_buffer != NULL) {
+    nassertv(gltex->num_levels != 0);
+    TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+    gl_free(gltex->allocated_buffer);
+    gltex->allocated_buffer = NULL;
+    gltex->total_bytecount = 0;
+    gltex->num_levels = 0;
+  } else {
+    nassertv(gltex->num_levels == 0);
   }
-  gltex->num_levels = 0;
 
   gtc->dequeue_lru();
 
@@ -1857,16 +1862,13 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     return false;
   }
 
+  num_levels = min(num_levels, MAX_MIPMAP_LEVELS);
+
   gltex->xsize = x_size;
   gltex->ysize = y_size;
 
   gltex->s_max = 1 << (s_bits + ZB_POINT_ST_FRAC_BITS);
   gltex->t_max = 1 << (t_bits + ZB_POINT_ST_FRAC_BITS);
-
-  for (int i = 0; i < gltex->num_levels; ++i) {
-    gl_free(gltex->levels[i].pixmap);
-    gltex->levels[i].pixmap = NULL;
-  }
 
   gltex->num_levels = num_levels;
   
@@ -1874,14 +1876,30 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   // mipmap levels, and index into that buffer for each level.  This
   // cuts down on the number of individual alloc calls we have to make
   // for each texture.
-  gltex->total_bytecount = (x_size * y_size * 4);
-  if (num_levels > 1) {
-    gltex->total_bytecount = (gltex->total_bytecount * 4 + 3) / 3;
+  int total_bytecount = 0;
+
+  // Count up the total bytes required for all mipmap levels.
+  {
+    int x = x_size;
+    int y = y_size;
+    for (int level = 0; level < num_levels; ++level) {
+      int bytecount = x * y * 4;
+      total_bytecount += bytecount;
+      x = max((x >> 1), 1);
+      y = max((y >> 1), 1);
+    }
   }
 
-  gltex->allocated_buffer = (void *)gl_malloc(gltex->total_bytecount);
+  if (gltex->total_bytecount != total_bytecount) {
+    gl_free(gltex->allocated_buffer);
+    TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
+    gltex->allocated_buffer = (void *)gl_malloc(total_bytecount);
+    gltex->total_bytecount = total_bytecount;
+    TinyTextureContext::get_class_type().inc_memory_usage(TypeHandle::MC_array, total_bytecount);
+  }
+
   char *next_buffer = (char *)gltex->allocated_buffer;
-  char *end_of_buffer = next_buffer + gltex->total_bytecount;
+  char *end_of_buffer = next_buffer + total_bytecount;
 
   int level = 0;
   ZTextureLevel *dest = NULL;
