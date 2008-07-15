@@ -1273,7 +1273,7 @@ release_texture(TextureContext *tc) {
   if (gltex->allocated_buffer != NULL) {
     nassertv(gltex->num_levels != 0);
     TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
-    gl_free(gltex->allocated_buffer);
+    PANDA_FREE_ARRAY(gltex->allocated_buffer);
     gltex->allocated_buffer = NULL;
     gltex->total_bytecount = 0;
     gltex->num_levels = 0;
@@ -1892,10 +1892,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
 
   if (gltex->total_bytecount != total_bytecount) {
     if (gltex->allocated_buffer != NULL) {
-      gl_free(gltex->allocated_buffer);
+      PANDA_FREE_ARRAY(gltex->allocated_buffer);
       TinyTextureContext::get_class_type().dec_memory_usage(TypeHandle::MC_array, gltex->total_bytecount);
     }
-    gltex->allocated_buffer = (void *)gl_malloc(total_bytecount);
+    gltex->allocated_buffer = PANDA_MALLOC_ARRAY(total_bytecount);
     gltex->total_bytecount = total_bytecount;
     TinyTextureContext::get_class_type().inc_memory_usage(TypeHandle::MC_array, total_bytecount);
   }
