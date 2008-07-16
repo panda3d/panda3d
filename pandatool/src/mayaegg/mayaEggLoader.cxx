@@ -206,6 +206,12 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
   */
   if (1) {
     shader.create(true,&status);
+    MColor firstColor(1.0,1.0,1.0,1.0);
+    status = shader.setColor(firstColor);
+    if (status != MStatus::kSuccess) {
+      mayaloader_cat.error() << "setColor failed on LambertShader\n";
+      status.perror("shader setColor failed!");
+    }
     sgroup.create(MSelectionList(), MFnSet::kRenderableOnly, &status);
     MPlug surfplug = sgroup.findPlug("surfaceShader");
     if (surfplug.connectedTo(oldplugs,true,false)) {
@@ -522,7 +528,8 @@ struct MayaEggVertex
   Normald               _normal;
   TexCoordd             _uv;
   vector<MayaEggWeight> _weights;
-  int                   _index;
+  int                   _index; 
+  int                   _external_index; // masad: use egg's index directly
 };
 
 struct MEV_Compare: public stl_hash_compare<MayaEggVertex>
@@ -578,6 +585,15 @@ struct MEV_Compare: public stl_hash_compare<MayaEggVertex>
         return false;
       }
     }
+    n = k1._external_index - k2._external_index;
+
+    if (n < 0) {
+      return true;
+    }
+    if (n > 0) {
+      return false;
+    }
+
     return false;
   }
 };
@@ -622,6 +638,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     vtx._uv = vert->get_uv();
   }
   vtx._index = 0;
+  vtx._external_index = vert->get_index()-1;
 
   EggVertex::GroupRef::const_iterator gri;
   double remaining_weight = 1.0;
@@ -670,6 +687,7 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
     return vti->_index;
   }
   
+  //_vert_count++;
   vtx._index = _vert_count++;
 
   if ((remaining_weight) > 0.01) {
@@ -1226,7 +1244,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     for (unsigned int i=1; i<vertIndices.size()-1; i++) {
       if (poly->has_color()) {
         if (mayaloader_cat.is_spam()) {
-          mayaloader_cat.spam() << "found a face color\n";
+          mayaloader_cat.spam() << "found a face color of " << poly->get_color() << endl;
         }
         mesh->_faceIndices.append(mesh->_face_count);
         mesh->_faceColorArray.append(MakeMayaColor(poly->get_color()));
@@ -1602,6 +1620,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 
   // masad: keep track of maximum frames of animation on all these joints
   MTime maxFrame(_start_frame - 1, _timeUnit);
+  MTime minFrame = maxFrame;
 
   for (ei = _anim_tab.begin(); ei != _anim_tab.end(); ++ei) {
     MayaAnim *anim = (*ei).second;
@@ -1696,6 +1715,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
   if (anim) {
     // masad: set the control's max time with maxFrame
     MAnimControl::setMaxTime(maxFrame);
+    MAnimControl::setMinTime(minFrame);
   }
 
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) {
