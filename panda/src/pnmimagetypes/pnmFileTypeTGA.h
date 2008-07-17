@@ -26,9 +26,6 @@
 struct ImageHeader;
 
 
-/* Max number of colors allowed for colormapped output. */
-#define TGA_MAXCOLORS 257
-
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileTypeTGA
 // Description : For reading and writing Targa image files.
@@ -64,8 +61,8 @@ public:
 
     int rows, cols, rlencoded, mapped;
     struct ImageHeader *tga_head;
-    pixel ColorMap[TGA_MAXCOLORS];
-    gray AlphaMap[TGA_MAXCOLORS];
+    pixel *ColorMap;
+    gray *AlphaMap;
     int RLE_count, RLE_flag;
   };
 

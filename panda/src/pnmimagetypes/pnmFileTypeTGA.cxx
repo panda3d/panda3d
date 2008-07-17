@@ -80,6 +80,9 @@ struct ImageHeader {
 
 typedef char ImageIDField[256];
 
+/* Max number of colors allowed for colormapped output. */
+#define TGA_MAXCOLORS 257
+
 /* Definitions for image types. */
 #define TGA_Null 0
 #define TGA_Map 1
@@ -190,6 +193,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   tga_head = new ImageHeader;
   RLE_count = 0;
   RLE_flag = 0;
+  ColorMap = NULL;
+  AlphaMap = NULL;
 
     /* Read the Targa file header. */
     readtga( file, tga_head, magic_number );
@@ -288,8 +293,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
         unsigned int temp1, temp2;
         temp1 = tga_head->Index_lo + tga_head->Index_hi * 256;
         temp2 = tga_head->Length_lo + tga_head->Length_hi * 256;
-        if ( ( temp1 + temp2 + 1 ) >= TGA_MAXCOLORS )
-            pm_error( "too many colors - %d", ( temp1 + temp2 + 1 ) );
+        int num_colors = temp1 + temp2 + 1;
+        nassertv(ColorMap == NULL && AlphaMap == NULL);
+        ColorMap = (pixel *)PANDA_MALLOC_ARRAY(num_colors * sizeof(pixel));
+        AlphaMap = (gray *)PANDA_MALLOC_ARRAY(num_colors * sizeof(gray));
         for ( unsigned int i = temp1; i < ( temp1 + temp2 ); ++i )
             get_map_entry( file, &ColorMap[i], (int) tga_head->CoSize,
                        &AlphaMap[i]);
@@ -317,6 +324,12 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 PNMFileTypeTGA::Reader::
 ~Reader() {
   delete tga_head;
+  if (ColorMap != NULL) {
+    PANDA_FREE_ARRAY(ColorMap);
+  }
+  if (AlphaMap != NULL) {
+    PANDA_FREE_ARRAY(AlphaMap);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
