@@ -67,6 +67,7 @@
 #include <maya/MAnimControl.h>
 #include <maya/MFnAnimCurve.h>
 #include <maya/MFnNurbsSurface.h>
+#include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
 #include "mayaEggLoader.h"
@@ -145,6 +146,54 @@ MVector MakeMayaVector(const LVector3d &vec)
 MColor MakeMayaColor(const Colorf &vec)
 {
   return MColor(vec[0], vec[1], vec[2], vec[3]);
+}
+
+// [gjeon] to create enum attribute, 
+// fieldNames is a stringArray of enum names, and filedIndex is the default index value
+MStatus create_enum_attribute(MObject &node, MString fullName, MString briefName, 
+                              MStringArray fieldNames, unsigned fieldIndex) {
+  MStatus stat;
+
+  MFnDependencyNode fnDN( node, &stat );
+  if ( MS::kSuccess != stat ) {
+    mayaloader_cat.error()
+      << "Could not create MFnDependencyNode" << "\n";
+    return stat;
+  }
+
+  MFnEnumAttribute fnAttr;
+  MObject newAttr = fnAttr.create( fullName, briefName, 
+                                   0, &stat );
+  if ( MS::kSuccess != stat ) {
+    mayaloader_cat.error()
+      << "Could not create new enum attribute " << fullName << "\n";
+    return stat;
+  }
+  for (unsigned i = 0; i < fieldNames.length(); i++){
+    fnAttr.addField(fieldNames[i], i);
+  }
+
+  stat = fnAttr.setDefault(fieldIndex);
+  if ( MS::kSuccess != stat ) {
+    mayaloader_cat.error()
+      << "Could not set value for enum attribute " << fullName << "\n";
+    return stat;
+  }
+
+  fnAttr.setKeyable( true ); 
+  fnAttr.setReadable( true ); 
+  fnAttr.setWritable( true ); 
+  fnAttr.setStorable( true ); 
+
+  // Now add the new attribute to this dependency node
+  stat = fnDN.addAttribute(newAttr,MFnDependencyNode::kLocalDynamicAttr);
+  if ( MS::kSuccess != stat ) {
+    mayaloader_cat.error()
+      << "Could not add new enum attribute " << fullName << "\n";
+    return stat;
+  }
+
+  return stat;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -617,6 +666,7 @@ public:
   MIntArray           _vertColorIndices;
   MIntArray           _vertNormalIndices;
 
+  MStringArray        _eggObjectTypes;
   VertTable  _vert_tab;
   
   int GetVert(EggVertex *vert, EggGroup *context);
@@ -836,6 +886,7 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
     result->_vertColorIndices.clear();
     result->_faceColorArray.clear();
     result->_faceIndices.clear();
+    result->_eggObjectTypes.clear();
     _mesh_tab[pool] = result;
   }
   return result;
@@ -937,6 +988,8 @@ MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *pa
     result->_vNumCvs = 0;
     result->_uForm = MFnNurbsSurface::kClosed;
     result->_vForm = MFnNurbsSurface::kClosed;
+
+    result->_eggObjectTypes.clear();
 
     _surface_tab[pool] = result;
   }
@@ -1254,6 +1307,21 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
                     cvertIndices[0], cvertIndices[i], cvertIndices[i+1],
                     tex);
     }
+    
+    // [gjeon] to handle double-sided flag
+    if (poly->get_bface_flag()) {
+      bool addNewFlag = true;
+      for (unsigned i = 0; i < mesh->_eggObjectTypes.length(); i++) {
+        if (mesh->_eggObjectTypes[i] == "double-sided") {
+          addNewFlag = false;
+          break;
+        }
+      }
+      if (addNewFlag) {
+        mesh->_eggObjectTypes.append("double-sided");
+      }
+    }
+
   } else if (node->is_of_type(EggNurbsSurface::get_class_type())) {
     // [gjeon] to convert nurbsSurface
     EggNurbsSurface *eggNurbsSurface = DCAST(EggNurbsSurface, node);
@@ -1318,6 +1386,20 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
       surface->_vForm = MFnNurbsSurface::kClosed;
     } else {
       surface->_vForm = MFnNurbsSurface::kOpen;
+    }
+
+    // [gjeon] to handle double-sided flag
+    if (eggNurbsSurface->get_bface_flag()) {
+      bool addNewFlag = true;
+      for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
+        if (surface->_eggObjectTypes[i] == "double-sided") {
+          addNewFlag = false;
+          break;
+        }
+      }
+      if (addNewFlag) {
+        surface->_eggObjectTypes.append("double-sided");
+      }
     }
 
   } else if (node->is_of_type(EggComment::get_class_type())) {
@@ -1461,6 +1543,17 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "transNode created." << endl;
     }
+
+    // [gjeon] add eggFlag attributes it any exists
+    for (unsigned i = 0; i < mesh->_eggObjectTypes.length(); i++) {
+      MString attrName = "eggObjectTypes";
+      attrName += (i + 1);
+      status = create_enum_attribute(mesh->_transNode, attrName, attrName, mesh->_eggObjectTypes, i);
+      if (status != MStatus::kSuccess) {
+        status.perror("create_enum_attribute failed!");
+      }
+    }
+
     mesh->_shapeNode = mfn.object();
     mfn.getPath(mesh->_shape_dag_path);
     mesh->ConnectTextures();
@@ -1542,7 +1635,16 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     surface->_transNode = mfnNurbsSurface.create(surface->_cvArray, surface->_uKnotArray, surface->_vKnotArray,
                                                  surface->_uDegree, surface->_vDegree, surface->_uForm, surface->_vForm,
                                                  true, parent, &status);
-   
+
+    // [gjeon] add eggFlag attributes it any exists   
+    for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
+      MString attrName = "eggObjectTypes";
+      attrName += (i + 1);
+      status = create_enum_attribute(surface->_transNode, attrName, attrName, surface->_eggObjectTypes, i);
+      if (status != MStatus::kSuccess) {
+        status.perror("create_enum_attribute failed!");
+      }
+    }
     surface->_shapeNode = mfnNurbsSurface.object();
     mfnNurbsSurface.getPath(surface->_shape_dag_path);
     surface->ConnectTextures();
