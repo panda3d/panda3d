@@ -766,13 +766,11 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
     $[INTERROGATE_OPTIONS] \
     $[if $[INTERROGATE_PYTHON_INTERFACE],$[if $[PYTHON_NATIVE],-python-native,-python]] \
     $[if $[INTERROGATE_C_INTERFACE],-c] \
-    $[if $[TRACK_IN_INTERPRETER],-track-interpreter] \
     $[if $[<= $[OPTIMIZE], 1],-spam]
 
 #defer interrogate_module_options \
     $[if $[INTERROGATE_PYTHON_INTERFACE],$[if $[PYTHON_NATIVE],-python-native,-python]] \
-    $[if $[INTERROGATE_C_INTERFACE],-c] \
-    $[if $[TRACK_IN_INTERPRETER],-track-interpreter]
+    $[if $[INTERROGATE_C_INTERFACE],-c]
 
 
 // The language stuff is used by model builds only.

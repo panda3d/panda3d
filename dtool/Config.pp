@@ -332,15 +332,6 @@
 // your source directory on your PYTHONPATH.
 #define INSTALL_PYTHON_SOURCE 1
 
-// Do you want to enable the "in_interpreter" global variable?  This
-// will enable some callbacks, particularly the MemoryUsage object, to
-// know whether they were called from Python code (or other high-level
-// show code) and react accordingly, generally for debugging
-// purporses.  It adds a bit of runtime overhead, and isn't usually
-// useful unless we're building a debug tree anyway.  The default is
-// to enable it only for optimize levels 1 and 2.
-#defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
-
 // Do you want to compile in support for tracking memory usage?  This
 // enables you to define the variable "track-memory-usage" at runtime
 // to help track memory leaks, and also report total memory usage on

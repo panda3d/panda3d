@@ -177,23 +177,6 @@ get_panda_mmap_size() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsage::get_interpreter_size
-//       Access: Public, Static
-//  Description: Returns the total number of bytes of allocated memory
-//               while the high-level languange code is running.  This
-//               number is only meaningful if both Panda and the
-//               high-level language are single-threaded, and running
-//               in the same thread.
-//
-//               This number is only available if Panda is able to
-//               hook into the actual heap callback.
-////////////////////////////////////////////////////////////////////
-INLINE size_t MemoryUsage::
-get_interpreter_size() {
-  return get_global_ptr()->_interpreter_size;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::get_external_size
 //       Access: Public, Static
 //  Description: Returns the total number of bytes of allocated memory
@@ -201,6 +184,10 @@ get_interpreter_size() {
 //               for.  This includes a few bytes for very low-level
 //               objects (like ConfigVariables) that cannot use Panda
 //               memory tracking because they are so very low-level.
+//
+//               This also includes all of the memory that might have
+//               been allocated by a high-level interpreter, like
+//               Python.
 //
 //               This number is only available if Panda is able to
 //               hook into the actual heap callback.
@@ -214,13 +201,12 @@ get_external_size() {
 
 #if defined(USE_MEMORY_DLMALLOC) || defined(USE_MEMORY_PTMALLOC2)
     // With alternative malloc, none of the Panda allocated memory
-    // shows up in total_size, so anything there is either interpreter
-    // or external.
-    return mu->_total_size - mu->_interpreter_size;
+    // shows up in total_size, so anything there is external.
+    return mu->_total_size;
 #else
     // Without alternative malloc, the Panda allocated memory is also
     // included in total_size, so we have to subtract it out.
-    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size - mu->_interpreter_size;
+    return mu->_total_size - mu->_total_heap_single_size - mu->_total_heap_array_size;
 #endif
   } else {
     return 0;

@@ -187,7 +187,7 @@ underflow() {
         // indicates that no retry is necessary
         //_is_closed = !BIO_should_retry(*_source);
         //_is_closed = !BIO_should_read(*_source);
-        _is_closed = BIO_eof(*_source);
+        _is_closed = (BIO_eof(*_source) != 0);
         if (_is_closed) {
           downloader_cat.info()
             << "Lost connection to "

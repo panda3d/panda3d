@@ -108,33 +108,6 @@ read_file(const Filename &filename, bool auto_unwrap) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::open_read_file
-//       Access: Published
-//  Description: Convenience function; returns a newly allocated
-//               istream if the file exists and can be read, or NULL
-//               otherwise.  Does not return an invalid istream.
-//
-//               If auto_unwrap is true, an explicitly-named .pz file
-//               is automatically decompressed and the decompressed
-//               contents are returned.  This is different than
-//               vfs-implicit-pz, which will automatically decompress
-//               a file if the extension .pz is *not* given.
-////////////////////////////////////////////////////////////////////
-INLINE istream *VirtualFileSystem::
-open_read_file(const Filename &filename, bool auto_unwrap) const {
-  PT(VirtualFile) file = get_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
-  }
-  istream *str = file->open_read_file(auto_unwrap);
-  if (str != (istream *)NULL && str->fail()) {
-    delete str;
-    str = (istream *)NULL;
-  }
-  return str;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::read_file
 //       Access: Public
 //  Description: Convenience function; fills the string up with the

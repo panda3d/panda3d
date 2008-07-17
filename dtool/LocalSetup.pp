@@ -337,9 +337,6 @@ $[cdefine DO_DCAST]
    visualization tools. */
 $[cdefine DO_COLLISION_RECORDING]
 
-/* Define if we want to track callbacks from within the show code.  */
-$[cdefine TRACK_IN_INTERPRETER]
-
 /* Define if we want to enable track-memory-usage.  */
 $[cdefine DO_MEMORY_USAGE]
 

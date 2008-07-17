@@ -110,6 +110,7 @@ get_next_character() {
     express_cat.warning()
       << "Non utf-8 byte in string: 0x" << hex << result << dec
       << ", string is '" << _input << "'\n";
+    nassertr(false, -1);
   }
 
   // End of string reached.

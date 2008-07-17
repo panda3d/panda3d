@@ -348,13 +348,6 @@ win32_malloc_hook(int alloc_type, void *ptr,
   }
   
   mu->_total_size += increment;
-
-#ifdef TRACK_IN_INTERPRETER
-  if (in_interpreter) {
-    mu->_interpreter_size += increment;
-  }
-#endif
-
   return true;
 }
 #endif  // WIN32_VC && _DEBUG
@@ -423,7 +416,6 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   _count = 0;
   _current_cpp_size = 0;
   _total_cpp_size = 0;
-  _interpreter_size = 0;
   _total_size = 0;
 }
 
@@ -448,7 +440,6 @@ overflow_heap_size() {
     << "\n  heap array: " << get_panda_heap_array_size()
     << "\n  heap overhead: " << get_panda_heap_overhead()
     << "\n  mmap: " << get_panda_mmap_size()
-    << "\n  interpreter: " << get_interpreter_size()
     << "\n  external: " << get_external_size()
     << "\n  total: " << get_total_size()
     << "\n";

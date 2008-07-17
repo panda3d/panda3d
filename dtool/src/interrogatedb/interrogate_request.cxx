@@ -17,10 +17,6 @@
 
 #include <string.h>  // for strdup
 
-#ifdef TRACK_IN_INTERPRETER
-int in_interpreter = false;
-#endif
-
 void
 interrogate_request_database(const char *database_filename) {
   InterrogateModuleDef *def = new InterrogateModuleDef;

@@ -68,7 +68,6 @@ PUBLISHED:
   INLINE static size_t get_panda_heap_array_size();
   INLINE static size_t get_panda_heap_overhead();
   INLINE static size_t get_panda_mmap_size();
-  INLINE static size_t get_interpreter_size();
   INLINE static size_t get_external_size();
   INLINE static size_t get_total_size();
 
@@ -148,7 +147,6 @@ private:
   int _count;
   size_t _current_cpp_size;
   size_t _total_cpp_size;
-  size_t _interpreter_size;
   size_t _total_size;
 
   class TypeHistogram {

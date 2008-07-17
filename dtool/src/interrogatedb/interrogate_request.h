@@ -76,22 +76,6 @@ typedef struct {
  */
 EXPCL_DTOOLCONFIG void interrogate_request_module(InterrogateModuleDef *def);
 
-#ifdef TRACK_IN_INTERPRETER
-/* 
- * If we're tracking whether we're currently running in Python code
- * (mainly for the purpose of debug logging from memory allocation
- * callbacks), this variable will record that state.  It will be set
- * true whenever we return to Python code, and false whenever we are
- * entering local C or C++ code.  The flag will be toggled off and
- * on within each generated Python wrapper function.
- *
- * This will mis-categorize some code that runs at static
- * initialization time, but it will correctly identify the vast
- * majority of code.
- */
-EXPCL_DTOOLCONFIG extern int in_interpreter;
-#endif  // TRACK_IN_INTERPRETER
-
 #ifdef __cplusplus
 }
 #endif

@@ -229,7 +229,6 @@ private:
   static PStatCollector _heap_single_other_size_pcollector;
   static PStatCollector _heap_array_size_pcollector;
   static PStatCollector _heap_array_other_size_pcollector;
-  static PStatCollector _heap_interpreter_size_pcollector;
   static PStatCollector _heap_external_size_pcollector;
   static PStatCollector _mmap_size_pcollector;
 

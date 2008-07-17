@@ -202,7 +202,6 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "System memory:Heap:Single",        { 0.8, 0.3, 0.3 } },
   { 1, "System memory:Heap:Array",         { 0.1, 0.3, 1.0 } },
   { 1, "System memory:Heap:Overhead",      { 0.9, 0.7, 0.8 } },
-  { 1, "System memory:Heap:Interpreter",   { 0.6, 1.0, 0.9 } },
   { 1, "System memory:Heap:External",      { 0.2, 0.2, 0.5 } },
   { 1, "System memory:MMap",               { 0.9, 0.4, 0.7 } },
   { 1, "Vertex Data",                      { 1.0, 0.4, 0.0 },  "MB", 64, 1048576 },

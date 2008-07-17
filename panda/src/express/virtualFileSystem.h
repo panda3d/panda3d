@@ -80,7 +80,7 @@ PUBLISHED:
   static VirtualFileSystem *get_global_ptr();
 
   BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
-  BLOCKING INLINE istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING void close_read_file(istream *stream) const;
 
 public:

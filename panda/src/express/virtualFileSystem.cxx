@@ -588,6 +588,33 @@ get_global_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::open_read_file
+//       Access: Published
+//  Description: Convenience function; returns a newly allocated
+//               istream if the file exists and can be read, or NULL
+//               otherwise.  Does not return an invalid istream.
+//
+//               If auto_unwrap is true, an explicitly-named .pz file
+//               is automatically decompressed and the decompressed
+//               contents are returned.  This is different than
+//               vfs-implicit-pz, which will automatically decompress
+//               a file if the extension .pz is *not* given.
+////////////////////////////////////////////////////////////////////
+istream *VirtualFileSystem::
+open_read_file(const Filename &filename, bool auto_unwrap) const {
+  PT(VirtualFile) file = get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  istream *str = file->open_read_file(auto_unwrap);
+  if (str != (istream *)NULL && str->fail()) {
+    close_read_file(str);
+    str = (istream *)NULL;
+  }
+  return str;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::close_read_file
 //       Access: Published
 //  Description: Closes a file opened by a previous call to
@@ -603,7 +630,7 @@ close_read_file(istream *stream) const {
     // the stream pointer does not call the appropriate global delete
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
-#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~istream();
     (*global_operator_delete)(stream);
 #else

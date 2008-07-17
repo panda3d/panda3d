@@ -35,7 +35,6 @@ PStatCollector PStatClient::_heap_single_size_pcollector("System memory:Heap:Sin
 PStatCollector PStatClient::_heap_single_other_size_pcollector("System memory:Heap:Single:Other");
 PStatCollector PStatClient::_heap_array_size_pcollector("System memory:Heap:Array");
 PStatCollector PStatClient::_heap_array_other_size_pcollector("System memory:Heap:Array:Other");
-PStatCollector PStatClient::_heap_interpreter_size_pcollector("System memory:Heap:Interpreter");
 PStatCollector PStatClient::_heap_external_size_pcollector("System memory:Heap:External");
 PStatCollector PStatClient::_mmap_size_pcollector("System memory:MMap");
 
@@ -223,7 +222,6 @@ main_tick() {
     _heap_overhead_size_pcollector.set_level(MemoryUsage::get_panda_heap_overhead());
     _heap_single_size_pcollector.set_level(MemoryUsage::get_panda_heap_single_size());
     _heap_array_size_pcollector.set_level(MemoryUsage::get_panda_heap_array_size());
-    _heap_interpreter_size_pcollector.set_level(MemoryUsage::get_interpreter_size());
     _heap_external_size_pcollector.set_level(MemoryUsage::get_external_size());
 
 
