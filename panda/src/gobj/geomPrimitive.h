@@ -182,7 +182,6 @@ public:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-protected:
   INLINE CPT(GeomVertexArrayFormat) get_index_format() const;
   INLINE PT(GeomVertexArrayData) make_index_data() const;
 

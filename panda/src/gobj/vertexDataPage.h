@@ -71,7 +71,10 @@ PUBLISHED:
   INLINE bool save_to_disk();
 
   INLINE static int get_num_threads();
+  INLINE static int get_num_pending_reads();
+  INLINE static int get_num_pending_writes();
   static void stop_threads();
+  static void flush_threads();
 
 public:
   INLINE unsigned char *get_page_data(bool force);
@@ -132,6 +135,9 @@ private:
     void add_page(VertexDataPage *page, RamClass ram_class);
     void remove_page(VertexDataPage *page);
     int get_num_threads() const;
+    int get_num_pending_reads() const;
+    int get_num_pending_writes() const;
+    void start_threads(int num_threads);
     void stop_threads();
 
   private:

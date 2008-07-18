@@ -166,6 +166,36 @@ get_num_threads() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::get_num_pending_reads
+//       Access: Published, Static
+//  Description: Returns the number of read requests that are waiting
+//               to be serviced by a thread.
+////////////////////////////////////////////////////////////////////
+INLINE int VertexDataPage::
+get_num_pending_reads() {
+  MutexHolder holder(_tlock);
+  if (_thread_mgr == (PageThreadManager *)NULL) {
+    return 0;
+  }
+  return _thread_mgr->get_num_pending_reads();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::get_num_pending_writes
+//       Access: Published, Static
+//  Description: Returns the number of write requests that are waiting
+//               to be serviced by a thread.
+////////////////////////////////////////////////////////////////////
+INLINE int VertexDataPage::
+get_num_pending_writes() {
+  MutexHolder holder(_tlock);
+  if (_thread_mgr == (PageThreadManager *)NULL) {
+    return 0;
+  }
+  return _thread_mgr->get_num_pending_writes();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::get_page_data
 //       Access: Public
 //  Description: Returns a pointer to the page's data area, or NULL if

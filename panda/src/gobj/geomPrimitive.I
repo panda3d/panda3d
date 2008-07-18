@@ -391,7 +391,7 @@ add_vertices(int v1, int v2, int v3, int v4) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_index_format
-//       Access: Protected
+//       Access: Public
 //  Description: Returns a registered format appropriate for using to
 //               store the index table.
 ////////////////////////////////////////////////////////////////////
@@ -404,7 +404,7 @@ get_index_format() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::make_index_data
-//       Access: Protected
+//       Access: Public
 //  Description: Creates and returns a new, empty index table.
 ////////////////////////////////////////////////////////////////////
 INLINE PT(GeomVertexArrayData) GeomPrimitive::

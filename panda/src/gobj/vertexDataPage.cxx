@@ -154,9 +154,9 @@ VertexDataPage::
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::stop_threads
 //       Access: Published, Static
-//  Description: Call this to stop the paging thread, if it was
-//               started.  This may block until all of the thread's
-//               pending tasks have been completed.
+//  Description: Call this to stop the paging threads, if they were
+//               started.  This may block until all of the pending
+//               tasks have been completed.
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 stop_threads() {
@@ -171,6 +171,32 @@ stop_threads() {
     gobj_cat.info()
       << "Stopping vertex paging threads.\n";
     thread_mgr->stop_threads();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::flush_threads
+//       Access: Published, Static
+//  Description: Waits for all of the pending thread tasks to finish
+//               before returning.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+flush_threads() {
+  int num_threads = vertex_data_page_threads;
+  if (num_threads == 0) {
+    stop_threads();
+    return;
+  }
+
+  PT(PageThreadManager) thread_mgr;
+  {
+    MutexHolder holder(_tlock);
+    thread_mgr = _thread_mgr;
+  }
+
+  if (thread_mgr != (PageThreadManager *)NULL) {
+    thread_mgr->stop_threads();
+    thread_mgr->start_threads(num_threads);
   }
 }
 
@@ -641,14 +667,7 @@ PageThreadManager(int num_threads) :
   _shutdown(false),
   _pending_cvar(_tlock)
 {
-  _threads.reserve(num_threads);
-  for (int i = 0; i < num_threads; ++i) {
-    ostringstream name_strm;
-    name_strm << "VertexDataPage" << i;
-    PT(PageThread) thread = new PageThread(this, name_strm.str());
-    thread->start(TP_low, true);
-    _threads.push_back(thread);
-  }
+  start_threads(num_threads);
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -750,6 +769,49 @@ get_num_threads() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::get_num_pending_reads
+//       Access: Public
+//  Description: Returns the number of read requests waiting on the
+//               queue.  Assumes _tlock is held.
+////////////////////////////////////////////////////////////////////
+int VertexDataPage::PageThreadManager::
+get_num_pending_reads() const {
+  return (int)_pending_reads.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::get_num_pending_writes
+//       Access: Public
+//  Description: Returns the number of write requests waiting on the
+//               queue.  Assumes _tlock is held.
+////////////////////////////////////////////////////////////////////
+int VertexDataPage::PageThreadManager::
+get_num_pending_writes() const {
+  return (int)_pending_writes.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::PageThreadManager::start_threads
+//       Access: Public
+//  Description: Adds the indicated of threads to the list of active
+//               threads.  Assumes _tlock is *not* held.
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::PageThreadManager::
+start_threads(int num_threads) {
+  MutexHolder holder(_tlock);
+  _shutdown = false;
+
+  _threads.reserve(num_threads);
+  for (int i = 0; i < num_threads; ++i) {
+    ostringstream name_strm;
+    name_strm << "VertexDataPage" << _threads.size();
+    PT(PageThread) thread = new PageThread(this, name_strm.str());
+    thread->start(TP_low, true);
+    _threads.push_back(thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::PageThreadManager::stop_threads
 //       Access: Public
 //  Description: Signals all the threads to stop and waits for them.
@@ -758,14 +820,16 @@ get_num_threads() const {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThreadManager::
 stop_threads() {
+  PageThreads threads;
   {
     MutexHolder holder(_tlock);
     _shutdown = true;
     _pending_cvar.signal_all();
+    threads.swap(_threads);
   }
 
   PageThreads::iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+  for (ti = threads.begin(); ti != threads.end(); ++ti) {
     PageThread *thread = (*ti);
     thread->join();
   }
