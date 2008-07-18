@@ -196,6 +196,7 @@ flush_threads() {
 
   if (thread_mgr != (PageThreadManager *)NULL) {
     thread_mgr->stop_threads();
+    MutexHolder holder(_tlock);
     thread_mgr->start_threads(num_threads);
   }
 }
@@ -794,11 +795,10 @@ get_num_pending_writes() const {
 //     Function: VertexDataPage::PageThreadManager::start_threads
 //       Access: Public
 //  Description: Adds the indicated of threads to the list of active
-//               threads.  Assumes _tlock is *not* held.
+//               threads.  Assumes _tlock is held.
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThreadManager::
 start_threads(int num_threads) {
-  MutexHolder holder(_tlock);
   _shutdown = false;
 
   _threads.reserve(num_threads);
