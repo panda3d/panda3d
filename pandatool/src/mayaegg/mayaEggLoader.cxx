@@ -669,11 +669,14 @@ public:
   MStringArray        _eggObjectTypes;
   VertTable  _vert_tab;
   
+  bool                _renameTrans;
+
   int GetVert(EggVertex *vert, EggGroup *context);
   EggGroup *GetControlJoint(void);
 
   virtual void ConnectTextures(void) = 0;
   void AssignNames(void);
+  void AddEggFlag(MString);
 };
 
 // [gjeon] moved from MayaEggMesh to MayaEggGeom
@@ -768,10 +771,28 @@ void MayaEggGeom::AssignNames(void)
   if ((nsize > 6) && (name.rfind(".verts")==(nsize-6))) {
     name.resize(nsize-6);
   }
+  if ((nsize > 4) && (name.rfind(".cvs")==(nsize-4))) {
+    name.resize(nsize-4);
+  }
+
   MFnDependencyNode dnshape(_shapeNode);
   MFnDependencyNode dntrans(_transNode);
-  dnshape.setName(MString(name.c_str())+"Shape");
-  dntrans.setName(MString(name.c_str()));
+
+  if (_renameTrans) {
+    dntrans.setName(MString(name.c_str()));
+  }
+
+  string shape_name = string(dntrans.name().asChar());
+  string numbers ("0123456789");
+  size_t found;
+  
+  found=shape_name.find_last_not_of(numbers);
+  if (found!=string::npos)
+    shape_name.insert(found+1, "Shape");
+  else
+    shape_name.append("Shape");
+
+  dnshape.setName(MString(shape_name.c_str()));
 }
 
 #define CTRLJOINT_DEFORM ((EggGroup*)((char*)(-1)))
@@ -802,6 +823,19 @@ EggGroup *MayaEggGeom::GetControlJoint(void)
     return result;
   default:
     return CTRLJOINT_DEFORM;
+  }
+}
+
+void MayaEggGeom::AddEggFlag(MString fieldName) {
+  bool addNewFlag = true;
+  for (unsigned i = 0; i < _eggObjectTypes.length(); i++) {
+    if (_eggObjectTypes[i] == fieldName) {
+      addNewFlag = false;
+      break;
+    }
+  }
+  if (addNewFlag) {
+    _eggObjectTypes.append(fieldName);
   }
 }
 
@@ -887,6 +921,7 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
     result->_faceColorArray.clear();
     result->_faceIndices.clear();
     result->_eggObjectTypes.clear();
+    result->_renameTrans = false;
     _mesh_tab[pool] = result;
   }
   return result;
@@ -990,7 +1025,7 @@ MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *pa
     result->_vForm = MFnNurbsSurface::kClosed;
 
     result->_eggObjectTypes.clear();
-
+    result->_renameTrans = false;
     _surface_tab[pool] = result;
   }
   return result;
@@ -1310,16 +1345,12 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     
     // [gjeon] to handle double-sided flag
     if (poly->get_bface_flag()) {
-      bool addNewFlag = true;
-      for (unsigned i = 0; i < mesh->_eggObjectTypes.length(); i++) {
-        if (mesh->_eggObjectTypes[i] == "double-sided") {
-          addNewFlag = false;
-          break;
-        }
-      }
-      if (addNewFlag) {
-        mesh->_eggObjectTypes.append("double-sided");
-      }
+      mesh->AddEggFlag("double-sided");
+    }
+
+    // [gjeon] to handle model flag
+    if (context->get_model_flag()) {
+      mesh->AddEggFlag("model");
     }
 
   } else if (node->is_of_type(EggNurbsSurface::get_class_type())) {
@@ -1390,16 +1421,12 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
 
     // [gjeon] to handle double-sided flag
     if (eggNurbsSurface->get_bface_flag()) {
-      bool addNewFlag = true;
-      for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
-        if (surface->_eggObjectTypes[i] == "double-sided") {
-          addNewFlag = false;
-          break;
-        }
-      }
-      if (addNewFlag) {
-        surface->_eggObjectTypes.append("double-sided");
-      }
+      surface->AddEggFlag("double-sided");
+    }
+
+    // [gjeon] to handle model flag
+    if (context->get_model_flag()) {
+      surface->AddEggFlag("model");
     }
 
   } else if (node->is_of_type(EggComment::get_class_type())) {
@@ -1521,6 +1548,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
         mayaloader_cat.debug() << "mesh's parent (group) : " << parentNode->_name << endl;
       }
     } else {
+      mesh->_renameTrans = true;
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << "mesh's parent (null) : " << endl;
       }
@@ -1539,9 +1567,12 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
                                   mesh->_vertexArray, mesh->_polygonCounts, mesh->_polygonConnects,
                                   mesh->_uarray, mesh->_varray,
                                   parent, &status);
-
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "transNode created." << endl;
+    }
+
+    if (!mesh->_renameTrans) {
+      mesh->_transNode = parent;
     }
 
     // [gjeon] add eggFlag attributes it any exists
@@ -1627,6 +1658,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
         mayaloader_cat.debug() << "surface's parent (group) : " << parentNode->_name << endl;
       }
     } else {
+      surface->_renameTrans = true;
       if (mayaloader_cat.is_debug()) {
         mayaloader_cat.debug() << "surface's parent (null) : " << endl;
       }
@@ -1635,6 +1667,10 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     surface->_transNode = mfnNurbsSurface.create(surface->_cvArray, surface->_uKnotArray, surface->_vKnotArray,
                                                  surface->_uDegree, surface->_vDegree, surface->_uForm, surface->_vForm,
                                                  true, parent, &status);
+
+    if (!surface->_renameTrans) {
+      surface->_transNode = parent;
+    }
 
     // [gjeon] add eggFlag attributes it any exists   
     for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
