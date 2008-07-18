@@ -113,3 +113,15 @@ operator < (const GeomTransformer::NewCollectedKey &other) const {
   }
   return _name < other._name;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::VertexDataAssoc::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE GeomTransformer::VertexDataAssoc::
+VertexDataAssoc() {
+  _might_have_unused = false;
+}
+
+

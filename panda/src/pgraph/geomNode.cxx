@@ -291,6 +291,8 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+
+  transformer.register_vertices(this);
 }
 
 ////////////////////////////////////////////////////////////////////

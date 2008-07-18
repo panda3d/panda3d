@@ -141,7 +141,9 @@ flatten(PandaNode *root, int combine_siblings_bits) {
 int SceneGraphReducer::
 remove_column(PandaNode *root, const InternalName *column) {
   PStatTimer timer(_remove_column_collector);
-  return r_remove_column(root, column, _transformer);
+  int count = r_remove_column(root, column, _transformer);
+  _transformer.finish_apply();
+  return count;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +158,9 @@ remove_column(PandaNode *root, const InternalName *column) {
 int SceneGraphReducer::
 make_compatible_state(PandaNode *root) {
   PStatTimer timer(_compatible_state_collector);
-  return r_make_compatible_state(root, _transformer);
+  int count = r_make_compatible_state(root, _transformer);
+  _transformer.finish_apply();
+  return count;
 }
 
 ////////////////////////////////////////////////////////////////////

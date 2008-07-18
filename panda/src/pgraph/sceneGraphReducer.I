@@ -100,6 +100,7 @@ apply_attribs(PandaNode *node, int attrib_types) {
   PStatTimer timer(_apply_collector);
   AccumulatedAttribs attribs;
   r_apply_attribs(node, attribs, attrib_types, _transformer);
+  _transformer.finish_apply();
 }
 
 ////////////////////////////////////////////////////////////////////

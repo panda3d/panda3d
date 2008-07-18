@@ -51,6 +51,9 @@ public:
   INLINE int get_max_collect_vertices() const;
   INLINE void set_max_collect_vertices(int max_collect_vertices);
 
+  void register_vertices(Geom *geom);
+  void register_vertices(GeomNode *node);
+
   bool transform_vertices(Geom *geom, const LMatrix4f &mat);
   bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
 
@@ -77,6 +80,8 @@ public:
   bool doubleside(GeomNode *node);
   bool reverse(GeomNode *node);
 
+  void finish_apply();
+
   int collect_vertex_data(Geom *geom, int collect_bits, bool format_only);
   int collect_vertex_data(GeomNode *node, int collect_bits, bool format_only);
   int finish_collect(bool format_only);
@@ -86,6 +91,30 @@ public:
 private:
   int _max_collect_vertices;
 
+  typedef pvector<PT(Geom) > GeomList;
+
+  // Keeps track of the Geoms that are associated with a particular
+  // GeomVertexData.  Also tracks whether the vertex data might have
+  // unused vertices because of our actions.
+  class VertexDataAssoc {
+  public:
+    INLINE VertexDataAssoc();
+    bool _might_have_unused;
+    GeomList _geoms;
+    void remove_unused_vertices(const GeomVertexData *vdata);
+  };
+  typedef pmap<CPT(GeomVertexData), VertexDataAssoc> VertexDataAssocMap;
+  VertexDataAssocMap _vdata_assoc;
+
+  // Corresponds to a new GeomVertexData created as needed during an
+  // apply operation.
+  class NewVertexData {
+  public:
+    CPT(GeomVertexData) _vdata;
+  };
+
+  // The table of GeomVertexData objects that have been transformed by
+  // a particular matrix.
   class SourceVertices {
   public:
     INLINE bool operator < (const SourceVertices &other) const;
@@ -93,9 +122,11 @@ private:
     LMatrix4f _mat;
     CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceVertices, PT(GeomVertexData) > NewVertices;
+  typedef pmap<SourceVertices, NewVertexData> NewVertices;
   NewVertices _vertices;
 
+  // The table of GeomVertexData objects whose texture coordinates
+  // have been transformed by a particular matrix.
   class SourceTexCoords {
   public:
     INLINE bool operator < (const SourceTexCoords &other) const;
@@ -105,9 +136,11 @@ private:
     CPT(InternalName) _to;
     CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceTexCoords, PT(GeomVertexData) > NewTexCoords;
+  typedef pmap<SourceTexCoords, NewVertexData> NewTexCoords;
   NewTexCoords _texcoords;
 
+  // The table of GeomVertexData objects whose colors have been
+  // modified.
   class SourceColors {
   public:
     INLINE bool operator < (const SourceColors &other) const;
@@ -115,7 +148,7 @@ private:
     LVecBase4f _color;
     CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceColors, CPT(GeomVertexData) > NewColors;
+  typedef pmap<SourceColors, NewVertexData> NewColors;
 
   // We have two concepts of colors: the "fixed" colors, which are
   // slapped in as a complete replacement of the original colors
@@ -123,7 +156,9 @@ private:
   // modified from the original colors (e.g. via a ColorScaleAttrib).
   NewColors _fcolors, _tcolors;
 
-  // For set_format(): record (format + vertex_data) -> vertex_data.
+  // The table of GeomVertexData objects whose vertex formats have
+  // been modified. For set_format(): record (format + vertex_data) ->
+  // vertex_data.
   class SourceFormat {
   public:
     INLINE bool operator < (const SourceFormat &other) const;
@@ -131,10 +166,12 @@ private:
     CPT(GeomVertexFormat) _format;
     CPT(GeomVertexData) _vertex_data;
   };
-  typedef pmap<SourceFormat, PT(GeomVertexData) > NewFormat;
+  typedef pmap<SourceFormat, NewVertexData> NewFormat;
   NewFormat _format;
 
-  typedef pmap<CPT(GeomVertexData), CPT(GeomVertexData) > ReversedNormals;
+  // The table of GeomVertexData objects whose normals have been
+  // reversed.
+  typedef pmap<CPT(GeomVertexData), NewVertexData> ReversedNormals;
   ReversedNormals _reversed_normals;
 
   class NewCollectedKey {

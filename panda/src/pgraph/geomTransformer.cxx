@@ -70,6 +70,42 @@ GeomTransformer::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::register_vertices
+//       Access: Public
+//  Description: Records the association of the Geom with its
+//               GeomVertexData, for the purpose of later removing
+//               unused vertices.
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::
+register_vertices(Geom *geom) {
+  VertexDataAssoc &assoc = _vdata_assoc[geom->get_vertex_data()];
+  assoc._geoms.push_back(geom);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::register_vertices
+//       Access: Public
+//  Description: Records the association of the Geom with its
+//               GeomVertexData, for the purpose of later removing
+//               unused vertices.
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::
+register_vertices(GeomNode *node) {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
+    GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
+    GeomNode::GeomList::iterator gi;
+    GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+      GeomNode::GeomEntry &entry = (*gi);
+      PT(Geom) geom = entry._geom.get_write_pointer();
+      register_vertices(geom);
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::transform_vertices
 //       Access: Public
 //  Description: Transforms the vertices and the normals in the
@@ -85,15 +121,15 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
   sv._mat = mat;
   sv._vertex_data = geom->get_vertex_data();
   
-  PT(GeomVertexData) &new_data = _vertices[sv];
-  if (new_data.is_null()) {
+  NewVertexData &new_data = _vertices[sv];
+  if (new_data._vdata.is_null()) {
     // We have not yet converted these vertices.  Do so now.
-    new_data = new GeomVertexData(*sv._vertex_data);
-    CPT(GeomVertexFormat) format = new_data->get_format();
+    PT(GeomVertexData) new_vdata = new GeomVertexData(*sv._vertex_data);
+    CPT(GeomVertexFormat) format = new_vdata->get_format();
     
     int ci;
     for (ci = 0; ci < format->get_num_points(); ci++) {
-      GeomVertexRewriter data(new_data, format->get_point(ci));
+      GeomVertexRewriter data(new_vdata, format->get_point(ci));
       
       while (!data.is_at_end()) {
         const LPoint3f &point = data.get_data3f();
@@ -101,16 +137,21 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       }
     }
     for (ci = 0; ci < format->get_num_vectors(); ci++) {
-      GeomVertexRewriter data(new_data, format->get_vector(ci));
+      GeomVertexRewriter data(new_vdata, format->get_vector(ci));
       
       while (!data.is_at_end()) {
         const LVector3f &vector = data.get_data3f();
         data.set_data3f(normalize(vector * mat));
       }
     }
+    new_data._vdata = new_vdata;
   }
   
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  if (sv._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[sv._vertex_data]._might_have_unused = true;
+  }
 
   return true;
 }
@@ -175,37 +216,45 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
   st._to = to_name;
   st._vertex_data = geom->get_vertex_data();
   
-  PT(GeomVertexData) &new_data = _texcoords[st];
-  if (new_data.is_null()) {
+  NewVertexData &new_data = _texcoords[st];
+  if (new_data._vdata.is_null()) {
     if (!st._vertex_data->has_column(from_name)) {
       // No from_name column; no change.
       return false;
     }
+
+    PT(GeomVertexData) new_vdata;
     
     // We have not yet converted these texcoords.  Do so now.
     if (st._vertex_data->has_column(to_name)) {
-      new_data = new GeomVertexData(*st._vertex_data);
+      new_vdata = new GeomVertexData(*st._vertex_data);
     } else {
       const GeomVertexColumn *old_column = 
         st._vertex_data->get_format()->get_column(from_name);
-      new_data = st._vertex_data->replace_column
+      new_vdata = st._vertex_data->replace_column
         (to_name, old_column->get_num_components(),
          old_column->get_numeric_type(),
          old_column->get_contents());
     }
     
-    CPT(GeomVertexFormat) format = new_data->get_format();
+    CPT(GeomVertexFormat) format = new_vdata->get_format();
     
-    GeomVertexWriter tdata(new_data, to_name);
-    GeomVertexReader fdata(new_data, from_name);
+    GeomVertexWriter tdata(new_vdata, to_name);
+    GeomVertexReader fdata(new_vdata, from_name);
     
     while (!fdata.is_at_end()) {
       const LPoint4f &coord = fdata.get_data4f();
       tdata.set_data4f(coord * mat);
     }
+    new_data._vdata = new_vdata;
   }
   
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (st._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[st._vertex_data]._might_have_unused = true;
+  }
 
   return true;
 }
@@ -258,18 +307,23 @@ set_color(Geom *geom, const Colorf &color) {
   sc._color = color;
   sc._vertex_data = geom->get_vertex_data();
   
-  CPT(GeomVertexData) &new_data = _fcolors[sc];
-  if (new_data.is_null()) {
+  NewVertexData &new_data = _fcolors[sc];
+  if (new_data._vdata.is_null()) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
-      new_data = sc._vertex_data->set_color(color);
+      new_data._vdata = sc._vertex_data->set_color(color);
     } else {
-      new_data = sc._vertex_data->set_color
+      new_data._vdata = sc._vertex_data->set_color
         (color, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
   }
   
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (sc._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[sc._vertex_data]._might_have_unused = true;
+  }
 
   return true;
 }
@@ -319,18 +373,23 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
   sc._color = scale;
   sc._vertex_data = geom->get_vertex_data();
   
-  CPT(GeomVertexData) &new_data = _tcolors[sc];
-  if (new_data.is_null()) {
+  NewVertexData &new_data = _tcolors[sc];
+  if (new_data._vdata.is_null()) {
     // We have not yet converted these colors.  Do so now.
     if (sc._vertex_data->has_column(InternalName::get_color())) {
-      new_data = sc._vertex_data->scale_color(scale);
+      new_data._vdata = sc._vertex_data->scale_color(scale);
     } else {
-      new_data = sc._vertex_data->set_color
+      new_data._vdata = sc._vertex_data->set_color
         (scale, 1, Geom::NT_packed_dabc, Geom::C_color);
     }
   }
   
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (sc._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[sc._vertex_data]._might_have_unused = true;
+  }
 
   return true;
 }
@@ -408,19 +467,26 @@ set_format(Geom *geom, const GeomVertexFormat *new_format) {
   sf._format = new_format;
   sf._vertex_data = geom->get_vertex_data();
   
-  PT(GeomVertexData) &new_data = _format[sf];
-  if (new_data.is_null()) {
+  NewVertexData &new_data = _format[sf];
+  if (new_data._vdata.is_null()) {
     if (sf._vertex_data->get_format() == new_format) {
       // No change.
       return false;
     }
 
     // We have not yet converted this vertex data.  Do so now.
-    new_data = new GeomVertexData(*sf._vertex_data);
-    new_data->set_format(new_format);
+    PT(GeomVertexData) new_vdata = new GeomVertexData(*sf._vertex_data);
+    new_vdata->set_format(new_format);
+    new_data._vdata = new_vdata;
   }
   
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (sf._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[sf._vertex_data]._might_have_unused = true;
+  }
+
   return true;
 }
 
@@ -594,17 +660,23 @@ bool GeomTransformer::
 reverse_normals(Geom *geom) {
   nassertr(geom != (Geom *)NULL, false);
   CPT(GeomVertexData) orig_data = geom->get_vertex_data();
-  CPT(GeomVertexData) &new_data = _reversed_normals[orig_data];
-  if (new_data.is_null()) {
-    new_data = orig_data->reverse_normals();
+  NewVertexData &new_data = _reversed_normals[orig_data];
+  if (new_data._vdata.is_null()) {
+    new_data._vdata = orig_data->reverse_normals();
   }
 
-  if (new_data == orig_data) {
+  if (new_data._vdata == orig_data) {
     // No change.
     return false;
   }
 
-  geom->set_vertex_data(new_data);
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (orig_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[orig_data]._might_have_unused = true;
+  }
+
   return true;
 }
 
@@ -681,6 +753,37 @@ reverse(GeomNode *node) {
   }
   
   return (num_geoms != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::finish_apply
+//       Access: Public
+//  Description: Should be called after performing any
+//               operations--particularly
+//               PandaNode::apply_attribs_to_vertices()--that might
+//               result in new GeomVertexData objects being duplicated
+//               and modified.  This walks through those newly
+//               duplicated objects and ensures that redundant unused
+//               vertices have not been created, removing them if they
+//               have.
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::
+finish_apply() {
+  VertexDataAssocMap::iterator vi;
+  for (vi = _vdata_assoc.begin(); vi != _vdata_assoc.end(); ++vi) {
+    const GeomVertexData *vdata = (*vi).first;
+    VertexDataAssoc &assoc = (*vi).second;
+    if (assoc._might_have_unused) {
+      assoc.remove_unused_vertices(vdata);
+    }
+  }
+  _vdata_assoc.clear();
+
+  _texcoords.clear();
+  _fcolors.clear();
+  _tcolors.clear();
+  _format.clear();
+  _reversed_normals.clear();
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -1205,5 +1308,148 @@ update_geoms() {
   for (sgi = _source_geoms.begin(); sgi != _source_geoms.end(); ++sgi) {
     SourceGeom &sg = (*sgi);
     sg._geom->offset_vertices(_new_data, sg._vertex_offset);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::VertexDataAssoc::remove_unused_vertices
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void GeomTransformer::VertexDataAssoc::
+remove_unused_vertices(const GeomVertexData *vdata) {
+  if (_geoms.empty()) {
+    // Trivial case.
+    return;
+  }
+
+  PT(Thread) current_thread = Thread::get_current_thread();
+
+  BitArray referenced_vertices;
+  bool any_referenced = false;
+  GeomList::iterator gi;
+  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
+    Geom *geom = (*gi);
+    if (geom->get_vertex_data() != vdata) {
+      continue;
+    }
+
+    any_referenced = true;
+    int num_primitives = geom->get_num_primitives();
+    for (int i = 0; i < num_primitives; ++i) {
+      CPT(GeomPrimitive) prim = geom->get_primitive(i);
+
+      GeomPrimitivePipelineReader reader(prim, current_thread);
+      int num_vertices = reader.get_num_vertices();
+      for (int vi = 0; vi < num_vertices; ++vi) {
+        referenced_vertices.set_bit(reader.get_vertex(vi));
+      }
+    }
+  }
+
+  if (!any_referenced) {
+    return;
+  }
+
+  int num_vertices = vdata->get_num_rows();
+  int new_num_vertices = referenced_vertices.get_num_on_bits();
+  if (num_vertices <= new_num_vertices) {
+    // All vertices are used.
+    nassertv(num_vertices == new_num_vertices);
+    return;
+  }
+
+  // Remap the vertices.
+  int *remap_array = (int *)alloca(sizeof(int) * num_vertices);
+  int new_index = 0;
+  int index;
+  int next_index = 0;
+  for (index = 0; index < num_vertices; ++index) {
+    if (referenced_vertices.get_bit(index)) {
+      while (next_index <= index) {
+        remap_array[next_index] = new_index;
+        ++next_index;
+      }
+      ++new_index;
+    }
+  }
+  while (next_index < num_vertices) {
+    remap_array[next_index] = new_num_vertices - 1;
+    ++next_index;
+  }
+
+  // Now recopy the actual vertex data, one array at a time.
+  PT(GeomVertexData) new_vdata = new GeomVertexData(*vdata);
+  new_vdata->unclean_set_num_rows(new_num_vertices);
+
+  int num_arrays = vdata->get_num_arrays();
+  nassertv(num_arrays == new_vdata->get_num_arrays());
+
+  GeomVertexDataPipelineReader reader(vdata, current_thread);
+  reader.check_array_readers();
+  GeomVertexDataPipelineWriter writer(new_vdata, true, current_thread);
+  writer.check_array_writers();
+
+  for (int a = 0; a < num_arrays; ++a) {
+    const GeomVertexArrayDataHandle *array_reader = reader.get_array_reader(a);
+    GeomVertexArrayDataHandle *array_writer = writer.get_array_writer(a);
+
+    int stride = array_reader->get_array_format()->get_stride();
+    nassertv(stride == array_writer->get_array_format()->get_stride());
+
+    int new_index = 0;
+    int index;
+    for (index = 0; index < num_vertices; ++index) {
+      if (referenced_vertices.get_bit(index)) {
+        array_writer->copy_subdata_from(new_index * stride, stride,
+                                        array_reader,
+                                        index * stride, stride);
+        ++new_index;
+      }
+    }
+  }
+
+  // Update the subranges in the TransformBlendTable, if any.
+  PT(TransformBlendTable) tbtable = new_vdata->modify_transform_blend_table();
+  if (!tbtable.is_null()) {
+    const SparseArray &rows = tbtable->get_rows();
+    SparseArray new_rows;
+    int num_subranges = rows.get_num_subranges();
+    for (int si = 0; si < num_subranges; ++si) {
+      int from = rows.get_subrange_begin(si);
+      int to = rows.get_subrange_end(si);
+      nassertv(from >= 0 && from < num_vertices && to > from && to <= num_vertices);
+      int new_from = remap_array[from];
+      int new_to = remap_array[to - 1] + 1;
+      nassertv(new_from >= 0 && new_from < new_num_vertices && new_to >= new_from && new_to <= new_num_vertices);
+      new_rows.set_range(new_from, new_to - new_from);
+    }
+    tbtable->set_rows(new_rows);
+  }
+
+  // Finally, reindex the Geoms.
+  for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
+    Geom *geom = (*gi);
+    if (geom->get_vertex_data() != vdata) {
+      continue;
+    }
+
+    int num_primitives = geom->get_num_primitives();
+    for (int i = 0; i < num_primitives; ++i) {
+      PT(GeomPrimitive) prim = geom->modify_primitive(i);
+      prim->make_indexed();
+      PT(GeomVertexArrayData) vertices = prim->modify_vertices();
+      GeomVertexRewriter rewriter(vertices, 0, current_thread);
+
+      while (!rewriter.is_at_end()) {
+        index = rewriter.get_data1i();
+        nassertv(index >= 0 && index < num_vertices);
+        new_index = remap_array[index];
+        nassertv(new_index >= 0 && new_index < new_num_vertices);
+        rewriter.set_data1i(new_index);
+      }
+    }
+
+    geom->set_vertex_data(new_vdata);
   }
 }
