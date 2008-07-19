@@ -20,6 +20,7 @@ VertexElementArray::VertexElementArray (int maximum_vertex_elements) {
   this -> offset = 0;
   this -> total_elements = 0;
   this -> maximum_vertex_elements = maximum_vertex_elements;
+  this -> total_texture_coordinate_elements = 0;
   this -> vertex_element_array = new DIRECT_3D_VERTEX_ELEMENT [maximum_vertex_elements];
   memset (this -> vertex_element_array, 0, sizeof (DIRECT_3D_VERTEX_ELEMENT) * maximum_vertex_elements);
   this -> vertex_element_type_array = new VERTEX_ELEMENT_TYPE [maximum_vertex_elements];
@@ -229,7 +230,8 @@ void VertexElementArray::add_u_vertex_element (int stream_index) {
     vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
 
     vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
-    vertex_element -> UsageIndex = 0;
+    vertex_element -> UsageIndex = this -> total_texture_coordinate_elements;
+    this -> total_texture_coordinate_elements++;
 
     this -> offset += 4;
     this -> total_elements++;
@@ -252,7 +254,8 @@ void VertexElementArray::add_uv_vertex_element (int stream_index) {
     vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
 
     vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
-    vertex_element -> UsageIndex = 0;
+    vertex_element -> UsageIndex = this -> total_texture_coordinate_elements;
+    this -> total_texture_coordinate_elements++;
 
     this -> offset += 8;
     this -> total_elements++;
@@ -275,7 +278,8 @@ void VertexElementArray::add_uvw_vertex_element (int stream_index) {
     vertex_element -> Method = D3DDECLMETHOD_DEFAULT;
 
     vertex_element -> Usage = D3DDECLUSAGE_TEXCOORD;
-    vertex_element -> UsageIndex = 0;
+    vertex_element -> UsageIndex = this -> total_texture_coordinate_elements;
+    this -> total_texture_coordinate_elements++;
 
     this -> offset += 12;
     this -> total_elements++;

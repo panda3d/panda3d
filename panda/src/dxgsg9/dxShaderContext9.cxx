@@ -496,7 +496,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
 
             if (false) {
 
-            } else if (name == InternalName::get_vertex ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_vertex ( )) {
 
               if (numeric_type == Geom::NT_float32) {
                 switch (num_values) {
@@ -514,7 +514,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.error ( ) << "VE ERROR: invalid vertex type " << numeric_type << "\n";
               }
 
-            } else if (name == InternalName::get_texcoord ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_texcoord ( )) {
 
               if (numeric_type == Geom::NT_float32) {
                 switch (num_values)
@@ -536,7 +536,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.error ( ) << "VE ERROR: invalid texture coordinate type " << numeric_type << "\n";
               }
 
-            } else if (name == InternalName::get_normal ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_normal ( )) {
 
               if (numeric_type == Geom::NT_float32) {
                 switch (num_values)
@@ -552,7 +552,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.error ( ) << "VE ERROR: invalid normal type " << numeric_type << "\n";
               }
 
-            } else if (name == InternalName::get_binormal ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_binormal ( )) {
 
               if (numeric_type == Geom::NT_float32) {
                 switch (num_values)
@@ -568,7 +568,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.error ( ) << "VE ERROR: invalid binormal type " << numeric_type << "\n";
               }
 
-            } else if (name == InternalName::get_tangent ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_tangent ( )) {
 
               if (numeric_type == Geom::NT_float32) {
                 switch (num_values)
@@ -584,7 +584,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.error ( ) << "VE ERROR: invalid tangent type " << numeric_type << "\n";
               }
 
-            } else if (name == InternalName::get_color ( )) {
+            } else if (name -> get_top ( ) == InternalName::get_color ( )) {
 
               if (numeric_type == Geom::NT_packed_dcba ||
                   numeric_type == Geom::NT_packed_dabc ||

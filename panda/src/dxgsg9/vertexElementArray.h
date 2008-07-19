@@ -85,6 +85,7 @@ public:
   int offset;
   int total_elements;
   int maximum_vertex_elements;
+  int total_texture_coordinate_elements;
   int vertex_element_type_counter_array [VS_TOTAL_TYPES];
   DIRECT_3D_VERTEX_ELEMENT *vertex_element_array;
   VERTEX_ELEMENT_TYPE *vertex_element_type_array;
