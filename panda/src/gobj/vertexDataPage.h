@@ -165,10 +165,37 @@ private:
   size_t _block_size;
 
   //Mutex _lock;  // Inherited from SimpleAllocator.  Protects above members.
-
   RamClass _pending_ram_class;  // Protected by _tlock.
 
   VertexDataBook *_book;  // never changes.
+
+  enum { deflate_page_size = 1024 };
+
+  // We build up a temporary linked list of these while deflating
+  // (compressing) the vertex data in-memory.
+  class DeflatePage {
+  public:
+    DeflatePage() {
+      _used_size = 0;
+      _next = NULL;
+    }
+    ALLOC_DELETED_CHAIN(DeflatePage);
+
+    unsigned char _buffer[deflate_page_size];
+    size_t _used_size;
+    DeflatePage *_next;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "VertexDataPage::DeflatePage");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+  };
 
   static SimpleLru _resident_lru;
   static SimpleLru _compressed_lru;

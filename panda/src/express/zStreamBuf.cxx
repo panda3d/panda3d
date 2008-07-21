@@ -19,6 +19,18 @@
 #include "pnotify.h"
 #include "config_express.h"
 
+#if !defined(USE_MEMORY_NOWRAPPERS)
+// Define functions that hook zlib into panda's memory allocation system.
+static void *
+do_zlib_alloc(voidpf opaque, uInt items, uInt size) {
+  return PANDA_MALLOC_ARRAY(items * size);
+}
+static void 
+do_zlib_free(voidpf opaque, voidpf address) {
+  PANDA_FREE_ARRAY(address);
+}
+#endif  !USE_MEMORY_NOWRAPPERS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ZStreamBuf::Constructor
 //       Access: Public
@@ -70,8 +82,13 @@ open_read(istream *source, bool owns_source) {
 
   _z_source.next_in = Z_NULL;
   _z_source.avail_in = 0;
+#ifdef USE_MEMORY_NOWRAPPERS
   _z_source.zalloc = Z_NULL;
   _z_source.zfree = Z_NULL;
+#else
+  _z_source.zalloc = (alloc_func)&do_zlib_alloc;
+  _z_source.zfree = (free_func)&do_zlib_free;
+#endif
   _z_source.opaque = Z_NULL;
   _z_source.msg = "no error message";
 
@@ -116,8 +133,13 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   _dest = dest;
   _owns_dest = owns_dest;
 
+#ifdef USE_MEMORY_NOWRAPPERS
   _z_dest.zalloc = Z_NULL;
   _z_dest.zfree = Z_NULL;
+#else
+  _z_dest.zalloc = (alloc_func)&do_zlib_alloc;
+  _z_dest.zfree = (free_func)&do_zlib_free;
+#endif
   _z_dest.opaque = Z_NULL;
   _z_dest.msg = "no error message";
 

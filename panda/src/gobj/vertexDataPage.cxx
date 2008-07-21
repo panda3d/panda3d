@@ -80,6 +80,20 @@ PStatCollector VertexDataPage::_thread_wait_pcollector("Wait:Idle");
 PStatCollector VertexDataPage::_alloc_pages_pcollector("System memory:MMap:Vertex data");
 
 TypeHandle VertexDataPage::_type_handle;
+TypeHandle VertexDataPage::DeflatePage::_type_handle;
+
+#if defined(HAVE_ZLIB) && !defined(USE_MEMORY_NOWRAPPERS)
+// Define functions that hook zlib into panda's memory allocation system.
+static void *
+do_zlib_alloc(voidpf opaque, uInt items, uInt size) {
+  return PANDA_MALLOC_ARRAY(items * size);
+}
+static void 
+do_zlib_free(voidpf opaque, voidpf address) {
+  PANDA_FREE_ARRAY(address);
+}
+#endif  // HAVE_ZLIB && !USE_MEMORY_NOWRAPPERS
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Book Constructor
@@ -356,6 +370,7 @@ make_resident() {
       gobj_cat.error()
         << "Couldn't expand: zlib error " << result << "\n";
       nassert_raise("zlib error");
+      memset(new_data, 0, new_allocated_size);
     }
     nassertv(dest_len == _uncompressed_size);
 
@@ -396,28 +411,96 @@ make_compressed() {
 #ifdef HAVE_ZLIB
     PStatTimer timer(_vdata_compress_pcollector);
 
-    // According to the zlib manual, we need to provide this much
-    // buffer to the compress algorithm: 0.1% bigger plus twelve
-    // bytes.
-    uLongf buffer_size = _uncompressed_size + ((_uncompressed_size + 999) / 1000) + 12;
-    Bytef *buffer = (Bytef *)alloca(buffer_size);
+    DeflatePage *page = new DeflatePage;
+    DeflatePage *head = page;
 
-    int result = compress2(buffer, &buffer_size,
-                           _page_data, _uncompressed_size,
-                           vertex_data_compression_level);
-    if (result != Z_OK) {
-      gobj_cat.error()
-        << "Couldn't compress: zlib error " << result << "\n";
+    z_stream z_dest;
+#ifdef USE_MEMORY_NOWRAPPERS
+    z_dest.zalloc = Z_NULL;
+    z_dest.zfree = Z_NULL;
+#else
+    z_dest.zalloc = (alloc_func)&do_zlib_alloc;
+    z_dest.zfree = (free_func)&do_zlib_free;
+#endif
+
+    z_dest.opaque = Z_NULL;
+    z_dest.msg = "no error message";
+    
+    int result = deflateInit(&z_dest, vertex_data_compression_level);
+    if (result < 0) {
       nassert_raise("zlib error");
+      return;
     }
+    Thread::consider_yield();
 
-    size_t new_allocated_size = round_up(buffer_size);
+    z_dest.next_in = (Bytef *)(char *)_page_data;
+    z_dest.avail_in = _uncompressed_size;
+    size_t output_size = 0;
+
+    // Compress the data into one or more individual pages.  We have
+    // to compress it page-at-a-time, since we're not really sure how
+    // big the result will be (so we can't easily pre-allocate a
+    // buffer).
+    int flush = 0;
+    result = 0;
+    while (result != Z_STREAM_END) {
+      unsigned char *start_out = (page->_buffer + page->_used_size);
+      z_dest.next_out = (Bytef *)start_out;
+      z_dest.avail_out = (size_t)deflate_page_size - page->_used_size;
+      if (z_dest.avail_out == 0) {
+        DeflatePage *new_page = new DeflatePage;
+        page->_next = new_page;
+        page = new_page;
+        start_out = page->_buffer;
+        z_dest.next_out = (Bytef *)start_out;
+        z_dest.avail_out = deflate_page_size;
+      }
+
+      result = deflate(&z_dest, flush);
+      if (result < 0 && result != Z_BUF_ERROR) {
+        nassert_raise("zlib error");
+        return;
+      }
+      size_t bytes_produced = (size_t)((unsigned char *)z_dest.next_out - start_out);
+      page->_used_size += bytes_produced;
+      nassertv(page->_used_size <= deflate_page_size);
+      output_size += bytes_produced;
+      if (bytes_produced == 0) {
+        // If we ever produce no bytes, then start flushing the output.
+        flush = Z_FINISH;
+      }
+
+      Thread::consider_yield();
+    }
+    nassertv(z_dest.avail_in == 0);
+
+    result = deflateEnd(&z_dest);
+    nassertv(result == Z_OK);
+
+    // Now we know how big the result will be.  Allocate a buffer, and
+    // copy the data from the various pages.
+
+    size_t new_allocated_size = round_up(output_size);
     unsigned char *new_data = alloc_page_data(new_allocated_size);
-    memcpy(new_data, buffer, buffer_size);
 
+    size_t copied_size = 0;
+    unsigned char *p = new_data;
+    page = head;
+    while (page != NULL) {
+      memcpy(p, page->_buffer, page->_used_size);
+      copied_size += page->_used_size;
+      p += page->_used_size;
+      DeflatePage *next = page->_next;
+      delete page;
+      page = next;
+    }
+    nassertv(copied_size == output_size);
+    
+    // Now free the original, uncompressed data, and put this new
+    // compressed buffer in its place.
     free_page_data(_page_data, _allocated_size);
     _page_data = new_data;
-    _size = buffer_size;
+    _size = output_size;
     _allocated_size = new_allocated_size;
 
     if (gobj_cat.is_debug()) {
