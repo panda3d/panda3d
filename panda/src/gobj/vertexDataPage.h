@@ -169,7 +169,7 @@ private:
 
   VertexDataBook *_book;  // never changes.
 
-  enum { deflate_page_size = 1024 };
+  enum { deflate_page_size = 1024, inflate_page_size = 1024 };
 
   // We build up a temporary linked list of these while deflating
   // (compressing) the vertex data in-memory.

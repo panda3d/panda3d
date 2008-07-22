@@ -364,15 +364,61 @@ make_resident() {
     }
     size_t new_allocated_size = round_up(_uncompressed_size);
     unsigned char *new_data = alloc_page_data(new_allocated_size);
+    unsigned char *end_data = new_data + new_allocated_size;
     uLongf dest_len = _uncompressed_size;
-    int result = uncompress(new_data, &dest_len, _page_data, _size);
-    if (result != Z_OK) {
-      gobj_cat.error()
-        << "Couldn't expand: zlib error " << result << "\n";
+
+    z_stream z_source;
+#ifdef USE_MEMORY_NOWRAPPERS
+    z_source.zalloc = Z_NULL;
+    z_source.zfree = Z_NULL;
+#else
+    z_source.zalloc = (alloc_func)&do_zlib_alloc;
+    z_source.zfree = (free_func)&do_zlib_free;
+#endif
+
+    z_source.opaque = Z_NULL;
+    z_source.msg = "no error message";
+
+    z_source.next_in = (Bytef *)(char *)_page_data;
+    z_source.avail_in = _size;
+    z_source.next_out = (Bytef *)new_data;
+    z_source.avail_out = new_allocated_size;
+
+    int result = inflateInit(&z_source);
+    if (result < 0) {
       nassert_raise("zlib error");
-      memset(new_data, 0, new_allocated_size);
+      return;
     }
-    nassertv(dest_len == _uncompressed_size);
+    Thread::consider_yield();
+
+    size_t output_size = 0;
+
+    int flush = 0;
+    result = 0;
+    while (result != Z_STREAM_END) {
+      unsigned char *start_out = (unsigned char *)z_source.next_out;
+      nassertv(start_out < end_data);
+      z_source.avail_out = min((size_t)(end_data - start_out), (size_t)inflate_page_size);
+      nassertv(z_source.avail_out != 0);
+      result = inflate(&z_source, flush);
+      if (result < 0 && result != Z_BUF_ERROR) {
+        nassert_raise("zlib error");
+        return;
+      }
+      size_t bytes_produced = (size_t)((unsigned char *)z_source.next_out - start_out);
+      output_size += bytes_produced;
+      if (bytes_produced == 0) {
+        // If we ever produce no bytes, then start flushing the output.
+        flush = Z_FINISH;
+      }
+
+      Thread::consider_yield();
+    }
+    nassertv(z_source.avail_in == 0);
+    nassertv(output_size == _uncompressed_size);
+
+    result = inflateEnd(&z_source);
+    nassertv(result == Z_OK);
 
     free_page_data(_page_data, _allocated_size);
     _page_data = new_data;
