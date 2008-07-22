@@ -14,6 +14,7 @@ from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import SceneGraphExplorer
 from TaskManagerPanel import TaskManagerWidget
+from direct.tkwidgets import MemoryExplorer
 
 """
 Possible to add:
@@ -183,17 +184,22 @@ class DirectSessionPanel(AppShell):
         # Create the notebook pages
         notebook = Pmw.NoteBook(notebookFrame)
         notebook.pack(fill = BOTH, expand = 1)
-        envPage = notebook.add('Environment')
-        lightsPage = notebook.add('Lights')
-        gridPage = notebook.add('Grid')
-        devicePage = notebook.add('Devices')
-        tasksPage = notebook.add('Tasks')
-        scenePage = notebook.add('Scene')
+        self.createEnvPage(notebook.add('Environment'))
+        self.createLightsPage(notebook.add('Lights'))
+        self.createGridPage(notebook.add('Grid'))
+        self.createDevicePage(notebook.add('Devices'))
+        self.createTasksPage(notebook.add('Tasks'))
+        self.createMemPage(notebook.add('Memory'))
+
+        notebook.setnaturalsize()
+
+        framePane.pack(expand = 1, fill = BOTH)
+        mainFrame.pack(fill = 'both', expand = 1)
+        
         # Put this here so it isn't called right away
         notebook['raisecommand'] = self.updateInfo
-
-        ## Environment page ##
-        # Backgroud color
+       
+    def createEnvPage(self, envPage):
         bkgrdFrame = Frame(envPage, borderwidth = 2, relief = 'sunken')
 
         Label(bkgrdFrame, text = 'Background',
@@ -273,7 +279,6 @@ class DirectSessionPanel(AppShell):
         frame.pack(side = LEFT, fill = X, expand = 0)
         fovFrame.pack(fill = X, expand = 1)
 
-
         drFrame.pack(fill = BOTH, expand = 0)
 
         ## Render Style ##
@@ -305,7 +310,7 @@ class DirectSessionPanel(AppShell):
         self.toggleWireframeButton.pack(fill = X, expand = 1)
         toggleFrame.pack(side = LEFT, fill = X, expand = 1)
 
-        ## Lights page ##
+    def createLightsPage(self, lightsPage):
         # Lights #
         lightFrame = Frame(lightsPage, borderwidth = 2, relief = 'sunken')
         self.lightsButton = Menubutton(lightFrame, text = 'Lights',
@@ -470,7 +475,8 @@ class DirectSessionPanel(AppShell):
 
         lightFrame.pack(expand = 1, fill = BOTH)
 
-        ## GRID PAGE ##
+
+    def createGridPage(self, gridPage):
         Label(gridPage, text = 'Grid',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.enableGrid = BooleanVar()
@@ -524,7 +530,7 @@ class DirectSessionPanel(AppShell):
         self.gridSnapAngle['command'] = base.direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0)
 
-        ## DEVICE PAGE ##
+    def createDevicePage(self, devicePage):
         Label(devicePage, text = 'DEVICES',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
 
@@ -590,17 +596,19 @@ class DirectSessionPanel(AppShell):
             self.jbHprSF.pack(fill = X, expand = 0)
             self.bind(self.jbHprSF, 'Set joybox HPR speed multiplier')
 
-        ## TASKS PAGE ##
+    def createTasksPage(self, tasksPage):
         Label(tasksPage, text = 'TASKS',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.taskMgrPanel = TaskManagerWidget(tasksPage, taskMgr)
         self.taskMgrPanel.taskListBox['listbox_height'] = 10
 
-        notebook.setnaturalsize()
-
-        framePane.pack(expand = 1, fill = BOTH)
-        mainFrame.pack(fill = 'both', expand = 1)
-
+    def createMemPage(self, memPage):
+        self.MemExp = MemoryExplorer.MemoryExplorer(
+            memPage, nodePath = render,
+            scrolledCanvas_hull_width = 250,
+            scrolledCanvas_hull_height = 250)
+        self.MemExp.pack(fill = BOTH, expand = 1)
+            
     def toggleDirect(self):
         if self.directEnabled.get():
             base.direct.enable()
