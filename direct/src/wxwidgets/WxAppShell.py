@@ -23,6 +23,10 @@ class WxAppShell(wx.Frame):
 
     def __init__(self, *args, **kw):
         # Initialize the base class
+        if not kw.get(''):
+            kw['title'] = self.appname
+        if not kw.get('size'):
+            kw['size'] = wx.Size(self.frameWidth, self.frameHeight)
         wx.Frame.__init__(self, None, -1, *args, **kw)
 
         # Initialize the application
