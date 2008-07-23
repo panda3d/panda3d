@@ -38,10 +38,10 @@ class VertexDataBlock;
 //               cache file, if necessary.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ VertexDataPage : public SimpleAllocator, public SimpleLruPage {
-public:
+private:
   VertexDataPage(size_t book_size);
   VertexDataPage(VertexDataBook *book, size_t page_size, size_t block_size);
-  ~VertexDataPage();
+  virtual ~VertexDataPage();
 
 PUBLISHED:
   // These are used to indicate the current residency state of the

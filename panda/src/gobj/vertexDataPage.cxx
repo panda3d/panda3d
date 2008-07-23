@@ -97,7 +97,7 @@ do_zlib_free(voidpf opaque, voidpf address) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Book Constructor
-//       Access: Public
+//       Access: Private
 //  Description: This constructor is used only by VertexDataBook, to
 //               create a mostly-empty object that can be used to
 //               search for a particular page size in the set.
@@ -119,7 +119,7 @@ VertexDataPage(size_t book_size) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Constructor
-//       Access: Public
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
@@ -141,7 +141,7 @@ VertexDataPage(VertexDataBook *book, size_t page_size, size_t block_size) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::Destructor
-//       Access: Public
+//       Access: Private, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VertexDataPage::
@@ -163,6 +163,8 @@ VertexDataPage::
     free_page_data(_page_data, _allocated_size);
     _size = 0;
   }
+
+  nassertv(_book == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -240,6 +242,7 @@ changed_contiguous() {
     VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
     nassertv(pi != _book->_pages.end());
     _book->_pages.erase(pi);
+    _book = NULL;
     delete this;
     return;
   }
@@ -692,7 +695,7 @@ adjust_book_size() {
     new_size = 0;
   }
 
-  if (new_size != _book_size) {
+  if (_book != (VertexDataBook *)NULL && new_size != _book_size) {
     VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
     nassertv(pi != _book->_pages.end());
     _book->_pages.erase(pi);
