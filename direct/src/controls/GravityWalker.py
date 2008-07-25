@@ -28,6 +28,8 @@ class GravityWalker(DirectObject.DirectObject):
     wantFloorSphere = base.config.GetBool('want-floor-sphere', 0)
     earlyEventSphere = base.config.GetBool('early-event-sphere', 0)
 
+    DiagonalFactor = math.sqrt(2.) / 2.
+
     # special methods
     def __init__(self, gravity = -32.1740, standableGround=0.707,
             hardLandingForce=16.0):
@@ -501,6 +503,10 @@ class GravityWalker(DirectObject.DirectObject):
         self.rotationSpeed=not (slideLeft or slideRight) and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
+
+        if self.speed and self.slideSpeed:
+            self.speed *= GravityWalker.DiagonalFactor
+            self.slideSpeed *= GravityWalker.DiagonalFactor
 
         debugRunning = inputState.isSet("debugRunning")
         if(debugRunning):
