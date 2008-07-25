@@ -372,7 +372,8 @@ class ClassicFSM(DirectObject):
         from direct.tkpanels import FSMInspector
         FSMInspector.FSMInspector(self)
 
-
+    def isInternalStateInFlux(self):
+        return self.__internalStateInFlux
 
 
 
