@@ -39,7 +39,7 @@
 //               http://flipcode.com/articles/article_geomipmaps.pdf
 //               
 ////////////////////////////////////////////////////////////////////
-class GeoMipTerrain {
+class EXPCL_PANDA_GRUTIL GeoMipTerrain {
 PUBLISHED:
   INLINE GeoMipTerrain(const string &name);
   INLINE ~GeoMipTerrain();
