@@ -56,7 +56,7 @@ class GarbageReport(Job):
             yield None
         # don't repr the garbage list if we don't have to
         if self.notify.getDebug():
-            self.notify.debug('self.garbage == %s' % safeRepr(self.garbage))
+            self.notify.debug('self.garbage == %s' % fastRepr(self.garbage))
         del gc.garbage[:]
         if not wasOn:
             gc.set_debug(oldFlags)
@@ -79,6 +79,9 @@ class GarbageReport(Job):
                 yield None
                 """
 
+        # Py obj id -> garbage list index
+        self._id2index = {}
+
         self.referrersByReference = {}
         self.referrersByNumber = {}
 
@@ -86,8 +89,14 @@ class GarbageReport(Job):
         self.referentsByNumber = {}
 
         self.cycles = []
-        self.cycleSets = []
+        self.uniqueCycleSets = set()
         self.cycleIds = set()
+
+        # make the id->index table to speed up the next steps
+        for i in xrange(self.numGarbage):
+            self._id2index[id(self.garbage[i])] = i
+            if not (i % 20):
+                yield None
 
         # grab the referrers (pointing to garbage)
         if self._args.fullReport and (self.numGarbage != 0):
@@ -119,7 +128,7 @@ class GarbageReport(Job):
                 self.notify.info('detecting cycles...')
             for i in xrange(self.numGarbage):
                 yield None
-                for newCycles in self._getCycles(i, self.cycleSets):
+                for newCycles in self._getCycles(i, self.uniqueCycleSets):
                     yield None
                 self.cycles.extend(newCycles)
                 # if we're not doing a full report, add this cycle's IDs to the master set
@@ -137,11 +146,11 @@ class GarbageReport(Job):
         if self.numGarbage > 0:
             # make a list of the ids we will actually be printing
             if self._args.fullReport:
-                garbageIds = range(self.numGarbage)
+                garbageIndices = range(self.numGarbage)
             else:
-                garbageIds = list(self.cycleIds)
-                garbageIds.sort()
-            numGarbage = len(garbageIds)
+                garbageIndices = list(self.cycleIds)
+                garbageIndices.sort()
+            numGarbage = len(garbageIndices)
 
             # log each individual item with a number in front of it
             if not self._args.fullReport:
@@ -160,17 +169,17 @@ class GarbageReport(Job):
 
             for i in xrange(numGarbage):
                 yield None
-                id = garbageIds[i]
+                idx = garbageIndices[i]
                 if self._args.safeMode:
                     # in safe mode, don't try to repr any of the objects
-                    objStr = repr(itype(self.garbage[id]))
+                    objStr = repr(itype(self.garbage[idx]))
                 else:
-                    objStr = safeRepr(self.garbage[id])
+                    objStr = fastRepr(self.garbage[idx])
                 maxLen = 5000
                 if len(objStr) > maxLen:
                     snip = '<SNIP>'
                     objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
-                s.append(format % (id, itype(self.garbage[id]), objStr))
+                s.append(format % (idx, itype(self.garbage[idx]), objStr))
 
             if self._args.findCycles:
                 s.append('===== Garbage Cycles =====')
@@ -255,14 +264,12 @@ class GarbageReport(Job):
         yield None
         # look to see if each referrer is another garbage item
         byNum = []
-        for referrer in byRef:
-            yield None
-            try:
-                num = self.garbage.index(referrer)
-                byNum.append(num)
-            except:
-                #num = GarbageReport.NotGarbage
-                pass
+        for i in xrange(len(byRef)):
+            if not (i % 20):
+                yield None
+            referrer = byRef[i]
+            num = self._id2index.get(id(referrer), None)
+            byNum.append(num)
         yield byNum, byRef
 
     def _getReferents(self, obj):
@@ -274,24 +281,38 @@ class GarbageReport(Job):
         yield None
         # look to see if each referent is another garbage item
         byNum = []
-        for referent in byRef:
-            yield None
-            try:
-                num = self.garbage.index(referent)
-                byNum.append(num)
-            except:
-                #num = GarbageReport.NotGarbage
-                pass
+        for i in xrange(len(byRef)):
+            if not (i % 20):
+                yield None
+            referent = byRef[i]
+            num = self._id2index.get(id(referent), None)
+            byNum.append(num)
         yield byNum, byRef
 
-    def _getCycles(self, index, cycleSets=None):
+    def _getNormalizedCycle(self, cycle):
+        # returns a representation of a cycle (list of indices) that will be
+        # reliably derived from a unique cycle regardless of ordering
+        # this lets us detect duplicate cycles that appear different because of
+        # which element appears first
+        if len(cycle) == 0:
+            return cycle
+        min = 1<<30
+        minIndex = None
+        for i in xrange(len(cycle)):
+            elem = cycle[i]
+            if elem < min:
+                min = elem
+                minIndex = i
+        return cycle[minIndex:] + cycle[:minIndex]
+
+    def _getCycles(self, index, uniqueCycleSets=None):
         # detect garbage cycles for a particular item of garbage
         assert self.notify.debugCall()
         # returns list of lists, sublists are garbage reference cycles
         cycles = []
-        # sets of cycle members, to avoid duplicates
-        if cycleSets is None:
-            cycleSets = []
+        # this lets us eliminate duplicate cycles
+        if uniqueCycleSets is None:
+            uniqueCycleSets = set()
         stateStack = Stack()
         rootId = index
         stateStack.push(([rootId], rootId, 0))
@@ -310,14 +331,16 @@ class GarbageReport(Job):
                     print '       : %s -> %s' % (curId, refId)
                 if refId == rootId:
                     # we found a cycle! mark it down and move on to the next refId
-                    if not set(candidateCycle) in cycleSets:
+                    normCandidateCycle = self._getNormalizedCycle(candidateCycle)
+                    normCandidateCycleTuple = tuple(normCandidateCycle)
+                    if not normCandidateCycleTuple in uniqueCycleSets:
                         if self.notify.getDebug():
-                            print '  FOUND: ', list(candidateCycle) + [refId]
-                        cycles.append(list(candidateCycle) + [refId])
-                        cycleSets.append(set(candidateCycle))
+                            print '  FOUND: ', normCandidateCycle + [normCandidateCycle[0],]
+                        cycles.append(normCandidateCycle + [normCandidateCycle[0],])
+                        uniqueCycleSets.add(normCandidateCycleTuple)
                 elif refId in candidateCycle:
                     pass
-                else:
+                elif refId is not None:
                     # this refId does not complete a cycle. Mark down
                     # where we are in this list of referents, then
                     # start looking through the referents of the new refId
