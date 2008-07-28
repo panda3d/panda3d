@@ -181,6 +181,18 @@ class GarbageReport(Job):
                     objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
                 s.append(format % (idx, itype(self.garbage[idx]), objStr))
 
+            # also log the types of the objects
+            s.append('===== Garbage Item Types %s=====' % abbrev)
+            for i in xrange(numGarbage):
+                yield None
+                idx = garbageIndices[i]
+                objStr = deeptype(self.garbage[idx])
+                maxLen = 5000
+                if len(objStr) > maxLen:
+                    snip = '<SNIP>'
+                    objStr = '%s%s' % (objStr[:(maxLen-len(snip))], snip)
+                s.append(format % (idx, itype(self.garbage[idx]), objStr))
+
             if self._args.findCycles:
                 s.append('===== Garbage Cycles =====')
                 for i in xrange(len(self.cycles)):
