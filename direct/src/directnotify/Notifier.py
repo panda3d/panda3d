@@ -15,6 +15,7 @@ class Notifier:
     # particularly useful for integrating the Python notify system
     # with the C++ notify system.
     streamWriter = None
+    showTime = 0
 
     def __init__(self, name, logger=None):
         """
@@ -37,6 +38,9 @@ class Notifier:
         self.__warning = 1
         self.__debug = 0
         self.__logging = 0
+        
+        
+
 
     def setServerDelta(self, delta, timezone):
         """
@@ -117,7 +121,11 @@ class Notifier:
         Raise an exception with given string and optional type:
         Exception: error
         """
-        string = (self.getTime() + str(exception) + ": " + self.__name + ": " + errorString)
+        message = str(errorString)
+        if Notifier.showTime:
+            string = (self.getTime() + str(exception) + ": " + self.__name + ": " + message)
+        else:
+            string = (str(exception) + ": " + self.__name + ": " + message)
         self.__log(string)
         raise exception(errorString)
 
@@ -127,7 +135,11 @@ class Notifier:
         Issue the warning message if warn flag is on
         """
         if self.__warning:
-            string = (self.getTime() + self.__name + '(warning): ' + warningString)
+            message = str(warningString)
+            if Notifier.showTime:
+                string = (self.getTime() + self.__name + '(warning): ' + message)
+            else:
+                string = (":" + self.__name + 'warning: ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.warning("blah")
@@ -150,7 +162,11 @@ class Notifier:
         Issue the debug message if debug flag is on
         """
         if self.__debug:
-            string = (self.getTime() + self.__name + '(debug): ' + debugString)
+            message = str(debugString)
+            if Notifier.showTime:
+                string = (self.getTime() + self.__name + ':debug: ' + message)
+            else:
+                string = (':' + self.__name + ':debug: ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.debug("blah")
@@ -173,7 +189,11 @@ class Notifier:
         Print the given informational string, if info flag is on
         """
         if self.__info:
-            string = (self.getTime() + self.__name + '(info): ' + infoString)
+            message = str(infoString)
+            if Notifier.showTime:
+                string = (self.getTime() + self.__name + ':info: ' + message)
+            else:
+                string = (':' + self.__name + ':info: ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.info("blah")
@@ -268,10 +288,11 @@ class Notifier:
         the function call (with parameters).
         """
         if self.__debug:
+            message = str(debugString)
             string = ":%s:%s \"%s\" %s"%(
                 self.getOnlyTime(),
                 self.__name,
-                debugString,
+                message,
                 PythonUtil.traceParentCall())
             self.__log(string)
             self.__print(string)
