@@ -186,7 +186,7 @@ class GarbageReport(Job):
             for i in xrange(numGarbage):
                 yield None
                 idx = garbageIndices[i]
-                objStr = deeptype(self.garbage[idx])
+                objStr = str(deeptype(self.garbage[idx]))
                 maxLen = 5000
                 if len(objStr) > maxLen:
                     snip = '<SNIP>'
