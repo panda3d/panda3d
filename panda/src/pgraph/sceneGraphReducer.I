@@ -97,6 +97,7 @@ get_combine_radius() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
 apply_attribs(PandaNode *node, int attrib_types) {
+  nassertv(node != (PandaNode *)NULL);
   PStatTimer timer(_apply_collector);
   AccumulatedAttribs attribs;
   r_apply_attribs(node, attribs, attrib_types, _transformer);
@@ -115,6 +116,7 @@ apply_attribs(PandaNode *node, int attrib_types) {
 INLINE void SceneGraphReducer::
 apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
               int attrib_types, GeomTransformer &transformer) {
+  nassertv(node != (PandaNode *)NULL);
   r_apply_attribs(node, attribs, attrib_types, transformer);
 }
 
@@ -142,6 +144,7 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 ////////////////////////////////////////////////////////////////////
 INLINE int SceneGraphReducer::
 make_compatible_format(PandaNode *root, int collect_bits) {
+  nassertr(root != (PandaNode *)NULL, 0);
   PStatTimer timer(_collect_collector);
   int count = 0;
   count += r_collect_vertex_data(root, collect_bits, _transformer, true);
@@ -167,6 +170,7 @@ make_compatible_format(PandaNode *root, int collect_bits) {
 ////////////////////////////////////////////////////////////////////
 INLINE int SceneGraphReducer::
 collect_vertex_data(PandaNode *root, int collect_bits) {
+  nassertr(root != (PandaNode *)NULL, 0);
   PStatTimer timer(_collect_collector);
   int count = 0;
   count += r_collect_vertex_data(root, collect_bits, _transformer, false);
@@ -186,6 +190,7 @@ collect_vertex_data(PandaNode *root, int collect_bits) {
 ////////////////////////////////////////////////////////////////////
 INLINE int SceneGraphReducer::
 make_nonindexed(PandaNode *root, int nonindexed_bits) {
+  nassertr(root != (PandaNode *)NULL, 0);
   PStatTimer timer(_make_nonindexed_collector);
   return r_make_nonindexed(root, nonindexed_bits);
 }
@@ -203,6 +208,7 @@ make_nonindexed(PandaNode *root, int nonindexed_bits) {
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
 premunge(PandaNode *root, const RenderState *initial_state) {
+  nassertv(root != (PandaNode *)NULL);
   if (_gsg != (GraphicsStateGuardianBase *)NULL) {
     PStatTimer timer(_premunge_collector);
     r_premunge(root, initial_state);
