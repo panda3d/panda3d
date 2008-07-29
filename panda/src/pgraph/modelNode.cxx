@@ -35,6 +35,32 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this PandaNode with the other PandaNode, if
+//               possible, and returns a pointer to the combined
+//               PandaNode, or NULL if the two PandaNodes cannot
+//               safely be combined.
+//
+//               The return value may be this, other, or a new
+//               PandaNode altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two PandaNodes and
+//               what the collapsed PandaNode should look like.
+////////////////////////////////////////////////////////////////////
+PandaNode *ModelNode::
+combine_with(PandaNode *other) {
+  if (_preserve_transform == PT_drop_node) {
+    // If we have PT_drop_node set, we always yield to the other node.
+    return other;
+  }
+
+  return PandaNode::combine_with(other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::safe_to_flatten
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to flatten out
@@ -45,7 +71,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_flatten() const {
-  return false;
+  return _preserve_transform == PT_drop_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +84,7 @@ safe_to_flatten() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_transform() const {
-  return _preserve_transform == PT_none;
+  return _preserve_transform == PT_none || _preserve_transform == PT_drop_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +116,7 @@ safe_to_modify_transform() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_combine() const {
-  return false;
+  return _preserve_transform == PT_drop_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +128,7 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 preserve_name() const {
-  return true;
+  return _preserve_transform != PT_drop_node;
 }
 
 ////////////////////////////////////////////////////////////////////

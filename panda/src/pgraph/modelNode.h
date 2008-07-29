@@ -41,6 +41,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
 
+  virtual PandaNode *combine_with(PandaNode *other); 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
   virtual bool safe_to_modify_transform() const;
@@ -52,7 +53,8 @@ PUBLISHED:
   enum PreserveTransform {
     PT_none,
     PT_local,
-    PT_net
+    PT_net,
+    PT_drop_node,
   };
 
   INLINE void set_preserve_transform(PreserveTransform preserve_transform);

@@ -64,6 +64,7 @@
 #include "dcast.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
+#include "modelNode.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -6301,6 +6302,33 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
     delete deleted_entries;
     deleted_entries = next;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_clear_model_nodes
+//       Access: Private
+//  Description: The recursive implementation of
+//               clear_model_nodes().  This walks through the
+//               subgraph defined by the indicated node and below.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+r_clear_model_nodes(PandaNode *node) {
+  int count = 0;
+
+  if (node->is_of_type(ModelNode::get_class_type())) {
+    ModelNode *mnode;
+    DCAST_INTO_R(mnode, node, count);
+    mnode->set_preserve_transform(ModelNode::PT_drop_node);
+    ++count;
+  }
+
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    count += r_clear_model_nodes(cr.get_child(i));
+  }
+
+  return count;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2132,6 +2132,23 @@ compare_to(const NodePath &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_model_nodes
+//       Access: Published
+//  Description: Recursively walks through the scene graph at this
+//               level and below, looking for ModelNodes, and calls
+//               model_node->set_preserve_transform(PT_drop_node) on
+//               each one.  This allows a subsequent call to
+//               flatten_strong() to eliminate all of the ModelNodes.
+//
+//               Returns the number of ModelNodes found.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+clear_model_nodes() {
+  nassertr_always(!is_empty(), 0);
+  return r_clear_model_nodes(node());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_tag
 //       Access: Published
 //  Description: Associates a user-defined value with a user-defined

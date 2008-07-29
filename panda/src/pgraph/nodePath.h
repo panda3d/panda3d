@@ -807,6 +807,7 @@ PUBLISHED:
   int flatten_light();
   int flatten_medium();
   int flatten_strong();
+  INLINE int clear_model_nodes();
 
   INLINE void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
@@ -863,6 +864,7 @@ private:
                     FindApproxLevelEntry *level,
                     int max_matches) const;
 
+  int r_clear_model_nodes(PandaNode *node);
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
 
   void r_force_recompute_bounds(PandaNode *node);
