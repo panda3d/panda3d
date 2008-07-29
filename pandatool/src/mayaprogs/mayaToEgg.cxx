@@ -114,6 +114,15 @@ MayaToEgg() :
      &MayaToEgg::dispatch_vector_string, NULL, &_subsets);
 
   add_option
+    ("exclude", "name", 0,
+     "Specifies that a subset of the geometry in the Maya file should "
+     "not be converted; specifically, the geometry under the node or nodes whose "
+     "name matches the parameter (which may include globbing characters "
+     "like * or ?).  This parameter may be repeated multiple times to name "
+     "multiple roots.",
+     &MayaToEgg::dispatch_vector_string, NULL, &_excludes);
+
+  add_option
     ("ignore-slider", "name", 0,
      "Specifies the name of a slider (blend shape deformer) that maya2egg "
      "should not process.  The slider will not be touched during conversion "
@@ -196,11 +205,17 @@ run() {
     }
   }
 
-  //vector_string::const_iterator si;
   if (!_subsets.empty()) {
     converter.clear_subsets();
     for (si = _subsets.begin(); si != _subsets.end(); ++si) {
       converter.add_subset(GlobPattern(*si));
+    }
+  }
+
+  if (!_excludes.empty()) {
+    converter.clear_excludes();
+    for (si = _excludes.begin(); si != _excludes.end(); ++si) {
+      converter.add_exclude(GlobPattern(*si));
     }
   }
 

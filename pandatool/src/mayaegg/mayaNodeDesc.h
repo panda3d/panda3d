@@ -67,7 +67,9 @@ public:
   
 private:
   void tag();
+  void untag();
   void tag_recursively();
+  void untag_recursively();
   void tag_joint();
   void tag_joint_recursively();
 

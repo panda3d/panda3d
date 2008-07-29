@@ -42,6 +42,7 @@ protected:
   MayaToEggConverter::TransformType _transform_type;
   vector_string _subroots; 
   vector_string _subsets;
+  vector_string _excludes;
   vector_string _ignore_sliders;
   vector_string _force_joints;
 };

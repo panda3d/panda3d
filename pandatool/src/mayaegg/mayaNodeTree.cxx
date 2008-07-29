@@ -186,6 +186,32 @@ tag_named(const GlobPattern &glob) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::untag_named
+//       Access: Public
+//  Description: Un-tags nodes matching the indicated glob (and all of
+//               their children) for conversion.  Returns true on
+//               success, false otherwise (e.g. the named node does
+//               not exist).
+////////////////////////////////////////////////////////////////////
+bool MayaNodeTree::
+untag_named(const GlobPattern &glob) {
+  // There might be multiple nodes matching the name; search for all
+  // of them.
+  bool found_any = false;
+
+  Nodes::iterator ni;
+  for (ni = _nodes.begin(); ni != _nodes.end(); ++ni) {
+    MayaNodeDesc *node = (*ni);
+    if (glob.matches(node->get_name())) {
+      node->untag_recursively();
+      found_any = true;
+    }
+  }
+
+  return found_any;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::tag_selected
 //       Access: Public
 //  Description: Tags the just the selected hierarchy for conversion,

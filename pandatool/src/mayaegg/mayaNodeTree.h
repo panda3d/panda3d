@@ -49,6 +49,7 @@ public:
   void tag_all();
   bool tag_selected();
   bool tag_named(const GlobPattern &glob);
+  bool untag_named(const GlobPattern &glob);
 
   int get_num_nodes() const;
   MayaNodeDesc *get_node(int n) const;

@@ -284,6 +284,17 @@ tag() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::untag
+//       Access: Private
+//  Description: Un-tags this node for conversion, but does not tag child
+//               nodes.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+untag() {
+  _tagged = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::tag_recursively
 //       Access: Private
 //  Description: Tags this node and all descendant nodes for
@@ -297,6 +308,23 @@ tag_recursively() {
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     MayaNodeDesc *child = (*ci);
     child->tag_recursively();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeDesc::untag_recursively
+//       Access: Private
+//  Description: Un-tags this node and all descendant nodes for
+//               conversion.
+////////////////////////////////////////////////////////////////////
+void MayaNodeDesc::
+untag_recursively() {
+  _tagged = false;
+
+  Children::const_iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    MayaNodeDesc *child = (*ci);
+    child->untag_recursively();
   }
 }
 

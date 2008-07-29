@@ -83,6 +83,9 @@ public:
   void clear_subsets();
   void add_subset(const GlobPattern &glob);
 
+  void clear_excludes();
+  void add_exclude(const GlobPattern &glob);
+
   void clear_ignore_sliders();
   void add_ignore_slider(const GlobPattern &glob);
   bool ignore_slider(const string &name) const;
@@ -166,6 +169,7 @@ private:
   typedef pvector<GlobPattern> Globs;
   Globs _subsets;
   Globs _subroots;
+  Globs _excludes;
   Globs _ignore_sliders;
   Globs _force_joints;
 

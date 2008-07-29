@@ -109,6 +109,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _from_selection(copy._from_selection),
   _subsets(copy._subsets),
   _subroots(copy._subroots),
+  _excludes(copy._excludes),
   _ignore_sliders(copy._ignore_sliders),
   _force_joints(copy._force_joints),
   _tree(this),
@@ -265,6 +266,27 @@ clear_subsets() {
 void MayaToEggConverter::
 add_subset(const GlobPattern &glob) {
   _subsets.push_back(glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::clear_excludes
+//       Access: Public
+//  Description: Empties the list of excluded nodes added via
+//               add_exclude().
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+clear_excludes() {
+  _excludes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::add_exclude
+//       Access: Public
+//  Description: Adds a name pattern to the list of excluded nodes.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+add_exclude(const GlobPattern &glob) {
+  _excludes.push_back(glob);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -465,7 +487,6 @@ convert_maya() {
   if (all_ok) {
     if (_from_selection) {
       all_ok = _tree.tag_selected();
-
     } else if (!_subsets.empty()) {
       Globs::const_iterator gi;
       for (gi = _subsets.begin(); gi != _subsets.end(); ++gi) {
@@ -477,6 +498,18 @@ convert_maya() {
 
     } else {
       _tree.tag_all();
+    }
+  }
+
+  if (all_ok) {
+    if (!_excludes.empty()) {
+      Globs::const_iterator gi;
+      for (gi = _excludes.begin(); gi != _excludes.end(); ++gi) {
+        if (!_tree.untag_named(*gi)) {
+          mayaegg_cat.info()
+            << "No node matching " << *gi << " found.\n";
+        }
+      }
     }
   }
 
