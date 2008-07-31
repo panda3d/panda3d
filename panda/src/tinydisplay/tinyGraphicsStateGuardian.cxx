@@ -255,9 +255,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   _c->viewport.ymin = ymin;
   _c->viewport.xsize = xsize;
   _c->viewport.ysize = ysize;
-  gl_eval_viewport(_c);
-
-  GLViewport *v = &_c->viewport;
+  set_scissor(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -467,21 +465,23 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // matrix (so we don't attempt to transform it again).
     const TransformState *ident = TransformState::make_identity();
     load_matrix(&_c->matrix_model_view, ident);
-    load_matrix(&_c->matrix_projection, ident);
+    load_matrix(&_c->matrix_projection, _scissor_mat);
     load_matrix(&_c->matrix_model_view_inv, ident);
-    load_matrix(&_c->matrix_model_projection, ident);
+    load_matrix(&_c->matrix_model_projection, _scissor_mat);
     _c->matrix_model_projection_no_w_transform = 1;
     _transform_stale = true;
 
   } else if (_transform_stale) {
     // Load the actual transform.
 
+    CPT(TransformState) scissor_proj_mat = _scissor_mat->compose(_projection_mat);
+
     if (_c->lighting_enabled) {
       // With the lighting equation, we need to keep the modelview and
       // projection matrices separate.
 
       load_matrix(&_c->matrix_model_view, _internal_transform);
-      load_matrix(&_c->matrix_projection, _projection_mat);
+      load_matrix(&_c->matrix_projection, scissor_proj_mat);
 
       /* precompute inverse modelview */
       M4 tmp;
@@ -492,7 +492,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // Compose the modelview and projection matrices.
     load_matrix(&_c->matrix_model_projection, 
-                _projection_mat->compose(_internal_transform));
+                scissor_proj_mat->compose(_internal_transform));
 
     /* test to accelerate computation */
     _c->matrix_model_projection_no_w_transform = 0;
@@ -1219,6 +1219,11 @@ set_state_and_transform(const RenderState *target,
     _state._light = _target._light;
   }
 
+  if (_target._scissor != _state._scissor) {
+    do_issue_scissor();
+    _state._scissor = _target._scissor;
+  }
+
   _state_rs = _target_rs;
 }
 
@@ -1704,6 +1709,38 @@ do_issue_texture() {
   // M_replace means M_replace; anything else is treated the same as
   // M_modulate.
   _texture_replace = (stage->get_mode() == TextureStage::M_replace);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::do_issue_scissor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+do_issue_scissor() {
+  const LVecBase4f &frame = _target._scissor->get_frame();
+  set_scissor(frame[0], frame[1], frame[2], frame[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::set_scissor
+//       Access: Private
+//  Description: Sets up the scissor region, as a set of coordinates
+//               relative to the current viewport.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+set_scissor(float left, float right, float bottom, float top) {
+  _c->scissor.left = left;
+  _c->scissor.right = right;
+  _c->scissor.bottom = bottom;
+  _c->scissor.top = top;
+  gl_eval_viewport(_c);
+
+  float xsize = right - left;
+  float ysize = top - bottom;
+  float xcenter = (left + right) - 1.0f;
+  float ycenter = (bottom + top) - 1.0f;
+  _scissor_mat = TransformState::make_scale(LVecBase3f(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3f(-xcenter, -ycenter, 0.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -100,6 +100,8 @@
     sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
+    scissorAttrib.I scissorAttrib.h \
+    scissorEffect.I scissorEffect.h \
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
@@ -211,6 +213,8 @@
     sceneGraphAnalyzer.cxx \
     sceneGraphReducer.cxx \
     sceneSetup.cxx \
+    scissorAttrib.cxx \
+    scissorEffect.cxx \
     selectiveChildNode.cxx \
     sequenceNode.cxx \
     shadeModelAttrib.cxx \
@@ -320,6 +324,8 @@
     sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
+    scissorAttrib.I scissorAttrib.h \
+    scissorEffect.I scissorEffect.h \
     selectiveChildNode.I selectiveChildNode.h \
     sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \

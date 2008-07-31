@@ -8,6 +8,8 @@
 #include "sceneGraphReducer.cxx"
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
+#include "scissorAttrib.cxx"
+#include "scissorEffect.cxx"
 #include "shadeModelAttrib.cxx"
 #include "shaderInput.cxx"
 #include "shaderAttrib.cxx"

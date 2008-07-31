@@ -99,6 +99,9 @@ private:
   void do_issue_cull_face();
   void do_issue_material();
   void do_issue_texture();
+  void do_issue_scissor();
+
+  void set_scissor(float left, float right, float bottom, float top);
 
   bool apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
@@ -138,6 +141,8 @@ private:
   bool _texture_replace;
 
   SimpleLru _textures_lru;
+
+  CPT(TransformState) _scissor_mat;
 
   // Used during being_draw_primitives() .. end_draw_primitives().
   int _min_vertex;

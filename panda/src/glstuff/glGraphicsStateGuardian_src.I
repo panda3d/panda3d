@@ -387,23 +387,6 @@ enable_stencil_test(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_scissor
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-enable_scissor(bool val)
-{
-    if ( _scissor_enabled != val ) {
-        _scissor_enabled = val;
-        if ( val )
-            GLP(Enable)( GL_SCISSOR_TEST );
-        else
-            GLP(Disable)( GL_SCISSOR_TEST );
-    }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::enable_blend
 //       Access:
 //  Description:

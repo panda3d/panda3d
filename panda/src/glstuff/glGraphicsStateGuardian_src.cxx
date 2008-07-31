@@ -1154,7 +1154,6 @@ reset() {
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
   _polygon_smooth_enabled = false;
-  _scissor_enabled = false;
   _stencil_test_enabled = false;
   _blend_enabled = false;
   _depth_test_enabled = false;
@@ -1454,6 +1453,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 
   int l, b, w, h;
   dr->get_region_pixels(l, b, w, h);
+  _viewport_x = l;
+  _viewport_y = b;
   _viewport_width = w;
   _viewport_height = h;
   GLint x = GLint(l);
@@ -1465,7 +1466,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
   
-  enable_scissor(true);
+  GLP(Enable)(GL_SCISSOR_TEST);
   GLP(Scissor)(x, y, width, height);
   GLP(Viewport)(x, y, width, height);
 
@@ -6235,6 +6236,11 @@ set_state_and_transform(const RenderState *target,
     }
   }
 
+  if (_target._scissor != _state._scissor) {
+    do_issue_scissor();
+    _state._scissor = _target._scissor;
+  }
+
   _state_rs = _target_rs;
   maybe_gl_finish();
   report_my_gl_errors();
@@ -7951,4 +7957,22 @@ do_issue_stencil() {
     stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
     stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_issue_scissor
+//       Access: Protected
+//  Description: Set stencil render states.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+do_issue_scissor() {
+  const LVecBase4f &frame = _target._scissor->get_frame();
+
+  int x = _viewport_x + _viewport_width * frame[0];
+  int y = _viewport_y + _viewport_height * frame[2];
+  int width = _viewport_width * (frame[1] - frame[0]);
+  int height = _viewport_height * (frame[3] - frame[2]);
+
+  GLP(Enable)(GL_SCISSOR_TEST);
+  GLP(Scissor)(x, y, width, height);
 }

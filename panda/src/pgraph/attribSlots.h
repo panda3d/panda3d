@@ -40,6 +40,7 @@
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
+#include "scissorAttrib.h"
 #include "shadeModelAttrib.h"
 #include "shaderAttrib.h"
 #include "stencilAttrib.h"
@@ -84,6 +85,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
   CPT(TexMatrixAttrib)       _tex_matrix;
   CPT(TextureAttrib)         _texture;
   CPT(TransparencyAttrib)    _transparency;
+  CPT(ScissorAttrib)         _scissor;
 
  public:
   AttribSlots();
@@ -94,8 +96,7 @@ class EXPCL_PANDA_PGRAPH AttribSlots
   INLINE static const AttribSlots &get_defaults();
 
  public:
-  // Each "array" reference requires a switch and a DCAST, so it's not overly fast.
-  enum { slot_count=27 };
+  enum { slot_count=28 };
   const RenderAttrib *get_slot(int n) const;
 
  private:

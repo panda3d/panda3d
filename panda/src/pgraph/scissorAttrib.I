@@ -1,0 +1,41 @@
+// Filename: scissorAttrib.I
+// Created by:  drose (29Jul08)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorAttrib::make
+//       Access: Published, Static
+//  Description: Constructs a ScissorAttrib that restricts rendering
+//               to the indicated frame within the current
+//               DisplayRegion.  (0,0) is the lower-left corner of the
+//               DisplayRegion, and (1,1) is the upper-right corner.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) ScissorAttrib::
+make(float left, float right, float bottom, float top) {
+  return make(LVecBase4f(left, right, bottom, top));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorAttrib::get_frame
+//       Access: Published
+//  Description: Returns the left, right, bottom, top coordinates of
+//               the scissor frame.  This defines a frame within the
+//               current DisplayRegion, where 0,0 is the lower-left
+//               corner of the DisplayRegion, and 1,1 is the
+//               upper-right corner.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4f &ScissorAttrib::
+get_frame() const {
+  return _frame;
+}

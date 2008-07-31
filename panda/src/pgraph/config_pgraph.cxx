@@ -80,6 +80,8 @@
 #include "rescaleNormalAttrib.h"
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
+#include "scissorAttrib.h"
+#include "scissorEffect.h"
 #include "shadeModelAttrib.h"
 #include "shaderInput.h"
 #include "shaderAttrib.h"
@@ -432,6 +434,8 @@ init_libpgraph() {
   RescaleNormalAttrib::init_type();
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
+  ScissorAttrib::init_type();
+  ScissorEffect::init_type();
   ShadeModelAttrib::init_type();
   ShaderInput::init_type();
   ShaderAttrib::init_type();
@@ -498,6 +502,8 @@ init_libpgraph() {
   RenderState::register_with_read_factory();
   RescaleNormalAttrib::register_with_read_factory();
   SequenceNode::register_with_read_factory();
+  ScissorAttrib::register_with_read_factory();
+  ScissorEffect::register_with_read_factory();
   ShadeModelAttrib::register_with_read_factory();
   ShaderInput::register_with_read_factory();
   ShaderAttrib::register_with_read_factory();

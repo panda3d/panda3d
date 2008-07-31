@@ -72,6 +72,10 @@ operator = (const Lens &copy) {
   _user_flags = copy._user_flags;
   _comp_flags = 0;
 
+  _focal_length_seq = copy._focal_length_seq;
+  _fov_seq = copy._fov_seq;
+  _film_size_seq = copy._film_size_seq;
+
   // We don't copy the _geom_data.  That's unique to each Lens.
 }
 
@@ -1760,6 +1764,7 @@ film_to_fov(float, float, bool) const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 resequence_fov_triad(char &newest, char &older_a, char &older_b) {
+  nassertv(newest + older_a + older_b == 3);
   switch (newest) {
   case 0:
     newest = 2;

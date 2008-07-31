@@ -46,6 +46,7 @@ clear_to_zero() {
   _tex_matrix     = NULL;
   _texture        = NULL;
   _transparency   = NULL;
+  _scissor        = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

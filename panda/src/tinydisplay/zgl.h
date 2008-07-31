@@ -79,6 +79,10 @@ typedef struct GLViewport {
   int updated;
 } GLViewport;
 
+typedef struct GLScissor {
+  float left, right, bottom, top;
+} GLScissor;
+
 typedef union {
   int op;
   float f;
@@ -161,6 +165,7 @@ typedef struct GLContext {
 
   /* viewport */
   GLViewport viewport;
+  GLScissor scissor;
 
   /* current state */
   int smooth_shade_model;

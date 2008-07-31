@@ -239,6 +239,7 @@ protected:
   void do_issue_tex_gen();
   void do_issue_tex_matrix();
   void do_issue_stencil();
+  void do_issue_scissor();
 
   virtual void gl_flush() const;
   INLINE void maybe_gl_finish() const;
@@ -279,7 +280,6 @@ protected:
   INLINE void setup_antialias_point();
   INLINE void setup_antialias_polygon();
 
-  INLINE void enable_scissor(bool val);
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_blend(bool val);
   INLINE void enable_depth_test(bool val);
@@ -358,7 +358,6 @@ protected:
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool _polygon_smooth_enabled;
-  bool _scissor_enabled;
   bool _stencil_test_enabled;
   bool _blend_enabled;
   bool _depth_test_enabled;
@@ -370,6 +369,8 @@ protected:
 
   bool _dithering_enabled;
 
+  int _viewport_x;
+  int _viewport_y;
   int _viewport_width;
   int _viewport_height;
   int _draw_buffer_type;

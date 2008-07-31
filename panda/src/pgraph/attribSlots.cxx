@@ -55,6 +55,7 @@ initialize_defvals() {
   _defvals._tex_matrix     = DCAST(TexMatrixAttrib,TexMatrixAttrib::make());
   _defvals._texture        = DCAST(TextureAttrib,TextureAttrib::make_all_off());
   _defvals._transparency   = DCAST(TransparencyAttrib,TransparencyAttrib::make(TransparencyAttrib::M_none));
+  _defvals._scissor        = DCAST(ScissorAttrib, ScissorAttrib::make_off());
 
   // Step two. Replace each with make_default_impl.
 
@@ -85,6 +86,7 @@ initialize_defvals() {
   _defvals._tex_matrix     = DCAST(TexMatrixAttrib,_defvals._tex_matrix->make_default());
   _defvals._texture        = DCAST(TextureAttrib,_defvals._texture->make_default());
   _defvals._transparency   = DCAST(TransparencyAttrib,_defvals._transparency->make_default());
+  _defvals._scissor        = DCAST(ScissorAttrib,_defvals._scissor->make_default());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +131,8 @@ AttribSlots(const AttribSlots &copy) :
   _tex_gen(copy._tex_gen),
   _tex_matrix(copy._tex_matrix),
   _texture(copy._texture),
-  _transparency(copy._transparency)
+  _transparency(copy._transparency),
+  _scissor(copy._scissor)
 {
 }
 
@@ -167,6 +170,7 @@ operator =(const AttribSlots &src) {
   _tex_matrix     = src._tex_matrix;
   _texture        = src._texture;
   _transparency   = src._transparency;
+  _scissor        = src._scissor;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,33 +181,34 @@ operator =(const AttribSlots &src) {
 const RenderAttrib *AttribSlots::
 get_slot(int n) const {
   switch(n) {
-  case  0: return DCAST(RenderAttrib, _alpha_test);
-  case  1: return DCAST(RenderAttrib, _antialias);
-  case  2: return DCAST(RenderAttrib, _audio_volume);
-  case  3: return DCAST(RenderAttrib, _aux_bitplane);
-  case  4: return DCAST(RenderAttrib, _clip_plane);
-  case  5: return DCAST(RenderAttrib, _color);
-  case  6: return DCAST(RenderAttrib, _color_blend);
-  case  7: return DCAST(RenderAttrib, _color_scale);
-  case  8: return DCAST(RenderAttrib, _color_write);
-  case  9: return DCAST(RenderAttrib, _cull_bin);
-  case 10: return DCAST(RenderAttrib, _cull_face);
-  case 11: return DCAST(RenderAttrib, _depth_offset);
-  case 12: return DCAST(RenderAttrib, _depth_test);
-  case 13: return DCAST(RenderAttrib, _depth_write);
-  case 14: return DCAST(RenderAttrib, _fog);
-  case 15: return DCAST(RenderAttrib, _light);
-  case 16: return DCAST(RenderAttrib, _light_ramp);
-  case 17: return DCAST(RenderAttrib, _material);
-  case 18: return DCAST(RenderAttrib, _render_mode);
-  case 19: return DCAST(RenderAttrib, _rescale_normal);
-  case 20: return DCAST(RenderAttrib, _shade_model);
-  case 21: return DCAST(RenderAttrib, _shader);
-  case 22: return DCAST(RenderAttrib, _stencil);
-  case 23: return DCAST(RenderAttrib, _tex_gen);
-  case 24: return DCAST(RenderAttrib, _tex_matrix);
-  case 25: return DCAST(RenderAttrib, _texture);
-  case 26: return DCAST(RenderAttrib, _transparency);
+  case  0: return _alpha_test;
+  case  1: return _antialias;
+  case  2: return _audio_volume;
+  case  3: return _aux_bitplane;
+  case  4: return _clip_plane;
+  case  5: return _color;
+  case  6: return _color_blend;
+  case  7: return _color_scale;
+  case  8: return _color_write;
+  case  9: return _cull_bin;
+  case 10: return _cull_face;
+  case 11: return _depth_offset;
+  case 12: return _depth_test;
+  case 13: return _depth_write;
+  case 14: return _fog;
+  case 15: return _light;
+  case 16: return _light_ramp;
+  case 17: return _material;
+  case 18: return _render_mode;
+  case 19: return _rescale_normal;
+  case 20: return _shade_model;
+  case 21: return _shader;
+  case 22: return _stencil;
+  case 23: return _tex_gen;
+  case 24: return _tex_matrix;
+  case 25: return _texture;
+  case 26: return _transparency;
+  case 27: return _scissor;
   default:
     nassertr(false, NULL);
     return NULL;
