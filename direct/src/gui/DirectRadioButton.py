@@ -216,4 +216,4 @@ class DirectRadioButton(DirectButton):
     def setIndicatorValue(self):
         self.component('indicator').guiItem.setState(self['indicatorValue'])
         if self.colors != None:
-            self.component('indicator')['image_color'] = self.colors[self['indicatorValue']]
+            self.component('indicator')['geom_color'] = self.colors[self['indicatorValue']]
