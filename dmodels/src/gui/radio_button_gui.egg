@@ -1,0 +1,33 @@
+<Comment> {
+  "egg-texture-cards ../maps/circle.png -o radio_button_gui.egg"
+}
+<Texture> circle {
+  "../maps/circle.png"
+}
+<Group> {
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.5 0.5 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.5 -0.5 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.5 -0.5 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.5 0.5 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> circle {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { circle }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+}

@@ -9,3 +9,6 @@
   #define SOURCES $[patsubst %.flt,%.egg,$[wildcard *.flt]]
 #end install_egg
 
+#begin install_egg
+  #define SOURCES radio_button_gui.egg
+#end install_egg
