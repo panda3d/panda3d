@@ -372,6 +372,8 @@ class ShipPilot(PhysicsWalker):
         if self.ship.getIsAutoSailing():
             forward = 1
             reverse = 0
+        else:
+            forward = 0
             
         # How far did we move based on the amount of time elapsed?
         dt = ClockObject.getGlobalClock().getDt()
