@@ -24,3 +24,4 @@ from DirectScrollBar import *
 from DirectScrolledFrame import *
 from DirectCheckButton import *
 from DirectOptionMenu import *
+from DirectRadioButton import *
