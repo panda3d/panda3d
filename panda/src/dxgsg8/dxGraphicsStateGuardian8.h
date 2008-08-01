@@ -140,6 +140,9 @@ protected:
   void do_issue_texture();
   void do_issue_blending();
   void do_issue_stencil();
+  void do_issue_scissor();
+
+  void set_scissor(float left, float right, float bottom, float top);
 
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -233,6 +236,8 @@ protected:
   };
   DxgsgFogType _do_fog_type;
 
+  D3DVIEWPORT8 _current_viewport;
+
   DWORD _clip_plane_bits;
   CullFaceAttrib::Mode _cull_face_mode;
   RenderModeAttrib::Mode _current_fill_mode;  //point/wireframe/solid
@@ -246,6 +251,7 @@ protected:
   bool _tex_stats_retrieval_impossible;
 
   static D3DMATRIX _d3d_ident_mat;
+  CPT(TransformState) _scissor_mat;
 
   static unsigned char *_temp_buffer;
   static unsigned char *_safe_buffer_start;

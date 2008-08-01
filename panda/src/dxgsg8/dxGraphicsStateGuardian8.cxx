@@ -118,6 +118,8 @@ DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_flat_first_vertex;
 
+  _scissor_mat = TransformState::make_identity();
+
   get_gamma_table();
   atexit (atexit_function);
 }
@@ -578,28 +580,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 
   // Create the viewport
   D3DVIEWPORT8 vp = { l, u, w, h, 0.0f, 1.0f };
-  HRESULT hr = _d3d_device->SetViewport(&vp);
-  if (FAILED(hr)) {
-    dxgsg8_cat.error()
-      << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
-    dxgsg8_cat.error()
-      << "SetViewport(" << l << ", " << u << ", " << w << ", " << h
-      << ") failed" << D3DERRORSTRING(hr);
-
-    D3DVIEWPORT8 vp_old;
-    _d3d_device->GetViewport(&vp_old);
-    dxgsg8_cat.error()
-      << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
-      << vp_old.Height << ") returned: Trying to set that vp---->\n";
-    hr = _d3d_device->SetViewport(&vp_old);
-
-    if (FAILED(hr)) {
-      dxgsg8_cat.error() << "Failed again\n";
-      throw_event("panda3d-render-error");
-      nassertv(false);
-    }
-  }
-  // Note: for DX9, also change scissor clipping state here
+  _current_viewport = vp;
+  set_scissor(0.0f, 1.0f, 0.0f, 1.0f);
 
   if (_screen->_can_direct_disable_color_writes) {
     _d3d_device->SetRenderState(D3DRS_COLORWRITEENABLE, _color_write_mask);
@@ -664,9 +646,10 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 prepare_lens() {
+  CPT(TransformState) scissor_proj_mat = _scissor_mat->compose(_projection_mat);
   HRESULT hr =
     _d3d_device->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)_projection_mat->get_mat().get_data());
+                              (D3DMATRIX*)scissor_proj_mat->get_mat().get_data());
   return SUCCEEDED(hr);
 }
 
@@ -2242,10 +2225,6 @@ set_state_and_transform(const RenderState *target,
   target->store_into_slots(&_target);
   _state_rs = 0;
 
-  // There might be some physical limits to the actual target
-  // attributes we issue.  Impose them now.
-  _target._texture = _target._texture->filter_to_max(_max_texture_stages);
-
   if (_target._alpha_test != _state._alpha_test) {
     do_issue_alpha_test();
     _state._alpha_test = _target._alpha_test;
@@ -2331,6 +2310,15 @@ set_state_and_transform(const RenderState *target,
   if (_target._texture != _state._texture ||
       _target._tex_gen != _state._tex_gen) {
     determine_effective_texture();
+
+    // For some mysterious and disturbing reason, making this call
+    // here--which should have no effect--actually prevents the DX
+    // context from going awry.  If this call is omitted, the DX
+    // context goes foobar when switching states and refuses to draw
+    // anything at all.  I strongly suspect memory corruption
+    // somewhere, but can't locate it.
+    _target._texture->filter_to_max(_max_texture_stages);
+
     do_issue_texture();
     _state._texture = _target._texture;
     _state._tex_gen = _target._tex_gen;
@@ -2349,6 +2337,11 @@ set_state_and_transform(const RenderState *target,
   if (_target._stencil != _state._stencil) {
     do_issue_stencil();
     _state._stencil = _target._stencil;
+  }
+
+  if (_target._scissor != _state._scissor) {
+    do_issue_scissor();
+    _state._scissor = _target._scissor;
   }
 
   _state_rs = _target_rs;
@@ -3725,6 +3718,8 @@ create_swap_chain(DXScreenData *new_context) {
     wdxdisplay8_cat.debug() << "Swapchain creation failed :"<<D3DERRORSTRING(hr)<<"\n";
     return false;
   }
+  wdxdisplay8_cat.debug()
+    << "Created swap chain " << new_context->_swap_chain << "\n";
   return true;
 }
 
@@ -3736,6 +3731,8 @@ create_swap_chain(DXScreenData *new_context) {
 bool DXGraphicsStateGuardian8::
 release_swap_chain(DXScreenData *new_context) {
   HRESULT hr;
+  wdxdisplay8_cat.debug() 
+    << "Releasing swap chain " << new_context->_swap_chain << "\n";
   if (new_context->_swap_chain) {
     hr = new_context->_swap_chain->Release();
     if (FAILED(hr)) {
@@ -4200,6 +4197,68 @@ do_issue_stencil() {
 LPDIRECT3DDEVICE8 DXGraphicsStateGuardian8::
 get_d3d_device() {
   return _d3d_device;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: dxGraphicsStateGuardian8::do_issue_scissor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+do_issue_scissor() {
+  const LVecBase4f &frame = _target._scissor->get_frame();
+  set_scissor(frame[0], frame[1], frame[2], frame[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::set_scissor
+//       Access: Private
+//  Description: Sets up the scissor region, as a set of coordinates
+//               relative to the current viewport.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian8::
+set_scissor(float left, float right, float bottom, float top) {
+  // DirectX8 doesn't have an explicit scissor control, independent of
+  // the viewport, so we have to do it by hand, by moving the viewport
+  // smaller but adjusting the projection matrix to compensate.
+
+  // First, constrain the viewport to the scissor region.
+  D3DVIEWPORT8 vp;
+  vp.Width = _current_viewport.Width * (right - left);
+  vp.X = _current_viewport.X + _current_viewport.Width * left;
+  vp.Height = _current_viewport.Height * (top - bottom);
+  vp.Y = _current_viewport.Y + _current_viewport.Height * (1.0f - top);
+
+  HRESULT hr = _d3d_device->SetViewport(&vp);
+  if (FAILED(hr)) {
+    dxgsg8_cat.error()
+      << "_screen->_swap_chain = " << _screen->_swap_chain << " _swap_chain = " << _swap_chain << "\n";
+    dxgsg8_cat.error()
+      << "SetViewport(" << vp.X << ", " << vp.Y << ", " << vp.Width << ", " << vp.Height
+      << ") failed" << D3DERRORSTRING(hr);
+    
+    D3DVIEWPORT8 vp_old;
+    _d3d_device->GetViewport(&vp_old);
+    dxgsg8_cat.error()
+      << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
+      << vp_old.Height << ") returned: Trying to set that vp---->\n";
+    hr = _d3d_device->SetViewport(&vp_old);
+
+    if (FAILED(hr)) {
+      dxgsg8_cat.error() << "Failed again\n";
+      throw_event("panda3d-render-error");
+      nassertv(false);
+    }
+  }
+
+  // Now, compute _scissor_mat, which we use to compensate the
+  // projection matrix.
+  float xsize = right - left;
+  float ysize = top - bottom;
+  float xcenter = (left + right) - 1.0f;
+  float ycenter = (bottom + top) - 1.0f;
+  _scissor_mat = TransformState::make_scale(LVecBase3f(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3f(-xcenter, -ycenter, 0.0f)));
+  prepare_lens();
 }
 
 ////////////////////////////////////////////////////////////////////
