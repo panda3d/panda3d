@@ -7962,7 +7962,7 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_scissor
 //       Access: Protected
-//  Description: Set stencil render states.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
