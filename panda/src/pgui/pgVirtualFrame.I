@@ -88,13 +88,11 @@ get_canvas_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGVirtualFrame::get_clip_plane_node
+//     Function: PGVirtualFrame::get_canvas_parent
 //       Access: Published
-//  Description: Returns the special node that holds all of PlaneNodes
-//               that are used for applying the clip planes to the
-//               canvas_node.
+//  Description: Returns the parent node of the canvas_node.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PGVirtualFrame::
-get_clip_plane_node() const {
-  return _clip_plane_node;
+get_canvas_parent() const {
+  return _canvas_parent;
 }

@@ -29,19 +29,19 @@ class TransformState;
 //               only see the portion of the canvas that is below the
 //               window at any given time.
 //
-//               This works simply by automatically defining clipping
-//               planes to be applied to a special child node, called
+//               This works simply by automatically defining a scissor
+//               effect to be applied to a special child node, called
 //               the canvas_node, of the PGVirtualFrame node.  Every
 //               object that is parented to the canvas_node will be
-//               clipped by the clip_frame.  Also, you can modify the
-//               canvas_transform through convenience methods here,
-//               which actually modifies the transform on the
+//               clipped by the scissor effect.  Also, you can modify
+//               the canvas_transform through convenience methods
+//               here, which actually modifies the transform on the
 //               canvas_node.
 //
 //               The net effect is that the virtual canvas is
 //               arbitrarily large, and we can peek at it through the
-//               clip_frame, and scroll through different parts of it
-//               by modifying the canvas_transform.
+//               scissor region, and scroll through different parts of
+//               it by modifying the canvas_transform.
 //
 //               See PGScrollFrame for a specialization of this class
 //               that handles the traditional scrolling canvas, with
@@ -71,7 +71,7 @@ PUBLISHED:
   INLINE const TransformState *get_canvas_transform() const;
 
   INLINE PandaNode *get_canvas_node() const;
-  INLINE PandaNode *get_clip_plane_node() const;
+  INLINE PandaNode *get_canvas_parent() const;
 
 protected:
   virtual void clip_frame_changed();
@@ -84,7 +84,7 @@ private:
   LVecBase4f _clip_frame;
 
   PT(ModelNode) _canvas_node;
-  PT(PandaNode) _clip_plane_node;
+  PT(ModelNode) _canvas_parent;
 
 public:
   static TypeHandle get_class_type() {

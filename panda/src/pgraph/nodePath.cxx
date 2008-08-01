@@ -43,6 +43,7 @@
 #include "antialiasAttrib.h"
 #include "audioVolumeAttrib.h"
 #include "texProjectorEffect.h"
+#include "scissorEffect.h"
 #include "texturePool.h"
 #include "planeNode.h"
 #include "lensNode.h"
@@ -2794,6 +2795,113 @@ has_clip_plane_off(const NodePath &clip_plane) const {
   }
   nassert_raise("Not a PlaneNode object.");
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scissor
+//       Access: Published
+//  Description: Sets up a scissor region on the nodes rendered at
+//               this level and below.  The four coordinates are
+//               understood to define a rectangle in screen space.
+//               These numbers are relative to the current
+//               DisplayRegion, where (0,0) is the lower-left corner
+//               of the DisplayRegion, and (1,1) is the upper-right
+//               corner.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_scissor(float left, float right, float bottom, float top) {
+  set_effect(ScissorEffect::make_screen(LVecBase4f(left, right, bottom, top)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scissor
+//       Access: Published
+//  Description: Sets up a scissor region on the nodes rendered at
+//               this level and below.  The two points are understood
+//               to be relative to this node.  When these points are
+//               projected into screen space, they define the
+//               diagonally-opposite points that determine the scissor
+//               region.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_scissor(const LPoint3f &a, const LPoint3f &b) {
+  set_effect(ScissorEffect::make_node(a, b));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scissor
+//       Access: Published
+//  Description: Sets up a scissor region on the nodes rendered at
+//               this level and below.  The four points are understood
+//               to be relative to this node.  When these points are
+//               projected into screen space, they define the
+//               bounding volume of the scissor region (the scissor
+//               region is the smallest onscreen rectangle that
+//               encloses all four points).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_scissor(const LPoint3f &a, const LPoint3f &b,
+            const LPoint3f &c, const LPoint3f &d) {
+  set_effect(ScissorEffect::make_node(a, b, c, d));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scissor
+//       Access: Published
+//  Description: Sets up a scissor region on the nodes rendered at
+//               this level and below.  The two points are understood
+//               to be relative to the indicated other node.  When
+//               these points are projected into screen space, they
+//               define the diagonally-opposite points that determine
+//               the scissor region.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_scissor(const NodePath &other, const LPoint3f &a, const LPoint3f &b) {
+  set_effect(ScissorEffect::make_node(a, b, other));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_scissor
+//       Access: Published
+//  Description: Sets up a scissor region on the nodes rendered at
+//               this level and below.  The four points are understood
+//               to be relative to the indicated other node.  When
+//               these points are projected into screen space, they
+//               define the bounding volume of the scissor region (the
+//               scissor region is the smallest onscreen rectangle
+//               that encloses all four points).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_scissor(const NodePath &other,
+            const LPoint3f &a, const LPoint3f &b,
+            const LPoint3f &c, const LPoint3f &d) {
+  set_effect(ScissorEffect::make_node(a, b, c, d, other));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_scissor
+//       Access: Published
+//  Description: Removes the scissor region that was defined at this
+//               node level by a previous call to set_scissor().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_scissor() {
+  clear_effect(ScissorEffect::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_scissor
+//       Access: Published
+//  Description: Returns true if a scissor region was defined at this
+//               node by a previous call to set_scissor().  This does
+//               not check for scissor regions inherited from a parent
+//               class.  It also does not check for the presence of a
+//               low-level ScissorAttrib, which is different from the
+//               ScissorEffect added by set_scissor.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_scissor() const {
+  return has_effect(ScissorEffect::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////

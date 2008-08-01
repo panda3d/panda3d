@@ -547,6 +547,18 @@ PUBLISHED:
   bool has_clip_plane_off() const;
   bool has_clip_plane_off(const NodePath &clip_plane) const;
 
+  void set_scissor(float left, float right, float bottom, float top);
+  void set_scissor(const LPoint3f &a, const LPoint3f &b);
+  void set_scissor(const LPoint3f &a, const LPoint3f &b, 
+                   const LPoint3f &c, const LPoint3f &d);
+  void set_scissor(const NodePath &other, 
+                   const LPoint3f &a, const LPoint3f &b);
+  void set_scissor(const NodePath &other,
+                   const LPoint3f &a, const LPoint3f &b, 
+                   const LPoint3f &c, const LPoint3f &d);
+  void clear_scissor();
+  bool has_scissor() const;
+
   void set_bin(const string &bin_name, int draw_order, int priority = 0);
   void clear_bin();
   bool has_bin() const;

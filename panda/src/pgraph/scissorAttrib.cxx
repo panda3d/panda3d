@@ -104,6 +104,37 @@ compare_to_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ScissorAttrib::compose_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               This should return the result of applying the other
+//               RenderAttrib to a node in the scene graph below this
+//               RenderAttrib, which was already applied.  In most
+//               cases, the result is the same as the other
+//               RenderAttrib (that is, a subsequent RenderAttrib
+//               completely replaces the preceding one).  On the other
+//               hand, some kinds of RenderAttrib (for instance,
+//               ColorTransformAttrib) might combine in meaningful
+//               ways.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ScissorAttrib::
+compose_impl(const RenderAttrib *other) const {
+  const ScissorAttrib *ta;
+  DCAST_INTO_R(ta, other, 0);
+
+  LVecBase4f new_frame(max(ta->_frame[0], _frame[0]),
+                       min(ta->_frame[1], _frame[1]),
+                       max(ta->_frame[2], _frame[2]),
+                       min(ta->_frame[3], _frame[3]));
+  
+  ScissorAttrib *attrib = new ScissorAttrib(new_frame);
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ScissorAttrib::make_default_impl
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by derived ScissorAttrib

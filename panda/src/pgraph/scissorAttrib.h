@@ -55,6 +55,7 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
 private:

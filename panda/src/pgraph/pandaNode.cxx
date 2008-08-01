@@ -344,7 +344,16 @@ void PandaNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    xform(attribs._transform->get_mat());
+    const LMatrix4f &mat = attribs._transform->get_mat();
+    xform(mat);
+
+    Thread *current_thread = Thread::get_current_thread();
+    OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+      CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+      cdata->_effects = cdata->_effects->xform(mat);
+      cdata->set_fancy_bit(FB_effects, !cdata->_effects->is_empty());
+    }
+    CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   }
 }
 

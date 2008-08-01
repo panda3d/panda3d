@@ -33,13 +33,28 @@ TypeHandle ScissorEffect::_type_handle;
 ////////////////////////////////////////////////////////////////////
 ScissorEffect::
 ScissorEffect(bool screen, const LVecBase4f &frame,
-              const LPoint3f *points, int num_points, bool clip) :
+              const PointDef *points, int num_points, bool clip) :
   _screen(screen), _frame(frame), _clip(clip) 
 {
   _points.reserve(num_points);
   for (int i = 0; i < num_points; ++i) {
     _points.push_back(points[i]);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorEffect::Copy Constructor
+//       Access: Private
+//  Description: Use ScissorEffect::make() to construct a new
+//               ScissorEffect object.
+////////////////////////////////////////////////////////////////////
+ScissorEffect::
+ScissorEffect(const ScissorEffect &copy) :
+  _screen(copy._screen), 
+  _frame(copy._frame),
+  _points(copy._points),
+  _clip(copy._clip)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,17 +73,34 @@ make_screen(const LVecBase4f &frame, bool clip) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ScissorEffect::make_node
 //       Access: Published, Static
+//  Description: Constructs a new node-relative ScissorEffect, with no
+//               points.  This empty ScissorEffect does nothing.  You
+//               must then call add_point a number of times to add the
+//               points you require.
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) ScissorEffect::
+make_node(bool clip) {
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), NULL, 0, clip);
+  return return_new(effect);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorEffect::make_node
+//       Access: Published, Static
 //  Description: Constructs a new node-relative ScissorEffect.  The
 //               two points are understood to be relative to the
-//               current node, and determine the diagonally opposite
+//               indicated node, or the current node if the NodePath
+//               is empty, and determine the diagonally opposite
 //               corners of the scissor region.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-make_node(const LPoint3f &a, const LPoint3f &b, bool clip) {
-  LPoint3f points[2];
-  points[0] = a;
-  points[1] = b;
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 2, clip);
+make_node(const LPoint3f &a, const LPoint3f &b, const NodePath &node) {
+  PointDef points[2];
+  points[0]._p = a;
+  points[0]._node = node;
+  points[1]._p = b;
+  points[1]._node = node;
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 2, true);
   return return_new(effect);
 }
 
@@ -77,30 +109,70 @@ make_node(const LPoint3f &a, const LPoint3f &b, bool clip) {
 //       Access: Published, Static
 //  Description: Constructs a new node-relative ScissorEffect.  The
 //               four points are understood to be relative to the
-//               current node, and determine four points surrounding
-//               the scissor region.
+//               indicated node, or the current node if the indicated
+//               NodePath is empty, and determine four points
+//               surrounding the scissor region.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-make_node(const LPoint3f &a, const LPoint3f &b, const LPoint3f &c, const LPoint3f &d, bool clip) {
-  LPoint3f points[4];
-  points[0] = a;
-  points[1] = b;
-  points[2] = c;
-  points[3] = d;
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 4, clip);
+make_node(const LPoint3f &a, const LPoint3f &b, const LPoint3f &c, const LPoint3f &d, const NodePath &node) {
+  PointDef points[4];
+  points[0]._p = a;
+  points[0]._node = node;
+  points[1]._p = b;
+  points[1]._node = node;
+  points[2]._p = c;
+  points[2]._node = node;
+  points[3]._p = d;
+  points[3]._node = node;
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 4, true);
   return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ScissorEffect::safe_to_transform
-//       Access: Public, Virtual
-//  Description: Returns true if it is generally safe to transform
-//               this particular kind of RenderEffect by calling the
-//               xform() method, false otherwise.
+//     Function: ScissorEffect::add_point
+//       Access: Published
+//  Description: Returns a new ScissorEffect with the indicated point
+//               added.  It is only valid to call this on a "node"
+//               type ScissorEffect.  The full set of points,
+//               projected into screen space, defines the bounding
+//               volume of the rectangular scissor region.
+//
+//               Each point may be relative to a different node, if
+//               desired.
 ////////////////////////////////////////////////////////////////////
-bool ScissorEffect::
-safe_to_transform() const {
-  return false;
+CPT(RenderEffect) ScissorEffect::
+add_point(const LPoint3f &p, const NodePath &node) const {
+  nassertr(!is_screen(), this);
+  ScissorEffect *effect = new ScissorEffect(*this);
+  PointDef point;
+  point._p = p;
+  point._node = node;
+  effect->_points.push_back(point);
+  return return_new(effect);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorEffect::xform
+//       Access: Public, Virtual
+//  Description: Returns a new RenderEffect transformed by the
+//               indicated matrix.
+////////////////////////////////////////////////////////////////////
+CPT(RenderEffect) ScissorEffect::
+xform(const LMatrix4f &mat) const {
+  if (is_screen()) {
+    return this;
+  }
+  ScissorEffect *effect = new ScissorEffect(*this);
+  Points::iterator pi;
+  for (pi = effect->_points.begin();
+       pi != effect->_points.end();
+       ++pi) {
+    PointDef &point = (*pi);
+    if (point._node.is_empty()) {
+      point._p = point._p * mat;
+    }
+  }
+  return return_new(effect);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +189,12 @@ output(ostream &out) const {
     out << "node";
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
-      out << " [" << (*pi) << "]";
+      const PointDef &point = (*pi);
+      if (point._node.is_empty()) {
+        out << " (" << point._p << ")";
+      } else {
+        out << " (" << point._node << ":" << point._p << ")";
+      }
     }
   }
   if (!get_clip()) {
@@ -162,8 +239,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(RenderState) &node_state) const {
   LVecBase4f frame;
   const Lens *lens = trav->get_scene()->get_lens();
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav)->compose(node_transform);
-  if (modelview_transform->is_singular()) {
+  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
+  CPT(TransformState) net_transform = modelview_transform->compose(node_transform);
+  if (net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
     return;
   }
@@ -172,15 +250,24 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     frame = _frame;
   } else {
     const LMatrix4f &proj_mat = lens->get_projection_mat();
-    LMatrix4f net_mat = modelview_transform->get_mat() * proj_mat;
+    LMatrix4f net_mat = net_transform->get_mat() * proj_mat;
 
     bool any_points = false;
 
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
-      const LPoint3f &p = (*pi);
-      LVecBase4f pv(p[0], p[1], p[2], 1.0f);
-      pv = pv * net_mat;
+      const PointDef &point = (*pi);
+      LVecBase4f pv(point._p[0], point._p[1], point._p[2], 1.0f);
+      if (point._node.is_empty()) {
+        // Relative to this node.
+        pv = pv * net_mat;
+
+      } else {
+        // Relative to some other node.
+        LMatrix4f other_mat = point._node.get_net_transform()->get_mat() * proj_mat;
+        pv = pv * other_mat;
+      }
+
       if (pv[3] == 0) {
         continue;
       }
@@ -264,7 +351,11 @@ compare_to_impl(const RenderEffect *other) const {
       return compare;
     }
     for (size_t i = 0; i < _points.size(); ++i) {
-      compare = _points[i].compare_to(ta->_points[i]);
+      compare = _points[i]._p.compare_to(ta->_points[i]._p);
+      if (compare != 0) {
+        return compare;
+      }
+      compare = _points[i]._node.compare_to(ta->_points[i]._node);
       if (compare != 0) {
         return compare;
       }
@@ -301,7 +392,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     dg.add_uint16(_points.size());
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
-      (*pi).write_datagram(dg);
+      (*pi)._p.write_datagram(dg);
     }
   }
   dg.add_bool(_clip);
@@ -345,9 +436,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     int num_points = scan.get_uint16();
     _points.reserve(num_points);
     for (int i = 0; i < num_points; ++i) {
-      LPoint3f p;
-      p.read_datagram(scan);
-      _points.push_back(p);
+      PointDef point;
+      point._p.read_datagram(scan);
+      _points.push_back(point);
     }
   }
   _clip = scan.get_bool();

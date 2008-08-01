@@ -63,7 +63,19 @@ get_num_points() const {
 INLINE const LPoint3f &ScissorEffect::
 get_point(int n) const {
   nassertr(n >= 0 && n < (int)_points.size(), LPoint3f::zero());
-  return _points[n];
+  return _points[n]._p;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorEffect::get_node
+//       Access: Published
+//  Description: Returns the node to which the nth point is relative,
+//               or empty NodePath to indicate the current node.
+////////////////////////////////////////////////////////////////////
+INLINE NodePath ScissorEffect::
+get_node(int n) const {
+  nassertr(n >= 0 && n < (int)_points.size(), NodePath());
+  return _points[n]._node;
 }
 
 ////////////////////////////////////////////////////////////////////

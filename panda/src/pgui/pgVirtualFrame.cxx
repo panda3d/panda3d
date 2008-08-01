@@ -13,8 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pgVirtualFrame.h"
-#include "clipPlaneAttrib.h"
-#include "planeNode.h"
+#include "scissorEffect.h"
 #include "sceneGraphReducer.h"
 
 TypeHandle PGVirtualFrame::_type_handle;
@@ -99,7 +98,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
   // Reassign the canvas_node to point to the new copy, if it's there.
   const PGVirtualFrame *from_frame = DCAST(PGVirtualFrame, from);
   PandaNode *from_canvas_node = from_frame->get_canvas_node();
-  PandaNode *from_clip_plane_node = from_frame->get_clip_plane_node();
+  PandaNode *from_canvas_parent = from_frame->get_canvas_parent();
 
   InstanceMap::const_iterator ci;
   ci = inst_map.find(from_canvas_node);
@@ -108,10 +107,10 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
     _canvas_node = DCAST(ModelNode, (*ci).second);
   }
 
-  ci = inst_map.find(from_clip_plane_node);
+  ci = inst_map.find(from_canvas_parent);
   if (ci != inst_map.end()) {
-    remove_child(_clip_plane_node);
-    _clip_plane_node = (*ci).second;
+    remove_child(_canvas_parent);
+    _canvas_parent = DCAST(ModelNode, (*ci).second);
   }
 
   // Reassign the clip planes according to the clip frame.
@@ -163,33 +162,14 @@ set_clip_frame(const LVecBase4f &frame) {
   if (!_has_clip_frame || _clip_frame != frame) {
     _has_clip_frame = true;
     _clip_frame = frame;
+
+    CPT(RenderEffect) scissor_effect = ScissorEffect::make_node
+      (LPoint3f(_clip_frame[0], _clip_frame[2], _clip_frame[2]),
+       LPoint3f(_clip_frame[1], _clip_frame[2], _clip_frame[2]),
+       LPoint3f(_clip_frame[1], _clip_frame[3], _clip_frame[3]),
+       LPoint3f(_clip_frame[0], _clip_frame[3], _clip_frame[3]));
     
-    const LVector3f r = LVector3f::right();
-    const LVector3f u = LVector3f::up();
-    
-    PT(PlaneNode) left_clip = 
-      new PlaneNode("left_clip", Planef(r, r * _clip_frame[0]));
-    PT(PlaneNode) right_clip = 
-      new PlaneNode("right_clip", Planef(-r, r * _clip_frame[1]));
-    
-    PT(PlaneNode) bottom_clip = 
-      new PlaneNode("bottom_clip", Planef(u, u * _clip_frame[2]));
-    PT(PlaneNode) top_clip = 
-      new PlaneNode("top_clip", Planef(-u, u * _clip_frame[3]));
-    
-    _clip_plane_node->remove_all_children();
-    _clip_plane_node->add_child(left_clip);
-    _clip_plane_node->add_child(right_clip);
-    _clip_plane_node->add_child(bottom_clip);
-    _clip_plane_node->add_child(top_clip);
-    
-    CPT(ClipPlaneAttrib) plane_attrib = DCAST(ClipPlaneAttrib, ClipPlaneAttrib::make());
-    plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib->add_on_plane(NodePath::any_path(left_clip)));
-    plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib->add_on_plane(NodePath::any_path(right_clip)));
-    plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib->add_on_plane(NodePath::any_path(bottom_clip)));
-    plane_attrib = DCAST(ClipPlaneAttrib, plane_attrib->add_on_plane(NodePath::any_path(top_clip)));
-    
-    _canvas_node->set_attrib(plane_attrib);
+    _canvas_parent->set_effect(scissor_effect);
     clip_frame_changed();
   }
 }
@@ -205,7 +185,7 @@ clear_clip_frame() {
   if (_has_clip_frame) {
     _has_clip_frame = false;
     
-    _canvas_node->clear_attrib(ClipPlaneAttrib::get_class_type());
+    _canvas_parent->clear_effect(ScissorEffect::get_class_type());
     clip_frame_changed();
   }
 }
@@ -222,17 +202,16 @@ clip_frame_changed() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGVirtualFrame::setup_child_nodes
 //       Access: Private
-//  Description: Creates the special canvas_node and clip_plane_node
+//  Description: Creates the special canvas_node and canvas_parent
 //               for this object.
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
 setup_child_nodes() {
+  _canvas_parent = new ModelNode("canvas_parent");
+  _canvas_parent->set_preserve_transform(ModelNode::PT_local);
+  add_child(_canvas_parent);
+
   _canvas_node = new ModelNode("canvas");
   _canvas_node->set_preserve_transform(ModelNode::PT_local);
-  // We have to preserve the clip plane attribute.
-  _canvas_node->set_preserve_attributes(SceneGraphReducer::TT_other);
-  add_child(_canvas_node);
-
-  _clip_plane_node = new PandaNode("clip_planes");
-  add_child(_clip_plane_node);
+  _canvas_parent->add_child(_canvas_node);
 }
