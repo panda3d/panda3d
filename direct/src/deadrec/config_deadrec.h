@@ -17,8 +17,11 @@
 
 #include "directbase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(deadrec, EXPCL_DIRECT, EXPTP_DIRECT);
+
+extern ConfigVariableBool accept_clock_skew;
 
 extern EXPCL_DIRECT void init_libdeadrec();
 

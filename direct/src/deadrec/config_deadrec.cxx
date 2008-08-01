@@ -23,6 +23,11 @@ ConfigureFn(config_deadrec) {
   init_libdeadrec();
 }
 
+ConfigVariableBool accept_clock_skew
+("accept-clock-skew", false,
+ PRC_DESC("This controls the default value of "
+          "SmoothMover::get_accept_clock_skew()."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdeadrec

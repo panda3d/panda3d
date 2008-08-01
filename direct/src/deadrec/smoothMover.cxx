@@ -15,6 +15,7 @@
 #include "smoothMover.h"
 #include "pnotify.h"
 #include "compose_matrix.h"
+#include "config_deadrec.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::Constructor
@@ -57,7 +58,7 @@ SmoothMover() {
   _smooth_mode = SM_off;
   _prediction_mode = PM_off;
   _delay = 0.2;
-  _accept_clock_skew = true;
+  _accept_clock_skew = accept_clock_skew;
   _directional_velocity = true;
   _default_to_standing_still = true;
   _max_position_age = 0.25;
