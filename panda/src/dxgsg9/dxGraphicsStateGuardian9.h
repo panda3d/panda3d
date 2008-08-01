@@ -187,6 +187,7 @@ protected:
   void do_issue_texture();
   void do_issue_blending();
   void do_issue_stencil();
+  void do_issue_scissor();
 
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);

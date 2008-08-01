@@ -893,6 +893,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
       << "GetViewport(" << vp_old.X << ", " << vp_old.Y << ", " << vp_old.Width << ", "
       << vp_old.Height << ") returned: Trying to set that vp---->\n";
     hr = _d3d_device->SetViewport(&vp_old);
+    set_render_state(D3DRS_SCISSORTESTENABLE, FALSE);
 
     if (FAILED(hr)) {
       dxgsg9_cat.error() << "Failed again\n";
@@ -3621,6 +3622,11 @@ set_state_and_transform(const RenderState *target,
     _state._stencil = _target._stencil;
   }
 
+  if (_target._scissor != _state._scissor) {
+    do_issue_scissor();
+    _state._scissor = _target._scissor;
+  }
+
   _state_rs = _target_rs;
 }
 
@@ -5647,6 +5653,24 @@ do_issue_stencil() {
     stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_front_enable, 0);
     stencil_render_states -> set_stencil_render_state (true, StencilRenderStates::SRS_back_enable, 0);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: dxGraphicsStateGuardian9::do_issue_scissor
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+do_issue_scissor() {
+  const LVecBase4f &frame = _target._scissor->get_frame();
+
+  RECT r;
+  r.left = _current_viewport.X + _current_viewport.Width * frame[0];
+  r.top = _current_viewport.Y + _current_viewport.Height * (1.0f - frame[3]);
+  r.right = _current_viewport.X + _current_viewport.Width * frame[1];
+  r.bottom = _current_viewport.Y + _current_viewport.Height * (1.0f - frame[2]);
+  _d3d_device->SetScissorRect(&r);
+  set_render_state(D3DRS_SCISSORTESTENABLE, TRUE);
 }
 
 ////////////////////////////////////////////////////////////////////
