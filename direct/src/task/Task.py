@@ -455,8 +455,14 @@ class TaskManager:
         # sweep garbage collector. Returns the number of tasks that have
         # been removed Warning: this creates an entirely new doLaterList.
         oldLen = len(self.__doLaterList)
+        # grab all the tasks being removed so we can remove them from the nameDict
+        # TODO: would be more efficient to remove from nameDict in task.remove()
+        removedTasks = [task for task in self.__doLaterList
+                        if task._removed]
         self.__doLaterList = [task for task in self.__doLaterList #grab all tasks with name
                               if not task._removed] #filter removed tasks
+        for task in removedTasks:
+            self.__removeTaskFromNameDict(task)
         # Re heapify to maintain ordering after filter
         heapify(self.__doLaterList)
         newLen = len(self.__doLaterList)
@@ -1187,6 +1193,8 @@ class TaskManager:
             del self._memUsage
 
         def _checkMemLeaks(self):
+            # flush removed doLaters
+            self.__doLaterFilter()
             # give the mgr a chance to clear out removed tasks
             self.step()
             mu = self._memUsage
@@ -1295,6 +1303,15 @@ if __debug__:
         assert tm.remove('testRemoveByName') == 1
         assert tm.remove('testRemoveByName') == 0
         _testRemoveByName = None
+        tm._checkMemLeaks()
+
+        # duplicate named tasks
+        def _testDupNamedTasks(task):
+            return task.done
+        tm.add(_testDupNamedTasks, 'testDupNamedTasks')
+        tm.add(_testDupNamedTasks, 'testDupNamedTasks')
+        assert tm.remove('testRemoveByName') == 0
+        _testDupNamedTasks = None
         tm._checkMemLeaks()
 
         # continued task
@@ -1600,7 +1617,34 @@ if __debug__:
         tm.remove('testDoLater1')
         tm.remove('testDoLater3')
         assert len(tm.getDoLaters()) == 0
-        _testGetTasks = None
+        _testGetDoLaters = None
+        tm._checkMemLeaks()
+
+        # duplicate named doLaters removed via taskMgr.remove
+        def _testDupNameDoLaters():
+            pass
+        # the doLaterProcessor is always running
+        tm.doMethodLater(.1, _testDupNameDoLaters, 'testDupNameDoLater')
+        tm.doMethodLater(.1, _testDupNameDoLaters, 'testDupNameDoLater')
+        assert len(tm.getDoLaters()) == 2
+        tm.remove('testDupNameDoLater')
+        assert len(tm.getDoLaters()) == 0
+        _testDupNameDoLaters = None
+        tm._checkMemLeaks()
+
+        # duplicate named doLaters removed via remove()
+        def _testDupNameDoLatersRemove():
+            pass
+        # the doLaterProcessor is always running
+        dl1 = tm.doMethodLater(.1, _testDupNameDoLatersRemove, 'testDupNameDoLaterRemove')
+        dl2 = tm.doMethodLater(.1, _testDupNameDoLatersRemove, 'testDupNameDoLaterRemove')
+        assert len(tm.getDoLaters()) == 2
+        dl2.remove()
+        assert len(tm.getDoLaters()) == 1
+        dl1.remove()
+        assert len(tm.getDoLaters()) == 0
+        _testDupNameDoLatersRemove = None
+        # nameDict etc. isn't cleared out right away with task.remove()
         tm._checkMemLeaks()
 
         # getTasksNamed
