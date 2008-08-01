@@ -18,6 +18,7 @@
 #include "cullBinManager.h"
 #include "fogAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "scissorAttrib.h"
 #include "transparencyAttrib.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -1970,6 +1971,27 @@ determine_clip_plane() {
     _clip_plane = DCAST(ClipPlaneAttrib, attrib);
   }
   _flags |= F_checked_clip_plane;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_scissor
+//       Access: Private
+//  Description: This is the private implementation of get_scissor().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_scissor() {
+  MutexHolder holder(_lock);
+  if ((_flags & F_checked_scissor) != 0) {
+    // Someone else checked it first.
+    return;
+  }
+
+  const RenderAttrib *attrib = get_attrib(ScissorAttrib::get_class_type());
+  _scissor = (const ScissorAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _scissor = DCAST(ScissorAttrib, attrib);
+  }
+  _flags |= F_checked_scissor;
 }
 
 ////////////////////////////////////////////////////////////////////

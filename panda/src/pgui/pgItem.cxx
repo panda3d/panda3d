@@ -26,6 +26,7 @@
 #include "cullTraverserData.h"
 #include "cullBinManager.h"
 #include "clipPlaneAttrib.h"
+#include "scissorAttrib.h"
 #include "dcast.h"
 #include "boundingSphere.h"
 #include "boundingBox.h"
@@ -252,7 +253,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      if (activate_region(transform, sort, data._state->get_clip_plane())) {
+      if (activate_region(transform, sort, data._state->get_clip_plane(),
+                          data._state->get_scissor())) {
         pg_trav->_top->add_region(get_region());
       }
     }
@@ -379,7 +381,8 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
 activate_region(const LMatrix4f &transform, int sort,
-                const ClipPlaneAttrib *cpa) {
+                const ClipPlaneAttrib *cpa,
+                const ScissorAttrib *sa) {
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
   LPoint3f ll(_frame[0], 0.0f, _frame[2]);
@@ -391,8 +394,10 @@ activate_region(const LMatrix4f &transform, int sort,
   ul = ul * transform;
   ur = ur * transform;
 
+  LVecBase4f frame;
   if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
-    // Apply the clip plane(s) now that we are here in world space.
+    // Apply the clip plane(s) and/or scissor region now that we are
+    // here in world space.
     
     pvector<LPoint2f> points;
     points.reserve(4);
@@ -406,13 +411,13 @@ activate_region(const LMatrix4f &transform, int sort,
       NodePath plane_path = cpa->get_on_plane(i);
       Planef plane = DCAST(PlaneNode, plane_path.node())->get_plane();
       plane.xform(plane_path.get_net_transform()->get_mat());
-
+      
       // We ignore the y coordinate, assuming the frame is still in
       // the X-Z plane after being transformed.  Not sure if we really
       // need to support general 3-D transforms on 2-D objects.
       clip_frame(points, plane);
     }
-
+    
     if (points.empty()) {
       // Turns out it's completely clipped after all.
       return false;
@@ -420,7 +425,7 @@ activate_region(const LMatrix4f &transform, int sort,
 
     pvector<LPoint2f>::iterator pi;
     pi = points.begin();
-    LVecBase4f frame((*pi)[0], (*pi)[0], (*pi)[1], (*pi)[1]);
+    frame.set((*pi)[0], (*pi)[0], (*pi)[1], (*pi)[1]);
     ++pi;
     while (pi != points.end()) {
       frame[0] = min(frame[0], (*pi)[0]);
@@ -429,15 +434,29 @@ activate_region(const LMatrix4f &transform, int sort,
       frame[3] = max(frame[3], (*pi)[1]);
       ++pi;
     }
-    _region->set_frame(frame);
-
   } else {
     // Since there are no clip planes involved, just set the frame.
-    _region->set_frame(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
-                       max(max(ll[0], lr[0]), max(ul[0], ur[0])),
-                       min(min(ll[2], lr[2]), min(ul[2], ur[2])),
-                       max(max(ll[2], lr[2]), max(ul[2], ur[2])));
+    frame.set(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
+              max(max(ll[0], lr[0]), max(ul[0], ur[0])),
+              min(min(ll[2], lr[2]), min(ul[2], ur[2])),
+              max(max(ll[2], lr[2]), max(ul[2], ur[2])));
   }
+
+  if (sa != (ScissorAttrib *)NULL) {
+    // Also restrict it to within the scissor region.
+    const LVecBase4f &sf = sa->get_frame();
+    // Expand sf from 0..1 to -1..1.
+    frame.set(max(frame[0], sf[0] * 2.0f - 1.0f),
+              min(frame[1], sf[1] * 2.0f - 1.0f),
+              max(frame[2], sf[2] * 2.0f - 1.0f),
+              min(frame[3], sf[3] * 2.0f - 1.0f));
+    if (frame[1] <= frame[0] || frame[3] <= frame[2]) {
+      // Completely outside the scissor region.
+      return false;
+    }
+  }
+
+  _region->set_frame(frame);
                      
   _region->set_sort(sort);
   _region->set_active(true);

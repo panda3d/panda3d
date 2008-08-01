@@ -34,6 +34,7 @@ class PGTop;
 class MouseWatcherParameter;
 class AudioSound;
 class ClipPlaneAttrib;
+class ScissorAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PGItem
@@ -70,7 +71,8 @@ protected:
 public:
   virtual void xform(const LMatrix4f &mat);
   bool activate_region(const LMatrix4f &transform, int sort,
-                       const ClipPlaneAttrib *cpa);
+                       const ClipPlaneAttrib *cpa,
+                       const ScissorAttrib *sa);
   INLINE PGMouseWatcherRegion *get_region() const;
 
   virtual void enter_region(const MouseWatcherParameter &param);

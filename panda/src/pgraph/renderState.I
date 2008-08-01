@@ -367,6 +367,25 @@ get_clip_plane() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_scissor
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ScissorAttrib on this state.  It returns a
+//               pointer to the ScissorAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const ScissorAttrib *RenderState::
+get_scissor() const {
+  if ((_flags & F_checked_scissor) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal scissor cache.
+    ((RenderState *)this)->determine_scissor();
+  }
+  return _scissor;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::get_shader
 //       Access: Published
 //  Description: This function is provided as an optimization, to

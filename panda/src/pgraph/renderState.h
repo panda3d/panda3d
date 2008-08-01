@@ -42,6 +42,7 @@ class ColorScaleAttrib;
 class TextureAttrib;
 class TexGenAttrib;
 class ClipPlaneAttrib;
+class ScissorAttrib;
 class ShaderAttrib;
 class FactoryParams;
 class AudioVolumeAttrib;
@@ -147,6 +148,7 @@ PUBLISHED:
   INLINE const TexMatrixAttrib *get_tex_matrix() const;
   INLINE const RenderModeAttrib *get_render_mode() const;
   INLINE const ClipPlaneAttrib *get_clip_plane() const;
+  INLINE const ScissorAttrib *get_scissor() const;
   INLINE const ShaderAttrib *get_shader() const;
   INLINE const AudioVolumeAttrib *get_audio_volume() const;
   
@@ -201,6 +203,7 @@ private:
   void determine_tex_matrix();
   void determine_render_mode();
   void determine_clip_plane();
+  void determine_scissor();
   void determine_shader();
   void determine_cull_callback();
   void determine_audio_volume();
@@ -315,28 +318,30 @@ private:
   const TexMatrixAttrib *_tex_matrix;
   const RenderModeAttrib *_render_mode;
   const ClipPlaneAttrib *_clip_plane;
+  const ScissorAttrib *_scissor;
   const ShaderAttrib *_shader;
   const AudioVolumeAttrib *_audio_volume;
   
   enum Flags {
-    F_checked_bin_index     = 0x0001,
-    F_checked_fog           = 0x0002,
-    F_checked_bin           = 0x0004,
-    F_checked_transparency  = 0x0008,
-    F_checked_color         = 0x0010,
-    F_checked_color_scale   = 0x0020,
-    F_checked_texture       = 0x0040,
-    F_checked_tex_gen       = 0x0080,
-    F_checked_tex_matrix    = 0x0100,
-    F_checked_render_mode   = 0x0200,
-    F_checked_clip_plane    = 0x0400,
-    F_checked_shader        = 0x0800,
-    F_checked_cull_callback = 0x1000,
-    F_checked_audio_volume  = 0x2000,
-    F_has_cull_callback     = 0x4000,
-    F_is_destructing        = 0x8000,
+    F_checked_bin_index     = 0x000001,
+    F_checked_fog           = 0x000002,
+    F_checked_bin           = 0x000004,
+    F_checked_transparency  = 0x000008,
+    F_checked_color         = 0x000010,
+    F_checked_color_scale   = 0x000020,
+    F_checked_texture       = 0x000040,
+    F_checked_tex_gen       = 0x000080,
+    F_checked_tex_matrix    = 0x000100,
+    F_checked_render_mode   = 0x000200,
+    F_checked_clip_plane    = 0x000400,
+    F_checked_shader        = 0x000800,
+    F_checked_cull_callback = 0x001000,
+    F_checked_audio_volume  = 0x002000,
+    F_has_cull_callback     = 0x004000,
+    F_is_destructing        = 0x008000,
+    F_checked_scissor       = 0x010000,
   };
-  unsigned short _flags;
+  unsigned int _flags;
 
   // This mutex protects _flags, and all of the above computed values.
   Mutex _lock;
