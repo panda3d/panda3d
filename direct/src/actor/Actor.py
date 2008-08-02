@@ -831,7 +831,7 @@ class Actor(DirectObject, NodePath):
 
         # loop through all anims for named part and find if any are playing
         for animName, anim in animDict.items():
-            if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
+            if anim.animControl and anim.animControl.isPlaying():
                 return animName
 
         # we must have found none, or gotten an error
@@ -856,7 +856,7 @@ class Actor(DirectObject, NodePath):
 
         # loop through all anims for named part and find if any are playing
         for animName, anim in animDict.items():
-            if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
+            if anim.animControl and anim.animControl.isPlaying():
                 return anim.animControl.getFrame()
 
         # we must have found none, or gotten an error
@@ -1572,7 +1572,7 @@ class Actor(DirectObject, NodePath):
                 pass
             else:
                 # bind the animation first if we need to
-                if not isinstance(anim.animControl, AnimControl):
+                if not anim.animControl:
                     self.__bindAnimToPart(animName, partName, lodName)
                 return anim.animControl
 
@@ -1648,7 +1648,7 @@ class Actor(DirectObject, NodePath):
                 # get all playing animations
                 for thisPart, animDict in animDictItems:
                     for anim in animDict.values():
-                        if isinstance(anim.animControl, AnimControl) and anim.animControl.isPlaying():
+                        if anim.animControl and anim.animControl.isPlaying():
                             controls.append(anim.animControl)
             else:
                 # get the named animation only.
