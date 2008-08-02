@@ -40,7 +40,7 @@ THREADCOUNT=0
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
   "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","ARTOOLKIT",
-  "ODE","DIRECTCAM","FFMPEG","PANDATOOL","PANDAAPP"
+  "ODE","DIRECTCAM","FFMPEG","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -3213,69 +3213,6 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('x2egg.exe', input='libxfile.lib')
     TargetAdd('x2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('x2egg.exe', opts=['ADVAPI'])
-
-#
-# DIRECTORY: pandaapp/src/pandaappbase/
-#
-
-if (PkgSkip("PANDAAPP")==0):
-    OPTS=['DIR:pandaapp/src/pandaappbase']
-    TargetAdd('pandaappbase_pandaappbase.obj', opts=OPTS, input='pandaappbase.cxx')
-    TargetAdd('libpandaappbase.lib', input='pandaappbase_pandaappbase.obj')
-
-#
-# DIRECTORY: pandaapp/src/httpbackup/
-#
-
-if (PkgSkip("OPENSSL")==0) and (PkgSkip("PANDAAPP")==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandaapp/src/httpbackup', 'DIR:pandaapp/src/pandaappbase', 'OPENSSL']
-    TargetAdd('httpbackup_backupCatalog.obj', opts=OPTS, input='backupCatalog.cxx')
-    TargetAdd('httpbackup_httpBackup.obj', opts=OPTS, input='httpBackup.cxx')
-    TargetAdd('httpbackup.exe', input='httpbackup_backupCatalog.obj')
-    TargetAdd('httpbackup.exe', input='httpbackup_httpBackup.obj')
-    TargetAdd('httpbackup.exe', input='libpandaappbase.lib')
-    TargetAdd('httpbackup.exe', input='libprogbase.lib')
-    TargetAdd('httpbackup.exe', input='libpandatoolbase.lib')
-    TargetAdd('httpbackup.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('httpbackup.exe', input='libp3pystub.dll')
-    TargetAdd('httpbackup.exe', opts=['ADVAPI', 'OPENSSL'])
-
-#
-# DIRECTORY: pandaapp/src/indexify/
-#
-
-if (PkgSkip("FREETYPE")==0) and (PkgSkip("PANDAAPP")==0) and (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandaapp/src/indexify', 'FREETYPE']
-    TargetAdd('font-samples_default_font.obj', opts=OPTS, input='default_font.cxx')
-    TargetAdd('font-samples_fontSamples.obj', opts=OPTS, input='fontSamples.cxx')
-    TargetAdd('font-samples.exe', input='font-samples_default_font.obj')
-    TargetAdd('font-samples.exe', input='font-samples_fontSamples.obj')
-    TargetAdd('font-samples.exe', input='libprogbase.lib')
-    TargetAdd('font-samples.exe', input='libpandatoolbase.lib')
-    TargetAdd('font-samples.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('font-samples.exe', input='libp3pystub.dll')
-    TargetAdd('font-samples.exe', opts=['ADVAPI', 'FREETYPE'])
-
-    TargetAdd('indexify_default_index_icons.obj', opts=OPTS, input='default_index_icons.cxx')
-    TargetAdd('indexify_default_font.obj', opts=OPTS, input='default_font.cxx')
-    TargetAdd('indexify_indexImage.obj', opts=OPTS, input='indexImage.cxx')
-    TargetAdd('indexify_indexParameters.obj', opts=OPTS, input='indexParameters.cxx')
-    TargetAdd('indexify_indexify.obj', opts=OPTS, input='indexify.cxx')
-    TargetAdd('indexify_photo.obj', opts=OPTS, input='photo.cxx')
-    TargetAdd('indexify_rollDirectory.obj', opts=OPTS, input='rollDirectory.cxx')
-
-    TargetAdd('indexify.exe', input='indexify_default_index_icons.obj')
-    TargetAdd('indexify.exe', input='indexify_default_font.obj')
-    TargetAdd('indexify.exe', input='indexify_indexImage.obj')
-    TargetAdd('indexify.exe', input='indexify_indexParameters.obj')
-    TargetAdd('indexify.exe', input='indexify_indexify.obj')
-    TargetAdd('indexify.exe', input='indexify_photo.obj')
-    TargetAdd('indexify.exe', input='indexify_rollDirectory.obj')
-    TargetAdd('indexify.exe', input='libprogbase.lib')
-    TargetAdd('indexify.exe', input='libpandatoolbase.lib')
-    TargetAdd('indexify.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('indexify.exe', input='libp3pystub.dll')
-    TargetAdd('indexify.exe', opts=['ADVAPI', 'FREETYPE'])
 
 #
 # Generate the models directory and samples directory
