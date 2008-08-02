@@ -33,7 +33,7 @@ def Dtool_PreloadDLL(module):
     windows can't find DLLs - it can only find PYDs.  The
     preloader is able to find DLLs."""
 
-    if (sys.platform != "win32"):
+    if (sys.platform != "win32" and sys.platform != "darwin"):
         return
     if (sys.modules.has_key(module)):
         return
