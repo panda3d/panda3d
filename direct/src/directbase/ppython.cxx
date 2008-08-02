@@ -117,14 +117,14 @@ int main(int argc, char **argv)
 
 ///////////////////////////////////////////////////////////////////////
 //
-// Linux Version
+// Linux and OSX Version
 //
 // This would probably work on most unixes, with the possible
 // exception of the /proc/self/exe bit.
 //
 ///////////////////////////////////////////////////////////////////////
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "/bin/genpycode"
@@ -139,12 +139,16 @@ int main(int argc, char **argv)
 #endif
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/param.h>
+#ifdef __APPLE__
+  #include <sys/malloc.h>
+#else
+  #include <malloc.h>
+#endif
 
 void errorexit(char *s)
 {
@@ -165,9 +169,9 @@ int main(int argc, char **argv)
   int fnlen,modargc;
 
   // Ask linux for the file name of this executable.
-
   int ok = readlink("/proc/self/exe", fnbuf, PATH_MAX-1);
-  if (ok<0) errorexit("Cannot read /proc/sys/exe");
+  if (ok<0 && argc > 0) strcpy(fnbuf, argv[0]);
+  else errorexit("Cannot read /proc/sys/exe");
   fnbuf[PATH_MAX-1] = 0;
   fnlen = strlen(fnbuf);
 
