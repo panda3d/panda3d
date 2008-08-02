@@ -170,8 +170,10 @@ int main(int argc, char **argv)
 
   // Ask linux for the file name of this executable.
   int ok = readlink("/proc/self/exe", fnbuf, PATH_MAX-1);
-  if (ok<0 && argc > 0) strcpy(fnbuf, argv[0]);
-  else errorexit("Cannot read /proc/sys/exe");
+  if (ok<0) {
+    if (argc>0) strcpy(fnbuf, argv[0]);
+    else errorexit("Cannot read /proc/sys/exe");
+  }
   fnbuf[PATH_MAX-1] = 0;
   fnlen = strlen(fnbuf);
 
