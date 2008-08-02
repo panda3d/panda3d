@@ -5,6 +5,9 @@ import imp,sys,os
 
 is_python_d = False
 dll_suffix = ''
+dll_ext = '.dll'
+if (sys.platform == "darwin"):
+    dll_ext = '.dylib'
 
 if (sys.platform == "win32"):
     # If we launched from python_d.exe, we need to load libpanda_d.dll, etc.
@@ -13,7 +16,7 @@ if (sys.platform == "win32"):
         dll_suffix = '_d'
     
     target = None
-    filename = "libpandaexpress%s.dll" % (dll_suffix)
+    filename = "libpandaexpress%s%s" % (dll_suffix, dll_ext)
     for dir in sys.path + [sys.prefix]:
         lib = os.path.join(dir, filename)
         if (os.path.exists(lib)):
@@ -36,13 +39,13 @@ def Dtool_PreloadDLL(module):
         return
     target = None
     for dir in sys.path + [sys.prefix]:
-        lib = os.path.join(dir, module + dll_suffix + ".dll")
+        lib = os.path.join(dir, module + dll_suffix + dll_ext)
         if (os.path.exists(lib)):
             target = dir
             break
     if (target == None):
         raise "DLL loader cannot find "+module+"."
-    imp.load_dynamic(module, os.path.join(target, module + dll_suffix + ".dll"))
+    imp.load_dynamic(module, os.path.join(target, module + dll_suffix + dll_ext))
 
 Dtool_PreloadDLL("libpandaexpress")
 from libpandaexpress import *
