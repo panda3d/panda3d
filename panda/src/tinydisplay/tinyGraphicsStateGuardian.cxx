@@ -1819,8 +1819,7 @@ apply_texture(TextureContext *tc) {
     bool okflag = upload_texture(gtc);
     if (!okflag) {
       tinydisplay_cat.error()
-        << "Could not load " << *gtc->get_texture()
-        << ": inappropriate size.\n";
+        << "Could not load " << *gtc->get_texture() << "\n";
     }
     gtc->mark_loaded();
     if (!okflag) {
