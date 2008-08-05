@@ -30,9 +30,21 @@ class EXPCL_PANDA_PGRAPH RenderModeAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
     M_unchanged,
+
+    // Normal, filled polygons.
     M_filled,
+
+    // Wireframe polygons, possibly with thickness.
     M_wireframe,
-    M_point
+
+    // Points at vertices only, possibly with thickness and/or
+    // perspective sizing.
+    M_point,
+
+    // Filled polygons, without any particular emphasis on perspective
+    // correctness (a particularly useful designation for software
+    // rendering sprites).
+    M_filled_flat
   };
 
 private:

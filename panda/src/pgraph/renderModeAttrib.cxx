@@ -61,11 +61,11 @@ output(ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_unchanged:
-    out << "unchanged(" << get_thickness() << ")";
+    out << "unchanged";
     break;
 
   case M_filled:
-    out << "filled(" << get_thickness() << ")";
+    out << "filled";
     break;
 
   case M_wireframe:
@@ -74,6 +74,10 @@ output(ostream &out) const {
 
   case M_point:
     out << "point(" << get_thickness() << ")";
+    break;
+
+  case M_filled_flat:
+    out << "filled_flat";
     break;
   }
 

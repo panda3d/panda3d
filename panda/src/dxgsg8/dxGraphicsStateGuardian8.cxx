@@ -2002,6 +2002,7 @@ do_issue_render_mode() {
   switch (mode) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
+  case RenderModeAttrib::M_filled_flat:
     _d3d_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
     break;
 

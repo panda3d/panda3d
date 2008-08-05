@@ -3782,6 +3782,7 @@ do_issue_render_mode() {
   switch (_render_mode) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
+  case RenderModeAttrib::M_filled_flat:
     GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_FILL);
     break;
 

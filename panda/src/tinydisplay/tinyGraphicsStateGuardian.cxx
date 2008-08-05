@@ -103,6 +103,12 @@ reset() {
   _alpha_scale_via_texture = false;
   _runtime_color_scale = true;
 
+  _color_material_flags = 0;
+  _texturing_state = 0;
+  _texfilter_state = 0;
+  _texture_replace = false;
+  _filled_flat = false;
+
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
@@ -800,9 +806,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   int texfilter_state = 0;  // tnearest
   if (texturing_state > 0) {
     texfilter_state = _texfilter_state;
-    if (_c->matrix_model_projection_no_w_transform) {
+    if (_c->matrix_model_projection_no_w_transform ||
+        _filled_flat) {
       // Don't bother with the perspective-correct algorithm if we're
-      // under an orthonormal lens, e.g. render2d.
+      // under an orthonormal lens, e.g. render2d; or if
+      // RenderMode::M_filled_flat is in effect.
       texturing_state = 1;    // textured (not perspective correct)
     }
 
@@ -1602,11 +1610,19 @@ void TinyGraphicsStateGuardian::
 do_issue_render_mode() {
   const RenderModeAttrib *attrib = _target._render_mode;
 
+  _filled_flat = false;
+
   switch (attrib->get_mode()) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
     _c->draw_triangle_front = gl_draw_triangle_fill;
     _c->draw_triangle_back = gl_draw_triangle_fill;
+    break;
+
+  case RenderModeAttrib::M_filled_flat:
+    _c->draw_triangle_front = gl_draw_triangle_fill;
+    _c->draw_triangle_back = gl_draw_triangle_fill;
+    _filled_flat = true;
     break;
 
   case RenderModeAttrib::M_wireframe:

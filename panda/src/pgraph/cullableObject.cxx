@@ -258,10 +258,10 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
     point_size = render_mode->get_thickness();
     perspective = render_mode->get_perspective();
 
-    if (render_mode->get_mode() != RenderModeAttrib::M_filled) {
-      // Be sure to turn on polygon render mode, since we're actually
-      // rendering polygons, not points any more.
-      _state = _state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled));
+    if (render_mode->get_mode() != RenderModeAttrib::M_filled_flat) {
+      // Render the new polygons with M_filled_flat, for a slight
+      // performance advantage when software rendering.
+      _state = _state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled_flat));
     }
   }
 

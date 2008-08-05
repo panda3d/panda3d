@@ -3257,6 +3257,7 @@ do_issue_render_mode() {
   switch (mode) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
+  case RenderModeAttrib::M_filled_flat:
     set_render_state(D3DRS_FILLMODE, D3DFILL_SOLID);
     break;
 

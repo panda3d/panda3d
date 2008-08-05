@@ -139,6 +139,7 @@ private:
   int _texturing_state;
   int _texfilter_state;
   bool _texture_replace;
+  bool _filled_flat;
 
   SimpleLru _textures_lru;
 
