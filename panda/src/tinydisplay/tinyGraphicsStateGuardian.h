@@ -152,6 +152,15 @@ private:
 
   static PStatCollector _vertices_immediate_pcollector;
   static PStatCollector _draw_transform_pcollector;
+  static PStatCollector _pixel_count_white_untextured_pcollector;
+  static PStatCollector _pixel_count_flat_untextured_pcollector;
+  static PStatCollector _pixel_count_smooth_untextured_pcollector;
+  static PStatCollector _pixel_count_white_textured_pcollector;
+  static PStatCollector _pixel_count_flat_textured_pcollector;
+  static PStatCollector _pixel_count_smooth_textured_pcollector;
+  static PStatCollector _pixel_count_white_perspective_pcollector;
+  static PStatCollector _pixel_count_flat_perspective_pcollector;
+  static PStatCollector _pixel_count_smooth_perspective_pcollector;
 
 public:
   static TypeHandle get_class_type() {

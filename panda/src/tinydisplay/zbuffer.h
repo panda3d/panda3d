@@ -136,6 +136,26 @@ struct ZBufferPoint {
 
 /* zbuffer.c */
 
+#ifdef DO_PSTATS
+extern int pixel_count_white_untextured;
+extern int pixel_count_flat_untextured;
+extern int pixel_count_smooth_untextured;
+extern int pixel_count_white_textured;
+extern int pixel_count_flat_textured;
+extern int pixel_count_smooth_textured;
+extern int pixel_count_white_perspective;
+extern int pixel_count_flat_perspective;
+extern int pixel_count_smooth_perspective;
+
+#define COUNT_PIXELS(pixel_count, p0, p1, p2) \
+  (pixel_count) += abs((p0)->x * ((p1)->y - (p2)->y) + (p1)->x * ((p2)->y - (p0)->y) + (p2)->x * ((p0)->y - (p1)->y)) / 2
+
+#else
+
+#define COUNT_PIXELS(pixel_count, p0, p1, p2)
+
+#endif  // DO_PSTATS
+
 ZBuffer *ZB_open(int xsize,int ysize,int mode,
 		 int nb_colors,
 		 unsigned char *color_indexes,

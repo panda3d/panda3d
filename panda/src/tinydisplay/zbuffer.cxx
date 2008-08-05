@@ -10,6 +10,18 @@
 #include "zbuffer.h"
 #include "pnotify.h"
 
+#ifdef DO_PSTATS
+int pixel_count_white_untextured;
+int pixel_count_flat_untextured;
+int pixel_count_smooth_untextured;
+int pixel_count_white_textured;
+int pixel_count_flat_textured;
+int pixel_count_smooth_textured;
+int pixel_count_white_perspective;
+int pixel_count_flat_perspective;
+int pixel_count_smooth_perspective;
+#endif  // DO_PSTATS
+
 ZBuffer *ZB_open(int xsize, int ysize, int mode,
 		 int nb_colors,
 		 unsigned char *color_indexes,

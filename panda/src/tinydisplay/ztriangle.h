@@ -39,6 +39,8 @@
 
   EARLY_OUT();
 
+  COUNT_PIXELS(PIXEL_COUNT, p0, p1, p2);
+
   /* we sort the vertex with increasing y */
   if (p1->y < p0->y) {
     t = p0;
@@ -382,3 +384,4 @@
 #undef DRAW_INIT
 #undef DRAW_LINE  
 #undef PUT_PIXEL
+#undef PIXEL_COUNT

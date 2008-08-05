@@ -32,6 +32,15 @@ TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
 PStatCollector TinyGraphicsStateGuardian::_draw_transform_pcollector("Draw:Transform");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_untextured_pcollector("Pixels:White untextured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_untextured_pcollector("Pixels:Flat untextured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_untextured_pcollector("Pixels:Smooth untextured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_textured_pcollector("Pixels:White textured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_textured_pcollector("Pixels:Flat textured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_textured_pcollector("Pixels:Smooth textured");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_perspective_pcollector("Pixels:White perspective");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_perspective_pcollector("Pixels:Flat perspective");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_perspective_pcollector("Pixels:Smooth perspective");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
@@ -341,6 +350,16 @@ begin_frame(Thread *current_thread) {
 
 #ifdef DO_PSTATS
   _vertices_immediate_pcollector.clear_level();
+
+  _pixel_count_white_untextured_pcollector.clear_level();
+  _pixel_count_flat_untextured_pcollector.clear_level();
+  _pixel_count_smooth_untextured_pcollector.clear_level();
+  _pixel_count_white_textured_pcollector.clear_level();
+  _pixel_count_flat_textured_pcollector.clear_level();
+  _pixel_count_smooth_textured_pcollector.clear_level();
+  _pixel_count_white_perspective_pcollector.clear_level();
+  _pixel_count_flat_perspective_pcollector.clear_level();
+  _pixel_count_smooth_perspective_pcollector.clear_level();
 #endif
 
   return true;
@@ -424,8 +443,20 @@ void TinyGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
 
+#ifdef DO_PSTATS
   // Flush any PCollectors specific to this kind of GSG.
   _vertices_immediate_pcollector.flush_level();
+
+  _pixel_count_white_untextured_pcollector.flush_level();
+  _pixel_count_flat_untextured_pcollector.flush_level();
+  _pixel_count_smooth_untextured_pcollector.flush_level();
+  _pixel_count_white_textured_pcollector.flush_level();
+  _pixel_count_flat_textured_pcollector.flush_level();
+  _pixel_count_smooth_textured_pcollector.flush_level();
+  _pixel_count_white_perspective_pcollector.flush_level();
+  _pixel_count_flat_perspective_pcollector.flush_level();
+  _pixel_count_smooth_perspective_pcollector.flush_level();
+#endif  // DO_PSTATS
 
   // Evict any textures that exceed our texture memory.
   _textures_lru.begin_epoch();
@@ -783,6 +814,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   _c->zb_fill_tri = fill_tri_funcs[depth_write_state][color_write_state][alpha_test_state][depth_test_state][texfilter_state][shade_model_state][texturing_state];
+
+#ifdef DO_PSTATS
+  pixel_count_white_untextured = 0;
+  pixel_count_flat_untextured = 0;
+  pixel_count_smooth_untextured = 0;
+  pixel_count_white_textured = 0;
+  pixel_count_flat_textured = 0;
+  pixel_count_smooth_textured = 0;
+  pixel_count_white_perspective = 0;
+  pixel_count_flat_perspective = 0;
+  pixel_count_smooth_perspective = 0;
+#endif  // DO_PSTATS
   
   return true;
 }
@@ -1028,6 +1071,19 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 end_draw_primitives() {
+
+#ifdef DO_PSTATS
+  _pixel_count_white_untextured_pcollector.add_level(pixel_count_white_untextured);
+  _pixel_count_flat_untextured_pcollector.add_level(pixel_count_flat_untextured);
+  _pixel_count_smooth_untextured_pcollector.add_level(pixel_count_smooth_untextured);
+  _pixel_count_white_textured_pcollector.add_level(pixel_count_white_textured);
+  _pixel_count_flat_textured_pcollector.add_level(pixel_count_flat_textured);
+  _pixel_count_smooth_textured_pcollector.add_level(pixel_count_smooth_textured);
+  _pixel_count_white_perspective_pcollector.add_level(pixel_count_white_perspective);
+  _pixel_count_flat_perspective_pcollector.add_level(pixel_count_flat_perspective);
+  _pixel_count_smooth_perspective_pcollector.add_level(pixel_count_smooth_perspective);
+#endif  // DO_PSTATS
+
   GraphicsStateGuardian::end_draw_primitives();
 }
 

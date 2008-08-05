@@ -21,6 +21,8 @@ static void FNAME(white_untextured) (ZBuffer *zb,
     z+=dzdx;                                                            \
   }
 
+#define PIXEL_COUNT pixel_count_white_untextured
+
 #include "ztriangle.h"
 }
 
@@ -57,6 +59,8 @@ static void FNAME(flat_untextured) (ZBuffer *zb,
     }                                                   \
     z+=dzdx;                                            \
   }
+
+#define PIXEL_COUNT pixel_count_flat_untextured
 
 #include "ztriangle.h"
 }
@@ -105,6 +109,8 @@ static void FNAME(smooth_untextured) (ZBuffer *zb,
     oa1+=dadx;                                                          \
   }
 
+#define PIXEL_COUNT pixel_count_smooth_untextured
+
 #include "ztriangle.h"
 }
 
@@ -139,6 +145,8 @@ static void FNAME(white_textured) (ZBuffer *zb,
     s+=dsdx;                                                            \
     t+=dtdx;                                                            \
   }
+
+#define PIXEL_COUNT pixel_count_white_textured
 
 #include "ztriangle.h"
 }
@@ -192,6 +200,8 @@ static void FNAME(flat_textured) (ZBuffer *zb,
     s+=dsdx;                                                            \
     t+=dtdx;                                                            \
   }
+
+#define PIXEL_COUNT pixel_count_flat_textured
 
 #include "ztriangle.h"
 }
@@ -256,6 +266,8 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
     t+=dtdx;                                                            \
   }
 
+#define PIXEL_COUNT pixel_count_smooth_textured
+
 #include "ztriangle.h"
 }
 
@@ -275,8 +287,8 @@ static void FNAME(white_perspective) (ZBuffer *zb,
 
 #define NB_INTERP 8
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                                     \
+  {                                                     \
   }
 
 #define DRAW_INIT()				\
@@ -364,6 +376,8 @@ static void FNAME(white_perspective) (ZBuffer *zb,
     }                                                   \
   }
   
+#define PIXEL_COUNT pixel_count_white_perspective
+
 #include "ztriangle.h"
 }
 
@@ -382,9 +396,8 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
 #define INTERP_STZ
 #define INTERP_RGB
 
-
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                                     \
+  {                                                     \
   }
 
 #define DRAW_INIT() 				\
@@ -492,6 +505,8 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
       n-=1;                                             \
     }                                                   \
   }
+
+#define PIXEL_COUNT pixel_count_flat_perspective
 
 #include "ztriangle.h"
 }
@@ -629,6 +644,8 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
       n-=1;                                             \
     }                                                   \
   }
+
+#define PIXEL_COUNT pixel_count_smooth_perspective
 
 #include "ztriangle.h"
 }
