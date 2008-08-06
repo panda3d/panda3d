@@ -743,7 +743,11 @@ global proc string argsBuilder()
 	//get the version of maya and append it to the maya2egg call
 	string $mayaVersionLong = `getApplicationVersionAsFloat`;
 	string $mayaVersionShort = substituteAllString($mayaVersionLong, ".", "");
-	string $mayaVersionShort = substituteAllString($mayaVersionShort, "0", "");
+	//only strips the zeroes if the version number is less than 4
+	if (`size($mayaVersionShort)`<4)
+	{
+		$mayaVersionShort = substituteAllString($mayaVersionShort, "0", "");
+	}
 
 	$args += $mayaVersionShort;
 
