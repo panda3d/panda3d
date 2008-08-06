@@ -1,5 +1,8 @@
 ------------------------  RELEASE 1.5.3  ------------------------
 
+This release fixes most of the remaining bugs, but it adds
+some new features as well.
+
 * License changed to BSD
 * Fixes x-file parser for real, this time.
 * Fixes serious bug in shader generator
@@ -8,6 +11,8 @@
 * Adds support for .egg.pz to packpanda --bam
 * Turns on libpandaode support
 * Mayapandatool fixed
+* Added support for 3dsmax 2009
+* Improved support for 64-bits, gcc 4.3 and OSX
 
 ------------------------  RELEASE 1.5.2  ------------------------
 
