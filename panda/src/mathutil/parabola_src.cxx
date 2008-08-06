@@ -20,9 +20,10 @@
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(Parabola)::
 xform(const FLOATNAME(LMatrix4) &mat) {
-  // I'm not really sure if this is the right thing to do here.
-  _a = mat.xform_vec_general(_a);
-  _b = mat.xform_vec_general(_b);
+  // Note that xform_vec() is the correct operation here, while
+  // xform_vec_general() is not.
+  _a = mat.xform_vec(_a);
+  _b = mat.xform_vec(_b);
   _c = mat.xform_point(_c);
 }
 
