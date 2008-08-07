@@ -90,7 +90,9 @@ class AsyncRequest(DirectObject):
         self.acceptOnce(
             "doFieldResponse-%s"%(context,),
             self._checkCompletion, [key])
-        
+
+        self.neededObjects[key] = None
+
         self.air.queryObjectField(dclassName, fieldName, doId, context)
         self._resetTimeoutTask()
 
