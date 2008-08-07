@@ -27,6 +27,17 @@ EggBackPointer() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggBackPointer::get_frame_rate
+//       Access: Public, Virtual
+//  Description: Returns the stated frame rate of this particular
+//               joint, or 0.0 if it doesn't state.
+////////////////////////////////////////////////////////////////////
+double EggBackPointer::
+get_frame_rate() const {
+  return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggBackPointer::extend_to
 //       Access: Public, Virtual
 //  Description: Extends the table to the indicated number of frames.

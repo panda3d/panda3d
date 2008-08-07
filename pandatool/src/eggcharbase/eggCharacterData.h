@@ -71,6 +71,7 @@ public:
   INLINE EggData *get_egg_data(int n) const;
   int get_num_frames(int model_index) const;
   bool check_num_frames(int model_index);
+  double get_frame_rate(int model_index) const;
 
   INLINE EggJointData *get_root_joint() const;
   INLINE EggJointData *find_joint(const string &name) const;

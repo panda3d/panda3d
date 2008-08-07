@@ -29,6 +29,21 @@ EggScalarTablePointer(EggObject *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggScalarTablePointer::get_frame_rate
+//       Access: Public, Virtual
+//  Description: Returns the stated frame rate of this particular
+//               joint, or 0.0 if it doesn't state.
+////////////////////////////////////////////////////////////////////
+double EggScalarTablePointer::
+get_frame_rate() const {
+  if (_data == (EggSAnimData *)NULL || !_data->has_fps()) {
+    return 0.0;
+  } else {
+    return _data->get_fps();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggScalarTablePointer::get_num_frames
 //       Access: Public, Virtual
 //  Description: Returns the number of frames of animation for this

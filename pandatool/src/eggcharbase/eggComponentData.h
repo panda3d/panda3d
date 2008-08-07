@@ -45,6 +45,7 @@ public:
 
   int get_num_frames(int model_index) const;
   void extend_to(int model_index, int num_frames) const;
+  double get_frame_rate(int model_index) const;
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object)=0;
   virtual void write(ostream &out, int indent_level = 0) const=0;

@@ -36,6 +36,7 @@ class EggBackPointer : public TypedObject {
 public:
   EggBackPointer();
 
+  virtual double get_frame_rate() const;
   virtual int get_num_frames() const=0;
   virtual void extend_to(int num_frames);
   virtual bool has_vertices() const;

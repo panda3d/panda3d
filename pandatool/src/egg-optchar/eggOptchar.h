@@ -77,10 +77,12 @@ private:
 
   void do_flag_groups(EggGroupNode *egg_group);
   void rename_primitives(EggGroupNode *egg_group, const string &name);
+  void do_preload();
 
   bool _list_hierarchy;
   bool _list_hierarchy_v;
   bool _list_hierarchy_p;
+  bool _preload;
   bool _keep_all;
 
   class StringPair {

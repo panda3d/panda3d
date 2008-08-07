@@ -119,6 +119,21 @@ extend_to(int model_index, int num_frames) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggComponentData::get_frame_rate
+//       Access: Public, Virtual
+//  Description: Returns the number of frames of animation for this
+//               particular component in the indicated model.
+////////////////////////////////////////////////////////////////////
+double EggComponentData::
+get_frame_rate(int model_index) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return 0.0;
+  }
+  return back->get_frame_rate();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggComponentData::set_model
 //       Access: Public
 //  Description: Sets the back_pointer associated with the given

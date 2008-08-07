@@ -24,6 +24,9 @@
 #include "eggGroupNode.h"
 #include "eggPrimitive.h"
 #include "eggVertexPool.h"
+#include "eggTable.h"
+#include "eggGroup.h"
+#include "eggAnimPreload.h"
 #include "string_utils.h"
 #include "dcast.h"
 #include "pset.h"
@@ -108,6 +111,13 @@ EggOptchar() {
      "at runtime, but it will be animated by its vertices, not the node, so "
      "objects parented to this node will not inherit its animation.",
      &EggOptchar::dispatch_flag_groups, NULL, &_flag_groups);
+
+  add_option
+    ("preload", "", 0,
+     "Add an <AnimPreload> entry for each animation to the model file(s).  "
+     "This can be used at runtime to support asynchronous "
+     "loading and binding of animation channels.",
+     &EggOptchar::dispatch_none, &_preload);
 
   add_option
     ("zero", "joint[,hprxyzijkabc]", 0,
@@ -256,6 +266,11 @@ run() {
       for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
         do_flag_groups(*ei);
       }
+    }
+
+    // Add the AnimPreload entries.
+    if (_preload) {
+      do_preload();
     }
 
     write_eggs();
@@ -1343,6 +1358,65 @@ rename_primitives(EggGroupNode *egg_group, const string &name) {
 
     } else if (child->is_of_type(EggPrimitive::get_class_type())) {
       child->set_name(name);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::do_preload
+//       Access: Private
+//  Description: Generates the preload tables for each model.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+do_preload() {
+  // First, build up the list of AnimPreload entries, one for each
+  // animation file.
+  PT(EggGroup) anim_group = new EggGroup("preload");
+
+  int num_characters = _collection->get_num_characters();
+  int ci;
+  for (ci = 0; ci < num_characters; ++ci) {
+    EggCharacterData *char_data = _collection->get_character(ci);
+
+    int num_models = char_data->get_num_models();
+    for (int mn = 0; mn < num_models; ++mn) {
+      EggNode *root = char_data->get_model_root(mn);
+      if (root->is_of_type(EggTable::get_class_type())) {
+        // This model represents an animation.
+        EggData *data = char_data->get_egg_data(mn);
+        string basename = data->get_egg_filename().get_basename_wo_extension();
+        PT(EggAnimPreload) anim_preload = new EggAnimPreload(basename);
+
+        int mi = char_data->get_model_index(mn);
+        anim_preload->set_num_frames(char_data->get_num_frames(mi));
+        double frame_rate = char_data->get_frame_rate(mi);
+        if (frame_rate != 0.0) {
+          anim_preload->set_fps(frame_rate);
+        }
+        
+        anim_group->add_child(anim_preload);
+      }
+    }
+  }
+
+  // Now go back through and copy the preload tables into each of the
+  // model files.
+  for (ci = 0; ci < num_characters; ++ci) {
+    EggCharacterData *char_data = _collection->get_character(ci);
+
+    int num_models = char_data->get_num_models();
+    for (int mn = 0; mn < num_models; ++mn) {
+      EggNode *root = char_data->get_model_root(mn);
+      if (root->is_of_type(EggGroup::get_class_type())) {
+        // This is a model file.  Copy in the table.
+        EggGroup *model_root = DCAST(EggGroup, root);
+        EggGroup::const_iterator ci;
+        for (ci = anim_group->begin(); ci != anim_group->end(); ++ci) {
+          EggAnimPreload *anim_preload = DCAST(EggAnimPreload, *ci);
+          PT(EggAnimPreload) new_anim_preload = new EggAnimPreload(*anim_preload);
+          model_root->add_child(new_anim_preload);
+        }
+      }
     }
   }
 }

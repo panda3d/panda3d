@@ -134,6 +134,28 @@ get_num_frames(int model_index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::get_frame_rate
+//       Access: Public
+//  Description: Returns the stated frame rate of the specified model.
+//               Similar to get_num_frames().
+////////////////////////////////////////////////////////////////////
+double EggCharacterData::
+get_frame_rate(int model_index) const {
+  Components::const_iterator ci;
+  for (ci = _components.begin(); ci != _components.end(); ++ci) {
+    EggComponentData *component = (*ci);
+    double frame_rate = component->get_frame_rate(model_index);
+    if (frame_rate != 0.0) {
+      // We have a winner.  Assume all other components will be
+      // similar.
+      return frame_rate;
+    }
+  }
+
+  return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::check_num_frames
 //       Access: Public
 //  Description: Walks through each component and ensures that all

@@ -56,6 +56,21 @@ EggMatrixTablePointer(EggObject *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::get_frame_rate
+//       Access: Public, Virtual
+//  Description: Returns the stated frame rate of this particular
+//               joint, or 0.0 if it doesn't state.
+////////////////////////////////////////////////////////////////////
+double EggMatrixTablePointer::
+get_frame_rate() const {
+  if (_xform == (EggXfmSAnim *)NULL || !_xform->has_fps()) {
+    return 0.0;
+  } else {
+    return _xform->get_fps();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMatrixTablePointer::get_num_frames
 //       Access: Public, Virtual
 //  Description: Returns the number of frames of animation for this
