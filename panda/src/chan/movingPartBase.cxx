@@ -143,9 +143,12 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
          !needs_update && bci != cdata->_blend.end();
          ++bci) {
       AnimControl *control = (*bci).first;
+
+      AnimChannelBase *channel = NULL;
       int channel_index = control->get_channel_index();
-      nassertr(channel_index >= 0 && channel_index < (int)_channels.size(), false);
-      AnimChannelBase *channel = _channels[channel_index];
+      if (channel_index >= 0 && channel_index < (int)_channels.size()) {
+        channel = _channels[channel_index];
+      }
       if (channel != (AnimChannelBase*)NULL) {
         needs_update = control->channel_has_changed(channel, cdata->_frame_blend_flag);
       }

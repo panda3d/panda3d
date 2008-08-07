@@ -12,7 +12,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
-     config_egg.h eggAnimData.I eggAnimData.h eggAttributes.I  \
+     config_egg.h eggAnimData.I eggAnimData.h \
+     eggAnimPreload.I eggAnimPreload.h \
+     eggAttributes.I  \
      eggAttributes.h eggBin.h eggBinMaker.h eggComment.I  \
      eggComment.h \
      eggCompositePrimitive.I eggCompositePrimitive.h \
@@ -54,7 +56,9 @@
      vector_PT_EggTexture.h pt_EggVertex.h vector_PT_EggVertex.h
 
   #define INCLUDED_SOURCES \
-     config_egg.cxx eggAnimData.cxx eggAttributes.cxx eggBin.cxx  \
+     config_egg.cxx eggAnimData.cxx \
+     eggAnimPreload.cxx \
+     eggAttributes.cxx eggBin.cxx  \
      eggBinMaker.cxx eggComment.cxx \
      eggCompositePrimitive.cxx \
      eggCoordinateSystem.cxx  \
@@ -85,6 +89,7 @@
 
   #define INSTALL_HEADERS \
     eggAnimData.I eggAnimData.h \
+    eggAnimPreload.I eggAnimPreload.h \
     eggAttributes.I eggAttributes.h eggBin.h eggBinMaker.h eggComment.I \
     eggComment.h \
     eggCompositePrimitive.I eggCompositePrimitive.h \

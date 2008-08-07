@@ -32,6 +32,7 @@
 #include "eggCoordinateSystem.h"
 #include "eggExternalReference.h"
 #include "eggData.h"
+#include "eggAnimPreload.h"
 #include "pt_EggTexture.h"
 #include "pt_EggMaterial.h"
 
@@ -146,6 +147,7 @@ egg_cleanup_parser() {
 %token <_ulong> EGG_ULONG
 %token <_string> EGG_STRING
 
+%token ANIMPRELOAD
 %token BEZIERCURVE BFACE BILLBOARD BILLBOARDCENTER BINORMAL BUNDLE CLOSED
 %token COLLIDE COMMENT COMPONENT
 %token COORDSYSTEM CV DART
@@ -190,6 +192,7 @@ egg_cleanup_parser() {
 %type <_egg> nurbs_curve
 %type <_egg> table
 %type <_egg> bundle
+%type <_egg> anim_preload
 %type <_egg> sanim
 %type <_egg> xfmanim
 %type <_egg> xfm_s_anim
@@ -261,6 +264,7 @@ node:
         | nurbs_surface
         | nurbs_curve
         | table
+        | anim_preload
         ;
 
 /*
@@ -2484,7 +2488,6 @@ bundle:
 }
         ;
 
-
 /*
  * table_body
  *
@@ -2669,6 +2672,52 @@ xfm_s_anim_body:
 }
         ;
 
+
+/*
+ * anim_preload
+ *
+ * enter:
+ * exit: returns a new EggAnimPreload object.
+ *
+ */
+anim_preload:
+        ANIMPRELOAD optional_name
+{
+  EggAnimPreload *anim_preload = new EggAnimPreload($2);
+  egg_stack.push_back(anim_preload);
+}
+        '{' anim_preload_body '}'
+{
+  $$ = egg_stack.back();
+  egg_stack.pop_back();
+}
+        ;
+
+
+/*
+ * anim_preload_body
+ *
+ * enter: TOS is EggAnimPreload.
+ * exit: anim_preload contents have been filled.
+ *
+ */
+anim_preload_body:
+        empty
+        | anim_preload_body SCALAR required_name '{' real_or_string '}'
+{
+  EggAnimPreload *anim_preload = DCAST(EggAnimPreload, egg_stack.back());
+  string name = $3;
+  double value = $<_number>5;
+
+  if (cmp_nocase_uh(name, "fps") == 0) {
+    anim_preload->set_fps(value);
+  } else if (cmp_nocase_uh(name, "frames") == 0) {
+    anim_preload->set_num_frames((int)value);
+  } else {
+    eggyywarning("Unsupported AnimPreload scalar: " + name);
+  }
+}
+        ;
 
 /*
  * integer_list

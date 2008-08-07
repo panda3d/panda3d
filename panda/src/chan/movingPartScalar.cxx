@@ -58,18 +58,24 @@ get_blend_value(const PartBundle *root) {
 
   if (cdata->_blend.empty()) {
     // No channel is bound; supply the default value.
-    _value = _initial_value;
+    if (restore_initial_pose) {
+      _value = _initial_value;
+    }
 
   } else if (cdata->_blend.size() == 1 && !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     AnimControl *control = (*cdata->_blend.begin()).first;
 
+    ChannelType *channel = NULL;
     int channel_index = control->get_channel_index();
-    nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-    ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+    if (channel_index >= 0 && channel_index < (int)_channels.size()) {
+      channel = DCAST(ChannelType, _channels[channel_index]);
+    }
     if (channel == NULL) {
       // Nothing is actually bound here.
-      _value = _initial_value;
+      if (restore_initial_pose) {
+        _value = _initial_value;
+      }
 
     } else {
       channel->get_value(control->get_frame(), _value);
@@ -86,9 +92,11 @@ get_blend_value(const PartBundle *root) {
       float effect = (*cbi).second;
       nassertv(effect != 0.0f);
 
+      ChannelType *channel = NULL;
       int channel_index = control->get_channel_index();
-      nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
-      ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
+      if (channel_index >= 0 && channel_index < (int)_channels.size()) {
+        channel = DCAST(ChannelType, _channels[channel_index]);
+      }
       if (channel != NULL) {
         ValueType v;
         channel->get_value(control->get_frame(), v);
@@ -109,7 +117,9 @@ get_blend_value(const PartBundle *root) {
     }
 
     if (net == 0.0f) {
-      _value = _initial_value;
+      if (restore_initial_pose) {
+        _value = _initial_value;
+      }
 
     } else {
       _value /= net;

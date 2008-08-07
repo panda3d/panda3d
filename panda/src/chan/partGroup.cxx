@@ -253,6 +253,7 @@ sort_descendants() {
 bool PartGroup::
 check_hierarchy(const AnimGroup *anim, const PartGroup *,
                 int hierarchy_match_flags) const {
+  Thread::consider_yield();
   if (anim->get_value_type() != get_value_type()) {
     if (chan_cat.is_error()) {
       chan_cat.error()
@@ -507,6 +508,7 @@ void PartGroup::
 bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index, 
                bool is_included, BitArray &bound_joints,
                const PartSubset &subset) {
+  Thread::consider_yield();
   if (subset.matches_include(get_name())) {
     is_included = true;
   } else if (subset.matches_exclude(get_name())) {

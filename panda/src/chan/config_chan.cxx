@@ -24,6 +24,8 @@
 #include "animChannelScalarDynamic.h"
 #include "animControl.h"
 #include "animGroup.h"
+#include "animPreloadTable.h"
+#include "bindAnimRequest.h"
 #include "movingPartBase.h"
 #include "movingPartMatrix.h"
 #include "movingPartScalar.h"
@@ -86,6 +88,13 @@ PRC_DESC("Set this true to interpolate character animations between frames, "
          "also be changed on a per-character basis with "
          "PartBundle::set_frame_blend_flag()."));
 
+ConfigVariableBool restore_initial_pose
+("restore-initial-pose", true,
+PRC_DESC("When this is true, stopping all animations on an Actor causes it "
+         "to return to its initial, unanimated pose.  When false, it retains "
+         "whatever its last-computed pose was (which may or may not be "
+         "the unanimated pose)."));
+
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();
@@ -98,6 +107,8 @@ ConfigureFn(config_chan) {
   AnimChannelScalarDynamic::init_type();
   AnimControl::init_type();
   AnimGroup::init_type();
+  AnimPreloadTable::init_type();
+  BindAnimRequest::init_type();
   MovingPartBase::init_type();
   MovingPartMatrix::init_type();
   MovingPartScalar::init_type();
@@ -125,6 +136,7 @@ ConfigureFn(config_chan) {
   AnimChannelMatrixDynamic::register_with_read_factory();
   AnimChannelScalarTable::register_with_read_factory();
   AnimChannelScalarDynamic::register_with_read_factory();
+  AnimPreloadTable::register_with_read_factory();
 }
 
 

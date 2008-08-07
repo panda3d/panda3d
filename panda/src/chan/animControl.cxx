@@ -17,29 +17,81 @@
 #include "partBundle.h"
 #include "config_chan.h"
 #include "dcast.h"
+#include "mutexHolder.h"
+#include "throw_event.h"
 
 TypeHandle AnimControl::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::Constructor
 //       Access: Public
-//  Description:
+//  Description: This constructor is used to create a temporarily
+//               uninitialized AnimControl that will serve as a
+//               placeholder for an animation while the animation is
+//               being loaded during an asynchronous load-and-bind
+//               operation.
 ////////////////////////////////////////////////////////////////////
 AnimControl::
-AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
-            const BitArray &bound_joints) {
+AnimControl(const string &name, PartBundle *part, 
+            double frame_rate, int num_frames) :
+  Namable(name)
+{
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif
 
+  _pending = true;
   _part = part;
+  _anim = NULL;
+  _channel_index = -1;
+  set_frame_rate(frame_rate);
+  set_num_frames(num_frames);
+
+  _marked_frame = -1;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::setup_anim
+//       Access: Public
+//  Description: This can only be called once for a given AnimControl.
+//               It is used to supply the AnimBundle and related
+//               information.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+setup_anim(PartBundle *part, AnimBundle *anim, int channel_index, 
+           const BitArray &bound_joints) {
+  MutexHolder holder(_pending_lock);
+  nassertv(_pending && part == _part);
+  nassertv(_anim == (AnimBundle *)NULL);
   _anim = anim;
   _channel_index = channel_index;
   _bound_joints = bound_joints;
   set_frame_rate(_anim->get_base_frame_rate());
   set_num_frames(_anim->get_num_frames());
 
+  // Now the AnimControl is fully set up.
   _marked_frame = -1;
+  _pending = false;
+  if (!_pending_done_event.empty()) {
+    throw_event(_pending_done_event);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::fail_anim
+//       Access: Public
+//  Description: This can only be called once for a given AnimControl.
+//               It indicates the attempt to bind it asynchronously
+//               has failed.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+fail_anim(PartBundle *part) {
+  MutexHolder holder(_pending_lock);
+  nassertv(_pending && part == _part);
+  _pending = false;
+  if (!_pending_done_event.empty()) {
+    throw_event(_pending_done_event);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +102,35 @@ AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
 AnimControl::
 ~AnimControl() {
   get_part()->set_control_effect(this, 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::set_pending_done_event
+//       Access: Published
+//  Description: Specifies an event name that will be thrown when the
+//               AnimControl is finished binding asynchronously.  If
+//               the AnimControl has already finished binding, the
+//               event will be thrown immediately.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+set_pending_done_event(const string &done_event) {
+  MutexHolder holder(_pending_lock);
+  _pending_done_event = done_event;
+  if (!_pending) {
+    throw_event(_pending_done_event);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::get_pending_done_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               AnimControl is finished binding asynchronously.
+////////////////////////////////////////////////////////////////////
+string AnimControl::
+get_pending_done_event() const {
+  MutexHolder holder(_pending_lock);
+  return _pending_done_event;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,10 +151,16 @@ get_part() const {
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 output(ostream &out) const {
-  out << "AnimControl(" << get_part()->get_name()
-      << ", " << get_anim()->get_name() << ": ";
+  out << "AnimControl(" << get_name() << ", " << get_part()->get_name()
+      << ": ";
   AnimInterface::output(out);
   out << ")";
+
+  if (is_pending()) {
+    out << " (pending bind)";
+  } else if (!has_anim()) {
+    out << " (failed bind)";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

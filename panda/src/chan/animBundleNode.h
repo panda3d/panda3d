@@ -42,6 +42,8 @@ public:
 
 PUBLISHED:
   INLINE AnimBundle *get_bundle() const;
+  
+  static AnimBundle *find_anim_bundle(PandaNode *root);
 
 private:
   PT(AnimBundle) _bundle;

@@ -20,7 +20,10 @@
     animChannelScalarTable.I animChannelScalarTable.h \
     animControl.I animControl.N  \
     animControl.h animControlCollection.I  \
-    animControlCollection.h animGroup.I animGroup.h auto_bind.h  \
+    animControlCollection.h animGroup.I animGroup.h \
+    animPreloadTable.I animPreloadTable.h \
+    auto_bind.h  \
+    bindAnimRequest.I bindAnimRequest.h \
     config_chan.h \
     movingPart.I movingPart.h \
     movingPartBase.I movingPartBase.h  \
@@ -43,7 +46,10 @@
     animChannelScalarDynamic.cxx \
     animChannelScalarTable.cxx \
     animControl.cxx  \
-    animControlCollection.cxx animGroup.cxx auto_bind.cxx  \
+    animControlCollection.cxx animGroup.cxx \
+    animPreloadTable.cxx \
+    auto_bind.cxx  \
+    bindAnimRequest.cxx \
     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
     movingPartScalar.cxx partBundle.cxx \
     partBundleHandle.cxx \
@@ -64,7 +70,11 @@
     animChannelScalarTable.I animChannelScalarTable.h \
     animControl.I animControl.h \
     animControlCollection.I animControlCollection.h animGroup.I \
-    animGroup.h auto_bind.h config_chan.h \
+    animGroup.h \
+    animPreloadTable.I animPreloadTable.h \
+    auto_bind.h  \
+    bindAnimRequest.I bindAnimRequest.h \
+    config_chan.h \
     movingPart.I movingPart.h movingPartBase.I \
     movingPartBase.h movingPartMatrix.I movingPartMatrix.h \
     movingPartScalar.I movingPartScalar.h partBundle.I partBundle.h \

@@ -1,5 +1,6 @@
 #include "config_egg.cxx"
 #include "eggAnimData.cxx"
+#include "eggAnimPreload.cxx"
 #include "eggAttributes.cxx"
 #include "eggBin.cxx"
 #include "eggBinMaker.cxx"

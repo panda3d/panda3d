@@ -49,6 +49,7 @@ static const unsigned short _bam_minor_ver = 16;
 // Bumped to minor version 14 on 12/19/07 to change default ColorAttrib.
 // Bumped to minor version 15 on 4/9/08 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 5/13/08 to add Texture::_quality_level.
+// Bumped to minor version 17 on 8/6/08 to add PartBundle::_anim_preload.
 
 
 #endif

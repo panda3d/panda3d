@@ -20,6 +20,7 @@
 #include "partGroup.h"
 #include "animControl.h"
 #include "partSubset.h"
+#include "animPreloadTable.h"
 #include "pointerTo.h"
 #include "thread.h"
 #include "cycleData.h"
@@ -30,11 +31,14 @@
 #include "pvector.h"
 #include "transformState.h"
 #include "weakPointerTo.h"
+#include "copyOnWritePointer.h"
 
+class Loader;
 class AnimBundle;
 class PartBundleNode;
 class PartBundleNode;
 class TransformState;
+class AnimPreloadTable;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PartBundle
@@ -58,6 +62,11 @@ public:
   virtual PartGroup *make_copy() const;
 
 PUBLISHED:
+  INLINE CPT(AnimPreloadTable) get_anim_preload() const;
+  INLINE PT(AnimPreloadTable) modify_anim_preload();
+  INLINE void set_anim_preload(AnimPreloadTable *table);
+  INLINE void clear_anim_preload();
+  void merge_anim_preloads(const PartBundle *other);
 
   // This is the parameter to set_blend_type() and specifies the kind
   // of blending operation to be performed when multiple controls are
@@ -119,6 +128,11 @@ PUBLISHED:
   PT(AnimControl) bind_anim(AnimBundle *anim,
                             int hierarchy_match_flags = 0, 
                             const PartSubset &subset = PartSubset());
+  PT(AnimControl) load_bind_anim(Loader *loader,
+                                 const Filename &filename,
+                                 int hierarchy_match_flags,
+                                 const PartSubset &subset,
+                                 bool allow_async);
 
   bool freeze_joint(const string &joint_name, const TransformState *transform);
   bool control_joint(const string &joint_name, PandaNode *node);
@@ -133,6 +147,9 @@ public:
   // bunch of friends.
   virtual void control_activated(AnimControl *control);
 
+  bool do_bind_anim(AnimControl *control, AnimBundle *anim,
+                    int hierarchy_match_flags, const PartSubset &subset);
+
 protected:
   virtual void add_node(PartBundleNode *node);
   virtual void remove_node(PartBundleNode *node);
@@ -144,6 +161,8 @@ private:
   float do_get_control_effect(AnimControl *control, const CData *cdata) const;
   void recompute_net_blend(CData *cdata);
   void clear_and_stop_intersecting(AnimControl *control, CData *cdata);
+
+  COWPT(AnimPreloadTable) _anim_preload;
 
   typedef pvector<PartBundleNode *> Nodes;
   Nodes _nodes;
@@ -183,6 +202,8 @@ public:
   static void register_with_read_factory();
   virtual void finalize(BamReader *manager);
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **p_list,
+                                BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

@@ -14,6 +14,52 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::get_anim_preload
+//       Access: Published
+//  Description: Returns the AnimPreloadTable associated with
+//               the PartBundle.  This table, if present, can be used
+//               for the benefit of load_bind_anim() to allow
+//               asynchronous binding.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(AnimPreloadTable) PartBundle::
+get_anim_preload() const {
+  return _anim_preload.get_read_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::modify_anim_preload
+//       Access: Published
+//  Description: Returns a modifiable pointer to the AnimPreloadTable
+//               associated with the PartBundle, if any.
+////////////////////////////////////////////////////////////////////
+INLINE PT(AnimPreloadTable) PartBundle::
+modify_anim_preload() {
+  return _anim_preload.get_write_pointer();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::set_anim_preload
+//       Access: Published
+//  Description: Replaces the AnimPreloadTable associated with
+//               the PartBundle.
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+set_anim_preload(AnimPreloadTable *anim_preload) {
+  _anim_preload = anim_preload;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::clear_anim_preload
+//       Access: Published
+//  Description: Removes any AnimPreloadTable associated with
+//               the PartBundle.
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+clear_anim_preload() {
+  _anim_preload = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::set_blend_type
 //       Access: Published
 //  Description: Defines the algorithm that is used when blending

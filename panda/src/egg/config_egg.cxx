@@ -15,6 +15,7 @@
 #include "config_egg.h"
 #include "eggRenderMode.h"
 #include "eggAnimData.h"
+#include "eggAnimPreload.h"
 #include "eggAttributes.h"
 #include "eggBin.h"
 #include "eggBinMaker.h"
@@ -166,6 +167,7 @@ init_libegg() {
 
   EggRenderMode::init_type();
   EggAnimData::init_type();
+  EggAnimPreload::init_type();
   EggAttributes::init_type();
   EggBin::init_type();
   EggBinMaker::init_type();

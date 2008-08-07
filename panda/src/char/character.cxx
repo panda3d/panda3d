@@ -281,7 +281,11 @@ merge_bundles(PartBundle *old_bundle, PartBundle *new_bundle) {
 void Character::
 merge_bundles(PartBundleHandle *old_bundle_handle, 
               PartBundleHandle *new_bundle_handle) {
-  update_bundle(old_bundle_handle, new_bundle_handle->get_bundle());
+  PartBundle *old_bundle = old_bundle_handle->get_bundle();
+  PartBundle *new_bundle = new_bundle_handle->get_bundle();
+  new_bundle->merge_anim_preloads(old_bundle);
+
+  update_bundle(old_bundle_handle, new_bundle);
 }
 
 ////////////////////////////////////////////////////////////////////

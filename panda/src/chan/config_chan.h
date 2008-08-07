@@ -27,5 +27,6 @@ EXPCL_PANDA_CHAN extern ConfigVariableBool compress_channels;
 EXPCL_PANDA_CHAN extern ConfigVariableInt compress_chan_quality;
 EXPCL_PANDA_CHAN extern ConfigVariableBool read_compressed_channels;
 EXPCL_PANDA_CHAN extern ConfigVariableBool interpolate_frames;
+EXPCL_PANDA_CHAN extern ConfigVariableBool restore_initial_pose;
 
 #endif

@@ -46,6 +46,38 @@ safe_to_flatten() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimBundleNode::find_anim_bundle
+//       Access: Published, Static
+//  Description: Recursively walks the scene graph beginning at the
+//               indicated node (which need not be an AnimBundleNode),
+//               and returns the first AnimBundle found.  Returns NULL
+//               if no AnimBundle can be found.
+////////////////////////////////////////////////////////////////////
+AnimBundle *AnimBundleNode::
+find_anim_bundle(PandaNode *root) {
+  nassertr(root != (PandaNode *)NULL, NULL);
+
+  if (root->is_of_type(AnimBundleNode::get_class_type())) {
+    AnimBundleNode *anode = DCAST(AnimBundleNode, root);
+    AnimBundle *anim = anode->get_bundle();
+    if (anim != (AnimBundle *)NULL) {
+      return anim;
+    }
+  }
+
+  Children cr = root->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    AnimBundle *anim = find_anim_bundle(cr.get_child(i));
+    if (anim != (AnimBundle *)NULL) {
+      return anim;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

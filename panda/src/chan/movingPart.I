@@ -116,8 +116,7 @@ output_value(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void MovingPart<SwitchType>::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   MovingPartBase::write_datagram(manager, me);
   SwitchType::write_datagram(me, _value);
   SwitchType::write_datagram(me, _initial_value);
@@ -133,8 +132,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void MovingPart<SwitchType>::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   MovingPartBase::fillin(scan, manager);
   SwitchType::read_datagram(scan, _value);
   SwitchType::read_datagram(scan, _initial_value);

@@ -53,6 +53,20 @@ throw_event(const string &event_name,
   EventQueue::get_global_event_queue()->queue_event(event);
 }
 
+INLINE void
+throw_event(const string &event_name,
+            const EventParameter &p1,
+            const EventParameter &p2,
+            const EventParameter &p3,
+            const EventParameter &p4) {
+  Event *event = new Event(event_name);
+  event->add_parameter(p1);
+  event->add_parameter(p2);
+  event->add_parameter(p3);
+  event->add_parameter(p4);
+  EventQueue::get_global_event_queue()->queue_event(event);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 INLINE void

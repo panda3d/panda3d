@@ -540,6 +540,8 @@ read_handle(DatagramIterator &scan) {
 ////////////////////////////////////////////////////////////////////
 void BamReader::
 read_pointer(DatagramIterator &scan) {
+  Thread::consider_yield();
+
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 

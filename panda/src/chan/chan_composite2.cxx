@@ -1,3 +1,5 @@
+#include "animPreloadTable.cxx"
+#include "bindAnimRequest.cxx"
 #include "config_chan.cxx"
 #include "movingPartBase.cxx"
 #include "movingPartMatrix.cxx"

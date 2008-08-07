@@ -33,6 +33,11 @@ INLINE void throw_event(const string &event_name,
                         const EventParameter &p1,
                         const EventParameter &p2,
                         const EventParameter &p3);
+INLINE void throw_event(const string &event_name,
+                        const EventParameter &p1,
+                        const EventParameter &p2,
+                        const EventParameter &p3,
+                        const EventParameter &p4);
 
 #include "eventHandler.h"
 

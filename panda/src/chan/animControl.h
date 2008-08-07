@@ -21,8 +21,10 @@
 #include "animBundle.h"
 #include "partGroup.h"
 #include "bitArray.h"
-
-#include "referenceCount.h"
+#include "pandaNode.h"
+#include "typedReferenceCount.h"
+#include "namable.h"
+#include "pmutex.h"
 
 class PartBundle;
 class AnimChannelBase;
@@ -35,18 +37,29 @@ class AnimChannelBase;
 //               animation: whether started, stopped, or looping, and
 //               the current frame number and play rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_CHAN AnimControl : public ReferenceCount, public AnimInterface {
+class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(PartBundle *part, AnimBundle *anim, int channel_index,
-              const BitArray &bound_joints);
+  AnimControl(const string &name, PartBundle *part, 
+              double frame_rate, int num_frames);
+  void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
+                  const BitArray &bound_joints);
+  void fail_anim(PartBundle *part);
 
 PUBLISHED:
   virtual ~AnimControl();
+
+  INLINE bool is_pending() const;
+  INLINE bool has_anim() const;
+  void set_pending_done_event(const string &done_event);
+  string get_pending_done_event() const;
 
   PartBundle *get_part() const;
   INLINE AnimBundle *get_anim() const;
   INLINE int get_channel_index() const;
   INLINE const BitArray &get_bound_joints() const;
+
+  INLINE void set_anim_model(PandaNode *model);
+  INLINE PandaNode *get_anim_model() const;
 
   virtual void output(ostream &out) const;
 
@@ -65,6 +78,10 @@ private:
   // This is a PT(PartGroup) instead of a PT(PartBundle), just because
   // we can't include partBundle.h for circular reasons.  But it
   // actually keeps a pointer to a PartBundle.
+  bool _pending;
+  string _pending_done_event;
+  Mutex _pending_lock;  // protects the above two.
+
   PT(PartGroup) _part;
   PT(AnimBundle) _anim;
   int _channel_index;
@@ -80,21 +97,30 @@ private:
   // get_bound_joints().
   BitArray _bound_joints;
 
+  PT(PandaNode) _anim_model;
+
 public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    ReferenceCount::init_type();
+    TypedReferenceCount::init_type();
     AnimInterface::init_type();
     register_type(_type_handle, "AnimControl",
-                  ReferenceCount::get_class_type(),
+                  TypedReferenceCount::get_class_type(),
                   AnimInterface::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const AnimControl &control);
 
 #include "animControl.I"
 

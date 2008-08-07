@@ -339,6 +339,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 
 
+"<ANIMPRELOAD>" {
+  accept();
+  return ANIMPRELOAD;
+}
 "<BEZIERCURVE>" {
   accept();
   return BEZIERCURVE;

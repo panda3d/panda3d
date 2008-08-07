@@ -278,6 +278,11 @@ compute_billboard(CPT(TransformState) &node_transform,
 
   CPT(TransformState) rel_transform =
     net_transform->compose(translate)->invert_compose(camera_transform);
+  if (!rel_transform->has_mat()) {
+    // Never mind.
+    return;
+  }
+
   const LMatrix4f &rel_mat = rel_transform->get_mat();
 
   // Determine the look_at point in the camera space.

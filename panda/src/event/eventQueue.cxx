@@ -45,6 +45,11 @@ EventQueue::
 void EventQueue::
 queue_event(CPT_Event event) {
   nassertv(!event.is_null());
+  if (event->get_name().empty()) {
+    // Never mind.
+    return;
+  }
+
   MutexHolder holder(_lock);
 
   _queue.push_back(event);
