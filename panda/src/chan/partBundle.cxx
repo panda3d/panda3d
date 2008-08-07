@@ -784,7 +784,7 @@ make_from_bam(const FactoryParams &params) {
 void PartBundle::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PartGroup::fillin(scan, manager);
-  if (manager->get_file_minor_ver() >= 16) {
+  if (manager->get_file_minor_ver() >= 17) {
     manager->read_pointer(scan);  // _anim_preload
   }
   if (manager->get_file_minor_ver() >= 10) {
