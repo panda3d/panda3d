@@ -57,7 +57,6 @@ class Actor(DirectObject, NodePath):
         
         def __init__(self, filename):
             self.filename = filename
-            self.animModel = None
             self.animControl = None
 
         def makeCopy(self):
@@ -88,7 +87,7 @@ class Actor(DirectObject, NodePath):
 
     def __init__(self, models=None, anims=None, other=None, copy=1,
                  lodNode = None, flattenable = 1, setFinal = 0,
-                 mergeLODBundles = None):
+                 mergeLODBundles = None, allowAsyncBind = None):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -171,9 +170,18 @@ class Actor(DirectObject, NodePath):
         if mergeLODBundles == None:
             # If this isn't specified, it comes from the Config.prc
             # file.
-            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', 1)
+            self.mergeLODBundles = base.config.GetBool('merge-lod-bundles', True)
         else:
             self.mergeLODBundles = mergeLODBundles
+
+        # Set the allowAsyncBind flag.  If this is true, it enables
+        # asynchronous animation binding.  This requires that you have
+        # run "egg-optchar -preload" on your animation and models to
+        # generate the appropriate AnimPreloadTable.
+        if allowAsyncBind == None:
+            self.allowAsyncBind = base.config.GetBool('allow-async-bind', True)
+        else:
+            self.allowAsyncBind = allowAsyncBind
 
         # create data structures
         self.__commonBundleHandles = {}
@@ -2026,7 +2034,6 @@ class Actor(DirectObject, NodePath):
                             # animations.
                             animDef.animControl.getPart().clearControlEffects()
                             animDef.animControl = None
-                            animDef.animModel = None
                     except:
                         return
 
@@ -2084,6 +2091,64 @@ class Actor(DirectObject, NodePath):
         """
         for internal use only!
         """
+
+        # Temporary check for old Pandas.
+        if not hasattr(PartBundle, 'loadBindAnim'):
+            return self.__tempHackDoNotUseBindAnimToPart(animName, partName, lodName)
+        
+        # make sure this anim is in the dict
+        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+
+        partDict = self.__animControlDict[lodName]
+        animDict = partDict.get(partName)
+        if animDict == None:
+            # It must be a subpart that hasn't been bound yet.
+            animDict = {}
+            partDict[partName] = animDict
+
+        anim = animDict.get(animName)
+        if anim == None:
+            # It must be a subpart that hasn't been bound yet.
+            anim = partDict[subpartDef.truePartName].get(animName)
+            anim = anim.makeCopy()
+            animDict[animName] = anim
+
+        if anim == None:
+            Actor.notify.error("actor has no animation %s", animName)
+
+        # only bind if not already bound!
+        if anim.animControl:
+            return anim.animControl
+
+        if self.mergeLODBundles:
+            bundle = self.__commonBundleHandles[subpartDef.truePartName].getBundle()
+        else:
+            bundle = self.__partBundleDict[lodName][subpartDef.truePartName].getBundle()
+
+        # Load and bind the anim.  This might be an asynchronous
+        # operation that will complete in the background, but if so it
+        # will still return a usable AnimControl.
+        animControl = bundle.loadBindAnim(
+            loader.loader, Filename(anim.filename), -1,
+            subpartDef.subset, self.allowAsyncBind)
+
+        if not animControl:
+            # Couldn't bind.  (This implies the binding operation was
+            # not attempted asynchronously.)
+            return None
+
+        # store the animControl
+        anim.animControl = animControl
+        assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
+                                  (animName, partName, lodName))
+        return animControl
+
+    def __tempHackDoNotUseBindAnimToPart(self, animName, partName, lodName):
+        """ This method exists only temporarily to support old Pandas
+        that don't yet have PartBundle.loadBindAnim().  This method is
+        the old implementation of __bindAnimToPart(), from before we
+        added asynchronous support.  """
+        
         # make sure this anim is in the dict
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
 
