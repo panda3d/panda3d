@@ -752,7 +752,9 @@ int PartBundle::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = PartGroup::complete_pointers(p_list, manager);
   
-  _anim_preload = DCAST(AnimPreloadTable, p_list[pi++]);
+  if (manager->get_file_minor_ver() >= 17) {
+    _anim_preload = DCAST(AnimPreloadTable, p_list[pi++]);
+  }
 
   return pi;
 }
