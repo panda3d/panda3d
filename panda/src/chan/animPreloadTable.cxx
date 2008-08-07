@@ -150,6 +150,7 @@ add_anims_from(const AnimPreloadTable *other) {
 ////////////////////////////////////////////////////////////////////
 void AnimPreloadTable::
 output(ostream &out) const {
+  consider_sort();
   out << "AnimPreloadTable, " << _anims.size() << " animation records.";
 }
 
@@ -160,9 +161,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void AnimPreloadTable::
 write(ostream &out, int indent_level) const {
+  consider_sort();
   indent(out, indent_level)
     << "AnimPreloadTable, " << _anims.size() << " animation records:\n";
-  consider_sort();
   Anims::const_iterator ai;
   for (ai = _anims.begin(); ai != _anims.end(); ++ai) {
     const AnimRecord &record = (*ai);

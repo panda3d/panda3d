@@ -34,7 +34,8 @@ TypeHandle AnimControl::_type_handle;
 AnimControl::
 AnimControl(const string &name, PartBundle *part, 
             double frame_rate, int num_frames) :
-  Namable(name)
+  Namable(name),
+  _bound_joints(BitArray::all_on())
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
