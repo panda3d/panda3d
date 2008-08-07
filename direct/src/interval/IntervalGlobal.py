@@ -18,30 +18,3 @@ from IntervalManager import *
 if __debug__:
     from TestInterval import *
 from pandac.PandaModules import WaitInterval
-
-# there is legacy code in Toontown that puts interval-related DelayDeletes directly
-# on the interval object, relying on Python to __del__ the DelayDelete when the interval
-# is garbage-collected. DelayDelete now requires .destroy() to be called.
-# To reduce code duplication, this method may be called to clean up delayDeletes that
-# have been placed on an interval.
-def cleanupDelayDeletes(interval):
-    if hasattr(interval, 'delayDelete'):
-        delayDelete = interval.delayDelete
-        # get rid of all references before calling destroy in case destroy causes
-        # this function to be called again
-        del interval.delayDelete
-        if type(delayDelete) == type([]):
-            for i in delayDelete:
-                i.destroy()
-        else:
-            delayDelete.destroy()
-    if hasattr(interval, 'delayDeletes'):
-        delayDeletes = interval.delayDeletes
-        # get rid of the reference before calling destroy in case destroy causes
-        # this function to be called again
-        del interval.delayDeletes
-        if type(delayDeletes) == type([]):
-            for i in delayDeletes:
-                i.destroy()
-        else:
-            delayDeletes.destroy()

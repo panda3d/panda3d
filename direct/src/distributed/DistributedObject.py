@@ -40,8 +40,6 @@ class DistributedObject(DistributedObjectBase):
     # even to the quiet zone.
     neverDisable = 0
 
-    DelayDeleteSerialGen = SerialNumGen()
-
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)
         try:
@@ -58,10 +56,10 @@ class DistributedObject(DistributedObjectBase):
             # it needs to be optimized in this way.
             self.setCacheable(0)
 
+            # this is for Toontown only, see toontown.distributed.DelayDeletable
             self._token2delayDeleteName = {}
-            # This flag tells whether a delete has been requested on this
-            # object.
-            self.deleteImminent = 0
+            self._delayDeleteForceAllow = False
+            self._delayDeleted = 0
 
             # Keep track of our state as a distributed object.  This
             # is only trustworthy if the inheriting class properly
@@ -74,12 +72,6 @@ class DistributedObject(DistributedObjectBase):
 
             # This is used by doneBarrier().
             self.__barrierContext = None
-
-            self._delayDeleteForceAllow = False
-
-            ## TODO: This should probably be move to a derived class for CMU
-            ## #zone of the distributed object, default to 0
-            ## self.zone = 0
 
     if __debug__:
         def status(self, indent=0):
@@ -192,8 +184,8 @@ class DistributedObject(DistributedObjectBase):
 
     def deleteOrDelay(self):
         if len(self._token2delayDeleteName) > 0:
-            if not self.deleteImminent:
-                self.deleteImminent = 1
+            if not self._delayDeleted:
+                self._delayDeleted = 1
                 # Object is delayDeleted. Clean up DistributedObject state,
                 # remove from repository tables, so that we won't crash if
                 # another instance of the same object gets generated while
@@ -204,57 +196,13 @@ class DistributedObject(DistributedObjectBase):
         else:
             self.disableAnnounceAndDelete()
 
-    def getDelayDeleteCount(self):
-        return len(self._token2delayDeleteName)
-
-    def forceAllowDelayDelete(self):
-        # Toontown has code that creates a DistributedObject manually and then
-        # DelayDeletes it. That code should call this method, otherwise the
-        # DelayDelete system will crash because the object is not generated
-        self._delayDeleteForceAllow = True
-
-    def acquireDelayDelete(self, name):
-        # Also see DelayDelete.py
-        if ((not self._delayDeleteForceAllow) and
-            (self.activeState not in (ESGenerating, ESGenerated))):
-            self.notify.error(
-                'cannot acquire DelayDelete "%s" on %s because it is in state %s' % (
-                name, self.__class__.__name__, ESNum2Str[self.activeState]))
-
-        if self.getDelayDeleteCount() == 0:
-            self.cr._addDelayDeletedDO(self)
-
-        token = DistributedObject.DelayDeleteSerialGen.next()
-        self._token2delayDeleteName[token] = name
-
-        assert self.notify.debug(
-            "delayDelete count for doId %s now %s" %
-            (self.doId, len(self._token2delayDeleteName)))
-
-        # Return the token, user must pass token to releaseDelayDelete
-        return token
-
-    def releaseDelayDelete(self, token):
-        name = self._token2delayDeleteName.pop(token)
-        assert self.notify.debug("releasing delayDelete '%s'" % name)
-        if len(self._token2delayDeleteName) == 0:
-            assert self.notify.debug(
-                "delayDelete count for doId %s now 0" % (self.doId))
-            self.cr._removeDelayDeletedDO(self)
-            # do we have a pending delete?
-            if self.deleteImminent:
-                assert self.notify.debug(
-                    "delayDelete count for doId %s -- deleteImminent" %
-                    (self.doId))
-                self.disableAnnounceAndDelete()
-
-    def getDelayDeleteNames(self):
-        return self._token2delayDeleteName.values()
-
     def disableAnnounceAndDelete(self):
         self.disableAndAnnounce()
         self.delete()
         self._destroyDO()
+
+    def getDelayDeleteCount(self):
+        return len(self._token2delayDeleteName)
 
     def getDelayDeleteEvent(self):
         return self.uniqueName("delayDelete")
@@ -277,9 +225,9 @@ class DistributedObject(DistributedObjectBase):
             messenger.send(self.getDisableEvent())
             self.disable()
             self.activeState = ESDisabled
-            if not self.deleteImminent:
-                # if deleteImminent was set, it was DelayDeleted and _deactivateDO was
-                # already called
+            if not self._delayDeleted:
+                # if the object is DelayDeleted, _deactivateDO has
+                # already been called
                 self._deactivateDO()
 
     def announceGenerate(self):
@@ -316,12 +264,6 @@ class DistributedObject(DistributedObjectBase):
             del self._cachedData
         self.cr = None
         self.dclass = None
-
-    def delayDelete(self):
-        """
-        Inheritors should redefine this to take appropriate action on delayDelete
-        """
-        pass
 
     def disable(self):
         """
