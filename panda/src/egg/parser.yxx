@@ -43,6 +43,7 @@
 #include "coordinateSystem.h"
 #include "pvector.h"
 #include "dcast.h"
+#include "thread.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we
@@ -1138,6 +1139,7 @@ group:
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
+  Thread::consider_yield();
 }
         ;
 
@@ -2463,6 +2465,7 @@ table:
 {
   $$ = egg_stack.back();
   egg_stack.pop_back();
+  Thread::consider_yield();
 }
         ;
 
