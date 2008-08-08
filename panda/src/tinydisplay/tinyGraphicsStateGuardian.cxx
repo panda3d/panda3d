@@ -1361,6 +1361,7 @@ set_state_and_transform(const RenderState *target,
     tinydisplay_cat.spam()
       << "Setting GSG state to " << (void *)target << ":\n";
     target->write(tinydisplay_cat.spam(false), 2);
+    transform->write(tinydisplay_cat.spam(false), 2);
   }
 #endif
 
@@ -1570,6 +1571,10 @@ do_issue_light() {
   _c->ambient_light_model.Y = cur_ambient_light[1];
   _c->ambient_light_model.Z = cur_ambient_light[2];
   _c->ambient_light_model.W = cur_ambient_light[3];
+
+  // Changing the lighting state means we need to reapply the
+  // transform in begin_draw_primitives().
+  _transform_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
