@@ -542,20 +542,18 @@ match_egg_nodes(EggCharacterData *char_data, EggJointData *joint_data,
 
       // First, check to see if any of the names match any past-used
       // name.
-
       EggNodeList more_egg_nodes;
 
       for (ei = extra_egg_nodes.begin(); ei != extra_egg_nodes.end(); ++ei) {
         EggNode *egg_node = (*ei);
         bool matched = false;
-        for (di = extra_data.begin();
-             di != extra_data.end() && !matched;
-             ++di) {
+        for (di = extra_data.begin(); di != extra_data.end(); ++di) {
           EggJointData *data = (*di);
           if (data->matches_name(egg_node->get_name())) {
-            matched = true;
             found_egg_match(char_data, data, egg_node, egg_index, model_index);
             extra_data.erase(di);
+            matched = true;
+            break;
           }
         }
 
