@@ -144,11 +144,7 @@ class DirectEntry(DirectFrame):
         DirectFrame.destroy(self)
 
     def setup(self):
-        # Temporary condition for old pandas.
-        if hasattr(self.guiItem, 'setupMinimal'):
-            self.guiItem.setupMinimal(self['width'], self['numLines'])
-        else:
-            self.guiItem.setup(self['width'], self['numLines'])
+        self.guiItem.setupMinimal(self['width'], self['numLines'])
 
     def setFocus(self):
         PGEntry.setFocus(self.guiItem, self['focus'])

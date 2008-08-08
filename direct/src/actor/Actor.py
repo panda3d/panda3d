@@ -1120,10 +1120,6 @@ class Actor(DirectObject, NodePath):
         optimal than controlJoint() for cases in which the transform
         is not intended to be animated during the lifetime of the
         Actor. """
-        # Temporary condition for old Pandas.
-        if not hasattr(PartBundle, 'controlJoint'):
-            return
-        
         if transform == None:
             transform = TransformState.makePosHprScale(pos, hpr, scale)
 
