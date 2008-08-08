@@ -1093,12 +1093,6 @@ class Actor(DirectObject, NodePath):
         It used to be necessary to call this before any animations
         have been loaded and bound, but that is no longer so.
         """
-        # Temporary condition for old Pandas.
-        if not hasattr(PartBundle, 'controlJoint'):
-            if node == None:
-                node = self.attachNewNode(jointName)
-            return node
-        
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
         trueName = subpartDef.truePartName
         anyGood = False
@@ -1107,7 +1101,7 @@ class Actor(DirectObject, NodePath):
             if node == None:
                 node = self.attachNewNode(jointName)
                 joint = bundle.findChild(jointName)
-                if joint and joint.getType().isDerivedFrom(MovingPartMatrix.getClassType()):
+                if joint and isinstance(joint, MovingPartMatrix):
                     node.setMat(joint.getInitialValue())
 
             if bundle.controlJoint(jointName, node.node()):
