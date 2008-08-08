@@ -676,25 +676,6 @@ bool TinyOsxGraphicsWindow::begin_frame(FrameMode mode, Thread *current_thread)
 void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread) 
 {
   end_frame_spam(mode);
-  
-  if(mode == FM_render )
-  {
-    nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-
-        /*
-    if (!_properties.get_fixed_size() && 
-        !_properties.get_undecorated() && 
-        !_properties.get_fullscreen() &&
-        show_resize_box) {
-      // Draw a kludgey little resize box in the corner of the window,
-      // so the user knows he's supposed to be able to drag the window
-      // if he wants.
-      DisplayRegionPipelineReader dr_reader(_default_display_region, current_thread);
-      _gsg->prepare_display_region(&dr_reader, Lens::SC_mono);
-      DCAST(TinyGraphicsStateGuardian, _gsg)->draw_resize_box();
-    }
-        */
-  }
 
   _gsg->end_frame(current_thread);
 
@@ -721,11 +702,6 @@ void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread)
 //               end_flip(), to make it easier to flip all of the
 //               windows at the same time.
 ////////////////////////////////////////////////////////////////////
-void TinyOsxGraphicsWindow::end_flip()
-{
-  //  cerr << " end_flip [" << _ID << "]\n";
-}
-
 void TinyOsxGraphicsWindow::begin_flip() 
 {
   if (_osx_window == NULL) {
