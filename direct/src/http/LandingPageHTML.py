@@ -6,7 +6,7 @@ defaultTitle = title
 description = "To set this description, call WebRequestDispatcher.setDescription!<BR><BR>You can also add stats to the table below by calling WebRequestDispatcher.addQuickStat(Name,Value,PositionInTable)."
 defaultDesc = description
 
-contactInfo = "M. Ian Graham - ian.graham@dig.com - 818-623-3219"
+contactInfo = "M. Ian Graham - ian.graham@dig.com"
 
 
 # -- Begin fancy layout stuff, change at your own risk --
