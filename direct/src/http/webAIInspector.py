@@ -6,7 +6,7 @@ The port will need to be defined when the instance is inited.
 
 """
 
-import string, time, direct, inspect
+import string, time, direct, inspect, socket
 from operator import itemgetter
 from direct.http import WebRequest
 from socket import gethostname
@@ -41,6 +41,8 @@ class aiWebServer(SystemInformation):
         self.web.registerGETHandler('blank', self.blank)
         self.web.registerGETHandler('magicWord', self.magicWord)
         self.startCheckingIncomingHTTP()
+
+        self.air.setConnectionURL("http://%s:%s/" % (socket.gethostbyname(socket.gethostname()),self.HTTPListenPort))        
 
     def magicWord(self, replyTo, **kw):
         # This will process Magic Word requests
