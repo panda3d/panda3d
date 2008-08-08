@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "parasiteBuffer.h"
+#include "texture.h"
 
 TypeHandle ParasiteBuffer::_type_handle;
 
@@ -88,6 +88,24 @@ set_size(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParasiteBuffer::set_size_and_recalc
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ParasiteBuffer::
+set_size_and_recalc(int x, int y) {
+  if (_creation_flags & GraphicsPipe::BF_size_power_2) {
+    x = Texture::down_to_power_2(x);
+    y = Texture::down_to_power_2(y);
+  }
+  if (_creation_flags & GraphicsPipe::BF_size_square) {
+    x = y = min(x, y);
+  }
+
+  GraphicsOutput::set_size_and_recalc(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParasiteBuffer::is_active
 //       Access: Published, Virtual
 //  Description: Returns true if the window is ready to be rendered
@@ -134,6 +152,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
         (_host->get_y_size() != _y_size)) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
+    }
+  } else {
+    if (_host->get_x_size() < _x_size ||
+        _host->get_y_size() < _y_size) {
+      set_size_and_recalc(min(_x_size, _host->get_x_size()),
+                          min(_y_size, _host->get_y_size()));
     }
   }
   

@@ -732,13 +732,20 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   FrameBufferProperties props;
   props.set_rgb_color(1);
   props.set_depth_bits(1);
+
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (textures_power_2 != ATS_none) {
+    flags |= GraphicsPipe::BF_size_power_2;
+  }
+  if (tex->get_texture_type() == Texture::TT_cube_map) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
   
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_child_sort(),
                 props, WindowProperties::size(x_size, y_size),
-                GraphicsPipe::BF_refuse_window,
-                get_gsg(), get_host());
+                flags, get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);

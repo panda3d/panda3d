@@ -60,6 +60,7 @@ PUBLISHED:
   void set_size(int x, int y);
 
 public:
+  void set_size_and_recalc(int x, int y);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual GraphicsOutput *get_host();
