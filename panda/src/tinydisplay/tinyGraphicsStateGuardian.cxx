@@ -251,13 +251,10 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
     xsize = int(xsize * pixel_factor);
     ysize = int(ysize * pixel_factor);
     if (_aux_frame_buffer == (ZBuffer *)NULL) {
-      // We add 3 to xsize, since ZB_open may resize the frame buffer
-      // down by up to 3 pixels to make it fit within the
-      // word-alignment rule.
-      _aux_frame_buffer = ZB_open(xsize + 3, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
+      _aux_frame_buffer = ZB_open(xsize, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
     } else if (_aux_frame_buffer->xsize < xsize || _aux_frame_buffer->ysize < ysize) {
       ZB_resize(_aux_frame_buffer, NULL, 
-                max(_aux_frame_buffer->xsize, xsize) + 3,
+                max(_aux_frame_buffer->xsize, xsize),
                 max(_aux_frame_buffer->ysize, ysize));
     }
     _c->zb = _aux_frame_buffer;
@@ -272,6 +269,11 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   _c->viewport.xsize = xsize;
   _c->viewport.ysize = ysize;
   set_scissor(0.0f, 1.0f, 0.0f, 1.0f);
+
+  nassertv(xmin >= 0 && xmin < _c->zb->xsize && 
+           ymin >= 0 && ymin < _c->zb->ysize &&
+           xmin + xsize >= 0 && xmin + xsize <= _c->zb->xsize &&
+           ymin + ysize >= 0 && ymin + ysize <= _c->zb->ysize);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	return NULL;
 
     /* xsize must be a multiple of 4 */
-    xsize = xsize & ~3;
+    xsize = (xsize + 3) & ~3;
 
     zb->xsize = xsize;
     zb->ysize = ysize;
@@ -107,7 +107,7 @@ void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
     int size;
 
     /* xsize must be a multiple of 4 */
-    xsize = xsize & ~3;
+    xsize = (xsize + 3) & ~3;
 
     zb->xsize = xsize;
     zb->ysize = ysize;
@@ -335,6 +335,11 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
   int y;
   PIXEL *pp;
   ZPOINT *zz;
+
+  nassertv(xmin >= 0 && xmin < zb->xsize && 
+           ymin >= 0 && ymin < zb->ysize &&
+           xmin + xsize >= 0 && xmin + xsize <= zb->xsize &&
+           ymin + ysize >= 0 && ymin + ysize <= zb->ysize);
 
   if (clear_z) {
     zz = zb->zbuf + xmin + ymin * zb->xsize;
