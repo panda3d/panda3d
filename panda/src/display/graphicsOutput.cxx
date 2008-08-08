@@ -737,7 +737,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   if (textures_power_2 != ATS_none) {
     flags |= GraphicsPipe::BF_size_power_2;
   }
-  if (tex->get_texture_type() == Texture::TT_cube_map) {
+  if (tex != (Texture *)NULL && 
+      tex->get_texture_type() == Texture::TT_cube_map) {
     flags |= GraphicsPipe::BF_size_square;
   }
   
