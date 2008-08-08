@@ -104,4 +104,3 @@ class DirectScrolledFrame(DirectFrame):
         del self.verticalScroll
         del self.horizontalScroll
         DirectFrame.destroy(self)
-

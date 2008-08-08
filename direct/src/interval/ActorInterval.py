@@ -66,7 +66,7 @@ class ActorInterval(Interval.Interval):
             self.endFrame = 0
         else:
 
-            self.frameRate = self.controls[0].getAnim().getBaseFrameRate() * abs(playRate)
+            self.frameRate = self.controls[0].getFrameRate() * abs(playRate)
             # Compute start and end frames.
             if startFrame != None:
                 self.startFrame = startFrame
