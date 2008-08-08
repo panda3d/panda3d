@@ -840,8 +840,8 @@ write(ostream &out, int indent_level) const {
     const Attribute &attribute = (*ai);
     attribute._attrib->write(out, indent_level + 2);
   }
-  indent(out, indent_level + 2) << _composition_cache << "\n";
-  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
+  //  indent(out, indent_level + 2) << _composition_cache << "\n";
+  //  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

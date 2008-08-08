@@ -925,8 +925,8 @@ output(ostream &out) const {
 void TransformState::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
-  indent(out, indent_level + 2) << _composition_cache << "\n";
-  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
+  //  indent(out, indent_level + 2) << _composition_cache << "\n";
+  //  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
