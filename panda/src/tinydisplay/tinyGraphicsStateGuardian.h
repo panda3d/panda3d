@@ -68,6 +68,8 @@ public:
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
+                              bool force);
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
                           bool force);
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader,

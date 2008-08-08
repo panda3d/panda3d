@@ -94,6 +94,7 @@ reset() {
   _supported_geom_rendering =
     Geom::GR_point | 
     Geom::GR_indexed_other |
+    Geom::GR_triangle_strip |
     Geom::GR_flat_last_vertex;
 
   _max_texture_dimension = (1 << ZB_POINT_ST_FRAC_BITS);
@@ -854,7 +855,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 #endif  // NDEBUG
 
   int num_vertices = reader->get_num_vertices();
-  _vertices_immediate_pcollector.add_level(num_vertices);
+  _vertices_tri_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
     switch (reader->get_index_type()) {
@@ -921,6 +922,144 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::draw_tristrips
+//       Access: Public, Virtual
+//  Description: Draws a series of triangle strips.
+////////////////////////////////////////////////////////////////////
+bool TinyGraphicsStateGuardian::
+draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
+  PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (tinydisplay_cat.is_spam()) {
+    tinydisplay_cat.spam() << "draw_tristrips: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+  // Send the individual triangle strips, stepping over the
+  // degenerate vertices.
+  CPTA_int ends = reader->get_ends();
+
+  _primitive_batches_tristrip_pcollector.add_level(ends.size());
+  if (reader->is_indexed()) {
+    unsigned int start = 0;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_tristrip_pcollector.add_level(ends[i] - start);
+
+      int end = ends[i];
+      nassertr(end - start >= 3, false);
+
+      switch (reader->get_index_type()) {
+      case Geom::NT_uint8:
+        {
+          PN_uint8 *index = (PN_uint8 *)reader->get_read_pointer(force);
+          if (index == NULL) {
+            return false;
+          }
+          GLVertex *v0 = &_vertices[index[start] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[start + 1] - _min_vertex];
+
+          bool reversed = false;
+          for (int vi = start + 2; vi < end; ++vi) {
+            GLVertex *v2 = &_vertices[index[vi] - _min_vertex];
+            if (reversed) {
+              gl_draw_triangle(_c, v1, v0, v2);
+              reversed = false;
+            } else {
+              gl_draw_triangle(_c, v0, v1, v2);
+              reversed = true;
+            }
+            v0 = v1;
+            v1 = v2;
+          }
+        }
+        break;
+
+      case Geom::NT_uint16:
+        {
+          PN_uint16 *index = (PN_uint16 *)reader->get_read_pointer(force);
+          if (index == NULL) {
+            return false;
+          }
+          GLVertex *v0 = &_vertices[index[start] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[start + 1] - _min_vertex];
+
+          bool reversed = false;
+          for (int vi = start + 2; vi < end; ++vi) {
+            GLVertex *v2 = &_vertices[index[vi] - _min_vertex];
+            if (reversed) {
+              gl_draw_triangle(_c, v1, v0, v2);
+              reversed = false;
+            } else {
+              gl_draw_triangle(_c, v0, v1, v2);
+              reversed = true;
+            }
+            v0 = v1;
+            v1 = v2;
+          }
+        }
+        break;
+
+      case Geom::NT_uint32:
+        {
+          PN_uint32 *index = (PN_uint32 *)reader->get_read_pointer(force);
+          if (index == NULL) {
+            return false;
+          }
+          GLVertex *v0 = &_vertices[index[start] - _min_vertex];
+          GLVertex *v1 = &_vertices[index[start + 1] - _min_vertex];
+
+          bool reversed = false;
+          for (int vi = start + 2; vi < end; ++vi) {
+            GLVertex *v2 = &_vertices[index[vi] - _min_vertex];
+            if (reversed) {
+              gl_draw_triangle(_c, v1, v0, v2);
+              reversed = false;
+            } else {
+              gl_draw_triangle(_c, v0, v1, v2);
+              reversed = true;
+            }
+            v0 = v1;
+            v1 = v2;
+          }
+        }
+        break;
+      }
+
+      start = ends[i] + 2;
+    }
+  } else {
+    unsigned int start = 0;
+    int delta = reader->get_first_vertex() - _min_vertex;
+    for (size_t i = 0; i < ends.size(); i++) {
+      _vertices_tristrip_pcollector.add_level(ends[i] - start);
+
+      int end = ends[i];
+      nassertr(end - start >= 3, false);
+      GLVertex *v0 = &_vertices[start + delta];
+      GLVertex *v1 = &_vertices[start + delta + 1];
+
+      bool reversed = false;
+      for (int vi = start + 2; vi < end; ++vi) {
+        GLVertex *v2 = &_vertices[vi + delta];
+        if (reversed) {
+          gl_draw_triangle(_c, v1, v0, v2);
+          reversed = false;
+        } else {
+          gl_draw_triangle(_c, v0, v1, v2);
+          reversed = true;
+        }
+        v0 = v1;
+        v1 = v2;
+      }
+      start = ends[i] + 2;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::draw_lines
 //       Access: Public, Virtual
 //  Description: Draws a series of disconnected line segments.
@@ -935,7 +1074,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 #endif  // NDEBUG
 
   int num_vertices = reader->get_num_vertices();
-  _vertices_immediate_pcollector.add_level(num_vertices);
+  _vertices_other_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
     switch (reader->get_index_type()) {
@@ -1012,7 +1151,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 #endif  // NDEBUG
 
   int num_vertices = reader->get_num_vertices();
-  _vertices_immediate_pcollector.add_level(num_vertices);
+  _vertices_other_pcollector.add_level(num_vertices);
 
   if (reader->is_indexed()) {
     switch (reader->get_index_type()) {
