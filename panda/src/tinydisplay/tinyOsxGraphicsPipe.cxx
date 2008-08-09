@@ -239,8 +239,7 @@ make_output(const string &name,
   
   // Second thing to try: a TinyGraphicsBuffer
   if (retry == 1) {
-    if ((!support_render_texture)||
-        ((flags&BF_require_parasite)!=0)||
+    if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
       return NULL;
     }
