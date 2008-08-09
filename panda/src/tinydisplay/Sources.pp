@@ -18,6 +18,7 @@
     tinyGeomMunger.I tinyGeomMunger.cxx tinyGeomMunger.h \
     tinySDLGraphicsPipe.I tinySDLGraphicsPipe.cxx tinySDLGraphicsPipe.h \
     tinySDLGraphicsWindow.h tinySDLGraphicsWindow.I tinySDLGraphicsWindow.cxx \
+    tinyGraphicsBuffer.h tinyGraphicsBuffer.I tinyGraphicsBuffer.cxx \
     tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
     tinyGraphicsStateGuardian.cxx \
     tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \

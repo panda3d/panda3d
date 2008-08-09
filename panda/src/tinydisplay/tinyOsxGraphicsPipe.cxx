@@ -19,6 +19,7 @@
 #include "tinyOsxGraphicsPipe.h"
 #include "config_tinydisplay.h"
 #include "tinyOsxGraphicsWindow.h"
+#include "tinyGraphicsBuffer.h"
 #include "pnmImage.h"
 
 TypeHandle TinyOsxGraphicsPipe::_type_handle;
@@ -234,6 +235,16 @@ make_output(const string &name,
     }
     return new TinyOsxGraphicsWindow(this, name, fb_prop, win_prop,
                                      flags, gsg, host);
+  }
+  
+  // Second thing to try: a TinyGraphicsBuffer
+  if (retry == 1) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)) {
+      return NULL;
+    }
+    return new TinyGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
   }
   
   // Nothing else left to try.

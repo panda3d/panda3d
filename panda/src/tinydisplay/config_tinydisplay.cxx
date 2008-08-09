@@ -21,6 +21,7 @@
 #include "tinyOsxGraphicsWindow.h"
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
+#include "tinyGraphicsBuffer.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
 #include "tinyTextureContext.h"
@@ -115,6 +116,7 @@ init_libtinydisplay() {
   }
   initialized = true;
 
+  TinyGraphicsBuffer::init_type();
   TinyGraphicsStateGuardian::init_type();
   TinyGeomMunger::init_type();
   TinyTextureContext::init_type();
