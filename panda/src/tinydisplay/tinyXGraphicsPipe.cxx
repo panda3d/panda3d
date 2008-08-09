@@ -18,6 +18,7 @@
 #include "tinyXGraphicsPipe.h"
 #include "tinyXGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
+#include "tinyGraphicsBuffer.h"
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
 
@@ -200,11 +201,6 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
-  if (!_is_valid) {
-    return NULL;
-  }
-
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
     DCAST_INTO_R(tinygsg, gsg, NULL);
@@ -212,7 +208,7 @@ make_output(const string &name,
 
   // First thing to try: a TinyXGraphicsWindow
 
-  if (retry == 0) {
+  if (retry == 0 && _is_valid) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -224,6 +220,16 @@ make_output(const string &name,
     }
     return new TinyXGraphicsWindow(this, name, fb_prop, win_prop,
                                  flags, gsg, host);
+  }
+  
+  // Second thing to try: a TinyGraphicsBuffer
+  if (retry == 1) {
+    if ((!support_render_texture)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)) {
+      return NULL;
+    }
+    return new TinyGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
   }
   
   // Nothing else left to try.

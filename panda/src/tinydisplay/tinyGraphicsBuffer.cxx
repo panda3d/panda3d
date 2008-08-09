@@ -130,10 +130,6 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsBuffer::
 open_buffer() {
-  if (!GraphicsBuffer::open_buffer()) {
-    return false;
-  }
-
   // GSG Creation/Initialization
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
@@ -159,6 +155,7 @@ open_buffer() {
     return false;
   }
 
+  _is_valid = true;
   return true;
 }
 
