@@ -139,12 +139,6 @@ event_2(const Event *event, void *) {
 void
 event_0(const Event *event, void *) {
   // 0: run hacky test.
-
-  BamCache *cache = BamCache::get_global_ptr();
-  cache->flush_index();
-
-  return;
-
   EventParameter param = event->get_parameter(0);
   WindowFramework *wf;
   DCAST_INTO_V(wf, param.get_ptr());
@@ -152,6 +146,7 @@ event_0(const Event *event, void *) {
   // Create a new offscreen buffer.
   GraphicsWindow *win = wf->get_graphics_window();
   PT(GraphicsOutput) buffer = win->make_texture_buffer("tex", 256, 256);
+  cerr << buffer->get_type() << "\n";
 
   // Set the offscreen buffer to render the same scene as the main camera.
   DisplayRegion *dr = buffer->make_display_region();
