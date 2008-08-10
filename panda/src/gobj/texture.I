@@ -720,7 +720,15 @@ get_compression() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_render_to_texture
 //       Access: Published
-//  Description: 
+//  Description: Returns a flag on the texture that indicates whether the
+//               texture is intended to be used as a direct-render
+//               target, by binding a framebuffer to a texture and
+//               rendering directly into the texture.
+//
+//               Normally, a user should not need to set this flag
+//               directly; it is set automatically by the low-level
+//               display code when a texture is bound to a
+//               framebuffer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 get_render_to_texture() const {

@@ -314,15 +314,19 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // which has system-imposed restrictions on size).
   tex->set_size_padded(get_x_size(), get_y_size());
   
-  if (mode == RTM_bind_or_copy && !support_render_texture) {
-    mode = RTM_copy_texture;
-  }
-  else {
-    if (_gsg -> get_supports_render_texture ( )) {
-      tex->set_render_to_texture (true);
+  if (mode == RTM_bind_or_copy) {
+    if (!_gsg->get_supports_render_texture() || !support_render_texture) {
+      // Binding is not supported or it is disabled, so just fall back
+      // to copy instead.
+      mode = RTM_copy_texture;
     }
   }
 
+  if (mode == RTM_bind_or_copy) {
+    // If we're still planning on binding, indicate it in texture
+    // properly.
+    tex->set_render_to_texture(true);
+  }
 
   RenderTexture result;
   result._texture = tex;

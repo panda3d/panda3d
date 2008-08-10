@@ -118,7 +118,7 @@ close_buffer() {
     _active = false;
   }
 
-  GraphicsBuffer::close_buffer();
+  _is_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////

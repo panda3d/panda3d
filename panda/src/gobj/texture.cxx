@@ -840,7 +840,19 @@ set_compression(Texture::CompressionMode compression) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_render_to_texture
 //       Access: Published
-//  Description: 
+//  Description: Sets a flag on the texture that indicates whether the
+//               texture is intended to be used as a direct-render
+//               target, by binding a framebuffer to a texture and
+//               rendering directly into the texture.
+//
+//               This controls some low-level choices made about the
+//               texture object itself.  For instance, compressed
+//               textures are disallowed when this flag is set true.
+//
+//               Normally, a user should not need to set this flag
+//               directly; it is set automatically by the low-level
+//               display code when a texture is bound to a
+//               framebuffer.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_render_to_texture(bool render_to_texture) {
