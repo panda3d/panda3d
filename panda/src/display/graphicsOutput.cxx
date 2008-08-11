@@ -1007,9 +1007,13 @@ clear(Thread *current_thread) {
 //  Description: For all textures marked RTM_copy_texture,
 //               RTM_copy_ram, RTM_triggered_copy_texture, or
 //               RTM_triggered_copy_ram, do the necessary copies.
+//
+//               Returns true if all copies are successful, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
+bool GraphicsOutput::
 copy_to_textures() {
+  bool okflag = true;
   for (int i=0; i<count_textures(); i++) {
     RenderTextureMode rtm_mode = get_rtm_mode(i);
     if ((rtm_mode == RTM_none)||(rtm_mode == RTM_bind_or_copy)) {
@@ -1018,7 +1022,7 @@ copy_to_textures() {
 
     Texture *texture = get_texture(i);
     PStatTimer timer(_copy_texture_pcollector);
-    nassertv(has_texture());
+    nassertr(has_texture(), false);
 
     if ((rtm_mode == RTM_copy_texture)||
         (rtm_mode == RTM_copy_ram)||
@@ -1036,27 +1040,37 @@ copy_to_textures() {
         buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
                                          get_fb_properties());
       }
-      
+
+      bool copied = false;
       if (_cube_map_dr != (DisplayRegion *)NULL) {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
-                                        _cube_map_dr, buffer);
+          copied = 
+            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
+                                          _cube_map_dr, buffer);
         } else {
-          _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
-                                            _cube_map_dr, buffer);
+          copied =
+            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
+                                              _cube_map_dr, buffer);
         }
       } else {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
-          _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
-                                        _default_display_region, buffer);
+          copied = 
+            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
+                                          _default_display_region, buffer);
         } else {
-          _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
-                                            _default_display_region, buffer);
+          copied = 
+            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
+                                              _default_display_region, buffer);
         }
+      }
+      if (!copied) {
+        okflag = false;
       }
     }
   }
   _trigger_copy = false;
+  
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////

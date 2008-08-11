@@ -191,7 +191,7 @@ public:
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual void end_draw_primitives()=0;
 
-  virtual void framebuffer_copy_to_texture
+  virtual bool framebuffer_copy_to_texture
   (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
   (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;

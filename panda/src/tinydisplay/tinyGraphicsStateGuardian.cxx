@@ -1245,10 +1245,10 @@ end_draw_primitives() {
 //               If z > -1, it is the cube map index into which to
 //               copy.
 ////////////////////////////////////////////////////////////////////
-void TinyGraphicsStateGuardian::
+bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
-  nassertv(tex != NULL && dr != NULL);
+  nassertr(tex != NULL && dr != NULL, false);
   
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
@@ -1256,12 +1256,12 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-  nassertv(tc != (TextureContext *)NULL);
+  nassertr(tc != (TextureContext *)NULL, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   GLTexture *gltex = &gtc->_gltex;
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
-    return;
+    return false;
   }
 
   PIXEL *ip = gltex->levels[0].pixmap + gltex->xsize * gltex->ysize;
@@ -1275,6 +1275,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
   gtc->mark_loaded();
   gtc->enqueue_lru(&_textures_lru);
+
+  return true;
 }
 
 

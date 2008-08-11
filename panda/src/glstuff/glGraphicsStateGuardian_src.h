@@ -181,7 +181,7 @@ public:
 
   virtual void clear(DrawableRegion *region);
   
-  virtual void framebuffer_copy_to_texture
+  virtual bool framebuffer_copy_to_texture
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);

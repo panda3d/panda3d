@@ -36,6 +36,7 @@ OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
 
   // OSMesa is never hardware-accelerated.
   _is_hardware = false;
+  cerr << "constructed " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2049,7 +2049,7 @@ end_draw_primitives() {
 //               If z > -1, it is the cube map index into which to
 //               copy.
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
+bool DXGraphicsStateGuardian9::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
   set_read_buffer(rb);
@@ -2062,33 +2062,27 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   dr->get_region_pixels_i(xo, yo, w, h);
   tex->set_size_padded(w, h);
 
-  bool use_stretch_rect;
-
-  use_stretch_rect = true;
-  if (use_stretch_rect) {
-    // must use a render target type texture for StretchRect
-    tex -> set_render_to_texture (true);
-  }
+  // must use a render target type texture for StretchRect
+  tex->set_render_to_texture(true);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
-    return;
+    return false;
   }
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
 
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
     // For a specialty texture like a cube map, go the slow route
     // through RAM for now.
-    framebuffer_copy_to_ram(tex, z, dr, rb);
-    return;
+    return framebuffer_copy_to_ram(tex, z, dr, rb);
   }
-  nassertv(dtc->get_d3d_2d_texture() != NULL);
+  nassertr(dtc->get_d3d_2d_texture() != NULL, false);
 
   IDirect3DSurface9 *tex_level_0;
   hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
-    return;
+    return false;
   }
 
   // If the texture is the wrong size, we need to do something about it.
@@ -2097,7 +2091,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (FAILED(hr)) {
     dxgsg9_cat.error() << "GetDesc failed in copy_texture" << D3DERRORSTRING(hr);
     SAFE_RELEASE(tex_level_0);
-    return;
+    return false;
   }
   if ((texdesc.Width != tex->get_x_size())||(texdesc.Height != tex->get_y_size())) {
     if ((orig_x != tex->get_x_size()) || (orig_y != tex->get_y_size())) {
@@ -2107,18 +2101,18 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
         // Oops, we can't re-create the texture for some reason.
         dxgsg9_cat.error()
           << "Unable to re-create texture " << *dtc->get_texture() << endl;
-        return;
+        return false;
       }
       hr = dtc->get_d3d_2d_texture()->GetSurfaceLevel(0, &tex_level_0);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "GetSurfaceLev failed in copy_texture" << D3DERRORSTRING(hr);
-        return;
+        return false;
       }
       hr = tex_level_0->GetDesc(&texdesc);
       if (FAILED(hr)) {
         dxgsg9_cat.error() << "GetDesc 2 failed in copy_texture" << D3DERRORSTRING(hr);
         SAFE_RELEASE(tex_level_0);
-        return;
+        return false;
       }
     }
     if ((texdesc.Width != tex->get_x_size())||(texdesc.Height != tex->get_y_size())) {
@@ -2127,7 +2121,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       dxgsg9_cat.error()
         << "Unable to copy to texture, texture is wrong size: " << *dtc->get_texture() << endl;
       SAFE_RELEASE(tex_level_0);
-      return;
+      return false;
     }
   }
 
@@ -2143,7 +2137,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
       << "GetRenderTarget failed in framebuffer_copy_to_texture"
       << D3DERRORSTRING(hr);
     SAFE_RELEASE(tex_level_0);
-    return;
+    return false;
   }
 
   RECT src_rect;
@@ -2157,69 +2151,31 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //  hr = _d3d_device->CopyRects(render_target, &src_rect, 1, tex_level_0, 0);
 
 //  DX9
-  if (use_stretch_rect) {
-    D3DTEXTUREFILTERTYPE filter;
+  D3DTEXTUREFILTERTYPE filter;
 
-    filter = D3DTEXF_POINT;
+  filter = D3DTEXF_POINT;
 
-//    dxgsg9_cat.debug () << "framebuffer_copy_to_texture\n";
-
-    hr = _d3d_device->StretchRect (
-      render_target,
-      &src_rect,
-      tex_level_0,
-      &src_rect,
-      filter);
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "StretchRect failed in framebuffer_copy_to_texture"
-        << D3DERRORSTRING(hr);
-      return;
-    }
-  }
-  else {
-    //  this is not efficient since it copies the entire render
-    //  target to system memory and then copies the rectangle to the texture
-    // create a surface in system memory that is a duplicate of the render target
-    D3DPOOL pool;
-    IDirect3DSurface9 *temp_surface = NULL;
-    D3DSURFACE_DESC surface_description;
-
-    render_target -> GetDesc (&surface_description);
-
-    pool = D3DPOOL_SYSTEMMEM;
-    hr = _d3d_device->CreateOffscreenPlainSurface(
-           surface_description.Width,
-           surface_description.Height,
-           surface_description.Format,
-           pool,
-           &temp_surface,
-           NULL);
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "CreateOffscreenPlainSurface failed in framebuffer_copy_to_texture"
-        << D3DERRORSTRING(hr);
-      return;
-    }
-
-    // this copies the entire render target into system memory
-    hr = _d3d_device -> GetRenderTargetData (render_target, temp_surface);
-
-    if (FAILED(hr)) {
-      dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
-      RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
-      return;
-    }
-
-    // copy system memory version to texture
-    DXTextureContext9::d3d_surface_to_texture(src_rect, temp_surface,
-                false, tex, z);
-
-    RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
+  bool okflag = true;
+  hr = _d3d_device->StretchRect(render_target, &src_rect,
+                                tex_level_0, &src_rect,
+                                filter);
+  if (FAILED(hr)) {
+    dxgsg9_cat.debug()
+      << "StretchRect failed in framebuffer_copy_to_texture"
+      << D3DERRORSTRING(hr);
+    okflag = false;
   }
 
   SAFE_RELEASE(render_target);
   SAFE_RELEASE(tex_level_0);
+
+  if (!okflag) {
+    // The copy failed.  Fall back to copying it to RAM and back.
+    // Terribly slow, but what are you going to do?
+    return framebuffer_copy_to_ram(tex, z, dr, rb);
+  }
+
+  return true;
 }
 
 
@@ -2234,7 +2190,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, 
+                        const RenderBuffer &rb) {
   set_read_buffer(rb);
 
   RECT rect;
@@ -2291,7 +2248,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // GetBackBuffer().  Might just be related to the swap_chain
     // thing.
 
-  render_target_index = 0;
+    render_target_index = 0;
     hr = _d3d_device->GetRenderTarget(render_target_index, &backbuffer);
 
     if (FAILED(hr)) {
@@ -2302,30 +2259,29 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     // Since we might not be able to Lock the back buffer, we will
     // need to copy it to a temporary surface of the appropriate type
     // first.
-  D3DPOOL pool;
-  D3DSURFACE_DESC surface_description;
+    D3DPOOL pool;
+    D3DSURFACE_DESC surface_description;
 
-  backbuffer -> GetDesc (&surface_description);
+    backbuffer -> GetDesc (&surface_description);
 
-  pool = D3DPOOL_SYSTEMMEM;
+    pool = D3DPOOL_SYSTEMMEM;
     hr = _d3d_device->CreateOffscreenPlainSurface(
-          surface_description.Width,
-          surface_description.Height,
-          surface_description.Format,
-          pool,
-          &temp_surface,
-          NULL);
+                                                  surface_description.Width,
+                                                  surface_description.Height,
+                                                  surface_description.Format,
+                                                  pool,
+                                                  &temp_surface,
+                                                  NULL);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-  << "CreateImageSurface failed in copy_pixel_buffer()"
-  << D3DERRORSTRING(hr);
+        << "CreateImageSurface failed in copy_pixel_buffer()"
+        << D3DERRORSTRING(hr);
       backbuffer->Release();
       return false;
     }
 
     // Now we must copy from the backbuffer to our temporary surface.
 
-//  DX8 VERSION  hr = _d3d_device->CopyRects(backbuffer, &rect, 1, temp_surface, NULL);
     hr = _d3d_device -> GetRenderTargetData (backbuffer, temp_surface);
 
     if (FAILED(hr)) {
@@ -2335,7 +2291,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       return false;
     }
 
-    copy_inverted = true;
+    //    copy_inverted = true;
 
     RELEASE(backbuffer, dxgsg9, "backbuffer", RELEASE_ONCE);
 
@@ -2365,20 +2321,20 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     hr = _d3d_device->CreateOffscreenPlainSurface(w, h, D3DFMT_A8R8G8B8, D3DPOOL_SCRATCH, &temp_surface, NULL);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-  << "CreateImageSurface failed in copy_pixel_buffer()"
-  << D3DERRORSTRING(hr);
+        << "CreateImageSurface failed in copy_pixel_buffer()"
+        << D3DERRORSTRING(hr);
       return false;
     }
 
     UINT swap_chain;
 
-/* ***** DX9 swap chain ??? */
-  swap_chain = 0;
+    /* ***** DX9 swap chain ??? */
+    swap_chain = 0;
     hr = _d3d_device->GetFrontBufferData(swap_chain,temp_surface);
 
     if (hr == D3DERR_DEVICELOST) {
       dxgsg9_cat.error()
-  << "copy_pixel_buffer failed: device lost\n";
+        << "copy_pixel_buffer failed: device lost\n";
       temp_surface->Release();
       return false;
     }
@@ -2394,8 +2350,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
 
+  copy_inverted = false;
   DXTextureContext9::d3d_surface_to_texture(rect, temp_surface,
-              copy_inverted, tex, z);
+                                            copy_inverted, tex, z);
 
   RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
 

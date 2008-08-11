@@ -214,7 +214,7 @@ public:
 protected:
   virtual void pixel_factor_changed();
   void prepare_for_deletion();
-  void copy_to_textures();
+  bool copy_to_textures();
   
   INLINE void begin_frame_spam(FrameMode mode);
   INLINE void end_frame_spam(FrameMode mode);

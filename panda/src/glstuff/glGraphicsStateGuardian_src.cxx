@@ -290,6 +290,7 @@ CLP(GraphicsStateGuardian)::
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 reset() {
+  cerr << "begin reset\n";
   free_pointers();
   GraphicsStateGuardian::reset();
 
@@ -1331,6 +1332,7 @@ reset() {
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
+  cerr << "end reset()\n";
 }
 
 
@@ -3428,10 +3430,10 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 //               If z > -1, it is the cube map index into which to
 //               copy.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
-  nassertv(tex != NULL && dr != NULL);
+  nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   
   int xo, yo, w, h;
@@ -3447,17 +3449,17 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   // Sanity check everything.
   if (z >= 0) {
     if (!_supports_cube_map) {
-      return;
+      return false;
     }
-    nassertv(z < 6);
-    nassertv(tex->get_texture_type() == Texture::TT_cube_map);
+    nassertr(z < 6, false);
+    nassertr(tex->get_texture_type() == Texture::TT_cube_map, false);
     if ((w != tex->get_x_size()) ||
         (h != tex->get_y_size()) ||
         (w != h)) {
-      return;
+      return false;
     }
   } else {
-    nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+    nassertr(tex->get_texture_type() == Texture::TT_2d_texture, false);
   }
 
   // Match framebuffer format if necessary.
@@ -3479,7 +3481,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
-  nassertv(tc != (TextureContext *)NULL);
+  nassertr(tc != (TextureContext *)NULL, false);
   apply_texture(tc);
 
   if (z >= 0) {
@@ -3497,6 +3499,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   // Force reload of texture state, since we've just monkeyed with it.
   _state_rs = 0;
   _state._texture = 0;
+
+  return true;
 }
 
 
