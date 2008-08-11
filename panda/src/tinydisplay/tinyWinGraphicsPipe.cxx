@@ -20,6 +20,7 @@
 #include "config_tinydisplay.h"
 #include "config_windisplay.h"
 #include "tinyWinGraphicsWindow.h"
+#include "tinyGraphicsBuffer.h"
 
 TypeHandle TinyWinGraphicsPipe::_type_handle;
   
@@ -114,6 +115,15 @@ make_output(const string &name,
     }
     return new TinyWinGraphicsWindow(this, name, fb_prop, win_prop,
                                      flags, gsg, host);
+  }
+  
+  // Second thing to try: a TinyGraphicsBuffer
+  if (retry == 1) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)) {
+      return NULL;
+    }
+    return new TinyGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
   }
   
   // Nothing else left to try.

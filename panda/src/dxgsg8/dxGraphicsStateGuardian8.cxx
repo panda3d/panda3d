@@ -4258,7 +4258,13 @@ set_scissor(float left, float right, float bottom, float top) {
   float ysize = top - bottom;
   float xcenter = (left + right) - 1.0f;
   float ycenter = (bottom + top) - 1.0f;
-  _scissor_mat = TransformState::make_scale(LVecBase3f(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3f(-xcenter, -ycenter, 0.0f)));
+  if (xsize == 0.0f || ysize == 0.0f) {
+    // If the scissor region is zero, nothing will be drawn anyway, so
+    // don't worry about it.
+    _scissor_mat = TransformState::make_identity();
+  } else {
+    _scissor_mat = TransformState::make_scale(LVecBase3f(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3f(-xcenter, -ycenter, 0.0f)));
+  }
   prepare_lens();
 }
 
