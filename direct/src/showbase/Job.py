@@ -24,6 +24,7 @@ class Job(DirectObject):
         self._id = Job._SerialGen.next()
         self._printing = False
         self._priority = Job.Priorities.Normal
+        self._finished = False
         if __debug__:
             self._pstats = PStatCollector("App:Show code:jobManager:%s" % self._name)
 
@@ -73,6 +74,12 @@ class Job(DirectObject):
             pass
             """
         pass
+
+    def _setFinished(self):
+        self._finished = True
+        self.finished()
+    def isFinished(self):
+        return self._finished
 
     def finished(self):
         # called when the job finishes and has been removed from the JobManager

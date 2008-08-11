@@ -115,7 +115,7 @@ class JobManager:
             if result is Job.Done:
                 job.suspend()
                 self.remove(job)
-                job.finished()
+                job._setFinished()
                 messenger.send(job.getFinishedEvent())
                 # job is done.
                 break
@@ -197,7 +197,7 @@ class JobManager:
                     elif result is Job.Done:
                         job.suspend()
                         self.remove(job)
-                        job.finished()
+                        job._setFinished()
                         if __debug__:
                             job._pstats.stop()
                         messenger.send(job.getFinishedEvent())
