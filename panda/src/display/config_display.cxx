@@ -113,7 +113,7 @@ ConfigVariableBool prefer_texture_buffer
           "same memory)."));
 
 ConfigVariableBool prefer_parasite_buffer
-("prefer-parasite-buffer", true,
+("prefer-parasite-buffer", false,
  PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() try to "
           "create a ParasiteBuffer before it tries to create an offscreen "
           "buffer (assuming it could not create a direct render buffer for "
