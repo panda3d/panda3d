@@ -7536,6 +7536,10 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
     }
   }
 
+#ifdef DO_PSTATS
+  _data_transferred_pcollector.add_level(image_size);
+#endif
+
   GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
                   width, height, 0,
                   external_format, component_type, image_ptr);
