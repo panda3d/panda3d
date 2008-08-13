@@ -241,6 +241,11 @@ class ShowBase(DirectObject.DirectObject):
             self.openDefaultWindow(startDirect = False, props=props)
 
         self.loader = Loader.Loader(self)
+
+        # Temporary hasattr for old Pandas.
+        if hasattr(self.graphicsEngine, 'setDefaultLoader'):
+            self.graphicsEngine.setDefaultLoader(self.loader.loader)
+            
         self.eventMgr = eventMgr
         self.messenger = messenger
         self.bboard = bulletinBoard

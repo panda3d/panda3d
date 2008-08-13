@@ -1990,9 +1990,6 @@ apply_texture(TextureContext *tc) {
     if (!okflag) {
       tinydisplay_cat.error()
         << "Could not load " << *gtc->get_texture() << "\n";
-    }
-    gtc->mark_loaded();
-    if (!okflag) {
       return false;
     }
   }
@@ -2014,8 +2011,23 @@ apply_texture(TextureContext *tc) {
 bool TinyGraphicsStateGuardian::
 upload_texture(TinyTextureContext *gtc) {
   Texture *tex = gtc->get_texture();
-  PStatTimer timer(_load_texture_pcollector);
 
+  if (_incomplete_render && 
+      !tex->has_ram_image() && tex->might_have_ram_image() &&
+      tex->has_simple_ram_image() &&
+      !_loader.is_null()) {
+    // If we don't have the texture data right now, go get it, but in
+    // the meantime load a temporary simple image in its place.
+    async_reload_texture(gtc);
+    if (!tex->has_ram_image()) {
+      if (gtc->was_simple_image_modified()) {
+        return upload_simple_texture(gtc);
+      }
+      return true;
+    }
+  }
+
+  PStatTimer timer(_load_texture_pcollector);
   CPTA_uchar src_image = tex->get_ram_image();
   if (src_image.is_null()) {
     return false;
@@ -2103,6 +2115,54 @@ upload_texture(TinyTextureContext *gtc) {
   gtc->update_data_size_bytes(bytecount);
   
   tex->texture_uploaded();
+  gtc->mark_loaded();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::upload_simple_texture
+//       Access: Protected
+//  Description: This is used as a standin for upload_texture
+//               when the texture in question is unavailable (e.g. it
+//               hasn't yet been loaded from disk).  Until the texture
+//               image itself becomes available, we will render the
+//               texture's "simple" image--a sharply reduced version
+//               of the same texture.
+////////////////////////////////////////////////////////////////////
+bool TinyGraphicsStateGuardian::
+upload_simple_texture(TinyTextureContext *gtc) {
+  PStatTimer timer(_load_texture_pcollector);
+  Texture *tex = gtc->get_texture();
+  nassertr(tex != (Texture *)NULL, false);
+
+  const unsigned char *image_ptr = tex->get_simple_ram_image();
+  if (image_ptr == (const unsigned char *)NULL) {
+    return false;
+  }
+
+  size_t image_size = tex->get_simple_ram_image_size();
+  int width = tex->get_simple_x_size();
+  int height = tex->get_simple_y_size();
+
+#ifdef DO_PSTATS
+  _data_transferred_pcollector.add_level(image_size);
+#endif
+  GLTexture *gltex = &gtc->_gltex;
+
+  if (tinydisplay_cat.is_debug()) {
+    tinydisplay_cat.debug()
+      << "loading simple image for " << tex->get_name() << "\n";
+  }
+
+  if (!setup_gltex(gltex, width, height, 1)) {
+    return false;
+  }
+
+  ZTextureLevel *dest = &gltex->levels[0];
+  memcpy(dest->pixmap, image_ptr, image_size);
+
+  gtc->mark_simple_loaded();
 
   return true;
 }
@@ -2110,10 +2170,10 @@ upload_texture(TinyTextureContext *gtc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::setup_gltex
 //       Access: Private
-//  Description: Sets the GLTexture size, bits, and masks appropriate,
-//               and allocates space for a pixmap.  Does not fill the
-//               pixmap contents.  Returns true if the texture is a
-//               valid size, false otherwise.
+//  Description: Sets the GLTexture size, bits, and masks
+//               appropriately, and allocates space for a pixmap.
+//               Does not fill the pixmap contents.  Returns true if
+//               the texture is a valid size, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
 setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {

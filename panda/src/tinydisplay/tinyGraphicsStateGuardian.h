@@ -107,6 +107,7 @@ private:
 
   bool apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc);
+  bool upload_simple_texture(TinyTextureContext *gtc);
   bool setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels);
   int get_tex_shift(int orig_size);
 
