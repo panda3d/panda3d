@@ -52,7 +52,7 @@ class CartesianGridBase:
         sphereRadius = Vec3(xMax,yMax,0).length()
         
         # sphereRadius = max(sphereRadius, gridRadius*cellWidth)
-        return 2 * (sphereRadius // cellWidth)
+        return max(2 * (sphereRadius // cellWidth), 1)
 
     def getZoneCellOrigin(self, zoneId):
         # It returns the origin of the zoneCell
