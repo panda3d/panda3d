@@ -290,7 +290,6 @@ CLP(GraphicsStateGuardian)::
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 reset() {
-  cerr << "begin reset\n";
   free_pointers();
   GraphicsStateGuardian::reset();
 
@@ -1332,7 +1331,6 @@ reset() {
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
-  cerr << "end reset()\n";
 }
 
 
@@ -6393,7 +6391,10 @@ update_standard_texture_bindings() {
     }
     GLP(Enable)(target);
     
-    apply_texture(tc);
+    if (!apply_texture(tc)) {
+      GLP(Disable)(target);
+      break;
+    }
     
     if (stage->involves_color_scale() && _color_scale_enabled) {
       Colorf color = stage->get_color();
@@ -6939,14 +6940,14 @@ specify_texture(Texture *tex) {
 //               texture, and makes it the current texture available
 //               for rendering.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
+bool CLP(GraphicsStateGuardian)::
 apply_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   gtc->set_active(true);
   GLenum target = get_texture_target(gtc->get_texture()->get_texture_type());
   if (target == GL_NONE) {
-    return;
+    return false;
   }
   GLP(BindTexture)(target, gtc->_index);
 
@@ -6954,8 +6955,12 @@ apply_texture(TextureContext *tc) {
     // If the texture image was modified, reload the texture.  This
     // means we also re-specify the properties for good measure.
     specify_texture(gtc->get_texture());
-    upload_texture(gtc);
-    gtc->mark_loaded();
+    bool okflag = upload_texture(gtc);
+    if (!okflag) {
+      GLCAT.error()
+        << "Could not load " << *gtc->get_texture() << "\n";
+      return false;
+    }
 
   } else if (gtc->was_properties_modified()) {
     // If only the properties have been modified, we don't necessarily
@@ -6965,6 +6970,7 @@ apply_texture(TextureContext *tc) {
   }
 
   report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6979,6 +6985,21 @@ apply_texture(TextureContext *tc) {
 bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
+
+  if (_incomplete_render && 
+      !tex->has_ram_image() && tex->might_have_ram_image() &&
+      tex->has_simple_ram_image() &&
+      !_loader.is_null()) {
+    // If we don't have the texture data right now, go get it, but in
+    // the meantime load a temporary simple image in its place.
+    async_reload_texture(gtc);
+    if (!tex->has_ram_image()) {
+      if (gtc->was_simple_image_modified()) {
+        return upload_simple_texture(gtc);
+      }
+      return true;
+    }
+  }
 
   CPTA_uchar image = tex->get_ram_image();
 
@@ -7139,6 +7160,7 @@ upload_texture(CLP(TextureContext) *gtc) {
 #endif
 
     tex->texture_uploaded();
+    gtc->mark_loaded();
 
     report_my_gl_errors();
     return true;
@@ -7459,6 +7481,68 @@ upload_texture_image(CLP(TextureContext) *gtc,
     return false;
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::upload_simple_texture
+//       Access: Protected
+//  Description: This is used as a standin for upload_texture
+//               when the texture in question is unavailable (e.g. it
+//               hasn't yet been loaded from disk).  Until the texture
+//               image itself becomes available, we will render the
+//               texture's "simple" image--a sharply reduced version
+//               of the same texture.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+upload_simple_texture(CLP(TextureContext) *gtc) {
+  report_my_gl_errors();
+
+  PStatTimer timer(_load_texture_pcollector);
+  Texture *tex = gtc->get_texture();
+  nassertr(tex != (Texture *)NULL, false);
+
+  int internal_format = GL_RGBA;
+  int external_format = GL_BGRA;
+
+  const unsigned char *image_ptr = tex->get_simple_ram_image();
+  if (image_ptr == (const unsigned char *)NULL) {
+    return false;
+  }
+
+  size_t image_size = tex->get_simple_ram_image_size();
+  PTA_uchar bgr_image;
+  if (!_supports_bgr) {
+    // If the GL doesn't claim to support BGR, we may have to reverse
+    // the component ordering of the image.
+    external_format = GL_RGBA;
+    image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+                                       external_format, tex);
+  }
+
+  int width = tex->get_simple_x_size();
+  int height = tex->get_simple_y_size();
+  int component_type = GL_UNSIGNED_BYTE;
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "loading simple image for " << tex->get_name() << "\n";
+  }
+
+  // Turn off mipmaps for the simple texture.
+  if (tex->uses_mipmaps()) {
+    if (is_at_least_version(1, 2)) {
+      GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+    }
+  }
+
+  GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
+                  width, height, 0,
+                  external_format, component_type, image_ptr);
+
+  gtc->mark_simple_loaded();
+
+  report_my_gl_errors();
   return true;
 }
 

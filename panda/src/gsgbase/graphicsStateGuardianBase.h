@@ -108,6 +108,8 @@ class Lens;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GSGBASE GraphicsStateGuardianBase : public TypedWritableReferenceCount {
 PUBLISHED:
+  virtual bool get_incomplete_render() const=0;
+
   virtual bool prefers_triangle_strips() const=0;
   virtual int get_max_vertices_per_array() const=0;
   virtual int get_max_vertices_per_primitive() const=0;

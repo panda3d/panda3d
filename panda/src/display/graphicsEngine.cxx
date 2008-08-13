@@ -1760,6 +1760,9 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
   gsg->_threading_model = threading_model;
   gsg->_pipe = pipe;
   gsg->_engine = this;
+  if (!_default_loader.is_null()) {
+    gsg->set_loader(_default_loader);
+  }
 
   auto_adjust_capabilities(gsg);
   

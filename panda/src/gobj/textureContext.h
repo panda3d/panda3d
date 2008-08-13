@@ -44,9 +44,11 @@ PUBLISHED:
   INLINE bool was_modified() const;
   INLINE bool was_properties_modified() const;
   INLINE bool was_image_modified() const;
+  INLINE bool was_simple_image_modified() const;
 
 public:
   INLINE void mark_loaded();
+  INLINE void mark_simple_loaded();
 
 private:
   // This cannot be a PT(Texture), because the texture and the GSG
@@ -55,6 +57,7 @@ private:
   Texture *_texture;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
+  UpdateSeq _simple_image_modified;
   
 public:
   static TypeHandle get_class_type() {

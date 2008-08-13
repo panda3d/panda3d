@@ -195,6 +195,17 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_texture
+//       Access: Public
+//  Description: Releases a texture if it has already been prepared,
+//               or removes it from the preparation queue.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_texture(Texture *tex) {
+  tex->release(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_all_textures
 //       Access: Public
 //  Description: Releases all textures at once.  This will force them

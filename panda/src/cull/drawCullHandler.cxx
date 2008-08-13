@@ -32,7 +32,7 @@ void DrawCullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
   // Munge vertices as needed for the GSG's requirements, and the
   // object's current state.
-  bool force = !allow_incomplete_render;
+  bool force = !_gsg->get_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
 
   if (object->munge_geom(_gsg, _gsg->get_geom_munger(object->_state, current_thread), traverser, force)) {

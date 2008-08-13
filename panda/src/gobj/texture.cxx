@@ -96,6 +96,10 @@ Texture(const string &name) :
   _has_read_pages = false;
   _has_read_mipmaps = false;
   _num_mipmap_levels_read = 0;
+
+  _simple_x_size = 0;
+  _simple_y_size = 0;
+  _simple_ram_image._page_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,44 +109,12 @@ Texture(const string &name) :
 //               an existing Texture.
 ////////////////////////////////////////////////////////////////////
 Texture::
-Texture(const Texture &copy) :
-  Namable(copy),
-  _filename(copy._filename),
-  _alpha_filename(copy._alpha_filename),
-  _fullpath(copy._fullpath),
-  _alpha_fullpath(copy._alpha_fullpath),
-  _primary_file_num_channels(copy._primary_file_num_channels),
-  _alpha_file_channel(copy._alpha_file_channel),
-  _x_size(copy._x_size),
-  _y_size(copy._y_size),
-  _z_size(copy._z_size),
-  _num_components(copy._num_components),
-  _component_width(copy._component_width),
-  _texture_type(copy._texture_type),
-  _format(copy._format),
-  _component_type(copy._component_type),
-  _loaded_from_image(copy._loaded_from_image),
-  _loaded_from_txo(copy._loaded_from_txo),
-  _has_read_pages(copy._has_read_pages),
-  _has_read_mipmaps(copy._has_read_mipmaps),
-  _num_mipmap_levels_read(copy._num_mipmap_levels_read),
-  _wrap_u(copy._wrap_u),
-  _wrap_v(copy._wrap_v),
-  _wrap_w(copy._wrap_w),
-  _minfilter(copy._minfilter),
-  _magfilter(copy._magfilter),
-  _anisotropic_degree(copy._anisotropic_degree),
-  _keep_ram_image(copy._keep_ram_image),
-  _border_color(copy._border_color),
-  _compression(copy._compression),
-  _match_framebuffer_format(copy._match_framebuffer_format),
-  _quality_level(copy._quality_level),
-  _pad_x_size(copy._pad_x_size),
-  _pad_y_size(copy._pad_y_size),
-  _pad_z_size(copy._pad_z_size),
-  _ram_image_compression(copy._ram_image_compression),
-  _ram_images(copy._ram_images)
-{
+Texture(const Texture &copy) {
+  _has_read_pages = false;
+  _has_read_mipmaps = false;
+  _num_mipmap_levels_read = 0;
+
+  operator = (copy);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,6 +126,10 @@ Texture(const Texture &copy) :
 void Texture::
 operator = (const Texture &copy) {
   Namable::operator = (copy);
+
+  ReMutexHolder holder(_lock);
+  ReMutexHolder holder2(copy._lock);
+
   _filename = copy._filename;
   _alpha_filename = copy._alpha_filename;
   if (!copy._fullpath.empty()) {
@@ -190,8 +166,13 @@ operator = (const Texture &copy) {
   _quality_level = copy._quality_level;
   _ram_image_compression = copy._ram_image_compression;
   _ram_images = copy._ram_images;
+  _simple_x_size = copy._simple_x_size;
+  _simple_y_size = copy._simple_y_size;
+  _simple_ram_image = copy._simple_ram_image;
+
   ++_properties_modified;
   ++_image_modified;
+  ++_simple_image_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,6 +226,7 @@ void Texture::
 setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
               int z_size, Texture::ComponentType component_type,
               Texture::Format format) {
+  ReMutexHolder holder(_lock);
   if (texture_type == TT_cube_map) {
     // Cube maps must always consist of six square images.
     nassertv(x_size == y_size && z_size == 6);
@@ -255,6 +237,9 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
     _wrap_u = WM_clamp;
     _wrap_v = WM_clamp;
     _wrap_w = WM_clamp;
+  }
+  if (texture_type != TT_2d_texture) {
+    clear_simple_ram_image();
   }
 
   _texture_type = texture_type;
@@ -284,6 +269,7 @@ setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 generate_normalization_cube_map(int size) {
+  ReMutexHolder holder(_lock);
   setup_cube_map(size, T_unsigned_byte, F_rgb);
   PTA_uchar image = make_ram_image();
   _keep_ram_image = true;
@@ -385,6 +371,7 @@ generate_normalization_cube_map(int size) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 generate_alpha_scale_map() {
+  ReMutexHolder holder(_lock);
   setup_1d_texture(256, T_unsigned_byte, F_alpha);
   set_wrap_u(WM_clamp);
   set_minfilter(FT_nearest);
@@ -416,6 +403,7 @@ generate_alpha_scale_map() {
 ////////////////////////////////////////////////////////////////////
 size_t Texture::
 estimate_texture_memory() const {
+  ReMutexHolder holder(_lock);
   size_t pixels = get_x_size() * get_y_size();
 
   size_t bpp = 4;
@@ -487,6 +475,7 @@ estimate_texture_memory() const {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_aux_data(const string &key, TypedReferenceCount *aux_data) {
+  ReMutexHolder holder(_lock);
   _aux_data[key] = aux_data;
 }
 
@@ -498,6 +487,7 @@ set_aux_data(const string &key, TypedReferenceCount *aux_data) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_aux_data(const string &key) {
+  ReMutexHolder holder(_lock);
   _aux_data.erase(key);
 }
 
@@ -510,6 +500,7 @@ clear_aux_data(const string &key) {
 ////////////////////////////////////////////////////////////////////
 TypedReferenceCount *Texture::
 get_aux_data(const string &key) const {
+  ReMutexHolder holder(_lock);
   AuxData::const_iterator di;
   di = _aux_data.find(key);
   if (di != _aux_data.end()) {
@@ -529,6 +520,7 @@ get_aux_data(const string &key) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read_txo(istream &in, const string &filename) {
+  ReMutexHolder holder(_lock);
   DatagramInputFile din;
 
   if (!din.open(in)) {
@@ -605,6 +597,7 @@ read_txo(istream &in, const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 write_txo(ostream &out, const string &filename) const {
+  ReMutexHolder holder(_lock);
   DatagramOutputFile dout;
 
   if (!dout.open(out)) {
@@ -651,6 +644,7 @@ write_txo(ostream &out, const string &filename) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 reload() {
+  ReMutexHolder holder(_lock);
   if (_loaded_from_image && has_filename()) {
     reload_ram_image();
     ++_image_modified;
@@ -671,6 +665,7 @@ reload() {
 ////////////////////////////////////////////////////////////////////
 Texture *Texture::
 load_related(const InternalName *suffix) const {
+  ReMutexHolder holder(_lock);
   RelatedTextures::const_iterator ti;
   ti = _related_textures.find(suffix);
   if (ti != _related_textures.end()) {
@@ -719,6 +714,7 @@ load_related(const InternalName *suffix) const {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_wrap_u(Texture::WrapMode wrap) {
+  ReMutexHolder holder(_lock);
   if (_wrap_u != wrap) {
     ++_properties_modified;
     _wrap_u = wrap;
@@ -732,6 +728,7 @@ set_wrap_u(Texture::WrapMode wrap) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_wrap_v(Texture::WrapMode wrap) {
+  ReMutexHolder holder(_lock);
   if (_wrap_v != wrap) {
     ++_properties_modified;
     _wrap_v = wrap;
@@ -745,6 +742,7 @@ set_wrap_v(Texture::WrapMode wrap) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_wrap_w(Texture::WrapMode wrap) {
+  ReMutexHolder holder(_lock);
   if (_wrap_w != wrap) {
     ++_properties_modified;
     _wrap_w = wrap;
@@ -758,6 +756,7 @@ set_wrap_w(Texture::WrapMode wrap) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_minfilter(Texture::FilterType filter) {
+  ReMutexHolder holder(_lock);
   if (_minfilter != filter) {
     ++_properties_modified;
     _minfilter = filter;
@@ -771,6 +770,7 @@ set_minfilter(Texture::FilterType filter) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_magfilter(Texture::FilterType filter) {
+  ReMutexHolder holder(_lock);
   if (_magfilter != filter) {
     ++_properties_modified;
     _magfilter = filter;
@@ -788,6 +788,7 @@ set_magfilter(Texture::FilterType filter) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_anisotropic_degree(int anisotropic_degree) {
+  ReMutexHolder holder(_lock);
   if (_anisotropic_degree != anisotropic_degree) {
     ++_properties_modified;
     _anisotropic_degree = anisotropic_degree;
@@ -804,6 +805,7 @@ set_anisotropic_degree(int anisotropic_degree) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_border_color(const Colorf &color) {
+  ReMutexHolder holder(_lock);
   if (_border_color != color) {
     ++_properties_modified;
     _border_color = color;
@@ -831,6 +833,7 @@ set_border_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_compression(Texture::CompressionMode compression) {
+  ReMutexHolder holder(_lock);
   if (_compression != compression) {
     ++_properties_modified;
     _compression = compression;
@@ -870,6 +873,7 @@ set_render_to_texture(bool render_to_texture) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_quality_level(Texture::QualityLevel quality_level) {
+  ReMutexHolder holder(_lock);
   if (_quality_level != quality_level) {
     ++_properties_modified;
     _quality_level = quality_level;
@@ -888,6 +892,7 @@ set_quality_level(Texture::QualityLevel quality_level) {
 ////////////////////////////////////////////////////////////////////
 int Texture::
 get_expected_num_mipmap_levels() const {
+  ReMutexHolder holder(_lock);
   int size = max(_x_size, max(_y_size, _z_size));
   int count = 1;
   while (size > 1) {
@@ -905,6 +910,7 @@ get_expected_num_mipmap_levels() const {
 ////////////////////////////////////////////////////////////////////
 int Texture::
 get_expected_mipmap_x_size(int n) const {
+  ReMutexHolder holder(_lock);
   int size = max(_x_size, 1);
   while (n > 0 && size > 1) {
     size >>= 1;
@@ -921,6 +927,7 @@ get_expected_mipmap_x_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 int Texture::
 get_expected_mipmap_y_size(int n) const {
+  ReMutexHolder holder(_lock);
   int size = max(_y_size, 1);
   while (n > 0 && size > 1) {
     size >>= 1;
@@ -937,6 +944,7 @@ get_expected_mipmap_y_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 int Texture::
 get_expected_mipmap_z_size(int n) const {
+  ReMutexHolder holder(_lock);
   // 3-D textures have a different number of pages per each mipmap
   // level.  Other kinds of textures--especially, cube map
   // textures--always have the same.
@@ -983,6 +991,7 @@ get_expected_mipmap_z_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 has_ram_image() const {
+  ReMutexHolder holder(_lock);
   return !_ram_images.empty() && !_ram_images[0]._image.empty();
 }
 
@@ -1016,6 +1025,7 @@ has_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 CPTA_uchar Texture::
 get_ram_image() {
+  ReMutexHolder holder(_lock);
   if (_loaded_from_image && !has_ram_image() && has_filename()) {
     reload_ram_image();
   }
@@ -1040,6 +1050,7 @@ get_ram_image() {
 void Texture::
 set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
               size_t page_size) {
+  ReMutexHolder holder(_lock);
   nassertv(compression != CM_default);
   nassertv(compression != CM_off || image.size() == get_expected_ram_image_size());
   if (_ram_images.empty()) {
@@ -1067,6 +1078,7 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_image() {
+  ReMutexHolder holder(_lock);
   _ram_image_compression = CM_off;
   _ram_images.clear();
 }
@@ -1093,6 +1105,7 @@ get_keep_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 has_all_ram_mipmap_images() const {
+  ReMutexHolder holder(_lock);
   if (_ram_images.empty() || _ram_images[0]._image.empty()) {
     // If we don't even have a base image, the answer is no.
     return false;
@@ -1128,6 +1141,7 @@ has_all_ram_mipmap_images() const {
 ////////////////////////////////////////////////////////////////////
 CPTA_uchar Texture::
 get_ram_mipmap_image(int n) {
+  ReMutexHolder holder(_lock);
   if (n < (int)_ram_images.size()) {
     return _ram_images[n]._image;
   }
@@ -1145,6 +1159,7 @@ get_ram_mipmap_image(int n) {
 ////////////////////////////////////////////////////////////////////
 PTA_uchar Texture::
 make_ram_mipmap_image(int n) {
+  ReMutexHolder holder(_lock);
   nassertr(_ram_image_compression == CM_off, PTA_uchar(get_class_type()));
 
   while (n >= (int)_ram_images.size()) {
@@ -1171,6 +1186,7 @@ make_ram_mipmap_image(int n) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
+  ReMutexHolder holder(_lock);
   nassertv(_ram_image_compression != CM_off || image.size() == get_expected_ram_mipmap_image_size(n));
 
   while (n >= (int)_ram_images.size()) {
@@ -1197,6 +1213,7 @@ set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_mipmap_image(int n) {
+  ReMutexHolder holder(_lock);
   if (n >= (int)_ram_images.size()) {
     return;
   }
@@ -1212,6 +1229,7 @@ clear_ram_mipmap_image(int n) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 clear_ram_mipmap_images() {
+  ReMutexHolder holder(_lock);
   if (!_ram_images.empty()) {
     _ram_images.erase(_ram_images.begin() + 1, _ram_images.end());
   }
@@ -1232,6 +1250,7 @@ clear_ram_mipmap_images() {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 generate_ram_mipmap_images() {
+  ReMutexHolder holder(_lock);
   nassertv(has_ram_image());
   nassertv(get_ram_image_compression() == CM_off);
   nassertv(get_component_type() != T_float);
@@ -1275,6 +1294,142 @@ generate_ram_mipmap_images() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_simple_ram_image
+//       Access: Published
+//  Description: Replaces the internal "simple" texture image.  This
+//               can be used as an option to display while the main
+//               texture image is being loaded from disk.  It is
+//               normally a very small image, 16x16 or smaller (and
+//               maybe even 1x1), that is designed to give just enough
+//               sense of color to serve as a placeholder until the
+//               full texture is available.
+//
+//               The "simple" image is always 4 components, 1 byte
+//               each, regardless of the parameters of the full
+//               texture.  The simple image is only supported for
+//               ordinary 2-d textures.
+//
+//               Also see generate_simple_ram_image().
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_simple_ram_image(PTA_uchar image, int x_size, int y_size) {
+  ReMutexHolder holder(_lock);
+  nassertv(get_texture_type() == TT_2d_texture);
+  size_t expected_page_size = (size_t)(x_size * y_size * 4);
+  nassertv(image.size() == expected_page_size);
+
+  _simple_x_size = x_size;
+  _simple_y_size = y_size;
+  _simple_ram_image._image = image;
+  _simple_ram_image._page_size = image.size();
+  _simple_image_date_generated = 0;
+  ++_simple_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::generate_simple_ram_image
+//       Access: Published
+//  Description: Computes the "simple" ram image by loading the main
+//               RAM image, if it is not already available, and
+//               reducing it to 16x16 or smaller.  This may be an
+//               expensive operation.
+////////////////////////////////////////////////////////////////////
+void Texture::
+generate_simple_ram_image() {
+  ReMutexHolder holder(_lock);
+
+  if (get_texture_type() != TT_2d_texture) {
+    clear_simple_ram_image();
+    return;
+  }
+
+  PNMImage pnmimage;
+  if (!store(pnmimage)) {
+    clear_simple_ram_image();
+    return;
+  }
+
+  // Start at the suggested size from the config file.
+  int x_size = simple_image_size.get_word(0);
+  int y_size = simple_image_size.get_word(1);
+
+  // Limit it to no larger than the source image, and also make it a
+  // power of two.
+  x_size = down_to_power_2(min(x_size, get_x_size()));
+  y_size = down_to_power_2(min(y_size, get_y_size()));
+
+  // Generate a reduced image of that size.
+  PNMImage scaled(x_size, y_size, pnmimage.get_num_channels());
+  scaled.quick_filter_from(pnmimage);
+
+  // Make sure the reduced image has 4 components, by convention.
+  if (!scaled.has_alpha()) {
+    scaled.add_alpha();
+    scaled.alpha_fill(1.0);
+  }
+  scaled.set_num_channels(4);
+
+  // Now see if we can go even smaller.
+  bool did_anything;
+  do {
+    did_anything = false;
+
+    // Try to reduce X.
+    if (x_size > 1) {
+      int new_x_size = (x_size >> 1);
+      PNMImage smaller(new_x_size, y_size, 4);
+      smaller.quick_filter_from(scaled);
+      PNMImage bigger(x_size, y_size, 4);
+      bigger.quick_filter_from(smaller);
+      
+      if (compare_images(scaled, bigger)) {
+        scaled.take_from(smaller);
+        x_size = new_x_size;
+        did_anything = true;
+      }
+    }
+
+    // Try to reduce Y.
+    if (y_size > 1) {
+      int new_y_size = (y_size >> 1);
+      PNMImage smaller(x_size, new_y_size, 4);
+      smaller.quick_filter_from(scaled);
+      PNMImage bigger(x_size, y_size, 4);
+      bigger.quick_filter_from(smaller);
+      
+      if (compare_images(scaled, bigger)) {
+        scaled.take_from(smaller);
+        y_size = new_y_size;
+        did_anything = true;
+      }
+    }
+  } while (did_anything);
+
+  size_t expected_page_size = (size_t)(x_size * y_size * 4);
+  PTA_uchar image = PTA_uchar::empty_array(expected_page_size, get_class_type());
+  convert_from_pnmimage(image, expected_page_size, 0, scaled, 4, 1);
+
+  set_simple_ram_image(image, x_size, y_size);
+  _simple_image_date_generated = (PN_int32)time(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::clear_simple_ram_image
+//       Access: Published
+//  Description: Discards the current "simple" image.
+////////////////////////////////////////////////////////////////////
+void Texture::
+clear_simple_ram_image() {
+  ReMutexHolder holder(_lock);
+  _simple_x_size = 0;
+  _simple_y_size = 0;
+  _simple_ram_image._image.clear();
+  _simple_ram_image._page_size = 0;
+  _simple_image_date_generated = 0;
+  ++_simple_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::prepare
 //       Access: Published
 //  Description: Indicates that the texture should be enqueued to be
@@ -1300,6 +1455,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
+  ReMutexHolder holder(_lock);
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
@@ -1317,6 +1473,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 release(PreparedGraphicsObjects *prepared_objects) {
+  ReMutexHolder holder(_lock);
   Contexts::iterator ci;
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
@@ -1342,6 +1499,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 int Texture::
 release_all() {
+  ReMutexHolder holder(_lock);
   // We have to traverse a copy of the _contexts list, because the
   // PreparedGraphicsObjects object will call clear_prepared() in response
   // to each release_texture(), and we don't want to be modifying the
@@ -1373,6 +1531,7 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write(ostream &out, int indent_level) const {
+  ReMutexHolder holder(_lock);
   indent(out, indent_level)
     << get_type() << " " << get_name();
   if (!get_filename().empty()) {
@@ -1549,6 +1708,13 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level + 2)
       << "no ram image\n";
   }
+
+  if (has_simple_ram_image()) {
+    indent(out, indent_level + 2)
+      << "simple image: " << get_simple_x_size() << " x "
+      << get_simple_y_size() << ", "
+      << get_simple_ram_image_size() << " bytes\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1559,6 +1725,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_format(Texture::Format format) {
+  ReMutexHolder holder(_lock);
   _format = format;
 
   switch (_format) {
@@ -1606,6 +1773,7 @@ set_format(Texture::Format format) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 set_component_type(Texture::ComponentType component_type) {
+  ReMutexHolder holder(_lock);
   _component_type = component_type;
 
   switch (component_type) {
@@ -1662,6 +1830,7 @@ is_mipmap(FilterType filter_type) {
 TextureContext *Texture::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
+  ReMutexHolder holder(_lock);
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
@@ -1689,6 +1858,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 texture_uploaded() {
+  ReMutexHolder holder(_lock);
   if (!keep_texture_ram && !_keep_ram_image) {
     // Once we have prepared the texture, we can generally safely
     // remove the pixels from main RAM.  The GSG is now responsible
@@ -2074,6 +2244,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
         << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
     }
+    Thread::consider_yield();
   }
 
   PNMImage alpha_image;
@@ -2119,6 +2290,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
           << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
         return false;
       }
+      Thread::consider_yield();
     }
   }
 
@@ -2156,6 +2328,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                       alpha_image.get_num_channels(),
                       alpha_image.get_maxval(), alpha_image.get_type());
       scaled.quick_filter_from(alpha_image);
+      Thread::consider_yield();
       alpha_image = scaled;
     }
   }
@@ -2375,17 +2548,19 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
     PNMImage scaled(x_size, y_size, pnmimage.get_num_channels(),
                     pnmimage.get_maxval(), pnmimage.get_type());
     scaled.quick_filter_from(pnmimage);
+    Thread::consider_yield();
 
     convert_from_pnmimage(_ram_images[n]._image, 
                           get_expected_ram_mipmap_page_size(n), z,
-                          scaled);
+                          scaled, _num_components, _component_width);
   } else {
     // Now copy the pixel data from the PNMImage into our internal
     // _image component.
     convert_from_pnmimage(_ram_images[n]._image, 
                           get_expected_ram_mipmap_page_size(n), z,
-                          pnmimage);
+                          pnmimage, _num_components, _component_width);
   }
+  Thread::consider_yield();
 
   return true;
 }
@@ -2408,6 +2583,7 @@ do_store_one(PNMImage &pnmimage, int z, int n) const {
   return convert_to_pnmimage(pnmimage, 
                              get_expected_mipmap_x_size(n), 
                              get_expected_mipmap_y_size(n), 
+                             _num_components, _component_width,
                              _ram_images[n]._image, 
                              get_ram_mipmap_page_size(n), z);
 }
@@ -2718,26 +2894,27 @@ reconsider_image_properties(int x_size, int y_size, int num_components,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::convert_from_pnmimage
-//       Access: Private
+//       Access: Private, Static
 //  Description: Internal method to convert pixel data from the
 //               indicated PNMImage into the given ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
 convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
-                      const PNMImage &pnmimage) {
+                      const PNMImage &pnmimage,
+                      int num_components, int component_width) {
   int x_size = pnmimage.get_x_size();
   int y_size = pnmimage.get_y_size();
   xelval maxval = pnmimage.get_maxval();
 
-  bool is_grayscale = (_num_components == 1 || _num_components == 2);
-  bool has_alpha = (_num_components == 2 || _num_components == 4);
+  bool is_grayscale = (num_components == 1 || num_components == 2);
+  bool has_alpha = (num_components == 2 || num_components == 4);
   bool img_has_alpha = pnmimage.has_alpha();
 
   int idx = page_size * z;
   nassertv(idx + page_size <= image.size());
   unsigned char *p = &image[idx];
 
-  if (maxval == 255) {
+  if (maxval == 255 && component_width == 1) {
     // Most common case: one byte per pixel, and the source image
     // shows a maxval of 255.  No scaling is necessary.
     for (int j = y_size-1; j >= 0; j--) {
@@ -2759,7 +2936,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
       }
     }
 
-  } else if (maxval == 65535) {
+  } else if (maxval == 65535 && component_width == 2) {
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     for (int j = y_size-1; j >= 0; j--) {
@@ -2781,7 +2958,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
       }
     }
 
-  } else if (maxval <= 255) {
+  } else if (component_width == 1) {
     // A less common case: one byte per pixel, but the maxval is
     // something other than 255.  In this case, we should scale the
     // pixel values up to the appropriate amount.
@@ -2806,7 +2983,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
       }
     }
 
-  } else {
+  } else {  // component_width == 2
     // Another uncommon case: two bytes per pixel, and the maxval is
     // something other than 65535.  Again, we must scale the pixel
     // values.
@@ -2837,14 +3014,15 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::convert_to_pnmimage
-//       Access: Private
+//       Access: Private, Static
 //  Description: Internal method to convert pixel data to the
 //               indicated PNMImage from the given ram_image.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
-                    CPTA_uchar image, size_t page_size, int z) const {
-  pnmimage.clear(x_size, y_size, _num_components);
+                    int num_components, int component_width,
+                    CPTA_uchar image, size_t page_size, int z) {
+  pnmimage.clear(x_size, y_size, num_components);
   bool has_alpha = pnmimage.has_alpha();
   bool is_grayscale = pnmimage.is_grayscale();
   
@@ -2852,7 +3030,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   nassertr(idx + page_size <= image.size(), false);
   const unsigned char *p = &image[idx];
 
-  if (_component_type == T_unsigned_byte) {
+  if (component_width == 1) {
     for (int j = y_size-1; j >= 0; j--) {
       for (int i = 0; i < x_size; i++) {
         if (is_grayscale) {
@@ -2868,7 +3046,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
       }
     }
 
-  } else if (_component_type == T_unsigned_short) {
+  } else if (component_width == 2) {
     for (int j = y_size-1; j >= 0; j--) {
       for (int i = 0; i < x_size; i++) {
         if (is_grayscale) {
@@ -2885,9 +3063,6 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
     }
 
   } else {
-    gobj_cat.error()
-      << "Couldn't write image for " << get_name()
-      << "; inappropriate data type " << (int)_component_type << ".\n";
     return false;
   }
 
@@ -3041,6 +3216,34 @@ consider_downgrade(PNMImage &pnmimage, int num_channels) {
       << num_channels << ".\n";
     pnmimage.set_num_channels(num_channels);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::compare_images
+//       Access: Private, Static
+//  Description: Called by generate_simple_ram_image(), this compares
+//               the two PNMImages pixel-by-pixel.  If they're similar
+//               enough (within a given threshold), returns true.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+compare_images(const PNMImage &a, const PNMImage &b) {
+  nassertr(a.get_maxval() == 255 && b.get_maxval() == 255, false);
+  nassertr(a.get_num_channels() == 4 && b.get_num_channels() == 4, false);
+  nassertr(a.get_x_size() == b.get_x_size() && 
+           a.get_y_size() == b.get_y_size(), false);
+
+  int delta = 0;
+  for (int yi = 0; yi < a.get_y_size(); ++yi) {
+    for (int xi = 0; xi < a.get_x_size(); ++xi) {
+      delta += abs(a.get_red_val(xi, yi) - b.get_red_val(xi, yi));
+      delta += abs(a.get_green_val(xi, yi) - b.get_green_val(xi, yi));
+      delta += abs(a.get_blue_val(xi, yi) - b.get_blue_val(xi, yi));
+      delta += abs(a.get_alpha_val(xi, yi) - b.get_alpha_val(xi, yi));
+    }
+  }
+
+  double average_delta = (double)delta / ((double)a.get_x_size() * (double)b.get_y_size() * (double)a.get_maxval());
+  return (average_delta <= simple_image_threshold);
 }
 
 ////////////////////////////////////////////////////////////////////

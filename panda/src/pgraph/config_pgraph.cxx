@@ -94,6 +94,7 @@
 #include "texMatrixAttrib.h"
 #include "texProjectorEffect.h"
 #include "textureAttrib.h"
+#include "textureReloadRequest.h"
 #include "texGenAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
@@ -338,15 +339,6 @@ ConfigVariableString default_model_extension
           "Panda's loader; new code should probably give the correct name "
           "for each model file they intend to load."));
 
-ConfigVariableBool allow_incomplete_render
-("allow-incomplete-render", false,
- PRC_DESC("When this is true, the frame may be rendered even if some of the "
-          "geometry in the scene has been paged out.  The nonresident "
-          "geometry will be rendered as soon as it can be paged back in, "
-          "which may be several frames in the future.  When this is false, "
-          "geometry is always paged in when needed, holding up the frame "
-          "render if necessary."));
-
 ConfigVariableEnum<LODNodeType> default_lod_type
 ("default-lod-type", LNT_pop,
  PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
@@ -448,6 +440,7 @@ init_libpgraph() {
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();
   TextureAttrib::init_type();
+  TextureReloadRequest::init_type();
   TexGenAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();

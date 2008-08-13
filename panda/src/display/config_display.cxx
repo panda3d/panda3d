@@ -205,6 +205,15 @@ ConfigVariableBool alpha_scale_via_texture
           "application specifically enables it.  See also "
           "color-scale-via-lighting."));
 
+ConfigVariableBool allow_incomplete_render
+("allow-incomplete-render", false,
+ PRC_DESC("When this is true, the frame may be rendered even if some of the "
+          "geometry in the scene has been paged out.  The nonresident "
+          "geometry will be rendered as soon as it can be paged back in, "
+          "which may be several frames in the future.  When this is false, "
+          "geometry is always paged in when needed, holding up the frame "
+          "render if necessary."));
+
 ConfigVariableInt win_size
 ("win-size", "640 480",
  PRC_DESC("This is the default size at which to open a new window.  This "

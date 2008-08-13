@@ -30,6 +30,7 @@
 #include "pset.h"
 #include "ordered_vector.h"
 #include "indirectLess.h"
+#include "loader.h"
 
 class Pipeline;
 class DisplayRegion;
@@ -65,6 +66,9 @@ PUBLISHED:
 
   INLINE void set_portal_cull(bool value);
   INLINE bool get_portal_cull() const;
+
+  INLINE void set_default_loader(Loader *loader);
+  INLINE Loader *get_default_loader() const;
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
                               const string &name, int sort,
@@ -322,6 +326,7 @@ private:
   GraphicsThreadingModel _threading_model;
   bool _auto_flip;
   bool _portal_enabled; //toggle to portal culling on/off
+  PT(Loader) _default_loader;
 
   enum FlipState {
     FS_draw,  // Still drawing.

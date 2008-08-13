@@ -106,6 +106,79 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::needs_reset
+//       Access: Public
+//  Description: Returns true if the gsg is marked as needing a
+//               reset.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+needs_reset() const {
+  return _needs_reset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_incomplete_render
+//       Access: Public
+//  Description: Sets the incomplete_render flag.  When this is
+//               true, the frame will be rendered even if some of the
+//               geometry or textures in the scene are not available
+//               (e.g. they have been temporarily paged out).  When
+//               this is false, the frame will be held up while this
+//               data is reloaded.
+//
+//               Setting this true allows for a smoother frame rate,
+//               but occasionally parts of the frame will be invisible
+//               or missing (they will generally come in within a
+//               second or two).  Setting this false guarantees that
+//               every frame will be complete, but may cause more
+//               chugs as things are loaded up at runtime.
+//
+//               You may want to set this false during loading
+//               screens, to guarantee that all of your assets are
+//               available by the time you take the loading screen
+//               down.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_incomplete_render(bool incomplete_render) {
+  _incomplete_render = incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_incomplete_render
+//       Access: Public, Virtual
+//  Description: Returns the incomplete_render flag.  See
+//               set_incomplete_render().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_incomplete_render() const {
+  return _incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_loader
+//       Access: Public
+//  Description: Sets the Loader object that will be used by this GSG
+//               to load textures when necessary, if
+//               get_incomplete_render() is true.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+set_loader(Loader *loader) {
+  _loader = loader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_loader
+//       Access: Public, Virtual
+//  Description: Returns the Loader object that will be used by this
+//               GSG to load textures when necessary, if
+//               get_incomplete_render() is true.
+////////////////////////////////////////////////////////////////////
+INLINE Loader *GraphicsStateGuardian::
+get_loader() const {
+  return _loader;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_pipe
 //       Access: Published
 //  Description: Returns the graphics pipe on which this GSG was
@@ -714,17 +787,6 @@ reset_if_new() {
 INLINE void GraphicsStateGuardian::
 mark_new() {
   _needs_reset = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::needs_reset
-//       Access: Public
-//  Description: Returns true if the gsg is marked as needing a
-//               reset.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-needs_reset() const {
-  return _needs_reset;
 }
 
 ////////////////////////////////////////////////////////////////////

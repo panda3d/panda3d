@@ -107,7 +107,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   static const Colorf flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
   static const Colorf flash_dual_color(0.92f, 0.01f, 0.01f, 1.0f);
 
-  bool force = !allow_incomplete_render;
+  bool force = !_gsg->get_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
 
   // Check to see if there's a special transparency setting.
@@ -264,7 +264,7 @@ finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 draw(Thread *current_thread) {
-  bool force = !allow_incomplete_render;
+  bool force = !_gsg->get_incomplete_render();
 
   // Ask the bin manager for the correct order to draw all the bins.
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();

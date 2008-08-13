@@ -73,11 +73,23 @@ was_image_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::was_simple_image_modified
+//       Access: Public
+//  Description: Returns true if the texture's "simple" image has been
+//               modified since the last time mark_simple_loaded() was
+//               called.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureContext::
+was_simple_image_modified() const {
+  return _simple_image_modified != _texture->get_simple_image_modified();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::mark_loaded
 //       Access: Public
-//  Description: Should be called after the TextureContext has been
-//               loaded into graphics memory, this updates the
-//               internal flags for changed_size() and modified().
+//  Description: Should be called after the texture has been loaded
+//               into graphics memory, this updates the internal flags
+//               for changed_size() and modified().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureContext::
 mark_loaded() {
@@ -87,5 +99,21 @@ mark_loaded() {
   update_modified(max(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
+  set_resident(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::mark_simple_loaded
+//       Access: Public
+//  Description: Should be called after the texture's "simple" image
+//               has been loaded into graphics memory.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureContext::
+mark_simple_loaded() {
+  _properties_modified = _texture->get_properties_modified();
+  _simple_image_modified = _texture->get_simple_image_modified();
+  update_modified(max(_properties_modified, _simple_image_modified));
+
+  // The texture's not exactly resident now, but some part of it is.
   set_resident(true);
 }

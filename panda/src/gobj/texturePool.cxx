@@ -278,6 +278,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
           gobj_cat.info()
             << "Texture " << filename << " found in disk cache.\n";
           tex = DCAST(Texture, record->extract_data());
+          if (preload_simple_textures && !tex->has_simple_ram_image()) {
+            tex->generate_simple_ram_image();
+          }
           if (!preload_textures) {
             // But drop the RAM until we need it.
             tex->clear_ram_image();
@@ -300,6 +303,11 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       report_texture_unreadable(filename);
       return NULL;
     }
+
+    if (preload_simple_textures) {
+      tex->generate_simple_ram_image();
+    }
+
     store_record = (record != (BamCacheRecord *)NULL);
   }
 
@@ -331,11 +339,11 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     nassertr(tex->has_ram_image(), tex);
     record->set_data(tex, false);
     cache->store(record);
+  }
 
-    if (!preload_textures) {
-      // And now drop the RAM until we need it.
-      tex->clear_ram_image();
-    }
+  if (!preload_textures) {
+    // And now drop the RAM until we need it.
+    tex->clear_ram_image();
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);
@@ -424,6 +432,11 @@ ns_load_texture(const Filename &orig_filename,
       report_texture_unreadable(filename);
       return NULL;
     }
+
+    if (preload_simple_textures) {
+      tex->generate_simple_ram_image();
+    }
+
     store_record = (record != (BamCacheRecord *)NULL);
   }
 
@@ -455,6 +468,11 @@ ns_load_texture(const Filename &orig_filename,
     // Store the on-disk cache record for next time.
     record->set_data(tex, false);
     cache->store(record);
+  }
+
+  if (!preload_textures) {
+    // And now drop the RAM until we need it.
+    tex->clear_ram_image();
   }
 
   nassertr(!tex->get_fullpath().empty(), tex);

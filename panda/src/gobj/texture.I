@@ -129,9 +129,10 @@ setup_cube_map(int size, ComponentType component_type,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 read(const Filename &fullpath) {
+  ReMutexHolder holder(_lock);
   clear();
   return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false, 
-                 !preload_textures, NULL);
+                 !preload_textures && !preload_simple_textures, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,9 +149,11 @@ read(const Filename &fullpath) {
 INLINE bool Texture::
 read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel) {
+  ReMutexHolder holder(_lock);
   clear();
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, 0, 0, false, false, !preload_textures, 
+		 alpha_file_channel, 0, 0, false, false, 
+                 !preload_textures && !preload_simple_textures, 
                  NULL);
 }
 
@@ -167,10 +170,11 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 INLINE bool Texture::
 read(const Filename &fullpath, int z, int n, 
      bool read_pages, bool read_mipmaps) {
+  ReMutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
   return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
-                 !preload_textures, NULL);
+                 !preload_textures && !preload_simple_textures, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,11 +251,12 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      int primary_file_num_channels, int alpha_file_channel,
      int z, int n, bool read_pages, bool read_mipmaps,
      BamCacheRecord *record) {
+  ReMutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, z, n, read_pages, read_mipmaps,
-                 !preload_textures, record);
+                 !preload_textures && !preload_simple_textures, record);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,6 +266,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 write(const Filename &fullpath) {
+  ReMutexHolder holder(_lock);
   return do_write(fullpath, 0, 0, false, false);
 }
 
@@ -321,6 +327,7 @@ write(const Filename &fullpath) {
 INLINE bool Texture::
 write(const Filename &fullpath, int z, int n, 
       bool write_pages, bool write_mipmaps) {
+  ReMutexHolder holder(_lock);
   return do_write(fullpath, z, n, write_pages, write_mipmaps);
 }
 
@@ -331,6 +338,7 @@ write(const Filename &fullpath, int z, int n,
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage) {
+  ReMutexHolder holder(_lock);
   clear();
   return do_load_one(pnmimage, get_name(), 0, 0);
 }
@@ -343,6 +351,7 @@ load(const PNMImage &pnmimage) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n) {
+  ReMutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
   return do_load_one(pnmimage, get_name(), z, n);
@@ -356,6 +365,7 @@ load(const PNMImage &pnmimage, int z, int n) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 store(PNMImage &pnmimage) const {
+  ReMutexHolder holder(_lock);
   return do_store_one(pnmimage, 0, 0);
 }
 
@@ -367,6 +377,7 @@ store(PNMImage &pnmimage) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 store(PNMImage &pnmimage, int z, int n) const {
+  ReMutexHolder holder(_lock);
   return do_store_one(pnmimage, z, n);
 }
 
@@ -378,6 +389,7 @@ store(PNMImage &pnmimage, int z, int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_filename() const {
+  ReMutexHolder holder(_lock);
   return !_filename.empty();
 }
 
@@ -390,6 +402,7 @@ has_filename() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Texture::
 get_filename() const {
+  ReMutexHolder holder(_lock);
   return _filename;
 }
 
@@ -401,6 +414,7 @@ get_filename() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_alpha_filename() const {
+  ReMutexHolder holder(_lock);
   return !_alpha_filename.empty();
 }
 
@@ -414,6 +428,7 @@ has_alpha_filename() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Texture::
 get_alpha_filename() const {
+  ReMutexHolder holder(_lock);
   return _alpha_filename;
 }
 
@@ -425,6 +440,7 @@ get_alpha_filename() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_fullpath() const {
+  ReMutexHolder holder(_lock);
   return !_fullpath.empty();
 }
 
@@ -437,6 +453,7 @@ has_fullpath() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Texture::
 get_fullpath() const {
+  ReMutexHolder holder(_lock);
   return _fullpath;
 }
 
@@ -448,6 +465,7 @@ get_fullpath() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_alpha_fullpath() const {
+  ReMutexHolder holder(_lock);
   return !_alpha_fullpath.empty();
 }
 
@@ -461,6 +479,7 @@ has_alpha_fullpath() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const Filename &Texture::
 get_alpha_fullpath() const {
+  ReMutexHolder holder(_lock);
   return _alpha_fullpath;
 }
 
@@ -546,6 +565,7 @@ get_pad_z_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_pad_size(int x, int y, int z) {
+  ReMutexHolder holder(_lock);
   if (x > _x_size) x = _x_size;
   if (y > _y_size) y = _y_size;
   if (z > _z_size) z = _z_size;
@@ -770,6 +790,7 @@ get_quality_level() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 might_have_ram_image() const {
+  ReMutexHolder holder(_lock);
   return (has_ram_image() || has_filename());
 }
 
@@ -781,6 +802,7 @@ might_have_ram_image() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_image_size() const {
+  ReMutexHolder holder(_lock);
   if (_ram_images.empty()) {
     return 0;
   }
@@ -801,6 +823,7 @@ get_ram_image_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_page_size() const {
+  ReMutexHolder holder(_lock);
   if (_ram_image_compression == CM_off || _ram_images.empty()) {
     return get_expected_ram_page_size();
   } else {
@@ -817,6 +840,7 @@ get_ram_page_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_expected_ram_image_size() const {
+  ReMutexHolder holder(_lock);
   return get_expected_ram_page_size() * (size_t)_z_size;
 }
 
@@ -830,6 +854,7 @@ get_expected_ram_image_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_expected_ram_page_size() const {
+  ReMutexHolder holder(_lock);
   return (size_t)(_x_size * _y_size * _num_components * _component_width);
 }
 
@@ -860,6 +885,7 @@ get_ram_image_compression() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_uchar Texture::
 modify_ram_image() {
+  ReMutexHolder holder(_lock);
   do_modify_ram_image();
   ++_image_modified;
   return _ram_images[0]._image;
@@ -876,6 +902,7 @@ modify_ram_image() {
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_uchar Texture::
 make_ram_image() {
+  ReMutexHolder holder(_lock);
   ++_image_modified;
   do_make_ram_image();
   return _ram_images[0]._image;
@@ -911,6 +938,7 @@ set_keep_ram_image(bool keep_ram_image) {
 ////////////////////////////////////////////////////////////////////
 INLINE int Texture::
 get_num_ram_mipmap_images() const {
+  ReMutexHolder holder(_lock);
   return _ram_images.size();
 }
 
@@ -926,6 +954,7 @@ get_num_ram_mipmap_images() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 has_ram_mipmap_image(int n) const {
+  ReMutexHolder holder(_lock);
   return (n >= 0 && n < (int)_ram_images.size() && !_ram_images[n]._image.empty());
 }
 
@@ -938,6 +967,7 @@ has_ram_mipmap_image(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_mipmap_image_size(int n) const {
+  ReMutexHolder holder(_lock);
   if (n >= 0 && n < (int)_ram_images.size()) {
     return _ram_images[n]._image.size();
   }
@@ -959,6 +989,7 @@ get_ram_mipmap_image_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_ram_mipmap_page_size(int n) const {
+  ReMutexHolder holder(_lock);
   if (_ram_image_compression != CM_off) {
     if (n >= 0 && n < (int)_ram_images.size()) {
       return _ram_images[n]._page_size;
@@ -978,6 +1009,7 @@ get_ram_mipmap_page_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_expected_ram_mipmap_image_size(int n) const {
+  ReMutexHolder holder(_lock);
   return get_expected_ram_mipmap_page_size(n) * (size_t)get_expected_mipmap_z_size(n);
 }
 
@@ -991,6 +1023,7 @@ get_expected_ram_mipmap_image_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Texture::
 get_expected_ram_mipmap_page_size(int n) const {
+  ReMutexHolder holder(_lock);
   return (size_t)(get_expected_mipmap_x_size(n) * get_expected_mipmap_y_size(n) * _num_components * _component_width);
 }
 
@@ -1006,9 +1039,77 @@ get_expected_ram_mipmap_page_size(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_uchar Texture::
 modify_ram_mipmap_image(int n) {
+  ReMutexHolder holder(_lock);
   do_modify_ram_mipmap_image(n);
   ++_image_modified;
   return _ram_images[n]._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_simple_x_size
+//       Access: Published
+//  Description: Returns the width of the "simple" image in texels.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_simple_x_size() const {
+  return _simple_x_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_simple_y_size
+//       Access: Published
+//  Description: Returns the height of the "simple" image in texels.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_simple_y_size() const {
+  return _simple_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_simple_ram_image
+//       Access: Published, Virtual
+//  Description: Returns true if the Texture has a "simple" image
+//               available in main RAM.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_simple_ram_image() const {
+  ReMutexHolder holder(_lock);
+  return !_simple_ram_image._image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_simple_ram_image_size
+//       Access: Published
+//  Description: Returns the number of bytes used by the "simple"
+//               image, or 0 if there is no simple image.
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+get_simple_ram_image_size() const {
+  ReMutexHolder holder(_lock);
+  return _simple_ram_image._image.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_simple_ram_image
+//       Access: Published
+//  Description: Returns the image data associated with the "simple"
+//               texture image.  This is provided for some textures as
+//               an option to display while the main texture image is
+//               being loaded from disk.
+//
+//               Unlike get_ram_image(), this function will always
+//               return immediately.  Either the simple image is
+//               available, or it is not.
+//
+//               The "simple" image is always 4 components, 1 byte
+//               each, regardless of the parameters of the full
+//               texture.  The simple image is only supported for
+//               ordinary 2-d textures.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_uchar Texture::
+get_simple_ram_image() const {
+  ReMutexHolder holder(_lock);
+  return _simple_ram_image._image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1036,6 +1137,18 @@ get_image_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_simple_image_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture's "simple"
+//               image data is modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq Texture::
+get_simple_image_modified() const {
+  return _simple_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_filename
 //       Access: Published
 //  Description: Sets the name of the file that contains the image's
@@ -1050,6 +1163,7 @@ get_image_modified() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_filename(const Filename &filename) {
+  ReMutexHolder holder(_lock);
   _filename = filename;
 }
 
@@ -1061,6 +1175,7 @@ set_filename(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 clear_filename() {
+  ReMutexHolder holder(_lock);
   _filename = Filename();
 }
 
@@ -1082,6 +1197,7 @@ clear_filename() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_alpha_filename(const Filename &alpha_filename) {
+  ReMutexHolder holder(_lock);
   _alpha_filename = alpha_filename;
 }
 
@@ -1093,6 +1209,7 @@ set_alpha_filename(const Filename &alpha_filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 clear_alpha_filename() {
+  ReMutexHolder holder(_lock);
   _alpha_filename = Filename();
 }
 
@@ -1106,6 +1223,7 @@ clear_alpha_filename() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_fullpath(const Filename &fullpath) {
+  ReMutexHolder holder(_lock);
   _fullpath = fullpath;
 }
 
@@ -1117,6 +1235,7 @@ set_fullpath(const Filename &fullpath) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 clear_fullpath() {
+  ReMutexHolder holder(_lock);
   _fullpath = Filename();
 }
 
@@ -1131,6 +1250,7 @@ clear_fullpath() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_alpha_fullpath(const Filename &alpha_fullpath) {
+  ReMutexHolder holder(_lock);
   _alpha_fullpath = alpha_fullpath;
 }
 
@@ -1142,6 +1262,7 @@ set_alpha_fullpath(const Filename &alpha_fullpath) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 clear_alpha_fullpath() {
+  ReMutexHolder holder(_lock);
   _alpha_fullpath = Filename();
 }
 
@@ -1154,6 +1275,7 @@ clear_alpha_fullpath() {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_x_size(int x_size) {
+  ReMutexHolder holder(_lock);
   if (_x_size != x_size) {
     _x_size = x_size;
     ++_image_modified;
@@ -1171,6 +1293,7 @@ set_x_size(int x_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_y_size(int y_size) {
+  ReMutexHolder holder(_lock);
   if (_y_size != y_size) {
     nassertv(_texture_type != Texture::TT_1d_texture || y_size == 1);
     _y_size = y_size;
@@ -1189,6 +1312,7 @@ set_y_size(int y_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_z_size(int z_size) {
+  ReMutexHolder holder(_lock);
   if (_z_size != z_size) {
     nassertv(_texture_type == Texture::TT_3d_texture ||
              (_texture_type == Texture::TT_cube_map && z_size == 6) ||

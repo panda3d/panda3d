@@ -52,6 +52,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableList exclude_texture_scale;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableBool keep_texture_ram;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool preload_textures;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool preload_simple_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool compressed_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_buffers;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_arrays;
@@ -69,6 +70,8 @@ extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<AutoTextureScale> textures_square;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_auto_power_2;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt simple_image_size;
+extern EXPCL_PANDA_GOBJ ConfigVariableDouble simple_image_threshold;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<ShaderUtilization> shader_utilization;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool shader_auto_utilization;

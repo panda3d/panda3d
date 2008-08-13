@@ -25,6 +25,7 @@
 #include "textureAttrib.cxx"
 #include "texGenAttrib.cxx"
 #include "textureCollection.cxx"
+#include "textureReloadRequest.cxx"
 #include "textureStageCollection.cxx"
 #include "transformState.cxx"
 #include "transparencyAttrib.cxx"

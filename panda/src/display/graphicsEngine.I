@@ -75,6 +75,30 @@ get_portal_cull() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_default_loader
+//       Access: Public
+//  Description: Sets the Loader object that will be assigned to every
+//               GSG created with this GraphicsEngine.  See
+//               GraphicsStateGuardian::set_loader().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+set_default_loader(Loader *loader) {
+  _default_loader = loader;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_default_loader
+//       Access: Public, Virtual
+//  Description: Returns the Loader object that will be assigned to
+//               every GSG created with this GraphicsEngine.  See
+//               GraphicsStateGuardian::set_loader().
+////////////////////////////////////////////////////////////////////
+INLINE Loader *GraphicsEngine::
+get_default_loader() const {
+  return _default_loader;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::close_gsg
 //       Access: Published
 //  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe

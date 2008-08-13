@@ -415,6 +415,7 @@ read_data(xel *array, xelval *) {
       }
       x++;
     }
+    Thread::consider_yield();
   }
 
   /* Step 7: Finish decompression */

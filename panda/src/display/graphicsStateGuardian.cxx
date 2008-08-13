@@ -40,6 +40,7 @@
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
+#include "textureReloadRequest.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -131,6 +132,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _active = true;
   _prepared_objects = new PreparedGraphicsObjects;
   _stereo_buffer_mask = ~0;
+  _incomplete_render = allow_incomplete_render;
 
   _is_hardware = false;
   _prefers_triangle_strips = false;
@@ -318,106 +320,6 @@ get_internal_coordinate_system() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-reset() {
-  _needs_reset = false;
-  _is_valid = false;
-
-  _state_rs = NULL;
-  _target_rs = NULL;
-  _state.clear_to_zero();
-  _target.clear_to_defaults();
-  _internal_transform = _cs_transform;
-  _scene_null = new SceneSetup;
-  _scene_setup = _scene_null;
-
-  _color_write_mask = ColorWriteAttrib::C_all;
-
-  _has_scene_graph_color = false;
-  _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _transform_stale = true;
-  _color_blend_involves_color_scale = false;
-  _texture_involves_color_scale = false;
-  _vertex_colors_enabled = true;
-  _lighting_enabled = false;
-  _num_lights_enabled = 0;
-  _num_clip_planes_enabled = 0;
-
-  _color_scale_enabled = false;
-  _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _has_texture_alpha_scale = false;
-
-  _has_material_force_color = false;
-  _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
-
-  _tex_gen_modifies_mat = false;
-  _last_max_stage_index = 0;
-
-  _is_valid = true;
-
-  if (_stencil_render_states) {
-    delete _stencil_render_states;
-    _stencil_render_states = 0;
-  }
-  _stencil_render_states = new StencilRenderStates (this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_state_and_transform
-//       Access: Public
-//  Description: Simultaneously resets the render state and the
-//               transform state.
-//
-//               This transform specified is the "internal" net
-//               transform, already converted into the GSG's internal
-//               coordinate space by composing it to
-//               get_cs_transform().  (Previously, this used to be the
-//               "external" net transform, with the assumption that
-//               that GSG would convert it internally, but that is no
-//               longer the case.)
-//
-//               Special case: if (state==NULL), then the target
-//               state is already stored in _target.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-set_state_and_transform(const RenderState *state,
-                        const TransformState *trans) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::clear
-//       Access: Public
-//  Description: Clears the framebuffer within the current
-//               DisplayRegion, according to the flags indicated by
-//               the given DrawableRegion object.
-//
-//               This does not set the DisplayRegion first.  You
-//               should call prepare_display_region() to specify the
-//               region you wish the clear operation to apply to.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-clear(DrawableRegion *clearable) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_render_buffer
-//       Access: Public
-//  Description: Returns a RenderBuffer object suitable for operating
-//               on the requested set of buffers.  buffer_type is the
-//               union of all the desired RenderBuffer::Type values.
-////////////////////////////////////////////////////////////////////
-RenderBuffer GraphicsStateGuardian::
-get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
-  return RenderBuffer(this, buffer_type & prop.get_buffer_mask() & _stereo_buffer_mask);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_prepared_objects
 //       Access: Public, Virtual
 //  Description: Returns the set of texture and geom objects that have
@@ -427,6 +329,37 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
 PreparedGraphicsObjects *GraphicsStateGuardian::
 get_prepared_objects() {
   return _prepared_objects;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_gamma
+//       Access: Published, Virtual
+//  Description: Set gamma.  Returns true on success.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+set_gamma(float gamma) {
+  _gamma = gamma;  
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_gamma
+//       Access: Published
+//  Description: Get the current gamma setting.
+////////////////////////////////////////////////////////////////////
+float GraphicsStateGuardian::
+get_gamma(float gamma) {
+  return _gamma;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::restore_gamma
+//       Access: Published, Virtual
+//  Description: Restore original gamma setting.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+restore_gamma() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1153,6 +1086,26 @@ prepare_lens() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::calc_projection_mat
+//       Access: Public, Virtual
+//  Description: Given a lens, this function calculates the appropriate
+//               projection matrix for this gsg.  The result depends
+//               on the peculiarities of the rendering API.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) GraphicsStateGuardian::
+calc_projection_mat(const Lens *lens) {
+  if (lens == (Lens *)NULL) {
+    return NULL;
+  }
+
+  if (!lens->is_linear()) {
+    return NULL;
+  }
+
+  return TransformState::make_identity();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::begin_frame
 //       Access: Public, Virtual
 //  Description: Called before each frame is rendered, to allow the
@@ -1460,6 +1413,106 @@ void GraphicsStateGuardian::
 end_draw_primitives() {
   _munger = NULL;
   _data_reader = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::reset
+//       Access: Public, Virtual
+//  Description: Resets all internal state as if the gsg were newly
+//               created.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+reset() {
+  _needs_reset = false;
+  _is_valid = false;
+
+  _state_rs = NULL;
+  _target_rs = NULL;
+  _state.clear_to_zero();
+  _target.clear_to_defaults();
+  _internal_transform = _cs_transform;
+  _scene_null = new SceneSetup;
+  _scene_setup = _scene_null;
+
+  _color_write_mask = ColorWriteAttrib::C_all;
+
+  _has_scene_graph_color = false;
+  _scene_graph_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _transform_stale = true;
+  _color_blend_involves_color_scale = false;
+  _texture_involves_color_scale = false;
+  _vertex_colors_enabled = true;
+  _lighting_enabled = false;
+  _num_lights_enabled = 0;
+  _num_clip_planes_enabled = 0;
+
+  _color_scale_enabled = false;
+  _current_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _has_texture_alpha_scale = false;
+
+  _has_material_force_color = false;
+  _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+
+  _tex_gen_modifies_mat = false;
+  _last_max_stage_index = 0;
+
+  _is_valid = true;
+
+  if (_stencil_render_states) {
+    delete _stencil_render_states;
+    _stencil_render_states = 0;
+  }
+  _stencil_render_states = new StencilRenderStates (this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_state_and_transform
+//       Access: Public
+//  Description: Simultaneously resets the render state and the
+//               transform state.
+//
+//               This transform specified is the "internal" net
+//               transform, already converted into the GSG's internal
+//               coordinate space by composing it to
+//               get_cs_transform().  (Previously, this used to be the
+//               "external" net transform, with the assumption that
+//               that GSG would convert it internally, but that is no
+//               longer the case.)
+//
+//               Special case: if (state==NULL), then the target
+//               state is already stored in _target.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_state_and_transform(const RenderState *state,
+                        const TransformState *trans) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear
+//       Access: Public
+//  Description: Clears the framebuffer within the current
+//               DisplayRegion, according to the flags indicated by
+//               the given DrawableRegion object.
+//
+//               This does not set the DisplayRegion first.  You
+//               should call prepare_display_region() to specify the
+//               region you wish the clear operation to apply to.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear(DrawableRegion *clearable) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_render_buffer
+//       Access: Public
+//  Description: Returns a RenderBuffer object suitable for operating
+//               on the requested set of buffers.  buffer_type is the
+//               union of all the desired RenderBuffer::Type values.
+////////////////////////////////////////////////////////////////////
+RenderBuffer GraphicsStateGuardian::
+get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
+  return RenderBuffer(this, buffer_type & prop.get_buffer_mask() & _stereo_buffer_mask);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1799,6 +1852,58 @@ init_frame_pstats() {
 #endif  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::create_gamma_table
+//       Access: Public, Static
+//  Description: Create a gamma table.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+  int i;
+
+  if (gamma <= 0.0) {
+    // avoid divide by zero and negative exponents
+    gamma = 1.0;
+  }
+  
+  for (i = 0; i < 256; i++) {
+    double g;
+    double x;
+    float gamma_correction;
+    
+    x = ((double) i / 255.0);
+    gamma_correction = 1.0 / gamma;    
+    x = pow (x, (double) gamma_correction);
+    if (x > 1.00) {
+      x = 1.0;
+    }
+
+    g = x * 65535.0;    
+    red_table [i] = (int)g;
+    green_table [i] = (int)g;
+    blue_table [i] = (int)g;
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::traverse_prepared_textures
+//       Access: Public
+//  Description: Calls the indicated function on all
+//               currently-prepared textures, or until the callback
+//               function returns false.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
+  PreparedGraphicsObjects::Textures::const_iterator ti;
+  for (ti = _prepared_objects->_prepared_textures.begin();
+       ti != _prepared_objects->_prepared_textures.end();
+       ++ti) {
+    bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
+    if(!bResult)
+      return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to
@@ -2095,104 +2200,20 @@ get_untextured_state() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::traverse_prepared_textures
-//       Access: Public
-//  Description: Calls the indicated function on all
-//               currently-prepared textures, or until the callback
-//               function returns false.
+//     Function: GraphicsStateGuardian::async_reload_texture
+//       Access: Protected
+//  Description: Should be called when a texture is encountered that
+//               needs to have its RAM image reloaded, and
+//               get_incomplete_render() is true.  This will fire off
+//               a thread on the current Loader object that will
+//               request the texture to load its image.  The image
+//               will be available at some point in the future (no
+//               event will be generated).
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
-  PreparedGraphicsObjects::Textures::const_iterator ti;
-  for (ti = _prepared_objects->_prepared_textures.begin();
-       ti != _prepared_objects->_prepared_textures.end();
-       ++ti) {
-    bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
-    if(!bResult)
-      return;
-  }
-}
+async_reload_texture(TextureContext *tc) {
+  nassertv(_loader != (Loader *)NULL);
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::calc_projection_mat
-//       Access: Public, Virtual
-//  Description: Given a lens, this function calculates the appropriate
-//               projection matrix for this gsg.  The result depends
-//               on the peculiarities of the rendering API.
-////////////////////////////////////////////////////////////////////
-CPT(TransformState) GraphicsStateGuardian::
-calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)NULL) {
-    return NULL;
-  }
-
-  if (!lens->is_linear()) {
-    return NULL;
-  }
-
-  return TransformState::make_identity();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::set_gamma
-//       Access: Published, Virtual
-//  Description: Set gamma.  Returns true on success.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-set_gamma(float gamma) {
-  _gamma = gamma;  
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::create_gamma_table
-//       Access: Published
-//  Description: Get the current gamma setting.
-////////////////////////////////////////////////////////////////////
-float GraphicsStateGuardian::
-get_gamma(float gamma) {
-  return _gamma;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::restore_gamma
-//       Access: Published, Virtual
-//  Description: Restore original gamma setting.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-restore_gamma() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::create_gamma_table
-//       Access: Public, Static
-//  Description: Create a gamma table.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
-  int i;
-
-  if (gamma <= 0.0) {
-    // avoid divide by zero and negative exponents
-    gamma = 1.0;
-  }
-  
-  for (i = 0; i < 256; i++) {
-    double g;
-    double x;
-    float gamma_correction;
-    
-    x = ((double) i / 255.0);
-    gamma_correction = 1.0 / gamma;    
-    x = pow (x, (double) gamma_correction);
-    if (x > 1.00) {
-      x = 1.0;
-    }
-
-    g = x * 65535.0;    
-    red_table [i] = (int)g;
-    green_table [i] = (int)g;
-    blue_table [i] = (int)g;
-  }    
+  PT(AsyncTask) request = new TextureReloadRequest(tc);
+  _loader->load_async(request);
 }

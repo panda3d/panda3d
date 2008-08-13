@@ -68,7 +68,6 @@ extern ConfigVariableBool m_dual_flash;
 
 extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
-extern EXPCL_PANDA_PGRAPH ConfigVariableBool allow_incomplete_render;
 
 extern ConfigVariableEnum<LODNodeType> default_lod_type;
 

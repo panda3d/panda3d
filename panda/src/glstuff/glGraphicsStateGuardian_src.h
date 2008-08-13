@@ -323,7 +323,7 @@ protected:
 
   void do_auto_rescale_normal();
   void specify_texture(Texture *tex);
-  void apply_texture(TextureContext *tc);
+  bool apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc);
   bool upload_texture_image(CLP(TextureContext) *gtc,
                             bool uses_mipmaps, int mipmap_bias,
@@ -331,7 +331,8 @@ protected:
                             GLint internal_format, GLint external_format, 
                             GLenum component_type,
                             bool one_page_only, int z,
-          Texture::CompressionMode image_compression);
+                            Texture::CompressionMode image_compression);
+  bool upload_simple_texture(CLP(TextureContext) *gtc);
 
   size_t get_texture_memory_size(Texture *tex);
   void check_nonresident_texture(BufferContextChain &chain);

@@ -26,6 +26,8 @@
 #include "pmap.h"
 #include "config_gobj.h"
 #include "pStatCollector.h"
+#include "reMutex.h"
+#include "reMutexHolder.h"
 
 class PNMImage;
 class TextureContext;
@@ -313,8 +315,18 @@ PUBLISHED:
   void clear_ram_mipmap_images();
   void generate_ram_mipmap_images();
 
+  INLINE int get_simple_x_size() const;
+  INLINE int get_simple_y_size() const;
+  INLINE bool has_simple_ram_image() const;
+  INLINE size_t get_simple_ram_image_size() const;
+  INLINE CPTA_uchar get_simple_ram_image() const;
+  void set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  void generate_simple_ram_image();
+  void clear_simple_ram_image();
+
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
+  INLINE UpdateSeq get_simple_image_modified() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
@@ -428,14 +440,19 @@ protected:
   };
 
 private:
-  void convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
-                             const PNMImage &pnmimage);
-  bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
-                           CPTA_uchar image, size_t page_size, int z) const;
+  static void convert_from_pnmimage(PTA_uchar &image, size_t page_size, 
+                                    int z, const PNMImage &pnmimage,
+                                    int num_components, int component_width);
+  static bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
+                                  int num_components, int component_width,
+                                  CPTA_uchar image, size_t page_size, 
+                                  int z);
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   void consider_rescale(PNMImage &pnmimage, const string &name);
   void consider_downgrade(PNMImage &pnmimage, int num_channels);
+
+  static bool compare_images(const PNMImage &a, const PNMImage &b);
 
   INLINE static void store_unscaled_byte(unsigned char *&p, int value);
   INLINE static void store_unscaled_short(unsigned char *&p, int value);
@@ -480,6 +497,9 @@ private:
                                        size_t page_size);
 
 protected:
+  // Protects all of the members of this class.
+  ReMutex _lock;
+
   Filename _filename;
   Filename _alpha_filename;
   Filename _fullpath;
@@ -550,9 +570,17 @@ protected:
   // additional mipmap levels.
   typedef pvector<RamImage> RamImages;
   RamImages _ram_images;
+
+  // This is the simple image, which may be loaded before the texture
+  // is loaded from disk.  It exists only for 2-d textures.
+  RamImage _simple_ram_image;
+  int _simple_x_size;
+  int _simple_y_size;
+  PN_int32 _simple_image_date_generated;
   
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
+  UpdateSeq _simple_image_modified;
   
 private:
   // The auxiliary data is not recorded to a bam file.

@@ -71,6 +71,7 @@ PUBLISHED:
   bool dequeue_texture(Texture *tex);
   bool is_texture_prepared(const Texture *tex) const;
   void release_texture(TextureContext *tc);
+  void release_texture(Texture *tex);
   int release_all_textures();
   int get_num_queued_textures() const;
   int get_num_prepared_textures() const;

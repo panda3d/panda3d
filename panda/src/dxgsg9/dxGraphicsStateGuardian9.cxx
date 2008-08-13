@@ -2377,7 +2377,7 @@ bool vertex_buffer_page_in_function (LruPage *lru_page)
     Not sure if this is the correct thing to do.  Can we return false
     from the page_in function?  Will we get called again next frame if
     we do?
-  if (allow_incomplete_render) {
+  if (_incomplete_render) {
     // Check if the data is resident before continuing.
     const unsigned char *data_pointer = reader->get_read_pointer(false);
     if (data_pointer == NULL) {
@@ -2431,7 +2431,7 @@ bool index_buffer_page_in_function (LruPage *lru_page)
     Not sure if this is the correct thing to do.  Can we return false
     from the page_in function?  Will we get called again next frame if
     we do?
-  if (allow_incomplete_render) {
+  if (_incomplete_render) {
     // Check if the data is resident before continuing.
     const unsigned char *data_pointer = reader.get_read_pointer(false);
     if (data_pointer == NULL) {

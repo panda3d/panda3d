@@ -44,6 +44,7 @@
 #include "texture.h"
 #include "occlusionQueryContext.h"
 #include "stencilRenderStates.h"
+#include "loader.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -89,6 +90,12 @@ PUBLISHED:
   INLINE bool is_active() const;
   INLINE bool is_valid() const;
   INLINE bool needs_reset() const;
+
+  INLINE void set_incomplete_render(bool incomplete_render);
+  virtual INLINE bool get_incomplete_render() const;
+
+  INLINE void set_loader(Loader *loader);
+  INLINE Loader *get_loader() const;
 
   INLINE GraphicsPipe *get_pipe() const;
   INLINE GraphicsEngine *get_engine() const;
@@ -268,6 +275,8 @@ public:
   static void init_frame_pstats();
 #endif
 
+  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
+
 protected:
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
@@ -292,6 +301,8 @@ protected:
   static CPT(RenderState) get_unlit_state();
   static CPT(RenderState) get_unclipped_state();
   static CPT(RenderState) get_untextured_state();
+
+  void async_reload_texture(TextureContext *tc);
 
 protected:
   PT(SceneSetup) _scene_null;
@@ -353,6 +364,8 @@ protected:
   bool _is_valid;
   bool _closing_gsg;
   bool _active;
+  bool _incomplete_render;
+  PT(Loader) _loader;
 
   PT(PreparedGraphicsObjects) _prepared_objects;
 
@@ -481,9 +494,6 @@ private:
   PT(GraphicsPipe) _pipe;
   GraphicsEngine *_engine;
   GraphicsThreadingModel _threading_model;
-
-public:
-  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
 public:
   static TypeHandle get_class_type() {

@@ -108,6 +108,15 @@ ConfigVariableBool preload_textures
           "wasted memory from Textures that are created but never used "
           "to render."));
 
+ConfigVariableBool preload_simple_textures
+("preload-simple-textures", false,
+ PRC_DESC("When this is true, every texture image will have a simple "
+          "image generated for it at load time.  (Normally, textures "
+          "get a simple image at egg2bam time.)  This slows the initial "
+          "loading time of textures, but allows you to take advantage "
+          "of gsg::set_incomplete_render() to load textures on-the-fly "
+          "in a sub-thread."));
+
 ConfigVariableBool compressed_textures
 ("compressed-textures", false,
  PRC_DESC("Set this to true to compress textures as they are loaded into "
@@ -253,6 +262,31 @@ ConfigVariableBool textures_auto_power_2
           "you then open a second window that doesn't support the same "
           "capabilities, it will have no choice but to print an error message."));
 
+ConfigVariableBool textures_header_only
+("textures-header-only", false,
+ PRC_DESC("If this is true, texture images will not actually be loaded from "
+          "disk, but the image header information will be consulted to verify "
+          "number of channels and so forth.  The texture images themselves "
+          "will be generated in a default blue color."));
+
+ConfigVariableInt simple_image_size
+("simple-image-size", "16 16",
+ PRC_DESC("This is an x y pair that specifies the maximum size of an "
+          "automatically-generated "
+          "texture simple image.  The simple image can displayed before "
+          "the texture has been loaded from disk."));
+
+ConfigVariableDouble simple_image_threshold
+("simple-image-threshold", 0.1,
+ PRC_DESC("This is a value that indicates how closely a texture's " 
+          "generated simple "
+          "image should approximate the original image.  The smaller the "
+          "number, the closer the match; small numbers will result in "
+          "simple images close to the maximum size specified by "
+          "simple-image-size.  Larger numbers will result in smaller "
+          "simple images.  Generally the value should be considerably "
+          "less than 1."));
+
 ConfigVariableEnum<ShaderUtilization> shader_utilization
 ("shader-utilization", SUT_none,
  PRC_DESC("At times, panda may generate shaders.  This variable controls what "
@@ -269,14 +303,6 @@ ConfigVariableBool shader_auto_utilization
           "automatically be adusted.  The pitfall of doing this is that if "
           "you then open a second window that doesn't support the same "
           "capabilities, it will have no choice but to print an error message."));
-
-extern EXPCL_PANDA_GOBJ ConfigVariableBool textures_header_only;
-ConfigVariableBool textures_header_only
-("textures-header-only", false,
- PRC_DESC("If this is true, texture images will not actually be loaded from "
-          "disk, but the image header information will be consulted to verify "
-          "number of channels and so forth.  The texture images themselves "
-          "will be generated in a default blue color."));
 
 ConfigVariableInt geom_cache_size
 ("geom-cache-size", 5000,
