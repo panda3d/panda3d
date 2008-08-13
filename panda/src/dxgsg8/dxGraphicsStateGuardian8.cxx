@@ -1420,7 +1420,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
     // For a specialty texture like a cube map, go the slow route
     // through RAM for now.
-    return framebuffer_copy_to_ram(tex, z, dr, rb);
+    return do_framebuffer_copy_to_ram(tex, z, dr, rb, true);
   }
   nassertr(dtc->get_d3d_2d_texture() != NULL, false);
 
@@ -1501,7 +1501,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (!okflag) {
     // The copy failed.  Fall back to copying it to RAM and back.
     // Terribly slow, but what are you going to do?
-    return framebuffer_copy_to_ram(tex, z, dr, rb);
+    return do_framebuffer_copy_to_ram(tex, z, dr, rb, true);
   }
 
   return true;
@@ -1520,6 +1520,21 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
+  return do_framebuffer_copy_to_ram(tex, z, dr, rb, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::do_framebuffer_copy_to_ram
+//       Access: Public
+//  Description: This is the implementation of
+//               framebuffer_copy_to_ram(); it adds one additional
+//               parameter, which should be true if the framebuffer is
+//               to be inverted during the copy (as in the same way it
+//               copies to texture memory).
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, 
+                           const RenderBuffer &rb, bool inverted) {
   set_read_buffer(rb);
 
   RECT rect;
@@ -1603,7 +1618,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       return false;
     }
 
-    //    copy_inverted = true;
+    copy_inverted = true;
 
     RELEASE(backbuffer, dxgsg8, "backbuffer", RELEASE_ONCE);
 
@@ -1647,8 +1662,6 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
       return false;
     }
 
-    // For some reason the front buffer comes out inverted, but the
-    // back buffer does not.
     copy_inverted = true;
 
   } else {
@@ -1658,6 +1671,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const Rend
     return false;
   }
 
+  if (inverted) {
+    copy_inverted = !copy_inverted;
+  }
   DXTextureContext8::d3d_surface_to_texture(rect, temp_surface,
                                             copy_inverted, tex, z);
 
