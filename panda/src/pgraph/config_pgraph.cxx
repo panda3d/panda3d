@@ -284,6 +284,16 @@ ConfigVariableDouble lod_fade_time
  PRC_DESC("The default amount of time (in seconds) over which a FadeLODNode "
           "transitions between its different levels."));
 
+ConfigVariableString lod_fade_bin_name
+("lod-fade-bin-name", "fixed",
+ PRC_DESC("The default bin name in which to place the fading part of a "
+          "FadeLODNode transition."));
+
+ConfigVariableInt lod_fade_bin_draw_order
+("lod-fade-bin-draw-order", 0,
+ PRC_DESC("The default bin draw order to assign the fading part of a "
+          "FadeLODNode transition."));
+
 ConfigVariableBool verify_lods
 ("verify-lods", false,
  PRC_DESC("When this is true, LODNodes will test when they are rendered to "

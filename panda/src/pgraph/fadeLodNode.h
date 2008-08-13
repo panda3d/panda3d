@@ -28,7 +28,7 @@ PUBLISHED:
   FadeLODNode(const string &name);
 
 protected:
-  INLINE FadeLODNode(const FadeLODNode &copy);
+  FadeLODNode(const FadeLODNode &copy);
 public:
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -38,11 +38,23 @@ PUBLISHED:
   INLINE void set_fade_time(float t);
   INLINE float get_fade_time() const;
 
+  void set_fade_bin(const string &name, int draw_order);
+  INLINE const string &get_fade_bin_name() const;
+  INLINE int get_fade_bin_draw_order() const;
+
 private:
-  static CPT(RenderState) get_fade_out_state();
+  static CPT(RenderState) get_fade_1_old_state();
+  CPT(RenderState) get_fade_1_new_state(float in_alpha);
+  CPT(RenderState) get_fade_2_old_state(float out_alpha);
+  static CPT(RenderState) get_fade_2_new_state();
 
 private:
   float _fade_time;
+  string _fade_bin_name;
+  int _fade_bin_draw_order;
+
+  CPT(RenderState) _fade_1_new_state;
+  CPT(RenderState) _fade_2_old_state;
   
 public:
   static void register_with_read_factory();

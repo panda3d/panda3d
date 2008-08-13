@@ -35,6 +35,22 @@ FadeLODNode(const string &name) :
   set_cull_callback();
 
   _fade_time = lod_fade_time;
+  _fade_bin_name = lod_fade_bin_name;
+  _fade_bin_draw_order = lod_fade_bin_draw_order;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::Copy Constructor
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+FadeLODNode::
+FadeLODNode(const FadeLODNode &copy) :
+  LODNode(copy)
+{
+  _fade_time = copy._fade_time;
+  _fade_bin_name = copy._fade_bin_name;
+  _fade_bin_draw_order = copy._fade_bin_draw_order;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,6 +155,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           PandaNode *child = get_child(ldata->_fade_out);
           if (child != (PandaNode *)NULL) {
             CullTraverserData next_data_out(data, child);
+            next_data_out._state = 
+              next_data_out._state->compose(get_fade_1_old_state());
             trav->traverse(next_data_out);
           }
         }
@@ -149,24 +167,23 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             CullTraverserData next_data_in(data, child);
             
             float in_alpha = elapsed / half_fade_time;
-            LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
-            
             next_data_in._state = 
-              next_data_in._state->compose(get_fade_out_state())->compose
-              (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+              next_data_in._state->compose(get_fade_1_new_state(in_alpha));
             
             trav->traverse(next_data_in);
           }
         }
         
       } else if (elapsed < _fade_time) {
-        //SECOND HALF OF FADE:
-        //Fade out the old LOD with z write off and 
-        //draw the opaque new LOD with z write on
+        // SECOND HALF OF FADE:
+        // Fade out the old LOD with z write off and 
+        // draw the opaque new LOD with z write on
         if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
           PandaNode *child = get_child(ldata->_fade_in);
           if (child != (PandaNode *)NULL) {
             CullTraverserData next_data_in(data, child);
+            next_data_in._state = 
+              next_data_in._state->compose(get_fade_2_new_state());
             trav->traverse(next_data_in);
           }
         }
@@ -177,11 +194,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             CullTraverserData next_data_out(data, child);
           
             float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
-            LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
-            
             next_data_out._state = 
-              next_data_out._state->compose(get_fade_out_state())->compose
-              (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+              next_data_out._state->compose(get_fade_2_old_state(out_alpha));
             
             trav->traverse(next_data_out);
           }
@@ -225,20 +239,84 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::get_fade_out_state
+//     Function: FadeLODNode::set_fade_bin
+//       Access: Published
+//  Description: Specifies the cull bin and draw order that is
+//               assigned to the fading part of the geometry during a
+//               transition.
+////////////////////////////////////////////////////////////////////
+void FadeLODNode::
+set_fade_bin(const string &name, int draw_order) {
+  _fade_bin_name = name;
+  _fade_bin_draw_order = draw_order;
+  _fade_1_new_state.clear();
+  _fade_2_old_state.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_1_old_state
 //       Access: Protected, Static
-//  Description: Returns a RenderState for rendering the element that
-//               is switching out of visibility.
+//  Description: Returns a RenderState for rendering the old element
+//               during first half of fade.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
-get_fade_out_state() {
-  // Once someone asks for this pointer, we hold its reference count
-  // and never free it.
+get_fade_1_old_state() {
+  return RenderState::make_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_1_new_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState for rendering the new element
+//               during first half of fade.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) FadeLODNode::
+get_fade_1_new_state(float in_alpha) {
+  if (_fade_1_new_state == (const RenderState *)NULL) {
+    _fade_1_new_state = RenderState::make
+      (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+       DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+       CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order),
+       DepthOffsetAttrib::make());
+  }
+
+  LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
+  return _fade_1_new_state->compose
+    (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_2_old_state
+//       Access: Protected
+//  Description: Returns a RenderState for rendering the old element
+//               during second half of fade.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) FadeLODNode::
+get_fade_2_old_state(float out_alpha) {
+  if (_fade_2_old_state == (const RenderState *)NULL) {
+    _fade_2_old_state = RenderState::make
+      (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+       DepthWriteAttrib::make(DepthWriteAttrib::M_off),
+       CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order));
+  }
+
+  LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
+  return _fade_2_old_state->compose
+    (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_2_new_state
+//       Access: Protected, Static
+//  Description: Returns a RenderState for rendering the new element
+//               during second half of fade.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) FadeLODNode::
+get_fade_2_new_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
-       DepthWriteAttrib::make(DepthWriteAttrib::M_off));
+      (DepthOffsetAttrib::make());
   }
 
   return state;

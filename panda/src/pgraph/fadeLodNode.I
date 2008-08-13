@@ -12,17 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////
-//     Function: FadeLODNode::Copy Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE FadeLODNode::
-FadeLODNode(const FadeLODNode &copy) :
-  LODNode(copy)
-{
-  _fade_time = copy._fade_time;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::set_fade_time
@@ -43,4 +32,29 @@ INLINE float FadeLODNode::
 get_fade_time() const {
   return _fade_time;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_bin_name
+//       Access: Published
+//  Description: Returns the cull bin that is assigned to the fading
+//               part of the geometry during a transition.
+////////////////////////////////////////////////////////////////////
+INLINE const string &FadeLODNode::
+get_fade_bin_name() const {
+  return _fade_bin_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_bin_draw_order
+//       Access: Published
+//  Description: Returns the draw order that is assigned (along with
+//               the bin name) to the fading part of the geometry
+//               during a transition.
+////////////////////////////////////////////////////////////////////
+INLINE int FadeLODNode::
+get_fade_bin_draw_order() const {
+  return _fade_bin_draw_order;
+}
+
 
