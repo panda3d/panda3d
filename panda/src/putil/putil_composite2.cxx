@@ -3,6 +3,7 @@
 #include "lineStreamBuf.cxx"
 #include "linkedListNode.cxx"
 #include "load_prc_file.cxx"
+#include "loaderOptions.cxx"
 #include "modifierButtons.cxx"
 #include "mouseButton.cxx"
 #include "mouseData.cxx"

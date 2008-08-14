@@ -9,7 +9,6 @@
 #include "loaderFileType.cxx"
 #include "loaderFileTypeBam.cxx"
 #include "loaderFileTypeRegistry.cxx"
-#include "loaderOptions.cxx"
 #include "lodNode.cxx"
 #include "lodNodeType.cxx"
 #include "materialAttrib.cxx"

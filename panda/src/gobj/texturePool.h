@@ -19,10 +19,13 @@
 #include "texture.h"
 #include "filename.h"
 #include "config_gobj.h"
+#include "loaderOptions.h"
 #include "pmutex.h"
 #include "pmap.h"
 
 class TexturePoolFilter;
+class BamCache;
+class BamCacheRecord;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexturePool
@@ -41,16 +44,20 @@ PUBLISHED:
   INLINE static bool verify_texture(const string &filename);
   INLINE static Texture *load_texture(const string &filename, 
                                       int primary_file_num_channels = 0,
-              bool read_mipmaps = false);
+                                      bool read_mipmaps = false,
+                                      const LoaderOptions &options = LoaderOptions());
   INLINE static Texture *load_texture(const string &filename,
                                       const string &alpha_filename, 
                                       int primary_file_num_channels = 0,
                                       int alpha_file_channel = 0,
-              bool read_mipmaps = false);
+                                      bool read_mipmaps = false,
+                                      const LoaderOptions &options = LoaderOptions());
   INLINE static Texture *load_3d_texture(const string &filename_pattern,
-           bool read_mipmaps = false);
+                                         bool read_mipmaps = false,
+                                         const LoaderOptions &options = LoaderOptions());
   INLINE static Texture *load_cube_map(const string &filename_pattern,
-               bool read_mipmaps = false);
+                                       bool read_mipmaps = false,
+                                       const LoaderOptions &options = LoaderOptions());
 
   INLINE static Texture *get_normalization_cube_map(int size);
   INLINE static Texture *get_alpha_scale_map();
@@ -87,17 +94,21 @@ private:
 
   bool ns_has_texture(const Filename &orig_filename);
   Texture *ns_load_texture(const Filename &orig_filename, 
-         int primary_file_num_channels,
-         bool read_mipmaps);
+                           int primary_file_num_channels,
+                           bool read_mipmaps,
+                           const LoaderOptions &options);
   Texture *ns_load_texture(const Filename &orig_filename, 
                            const Filename &orig_alpha_filename, 
                            int primary_file_num_channels,
                            int alpha_file_channel,
-         bool read_mipmaps);
+                           bool read_mipmaps,
+                           const LoaderOptions &options);
   Texture *ns_load_3d_texture(const Filename &filename_pattern,
-            bool read_mipmaps);
+                              bool read_mipmaps,
+                              const LoaderOptions &options);
   Texture *ns_load_cube_map(const Filename &filename_pattern,
-          bool read_mipmaps);
+                            bool read_mipmaps,
+                            const LoaderOptions &options);
   Texture *ns_get_normalization_cube_map(int size);
   Texture *ns_get_alpha_scale_map();
 
@@ -107,6 +118,10 @@ private:
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
 
+  void try_load_cache(PT(Texture) &tex, BamCache *cache, 
+                      const Filename &filename, PT(BamCacheRecord) &record, 
+                      bool &compressed_cache_record,
+                      const LoaderOptions &options);
   void report_texture_unreadable(const Filename &filename) const;
 
   // Methods to invoke a TexturePoolFilter.
@@ -114,7 +129,7 @@ private:
                        const Filename &orig_alpha_filename,
                        int primary_file_num_channels,
                        int alpha_file_channel,
-                       bool read_mipmaps);
+                       bool read_mipmaps, const LoaderOptions &options);
   PT(Texture) post_load(Texture *tex);
 
   void load_filters();

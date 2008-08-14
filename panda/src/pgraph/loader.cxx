@@ -257,7 +257,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
 
   PT(BamCacheRecord) record;
-  if (cache->get_active() && requested_type->get_allow_disk_cache(options)) {
+  if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
     // See if the model can be found in the on-disk cache, if it is
     // active.
     record = cache->lookup(pathname, "bam");

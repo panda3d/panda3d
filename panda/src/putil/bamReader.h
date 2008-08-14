@@ -23,6 +23,7 @@
 #include "datagramIterator.h"
 #include "bamReaderParam.h"
 #include "bamEndian.h"
+#include "loaderOptions.h"
 #include "factory.h"
 #include "vector_int.h"
 #include "pset.h"
@@ -99,6 +100,9 @@ public:
   AuxData *get_aux_data(TypedWritable *obj, const string &name) const;
 
   INLINE const Filename &get_filename() const;
+
+  INLINE const LoaderOptions &get_loader_options() const;
+  INLINE void set_loader_options(const LoaderOptions &options);
   
   TypedWritable *read_object();
   INLINE bool is_eof() const;
@@ -185,8 +189,10 @@ private:
   typedef phash_map<int, TypeHandle, int_hash> IndexMap;
   IndexMap _index_map;
 
-  // This is the filename of the BAM, or null string if not in a file.
+  // This is the filename of the BAM, or empty string if not in a file.
   Filename _filename;
+
+  LoaderOptions _loader_options;
 
   // This maps the object ID numbers encountered within the Bam file
   // to the actual pointers of the corresponding generated objects.

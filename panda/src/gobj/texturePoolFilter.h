@@ -20,6 +20,8 @@
 #include "pointerTo.h"
 #include "typedObject.h"
 
+class LoaderOptions;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TexturePoolFilter
 // Description : This is an abstract base class, a placeholder for any
@@ -50,7 +52,8 @@ public:
                                const Filename &orig_alpha_filename,
                                int primary_file_num_channels,
                                int alpha_file_channel,
-                               bool read_mipmaps);
+                               bool read_mipmaps, 
+                               const LoaderOptions &options);
   virtual PT(Texture) post_load(Texture *tex);
 
   virtual void output(ostream &out) const;

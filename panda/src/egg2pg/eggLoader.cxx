@@ -928,6 +928,12 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     }
   }
 
+  // By convention, the egg loader will preload the simple texture images.
+  LoaderOptions options;
+  if (egg_preload_simple_textures) {
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_preload_simple);
+  }
+
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:
@@ -938,22 +944,22 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
                                       egg_tex->get_alpha_fullpath(),
                                       wanted_channels,
                                       egg_tex->get_alpha_file_channel(),
-				      egg_tex->get_read_mipmaps());
+				      egg_tex->get_read_mipmaps(), options);
     } else {
       tex = TexturePool::load_texture(egg_tex->get_fullpath(),
                                       wanted_channels,
-				      egg_tex->get_read_mipmaps());
+				      egg_tex->get_read_mipmaps(), options);
     }
     break;
 
   case EggTexture::TT_3d_texture:
     tex = TexturePool::load_3d_texture(egg_tex->get_fullpath(),
-				       egg_tex->get_read_mipmaps());
+				       egg_tex->get_read_mipmaps(), options);
     break;
 
   case EggTexture::TT_cube_map:
     tex = TexturePool::load_cube_map(egg_tex->get_fullpath(),
-				     egg_tex->get_read_mipmaps());
+				     egg_tex->get_read_mipmaps(), options);
     break;
   }
 

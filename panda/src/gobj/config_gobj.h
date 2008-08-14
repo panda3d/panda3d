@@ -51,8 +51,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableList exclude_texture_scale;
 
 
 extern EXPCL_PANDA_GOBJ ConfigVariableBool keep_texture_ram;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool preload_textures;
-extern EXPCL_PANDA_GOBJ ConfigVariableBool preload_simple_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool compressed_textures;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_buffers;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_arrays;

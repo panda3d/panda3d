@@ -28,6 +28,7 @@
 #include "pStatCollector.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
+#include "loaderOptions.h"
 
 class PNMImage;
 class TextureContext;
@@ -211,15 +212,18 @@ PUBLISHED:
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
 
-  INLINE bool read(const Filename &fullpath);
-  INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-                   int primary_file_num_channels, int alpha_file_channel);
-  INLINE bool read(const Filename &fullpath, int z, int n, 
-                   bool read_pages, bool read_mipmaps);
-  INLINE bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-                   int primary_file_num_channels, int alpha_file_channel,
-                   int z, int n, bool read_pages, bool read_mipmaps,
-                   BamCacheRecord *record = NULL);
+  bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
+  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+            int primary_file_num_channels, int alpha_file_channel,
+            const LoaderOptions &options = LoaderOptions());
+  bool read(const Filename &fullpath, int z, int n, 
+            bool read_pages, bool read_mipmaps,
+            const LoaderOptions &options = LoaderOptions());
+  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+            int primary_file_num_channels, int alpha_file_channel,
+            int z, int n, bool read_pages, bool read_mipmaps,
+            BamCacheRecord *record = NULL,
+            const LoaderOptions &options = LoaderOptions());
 
   INLINE bool write(const Filename &fullpath);
   INLINE bool write(const Filename &fullpath, int z, int n, 
@@ -273,6 +277,7 @@ PUBLISHED:
   INLINE int get_anisotropic_degree() const;
   INLINE Colorf get_border_color() const;
   INLINE CompressionMode get_compression() const;
+  INLINE bool has_compression() const;
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
 
@@ -321,6 +326,8 @@ PUBLISHED:
   INLINE size_t get_simple_ram_image_size() const;
   INLINE CPTA_uchar get_simple_ram_image() const;
   void set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  PTA_uchar modify_simple_ram_image();
+  PTA_uchar new_simple_ram_image(int x_size, int y_size);
   void generate_simple_ram_image();
   void clear_simple_ram_image();
 
@@ -369,6 +376,10 @@ PUBLISHED:
   
   INLINE void set_pad_size(int x=0, int y=0, int z=0);
   void set_size_padded(int x=1, int y=1, int z=1);
+
+  INLINE int get_orig_file_x_size() const;
+  INLINE int get_orig_file_y_size() const;
+  INLINE int get_orig_file_z_size() const;
   
   void set_format(Format format);
   void set_component_type(ComponentType component_type);
@@ -383,11 +394,14 @@ PUBLISHED:
   INLINE bool get_match_framebuffer_format() const;
   INLINE void set_match_framebuffer_format(bool flag);
 
+  INLINE bool get_post_load_store_cache() const;
+  INLINE void set_post_load_store_cache(bool flag);
+
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects,
                               GraphicsStateGuardianBase *gsg);
 
 public:
-  void texture_uploaded();
+  void texture_uploaded(GraphicsStateGuardianBase *gsg);
   
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
@@ -404,6 +418,8 @@ public:
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
+
+  static bool adjust_size(int &x_size, int &y_size, const string &name);
 
 protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -541,11 +557,15 @@ protected:
   CompressionMode _compression;
   bool _render_to_texture;
   bool _match_framebuffer_format;
+  bool _post_load_store_cache;
   QualityLevel _quality_level;
 
   int _pad_x_size;
   int _pad_y_size;
   int _pad_z_size;
+
+  int _orig_file_x_size;
+  int _orig_file_y_size;
   
   // A Texture keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.

@@ -55,9 +55,9 @@ verify_texture(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
 load_texture(const string &filename, int primary_file_num_channels,
-       bool read_mipmaps) {
+             bool read_mipmaps, const LoaderOptions &options) {
   return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
-             read_mipmaps);
+                                           read_mipmaps, options);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,11 +78,11 @@ load_texture(const string &filename, int primary_file_num_channels,
 INLINE Texture *TexturePool::
 load_texture(const string &filename, const string &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel,
-       bool read_mipmaps) {
+             bool read_mipmaps, const LoaderOptions &options) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename, 
-             primary_file_num_channels,
-             alpha_file_channel,
-             read_mipmaps);
+                                           primary_file_num_channels,
+                                           alpha_file_channel,
+                                           read_mipmaps, options);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,8 +100,10 @@ load_texture(const string &filename, const string &alpha_filename,
 //               second with the index number of each 3-d level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_3d_texture(const string &filename_pattern, bool read_mipmaps) {
-  return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps);
+load_3d_texture(const string &filename_pattern, bool read_mipmaps, 
+                const LoaderOptions &options) {
+  return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps, 
+                                              options);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,8 +121,10 @@ load_3d_texture(const string &filename_pattern, bool read_mipmaps) {
 //               second with the face number, 0 through 5.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_cube_map(const string &filename_pattern, bool read_mipmaps) {
-  return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps);
+load_cube_map(const string &filename_pattern, bool read_mipmaps, 
+              const LoaderOptions &options) {
+  return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps, 
+                                            options);
 }
 
 ////////////////////////////////////////////////////////////////////

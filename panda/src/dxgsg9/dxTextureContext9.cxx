@@ -952,7 +952,7 @@ create_texture(DXScreenData &scrn) {
         }
       }
     }
-    get_texture()->texture_uploaded();
+    get_texture()->texture_uploaded(scrn._dxgsg9);
   }
   mark_loaded();
   

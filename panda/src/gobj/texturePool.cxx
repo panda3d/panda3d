@@ -235,7 +235,7 @@ ns_has_texture(const Filename &orig_filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
-                bool read_mipmaps) {
+                bool read_mipmaps, const LoaderOptions &options) {
   Filename filename(orig_filename);
 
   if (!_fake_texture_image.empty()) {
@@ -265,31 +265,12 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   // Can one of our texture filters supply the texture?
   tex = pre_load(orig_filename, Filename(), primary_file_num_channels, 0,
-                 read_mipmaps);
+                 read_mipmaps, options);
 
   BamCache *cache = BamCache::get_global_ptr();
-  if (tex == (Texture *)NULL) {
-    // The texture was not supplied by a texture filter.  See if it
-    // can be found in the on-disk cache, if it is active.
-    if (cache->get_active() && !textures_header_only) {
-      record = cache->lookup(filename, "txo");
-      if (record != (BamCacheRecord *)NULL) {
-        if (record->has_data()) {
-          gobj_cat.info()
-            << "Texture " << filename << " found in disk cache.\n";
-          tex = DCAST(Texture, record->extract_data());
-          if (preload_simple_textures && !tex->has_simple_ram_image()) {
-            tex->generate_simple_ram_image();
-          }
-          if (!preload_textures) {
-            // But drop the RAM until we need it.
-            tex->clear_ram_image();
-          }
-          tex->set_keep_ram_image(false);
-        }
-      }
-    }
-  }
+  bool compressed_cache_record = false;
+  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+                 options);
 
   if (tex == (Texture *)NULL) {
     // The texture was neither in the pool, nor found in the on-disk
@@ -298,17 +279,30 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       << "Loading texture " << filename << "\n";
     tex = make_texture(filename.get_extension());
     if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
-                   0, 0, false, read_mipmaps, record)) {
+                   0, 0, false, read_mipmaps, record, options)) {
       // This texture was not found or could not be read.
       report_texture_unreadable(filename);
       return NULL;
     }
 
-    if (preload_simple_textures) {
+    if (options.get_texture_flags() & LoaderOptions::TF_preload_simple) {
       tex->generate_simple_ram_image();
     }
 
     store_record = (record != (BamCacheRecord *)NULL);
+  }
+
+  if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+    // We don't want to save the uncompressed version; we'll save the
+    // compressed version when it becomes available.
+    store_record = false;
+    if (!compressed_cache_record) {
+      tex->set_post_load_store_cache(true);
+    }
+
+  } else if (!cache->get_cache_textures()) {
+    // We don't want to save this texture.
+    store_record = false;
   }
 
   // Set the original filename, before we searched along the path.
@@ -341,7 +335,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     cache->store(record);
   }
 
-  if (!preload_textures) {
+  if (!(options.get_texture_flags() & LoaderOptions::TF_preload)) {
     // And now drop the RAM until we need it.
     tex->clear_ram_image();
   }
@@ -364,13 +358,13 @@ ns_load_texture(const Filename &orig_filename,
                 const Filename &orig_alpha_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
-    bool read_mipmaps) {
+                bool read_mipmaps, const LoaderOptions &options) {
   Filename filename(orig_filename);
   Filename alpha_filename(orig_alpha_filename);
 
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
-         read_mipmaps);
+                           read_mipmaps, options);
   }
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -399,25 +393,12 @@ ns_load_texture(const Filename &orig_filename,
 
   // Can one of our texture filters supply the texture?
   tex = pre_load(orig_filename, alpha_filename, primary_file_num_channels, 
-                 alpha_file_channel, read_mipmaps);
+                 alpha_file_channel, read_mipmaps, options);
 
   BamCache *cache = BamCache::get_global_ptr();
-  if (tex == (Texture *)NULL) {
-    // The texture was not supplied by a texture filter.  See if it
-    // can be found in the on-disk cache, if it is active.
-    if (cache->get_active() && !textures_header_only) {
-      // See if the texture can be found in the on-disk cache, if it is
-      // active.
-      record = cache->lookup(filename, "txo");
-      if (record != (BamCacheRecord *)NULL) {
-        if (record->has_data()) {
-          gobj_cat.info()
-            << "Texture " << filename << " found in disk cache.\n";
-          tex = DCAST(Texture, record->extract_data());
-        }
-      }
-    }
-  }
+  bool compressed_cache_record = false;
+  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+                 options);
 
   if (tex == (Texture *)NULL) {
     // The texture was neither in the pool, nor found in the on-disk
@@ -427,17 +408,31 @@ ns_load_texture(const Filename &orig_filename,
       << alpha_filename << endl;
     tex = make_texture(filename.get_extension());
     if (!tex->read(filename, alpha_filename, primary_file_num_channels,
-                   alpha_file_channel, 0, 0, false, read_mipmaps)) {
+                   alpha_file_channel, 0, 0, false, read_mipmaps, NULL,
+                   options)) {
       // This texture was not found or could not be read.
       report_texture_unreadable(filename);
       return NULL;
     }
 
-    if (preload_simple_textures) {
+    if (options.get_texture_flags() & LoaderOptions::TF_preload_simple) {
       tex->generate_simple_ram_image();
     }
 
     store_record = (record != (BamCacheRecord *)NULL);
+  }
+
+  if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+    // We don't want to save the uncompressed version; we'll save the
+    // compressed version when it becomes available.
+    store_record = false;
+    if (!compressed_cache_record) {
+      tex->set_post_load_store_cache(true);
+    }
+
+  } else if (!cache->get_cache_textures()) {
+    // We don't want to save this texture.
+    store_record = false;
   }
 
   // Set the original filenames, before we searched along the path.
@@ -470,7 +465,7 @@ ns_load_texture(const Filename &orig_filename,
     cache->store(record);
   }
 
-  if (!preload_textures) {
+  if (!(options.get_texture_flags() & LoaderOptions::TF_preload)) {
     // And now drop the RAM until we need it.
     tex->clear_ram_image();
   }
@@ -490,7 +485,7 @@ ns_load_texture(const Filename &orig_filename,
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
-       bool read_mipmaps) {
+                   bool read_mipmaps, const LoaderOptions &options) {
   Filename filename(filename_pattern);
   filename.set_pattern(true);
 
@@ -514,18 +509,9 @@ ns_load_3d_texture(const Filename &filename_pattern,
   bool store_record = false;
 
   BamCache *cache = BamCache::get_global_ptr();
-  if (cache->get_active() && !textures_header_only) {
-    // See if the texture can be found in the on-disk cache, if it is
-    // active.
-    record = cache->lookup(filename, "txo");
-    if (record != (BamCacheRecord *)NULL) {
-      if (record->has_data()) {
-        gobj_cat.info()
-          << "Texture " << filename << " found in disk cache.\n";
-        tex = DCAST(Texture, record->extract_data());
-      }
-    }
-  }
+  bool compressed_cache_record = false;
+  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+                 options);
 
   if (tex == (Texture *)NULL || 
       tex->get_texture_type() != Texture::TT_3d_texture) {
@@ -535,12 +521,25 @@ ns_load_3d_texture(const Filename &filename_pattern,
       << "Loading 3-d texture " << filename << "\n";
     tex = make_texture(filename.get_extension());
     tex->setup_3d_texture();
-    if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
+    if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
       report_texture_unreadable(filename);
       return NULL;
     }
     store_record = (record != (BamCacheRecord *)NULL);
+  }
+
+  if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+    // We don't want to save the uncompressed version; we'll save the
+    // compressed version when it becomes available.
+    store_record = false;
+    if (!compressed_cache_record) {
+      tex->set_post_load_store_cache(true);
+    }
+
+  } else if (!cache->get_cache_textures()) {
+    // We don't want to save this texture.
+    store_record = false;
   }
 
   // Set the original filename, before we searched along the path.
@@ -579,7 +578,8 @@ ns_load_3d_texture(const Filename &filename_pattern,
 //  Description: The nonstatic implementation of load_cube_map().
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
-ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
+ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps, 
+                 const LoaderOptions &options) {
   Filename filename(filename_pattern);
   filename.set_pattern(true);
 
@@ -603,18 +603,9 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
   bool store_record = false;
 
   BamCache *cache = BamCache::get_global_ptr();
-  if (cache->get_active() && !textures_header_only) {
-    // See if the texture can be found in the on-disk cache, if it is
-    // active.
-    record = cache->lookup(filename, "txo");
-    if (record != (BamCacheRecord *)NULL) {
-      if (record->has_data()) {
-        gobj_cat.info()
-          << "Texture " << filename << " found in disk cache.\n";
-        tex = DCAST(Texture, record->extract_data());
-      }
-    }
-  }
+  bool compressed_cache_record = false;
+  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+                 options);
 
   if (tex == (Texture *)NULL || 
       tex->get_texture_type() != Texture::TT_cube_map) {
@@ -624,12 +615,25 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps) {
       << "Loading cube map texture " << filename << "\n";
     tex = make_texture(filename.get_extension());
     tex->setup_cube_map();
-    if (!tex->read(filename, 0, 0, true, read_mipmaps)) {
+    if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
       report_texture_unreadable(filename);
       return NULL;
     }
     store_record = (record != (BamCacheRecord *)NULL);
+  }
+
+  if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+    // We don't want to save the uncompressed version; we'll save the
+    // compressed version when it becomes available.
+    store_record = false;
+    if (!compressed_cache_record) {
+      tex->set_post_load_store_cache(true);
+    }
+
+  } else if (!cache->get_cache_textures()) {
+    // We don't want to save this texture.
+    store_record = false;
   }
     
   // Set the original filename, before we searched along the path.
@@ -841,6 +845,81 @@ ns_list_contents(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::try_load_cache
+//       Access: Private
+//  Description: Attempts to load the texture from the cache record.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
+               PT(BamCacheRecord) &record, bool &compressed_cache_record,
+               const LoaderOptions &options) {
+  if (tex == (Texture *)NULL) {
+    // The texture was not supplied by a texture filter.  See if it
+    // can be found in the on-disk cache, if it is active.
+    if ((cache->get_cache_textures() || cache->get_cache_compressed_textures()) && !textures_header_only) {
+      record = cache->lookup(filename, "txo");
+      if (record != (BamCacheRecord *)NULL) {
+        if (record->has_data()) {
+          tex = DCAST(Texture, record->extract_data());
+          compressed_cache_record = (tex->get_ram_image_compression() != Texture::CM_off);
+          int x_size = tex->get_orig_file_x_size();
+          int y_size = tex->get_orig_file_y_size();
+          Texture::adjust_size(x_size, y_size, filename.get_basename());
+
+          if (!cache->get_cache_textures() && !compressed_cache_record) {
+            // We're not supposed to be caching uncompressed textures.
+            if (gobj_cat.is_debug()) {
+              gobj_cat.debug()
+                << "Not caching uncompressed texture " << *tex << "\n";
+            }
+            tex = NULL;
+            record = NULL;
+
+          } else if (x_size != tex->get_x_size() ||
+                     y_size != tex->get_y_size()) {
+            // The cached texture no longer matches our expected size
+            // (the resizing config variables must have changed).
+            // We'll have to reload the texture from its original file
+            // so we can rebuild the cache.
+            if (gobj_cat.is_debug()) {
+              gobj_cat.debug()
+                << "Cached texture " << *tex << " has size "
+                << tex->get_x_size() << " x " << tex->get_y_size()
+                << " instead of " << x_size << " x " << y_size
+                << "; dropping cache.\n";
+            }
+            tex = NULL;
+
+          } else if (!tex->has_compression() && tex->get_ram_image_compression() != Texture::CM_off) {
+            // This texture shouldn't be compressed, but it is.  Go
+            // reload it.
+            if (gobj_cat.is_debug()) {
+              gobj_cat.debug()
+                << "Cached texture " << *tex
+                << " is compressed in cache; dropping cache.\n";
+            }
+            tex = NULL;
+
+          } else {
+            gobj_cat.info()
+              << "Texture " << filename << " found in disk cache.\n";
+            if ((options.get_texture_flags() & LoaderOptions::TF_preload_simple) &&
+                !tex->has_simple_ram_image()) {
+              tex->generate_simple_ram_image();
+            }
+            if (!(options.get_texture_flags() & LoaderOptions::TF_preload)) {
+              // But drop the RAM until we need it.
+              tex->clear_ram_image();
+            }
+            tex->set_keep_ram_image(false);
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::report_texture_unreadable
 //       Access: Private
 //  Description: Prints a suitable error message when a texture could
@@ -892,7 +971,7 @@ report_texture_unreadable(const Filename &filename) const {
 PT(Texture) TexturePool::
 pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          int primary_file_num_channels, int alpha_file_channel,
-         bool read_mipmaps) {
+         bool read_mipmaps, const LoaderOptions &options) {
   PT(Texture) tex;
 
   MutexHolder holder(_lock);
@@ -903,7 +982,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
        ++fi) {
     tex = (*fi)->pre_load(orig_filename, orig_alpha_filename,
                           primary_file_num_channels, alpha_file_channel,
-                          read_mipmaps);
+                          read_mipmaps, options);
     if (tex != (Texture *)NULL) {
       return tex;
     }

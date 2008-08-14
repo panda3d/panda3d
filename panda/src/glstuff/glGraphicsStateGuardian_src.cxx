@@ -46,6 +46,8 @@
 #include "indirectLess.h"
 #include "pStatTimer.h"
 #include "load_prc_file.h"
+#include "bamCache.h"
+#include "bamCacheRecord.h"
 
 #ifdef HAVE_CG
 #include "Cg/cgGL.h"
@@ -2666,224 +2668,8 @@ extract_texture_data(Texture *tex) {
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  GLenum target = get_texture_target(tex->get_texture_type());
-  GLP(BindTexture)(target, gtc->_index);
 
-  report_my_gl_errors();
-
-  GLint wrap_u, wrap_v, wrap_w;
-  GLint minfilter, magfilter;
-  GLfloat border_color[4];
-
-  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_S, &wrap_u);
-  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_T, &wrap_v);
-  wrap_w = GL_REPEAT;
-  if (_supports_3d_texture) {
-    GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
-  }
-  GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-
-  // Mesa has a bug querying this property.
-  magfilter = GL_LINEAR;
-  //  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
-
-  GLP(GetTexParameterfv)(target, GL_TEXTURE_BORDER_COLOR, border_color);
-
-  GLenum page_target = target;
-  if (target == GL_TEXTURE_CUBE_MAP) {
-    // We need a particular page to get the level parameter from.
-    page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-  }
-
-  GLint width = 1, height = 1, depth = 1;
-  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
-  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
-  if (_supports_3d_texture) {
-    GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
-  }
-  report_my_gl_errors();
-
-  GLint internal_format;
-  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
-
-  // Make sure we were able to query those parameters properly.
-  GLenum error_code = GLP(GetError)();
-  if (error_code != GL_NO_ERROR) {
-    GLCAT.error()
-      << "Unable to query texture parameters for " << tex->get_name()
-      << " : " << get_error_string(error_code) << "\n";
-
-    return false;
-  }
-
-  Texture::ComponentType type = Texture::T_unsigned_byte;
-  Texture::Format format = Texture::F_rgb;
-  Texture::CompressionMode compression = Texture::CM_off;
-
-  switch (internal_format) {
-  case GL_COLOR_INDEX:
-    format = Texture::F_color_index;
-    break;
-  case GL_DEPTH_COMPONENT:
-  case GL_DEPTH_STENCIL_EXT:
-    type = Texture::T_float;
-    format = Texture::F_depth_stencil;
-    break;
-  case GL_RGBA:
-    format = Texture::F_rgba;
-    break;
-  case GL_RGBA4:
-    format = Texture::F_rgba4;
-    break;
-  case GL_RGBA8:
-    format = Texture::F_rgba8;
-    break;
-  case GL_RGBA12:
-    type = Texture::T_unsigned_short;
-    format = Texture::F_rgba12;
-    break;
-
-  case GL_RGB:
-    format = Texture::F_rgb;
-    break;
-  case GL_RGB5:
-    format = Texture::F_rgb5;
-    break;
-  case GL_RGB5_A1:
-    format = Texture::F_rgba5;
-    break;
-  case GL_RGB8:
-    format = Texture::F_rgb8;
-    break;
-  case GL_RGB12:
-    format = Texture::F_rgb12;
-    break;
-  case GL_R3_G3_B2:
-    format = Texture::F_rgb332;
-
-  case GL_RED:
-    format = Texture::F_red;
-    break;
-  case GL_GREEN:
-    format = Texture::F_green;
-    break;
-  case GL_BLUE:
-    format = Texture::F_blue;
-    break;
-  case GL_ALPHA:
-    format = Texture::F_alpha;
-    break;
-  case GL_LUMINANCE:
-    format = Texture::F_luminance;
-    break;
-  case GL_LUMINANCE_ALPHA:
-    format = Texture::F_luminance_alpha;
-    break;
-
-  case GL_COMPRESSED_RGB:
-    format = Texture::F_rgb;
-    compression = Texture::CM_on;
-    break;
-  case GL_COMPRESSED_RGBA:
-    format = Texture::F_rgba;
-    compression = Texture::CM_on;
-    break;
-  case GL_COMPRESSED_ALPHA:
-    format = Texture::F_alpha;
-    compression = Texture::CM_on;
-    break;
-  case GL_COMPRESSED_LUMINANCE:
-    format = Texture::F_luminance;
-    compression = Texture::CM_on;
-    break;
-  case GL_COMPRESSED_LUMINANCE_ALPHA:
-    format = Texture::F_luminance_alpha;
-    compression = Texture::CM_on;
-    break;
-
-  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-    format = Texture::F_rgb;
-    compression = Texture::CM_dxt1;
-    break;
-  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    format = Texture::F_rgbm;
-    compression = Texture::CM_dxt1;
-    break;
-  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    format = Texture::F_rgba;
-    compression = Texture::CM_dxt3;
-    break;
-  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-    format = Texture::F_rgba;
-    compression = Texture::CM_dxt5;
-    break;
-  case GL_COMPRESSED_RGB_FXT1_3DFX:
-    format = Texture::F_rgb;
-    compression = Texture::CM_fxt1;
-    break;
-  case GL_COMPRESSED_RGBA_FXT1_3DFX:
-    format = Texture::F_rgba;
-    compression = Texture::CM_fxt1;
-    break;
-  }
-
-  /*
-  switch (target) {
-  case GL_TEXTURE_1D:
-    tex->setup_1d_texture(width, type, format);
-    break;
-    
-  case GL_TEXTURE_2D:
-    tex->setup_2d_texture(width, height, type, format);
-    break;
-    
-  case GL_TEXTURE_3D:
-    tex->setup_3d_texture(width, height, depth, type, format);
-    break;
-    
-  case GL_TEXTURE_CUBE_MAP:
-    tex->setup_cube_map(width, type, format);
-    break;
-  }
-  */
-
-  tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
-  tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
-  tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-  tex->set_border_color(Colorf(border_color[0], border_color[1],
-                               border_color[2], border_color[3]));
-
-  tex->set_minfilter(get_panda_filter_type(minfilter));
-  //  tex->set_magfilter(get_panda_filter_type(magfilter));
-
-  PTA_uchar image;
-  size_t page_size = 0;
-
-  if (!extract_texture_image(image, page_size, tex, target, page_target,
-                             type, compression, 0)) {
-    return false;
-  }
-
-  tex->set_ram_image(image, compression, page_size);
-
-  if (tex->uses_mipmaps()) {
-    // Also get the mipmap levels.
-    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
-    GLint highest_level = num_expected_levels;
-    if (is_at_least_version(1, 2)) {
-      GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
-      highest_level = min(highest_level, num_expected_levels);
-    }
-    for (int n = 1; n <= highest_level; ++n) {
-      if (!extract_texture_image(image, page_size, tex, target, page_target,
-                                 type, compression, n)) {
-        return false;
-      }
-      tex->set_ram_mipmap_image(n, image, page_size);
-    }
-  }
-
-  return true;
+  return do_extract_texture_data(gtc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7159,7 +6945,22 @@ upload_texture(CLP(TextureContext) *gtc) {
     }
 #endif
 
-    tex->texture_uploaded();
+    if (tex->get_post_load_store_cache()) {
+      tex->set_post_load_store_cache(false);
+      // OK, get the RAM image, and save it in a BamCache record.
+      if (do_extract_texture_data(gtc)) {
+        if (tex->has_ram_image()) {
+          BamCache *cache = BamCache::get_global_ptr();
+          PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
+          if (record != (BamCacheRecord *)NULL) {
+            record->set_data(tex, false);
+            cache->store(record);
+          }
+        }
+      }
+    }
+
+    tex->texture_uploaded(this);
     gtc->mark_loaded();
 
     report_my_gl_errors();
@@ -7677,6 +7478,236 @@ check_nonresident_texture(BufferContextChain &chain) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::do_extract_texture_data
+//       Access: Protected
+//  Description: The internal implementation of
+//               extract_texture_data(), given an already-created
+//               TextureContext.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+do_extract_texture_data(CLP(TextureContext) *gtc) {
+  report_my_gl_errors();
+
+  Texture *tex = gtc->get_texture();
+  GLenum target = get_texture_target(tex->get_texture_type());
+  GLP(BindTexture)(target, gtc->_index);
+
+  GLint wrap_u, wrap_v, wrap_w;
+  GLint minfilter, magfilter;
+  GLfloat border_color[4];
+
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_S, &wrap_u);
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_T, &wrap_v);
+  wrap_w = GL_REPEAT;
+  if (_supports_3d_texture) {
+    GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
+  }
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+
+  // Mesa has a bug querying this property.
+  magfilter = GL_LINEAR;
+  //  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
+
+  GLP(GetTexParameterfv)(target, GL_TEXTURE_BORDER_COLOR, border_color);
+
+  GLenum page_target = target;
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    // We need a particular page to get the level parameter from.
+    page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+  }
+
+  GLint width = 1, height = 1, depth = 1;
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
+  if (_supports_3d_texture) {
+    GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+  }
+  report_my_gl_errors();
+
+  GLint internal_format;
+  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+
+  // Make sure we were able to query those parameters properly.
+  GLenum error_code = GLP(GetError)();
+  if (error_code != GL_NO_ERROR) {
+    GLCAT.error()
+      << "Unable to query texture parameters for " << tex->get_name()
+      << " : " << get_error_string(error_code) << "\n";
+
+    return false;
+  }
+
+  Texture::ComponentType type = Texture::T_unsigned_byte;
+  Texture::Format format = Texture::F_rgb;
+  Texture::CompressionMode compression = Texture::CM_off;
+
+  switch (internal_format) {
+  case GL_COLOR_INDEX:
+    format = Texture::F_color_index;
+    break;
+  case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_STENCIL_EXT:
+    type = Texture::T_float;
+    format = Texture::F_depth_stencil;
+    break;
+  case GL_RGBA:
+    format = Texture::F_rgba;
+    break;
+  case GL_RGBA4:
+    format = Texture::F_rgba4;
+    break;
+  case GL_RGBA8:
+    format = Texture::F_rgba8;
+    break;
+  case GL_RGBA12:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_rgba12;
+    break;
+
+  case GL_RGB:
+    format = Texture::F_rgb;
+    break;
+  case GL_RGB5:
+    format = Texture::F_rgb5;
+    break;
+  case GL_RGB5_A1:
+    format = Texture::F_rgba5;
+    break;
+  case GL_RGB8:
+    format = Texture::F_rgb8;
+    break;
+  case GL_RGB12:
+    format = Texture::F_rgb12;
+    break;
+  case GL_R3_G3_B2:
+    format = Texture::F_rgb332;
+
+  case GL_RED:
+    format = Texture::F_red;
+    break;
+  case GL_GREEN:
+    format = Texture::F_green;
+    break;
+  case GL_BLUE:
+    format = Texture::F_blue;
+    break;
+  case GL_ALPHA:
+    format = Texture::F_alpha;
+    break;
+  case GL_LUMINANCE:
+    format = Texture::F_luminance;
+    break;
+  case GL_LUMINANCE_ALPHA:
+    format = Texture::F_luminance_alpha;
+    break;
+
+  case GL_COMPRESSED_RGB:
+    format = Texture::F_rgb;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_RGBA:
+    format = Texture::F_rgba;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_ALPHA:
+    format = Texture::F_alpha;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_LUMINANCE:
+    format = Texture::F_luminance;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_LUMINANCE_ALPHA:
+    format = Texture::F_luminance_alpha;
+    compression = Texture::CM_on;
+    break;
+
+  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    format = Texture::F_rgb;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    format = Texture::F_rgbm;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    format = Texture::F_rgba;
+    compression = Texture::CM_dxt3;
+    break;
+  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    format = Texture::F_rgba;
+    compression = Texture::CM_dxt5;
+    break;
+  case GL_COMPRESSED_RGB_FXT1_3DFX:
+    format = Texture::F_rgb;
+    compression = Texture::CM_fxt1;
+    break;
+  case GL_COMPRESSED_RGBA_FXT1_3DFX:
+    format = Texture::F_rgba;
+    compression = Texture::CM_fxt1;
+    break;
+  }
+
+  /*
+  switch (target) {
+  case GL_TEXTURE_1D:
+    tex->setup_1d_texture(width, type, format);
+    break;
+    
+  case GL_TEXTURE_2D:
+    tex->setup_2d_texture(width, height, type, format);
+    break;
+    
+  case GL_TEXTURE_3D:
+    tex->setup_3d_texture(width, height, depth, type, format);
+    break;
+    
+  case GL_TEXTURE_CUBE_MAP:
+    tex->setup_cube_map(width, type, format);
+    break;
+  }
+  */
+
+  tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
+  tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
+  tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
+  tex->set_border_color(Colorf(border_color[0], border_color[1],
+                               border_color[2], border_color[3]));
+
+  tex->set_minfilter(get_panda_filter_type(minfilter));
+  //  tex->set_magfilter(get_panda_filter_type(magfilter));
+
+  PTA_uchar image;
+  size_t page_size = 0;
+
+  if (!extract_texture_image(image, page_size, tex, target, page_target,
+                             type, compression, 0)) {
+    return false;
+  }
+
+  tex->set_ram_image(image, compression, page_size);
+
+  if (tex->uses_mipmaps()) {
+    // Also get the mipmap levels.
+    GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
+    GLint highest_level = num_expected_levels;
+    if (is_at_least_version(1, 2)) {
+      GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
+      highest_level = min(highest_level, num_expected_levels);
+    }
+    for (int n = 1; n <= highest_level; ++n) {
+      if (!extract_texture_image(image, page_size, tex, target, page_target,
+                                 type, compression, n)) {
+        return false;
+      }
+      tex->set_ram_mipmap_image(n, image, page_size);
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

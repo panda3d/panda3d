@@ -148,6 +148,14 @@ ConfigVariableBool egg_emulate_bface
           "it is false, a single polygon will be created with the two_sided "
           "flag set on it."));
 
+ConfigVariableBool egg_preload_simple_textures
+("egg-preload-simple-textures", true,
+ PRC_DESC("This specifies whether the egg loader will generate simple "
+          "texture images for each texture loaded.  This supercedes the "
+          "preload-simple-textures global default, for egg files.  In "
+          "fact, the egg loader will generate simple texture images if "
+          "either this or preload-simple-textures is true."));
+
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }

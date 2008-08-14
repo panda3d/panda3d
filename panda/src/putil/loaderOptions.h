@@ -22,10 +22,9 @@
 // Description : Specifies parameters that may be passed to the
 //               loader.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH LoaderOptions {
+class EXPCL_PANDA_PUTIL LoaderOptions {
 PUBLISHED:
-  // At the moment, we only have this one set of flags.  Maybe one day
-  // there will be more options.
+  // Flags for loading model files.
   enum LoaderFlags {
     LF_search            = 0x0001,
     LF_report_errors     = 0x0002,
@@ -39,19 +38,32 @@ PUBLISHED:
     LF_allow_instance    = 0x0080,  // returned pointer might be shared
   };
 
-  INLINE LoaderOptions(int flags = LF_search | LF_report_errors);
+  // Flags for loading texture files.
+  enum TextureFlags {
+    TF_preload           = 0x0004,  // Texture will have RAM image
+    TF_preload_simple    = 0x0008,  // Texture will have simple RAM image
+  };
+
+  LoaderOptions(int flags = LF_search | LF_report_errors);
+  INLINE LoaderOptions(int flags, int texture_flags);
   INLINE LoaderOptions(const LoaderOptions &copy);
   INLINE void operator = (const LoaderOptions &copy);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
 
+  INLINE void set_texture_flags(int flags);
+  INLINE int get_texture_flags() const;
+
   void output(ostream &out) const;
 
 private:
   void write_flag(ostream &out, string &sep, 
                   const string &flag_name, int flag) const;
+  void write_texture_flag(ostream &out, string &sep, 
+                          const string &flag_name, int flag) const;
   int _flags;
+  int _texture_flags;
 };
 
 INLINE ostream &operator << (ostream &out, const LoaderOptions &opts) {

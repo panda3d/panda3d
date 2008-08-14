@@ -39,13 +39,13 @@
     geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
+    lens.h lens.I \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
-    lens.h lens.I \
     queryContext.I queryContext.h \
     savedContext.I savedContext.h \
     shader.I shader.h \
@@ -103,12 +103,12 @@
     indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
+    lens.cxx  \
     materialPool.cxx matrixLens.cxx \
     occlusionQueryContext.cxx \
     orthographicLens.cxx  \
     perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
-    lens.cxx  \
     queryContext.cxx \
     savedContext.cxx \
     shader.cxx \
@@ -165,13 +165,13 @@
     geomVertexWriter.h geomVertexWriter.I \
     indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
+    lens.h lens.I \
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     occlusionQueryContext.I occlusionQueryContext.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I \
     perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
-    lens.h lens.I \
     queryContext.I queryContext.h \
     savedContext.I savedContext.h \
     shader.I shader.h \

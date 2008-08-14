@@ -709,7 +709,7 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
-  get_texture()->texture_uploaded();
+  get_texture()->texture_uploaded(scrn._dxgsg8);
   mark_loaded();
   return true;
 

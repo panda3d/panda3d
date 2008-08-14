@@ -955,7 +955,7 @@ get_alpha_file_channel() const {
 //               mipmap level number; and the texture will be defined
 //               with a series of images, one for each mipmap level.
 //
-//               If the filename is of a time that already requires a
+//               If the filename is of a type that already requires a
 //               hash mark, such as a cube map or a 3-d texture, then
 //               the filename should now require two hash marks, and
 //               the first one indicates the mipmap level number,

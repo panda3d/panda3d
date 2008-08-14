@@ -37,7 +37,8 @@ TexturePoolFilter::
 //               this filename.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) TexturePoolFilter::
-pre_load(const Filename &, const Filename &, int, int, bool) {
+pre_load(const Filename &, const Filename &, int, int, bool,
+         const LoaderOptions &) {
   return NULL;
 }
 

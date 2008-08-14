@@ -336,6 +336,7 @@ protected:
 
   size_t get_texture_memory_size(Texture *tex);
   void check_nonresident_texture(BufferContextChain &chain);
+  bool do_extract_texture_data(CLP(TextureContext) *gtc);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
            Texture *tex, GLenum target, GLenum page_target,
            Texture::ComponentType type,

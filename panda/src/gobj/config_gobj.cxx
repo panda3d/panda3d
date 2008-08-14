@@ -98,25 +98,6 @@ ConfigVariableBool keep_texture_ram
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
 
-ConfigVariableBool preload_textures
-("preload-textures", true,
- PRC_DESC("When this is true, texture images are loaded from disk as soon "
-          "as the Texture is created from the TexturePool.  When this is "
-          "false, the Texture is created immediately, but the image data "
-          "is not loaded from disk until the Texture is actually rendered "
-          "(or otherwise prepared) on the GSG.  This can help reduce "
-          "wasted memory from Textures that are created but never used "
-          "to render."));
-
-ConfigVariableBool preload_simple_textures
-("preload-simple-textures", false,
- PRC_DESC("When this is true, every texture image will have a simple "
-          "image generated for it at load time.  (Normally, textures "
-          "get a simple image at egg2bam time.)  This slows the initial "
-          "loading time of textures, but allows you to take advantage "
-          "of gsg::set_incomplete_render() to load textures on-the-fly "
-          "in a sub-thread."));
-
 ConfigVariableBool compressed_textures
 ("compressed-textures", false,
  PRC_DESC("Set this to true to compress textures as they are loaded into "

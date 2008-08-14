@@ -123,143 +123,6 @@ setup_cube_map(int size, ComponentType component_type,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::read
-//       Access: Published
-//  Description: Reads the named filename into the texture.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-read(const Filename &fullpath) {
-  ReMutexHolder holder(_lock);
-  clear();
-  return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false, 
-                 !preload_textures && !preload_simple_textures, NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::read
-//       Access: Published
-//  Description: Combine a 3-component image with a grayscale image
-//               to get a 4-component image.
-//
-//               See the description of the full-parameter read()
-//               method for the meaning of the
-//               primary_file_num_channels and alpha_file_channel
-//               parameters.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-read(const Filename &fullpath, const Filename &alpha_fullpath,
-     int primary_file_num_channels, int alpha_file_channel) {
-  ReMutexHolder holder(_lock);
-  clear();
-  return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, 0, 0, false, false, 
-                 !preload_textures && !preload_simple_textures, 
-                 NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::read
-//       Access: Published
-//  Description: Reads a single file into a single page or mipmap
-//               level, or automatically reads a series of files into
-//               a series of pages and/or mipmap levels.
-//
-//               See the description of the full-parameter read()
-//               method for the meaning of the various parameters.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-read(const Filename &fullpath, int z, int n, 
-     bool read_pages, bool read_mipmaps) {
-  ReMutexHolder holder(_lock);
-  ++_properties_modified;
-  ++_image_modified;
-  return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
-                 !preload_textures && !preload_simple_textures, NULL);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::read
-//       Access: Published
-//  Description: Reads the texture from the indicated filename.  If
-//               primary_file_num_channels is not 0, it specifies the
-//               number of components to downgrade the image to if it
-//               is greater than this number.
-//
-//               If the filename has the extension .txo, this
-//               implicitly reads a texture object instead of a
-//               filename (which replaces all of the texture
-//               properties).  In this case, all the rest of the
-//               parameters are ignored, and the filename should not
-//               contain any hash marks; just the one named file will
-//               be read, since a single .txo file can contain all
-//               pages and mipmaps necessary to define a texture.
-//
-//               If alpha_fullpath is not empty, it specifies the name
-//               of a file from which to retrieve the alpha.  In this
-//               case, alpha_file_channel represents the numeric
-//               channel of this image file to use as the resulting
-//               texture's alpha channel; usually, this is 0 to
-//               indicate the grayscale combination of r, g, b; or it
-//               may be a one-based channel number, e.g. 1 for the red
-//               channel, 2 for the green channel, and so on.
-//
-//               If read pages is false, then z indicates the page
-//               number into which this image will be assigned.
-//               Normally this is 0 for the first (or only) page of
-//               the texture.  3-D textures have one page for each
-//               level of depth, and cube map textures always have six
-//               pages.
-//
-//               If read_pages is true, multiple images will be read
-//               at once, one for each page of a cube map or a 3-D
-//               texture.  In this case, the filename should contain a
-//               sequence of one or more hash marks ("#") which will
-//               be filled in with the z value of each page,
-//               zero-based.  In this case, the z parameter indicates
-//               the maximum z value that will be loaded, or 0 to load
-//               all filenames that exist.
-//
-//               If read_mipmaps is false, then n indicates the mipmap
-//               level to which this image will be assigned.  Normally
-//               this is 0 for the base texture image, but it is
-//               possible to load custom mipmap levels into the later
-//               images.  After the base texture image is loaded (thus
-//               defining the size of the texture), you can call
-//               get_expected_num_mipmap_levels() to determine the
-//               maximum sensible value for n.
-//
-//               If read_mipmaps is true, multiple images will be read
-//               as above, but this time the images represent the
-//               different mipmap levels of the texture image.  In
-//               this case, the n parameter indicates the maximum n
-//               value that will be loaded, or 0 to load all filenames
-//               that exist (up to the expected number of mipmap
-//               levels).
-//
-//               If both read_pages and read_mipmaps is true, then
-//               both sequences will be read; the filename should
-//               contain two sequences of hash marks, separated by
-//               some character such as a hyphen, underscore, or dot.
-//               The first hash mark sequence will be filled in with
-//               the mipmap level, while the second hash mark sequence
-//               will be the page index.
-//
-//               This method implicitly sets keep_ram_image to false.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-read(const Filename &fullpath, const Filename &alpha_fullpath,
-     int primary_file_num_channels, int alpha_file_channel,
-     int z, int n, bool read_pages, bool read_mipmaps,
-     BamCacheRecord *record) {
-  ReMutexHolder holder(_lock);
-  ++_properties_modified;
-  ++_image_modified;
-  return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, z, n, read_pages, read_mipmaps,
-                 !preload_textures && !preload_simple_textures, record);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::write
 //       Access: Published
 //  Description: Writes the texture to the named filename.
@@ -575,6 +438,45 @@ set_pad_size(int x, int y, int z) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_orig_file_x_size
+//       Access: Published
+//  Description: Returns the X size of the original disk image that
+//               this Texture was loaded from (if it came from a disk
+//               file), before any automatic rescaling by Panda.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_orig_file_x_size() const {
+  return _orig_file_x_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_orig_file_y_size
+//       Access: Published
+//  Description: Returns the Y size of the original disk image that
+//               this Texture was loaded from (if it came from a disk
+//               file), before any automatic rescaling by Panda.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_orig_file_y_size() const {
+  return _orig_file_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_orig_file_z_size
+//       Access: Published
+//  Description: Returns the Z size of the original disk image that
+//               this Texture was loaded from (if it came from a disk
+//               file), before any automatic rescaling by Panda.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_orig_file_z_size() const {
+  // At the moment, we perform no automatic adjustment of Z size.  So
+  // we can just return the current value, since it would be the same
+  // thing.
+  return _z_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_num_components
 //       Access: Published
 //  Description: Returns the number of color components for each texel
@@ -735,6 +637,29 @@ get_border_color() const {
 INLINE Texture::CompressionMode Texture::
 get_compression() const {
   return _compression;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_compression
+//       Access: Published
+//  Description: Returns true if the texture indicates it wants to be
+//               compressed, either with CM_on or higher, or
+//               CM_default and compressed-textures is true.
+//
+//               If true returned, this is not a guarantee that the
+//               texture is actually successfully compressed on the
+//               GSG.  It may be that the GSG does not support the
+//               requested compression mode, in which case the texture
+//               may actually be stored uncompressed in texture
+//               memory.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_compression() const {
+  if (_compression == CM_default) {
+    return compressed_textures;
+  } else {
+    return (_compression != CM_off);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1408,7 +1333,34 @@ set_match_framebuffer_format(bool flag) {
   _match_framebuffer_format = flag;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_post_load_store_cache
+//       Access: Public
+//  Description: Returns the setting of the post_load_store_cache
+//               flag.  See set_post_load_store_cache().
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+get_post_load_store_cache() const {
+  return _post_load_store_cache;
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_post_load_store_cache
+//       Access: Public
+//  Description: Sets the post_load_store_cache flag.  When this is
+//               set, the next time the texture is loaded on a GSG, it
+//               will automatically extract its RAM image from the GSG
+//               and save it to the global BamCache.
+//
+//               This is used to store compressed RAM images in the
+//               BamCache.  This flag should not be set explicitly; it
+//               is set automatically by the TexturePool when
+//               model-cache-compressed-textures is set true.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_post_load_store_cache(bool flag) {
+  _post_load_store_cache = flag;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_unscaled_byte

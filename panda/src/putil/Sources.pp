@@ -48,6 +48,7 @@
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
+    loaderOptions.I loaderOptions.h \
     modifierButtons.I modifierButtons.h mouseButton.h \
     mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h \
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
@@ -96,6 +97,7 @@
     keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
     linkedListNode.cxx \
     load_prc_file.cxx \
+    loaderOptions.cxx \
     modifierButtons.cxx mouseButton.cxx mouseData.cxx \
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
@@ -153,6 +155,7 @@
     lineStream.h lineStreamBuf.I lineStreamBuf.h \
     linkedListNode.I linkedListNode.h \
     load_prc_file.h \
+    loaderOptions.I loaderOptions.h \
     modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.I mouseData.h \
     nameUniquifier.I nameUniquifier.h \

@@ -53,11 +53,10 @@ EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_sound_path();
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_plugin_path();
 END_PUBLISH
 
-extern ConfigVariableDouble clock_frame_rate;
-extern ConfigVariableDouble clock_degrade_factor;
-extern ConfigVariableDouble max_dt;
 extern ConfigVariableDouble sleep_precision;
-extern ConfigVariableDouble average_frame_rate_interval;
+
+extern EXPCL_PANDA_PUTIL ConfigVariableBool preload_textures;
+extern EXPCL_PANDA_PUTIL ConfigVariableBool preload_simple_textures;
 
 extern EXPCL_PANDA_PUTIL void init_libputil();
 

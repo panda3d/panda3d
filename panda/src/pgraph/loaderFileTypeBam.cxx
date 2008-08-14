@@ -80,7 +80,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   if (!bam_file.open_read(path, report_errors)) {
     return NULL;
   }
-
+  bam_file.get_reader()->set_loader_options(options);
   return bam_file.read_node(report_errors);
 }
 

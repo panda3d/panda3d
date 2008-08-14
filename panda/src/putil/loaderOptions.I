@@ -19,8 +19,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LoaderOptions::
-LoaderOptions(int flags) : 
-  _flags(flags)
+LoaderOptions(int flags, int texture_flags) : 
+  _flags(flags), _texture_flags(texture_flags)
 {
 }
 
@@ -31,7 +31,8 @@ LoaderOptions(int flags) :
 ////////////////////////////////////////////////////////////////////
 INLINE LoaderOptions::
 LoaderOptions(const LoaderOptions &copy) :
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _texture_flags(copy._texture_flags)
 {
 }
 
@@ -43,6 +44,7 @@ LoaderOptions(const LoaderOptions &copy) :
 INLINE void LoaderOptions::
 operator = (const LoaderOptions &copy) {
   _flags = copy._flags;
+  _texture_flags = copy._texture_flags;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,4 +65,24 @@ set_flags(int flags) {
 INLINE int LoaderOptions::
 get_flags() const {
   return _flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::set_texture_flags
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void LoaderOptions::
+set_texture_flags(int texture_flags) {
+  _texture_flags = texture_flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::get_texture_flags
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int LoaderOptions::
+get_texture_flags() const {
+  return _texture_flags;
 }

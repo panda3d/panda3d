@@ -13,7 +13,25 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderOptions.h"
+#include "config_util.h"
 #include "indent.h"
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LoaderOptions::
+LoaderOptions(int flags) : 
+  _flags(flags), _texture_flags(0)  
+{
+  if (preload_textures) {
+    _texture_flags |= TF_preload;
+  }
+  if (preload_simple_textures) {
+    _texture_flags |= TF_preload_simple;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderOptions::output
@@ -23,6 +41,7 @@
 void LoaderOptions::
 output(ostream &out) const {
   out << "LoaderOptions(";
+
   string sep = "";
   write_flag(out, sep, "LF_search", LF_search);
   write_flag(out, sep, "LF_report_errors", LF_report_errors);
@@ -41,6 +60,16 @@ output(ostream &out) const {
   if (sep.empty()) {
     out << "0";
   }
+
+  out << ", ";
+
+  sep = "";
+  write_texture_flag(out, sep, "TF_preload", TF_preload);
+  write_texture_flag(out, sep, "TF_preload_simple", TF_preload_simple);
+  if (sep.empty()) {
+    out << "0";
+  }
+
   out << ")";
 }
 
@@ -53,6 +82,20 @@ void LoaderOptions::
 write_flag(ostream &out, string &sep, 
            const string &flag_name, int flag) const {
   if ((_flags & flag) == flag) {
+    out << sep << flag_name;
+    sep = " | ";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::write_texture_flag
+//       Access: Private
+//  Description: Used to implement output().
+////////////////////////////////////////////////////////////////////
+void LoaderOptions::
+write_texture_flag(ostream &out, string &sep, 
+                   const string &flag_name, int flag) const {
+  if ((_texture_flags & flag) == flag) {
     out << sep << flag_name;
     sep = " | ";
   }

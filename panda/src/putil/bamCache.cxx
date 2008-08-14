@@ -53,16 +53,31 @@ BamCache() :
      PRC_DESC("This is the amount of time, in seconds, between automatic "
               "flushes of the model-cache index."));
 
+  ConfigVariableBool model_cache_models
+    ("model-cache-models", true,
+     PRC_DESC("If this is set to true, models will be cached in the "
+              "model cache, as bam files."));
+
   ConfigVariableBool model_cache_textures
     ("model-cache-textures", true,
      PRC_DESC("If this is set to true, textures will also be cached in the "
               "model cache, as txo files."));
 
+  ConfigVariableBool model_cache_compressed_textures
+    ("model-cache-compressed-textures", false,
+     PRC_DESC("If this is set to true, compressed textures will be cached "
+              "in the model cache, in their compressed form as downloaded "
+              "by the GSG.  This may be set in conjunction with "
+              "model-cache-textures, or it may be independent."));
+
   ConfigVariableInt model_cache_max_kbytes
     ("model-cache-max-kbytes", 1048576,
      PRC_DESC("This is the maximum size of the model cache, in kilobytes."));
 
+  _cache_models = model_cache_models;
   _cache_textures = model_cache_textures;
+  _cache_compressed_textures = model_cache_compressed_textures;
+
   _flush_time = model_cache_flush;
   _max_kbytes = model_cache_max_kbytes;
 
@@ -143,10 +158,6 @@ set_root(const Filename &root) {
 PT(BamCacheRecord) BamCache::
 lookup(const Filename &source_filename, const string &cache_extension) {
   consider_flush_index();
-
-  if ((cache_extension == "txo")&&(!_cache_textures)) {
-    return NULL;
-  }
   
   Filename source_pathname(source_filename);
   source_pathname.make_absolute();

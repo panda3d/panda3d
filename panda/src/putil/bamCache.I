@@ -20,6 +20,10 @@
 //               that the cache should be consulted automatically on
 //               loads, "not active" means that objects should be
 //               loaded directly without consulting the cache.
+//
+//               This represents the global flag.  Also see the
+//               individual cache_models, cache_textures,
+//               cache_compressed_textures flags.
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_active(bool active) {
@@ -34,10 +38,99 @@ set_active(bool active) {
 //               should be consulted automatically on loads, "not
 //               active" means that objects should be loaded directly
 //               without consulting the cache.
+//
+//               This represents the global flag.  Also see the
+//               individual cache_models, cache_textures,
+//               cache_compressed_textures flags.
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_active() const {
   return _active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::set_cache_models
+//       Access: Published
+//  Description: Indicates whether model files (e.g. egg files and bam
+//               files) will be stored in the cache, as bam files.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+set_cache_models(bool flag) {
+  _cache_models = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::get_cache_models
+//       Access: Published
+//  Description: Returns whether model files (e.g. egg files and bam
+//               files) will be stored in the cache, as bam files.
+//
+//               This also returns false if get_active() is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCache::
+get_cache_models() const {
+  return _cache_models && _active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::set_cache_textures
+//       Access: Published
+//  Description: Indicates whether texture files will be stored in the
+//               cache, as uncompressed txo files.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+set_cache_textures(bool flag) {
+  _cache_textures = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::get_cache_textures
+//       Access: Published
+//  Description: Returns whether texture files (e.g. egg files and bam
+//               files) will be stored in the cache, as txo files.
+//
+//               This also returns false if get_active() is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCache::
+get_cache_textures() const {
+  return _cache_textures && _active;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::set_cache_compressed_textures
+//       Access: Published
+//  Description: Indicates whether compressed texture files will be
+//               stored in the cache, as compressed txo files.  The
+//               compression data is extracted from the GSG after the
+//               texture has been loaded.
+//
+//               This may be set in conjunction with
+//               set_cache_textures(), or independently of it.  If
+//               set_cache_textures() is true and this is false, all
+//               textures will be cached in their uncompressed form.
+//               If set_cache_textures() is false and this is true,
+//               only compressed textures will be cached, and they
+//               will be cached in their compressed form.  If both are
+//               true, all textures will be cached, in their
+//               uncompressed or compressed form appropriately.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCache::
+set_cache_compressed_textures(bool flag) {
+  _cache_compressed_textures = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCache::get_cache_compressed_textures
+//       Access: Published
+//  Description: Returns whether compressed texture files will be
+//               stored in the cache, as compressed txo files.  See
+//               set_cache_compressed_textures().
+//
+//               This also returns false if get_active() is false.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamCache::
+get_cache_compressed_textures() const {
+  return _cache_compressed_textures && _active;
 }
 
 ////////////////////////////////////////////////////////////////////

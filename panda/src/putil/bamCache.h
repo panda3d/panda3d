@@ -48,6 +48,15 @@ PUBLISHED:
   INLINE void set_active(bool flag);
   INLINE bool get_active() const;
 
+  INLINE void set_cache_models(bool flag);
+  INLINE bool get_cache_models() const;
+
+  INLINE void set_cache_textures(bool flag);
+  INLINE bool get_cache_textures() const;
+
+  INLINE void set_cache_compressed_textures(bool flag);
+  INLINE bool get_cache_compressed_textures() const;
+
   void set_root(const Filename &root);
   INLINE const Filename &get_root() const;
 
@@ -92,17 +101,20 @@ private:
   PT(BamCacheRecord) read_record(const Filename &source_pathname,
                                  const Filename &cache_filename,
                                  int pass);
-  static PT(BamCacheRecord) do_read_record(Filename &cache_pathname, bool read_data);
+  static PT(BamCacheRecord) do_read_record(Filename &cache_pathname, 
+                                           bool read_data);
 
   static string hash_filename(const string &filename);
   static void make_global();
 
   bool _active;
+  bool _cache_models;
+  bool _cache_textures;
+  bool _cache_compressed_textures;
   bool _read_only;
   Filename _root;
   int _flush_time;
   int _max_kbytes;
-  bool _cache_textures;
   static BamCache *_global_ptr;
 
   BamCacheIndex *_index;

@@ -27,6 +27,27 @@ get_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_loader_options
+//       Access: Public
+//  Description: Returns the LoaderOptions passed to the loader when
+//               the model was requested, if any.
+////////////////////////////////////////////////////////////////////
+INLINE const LoaderOptions &BamReader::
+get_loader_options() const {
+  return _loader_options;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::set_loader_options
+//       Access: Public
+//  Description: Specifies the LoaderOptions for this BamReader.
+////////////////////////////////////////////////////////////////////
+INLINE void BamReader::
+set_loader_options(const LoaderOptions &options) {
+  _loader_options = options;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::is_eof
 //       Access: Public
 //  Description: Returns true if the reader has reached end-of-file,
