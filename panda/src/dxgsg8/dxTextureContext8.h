@@ -29,6 +29,7 @@ public:
   virtual ~DXTextureContext8();
 
   bool create_texture(DXScreenData &scrn);
+  bool create_simple_texture(DXScreenData &scrn);
   void delete_texture();
 
   INLINE bool has_mipmaps() const;

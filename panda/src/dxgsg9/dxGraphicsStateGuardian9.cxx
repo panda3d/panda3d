@@ -207,7 +207,9 @@ prepare_texture(Texture *tex) {
     return NULL;
   }
 
-  if (!dtc->create_texture(*_screen)) {
+  if (!upload_texture(dtc)) {
+    dxgsg9_cat.error()
+      << "Unable to create texture " << *tex << endl;
     delete dtc;
     return NULL;
   }
@@ -237,28 +239,21 @@ apply_texture(int i, TextureContext *tc) {
   if (_lru) {
     _lru -> access_page (dtc -> _lru_page);
   }
+  Texture *tex = tc->get_texture();
 
   // If the texture image has changed, or if its use of mipmaps has
   // changed, we need to re-create the image.
 
   if (dtc->was_modified()) {
-    if (!get_supports_compressed_texture_format(tc->get_texture()->get_ram_image_compression())) {
-      dxgsg9_cat.error()
-        << *dtc->get_texture() << " is stored in an unsupported compressed format.\n";
-      set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
-      return;
-    }
-
-    if (!dtc->create_texture(*_screen)) {
+    if (!upload_texture(dtc)) {
       // Oops, we can't re-create the texture for some reason.
       dxgsg9_cat.error()
-        << "Unable to re-create texture " << *dtc->get_texture() << endl;
+        << "Unable to re-create texture " << *tex << endl;
       set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
       return;
     }
   }
 
-  Texture *tex = tc->get_texture();
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
 
   DWORD address_u;
@@ -311,16 +306,10 @@ apply_texture(int i, TextureContext *tc) {
     new_mip_filter = D3DTEXF_NONE;
   }
 
-#ifndef NDEBUG
   // sanity check
-  if ((!dtc->has_mipmaps()) && (new_mip_filter != D3DTEXF_NONE)) {
-    dxgsg9_cat.error()
-      << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname["
-      << tex->get_name() << "], filter("
-      << tex->get_minfilter() << ")\n";
+  if (!dtc->has_mipmaps()) {
     new_mip_filter = D3DTEXF_NONE;
   }
-#endif
 
   if (aniso_degree >= 2) {
     new_min_filter = D3DTEXF_ANISOTROPIC;
@@ -330,6 +319,39 @@ apply_texture(int i, TextureContext *tc) {
   set_sampler_state(i, D3DSAMP_MIPFILTER, new_mip_filter);
 
   _d3d_device->SetTexture(i, dtc->get_d3d_texture());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::upload_texture
+//       Access: Public
+//  Description: Creates a texture surface on the graphics card and
+//               fills it with its pixel data.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+upload_texture(DXTextureContext9 *dtc) {
+  Texture *tex = dtc->get_texture();
+  if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
+    dxgsg9_cat.error()
+      << *tex << " is stored in an unsupported compressed format.\n";
+    return false;
+  }
+
+  if (_incomplete_render && 
+      !tex->has_ram_image() && tex->might_have_ram_image() &&
+      tex->has_simple_ram_image() &&
+      !_loader.is_null()) {
+    // If we don't have the texture data right now, go get it, but in
+    // the meantime load a temporary simple image in its place.
+    async_reload_texture(dtc);
+    if (!tex->has_ram_image()) {
+      if (dtc->was_simple_image_modified()) {
+        return dtc->create_simple_texture(*_screen);
+      }
+      return true;
+    }
+  }
+  
+  return dtc->create_texture(*_screen);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -64,6 +64,7 @@ enum GsgPageType
 
 class Light;
 
+class DXTextureContext9;
 class DXVertexBufferContext9;
 class DXIndexBufferContext9;
 
@@ -83,6 +84,7 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex);
   void apply_texture(int i, TextureContext *tc);
+  bool upload_texture(DXTextureContext9 *dtc);
   virtual void release_texture(TextureContext *tc);
 
   ShaderContext *prepare_shader(Shader *se);

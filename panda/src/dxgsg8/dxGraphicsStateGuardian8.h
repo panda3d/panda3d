@@ -31,6 +31,7 @@
 
 class Light;
 
+class DXTextureContext8;
 class DXVertexBufferContext8;
 class DXIndexBufferContext8;
 
@@ -49,6 +50,7 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex);
   void apply_texture(int i, TextureContext *tc);
+  bool upload_texture(DXTextureContext8 *dtc);
   virtual void release_texture(TextureContext *tc);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);

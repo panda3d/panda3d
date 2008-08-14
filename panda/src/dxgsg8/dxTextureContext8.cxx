@@ -723,6 +723,95 @@ create_texture(DXScreenData &scrn) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext8::create_simple_texture
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool DXTextureContext8::
+create_simple_texture(DXScreenData &scrn) {
+  nassertr(IS_VALID_PTR(get_texture()), false);
+
+  HRESULT hr;
+
+  delete_texture();
+
+  _d3d_format = D3DFMT_A8R8G8B8;
+  D3DFORMAT target_pixel_format = D3DFMT_A8R8G8B8;
+  DWORD target_bpp = 32;
+  DWORD num_color_channels = 4;
+
+  DWORD target_width = (DWORD)get_texture()->get_simple_x_size();
+  DWORD target_height = (DWORD)get_texture()->get_simple_y_size();
+  DWORD mip_level_count = 1;
+  DWORD usage = 0;
+  D3DPOOL pool = D3DPOOL_MANAGED;
+
+  int data_size = target_width * target_height * 4;
+
+  hr = scrn._d3d_device->CreateTexture
+    (target_width, target_height, mip_level_count, usage,
+     target_pixel_format, pool, &_d3d_2d_texture);
+  _d3d_texture = _d3d_2d_texture;      
+  if (FAILED(hr)) {
+    dxgsg8_cat.error()
+      << "D3D create_simple_texture failed!" << D3DERRORSTRING(hr);
+    dxgsg8_cat.error()
+      << "  width = " << target_width << " height = " << target_height << " target_pixel_format = " << target_pixel_format << "\n";
+
+    goto error_exit;
+  }
+
+  if (dxgsg8_cat.is_debug()) {
+    dxgsg8_cat.debug()
+      << "create_simple_texture: " << get_texture()->get_name()
+      << "\n";
+  }
+
+  {
+    CPTA_uchar image = get_texture()->get_simple_ram_image();
+
+    hr = -1;
+    //  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation, scrn._d3d_device);
+
+    IDirect3DSurface8 *surface = NULL;
+    _d3d_2d_texture->GetSurfaceLevel(0, &surface);
+
+    RECT source_size;
+    source_size.left = source_size.top = 0;
+    source_size.right = target_width;
+    source_size.bottom = target_height;
+
+    DWORD mip_filter = D3DX_FILTER_LINEAR;
+
+    hr = D3DXLoadSurfaceFromMemory
+      (surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)image.p(),
+       target_pixel_format, target_width * 4, (PALETTEENTRY*)NULL,
+       &source_size, mip_filter, (D3DCOLOR)0x0);
+
+    RELEASE(surface, dxgsg8, "create_simple_texture Surface", RELEASE_ONCE);
+  }
+    
+  if (FAILED(hr)) {
+    dxgsg8_cat.debug ()
+      << "*** fill_d3d_texture_pixels failed ***: format "
+      << target_pixel_format
+      << "\n";
+    
+    goto error_exit;
+  }
+
+  mark_simple_loaded();
+  return true;
+
+ error_exit:
+  RELEASE(_d3d_texture, dxgsg8, "texture", RELEASE_ONCE);
+  _d3d_2d_texture = NULL;
+  _d3d_volume_texture = NULL;
+  _d3d_cube_texture = NULL;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext8::delete_texture
 //       Access: Public
 //  Description: Release the surface used to store the texture
