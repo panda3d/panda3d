@@ -43,7 +43,7 @@ ConfigVariableBool compress_channels
 ("compress-channels", false,
  PRC_DESC("Set this true to enable lossy compression of animation channels "
           "when writing to the bam file.  This serves to reduce the size of "
-          "the bam file only; it does reduce the memory footprint of the "
+          "the bam file only; it does not reduce the memory footprint of the "
           "channels when the bam file is loaded."));
 
 // There are some special values above 100 which are generally only
