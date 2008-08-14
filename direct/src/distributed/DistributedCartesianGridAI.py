@@ -43,7 +43,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
         return [self.style, rule]
 
     # Reparent and setLocation on av to DistributedOceanGrid
-    def addObjectToGrid(self, av, useZoneId=-1):
+    def addObjectToGrid(self, av, useZoneId=-1, startAutoUpdate=True):
         self.notify.debug("setting parent to grid %s" % self)
         avId = av.doId
 
@@ -55,7 +55,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
         # Put the avatar on the grid
         self.handleAvatarZoneChange(av, useZoneId)
 
-        if not self.updateTaskStarted:
+        if (not self.updateTaskStarted) and startAutoUpdate:
             self.startUpdateGridTask()
 
     def removeObjectFromGrid(self, av):
