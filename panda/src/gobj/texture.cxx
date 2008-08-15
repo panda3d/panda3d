@@ -2810,25 +2810,38 @@ reload_ram_image() {
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record;
 
-  if (cache->get_active() && !textures_header_only) {
+  if ((cache->get_cache_textures() || (has_compression() && cache->get_cache_compressed_textures())) && !textures_header_only) {
     // See if the texture can be found in the on-disk cache, if it is
     // active.
 
     record = cache->lookup(get_fullpath(), "txo");
     if (record != (BamCacheRecord *)NULL && 
         record->has_data()) {
+      PT(Texture) tex = DCAST(Texture, record->extract_data());
       
       // But don't use the cache record if the config parameters have
       // changed, and we want a different-sized texture now.
       int x_size = _orig_file_x_size;
       int y_size = _orig_file_y_size;
       Texture::adjust_size(x_size, y_size, _filename.get_basename());
-      if (get_x_size() == x_size && get_y_size() == y_size) {
-        PT(Texture) tex = DCAST(Texture, record->extract_data());
-       
+      if (x_size != tex->get_x_size() || y_size != tex->get_y_size()) {
+        if (gobj_cat.is_debug()) {
+          gobj_cat.debug()
+            << "Cached texture " << *this << " has size "
+            << tex->get_x_size() << " x " << tex->get_y_size()
+            << " instead of " << x_size << " x " << y_size
+            << "; ignoring cache.\n";
+        }
+      } else {
         // Also don't keep the cached version if it's compressed but
         // we want uncompressed.
-        if (tex->get_ram_image_compression() == CM_off || !has_compression()) {
+        if (!has_compression() && tex->get_ram_image_compression() != Texture::CM_off) {
+          if (gobj_cat.is_debug()) {
+            gobj_cat.debug()
+              << "Cached texture " << *this
+              << " is compressed in cache; ignoring cache.\n";
+          }
+        } else {
           gobj_cat.info()
             << "Texture " << get_name() << " reloaded from disk cache\n";
           // We don't want to replace all the texture parameters--for
@@ -4051,12 +4064,19 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     set_format(format);
   }
 
-  _orig_file_x_size = 0;
-  _orig_file_y_size = 0;
   bool has_simple_ram_image = false;
   if (manager->get_file_minor_ver() >= 18) {
-    _orig_file_x_size = scan.get_uint32();
-    _orig_file_y_size = scan.get_uint32();
+    if (has_rawdata || (_orig_file_x_size == 0 && _orig_file_y_size == 0)) {
+      // We only trust the file size if we have the raw data.
+      _orig_file_x_size = scan.get_uint32();
+      _orig_file_y_size = scan.get_uint32();
+    } else {
+      // Discard the file size indicated in the bam file; it might not
+      // be accurate.
+      scan.get_uint32();
+      scan.get_uint32();
+    }
+
     has_simple_ram_image = scan.get_bool();
   }
 
