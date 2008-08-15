@@ -26,6 +26,7 @@
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 
+BEGIN_PUBLISH
 enum AutoTextureScale {
   ATS_none,
   ATS_down,
@@ -38,6 +39,7 @@ enum ShaderUtilization {
   SUT_advanced,
   SUT_UNSPECIFIED,
 };
+END_PUBLISH
 
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, AutoTextureScale ats);
 EXPCL_PANDA_GOBJ istream &operator >> (istream &in, AutoTextureScale &ats);
