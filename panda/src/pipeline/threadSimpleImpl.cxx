@@ -22,6 +22,8 @@
 
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
+int ThreadSimpleImpl::_next_unique_id = 1;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleImpl::Constructor
 //       Access: Public
@@ -31,6 +33,9 @@ ThreadSimpleImpl::
 ThreadSimpleImpl(Thread *parent_obj) :
   _parent_obj(parent_obj)
 {
+  _unique_id = _next_unique_id;
+  ++_next_unique_id;
+
   _status = S_new;
   _joinable = false;
   _time_per_epoch = 0.0;
@@ -155,6 +160,24 @@ join() {
 void ThreadSimpleImpl::
 preempt() {
   _manager->preempt(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleImpl::get_unique_id
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+string ThreadSimpleImpl::
+get_unique_id() const {
+  ostringstream strm;
+#ifdef WIN32
+  strm << GetCurrentProcessId();
+#else
+  strm << getpid();
+#endif
+  strm << "." << _unique_id;
+
+  return strm.str();
 }
 
 ////////////////////////////////////////////////////////////////////

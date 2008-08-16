@@ -180,6 +180,19 @@ join() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadPosixImpl::get_unique_id
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+string ThreadPosixImpl::
+get_unique_id() const {
+  ostringstream strm;
+  strm << getpid() << "." << _thread;
+
+  return strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadPosixImpl::root_func
 //       Access: Private, Static
 //  Description: The entry point of each thread.

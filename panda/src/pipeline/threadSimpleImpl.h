@@ -68,6 +68,8 @@ public:
   void join();
   void preempt();
 
+  string get_unique_id() const;
+
   static void prepare_for_exit();
 
   INLINE static Thread *get_current_thread();
@@ -98,6 +100,8 @@ private:
     S_killed,
   };
 
+  static int _next_unique_id;
+  int _unique_id;
   Thread *_parent_obj;
   bool _joinable;
   Status _status;

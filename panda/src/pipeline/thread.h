@@ -60,6 +60,7 @@ PUBLISHED:
   INLINE const string &get_sync_name() const;
 
   INLINE int get_pstats_index() const;
+  INLINE string get_unique_id() const;
 
   INLINE int get_pipeline_stage() const;
   void set_pipeline_stage(int pipeline_stage);

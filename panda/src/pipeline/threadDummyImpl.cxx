@@ -19,6 +19,29 @@
 #include "threadDummyImpl.h"
 #include "thread.h"
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadDummyImpl::get_unique_id
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+string ThreadDummyImpl::
+get_unique_id() const {
+  // In a single-threaded application, this is just the unique process
+  // ID.
+  ostringstream strm;
+#ifdef WIN32
+  strm << GetCurrentProcessId();
+#else
+  strm << getpid();
+#endif
+  return strm.str();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadDummyImpl::get_current_thread
 //       Access: Public

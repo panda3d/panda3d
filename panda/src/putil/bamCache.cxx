@@ -210,8 +210,10 @@ store(BamCacheRecord *record) {
   // We actually do the write to a temporary filename first, and then
   // move it into place, so that no one attempts to read the file
   // while it is in the process of being written.
+  Thread *current_thread = Thread::get_current_thread();
+  string extension = current_thread->get_unique_id() + string(".tmp");
   Filename temp_pathname = cache_pathname;
-  temp_pathname.set_extension("tmp");
+  temp_pathname.set_extension(extension);
   temp_pathname.set_binary();
 
   ofstream temp_file;

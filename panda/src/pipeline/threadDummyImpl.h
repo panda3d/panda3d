@@ -46,6 +46,8 @@ public:
   INLINE void join();
   INLINE void preempt();
 
+  string get_unique_id() const;
+
   INLINE static void prepare_for_exit();
 
   static Thread *get_current_thread();

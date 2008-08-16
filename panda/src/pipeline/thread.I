@@ -108,6 +108,18 @@ get_pstats_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_unique_id
+//       Access: Published
+//  Description: Returns a string that is guaranteed to be unique to
+//               this thread, across all processes on the machine,
+//               during at least the lifetime of this process.
+////////////////////////////////////////////////////////////////////
+INLINE string Thread::
+get_unique_id() const {
+  return _impl.get_unique_id();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_pipeline_stage
 //       Access: Published
 //  Description: Returns the Pipeline stage number associated with

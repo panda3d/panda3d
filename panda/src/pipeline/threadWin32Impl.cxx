@@ -135,6 +135,19 @@ join() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadWin32Impl::get_unique_id
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+string ThreadWin32Impl::
+get_unique_id() const {
+  ostringstream strm;
+  strm << GetCurrentProcessId() << "." << GetThreadId(_thread);
+
+  return strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadWin32Impl::root_func
 //       Access: Private, Static
 //  Description: The entry point of each thread.
