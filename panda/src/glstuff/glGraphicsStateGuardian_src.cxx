@@ -7772,7 +7772,15 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     GLP(GetTexLevelParameteriv)(target, n, GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
     page_size = image_size / tex->get_z_size();
     image = PTA_uchar::empty_array(image_size);
-    _glGetCompressedTexImage(target, n, image.p());
+
+    // Some drivers (ATI!) seem to try to overstuff more bytes in the
+    // array than they asked us to allocate (that is, more bytes than
+    // GL_TEXTURE_COMPRESSED_IMAGE_SIZE), requiring us to overallocate
+    // and then copy the result into our final buffer.  Sheesh.
+
+    unsigned char *buffer = (unsigned char *)alloca(image_size + 32);
+    _glGetCompressedTexImage(target, n, buffer);
+    memcpy(image.p(), buffer, image_size);
   }
 
   // Now see if we were successful.
