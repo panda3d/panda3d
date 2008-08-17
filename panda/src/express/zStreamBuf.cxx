@@ -29,7 +29,7 @@ static void
 do_zlib_free(voidpf opaque, voidpf address) {
   PANDA_FREE_ARRAY(address);
 }
-#endif  !USE_MEMORY_NOWRAPPERS
+#endif  //  !USE_MEMORY_NOWRAPPERS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ZStreamBuf::Constructor
