@@ -166,6 +166,13 @@ TrueClock() {
   _last_reported_time_scale = 1.0;
   _report_time_scale_time = 0.0;
 
+  ConfigVariableBool lock_to_one_cpu
+    ("lock-to-one-cpu", false,
+     PRC_DESC("Set this to true if you want the entire process to use one "
+              "CPU, even on multi-core and multi-CPU workstations. This is "
+              "mainly a hack to solve a bug in which QueryPerformanceCounter "
+              "returns inconsistent results on multi-core machines. "));
+
   if (lock_to_one_cpu) {
     set_cpu_affinity(0x01);
   }

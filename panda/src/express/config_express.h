@@ -61,8 +61,6 @@ extern ConfigVariableInt patchfile_zone_size;
 
 extern ConfigVariableBool keep_temporary_files;
 
-extern ConfigVariableBool lock_to_one_cpu;
-
 extern ConfigVariableInt multifile_encryption_iteration_count;
 
 extern ConfigVariableBool vfs_case_sensitive;

@@ -58,13 +58,6 @@ ConfigVariableBool keep_temporary_files
           "default) to delete these.  Mainly useful for debugging "
           "when the process goes wrong."));
 
-ConfigVariableBool lock_to_one_cpu
-("lock-to-one-cpu", false,
- PRC_DESC("Set this to true if you want the entire process to use one "
-          "CPU, even on multi-core and multi-CPU workstations. This is "
-          "mainly a hack to solve a bug in which QueryPerformanceCounter "
-          "returns inconsistent results on multi-core machines. "));
-
 ConfigVariableInt multifile_encryption_iteration_count
 ("multifile-encryption-iteration-count", 0,
  PRC_DESC("This is a special value of encryption-iteration-count used to encrypt "
