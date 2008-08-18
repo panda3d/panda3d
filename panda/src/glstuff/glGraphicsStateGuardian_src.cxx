@@ -7778,9 +7778,46 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     // GL_TEXTURE_COMPRESSED_IMAGE_SIZE), requiring us to overallocate
     // and then copy the result into our final buffer.  Sheesh.
 
-    unsigned char *buffer = (unsigned char *)alloca(image_size + 32);
-    _glGetCompressedTexImage(target, n, buffer);
-    memcpy(image.p(), buffer, image_size);
+    // We'll only do this for small textures (the ATI bug doesn't
+    // *seem* to affect large textures), to save on the overhead of
+    // the double-copy, and reduce risk from an overly-large alloca().
+#ifndef NDEBUG
+    static const int max_trouble_buffer = 102400;
+#else
+    static const int max_trouble_buffer = 1024;
+#endif
+    if (image_size < max_trouble_buffer) {
+      static const int extra_space = 32;
+      unsigned char *buffer = (unsigned char *)alloca(image_size + extra_space);
+#ifndef NDEBUG
+      // Tag the buffer with a specific byte so we can report on
+      // whether that driver bug is still active.
+      static unsigned char keep_token = 0x00;
+      unsigned char token = ++keep_token;
+      memset(buffer + image_size, token, extra_space);
+#endif
+      _glGetCompressedTexImage(target, n, buffer);
+      memcpy(image.p(), buffer, image_size);
+#ifndef NDEBUG
+      int count = extra_space;
+      while (count > 0 && buffer[image_size + count - 1] == token) {
+        --count;
+      }
+      if (count != 0) {
+        GLCAT.warning()
+          << "GL graphics driver overfilled " << count
+          << " bytes into a " << image_size
+          << "-byte buffer provided to glGetCompressedTexImage()\n";
+      }
+
+      // This had better not equal the amount of buffer space we set
+      // aside.  If it does, we assume the driver might have
+      // overfilled even our provided extra buffer.
+      nassertr(count != extra_space, true)
+#endif
+    } else {
+      _glGetCompressedTexImage(target, n, image.p());
+    }
   }
 
   // Now see if we were successful.
