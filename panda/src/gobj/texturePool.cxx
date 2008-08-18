@@ -913,6 +913,17 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
             }
             tex->set_keep_ram_image(false);
           }
+        } else {
+          if (!cache->get_cache_textures()) {
+            // This texture has no actual record, and therefore no
+            // compressed record (yet).  And we're not supposed to be
+            // caching uncompressed textures.
+            if (gobj_cat.is_debug()) {
+              gobj_cat.debug()
+                << "Not caching uncompressed texture\n";
+            }
+            record = NULL;
+          }
         }
       }
     }
