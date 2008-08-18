@@ -2883,9 +2883,11 @@ reload_ram_image() {
           z, n, _has_read_pages, _has_read_mipmaps, false, NULL);
 
   if (has_ram_image() && record != (BamCacheRecord *)NULL) {
-    // Update the cache.
-    record->set_data(this, false);
-    cache->store(record);
+    if (cache->get_cache_textures() || (get_ram_image_compression() != CM_off && cache->get_cache_compressed_textures())) {
+      // Update the cache.
+      record->set_data(this, false);
+      cache->store(record);
+    }
   }
 }
 
