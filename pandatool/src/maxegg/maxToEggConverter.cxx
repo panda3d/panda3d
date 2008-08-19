@@ -364,102 +364,25 @@ get_transform(INode *max_node, EggGroup *egg_group) {
         return;
     }
 
-    // The 3dsMax-style matrix that contains the pivot matrix...this pivot matrix
-    // encapsulates all the scales, rotates, and transforms it takes
-    // to "get to" the pivot point.
-    Matrix3 pivot;
-    //This is the Panda-flava-flav-style matrix we'll be exporting to.
-    Point3 row0;
-    Point3 row1;
-    Point3 row2;
-    Point3 row3;
-
     if ( !egg_group ) {
         return;
     }
 
-    // *** A special case that I don't think we're supporting in Max
-    /*
-    // A special case: if the group is a billboard, we center the
-    // transform on the rotate pivot and ignore whatever transform might
-    // be there.
-    if (egg_group->get_billboard_type() != EggGroup::BT_none) {
-    MFnTransform transform(transformNode, &status);
-    if (!status) {
-    status.perror("MFnTransform constructor");
-    return;
-    }
-
-    MPoint pivot = transform.rotatePivot(MSpace::kObject, &status);
-    if (!status) {
-    status.perror("Can't get rotate pivot");
-    return;
-    }
-
-    // We need to convert the pivot to world coordinates.
-    // Unfortunately, Maya can only tell it to us in local
-    // coordinates.
-    MMatrix mat = dag_path.inclusiveMatrix(&status);
-    if (!status) {
-    status.perror("Can't get coordinate space for pivot");
-    return;
-    }
-    LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-    mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-    mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-    mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-    LPoint3d p3d(pivot[0], pivot[1], pivot[2]);
-    p3d = p3d * n2w;
-
-    if (egg_group->get_parent() != (EggGroupNode *)NULL) {
-    // Now convert the pivot point into the group's parent's space.
-    p3d = p3d * egg_group->get_parent()->get_vertex_frame_inv();
-    }
-
-    egg_group->clear_transform();
-    egg_group->add_translate(p3d);
-    return;
-    }
-    */
-
-    // *** Make sure this is happening correctly; I'm not sure at the moment
-    //     how these flags get specified
-    /*
-      switch (_transform_type) {
-      case TT_all:
-      break;
-    
-      case TT_model:
-      if (!egg_group->get_model_flag() &&
-      !egg_group->has_dcs_type()) {
-      return;
-      }
-      break;
-    
-      case TT_dcs: 
-      if (!egg_group->get_dcs_type()) {
-      return;
-      }
-      break;
-    
-      case TT_none:
-      case TT_invalid:
-      return;
-      }
-    */
-
     // Gets the TM for this node, a matrix which encapsulates all transformations
     // it takes to get to the current node, including parent transformations.
-    pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
-    row0 = pivot.GetRow(0);
-    row1 = pivot.GetRow(1);
-    row2 = pivot.GetRow(2);
-    row3 = pivot.GetRow(3);
+    Matrix3 pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
 
+    //This is the Panda-flava-flav-style matrix we'll be exporting to.
+    Point3 row0 = pivot.GetRow(0);
+    Point3 row1 = pivot.GetRow(1);
+    Point3 row2 = pivot.GetRow(2);
+    Point3 row3 = pivot.GetRow(3);
+    
     LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
                   row1.x, row1.y, row1.z, 0.0f,
                   row2.x, row2.y, row2.z, 0.0f,
                   row3.x, row3.y, row3.z, 1.0f );
+
     // Now here's the tricky part. I believe this command strips out the node
     // "frame" which is the sum of all transformations enacted by the parent of
     // this node. This should reduce to the transformation relative to this 
@@ -479,24 +402,15 @@ get_transform(INode *max_node, EggGroup *egg_group) {
 LMatrix4d MaxToEggConverter::
 get_object_transform(INode *max_node) {
 
-    // The 3dsMax-style matrix that contains the pivot matrix...this pivot matrix
-    // encapsulates all the scales, rotates, and transforms it takes
-    // to "get to" the pivot point.
-    Matrix3 pivot;
-    //This is the Panda-flava-flav-style matrix we'll be exporting to.
-    Point3 row0;
-    Point3 row1;
-    Point3 row2;
-    Point3 row3;
-
     // Gets the TM for this node, a matrix which encapsulates all transformations
     // it takes to get to the current node, including parent transformations.
-    pivot = max_node->GetObjectTM(_current_frame * GetTicksPerFrame());
-    row0 = pivot.GetRow(0);
-    row1 = pivot.GetRow(1);
-    row2 = pivot.GetRow(2);
-    row3 = pivot.GetRow(3);
+    Matrix3 pivot = max_node->GetObjectTM(_current_frame * GetTicksPerFrame());
 
+    Point3 row0 = pivot.GetRow(0);
+    Point3 row1 = pivot.GetRow(1);
+    Point3 row2 = pivot.GetRow(2);
+    Point3 row3 = pivot.GetRow(3);
+    
     LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
                   row1.x, row1.y, row1.z, 0.0f,
                   row2.x, row2.y, row2.z, 0.0f,
@@ -517,32 +431,23 @@ get_object_transform(INode *max_node) {
 void MaxToEggConverter::
 get_joint_transform(INode *max_node, EggGroup *egg_group) {
 
-    // The 3dsMax-style matrix that contains the pivot matrix...this pivot matrix
-    // encapsulates all the scales, rotates, and transforms it takes
-    // to "get to" the pivot point.
-    Matrix3 pivot;
-    //This is the Panda-flava-flav-style matrix we'll be exporting to.
-    Point3 row0;
-    Point3 row1;
-    Point3 row2;
-    Point3 row3;
-
     if ( !egg_group ) {
         return;
     }
 
     // Gets the TM for this node, a matrix which encapsulates all transformations
     // it takes to get to the current node, including parent transformations.
-    pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
-    row0 = pivot.GetRow(0);
-    row1 = pivot.GetRow(1);
-    row2 = pivot.GetRow(2);
-    row3 = pivot.GetRow(3);
+    Matrix3 pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
+    Point3 row0 = pivot.GetRow(0);
+    Point3 row1 = pivot.GetRow(1);
+    Point3 row2 = pivot.GetRow(2);
+    Point3 row3 = pivot.GetRow(3);
 
     LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
                   row1.x, row1.y, row1.z, 0.0f,
                   row2.x, row2.y, row2.z, 0.0f,
                   row3.x, row3.y, row3.z, 1.0f );
+
     // Now here's the tricky part. I believe this command strips out the node
     // "frame" which is the sum of all transformations enacted by the parent of
     // this node. This should reduce to the transformation relative to this 
@@ -566,28 +471,17 @@ get_joint_transform(INode *max_node, EggGroup *egg_group) {
 void MaxToEggConverter::
 get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
 
-    // The 3dsMax-style matrix that contains the pivot matrix...this pivot matrix
-    // encapsulates all the scales, rotates, and transforms it takes
-    // to "get to" the pivot point.
-    Matrix3 pivot;
-    Matrix3 parent_pivot;
-    //This is the Panda-flava-flav-style matrix we'll be exporting to.
-    Point3 row0;
-    Point3 row1;
-    Point3 row2;
-    Point3 row3;
-
     if ( !egg_group ) {
         return;
     }
 
     // Gets the TM for this node, a matrix which encapsulates all transformations
     // it takes to get to the current node, including parent transformations.
-    pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
-    row0 = pivot.GetRow(0);
-    row1 = pivot.GetRow(1);
-    row2 = pivot.GetRow(2);
-    row3 = pivot.GetRow(3);
+    Matrix3 pivot = max_node->GetNodeTM(_current_frame * GetTicksPerFrame());
+    Point3 row0 = pivot.GetRow(0);
+    Point3 row1 = pivot.GetRow(1);
+    Point3 row2 = pivot.GetRow(2);
+    Point3 row3 = pivot.GetRow(3);
 
     LMatrix4d m4d(row0.x, row0.y, row0.z, 0.0f,
                   row1.x, row1.y, row1.z, 0.0f,
@@ -595,7 +489,7 @@ get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
                   row3.x, row3.y, row3.z, 1.0f );
 
     if (parent_node) {
-        parent_pivot = parent_node->GetNodeTM(_current_frame * GetTicksPerFrame());
+        Matrix3 parent_pivot = parent_node->GetNodeTM(_current_frame * GetTicksPerFrame());
         //  parent_pivot.Invert();
         row0 = parent_pivot.GetRow(0);
         row1 = parent_pivot.GetRow(1);
@@ -682,22 +576,11 @@ void MaxToEggConverter::
 make_polyset(INode *max_node, Mesh *mesh,
              EggGroup *egg_group, Shader *default_shader) {
 
-    // *** I think this needs to have a plugin written to support
-    /*
-      MObject mesh_object = mesh.object();
-      bool double_sided = false;
-      get_bool_attribute(mesh_object, "doubleSided", double_sided);
-    */
-
     mesh->buildNormals();
 
     if (mesh->getNumFaces() == 0) {
         return;
     }
-
-    string vpool_name = string(max_node->GetName()) + ".verts";
-    EggVertexPool *vpool = new EggVertexPool(vpool_name);
-    egg_group->add_child(vpool);
 
     // One way to convert the mesh would be to first get out all the
     // vertices in the mesh and add them into the vpool, then when we
@@ -711,17 +594,9 @@ make_polyset(INode *max_node, Mesh *mesh,
     // all the vertices up front, we'll start with an empty vpool, and
     // add vertices to it on the fly.
 
-    // *** Need to find out if I even need to deal with shaders
-    /*
-      MObjectArray shaders;
-      MIntArray poly_shader_indices;
-
-      status = mesh.getConnectedShaders(dag_path.instanceNumber(),
-      shaders, poly_shader_indices);
-      if (!status) {
-      status.perror("MFnMesh::getConnectedShaders");
-      }
-    */
+    string vpool_name = string(max_node->GetName()) + ".verts";
+    EggVertexPool *vpool = new EggVertexPool(vpool_name);
+    egg_group->add_child(vpool);
 
     // We will need to transform all vertices from world coordinate
     // space into the vertex space appropriate to this node.  Usually,
@@ -733,17 +608,6 @@ make_polyset(INode *max_node, Mesh *mesh,
         egg_group->get_vertex_frame_inv();
 
 
-    // *** Not quite sure how this vertex color flag is handled.  Check on later
-    /*
-    // Save this modeling flag for the vertex color check later (see the
-    // comment below).
-    bool egg_vertex_color = false;
-    if (egg_group->has_user_data(MayaEggGroupUserData::get_class_type())) {
-    egg_vertex_color = 
-    DCAST(MayaEggGroupUserData, egg_group->get_user_data())->_vertex_color;
-    }
-    */
-
     for ( int iFace=0; iFace < mesh->getNumFaces(); iFace++ ) {
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
@@ -751,62 +615,6 @@ make_polyset(INode *max_node, Mesh *mesh,
         egg_poly->set_bface_flag(_options->_double_sided);
 
         Face face = mesh->faces[iFace];
-
-        // *** Once again skipping shaders until I determine if I need them
-        /*
-        // Determine the shader for this particular polygon.
-        MayaShader *shader = NULL;
-        int index = pi.index();
-        nassertv(index >= 0 && index < (int)poly_shader_indices.length());
-        int shader_index = poly_shader_indices[index];
-        if (shader_index != -1) {
-        nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
-        MObject engine = shaders[shader_index];
-        shader =
-        _shaders.find_shader_for_shading_engine(engine);
-
-        } else if (default_shader != (MayaShader *)NULL) {
-        shader = default_shader;
-        }
-
-        const MayaShaderColorDef &color_def = shader->_color;
-        */
-
-        // Should we extract the color from the vertices?  Normally, in
-        // Maya a texture completely replaces the vertex color, so we
-        // should ignore the vertex color if we have a texture. 
-
-        // However, this is an inconvenient property of Maya; sometimes we
-        // really do want both vertex color and texture applied to the
-        // same object.  To allow this, we define the special egg flag
-        // "vertex-color", which when set indicates that we should
-        // respect the vertex color anyway.
-
-        // *** Ignoring vertex colors for now
-        bool ignore_vertex_color = true;
-        /*
-          bool ignore_vertex_color = false;
-          if (shader != (MayaShader *)NULL) {
-          ignore_vertex_color = color_def._has_texture && !egg_vertex_color;
-          }
-        */
-
-        // *** More shader stuff to ignore
-        /*
-          LPoint3d centroid(0.0, 0.0, 0.0);
-
-          if (shader != (MayaShader *)NULL && color_def.has_projection()) {
-          // If the shader has a projection, we may need to compute the
-          // polygon's centroid to avoid seams at the edges.
-          for (i = 0; i < num_verts; i++) {
-          MPoint p = pi.point(i, MSpace::kWorld);
-          LPoint3d p3d(p[0], p[1], p[2]);
-          p3d = p3d * vertex_frame_inv;
-          centroid += p3d;
-          }
-          centroid /= (double)num_verts;
-          }
-        */
 
         // Get the vertices for the polygon.
         for ( int iVertex=0; iVertex < 3; iVertex++ ) {
@@ -826,43 +634,11 @@ make_polyset(INode *max_node, Mesh *mesh,
             n3d = n3d * vertex_frame;
             vert.set_normal(n3d);
 
-            // *** More shader stuff to ignore for now
-            /*
-              if (shader != (MayaShader *)NULL && color_def.has_projection()) {
-              // If the shader has a projection, use it instead of the
-              // polygon's built-in UV's.
-              vert.set_uv(color_def.project_uv(p3d, centroid));
-
-              } else if (pi.hasUVs()) {
-              // Get the UV's from the polygon.
-              float2 uvs;
-              status = pi.getUV(i, uvs);
-              if (!status) {
-              status.perror("MItMeshPolygon::getUV");
-              } else {
-              vert.set_uv(TexCoordd(uvs[0], uvs[1]));
-              }
-              }
-            */
-
             // Get the UVs for this vertex
             if (mesh->getNumTVerts()) {
                 UVVert vertTexCoord = mesh->getTVert(mesh->tvFace[iFace].t[iVertex]);
                 vert.set_uv( TexCoordd(vertTexCoord.x, vertTexCoord.y));
             }
-
-            // *** Leaving out vertex colors for now
-            /*
-              if (pi.hasColor() && !ignore_vertex_color) {
-              MColor c;
-              status = pi.getColor(c, i);
-              if (!status) {
-              status.perror("MItMeshPolygon::getColor");
-              } else {
-              vert.set_color(Colorf(c.r, c.g, c.b, 1.0));
-              }
-              }
-            */
 
             vert.set_external_index(face.v[iVertex]);
 
@@ -871,16 +647,16 @@ make_polyset(INode *max_node, Mesh *mesh,
 
         //Max uses normals, not winding, to determine which way a 
         //polygon faces. Make sure the winding and that normal agree
+        
         EggVertex *verts[3];
         LPoint3d points[3];
-
+        
         for (int i = 0; i < 3; i++) {
             verts[i] = egg_poly->get_vertex(i);
             points[i] = verts[i]->get_pos3();
         }
 
-        LVector3d realNorm = ((points[1] - points[0]).cross( 
-                                                            points[2] - points[0]));
+        LVector3d realNorm = ((points[1] - points[0]).cross(points[2] - points[0]));
         Point3 maxNormTemp = mesh->getFaceNormal(iFace);
         LVector3d maxNorm = (LVector3d(maxNormTemp.x, maxNormTemp.y, maxNormTemp.z) *
                              vertex_frame);
@@ -889,14 +665,6 @@ make_polyset(INode *max_node, Mesh *mesh,
             egg_poly->set_vertex(0, verts[2]);
             egg_poly->set_vertex(2, verts[0]);
         }
-
-        // *** More shader stuff to ignore
-        /*
-        // Now apply the shader.
-        if (shader != (MayaShader *)NULL) {
-        set_shader_attributes(*egg_poly, *shader);
-        }
-        */
 
         set_material_attributes(*egg_poly, max_node->GetMtl(), &face);
     }
@@ -908,69 +676,8 @@ make_polyset(INode *max_node, Mesh *mesh,
     if (_options->_anim_type == MaxEggOptions::AT_model) {
         get_vertex_weights(max_node, vpool);
     }
-
 }
 
-// *** I don't know if there is a Max equivalent to this.  I will implement 
-//     this if I find one
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: MaxToEggConverter::make_locator
-//       Access: Private
-//  Description: Locators are used in Maya to indicate a particular
-//               position in space to the user or the modeler.  We
-//               represent that in egg with an ordinary Group node,
-//               which we transform by the locator's position, so that
-//               the indicated point becomes the origin at this node
-//               and below.
-////////////////////////////////////////////////////////////////////
-void MaxToEggConverter::
-make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
-EggGroup *egg_group) {
-MStatus status;
-
-unsigned int num_children = dag_node.childCount();
-MObject locator;
-bool found_locator = false;
-for (unsigned int ci = 0; ci < num_children && !found_locator; ci++) {
-locator = dag_node.child(ci);
-found_locator = (locator.apiType() == MFn::kLocator);
-}
-
-if (!found_locator) {
-mayaegg_cat.error()
-<< "Couldn't find locator within locator node " 
-<< dag_path.fullPathName().asChar() << "\n";
-return;
-}
-
-LPoint3d p3d;
-if (!get_vec3d_attribute(locator, "localPosition", p3d)) {
-mayaegg_cat.error()
-<< "Couldn't get position of locator " 
-<< dag_path.fullPathName().asChar() << "\n";
-return;
-}
-
-// We need to convert the position to world coordinates.  For some
-// reason, Maya can only tell it to us in local coordinates.
-MMatrix mat = dag_path.inclusiveMatrix(&status);
-if (!status) {
-status.perror("Can't get coordinate space for locator");
-return;
-}
-LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-p3d = p3d * n2w;
-
-// Now convert the locator point into the group's space.
-p3d = p3d * egg_group->get_node_frame_inv();
-
-egg_group->add_translate(p3d);
-}
-*/
 
 Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo)
 {
@@ -1118,240 +825,6 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
     }
 }
 
-// *** More ignored shader stuff.  I am replacing this with 
-//     set_material_attributes for now
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::set_shader_attributes
-//       Access: Private
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
-void MaxToEggConverter::
-set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
-// In Maya, a polygon is either textured or colored.  The texture,
-// if present, replaces the color.
-const MayaShaderColorDef &color_def = shader._color;
-const MayaShaderColorDef &trans_def = shader._transparency;
-if (color_def._has_texture || trans_def._has_texture) {
-EggTexture tex(shader.get_name(), "");
-
-if (color_def._has_texture) {
-// If we have a texture on color, apply it as the filename.
-Filename filename = Filename::from_os_specific(color_def._texture);
-Filename fullpath,outpath;
-_options->_path_replace->full_convert_path(filename, get_texture_path(),
-fullpath, outpath);
-tex.set_filename(outpath);
-tex.set_fullpath(fullpath);
-apply_texture_properties(tex, color_def);
-
-// If we also have a texture on transparency, apply it as the
-// alpha filename.
-if (trans_def._has_texture) {
-if (color_def._wrap_u != trans_def._wrap_u ||
-color_def._wrap_u != trans_def._wrap_u) {
-mayaegg_cat.warning()
-<< "Shader " << shader.get_name()
-<< " has contradictory wrap modes on color and texture.\n";
-}
-          
-if (!compare_texture_properties(tex, trans_def)) {
-// Only report each broken shader once.
-static pset<string> bad_shaders;
-if (bad_shaders.insert(shader.get_name()).second) {
-mayaegg_cat.error()
-<< "Color and transparency texture properties differ on shader "
-<< shader.get_name() << "\n";
-}
-}
-tex.set_format(EggTexture::F_rgba);
-          
-// We should try to be smarter about whether the transparency
-// value is connected to the texture's alpha channel or to its
-// grayscale channel.  However, I'm not sure how to detect
-// this at the moment; rather than spending days trying to
-// figure out, for now I'll just assume that if the same
-// texture image is used for both color and transparency, then
-// the artist meant to use the alpha channel for transparency.
-if (trans_def._texture == color_def._texture) {
-// That means that we don't need to do anything special: use
-// all the channels of the texture.
-
-} else {
-// Otherwise, pull the alpha channel from the other image
-// file.  Ideally, we should figure out which channel from
-// the other image supplies alpha (and specify this via
-// set_alpha_file_channel()), but for now we assume it comes
-// from the grayscale data.
-filename = Filename::from_os_specific(trans_def._texture);
-_path_replace->full_convert_path(filename, get_texture_path(),
-fullpath, outpath);
-tex.set_alpha_filename(outpath);
-tex.set_alpha_fullpath(fullpath);
-}
-
-} else {
-// If there is no transparency texture specified, we don't
-// have any transparency, so tell the egg format to ignore any
-// alpha channel that might be on the color texture.
-tex.set_format(EggTexture::F_rgb);
-}
-
-} else {  // trans_def._has_texture
-// We have a texture on transparency only.  Apply it as the
-// primary filename, and set the format accordingly.
-Filename filename = Filename::from_os_specific(trans_def._texture);
-Filename fullpath, outpath;
-_path_replace->full_convert_path(filename, get_texture_path(),
-fullpath, outpath);
-tex.set_filename(outpath);
-tex.set_fullpath(fullpath);
-tex.set_format(EggTexture::F_alpha);
-apply_texture_properties(tex, trans_def);
-}
-  
-EggTexture *new_tex =
-_textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-    
-primitive.set_texture(new_tex);
-
-}
-
-// Also apply an overall color to the primitive.
-Colorf rgba = shader.get_rgba();
-
-// The existence of a texture on either color channel completely
-// replaces the corresponding flat color.
-if (color_def._has_texture) {
-rgba[0] = 1.0f;
-rgba[1] = 1.0f;
-rgba[2] = 1.0f;
-}
-if (trans_def._has_texture) {
-rgba[3] = 1.0f;
-}
-
-// But the color gain always gets applied.
-rgba[0] *= color_def._color_gain[0];
-rgba[1] *= color_def._color_gain[1];
-rgba[2] *= color_def._color_gain[2];
-rgba[3] *= color_def._color_gain[3];
-
-primitive.set_color(rgba);
-}
-*/
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::set_material_attributes
-//       Access: Private
-//  Description: Applies the known shader attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
-void MaxToEggConverter::
-set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
-Bitmap *maxBitmap;
-BitmapTex *maxBitmapTex;
-//  Mtl *maxMaterial;
-StdMat *maxStandardMaterial;
-Texmap *maxTexmap;
-EggTexture *myEggTexture = null;
-string outString;
-string outHandle;
-bool has_diffuse_texture = false;
-bool has_trans_texture = false;
-  
-Point3 diffuseColor = Point3(1, 1, 1);
-
-//First, get the material data associated with this node.
-//  maxMaterial = max_node->GetMtl();
-if ( !maxMaterial ) {
-return;
-}
-
-//Now, determine wether it's a standard or multi material
-if ( maxMaterial->ClassID() == Class_ID(DMTL_CLASS_ID, 0 )) {
-      
-// Access the Diffuse map and see if it's a Bitmap texture
-maxStandardMaterial = (StdMat *)maxMaterial;
-maxTexmap = maxMaterial->GetSubTexmap(ID_DI);
-//Determine whether this texture is a bitmap.
-if (maxTexmap && (maxTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
-ostringstream name_strm;
-name_strm << "Tex" << ++_cur_tref;
-EggTexture tex(name_strm.str(), "");
-
-// It is! 
-has_diffuse_texture = true;
-
-maxBitmapTex = (BitmapTex *) maxTexmap;
-Filename filename = Filename::from_os_specific(maxBitmapTex->GetMapName());
-Filename fullpath, outpath;
-_path_replace->full_convert_path(filename, get_texture_path(),
-fullpath, outpath);
-tex.set_filename(outpath);
-tex.set_fullpath(fullpath);
-apply_texture_properties(tex, maxStandardMaterial);
-// *** Must add stuff here for looking for transparencies
-maxBitmap = maxBitmapTex->GetBitmap(0);
-//Query some parameters of the bitmap to get the format option.
-if ( maxBitmap && maxBitmap->HasAlpha() ) {
-has_trans_texture = true;
-tex.set_format(EggTexture::F_rgba);
-} else {
-tex.set_format(EggTexture::F_rgb);
-}
-EggTexture *new_tex =
-_textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-    
-primitive.set_texture(new_tex);
-}
-
-// Also apply an overall color to the primitive.
-Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
-
-// The existence of a texture on either color channel completely
-// replaces the corresponding flat color.
-if (!has_diffuse_texture) {
-// Get the default diffuse color of the material without the texture map
-diffuseColor = Point3(maxMaterial->GetDiffuse());
-rgba[0] = diffuseColor.x;
-rgba[1] = diffuseColor.y;
-rgba[2] = diffuseColor.z;
-}
-if (!has_trans_texture) {
-// *** Figure out how to actually get the opacity here
-rgba[3] = 1.0f;
-}
-
-// *** May need color gain, but I don't know what it is
-/*
-// But the color gain always gets applied.
-rgba[0] *= color_def._color_gain[0];
-rgba[1] *= color_def._color_gain[1];
-rgba[2] *= color_def._color_gain[2];
-rgba[3] *= color_def._color_gain[3];
-*/
-/*
-  primitive.set_color(rgba);
-
-  } else if ( maxMaterial->ClassID() == Class_ID(MULTI_CLASS_ID, 0 )) {
-  // It's a multi-material.  Find the submaterial for this face.
-  // and call set_material_attributes again on the submaterial.
-  MtlID matID = face->getMatID();
-  if (matID < maxMaterial->NumSubMtls()) {
-  set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
-  }
-  } else {
-  // It's non-standard material. At the moment, let's just 
-  // return
-  return;
-  }
-
-  }
-*/
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxToEggConverter::set_material_attributes
 //       Access: Private
@@ -1372,7 +845,7 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
     string outHandle;
     bool has_diffuse_texture = false;
     bool has_trans_texture = false;
-  
+    
     Point3 diffuseColor = Point3(1, 1, 1);
 
     //First, get the material data associated with this node.
@@ -1454,7 +927,7 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
       
             primitive.set_texture(new_tex);
         }
-    
+        
         // Also apply an overall color to the primitive.
         Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -1506,73 +979,15 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
 ////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::
 apply_texture_properties(EggTexture &tex, StdMat *maxMaterial) {
-    // Let's mipmap all textures by default.
     tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
     tex.set_magfilter(EggTexture::FT_linear);
 
-  
-    // *** Need to figure out how to get the wrap options from Max
     EggTexture::WrapMode wrap_u = EggTexture::WM_repeat;
     EggTexture::WrapMode wrap_v = EggTexture::WM_repeat;
   
-    /*
-      EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-      EggTexture::WrapMode wrap_v = color_def._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-    */
-
     tex.set_wrap_u(wrap_u);
     tex.set_wrap_v(wrap_v);
-  
-    // *** I may need to find this too
-    /*
-      LMatrix3d mat = color_def.compute_texture_matrix();
-      if (!mat.almost_equal(LMatrix3d::ident_mat())) {
-      tex.set_transform(mat);
-      }
-    */
 }
-
-// *** I don't think I need this right now
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::compare_texture_properties
-//       Access: Private
-//  Description: Compares the texture properties already on the
-//               texture (presumably set by a previous call to
-//               apply_texture_properties()) and returns false if they
-//               differ from that specified by the indicated color_def
-//               object, or true if they match.
-////////////////////////////////////////////////////////////////////
-bool MaxToEggConverter::
-compare_texture_properties(EggTexture &tex, 
-const MayaShaderColorDef &color_def) {
-bool okflag = true;
-
-EggTexture::WrapMode wrap_u = color_def._wrap_u ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-EggTexture::WrapMode wrap_v = color_def._wrap_v ? EggTexture::WM_repeat : EggTexture::WM_clamp;
-  
-if (wrap_u != tex.determine_wrap_u()) {
-// Choose the more general of the two.
-if (wrap_u == EggTexture::WM_repeat) {
-tex.set_wrap_u(wrap_u);
-}
-okflag = false;
-}
-if (wrap_v != tex.determine_wrap_v()) {
-if (wrap_v == EggTexture::WM_repeat) {
-tex.set_wrap_v(wrap_v);
-}
-okflag = false;
-}
-  
-LMatrix3d mat = color_def.compute_texture_matrix();
-if (!mat.almost_equal(tex.get_transform())) {
-okflag = false;
-}
-
-return okflag;
-}
-*/
 
 
 ////////////////////////////////////////////////////////////////////
