@@ -109,9 +109,6 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
     _root->check_pseudo_joints(false);
   }
 
-  Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, 
-               "finished building complete hierarchy" );
-  
   return all_ok;
 }
 

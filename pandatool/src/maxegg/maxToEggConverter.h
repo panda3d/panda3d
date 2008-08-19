@@ -89,18 +89,18 @@ class MaxToEggConverter {
  public:
     EggTextureCollection _textures;
     
-  enum TransformType {
-      TT_invalid,
-      TT_all,
-      TT_model,
-      TT_dcs,
-      TT_none,
-  };
-  TransformType _transform_type;
+    enum TransformType {
+        TT_invalid,
+        TT_all,
+        TT_model,
+        TT_dcs,
+        TT_none,
+    };
+    TransformType _transform_type;
   
-  static TransformType string_transform_type(const string &arg);
+    static TransformType string_transform_type(const string &arg);
   
-  Modifier* FindSkinModifier (INode* node, const Class_ID &type);
+    Modifier* FindSkinModifier (INode* node, const Class_ID &type);
 };
 
 
