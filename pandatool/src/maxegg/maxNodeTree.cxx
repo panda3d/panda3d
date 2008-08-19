@@ -13,24 +13,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "maxNodeTree.h"
-#include "eggGroup.h"
-#include "eggTable.h"
-#include "eggXfmSAnim.h"
-#include "eggData.h"
-
-#ifdef MAX5
-//Disable the "Too many actual parameters in istdplug.h" warning in Max5
-#pragma warning(push)
-#pragma warning(disable: 4002)
-#include "max_pre_include.h"
-#endif
-#include "Max.h"
-#ifdef MAX5
-#include "max_post_include.h"
-#pragma warning(pop)
-#endif
-#include "maxToEggConverter.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -130,74 +112,6 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
   Logger::Log( MTEC, Logger::SAT_MEDIUM_LEVEL, 
                "finished building complete hierarchy" );
   
-  return all_ok;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_selected_hierarchy
-//       Access: Public
-//  Description: Walks through the selected subset of the Max
-//               hierarchy (or the complete hierarchy, if nothing is
-//               selected) and builds up the corresponding tree.
-////////////////////////////////////////////////////////////////////
-bool MaxNodeTree::
-build_selected_hierarchy(INode *root) {
-  // *** Write this later when it's time to do selection
-  /*
-  MStatus status;
-
-  MItDag dag_iterator(MItDag::kDepthFirst, MFn::kTransform, &status);
-  if (!status) {
-    status.perror("MItDag constructor");
-    return false;
-  }
-
-  // Get only the selected geometry.
-  MSelectionList selection;
-  status = MGlobal::getActiveSelectionList(selection);
-  if (!status) {
-    status.perror("MGlobal::getActiveSelectionList");
-    return false;
-  }
-  
-  // Get the selected geometry only if the selection is nonempty;
-  // otherwise, get the whole scene anyway.
-  if (selection.isEmpty()) {
-    mayaegg_cat.info()
-      << "Selection list is empty.\n";
-    return build_complete_hierarchy();
-  }
-  */
-  bool all_ok = true;
-  /*
-  unsigned int length = selection.length();
-  for (unsigned int i = 0; i < length; i++) {
-    MDagPath root_path;
-    status = selection.getDagPath(i, root_path);
-    if (!status) {
-      status.perror("MSelectionList::getDagPath");
-    } else {
-      // Now traverse through the selected dag path and all nested
-      // dag paths.
-      dag_iterator.reset(root_path);
-      while (!dag_iterator.isDone()) {
-        MDagPath dag_path;
-        status = dag_iterator.getPath(dag_path);
-        if (!status) {
-          status.perror("MItDag::getPath");
-        } else {
-          build_node(dag_path);
-        }
-        
-        dag_iterator.next();
-      }
-    }
-  }
-
-  if (all_ok) {
-    _root->check_pseudo_joints(false);
-  }
-  */
   return all_ok;
 }
 

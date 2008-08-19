@@ -15,16 +15,10 @@
 
 #pragma conform(forScope, off)
 
-#include "pandatoolbase.h"
-
 //Includes & Definitions
-#include "maxToEgg.h"
-#include "maxEggExpOptions.h"
-#include "windef.h"
 
 /* Error-Reporting Includes
  */
-#include "maxLogger.h"
 #define ME Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM6
 #define MaxEggPlugin_CLASS_ID   Class_ID(0x7ac0d6b7, 0x55731ef6)
 
@@ -51,7 +45,7 @@ extern TCHAR *GetString(int id);
 
 class MaxEggPlugin : public HelperObject 
 {
-  MaxEggExpOptions **eggList;
+  MaxOptionsDialog **eggList;
   int numEggs;
   int maxEggs;
 
@@ -76,9 +70,9 @@ class MaxEggPlugin : public HelperObject
   void SaveCheckState();
   void BuildMesh();
 
-  void AddEgg(MaxEggExpOptions *newEgg);
+  void AddEgg(MaxOptionsDialog *newEgg);
   void RemoveEgg(int i);
-  MaxEggExpOptions *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : NULL; }
+  MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : NULL; }
 
   // Required implimented virtual methods:
   // inherited virtual methods for Reference-management
@@ -118,7 +112,6 @@ class MaxEggPlugin : public HelperObject
   // IO
   IOResult Save(ISave *isave);
   IOResult Load(ILoad *iload);
-
 };
 
 

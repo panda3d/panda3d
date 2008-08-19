@@ -13,8 +13,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "maxNodeDesc.h"
-#include "maxLogger.h"
 #define MTEC Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM4
 
 TypeHandle MaxNodeDesc::_type_handle;

@@ -16,10 +16,6 @@
 #ifndef MAXNODETREE_H
 #define MAXNODETREE_H
 
-#include "pandatoolbase.h"
-
-#include "maxNodeDesc.h"
-
 class EggData;
 class EggGroupNode;
 
@@ -34,7 +30,6 @@ public:
   MaxNodeDesc *build_node(INode *max_node);
   MaxNodeDesc *build_joint(INode *max_node, MaxNodeDesc *node_joint);
   bool build_complete_hierarchy(INode *root, ULONG *selection_list, int len);
-  bool build_selected_hierarchy(INode *root);
   MaxNodeDesc *find_node(INode *max_node);
   MaxNodeDesc *find_joint(INode *max_node);
 

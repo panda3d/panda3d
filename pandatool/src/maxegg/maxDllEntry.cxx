@@ -11,7 +11,6 @@
  *>     Copyright (c) 2000, All Rights Reserved.
  **********************************************************************/
 
-#include "MaxEgg.h"
 
 extern ClassDesc* GetMaxEggPluginDesc();
 

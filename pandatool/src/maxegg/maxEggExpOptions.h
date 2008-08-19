@@ -13,11 +13,7 @@
 #pragma conform(forScope, off)
 
 //Includes & Definitions
-#include "maxToEgg.h"
-#include "windef.h"
 
-/* Error-Reporting Includes */
-#include "maxLogger.h"
 #define ME Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM6
 #define MNEG Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM2
 #define MNEG_GEOMETRY_GENERATION Logger::ST_MAP_ME_TO_APP_SPECIFIC_SYSTEM3
@@ -49,66 +45,65 @@ char *ChunkLoadString(ILoad *iload, char *buffer, int maxBytes);
 int ChunkLoadInt(ILoad *iload);
 bool ChunkLoadBool(ILoad *iload);
 void SetICustEdit(HWND wnd, int nIDDlgItem, char *text);
-BOOL CALLBACK MaxEggExpOptionsProc( HWND hWnd, UINT message, 
-                                                                  WPARAM wParam, LPARAM lParam );
+BOOL CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, 
+                                    WPARAM wParam, LPARAM lParam );
 
-class MaxEggExpOptions
+struct MaxEggOptions
 {
-  friend class MaxEggPlugin;
-  public:
+    MaxEggOptions();
+
     enum Anim_Type {
-    AT_none,
-    AT_model,
-    AT_chan,
-    AT_pose,
-    AT_strobe,
-    AT_both
-  };
+        AT_none,
+        AT_model,
+        AT_chan,
+        AT_pose,
+        AT_strobe,
+        AT_both
+    };
 
- protected:
-  Anim_Type anim_type;
-  int sf, ef;
-  int minFrame, maxFrame;
-  bool dblSided, expWholeScene;
-  char shortName[256];
+    IObjParam *_max_interface;
+    Anim_Type _anim_type;
+    int _start_frame;
+    int _end_frame;
+    bool _double_sided;
+    bool _export_whole_scene;
+    char _file_name[2048];
+    char _short_name[256];
+    PT(PathReplace) _path_replace;
+    std::vector<ULONG> _node_list;
+};
 
-  bool successful;
+class MaxOptionsDialog : public MaxEggOptions
+{
+    friend class MaxEggPlugin;
+    
+  public:
+    int _min_frame, _max_frame;
+    bool _checked;
+    bool _choosing_nodes;
+    bool _successful;
+    MaxEggOptions::Anim_Type _prev_type;
 
-  ULONG *nodeList;
-  int numNodes;
-  int maxNodes;
-
- public:
-  bool checked;
-  char filename[2048];
-  IObjParam *maxInterface;
-  bool choosingNodes;
-  Anim_Type prev_type;
-
-  MaxEggExpOptions();
-  virtual ~MaxEggExpOptions() { delete [] nodeList;}
-
-  bool DoExport(IObjParam *ip, bool autoOverwrite, bool saveLog);
-  
-  void UpdateUI(HWND hWnd);
-  bool UpdateFromUI(HWND hWnd);
-  void RefreshNodeList(HWND hWnd);
-  void SetAnimRange();
-
-  bool FindNode(ULONG INodeHandle); //returns true if the node is already in the list
-  void AddNode(ULONG INodeHandle);
-  void RemoveNode(int i);
-  void RemoveNodeByHandle(ULONG INodeHandle);
-  void ClearNodeList(HWND hWnd);
-  void CullBadNodes();
-
-  ULONG GetNode(int i) { return (i >= 0 && i < maxNodes) ? nodeList[i] : ULONG_MAX; }
-
-  IOResult Load(ILoad *iload);
-  IOResult Save(ISave *isave);
-
-  //int DoExport(const TCHAR *name,ExpInterface *ei,
-        //       Interface *i, BOOL suppressPrompts=FALSE, DWORD options=0);
+    MaxOptionsDialog();
+    ~MaxOptionsDialog();
+    
+    void SetMaxInterface(IObjParam *iface) { _max_interface = iface; }
+    void UpdateUI(HWND hWnd);
+    bool UpdateFromUI(HWND hWnd);
+    void RefreshNodeList(HWND hWnd);
+    void SetAnimRange();
+    
+    bool FindNode(ULONG INodeHandle); //returns true if the node is already in the list
+    void AddNode(ULONG INodeHandle);
+    void RemoveNode(int i);
+    void RemoveNodeByHandle(ULONG INodeHandle);
+    void ClearNodeList(HWND hWnd);
+    void CullBadNodes();
+    
+    ULONG GetNode(int i) { return (i >= 0 && i < _node_list.size()) ? _node_list[i] : ULONG_MAX; }
+    
+    IOResult Load(ILoad *iload);
+    IOResult Save(ISave *isave);
 };
 
 #endif // __MaxEggExpOptions__H
