@@ -51,6 +51,7 @@ class MaxToEggConverter {
     string            _program_name;
     MaxNodeTree       _tree;
     int               _cur_tref;
+    EggTextureCollection _textures;
     
     void reset();
 
@@ -87,19 +88,7 @@ class MaxToEggConverter {
     bool reparent_decals(EggGroupNode *egg_parent);
     
  public:
-    EggTextureCollection _textures;
     
-    enum TransformType {
-        TT_invalid,
-        TT_all,
-        TT_model,
-        TT_dcs,
-        TT_none,
-    };
-    TransformType _transform_type;
-  
-    static TransformType string_transform_type(const string &arg);
-  
     Modifier* FindSkinModifier (INode* node, const Class_ID &type);
 };
 

@@ -39,7 +39,6 @@ MaxToEggConverter::
 //     Function: MaxToEggConverter::reset
 ////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::reset() {
-    _transform_type = TT_model;
     _cur_tref = 0;
     _current_frame = 0;
     _textures.clear();
@@ -849,15 +848,12 @@ set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
     Point3 diffuseColor = Point3(1, 1, 1);
 
     //First, get the material data associated with this node.
-    //  maxMaterial = max_node->GetMtl();
     if ( !maxMaterial ) {
         return;
     }
 
     //Now, determine wether it's a standard or multi material
     if ( maxMaterial->ClassID() == Class_ID(DMTL_CLASS_ID, 0 )) {
-        // *** Eventuall we should probably deal with multi-materials
-     
         maxStandardMaterial = (StdMat *)maxMaterial;
 
         // Access the Diffuse map and see if it's a Bitmap texture
@@ -1068,27 +1064,6 @@ reparent_decals(EggGroupNode *egg_parent) {
     return okflag;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: MayaShader::string_transform_type
-//       Access: Public, Static
-//  Description: Returns the TransformType value corresponding to the
-//               indicated string, or TT_invalid.
-////////////////////////////////////////////////////////////////////
-MaxToEggConverter::TransformType MaxToEggConverter::
-string_transform_type(const string &arg) {
-    if (strcmp(arg.c_str(), "all") == 0) {
-        return TT_all;
-    } else if (strcmp(arg.c_str(), "model") == 0) {
-        return TT_model;
-    } else if (strcmp(arg.c_str(), "dcs") == 0) {
-        return TT_dcs;
-    } else if (strcmp(arg.c_str(), "none") == 0) {
-        return TT_none;
-    } else {
-        return TT_invalid;
-    }
-}
-
 Modifier* MaxToEggConverter::FindSkinModifier (INode* node, const Class_ID &type)
 {
     // Get object from node. Abort if no object.
@@ -1101,15 +1076,14 @@ Modifier* MaxToEggConverter::FindSkinModifier (INode* node, const Class_ID &type
         IDerivedObject* pDerObj = static_cast<IDerivedObject*>(pObj);
 
         // Iterate over all entries of the modifier stack.
-        for (int stackId = 0; stackId < pDerObj->NumModifiers(); ++stackId)
-            {
-                // Get current modifier.
-                Modifier* mod = pDerObj->GetModifier(stackId);
-
-                // Is this what we are looking for?
-                if (mod->ClassID() == type )
-                    return mod;
-            }
+        for (int stackId = 0; stackId < pDerObj->NumModifiers(); ++stackId) {
+            // Get current modifier.
+            Modifier* mod = pDerObj->GetModifier(stackId);
+            
+            // Is this what we are looking for?
+            if (mod->ClassID() == type )
+                return mod;
+        }
 
         // continue with next derived object
         pObj = pDerObj->GetObjRef();
