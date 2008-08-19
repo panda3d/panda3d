@@ -47,15 +47,12 @@
 
 #include "maxNodeDesc.h"
 #include "maxNodeTree.h"
-#include "maxToEgg.h"
-#include "maxEggExpOptions.h"
+#include "maxOptionsDialog.h"
 #include "maxToEggConverter.h"
 #include "maxEgg.h"
 
-#include "maxDllEntry.cxx"
-#include "maxEgg.cxx"
-#include "maxEggExpOptions.cxx"
 #include "maxNodeDesc.cxx"
 #include "maxNodeTree.cxx"
-#include "maxToEgg.cxx"
+#include "maxOptionsDialog.cxx"
 #include "maxToEggConverter.cxx"
+#include "maxEgg.cxx"
