@@ -35,6 +35,8 @@
 #include "indent.h"
 #include "cmath.h"
 #include "pStatTimer.h"
+#include "pbitops.h"
+#include "streamReader.h"
 
 #include <stddef.h>
 
@@ -51,6 +53,168 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
+
+// Stuff to read and write DDS files.
+
+//  little-endian, of course
+#define DDS_MAGIC 0x20534444
+
+
+//  DDS_header.dwFlags
+#define DDSD_CAPS                   0x00000001 
+#define DDSD_HEIGHT                 0x00000002 
+#define DDSD_WIDTH                  0x00000004 
+#define DDSD_PITCH                  0x00000008 
+#define DDSD_PIXELFORMAT            0x00001000 
+#define DDSD_MIPMAPCOUNT            0x00020000 
+#define DDSD_LINEARSIZE             0x00080000 
+#define DDSD_DEPTH                  0x00800000 
+
+//  DDS_header.sPixelFormat.dwFlags
+#define DDPF_ALPHAPIXELS            0x00000001 
+#define DDPF_FOURCC                 0x00000004 
+#define DDPF_INDEXED                0x00000020 
+#define DDPF_RGB                    0x00000040 
+
+//  DDS_header.sCaps.dwCaps1
+#define DDSCAPS_COMPLEX             0x00000008 
+#define DDSCAPS_TEXTURE             0x00001000 
+#define DDSCAPS_MIPMAP              0x00400000 
+
+//  DDS_header.sCaps.dwCaps2
+#define DDSCAPS2_CUBEMAP            0x00000200 
+#define DDSCAPS2_CUBEMAP_POSITIVEX  0x00000400 
+#define DDSCAPS2_CUBEMAP_NEGATIVEX  0x00000800 
+#define DDSCAPS2_CUBEMAP_POSITIVEY  0x00001000 
+#define DDSCAPS2_CUBEMAP_NEGATIVEY  0x00002000 
+#define DDSCAPS2_CUBEMAP_POSITIVEZ  0x00004000 
+#define DDSCAPS2_CUBEMAP_NEGATIVEZ  0x00008000 
+#define DDSCAPS2_VOLUME             0x00200000 
+
+#define D3DFMT_DXT1     '1TXD'    //  DXT1 compression texture format 
+#define D3DFMT_DXT2     '2TXD'    //  DXT2 compression texture format 
+#define D3DFMT_DXT3     '3TXD'    //  DXT3 compression texture format 
+#define D3DFMT_DXT4     '4TXD'    //  DXT4 compression texture format 
+#define D3DFMT_DXT5     '5TXD'    //  DXT5 compression texture format 
+
+#define PF_IS_DXT1(pf) \
+  ((pf.dwFlags & DDPF_FOURCC) && \
+   (pf.dwFourCC == D3DFMT_DXT1))
+
+#define PF_IS_DXT3(pf) \
+  ((pf.dwFlags & DDPF_FOURCC) && \
+   (pf.dwFourCC == D3DFMT_DXT3))
+
+#define PF_IS_DXT5(pf) \
+  ((pf.dwFlags & DDPF_FOURCC) && \
+   (pf.dwFourCC == D3DFMT_DXT5))
+
+#define PF_IS_BGRA8(pf) \
+  ((pf.dwFlags & DDPF_RGB) && \
+   (pf.dwFlags & DDPF_ALPHAPIXELS) && \
+   (pf.dwRGBBitCount == 32) && \
+   (pf.dwRBitMask == 0xff0000) && \
+   (pf.dwGBitMask == 0xff00) && \
+   (pf.dwBBitMask == 0xff) && \
+   (pf.dwAlphaBitMask == 0xff000000U))
+
+#define PF_IS_BGR8(pf) \
+  ((pf.dwFlags & DDPF_ALPHAPIXELS) && \
+  !(pf.dwFlags & DDPF_ALPHAPIXELS) && \
+   (pf.dwRGBBitCount == 24) && \
+   (pf.dwRBitMask == 0xff0000) && \
+   (pf.dwGBitMask == 0xff00) && \
+   (pf.dwBBitMask == 0xff))
+
+#define PF_IS_BGR5A1(pf) \
+  ((pf.dwFlags & DDPF_RGB) && \
+   (pf.dwFlags & DDPF_ALPHAPIXELS) && \
+   (pf.dwRGBBitCount == 16) && \
+   (pf.dwRBitMask == 0x00007c00) && \
+   (pf.dwGBitMask == 0x000003e0) && \
+   (pf.dwBBitMask == 0x0000001f) && \
+   (pf.dwAlphaBitMask == 0x00008000))
+
+#define PF_IS_BGR565(pf) \
+  ((pf.dwFlags & DDPF_RGB) && \
+  !(pf.dwFlags & DDPF_ALPHAPIXELS) && \
+   (pf.dwRGBBitCount == 16) && \
+   (pf.dwRBitMask == 0x0000f800) && \
+   (pf.dwGBitMask == 0x000007e0) && \
+   (pf.dwBBitMask == 0x0000001f))
+
+#define PF_IS_INDEX8(pf) \
+  ((pf.dwFlags & DDPF_INDEXED) && \
+   (pf.dwRGBBitCount == 8))
+
+struct DDSPixelFormat {
+  unsigned int pf_size;
+  unsigned int pf_flags;
+  unsigned int four_cc;
+  unsigned int rgb_bitcount;
+  unsigned int r_mask;
+  unsigned int g_mask;
+  unsigned int b_mask;
+  unsigned int a_mask;
+};
+
+struct DDSCaps2 {
+  unsigned int caps1;
+  unsigned int caps2;
+  unsigned int ddsx;
+};
+
+struct DDSHeader {
+  unsigned int dds_magic;
+  unsigned int dds_size;
+  unsigned int dds_flags;
+  unsigned int height;
+  unsigned int width;
+  unsigned int pitch;
+  unsigned int depth;
+  unsigned int num_levels;
+
+  DDSPixelFormat pf;
+  DDSCaps2 caps;
+};
+
+struct DdsLoadInfo {
+  bool compressed;
+  bool swap;
+  bool palette;
+  unsigned int divSize;
+  unsigned int blockBytes;
+  /*
+  GLenum internalFormat;
+  GLenum externalFormat;
+  GLenum type;
+  */
+};
+
+DdsLoadInfo loadInfoDXT1 = {
+  true, false, false, 4, 8, // GL_COMPRESSED_RGBA_S3TC_DXT1
+};
+DdsLoadInfo loadInfoDXT3 = {
+  true, false, false, 4, 16, // GL_COMPRESSED_RGBA_S3TC_DXT3
+};
+DdsLoadInfo loadInfoDXT5 = {
+  true, false, false, 4, 16, // GL_COMPRESSED_RGBA_S3TC_DXT5
+};
+DdsLoadInfo loadInfoBGRA8 = {
+  false, false, false, 1, 4, // GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE
+};
+DdsLoadInfo loadInfoBGR8 = {
+  false, false, false, 1, 3, // GL_RGB8, GL_BGR, GL_UNSIGNED_BYTE
+};
+DdsLoadInfo loadInfoBGR5A1 = {
+  false, true, false, 1, 2, // GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV
+};
+DdsLoadInfo loadInfoBGR565 = {
+  false, true, false, 1, 2, // GL_RGB5, GL_RGB, GL_UNSIGNED_SHORT_5_6_5
+};
+DdsLoadInfo loadInfoIndex8 = {
+  false, false, true, 1, 1, // GL_RGB8, GL_BGRA, GL_UNSIGNED_BYTE
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::Constructor
@@ -781,6 +945,155 @@ write_txo(ostream &out, const string &filename) const {
       << get_name() << " does not have ram image\n";
     return false;
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds
+//       Access: Published
+//  Description: Reads the texture from a DDS file object.  This is a
+//               Microsoft-defined file format; it is similar in
+//               principle to a txo object, in that it is designed to
+//               contain the texture image in a form as similar as
+//               possible to its runtime image, and it can contain
+//               mipmaps, pre-compressed textures, and so on.
+//
+//               As with read_txo, the filename is just for reference.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds(istream &in, const string &filename, bool header_only) {
+  ReMutexHolder holder(_lock);
+  
+  StreamReader dds(in);
+  
+  // DDS header
+  DDSHeader header;
+  header.dds_magic = dds.get_uint32();
+  header.dds_size = dds.get_uint32();
+  header.dds_flags = dds.get_uint32();
+  header.height = dds.get_uint32();
+  header.width = dds.get_uint32();
+  header.pitch = dds.get_uint32();
+  header.depth = dds.get_uint32();
+  header.num_levels = dds.get_uint32();
+  dds.skip_bytes(44);
+  
+  // Pixelformat
+  header.pf.pf_size = dds.get_uint32();
+  header.pf.pf_flags = dds.get_uint32();
+  header.pf.four_cc = dds.get_uint32();
+  header.pf.rgb_bitcount = dds.get_uint32();
+  header.pf.r_mask = dds.get_uint32();
+  header.pf.g_mask = dds.get_uint32();
+  header.pf.b_mask = dds.get_uint32();
+  header.pf.a_mask = dds.get_uint32();
+  
+  // Caps
+  header.caps.caps1 = dds.get_uint32();
+  header.caps.caps2 = dds.get_uint32();
+  header.caps.ddsx = dds.get_uint32();
+  dds.skip_bytes(4);
+  
+  if (header.dds_magic != DDS_MAGIC || (in.fail() || in.eof())) {
+    gobj_cat.error()
+      << filename << " is not a DDS file.\n";
+    return false;
+  }
+
+  if ((header.dds_flags & DDSD_MIPMAPCOUNT) == 0) {
+    // No bit set means only the base mipmap level.
+    header.num_levels = 1;
+  }
+
+  // Determine the function to use to read the DDS image.
+  typedef bool (*ReadDDSLevelFunc)(Texture *tex, const DDSHeader &header, 
+                                   int n, istream &in);
+  ReadDDSLevelFunc func = NULL;
+
+  Format format = F_rgb;
+
+  clear_ram_image();
+  CompressionMode compression = CM_off;
+
+  if (header.pf.pf_flags & DDPF_FOURCC) {
+    // Some compressed texture format.
+    if (header.pf.four_cc == 0x31545844) {   // 'DXT1', little-endian.
+      compression = CM_dxt1;
+    } else if (header.pf.four_cc == 0x33545844) {   // 'DXT3'
+      compression = CM_dxt3;
+    } else if (header.pf.four_cc == 0x35545844) {   // 'DXT5'
+      compression = CM_dxt5;
+    } else {
+      gobj_cat.error()
+        << filename << ": unsupported texture compression.\n";
+      return false;
+    }
+
+    func = read_dds_level_compressed;
+
+  } else {
+    // An uncompressed texture format.
+    func = read_dds_level_generic_uncompressed;
+
+    if (header.pf.pf_flags & DDPF_ALPHAPIXELS) {
+      // An uncompressed format that involves alpha.
+      format = F_rgba;
+      if (header.pf.rgb_bitcount == 32 &&
+          header.pf.r_mask == 0x000000ff &&
+          header.pf.g_mask == 0x0000ff00 &&
+          header.pf.b_mask == 0x00ff0000 &&
+          header.pf.a_mask == 0xff000000U) {
+        func = read_dds_level_abgr8;
+      } else if (header.pf.rgb_bitcount == 32 &&
+          header.pf.r_mask == 0x00ff0000 &&
+          header.pf.g_mask == 0x0000ff00 &&
+          header.pf.b_mask == 0x000000ff &&
+          header.pf.a_mask == 0xff000000U) {
+        func = read_dds_level_rgba8;
+      }
+    } else {
+      // An uncompressed format that doesn't involve alpha.
+      if (header.pf.rgb_bitcount == 24 &&
+          header.pf.r_mask == 0x00ff0000 &&
+          header.pf.g_mask == 0x0000ff00 &&
+          header.pf.b_mask == 0x000000ff) {
+        func = read_dds_level_rgb8;
+      } else if (header.pf.rgb_bitcount == 24 &&
+                 header.pf.r_mask == 0x000000ff &&
+                 header.pf.g_mask == 0x0000ff00 &&
+                 header.pf.b_mask == 0x00ff0000) {
+        func = read_dds_level_bgr8;
+      }
+    }
+  }
+
+  setup_2d_texture(header.width, header.height, T_unsigned_byte, format);
+  _orig_file_x_size = _x_size;
+  _orig_file_y_size = _y_size;
+  _compression = compression;
+  _ram_image_compression = compression;
+
+  if (!header_only) {
+    for (int n = 0; n < (int)header.num_levels; ++n) {
+      if (!func(this, header, n, in)) {
+        return false;
+      }
+    }
+    _has_read_pages = true;
+    _has_read_mipmaps = true;
+    _num_mipmap_levels_read = _ram_images.size();
+  }
+
+  if (in.fail() || in.eof()) {
+    gobj_cat.error()
+      << filename << ": truncated DDS file.\n";
+    return false;
+  }
+
+  ++_properties_modified;
+  _loaded_from_image = true;
+  _loaded_from_txo = true;
 
   return true;
 }
@@ -2193,6 +2506,13 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     return read_txo_file(fullpath);
   }
 
+  if (is_dds_filename(fullpath)) {
+    if (record != (BamCacheRecord *)NULL) {
+      record->add_dependent_file(fullpath);
+    }
+    return read_dds_file(fullpath, header_only);
+  }
+
   // If read_pages or read_mipmaps is specified, then z and n actually
   // indicate z_size and n_size, respectively--the numerical limits on
   // which to search for filenames.
@@ -2865,7 +3185,6 @@ reload_ram_image() {
 
   gobj_cat.info()
     << "Reloading texture " << get_name() << "\n";
-  do_make_ram_image();
 
   int z = 0;
   int n = 0;
@@ -3397,6 +3716,410 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_bgr8
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in BGR8 format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
+                    int n, istream &in) {
+  // This is laid out in order B, G, R.
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t row_bytes = x_size * 3;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    for (int x = 0; x < x_size; ++x) {
+      unsigned int b = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int r = (unsigned char)in.get();
+
+      store_unscaled_byte(p, b);
+      store_unscaled_byte(p, g);
+      store_unscaled_byte(p, r);
+    }
+    nassertr(p <= image.p() + size, false);
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_rgb8
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in RGB8 format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
+                    int n, istream &in) {
+  // This is laid out in order R, G, B.
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t row_bytes = x_size * 3;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    for (int x = 0; x < x_size; ++x) {
+      unsigned int r = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int b = (unsigned char)in.get();
+
+      store_unscaled_byte(p, b);
+      store_unscaled_byte(p, g);
+      store_unscaled_byte(p, r);
+    }
+    nassertr(p <= image.p() + size, false);
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_abgr8
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in ABGR8 format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
+                     int n, istream &in) {
+  // This is laid out in order R, G, B, A.
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t row_bytes = x_size * 4;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    for (int x = 0; x < x_size; ++x) {
+      unsigned int r = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int b = (unsigned char)in.get();
+      unsigned int a = (unsigned char)in.get();
+
+      store_unscaled_byte(p, b);
+      store_unscaled_byte(p, g);
+      store_unscaled_byte(p, r);
+      store_unscaled_byte(p, a);
+    }
+    nassertr(p <= image.p() + size, false);
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_rgba8
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file in RGBA8 format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
+                     int n, istream &in) {
+  // This is actually laid out in order B, G, R, A.
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t row_bytes = x_size * 4;
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    for (int x = 0; x < x_size; ++x) {
+      unsigned int b = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int r = (unsigned char)in.get();
+      unsigned int a = (unsigned char)in.get();
+
+      store_unscaled_byte(p, b);
+      store_unscaled_byte(p, g);
+      store_unscaled_byte(p, r);
+      store_unscaled_byte(p, a);
+    }
+    nassertr(p <= image.p() + size, false);
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_generic_uncompressed
+//       Access: Private, Static
+//  Description: Called by read_dds for a DDS file whose format isn't
+//               one we've specifically optimized.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header, 
+                                    int n, istream &in) {
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  int pitch = (x_size * header.pf.rgb_bitcount) / 8;
+
+  // MS says the pitch can be supplied in the header file and must be
+  // DWORD aligned, but this appears to apply to level 0 mipmaps only
+  // (where it almost always will be anyway).  Other mipmap levels
+  // seem to be tightly packed, but there isn't a separate pitch for
+  // each mipmap level.  Weird.
+  if (n == 0) {
+    pitch = ((pitch + 3) / 4) * 4;
+    if (header.dds_flags & DDSD_PITCH) {
+      pitch = header.pitch;
+    }
+  }
+
+  int bpp = header.pf.rgb_bitcount / 8;
+  int skip_bytes = pitch - (bpp * x_size);
+  nassertr(skip_bytes >= 0, false);
+
+  unsigned int r_mask = header.pf.r_mask;
+  unsigned int g_mask = header.pf.g_mask;
+  unsigned int b_mask = header.pf.b_mask;
+  unsigned int a_mask = header.pf.a_mask;
+
+  // Determine the number of bits to shift each mask to the right so
+  // that the lowest on bit is at bit 0.
+  int r_shift = get_lowest_on_bit(r_mask);
+  int g_shift = get_lowest_on_bit(g_mask);
+  int b_shift = get_lowest_on_bit(b_mask);
+  int a_shift = get_lowest_on_bit(a_mask);
+
+  // Then determine the scale factor required to raise the highest
+  // color value to 0xff000000.
+  unsigned int r_scale = 0;
+  if (r_mask != 0) {
+    r_scale = 0xff000000 / (r_mask >> r_shift);
+  }
+  unsigned int g_scale = 0;
+  if (g_mask != 0) {
+    g_scale = 0xff000000 / (g_mask >> g_shift);
+  }
+  unsigned int b_scale = 0;
+  if (b_mask != 0) {
+    b_scale = 0xff000000 / (b_mask >> b_shift);
+  }
+  unsigned int a_scale = 0;
+  if (a_mask != 0) {
+    a_scale = 0xff000000 / (a_mask >> a_shift);
+  }
+
+  bool add_alpha = has_alpha(tex->_format);
+
+  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t row_bytes = x_size * tex->get_num_components();
+  PTA_uchar image = PTA_uchar::empty_array(size);
+  for (int y = y_size - 1; y >= 0; --y) {
+    unsigned char *p = image.p() + y * row_bytes;
+    for (int x = 0; x < x_size; ++x) {
+
+      // Read a little-endian numeric value of bpp bytes.
+      unsigned int pixel = 0;
+      int shift = 0;
+      for (int b = 0; b < bpp; ++b) {
+        unsigned int ch = (unsigned char)in.get();
+        pixel |= (ch << shift);
+        shift += 8;
+      }
+
+      // Then break apart that value into its R, G, B, and maybe A
+      // components.
+      unsigned int r = (((pixel & r_mask) >> r_shift) * r_scale) >> 24;
+      unsigned int g = (((pixel & g_mask) >> g_shift) * g_scale) >> 24;
+      unsigned int b = (((pixel & b_mask) >> b_shift) * b_scale) >> 24;
+
+      // Store the components in the Texture's image data.
+      store_unscaled_byte(p, b);
+      store_unscaled_byte(p, g);
+      store_unscaled_byte(p, r);
+      if (add_alpha) {
+        unsigned int a = (((pixel & a_mask) >> a_shift) * a_scale) >> 24;
+        store_unscaled_byte(p, a);
+      }
+    }
+    nassertr(p <= image.p() + size, false);
+    for (int b = 0; b < skip_bytes; ++b) {
+      in.get();
+    }
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_compressed
+//       Access: Private, Static
+//  Description: Called by read_dds for a compressed DDS file format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_compressed(Texture *tex, const DDSHeader &header, 
+                          int n, istream &in) {
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  int div = 4;
+  int block_bytes = 8;
+
+  switch (tex->_ram_image_compression) {
+  case CM_dxt3:
+  case CM_dxt5:
+    block_bytes = 16;
+    break;
+  }
+
+  int linear_size = max(div, x_size) / div * max(div, y_size) / div * block_bytes;
+
+  if (n == 0) {
+    if (header.dds_flags & DDSD_LINEARSIZE) {
+      nassertr(linear_size == header.pitch, false);
+    }
+  }
+
+  PTA_uchar image = PTA_uchar::empty_array(linear_size);
+  in.read((char *)image.p(), linear_size);
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
+      
+
+      /*
+  DdsLoadInfo * li;
+
+  if( PF_IS_DXT1( hdr.sPixelFormat ) ) {
+    li = &loadInfoDXT1;
+  }
+  else if( PF_IS_DXT3( hdr.sPixelFormat ) ) {
+    li = &loadInfoDXT3;
+  }
+  else if( PF_IS_DXT5( hdr.sPixelFormat ) ) {
+    li = &loadInfoDXT5;
+  }
+  else if( PF_IS_BGRA8( hdr.sPixelFormat ) ) {
+    li = &loadInfoBGRA8;
+  }
+  else if( PF_IS_BGR8( hdr.sPixelFormat ) ) {
+    li = &loadInfoBGR8;
+  }
+  else if( PF_IS_BGR5A1( hdr.sPixelFormat ) ) {
+    li = &loadInfoBGR5A1;
+  }
+  else if( PF_IS_BGR565( hdr.sPixelFormat ) ) {
+    li = &loadInfoBGR565;
+  }
+  else if( PF_IS_INDEX8( hdr.sPixelFormat ) ) {
+    li = &loadInfoIndex8;
+  }
+  else {
+    goto failure;
+  }
+
+  //fixme: do cube maps later
+  //fixme: do 3d later
+  x = xSize;
+  y = ySize;
+  glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE );
+  mipMapCount = (hdr.dwFlags & DDSD_MIPMAPCOUNT) ? hdr.dwMipMapCount : 1;
+  if( mipMapCount > 1 ) {
+    hasMipmaps_ = true;
+  }
+  if( li->compressed ) {
+    size_t size = max( li->divSize, x )/li->divSize * max( li->divSize, y )/li->divSize * li->blockBytes;
+    assert( size == hdr.dwPitchOrLinearSize );
+    assert( hdr.dwFlags & DDSD_LINEARSIZE );
+    unsigned char * data = (unsigned char *)malloc( size );
+    if( !data ) {
+      goto failure;
+    }
+    format = cFormat = li->internalFormat;
+    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
+      fread( data, 1, size, f );
+      glCompressedTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, size, data );
+      gl->updateError();
+      x = (x+1)>>1;
+      y = (y+1)>>1;
+      size = max( li->divSize, x )/li->divSize * max( li->divSize, y )/li->divSize * li->blockBytes;
+    }
+    free( data );
+  }
+  else if( li->palette ) {
+    //  currently, we unpack palette into BGRA
+    //  I'm not sure we always get pitch...
+    assert( hdr.dwFlags & DDSD_PITCH );
+    assert( hdr.sPixelFormat.dwRGBBitCount == 8 );
+    size_t size = hdr.dwPitchOrLinearSize * ySize;
+    //  And I'm even less sure we don't get padding on the smaller MIP levels...
+    assert( size == x * y * li->blockBytes );
+    format = li->externalFormat;
+    cFormat = li->internalFormat;
+    unsigned char * data = (unsigned char *)malloc( size );
+    unsigned int palette[ 256 ];
+    unsigned int * unpacked = (unsigned int *)malloc( size*sizeof( unsigned int ) );
+    fread( palette, 4, 256, f );
+    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
+      fread( data, 1, size, f );
+      for( unsigned int zz = 0; zz < size; ++zz ) {
+        unpacked[ zz ] = palette[ data[ zz ] ];
+      }
+      glPixelStorei( GL_UNPACK_ROW_LENGTH, y );
+      glTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, li->externalFormat, li->type, unpacked );
+      gl->updateError();
+      x = (x+1)>>1;
+      y = (y+1)>>1;
+      size = x * y * li->blockBytes;
+    }
+    free( data );
+    free( unpacked );
+  }
+  else {
+    if( li->swap ) {
+      glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_TRUE );
+    }
+    size = x * y * li->blockBytes;
+    format = li->externalFormat;
+    cFormat = li->internalFormat;
+    unsigned char * data = (unsigned char *)malloc( size );
+    //fixme: how are MIP maps stored for 24-bit if pitch != ySize*3 ?
+    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
+      fread( data, 1, size, f );
+      glPixelStorei( GL_UNPACK_ROW_LENGTH, y );
+      glTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, li->externalFormat, li->type, data );
+      gl->updateError();
+      x = (x+1)>>1;
+      y = (y+1)>>1;
+      size = x * y * li->blockBytes;
+    }
+    free( data );
+    glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_FALSE );
+    gl->updateError();
+  }
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipMapCount-1 );
+  gl->updateError();
+
+  return true;
+
+ failure:
+  return false;
+
+      */
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_prepared
 //       Access: Private
 //  Description: Removes the indicated PreparedGraphicsObjects table
@@ -3538,6 +4261,44 @@ read_txo_file(const Filename &fullpath) {
   istream *in = file->open_read_file(true);
   bool success = read_txo(*in, fullpath);
   vfs->close_read_file(in);
+  
+  set_fullpath(fullpath);
+  clear_alpha_fullpath();
+  _keep_ram_image = false;
+  
+  return success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_file
+//       Access: Private
+//  Description: Called internally when read() detects a DDS file.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_file(const Filename &fullpath, bool header_only) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  Filename filename = Filename::binary_filename(fullpath);
+  PT(VirtualFile) file = vfs->get_file(filename);
+  if (file == (VirtualFile *)NULL) {
+    // No such file.
+    gobj_cat.error()
+      << "Could not find " << fullpath << "\n";
+    return false;
+  }
+  
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Reading DDS file " << filename << "\n";
+  }
+  
+  istream *in = file->open_read_file(true);
+  bool success = read_dds(*in, fullpath, header_only);
+  vfs->close_read_file(in);
+
+  if (!has_name()) {
+    set_name(fullpath.get_basename_wo_extension());
+  }
   
   set_fullpath(fullpath);
   clear_alpha_fullpath();

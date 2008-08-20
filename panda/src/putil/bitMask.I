@@ -429,12 +429,7 @@ get_num_off_bits() const {
 template<class WType, int nbits>
 INLINE int BitMask<WType, nbits>::
 get_lowest_on_bit() const {
-  if (_word == 0) {
-    return -1;
-  }
-
-  WordType w = (_word & (~_word + 1));
-  return count_bits_in_word(w - 1);
+  return ::get_lowest_on_bit(_word);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -598,7 +598,7 @@ load_model(const NodePath &parent, Filename filename) {
     if (model_type == (LoaderFileType *)NULL) {
       // The extension isn't a known model file type; is it a known
       // image file extension?
-      if (extension == "txo") {
+      if (extension == "txo" || downcase(extension) == "dds") {
         // A texture object.  Not exactly an image, but certainly a
         // texture.
         is_image = true;
@@ -1162,17 +1162,11 @@ load_image_as_model(const Filename &filename) {
     x_size = vtex->get_video_width();
     y_size = vtex->get_video_height();
     tex_scale = vtex->get_tex_scale();
-  } else if (tex->is_of_type(MovieTexture::get_class_type())) {
-    // Don't try to read a PNMImageHeader.
-  } else if (!tex->get_loaded_from_txo()) {
+  } else {
     // Get the size from the original image (the texture may have
     // scaled it to make a power of 2).
-    PNMImageHeader header;
-    if (header.read_header(filename)) {
-      x_size = header.get_x_size();
-      y_size = header.get_y_size();
-      has_alpha = header.has_alpha();
-    }
+    x_size = tex->get_orig_file_x_size();
+    y_size = tex->get_orig_file_y_size();
   }
 
   // Yes, it is an image file; make a texture out of it.

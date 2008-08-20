@@ -1474,6 +1474,23 @@ is_txo_filename(const Filename &fullpath) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_dds_filename
+//       Access: Private, Static
+//  Description: Returns true if the indicated filename ends in .dds
+//               or .dds.pz, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+is_dds_filename(const Filename &fullpath) {
+  string extension = fullpath.get_extension();
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
+  return (downcase(extension) == "dds");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_textures_power_2
 //       Access: Published, Static
 //  Description: Set this flag to ATS_none, ATS_up, or ATS_down

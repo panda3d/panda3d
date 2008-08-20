@@ -94,6 +94,36 @@ flood_bits_up(PN_uint64 x) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_lowest_on_bit
+//  Description: Returns the index of the lowest 1 bit in the word.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+INLINE int
+get_lowest_on_bit(PN_uint32 x) {
+  if (x == 0) {
+    return -1;
+  }
+
+  PN_uint32 w = (x & (~x + 1));
+  return count_bits_in_word(w - 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_lowest_on_bit
+//  Description: Returns the index of the lowest 1 bit in the word.
+//               Returns -1 if there are no 1 bits.
+////////////////////////////////////////////////////////////////////
+INLINE int
+get_lowest_on_bit(PN_uint64 x) {
+  if (x == 0) {
+    return -1;
+  }
+
+  PN_uint64 w = (x & (~x + 1));
+  return count_bits_in_word(w - 1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_highest_on_bit
 //  Description: Returns the index of the highest 1 bit in the word.
 //               Returns -1 if there are no 1 bits.

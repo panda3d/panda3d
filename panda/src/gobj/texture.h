@@ -29,6 +29,7 @@
 #include "reMutex.h"
 #include "reMutexHolder.h"
 #include "loaderOptions.h"
+#include "string_utils.h"
 
 class PNMImage;
 class TextureContext;
@@ -37,6 +38,7 @@ class PreparedGraphicsObjects;
 class CullTraverser;
 class CullTraverserData;
 class BamCacheRecord;
+struct DDSHeader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
@@ -231,6 +233,7 @@ PUBLISHED:
 
   bool read_txo(istream &in, const string &filename = "stream");
   bool write_txo(ostream &out, const string &filename = "stream") const;
+  bool read_dds(istream &in, const string &filename = "stream", bool header_only = false);
 
   INLINE bool load(const PNMImage &pnmimage);
   INLINE bool load(const PNMImage &pnmimage, int z, int n);
@@ -463,6 +466,21 @@ private:
                                   int num_components, int component_width,
                                   CPTA_uchar image, size_t page_size, 
                                   int z);
+  static bool read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
+                                  int n, istream &in);
+  static bool read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
+                                  int n, istream &in);
+  static bool read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
+                                   int n, istream &in);
+  static bool read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
+                                   int n, istream &in);
+  static bool read_dds_level_generic_uncompressed(Texture *tex, 
+                                                  const DDSHeader &header, 
+                                                  int n, istream &in);
+  static bool read_dds_level_compressed(Texture *tex, 
+                                        const DDSHeader &header, 
+                                        int n, istream &in);
+
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   void consider_rescale(PNMImage &pnmimage, const string &name);
@@ -480,6 +498,9 @@ private:
   INLINE static bool is_txo_filename(const Filename &fullpath);
   bool read_txo_file(const Filename &fullpath);
   bool write_txo_file(const Filename &fullpath) const;
+
+  INLINE static bool is_dds_filename(const Filename &fullpath);
+  bool read_dds_file(const Filename &fullpath, bool header_only);
 
   void filter_2d_mipmap_pages(RamImage &to, const RamImage &from,
                               int x_size, int y_size);
