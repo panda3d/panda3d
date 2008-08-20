@@ -91,62 +91,6 @@ AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
 #define DDSCAPS2_CUBEMAP_NEGATIVEZ  0x00008000 
 #define DDSCAPS2_VOLUME             0x00200000 
 
-#define D3DFMT_DXT1     '1TXD'    //  DXT1 compression texture format 
-#define D3DFMT_DXT2     '2TXD'    //  DXT2 compression texture format 
-#define D3DFMT_DXT3     '3TXD'    //  DXT3 compression texture format 
-#define D3DFMT_DXT4     '4TXD'    //  DXT4 compression texture format 
-#define D3DFMT_DXT5     '5TXD'    //  DXT5 compression texture format 
-
-#define PF_IS_DXT1(pf) \
-  ((pf.dwFlags & DDPF_FOURCC) && \
-   (pf.dwFourCC == D3DFMT_DXT1))
-
-#define PF_IS_DXT3(pf) \
-  ((pf.dwFlags & DDPF_FOURCC) && \
-   (pf.dwFourCC == D3DFMT_DXT3))
-
-#define PF_IS_DXT5(pf) \
-  ((pf.dwFlags & DDPF_FOURCC) && \
-   (pf.dwFourCC == D3DFMT_DXT5))
-
-#define PF_IS_BGRA8(pf) \
-  ((pf.dwFlags & DDPF_RGB) && \
-   (pf.dwFlags & DDPF_ALPHAPIXELS) && \
-   (pf.dwRGBBitCount == 32) && \
-   (pf.dwRBitMask == 0xff0000) && \
-   (pf.dwGBitMask == 0xff00) && \
-   (pf.dwBBitMask == 0xff) && \
-   (pf.dwAlphaBitMask == 0xff000000U))
-
-#define PF_IS_BGR8(pf) \
-  ((pf.dwFlags & DDPF_ALPHAPIXELS) && \
-  !(pf.dwFlags & DDPF_ALPHAPIXELS) && \
-   (pf.dwRGBBitCount == 24) && \
-   (pf.dwRBitMask == 0xff0000) && \
-   (pf.dwGBitMask == 0xff00) && \
-   (pf.dwBBitMask == 0xff))
-
-#define PF_IS_BGR5A1(pf) \
-  ((pf.dwFlags & DDPF_RGB) && \
-   (pf.dwFlags & DDPF_ALPHAPIXELS) && \
-   (pf.dwRGBBitCount == 16) && \
-   (pf.dwRBitMask == 0x00007c00) && \
-   (pf.dwGBitMask == 0x000003e0) && \
-   (pf.dwBBitMask == 0x0000001f) && \
-   (pf.dwAlphaBitMask == 0x00008000))
-
-#define PF_IS_BGR565(pf) \
-  ((pf.dwFlags & DDPF_RGB) && \
-  !(pf.dwFlags & DDPF_ALPHAPIXELS) && \
-   (pf.dwRGBBitCount == 16) && \
-   (pf.dwRBitMask == 0x0000f800) && \
-   (pf.dwGBitMask == 0x000007e0) && \
-   (pf.dwBBitMask == 0x0000001f))
-
-#define PF_IS_INDEX8(pf) \
-  ((pf.dwFlags & DDPF_INDEXED) && \
-   (pf.dwRGBBitCount == 8))
-
 struct DDSPixelFormat {
   unsigned int pf_size;
   unsigned int pf_flags;
@@ -176,44 +120,6 @@ struct DDSHeader {
 
   DDSPixelFormat pf;
   DDSCaps2 caps;
-};
-
-struct DdsLoadInfo {
-  bool compressed;
-  bool swap;
-  bool palette;
-  unsigned int divSize;
-  unsigned int blockBytes;
-  /*
-  GLenum internalFormat;
-  GLenum externalFormat;
-  GLenum type;
-  */
-};
-
-DdsLoadInfo loadInfoDXT1 = {
-  true, false, false, 4, 8, // GL_COMPRESSED_RGBA_S3TC_DXT1
-};
-DdsLoadInfo loadInfoDXT3 = {
-  true, false, false, 4, 16, // GL_COMPRESSED_RGBA_S3TC_DXT3
-};
-DdsLoadInfo loadInfoDXT5 = {
-  true, false, false, 4, 16, // GL_COMPRESSED_RGBA_S3TC_DXT5
-};
-DdsLoadInfo loadInfoBGRA8 = {
-  false, false, false, 1, 4, // GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE
-};
-DdsLoadInfo loadInfoBGR8 = {
-  false, false, false, 1, 3, // GL_RGB8, GL_BGR, GL_UNSIGNED_BYTE
-};
-DdsLoadInfo loadInfoBGR5A1 = {
-  false, true, false, 1, 2, // GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV
-};
-DdsLoadInfo loadInfoBGR565 = {
-  false, true, false, 1, 2, // GL_RGB5, GL_RGB, GL_UNSIGNED_SHORT_5_6_5
-};
-DdsLoadInfo loadInfoIndex8 = {
-  false, false, true, 1, 1, // GL_RGB8, GL_BGRA, GL_UNSIGNED_BYTE
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -967,7 +873,7 @@ read_dds(istream &in, const string &filename, bool header_only) {
   
   StreamReader dds(in);
   
-  // DDS header
+  // DDS header (19 words)
   DDSHeader header;
   header.dds_magic = dds.get_uint32();
   header.dds_size = dds.get_uint32();
@@ -979,7 +885,7 @@ read_dds(istream &in, const string &filename, bool header_only) {
   header.num_levels = dds.get_uint32();
   dds.skip_bytes(44);
   
-  // Pixelformat
+  // Pixelformat (8 words)
   header.pf.pf_size = dds.get_uint32();
   header.pf.pf_flags = dds.get_uint32();
   header.pf.four_cc = dds.get_uint32();
@@ -989,10 +895,13 @@ read_dds(istream &in, const string &filename, bool header_only) {
   header.pf.b_mask = dds.get_uint32();
   header.pf.a_mask = dds.get_uint32();
   
-  // Caps
+  // Caps (4 words)
   header.caps.caps1 = dds.get_uint32();
   header.caps.caps2 = dds.get_uint32();
   header.caps.ddsx = dds.get_uint32();
+  dds.skip_bytes(4);
+
+  // Pad out to 32 words
   dds.skip_bytes(4);
   
   if (header.dds_magic != DDS_MAGIC || (in.fail() || in.eof())) {
@@ -3722,8 +3631,8 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
-                    int n, istream &in) {
-  // This is laid out in order B, G, R.
+                    int n, istream &in) { 
+  // This appears to be laid out in order R, G, B (?)
   int x_size = tex->get_expected_mipmap_x_size(n);
   int y_size = tex->get_expected_mipmap_y_size(n);
 
@@ -3733,9 +3642,9 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
     for (int x = 0; x < x_size; ++x) {
-      unsigned int b = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
       unsigned int r = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int b = (unsigned char)in.get();
 
       store_unscaled_byte(p, b);
       store_unscaled_byte(p, g);
@@ -3757,7 +3666,7 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
 bool Texture::
 read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
                     int n, istream &in) {
-  // This is laid out in order R, G, B.
+  // This appears to be laid out in order B, G, R (?)
   int x_size = tex->get_expected_mipmap_x_size(n);
   int y_size = tex->get_expected_mipmap_y_size(n);
 
@@ -3767,9 +3676,9 @@ read_dds_level_rgb8(Texture *tex, const DDSHeader &header,
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
     for (int x = 0; x < x_size; ++x) {
-      unsigned int r = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
       unsigned int b = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int r = (unsigned char)in.get();
 
       store_unscaled_byte(p, b);
       store_unscaled_byte(p, g);
