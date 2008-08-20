@@ -85,33 +85,34 @@ create_texture(DXScreenData &scrn) {
   bool needs_luminance = false;
   bool compress_texture = false;
   
-  nassertr(IS_VALID_PTR(get_texture()), false);
+  Texture *tex = get_texture();
+  nassertr(IS_VALID_PTR(tex), false);
 
   delete_texture();
 
   // bpp indicates requested fmt, not texture fmt
-  DWORD target_bpp = get_bits_per_pixel(get_texture()->get_format(), &num_alpha_bits);
-  DWORD num_color_channels = get_texture()->get_num_components();
+  DWORD target_bpp = get_bits_per_pixel(tex->get_format(), &num_alpha_bits);
+  DWORD num_color_channels = tex->get_num_components();
 
-//  printf ("format = %d \n", get_texture()->get_format());
+//  printf ("format = %d \n", tex->get_format());
 //  printf ("target_bpp %d, num_color_channels %d num_alpha_bits %d \n", target_bpp, num_color_channels, num_alpha_bits);
 
   //PRINT_REFCNT(dxgsg9, scrn._d3d9);
 
-  DWORD orig_width = (DWORD)get_texture()->get_x_size();
-  DWORD orig_height = (DWORD)get_texture()->get_y_size();
-  DWORD orig_depth = (DWORD)get_texture()->get_z_size();
+  DWORD orig_width = (DWORD)tex->get_x_size();
+  DWORD orig_height = (DWORD)tex->get_y_size();
+  DWORD orig_depth = (DWORD)tex->get_z_size();
 
-  if ((get_texture()->get_format() == Texture::F_luminance_alpha)||
-      (get_texture()->get_format() == Texture::F_luminance_alphamask) ||
-      (get_texture()->get_format() == Texture::F_luminance)) {
+  if ((tex->get_format() == Texture::F_luminance_alpha)||
+      (tex->get_format() == Texture::F_luminance_alphamask) ||
+      (tex->get_format() == Texture::F_luminance)) {
     needs_luminance = true;
   }
 
   if (num_alpha_bits > 0) {
     if (num_color_channels == 3) {
       dxgsg9_cat.error()
-        << "texture " << get_texture()->get_name()
+        << "texture " << tex->get_name()
         << " has no inherent alpha channel, but alpha format is requested!\n";
     }
   }
@@ -141,26 +142,19 @@ create_texture(DXScreenData &scrn) {
   }
 
   // check for texture compression
-  Texture::CompressionMode compression_mode = Texture::CM_off;
-  bool texture_stored_compressed = false;
   bool texture_wants_compressed = false;
-
-  compression_mode = get_texture()->get_ram_image_compression();
-  // assert my assumption that CM_dxt1..CM_dxt5 enum values are ascending without gaps
-  nassertr(((Texture::CM_dxt1+1)==Texture::CM_dxt2)&&((Texture::CM_dxt2+1)==Texture::CM_dxt3)&&((Texture::CM_dxt3+1)==Texture::CM_dxt4)&&((Texture::CM_dxt4+1)==Texture::CM_dxt5),false);
-  if ((compression_mode >= Texture::CM_dxt1) && (compression_mode <= Texture::CM_dxt5)) {
-    texture_stored_compressed = true;
-  }
+  Texture::CompressionMode compression_mode = tex->get_ram_image_compression();
+  bool texture_stored_compressed = compression_mode != Texture::CM_off;
   
   if (texture_stored_compressed) {
     texture_wants_compressed = true;  
   }
   else {
-    if (get_texture()->get_compression() == Texture::CM_off) {
+    if (tex->get_compression() == Texture::CM_off) {
       // no compression
     }
     else {    
-      if (get_texture()->get_compression() == Texture::CM_default) {
+      if (tex->get_compression() == Texture::CM_default) {
         // default = use "compressed-textures" config setting
         if (compressed_textures) {
           texture_wants_compressed = true;
@@ -172,13 +166,13 @@ create_texture(DXScreenData &scrn) {
     }  
   }
     
-  switch (get_texture()->get_texture_type()) {
+  switch (tex->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
     case Texture::TT_cube_map:
       // no compression for render target textures, or very small
       // textures
-      if (!get_texture()->get_render_to_texture() &&
+      if (!tex->get_render_to_texture() &&
           orig_width >= 4 && orig_height >= 4) {
         if (texture_wants_compressed){
           compress_texture = true;
@@ -199,7 +193,7 @@ create_texture(DXScreenData &scrn) {
 
   DWORD filter_caps;
 
-  switch (get_texture()->get_texture_type()) {
+  switch (tex->get_texture_type()) {
   case Texture::TT_1d_texture:
   case Texture::TT_2d_texture:
     filter_caps = scrn._d3dcaps.TextureFilterCaps;
@@ -293,15 +287,15 @@ create_texture(DXScreenData &scrn) {
 
   if (orig_width != target_width || orig_height != target_height ||
       orig_depth != target_depth) {
-    if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
+    if (tex->get_texture_type() == Texture::TT_3d_texture) {
       dxgsg9_cat.info()
-        << "Reducing size of " << get_texture()->get_name()
+        << "Reducing size of " << tex->get_name()
         << " from " << orig_width << "x" << orig_height << "x" << orig_depth
         << " to " << target_width << "x" << target_height
         << "x" << target_depth << "\n";
     } else {
       dxgsg9_cat.info()
-        << "Reducing size of " << get_texture()->get_name()
+        << "Reducing size of " << tex->get_name()
         << " from " << orig_width << "x" << orig_height
         << " to " << target_width << "x" << target_height << "\n";
     }
@@ -559,7 +553,7 @@ create_texture(DXScreenData &scrn) {
 
   // if we've gotten here, haven't found a match
   dxgsg9_cat.error()
-    << error_message << ": " << get_texture()->get_name() << endl
+    << error_message << ": " << tex->get_name() << endl
     << "NumColorChannels: " << num_color_channels << "; NumAlphaBits: "
     << num_alpha_bits << "; targetbpp: " <<target_bpp
     << "; _supported_tex_formats_mask: 0x"
@@ -572,7 +566,7 @@ create_texture(DXScreenData &scrn) {
  found_matching_format:
   // We found a suitable format that matches the texture's format.
 
-  if (get_texture()->get_match_framebuffer_format()) {
+  if (tex->get_match_framebuffer_format()) {
     // Instead of creating a texture with the found format, we will
     // need to make one that exactly matches the framebuffer's
     // format.  Look up what that format is.
@@ -610,7 +604,7 @@ create_texture(DXScreenData &scrn) {
 
   Texture::FilterType ft;
 
-  ft = get_texture()->get_magfilter();
+  ft = tex->get_magfilter();
   if ((ft != Texture::FT_linear) && ft != Texture::FT_nearest) {
     // mipmap settings make no sense for magfilter
     if (ft == Texture::FT_nearest_mipmap_nearest) {
@@ -624,10 +618,10 @@ create_texture(DXScreenData &scrn) {
       (filter_caps & D3DPTFILTERCAPS_MAGFLINEAR) == 0) {
     ft = Texture::FT_nearest;
   }
-  get_texture()->set_magfilter(ft);
+  tex->set_magfilter(ft);
 
   // figure out if we are mipmapping this texture
-  ft = get_texture()->get_minfilter();
+  ft = tex->get_minfilter();
   _has_mipmaps = false;
 
   if (!dx_ignore_mipmaps) {  // set if no HW mipmap capable
@@ -645,11 +639,11 @@ create_texture(DXScreenData &scrn) {
         if (ft != Texture::FT_linear_mipmap_linear) {
           dxgsg9_cat.spam()
             << "Forcing trilinear mipmapping on DX texture ["
-            << get_texture()->get_name() << "]\n";
+            << tex->get_name() << "]\n";
         }
       }
       ft = Texture::FT_linear_mipmap_linear;
-      get_texture()->set_minfilter(ft);
+      tex->set_minfilter(ft);
     }
 
   } else if ((ft == Texture::FT_nearest_mipmap_nearest) ||   // cvt to no-mipmap filter types
@@ -701,23 +695,23 @@ create_texture(DXScreenData &scrn) {
     break;
   }
 
-  get_texture()->set_minfilter(ft);
+  tex->set_minfilter(ft);
 
   uint aniso_degree;
 
   aniso_degree = 1;
   if (scrn._d3dcaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
-    aniso_degree = get_texture()->get_anisotropic_degree();
+    aniso_degree = tex->get_anisotropic_degree();
     if ((aniso_degree>scrn._d3dcaps.MaxAnisotropy) ||
         dx_force_anisotropic_filtering) {
       aniso_degree = scrn._d3dcaps.MaxAnisotropy;
     }
   }
-  get_texture()->set_anisotropic_degree(aniso_degree);
+  tex->set_anisotropic_degree(aniso_degree);
 
 #ifdef _DEBUG
   dxgsg9_cat.spam()
-    << "create_texture: setting aniso degree for " << get_texture()->get_name()
+    << "create_texture: setting aniso degree for " << tex->get_name()
     << " to: " << aniso_degree << endl;
 #endif
 
@@ -729,7 +723,7 @@ create_texture(DXScreenData &scrn) {
 
     if (dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
-        << "create_texture: generating mipmaps for " << get_texture()->get_name()
+        << "create_texture: generating mipmaps for " << tex->get_name()
         << endl;
     }
   } else {
@@ -740,7 +734,7 @@ create_texture(DXScreenData &scrn) {
   D3DPOOL pool;
 
   usage = 0;
-  if (get_texture()->get_render_to_texture ( )) {
+  if (tex->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
     pool = D3DPOOL_DEFAULT;
@@ -866,7 +860,7 @@ create_texture(DXScreenData &scrn) {
   if (_has_mipmaps) {
     data_size = (int) ((float) data_size * 1.3f);
   }
-  if (get_texture()->get_texture_type() == Texture::TT_cube_map) {
+  if (tex->get_texture_type() == Texture::TT_cube_map) {
     data_size *= 6;
   }
   update_data_size_bytes(data_size);
@@ -876,7 +870,7 @@ create_texture(DXScreenData &scrn) {
   attempts = 0;
   do
   {
-    switch (get_texture()->get_texture_type()) {
+    switch (tex->get_texture_type()) {
     case Texture::TT_1d_texture:
     case Texture::TT_2d_texture:
       hr = scrn._d3d_device->CreateTexture
@@ -916,7 +910,7 @@ create_texture(DXScreenData &scrn) {
 
   if (DEBUG_TEXTURES && dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
-      << "create_texture: " << get_texture()->get_name()
+      << "create_texture: " << tex->get_name()
       << " converting panda equivalent of " << D3DFormatStr(_d3d_format)
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
@@ -933,7 +927,7 @@ create_texture(DXScreenData &scrn) {
   }
 
   // must not put render to texture into LRU
-  if (!_managed && !get_texture()->get_render_to_texture()) {
+  if (!_managed && !tex->get_render_to_texture()) {
     if (_lru_page == 0) {
       Lru *lru;
 
@@ -945,14 +939,14 @@ create_texture(DXScreenData &scrn) {
         if (lru_page) {
           lru_page -> _m.v.type = GPT_Texture;
           lru_page -> _m.lru_page_type.pointer = this;
-          lru_page -> _m.name = get_texture()->get_filename();
+          lru_page -> _m.name = tex->get_filename();
 
           lru -> add_cached_page (LPP_New, lru_page);
           _lru_page = lru_page;
         }
       }
     }
-    get_texture()->texture_uploaded(scrn._dxgsg9);
+    tex->texture_uploaded(scrn._dxgsg9);
   }
   mark_loaded();
   
@@ -1505,7 +1499,6 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
   nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
 
   CPTA_uchar image = get_texture()->get_ram_image();
-  
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1556,30 +1549,26 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
   DWORD orig_depth = (DWORD) get_texture()->get_z_size();
   D3DFORMAT source_format = _d3d_format;
   
-  nassertr(IS_VALID_PTR((BYTE*)image.p()), E_FAIL);
-  
   // check for compressed textures and adjust source_format accordingly
-  if (get_texture()->get_compression() != Texture::CM_off) {
-    switch (get_texture()->get_ram_image_compression()) {
-      case Texture::CM_dxt1:
-          source_format = D3DFMT_DXT1;
-        break;
-      case Texture::CM_dxt2:
-          source_format = D3DFMT_DXT2;
-        break;
-      case Texture::CM_dxt3:
-          source_format = D3DFMT_DXT3;
-        break;
-      case Texture::CM_dxt4:
-          source_format = D3DFMT_DXT4;
-        break;
-      case Texture::CM_dxt5:
-          source_format = D3DFMT_DXT5;
-        break;
-      default:
-        // no known compression format.. no adjustment
-        break;
-    }
+  switch (get_texture()->get_ram_image_compression()) {
+  case Texture::CM_dxt1:
+    source_format = D3DFMT_DXT1;
+    break;
+  case Texture::CM_dxt2:
+    source_format = D3DFMT_DXT2;
+    break;
+  case Texture::CM_dxt3:
+    source_format = D3DFMT_DXT3;
+    break;
+  case Texture::CM_dxt4:
+    source_format = D3DFMT_DXT4;
+    break;
+  case Texture::CM_dxt5:
+    source_format = D3DFMT_DXT5;
+    break;
+  default:
+    // no known compression format.. no adjustment
+    break;
   }
   
   for (unsigned int di = 0; di < orig_depth; di++) {

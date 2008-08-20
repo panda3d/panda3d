@@ -1867,6 +1867,24 @@ reset() {
     }
   }
 
+  // check if compressed textures are supported
+  #define CHECK_FOR_DXTVERSION(num) \
+  if (_screen->_supported_tex_formats_mask & DXT##num##_FLAG) {\
+    if (dxgsg8_cat.is_debug()) {\
+      dxgsg8_cat.debug() << "Compressed texture format DXT" << #num << " supported \n";\
+    }\
+    _supports_compressed_texture = true;\
+    _compressed_texture_formats.set_bit(Texture::CM_dxt##num);\
+  }
+
+  CHECK_FOR_DXTVERSION(1)
+  CHECK_FOR_DXTVERSION(2)
+  CHECK_FOR_DXTVERSION(3)
+  CHECK_FOR_DXTVERSION(4)
+  CHECK_FOR_DXTVERSION(5)
+
+  #undef CHECK_FOR_DXTVERSION
+
   // s3 virge drivers sometimes give crap values for these
   if (_screen->_d3dcaps.MaxTextureWidth == 0)
     _screen->_d3dcaps.MaxTextureWidth = 256;
