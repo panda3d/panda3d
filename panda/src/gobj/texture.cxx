@@ -948,9 +948,9 @@ read_dds(istream &in, const string &filename, bool header_only) {
       return false;
     }
 
-    if (header.pf.pf_flags & DDPF_ALPHAPIXELS) {
-      format = F_rgba;
-    }
+    // All of the compressed formats support alpha, even DXT1 (to some
+    // extent, at least).
+    format = F_rgba;
 
   } else {
     // An uncompressed texture format.
