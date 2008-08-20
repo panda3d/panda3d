@@ -477,9 +477,15 @@ private:
   static bool read_dds_level_generic_uncompressed(Texture *tex, 
                                                   const DDSHeader &header, 
                                                   int n, istream &in);
-  static bool read_dds_level_compressed(Texture *tex, 
-                                        const DDSHeader &header, 
-                                        int n, istream &in);
+  static bool read_dds_level_dxt1(Texture *tex, 
+                                  const DDSHeader &header, 
+                                  int n, istream &in);
+  static bool read_dds_level_dxt23(Texture *tex, 
+                                   const DDSHeader &header, 
+                                   int n, istream &in);
+  static bool read_dds_level_dxt45(Texture *tex, 
+                                   const DDSHeader &header, 
+                                   int n, istream &in);
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 

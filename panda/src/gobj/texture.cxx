@@ -929,17 +929,28 @@ read_dds(istream &in, const string &filename, bool header_only) {
     // Some compressed texture format.
     if (header.pf.four_cc == 0x31545844) {   // 'DXT1', little-endian.
       compression = CM_dxt1;
+      func = read_dds_level_dxt1;
+    } else if (header.pf.four_cc == 0x32545844) {   // 'DXT2'
+      compression = CM_dxt2;
+      func = read_dds_level_dxt23;
     } else if (header.pf.four_cc == 0x33545844) {   // 'DXT3'
       compression = CM_dxt3;
+      func = read_dds_level_dxt23;
+    } else if (header.pf.four_cc == 0x34545844) {   // 'DXT4'
+      compression = CM_dxt4;
+      func = read_dds_level_dxt45;
     } else if (header.pf.four_cc == 0x35545844) {   // 'DXT5'
       compression = CM_dxt5;
+      func = read_dds_level_dxt45;
     } else {
       gobj_cat.error()
         << filename << ": unsupported texture compression.\n";
       return false;
     }
 
-    func = read_dds_level_compressed;
+    if (header.pf.pf_flags & DDPF_ALPHAPIXELS) {
+      format = F_rgba;
+    }
 
   } else {
     // An uncompressed texture format.
@@ -967,12 +978,12 @@ read_dds(istream &in, const string &filename, bool header_only) {
           header.pf.r_mask == 0x00ff0000 &&
           header.pf.g_mask == 0x0000ff00 &&
           header.pf.b_mask == 0x000000ff) {
-        func = read_dds_level_rgb8;
+        func = read_dds_level_bgr8;
       } else if (header.pf.rgb_bitcount == 24 &&
                  header.pf.r_mask == 0x000000ff &&
                  header.pf.g_mask == 0x0000ff00 &&
                  header.pf.b_mask == 0x00ff0000) {
-        func = read_dds_level_bgr8;
+        func = read_dds_level_rgb8;
       }
     }
   }
@@ -3632,7 +3643,7 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
 bool Texture::
 read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
                     int n, istream &in) { 
-  // This appears to be laid out in order R, G, B (?)
+  // This is in order B, G, R.
   int x_size = tex->get_expected_mipmap_x_size(n);
   int y_size = tex->get_expected_mipmap_y_size(n);
 
@@ -3642,9 +3653,9 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
     for (int x = 0; x < x_size; ++x) {
-      unsigned int r = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
       unsigned int b = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int r = (unsigned char)in.get();
 
       store_unscaled_byte(p, b);
       store_unscaled_byte(p, g);
@@ -3666,7 +3677,7 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
 bool Texture::
 read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
                     int n, istream &in) {
-  // This appears to be laid out in order B, G, R (?)
+  // This is in order R, G, B.
   int x_size = tex->get_expected_mipmap_x_size(n);
   int y_size = tex->get_expected_mipmap_y_size(n);
 
@@ -3676,9 +3687,9 @@ read_dds_level_rgb8(Texture *tex, const DDSHeader &header,
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
     for (int x = 0; x < x_size; ++x) {
-      unsigned int b = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
       unsigned int r = (unsigned char)in.get();
+      unsigned int g = (unsigned char)in.get();
+      unsigned int b = (unsigned char)in.get();
 
       store_unscaled_byte(p, b);
       store_unscaled_byte(p, g);
@@ -3870,27 +3881,25 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::read_dds_level_compressed
+//     Function: Texture::read_dds_level_dxt1
 //       Access: Private, Static
-//  Description: Called by read_dds for a compressed DDS file format.
+//  Description: Called by read_dds for DXT1 file format.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-read_dds_level_compressed(Texture *tex, const DDSHeader &header, 
-                          int n, istream &in) {
+read_dds_level_dxt1(Texture *tex, const DDSHeader &header, 
+                    int n, istream &in) {
   int x_size = tex->get_expected_mipmap_x_size(n);
   int y_size = tex->get_expected_mipmap_y_size(n);
 
-  int div = 4;
-  int block_bytes = 8;
+  static const int div = 4;
+  static const int block_bytes = 8;
 
-  switch (tex->_ram_image_compression) {
-  case CM_dxt3:
-  case CM_dxt5:
-    block_bytes = 16;
-    break;
-  }
-
-  int linear_size = max(div, x_size) / div * max(div, y_size) / div * block_bytes;
+  // The DXT1 image is divided into num_rows x num_cols blocks, where
+  // each block represents 4x4 pixels.
+  int num_cols = max(div, x_size) / div;
+  int num_rows = max(div, y_size) / div;
+  int row_length = num_cols * block_bytes;
+  int linear_size = row_length * num_rows;
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
@@ -3899,134 +3908,251 @@ read_dds_level_compressed(Texture *tex, const DDSHeader &header,
   }
 
   PTA_uchar image = PTA_uchar::empty_array(linear_size);
-  in.read((char *)image.p(), linear_size);
+
+  if (y_size >= 4) {
+    // We have to flip the image as we read it, because of DirectX's
+    // inverted sense of up.  That means we (a) reverse the order of the
+    // rows of blocks . . .
+    for (int ri = num_rows - 1; ri >= 0; --ri) {
+      unsigned char *p = image.p() + row_length * ri;
+      in.read((char *)p, row_length);
+      
+      for (int ci = 0; ci < num_cols; ++ci) {
+        // . . . and (b) within each block, we reverse the 4 individual
+        // rows of 4 pixels.
+        PN_uint32 *cells = (PN_uint32 *)p;
+        PN_uint32 w = cells[1];
+        w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
+        cells[1] = w;
+        
+        p += block_bytes;
+      }
+    }
+
+  } else if (y_size >= 2) {
+    // To invert a two-pixel high image, we just flip two rows within a cell.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+    
+    for (int ci = 0; ci < num_cols; ++ci) {
+      PN_uint32 *cells = (PN_uint32 *)p;
+      PN_uint32 w = cells[1];
+      w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
+      cells[1] = w;
+      
+      p += block_bytes;
+    }
+
+  } else if (y_size >= 1) {
+    // No need to invert a one-pixel-high image.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+  }
 
   tex->set_ram_mipmap_image(n, image);
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_dxt23
+//       Access: Private, Static
+//  Description: Called by read_dds for DXT2 or DXT3 file format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_dxt23(Texture *tex, const DDSHeader &header, 
+                     int n, istream &in) {
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
+
+  static const int div = 4;
+  static const int block_bytes = 16;
+
+  // The DXT3 image is divided into num_rows x num_cols blocks, where
+  // each block represents 4x4 pixels.  Unlike DXT1, each block
+  // consists of two 8-byte chunks, representing the alpha and color
+  // separately.
+  int num_cols = max(div, x_size) / div;
+  int num_rows = max(div, y_size) / div;
+  int row_length = num_cols * block_bytes;
+  int linear_size = row_length * num_rows;
+
+  if (n == 0) {
+    if (header.dds_flags & DDSD_LINEARSIZE) {
+      nassertr(linear_size == header.pitch, false);
+    }
+  }
+
+  PTA_uchar image = PTA_uchar::empty_array(linear_size);
+
+  if (y_size >= 4) {
+    // We have to flip the image as we read it, because of DirectX's
+    // inverted sense of up.  That means we (a) reverse the order of the
+    // rows of blocks . . .
+    for (int ri = num_rows - 1; ri >= 0; --ri) {
+      unsigned char *p = image.p() + row_length * ri;
+      in.read((char *)p, row_length);
       
+      for (int ci = 0; ci < num_cols; ++ci) {
+        // . . . and (b) within each block, we reverse the 4 individual
+        // rows of 4 pixels.
+        PN_uint32 *cells = (PN_uint32 *)p;
 
-      /*
-  DdsLoadInfo * li;
+        // Alpha.  The block is four 16-bit words of pixel data.
+        PN_uint32 w0 = cells[0];
+        PN_uint32 w1 = cells[1];
+        w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
+        w1 = ((w1 & 0xffff) << 16) | ((w1 & 0xffff0000U) >> 16);
+        cells[0] = w1;
+        cells[1] = w0;
 
-  if( PF_IS_DXT1( hdr.sPixelFormat ) ) {
-    li = &loadInfoDXT1;
-  }
-  else if( PF_IS_DXT3( hdr.sPixelFormat ) ) {
-    li = &loadInfoDXT3;
-  }
-  else if( PF_IS_DXT5( hdr.sPixelFormat ) ) {
-    li = &loadInfoDXT5;
-  }
-  else if( PF_IS_BGRA8( hdr.sPixelFormat ) ) {
-    li = &loadInfoBGRA8;
-  }
-  else if( PF_IS_BGR8( hdr.sPixelFormat ) ) {
-    li = &loadInfoBGR8;
-  }
-  else if( PF_IS_BGR5A1( hdr.sPixelFormat ) ) {
-    li = &loadInfoBGR5A1;
-  }
-  else if( PF_IS_BGR565( hdr.sPixelFormat ) ) {
-    li = &loadInfoBGR565;
-  }
-  else if( PF_IS_INDEX8( hdr.sPixelFormat ) ) {
-    li = &loadInfoIndex8;
-  }
-  else {
-    goto failure;
-  }
-
-  //fixme: do cube maps later
-  //fixme: do 3d later
-  x = xSize;
-  y = ySize;
-  glTexParameteri( GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE );
-  mipMapCount = (hdr.dwFlags & DDSD_MIPMAPCOUNT) ? hdr.dwMipMapCount : 1;
-  if( mipMapCount > 1 ) {
-    hasMipmaps_ = true;
-  }
-  if( li->compressed ) {
-    size_t size = max( li->divSize, x )/li->divSize * max( li->divSize, y )/li->divSize * li->blockBytes;
-    assert( size == hdr.dwPitchOrLinearSize );
-    assert( hdr.dwFlags & DDSD_LINEARSIZE );
-    unsigned char * data = (unsigned char *)malloc( size );
-    if( !data ) {
-      goto failure;
-    }
-    format = cFormat = li->internalFormat;
-    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
-      fread( data, 1, size, f );
-      glCompressedTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, size, data );
-      gl->updateError();
-      x = (x+1)>>1;
-      y = (y+1)>>1;
-      size = max( li->divSize, x )/li->divSize * max( li->divSize, y )/li->divSize * li->blockBytes;
-    }
-    free( data );
-  }
-  else if( li->palette ) {
-    //  currently, we unpack palette into BGRA
-    //  I'm not sure we always get pitch...
-    assert( hdr.dwFlags & DDSD_PITCH );
-    assert( hdr.sPixelFormat.dwRGBBitCount == 8 );
-    size_t size = hdr.dwPitchOrLinearSize * ySize;
-    //  And I'm even less sure we don't get padding on the smaller MIP levels...
-    assert( size == x * y * li->blockBytes );
-    format = li->externalFormat;
-    cFormat = li->internalFormat;
-    unsigned char * data = (unsigned char *)malloc( size );
-    unsigned int palette[ 256 ];
-    unsigned int * unpacked = (unsigned int *)malloc( size*sizeof( unsigned int ) );
-    fread( palette, 4, 256, f );
-    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
-      fread( data, 1, size, f );
-      for( unsigned int zz = 0; zz < size; ++zz ) {
-        unpacked[ zz ] = palette[ data[ zz ] ];
+        // Color.  Only the second 32-bit dword of the color block
+        // represents the pixel data.
+        PN_uint32 w = cells[3];
+        w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
+        cells[3] = w;
+        
+        p += block_bytes;
       }
-      glPixelStorei( GL_UNPACK_ROW_LENGTH, y );
-      glTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, li->externalFormat, li->type, unpacked );
-      gl->updateError();
-      x = (x+1)>>1;
-      y = (y+1)>>1;
-      size = x * y * li->blockBytes;
     }
-    free( data );
-    free( unpacked );
+
+  } else if (y_size >= 2) {
+    // To invert a two-pixel high image, we just flip two rows within a cell.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+    
+    for (int ci = 0; ci < num_cols; ++ci) {
+      PN_uint32 *cells = (PN_uint32 *)p;
+
+      PN_uint32 w0 = cells[0];
+      w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
+      cells[0] = w0;
+
+      PN_uint32 w = cells[3];
+      w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
+      cells[3] = w;
+      
+      p += block_bytes;
+    }
+
+  } else if (y_size >= 1) {
+    // No need to invert a one-pixel-high image.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
   }
-  else {
-    if( li->swap ) {
-      glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_TRUE );
-    }
-    size = x * y * li->blockBytes;
-    format = li->externalFormat;
-    cFormat = li->internalFormat;
-    unsigned char * data = (unsigned char *)malloc( size );
-    //fixme: how are MIP maps stored for 24-bit if pitch != ySize*3 ?
-    for( unsigned int ix = 0; ix < mipMapCount; ++ix ) {
-      fread( data, 1, size, f );
-      glPixelStorei( GL_UNPACK_ROW_LENGTH, y );
-      glTexImage2D( GL_TEXTURE_2D, ix, li->internalFormat, x, y, 0, li->externalFormat, li->type, data );
-      gl->updateError();
-      x = (x+1)>>1;
-      y = (y+1)>>1;
-      size = x * y * li->blockBytes;
-    }
-    free( data );
-    glPixelStorei( GL_UNPACK_SWAP_BYTES, GL_FALSE );
-    gl->updateError();
-  }
-  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipMapCount-1 );
-  gl->updateError();
+
+  tex->set_ram_mipmap_image(n, image);
 
   return true;
+}
 
- failure:
-  return false;
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_dds_level_dxt45
+//       Access: Private, Static
+//  Description: Called by read_dds for DXT4 or DXT5 file format.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_dds_level_dxt45(Texture *tex, const DDSHeader &header, 
+                     int n, istream &in) {
+  int x_size = tex->get_expected_mipmap_x_size(n);
+  int y_size = tex->get_expected_mipmap_y_size(n);
 
-      */
+  static const int div = 4;
+  static const int block_bytes = 16;
 
+  // The DXT5 image is similar to DXT3, in that there each 4x4 block
+  // of pixels consists of an alpha block and a color block, but the
+  // layout of the alpha block is different.
+  int num_cols = max(div, x_size) / div;
+  int num_rows = max(div, y_size) / div;
+  int row_length = num_cols * block_bytes;
+  int linear_size = row_length * num_rows;
+
+  if (n == 0) {
+    if (header.dds_flags & DDSD_LINEARSIZE) {
+      nassertr(linear_size == header.pitch, false);
+    }
+  }
+
+  PTA_uchar image = PTA_uchar::empty_array(linear_size);
+
+  if (y_size >= 4) {
+    // We have to flip the image as we read it, because of DirectX's
+    // inverted sense of up.  That means we (a) reverse the order of the
+    // rows of blocks . . .
+    for (int ri = num_rows - 1; ri >= 0; --ri) {
+      unsigned char *p = image.p() + row_length * ri;
+      in.read((char *)p, row_length);
+      
+      for (int ci = 0; ci < num_cols; ++ci) {
+        // . . . and (b) within each block, we reverse the 4 individual
+        // rows of 4 pixels.
+        PN_uint32 *cells = (PN_uint32 *)p;
+
+        // Alpha.  The block is one 16-bit word of reference values,
+        // followed by six words of pixel values, in 12-bit rows.
+        // Tricky to invert.
+        unsigned char p2 = p[2];
+        unsigned char p3 = p[3];
+        unsigned char p4 = p[4];
+        unsigned char p5 = p[5];
+        unsigned char p6 = p[6];
+        unsigned char p7 = p[7];
+
+        p[2] = ((p7 & 0xf) << 4) | ((p6 & 0xf0) >> 4);
+        p[3] = ((p5 & 0xf) << 4) | ((p7 & 0xf0) >> 4);
+        p[4] = ((p6 & 0xf) << 4) | ((p5 & 0xf0) >> 4);
+        p[5] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+        p[6] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+        p[7] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+        // Color.  Only the second 32-bit dword of the color block
+        // represents the pixel data.
+        PN_uint32 w = cells[3];
+        w = ((w & 0xff) << 24) | ((w & 0xff00) << 8) | ((w & 0xff0000) >> 8) | ((w & 0xff000000U) >> 24);
+        cells[3] = w;
+        
+        p += block_bytes;
+      }
+    }
+
+  } else if (y_size >= 2) {
+    // To invert a two-pixel high image, we just flip two rows within a cell.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+    
+    for (int ci = 0; ci < num_cols; ++ci) {
+      PN_uint32 *cells = (PN_uint32 *)p;
+
+      unsigned char p2 = p[2];
+      unsigned char p3 = p[3];
+      unsigned char p4 = p[4];
+      
+      p[2] = ((p4 & 0xf) << 4) | ((p3 & 0xf0) >> 4);
+      p[3] = ((p2 & 0xf) << 4) | ((p4 & 0xf0) >> 4);
+      p[4] = ((p3 & 0xf) << 4) | ((p2 & 0xf0) >> 4);
+
+      PN_uint32 w0 = cells[0];
+      w0 = ((w0 & 0xffff) << 16) | ((w0 & 0xffff0000U) >> 16);
+      cells[0] = w0;
+
+      PN_uint32 w = cells[3];
+      w = ((w & 0xff) << 8) | ((w & 0xff00) >> 8);
+      cells[3] = w;
+      
+      p += block_bytes;
+    }
+
+  } else if (y_size >= 1) {
+    // No need to invert a one-pixel-high image.
+    unsigned char *p = image.p();
+    in.read((char *)p, row_length);
+  }
+
+  tex->set_ram_mipmap_image(n, image);
+
+  return true;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_prepared
