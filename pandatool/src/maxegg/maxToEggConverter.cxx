@@ -669,7 +669,11 @@ make_polyset(INode *max_node, Mesh *mesh,
             egg_poly->set_vertex(2, verts[0]);
         }
 
-        set_material_attributes(*egg_poly, max_node->GetMtl(), &face);
+        const PandaMaterial &pmat = get_panda_material(max_node->GetMtl(), face.getMatID());
+        for (int i=0; i<pmat._texture_list.size(); i++) {
+            egg_poly->set_texture(pmat._texture_list[i]);
+        }
+        egg_poly->set_color(pmat._color);
     }
    
     // Now that we've added all the polygons (and created all the
@@ -836,15 +840,36 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
 //               and a primitive color.
 ////////////////////////////////////////////////////////////////////
 const MaxToEggConverter::PandaMaterial &MaxToEggConverter::
-get_material_textures(StdMat *maxMaterial) {
+get_panda_material(Mtl *mtl, MtlID matID) {
 
-    MaterialMap::iterator it = _material_map.find(maxMaterial);
+    MaterialMap::iterator it = _material_map.find(mtl);
     if (it != _material_map.end()) {
         return (*it).second;
     }
-
-    PandaMaterial &pandaMat = _material_map[maxMaterial];
+    
+    PandaMaterial &pandaMat = _material_map[mtl];
     pandaMat._color = Colorf(1,1,1,1);
+
+
+    // If it's a multi-material, dig down.
+        
+    while (( mtl != 0) && (mtl->ClassID() == Class_ID(MULTI_CLASS_ID, 0 ))) {
+        if (matID < mtl->NumSubMtls()) {
+            mtl = mtl->GetSubMtl(matID);
+        } else {
+            mtl = 0;
+        }
+    }
+
+    // If it's a null material or an incomprehensible material, return a blank.
+    
+    if ((mtl == 0) || (mtl->ClassID() != Class_ID(DMTL_CLASS_ID, 0 ))) {
+        return pandaMat;
+    }
+    
+    // Process the standard material.
+
+    StdMat *maxMaterial = (StdMat*)mtl;
 
     Texmap *diffuseTexmap;
     Texmap *transTexmap;
@@ -939,46 +964,6 @@ get_material_textures(StdMat *maxMaterial) {
     return pandaMat;
 }
         
-////////////////////////////////////////////////////////////////////
-//     Function: MaxToEggConverter::set_material_attributes
-//       Access: Private
-//  Description: Applies the known material attributes to the indicated
-//               egg primitive.
-////////////////////////////////////////////////////////////////////
-void MaxToEggConverter::
-set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face) {
-    //  Mtl *maxMaterial;
-    StdMat *maxStandardMaterial;
-    EggTexture *myEggTexture = null;
-    string outString;
-    string outHandle;
-    
-    //First, get the material data associated with this node.
-    if ( !maxMaterial ) {
-        return;
-    }
-
-    //Now, determine wether it's a standard or multi material
-    if ( maxMaterial->ClassID() == Class_ID(DMTL_CLASS_ID, 0 )) {
-        const PandaMaterial &pmat = get_material_textures((StdMat *)maxMaterial);
-        for (int i=0; i<pmat._texture_list.size(); i++) {
-            primitive.set_texture(pmat._texture_list[i]);
-        }
-        primitive.set_color(pmat._color);
-    } else if ( maxMaterial->ClassID() == Class_ID(MULTI_CLASS_ID, 0 )) {
-        // It's a multi-material.  Find the submaterial for this face.
-        // and call set_material_attributes again on the submaterial.
-        MtlID matID = face->getMatID();
-        if (matID < maxMaterial->NumSubMtls()) {
-            set_material_attributes(primitive, maxMaterial->GetSubMtl(matID), face);
-        }
-    } else {
-        // It's another non-standard material. At the moment, let's just 
-        // return
-        return;
-    }
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::apply_texture_properties
 //       Access: Private
