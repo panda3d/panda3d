@@ -106,6 +106,7 @@ public:
 PUBLISHED:
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE PointerToArray(TypeHandle type_handle = get_type_handle(Element));
+  INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
