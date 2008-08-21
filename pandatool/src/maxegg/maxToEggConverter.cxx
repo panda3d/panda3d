@@ -675,7 +675,7 @@ make_polyset(INode *max_node, Mesh *mesh,
         }
 
         for (int i=0; i<pmat._texture_list.size(); i++) {
-            egg_poly->set_texture(pmat._texture_list[i]);
+            egg_poly->add_texture(pmat._texture_list[i]);
         }
         egg_poly->set_color(pmat._color);
     }
@@ -866,7 +866,8 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     
     PandaMaterial &pandaMat = _material_map[mtl];
     pandaMat._color = Colorf(1,1,1,1);
-
+    pandaMat._any_diffuse = false;
+    pandaMat._any_opacity = false;
 
     // If it's a multi-material, dig down.
         
@@ -878,116 +879,169 @@ get_panda_material(Mtl *mtl, MtlID matID) {
         }
     }
 
-    // If it's a null material or an incomprehensible material, return a blank.
+    // If it's a standard material, we're good.
     
-    if ((mtl == 0) || (mtl->ClassID() != Class_ID(DMTL_CLASS_ID, 0 ))) {
-        return pandaMat;
-    }
-    
-    // Process the standard material.
-
-    StdMat *maxMaterial = (StdMat*)mtl;
-
-    Texmap *diffuseTexmap;
-    Texmap *transTexmap;
-    Bitmap *diffuseBitmap;
-    BitmapTex *diffuseBitmapTex;
-    BitmapTex *transBitmapTex;
-    bool has_diffuse_texture = false;
-    bool has_trans_texture = false;
-    Point3 diffuseColor = Point3(1, 1, 1);
-    int mapChan = 1;
-
-    // Access the Diffuse map and see if it's a Bitmap texture
-    diffuseTexmap = maxMaterial->GetSubTexmap(ID_DI);
-    if (diffuseTexmap && (diffuseTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
-        has_diffuse_texture = true;
-        diffuseBitmapTex = (BitmapTex *) diffuseTexmap;
-        mapChan = diffuseBitmapTex->GetMapChannel();
-    }
-
-    // Access the Opacity map and see if it's a Bitmap texture
-    transTexmap = maxMaterial->GetSubTexmap(ID_OP);
-    if (transTexmap && (transTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
-        has_trans_texture = true;
-        transBitmapTex = (BitmapTex *) transTexmap;
-        mapChan = transBitmapTex->GetMapChannel();
-    }
-    
-    if (has_diffuse_texture || has_trans_texture) {
-        ostringstream name_strm;
-        name_strm << "Tex" << ++_cur_tref;
-        EggTexture tex(name_strm.str(), "");
-        
-        if (has_diffuse_texture) {
-            // It is! 
-            Filename filename = Filename::from_os_specific(diffuseBitmapTex->GetMapName());
-            Filename fullpath, outpath;
-            _options->_path_replace->full_convert_path(filename, get_texture_path(),
-                                                       fullpath, outpath);
-            tex.set_filename(outpath);
-            tex.set_fullpath(fullpath);
-            apply_texture_properties(tex, maxMaterial);
-            // *** Must add stuff here for looking for transparencies
-            diffuseBitmap = diffuseBitmapTex->GetBitmap(0);
-            //Query some parameters of the bitmap to get the format option.
-            if ( has_trans_texture ) {
-                tex.set_format(EggTexture::F_rgba);
-                if (stricmp(diffuseBitmapTex->GetMapName(),
-                            transBitmapTex->GetMapName()) == 0) {
-                    // nothing more needs to be done
-                } else {
-                    filename = Filename::from_os_specific(transBitmapTex->GetMapName());
-                    _options->_path_replace->full_convert_path(filename, get_texture_path(),
-                                                               fullpath, outpath);
-                    tex.set_alpha_filename(outpath);
-                    tex.set_alpha_fullpath(fullpath);
-                }
-            } else {
-                if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
-                    tex.set_format(EggTexture::F_rgba);
-                } else {
-                    tex.set_format(EggTexture::F_rgb);
-                }
-            }
-        } else {
-            // We have a texture on transparency only.  Apply it as the
-            // primary filename, and set the format accordingly.
-            Filename filename = Filename::from_os_specific(transBitmapTex->GetMapName());
-            Filename fullpath, outpath;
-            _options->_path_replace->full_convert_path(filename, get_texture_path(),
-                                                       fullpath, outpath);
-            tex.set_filename(outpath);
-            tex.set_fullpath(fullpath);
-            tex.set_format(EggTexture::F_alpha);
-            apply_texture_properties(tex, maxMaterial);
+    if ((mtl != 0) && (mtl->ClassID() == Class_ID(DMTL_CLASS_ID, 0 ))) {
+        StdMat *maxMaterial = (StdMat*)mtl;
+        analyze_diffuse_maps(pandaMat, maxMaterial->GetSubTexmap(ID_DI));
+        analyze_opacity_maps(pandaMat, maxMaterial->GetSubTexmap(ID_OP));
+        for (int i=0; i<pandaMat._texture_list.size(); i++) {
+            EggTexture *src = pandaMat._texture_list[i];
+            pandaMat._texture_list[i] =
+                _textures.create_unique_texture(*src, ~EggTexture::E_tref_name);
         }
-        ostringstream uvname;
-        uvname << "m" << mapChan;
-        tex.set_uv_name(uvname.str());
-        EggTexture *new_tex =
-            _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
-        
-        pandaMat._texture_list.push_back(new_tex);
-        pandaMat._map_channels.push_back(mapChan);
 
         // The existence of a texture on either color channel completely
         // replaces the corresponding flat color.
-        if (!has_diffuse_texture) {
+        if (!pandaMat._any_diffuse) {
             // Get the default diffuse color of the material without the texture map
-            diffuseColor = Point3(maxMaterial->GetDiffuse(0));
+            Point3 diffuseColor = Point3(maxMaterial->GetDiffuse(0));
             pandaMat._color[0] = diffuseColor.x;
             pandaMat._color[1] = diffuseColor.y;
             pandaMat._color[2] = diffuseColor.z;
         }
-        if (!has_trans_texture) {
+        if (!pandaMat._any_opacity) {
             // *** Figure out how to actually get the opacity here
             pandaMat._color[3] = maxMaterial->GetOpacity(_current_frame * GetTicksPerFrame());
         }
+        return pandaMat;
     }
+
+    // Otherwise, it's unrecognizable. Leave result blank.
     return pandaMat;
 }
+
+void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *mat) {
+    if (mat == 0) return;
+    
+    if (mat->ClassID() == Class_ID(RGBMULT_CLASS_ID, 0)) {
+        for (int i=0; i<mat->NumSubTexmaps(); i++) {
+            analyze_diffuse_maps(pandaMat, mat->GetSubTexmap(i));
+        }
+        return;
+    }
+
+    if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        pandaMat._any_diffuse = true;
+        PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");
+
+        BitmapTex *diffuseTex = (BitmapTex *)mat;
+
+        Filename fullpath, outpath;
+        Filename filename = Filename::from_os_specific(diffuseTex->GetMapName());
+        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+                                                   fullpath, outpath);
+        tex->set_filename(outpath);
+        tex->set_fullpath(fullpath);
+
+        apply_texture_properties(*tex, diffuseTex->GetMapChannel());
+        add_map_channel(pandaMat, diffuseTex->GetMapChannel());
         
+        Bitmap *diffuseBitmap = diffuseTex->GetBitmap(0);
+        if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
+            tex->set_format(EggTexture::F_rgba);
+        } else {
+            tex->set_format(EggTexture::F_rgb);
+        }
+        
+        pandaMat._texture_list.push_back(tex);
+    }
+}
+
+void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *mat) {
+    if (mat == 0) return;
+    
+    if (mat->ClassID() == Class_ID(RGBMULT_CLASS_ID, 0)) {
+        for (int i=0; i<mat->NumSubTexmaps(); i++) {
+            analyze_opacity_maps(pandaMat, mat->GetSubTexmap(i));
+        }
+        return;
+    }
+
+    if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        pandaMat._any_opacity = true;
+        BitmapTex *transTex = (BitmapTex *)mat;
+
+        Filename fullpath, outpath;
+        Filename filename = Filename::from_os_specific(transTex->GetMapName());
+        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+                                                   fullpath, outpath);
+
+        // See if this opacity map already showed up.
+        for (int i=0; i<pandaMat._texture_list.size(); i++) {
+            EggTexture *tex = pandaMat._texture_list[i];
+            if ((tex->get_env_type()==EggTexture::ET_unspecified)&&(tex->get_fullpath() == fullpath)) {
+                tex->set_format(EggTexture::F_rgba);
+                return;
+            }
+        }
+        
+        // Try to find a diffuse map to pair this with as an alpha-texture.
+        int pair = -1;
+        std::string uvname = get_uv_name(transTex->GetMapChannel());
+        for (int i=0; i<pandaMat._texture_list.size(); i++) {
+            EggTexture *tex = pandaMat._texture_list[i];
+            if ((tex->get_env_type()==EggTexture::ET_unspecified)&&
+                (tex->get_format() == EggTexture::F_rgb)&&
+                (tex->get_uv_name() == uvname)) {
+                tex->set_format(EggTexture::F_rgba);
+                tex->set_alpha_filename(outpath);
+                tex->set_alpha_fullpath(fullpath);
+                return;
+            }
+        }
+        
+        // Otherwise, just create it as an alpha-texture.
+        PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");
+        tex->set_filename(outpath);
+        tex->set_fullpath(fullpath);
+
+        apply_texture_properties(*tex, transTex->GetMapChannel());
+        add_map_channel(pandaMat, transTex->GetMapChannel());
+        tex->set_format(EggTexture::F_alpha);
+
+        pandaMat._texture_list.push_back(tex);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::add_map_channel
+//       Access: Private
+//  Description: Adds the specified map channel to the map channel
+//               list, if it's not already there.
+////////////////////////////////////////////////////////////////////
+void MaxToEggConverter::add_map_channel(PandaMaterial &pandaMat, int chan) {
+    for (int i=0; i<pandaMat._map_channels.size(); i++) {
+        if (pandaMat._map_channels[i] == chan) {
+            return;
+        }
+    }
+    pandaMat._map_channels.push_back(chan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::generate_tex_name
+//       Access: Private
+//  Description: Generates an arbitrary unused texture name.
+////////////////////////////////////////////////////////////////////
+std::string MaxToEggConverter::generate_tex_name() {
+    ostringstream name_strm;
+    name_strm << "Tex" << ++_cur_tref;
+    return name_strm.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::get_uv_name
+//       Access: Private
+//  Description: Returns the UV-name of the nth map-channel.
+////////////////////////////////////////////////////////////////////
+std::string MaxToEggConverter::get_uv_name(int channel) {
+    ostringstream uvname;
+    uvname << "m" << channel;
+    return uvname.str();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::apply_texture_properties
 //       Access: Private
@@ -996,7 +1050,10 @@ get_panda_material(Mtl *mtl, MtlID matID) {
 //               matrix.
 ////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::
-apply_texture_properties(EggTexture &tex, StdMat *maxMaterial) {
+apply_texture_properties(EggTexture &tex, int channel) {
+
+    tex.set_uv_name(get_uv_name(channel));
+
     tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
     tex.set_magfilter(EggTexture::FT_linear);
 

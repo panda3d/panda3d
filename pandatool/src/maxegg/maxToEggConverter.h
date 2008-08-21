@@ -46,9 +46,11 @@ class MaxToEggConverter {
     
  private:
     struct PandaMaterial {
-        std::vector<EggTexture*> _texture_list;
+        std::vector<PT(EggTexture)> _texture_list;
         Colorf _color;
         std::vector<int> _map_channels;
+        bool _any_diffuse;
+        bool _any_opacity;
     };
     typedef std::map<Mtl*,PandaMaterial> MaterialMap;
     MaxEggOptions    *_options;
@@ -86,14 +88,13 @@ class MaxToEggConverter {
     
     void get_vertex_weights(INode *max_node, EggVertexPool *vpool);
 
-    void set_material_attributes(EggPrimitive &primitive, INode *max_node);
-    
-    void set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face);
-    
     const PandaMaterial &get_panda_material(Mtl *mtl, MtlID id);
-
-    void apply_texture_properties(EggTexture &tex, 
-                                  StdMat *maxMaterial);
+    void analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *m);
+    void analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *m);
+    void add_map_channel(PandaMaterial &pandaMat, int channel);
+    void apply_texture_properties(EggTexture &tex, int channel);
+    std::string generate_tex_name();
+    std::string get_uv_name(int n);
     bool reparent_decals(EggGroupNode *egg_parent);
     
  public:
