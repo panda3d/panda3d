@@ -314,6 +314,16 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.printInterestsIfDebug()
         return existed
 
+    @report(types = ['args'], dConfigParam = 'want-guildmgr-report')
+    def removeAIInterest(self, handle):
+        """
+        handle is NOT an InterestHandle.  It's just a bare integer representing an
+        AI opened interest. We're making the client close down this interest since
+        the AI has trouble removing interests(that its opened) when the avatar goes
+        offline.  See GuildManager(UD) for how it's being used.
+        """
+        self._sendRemoveAIInterest(handle)
+
     def alterInterest(self, handle, parentId, zoneIdList, description=None,
                       event=None):
         """
@@ -533,6 +543,17 @@ class DoInterestManager(DirectObject.DirectObject):
             self._addDebugInterestHistory(
                 "remove", state.desc, handle, contextId,
                 state.parentId, state.zoneIdList)
+
+    def _sendRemoveAIInterest(self, handle):
+        """
+        handle is a bare int, NOT an InterestHandle.  Use this to
+        close an AI opened interest.
+        """
+        datagram = PyDatagram()
+        # Add message type
+        datagram.addUint16(CLIENT_REMOVE_INTEREST)
+        datagram.addUint16((1<<15) + handle)
+        self.send(datagram)
 
     def cleanupWaitAllInterestsComplete(self):
         if self._completeDelayedCallback is not None:
