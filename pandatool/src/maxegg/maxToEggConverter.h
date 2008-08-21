@@ -45,6 +45,11 @@ class MaxToEggConverter {
     bool convert(MaxEggOptions *options);
     
  private:
+    struct PandaMaterial {
+        std::vector<EggTexture*> _texture_list;
+        Colorf _color;
+    };
+    typedef std::map<StdMat*,PandaMaterial> MaterialMap;
     MaxEggOptions    *_options;
     int               _current_frame;
     PT(EggData)       _egg_data;
@@ -52,6 +57,7 @@ class MaxToEggConverter {
     MaxNodeTree       _tree;
     int               _cur_tref;
     EggTextureCollection _textures;
+    MaterialMap       _material_map;
     
     void reset();
 
@@ -83,6 +89,8 @@ class MaxToEggConverter {
     
     void set_material_attributes(EggPrimitive &primitive, Mtl *maxMaterial, Face *face);
     
+    const PandaMaterial &get_material_textures(StdMat *mtl);
+
     void apply_texture_properties(EggTexture &tex, 
                                   StdMat *maxMaterial);
     bool reparent_decals(EggGroupNode *egg_parent);

@@ -10,6 +10,7 @@
 
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
+#include "pathStore.h"
 
 void SetICustEdit(HWND wnd, int nIDDlgItem, char *text)
 { 
@@ -234,6 +235,7 @@ MaxEggOptions::MaxEggOptions() {
     _file_name[0]=0;
     _short_name[0]=0;
     _path_replace = new PathReplace;
+    _path_replace->_path_store = PS_relative;
     _export_whole_scene = true;
 }
 
@@ -551,6 +553,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
   _anim_type = newAnimType;
   _double_sided = IsDlgButtonChecked(hWnd, IDC_CHECK1);
   _export_whole_scene = IsDlgButtonChecked(hWnd, IDC_EXPORT_ALL);
+
   return true;
 }
 
