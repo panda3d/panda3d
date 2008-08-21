@@ -1576,7 +1576,7 @@ has_all_ram_mipmap_images() const {
 CPTA_uchar Texture::
 get_ram_mipmap_image(int n) {
   ReMutexHolder holder(_lock);
-  if (n < (int)_ram_images.size() || !_ram_images[n]._image.empty()) {
+  if (n < (int)_ram_images.size() && !_ram_images[n]._image.empty()) {
     return _ram_images[n]._image;
   }
   return CPTA_uchar(get_class_type());
