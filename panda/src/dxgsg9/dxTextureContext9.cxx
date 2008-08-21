@@ -16,6 +16,7 @@
 #include "dxGraphicsStateGuardian9.h"
 #include "pStatTimer.h"
 #include "dxTextureContext9.h"
+#include "bamCache.h"
 #include <d3dx9tex.h>
 #include <assert.h>
 #include <time.h>
@@ -718,13 +719,17 @@ create_texture(DXScreenData &scrn) {
   UINT mip_level_count;
 
   if (_has_mipmaps) {
-    // tell CreateTex to alloc space for all mip levels down to 1x1
-    mip_level_count = 0;
+    tex->get_ram_image();
+    mip_level_count = tex->get_num_loadable_ram_mipmap_images();
+    if (mip_level_count < 2) {
+      // tell CreateTex to alloc space for all mip levels down to 1x1
+      mip_level_count = 0;
 
-    if (dxgsg9_cat.is_debug()) {
-      dxgsg9_cat.debug()
-        << "create_texture: generating mipmaps for " << tex->get_name()
-        << endl;
+      if (dxgsg9_cat.is_debug()) {
+        dxgsg9_cat.debug()
+          << "create_texture: generating mipmaps for " << tex->get_name()
+          << endl;
+      }
     }
   } else {
     mip_level_count = 1;
@@ -926,6 +931,21 @@ create_texture(DXScreenData &scrn) {
     goto error_exit;
   }
 
+  if (tex->get_post_load_store_cache()) {
+    tex->set_post_load_store_cache(false);
+    // OK, get the RAM image, and save it in a BamCache record.
+    if (extract_texture_data()) {
+      if (tex->has_ram_image()) {
+        BamCache *cache = BamCache::get_global_ptr();
+        PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
+        if (record != (BamCacheRecord *)NULL) {
+          record->set_data(tex, false);
+          cache->store(record);
+        }
+      }
+    }
+  }
+
   // must not put render to texture into LRU
   if (!_managed && !tex->get_render_to_texture()) {
     if (_lru_page == 0) {
@@ -1067,6 +1087,119 @@ delete_texture() {
   _d3d_2d_texture = NULL;
   _d3d_volume_texture = NULL;
   _d3d_cube_texture = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext9::extract_texture_data
+//       Access: Public
+//  Description: This method will be called in the draw thread to
+//               download the texture memory's image into its
+//               ram_image value.  It returns true on success, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DXTextureContext9::
+extract_texture_data() {
+  HRESULT hr;
+
+  Texture *tex = get_texture();
+  if (tex->get_texture_type() != Texture::TT_2d_texture) {
+    dxgsg9_cat.error()
+      << "Not supported: extract_texture_data for " << tex->get_texture_type()
+      << "\n";
+    return false;
+  }
+  nassertr(IS_VALID_PTR(_d3d_2d_texture), false);
+
+  D3DSURFACE_DESC desc;
+  hr = _d3d_2d_texture->GetLevelDesc(0, &desc);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "Texture::GetLevelDesc() failed!" << D3DERRORSTRING(hr);
+    return false;
+  }
+
+  int div = 1;
+  Texture::Format format = Texture::F_rgba;
+  Texture::CompressionMode compression = Texture::CM_off;
+
+  switch (desc.Format) {
+  case D3DFMT_R8G8B8:
+    format = Texture::F_rgb;
+    break;
+
+  case D3DFMT_A8R8G8B8:
+  case D3DFMT_X8R8G8B8:
+    break;
+
+  case D3DFMT_L8:
+    format = Texture::F_luminance;
+    break;
+
+  case D3DFMT_A8L8:
+    format = Texture::F_luminance_alpha;
+    break;
+
+  case D3DFMT_DXT1:
+    compression = Texture::CM_dxt1;
+    div = 4;
+    break;
+  case D3DFMT_DXT2:
+    compression = Texture::CM_dxt2;
+    div = 4;
+    break;
+  case D3DFMT_DXT3:
+    compression = Texture::CM_dxt3;
+    div = 4;
+    break;
+  case D3DFMT_DXT4:
+    compression = Texture::CM_dxt4;
+    div = 4;
+    break;
+  case D3DFMT_DXT5:
+    compression = Texture::CM_dxt5;
+    div = 4;
+    break;
+
+  default:
+    dxgsg9_cat.error()
+      << "Cannot extract texture data: unhandled surface format " 
+      << desc.Format << "\n";
+    return false;
+  }
+
+  int num_levels = _d3d_2d_texture->GetLevelCount();
+
+  tex->set_x_size(desc.Width);
+  tex->set_y_size(desc.Height);
+  tex->set_z_size(1);
+  tex->set_component_type(Texture::T_unsigned_byte);
+  tex->set_format(format);
+  tex->clear_ram_image();
+
+  for (int n = 0; n < num_levels; ++n) {
+    D3DLOCKED_RECT rect;
+    hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
+    if (FAILED(hr)) {
+      dxgsg9_cat.error()
+        << "Texture::LockRect() failed!" << D3DERRORSTRING(hr);
+      return false;
+    }
+    
+    int y_size = tex->get_expected_mipmap_y_size(n);
+    int size = rect.Pitch * (y_size / div);
+    size = min(size, (int)tex->get_expected_ram_mipmap_image_size(n));
+    PTA_uchar image = PTA_uchar::empty_array(size);
+    memcpy(image.p(), rect.pBits, size);
+    
+    _d3d_2d_texture->UnlockRect(n);
+    if (n == 0) {
+      tex->set_ram_image(image, compression);
+    } else {
+      tex->set_ram_mipmap_image(n, image);
+    }
+  }
+    
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1377,6 +1510,7 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   bool using_temp_buffer = false;
   HRESULT hr = E_FAIL;
   CPTA_uchar image = get_texture()->get_ram_mipmap_image(mip_level);
+  nassertr(!image.is_null(), E_FAIL);
   BYTE *pixels = (BYTE*) image.p();
   DWORD width  = (DWORD) get_texture()->get_expected_mipmap_x_size(mip_level);
   DWORD height = (DWORD) get_texture()->get_expected_mipmap_y_size(mip_level);
@@ -1472,6 +1606,7 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "FillDDTextureMipmapPixels failed for " << get_texture()->get_name()
+      << ", mip_level " << mip_level
       << ", D3DXLoadSurfFromMem failed" << D3DERRORSTRING(hr);
   }
 
@@ -1491,19 +1626,20 @@ exit_FillMipmapSurf:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
 fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDevice9 *device) {
-  if (get_texture()->get_texture_type() == Texture::TT_3d_texture) {
+  Texture *tex = get_texture();
+  nassertr(IS_VALID_PTR(tex), E_FAIL);
+  if (tex->get_texture_type() == Texture::TT_3d_texture) {
     return fill_d3d_volume_texture_pixels();
   }
 
   HRESULT hr = E_FAIL;
-  nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
 
-  CPTA_uchar image = get_texture()->get_ram_image();
+  CPTA_uchar image = tex->get_ram_image();
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
     // operations or something.
-    if (get_texture()->get_render_to_texture()) {   
+    if (tex->get_render_to_texture()) {   
       HRESULT result;
 
       if (_d3d_2d_texture) {
@@ -1546,11 +1682,11 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
 
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
-  DWORD orig_depth = (DWORD) get_texture()->get_z_size();
+  DWORD orig_depth = (DWORD) tex->get_z_size();
   D3DFORMAT source_format = _d3d_format;
   
   // check for compressed textures and adjust source_format accordingly
-  switch (get_texture()->get_ram_image_compression()) {
+  switch (tex->get_ram_image_compression()) {
   case Texture::CM_dxt1:
     source_format = D3DFMT_DXT1;
     break;
@@ -1582,10 +1718,9 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
     if (_has_mipmaps) {
       // if we have pre-calculated mipmap levels, use them, otherwise generate on the fly
       int miplevel_count = _d3d_2d_texture->GetLevelCount(); // what if it's not a 2d texture?
-
-      if (miplevel_count <= get_texture()->get_num_ram_mipmap_images()) {
+      if (miplevel_count <= tex->get_num_loadable_ram_mipmap_images()) {
         dxgsg9_cat.debug()
-        << "Using pre-calculated mipmap levels for texture  " << get_texture()->get_name();
+        << "Using pre-calculated mipmap levels for texture  " << tex->get_name();
 
         for (int mip_level = 1; mip_level < miplevel_count; ++mip_level) {
           hr = fill_d3d_texture_mipmap_pixels(mip_level, di, source_format);
@@ -1625,7 +1760,7 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
 
           if (FAILED(hr)) {
             dxgsg9_cat.error()
-              << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+              << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
               << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
           }
         }

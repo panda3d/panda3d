@@ -52,6 +52,7 @@ public:
   void apply_texture(int i, TextureContext *tc);
   bool upload_texture(DXTextureContext8 *dtc);
   virtual void release_texture(TextureContext *tc);
+  virtual bool extract_texture_data(Texture *tex);
 
   virtual VertexBufferContext *prepare_vertex_buffer(GeomVertexArrayData *data);
   bool apply_vertex_buffer(VertexBufferContext *vbc,

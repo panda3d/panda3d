@@ -7104,9 +7104,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
       CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
       if (ptimage == (const unsigned char *)NULL) {
-        GLCAT.warning()
-          << "No mipmap level " << n << " defined for " << tex->get_name()
-          << "\n";
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "No mipmap level " << n << " defined for " << tex->get_name()
+            << "\n";
+        }
         // No mipmap level n; stop here.
         break;
       }
@@ -7651,25 +7653,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   }
 
-  /*
-  switch (target) {
-  case GL_TEXTURE_1D:
-    tex->setup_1d_texture(width, type, format);
-    break;
-    
-  case GL_TEXTURE_2D:
-    tex->setup_2d_texture(width, height, type, format);
-    break;
-    
-  case GL_TEXTURE_3D:
-    tex->setup_3d_texture(width, height, depth, type, format);
-    break;
-    
-  case GL_TEXTURE_CUBE_MAP:
-    tex->setup_cube_map(width, type, format);
-    break;
-  }
-  */
+  // We don't want to call setup_texture() again; that resets too
+  // much.  Instead, we'll just set the individual components.
+  tex->set_x_size(width);
+  tex->set_y_size(height);
+  tex->set_z_size(depth);
+  tex->set_component_type(type);
+  tex->set_format(format);
 
   tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
   tex->set_wrap_v(get_panda_wrap_mode(wrap_v));

@@ -367,6 +367,27 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::extract_texture_data
+//       Access: Public, Virtual
+//  Description: This method should only be called by the
+//               GraphicsEngine.  Do not call it directly; call
+//               GraphicsEngine::extract_texture_data() instead.
+//
+//               This method will be called in the draw thread to
+//               download the texture memory's image into its
+//               ram_image value.  It returns true on success, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian9::
+extract_texture_data(Texture *tex) {
+  TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
+  nassertr(tc != (TextureContext *)NULL, false);
+  DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+
+  return dtc->extract_texture_data();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::prepare_shader
 //       Access: Public, Virtual
 //  Description:

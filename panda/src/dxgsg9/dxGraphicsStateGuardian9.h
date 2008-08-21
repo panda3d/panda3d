@@ -86,6 +86,7 @@ public:
   void apply_texture(int i, TextureContext *tc);
   bool upload_texture(DXTextureContext9 *dtc);
   virtual void release_texture(TextureContext *tc);
+  virtual bool extract_texture_data(Texture *tex);
 
   ShaderContext *prepare_shader(Shader *se);
   void release_shader(ShaderContext *sc);

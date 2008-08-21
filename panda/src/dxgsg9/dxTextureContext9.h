@@ -33,6 +33,7 @@ public:
   bool create_texture(DXScreenData &scrn);
   bool create_simple_texture(DXScreenData &scrn);
   void delete_texture();
+  bool extract_texture_data();
 
   INLINE bool has_mipmaps() const;
   INLINE IDirect3DBaseTexture9 *get_d3d_texture() const;
