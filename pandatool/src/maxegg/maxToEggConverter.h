@@ -48,6 +48,7 @@ class MaxToEggConverter {
     struct PandaMaterial {
         std::vector<EggTexture*> _texture_list;
         Colorf _color;
+        std::vector<int> _map_channels;
     };
     typedef std::map<Mtl*,PandaMaterial> MaterialMap;
     MaxEggOptions    *_options;
@@ -80,8 +81,8 @@ class MaxToEggConverter {
                       EggGroup *egg_group,
                       Shader *default_shader = NULL);
 
-    //Gets the vertex normal for a given face and vertex. Go figure.
     Point3 get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo);
+    UVVert get_max_vertex_texcoord(Mesh *mesh, int faceNo, int vertNo, int channel);
     
     void get_vertex_weights(INode *max_node, EggVertexPool *vpool);
 

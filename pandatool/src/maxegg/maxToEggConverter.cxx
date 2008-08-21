@@ -619,6 +619,8 @@ make_polyset(INode *max_node, Mesh *mesh,
 
         Face face = mesh->faces[iFace];
 
+        const PandaMaterial &pmat = get_panda_material(max_node->GetMtl(), face.getMatID());
+
         // Get the vertices for the polygon.
         for ( int iVertex=0; iVertex < 3; iVertex++ ) {
             EggVertex vert;
@@ -638,9 +640,12 @@ make_polyset(INode *max_node, Mesh *mesh,
             vert.set_normal(n3d);
 
             // Get the UVs for this vertex
-            if (mesh->getNumTVerts()) {
-                UVVert vertTexCoord = mesh->getTVert(mesh->tvFace[iFace].t[iVertex]);
-                vert.set_uv( TexCoordd(vertTexCoord.x, vertTexCoord.y));
+            for (int iChan=0; iChan<pmat._map_channels.size(); iChan++) {
+                int channel = pmat._map_channels[iChan];
+                ostringstream uvname;
+                uvname << "m" << channel;
+                UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
+                vert.set_uv( uvname.str(), TexCoordd(uvw.x, uvw.y));
             }
 
             vert.set_external_index(face.v[iVertex]);
@@ -669,7 +674,6 @@ make_polyset(INode *max_node, Mesh *mesh,
             egg_poly->set_vertex(2, verts[0]);
         }
 
-        const PandaMaterial &pmat = get_panda_material(max_node->GetMtl(), face.getMatID());
         for (int i=0; i<pmat._texture_list.size(); i++) {
             egg_poly->set_texture(pmat._texture_list[i]);
         }
@@ -685,7 +689,20 @@ make_polyset(INode *max_node, Mesh *mesh,
     }
 }
 
+UVVert MaxToEggConverter::get_max_vertex_texcoord(Mesh *mesh, int faceNo, int vertNo, int channel) {
 
+    // extract the texture coordinate
+    UVVert uvVert(0,0,0);
+    if(mesh->mapSupport(channel)) {
+        TVFace *pTVFace = mesh->mapFaces(channel);
+        UVVert *pUVVert = mesh->mapVerts(channel);
+        uvVert = pUVVert[pTVFace[faceNo].t[vertNo]];
+    } else if(mesh->numTVerts > 0) {
+        uvVert = mesh->tVerts[mesh->tvFace[faceNo].t[vertNo]];
+    }
+    return uvVert;
+}
+    
 Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo)
 {
     Face f = mesh->faces[faceNo];
@@ -879,12 +896,14 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     bool has_diffuse_texture = false;
     bool has_trans_texture = false;
     Point3 diffuseColor = Point3(1, 1, 1);
+    int mapChan = 1;
 
     // Access the Diffuse map and see if it's a Bitmap texture
     diffuseTexmap = maxMaterial->GetSubTexmap(ID_DI);
     if (diffuseTexmap && (diffuseTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
         has_diffuse_texture = true;
         diffuseBitmapTex = (BitmapTex *) diffuseTexmap;
+        mapChan = diffuseBitmapTex->GetMapChannel();
     }
 
     // Access the Opacity map and see if it's a Bitmap texture
@@ -892,6 +911,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     if (transTexmap && (transTexmap->ClassID() == Class_ID(BMTEX_CLASS_ID, 0))) {
         has_trans_texture = true;
         transBitmapTex = (BitmapTex *) transTexmap;
+        mapChan = transBitmapTex->GetMapChannel();
     }
     
     if (has_diffuse_texture || has_trans_texture) {
@@ -942,11 +962,15 @@ get_panda_material(Mtl *mtl, MtlID matID) {
             tex.set_format(EggTexture::F_alpha);
             apply_texture_properties(tex, maxMaterial);
         }
+        ostringstream uvname;
+        uvname << "m" << mapChan;
+        tex.set_uv_name(uvname.str());
         EggTexture *new_tex =
             _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
         
         pandaMat._texture_list.push_back(new_tex);
-        
+        pandaMat._map_channels.push_back(mapChan);
+
         // The existence of a texture on either color channel completely
         // replaces the corresponding flat color.
         if (!has_diffuse_texture) {
