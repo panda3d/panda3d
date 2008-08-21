@@ -310,6 +310,7 @@ PUBLISHED:
 
   INLINE int get_num_ram_mipmap_images() const;
   INLINE bool has_ram_mipmap_image(int n) const;
+  int get_num_loadable_ram_mipmap_images() const;
   bool has_all_ram_mipmap_images() const;
   INLINE size_t get_ram_mipmap_image_size(int n) const;
   INLINE size_t get_ram_mipmap_page_size(int n) const;

@@ -1483,6 +1483,54 @@ get_keep_ram_image() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_num_loadable_ram_mipmap_images
+//       Access: Published
+//  Description: Returns the number of contiguous mipmap levels that
+//               exist in RAM, up until the first gap in the sequence.
+//               It is guaranteed that at least mipmap levels [0,
+//               get_num_ram_mipmap_images()) exist.
+//
+//               The number returned will never exceed the number of
+//               required mipmap images based on the size of the
+//               texture and its filter mode.
+//
+//               This method is different from
+//               get_num_ram_mipmap_images() in that it returns only
+//               the number of mipmap levels that can actually be
+//               usefully loaded, regardless of the actual number that
+//               may be stored.
+////////////////////////////////////////////////////////////////////
+int Texture::
+get_num_loadable_ram_mipmap_images() const {
+  ReMutexHolder holder(_lock);
+  if (_ram_images.empty() || _ram_images[0]._image.empty()) {
+    // If we don't even have a base image, the answer is none.
+    return 0;
+  }
+  if (!uses_mipmaps()) {
+    // If we have a base image and don't require mipmapping, the
+    // answer is 1.
+    return 1;
+  }
+
+  // Check that we have enough mipmap levels to meet the size
+  // requirements.
+  int size = max(_x_size, max(_y_size, _z_size));
+  int n = 0;
+  int x = 1;
+  while (x < size) {
+    x = (x << 1);
+    ++n;
+    if (n >= (int)_ram_images.size() || _ram_images[n]._image.empty()) {
+      return n;
+    }
+  }
+
+  ++n;
+  return n;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_all_ram_mipmap_images
 //       Access: Published
 //  Description: Returns true if all expected mipmap levels have been
@@ -1528,7 +1576,7 @@ has_all_ram_mipmap_images() const {
 CPTA_uchar Texture::
 get_ram_mipmap_image(int n) {
   ReMutexHolder holder(_lock);
-  if (n < (int)_ram_images.size()) {
+  if (n < (int)_ram_images.size() || !_ram_images[n]._image.empty()) {
     return _ram_images[n]._image;
   }
   return CPTA_uchar(get_class_type());

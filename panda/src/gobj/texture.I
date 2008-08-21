@@ -858,8 +858,11 @@ set_keep_ram_image(bool keep_ram_image) {
 //       Access: Published
 //  Description: Returns the maximum number of mipmap level images
 //               available in system memory.  The actual number may be
-//               less than this; use has_ram_mipmap_image() to verify
-//               each level.
+//               less than this (that is, there might be gaps in the
+//               sequence); use has_ram_mipmap_image() to verify each
+//               level.
+//
+//               Also see get_num_loadable_ram_mipmap_images().
 ////////////////////////////////////////////////////////////////////
 INLINE int Texture::
 get_num_ram_mipmap_images() const {
