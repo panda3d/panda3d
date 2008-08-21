@@ -3652,16 +3652,8 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    for (int x = 0; x < x_size; ++x) {
-      unsigned int b = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
-      unsigned int r = (unsigned char)in.get();
-
-      store_unscaled_byte(p, b);
-      store_unscaled_byte(p, g);
-      store_unscaled_byte(p, r);
-    }
-    nassertr(p <= image.p() + size, false);
+    nassertr(p + row_bytes <= image.p() + size, false);
+    in.read((char *)p, row_bytes);
   }
 
   tex->set_ram_mipmap_image(n, image);
@@ -3686,14 +3678,15 @@ read_dds_level_rgb8(Texture *tex, const DDSHeader &header,
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    for (int x = 0; x < x_size; ++x) {
-      unsigned int r = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
-      unsigned int b = (unsigned char)in.get();
+    nassertr(p + row_bytes <= image.p() + size, false);
+    in.read((char *)p, row_bytes);
 
-      store_unscaled_byte(p, b);
-      store_unscaled_byte(p, g);
-      store_unscaled_byte(p, r);
+    // Now reverse the r, g, b triples.
+    for (int x = 0; x < x_size; ++x) {
+      unsigned char r = p[0];
+      p[0] = p[2];
+      p[2] = r;
+      p += 3;
     }
     nassertr(p <= image.p() + size, false);
   }
@@ -3720,18 +3713,22 @@ read_dds_level_abgr8(Texture *tex, const DDSHeader &header,
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    for (int x = 0; x < x_size; ++x) {
-      unsigned int r = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
-      unsigned int b = (unsigned char)in.get();
-      unsigned int a = (unsigned char)in.get();
+    in.read((char *)p, row_bytes);
 
-      store_unscaled_byte(p, b);
-      store_unscaled_byte(p, g);
-      store_unscaled_byte(p, r);
-      store_unscaled_byte(p, a);
+    PN_uint32 *pw = (PN_uint32 *)p;
+    for (int x = 0; x < x_size; ++x) {
+      PN_uint32 w = *pw;
+#ifdef WORDS_BIGENDIAN
+      // bigendian: convert R, G, B, A to B, G, R, A.
+      w = ((w & 0xff00) << 16) | ((w & 0xff000000U) >> 16) | (w & 0xff00ff);
+#else
+      // littendian: convert A, B, G, R to to A, R, G, B.
+      w = ((w & 0xff) << 16) | ((w & 0xff0000) >> 16) | (w & 0xff00ff00U);
+#endif
+      *pw = w;
+      ++pw;
     }
-    nassertr(p <= image.p() + size, false);
+    nassertr((unsigned char *)pw <= image.p() + size, false);
   }
 
   tex->set_ram_mipmap_image(n, image);
@@ -3756,18 +3753,8 @@ read_dds_level_rgba8(Texture *tex, const DDSHeader &header,
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    for (int x = 0; x < x_size; ++x) {
-      unsigned int b = (unsigned char)in.get();
-      unsigned int g = (unsigned char)in.get();
-      unsigned int r = (unsigned char)in.get();
-      unsigned int a = (unsigned char)in.get();
-
-      store_unscaled_byte(p, b);
-      store_unscaled_byte(p, g);
-      store_unscaled_byte(p, r);
-      store_unscaled_byte(p, a);
-    }
-    nassertr(p <= image.p() + size, false);
+    nassertr(p + row_bytes <= image.p() + size, false);
+    in.read((char *)p, row_bytes);
   }
 
   tex->set_ram_mipmap_image(n, image);
