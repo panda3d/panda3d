@@ -7,10 +7,10 @@
   what to export from 3D Studio max
 */
 
+#include "maxEgg.h"
 
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
-#include "pathStore.h"
 
 void SetICustEdit(HWND wnd, int nIDDlgItem, char *text)
 { 
