@@ -51,6 +51,7 @@ class MaxToEggConverter {
         std::vector<int> _map_channels;
         bool _any_diffuse;
         bool _any_opacity;
+        bool _any_gloss;
     };
     typedef std::map<Mtl*,PandaMaterial> MaterialMap;
     MaxEggOptions    *_options;
@@ -91,6 +92,9 @@ class MaxToEggConverter {
     const PandaMaterial &get_panda_material(Mtl *mtl, MtlID id);
     void analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *m);
     void analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *m);
+    void analyze_gloss_maps(PandaMaterial &pandaMat, Texmap *m);
+    void analyze_glow_maps(PandaMaterial &pandaMat, Texmap *m);
+    void analyze_normal_maps(PandaMaterial &pandaMat, Texmap *m);
     void add_map_channel(PandaMaterial &pandaMat, int channel);
     void apply_texture_properties(EggTexture &tex, int channel);
     std::string generate_tex_name();

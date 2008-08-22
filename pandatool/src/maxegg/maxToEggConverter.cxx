@@ -868,6 +868,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     pandaMat._color = Colorf(1,1,1,1);
     pandaMat._any_diffuse = false;
     pandaMat._any_opacity = false;
+    pandaMat._any_gloss = false;
 
     // If it's a multi-material, dig down.
         
@@ -885,6 +886,13 @@ get_panda_material(Mtl *mtl, MtlID matID) {
         StdMat *maxMaterial = (StdMat*)mtl;
         analyze_diffuse_maps(pandaMat, maxMaterial->GetSubTexmap(ID_DI));
         analyze_opacity_maps(pandaMat, maxMaterial->GetSubTexmap(ID_OP));
+        analyze_gloss_maps(pandaMat, maxMaterial->GetSubTexmap(ID_SP));
+        if (!pandaMat._any_gloss)
+            analyze_gloss_maps(pandaMat, maxMaterial->GetSubTexmap(ID_SS));
+        if (!pandaMat._any_gloss)
+            analyze_gloss_maps(pandaMat, maxMaterial->GetSubTexmap(ID_SH));
+        analyze_glow_maps(pandaMat, maxMaterial->GetSubTexmap(ID_SI));
+        analyze_normal_maps(pandaMat, maxMaterial->GetSubTexmap(ID_BU));
         for (int i=0; i<pandaMat._texture_list.size(); i++) {
             EggTexture *src = pandaMat._texture_list[i];
             pandaMat._texture_list[i] =
@@ -911,6 +919,11 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     return pandaMat;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::analyze_diffuse_maps
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *mat) {
     if (mat == 0) return;
     
@@ -943,11 +956,17 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
         } else {
             tex->set_format(EggTexture::F_rgb);
         }
+        tex->set_env_type(EggTexture::ET_modulate);
         
         pandaMat._texture_list.push_back(tex);
     }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::analyze_opacity_maps
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *mat) {
     if (mat == 0) return;
     
@@ -970,18 +989,17 @@ void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *ma
         // See if this opacity map already showed up.
         for (int i=0; i<pandaMat._texture_list.size(); i++) {
             EggTexture *tex = pandaMat._texture_list[i];
-            if ((tex->get_env_type()==EggTexture::ET_unspecified)&&(tex->get_fullpath() == fullpath)) {
+            if ((tex->get_env_type()==EggTexture::ET_modulate)&&(tex->get_fullpath() == fullpath)) {
                 tex->set_format(EggTexture::F_rgba);
                 return;
             }
         }
         
         // Try to find a diffuse map to pair this with as an alpha-texture.
-        int pair = -1;
         std::string uvname = get_uv_name(transTex->GetMapChannel());
         for (int i=0; i<pandaMat._texture_list.size(); i++) {
             EggTexture *tex = pandaMat._texture_list[i];
-            if ((tex->get_env_type()==EggTexture::ET_unspecified)&&
+            if ((tex->get_env_type()==EggTexture::ET_modulate)&&
                 (tex->get_format() == EggTexture::F_rgb)&&
                 (tex->get_uv_name() == uvname)) {
                 tex->set_format(EggTexture::F_rgba);
@@ -1004,6 +1022,122 @@ void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *ma
     }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::analyze_glow_maps
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MaxToEggConverter::analyze_glow_maps(PandaMaterial &pandaMat, Texmap *mat) {
+    if (mat == 0) return;
+    
+    if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        BitmapTex *gtex = (BitmapTex *)mat;
+
+        Filename fullpath, outpath;
+        Filename filename = Filename::from_os_specific(gtex->GetMapName());
+        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+                                                   fullpath, outpath);
+
+        // Try to find a diffuse map to pair this with as an alpha-texture.
+        std::string uvname = get_uv_name(gtex->GetMapChannel());
+        for (int i=0; i<pandaMat._texture_list.size(); i++) {
+            EggTexture *tex = pandaMat._texture_list[i];
+            if ((tex->get_env_type()==EggTexture::ET_modulate)&&
+                (tex->get_format() == EggTexture::F_rgb)&&
+                (tex->get_uv_name() == uvname)) {
+                tex->set_env_type(EggTexture::ET_modulate_glow);
+                tex->set_format(EggTexture::F_rgba);
+                tex->set_alpha_filename(outpath);
+                tex->set_alpha_fullpath(fullpath);
+                return;
+            }
+        }
+        
+        // Otherwise, just create it as a separate glow-texture.
+        PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");
+        tex->set_env_type(EggTexture::ET_glow);
+        tex->set_filename(outpath);
+        tex->set_fullpath(fullpath);
+        apply_texture_properties(*tex, gtex->GetMapChannel());
+        add_map_channel(pandaMat, gtex->GetMapChannel());
+        tex->set_format(EggTexture::F_alpha);
+        
+        pandaMat._texture_list.push_back(tex);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::analyze_gloss_maps
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MaxToEggConverter::analyze_gloss_maps(PandaMaterial &pandaMat, Texmap *mat) {
+    if (mat == 0) return;
+    
+    if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        pandaMat._any_gloss = true;
+        BitmapTex *gtex = (BitmapTex *)mat;
+
+        Filename fullpath, outpath;
+        Filename filename = Filename::from_os_specific(gtex->GetMapName());
+        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+                                                   fullpath, outpath);
+
+        // Try to find a diffuse map to pair this with as an alpha-texture.
+        std::string uvname = get_uv_name(gtex->GetMapChannel());
+        for (int i=0; i<pandaMat._texture_list.size(); i++) {
+            EggTexture *tex = pandaMat._texture_list[i];
+            if ((tex->get_env_type()==EggTexture::ET_modulate)&&
+                (tex->get_format() == EggTexture::F_rgb)&&
+                (tex->get_uv_name() == uvname)) {
+                tex->set_env_type(EggTexture::ET_modulate_gloss);
+                tex->set_format(EggTexture::F_rgba);
+                tex->set_alpha_filename(outpath);
+                tex->set_alpha_fullpath(fullpath);
+                return;
+            }
+        }
+        
+        // Otherwise, just create it as a separate gloss-texture.
+        PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");
+        tex->set_env_type(EggTexture::ET_gloss);
+        tex->set_filename(outpath);
+        tex->set_fullpath(fullpath);
+        apply_texture_properties(*tex, gtex->GetMapChannel());
+        add_map_channel(pandaMat, gtex->GetMapChannel());
+        tex->set_format(EggTexture::F_alpha);
+        
+        pandaMat._texture_list.push_back(tex);
+    }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::analyze_normal_maps
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MaxToEggConverter::analyze_normal_maps(PandaMaterial &pandaMat, Texmap *mat) {
+    if (mat == 0) return;
+    
+    if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        BitmapTex *ntex = (BitmapTex *)mat;
+
+        Filename fullpath, outpath;
+        Filename filename = Filename::from_os_specific(ntex->GetMapName());
+        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+                                                   fullpath, outpath);
+
+        PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");
+        tex->set_env_type(EggTexture::ET_normal);
+        tex->set_filename(outpath);
+        tex->set_fullpath(fullpath);
+        apply_texture_properties(*tex, ntex->GetMapChannel());
+        add_map_channel(pandaMat, ntex->GetMapChannel());
+        tex->set_format(EggTexture::F_rgb);
+        
+        pandaMat._texture_list.push_back(tex);
+    }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaShader::add_map_channel
