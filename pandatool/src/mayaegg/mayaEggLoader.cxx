@@ -1578,7 +1578,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     // [gjeon] add eggFlag attributes it any exists
     for (unsigned i = 0; i < mesh->_eggObjectTypes.length(); i++) {
       MString attrName = "eggObjectTypes";
-      attrName += (i + 1);
+      attrName += (int)(i + 1);
       status = create_enum_attribute(mesh->_transNode, attrName, attrName, mesh->_eggObjectTypes, i);
       if (status != MStatus::kSuccess) {
         status.perror("create_enum_attribute failed!");
@@ -1675,7 +1675,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     // [gjeon] add eggFlag attributes it any exists   
     for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
       MString attrName = "eggObjectTypes";
-      attrName += (i + 1);
+      attrName += (int)(i + 1);
       status = create_enum_attribute(surface->_transNode, attrName, attrName, surface->_eggObjectTypes, i);
       if (status != MStatus::kSuccess) {
         status.perror("create_enum_attribute failed!");
