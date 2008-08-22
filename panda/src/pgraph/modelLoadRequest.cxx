@@ -14,6 +14,7 @@
 
 #include "modelLoadRequest.h"
 #include "loader.h"
+#include "config_pgraph.h"
 
 TypeHandle ModelLoadRequest::_type_handle;
 
@@ -24,6 +25,11 @@ TypeHandle ModelLoadRequest::_type_handle;
 ////////////////////////////////////////////////////////////////////
 bool ModelLoadRequest::
 do_task() {
+  double delay = async_load_delay;
+  if (delay != 0.0) {
+    Thread::sleep(delay);
+  }
+
   Loader *loader;
   DCAST_INTO_R(loader, _manager, false);
 
