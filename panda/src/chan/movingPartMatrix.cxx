@@ -114,8 +114,8 @@ get_blend_value(const PartBundle *root) {
     case PartBundle::BT_linear:
       {
         // An ordinary, linear blend.
-        _value = 0.0f;
-        float net = 0.0f;
+        LMatrix4f net_value = LMatrix4f::zeros_mat();
+        float net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
@@ -132,25 +132,25 @@ get_blend_value(const PartBundle *root) {
 
             if (!cdata->_frame_blend_flag) {
               // Hold the current frame until the next one is ready.
-              _value += v * effect;
+              net_value += v * effect;
             } else {
               // Blend between successive frames.
               float frac = (float)control->get_frac();
-              _value += v * (effect * (1.0f - frac));
+              net_value += v * (effect * (1.0f - frac));
 
               channel->get_value(control->get_next_frame(), v);
-              _value += v * (effect * frac);
+              net_value += v * (effect * frac);
             }
-            net += effect;
+            net_effect += effect;
           }
         }
         
-        if (net == 0.0f) {
+        if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _initial_value;
           }
         } else {
-          _value /= net;
+          _value = net_value / net_effect;
         }
       }
       break;
@@ -163,10 +163,10 @@ get_blend_value(const PartBundle *root) {
         // artificially-introduced scales, and then reapply the
         // scales and shears.
         
-        _value = 0.0f;
+        LMatrix4f net_value = LMatrix4f::zeros_mat();
         LVecBase3f scale(0.0f, 0.0f, 0.0f);
         LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net = 0.0f;
+        float net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
@@ -189,14 +189,14 @@ get_blend_value(const PartBundle *root) {
             
             if (!cdata->_frame_blend_flag) {
               // Hold the current frame until the next one is ready.
-              _value += v * effect;
+              net_value += v * effect;
               scale += iscale * effect;
               shear += ishear * effect;
             } else {
               // Blend between successive frames.
               float frac = (float)control->get_frac();
               float e0 = effect * (1.0f - frac);
-              _value += v * e0;
+              net_value += v * e0;
               scale += iscale * e0;
               shear += ishear * e0;
 
@@ -205,28 +205,28 @@ get_blend_value(const PartBundle *root) {
               channel->get_scale(next_frame, iscale);
               channel->get_shear(next_frame, ishear);
               float e1 = effect * frac;
-              _value += v * e1;
+              net_value += v * e1;
               scale += iscale * e1;
               shear += ishear * e1;
             }
-            net += effect;
+            net_effect += effect;
           }
         }
         
-        if (net == 0.0f) {
+        if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _initial_value;
           }
 
         } else {
-          _value /= net;
-          scale /= net;
-          shear /= net;
+          net_value /= net_effect;
+          scale /= net_effect;
+          shear /= net_effect;
           
           // Now rebuild the matrix with the correct scale values.
           
           LVector3f false_scale, false_shear, hpr, translate;
-          decompose_matrix(_value, false_scale, false_shear, hpr, translate);
+          decompose_matrix(net_value, false_scale, false_shear, hpr, translate);
           compose_matrix(_value, scale, shear, hpr, translate);
         }
       }
@@ -239,7 +239,7 @@ get_blend_value(const PartBundle *root) {
         LVecBase3f hpr(0.0f, 0.0f, 0.0f);
         LVecBase3f pos(0.0f, 0.0f, 0.0f);
         LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net = 0.0f;
+        float net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
@@ -288,20 +288,20 @@ get_blend_value(const PartBundle *root) {
               pos += ipos * e1;
               shear += ishear * e1;
             }
-            net += effect;
+            net_effect += effect;
           }
         }
         
-        if (net == 0.0f) {
+        if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _initial_value;
           }
 
         } else {
-          scale /= net;
-          hpr /= net;
-          pos /= net;
-          shear /= net;
+          scale /= net_effect;
+          hpr /= net_effect;
+          pos /= net_effect;
+          shear /= net_effect;
           
           compose_matrix(_value, scale, shear, hpr, pos);
         }
@@ -316,7 +316,7 @@ get_blend_value(const PartBundle *root) {
         LQuaternionf quat(0.0f, 0.0f, 0.0f, 0.0f);
         LVecBase3f pos(0.0f, 0.0f, 0.0f);
         LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net = 0.0f;
+        float net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
@@ -367,20 +367,20 @@ get_blend_value(const PartBundle *root) {
               pos += ipos * e1;
               shear += ishear * e1;
             }
-            net += effect;
+            net_effect += effect;
           }
         }
         
-        if (net == 0.0f) {
+        if (net_effect == 0.0f) {
           if (restore_initial_pose) {
             _value = _initial_value;
           }
 
         } else {
-          scale /= net;
-          quat /= net;
-          pos /= net;
-          shear /= net;
+          scale /= net_effect;
+          quat /= net_effect;
+          pos /= net_effect;
+          shear /= net_effect;
           
           // There should be no need to normalize the quaternion,
           // assuming all of the input quaternions were already
