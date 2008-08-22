@@ -20,8 +20,9 @@
 //               via load_async(), to begin an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 INLINE TextureReloadRequest::
-TextureReloadRequest(TextureContext *tc) :
+TextureReloadRequest(TextureContext *tc, bool allow_compressed) :
   _texture_context(tc),
+  _allow_compressed(allow_compressed),
   _is_ready(false)
 {
   nassertv(_texture_context != (TextureContext *)NULL);
@@ -37,6 +38,17 @@ TextureReloadRequest(TextureContext *tc) :
 INLINE TextureContext *TextureReloadRequest::
 get_texture_context() const {
   return _texture_context;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReloadRequest::get_allow_compressed
+//       Access: Published
+//  Description: Returns the "allow compressed" flag associated with
+//               this asynchronous TextureReloadRequest.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureReloadRequest::
+get_allow_compressed() const {
+  return _allow_compressed;
 }
 
 ////////////////////////////////////////////////////////////////////

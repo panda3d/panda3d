@@ -35,9 +35,10 @@ public:
   ALLOC_DELETED_CHAIN(TextureReloadRequest);
 
 PUBLISHED:
-  INLINE TextureReloadRequest(TextureContext *tc);
+  INLINE TextureReloadRequest(TextureContext *tc, bool allow_compressed);
   
   INLINE TextureContext *get_texture_context() const;
+  INLINE bool get_allow_compressed() const;
   INLINE bool is_ready() const;
   
 protected:
@@ -45,6 +46,7 @@ protected:
   
 private:
   TextureContext *_texture_context;
+  bool _allow_compressed;
   PT(Texture) _texture;
   bool _is_ready;
   

@@ -6772,22 +6772,29 @@ bool CLP(GraphicsStateGuardian)::
 upload_texture(CLP(TextureContext) *gtc) {
   Texture *tex = gtc->get_texture();
 
-  if (_incomplete_render && 
-      !tex->has_ram_image() && tex->might_have_ram_image() &&
-      tex->has_simple_ram_image() &&
-      !_loader.is_null()) {
-    // If we don't have the texture data right now, go get it, but in
-    // the meantime load a temporary simple image in its place.
-    async_reload_texture(gtc);
-    if (!tex->has_ram_image()) {
-      if (gtc->was_simple_image_modified()) {
-        return upload_simple_texture(gtc);
+  if (_incomplete_render) {
+    bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
+    if (!has_image && tex->might_have_ram_image() &&
+        tex->has_simple_ram_image() &&
+        !_loader.is_null()) {
+      // If we don't have the texture data right now, go get it, but in
+      // the meantime load a temporary simple image in its place.
+      async_reload_texture(gtc);
+      if (!tex->has_ram_image()) {
+        if (gtc->was_simple_image_modified()) {
+          return upload_simple_texture(gtc);
+        }
+        return true;
       }
-      return true;
     }
   }
 
-  CPTA_uchar image = tex->get_ram_image();
+  CPTA_uchar image;
+  if (_supports_compressed_texture) {
+    image = tex->get_ram_image();
+  } else {
+    image = tex->get_uncompressed_ram_image();
+  }
 
   Texture::CompressionMode image_compression;
   if (image.is_null()) {
@@ -6795,6 +6802,11 @@ upload_texture(CLP(TextureContext) *gtc) {
   } else {
     image_compression = tex->get_ram_image_compression();
   }
+
+  if (!get_supports_compressed_texture_format(image_compression)) {
+    image = tex->get_uncompressed_ram_image();
+    image_compression = Texture::CM_off;
+  }    
 
   int mipmap_bias = 0;
 

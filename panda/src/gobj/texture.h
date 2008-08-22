@@ -293,6 +293,7 @@ PUBLISHED:
   int get_expected_mipmap_z_size(int n) const;
 
   virtual bool has_ram_image() const;
+  virtual bool has_uncompressed_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
   INLINE size_t get_ram_page_size() const;
@@ -300,6 +301,7 @@ PUBLISHED:
   INLINE size_t get_expected_ram_page_size() const;
   CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
+  CPTA_uchar get_uncompressed_ram_image();
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
   void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
@@ -442,7 +444,7 @@ protected:
   bool do_store_one(PNMImage &pnmimage, int z, int n) const;
 
   virtual void reconsider_dirty();
-  virtual void reload_ram_image();
+  virtual void reload_ram_image(bool allow_compression);
 
   void do_modify_ram_image();
   void do_make_ram_image();

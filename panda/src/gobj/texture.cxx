@@ -1032,7 +1032,7 @@ bool Texture::
 reload() {
   ReMutexHolder holder(_lock);
   if (_loaded_from_image && has_filename()) {
-    reload_ram_image();
+    reload_ram_image(true);
     ++_image_modified;
     return has_ram_image();
   }
@@ -1382,6 +1382,19 @@ has_ram_image() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_uncompressed_ram_image
+//       Access: Published, Virtual
+//  Description: Returns true if the Texture has its image contents
+//               available in main RAM and is uncompressed, false
+//               otherwise.  See has_ram_image().
+////////////////////////////////////////////////////////////////////
+bool Texture::
+has_uncompressed_ram_image() const {
+  ReMutexHolder holder(_lock);
+  return !_ram_images.empty() && !_ram_images[0]._image.empty() && _ram_image_compression == CM_off;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_image
 //       Access: Published
 //  Description: Returns the system-RAM image data associated with the
@@ -1413,10 +1426,43 @@ CPTA_uchar Texture::
 get_ram_image() {
   ReMutexHolder holder(_lock);
   if (_loaded_from_image && !has_ram_image() && has_filename()) {
-    reload_ram_image();
+    reload_ram_image(true);
   }
 
   if (_ram_images.empty()) {
+    return CPTA_uchar(get_class_type());
+  }
+
+  return _ram_images[0]._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_uncompressed_ram_image
+//       Access: Published
+//  Description: Returns the system-RAM image associated with the
+//               texture, in an uncompressed form if at all possible.
+//
+//               If get_ram_image_compression() is CM_off, then the
+//               system-RAM image is already uncompressed, and this
+//               returns the same thing as get_ram_image().
+//
+//               If get_ram_image_compression() is anything else, then
+//               the system-RAM image is compressed.  In this case,
+//               the image will be reloaded from the *original* file
+//               (not from the cache), in the hopes that an
+//               uncompressed image will be found there.
+//
+//               If an uncompressed image cannot be found, returns
+//               NULL.
+////////////////////////////////////////////////////////////////////
+CPTA_uchar Texture::
+get_uncompressed_ram_image() {
+  ReMutexHolder holder(_lock);
+  if (_loaded_from_image && (!has_ram_image() || get_ram_image_compression() != CM_off) && has_filename()) {
+    reload_ram_image(false);
+  }
+
+  if (_ram_images.empty() || get_ram_image_compression() != CM_off) {
     return CPTA_uchar(get_class_type());
   }
 
@@ -3094,9 +3140,13 @@ reconsider_dirty() {
 //               available, if possible.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-reload_ram_image() {
+reload_ram_image(bool allow_compression) {
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record;
+
+  if (!has_compression()) {
+    allow_compression = false;
+  }
 
   if ((cache->get_cache_textures() || (has_compression() && cache->get_cache_compressed_textures())) && !textures_header_only) {
     // See if the texture can be found in the on-disk cache, if it is
@@ -3123,7 +3173,7 @@ reload_ram_image() {
       } else {
         // Also don't keep the cached version if it's compressed but
         // we want uncompressed.
-        if (!has_compression() && tex->get_ram_image_compression() != Texture::CM_off) {
+        if (!allow_compression && tex->get_ram_image_compression() != Texture::CM_off) {
           if (gobj_cat.is_debug()) {
             gobj_cat.debug()
               << "Cached texture " << *this

@@ -2013,7 +2013,7 @@ upload_texture(TinyTextureContext *gtc) {
   Texture *tex = gtc->get_texture();
 
   if (_incomplete_render && 
-      !tex->has_ram_image() && tex->might_have_ram_image() &&
+      !tex->has_uncompressed_ram_image() && tex->might_have_ram_image() &&
       tex->has_simple_ram_image() &&
       !_loader.is_null()) {
     // If we don't have the texture data right now, go get it, but in
@@ -2028,7 +2028,7 @@ upload_texture(TinyTextureContext *gtc) {
   }
 
   PStatTimer timer(_load_texture_pcollector);
-  CPTA_uchar src_image = tex->get_ram_image();
+  CPTA_uchar src_image = tex->get_uncompressed_ram_image();
   if (src_image.is_null()) {
     return false;
   }

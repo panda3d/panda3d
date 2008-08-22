@@ -2214,6 +2214,7 @@ void GraphicsStateGuardian::
 async_reload_texture(TextureContext *tc) {
   nassertv(_loader != (Loader *)NULL);
 
-  PT(AsyncTask) request = new TextureReloadRequest(tc);
+  PT(AsyncTask) request = 
+    new TextureReloadRequest(tc, _supports_compressed_texture);
   _loader->load_async(request);
 }

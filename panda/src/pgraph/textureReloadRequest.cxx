@@ -26,7 +26,11 @@ bool TextureReloadRequest::
 do_task() {
   // Don't reload the texture if it doesn't need it.
   if (_texture_context->was_image_modified()) {
-    _texture->get_ram_image();
+    if (_allow_compressed) {
+      _texture->get_ram_image();
+    } else {
+      _texture->get_uncompressed_ram_image();
+    }
   }
   _is_ready = true;
 
