@@ -920,7 +920,7 @@ create_texture(DXScreenData &scrn) {
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
 
-  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation, scrn._d3d_device);
+  hr = fill_d3d_texture_pixels(scrn);
   if (FAILED(hr)) {
 
     dxgsg9_cat.debug ()
@@ -1030,7 +1030,7 @@ create_simple_texture(DXScreenData &scrn) {
     CPTA_uchar image = get_texture()->get_simple_ram_image();
 
     hr = -1;
-    //  hr = fill_d3d_texture_pixels(scrn._supports_automatic_mipmap_generation, scrn._d3d_device);
+    //  hr = fill_d3d_texture_pixels(scrn);
 
     IDirect3DSurface9 *surface = NULL;
     _d3d_2d_texture->GetSurfaceLevel(0, &surface);
@@ -1625,16 +1625,35 @@ exit_FillMipmapSurf:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
-fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDevice9 *device) {
+fill_d3d_texture_pixels(DXScreenData &scrn) {
+  IDirect3DDevice9 *device = scrn._d3d_device;
   Texture *tex = get_texture();
   nassertr(IS_VALID_PTR(tex), E_FAIL);
   if (tex->get_texture_type() == Texture::TT_3d_texture) {
-    return fill_d3d_volume_texture_pixels();
+    return fill_d3d_volume_texture_pixels(scrn);
   }
 
   HRESULT hr = E_FAIL;
 
-  CPTA_uchar image = tex->get_ram_image();
+  CPTA_uchar image;
+  if (scrn._dxgsg9->get_supports_compressed_texture()) {
+    image = tex->get_ram_image();
+  } else {
+    image = tex->get_uncompressed_ram_image();
+  }
+
+  Texture::CompressionMode image_compression;
+  if (image.is_null()) {
+    image_compression = Texture::CM_off;
+  } else {
+    image_compression = tex->get_ram_image_compression();
+  }
+
+  if (!scrn._dxgsg9->get_supports_compressed_texture_format(image_compression)) {
+    image = tex->get_uncompressed_ram_image();
+    image_compression = Texture::CM_off;
+  }    
+
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1732,7 +1751,7 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
       else {
         // mipmaps need to be generated, either use autogen or d3dx functions
 
-        if (_managed == false && supports_automatic_mipmap_generation) {
+        if (_managed == false && scrn._supports_automatic_mipmap_generation) {
           if (false)
           {
             //hr = _d3d_texture -> SetAutoGenFilterType (D3DTEXF_PYRAMIDALQUAD);
@@ -1778,11 +1797,30 @@ fill_d3d_texture_pixels(bool supports_automatic_mipmap_generation,  IDirect3DDev
 //  Description:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
-fill_d3d_volume_texture_pixels() {
+fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
+  Texture *tex = get_texture();
   HRESULT hr = E_FAIL;
-  nassertr(IS_VALID_PTR(get_texture()), E_FAIL);
+  nassertr(IS_VALID_PTR(tex), E_FAIL);
 
-  CPTA_uchar image = get_texture()->get_ram_image();
+  CPTA_uchar image;
+  if (scrn._dxgsg9->get_supports_compressed_texture()) {
+    image = tex->get_ram_image();
+  } else {
+    image = tex->get_uncompressed_ram_image();
+  }
+
+  Texture::CompressionMode image_compression;
+  if (image.is_null()) {
+    image_compression = Texture::CM_off;
+  } else {
+    image_compression = tex->get_ram_image_compression();
+  }
+
+  if (!scrn._dxgsg9->get_supports_compressed_texture_format(image_compression)) {
+    image = tex->get_uncompressed_ram_image();
+    image_compression = Texture::CM_off;
+  }    
+
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
     // might be a texture we've rendered to by frame buffer
@@ -1793,15 +1831,15 @@ fill_d3d_volume_texture_pixels() {
   PStatTimer timer(GraphicsStateGuardian::_load_texture_pcollector);
 
   nassertr(IS_VALID_PTR(_d3d_texture), E_FAIL);
-  nassertr(get_texture()->get_texture_type() == Texture::TT_3d_texture, E_FAIL);
+  nassertr(tex->get_texture_type() == Texture::TT_3d_texture, E_FAIL);
 
-  DWORD orig_width  = (DWORD) get_texture()->get_x_size();
-  DWORD orig_height = (DWORD) get_texture()->get_y_size();
-  DWORD orig_depth = (DWORD) get_texture()->get_z_size();
-  DWORD num_color_channels = get_texture()->get_num_components();
+  DWORD orig_width  = (DWORD) tex->get_x_size();
+  DWORD orig_height = (DWORD) tex->get_y_size();
+  DWORD orig_depth = (DWORD) tex->get_z_size();
+  DWORD num_color_channels = tex->get_num_components();
   D3DFORMAT source_format = _d3d_format;
   BYTE *image_pixels = (BYTE*)image.p();
-  int component_width = get_texture()->get_component_width();
+  int component_width = tex->get_component_width();
 
   nassertr(IS_VALID_PTR(image_pixels), E_FAIL);
 
@@ -1814,7 +1852,7 @@ fill_d3d_volume_texture_pixels() {
 
   if (FAILED(hr)) {
     dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+      << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
       << ", GetSurfaceLevel failed" << D3DERRORSTRING(hr);
     return E_FAIL;
   }
@@ -1873,7 +1911,7 @@ fill_d3d_volume_texture_pixels() {
     // original image, but dx8 doesn't support high-precision images
     // anyway.
 
-    int num_components = get_texture()->get_num_components();
+    int num_components = tex->get_num_components();
     int num_pixels = orig_width * orig_height * orig_depth * num_components;
     BYTE *temp_buffer = new BYTE[num_pixels];
     if (!IS_VALID_PTR(temp_buffer)) {
@@ -1902,7 +1940,7 @@ fill_d3d_volume_texture_pixels() {
      &source_size, level_0_filter, (D3DCOLOR)0x0);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
-      << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+      << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
       << ", D3DXLoadVolumeFromMem failed" << D3DERRORSTRING(hr);
     goto exit_FillDDSurf;
   }
@@ -1920,7 +1958,7 @@ fill_d3d_volume_texture_pixels() {
                            mip_filter_flags);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "FillDDSurfaceTexturePixels failed for " << get_texture()->get_name()
+        << "FillDDSurfaceTexturePixels failed for " << tex->get_name()
         << ", D3DXFilterTex failed" << D3DERRORSTRING(hr);
       goto exit_FillDDSurf;
     }

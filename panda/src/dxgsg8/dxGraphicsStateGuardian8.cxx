@@ -274,18 +274,21 @@ upload_texture(DXTextureContext8 *dtc) {
     return false;
   }
 
-  if (_incomplete_render && 
-      !tex->has_ram_image() && tex->might_have_ram_image() &&
-      tex->has_simple_ram_image() &&
-      !_loader.is_null()) {
-    // If we don't have the texture data right now, go get it, but in
-    // the meantime load a temporary simple image in its place.
-    async_reload_texture(dtc);
-    if (!tex->has_ram_image()) {
-      if (dtc->was_simple_image_modified()) {
-        return dtc->create_simple_texture(*_screen);
+  if (_incomplete_render) {
+    bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
+    if (!has_image && tex->might_have_ram_image() &&
+        tex->has_simple_ram_image() &&
+        !_loader.is_null()) {
+      // If we don't have the texture data right now, go get it, but in
+      // the meantime load a temporary simple image in its place.
+      async_reload_texture(dtc);
+      has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
+      if (!has_image) {
+        if (dtc->was_simple_image_modified()) {
+          return dtc->create_simple_texture(*_screen);
+        }
+        return true;
       }
-      return true;
     }
   }
   

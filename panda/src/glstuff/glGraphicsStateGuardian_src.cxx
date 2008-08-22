@@ -6780,7 +6780,8 @@ upload_texture(CLP(TextureContext) *gtc) {
       // If we don't have the texture data right now, go get it, but in
       // the meantime load a temporary simple image in its place.
       async_reload_texture(gtc);
-      if (!tex->has_ram_image()) {
+      has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
+      if (!has_image) {
         if (gtc->was_simple_image_modified()) {
           return upload_simple_texture(gtc);
         }
