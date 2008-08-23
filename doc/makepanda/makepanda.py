@@ -289,6 +289,9 @@ if (COMPILER=="LINUX"):
     IncDirectory("GTK2", "/usr/include/pango-1.0")
     IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
     IncDirectory("GTK2", "/usr/include/atk-1.0")
+    if (platform.architecture()[0] == "64bit"):
+        IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+        IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
     LibName("GTK2", "-lgtk-x11-2.0")
 
     for pkg in ["VRPN", "FFTW", "FMOD", "FMODEX", "OPENAL", "NVIDIACG", "FFMPEG", "ARTOOLKIT", "ODE"]:
