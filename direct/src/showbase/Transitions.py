@@ -127,6 +127,13 @@ class Transitions:
         from black to transparent. When the color lerp is finished, it
         parents the fade polygon to hidden.
         """
+        gsg = base.win.getGsg()
+        if gsg:
+            # If we're about to fade in from black, go ahead and
+            # preload all the textures etc.
+            render.prepareScene(gsg)
+            render2d.prepareScene(gsg)
+        
         if (t == 0):
             # Fade in immediately with no lerp
             #print "transitiosn: fadeIn 0.0"
