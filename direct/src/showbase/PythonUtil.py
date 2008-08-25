@@ -2495,7 +2495,7 @@ def deeptype(obj, maxLen=100, _visitedIds=None):
         s += '}'
         return s
     else:
-        return itype(obj)
+        return str(itype(obj))
 
 def getNumberedTypedString(items, maxLen=5000, numPrefix=''):
     """get a string that has each item of the list on its own line,
