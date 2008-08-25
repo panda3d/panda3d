@@ -354,7 +354,8 @@ class TaskManager:
 
     OsdPrefix = 'task.'
 
-    DefTaskDurationWarningThreshold = 3.
+    # multiple of average frame duration
+    DefTaskDurationWarningThreshold = 4.
 
     def __init__(self):
         self.running = 0
@@ -751,10 +752,11 @@ class TaskManager:
                 task.avgDt = 0
 
         # warn if the task took too long
-        if self.warnTaskDuration:
-            if dt >= self.taskDurationWarningThreshold:
-                assert TaskManager.notify.warning('task %s ran for %.2f seconds' % (
-                    task.name, dt))
+        if self.warnTaskDuration and self.globalClock:
+            avgFrameDur = (1. / self.globalClock.getAverageFrameRate())
+            if dt >= (self.taskDurationWarningThreshold * avgFrameDur):
+                assert TaskManager.notify.warning('frame %s: task %s ran for %.2f seconds, avg frame duration=%.2f seconds' % (
+                    globalClock.getFrameCount(), task.name, dt, avgFrameDur))
             
         return ret
 
