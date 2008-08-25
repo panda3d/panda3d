@@ -5752,10 +5752,8 @@ void NodePath::
 prepare_scene(GraphicsStateGuardianBase *gsg) {
   nassertv_always(!is_empty());
 
-  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
-
   CPT(RenderState) net_state = get_net_state();
-  r_prepare_scene(node(), net_state, prepared_objects);
+  node()->prepare_scene(gsg, net_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7007,48 +7005,5 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
     PandaNode *child = cr.get_child(i);
     CPT(RenderState) next_state = state->compose(child->get_state());
     r_find_all_materials(child, next_state, materials);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_prepare_scene
-//       Access: Private
-//  Description: The recursive implementation of prepare_scene.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-r_prepare_scene(PandaNode *node, const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects) {
-  if (node->is_geom_node()) {
-    GeomNode *gnode;
-    DCAST_INTO_V(gnode, node);
-
-    /* 
-       Not implemented yet in pgraph.  Maybe we don't need this anyway.
-    if (retained_mode) {
-      gnode->prepare(gsg);
-    }
-    */
-
-    int num_geoms = gnode->get_num_geoms();
-    for (int i = 0; i < num_geoms; i++) {
-      CPT(RenderState) geom_state = state->compose(gnode->get_geom_state(i));
-      const RenderAttrib *attrib = 
-        geom_state->get_attrib(TextureAttrib::get_class_type());
-      if (attrib != (const RenderAttrib *)NULL) {
-        const TextureAttrib *ta;
-        DCAST_INTO_V(ta, attrib);
-        Texture *texture = ta->get_texture();
-        if (texture != (Texture *)NULL) {
-          texture->prepare(prepared_objects);
-        }
-      }
-    }
-  }
-
-  int num_children = node->get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    PandaNode *child = node->get_child(i);
-    CPT(RenderState) child_state = state->compose(child->get_state());
-    r_prepare_scene(child, child_state, prepared_objects);
   }
 }

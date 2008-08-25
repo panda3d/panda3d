@@ -352,6 +352,35 @@ safe_to_combine() const {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::r_prepare_scene
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of prepare_scene().
+//               Don't call this directly; call
+//               PandaNode::prepare_scene() or
+//               NodePath::prepare_scene() instead.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+r_prepare_scene(const RenderState *state,
+                PreparedGraphicsObjects *prepared_objects) {
+  int num_geoms = get_num_geoms();
+  for (int i = 0; i < num_geoms; i++) {
+    CPT(RenderState) geom_state = state->compose(get_geom_state(i));
+    const RenderAttrib *attrib = 
+      geom_state->get_attrib(TextureAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      const TextureAttrib *ta;
+      DCAST_INTO_V(ta, attrib);
+      Texture *texture = ta->get_texture();
+      if (texture != (Texture *)NULL) {
+        texture->prepare(prepared_objects);
+      }
+    }
+  }
+  
+  PandaNode::r_prepare_scene(state, prepared_objects);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::combine_with

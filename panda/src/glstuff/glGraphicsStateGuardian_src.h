@@ -143,6 +143,7 @@ public:
   INLINE bool draw_display_list(GeomContext *gc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
+  virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
 
@@ -324,7 +325,7 @@ protected:
   void do_auto_rescale_normal();
   void specify_texture(Texture *tex);
   bool apply_texture(TextureContext *tc);
-  bool upload_texture(CLP(TextureContext) *gtc);
+  bool upload_texture(CLP(TextureContext) *gtc, bool force);
   bool upload_texture_image(CLP(TextureContext) *gtc,
                             bool uses_mipmaps, int mipmap_bias,
                             GLenum texture_target, GLenum page_target, 

@@ -1214,7 +1214,8 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = (*qti);
-    tex->prepare_now(this, gsg);
+    TextureContext *tc = tex->prepare_now(this, gsg);
+    gsg->update_texture(tc, true);
   }
 
   _enqueued_textures.clear();

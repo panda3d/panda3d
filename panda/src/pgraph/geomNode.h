@@ -59,6 +59,9 @@ public:
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_combine() const;
 
+  virtual void r_prepare_scene(const RenderState *state,
+                               PreparedGraphicsObjects *prepared_objects);
+
 PUBLISHED:
   INLINE void set_preserved(bool value);
   INLINE bool get_preserved() const;

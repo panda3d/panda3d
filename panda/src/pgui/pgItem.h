@@ -68,6 +68,9 @@ protected:
   virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
                                        Thread *current_thread) const;
 
+  virtual void r_prepare_scene(const RenderState *state,
+                               PreparedGraphicsObjects *prepared_objects);
+
 public:
   virtual void xform(const LMatrix4f &mat);
   bool activate_region(const LMatrix4f &transform, int sort,

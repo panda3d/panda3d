@@ -60,6 +60,7 @@ class Light;
 class FactoryParams;
 class AccumulatedAttribs;
 class GeomTransformer;
+class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PandaNode
@@ -239,6 +240,8 @@ PUBLISHED:
   CollideMask get_net_collide_mask(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(RenderAttrib) get_off_clip_planes(Thread *current_thread = Thread::get_current_thread()) const;
 
+  void prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state);
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
@@ -313,6 +316,10 @@ protected:
                                Thread *current_thread);
 
   void set_cull_callback();
+
+public:
+  virtual void r_prepare_scene(const RenderState *state,
+                               PreparedGraphicsObjects *prepared_objects);
 
 protected:
   // This is a base class of CData, defined below.  It contains just

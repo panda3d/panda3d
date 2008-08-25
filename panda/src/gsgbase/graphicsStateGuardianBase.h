@@ -133,6 +133,7 @@ public:
 #endif
 
   virtual TextureContext *prepare_texture(Texture *tex)=0;
+  virtual bool update_texture(TextureContext *tc, bool force)=0;
   virtual void release_texture(TextureContext *tc)=0;
   virtual bool extract_texture_data(Texture *tex)=0;
 

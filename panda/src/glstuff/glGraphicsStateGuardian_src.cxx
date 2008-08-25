@@ -2638,6 +2638,50 @@ prepare_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_texture
+//       Access: Public, Virtual
+//  Description: Ensures that the current Texture data is refreshed
+//               onto the GSG.  This means updating the texture
+//               properties and/or re-uploading the texture image, if
+//               necessary.  This should only be called within the
+//               draw thread.
+//
+//               If force is true, this function will not return until
+//               the texture has been fully uploaded.  If force is
+//               false, the function may choose to upload a simple
+//               version of the texture instead, if the texture is not
+//               fully resident (and if get_incomplete_render() is
+//               true).
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+update_texture(TextureContext *tc, bool force) {
+  apply_texture(tc);
+
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+
+  if (gtc->was_image_modified()) {
+    // If the texture image was modified, reload the texture.  This
+    // means we also re-specify the properties for good measure.
+    specify_texture(gtc->get_texture());
+    bool okflag = upload_texture(gtc, force);
+    if (!okflag) {
+      GLCAT.error()
+        << "Could not load " << *gtc->get_texture() << "\n";
+      return false;
+    }
+
+  } else if (gtc->was_properties_modified()) {
+    // If only the properties have been modified, we don't necessarily
+    // need to reload the texture.
+    specify_texture(gtc->get_texture());
+    gtc->mark_loaded();
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
@@ -3275,17 +3319,43 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
-  apply_texture(tc);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  if (z >= 0) {
-    // Copy to a cube map face.  This doesn't seem to work too well
-    // with CopyTexSubImage2D, so we always use CopyTexImage2D.
-    GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
-                        get_internal_image_format(tex),
-                        xo, yo, w, h, 0);
-  } else {
-    GLP(CopyTexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, xo, yo, w, h);
+  apply_texture(gtc);
+  specify_texture(tex);
+
+  GLenum target = get_texture_target(tex->get_texture_type());
+  GLint internal_format = get_internal_image_format(tex);
+  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+  if (uses_mipmaps) {
+    if (_supports_generate_mipmap) {
+      GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, true);
+    } else {
+      // If we can't auto-generate mipmaps, do without mipmaps.
+      GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      uses_mipmaps = false;
+    }
   }
+
+  bool new_image = gtc->was_image_modified();
+  if (z >= 0) {
+    // Copy to a cube map face.
+    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+
+    // Cube map faces seem to have trouble with CopyTexSubImage, so we
+    // always reload the image.
+    new_image = true;
+  }
+
+  if (new_image) {
+    // We have to create a new image.
+    GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, w, h, 0);
+  } else {
+    // We can overlay the existing image.
+    GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
+  }
+
+  gtc->mark_loaded();
 
   report_my_gl_errors();
 
@@ -6186,7 +6256,7 @@ update_standard_texture_bindings() {
     }
     GLP(Enable)(target);
     
-    if (!apply_texture(tc)) {
+    if (!update_texture(tc, false)) {
       GLP(Disable)(target);
       break;
     }
@@ -6755,24 +6825,6 @@ apply_texture(TextureContext *tc) {
   }
   GLP(BindTexture)(target, gtc->_index);
 
-  if (gtc->was_image_modified()) {
-    // If the texture image was modified, reload the texture.  This
-    // means we also re-specify the properties for good measure.
-    specify_texture(gtc->get_texture());
-    bool okflag = upload_texture(gtc);
-    if (!okflag) {
-      GLCAT.error()
-        << "Could not load " << *gtc->get_texture() << "\n";
-      return false;
-    }
-
-  } else if (gtc->was_properties_modified()) {
-    // If only the properties have been modified, we don't necessarily
-    // need to reload the texture.
-    specify_texture(gtc->get_texture());
-    gtc->mark_loaded();
-  }
-
   report_my_gl_errors();
   return true;
 }
@@ -6787,10 +6839,10 @@ apply_texture(TextureContext *tc) {
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-upload_texture(CLP(TextureContext) *gtc) {
+upload_texture(CLP(TextureContext) *gtc, bool force) {
   Texture *tex = gtc->get_texture();
 
-  if (_incomplete_render) {
+  if (_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
         tex->has_simple_ram_image() &&
@@ -6826,6 +6878,13 @@ upload_texture(CLP(TextureContext) *gtc) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
   }    
+
+  /*
+  if (image.is_null()) {
+    // If we don't have an image, we can't upload.
+    return false;
+  }
+  */
 
   int mipmap_bias = 0;
 

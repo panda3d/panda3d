@@ -170,6 +170,7 @@ public:
   virtual SceneSetup *get_scene() const;
 
   virtual TextureContext *prepare_texture(Texture *tex);
+  virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
 

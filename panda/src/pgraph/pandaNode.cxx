@@ -27,6 +27,7 @@
 #include "pStatTimer.h"
 #include "config_mathutil.h"
 #include "reMutexHolder.h"
+#include "graphicsStateGuardianBase.h"
 
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
@@ -2106,6 +2107,27 @@ get_off_clip_planes(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::prepare_scene
+//       Access: Published
+//  Description: Walks through the scene graph beginning at this node,
+//               and does whatever initialization is required to
+//               render the scene properly with the indicated GSG.  It
+//               is not strictly necessary to call this, since the GSG
+//               will initialize itself when the scene is rendered,
+//               but this may take some of the overhead away from that
+//               process.
+//
+//               In particular, this will ensure that textures within
+//               the scene are loaded in texture memory, and display
+//               lists are built up from static geometry.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state) {
+  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
+  r_prepare_scene(net_state, prepared_objects);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::output
 //       Access: Published, Virtual
 //  Description: 
@@ -2658,6 +2680,25 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
     }
 
     quick_add_new_child(dest_child, sort, current_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_prepare_scene
+//       Access: Public, Virtual
+//  Description: The recursive implementation of prepare_scene().
+//               Don't call this directly; call
+//               PandaNode::prepare_scene() or
+//               NodePath::prepare_scene() instead.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+r_prepare_scene(const RenderState *state,
+                PreparedGraphicsObjects *prepared_objects) {
+  int num_children = get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = get_child(i);
+    CPT(RenderState) child_state = state->compose(child->get_state());
+    child->r_prepare_scene(child_state, prepared_objects);
   }
 }
 

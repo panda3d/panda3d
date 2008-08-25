@@ -650,6 +650,28 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::r_prepare_scene
+//       Access: Protected, Virtual
+//  Description: The recursive implementation of prepare_scene().
+//               Don't call this directly; call
+//               PandaNode::prepare_scene() or
+//               NodePath::prepare_scene() instead.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+r_prepare_scene(const RenderState *state,
+                PreparedGraphicsObjects *prepared_objects) {
+  check_rebuild();
+
+  PandaNode *child = _internal_geom;
+  if (child != (PandaNode *)NULL) {
+    CPT(RenderState) child_state = state->compose(child->get_state());
+    child->r_prepare_scene(child_state, prepared_objects);
+  }
+  
+  PandaNode::r_prepare_scene(state, prepared_objects);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::do_rebuild
 //       Access: Private
 //  Description: Removes any existing children of the TextNode, and

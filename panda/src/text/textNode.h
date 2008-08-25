@@ -242,6 +242,9 @@ public:
   virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
                                        Thread *current_thread) const;
 
+  virtual void r_prepare_scene(const RenderState *state,
+                               PreparedGraphicsObjects *prepared_objects);
+
 private:
   INLINE void invalidate_no_measure();
   INLINE void invalidate_with_measure();

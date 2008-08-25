@@ -1469,6 +1469,47 @@ prepare_texture(Texture *tex) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::update_texture
+//       Access: Public, Virtual
+//  Description: Ensures that the current Texture data is refreshed
+//               onto the GSG.  This means updating the texture
+//               properties and/or re-uploading the texture image, if
+//               necessary.  This should only be called within the
+//               draw thread.
+//
+//               If force is true, this function will not return until
+//               the texture has been fully uploaded.  If force is
+//               false, the function may choose to upload a simple
+//               version of the texture instead, if the texture is not
+//               fully resident (and if get_incomplete_render() is
+//               true).
+////////////////////////////////////////////////////////////////////
+bool TinyGraphicsStateGuardian::
+update_texture(TextureContext *tc, bool force) {
+  apply_texture(tc);
+
+  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
+
+  GLTexture *gltex = &gtc->_gltex;
+
+  if (gtc->was_image_modified() || gltex->num_levels == 0) {
+    // If the texture image was modified, reload the texture.
+    bool okflag = upload_texture(gtc);
+    if (!okflag) {
+      tinydisplay_cat.error()
+        << "Could not load " << *gtc->get_texture() << "\n";
+      return false;
+    }
+  }
+  gtc->enqueue_lru(&_textures_lru);
+
+  _c->current_texture = gltex;
+  _c->zb->current_texture = gltex->levels;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::release_texture
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
@@ -1874,7 +1915,7 @@ do_issue_texture() {
   }
     
   // Then, turn on the current texture mode.
-  if (!apply_texture(tc)) {
+  if (!update_texture(tc, false)) {
     return;
   }
 
@@ -1981,22 +2022,6 @@ apply_texture(TextureContext *tc) {
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   gtc->set_active(true);
-
-  GLTexture *gltex = &gtc->_gltex;
-
-  if (gtc->was_image_modified() || gltex->num_levels == 0) {
-    // If the texture image was modified, reload the texture.
-    bool okflag = upload_texture(gtc);
-    if (!okflag) {
-      tinydisplay_cat.error()
-        << "Could not load " << *gtc->get_texture() << "\n";
-      return false;
-    }
-  }
-  gtc->enqueue_lru(&_textures_lru);
-
-  _c->current_texture = gltex;
-  _c->zb->current_texture = gltex->levels;
   return true;
 }
 

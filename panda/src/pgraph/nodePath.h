@@ -913,9 +913,6 @@ private:
   void r_find_all_materials(PandaNode *node, const RenderState *state,
                            Materials &materials) const;
 
-  void r_prepare_scene(PandaNode *node, const RenderState *state,
-                       PreparedGraphicsObjects *prepared_objects);
-
   PT(NodePathComponent) _head;
   int _backup_key;
   ErrorType _error_type;
