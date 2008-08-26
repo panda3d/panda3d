@@ -647,9 +647,14 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-
-  Window root_window = glx_pipe->get_root();
-
+  
+  Window root_window;
+  if (!_properties.has_parent_window()) {
+    root_window = glx_pipe->get_root();
+  } else {
+    root_window = (Window) (int) _properties.get_parent_window();
+  }
+  
 #ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
