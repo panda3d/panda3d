@@ -7061,7 +7061,6 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   return false;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::upload_texture_image
 //       Access: Protected

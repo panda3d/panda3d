@@ -315,7 +315,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      glgsg->apply_texture(tc);
+      glgsg->update_texture(tc, true);
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                        GL_TEXTURE_2D, gtc->_index, 0);
@@ -339,7 +339,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      glgsg->apply_texture(tc);
+      glgsg->update_texture(tc, true);
       if (tex->get_texture_type() == Texture::TT_2d_texture) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
                                        GL_TEXTURE_2D, gtc->_index, 0);
@@ -442,6 +442,7 @@ generate_mipmaps() {
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+      glgsg->update_texture(tc, true);
       GLenum target = glgsg->get_texture_target(tex->get_texture_type());
       GLP(BindTexture)(target, gtc->_index);
       glgsg->_glGenerateMipmap(target);
@@ -516,6 +517,7 @@ select_cube_map(int cube_map_index) {
     TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
     nassertv(tc != (TextureContext *)NULL);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    glgsg->update_texture(tc, true);
     glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[i],
                                    GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index,
                                    gtc->_index, 0);
