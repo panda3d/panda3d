@@ -284,20 +284,27 @@ rebuild_bitplanes() {
     color_ctx =
       DCAST(DXTextureContext8,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
-    if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
-      color_d3d_tex = color_ctx->_d3d_2d_texture;
-      nassertr(color_d3d_tex != 0, false);
-      hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
-      if (!SUCCEEDED(hr)) {
-        dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+    if (color_ctx) {
+      if (!color_ctx->create_texture(*_dxgsg->_screen)) {
+        dxgsg8_cat.error()
+          << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+        return false;
       }
-    } else {
-      color_cube = color_ctx->_d3d_cube_texture;
-      nassertr(color_cube != 0, false);
-      if (_cube_map_index >= 0 && _cube_map_index < 6) {
-        hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+      if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
+        color_d3d_tex = color_ctx->_d3d_2d_texture;
+        nassertr(color_d3d_tex != 0, false);
+        hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
         if (!SUCCEEDED(hr)) {
-          dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+          dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+        }
+      } else {
+        color_cube = color_ctx->_d3d_cube_texture;
+        nassertr(color_cube != 0, false);
+        if (_cube_map_index >= 0 && _cube_map_index < 6) {
+          hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+          if (!SUCCEEDED(hr)) {
+            dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+          }
         }
       }
     }
@@ -332,19 +339,27 @@ rebuild_bitplanes() {
     depth_ctx =
       DCAST(DXTextureContext8,
             depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
-    if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
-      depth_d3d_tex = depth_ctx->_d3d_2d_texture;
-      nassertr(depth_d3d_tex != 0, false);
-      hr = color_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
-      if (!SUCCEEDED(hr)) {
-        dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+    if (depth_ctx) {
+      if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
+        dxgsg8_cat.error()
+          << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+        return false;
       }
-    } else {
-      depth_cube = depth_ctx->_d3d_cube_texture;
-      nassertr(depth_cube != 0, false);
-      hr = depth_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &depth_surf);
-      if (!SUCCEEDED(hr)) {
-        dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+      
+      if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
+        depth_d3d_tex = depth_ctx->_d3d_2d_texture;
+        nassertr(depth_d3d_tex != 0, false);
+        hr = color_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
+        if (!SUCCEEDED(hr)) {
+          dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+        }
+      } else {
+        depth_cube = depth_ctx->_d3d_cube_texture;
+        nassertr(depth_cube != 0, false);
+        hr = depth_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &depth_surf);
+        if (!SUCCEEDED(hr)) {
+          dxgsg8_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+        }
       }
     }
   }
@@ -409,6 +424,11 @@ select_cube_map(int cube_map_index) {
     color_ctx =
       DCAST(DXTextureContext8,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+    if (!color_ctx->create_texture(*_dxgsg->_screen)) {
+      dxgsg8_cat.error()
+        << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+      return;
+    }
 
     color_cube = color_ctx->_d3d_cube_texture;
 

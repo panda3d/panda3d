@@ -160,13 +160,6 @@ prepare_texture(Texture *tex) {
     return NULL;
   }
 
-  if (!upload_texture(dtc)) {
-    dxgsg8_cat.error()
-      << "Unable to create texture " << *tex << endl;
-    delete dtc;
-    return NULL;
-  }
-
   return dtc;
 }
 
@@ -184,24 +177,16 @@ apply_texture(int i, TextureContext *tc) {
     _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
     return;
   }
+  if (!update_texture(tc, false)) {
+    // Couldn't get the texture image or something.
+    _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
+    return;
+  }
 
   tc->set_active(true);
 
   DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
   Texture *tex = tc->get_texture();
-
-  // If the texture image has changed, or if its use of mipmaps has
-  // changed, we need to re-create the image.
-
-  if (dtc->was_modified()) {
-    if (!upload_texture(dtc)) {
-      // Oops, we can't re-create the texture for some reason.
-      dxgsg8_cat.error()
-        << "Unable to re-create texture " << *tex << endl;
-        _d3d_device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
-      return;
-    }
-  }
 
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
   wrap_u = tex->get_wrap_u();
@@ -260,13 +245,50 @@ apply_texture(int i, TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::update_texture
+//       Access: Public, Virtual
+//  Description: Ensures that the current Texture data is refreshed
+//               onto the GSG.  This means updating the texture
+//               properties and/or re-uploading the texture image, if
+//               necessary.  This should only be called within the
+//               draw thread.
+//
+//               If force is true, this function will not return until
+//               the texture has been fully uploaded.  If force is
+//               false, the function may choose to upload a simple
+//               version of the texture instead, if the texture is not
+//               fully resident (and if get_incomplete_render() is
+//               true).
+////////////////////////////////////////////////////////////////////
+bool DXGraphicsStateGuardian8::
+update_texture(TextureContext *tc, bool force) {
+  DXTextureContext8 *dtc = DCAST(DXTextureContext8, tc);
+
+  // If the texture image has changed, or if its use of mipmaps has
+  // changed, we need to re-create the image.
+
+  if (dtc->was_modified()) {
+    if (!upload_texture(dtc, force)) {
+      // Oops, we can't re-create the texture for some reason.
+      Texture *tex = tc->get_texture();
+      dxgsg8_cat.error()
+        << "Unable to re-create texture " << *tex << endl;
+      cerr << "b\n";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian8::upload_texture
 //       Access: Public
 //  Description: Creates a texture surface on the graphics card and
 //               fills it with its pixel data.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-upload_texture(DXTextureContext8 *dtc) {
+upload_texture(DXTextureContext8 *dtc, bool force) {
   Texture *tex = dtc->get_texture();
   if (!get_supports_compressed_texture_format(tex->get_ram_image_compression())) {
     dxgsg8_cat.error()
@@ -274,7 +296,7 @@ upload_texture(DXTextureContext8 *dtc) {
     return false;
   }
 
-  if (_incomplete_render) {
+  if (_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
         tex->has_simple_ram_image() &&

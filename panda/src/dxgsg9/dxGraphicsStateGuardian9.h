@@ -84,7 +84,8 @@ public:
 
   virtual TextureContext *prepare_texture(Texture *tex);
   void apply_texture(int i, TextureContext *tc);
-  bool upload_texture(DXTextureContext9 *dtc);
+  virtual bool update_texture(TextureContext *tc, bool force);
+  bool upload_texture(DXTextureContext9 *dtc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
 

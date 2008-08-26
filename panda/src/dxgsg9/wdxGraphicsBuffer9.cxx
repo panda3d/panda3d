@@ -314,7 +314,13 @@ rebuild_bitplanes() {
     color_ctx =
       DCAST(DXTextureContext9,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+
     if (color_ctx) {
+      if (!color_ctx->create_texture(*_dxgsg->_screen)) {
+        dxgsg9_cat.error()
+          << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+        return false;
+      }
       if (color_tex->get_texture_type() == Texture::TT_2d_texture) {
         color_d3d_tex = color_ctx->_d3d_2d_texture;
         nassertr(color_d3d_tex != 0, false);
@@ -387,6 +393,11 @@ rebuild_bitplanes() {
       DCAST(DXTextureContext9,
             depth_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
     if (depth_ctx) {
+      if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
+        dxgsg9_cat.error()
+          << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+        return false;
+      }
       if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
         depth_d3d_tex = depth_ctx->_d3d_2d_texture;
         nassertr(depth_d3d_tex != 0, false);
@@ -476,6 +487,11 @@ select_cube_map(int cube_map_index) {
     color_ctx =
       DCAST(DXTextureContext9,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+    if (!color_ctx->create_texture(*_dxgsg->_screen)) {
+      dxgsg9_cat.error()
+        << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+      return;
+    }
 
     color_cube = color_ctx->_d3d_cube_texture;
 
