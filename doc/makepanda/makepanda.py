@@ -3493,9 +3493,9 @@ def MakeInstallerLinux():
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
         WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
-	WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
-	oscmd("chmod 755 linuxroot/DEBIAN/postinst")
-	oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
+        WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
+        oscmd("chmod 755 linuxroot/DEBIAN/postinst")
+        oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
         oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
 
@@ -3505,7 +3505,10 @@ def MakeInstallerLinux():
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
-
+    
+    if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
+        exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
+    
 #    oscmd("chmod -R 755 linuxroot")
 #    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
     
