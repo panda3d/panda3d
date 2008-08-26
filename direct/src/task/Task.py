@@ -753,10 +753,12 @@ class TaskManager:
 
         # warn if the task took too long
         if self.warnTaskDuration and self.globalClock:
-            avgFrameDur = (1. / self.globalClock.getAverageFrameRate())
-            if dt >= (self.taskDurationWarningThreshold * avgFrameDur):
-                assert TaskManager.notify.warning('frame %s: task %s ran for %.2f seconds, avg frame duration=%.2f seconds' % (
-                    globalClock.getFrameCount(), task.name, dt, avgFrameDur))
+            avgFrameRate = self.globalClock.getAverageFrameRate()
+            if avgFrameRate > .00001:
+                avgFrameDur = (1. / avgFrameRate)
+                if dt >= (self.taskDurationWarningThreshold * avgFrameDur):
+                    assert TaskManager.notify.warning('frame %s: task %s ran for %.2f seconds, avg frame duration=%.2f seconds' % (
+                        globalClock.getFrameCount(), task.name, dt, avgFrameDur))
             
         return ret
 
