@@ -6,6 +6,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
 from direct.showbase.Job import Job
 import gc
+import types
 
 class FakeObject:
     pass
@@ -89,6 +90,7 @@ class GarbageReport(Job):
         self.referentsByNumber = {}
 
         self.cycles = []
+        self.cyclesBySyntax = []
         self.uniqueCycleSets = set()
         self.cycleIds = set()
 
@@ -131,6 +133,85 @@ class GarbageReport(Job):
                 for newCycles in self._getCycles(i, self.uniqueCycleSets):
                     yield None
                 self.cycles.extend(newCycles)
+                # create a representation of the cycle in human-readable form
+                newCyclesBySyntax = []
+                for cycle in newCycles:
+                    cycleBySyntax = ''
+                    objs = []
+                    # leave off the last index, it's a repeat of the first index
+                    for index in cycle[:-1]:
+                        objs.append(self.garbage[index])
+                        yield None
+                    # make the list repeat so we can safely iterate off the end
+                    numObjs = len(objs) - 1
+                    objs.extend(objs)
+
+                    # state variables for our loop below
+                    numToSkip = 0
+                    objAlreadyRepresented = False
+
+                    # if cycle starts off with an instance dict, start with the instance instead
+                    startIndex = 0
+                    endIndex = numObjs
+                    if type(objs[-1]) is types.InstanceType:
+                        startIndex = -1
+                        endIndex = numObjs - 1
+
+                    for index in xrange(startIndex, endIndex):
+                        if numToSkip:
+                            numToSkip -= 1
+                            continue
+                        obj = objs[index]
+                        if type(obj) is types.InstanceType:
+                            if not objAlreadyRepresented:
+                                cycleBySyntax += '%s' % obj.__class__.__name__
+                            cycleBySyntax += '.'
+                            # skip past the instance dict and get the member obj
+                            numToSkip += 1
+                            member = objs[index+2]
+                            for key, value in obj.__dict__.iteritems():
+                                if value is member:
+                                    break
+                                yield None
+                            else:
+                                key = '<unknown member name>'
+                            cycleBySyntax += '%s' % key
+                            objAlreadyRepresented = True
+                        elif type(obj) is types.DictType:
+                            cycleBySyntax += '{'
+                            # get object referred to by dict
+                            val = objs[index+1]
+                            for key, value in obj.iteritems():
+                                if value is val:
+                                    break
+                                yield None
+                            else:
+                                key = '<unknown key>'
+                            cycleBySyntax += '%s}' % fastRepr(key)
+                            objAlreadyRepresented = True
+                        elif type(obj) in (types.TupleType, types.ListType):
+                            brackets = {
+                                types.TupleType: '()',
+                                types.ListType: '[]',
+                                }[type(obj)]
+                            # get object being referenced by container
+                            nextObj = objs[index+1]
+                            cycleBySyntax += brackets[0]
+                            for index in xrange(len(obj)):
+                                if obj[index] is nextObj:
+                                    index = str(index)
+                                    break
+                                yield None
+                            else:
+                                index = '<unknown index>'
+                            cycleBySyntax += '%s%s' % (index, brackets[1])
+                            objAlreadyRepresented = True
+                        else:
+                            cycleBySyntax += '%s->' % itype(obj)
+                            objAlreadyRepresented = False
+                    newCyclesBySyntax.append(cycleBySyntax)
+                    yield None
+                self.cyclesBySyntax.extend(newCyclesBySyntax)
                 # if we're not doing a full report, add this cycle's IDs to the master set
                 if not self._args.fullReport:
                     for cycle in newCycles:
@@ -194,10 +275,16 @@ class GarbageReport(Job):
                 s.append(format % (idx, itype(self.garbage[idx]), objStr))
 
             if self._args.findCycles:
-                s.append('===== Garbage Cycles =====')
+                s.append('===== Garbage Cycles By Index =====')
                 for i in xrange(len(self.cycles)):
                     yield None
                     s.append('%s' % self.cycles[i])
+
+            if self._args.findCycles:
+                s.append('===== Garbage Cycles By Python Syntax =====')
+                for i in xrange(len(self.cyclesBySyntax)):
+                    yield None
+                    s.append('%s' % self.cyclesBySyntax[i])
 
             if self._args.fullReport:
                 format = '%0' + '%s' % digits + 'i:%s'
