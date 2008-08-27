@@ -14,6 +14,7 @@
 #include "sliderTable.cxx"
 #include "texture.cxx"
 #include "textureContext.cxx"
+#include "texturePeeker.cxx"
 #include "texturePool.cxx"
 #include "texturePoolFilter.cxx"
 #include "textureStage.cxx"

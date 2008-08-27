@@ -38,6 +38,7 @@ class PreparedGraphicsObjects;
 class CullTraverser;
 class CullTraverserData;
 class BamCacheRecord;
+class TexturePeeker;
 struct DDSHeader;
 
 ////////////////////////////////////////////////////////////////////
@@ -336,6 +337,8 @@ PUBLISHED:
   PTA_uchar new_simple_ram_image(int x_size, int y_size);
   void generate_simple_ram_image();
   void clear_simple_ram_image();
+
+  PT(TexturePeeker) peek();
 
   INLINE UpdateSeq get_properties_modified() const;
   INLINE UpdateSeq get_image_modified() const;
@@ -670,6 +673,7 @@ private:
   friend class TextureContext;
   friend class PreparedGraphicsObjects;
   friend class TexturePool;
+  friend class TexturePeeker;
 };
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;

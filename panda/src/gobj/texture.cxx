@@ -37,6 +37,7 @@
 #include "pStatTimer.h"
 #include "pbitops.h"
 #include "streamReader.h"
+#include "texturePeeker.h"
 
 #include <stddef.h>
 
@@ -1944,6 +1945,34 @@ clear_simple_ram_image() {
   _simple_ram_image._page_size = 0;
   _simple_image_date_generated = 0;
   ++_simple_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::peek
+//       Access: Published
+//  Description: Returns a TexturePeeker object that can be used to
+//               examine the individual texels stored within this
+//               Texture by (u, v) coordinate.
+//
+//               If the texture has a ram image resident, that image
+//               is used.  If it does not have a full ram image but
+//               does have a simple_ram_image resident, that image is
+//               used instead.  If neither image is resident the full
+//               image is reloaded.
+//
+//               Returns NULL if the texture cannot find an image to
+//               load, or the texture format is incompatible.
+////////////////////////////////////////////////////////////////////
+PT(TexturePeeker) Texture::
+peek() {
+  ReMutexHolder holder(_lock);
+
+  PT(TexturePeeker) peeker = new TexturePeeker(this);
+  if (peeker->is_valid()) {
+    return peeker;
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

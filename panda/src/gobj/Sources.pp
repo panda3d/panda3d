@@ -55,6 +55,7 @@
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
+    texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
     texturePoolFilter.I texturePoolFilter.h \
     textureStage.I textureStage.h \
@@ -116,7 +117,9 @@
     simpleAllocator.cxx \
     simpleLru.cxx \
     sliderTable.cxx \
-    texture.cxx textureContext.cxx texturePool.cxx \
+    texture.cxx textureContext.cxx \
+    texturePeeker.cxx \
+    texturePool.cxx \
     texturePoolFilter.cxx \
     textureStage.cxx \
     transformBlend.cxx \
@@ -181,6 +184,7 @@
     sliderTable.I sliderTable.h \
     texture.I texture.h \
     textureContext.I textureContext.h \
+    texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
     texturePoolFilter.I texturePoolFilter.h \
     textureStage.I textureStage.h \
