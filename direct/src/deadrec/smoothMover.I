@@ -301,7 +301,9 @@ get_sample_hpr() const {
 INLINE void SmoothMover::
 set_phony_timestamp() {
   double now = ClockObject::get_global_clock()->get_frame_time();
-  _sample._timestamp = now;
+  // adjust by _delay when creating the timestamp since other
+  // timestamps received from network updates are adjusted by this
+  _sample._timestamp = now - _delay;
   _has_most_recent_timestamp = true;
   _most_recent_timestamp = now;
 }
