@@ -37,7 +37,7 @@ inc_heap(size_t size) {
 INLINE void MemoryHook::
 dec_heap(size_t size) {
 #ifdef DO_MEMORY_USAGE
-  assert((int)size <= _requested_heap_size);
+  //assert((int)size <= _requested_heap_size);
   AtomicAdjust::add(_requested_heap_size, -(AtomicAdjust::Integer)size);
 #endif  // DO_MEMORY_USAGE
 }
