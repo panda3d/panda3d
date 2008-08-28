@@ -185,7 +185,7 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModel() is deprecated; use loader.loadModel() instead.")
+        Loader.notify.info("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.")
 
         return self.loadModel(modelPath, noCache = False)
 
@@ -195,7 +195,7 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        Loader.notify.info("loader.loadModel() is deprecated; use loader.loadModel() instead.")
+        Loader.notify.info("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
 
         return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
