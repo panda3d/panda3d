@@ -131,7 +131,12 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
         
         reparent_decals(_egg_data);
     }
-    
+
+    if (all_ok) {
+        _egg_data->recompute_tangent_binormal_auto();
+        _egg_data->remove_unused_vertices(true);
+    }
+
     if (all_ok) {
         Filename fn = Filename::from_os_specific(_options->_file_name);
         return _egg_data->write_egg(fn);
@@ -869,6 +874,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     pandaMat._any_diffuse = false;
     pandaMat._any_opacity = false;
     pandaMat._any_gloss = false;
+    pandaMat._any_normal = false;
 
     // If it's a multi-material, dig down.
         
@@ -1120,6 +1126,7 @@ void MaxToEggConverter::analyze_normal_maps(PandaMaterial &pandaMat, Texmap *mat
     if (mat == 0) return;
     
     if (mat->ClassID() == Class_ID(BMTEX_CLASS_ID, 0)) {
+        pandaMat._any_normal = true;
         BitmapTex *ntex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;

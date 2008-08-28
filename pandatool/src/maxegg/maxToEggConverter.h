@@ -52,6 +52,7 @@ class MaxToEggConverter {
         bool _any_diffuse;
         bool _any_opacity;
         bool _any_gloss;
+        bool _any_normal;
     };
     typedef std::map<Mtl*,PandaMaterial> MaterialMap;
     MaxEggOptions    *_options;
