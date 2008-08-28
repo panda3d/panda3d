@@ -2426,7 +2426,7 @@ class ParticlePanel(AppShell):
         self.widgetDict['Sprite Renderer-'+animName+' Anim Node'] = entry
 
         def checkForNode(modelStrVar=mStrVar, nodeStrVar=nStrVar):
-            mod = loader.loadModelCopy(modelStrVar.get())
+            mod = loader.loadModel(modelStrVar.get())
             if mod:
                 node = mod.find(nodeStrVar.get())
                 if node:

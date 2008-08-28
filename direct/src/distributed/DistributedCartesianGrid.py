@@ -392,7 +392,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             dx = self.cellWidth * self.gridSize * .5
             for i in range(self.gridSize):
                 for j in range(self.gridSize):
-                    marker = loader.loadModelCopy("models/misc/smiley")
+                    marker = loader.loadModel("models/misc/smiley")
                     marker.reparentTo(self.markerParent)
                     marker.setPos(i * self.cellWidth - dx,
                                   j * self.cellWidth - dx,

@@ -95,7 +95,7 @@ class OnscreenGeom(DirectObject, NodePath):
         if isinstance(geom, NodePath):
             self.assign(geom.copyTo(parent, sort))
         elif isinstance(geom, types.StringTypes):
-            self.assign(loader.loadModelCopy(geom))
+            self.assign(loader.loadModel(geom))
             self.reparentTo(parent, sort)
 
         if not self.isEmpty():

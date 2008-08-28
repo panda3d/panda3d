@@ -86,7 +86,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.platform2.destroy()
             del self.platform2
 
-        model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
+        model = loader.loadModel('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')

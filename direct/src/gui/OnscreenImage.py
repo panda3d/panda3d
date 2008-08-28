@@ -110,7 +110,7 @@ class OnscreenImage(DirectObject, NodePath):
             self.setTexture(tex)
         elif type(image) == type(()):
             # Assume its a file+node name, extract texture from node
-            model = loader.loadModelOnce(image[0])
+            model = loader.loadModel(image[0])
             if model:
                 node = model.find(image[1])
                 if node:

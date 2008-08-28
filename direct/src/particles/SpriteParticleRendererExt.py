@@ -84,7 +84,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
-        m = loader.loadModelOnce(modelName)
+        m = loader.loadModel(modelName)
         if (m == None):
             print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName
             return False
@@ -111,7 +111,7 @@ class SpriteParticleRendererExt(SpriteParticleRenderer):
                 nodeName = self.getSourceNodeName()
 
         # Load model and get texture
-        m = loader.loadModelOnce(modelName)
+        m = loader.loadModel(modelName)
         if (m == None):
             print "SpriteParticleRendererExt: Couldn't find model: %s!" % modelName
             return False

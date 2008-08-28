@@ -1790,7 +1790,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
-            self.oobeVis = loader.loadModelOnce('models/misc/camera')
+            self.oobeVis = loader.loadModel('models/misc/camera')
             if self.oobeVis:
                 self.oobeVis.node().setFinal(1)
             self.oobeCullFrustum = None

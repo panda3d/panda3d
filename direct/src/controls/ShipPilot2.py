@@ -1000,7 +1000,7 @@ class ShipPilot2(PhysicsWalker):
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
             if self.wantDebugIndicator:
-                indicator=loader.loadModelCopy('phase_5/models/props/dagger')
+                indicator=loader.loadModel('phase_5/models/props/dagger')
                 #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
         def debugPrint(self, message):

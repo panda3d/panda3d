@@ -185,7 +185,7 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         the model if successful or None otherwise
         """
-        Loader.notify.debug("loader.loadModelOnce() is deprecated; use loader.loadModel() instead.")
+        Loader.notify.info("loader.loadModel() is deprecated; use loader.loadModel() instead.")
 
         return self.loadModel(modelPath, noCache = False)
 
@@ -195,7 +195,7 @@ class Loader(DirectObject):
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
         """
-        Loader.notify.debug("loader.loadModelCopy() is deprecated; use loader.loadModel() instead.")
+        Loader.notify.info("loader.loadModel() is deprecated; use loader.loadModel() instead.")
 
         return self.loadModel(modelPath, loaderOptions = loaderOptions, noCache = False)
 
@@ -213,7 +213,7 @@ class Loader(DirectObject):
 
         However, if you're loading a font, see loadFont(), below.
         """
-        Loader.notify.debug("loader.loadModelNode() is deprecated; use loader.loadModel() instead.")
+        Loader.notify.info("loader.loadModelNode() is deprecated; use loader.loadModel() instead.")
 
         model = self.loadModel(modelPath, noCache = False)
         if model is not None:

@@ -7,7 +7,7 @@ from direct.showbase import ShowBase
 ShowBase.ShowBase()
 
 # Put an axis in the world:
-loader.loadModelCopy("models/misc/xyzAxis").reparentTo(render)
+loader.loadModel("models/misc/xyzAxis").reparentTo(render)
 
 if 0:
     # Hack:

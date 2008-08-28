@@ -67,7 +67,7 @@
         else:
             self.setSourceNodeName(nodeName)
         # Load model and get texture
-        m = loader.loadModelOnce(modelName)
+        m = loader.loadModel(modelName)
         if (m == None):
             print "SpriteParticleRenderer: Couldn't find model: %s!" % modelName 
             return None

@@ -13,7 +13,7 @@ class RotationTest(NodePath):
         #self.setPos(avatarNodePath, Vec3(0))
         #self.setHpr(avatarNodePath, Vec3(0))
 
-        avatarNodePath=loader.loadModelCopy("models/misc/smiley")
+        avatarNodePath=loader.loadModel("models/misc/smiley")
         assert not avatarNodePath.isEmpty()
 
         camLL=render.find("**/camLL")

@@ -80,7 +80,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.platform.destroy()
             del self.platform
 
-        model = loader.loadModelCopy('phase_9/models/cogHQ/platform1')
+        model = loader.loadModel('phase_9/models/cogHQ/platform1')
         fakeId = id(self)
         self.platform = MovingPlatform.MovingPlatform()
         self.platform.setupCopyModel(fakeId, model, 'platformcollision')
@@ -781,7 +781,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
             if self.wantDebugIndicator:
-                indicator=loader.loadModelCopy('phase_5/models/props/dagger')
+                indicator=loader.loadModel('phase_5/models/props/dagger')
                 #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
         def debugPrint(self, message):
