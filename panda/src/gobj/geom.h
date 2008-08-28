@@ -151,6 +151,12 @@ public:
                                 Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                                 bool &found_any, Thread *current_thread) const;
+  INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+				bool &found_any, 
+				const GeomVertexData *vertex_data,
+				bool got_mat, const LMatrix4f &mat,
+                                const InternalName *column_name,
+                                Thread *current_thread) const;
 
   static UpdateSeq get_next_modified();
 
@@ -164,6 +170,7 @@ private:
 			    bool &found_any, 
 			    const GeomVertexData *vertex_data,
 			    bool got_mat, const LMatrix4f &mat,
+                            const InternalName *column_name,
                             const CData *cdata, Thread *current_thread) const;
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);

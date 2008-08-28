@@ -292,7 +292,11 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 
-  transformer.register_vertices(this);
+  if ((attrib_types & SceneGraphReducer::TT_apply_texture_color) != 0) {
+    transformer.apply_texture_colors(this, attribs._other);
+  }
+
+  transformer.register_vertices(this, false);
 }
 
 ////////////////////////////////////////////////////////////////////

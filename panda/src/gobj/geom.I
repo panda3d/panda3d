@@ -325,8 +325,9 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
   CDReader cdata(_cycler, current_thread);
   
   do_calc_tight_bounds(min_point, max_point, found_any, 
-                       vertex_data, got_mat, mat, cdata,
-                       current_thread);
+                       vertex_data, got_mat, mat, 
+                       InternalName::get_vertex(),
+                       cdata, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -349,6 +350,26 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                     get_vertex_data(current_thread), false, 
                     LMatrix4f::ident_mat(),
                     current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::calc_tight_bounds
+//       Access: Public
+//  Description: Similar to calc_tight_bounds(), for UV coordinates or
+//               other named columns.
+////////////////////////////////////////////////////////////////////
+INLINE void Geom::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                  bool &found_any, 
+                  const GeomVertexData *vertex_data,
+                  bool got_mat, const LMatrix4f &mat,
+                  const InternalName *column_name,
+                  Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  
+  do_calc_tight_bounds(min_point, max_point, found_any, 
+                       vertex_data, got_mat, mat, 
+                       column_name, cdata, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

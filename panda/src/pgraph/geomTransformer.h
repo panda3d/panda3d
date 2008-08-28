@@ -25,6 +25,7 @@ class GeomNode;
 class RenderState;
 class InternalName;
 class GeomMunger;
+class Texture;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer
@@ -51,8 +52,8 @@ public:
   INLINE int get_max_collect_vertices() const;
   INLINE void set_max_collect_vertices(int max_collect_vertices);
 
-  void register_vertices(Geom *geom);
-  void register_vertices(GeomNode *node);
+  void register_vertices(Geom *geom, bool might_have_unused);
+  void register_vertices(GeomNode *node, bool might_have_unused);
 
   bool transform_vertices(Geom *geom, const LMatrix4f &mat);
   bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
@@ -67,6 +68,11 @@ public:
 
   bool transform_colors(Geom *geom, const LVecBase4f &scale);
   bool transform_colors(GeomNode *node, const LVecBase4f &scale);
+
+  bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
+                            const TexMatrixAttrib *tma,
+                            const Colorf &base_color, bool keep_vertex_color);
+  bool apply_texture_colors(GeomNode *node, const RenderState *state);
 
   bool apply_state(GeomNode *node, const RenderState *state);
 
@@ -87,6 +93,12 @@ public:
   int finish_collect(bool format_only);
 
   PT(Geom) premunge_geom(const Geom *geom, GeomMunger *munger);
+
+private:
+  static void get_texel_color(Colorf &color, float u, float v, 
+                              const unsigned char *image, 
+                              int x_size, int y_size);
+
 
 private:
   int _max_collect_vertices;
@@ -155,6 +167,22 @@ private:
   // (e.g. via a ColorAttrib), and the "transformed" colors, which are
   // modified from the original colors (e.g. via a ColorScaleAttrib).
   NewColors _fcolors, _tcolors;
+
+  // The table of GeomVertexData objects whose texture colors have
+  // been applied.
+  class SourceTextureColors {
+  public:
+    INLINE bool operator < (const SourceTextureColors &other) const;
+
+    TextureStage *_ts;
+    Texture *_tex;
+    const TexMatrixAttrib *_tma;
+    Colorf _base_color;
+    bool _keep_vertex_color;
+    CPT(GeomVertexData) _vertex_data;
+  };
+  typedef pmap<SourceTextureColors, NewVertexData> NewTextureColors;
+  NewTextureColors _tex_colors;
 
   // The table of GeomVertexData objects whose vertex formats have
   // been modified. For set_format(): record (format + vertex_data) ->
@@ -252,6 +280,7 @@ private:
   static PStatCollector _apply_texcoord_collector;
   static PStatCollector _apply_set_color_collector;
   static PStatCollector _apply_scale_color_collector;
+  static PStatCollector _apply_texture_color_collector;
   static PStatCollector _apply_set_format_collector;
     
 public:

@@ -1219,7 +1219,9 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   LPoint3f min, max;
   bool found_any = false;
   do_calc_tight_bounds(min, max, found_any, vertex_data,
-		       false, LMatrix4f::ident_mat(), cdata, current_thread);
+		       false, LMatrix4f::ident_mat(), 
+                       InternalName::get_vertex(),
+                       cdata, current_thread);
 
   if (found_any) {
     // Then we put the bounding volume around both of those points.
@@ -1268,6 +1270,7 @@ do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 		     bool &found_any, 
 		     const GeomVertexData *vertex_data,
 		     bool got_mat, const LMatrix4f &mat,
+                     const InternalName *column_name,
                      const CData *cdata, Thread *current_thread) const {
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin(); 
@@ -1275,7 +1278,7 @@ do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
        ++pi) {
     CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
     prim->calc_tight_bounds(min_point, max_point, found_any, vertex_data,
-                            got_mat, mat, current_thread);
+                            got_mat, mat, column_name, current_thread);
   }
 }
 

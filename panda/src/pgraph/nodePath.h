@@ -819,6 +819,7 @@ PUBLISHED:
   int flatten_light();
   int flatten_medium();
   int flatten_strong();
+  void apply_texture_colors();
   INLINE int clear_model_nodes();
 
   INLINE void set_tag(const string &key, const string &value);

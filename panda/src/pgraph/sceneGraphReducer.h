@@ -46,13 +46,14 @@ PUBLISHED:
   INLINE ~SceneGraphReducer();
 
   enum AttribTypes {
-    TT_transform       = 0x001,
-    TT_color           = 0x002,
-    TT_color_scale     = 0x004,
-    TT_tex_matrix      = 0x008,
-    TT_clip_plane      = 0x010,
-    TT_cull_face       = 0x020,
-    TT_other           = 0x040,
+    TT_transform           = 0x001,
+    TT_color               = 0x002,
+    TT_color_scale         = 0x004,
+    TT_tex_matrix          = 0x008,
+    TT_clip_plane          = 0x010,
+    TT_cull_face           = 0x020,
+    TT_apply_texture_color = 0x040,
+    TT_other               = 0x080,
   };
 
   enum CombineSiblings {
@@ -126,7 +127,7 @@ PUBLISHED:
   INLINE void set_combine_radius(float combine_radius);
   INLINE float get_combine_radius() const;
 
-  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~(TT_clip_plane | TT_cull_face));
+  INLINE void apply_attribs(PandaNode *node, int attrib_types = ~(TT_clip_plane | TT_cull_face | TT_apply_texture_color));
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
                             int attrib_types, GeomTransformer &transformer);
 
@@ -142,6 +143,7 @@ PUBLISHED:
   INLINE int collect_vertex_data(PandaNode *root, int collect_bits = ~0);
   INLINE int make_nonindexed(PandaNode *root, int nonindexed_bits = ~0);
   void unify(PandaNode *root, bool preserve_order);
+  void remove_unused_vertices(PandaNode *root);
 
   INLINE void premunge(PandaNode *root, const RenderState *initial_state);
 
@@ -179,6 +181,7 @@ protected:
                             GeomTransformer &transformer, bool format_only);
   int r_make_nonindexed(PandaNode *node, int collect_bits);
   void r_unify(PandaNode *node, int max_indices, bool preserve_order);
+  void r_register_vertices(PandaNode *node, GeomTransformer &transformer);
   void r_decompose(PandaNode *node);
 
   void r_premunge(PandaNode *node, const RenderState *state);
@@ -195,6 +198,7 @@ private:
   static PStatCollector _collect_collector;
   static PStatCollector _make_nonindexed_collector;
   static PStatCollector _unify_collector;
+  static PStatCollector _remove_unused_collector;
   static PStatCollector _premunge_collector;
 };
 

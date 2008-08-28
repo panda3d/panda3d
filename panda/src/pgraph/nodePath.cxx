@@ -6007,6 +6007,33 @@ flatten_strong() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::apply_texture_colors
+//       Access: Published
+//  Description: Removes textures from Geoms at this node and below by
+//               applying the texture colors to the vertices.  This is
+//               primarily useful to simplify a low-LOD model.  The
+//               texture colors are replaced by flat colors that
+//               approximate the original textures.
+//
+//               Only the bottommost texture on each Geom is used (if
+//               there is more than one), and it is applied as if it
+//               were M_modulate, and WM_repeat, regardless of its
+//               actual settings.  If the texture has a
+//               simple_ram_image, this may be used if the main image
+//               isn't resident.
+//
+//               After this call, there will be no texturing specified
+//               at this level and below.  Of course, there might
+//               still be texturing inherited from above.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+apply_texture_colors() {
+  nassertv_always(!is_empty());
+  SceneGraphReducer gr;
+  gr.apply_attribs(node(), SceneGraphReducer::TT_apply_texture_color | SceneGraphReducer::TT_tex_matrix | SceneGraphReducer::TT_other);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_net_tag
 //       Access: Published
 //  Description: Returns the lowest ancestor of this node that

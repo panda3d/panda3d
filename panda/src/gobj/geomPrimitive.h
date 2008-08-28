@@ -198,6 +198,7 @@ public:
                          bool &found_any, 
                          const GeomVertexData *vertex_data,
                          bool got_mat, const LMatrix4f &mat,
+                         const InternalName *column_name,
                          Thread *current_thread) const;
 
 protected:

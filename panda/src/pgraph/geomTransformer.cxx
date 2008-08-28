@@ -26,12 +26,15 @@
 #include "vector_int.h"
 #include "userVertexTransform.h"
 #include "geomMunger.h"
+#include "texture.h"
+#include "texturePeeker.h"
 #include "config_pgraph.h"
 
 PStatCollector GeomTransformer::_apply_vertex_collector("*:Flatten:apply:vertex");
 PStatCollector GeomTransformer::_apply_texcoord_collector("*:Flatten:apply:texcoord");
 PStatCollector GeomTransformer::_apply_set_color_collector("*:Flatten:apply:set color");
 PStatCollector GeomTransformer::_apply_scale_color_collector("*:Flatten:apply:scale color");
+PStatCollector GeomTransformer::_apply_texture_color_collector("*:Flatten:apply:texture color");
 PStatCollector GeomTransformer::_apply_set_format_collector("*:Flatten:apply:set format");
 
 TypeHandle GeomTransformer::NewCollectedData::_type_handle;
@@ -77,9 +80,12 @@ GeomTransformer::
 //               unused vertices.
 ////////////////////////////////////////////////////////////////////
 void GeomTransformer::
-register_vertices(Geom *geom) {
+register_vertices(Geom *geom, bool might_have_unused) {
   VertexDataAssoc &assoc = _vdata_assoc[geom->get_vertex_data()];
   assoc._geoms.push_back(geom);
+  if (might_have_unused) {
+    assoc._might_have_unused = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +96,7 @@ register_vertices(Geom *geom) {
 //               unused vertices.
 ////////////////////////////////////////////////////////////////////
 void GeomTransformer::
-register_vertices(GeomNode *node) {
+register_vertices(GeomNode *node, bool might_have_unused) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
@@ -99,7 +105,7 @@ register_vertices(GeomNode *node) {
     for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) geom = entry._geom.get_write_pointer();
-      register_vertices(geom);
+      register_vertices(geom, might_have_unused);
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler);
@@ -424,6 +430,272 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
   return any_changed;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::apply_texture_colors
+//       Access: Public
+//  Description: Removes textures from Geoms by applying the texture
+//               colors to the vertices.  
+//
+//               See apply_texure_colors(GeomNode *, RenderState *).
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
+                     const TexMatrixAttrib *tma, const Colorf &base_color,
+                     bool keep_vertex_color) {
+  PStatTimer timer(_apply_texture_color_collector);
+
+  nassertr(geom != (Geom *)NULL, false);
+
+  PT(TexturePeeker) peeker = tex->peek();
+  if (peeker == (TexturePeeker *)NULL) {
+    return false;
+  }
+
+  if (peeker->get_x_size() == 1 && 
+      peeker->get_y_size() == 1 && 
+      peeker->get_z_size() == 1) {
+    // If it's just a one-pixel texture (e.g. a simple ram image),
+    // don't bother scanning the UV's.  Just extract the color and
+    // apply it.
+    Colorf color;
+    peeker->lookup(color, 0.0f, 0.0f);
+    color.set(color[0] * base_color[0],
+              color[1] * base_color[1],
+              color[2] * base_color[2],
+              color[3] * base_color[3]);
+    if (keep_vertex_color) {
+      return transform_colors(geom, color);
+    } else {
+      return set_color(geom, color);
+    }
+  }
+
+  bool got_mat = false;
+  LMatrix4f mat = LMatrix4f::ident_mat();
+  if (tma != (TexMatrixAttrib *)NULL && tma->has_stage(ts)) {
+    mat = tma->get_mat(ts);
+    got_mat = !mat.almost_equal(LMatrix4f::ident_mat());
+  }
+
+  // This version of the code just applied one overall flat color to
+  // the entire mesh.  Turned out not to be good enough.  Instead,
+  // we'll look up each vertex in the texture map and apply the
+  // nearest color to the vertex.
+  /*
+  // Scan the UV's to get the used range.  This is particularly
+  // necessary for palettized textures.
+
+  LPoint3f min_point, max_point;
+  bool found_any = false;
+  geom->calc_tight_bounds(min_point, max_point, found_any,
+                          geom->get_vertex_data(),
+                          got_mat, mat,
+                          ts->get_texcoord_name(),
+                          Thread::get_current_thread());
+  if (found_any) {
+    // Now use that UV range to determine the overall color of the
+    // geom's texture.
+    Colorf color;
+    peeker->filter_rect(color, 
+                        min_point[0], min_point[1], min_point[2],
+                        max_point[0], max_point[1], max_point[2]);
+    color.set(color[0] * base_color[0],
+              color[1] * base_color[1],
+              color[2] * base_color[2],
+              color[3] * base_color[3]);
+    if (keep_vertex_color) {
+      return transform_colors(geom, color);
+    } else {
+      return set_color(geom, color);
+    }
+  }
+
+  return false;
+  */
+
+  SourceTextureColors stc;
+  stc._ts = ts;
+  stc._tex = tex;
+  stc._tma = tma;
+  stc._base_color = base_color;
+  stc._keep_vertex_color = keep_vertex_color;
+  stc._vertex_data = geom->get_vertex_data();
+  
+  NewVertexData &new_data = _tex_colors[stc];
+  if (new_data._vdata.is_null()) {
+    // We have not yet applied these texture colors.  Do so now.
+
+    PT(GeomVertexData) vdata;
+
+    // Make sure the vdata has a color column.
+    if (stc._vertex_data->has_column(InternalName::get_color())) {
+      vdata = new GeomVertexData(*stc._vertex_data);
+    } else {
+      // Create a color column where there wasn't one before.
+      vdata = new GeomVertexData(*stc._vertex_data->set_color
+                                           (Colorf(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
+      keep_vertex_color = false;
+    }
+    
+    // Check whether it has 2-d or 3-d texture coordinates.
+    bool tex3d = false;
+    const GeomVertexColumn *column = vdata->get_format()->get_column(ts->get_texcoord_name());
+    if (column == (GeomVertexColumn *)NULL) {
+      return false;
+    }
+    if (column->get_num_components() >= 3) {
+      tex3d = true;
+    }
+    
+    // Now walk through the vertices and apply each color from the
+    // texture as we go.
+    if (keep_vertex_color) {
+      // We want to modulate the existing vertex color.
+      GeomVertexReader gtexcoord(vdata, ts->get_texcoord_name());
+      GeomVertexRewriter gcolor(vdata, InternalName::get_color());
+      
+      if (got_mat || tex3d) {
+        while (!gtexcoord.is_at_end()) {
+          TexCoord3f p = gtexcoord.get_data3f();
+          Colorf c = gcolor.get_data4f();
+          p = p * mat;
+          Colorf color;
+          peeker->lookup(color, p[0], p[1], p[2]);
+          color.set(color[0] * base_color[0] * c[0],
+                    color[1] * base_color[1] * c[1],
+                    color[2] * base_color[2] * c[2],
+                    color[3] * base_color[3] * c[3]);
+          gcolor.set_data4f(color);
+        }
+      } else {
+        while (!gtexcoord.is_at_end()) {
+          TexCoordf p = gtexcoord.get_data2f();
+          Colorf c = gcolor.get_data4f();
+          Colorf color;
+          peeker->lookup(color, p[0], p[1]);
+          color.set(color[0] * base_color[0] * c[0],
+                    color[1] * base_color[1] * c[1],
+                    color[2] * base_color[2] * c[2],
+                    color[3] * base_color[3] * c[3]);
+          gcolor.set_data4f(color);
+        }
+      }
+    } else {
+      // We want to replace any existing vertex color.
+      GeomVertexReader gtexcoord(vdata, ts->get_texcoord_name());
+      GeomVertexWriter gcolor(vdata, InternalName::get_color());
+      
+      if (got_mat || tex3d) {
+        while (!gtexcoord.is_at_end()) {
+          TexCoord3f p = gtexcoord.get_data3f();
+          p = p * mat;
+          Colorf color;
+          peeker->lookup(color, p[0], p[1], p[2]);
+          color.set(color[0] * base_color[0],
+                    color[1] * base_color[1],
+                    color[2] * base_color[2],
+                    color[3] * base_color[3]);
+          gcolor.set_data4f(color);
+        }
+      } else {
+        while (!gtexcoord.is_at_end()) {
+          TexCoordf p = gtexcoord.get_data2f();
+          Colorf color;
+          peeker->lookup(color, p[0], p[1]);
+          color.set(color[0] * base_color[0],
+                    color[1] * base_color[1],
+                    color[2] * base_color[2],
+                    color[3] * base_color[3]);
+          gcolor.set_data4f(color);
+        }
+      }
+    }
+
+    new_data._vdata = vdata;
+  }
+
+  geom->set_vertex_data(new_data._vdata);
+  VertexDataAssoc &assoc = _vdata_assoc[new_data._vdata];
+  if (stc._vertex_data->get_ref_count() > 1) {
+    _vdata_assoc[new_data._vdata]._might_have_unused = true;
+    _vdata_assoc[stc._vertex_data]._might_have_unused = true;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::apply_texture_colors
+//       Access: Public
+//  Description: Removes textures from Geoms by applying the texture
+//               colors to the vertices.  This is primarily useful to
+//               simplify a low-LOD model.
+//
+//               Only the bottommost texture is used (if there is more
+//               than one), and it is applied as if it were
+//               M_modulate, and WM_repeat, regardless of its actual
+//               settings.  If the texture has a simple_ram_image,
+//               this may be used if the main image isn't resident.
+//
+//               After this call, there will be no texturing specified
+//               on the GeomNode level.  Of course, there might still
+//               be texturing inherited from above.
+////////////////////////////////////////////////////////////////////
+bool GeomTransformer::
+apply_texture_colors(GeomNode *node, const RenderState *state) {
+  bool any_changed = false;
+
+  GeomNode::CDWriter cdata(node->_cycler);
+  GeomNode::GeomList::iterator gi;
+  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    GeomNode::GeomEntry &entry = (*gi);
+    CPT(RenderState) geom_state = state->compose(entry._state);
+
+    const TextureAttrib *ta = geom_state->get_texture();
+    if (ta != (TextureAttrib *)NULL) {
+      CPT(TextureAttrib) ta2 = ta->filter_to_max(1);
+      if (ta2->get_num_on_stages() > 0) {
+        TextureStage *ts = ta2->get_on_stage(0);
+        Texture *tex = ta2->get_on_texture(ts);
+        const TexMatrixAttrib *tma = geom_state->get_tex_matrix();
+
+        const ColorAttrib *ca = geom_state->get_color();
+        Colorf base_color(1.0f, 1.0f, 1.0f, 1.0f);
+        bool keep_vertex_color = true;
+        if (ca != (ColorAttrib *)NULL && ca->get_color_type() == ColorAttrib::T_flat) {
+          base_color = ca->get_color();
+          keep_vertex_color = false;
+        }
+
+        PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
+        if (apply_texture_colors(new_geom, ts, tex, tma, base_color, keep_vertex_color)) {
+          entry._geom = new_geom;
+          any_changed = true;
+
+          if (new_geom->get_vertex_data()->has_column(InternalName::get_color())) {
+            // Ensure we have a ColorAttrib::make_vertex() attrib.
+            CPT(RenderState) color_state = entry._state->set_attrib(ColorAttrib::make_vertex());
+            if (entry._state != color_state) {
+              entry._state = color_state;
+              any_changed = true;
+            }
+          }
+        }
+
+        // Also remove any texture references from the GeomState.
+        CPT(RenderState) no_tex_state = entry._state->remove_attrib(TextureAttrib::get_class_type());
+        if (entry._state != no_tex_state) {
+          entry._state = no_tex_state;
+          any_changed = true;
+        }
+      }
+    }
+  }
+
+  return any_changed;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::apply_state

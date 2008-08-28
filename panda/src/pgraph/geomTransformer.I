@@ -83,6 +83,31 @@ operator < (const GeomTransformer::SourceColors &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTransformer::SourceTextureColors::Ordering Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool GeomTransformer::SourceTextureColors::
+operator < (const GeomTransformer::SourceTextureColors &other) const {
+  if (_vertex_data != other._vertex_data) {
+    return _vertex_data < other._vertex_data;
+  }
+  if (_tex != other._tex) {
+    return _tex < other._tex;
+  }
+  if (_ts != other._ts) {
+    return _ts < other._ts;
+  }
+  if (_tma != other._tma) {
+    return _tma < other._tma;
+  }
+  if (_keep_vertex_color != other._keep_vertex_color) {
+    return (int)_keep_vertex_color < (int)other._keep_vertex_color;
+  }
+  return (_base_color.compare_to(other._base_color) < 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::SourceFormat::Ordering Operator
 //       Access: Public
 //  Description:

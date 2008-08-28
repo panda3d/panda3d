@@ -31,6 +31,7 @@ PStatCollector SceneGraphReducer::_compatible_state_collector("*:Flatten:compati
 PStatCollector SceneGraphReducer::_collect_collector("*:Flatten:collect");
 PStatCollector SceneGraphReducer::_make_nonindexed_collector("*:Flatten:make nonindexed");
 PStatCollector SceneGraphReducer::_unify_collector("*:Flatten:unify");
+PStatCollector SceneGraphReducer::_remove_unused_collector("*:Flatten:remove unused vertices");
 PStatCollector SceneGraphReducer::_premunge_collector("*:Premunge");
 
 ////////////////////////////////////////////////////////////////////
@@ -181,6 +182,25 @@ unify(PandaNode *root, bool preserve_order) {
     max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
   r_unify(root, max_indices, preserve_order);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::remove_unused_vertices
+//       Access: Published
+//  Description: Removes any vertices in GeomVertexDatas that are no
+//               longer used at this level and below.  This requires
+//               remapping vertex indices in all of the
+//               GeomPrimitives, to remove holes in the
+//               GeomVertexDatas.  It is normally not necessary to
+//               call this explicitly.
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+remove_unused_vertices(PandaNode *root) {
+  PStatTimer timer(_remove_unused_collector);
+
+  r_register_vertices(root, _transformer);
+  _transformer.finish_apply();
+  Thread::consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -907,6 +927,27 @@ r_unify(PandaNode *node, int max_indices, bool preserve_order) {
     r_unify(children.get_child(i), max_indices, preserve_order);
   }
   Thread::consider_yield();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::r_register_vertices
+//       Access: Private
+//  Description: Recursively calls
+//               GeomTransformer::register_vertices() on all GeomNodes
+//               at the indicated root and below.
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+r_register_vertices(PandaNode *node, GeomTransformer &transformer) {
+  if (node->is_geom_node()) {
+    GeomNode *geom_node = DCAST(GeomNode, node);
+    transformer.register_vertices(geom_node, true);
+  }
+
+  PandaNode::Children children = node->get_children();
+  int num_children = children.get_num_children();
+  for (int i = 0; i < num_children; ++i) {
+    r_register_vertices(children.get_child(i), transformer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

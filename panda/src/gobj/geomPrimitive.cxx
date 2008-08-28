@@ -1319,19 +1319,21 @@ get_highest_index_value(NumericType index_type) {
 //     Function: GeomPrimitive::calc_tight_bounds
 //       Access: Public, Virtual
 //  Description: Expands min_point and max_point to include all of the
-//               vertices in the Geom, if any.  found_any is set true
-//               if any points are found.  It is the caller's
-//               responsibility to initialize min_point, max_point,
-//               and found_any before calling this function.
+//               vertices in the Geom, if any (or the data of any
+//               point type, for instance, texture coordinates--based
+//               on the column name).  found_any is set true if any
+//               points are found.  It is the caller's responsibility
+//               to initialize min_point, max_point, and found_any
+//               before calling this function.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4f &mat,
+                  const InternalName *column_name,
                   Thread *current_thread) const {
-  GeomVertexReader reader(vertex_data, InternalName::get_vertex(),
-                          current_thread);
+  GeomVertexReader reader(vertex_data, column_name, current_thread);
   if (!reader.has_column()) {
     // No vertex data.
     return;
