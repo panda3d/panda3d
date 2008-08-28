@@ -142,7 +142,7 @@ join() {
 string ThreadWin32Impl::
 get_unique_id() const {
   ostringstream strm;
-  strm << GetCurrentProcessId() << "." << GetThreadId(_thread);
+  strm << GetCurrentProcessId() << "." << _thread_id;
 
   return strm.str();
 }
