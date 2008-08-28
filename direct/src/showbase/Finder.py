@@ -184,6 +184,10 @@ def replaceCRFunc(replaceFuncList):
         base.cr
     except:
         return
+    # masad: Gyedo's fake cr causes a crash in followingreplaceMethod on rebinding, so
+    # I throw in the isFake check. I still think the fake cr should be eliminated.
+    if hasattr(base.cr,'isFake'):
+        return
     for oldFunc, funcName, newFunc in replaceFuncList:        
         if base.cr.replaceMethod(oldFunc, newFunc):
             print ('replaced DistributedObject function: %s' % funcName)
