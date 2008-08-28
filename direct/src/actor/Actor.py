@@ -1535,12 +1535,13 @@ class Actor(DirectObject, NodePath):
         except:
             return None
 
-    def getAnimControl(self, animName, partName=None, lodName=None):
+    def getAnimControl(self, animName, partName=None, lodName=None,
+                       allowAsyncBind = True):
         """
         getAnimControl(self, string, string, string="lodRoot")
         Search the animControl dictionary indicated by lodName for
         a given anim and part. If none specified, try the first part and lod.
-        Return the animControl if present, or None otherwise
+        Return the animControl if present, or None otherwise.
         """
     
         if not partName:
@@ -1571,21 +1572,31 @@ class Actor(DirectObject, NodePath):
             else:
                 # bind the animation first if we need to
                 if not anim.animControl:
-                    self.__bindAnimToPart(animName, partName, lodName)
+                    self.__bindAnimToPart(animName, partName, lodName,
+                                          allowAsyncBind = allowAsyncBind)
                 return anim.animControl
 
         return None
 
-    def getAnimControls(self, animName=None, partName=None, lodName=None):
+    def getAnimControls(self, animName=None, partName=None, lodName=None,
+                        allowAsyncBind = True):
         """getAnimControls(self, string, string=None, string=None)
 
         Returns a list of the AnimControls that represent the given
-        animation for the given part and the given lod.  If animName
-        is omitted, the currently-playing animation (or all
-        currently-playing animations) is returned.  If partName is
-        omitted, all parts are returned (or possibly the one overall
-        Actor part, according to the subpartsComplete flag).  If
-        lodName is omitted, all LOD's are returned.
+        animation for the given part and the given lod.
+
+        If animName is None or omitted, the currently-playing
+        animation (or all currently-playing animations) is returned.
+        If animName is True, all animations are returned.  If animName
+        is a single string name, that particular animation is
+        returned.  If animName is a list of string names, all of the
+        names animations are returned.
+
+        If partName is None or omitted, all parts are returned (or
+        possibly the one overall Actor part, according to the
+        subpartsComplete flag).
+
+        If lodName is None or omitted, all LOD's are returned.
         """
 
         if partName == None and self.__subpartsComplete:
@@ -1642,38 +1653,50 @@ class Actor(DirectObject, NodePath):
                     else:
                         animDictItems.append((pName, animDict))
 
-            if animName == None:
+            if animName is None:
                 # get all playing animations
                 for thisPart, animDict in animDictItems:
                     for anim in animDict.values():
                         if anim.animControl and anim.animControl.isPlaying():
                             controls.append(anim.animControl)
             else:
-                # get the named animation only.
+                # get the named animation(s) only.
+                if isinstance(animName, types.StringType):
+                    # A single animName
+                    animNameList = [animName]
+                else:
+                    # A list of animNames, or True to indicate all anims.
+                    animNameList = animName
                 for thisPart, animDict in animDictItems:
-                    anim = animDict.get(animName)
-                    if anim == None and partName != None:
-                        for pName in partNameList:
-                            # Maybe it's a subpart that hasn't been bound yet.
-                            subpartDef = self.__subpartDict.get(pName)
-                            if subpartDef:
-                                truePartName = subpartDef.truePartName
-                                anim = partDict[truePartName].get(animName)
-                                if anim:
-                                    anim = anim.makeCopy()
-                                    animDict[animName] = anim
+                    names = animNameList
+                    if animNameList is True:
+                        names = animDict.keys()
+                    for animName in names:
+                        anim = animDict.get(animName)
+                        if anim == None and partName != None:
+                            for pName in partNameList:
+                                # Maybe it's a subpart that hasn't been bound yet.
+                                subpartDef = self.__subpartDict.get(pName)
+                                if subpartDef:
+                                    truePartName = subpartDef.truePartName
+                                    anim = partDict[truePartName].get(animName)
+                                    if anim:
+                                        anim = anim.makeCopy()
+                                        animDict[animName] = anim
 
-                    if anim == None:
-                        # anim was not present
-                        assert Actor.notify.debug("couldn't find anim: %s" % (animName))
-                        pass
-                    else:
-                        # bind the animation first if we need to
-                        animControl = anim.animControl
-                        if animControl == None:
-                            animControl = self.__bindAnimToPart(animName, thisPart, lodName)
-                        if animControl:
-                            controls.append(animControl)
+                        if anim == None:
+                            # anim was not present
+                            assert Actor.notify.debug("couldn't find anim: %s" % (animName))
+                            pass
+                        else:
+                            # bind the animation first if we need to
+                            animControl = anim.animControl
+                            if animControl == None:
+                                animControl = self.__bindAnimToPart(
+                                    animName, thisPart, lodName,
+                                    allowAsyncBind = allowAsyncBind)
+                            if animControl:
+                                controls.append(animControl)
 
         return controls
 
@@ -2027,65 +2050,45 @@ class Actor(DirectObject, NodePath):
                     except:
                         return
 
-    def bindAnim(self, animName, partName="modelRoot", lodName="lodRoot"):
-        """bindAnim(self, string, string='modelRoot', string='lodRoot')
-        Bind the named animation to the named part and lod
+    def bindAnim(self, animName, partName = None, lodName = None,
+                 allowAsyncBind = False):
         """
-        if lodName == None or self.mergeLODBundles:
-            lodNames = self.__animControlDict.keys()
-        else:
-            lodNames = [lodName]
+        Binds the named animation to the named part and/or lod.  If
+        allowAsyncBind is False, this guarantees that the animation is
+        bound immediately--the animation is never bound in a
+        sub-thread; it will be loaded and bound in the main thread, so
+        it will be available by the time this method returns.
 
-        # loop over all lods
-        for thisLod in lodNames:
-            if partName == None:
-                partNames = self.__partBundleDict[thisLod].keys()
-            else:
-                partNames = [partName]
-            # loop over all parts
-            for thisPart in partNames:
-                ac = self.__bindAnimToPart(animName, thisPart, thisLod)
+        The parameters are the same as that for getAnimControls().  In
+        fact, this method is a thin wrapper around that other method.
 
+        Use this method if you need to ensure that an animation is
+        available before you start to play it, and you don't mind
+        holding up the render for a frame or two until the animation
+        is available.
+        """
+        self.getAnimControls(animName = animName, partName = partName,
+                             lodName = lodName,
+                             allowAsyncBind = allowAsyncBind)
 
-    def bindAllAnims(self):
+    def bindAllAnims(self, allowAsyncBind = False):
         """Loads and binds all animations that have been defined for
         the Actor. """
+        self.getAnimControls(animName = True, allowAsyncBind = allowAsyncBind)
 
-        for lodName, partDict in self.__animControlDict.items():
-            # Now, build the list of partNames and the corresponding
-            # animDicts.
-            for thisPart, animDict in partDict.items():
-                if animDict == None:
-                    # Maybe it's a subpart that hasn't been bound yet.
-                    subpartDef = self.__subpartDict.get(pName)
-                    if subpartDef:
-                        animDict = {}
-                        partDict[pName] = animDict
-
-                for animName, anim in animDict.items():
-                    if anim == None and partName != None:
-                        for pName in partNameList:
-                            # Maybe it's a subpart that hasn't been bound yet.
-                            subpartDef = self.__subpartDict.get(pName)
-                            if subpartDef:
-                                truePartName = subpartDef.truePartName
-                                anim = partDict[truePartName].get(animName)
-                                if anim:
-                                    anim = anim.makeCopy()
-                                    animDict[animName] = anim
-
-                    if anim.animControl == None:
-                        self.__bindAnimToPart(animName, thisPart, lodName)
-
-    def __bindAnimToPart(self, animName, partName, lodName):
+    def __bindAnimToPart(self, animName, partName, lodName,
+                         allowAsyncBind = True):
         """
-        for internal use only!
+        Binds the named animation to the named part/lod and returns
+        the associated animControl.  The animation is loaded and bound
+        in a sub-thread, if allowAsyncBind is True,
+        self.allowAsyncBind is True, threading is enabled, and the
+        animation has a preload table generated for it (e.g. via
+        "egg-optchar -preload").  Even though the animation may or may
+        not be yet bound at the time this function returns, a usable
+        animControl is returned, or None if the animation could not be
+        bound.
         """
-
-        # Temporary check for old Pandas.
-        if not hasattr(PartBundle, 'loadBindAnim'):
-            return self.__tempHackDoNotUseBindAnimToPart(animName, partName, lodName)
-        
         # make sure this anim is in the dict
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
 
@@ -2120,7 +2123,7 @@ class Actor(DirectObject, NodePath):
         # will still return a usable AnimControl.
         animControl = bundle.loadBindAnim(
             loader.loader, Filename(anim.filename), -1,
-            subpartDef.subset, self.allowAsyncBind)
+            subpartDef.subset, allowAsyncBind and self.allowAsyncBind)
 
         if not animControl:
             # Couldn't bind.  (This implies the binding operation was
@@ -2131,69 +2134,6 @@ class Actor(DirectObject, NodePath):
         anim.animControl = animControl
         assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
                                   (animName, partName, lodName))
-        return animControl
-
-    def __tempHackDoNotUseBindAnimToPart(self, animName, partName, lodName):
-        """ This method exists only temporarily to support old Pandas
-        that don't yet have PartBundle.loadBindAnim().  This method is
-        the old implementation of __bindAnimToPart(), from before we
-        added asynchronous support.  """
-        
-        # make sure this anim is in the dict
-        subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-
-        partDict = self.__animControlDict[lodName]
-        animDict = partDict.get(partName)
-        if animDict == None:
-            # It must be a subpart that hasn't been bound yet.
-            animDict = {}
-            partDict[partName] = animDict
-
-        anim = animDict.get(animName)
-        if anim == None:
-            # It must be a subpart that hasn't been bound yet.
-            anim = partDict[subpartDef.truePartName].get(animName)
-            anim = anim.makeCopy()
-            animDict[animName] = anim
-
-        if anim == None:
-            Actor.notify.error("actor has no animation %s", animName)
-
-        # only bind if not already bound!
-        if anim.animControl:
-            return anim.animControl
-
-        if self.mergeLODBundles:
-            bundle = self.__commonBundleHandles[subpartDef.truePartName].getBundle()
-        else:
-            bundle = self.__partBundleDict[lodName][subpartDef.truePartName].getBundle()
-
-        # fetch a copy from the modelPool, or if we weren't careful
-        # enough to preload, fetch from disk
-        animPath = anim.filename
-        loaderOptions = self.animLoaderOptions
-        if not self.__autoCopy:
-            # If copy = 0, then we should always hit the disk.
-            loaderOptions = LoaderOptions(loaderOptions)
-            loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoRamCache)
-
-        animNode = loader.loadModel(animPath, loaderOptions = loaderOptions)
-        if animNode == None:
-            return None
-        animBundle = (animNode.find("**/+AnimBundleNode").node()).getBundle()
-        animModel = animNode.node()
-
-        # bind anim
-        animControl = bundle.bindAnim(animBundle, -1, subpartDef.subset)
-
-        if (animControl == None):
-            Actor.notify.error("Null AnimControl: %s" % (animName))
-        else:
-            # store the animControl
-            anim.animControl = animControl
-            anim.animModel = animModel
-            assert Actor.notify.debug("binding anim: %s to part: %s, lod: %s" %
-                                      (animName, partName, lodName))
         return animControl
 
     def __copyPartBundles(self, other):
