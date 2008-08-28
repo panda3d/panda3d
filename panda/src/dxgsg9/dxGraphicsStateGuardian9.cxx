@@ -2138,6 +2138,12 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     return false;
   }
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+  if (!dtc->create_texture(*_screen)) {
+    // Oops, we can't re-create the texture for some reason.
+    dxgsg9_cat.error()
+      << "Unable to re-create texture " << *dtc->get_texture() << endl;
+    return false;
+  }
 
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
     // For a specialty texture like a cube map, go the slow route
