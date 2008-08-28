@@ -1997,9 +1997,9 @@ class Actor(DirectObject, NodePath):
                     else:
                         self.__commonBundleHandles[partName] = partDef.partBundleHandle
                         
-            # Since we may have merged together some bundles, all of
-            # our anims are now suspect.  Force them to reload.
-            self.unloadAnims()
+        # Since we may have merged together some bundles, all of
+        # our anims are now suspect.  Force them to reload.
+        self.unloadAnims()
         
     def unloadAnims(self, anims=None, partName=None, lodName=None):
         """unloadAnims(self, string:string{}, string='modelRoot',
