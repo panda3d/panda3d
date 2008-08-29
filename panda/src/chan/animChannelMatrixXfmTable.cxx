@@ -407,8 +407,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     // Now, write out the joint angles.  For these we need to build up
     // a HPR array.
     vector_LVecBase3f hprs;
-    int hprs_length =
-      max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
+    int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
       float h = _tables[6].empty() ? 0.0f : _tables[6][i % _tables[6].size()];
@@ -416,7 +415,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
       float r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3f(h, p, r));
     }
-    compressor.write_hprs(me, &hprs[0], hprs_length);
+    if (hprs_length != 0) {
+      compressor.write_hprs(me, &hprs[0], hprs_length);
+    }
 
     // And now the translations.
     for(i = 9; i < num_matrix_components; i++) {
