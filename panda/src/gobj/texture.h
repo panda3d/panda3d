@@ -389,6 +389,8 @@ PUBLISHED:
   INLINE int get_orig_file_x_size() const;
   INLINE int get_orig_file_y_size() const;
   INLINE int get_orig_file_z_size() const;
+
+  void set_orig_file_size(int x, int y, int z = 1);
   
   void set_format(Format format);
   void set_component_type(ComponentType component_type);

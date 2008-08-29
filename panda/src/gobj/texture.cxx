@@ -2263,6 +2263,46 @@ write(ostream &out, int indent_level) const {
   }
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_size_padded
+//       Access: Published
+//  Description: Changes the size of the texture, padding
+//               if necessary, and setting the pad region
+//               as well.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_size_padded(int x, int y, int z) {
+  ReMutexHolder holder(_lock);
+  if (get_textures_power_2() != ATS_none) {
+    set_x_size(up_to_power_2(x));
+    set_y_size(up_to_power_2(y));
+    set_z_size(up_to_power_2(z));
+  } else {
+    set_x_size(x);
+    set_y_size(y);
+    set_z_size(z);
+  }
+  set_pad_size(get_x_size() - x,
+               get_y_size() - y,
+               get_z_size() - z);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_orig_file_size
+//       Access: Published
+//  Description: Specifies the size of the texture as it exists in its
+//               original disk file, before any Panda scaling.
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_orig_file_size(int x, int y, int z) {
+  ReMutexHolder holder(_lock);
+  _orig_file_x_size = x;
+  _orig_file_y_size = y;
+
+  nassertv(z == _z_size);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_format
 //       Access: Published
@@ -4288,29 +4328,6 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     // prepared_objects which the texture didn't know about.
     nassertv(false);
   }
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_size_padded
-//  Description: Changes the size of the texture, padding
-//               if necessary, and setting the pad region
-//               as well.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_size_padded(int x, int y, int z) {
-  if (get_textures_power_2() != ATS_none) {
-    set_x_size(up_to_power_2(x));
-    set_y_size(up_to_power_2(y));
-    set_z_size(up_to_power_2(z));
-  } else {
-    set_x_size(x);
-    set_y_size(y);
-    set_z_size(z);
-  }
-  set_pad_size(get_x_size() - x,
-               get_y_size() - y,
-               get_z_size() - z);
 }
 
 ////////////////////////////////////////////////////////////////////
