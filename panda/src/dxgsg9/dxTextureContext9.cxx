@@ -69,6 +69,35 @@ DXTextureContext9::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext9::evict_lru
+//       Access: Public, Virtual
+//  Description: Evicts the page from the LRU.  Called internally when
+//               the LRU determines that it is full.  May also be
+//               called externally when necessary to explicitly evict
+//               the page.
+//
+//               It is legal for this method to either evict the page
+//               as requested, do nothing (in which case the eviction
+//               will be requested again at the next epoch), or
+//               requeue itself on the tail of the queue (in which
+//               case the eviction will be requested again much
+//               later).
+////////////////////////////////////////////////////////////////////
+void DXTextureContext9::
+evict_lru() {
+  if (get_texture()->get_render_to_texture()) {
+    // Don't evict the result of render-to-texture.
+    mark_used_lru();
+    return;
+  }
+
+  dequeue_lru();
+  delete_texture();
+  update_data_size_bytes(0);
+  mark_unloaded();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext9::create_texture
 //       Access: Public
 //  Description: Use panda texture's pixelbuffer to create a texture
@@ -318,13 +347,46 @@ create_texture(DXScreenData &scrn) {
   // D3DXCheckTextureRequirements(), but it wouldn't handle all my
   // specialized low-memory cases perfectly
 
-#define CONVTYPE_STMT
-
-#define CHECK_FOR_FMT(FMT, CONV)  \
+#define CHECK_FOR_FMT(FMT)  \
                     if (scrn._supported_tex_formats_mask & FMT##_FLAG) {   \
-                        CONVTYPE_STMT;                             \
                         target_pixel_format = D3DFMT_##FMT;                 \
                         goto found_matching_format; }
+
+  if (texture_stored_compressed){
+    // if the texture is already compressed, we need to choose the
+    // corresponding format, otherwise we might end up
+    // cross-compressing from e.g. DXT5 to DXT3
+    switch (compression_mode){
+    case Texture::CM_dxt1:
+      CHECK_FOR_FMT(DXT1);
+      break;
+    case Texture::CM_dxt2:
+      CHECK_FOR_FMT(DXT2);
+      break;
+    case Texture::CM_dxt3:
+      CHECK_FOR_FMT(DXT3);
+      break;
+    case Texture::CM_dxt4:
+      CHECK_FOR_FMT(DXT4);
+      break;
+    case Texture::CM_dxt5:
+      CHECK_FOR_FMT(DXT5);
+      break;
+    }
+    // if we can't support the texture's compressed image, we can't
+    // load the texture.
+    goto error_exit;
+  }
+
+  if (compress_texture) {
+    if (num_alpha_bits <= 1) {
+      CHECK_FOR_FMT(DXT1);    
+    } else if (num_alpha_bits <= 4) {
+      CHECK_FOR_FMT(DXT3);    
+    } else {
+      CHECK_FOR_FMT(DXT5);
+    }
+  }
 
   // handle each target bitdepth separately.  might be less confusing
   // to reorg by num_color_channels (input type, rather than desired
@@ -359,36 +421,7 @@ create_texture(DXScreenData &scrn) {
     if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
 
-    if (!dx_force_16bpptextures) {
-      if (compress_texture) {
-        if (texture_stored_compressed){
-          // if the texture is already compressed, we need to choose the corresponding format, 
-          // otherwise we might end up cross-compressing from e.g. DXT5 to DXT3
-          switch (compression_mode){
-          case Texture::CM_dxt2:
-            CHECK_FOR_FMT(DXT2, Conv32toDXT2);
-            break;
-          case Texture::CM_dxt3:
-            CHECK_FOR_FMT(DXT3, Conv32toDXT3);
-            break;
-          case Texture::CM_dxt4:
-            CHECK_FOR_FMT(DXT4, Conv32toDXT4);
-            break;
-          case Texture::CM_dxt5:
-            CHECK_FOR_FMT(DXT5, Conv32toDXT5);
-            break;
-          }
-          // if no compressed format matches, just fall trhough to pick a different format          
-        }
-        else
-          CHECK_FOR_FMT(DXT3, Conv32toDXT3);    
-      }
-      if (num_color_channels == 4) {
-        CHECK_FOR_FMT(A8R8G8B8, Conv32to32);
-      } else {
-        CHECK_FOR_FMT(A8R8G8B8, Conv24to32);
-      }
-    }
+    CHECK_FOR_FMT(A8R8G8B8);
 
     if (num_alpha_bits>0) {
       nassertr(num_color_channels == 4, false);
@@ -407,16 +440,13 @@ create_texture(DXScreenData &scrn) {
       // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify
       // 32->16 conversion.  This should be true on most cards.
 
-#ifndef FORCE_16bpp_1555
-      if (num_alpha_bits == 1)
-#endif
-      {
-        CHECK_FOR_FMT(A1R5G5B5, Conv32to16_1555);
+      if (num_alpha_bits == 1) {
+        CHECK_FOR_FMT(A1R5G5B5);
       }
 
       // normally prefer 4444 due to better alpha channel resolution
-      CHECK_FOR_FMT(A4R4G4B4, Conv32to16_4444);
-      CHECK_FOR_FMT(A1R5G5B5, Conv32to16_1555);
+      CHECK_FOR_FMT(A4R4G4B4);
+      CHECK_FOR_FMT(A1R5G5B5);
 
       // At this point, bail.  Don't worry about converting to
       // non-alpha formats yet, I think this will be a very rare case.
@@ -425,11 +455,11 @@ create_texture(DXScreenData &scrn) {
       // convert 3 or 4 channel to closest 16bpp color fmt
 
       if (num_color_channels == 3) {
-        CHECK_FOR_FMT(R5G6B5, Conv24to16_4444);
-        CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
+        CHECK_FOR_FMT(R5G6B5);
+        CHECK_FOR_FMT(X1R5G5B5);
       } else {
-        CHECK_FOR_FMT(R5G6B5, Conv32to16_4444);
-        CHECK_FOR_FMT(X1R5G5B5, Conv32to16_X555);
+        CHECK_FOR_FMT(R5G6B5);
+        CHECK_FOR_FMT(X1R5G5B5);
       }
     }
     break;
@@ -437,24 +467,19 @@ create_texture(DXScreenData &scrn) {
   case 24:
     nassertr(num_color_channels == 3, false);
 
-    if (compress_texture) {
-      CHECK_FOR_FMT(DXT1, Conv24toDXT1);    
-    }
+    CHECK_FOR_FMT(R8G8B8);
 
-    if (!dx_force_16bpptextures) {
-//    if (!(want_16bit_rgb_textures || dx_force_16bpptextures)) {
-      CHECK_FOR_FMT(R8G8B8, Conv24to24);
+    // no 24-bit fmt.  look for 32 bit fmt (note: this is
+    // memory-hogging choice instead I could look for
+    // memory-conserving 16-bit fmt).
 
-      // no 24-bit fmt.  look for 32 bit fmt (note: this is
-      // memory-hogging choice instead I could look for
-      // memory-conserving 16-bit fmt).
-
-      CHECK_FOR_FMT(X8R8G8B8, Conv24to32);
-    }
+    CHECK_FOR_FMT(X8R8G8B8);
+    CHECK_FOR_FMT(A8R8G8B8);
     
     // no 24-bit or 32 fmt.  look for 16 bit fmt (higher res 565 1st)
-    CHECK_FOR_FMT(R5G6B5, Conv24to16_0565);
-    CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
+    CHECK_FOR_FMT(R5G6B5);
+    CHECK_FOR_FMT(X1R5G5B5);
+    CHECK_FOR_FMT(A1R5G5B5);
     break;
 
   case 16:
@@ -462,22 +487,16 @@ create_texture(DXScreenData &scrn) {
       nassertr(num_alpha_bits > 0, false);
       nassertr(num_color_channels == 2, false);
 
-      CHECK_FOR_FMT(A8L8, ConvLum16to16);
+      CHECK_FOR_FMT(A8L8);
+      CHECK_FOR_FMT(A8R8G8B8);
 
-      if (!dx_force_16bpptextures) {
-        CHECK_FOR_FMT(A8R8G8B8, ConvLum16to32);
-      }
-
-#ifndef FORCE_16bpp_1555
-      if (num_alpha_bits == 1)
-#endif
-      {
-        CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
+      if (num_alpha_bits == 1) {
+        CHECK_FOR_FMT(A1R5G5B5);
       }
 
       // normally prefer 4444 due to better alpha channel resolution
-      CHECK_FOR_FMT(A4R4G4B4, ConvLum16to16_4444);
-      CHECK_FOR_FMT(A1R5G5B5, ConvLum16to16_1555);
+      CHECK_FOR_FMT(A4R4G4B4);
+      CHECK_FOR_FMT(A1R5G5B5);
     } else {
       nassertr((num_color_channels == 3)||(num_color_channels == 4), false);
       // look for compatible 16bit fmts, if none then give up
@@ -485,13 +504,13 @@ create_texture(DXScreenData &scrn) {
       switch(num_alpha_bits) {
       case 0:
         if (num_color_channels == 3) {
-          CHECK_FOR_FMT(R5G6B5, Conv24to16_0565);
-          CHECK_FOR_FMT(X1R5G5B5, Conv24to16_X555);
+          CHECK_FOR_FMT(R5G6B5);
+          CHECK_FOR_FMT(X1R5G5B5);
         } else {
           nassertr(num_color_channels == 4, false);
           // it could be 4 if user asks us to throw away the alpha channel
-          CHECK_FOR_FMT(R5G6B5, Conv32to16_0565);
-          CHECK_FOR_FMT(X1R5G5B5, Conv32to16_X555);
+          CHECK_FOR_FMT(R5G6B5);
+          CHECK_FOR_FMT(X1R5G5B5);
         }
         break;
       case 1:
@@ -500,13 +519,13 @@ create_texture(DXScreenData &scrn) {
         // could use 32bpp ARGB.  fail if this particular fmt not
         // avail.
         nassertr(num_color_channels == 4, false);
-        CHECK_FOR_FMT(X1R5G5B5, Conv32to16_X555);
+        CHECK_FOR_FMT(X1R5G5B5);
         break;
       case 4:
         // app specifically requests 4-4-4-4 F_rgba4 case, as opposed
         // to F_rgba, which could use 32bpp ARGB
         nassertr(num_color_channels == 4, false);
-        CHECK_FOR_FMT(A4R4G4B4, Conv32to16_4444);
+        CHECK_FOR_FMT(A4R4G4B4);
         break;
       default:
         nassertr(false, false);  // problem in get_bits_per_pixel()?
@@ -519,16 +538,14 @@ create_texture(DXScreenData &scrn) {
       nassertr(num_color_channels == 1, false);
 
       // look for native lum fmt first
-      CHECK_FOR_FMT(L8, ConvLum8to8);
-      CHECK_FOR_FMT(L8, ConvLum8to16_A8L8);
+      CHECK_FOR_FMT(L8);
+      CHECK_FOR_FMT(L8);
 
-      if (!dx_force_16bpptextures) {
-        CHECK_FOR_FMT(R8G8B8, ConvLum8to24);
-        CHECK_FOR_FMT(X8R8G8B8, ConvLum8to32);
-      }
+      CHECK_FOR_FMT(R8G8B8);
+      CHECK_FOR_FMT(X8R8G8B8);
 
-      CHECK_FOR_FMT(R5G6B5, ConvLum8to16_0565);
-      CHECK_FOR_FMT(X1R5G5B5, ConvLum8to16_X555);
+      CHECK_FOR_FMT(R5G6B5);
+      CHECK_FOR_FMT(X1R5G5B5);
 
     } else if (num_alpha_bits == 8) {
       // look for 16bpp A8L8, else 32-bit ARGB, else 16-4444.
@@ -538,13 +555,9 @@ create_texture(DXScreenData &scrn) {
       // model we need somehow (is it that voodoo assumes color is
       // white?  isnt that what we do in ConvAlpha8to32 anyway?)
 
-      CHECK_FOR_FMT(A8L8, ConvAlpha8to16_A8L8);
-
-      if (!dx_force_16bpptextures) {
-        CHECK_FOR_FMT(A8R8G8B8, ConvAlpha8to32);
-      }
-
-      CHECK_FOR_FMT(A4R4G4B4, ConvAlpha8to16_4444);
+      CHECK_FOR_FMT(A8L8);
+      CHECK_FOR_FMT(A8R8G8B8);
+      CHECK_FOR_FMT(A4R4G4B4);
     }
     break;
 
@@ -1739,7 +1752,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
       int miplevel_count = _d3d_2d_texture->GetLevelCount(); // what if it's not a 2d texture?
       if (miplevel_count <= tex->get_num_loadable_ram_mipmap_images()) {
         dxgsg9_cat.debug()
-        << "Using pre-calculated mipmap levels for texture  " << tex->get_name();
+          << "Using pre-calculated mipmap levels for texture  " << tex->get_name() << "\n";
 
         for (int mip_level = 1; mip_level < miplevel_count; ++mip_level) {
           hr = fill_d3d_texture_mipmap_pixels(mip_level, di, source_format);
@@ -2031,10 +2044,10 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
     return 24;
   case Texture::F_rgba8:
   case Texture::F_rgba:
+    *alphbits = 8;
+    return 32;
   case Texture::F_rgbm:
-    if (format == Texture::F_rgbm)   // does this make any sense?
-      *alphbits = 1;
-    else *alphbits = 8;
+    *alphbits = 1;
     return 32;
   case Texture::F_rgb12:
     return 36;

@@ -84,8 +84,6 @@ ConfigVariableBool dx_ignore_mipmaps
 // if this is set, more accurate but more expensive fog computations are performed
 ConfigVariableBool dx_use_rangebased_fog
 ("dx-use-rangebased-fog", false);
-ConfigVariableBool dx_force_16bpptextures
-("dx-force-16bpptextures", false);
 ConfigVariableBool dx_no_dithering
 ("dx-no-dithering", false);
 ConfigVariableBool dx_force_16bpp_zbuffer

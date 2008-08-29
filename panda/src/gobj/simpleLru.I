@@ -50,7 +50,7 @@ set_max_size(size_t max_size) {
   MutexHolder holder(_global_lock);
   _max_size = max_size;
   if (_total_size > _max_size) {
-    do_evict();
+    do_evict_to(_max_size, false);
   }
 }
 
@@ -63,7 +63,22 @@ INLINE void SimpleLru::
 consider_evict() {
   MutexHolder holder(_global_lock);
   if (_total_size > _max_size) {
-    do_evict();
+    do_evict_to(_max_size, false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::evict_to
+//       Access: Published
+//  Description: Evicts a sequence of objects until the queue fits
+//               within the indicated target size, regardless of its
+//               normal max size.
+////////////////////////////////////////////////////////////////////
+INLINE void SimpleLru::
+evict_to(size_t target_size) {
+  MutexHolder holder(_global_lock);
+  if (_total_size > target_size) {
+    do_evict_to(target_size, true);
   }
 }
 

@@ -178,6 +178,39 @@ DXVertexBufferContext8::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXVertexBufferContext8::evict_lru
+//       Access: Public, Virtual
+//  Description: Evicts the page from the LRU.  Called internally when
+//               the LRU determines that it is full.  May also be
+//               called externally when necessary to explicitly evict
+//               the page.
+//
+//               It is legal for this method to either evict the page
+//               as requested, do nothing (in which case the eviction
+//               will be requested again at the next epoch), or
+//               requeue itself on the tail of the queue (in which
+//               case the eviction will be requested again much
+//               later).
+////////////////////////////////////////////////////////////////////
+void DXVertexBufferContext8::
+evict_lru() {
+  dequeue_lru();
+
+  if (_vbuffer != NULL) {
+    if (dxgsg8_cat.is_debug()) {
+      dxgsg8_cat.debug()
+        << "deleting vertex buffer " << _vbuffer << "\n";
+    }
+
+    RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
+    _vbuffer = NULL;
+  }
+
+  update_data_size_bytes(0);
+  mark_unloaded();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXVertexBufferContext8::create_vbuffer
 //       Access: Public
 //  Description: Creates a new vertex buffer (but does not upload data

@@ -20,6 +20,7 @@
 #include "bufferContext.h"
 #include "geomVertexArrayData.h"
 #include "preparedGraphicsObjects.h"
+#include "simpleLru.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexBufferContext
@@ -32,7 +33,7 @@
 //               allocate a vertex buffer for the array.  OpenGL can
 //               create a buffer object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ VertexBufferContext : public BufferContext {
+class EXPCL_PANDA_GOBJ VertexBufferContext : public BufferContext, public SimpleLruPage {
 public:
   INLINE VertexBufferContext(PreparedGraphicsObjects *pgo,
                              GeomVertexArrayData *data);
@@ -45,7 +46,9 @@ PUBLISHED:
   INLINE bool was_modified(const GeomVertexArrayDataHandle *reader) const;
 
 public:
+  INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   INLINE void mark_loaded(const GeomVertexArrayDataHandle *reader);
+  INLINE void mark_unloaded();
 
 private:
   // This cannot be a PT(GeomVertexArrayData), because the data and

@@ -39,7 +39,6 @@ extern ConfigVariableBool dx_broken_max_index;
 extern ConfigVariableBool dx_ignore_mipmaps;
 extern ConfigVariableBool dx_mipmap_everything;
 extern ConfigVariableBool dx_show_transforms;
-extern ConfigVariableBool dx_force_16bpptextures;
 extern ConfigVariableBool dx_no_dithering;
 extern ConfigVariableBool dx_force_anisotropic_filtering;
 extern ConfigVariableBool dx_force_16bpp_zbuffer;

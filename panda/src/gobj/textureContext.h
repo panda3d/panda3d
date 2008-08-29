@@ -20,6 +20,7 @@
 #include "bufferContext.h"
 #include "texture.h"
 #include "preparedGraphicsObjects.h"
+#include "simpleLru.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureContext
@@ -34,7 +35,7 @@
 //               texture and store it here.  The texture stores all of
 //               these handles internally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ TextureContext : public BufferContext {
+class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public SimpleLruPage {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
 
@@ -47,8 +48,10 @@ PUBLISHED:
   INLINE bool was_simple_image_modified() const;
 
 public:
+  INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   INLINE void mark_loaded();
   INLINE void mark_simple_loaded();
+  INLINE void mark_unloaded();
 
 private:
   // This cannot be a PT(Texture), because the texture and the GSG

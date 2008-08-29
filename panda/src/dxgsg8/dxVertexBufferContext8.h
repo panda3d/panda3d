@@ -29,6 +29,8 @@ public:
   DXVertexBufferContext8(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data);
   virtual ~DXVertexBufferContext8();
 
+  virtual void evict_lru();
+
   void create_vbuffer(DXScreenData &scrn,
                       const GeomVertexArrayDataHandle *reader);
   bool upload_data(const GeomVertexArrayDataHandle *reader, bool force);

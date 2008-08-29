@@ -26,6 +26,38 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::set_graphics_memory_limit
+//       Access: Public
+//  Description: Sets an artificial cap on graphics memory that
+//               will be imposed on this GSG.
+//
+//               This limits the total amount of graphics memory,
+//               including texture memory and vertex buffer memory,
+//               that will be consumed by the GSG, regardless of
+//               whether the hardware claims to provide more graphics
+//               memory than this. It is useful to put a ceiling on
+//               graphics memory consumed, since some drivers seem to
+//               allow the application to consume more memory than the
+//               hardware can realistically support.
+////////////////////////////////////////////////////////////////////
+INLINE void PreparedGraphicsObjects::
+set_graphics_memory_limit(size_t limit) {
+  _graphics_memory_lru.set_max_size(limit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::get_graphics_memory_limit
+//       Access: Public
+//  Description: Returns the artificial cap on graphics memory that
+//               will be imposed on this GSG.  See
+//               set_graphics_memory_limit().
+////////////////////////////////////////////////////////////////////
+INLINE size_t PreparedGraphicsObjects::
+get_graphics_memory_limit() const {
+  return _graphics_memory_lru.get_max_size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::release_all
 //       Access: Public
 //  Description: Releases all prepared objects of all kinds at once.

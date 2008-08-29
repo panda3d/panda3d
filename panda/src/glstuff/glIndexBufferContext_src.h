@@ -23,9 +23,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
-  INLINE CLP(IndexBufferContext)(PreparedGraphicsObjects *pgo, 
+  INLINE CLP(IndexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
+                                 PreparedGraphicsObjects *pgo, 
                                  GeomPrimitive *data);
   ALLOC_DELETED_CHAIN(CLP(IndexBufferContext));
+
+  virtual void evict_lru();
+
+  CLP(GraphicsStateGuardian) *_glgsg;
 
   // This is the GL "name" of the data object.
   GLuint _index;

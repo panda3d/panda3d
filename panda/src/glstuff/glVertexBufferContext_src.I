@@ -19,8 +19,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(VertexBufferContext)::
-CLP(VertexBufferContext)(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
-  VertexBufferContext(pgo, data)
+CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
+                         PreparedGraphicsObjects *pgo, 
+                         GeomVertexArrayData *data) :
+  VertexBufferContext(pgo, data),
+  _glgsg(glgsg)
 {
   _index = 0;
 }

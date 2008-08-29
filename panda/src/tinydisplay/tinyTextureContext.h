@@ -18,21 +18,19 @@
 #include "pandabase.h"
 #include "textureContext.h"
 #include "deletedChain.h"
-#include "simpleLru.h"
 #include "zgl.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyTextureContext
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext, public SimpleLruPage {
+class EXPCL_TINYDISPLAY TinyTextureContext : public TextureContext {
 public:
   INLINE TinyTextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(TinyTextureContext);
 
   INLINE ~TinyTextureContext();
 
-  INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   virtual void evict_lru();
 
   GLTexture _gltex;

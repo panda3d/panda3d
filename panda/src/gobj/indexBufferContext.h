@@ -20,6 +20,7 @@
 #include "bufferContext.h"
 #include "geomPrimitive.h"
 #include "preparedGraphicsObjects.h"
+#include "simpleLru.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IndexBufferContext
@@ -32,7 +33,7 @@
 //               allocate a vertex buffer for the array.  OpenGL can
 //               create a buffer object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ IndexBufferContext : public BufferContext {
+class EXPCL_PANDA_GOBJ IndexBufferContext : public BufferContext, public SimpleLruPage {
 public:
   INLINE IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
 
@@ -44,7 +45,9 @@ PUBLISHED:
   INLINE bool was_modified(const GeomPrimitivePipelineReader *reader) const;
 
 public:
+  INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   INLINE void mark_loaded(const GeomPrimitivePipelineReader *reader);
+  INLINE void mark_unloaded();
 
 private:
   // This cannot be a PT(GeomPrimitive), because the data and

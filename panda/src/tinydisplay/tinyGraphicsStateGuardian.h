@@ -145,8 +145,6 @@ private:
   bool _texture_replace;
   bool _filled_flat;
 
-  SimpleLru _textures_lru;
-
   CPT(TransformState) _scissor_mat;
 
   // Used during being_draw_primitives() .. end_draw_primitives().

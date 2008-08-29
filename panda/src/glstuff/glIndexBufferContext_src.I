@@ -19,8 +19,11 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(IndexBufferContext)::
-CLP(IndexBufferContext)(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
-  IndexBufferContext(pgo, data)
+CLP(IndexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
+                        PreparedGraphicsObjects *pgo,
+                        GeomPrimitive *data) :
+  IndexBufferContext(pgo, data),
+  _glgsg(glgsg)
 {
   _index = 0;
 }

@@ -30,6 +30,8 @@ public:
   DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex);
   virtual ~DXTextureContext9();
 
+  virtual void evict_lru();
+
   bool create_texture(DXScreenData &scrn);
   bool create_simple_texture(DXScreenData &scrn);
   void delete_texture();

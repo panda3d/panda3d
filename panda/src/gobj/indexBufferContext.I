@@ -21,6 +21,7 @@
 INLINE IndexBufferContext::
 IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   BufferContext(&pgo->_ibuffer_residency),
+  SimpleLruPage(0),
   _data(data)
 {
 }
@@ -73,6 +74,18 @@ was_modified(const GeomPrimitivePipelineReader *reader) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: IndexBufferContext::update_data_size_bytes
+//       Access: Public
+//  Description: Should be called (usually by a derived class) when
+//               the on-card size of this object has changed.
+////////////////////////////////////////////////////////////////////
+INLINE void IndexBufferContext::
+update_data_size_bytes(size_t new_data_size_bytes) {
+  BufferContext::update_data_size_bytes(new_data_size_bytes);
+  SimpleLruPage::set_lru_size(new_data_size_bytes);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: IndexBufferContext::mark_loaded
 //       Access: Public
 //  Description: Should be called after the IndexBufferContext has been
@@ -88,4 +101,16 @@ mark_loaded(const GeomPrimitivePipelineReader *reader) {
 
   // Assume the buffer is now resident.
   set_resident(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IndexBufferContext::mark_unloaded
+//       Access: Public
+//  Description: Should be called after the buffer has been forced
+//               out of graphics memory.
+////////////////////////////////////////////////////////////////////
+INLINE void IndexBufferContext::
+mark_unloaded() {
+  update_modified(UpdateSeq::old());
+  set_resident(false);
 }

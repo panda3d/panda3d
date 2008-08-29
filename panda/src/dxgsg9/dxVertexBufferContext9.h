@@ -29,6 +29,8 @@ public:
   DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, DXScreenData &scrn);
   virtual ~DXVertexBufferContext9();
 
+  virtual void evict_lru();
+
   void free_vbuffer();
   void allocate_vbuffer(DXScreenData &scrn, const GeomVertexArrayDataHandle *reader);
   void create_vbuffer(DXScreenData &scrn, const GeomVertexArrayDataHandle *reader, string name);

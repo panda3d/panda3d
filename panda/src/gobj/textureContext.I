@@ -21,6 +21,7 @@
 INLINE TextureContext::
 TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   BufferContext(&pgo->_texture_residency),
+  SimpleLruPage(0),
   _texture(tex)
 {
 }
@@ -85,6 +86,18 @@ was_simple_image_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::update_data_size_bytes
+//       Access: Public
+//  Description: Should be called (usually by a derived class) when
+//               the on-card size of this object has changed.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureContext::
+update_data_size_bytes(size_t new_data_size_bytes) {
+  BufferContext::update_data_size_bytes(new_data_size_bytes);
+  SimpleLruPage::set_lru_size(new_data_size_bytes);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::mark_loaded
 //       Access: Public
 //  Description: Should be called after the texture has been loaded
@@ -116,4 +129,20 @@ mark_simple_loaded() {
 
   // The texture's not exactly resident now, but some part of it is.
   set_resident(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::mark_unloaded
+//       Access: Public
+//  Description: Should be called after the texture has been forced
+//               out of texture memory.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureContext::
+mark_unloaded() {
+  _properties_modified = UpdateSeq::old();
+  _image_modified = UpdateSeq::old();
+  _simple_image_modified = UpdateSeq::old();
+  update_modified(UpdateSeq::old());
+
+  set_resident(false);
 }

@@ -50,8 +50,7 @@ PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_perspective_pcolle
 TinyGraphicsStateGuardian::
 TinyGraphicsStateGuardian(GraphicsPipe *pipe,
 			 TinyGraphicsStateGuardian *share_with) :
-  GraphicsStateGuardian(CS_yup_right, pipe),
-  _textures_lru("textures_lru", td_texture_ram)
+  GraphicsStateGuardian(CS_yup_right, pipe)
 {
   _current_frame_buffer = NULL;
   _aux_frame_buffer = NULL;
@@ -466,9 +465,6 @@ end_frame(Thread *current_thread) {
   _pixel_count_flat_perspective_pcollector.flush_level();
   _pixel_count_smooth_perspective_pcollector.flush_level();
 #endif  // DO_PSTATS
-
-  // Evict any textures that exceed our texture memory.
-  _textures_lru.begin_epoch();
 }
 
 
@@ -1274,7 +1270,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   gtc->update_data_size_bytes(gltex->xsize * gltex->ysize * 4);
   gtc->mark_loaded();
-  gtc->enqueue_lru(&_textures_lru);
+  gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
 }
@@ -1501,7 +1497,7 @@ update_texture(TextureContext *tc, bool force) {
       return false;
     }
   }
-  gtc->enqueue_lru(&_textures_lru);
+  gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   _c->current_texture = gltex;
   _c->zb->current_texture = gltex->levels;

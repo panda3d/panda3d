@@ -2676,6 +2676,7 @@ update_texture(TextureContext *tc, bool force) {
     specify_texture(gtc->get_texture());
     gtc->mark_loaded();
   }
+  gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   report_my_gl_errors();
   return true;
@@ -2814,7 +2815,7 @@ record_deleted_display_list(GLuint index) {
 VertexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_vertex_buffer(GeomVertexArrayData *data) {
   if (_supports_buffers) {
-    CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(_prepared_objects, data);
+    CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gvbc->_index);
 
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
@@ -2881,6 +2882,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
 
     gvbc->mark_loaded(reader);
   }
+  gvbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   maybe_gl_finish();
   report_my_gl_errors();
@@ -2998,7 +3000,7 @@ setup_array_data(const unsigned char *&client_pointer,
 IndexBufferContext *CLP(GraphicsStateGuardian)::
 prepare_index_buffer(GeomPrimitive *data) {
   if (_supports_buffers) {
-    CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(_prepared_objects, data);
+    CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gibc->_index);
 
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
@@ -3067,6 +3069,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     }
     gibc->mark_loaded(reader);
   }
+  gibc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   maybe_gl_finish();
   report_my_gl_errors();
@@ -3356,6 +3359,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   gtc->mark_loaded();
+  gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   report_my_gl_errors();
 

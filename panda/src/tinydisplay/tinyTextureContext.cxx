@@ -48,5 +48,6 @@ evict_lru() {
     nassertv(gltex->num_levels == 0);
   }
 
-  set_resident(false);
+  update_data_size_bytes(0);
+  mark_unloaded();
 }

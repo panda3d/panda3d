@@ -374,6 +374,19 @@ ConfigVariableInt vertex_data_page_threads
           "is 0, this work will be done in the main thread, which may "
           "introduce occasional random chugs in rendering."));
 
+ConfigVariableInt graphics_memory_limit
+("graphics-memory-limit", -1,
+ PRC_DESC("This is a default limit that is imposed on each GSG at "
+          "GSG creation time.  It limits the total amount of graphics "
+          "memory, including texture memory and vertex buffer memory, "
+          "that will be consumed by the GSG, regardless of whether the "
+          "hardware claims to provide more graphics memory than this.  "
+          "It is useful to put a ceiling on graphics memory consumed, since "
+          "some drivers seem to allow the application to consume more "
+          "memory than the hardware can realistically support.  "
+          "Set this to -1 to have no limit other than the normal "
+          "hardware-imposed limit."));
+
 ConfigureFn(config_gobj) {
   BufferContext::init_type();
   Geom::init_type();

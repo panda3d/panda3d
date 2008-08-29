@@ -114,14 +114,15 @@ count_active_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::do_evict
+//     Function: SimpleLru::do_evict_to
 //       Access: Private
-//  Description: Evicts pages until the LRU is within tolerance.
-//               Assumes the lock is already held.  Does not evict
-//               "active" pages that were added within this epoch.
+//  Description: Evicts pages until the LRU is within the indicated
+//               size.  Assumes the lock is already held.  If
+//               hard_evict is false, does not evict "active" pages
+//               that were added within this epoch.
 ////////////////////////////////////////////////////////////////////
 void SimpleLru::
-do_evict() {
+do_evict_to(size_t target_size, bool hard_evict) {
   if (_next == this) {
     // Nothing in the queue.
     return;
@@ -134,7 +135,7 @@ do_evict() {
 
   // Now walk through the list.
   SimpleLruPage *node = (SimpleLruPage *)_next;
-  while (_total_size > _max_size) {
+  while (_total_size > target_size) {
     SimpleLruPage *next = (SimpleLruPage *)node->_next;
 
     // We must release the lock while we call evict_lru().
@@ -146,7 +147,7 @@ do_evict() {
       // If we reach the original tail of the list, stop.
       return;
     }
-    if (node == _active_marker) {
+    if (!hard_evict && node == _active_marker) {
       // Also stop if we reach the active marker.  Nodes beyond this
       // were added within this epoch.
       return;

@@ -28,6 +28,8 @@ public:
   DXTextureContext8(PreparedGraphicsObjects *pgo, Texture *tex);
   virtual ~DXTextureContext8();
 
+  virtual void evict_lru();
+
   bool create_texture(DXScreenData &scrn);
   bool create_simple_texture(DXScreenData &scrn);
   void delete_texture();

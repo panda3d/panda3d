@@ -92,6 +92,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableFilename vertex_save_file_directory;
 extern EXPCL_PANDA_GOBJ ConfigVariableString vertex_save_file_prefix;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_small_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_page_threads;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt graphics_memory_limit;
 
 #endif
 

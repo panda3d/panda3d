@@ -38,13 +38,14 @@ PUBLISHED:
   size_t count_active_size() const;
 
   INLINE void consider_evict();
+  INLINE void evict_to(size_t target_size);
   INLINE void begin_epoch();
 
 public:
   static Mutex &_global_lock;
 
 private:
-  void do_evict();
+  void do_evict_to(size_t target_size, bool hard_evict);
   bool do_validate_size();
 
   size_t _total_size;

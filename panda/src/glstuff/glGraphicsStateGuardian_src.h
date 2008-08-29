@@ -533,6 +533,8 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class CLP(VertexBufferContext);
+  friend class CLP(IndexBufferContext);
   friend class CLP(ShaderContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);

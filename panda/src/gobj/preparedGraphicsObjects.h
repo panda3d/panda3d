@@ -62,6 +62,9 @@ public:
 PUBLISHED:
   INLINE const string &get_name() const;
 
+  INLINE void set_graphics_memory_limit(size_t limit);
+  INLINE size_t get_graphics_memory_limit() const;
+
   INLINE void release_all();
   INLINE int get_num_queued() const;
   INLINE int get_num_prepared() const;
@@ -195,6 +198,8 @@ public:
   BufferResidencyTracker _texture_residency;
   BufferResidencyTracker _vbuffer_residency;
   BufferResidencyTracker _ibuffer_residency;
+
+  SimpleLru _graphics_memory_lru;
 
 public:
   // This is only public as a temporary hack.  Don't mess with it

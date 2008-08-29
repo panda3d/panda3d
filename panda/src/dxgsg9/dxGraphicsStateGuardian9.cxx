@@ -335,10 +335,10 @@ update_texture(TextureContext *tc, bool force) {
       Texture *tex = tc->get_texture();
       dxgsg9_cat.error()
         << "Unable to re-create texture " << *tex << endl;
-      cerr << "b\n";
       return false;
     }
   }
+  dtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
 }
@@ -525,6 +525,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
       set_stream_source = true;
     }
   }
+  dvbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   if (shader_context == 0) {
     // FVF MODE
@@ -735,6 +736,7 @@ apply_index_buffer(IndexBufferContext *ibc,
       dibc->set_active(true);
     }
   }
+  dibc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
 }
@@ -2243,7 +2245,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   SAFE_RELEASE(render_target);
   SAFE_RELEASE(tex_level_0);
 
-  if (!okflag) {
+  if (okflag) {
+    dtc->mark_loaded();
+    dtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+  } else {
     // The copy failed.  Fall back to copying it to RAM and back.
     // Terribly slow, but what are you going to do?
     return do_framebuffer_copy_to_ram(tex, z, dr, rb, true);

@@ -29,6 +29,8 @@ public:
   DXIndexBufferContext8(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
   virtual ~DXIndexBufferContext8();
 
+  virtual void evict_lru();
+
   void create_ibuffer(DXScreenData &scrn,
                       const GeomPrimitivePipelineReader *reader);
   bool upload_data(const GeomPrimitivePipelineReader *reader, bool force);

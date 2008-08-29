@@ -25,6 +25,8 @@ public:
   INLINE CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex);
   ALLOC_DELETED_CHAIN(CLP(TextureContext));
 
+  virtual void evict_lru();
+
   // This is the GL "name" of the texture object.
   GLuint _index;
 

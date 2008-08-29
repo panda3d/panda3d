@@ -16,6 +16,8 @@
 #include "vertexBufferContext.h"
 #include "deletedChain.h"
 
+class CLP(GraphicsStateGuardian);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GLVertexBufferContext
 // Description : Caches a GeomVertexArrayData on the GL as a buffer
@@ -23,9 +25,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
-  INLINE CLP(VertexBufferContext)(PreparedGraphicsObjects *pgo, 
+  INLINE CLP(VertexBufferContext)(CLP(GraphicsStateGuardian) *glgsg,
+                                  PreparedGraphicsObjects *pgo, 
                                   GeomVertexArrayData *data);
   ALLOC_DELETED_CHAIN(CLP(VertexBufferContext));
+
+  virtual void evict_lru();
+
+  CLP(GraphicsStateGuardian) *_glgsg;
 
   // This is the GL "name" of the data object.
   GLuint _index;

@@ -1240,6 +1240,9 @@ end_frame(Thread *current_thread) {
   _texture_state_pcollector.flush_level();
   _transform_state_pcollector.flush_level();
   _draw_primitive_pcollector.flush_level();
+
+  // Evict any textures and/or vbuffers that exceed our texture memory.
+  _prepared_objects->_graphics_memory_lru.begin_epoch();
 }
 
 ////////////////////////////////////////////////////////////////////

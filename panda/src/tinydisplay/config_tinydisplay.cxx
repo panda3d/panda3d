@@ -79,16 +79,6 @@ ConfigVariableInt osx_mouse_wheel_scale
  PRC_DESC("Specify the number of units to spin the Mac mouse wheel to "
           "represent a single wheel_up or wheel_down message."));
 
-ConfigVariableInt td_texture_ram
-("td-texture-ram", -1,
- PRC_DESC("This specifies the maximum amount of RAM to devote to keeping "
-          "textures resident with the tinydisplay software renderer.  When "
-          "this limit is exceeded, textures over the limit that have not "
-          "been rendered within the current frame will be evicted.  "
-          "(Textures will not be evicted while they are still in the "
-          "frame, even if this means this limit remains exceeded.)  "
-          "Set it to -1 for no limit."));
-
 ConfigVariableBool td_ignore_mipmaps
   ("td-ignore-mipmaps", false,
    PRC_DESC("Configure this true to disable use of mipmaps on the "

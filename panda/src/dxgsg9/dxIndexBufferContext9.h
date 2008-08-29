@@ -29,6 +29,8 @@ public:
   DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data);
   virtual ~DXIndexBufferContext9();
 
+  virtual void evict_lru();
+
   void free_ibuffer();
   void allocate_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);
   void create_ibuffer(DXScreenData &scrn, const GeomPrimitivePipelineReader *reader);

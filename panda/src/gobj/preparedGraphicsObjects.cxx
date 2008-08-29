@@ -24,6 +24,7 @@
 #include "reMutexHolder.h"
 #include "geomContext.h"
 #include "shaderContext.h"
+#include "config_gobj.h"
 
 int PreparedGraphicsObjects::_name_index = 0;
 
@@ -40,7 +41,8 @@ PreparedGraphicsObjects() :
   _index_buffer_cache_size(0),
   _texture_residency(_name, "texture"),
   _vbuffer_residency(_name, "vbuffer"),
-  _ibuffer_residency(_name, "ibuffer")
+  _ibuffer_residency(_name, "ibuffer"),
+  _graphics_memory_lru("graphics_memory_lru", graphics_memory_limit)
 {
   // GLGSG will turn this flag on.  This is a temporary hack to
   // disable this feature for DX8/DX9 for now, until we work out the
