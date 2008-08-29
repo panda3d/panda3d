@@ -8216,10 +8216,10 @@ void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const LVecBase4f &frame = _target._scissor->get_frame();
 
-  int x = _viewport_x + _viewport_width * frame[0];
-  int y = _viewport_y + _viewport_height * frame[2];
-  int width = _viewport_width * (frame[1] - frame[0]);
-  int height = _viewport_height * (frame[3] - frame[2]);
+  int x = (int)(_viewport_x + _viewport_width * frame[0] + 0.5f);
+  int y = (int)(_viewport_y + _viewport_height * frame[2] + 0.5f);
+  int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
+  int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
 
   GLP(Enable)(GL_SCISSOR_TEST);
   GLP(Scissor)(x, y, width, height);
