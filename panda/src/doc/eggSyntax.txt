@@ -1706,3 +1706,199 @@ MISCELLANEOUS
   which case the current egg file's directory is searched first, and
   then the model-path is searched.
 
+
+
+ANIMATION STRUCTURE
+
+  Unanimated models may be defined in egg files without much regard to
+  any particular structure, so long as named entries like VertexPools
+  and Textures appear before they are referenced.
+
+  However, a certain rigid structural convention must be followed in
+  order to properly define an animated skeleton-morph model and its
+  associated animation data.
+
+  The structure for an animated model should resemble the following:
+
+<Group> CHARACTER_NAME {
+  <Dart> { 1 }
+  <Joint> JOINT_A {
+    <Transform> { ... }
+    <VertexRef> { ... }
+    <Group> { <Polygon> ... }
+    <Joint> JOINT_B {
+      <Transform> { ... }
+      <VertexRef> { ... }
+      <Group> { <Polygon> ... }
+    }
+    <Joint> JOINT_C {
+      <Transform> { ... }
+      <VertexRef> { ... }
+      <Group> { <Polygon> ... }
+    }
+    ...
+  }
+}
+
+  The <Dart> flag is necessary to indicate that this group begins an
+  animated model description.  Without the <Dart> flag, joints will be
+  treated as ordinary groups, and morphs will be ignored.
+
+  In the above, UPPERCASE NAMES represent an arbitrary name that you
+  may choose.  The name of the enclosing group, CHARACTER_NAME, is
+  taken as the name of the animated model.  It should generally match
+  the bundle name in the associated animation tables.
+
+  Within the <Dart> group, you may define an arbitrary hierarchy of
+  <Joint> entries.  There may be as many <Joint> entries as you like,
+  and they may have any nesting complexity you like.  There may be
+  either one root <Joint>, or multiple roots.  However, you must
+  always include at least one <Joint>, even if your animation consists
+  entirely of morphs.
+
+  Polygons may be directly attached to joints by enclosing them within
+  the <Joint> group, perhaps with additional nesting <Group> entries,
+  as illustrated above.  This will result in the polygon's vertices
+  being hard-assigned to the joint it appears within.  Alternatively,
+  you declare the polygons elsewhere in the egg file, and use
+  <VertexRef> entries within the <Joint> group to associate the
+  vertices with the joints.  This is the more common approach, since
+  it allows for soft-assignment of vertices to multiple joints.
+
+  It is not necessary for every joint to have vertices at all.  Every
+  joint should include a transform entry, however, which defines the
+  initial, resting transform of the joint.  If a transform is omitted,
+  the identity transform is assumed.
+
+  Some of the vertex definitions may include morph entries, as
+  described in MORPH DESCRIPTION ENTRIES, above.  These are meaningful
+  only for vertices that are assigned, either implicitly or
+  explicitly, to at least one joint.
+
+  You may have multiple versions of a particular animated model--for
+  instance, multiple different LOD's, or multiple different clothing
+  options.  Normally each different version is stored in a different
+  egg file, but it is also possible to include multiple versions
+  within the same egg file.  If the different versions are intended to
+  play the same animations, they should all have the same
+  CHARACTER_NAME, and their joint hierarchies should exactly match in
+  structure and names.
+
+  The structure for an animation table should resemble the following:
+
+<Table> {
+  <Bundle> CHARACTER_NAME {
+    <Table> "<skeleton>" {
+      <Table> JOINT_A {
+        <Xfm$Anim_S$> xform {
+          <Char*> order { sphrt }
+          <Scalar> fps { 24 }
+          <S$Anim> x { 0 0 10 10 20 ... }
+          <S$Anim> y { 0 0 0 0 0 ... }
+          <S$Anim> z { 20 20 20 20 20 ... }
+        }
+        <Table> JOINT_B {
+          <Xfm$Anim_S$> xform {
+            <Char*> order { sphrt }
+            <Scalar> fps { 24 }
+            <S$Anim> x { ... }
+            <S$Anim> y { ... }
+            <S$Anim> z { ... }
+          }
+        }
+        <Table> JOINT_C {
+          <Xfm$Anim_S$> xform {
+            <Char*> order { sphrt }
+            <Scalar> fps { 24 }
+            <S$Anim> x { ... }
+            <S$Anim> y { ... }
+            <S$Anim> z { ... }
+          }
+        }
+      }
+    }
+    <Table> morph {
+      <S$Anim> MORPH_A {
+        <Scalar> fps { 24 }
+        <V> { 0 0 0 0.1 0.2 0.3 1 ... }
+      }
+      <S$Anim> MORPH_B {
+        <Scalar> fps { 24 }
+        <V> { ... }
+      }
+      <S$Anim> MORPH_C {
+        <Scalar> fps { 24 }
+        <V> { ... }
+      }
+    }
+  }
+}
+
+  The <Bundle> entry begins an animation table description.  This
+  entry must have at least one child: a <Table> named "<skeleton>"
+  (this name is a literal keyword and must be present).  The children
+  of this <Table> entry should be a hierarchy of additional <Table>
+  entries, one for each joint in the model.  The joint structure and
+  names defined by the <Table> hierarchy should exactly match the
+  joint structure and names defined by the <Joint> hierarchy in the
+  corresponding model.
+
+  Each <Table> that corresponds to a joint should have one child, an
+  <Xfm$Anim_S$> entry named "xform" (this name is a literal keyword
+  and must be present).  Within this entry, there is a series of up to
+  twelve <S$Anim> entries, each with a one-letter name like "x", "y",
+  or "z", which define the per-frame x, y, z position of the
+  corresponding joint.  There is one numeric entry for each frame, and
+  all frames represent the same length of time.  You can also define
+  rotation, scale, and shear.  See the full description of
+  <Xfm$Anim_S$>, above.
+
+  Within a particular animation bundle, all of the various components
+  throughout the various <Tables> should define the same number of
+  frames, with the exception that if any of them define exactly one
+  frame value, that value is understood to be replicated the
+  appropriate number of times to match the number of frames defined by
+  other components.
+
+  (Note that you may alternatively define an animation table with an
+  <Xfm$Anim> entry, which defines all of the individual components in
+  one big matrix instead of individually.  See the full description
+  above.)
+
+  Each joint defines its frame rate independently, with an "fps"
+  scalar.  This determines the number of frames per second for the
+  frame data within this table.  Typically, all joints have the same
+  frame rate, but it is possible for different joints to animate at
+  different speeds.
+
+  Each joint also defines the order in which its components should be
+  composed to determine the complete transform matrix, with an "order"
+  scalar.  This is described in more detail above.
+
+
+  If any of the vertices in the model have morphs, the top-level
+  <Table> should also include a <Table> named "morph" (this name is
+  also a literal keyword).  This table in turn contains a list of
+  <S$Anim> entries, one for each named morph description.  Each table
+  contains a list of numeric values, one per frame; as with the joint
+  data, there should be the same number of numeric values in all
+  tables, with the exception that just one value is understood to mean
+  hold that value through the entire animation.
+
+  The "morph" table may be omitted if there are no morphs defined in
+  the model.
+
+  There should be a separate <Bundle> definition for each different
+  animation.  The <Bundle> name should match the CHARACTER_NAME used
+  for the model, above.  Typically each bundle is stored in a separate
+  egg file, but it is also possible to store multiple different
+  animation bundles within the same egg file.  If you do this, you may
+  violate the CHARACTER_NAME rule, and give each bundle a different
+  name; this will become the name of the animation in the Actor
+  interface.
+
+  Although animations and models are typically stored in separate egg
+  files, it is possible to store them together in one large egg file.
+  The Actor interface will then make available all of the animations
+  it find within the egg file, by bundle name.
+
