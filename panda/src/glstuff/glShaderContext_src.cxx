@@ -15,6 +15,7 @@
 #ifdef HAVE_CG
 #include "Cg/cgGL.h"
 #endif
+#include "pStatTimer.h"
 
 #define DEBUG_GL_SHADER 0
 
@@ -164,6 +165,7 @@ unbind() {
 void CLP(ShaderContext)::
 issue_parameters(GSG *gsg, int altered) {
 #ifdef HAVE_CG
+  PStatTimer timer(gsg->_draw_set_state_shader_parameters_pcollector);
   if (_cg_context == 0) {
     return;
   }

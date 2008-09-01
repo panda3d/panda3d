@@ -480,6 +480,7 @@ public:
   static PStatCollector _draw_set_state_shade_model_pcollector;
   static PStatCollector _draw_set_state_blending_pcollector;
   static PStatCollector _draw_set_state_shader_pcollector;
+  static PStatCollector _draw_set_state_shader_parameters_pcollector;
   static PStatCollector _draw_set_state_texture_pcollector;
   static PStatCollector _draw_set_state_tex_matrix_pcollector;
   static PStatCollector _draw_set_state_tex_gen_pcollector;

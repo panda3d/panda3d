@@ -89,6 +89,7 @@ PStatCollector GraphicsStateGuardian::_draw_set_state_rescale_normal_pcollector(
 PStatCollector GraphicsStateGuardian::_draw_set_state_shade_model_pcollector("Draw:Set State:Shade model");
 PStatCollector GraphicsStateGuardian::_draw_set_state_blending_pcollector("Draw:Set State:Blending");
 PStatCollector GraphicsStateGuardian::_draw_set_state_shader_pcollector("Draw:Set State:Shader");
+PStatCollector GraphicsStateGuardian::_draw_set_state_shader_parameters_pcollector("Draw:Set State:Shader Parameters");
 PStatCollector GraphicsStateGuardian::_draw_set_state_texture_pcollector("Draw:Set State:Texture");
 PStatCollector GraphicsStateGuardian::_draw_set_state_tex_matrix_pcollector("Draw:Set State:Tex matrix");
 PStatCollector GraphicsStateGuardian::_draw_set_state_tex_gen_pcollector("Draw:Set State:Tex gen");
