@@ -386,6 +386,10 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     GLP(Enable)(target);
 
     gsg->apply_texture(tc);
+    if (!gsg->update_texture(tc, false)) {
+      GLP(Disable)(target);
+      continue;
+    }
   }
   cg_report_errors();
   if (glGetError() != GL_NO_ERROR) {

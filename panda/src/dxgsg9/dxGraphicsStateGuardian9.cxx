@@ -1383,7 +1383,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   _vertex_array_shader_context = _current_shader_context;
 
   const GeomVertexFormat *format = _data_reader->get_format ( );
-  const GeomVertexArrayDataHandle *data;
+  const GeomVertexArrayDataHandle *data = NULL;
   int number_of_arrays = _data_reader -> get_num_arrays ( );
 
   if (_current_shader_context && number_of_arrays > 1) {
@@ -1444,15 +1444,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
           if (number_of_columns >= vertex_element_array -> total_elements)
           {
 
-// check not implemented yet
-dxgsg9_cat.error ( ) << "vertex_element_type_array check not implemented yet\n";
-
-// build a vertex_element_type_array from data
-
-// compare both vertex_element_type_array for a match
-vertex_element_array -> vertex_element_type_array;
-
-
+            // check not implemented yet
+            dxgsg9_cat.error ( ) << "vertex_element_type_array check not implemented yet\n";
+            
+            // build a vertex_element_type_array from data
+            
+            // compare both vertex_element_type_array for a match
+            vertex_element_array -> vertex_element_type_array;
           }
         }
 
@@ -1490,7 +1488,10 @@ vertex_element_array -> vertex_element_type_array;
     data = _data_reader->get_array_reader(0);
   }
 
-  VertexBufferContext *vbc = ((GeomVertexArrayData *)(data->get_object()))->prepare_now(get_prepared_objects(), this);
+  nassertr(data != (GeomVertexArrayDataHandle *)NULL, false);
+  GeomVertexArrayData *data_obj = (GeomVertexArrayData *)data->get_object();
+  nassertr(data_obj != (GeomVertexArrayData *)NULL, false);
+  VertexBufferContext *vbc = data_obj->prepare_now(get_prepared_objects(), this);
   nassertr(vbc != (VertexBufferContext *)NULL, false);
   if (!apply_vertex_buffer(vbc, _current_shader_context, data, force, name)) {
     return false;

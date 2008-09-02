@@ -342,7 +342,7 @@ create_texture(DXScreenData &scrn) {
                         target_pixel_format = D3DFMT_##FMT;                 \
                         goto found_matching_format; }
 
-  if (texture_stored_compressed){
+  if (texture_stored_compressed && compress_texture) {
     // if the texture is already compressed, we need to choose the
     // corresponding format, otherwise we might end up
     // cross-compressing from e.g. DXT5 to DXT3
@@ -363,9 +363,8 @@ create_texture(DXScreenData &scrn) {
       CHECK_FOR_FMT(DXT5);
       break;
     }
-    // if we can't support the texture's compressed image, we can't
-    // load the texture.
-    goto error_exit;
+
+    // We don't support the compressed format.  Fall through.
   }
 
   if (compress_texture) {
@@ -1485,7 +1484,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
   D3DFORMAT source_format = _d3d_format;
 
   // check for compressed textures and adjust source_format accordingly
-  switch (tex->get_ram_image_compression()) {
+  switch (image_compression) {
   case Texture::CM_dxt1:
     source_format = D3DFMT_DXT1;
     break;
@@ -1579,7 +1578,12 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
     image_compression = tex->get_ram_image_compression();
   }
 
-  if (!scrn._dxgsg8->get_supports_compressed_texture_format(image_compression)) {
+  if (!scrn._dxgsg8->get_supports_compressed_texture_format(image_compression) ||
+      tex->get_x_size() < 4 || tex->get_y_size() < 4) {
+    // If we don't support this particular compression method, or in
+    // any case if the texture is too small (DirectX won't accept a
+    // small compressed texture), then fetch and load the uncompressed
+    // version instead.
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
   }    
