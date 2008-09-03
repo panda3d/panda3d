@@ -3009,6 +3009,8 @@ def superFlattenShip(ship):
     #PHASE 5: flatten strong!
     return ship.flattenStrong()
 
+exceptionLoggedNotify = None
+
 def exceptionLogged(append=True):
     """decorator that outputs the function name and all arguments
     if an exception passes back through the stack frame
@@ -3031,12 +3033,16 @@ def exceptionLogged(append=True):
         return nullDecorator
     
     def _decoratorFunc(f, append=append):
+        global exceptionLoggedNotify
+        if exceptionLoggedNotify is None:
+            from direct.directnotify.DirectNotifyGlobal import directNotify
+            exceptionLoggedNotify = directNotify.newCategory("ExceptionLogged")
         def _exceptionLogged(*args, **kArgs):
             try:
                 return f(*args, **kArgs)
             except Exception, e:
                 try:
-                    s = 'STACK UNWIND: %s(' % f.func_name
+                    s = '%s(' % f.func_name
                     for arg in args:
                         s += '%s, ' % arg
                     for key, value in kArgs.items():
@@ -3047,9 +3053,10 @@ def exceptionLogged(append=True):
                     if append:
                         appendStr(e, '\n%s' % s)
                     else:
-                        print s
+                        exceptionLoggedNotify.info(s)
                 except:
-                    print 'exceptionLogged(%s): ERROR IN PRINTING' % f.func_name
+                    exceptionLoggedNotify.info(
+                        '%s: ERROR IN PRINTING' % f.func_name)
                 raise
         _exceptionLogged.__doc__ = f.__doc__
         return _exceptionLogged
