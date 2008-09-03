@@ -2244,11 +2244,29 @@ def gcDebugOn():
     import gc
     return (gc.get_debug() & gc.DEBUG_SAVEALL) == gc.DEBUG_SAVEALL
 
+# base class for all Panda C++ objects
+# libdtoolconfig doesn't seem to have this, grab it off of PandaNode
+dtoolSuperBase = None
+
+def _getDtoolSuperBase(): 
+    global dtoolSuperBase
+    from pandac.PandaModules import PandaNode
+    dtoolSuperBase = PandaNode('').__class__.__bases__[0].__bases__[0].__bases__[0]
+
 def safeRepr(obj):
+    global dtoolSuperBase
+    if dtoolSuperBase is None:
+        _getDtoolSuperBase()
+
+    if isinstance(obj, dtoolSuperBase):
+        # repr of C++ object could crash, particularly if the object has been deleted
+        return '<%s.%s instance at %s>' % (
+            obj.__class__.__module__, obj.__class__.__name__, hex(id(obj)))
+
     try:
         return repr(obj)
     except:
-        return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
+        return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
 
 def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     """ caps the length of iterable types, so very large objects will print faster.
@@ -2302,7 +2320,10 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
             else:
                 return safeRepr(obj)
         else:
-            return safeRepr(obj)
+            r = safeRepr(obj)
+            if len(r) > maxLen:
+                r = r[:maxLen]
+            return r
     except:
         return '<** FAILED REPR OF %s **>' % obj.__class__.__name__
 
@@ -2445,11 +2466,20 @@ class RefCounter:
         return result
 
 def itype(obj):
+    # version of type that gives more complete information about instance types
+    global dtoolSuperBase
     t = type(obj)
     if t is types.InstanceType:
         return '%s of <class %s>>' % (repr(types.InstanceType)[:-1],
-                                     str(obj.__class__))
+                                      str(obj.__class__))
     else:
+        # C++ object instances appear to be types via type()
+        # check if this is a C++ object
+        if dtoolSuperBase is None:
+            _getDtoolSuperBase()
+        if isinstance(obj, dtoolSuperBase):
+            return '%s of %s>' % (repr(types.InstanceType)[:-1],
+                                  str(obj.__class__))
         return t
 
 def deeptype(obj, maxLen=100, _visitedIds=None):

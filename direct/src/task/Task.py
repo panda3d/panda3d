@@ -14,6 +14,7 @@ from pandac.libpandaexpressModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import *
+from direct.showbase import ExceptionVarDump
 import time
 import fnmatch
 import string
@@ -980,6 +981,15 @@ class TaskManager:
                     if code == 4:
                         self.stop()
                     else:
+                        raise
+                except Exception, e:
+                    if self.extendedExceptions:
+                        self.stop()
+                        print_exc_plus()
+                    else:
+                        if (ExceptionVarDump.wantVariableDump and
+                            ExceptionVarDump.dumpOnExceptionInit):
+                            ExceptionVarDump._varDump__print(e)
                         raise
                 except:
                     if self.extendedExceptions:

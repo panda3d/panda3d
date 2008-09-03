@@ -35,6 +35,7 @@ import Loader
 import time
 from direct.fsm import ClassicFSM
 from direct.fsm import State
+from direct.showbase import ExceptionVarDump
 import DirectObject
 import SfxPlayer
 if __debug__:
@@ -69,6 +70,8 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self):
+        if config.GetBool('want-variable-dump', 1):
+            ExceptionVarDump.install()
 
         # Locate the directory containing the main program
         maindir=os.path.abspath(sys.path[0])
