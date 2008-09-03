@@ -14,16 +14,16 @@
 <Texture> Tex975 {
   "maps/envir-mountain2.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
 <Texture> Tex969 {
   "maps/envir-mountain1.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
@@ -38,8 +38,8 @@
 <Texture> Tex61 {
   "maps/envir-tree2.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
@@ -54,32 +54,32 @@
 <Texture> Tex55 {
   "maps/envir-tree1.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
 <Texture> Tex185 {
   "maps/envir-groundcover1.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
 <Texture> Tex179 {
   "maps/envir-reeds.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
 <Texture> Tex175 {
   "maps/envir-bamboo.png"
   <Scalar> format { rgba }
-  <Scalar> wrapu { repeat }
-  <Scalar> wrapv { repeat }
+  <Scalar> wrapu { clamp }
+  <Scalar> wrapv { clamp }
   <Scalar> minfilter { linear_mipmap_linear }
   <Scalar> magfilter { linear }
 }
