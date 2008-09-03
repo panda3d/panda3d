@@ -311,10 +311,13 @@ set_time(float start_time) {
   }
   
   if (_channel == 0) {
-
+    // This is because setCallback expects an integer
+    // but 64-bits pointers wont fit in a 32-bits int.
+    nassertv_always((intptr_t)this < UINT_MAX);
+    
     result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
-    result = _channel->setCallback(FMOD_CHANNEL_CALLBACKTYPE_END, sound_end_callback, (int)this);
+    result = _channel->setCallback(FMOD_CHANNEL_CALLBACKTYPE_END, sound_end_callback, (intptr_t)this);
     fmod_audio_errcheck("_channel->setCallback()", result);
     result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
     fmod_audio_errcheck("_channel->setPosition()", result);
