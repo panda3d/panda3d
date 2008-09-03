@@ -1,4 +1,8 @@
+import os
 from direct.directnotify.DirectNotifyGlobal import directNotify
+from pandac.PandaModules import VirtualFileSystem
+from pandac.PandaModules import Filename
+from pandac.PandaModules import DSearchPath
 import LandingPageHTML
 
 class LandingPage:
@@ -14,6 +18,26 @@ class LandingPage:
         self.quickStats = [[],{}]
 
         self.addQuickStat("Pages Served", 0, 0)
+
+        self.favicon = self.readFavIcon()
+        
+
+    def readFavIcon(self):
+        vfs = VirtualFileSystem.getGlobalPtr()
+        filename = Filename('favicon.ico')
+
+        searchPath = DSearchPath()
+        searchPath.appendDirectory(Filename('.'))
+        searchPath.appendDirectory(Filename('etc'))
+        searchPath.appendDirectory(Filename.fromOsSpecific(os.path.expandvars('$DIRECT/src/http')))
+        searchPath.appendDirectory(Filename.fromOsSpecific(os.path.expandvars('direct/src/http')))
+        searchPath.appendDirectory(Filename.fromOsSpecific(os.path.expandvars('direct/http')))
+        found = vfs.resolveFilename(filename,searchPath)
+        if not found:
+            raise "Couldn't find direct/http/favicon.ico"
+
+        return vfs.readFile(filename, 1)
+
 
     def addTab(self, title, uri):
         self.menu[title] = uri
@@ -46,10 +70,12 @@ class LandingPage:
         if "/services" in uriList:
             uriList.remove("/services")
             autoList.append("/services")
-
         if "/default.css" in uriList:
             uriList.remove("/default.css")
             autoList.append("/default.css")
+        if "/favicon.ico" in uriList:
+            uriList.remove("/favicon.ico")
+            autoList.append("/favicon.ico")
 
         output += LandingPageHTML.getURITable(title="Application",uriList=uriList,uriToHandler=uriToHandler)
 
@@ -87,6 +113,9 @@ class LandingPage:
 
     def getStyleSheet(self):
         return LandingPageHTML.stylesheet
+
+    def getFavIcon(self):
+        return self.favicon
     
     def skin(self, body, uri):
         title = self.uriToTitle.get(uri,"Services")

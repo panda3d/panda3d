@@ -44,10 +44,10 @@ class WebRequest(object):
         self.connection.SendThisResponse(msg)
 
     def respondCustom(self,contentType,body):
-        msg = "HTTP/1.0 200 OK\r\nContent-Type: %s\n" % contentType
+        msg = "HTTP/1.0 200 OK\r\nContent-Type: %s" % contentType
 
         if contentType in ["text/css",]:
-            msg += "Cache-Control: max-age=313977290\nExpires: Tue, 02 May 2017 04:08:44 GMT\n"
+            msg += "\nCache-Control: max-age=313977290\nExpires: Tue, 02 May 2017 04:08:44 GMT\n"
 
         msg += "\r\n\r\n%s" % (body)
         self.connection.SendThisResponse(msg)
@@ -225,6 +225,7 @@ class WebRequestDispatcher(object):
                 self.registerGETHandler("/", self._main, returnsResponse = True, autoSkin = True)
                 self.registerGETHandler("/services", self._services, returnsResponse = True, autoSkin = True)
                 self.registerGETHandler("/default.css", self._stylesheet)
+                self.registerGETHandler("/favicon.ico", self._favicon)
                 self.landingPage.addTab("Main", "/")
                 self.landingPage.addTab("Services", "/services")
         else:
@@ -245,4 +246,8 @@ class WebRequestDispatcher(object):
         body = self.landingPage.getStyleSheet()
         replyTo.respondCustom("text/css",body)
 
-        
+    def _favicon(self,**kw):
+        replyTo = kw.get("replyTo",None)
+        assert replyTo is not None
+        body = self.landingPage.getFavIcon()
+        replyTo.respondCustom("image/x-icon",body)
