@@ -199,8 +199,8 @@ r_collect(PandaNode *node, const RenderState *state,
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; ++i) {
       PT(Geom) geom = gnode->get_geom(i)->make_copy();
-      if (transform != (const VertexTransform *)NULL) {
-        geom->set_vertex_data(convert_vd(transform, geom->get_vertex_data()));
+      if (next_transform != (const VertexTransform *)NULL) {
+        geom->set_vertex_data(convert_vd(next_transform, geom->get_vertex_data()));
       }
       CPT(RenderState) gstate = next_state->compose(gnode->get_geom_state(i));
       root_gnode->add_geom(geom, gstate);
