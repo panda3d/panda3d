@@ -1877,8 +1877,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _current_vbuffer_index = 0;
     }
     if (_current_ibuffer_index != 0) {
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
+      if (GLCAT.is_debug() && CLP(debug_buffers)) {
+        GLCAT.debug()
           << "unbinding index buffer\n";
       }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -3034,8 +3034,8 @@ apply_index_buffer(IndexBufferContext *ibc,
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
   if (_current_ibuffer_index != gibc->_index) {
-    if (GLCAT.is_spam()) {
-      GLCAT.spam()
+    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+      GLCAT.debug()
         << "binding index buffer " << gibc->_index << "\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
@@ -3100,8 +3100,8 @@ release_index_buffer(IndexBufferContext *ibc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_ibuffer_index == gibc->_index) {
-    if (GLCAT.is_spam()) {
-      GLCAT.spam()
+    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+      GLCAT.debug()
         << "unbinding index buffer\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -3148,8 +3148,8 @@ setup_primitive(const unsigned char *&client_pointer,
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
+      if (GLCAT.is_debug() && CLP(debug_buffers)) {
+        GLCAT.debug()
           << "unbinding index buffer\n";
       }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
