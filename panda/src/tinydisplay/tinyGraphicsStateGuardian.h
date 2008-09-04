@@ -100,6 +100,7 @@ private:
   void do_issue_transform();
   void do_issue_render_mode();
   void do_issue_cull_face();
+  void do_issue_rescale_normal();
   void do_issue_material();
   void do_issue_texture();
   void do_issue_scissor();
@@ -120,6 +121,7 @@ private:
   static void copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level);
 
   void setup_material(GLMaterial *gl_material, const Material *material);
+  void do_auto_rescale_normal();
   static void load_matrix(M4 *matrix, const TransformState *transform);
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
   static ZB_lookupTextureFunc get_tex_filter_func(Texture::FilterType filter);
@@ -144,6 +146,7 @@ private:
   int _texfilter_state;
   bool _texture_replace;
   bool _filled_flat;
+  bool _auto_rescale_normal;
 
   CPT(TransformState) _scissor_mat;
 

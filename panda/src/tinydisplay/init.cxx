@@ -23,6 +23,8 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   c->local_light_model=0;
   c->lighting_enabled=0;
   c->light_model_two_side = 0;
+  c->normalize_enabled = 0;
+  c->normal_scale = 1.0f;
 
   /* default materials */
   for(i=0;i<2;i++) {

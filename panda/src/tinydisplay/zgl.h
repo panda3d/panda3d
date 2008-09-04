@@ -172,6 +172,8 @@ typedef struct GLContext {
   int cull_face_enabled;
   int cull_clockwise;
   int normalize_enabled;
+  float normal_scale;
+
   gl_draw_triangle_func draw_triangle_front,draw_triangle_back;
   ZB_fillTriangleFunc zb_fill_tri;
 

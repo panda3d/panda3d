@@ -108,6 +108,7 @@ reset() {
   _texfilter_state = 0;
   _texture_replace = false;
   _filled_flat = false;
+  _auto_rescale_normal = false;
 
   // Now that the GSG has been initialized, make it available for
   // optimizations.
@@ -1397,6 +1398,12 @@ set_state_and_transform(const RenderState *target,
     do_issue_cull_face();
     _state._cull_face = _target._cull_face;
   }
+  
+  if (_target._rescale_normal != _state._rescale_normal) {
+    PStatTimer timer(_draw_set_state_rescale_normal_pcollector);
+    do_issue_rescale_normal();
+    _state._rescale_normal = _target._rescale_normal;
+  }
 
   if (_target._render_mode != _state._render_mode) {
     PStatTimer timer(_draw_set_state_render_mode_pcollector);
@@ -1784,6 +1791,10 @@ void TinyGraphicsStateGuardian::
 do_issue_transform() {
   _transform_state_pcollector.add_level(1);
   _transform_stale = true;
+
+  if (_auto_rescale_normal) {
+    do_auto_rescale_normal();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1823,6 +1834,41 @@ do_issue_render_mode() {
   default:
     tinydisplay_cat.error()
       << "Unknown render mode " << (int)attrib->get_mode() << endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::do_issue_rescale_normal
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+do_issue_rescale_normal() {
+  const RescaleNormalAttrib *attrib = _target._rescale_normal;
+  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+
+  _auto_rescale_normal = false;
+
+  switch (mode) {
+  case RescaleNormalAttrib::M_none:
+    _c->normalize_enabled = false;
+    _c->normal_scale = 1.0f;
+    break;
+
+  case RescaleNormalAttrib::M_normalize:
+    _c->normalize_enabled = true;
+    _c->normal_scale = 1.0f;
+    break;
+
+  case RescaleNormalAttrib::M_rescale:
+  case RescaleNormalAttrib::M_auto:
+    _auto_rescale_normal = true;
+    do_auto_rescale_normal();
+    break;
+
+  default:
+    tinydisplay_cat.error()
+      << "Unknown rescale_normal mode " << (int)mode << endl;
   }
 }
 
@@ -2580,6 +2626,26 @@ setup_material(GLMaterial *gl_material, const Material *material) {
     gl_material->diffuse.W = diffuse[3];
 
     _color_material_flags &= ~CMF_diffuse;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::do_auto_rescale_normal
+//       Access: Protected
+//  Description: Sets the state to either rescale or normalize the
+//               normals according to the current transform.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+do_auto_rescale_normal() {
+  if (_internal_transform->has_uniform_scale()) {
+    // There's a uniform scale; rescale the normals uniformly.
+    _c->normalize_enabled = false;
+    _c->normal_scale = _internal_transform->get_uniform_scale();
+
+  } else {
+    // If there's a non-uniform scale, normalize everything.
+    _c->normalize_enabled = true;
+    _c->normal_scale = 1.0f;
   }
 }
 

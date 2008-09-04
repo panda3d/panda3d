@@ -54,9 +54,9 @@ void gl_vertex_transform(GLContext * c, GLVertex * v)
 	m = &c->matrix_model_view_inv.m[0][0];
 	n = &c->current_normal;
 
-	v->normal.X = (n->X * m[0] + n->Y * m[1] + n->Z * m[2]);
-	v->normal.Y = (n->X * m[4] + n->Y * m[5] + n->Z * m[6]);
-	v->normal.Z = (n->X * m[8] + n->Y * m[9] + n->Z * m[10]);
+	v->normal.X = (n->X * m[0] + n->Y * m[1] + n->Z * m[2]) * c->normal_scale;
+	v->normal.Y = (n->X * m[4] + n->Y * m[5] + n->Z * m[6]) * c->normal_scale;
+	v->normal.Z = (n->X * m[8] + n->Y * m[9] + n->Z * m[10]) * c->normal_scale;
 
 	if (c->normalize_enabled) {
 	    gl_V3_Norm(&v->normal);
