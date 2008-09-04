@@ -90,7 +90,6 @@ do_partial_lru_update(int num_updates) {
 
   AdaptiveLruPageStaticList *node = start_node;
   do {
-    nassertv(node != &_static_list);
     AdaptiveLruPageStaticList *next = (AdaptiveLruPageStaticList *)node->_next;
     if (--num_updates <= 0) {
       return;
@@ -100,7 +99,7 @@ do_partial_lru_update(int num_updates) {
     node->remove_from_list();
     node->insert_before(&_static_list);
     node = next;
-  } while (node != start_node);
+  } while (node != start_node && node != &_static_list);
 }
 
 ////////////////////////////////////////////////////////////////////
