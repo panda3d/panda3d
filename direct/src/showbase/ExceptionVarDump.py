@@ -76,7 +76,8 @@ def _excepthookDumpVars(eType, eValue, tb):
     while tb is not None:
         frame = tb.tb_frame
         code = frame.f_code
-        names = code.co_names
+        # this is a list of every string identifier used in this stack frame's code
+        codeNames = code.co_names
         tb = tb.tb_next
         # skip everything before the 'run' method, those frames have lots of
         # not-useful information
@@ -87,19 +88,24 @@ def _excepthookDumpVars(eType, eValue, tb):
                 continue
         s += '\n  File "%s", line %s, in %s' % (
             code.co_filename, frame.f_lineno, code.co_name)
-        for name, val in frame.f_locals.iteritems():
-            r = fastRepr(val, maxLen=10)
+        baseIds = set()
+        for obj in frame.f_locals.itervalues():
+            baseIds.add(id(obj))
+        stateStack = Stack()
+        for name, obj in reversed(frame.f_locals.items()):
+            stateStack.push([name, obj, set(baseIds)])
+        while len(stateStack) > 0:
+            name, obj, visitedIds = stateStack.pop()
+            r = fastRepr(obj, maxLen=10)
             if type(r) is types.StringType:
                 r = r.replace('\n', '\\n')
             s += '\n    %s=%s' % (name, r)
-            # check if we should display any immediate attributes of the object
-            for n in names:
-                a = getattr(val, n, _AttrNotFound)
-                if a is not _AttrNotFound:
-                    r = fastRepr(a, maxLen=10)
-                    if type(r) is types.StringType:
-                        r = r.replace('\n', '\\n')
-                    s += '\n      %s.%s=%s' % (name, n, r)
+            for codeName in codeNames:
+                attr = getattr(obj, codeName, _AttrNotFound)
+                attrId = id(attr)
+                if attr is not _AttrNotFound and attrId not in visitedIds:
+                    visitedIds.add(attrId)
+                    stateStack.push(['%s.%s' % (name, codeName), attr, set(visitedIds)])
                     
     s += '\n'
     notify.info(s)
