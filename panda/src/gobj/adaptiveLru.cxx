@@ -391,9 +391,6 @@ do_evict_to(size_t target_size, bool hard_evict) {
 
         } else {
           // We must release the lock while we call evict_lru().
-          cerr << "evicting page, " << page->_current_frame_identifier
-               << " vs. " << minimum_frame_identifier << ", attempts = "
-               << attempts << "\n";
           _lock.release();
           ((AdaptiveLruPage *)node)->evict_lru();
           _lock.lock();
