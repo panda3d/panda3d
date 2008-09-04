@@ -99,11 +99,6 @@ generate_block(unsigned short mx,
   for (int x = 0; x <= _block_size; x++) {
     for (int y = 0; y <= _block_size; y++) {
       if ((x % level) == 0 && (y % level) == 0) {
-        LVector3f normal (get_normal(mx, my, x, y));
-        normal.set(normal.get_x() / _root.get_sx(),
-                   normal.get_y() / _root.get_sy(),
-                   normal.get_z() / _root.get_sz());
-        normal.normalize();
         if (_has_color_map) {
           LVecBase4d color = _color_map.get_xel_a(int((mx * _block_size + x)
                                   / double(_xsize) * _color_map.get_x_size()),
@@ -116,7 +111,7 @@ generate_block(unsigned short mx,
                                                 get_pixel_value(mx, my, x, y));
         twriter.add_data2f((mx * _block_size + x) / double(_xsize - 1),
                            (my * _block_size + y) / double(_ysize - 1));
-        nwriter.add_data3f(normal);
+        nwriter.add_data3f(get_normal(mx, my, x, y));
         if (x > 0 && y > 0) {
           //left border
           if (!_bruteforce && x == level && mx > 0 && _levels[mx - 1][my] > reallevel) {
