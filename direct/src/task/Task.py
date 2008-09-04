@@ -356,7 +356,7 @@ class TaskManager:
     OsdPrefix = 'task.'
 
     # multiple of average frame duration
-    DefTaskDurationWarningThreshold = 4.
+    DefTaskDurationWarningThreshold = 40.
 
     def __init__(self):
         self.running = 0
@@ -385,7 +385,7 @@ class TaskManager:
 
         # We don't have a base yet, but we can query the config
         # variables directly.
-        self.warnTaskDuration = ConfigVariableBool('task-duration-warnings', 1).getValue()
+        self.warnTaskDuration = ConfigVariableBool('want-task-duration-warnings', 1).getValue()
         self.taskDurationWarningThreshold = ConfigVariableDouble(
             'task-duration-warning-threshold',
             TaskManager.DefTaskDurationWarningThreshold).getValue()
