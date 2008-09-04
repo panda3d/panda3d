@@ -2321,6 +2321,7 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
                 return safeRepr(obj)
         else:
             r = safeRepr(obj)
+            maxLen *= strFactor
             if len(r) > maxLen:
                 r = r[:maxLen]
             return r
