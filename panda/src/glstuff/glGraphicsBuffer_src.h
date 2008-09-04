@@ -96,6 +96,8 @@ private:
   GLuint      _rb[RTP_COUNT];
   GLenum      _attach_point[RTP_COUNT];
 
+  GLuint      _cubemap_fbo [6];
+  
   CLP(GraphicsBuffer) *_shared_depth_buffer;
   list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
   

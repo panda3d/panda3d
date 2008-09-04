@@ -43,6 +43,10 @@ CLP(GraphicsBuffer)(GraphicsPipe *pipe,
     _tex[i] = 0;
   }
 
+  for (int f = 0; f < 6; f++) {
+    _cubemap_fbo [f] = 0;
+  }
+
   _shared_depth_buffer = 0;
 }
 
@@ -173,7 +177,7 @@ check_fbo() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
-
+  
   check_host_valid();
   if (_gsg == 0) {
     return;
@@ -184,100 +188,176 @@ rebuild_bitplanes() {
 
   // Bind the FBO
 
-  if (_fbo == 0) {
-    glgsg->_glGenFramebuffers(1, &_fbo);
+  Texture *tex = get_texture(0);
+
+  if (tex->get_texture_type() != Texture::TT_cube_map) {
     if (_fbo == 0) {
-      report_my_gl_errors();
-      return;
+      glgsg->_glGenFramebuffers(1, &_fbo);
+      if (_fbo == 0) {
+        report_my_gl_errors();
+        return;
+      }
+    }
+    glgsg->bind_fbo(_fbo);
+
+    // Calculate bitplane size.  This can be larger than the buffer.
+
+    if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+      if ((_host->get_x_size() != _x_size)||
+          (_host->get_y_size() != _y_size)) {
+        set_size_and_recalc(_host->get_x_size(),
+                            _host->get_y_size());
+      }
+    }
+    int bitplane_x = _x_size;
+    int bitplane_y = _y_size;
+    if (Texture::get_textures_power_2() != ATS_none) {
+      bitplane_x = Texture::up_to_power_2(bitplane_x);
+      bitplane_y = Texture::up_to_power_2(bitplane_y);
+    }
+    bool rb_resize = false;
+    if ((bitplane_x != _rb_size_x)||
+        (bitplane_y != _rb_size_y)) {
+      _rb_size_x = bitplane_x;
+      _rb_size_y = bitplane_y;
+      rb_resize = true;
+    }
+
+    // These variables indicate what should be bound to each bitplane.
+
+    Texture *attach[RTP_COUNT];
+    attach[RTP_color] = 0;
+    attach[RTP_depth_stencil] = 0;
+    for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
+      attach[RTP_aux_rgba_0+i] = 0;
+    }
+    for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
+      attach[RTP_aux_hrgba_0+i] = 0;
+    }
+    for (int i=0; i<_fb_properties.get_aux_float(); i++) {
+      attach[RTP_aux_float_0+i] = 0;
+    }
+
+    // Sort the textures list into appropriate slots.
+
+    for (int i=0; i<count_textures(); i++) {
+      if (get_rtm_mode(i) != RTM_bind_or_copy) {
+        continue;
+      }
+      Texture *tex = get_texture(i);
+      RenderTexturePlane plane = get_texture_plane(i);
+
+      // If it's a not a 2D texture or a cube map, punt it.
+      if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
+          (tex->get_texture_type() != Texture::TT_cube_map)) {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+        continue;
+      }
+
+      // If I can't find an appropriate slot, or if there's
+      // already a texture bound to this slot, then punt
+      // this texture.  
+
+      if (attach[plane]) {
+        _textures[i]._rtm_mode = RTM_copy_texture;
+        continue;
+      }
+
+      // Assign the texture to this slot.
+      attach[plane] = tex;
+    }
+
+    // For all slots, update the slot.
+
+    bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+    bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
+    int next = GL_COLOR_ATTACHMENT1_EXT;
+    for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
+      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
+      next += 1;
+    }
+    for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
+      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
+      next += 1;
+    }
+    for (int i=0; i<_fb_properties.get_aux_float(); i++) {
+      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
+      next += 1;
     }
   }
-  glgsg->bind_fbo(_fbo);
-
-  // Calculate bitplane size.  This can be larger than the buffer.
-
-  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
-      set_size_and_recalc(_host->get_x_size(),
-                          _host->get_y_size());
-    }
-  }
-  int bitplane_x = _x_size;
-  int bitplane_y = _y_size;
-  if (Texture::get_textures_power_2() != ATS_none) {
-    bitplane_x = Texture::up_to_power_2(bitplane_x);
-    bitplane_y = Texture::up_to_power_2(bitplane_y);
-  }
-  bool rb_resize = false;
-  if ((bitplane_x != _rb_size_x)||
-      (bitplane_y != _rb_size_y)) {
-    _rb_size_x = bitplane_x;
-    _rb_size_y = bitplane_y;
-    rb_resize = true;
-  }
-
-  // These variables indicate what should be bound to each bitplane.
-  
-  Texture *attach[RTP_COUNT];
-  attach[RTP_color] = 0;
-  attach[RTP_depth_stencil] = 0;
-  for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-    attach[RTP_aux_rgba_0+i] = 0;
-  }
-  for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-    attach[RTP_aux_hrgba_0+i] = 0;
-  }
-  for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-    attach[RTP_aux_float_0+i] = 0;
-  }
-  
-  // Sort the textures list into appropriate slots.
-  
-  for (int i=0; i<count_textures(); i++) {
-    if (get_rtm_mode(i) != RTM_bind_or_copy) {
-      continue;
-    }
-    Texture *tex = get_texture(i);
-    RenderTexturePlane plane = get_texture_plane(i);
+  else {
+    // make an FBO for each cubemap face
+    int update;
     
-    // If it's a not a 2D texture or a cube map, punt it.
-    if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
-        (tex->get_texture_type() != Texture::TT_cube_map)) {
-      _textures[i]._rtm_mode = RTM_copy_texture;
-      continue;
+    update = false;
+    for (int f = 0; f < 6; f++) {    
+      if (_cubemap_fbo [f] == 0) {
+        glgsg->_glGenFramebuffers(1, &_cubemap_fbo [f]);
+        update = true;
+        if (_cubemap_fbo [f] == 0) {
+          report_my_gl_errors();
+          return;
+        }    
+      }
     }
     
-    // If I can't find an appropriate slot, or if there's
-    // already a texture bound to this slot, then punt
-    // this texture.  
+    if (update) {    
+      int color_attachment = GL_COLOR_ATTACHMENT0_EXT;
 
-    if (attach[plane]) {
-      _textures[i]._rtm_mode = RTM_copy_texture;
-      continue;
+      for (int i=0; i<count_textures(); i++) {
+        if (get_rtm_mode(i) != RTM_bind_or_copy) {
+          continue;
+        }
+
+        Texture *tex = get_texture(i);
+        TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
+        nassertv(tc != (TextureContext *)NULL);
+        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+        RenderTexturePlane plane = get_texture_plane(i);
+
+        switch (plane)
+        {            
+          case RTP_depth:
+            // also case RTP_depth_stencil 
+            for (int f = 0; f < 6; f++) {    
+              glgsg -> bind_fbo(_cubemap_fbo [f]);
+              glgsg -> _glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                             GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + f,
+                                             gtc->_index, 0);
+            }
+            break;
+
+          case RTP_color:
+          case RTP_aux_rgba_0:
+          case RTP_aux_rgba_1:
+          case RTP_aux_rgba_2:
+          case RTP_aux_rgba_3:
+          case RTP_aux_hrgba_0:
+          case RTP_aux_hrgba_1:
+          case RTP_aux_hrgba_2:
+          case RTP_aux_hrgba_3:
+          case RTP_aux_float_0:
+          case RTP_aux_float_1:
+          case RTP_aux_float_2:
+          case RTP_aux_float_3:
+            for (int f = 0; f < 6; f++) {    
+              glgsg -> bind_fbo(_cubemap_fbo [f]);
+              glgsg -> _glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, color_attachment,
+                                             GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + f,
+                                             gtc->_index, 0);
+            }
+            color_attachment++;
+            break;
+            
+          default:
+            break;
+        }
+      }
     }
     
-    // Assign the texture to this slot.
-    attach[plane] = tex;
+    glgsg -> bind_fbo(_cubemap_fbo [0]);
   }
-
-
-  // For all slots, update the slot.
   
-  bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
-  bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
-  int next = GL_COLOR_ATTACHMENT1_EXT;
-  for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
-	next += 1;
-  }
-  for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
-    next += 1;
-  }
-  for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-    bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
-    next += 1;
-  }
   _cube_face_active = 0;
   
   report_my_gl_errors();
@@ -507,21 +587,9 @@ select_cube_map(int cube_map_index) {
 
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
-  
-  for (int i=0; i<RTP_COUNT; i++) {
-    Texture *tex = _tex[i];
-    if ((tex == 0) ||
-        (tex->get_texture_type() != Texture::TT_cube_map)) {
-      continue;
-    }
-    TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
-    nassertv(tc != (TextureContext *)NULL);
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-    glgsg->update_texture(tc, true);
-    glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, _attach_point[i],
-                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index,
-                                   gtc->_index, 0);
-  }
+
+  glgsg->bind_fbo(_cubemap_fbo [cube_map_index]);  
+
   report_my_gl_errors();
 }
 
@@ -624,6 +692,14 @@ close_buffer() {
   }
   report_my_gl_errors();
 
+  for (int f = 0; f < 6; f++) {
+    if (_cubemap_fbo [f]) {
+      glgsg->_glDeleteFramebuffers(1, &_cubemap_fbo [f]);
+      _cubemap_fbo [f] = 0;
+      report_my_gl_errors();
+    }
+  }
+  
   // Release the Gsg
   _gsg.clear();
 
