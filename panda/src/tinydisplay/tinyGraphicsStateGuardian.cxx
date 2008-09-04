@@ -1497,7 +1497,7 @@ update_texture(TextureContext *tc, bool force) {
 
   if (gtc->was_image_modified() || gltex->num_levels == 0) {
     // If the texture image was modified, reload the texture.
-    bool okflag = upload_texture(gtc);
+    bool okflag = upload_texture(gtc, force);
     if (!okflag) {
       tinydisplay_cat.error()
         << "Could not load " << *gtc->get_texture() << "\n";
@@ -2076,21 +2076,23 @@ apply_texture(TextureContext *tc) {
 //               the texture has no image.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-upload_texture(TinyTextureContext *gtc) {
+upload_texture(TinyTextureContext *gtc, bool force) {
   Texture *tex = gtc->get_texture();
 
-  if (_incomplete_render && 
-      !tex->has_uncompressed_ram_image() && tex->might_have_ram_image() &&
-      tex->has_simple_ram_image() &&
-      !_loader.is_null()) {
-    // If we don't have the texture data right now, go get it, but in
-    // the meantime load a temporary simple image in its place.
-    async_reload_texture(gtc);
-    if (!tex->has_ram_image()) {
-      if (gtc->was_simple_image_modified()) {
-        return upload_simple_texture(gtc);
+  if (_incomplete_render && !force) {
+    bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
+    if (!has_image && tex->might_have_ram_image() &&
+        tex->has_simple_ram_image() &&
+        !_loader.is_null()) {
+      // If we don't have the texture data right now, go get it, but in
+      // the meantime load a temporary simple image in its place.
+      async_reload_texture(gtc);
+      if (!tex->has_ram_image()) {
+        if (gtc->was_simple_image_modified()) {
+          return upload_simple_texture(gtc);
+        }
+        return true;
       }
-      return true;
     }
   }
 
