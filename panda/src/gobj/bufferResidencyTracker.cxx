@@ -15,6 +15,7 @@
 #include "bufferResidencyTracker.h"
 #include "bufferContext.h"
 #include "clockObject.h"
+#include "indent.h"
 
 PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");
 
@@ -69,6 +70,34 @@ end_frame(Thread *current_thread) {
   _active_nonresident_collector.set_level(_chains[S_active_nonresident].get_total_size());
   _inactive_resident_collector.set_level(_chains[S_inactive_resident].get_total_size());
   _active_resident_collector.set_level(_chains[S_active_resident].get_total_size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BufferResidencyTracker::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BufferResidencyTracker::
+write(ostream &out, int indent_level) const {
+  if (_chains[S_inactive_nonresident].get_count() != 0) {
+    indent(out, indent_level) << "Inactive nonresident:\n";
+    _chains[S_inactive_nonresident].write(out, indent_level + 2);
+  }
+
+  if (_chains[S_active_nonresident].get_count() != 0) {
+    indent(out, indent_level) << "Active nonresident:\n";
+    _chains[S_active_nonresident].write(out, indent_level + 2);
+  }
+
+  if (_chains[S_inactive_resident].get_count() != 0) {
+    indent(out, indent_level) << "Inactive resident:\n";
+    _chains[S_inactive_resident].write(out, indent_level + 2);
+  }
+
+  if (_chains[S_active_resident].get_count() != 0) {
+    indent(out, indent_level) << "Active resident:\n";
+    _chains[S_active_resident].write(out, indent_level + 2);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

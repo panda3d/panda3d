@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "simpleLru.h"
-#include "clockObject.h"
+#include "indent.h"
 
 // We define this as a reference to an allocated object, instead of as
 // a concrete object, so that it won't get destructed when the program
@@ -60,8 +60,11 @@ SimpleLru::
 ////////////////////////////////////////////////////////////////////
 //     Function: SimpleLruPage::enqueue_lru
 //       Access: Published
-//  Description: Adds the page to the tail of the SimpleLru.  When it
-//               reaches the head, it will be the next to be evicted.
+//  Description: Adds the page to the LRU for the first time, or marks
+//               it recently-accessed if it has already been added.
+//
+//               If lru is NULL, it means to remove this page from its
+//               LRU.
 ////////////////////////////////////////////////////////////////////
 void SimpleLruPage::
 enqueue_lru(SimpleLru *lru) {
@@ -114,6 +117,48 @@ count_active_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleLru::
+output(ostream &out) const {
+  MutexHolder holder(_global_lock);
+  out << "SimpleLru " << get_name()
+      << ", " << _total_size << " of " << _max_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLru::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleLru::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << ":\n";
+
+  // We write out the list backwards.  Things we write out first are
+  // the freshest in the LRU.  Things at the end of the list will be
+  // the next to be evicted.
+
+  MutexHolder holder(_global_lock);
+  LinkedListNode *node = _prev;
+  while (node != _active_marker && node != this) {
+    SimpleLruPage *page = (SimpleLruPage *)node;
+    indent(out, indent_level + 2) << *page << " (active)\n";
+    node = page->_prev;
+  }
+  if (node == _active_marker) {
+    node = _active_marker->_prev;
+    while (node != this) {
+      SimpleLruPage *page = (SimpleLruPage *)node;
+      indent(out, indent_level + 2) << *page << "\n";
+      node = page->_prev;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SimpleLru::do_evict_to
 //       Access: Private
 //  Description: Evicts pages until the LRU is within the indicated
@@ -157,13 +202,13 @@ do_evict_to(size_t target_size, bool hard_evict) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SimpleLru::do_validate_size
+//     Function: SimpleLru::do_validate
 //       Access: Private
-//  Description: Checks that _total_size is consistent.  Assume the
-//               lock is already held.
+//  Description: Checks that the LRU is internally consistent.  Assume
+//               the lock is already held.
 ////////////////////////////////////////////////////////////////////
 bool SimpleLru::
-do_validate_size() {
+do_validate() {
   size_t total = 0;
 
   LinkedListNode *node = _next;
@@ -205,4 +250,24 @@ SimpleLruPage::
 void SimpleLruPage::
 evict_lru() {
   dequeue_lru();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLruPage::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleLruPage::
+output(ostream &out) const {
+  out << "page " << this << ", " << _lru_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SimpleLruPage::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void SimpleLruPage::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << *this << "\n";
 }

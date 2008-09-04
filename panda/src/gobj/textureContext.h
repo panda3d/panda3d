@@ -20,7 +20,7 @@
 #include "bufferContext.h"
 #include "texture.h"
 #include "preparedGraphicsObjects.h"
-#include "simpleLru.h"
+#include "adaptiveLru.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureContext
@@ -35,7 +35,7 @@
 //               texture and store it here.  The texture stores all of
 //               these handles internally.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public SimpleLruPage {
+class EXPCL_PANDA_GOBJ TextureContext : public BufferContext, public AdaptiveLruPage {
 public:
   INLINE TextureContext(PreparedGraphicsObjects *pgo, Texture *tex);
 
@@ -52,6 +52,9 @@ public:
   INLINE void mark_loaded();
   INLINE void mark_simple_loaded();
   INLINE void mark_unloaded();
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
 
 private:
   // This cannot be a PT(Texture), because the texture and the GSG

@@ -45,6 +45,8 @@ public:
   INLINE BufferContextChain &get_inactive_resident();
   INLINE BufferContextChain &get_active_resident();
 
+  void write(ostream &out, int indent_level) const;
+
 private:
   void move_inactive(BufferContextChain &inactive, BufferContextChain &active);
 

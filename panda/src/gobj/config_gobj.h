@@ -93,6 +93,8 @@ extern EXPCL_PANDA_GOBJ ConfigVariableString vertex_save_file_prefix;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_small_size;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt vertex_data_page_threads;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt graphics_memory_limit;
+extern EXPCL_PANDA_GOBJ ConfigVariableDouble adaptive_lru_weight;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt adaptive_lru_max_updates_per_frame;
 
 #endif
 

@@ -26,6 +26,7 @@ class SimpleLruPage;
 ////////////////////////////////////////////////////////////////////
 //       Class : SimpleLru
 // Description : An implementation of a very simple LRU algorithm.
+//               Also see AdaptiveLru.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ SimpleLru : public LinkedListNode, public Namable {
 PUBLISHED:
@@ -41,12 +42,17 @@ PUBLISHED:
   INLINE void evict_to(size_t target_size);
   INLINE void begin_epoch();
 
+  INLINE bool validate();
+
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level) const;
+
 public:
   static Mutex &_global_lock;
 
 private:
   void do_evict_to(size_t target_size, bool hard_evict);
-  bool do_validate_size();
+  bool do_validate();
 
   size_t _total_size;
   size_t _max_size;
@@ -82,6 +88,9 @@ PUBLISHED:
 
   virtual void evict_lru();
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
+
 private:
   SimpleLru *_lru;
 
@@ -89,6 +98,16 @@ private:
 
   friend class SimpleLru;
 };
+
+inline ostream &operator << (ostream &out, const SimpleLru &lru) {
+  lru.output(out);
+  return out;
+}
+
+inline ostream &operator << (ostream &out, const SimpleLruPage &page) {
+  page.output(out);
+  return out;
+}
 
 #include "simpleLru.I"
 

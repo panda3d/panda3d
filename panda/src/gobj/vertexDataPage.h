@@ -76,6 +76,9 @@ PUBLISHED:
   static void stop_threads();
   static void flush_threads();
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
+
 public:
   INLINE unsigned char *get_page_data(bool force);
   INLINE bool operator < (const VertexDataPage &other) const;
@@ -228,6 +231,11 @@ private:
   friend class PageThread;
   friend class VertexDataBook;
 };
+
+inline ostream &operator << (ostream &out, const VertexDataPage &page) {
+  page.output(out);
+  return out;
+}
 
 #include "vertexDataPage.I"
 

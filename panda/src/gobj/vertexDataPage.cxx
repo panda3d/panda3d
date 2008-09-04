@@ -218,6 +218,26 @@ flush_threads() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::output
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+output(ostream &out) const {
+  SimpleAllocator::output(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VertexDataPage::write
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VertexDataPage::
+write(ostream &out, int indent_level) const {
+  SimpleAllocator::write(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VertexDataPage::make_block
 //       Access: Protected, Virtual
 //  Description: Creates a new SimpleAllocatorBlock object.  Override

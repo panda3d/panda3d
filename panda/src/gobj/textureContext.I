@@ -21,7 +21,7 @@
 INLINE TextureContext::
 TextureContext(PreparedGraphicsObjects *pgo, Texture *tex) :
   BufferContext(&pgo->_texture_residency),
-  SimpleLruPage(0),
+  AdaptiveLruPage(0),
   _texture(tex)
 {
 }
@@ -94,7 +94,7 @@ was_simple_image_modified() const {
 INLINE void TextureContext::
 update_data_size_bytes(size_t new_data_size_bytes) {
   BufferContext::update_data_size_bytes(new_data_size_bytes);
-  SimpleLruPage::set_lru_size(new_data_size_bytes);
+  AdaptiveLruPage::set_lru_size(new_data_size_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////

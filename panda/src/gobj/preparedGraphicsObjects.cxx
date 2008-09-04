@@ -100,6 +100,36 @@ PreparedGraphicsObjects::
   _released_index_buffers.clear();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::show_graphics_memory_lru
+//       Access: Public
+//  Description: Writes to the indicated ostream a report of how the
+//               various textures and vertex buffers are allocated in
+//               the LRU.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+show_graphics_memory_lru(ostream &out) const {
+  _graphics_memory_lru.write(out, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::show_residency_trackers
+//       Access: Public
+//  Description: Writes to the indicated ostream a report of how the
+//               various textures and vertex buffers are allocated in
+//               the LRU.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+show_residency_trackers(ostream &out) const {
+  out << "Textures:\n";
+  _texture_residency.write(out, 2);
+
+  out << "\nVertex buffers:\n";
+  _vbuffer_residency.write(out, 2);
+
+  out << "\nIndex buffers:\n";
+  _ibuffer_residency.write(out, 2);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::enqueue_texture

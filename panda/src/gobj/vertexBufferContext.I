@@ -21,7 +21,7 @@
 INLINE VertexBufferContext::
 VertexBufferContext(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
   BufferContext(&pgo->_vbuffer_residency),
-  SimpleLruPage(0),
+  AdaptiveLruPage(0),
   _data(data)
 {
 }
@@ -82,7 +82,7 @@ was_modified(const GeomVertexArrayDataHandle *reader) const {
 INLINE void VertexBufferContext::
 update_data_size_bytes(size_t new_data_size_bytes) {
   BufferContext::update_data_size_bytes(new_data_size_bytes);
-  SimpleLruPage::set_lru_size(new_data_size_bytes);
+  AdaptiveLruPage::set_lru_size(new_data_size_bytes);
 }
 
 ////////////////////////////////////////////////////////////////////

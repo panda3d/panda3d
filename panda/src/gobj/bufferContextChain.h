@@ -43,6 +43,8 @@ public:
 
   void take_from(BufferContextChain &other);
 
+  void write(ostream &out, int indent_level) const;
+
 private:
   INLINE void adjust_bytes(int delta);
   size_t _total_size;

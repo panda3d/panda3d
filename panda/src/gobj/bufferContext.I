@@ -39,6 +39,30 @@ get_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BufferContext::get_active
+//       Access: Public
+//  Description: Returns the active flag associated with this object.
+//               An object is considered "active" if it was rendered
+//               in the current frame.
+////////////////////////////////////////////////////////////////////
+INLINE bool BufferContext::
+get_active() const {
+  return (_residency_state & BufferResidencyTracker::S_active) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BufferContext::get_resident
+//       Access: Public
+//  Description: Returns the resident flag associated with this
+//               object.  An object is considered "resident" if it
+//               appears to be resident in texture memory.
+////////////////////////////////////////////////////////////////////
+INLINE bool BufferContext::
+get_resident() const {
+  return (_residency_state & BufferResidencyTracker::S_resident) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BufferContext::set_active
 //       Access: Public
 //  Description: Changes the active flag associated with this object.

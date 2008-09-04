@@ -46,6 +46,8 @@ public:
 PUBLISHED:
   INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
+  INLINE bool get_active() const;
+  INLINE bool get_resident() const;
 
 public:
   INLINE void set_active(bool flag);

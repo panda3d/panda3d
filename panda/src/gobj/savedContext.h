@@ -24,13 +24,14 @@
 // Description : This is the base class for all GSG-specific context
 //               objects, such as TextureContext and GeomContext.  It
 //               exists mainly to provide some structural
-//               organization.  At the moment, there are no methods
-//               common to all of these objects, but there might be
-//               one day.
+//               organization.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ SavedContext : public TypedObject {
 public:
   INLINE SavedContext();
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
 
 PUBLISHED:
   static TypeHandle get_class_type() {
@@ -50,6 +51,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+inline ostream &operator << (ostream &out, const SavedContext &context) {
+  context.output(out);
+  return out;
+}
 
 #include "savedContext.I"
 

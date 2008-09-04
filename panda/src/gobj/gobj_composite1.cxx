@@ -1,3 +1,4 @@
+#include "adaptiveLru.cxx"
 #include "bufferContext.cxx"
 #include "bufferContextChain.cxx"
 #include "bufferResidencyTracker.cxx"

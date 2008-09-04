@@ -11,6 +11,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
+    adaptiveLru.I adaptiveLru.h \
     bufferContext.I bufferContext.h \
     bufferContextChain.I bufferContextChain.h \
     bufferResidencyTracker.I bufferResidencyTracker.h \
@@ -75,6 +76,7 @@
     videoTexture.I videoTexture.h
     
   #define INCLUDED_SOURCES \
+    adaptiveLru.cxx \
     bufferContext.cxx \
     bufferContextChain.cxx \
     bufferResidencyTracker.cxx \
@@ -138,6 +140,7 @@
     videoTexture.cxx
 
   #define INSTALL_HEADERS \
+    adaptiveLru.I adaptiveLru.h \
     bufferContext.I bufferContext.h \
     bufferContextChain.I bufferContextChain.h \
     bufferResidencyTracker.I bufferResidencyTracker.h \

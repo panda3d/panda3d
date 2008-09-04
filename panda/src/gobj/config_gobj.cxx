@@ -387,6 +387,18 @@ ConfigVariableInt graphics_memory_limit
           "Set this to -1 to have no limit other than the normal "
           "hardware-imposed limit."));
 
+ConfigVariableDouble adaptive_lru_weight
+("adaptive-lru-weight", 0.2,
+ PRC_DESC("Specifies the weight factor used to compute the AdaptiveLru's "
+          "exponential moving average."));
+
+ConfigVariableInt adaptive_lru_max_updates_per_frame
+("adaptive-lru-max-updates-per-frame", 40,
+ PRC_DESC("The number of pages the AdaptiveLru class will update per "
+          "frame.  Do not set this too high or it will degrade "
+          "performance."));
+ 
+
 ConfigureFn(config_gobj) {
   BufferContext::init_type();
   Geom::init_type();

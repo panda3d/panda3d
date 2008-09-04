@@ -14,6 +14,7 @@
 
 #include "bufferContextChain.h"
 #include "bufferContext.h"
+#include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BufferContextChain::get_first
@@ -56,4 +57,21 @@ take_from(BufferContextChain &other) {
   }
 
   take_list_from(&other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BufferContextChain::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BufferContextChain::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << _count << " objects, consuming " << _total_size << " bytes:\n";
+
+  LinkedListNode *llnode = _next;
+  while (llnode != this) {
+    ((BufferContext *)llnode)->write(out, indent_level + 2);
+    llnode = ((BufferContext *)llnode)->_next;
+  }
 }
