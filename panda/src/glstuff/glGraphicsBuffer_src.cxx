@@ -313,6 +313,8 @@ rebuild_bitplanes() {
         TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
         nassertv(tc != (TextureContext *)NULL);
         CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+        glgsg->update_texture(tc, true);
+
         RenderTexturePlane plane = get_texture_plane(i);
 
         switch (plane)
