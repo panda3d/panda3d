@@ -88,27 +88,58 @@ def _excepthookDumpVars(eType, eValue, tb):
                 continue
         s += '\n  File "%s", line %s, in %s' % (
             code.co_filename, frame.f_lineno, code.co_name)
-        baseIds = set()
-        for obj in frame.f_locals.itervalues():
-            baseIds.add(id(obj))
         stateStack = Stack()
-        for name, obj in reversed(frame.f_locals.items()):
-            stateStack.push([name, obj, set(baseIds)])
+        # prime the stack with the variables we should visit from the frame's data structures
+        # grab all of the local, builtin and global variables that appear in the code's name list
+        name2obj = {}
+        for name, obj in frame.f_builtins.items():
+            if name in codeNames:
+                name2obj[name] = obj
+        for name, obj in frame.f_globals.items():
+            if name in codeNames:
+                name2obj[name] = obj
+        for name, obj in frame.f_locals.items():
+            if name in codeNames:
+                name2obj[name] = obj
+        # show them in alphabetical order
+        names = name2obj.keys()
+        names.sort()
+        # push them in reverse order so they'll be popped in the correct order
+        names.reverse()
+
+        # init the set of ids of already-visited objects
+        baseIds = set()
+        for obj in name2obj.itervalues():
+            baseIds.add(id(obj))
+
+        for name in names:
+            stateStack.push([name, name2obj[name], set(baseIds)])
+
         while len(stateStack) > 0:
             name, obj, visitedIds = stateStack.pop()
             r = fastRepr(obj, maxLen=10)
             if type(r) is types.StringType:
                 r = r.replace('\n', '\\n')
-            s += '\n    %s=%s' % (name, r)
-            for codeName in codeNames:
-                attr = getattr(obj, codeName, _AttrNotFound)
-                attrId = id(attr)
-                if attr is not _AttrNotFound and attrId not in visitedIds:
-                    visitedIds.add(attrId)
-                    stateStack.push(['%s.%s' % (name, codeName), attr, set(visitedIds)])
-                    
-    s += '\n'
-    notify.info(s)
+            s += '\n    %s = %s' % (name, r)
+            attrName2obj = {}
+            for attrName in codeNames:
+                attr = getattr(obj, attrName, _AttrNotFound)
+                if (attr is not _AttrNotFound) and (id(attr) not in visitedIds):
+                    attrName2obj[attrName] = attr
+            # show them in alphabetical order
+            attrNames = attrName2obj.keys()
+            attrNames.sort()
+            # push them in reverse order so they'll be popped in the correct order
+            attrNames.reverse()
+            for attrName in attrNames:
+                obj = attrName2obj[attrName]
+                ids = set(visitedIds)
+                ids.add(id(obj))
+                stateStack.push(['%s.%s' % (name, attrName), obj, ids])
+                
+    if foundRun:
+        s += '\n'
+        notify.info(s)
     oldExcepthook(eType, eValue, origTb)
 
 def install():
