@@ -1698,6 +1698,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   CPT(TransformState) net_transform = render_transform->compose(transform);
 
   LVector3f dir = light_obj->get_direction() * net_transform->get_mat();
+  dir.normalize();
   gl_light->position.X = -dir[0];
   gl_light->position.Y = -dir[1];
   gl_light->position.Z = -dir[2];
@@ -1754,6 +1755,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   const LMatrix4f &light_mat = net_transform->get_mat();
   LPoint3f pos = lens->get_nodal_point() * light_mat;
   LVector3f dir = lens->get_view_vector() * light_mat;
+  dir.normalize();
 
   gl_light->position.X = pos[0];
   gl_light->position.Y = pos[1];
