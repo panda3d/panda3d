@@ -4,6 +4,7 @@ from direct.showbase.PythonUtil import fastRepr
 from exceptions import Exception
 import sys
 import types
+import traceback
 
 notify = directNotify.newCategory("ExceptionVarDump")
 
@@ -69,6 +70,11 @@ class _AttrNotFound:
     pass
 
 def _excepthookDumpVars(eType, eValue, tb):
+    excStrs = traceback.format_exception(eType, eValue, tb)
+    s = 'printing traceback in case variable repr crashes the process...\n'
+    for excStr in excStrs:
+        s += excStr
+    notify.info(s)
     s = 'DUMPING STACK FRAME VARIABLES'
     origTb = tb
     #import pdb;pdb.set_trace()
