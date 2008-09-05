@@ -71,9 +71,6 @@
 #define SDK_VERSION(major,minor) tostring(major) << "." << tostring(minor)
 #define DIRECTX_SDK_VERSION  SDK_VERSION (_DXSDK_PRODUCT_MAJOR, _DXSDK_PRODUCT_MINOR) << "." << SDK_VERSION (_DXSDK_BUILD_MAJOR, _DXSDK_BUILD_MINOR)
 
-#define DEBUG_LRU false
-
-
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
 
 D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
@@ -140,9 +137,6 @@ DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
   _gsg_managed_vertex_buffers = dx_management;
   _gsg_managed_index_buffers = dx_management;
 
-  _enable_lru = dx_lru_management;
-
-  _lru = 0;
   _last_fvf = 0;
 
   _vertex_shader_version_major = 0;
@@ -177,11 +171,6 @@ DXGraphicsStateGuardian9::
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
   }
   free_nondx_resources();
-
-  if (_lru) {
-    delete _lru;
-    _lru = 0;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,10 +223,6 @@ apply_texture(int i, TextureContext *tc) {
 
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
   Texture *tex = tc->get_texture();
-
-  if (_lru) {
-    _lru -> access_page (dtc -> _lru_page);
-  }
 
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
 
@@ -481,10 +466,6 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   stream = 0;
   offset = 0;
 
-  if (_lru) {
-    _lru -> access_page (dvbc -> _lru_page);
-  }
-
   if (dvbc->_vbuffer == NULL) {
     // Attempt to create a new vertex buffer.
     if (vertex_buffers &&
@@ -690,10 +671,6 @@ bool DXGraphicsStateGuardian9::
 apply_index_buffer(IndexBufferContext *ibc,
                    const GeomPrimitivePipelineReader *reader, bool force) {
   DXIndexBufferContext9 *dibc = DCAST(DXIndexBufferContext9, ibc);
-
-  if (_lru) {
-    _lru -> access_page (dibc -> _lru_page);
-  }
 
   if (dibc->_ibuffer == NULL) {
     // Attempt to create a new index buffer.
@@ -1067,11 +1044,6 @@ begin_frame(Thread *current_thread) {
     return false;
   }
 
-  if (_lru)
-  {
-    _lru -> begin_frame ( );
-  }
-
   HRESULT hr = _d3d_device->BeginScene();
 
   if (FAILED(hr)) {
@@ -1224,86 +1196,6 @@ DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
       throw_event("panda3d-render-error");
     }
     return;
-  }
-
-  if (_lru) {
-    int frames;
-    int maximum_updates;
-
-    // LRU update
-    maximum_updates = dx_lru_maximum_page_updates_per_frame;
-    _lru -> partial_lru_update (maximum_updates);
-
-    // LRU debug
-    if (false && dxgsg9_cat.is_debug()) {
-      dxgsg9_cat.debug() << "*  start_priority_index " << _lru -> _m.start_priority_index << "\n";
-      dxgsg9_cat.debug() << "*  start_update_lru_page " << _lru -> _m.start_update_lru_page << "\n";
-    }
-
-    frames = dx_lru_debug_frames_til_output;
-    if (dx_lru_debug && frames > 0 && (_lru -> _m.current_frame_identifier % frames) == 0) {
-      if (dxgsg9_cat.is_error()) {
-        UINT available_texture_memory;
-
-        available_texture_memory = _d3d_device->GetAvailableTextureMem ( );
-
-        dxgsg9_cat.error() << "* LRU: total_pages " << _lru -> _m.total_pages << "/" << _lru -> _m.maximum_pages << " upf " << dx_lru_maximum_page_updates_per_frame << " fto " << dx_lru_debug_frames_til_output << "\n";
-        dxgsg9_cat.error() << "*  DX available_texture_memory = " << available_texture_memory << "\n";
-        dxgsg9_cat.error() << "*  delta_memory " << _available_texture_memory - (available_texture_memory + (_lru -> _m.maximum_memory - _lru -> _m.available_memory)) << "\n";
-        dxgsg9_cat.error() << "*  available_memory " << _lru -> _m.available_memory << "/" << _lru -> _m.maximum_memory << "\n";
-        dxgsg9_cat.error() << "*  total lifetime pages created " << _lru -> _m.identifier << "\n";
-        dxgsg9_cat.error() << "*  total_lifetime_page_ins " << _lru -> _m.total_lifetime_page_ins << "\n";
-        dxgsg9_cat.error() << "*  total_lifetime_page_outs " << _lru -> _m.total_lifetime_page_outs << "\n";
-        dxgsg9_cat.error() << "*  total_page_access " << _lru -> _m.total_page_access << " avg page access " << ((float) _lru -> _m.total_page_access / (float) frames) << "\n";
-        dxgsg9_cat.error() << "*  total_lru_pages_in_pool " << _lru -> _m.total_lru_pages_in_pool << "\n";
-        dxgsg9_cat.error() << "*  total_lru_pages_in_free_pool " << _lru -> _m.total_lru_pages_in_free_pool << "\n";
-        dxgsg9_cat.error() << "*  avg unique page access size " << (_lru -> _m.total_page_access_size / (double) frames) << "\n";
-        dxgsg9_cat.error() << "*  avg of all page access size " << ((_lru -> _m.total_page_access_size + _lru -> _m.total_page_all_access_size) / (double) frames) << "\n";
-
-        _lru -> _m.total_page_access = 0;
-        _lru -> _m.total_page_access_size = 0;
-        _lru -> _m.total_page_all_access_size = 0;
-
-        _lru -> count_priority_level_pages ( );
-
-        int index;
-
-        for (index = 0; index < LPP_TotalPriorities; index++) {
-          if (_lru -> _m.lru_page_count_array [index]) {
-            dxgsg9_cat.error() << "*  priority " << index << " pages " << _lru -> _m.lru_page_count_array [index] << "\n";
-          }
-        }
-
-        _lru -> calculate_lru_statistics ( );
-
-        for (index = 0; index < _lru -> _m.maximum_page_types; index++) {
-          PageTypeStatistics *page_type_statistics;
-
-          page_type_statistics = &_lru -> _m.page_type_statistics_array [index];
-          dxgsg9_cat.error() << "\n" <<
-              " page type " << index <<
-              "  total pages " << page_type_statistics -> total_pages <<
-              "  in " << page_type_statistics -> total_pages_in <<
-              "  size " << page_type_statistics -> total_memory_in <<
-              "  out " << page_type_statistics -> total_pages_out <<
-              "  size " << page_type_statistics -> total_memory_out <<
-              "\n";
-        }
-
-        void display_lru (int type, int priority, Lru *lru);
-
-        int type;
-
-        if (dx_lru_debug_textures) {
-          type = GPT_Texture;
-          display_lru (type, -1, _lru);
-        }       
-        if (dx_lru_debug_vertex_buffers) {
-          type = GPT_VertexBuffer;
-          display_lru (type, -1, _lru);
-        }
-      }
-    }
   }
 
 #if defined(DO_PSTATS)
@@ -2456,151 +2348,6 @@ do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   return true;
 }
 
-
-bool vertex_buffer_page_in_function (LruPage *lru_page)
-{
-  DXGraphicsStateGuardian9 *gsg;
-  DXVertexBufferContext9 *vertex_buffer;
-
-  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
-  vertex_buffer = (DXVertexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
-
-  // allocate vertex buffer
-  Thread *current_thread = Thread::get_current_thread();
-  CPT(GeomVertexArrayDataHandle) reader = vertex_buffer->get_data()->get_handle(current_thread);
-
-  /*
-    Not sure if this is the correct thing to do.  Can we return false
-    from the page_in function?  Will we get called again next frame if
-    we do?
-  if (_incomplete_render) {
-    // Check if the data is resident before continuing.
-    const unsigned char *data_pointer = reader->get_read_pointer(false);
-    if (data_pointer == NULL) {
-      return false;
-    }
-  }
-  */
-  vertex_buffer -> allocate_vbuffer (*(gsg->_screen), reader);
-
-  // update vertex buffer
-  vertex_buffer -> upload_data(reader, true);
-  vertex_buffer -> set_resident(true);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page IN VB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
-bool vertex_buffer_page_out_function (LruPage *lru_page)
-{
-  DXVertexBufferContext9 *vertex_buffer;
-
-  vertex_buffer = (DXVertexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
-  vertex_buffer -> free_vbuffer ( );
-  vertex_buffer -> set_resident(false);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page OUT VB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
-bool index_buffer_page_in_function (LruPage *lru_page)
-{
-  DXGraphicsStateGuardian9 *gsg;
-  DXIndexBufferContext9 *index_buffer;
-
-  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
-  index_buffer = (DXIndexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
-
-  // allocate vertex buffer
-  Thread *current_thread = Thread::get_current_thread();
-  GeomPrimitivePipelineReader reader(index_buffer->get_data(), current_thread);
-
-  /*
-    Not sure if this is the correct thing to do.  Can we return false
-    from the page_in function?  Will we get called again next frame if
-    we do?
-  if (_incomplete_render) {
-    // Check if the data is resident before continuing.
-    const unsigned char *data_pointer = reader.get_read_pointer(false);
-    if (data_pointer == NULL) {
-      return false;
-    }
-  }
-  */
-
-  index_buffer -> allocate_ibuffer (*(gsg->_screen), &reader);
-
-  // update vertex buffer
-  index_buffer -> upload_data (&reader, true);
-  index_buffer -> set_resident(true);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page IN IB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
-bool index_buffer_page_out_function (LruPage *lru_page)
-{
-  DXIndexBufferContext9 *index_buffer;
-
-  index_buffer = (DXIndexBufferContext9 *) lru_page -> _m.lru_page_type.pointer;
-  index_buffer -> free_ibuffer ( );
-  index_buffer -> set_resident(false);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page OUT IB " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
-bool texture_page_in_function (LruPage *lru_page)
-{
-  DXGraphicsStateGuardian9 *gsg;
-  DXTextureContext9 *texture;
-
-  gsg = (DXGraphicsStateGuardian9 *) (lru_page -> _m.lru -> _m.context);
-  texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
-
-  texture -> create_texture (*(gsg->_screen));
-  texture -> set_resident(true);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page IN TEX " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
-bool texture_page_out_function (LruPage *lru_page)
-{
-  DXTextureContext9 *texture;
-
-  texture = (DXTextureContext9 *) lru_page -> _m.lru_page_type.pointer;
-  texture -> delete_texture ( );
-  texture -> set_resident(false);
-
-  if (DEBUG_LRU && dxgsg9_cat.is_debug())
-  {
-    dxgsg9_cat.debug() << "  *** page OUT TEX " << lru_page -> _m.identifier << " size " << lru_page -> _m.size << "\n";
-  }
-
-  return true;
-}
-
 void DXGraphicsStateGuardian9::reset_render_states (void)
 {
   int index;
@@ -2842,80 +2589,6 @@ reset() {
     dxgsg9_cat.debug() << "*** GetAvailableTextureMem = " <<  available_texture_memory << "\n";
   }
   _available_texture_memory = available_texture_memory;
-
-  if (_lru == 0) {
-    if (dx_management == false && _enable_lru) {
-      int error;
-      int maximum_memory;
-      int maximum_pages;
-      Lru *lru;
-
-      int absolute_minimum_memory_requirement;
-      int minimum_memory_requirement;
-      int maximum_memory_requirement;
-      int free_memory_requirement;
-
-      maximum_pages = dx_lru_maximum_pages;
-
-      absolute_minimum_memory_requirement = 5000000;
-      minimum_memory_requirement = dx_lru_minimum_memory_requirement;
-      maximum_memory_requirement = dx_lru_maximum_memory_requirement;
-      free_memory_requirement = dx_lru_free_memory_requirement;
-
-      error = false;
-      maximum_memory = available_texture_memory - free_memory_requirement;
-      if (maximum_memory < minimum_memory_requirement) {
-         if (maximum_memory < absolute_minimum_memory_requirement) {
-           // video memory size is too small
-
-            dxgsg9_cat.error() << "Available video memory is too low " << _available_texture_memory << "\n";
-
-            error = true;
-         }
-         else {
-           // video memory is way too low, so take all of it
-           maximum_memory = available_texture_memory;
-
-           // need to warn user about low video memory
-           dxgsg9_cat.warning() << "Available video memory " << maximum_memory << " is below the minimum requirement of " << minimum_memory_requirement << "\n";
-        }
-      }
-      else {
-        if (maximum_memory_requirement != 0) {
-          if (maximum_memory >= maximum_memory_requirement) {
-            // cap video memory used
-            maximum_memory = maximum_memory_requirement;
-          }
-        } else {
-          // take all video memory
-
-        }
-      }
-
-      // no LRU if there is an error, go back to DirectX managed
-      if (error) {
-        _gsg_managed_textures = true;
-        _gsg_managed_vertex_buffers = true;
-        _gsg_managed_index_buffers = true;
-      } else {
-
-        int maximum_page_types;
-
-        maximum_page_types = GPT_TotalPageTypes;
-        lru = new Lru (maximum_memory, maximum_pages, maximum_page_types);
-        if (lru) {
-          // register page in and out callbacks
-          lru -> register_lru_page_type (GPT_VertexBuffer, vertex_buffer_page_in_function, vertex_buffer_page_out_function);
-          lru -> register_lru_page_type (GPT_IndexBuffer, index_buffer_page_in_function, index_buffer_page_out_function);
-          lru -> register_lru_page_type (GPT_Texture, texture_page_in_function, texture_page_out_function);
-
-          lru -> _m.context = (void *) this;
-        }
-
-        _lru = lru;
-      }
-    }
-  }
 
   // check for render to texture support
   D3DDEVICE_CREATION_PARAMETERS creation_parameters;
@@ -5500,9 +5173,12 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
 
       case D3DERR_OUTOFVIDEOMEMORY:
       case E_OUTOFMEMORY:
-        if (_lru) {
-          // increase the page out size as the number of attempts increases
-          if (_lru -> page_out_lru (allocation_size * attempts)) {
+        // increase the page out size as the number of attempts increases
+        {
+          size_t current_size = _prepared_objects->_graphics_memory_lru.get_total_size();
+          size_t target_size = max(current_size - allocation_size * attempts, 0);
+          _prepared_objects->_graphics_memory_lru.evict_to(target_size);
+          if (_prepared_objects->_graphics_memory_lru.get_total_size() < current_size) {
             retry = true;
           }
         }
@@ -6074,83 +5750,4 @@ KEY_ELEMENT *add_to_key_list (KEY key, KEY_LIST *key_list)
   }
 
   return key_element;
-}
-
-void display_lru (int type, int priority, Lru *lru)
-{
-  int index;
-  KEY_LIST *all_key_list;
-
-  all_key_list = new_key_list ( );
-
-  for (index = 0; index < LPP_TotalPriorities; index++) 
-  {
-    if (priority == -1 || index == priority)
-    {
-      LruPage *lru_page;
-      LruPage *next_lru_page;
-
-      lru_page = lru -> _m.lru_page_array[index];
-
-      KEY_LIST *key_list;
-
-      key_list = new_key_list ( );
-      
-      while (lru_page) 
-      {
-        if (type == lru_page -> _m.v.type)
-        {          
-//          cout << "  " << lru_page -> _m.name << "\n";
-          KEY_ELEMENT *key_element;
-
-          key_element = add_to_key_list (lru_page -> _m.name, key_list);
-
-          key_element = add_to_key_list (lru_page -> _m.name, all_key_list);
-        }
-
-        next_lru_page = lru_page -> _m.next;
-        lru_page = next_lru_page;
-      }
-
-      if (key_list -> total_key_elements > 0)
-      {
-          dxgsg9_cat.error() << "priority " << index << "\n";
-
-          KEY_ELEMENT *key_element;
-          KEY_ELEMENT *key_element_next;
-
-          key_element = first_key_element (key_list);
-          while (key_element)
-          {
-            key_element_next = next_key_element (key_element);
-
-            dxgsg9_cat.error() << "  " << key_element -> count << "  " << key_element -> key << "\n";
-                       
-            key_element = key_element_next;
-          }
-      }
-      
-      delete_key_list (key_list);
-    }
-  }
-
-  if (all_key_list -> total_key_elements > 0)
-  {
-      KEY_ELEMENT *key_element;
-      KEY_ELEMENT *key_element_next;
-
-      dxgsg9_cat.error() << "ALL KEYS \n";
-
-      key_element = first_key_element (all_key_list);
-      while (key_element)
-      {
-        key_element_next = next_key_element (key_element);
-
-        dxgsg9_cat.error() << "  " << key_element -> count << "  " << key_element -> key << "\n";
-
-        key_element = key_element_next;
-      }
-  }
-
-  delete_key_list (all_key_list);
 }

@@ -324,10 +324,7 @@ protected:
   int _gsg_managed_textures;
   int _gsg_managed_vertex_buffers;
   int _gsg_managed_index_buffers;
-  int _enable_lru;
   UINT _available_texture_memory;
-
-  Lru *_lru;
 
   DWORD _last_fvf;
 

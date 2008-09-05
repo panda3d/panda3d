@@ -40,7 +40,6 @@ public:
   int _fvf;
 
   int _managed;
-  LruPage *_lru_page;
 
   VERTEX_ELEMENT_TYPE *_vertex_element_type_array;
   DIRECT_3D_VERTEX_DECLARATION _direct_3d_vertex_declaration;

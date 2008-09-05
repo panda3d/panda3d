@@ -33,7 +33,6 @@ DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   _ibuffer(NULL)
 {
   _managed = -1;
-  _lru_page = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,13 +44,6 @@ DXIndexBufferContext9::
 ~DXIndexBufferContext9() {
 
   this -> free_ibuffer ( );
-
-  if (_lru_page)
-  {
-    _lru_page -> _m.lru -> remove_page (_lru_page);
-    _lru_page -> _m.lru -> free_page (_lru_page);
-    _lru_page = 0;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,13 +166,6 @@ create_ibuffer(DXScreenData &scrn,
 
   this -> free_ibuffer ( );
 
-  if (_lru_page)
-  {
-    _lru_page -> _m.lru -> remove_page (_lru_page);
-    _lru_page -> _m.lru -> free_page (_lru_page);
-    _lru_page = 0;
-  }
-
   PStatTimer timer(GraphicsStateGuardian::_create_index_buffer_pcollector,
                    current_thread);
 
@@ -189,30 +174,6 @@ create_ibuffer(DXScreenData &scrn,
   data_size = reader->get_data_size_bytes();
 
   this -> allocate_ibuffer(scrn, reader);
-
-  if (_ibuffer)
-  {
-    if (_managed == false)
-    {
-      Lru *lru;
-
-      lru = scrn._dxgsg9 -> _lru;
-      if (lru)
-      {
-        LruPage *lru_page;
-
-        lru_page = lru -> allocate_page (data_size);
-        if (lru_page)
-        {
-          lru_page -> _m.v.type = GPT_IndexBuffer;
-          lru_page -> _m.lru_page_type.pointer = this;
-
-          lru -> add_cached_page (LPP_New, lru_page);
-          _lru_page = lru_page;
-        }
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

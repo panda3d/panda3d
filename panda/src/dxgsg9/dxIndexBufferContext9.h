@@ -38,7 +38,6 @@ public:
 
   IDirect3DIndexBuffer9 *_ibuffer;
   int _managed;
-  LruPage *_lru_page;
 
 public:
   static TypeHandle get_class_type() {

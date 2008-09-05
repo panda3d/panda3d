@@ -48,7 +48,6 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
   _d3d_cube_texture = NULL;
   _has_mipmaps = false;
   _managed = -1;
-  _lru_page = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,13 +57,6 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
 ////////////////////////////////////////////////////////////////////
 DXTextureContext9::
 ~DXTextureContext9() {
-  if (_lru_page)
-  {
-    _lru_page -> _m.lru -> remove_page (_lru_page);
-    _lru_page -> _m.lru -> free_page (_lru_page);
-    _lru_page = 0;
-  }
-
   delete_texture();
 }
 
@@ -960,24 +952,6 @@ create_texture(DXScreenData &scrn) {
 
   // must not put render to texture into LRU
   if (!_managed && !tex->get_render_to_texture()) {
-    if (_lru_page == 0) {
-      Lru *lru;
-
-      lru = scrn._dxgsg9 -> _lru;
-      if (lru) {
-        LruPage *lru_page;
-
-        lru_page = lru -> allocate_page (data_size);
-        if (lru_page) {
-          lru_page -> _m.v.type = GPT_Texture;
-          lru_page -> _m.lru_page_type.pointer = this;
-          lru_page -> _m.name = tex->get_filename();
-
-          lru -> add_cached_page (LPP_New, lru_page);
-          _lru_page = lru_page;
-        }
-      }
-    }
     tex->texture_uploaded(scrn._dxgsg9);
   }
   mark_loaded();

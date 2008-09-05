@@ -158,7 +158,6 @@ DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, 
 
   _fvf = 0;
   _managed = -1;
-  _lru_page = 0;
 
   _direct_3d_vertex_declaration = 0;
   _shader_context = 0;
@@ -297,12 +296,6 @@ DXVertexBufferContext9::
   }
 
   free_vbuffer ( );
-
-  if (_lru_page) {
-    _lru_page -> _m.lru -> remove_page (_lru_page);
-    _lru_page -> _m.lru -> free_page (_lru_page);
-    _lru_page = 0;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -422,12 +415,6 @@ create_vbuffer(DXScreenData &scrn,
 
   free_vbuffer ( );
 
-  if (_lru_page) {
-    _lru_page -> _m.lru -> remove_page (_lru_page);
-    _lru_page -> _m.lru -> free_page (_lru_page);
-    _lru_page = 0;
-  }
-
   PStatTimer timer(GraphicsStateGuardian::_create_vertex_buffer_pcollector,
                    current_thread);
 
@@ -436,27 +423,6 @@ create_vbuffer(DXScreenData &scrn,
   data_size = reader->get_data_size_bytes();
 
   this -> allocate_vbuffer(scrn, reader);
-
-  if (_vbuffer) {
-    if (_managed == false) {
-      Lru *lru;
-
-      lru = scrn._dxgsg9 -> _lru;
-      if (lru) {
-        LruPage *lru_page;
-
-        lru_page = lru -> allocate_page (data_size);
-        if (lru_page) {
-          lru_page -> _m.v.type = GPT_VertexBuffer;
-          lru_page -> _m.lru_page_type.pointer = this;
-          lru_page -> _m.name = name;
-
-          lru -> add_cached_page (LPP_New, lru_page);
-          _lru_page = lru_page;
-        }
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

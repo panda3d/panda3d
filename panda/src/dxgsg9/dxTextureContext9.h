@@ -64,9 +64,6 @@ private:
 
   int _managed;
 
-public:
-  LruPage *_lru_page;
-
 private:
   bool _has_mipmaps;
 
