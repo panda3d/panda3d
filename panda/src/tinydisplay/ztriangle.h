@@ -353,6 +353,7 @@
 	r1+=drdl_min;
 	g1+=dgdl_min;
 	b1+=dbdl_min;
+	a1+=dadl_min;
 #endif
 #ifdef INTERP_ST
 	s1+=dsdl_min;
