@@ -2253,15 +2253,27 @@ def _getDtoolSuperBase():
     from pandac.PandaModules import PandaNode
     dtoolSuperBase = PandaNode('').__class__.__bases__[0].__bases__[0].__bases__[0]
 
+safeReprNotify = None
+
+def _getSafeReprNotify():
+    global safeReprNotify
+    from direct.directnotify.DirectNotifyGlobal import directNotify
+    safeReprNotify = directNotify.newCategory("safeRepr")
+
 def safeRepr(obj):
     global dtoolSuperBase
     if dtoolSuperBase is None:
         _getDtoolSuperBase()
 
+    global safeReprNotify
+    if safeReprNotify is None:
+        _getSafeReprNotify()
+
     if isinstance(obj, dtoolSuperBase):
         # repr of C++ object could crash, particularly if the object has been deleted
-        return '<%s.%s instance at %s>' % (
-            obj.__class__.__module__, obj.__class__.__name__, hex(id(obj)))
+        # log that we're calling repr
+        safeReprNotify.info('calling repr on instance of %s.%s' % (obj.__class__.__module__, obj.__class__.__name__))
+        sys.stdout.flush()
 
     try:
         return repr(obj)
