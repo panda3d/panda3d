@@ -238,9 +238,8 @@ buildGL(osxGraphicsWindow &window, bool full_screen,
     attrib.push_back(AGL_PBUFFER);
   }
 
-  // Request the largest buffer available that meets the minimum
-  // requirements specified.
-  attrib.push_back(AGL_MINIMUM_POLICY);
+  // Allow the system to choose the largest buffers requested that
+  // meets all our selections.
   attrib.push_back(AGL_MAXIMUM_POLICY);
 
   // Terminate the list.
@@ -271,13 +270,17 @@ buildGL(osxGraphicsWindow &window, bool full_screen,
 	
   } else {
     osxdisplay_cat.error()
-      << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format  \n" ;
+      << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format\n" ;
+    osxdisplay_cat.error()
+      << fb_props << "\n";
     if(err == noErr) {
       err = -1;
     }
   }
 
-  describe_pixel_format(fb_props);
+  if (err == noErr) {
+    describe_pixel_format(fb_props);
+  }
 	
   if (osxdisplay_cat.is_debug()) {
     osxdisplay_cat.debug()
