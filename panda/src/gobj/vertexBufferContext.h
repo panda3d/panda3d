@@ -80,6 +80,11 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
+inline ostream &operator << (ostream &out, const VertexBufferContext &context) {
+  context.output(out);
+  return out;
+}
+
 #include "vertexBufferContext.I"
 
 #endif

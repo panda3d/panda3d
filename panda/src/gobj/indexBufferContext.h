@@ -79,6 +79,11 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
+inline ostream &operator << (ostream &out, const IndexBufferContext &context) {
+  context.output(out);
+  return out;
+}
+
 #include "indexBufferContext.I"
 
 #endif

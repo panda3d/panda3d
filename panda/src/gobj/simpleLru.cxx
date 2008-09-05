@@ -156,6 +156,10 @@ write(ostream &out, int indent_level) const {
       node = page->_prev;
     }
   }
+
+#ifndef NDEBUG
+  ((SimpleLru *)this)->do_validate();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

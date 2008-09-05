@@ -76,6 +76,7 @@ PUBLISHED:
   INLINE int get_max_updates_per_frame() const;
 
 private:
+   public:  // temp hack
   enum LruPagePriority {
     LPP_Highest = 0,
     LPP_High = 10,
@@ -103,7 +104,7 @@ private:
   size_t _total_size;
   size_t _max_size;
 
-  int _current_frame_identifier;
+  unsigned int _current_frame_identifier;
   double _weight;
   int _max_updates_per_frame;
 
@@ -165,16 +166,19 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  // Not defined in SimpleLruPage.
+  unsigned int get_num_frames() const;
+  unsigned int get_num_inactive_frames() const;
+
 private:
   AdaptiveLru *_lru;
 
   size_t _lru_size;
   int _priority;
 
-  int _first_frame_identifier;  // creation time
-  int _last_frame_identifier;   // last time page used
-  int _current_frame_identifier;
-  int _update_frame_identifier;
+  unsigned int _first_frame_identifier;     // Frame first added.
+  unsigned int _current_frame_identifier;   // Frame last accessed.
+  unsigned int _update_frame_identifier;    // Frame last updated.
 
   int _current_frame_usage;
   int _last_frame_usage;

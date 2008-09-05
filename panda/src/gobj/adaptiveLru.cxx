@@ -117,10 +117,10 @@ do_partial_lru_update(int num_updates) {
 void AdaptiveLru::
 update_page(AdaptiveLruPage *page) {
   int target_priority = page->_priority;
-  int lifetime_frames = _current_frame_identifier - page->_first_frame_identifier;
-  if (lifetime_frames >= 1) {
+  unsigned int lifetime_frames = _current_frame_identifier - page->_first_frame_identifier;
+  if (lifetime_frames > 0) {
     if (page->_update_frame_identifier) {
-      int update_frames;
+      unsigned int update_frames;
       
       update_frames = (_current_frame_identifier - page->_update_frame_identifier);
       if (update_frames > 0) {
@@ -197,7 +197,7 @@ enqueue_lru(AdaptiveLru *lru) {
 
     _priority = AdaptiveLru::LPP_New;
     _first_frame_identifier = _lru->_current_frame_identifier;
-    _last_frame_identifier = _lru->_current_frame_identifier;
+    _current_frame_identifier = _lru->_current_frame_identifier;
     _lru->do_add_page(this);
   }
 }
@@ -212,12 +212,10 @@ size_t AdaptiveLru::
 count_active_size() const {
   size_t counted_size = 0;
 
-  int minimum_frame_identifier = _current_frame_identifier - 1;
-
   AdaptiveLruPageStaticList *node = (AdaptiveLruPageStaticList *)_static_list._next;
   while (node != &_static_list) {
     AdaptiveLruPage *page = (AdaptiveLruPage *)node;
-    if (page->_current_frame_identifier >= minimum_frame_identifier) {
+    if (page->_current_frame_identifier + 1 >= _current_frame_identifier) {
       counted_size += page->_lru_size;
     }
     node = (AdaptiveLruPageStaticList *)node->_next;
@@ -272,8 +270,6 @@ write(ostream &out, int indent_level) const {
 
   MutexHolder holder(_lock);
 
-  int minimum_frame_identifier = _current_frame_identifier - 1;
-    
   int index;
   for (index = 0; index < LPP_TotalPriorities; ++index) {
     AdaptiveLruPageDynamicList *node = (AdaptiveLruPageDynamicList *)_page_array[index]._prev;
@@ -283,7 +279,7 @@ write(ostream &out, int indent_level) const {
         AdaptiveLruPage *page = (AdaptiveLruPage *)node;
         indent(out, indent_level + 4) << *page;
 
-        if (page->_current_frame_identifier >= minimum_frame_identifier) {
+        if (page->_current_frame_identifier + 1 >= _current_frame_identifier) {
           out << " (active)";
         }
         out << "\n";
@@ -292,6 +288,10 @@ write(ostream &out, int indent_level) const {
       }
     }
   }
+
+#ifndef NDEBUG
+  ((AdaptiveLru *)this)->do_validate();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,7 +341,6 @@ do_access_page(AdaptiveLruPage *page) {
 
   } else {
     // This page has not yet been accessed this frame.  Update it.
-    page->_last_frame_identifier = page->_current_frame_identifier;
     page->_current_frame_identifier = _current_frame_identifier;
     page->_last_frame_usage = page->_current_frame_usage;
     page->_current_frame_usage = 1;
@@ -368,8 +367,6 @@ do_evict_to(size_t target_size, bool hard_evict) {
 
   attempts = 0;
   do {
-    int minimum_frame_identifier = _current_frame_identifier - 1;
-    
     // page out lower priority pages first
     int index;
     for (index = LPP_TotalPriorities - 1; index >= 0; index--) {
@@ -385,14 +382,15 @@ do_evict_to(size_t target_size, bool hard_evict) {
         AdaptiveLruPageDynamicList *next = (AdaptiveLruPageDynamicList *)node->_next;
         AdaptiveLruPage *page = (AdaptiveLruPage *)node;
 
-        if (attempts == 0 && (page->_current_frame_identifier >= minimum_frame_identifier)) {
+        if (attempts == 0 && 
+            (page->_current_frame_identifier + 1 >= _current_frame_identifier)) {
           // avoid swapping out pages used in the current and last
           // frame on the first attempt
 
         } else {
           // We must release the lock while we call evict_lru().
           _lock.release();
-          ((AdaptiveLruPage *)node)->evict_lru();
+          page->evict_lru();
           _lock.lock();
 
           if (_total_size <= target_size) {
@@ -486,7 +484,6 @@ AdaptiveLruPage(size_t lru_size) :
   _lru_size(lru_size),
   _priority(0),
   _first_frame_identifier(0),
-  _last_frame_identifier(0),
   _current_frame_identifier(0),
   _update_frame_identifier(0),
   _current_frame_usage(0),
@@ -508,7 +505,6 @@ AdaptiveLruPage(const AdaptiveLruPage &copy) :
   _lru_size(copy._lru_size),
   _priority(0),
   _first_frame_identifier(0),
-  _last_frame_identifier(0),
   _current_frame_identifier(0),
   _update_frame_identifier(0),
   _current_frame_usage(0),
@@ -580,6 +576,37 @@ void AdaptiveLruPage::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AdaptiveLruPage::get_num_frames
+//       Access: Published
+//  Description: Returns the number of frames since the page was first
+//               added to its LRU.  Returns 0 if it does not have an
+//               LRU.
+////////////////////////////////////////////////////////////////////
+unsigned int AdaptiveLruPage::
+get_num_frames() const {
+  if (_lru == (AdaptiveLru *)NULL) {
+    return 0;
+  }
+  return _lru->_current_frame_identifier - _first_frame_identifier;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AdaptiveLruPage::get_num_inactive_frames
+//       Access: Published
+//  Description: Returns the number of frames since the page was last
+//               accessed on its LRU.  Returns 0 if it does not have
+//               an LRU.
+////////////////////////////////////////////////////////////////////
+unsigned int AdaptiveLruPage::
+get_num_inactive_frames() const {
+  if (_lru == (AdaptiveLru *)NULL) {
+    return 0;
+  }
+  return _lru->_current_frame_identifier - _current_frame_identifier;
+}
+
 
 #if 0
 

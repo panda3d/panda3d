@@ -85,6 +85,11 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
+inline ostream &operator << (ostream &out, const TextureContext &context) {
+  context.output(out);
+  return out;
+}
+
 #include "textureContext.I"
 
 #endif
