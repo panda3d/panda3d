@@ -78,13 +78,13 @@ def _excepthookDumpVars(eType, eValue, tb):
         code = frame.f_code
         # this is a list of every string identifier used in this stack frame's code
         codeNames = code.co_names
-        tb = tb.tb_next
         # skip everything before the 'run' method, those frames have lots of
         # not-useful information
         if not foundRun:
             if code.co_name == 'run':
                 foundRun = True
             else:
+                tb = tb.tb_next
                 continue
         s += '\n  File "%s", line %s, in %s' % (
             code.co_filename, frame.f_lineno, code.co_name)
@@ -137,6 +137,8 @@ def _excepthookDumpVars(eType, eValue, tb):
                 ids.add(id(obj))
                 stateStack.push(['%s.%s' % (name, attrName), obj, ids])
                 
+        tb = tb.tb_next
+
     if foundRun:
         s += '\n'
         notify.info(s)
