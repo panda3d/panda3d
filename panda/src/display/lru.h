@@ -263,9 +263,7 @@ float calculate_exponential_moving_average (float value, float weight, float ave
 bool default_page_in_function (LruPage *lru_page);
 bool default_page_out_function (LruPage *lru_page);
 
-BEGIN_PUBLISH
 void test_ema (void);
 void test_lru (void);
-END_PUBLISH
 
 #endif
