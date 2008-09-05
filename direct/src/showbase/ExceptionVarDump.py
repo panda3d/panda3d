@@ -83,7 +83,7 @@ def _excepthookDumpVars(eType, eValue, tb):
         frame = tb.tb_frame
         code = frame.f_code
         # this is a list of every string identifier used in this stack frame's code
-        codeNames = code.co_names
+        codeNames = set(code.co_names)
         # skip everything before the 'run' method, those frames have lots of
         # not-useful information
         if not foundRun:
@@ -119,10 +119,11 @@ def _excepthookDumpVars(eType, eValue, tb):
             baseIds.add(id(obj))
 
         for name in names:
-            stateStack.push([name, name2obj[name], set(baseIds)])
+            stateStack.push([name, name2obj[name], set(baseIds), set(codeNames)])
 
         while len(stateStack) > 0:
-            name, obj, visitedIds = stateStack.pop()
+            name, obj, visitedIds, codeNames = stateStack.pop()
+            #notify.info('%s, %s, %s' % (name, fastRepr(obj), visitedIds))
             r = fastRepr(obj, maxLen=10)
             if type(r) is types.StringType:
                 r = r.replace('\n', '\\n')
@@ -131,6 +132,14 @@ def _excepthookDumpVars(eType, eValue, tb):
             for attrName in codeNames:
                 attr = getattr(obj, attrName, _AttrNotFound)
                 if (attr is not _AttrNotFound) and (id(attr) not in visitedIds):
+                    # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
+                    try:
+                        className = attr.__class__.__name__
+                    except:
+                        pass
+                    else:
+                        if className == 'method-wrapper':
+                            continue
                     attrName2obj[attrName] = attr
             # show them in alphabetical order
             attrNames = attrName2obj.keys()
@@ -141,7 +150,10 @@ def _excepthookDumpVars(eType, eValue, tb):
                 obj = attrName2obj[attrName]
                 ids = set(visitedIds)
                 ids.add(id(obj))
-                stateStack.push(['%s.%s' % (name, attrName), obj, ids])
+                # keep recursion in check, only allow one instance of each name at a time
+                cNames = set(codeNames)
+                cNames.remove(attrName)
+                stateStack.push(['%s.%s' % (name, attrName), obj, ids, cNames])
                 
         tb = tb.tb_next
 
