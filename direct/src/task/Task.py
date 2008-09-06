@@ -418,6 +418,12 @@ class TaskManager:
         self.fVerbose = value
         messenger.send('TaskManager-setVerbose', sentArgs = [value])
 
+    def getTaskDurationWarningThreshold(self):
+        return self.taskDurationWarningThreshold
+
+    def setTaskDurationWarningThreshold(self, threshold):
+        self.taskDurationWarningThreshold = threshold
+
     def invokeDefaultHandler(self, signalNumber, stackFrame):
         print '*** allowing mid-frame keyboard interrupt.'
         # Restore default interrupt handler
