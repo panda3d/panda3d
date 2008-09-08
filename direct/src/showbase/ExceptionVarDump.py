@@ -113,47 +113,44 @@ def _excepthookDumpVars(eType, eValue, tb):
         # push them in reverse order so they'll be popped in the correct order
         names.reverse()
 
-        # init the set of ids of already-visited objects
-        baseIds = set()
-        for obj in name2obj.itervalues():
-            baseIds.add(id(obj))
+        traversedIds = set()
 
         for name in names:
-            stateStack.push([name, name2obj[name], set(baseIds), set(codeNames)])
+            stateStack.push([name, name2obj[name], traversedIds])
 
         while len(stateStack) > 0:
-            name, obj, visitedIds, codeNames = stateStack.pop()
-            #notify.info('%s, %s, %s' % (name, fastRepr(obj), visitedIds))
+            name, obj, traversedIds = stateStack.pop()
+            #notify.info('%s, %s, %s' % (name, fastRepr(obj), traversedIds))
             r = fastRepr(obj, maxLen=10)
             if type(r) is types.StringType:
                 r = r.replace('\n', '\\n')
             s += '\n    %s = %s' % (name, r)
-            attrName2obj = {}
-            for attrName in codeNames:
-                attr = getattr(obj, attrName, _AttrNotFound)
-                if (attr is not _AttrNotFound) and (id(attr) not in visitedIds):
-                    # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
-                    try:
-                        className = attr.__class__.__name__
-                    except:
-                        pass
-                    else:
-                        if className == 'method-wrapper':
-                            continue
-                    attrName2obj[attrName] = attr
-            # show them in alphabetical order
-            attrNames = attrName2obj.keys()
-            attrNames.sort()
-            # push them in reverse order so they'll be popped in the correct order
-            attrNames.reverse()
-            for attrName in attrNames:
-                obj = attrName2obj[attrName]
-                ids = set(visitedIds)
-                ids.add(id(obj))
-                # keep recursion in check, only allow one instance of each name at a time
-                cNames = set(codeNames)
-                cNames.remove(attrName)
-                stateStack.push(['%s.%s' % (name, attrName), obj, ids, cNames])
+            # if we've already traversed through this object, don't traverse through it again
+            if id(obj) not in traversedIds:
+                attrName2obj = {}
+                for attrName in codeNames:
+                    attr = getattr(obj, attrName, _AttrNotFound)
+                    if (attr is not _AttrNotFound):
+                        # prevent infinite recursion on method wrappers (__init__.__init__.__init__...)
+                        try:
+                            className = attr.__class__.__name__
+                        except:
+                            pass
+                        else:
+                            if className == 'method-wrapper':
+                                continue
+                        attrName2obj[attrName] = attr
+                if len(attrName2obj):
+                    # show them in alphabetical order
+                    attrNames = attrName2obj.keys()
+                    attrNames.sort()
+                    # push them in reverse order so they'll be popped in the correct order
+                    attrNames.reverse()
+                    ids = set(traversedIds)
+                    ids.add(id(obj))
+                    for attrName in attrNames:
+                        obj = attrName2obj[attrName]
+                        stateStack.push(['%s.%s' % (name, attrName), obj, ids])
                 
         tb = tb.tb_next
 
