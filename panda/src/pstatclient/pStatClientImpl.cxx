@@ -374,30 +374,26 @@ send_hello() {
 ////////////////////////////////////////////////////////////////////
 void PStatClientImpl::
 report_new_collectors() {
-  nassertv(_is_connected);
-
-  if (_collectors_reported < _client->_num_collectors) {
-    // Empirically, we determined that you can't send more than about
-    // 1400 collectors at once without exceeding the 64K limit on a
-    // single datagram.  So we limit ourselves here to sending only
-    // half that many.
-    static const int max_collectors_at_once = 700;
-
-    while (_collectors_reported < _client->_num_collectors) {
-      PStatClientControlMessage message;
-      message._type = PStatClientControlMessage::T_define_collectors;
-      int i = 0;
-      while (_collectors_reported < _client->_num_collectors &&
-             i < max_collectors_at_once) {
-        message._collectors.push_back(_client->get_collector_def(_collectors_reported));
-        _collectors_reported++;
-        i++;
-      }
-
-      Datagram datagram;
-      message.encode(datagram);
-      _writer.send(datagram, _tcp_connection);
+  // Empirically, we determined that you can't send more than about
+  // 1400 collectors at once without exceeding the 64K limit on a
+  // single datagram.  So we limit ourselves here to sending only
+  // half that many.
+  static const int max_collectors_at_once = 700;
+  
+  while (_is_connected && _collectors_reported < _client->_num_collectors) {
+    PStatClientControlMessage message;
+    message._type = PStatClientControlMessage::T_define_collectors;
+    int i = 0;
+    while (_collectors_reported < _client->_num_collectors &&
+           i < max_collectors_at_once) {
+      message._collectors.push_back(_client->get_collector_def(_collectors_reported));
+      _collectors_reported++;
+      i++;
     }
+    
+    Datagram datagram;
+    message.encode(datagram);
+    _writer.send(datagram, _tcp_connection);
   }
 }
 
@@ -409,9 +405,7 @@ report_new_collectors() {
 ////////////////////////////////////////////////////////////////////
 void PStatClientImpl::
 report_new_threads() {
-  nassertv(_is_connected);
-
-  if (_threads_reported < _client->_num_threads) {
+  while (_is_connected && _threads_reported < _client->_num_threads) {
     PStatClientControlMessage message;
     message._type = PStatClientControlMessage::T_define_threads;
     message._first_thread_index = _threads_reported;

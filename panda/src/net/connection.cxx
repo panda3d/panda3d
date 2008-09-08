@@ -45,6 +45,12 @@ Connection(ConnectionManager *manager, Socket_IP *socket) :
   _collect_tcp_interval = collect_tcp_interval;
   _queued_data_start = 0.0;
   _queued_count = 0;
+
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  // In the presence of SIMPLE_THREADS, we use non-blocking I/O.  We
+  // simulate blocking by yielding the thread.
+  _socket->SetNonBlocking();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +210,12 @@ flush() {
   return do_flush();
 }
 
+/*
+This method is disabled.  We don't provide enough interface to use
+non-blocking I/O effectively at this level, so we shouldn't provide
+this call.  Specifically, we don't provide a way to query whether an
+operation failed because it would have blocked or not.
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Connection::set_nonblock
 //       Access: Published
@@ -217,6 +229,7 @@ set_nonblock(bool flag) {
     _socket->SetBlocking();
   }
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Connection::set_linger
@@ -355,7 +368,14 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
     data += datagram.get_message();
     
     int bytes_to_send = data.length();
-    bool okflag = udp->SendTo(data, datagram.get_address().get_addr());
+    Socket_Address addr = datagram.get_address().get_addr();
+    bool okflag = udp->SendTo(data, addr);
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR) {
+      Thread::force_yield();
+      okflag = udp->SendTo(data, addr);
+    }
+#endif  // SIMPLE_THREADS
     
     if (net_cat.is_debug()) {
       header.verify_datagram(datagram);
@@ -418,7 +438,14 @@ send_raw_datagram(const NetDatagram &datagram) {
     string data = datagram.get_message();
 
     ReMutexHolder holder(_write_mutex);
-    bool okflag = udp->SendTo(data, datagram.get_address().get_addr());
+    Socket_Address addr = datagram.get_address().get_addr();
+    bool okflag = udp->SendTo(data, addr);
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR) {
+      Thread::force_yield();
+      okflag = udp->SendTo(data, addr);
+    }
+#endif  // SIMPLE_THREADS
     
     if (net_cat.is_spam()) {
       net_cat.spam()
@@ -466,11 +493,30 @@ do_flush() {
   Socket_TCP *tcp;
   DCAST_INTO_R(tcp, _socket, false);
 
-  bool okflag = (tcp->SendData(_queued_data) == (int)_queued_data.size());
+  string sending_data;
+  _queued_data.swap(sending_data);
 
-  _queued_data = string();
   _queued_count = 0;
   _queued_data_start = TrueClock::get_global_ptr()->get_short_time();
+
+  int data_sent = tcp->SendData(sending_data);
+  bool okflag = (data_sent == (int)sending_data.size());
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  if (!okflag) {
+    int total_sent = 0;
+    if (data_sent > 0) {
+      total_sent += data_sent;
+    }
+    while (!okflag && (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
+      Thread::force_yield();
+      data_sent = tcp->SendData(sending_data.data() + total_sent, sending_data.size() - total_sent);
+      if (data_sent > 0) {
+        total_sent += data_sent;
+      }
+      okflag = (total_sent == (int)sending_data.size());
+    }
+  }
+#endif  // SIMPLE_THREADS
 
   return check_send_error(okflag);
 }
@@ -484,6 +530,11 @@ do_flush() {
 bool Connection::
 check_send_error(bool okflag) {
   if (!okflag) {
+    static ConfigVariableBool abort_send_error("abort-send-error", false);
+    if (abort_send_error) {
+      nassertr(false, false);
+    }
+
     // Assume any error means the connection has been reset; tell
     // our manager about it and ignore it.
     if (_manager != (ConnectionManager *)NULL) {

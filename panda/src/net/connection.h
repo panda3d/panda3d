@@ -48,7 +48,7 @@ PUBLISHED:
   bool flush();
 
   // Socket options.
-  void set_nonblock(bool flag);
+  //  void set_nonblock(bool flag);
   void set_linger(bool flag, double time);
   void set_reuse_addr(bool flag);
   void set_keep_alive(bool flag);

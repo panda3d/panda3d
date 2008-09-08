@@ -562,6 +562,13 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     int bytes_read =
       socket->RecvData(buffer + header_bytes_read,
                        _tcp_header_size - header_bytes_read);
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+      Thread::force_yield();
+      bytes_read = socket->RecvData(buffer + header_bytes_read,
+                                    _tcp_header_size - header_bytes_read);
+    }
+#endif  // SIMPLE_THREADS
 
     if (bytes_read <= 0) {
       // The socket was closed.  Report that and return.
@@ -598,6 +605,15 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     bytes_read =
       socket->RecvData(buffer, min(read_buffer_size,
                                    (int)(size - datagram.get_length())));
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+      Thread::force_yield();
+      bytes_read =
+        socket->RecvData(buffer, min(read_buffer_size,
+                                     (int)(size - datagram.get_length())));
+    }
+#endif  // SIMPLE_THREADS
+
     char *dp = buffer;
 
     if (bytes_read <= 0) {
@@ -702,6 +718,12 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   // Read as many bytes as we can.
   char buffer[read_buffer_size];
   int bytes_read = socket->RecvData(buffer, read_buffer_size);
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    Thread::force_yield();
+    bytes_read = socket->RecvData(buffer, read_buffer_size);
+  }
+#endif  // SIMPLE_THREADS
 
   if (bytes_read <= 0) {
     // The socket was closed.  Report that and return.

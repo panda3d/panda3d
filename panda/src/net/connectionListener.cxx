@@ -57,7 +57,16 @@ process_incoming_data(SocketInfo *sinfo) {
 
   Socket_Address addr;
   Socket_TCP *session = new Socket_TCP;
-  if (!socket->GetIncomingConnection(*session, addr)) {
+
+  bool got_connection = socket->GetIncomingConnection(*session, addr);
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  while (!got_connection && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    Thread::force_yield();
+    got_connection = socket->GetIncomingConnection(*session, addr);
+  }
+#endif  // SIMPLE_THREADS
+
+  if (!got_connection) {
     net_cat.error()
       << "Error when accepting new connection.\n";
     delete session;
