@@ -283,7 +283,6 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     case ios::end:
 #ifdef _WIN32
       // Windows case.
-      // Windows case.
       {
         LARGE_INTEGER li;
         GetFileSizeEx(_handle, &li);
