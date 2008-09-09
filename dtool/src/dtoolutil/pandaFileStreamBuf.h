@@ -48,10 +48,20 @@ private:
   size_t read_chars(char *start, size_t length);
   size_t write_chars(const char *start, size_t length);
 
+  size_t read_chars_raw(char *start, size_t length);
+  size_t write_chars_raw(const char *start, size_t length);
+
+  size_t decode_newlines(char *dest, size_t dest_length,
+                         const char *source, size_t source_length);
+  size_t encode_newlines(char *dest, size_t dest_length,
+                         const char *source, size_t source_length);
+
 private:
   string _filename;
   bool _is_open;
   ios::openmode _open_mode;
+
+  char _last_read_nl;
 
 #ifdef _WIN32
   HANDLE _handle;

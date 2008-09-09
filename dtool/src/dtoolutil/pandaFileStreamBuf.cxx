@@ -33,6 +33,8 @@ PandaFileStreamBuf::
 PandaFileStreamBuf() {
   _is_open = false;
   _open_mode = (ios::openmode)0;
+
+  _last_read_nl = 0;
   
 #ifdef _WIN32
   // Windows case.
@@ -216,6 +218,16 @@ close() {
 streampos PandaFileStreamBuf::
 seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
   streampos result = -1;
+
+  if (!(_open_mode & ios::binary)) {
+    // Seeking on text files is only supported for seeks to the
+    // beginning of the file.
+    if (off != 0 || dir != ios::beg) {
+      return -1;
+    }
+
+    _last_read_nl = 0;
+  }
 
   // Sync the iostream buffer first.
   sync();
@@ -418,7 +430,6 @@ underflow() {
   return (unsigned char)*gptr();
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFileStreamBuf::read_chars
 //       Access: Private
@@ -429,11 +440,99 @@ underflow() {
 size_t PandaFileStreamBuf::
 read_chars(char *start, size_t length) {
   if (length == 0) {
+    // Trivial no-op.
     return 0;
   }
 
   // Make sure the write buffer is flushed.
   sync();
+
+  if (_open_mode & ios::binary) {
+    // If the file is opened in binary mode, just read the data in the
+    // file.
+    return read_chars_raw(start, length);
+  }
+
+  // The file is opened in text mode.  We have to decode newline
+  // characters in the file.
+  char *buffer = (char *)alloca(length);
+
+  size_t read_length;
+  size_t final_length;
+  do {
+    read_length = length - 1;
+    if (_last_read_nl != 0) {
+      // If we have a newline character to grow on, we might need to
+      // expand the buffer we read from the file by one character.  In
+      // that case, read one character less to make room for it.
+      // (Otherwise, we are confident that the buffer will not expand
+      // when we decode the newlines.)
+      --read_length;
+    }
+    read_length = read_chars_raw(buffer, read_length);
+    final_length = decode_newlines(start, length, buffer, read_length);
+
+    // If we decoded all of the characters away, but we read nonzero
+    // characters, go back and get some more.
+  } while (read_length != 0 && final_length == 0);
+
+  return final_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::write_chars
+//       Access: Private
+//  Description: Outputs the indicated stream of characters to the
+//               current file position.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+write_chars(const char *start, size_t length) {
+  if (length == 0) {
+    // Trivial no-op.
+    return 0;
+  }
+
+  // Make sure the read buffer is flushed.
+  size_t n = egptr() - gptr();
+  gbump(n);
+  _gpos -= n;
+
+  // Windows case.
+  if (_open_mode & ios::binary) {
+    // If the file is opened in binary mode, just write the data to the
+    // file.
+    return write_chars_raw(start, length);
+  }
+
+  // The file is opened in text mode.  We have to encode newline
+  // characters to the file.
+
+#ifdef _WIN32
+  // Windows requires a larger buffer here, since we are writing two
+  // newline characters for every one.
+  size_t buffer_length = length * 2;
+#else
+  size_t buffer_length = length;
+#endif  // _WIN32
+
+  char *buffer = (char *)alloca(buffer_length);
+
+  size_t write_length = encode_newlines(buffer, buffer_length, start, length);
+  return write_chars_raw(buffer, write_length);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::read_chars_raw
+//       Access: Private
+//  Description: Reads raw data from the file directly into the
+//               indicated buffer.  Returns the number of characters
+//               read.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+read_chars_raw(char *start, size_t length) {
+  if (length == 0) {
+    return 0;
+  }
   
 #ifdef _WIN32
   // Windows case.
@@ -494,22 +593,16 @@ read_chars(char *start, size_t length) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::write_chars
+//     Function: PandaFileStreamBuf::write_chars_raw
 //       Access: Private
-//  Description: Outputs the indicated stream of characters to the
-//               current file position.
+//  Description: Writes the indicated buffer directly to the file
+//               stream.  Returns the number of characters written.
 ////////////////////////////////////////////////////////////////////
 size_t PandaFileStreamBuf::
-write_chars(const char *start, size_t length) {
+write_chars_raw(const char *start, size_t length) {
   if (length == 0) {
-    // Trivial no-op.
     return 0;
   }
-
-  // Make sure the read buffer is flushed.
-  size_t n = egptr() - gptr();
-  gbump(n);
-  _gpos -= n;
   
 #ifdef _WIN32
   // Windows case.
@@ -571,3 +664,179 @@ write_chars(const char *start, size_t length) {
 
   return length;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::decode_newlines
+//       Access: Private
+//  Description: Converts a buffer from universal newlines to \n.
+//
+//               Returns the number of characters placed in dest.
+//               This may also set (or read) the value of
+//               _last_read_nl, which is preserved from call-to-call
+//               to deal with newline combinations that straddle a
+//               read operation.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+decode_newlines(char *dest, size_t dest_length,
+                const char *source, size_t source_length) {
+  const char *p = source;  // Read from p
+  char *q = dest;          // Write to q
+
+  if (source_length == 0) {
+    // A special case: this is at end-of-file.  Resolve the hanging
+    // newline.
+    switch (_last_read_nl) {
+    case '\n':
+    case '\r':
+      // Close the newline to grow on.
+      assert(q < dest + dest_length);
+      *q++ = '\n';
+      _last_read_nl = 0;
+      break;
+    default:
+      break;
+    }
+  }
+
+  while (p < source + source_length) {
+    assert(q < dest + dest_length);
+    switch (*p) {
+    case '\n':
+      switch (_last_read_nl) {
+      case '\r':
+        // \r\n is an MS-DOS newline.
+        *q++ = '\n';
+        _last_read_nl = 0;
+        break;
+      case '\n':
+        // \n\n means one Unix newline, and one more to grow on.
+        *q++ = '\n';
+        _last_read_nl = '\n';
+        break;
+      default:
+        // A lone \n is a newline to grow on.
+        _last_read_nl = '\n';
+        break;
+      }
+      break;
+
+    case '\r':
+      switch (_last_read_nl) {
+      case '\n':
+        // \n\r is an MS-DOS newline.
+        *q++ = '\n';
+        _last_read_nl = 0;
+        break;
+      case '\r':
+        // \r\r means one Apple newline, and one more to grow on.
+        *q++ = '\n';
+        _last_read_nl = '\r';
+        break;
+      default:
+        // A lone \r is a newline to grow on.
+        _last_read_nl = '\r';
+        break;
+      }
+      break;
+
+    default:
+      switch (_last_read_nl) {
+      case '\n':
+      case '\r':
+        // Close the newline to grow on.
+        *q++ = '\n';
+        _last_read_nl = 0;
+        break;
+      default:
+        break;
+      }
+      assert(q < dest + dest_length);
+      *q++ = *p;
+    }
+    ++p;
+  }
+
+  return q - dest;
+}
+
+#ifdef _WIN32
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::encode_newlines
+//       Access: Private
+//  Description: Windows case: Converts a buffer from \n to \n\r.
+//
+//               To allow for full buffer expansion, dest_length
+//               should be at least 2*source_length.
+//
+//               Returns the number of characters placed in dest.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+encode_newlines(char *dest, size_t dest_length,
+                const char *source, size_t source_length) {
+  const char *p = source;  // Read from p
+  char *q = dest;          // Write to q
+
+  while (p < source + source_length) {
+    assert(q < dest + dest_length);
+    switch (*p) {
+    case '\n':
+      *q++ = '\r';
+      assert(q < dest + dest_length);
+      *q++ = '\n';
+      break;
+
+    case '\r':
+      // Huh, shouldn't have one of these.
+      break;
+
+    default:
+      *q++ = *p;
+      break;
+    }
+
+    ++p;
+  }
+
+  return q - dest;
+}
+
+#else  // _WIN32
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::encode_newlines
+//       Access: Private
+//  Description: Posix case: Converts a buffer from \n to \n.
+//
+//               This is, of course, no conversion at all; but we do
+//               strip out \r characters if they appear in the buffer;
+//               this will help programmers to realize when they have
+//               incorrectly tagged a binary file with text mode, even
+//               on a Posix environment.
+//
+//               Returns the number of characters placed in dest.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+encode_newlines(char *dest, size_t dest_length,
+                const char *source, size_t source_length) {
+  const char *p = source;  // Read from p
+  char *q = dest;          // Write to q
+
+  while (p < source + source_length) {
+    assert(q < dest + dest_length);
+    switch (*p) {
+    case '\r':
+      break;
+
+    default:
+      *q++ = *p;
+      break;
+    }
+
+    ++p;
+  }
+
+  return q - dest;
+}
+
+#endif  // _WIN32
