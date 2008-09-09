@@ -512,7 +512,7 @@ main(int argc, char *argv[]) {
     Filename nfilename = filename;
     nfilename.set_extension("N");
     nfilename.set_text();
-    ifstream nfile;
+    pifstream nfile;
     if (nfilename.open_read(nfile)) {
       builder.read_command_file(nfile);
     }
@@ -526,8 +526,8 @@ main(int argc, char *argv[]) {
   int file_identifier = time((time_t *)NULL);
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
     
-  ofstream * the_output_include = NULL;
-  ofstream output_include;
+  pofstream * the_output_include = NULL;
+  pofstream output_include;
   
 
   if (1==2 && !output_include_filename.empty()) 
@@ -556,7 +556,7 @@ main(int argc, char *argv[]) {
   // Now output all of the wrapper functions.
   if (!output_code_filename.empty())
   {
-    ofstream output_code;
+    pofstream output_code;
     output_code_filename.open_write(output_code);
 
     output_code
@@ -585,7 +585,7 @@ main(int argc, char *argv[]) {
 
   // And now output the bulk of the database.
   if (!output_data_filename.empty()) {
-    ofstream output_data;
+    pofstream output_data;
     output_data_filename.open_write(output_data);
 
     if (output_data.fail()) 

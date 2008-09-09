@@ -121,7 +121,7 @@ open(const CPPFile &file) {
   assert(_in == NULL);
 
   _file = file;
-  ifstream *in = new ifstream;
+  pifstream *in = new pifstream;
   _in = in;
 
   return _file._filename.open_read(*in);

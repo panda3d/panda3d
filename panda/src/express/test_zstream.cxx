@@ -128,7 +128,7 @@ main(int argc, char *argv[]) {
   Filename source_filename = argv[1];
   source_filename.set_binary();
 
-  ifstream source;
+  pifstream source;
 
   if (!source_filename.open_read(source)) {
     cerr << "Unable to open source " << source_filename << ".\n";

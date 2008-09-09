@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
   // Now output the table.
   if (!output_code_filename.empty()) 
   {
-    ofstream output_code;
+    pofstream output_code;
 
     if (!output_code_filename.open_write(output_code)) 
     {

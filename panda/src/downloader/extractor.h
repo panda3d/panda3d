@@ -73,7 +73,7 @@ private:
   size_t _subfile_length;
   size_t _total_bytes_extracted;
   istream *_read;
-  ofstream _write;
+  pofstream _write;
   Filename _subfile_filename;
 };
 

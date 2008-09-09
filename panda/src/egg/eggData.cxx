@@ -249,7 +249,7 @@ write_egg(Filename filename) {
   }
 #endif  // HAVE_ZLIB
 
-  ofstream file;
+  pofstream file;
   if (!filename.open_write(file)) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;

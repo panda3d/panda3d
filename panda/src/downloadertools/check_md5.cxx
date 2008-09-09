@@ -25,7 +25,7 @@
 
 bool output_decimal = false;
 bool suppress_filename = false;
-ofstream binary_output;
+pofstream binary_output;
 
 void
 usage() {

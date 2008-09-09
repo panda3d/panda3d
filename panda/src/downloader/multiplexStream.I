@@ -72,7 +72,7 @@ add_standard_output() {
 INLINE bool MultiplexStream::
 add_file(Filename file) {
   file.set_text();
-  ofstream *out = new ofstream;
+  pofstream *out = new pofstream;
   if (!file.open_append(*out)) {
     delete out;
     return false;

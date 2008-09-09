@@ -285,7 +285,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     }
 
   } else {
-    ofstream *new_ostream = new ofstream;
+    pofstream *new_ostream = new pofstream;
     Filename actual_name = Filename::binary_filename(filename);
     if (!actual_name.open_write(*new_ostream)) {
       delete new_ostream;

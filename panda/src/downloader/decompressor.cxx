@@ -92,30 +92,30 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   _source_filename = Filename(source_file);
   _source_filename.set_binary();
 
-  ifstream *source_fstream = new ifstream;
-  _source = source_fstream;
-  if (!_source_filename.open_read(*source_fstream)) {
+  pifstream *source_pfstream = new pifstream;
+  _source = source_pfstream;
+  if (!_source_filename.open_read(*source_pfstream)) {
     downloader_cat.error()
       << "Unable to read " << _source_filename << "\n";
     return get_write_error();
   }
 
   // Determine source file length
-  source_fstream->seekg(0, ios::end);
-  _source_length = source_fstream->tellg();
+  source_pfstream->seekg(0, ios::end);
+  _source_length = source_pfstream->tellg();
   if (_source_length == 0) {
     downloader_cat.warning()
       << "Zero length file: " << source_file << "\n";
     return EU_error_file_empty;
   }
-  source_fstream->seekg(0, ios::beg);
+  source_pfstream->seekg(0, ios::beg);
 
   // Open destination file
   Filename dest_filename(dest_file);
   dest_filename.set_binary();
 
-  ofstream *dest_fstream = new ofstream;
-  _dest = dest_fstream;
+  pofstream *dest_pfstream = new pofstream;
+  _dest = dest_pfstream;
   if (dest_filename.exists()) {
     downloader_cat.info()
       << dest_filename << " already exists, removing.\n";
@@ -130,7 +130,7 @@ initiate(const Filename &source_file, const Filename &dest_file) {
         << dest_filename << " does not already exist.\n";
     }
   }
-  if (!dest_filename.open_write(*dest_fstream, true)) {
+  if (!dest_filename.open_write(*dest_pfstream, true)) {
     downloader_cat.error()
       << "Unable to write to " << dest_filename << "\n";
     return get_write_error();

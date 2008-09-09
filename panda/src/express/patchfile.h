@@ -175,9 +175,9 @@ protected:
   PN_uint32 _total_bytes_to_process;
   PN_uint32 _total_bytes_processed;
 
-  ifstream _patch_stream;
-  ofstream _write_stream;
-  ifstream _origfile_stream;
+  pifstream _patch_stream;
+  pofstream _write_stream;
+  pifstream _origfile_stream;
 
   Filename _patch_file;
   Filename _orig_file;

@@ -100,7 +100,12 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     flags |= O_NONBLOCK;
 #endif
 
-    _fd = open(os_specific.c_str(), flags, 0666);
+    _fd = ::open(os_specific.c_str(), flags, 0666);
+    while (_fd == -1 && errno == EAGAIN) {
+      Thread::force_yield();
+      _fd = ::open(os_specific.c_str(), flags, 0666);
+    }
+
     if (_fd == -1) {
       // Couldn't open the file: permissions problem or bad directory.
       if (!_filename.exists()) {
@@ -230,12 +235,12 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
       gobj_cat.error()
         << "Error seeking to position " << block->get_start() << " in save file.\n";
-      return false;
+      return NULL;
     }
 
     while (size > 0) {
       ssize_t result = ::write(_fd, data, size);
-      if (result == -1) {
+      if (result < 0) {
         if (errno == EAGAIN) {
           Thread::force_yield();
         } else {
@@ -243,6 +248,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
             << "Error writing " << size << " bytes to save file.  Disk full?\n";
           return NULL;
         }
+        continue;
       }
 
       Thread::consider_yield();

@@ -48,7 +48,7 @@ private:
   bool _read_first_datagram;
   bool _error;
   PT(VirtualFile) _vfile;
-  ifstream _in_file;
+  pifstream _in_file;
   istream *_in;
   bool _owns_in;
 };

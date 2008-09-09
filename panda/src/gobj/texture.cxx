@@ -4482,7 +4482,7 @@ read_dds_file(const Filename &fullpath, bool header_only) {
 bool Texture::
 write_txo_file(const Filename &fullpath) const {
   Filename filename = Filename::binary_filename(fullpath);
-  ofstream out;
+  pofstream out;
   if (!filename.open_write(out)) {
     gobj_cat.error()
       << "Unable to open " << filename << "\n";

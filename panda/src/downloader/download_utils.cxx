@@ -22,7 +22,7 @@
 
 unsigned long
 check_crc(Filename name) {
-  ifstream read_stream;
+  pifstream read_stream;
   name.set_binary();
   if (!name.open_read(read_stream)) {
     downloader_cat.error()
@@ -48,7 +48,7 @@ check_crc(Filename name) {
 
 unsigned long
 check_adler(Filename name) {
-  ifstream read_stream;
+  pifstream read_stream;
   name.set_binary();
   if (!name.open_read(read_stream)) {
     downloader_cat.error()

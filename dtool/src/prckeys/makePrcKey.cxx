@@ -144,7 +144,7 @@ write_public_keys(Filename outfile) {
   outfile.set_text();
   cerr << "Rewriting " << outfile << "\n";
 
-  ofstream out;
+  pofstream out;
   if (!outfile.open_write(out)) {
     cerr << "Unable to open " << outfile << " for writing.\n";
     exit(1);
@@ -212,7 +212,7 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
   outfile.set_text();
   cerr << "Rewriting " << outfile << "\n";
 
-  ofstream out;
+  pofstream out;
   if (!outfile.open_write(out)) {
     cerr << "Unable to open " << outfile << " for writing.\n";
     exit(1);

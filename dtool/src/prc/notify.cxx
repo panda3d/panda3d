@@ -540,7 +540,7 @@ config_initialized() {
       } else {
         Filename filename = notify_output;
         filename.set_text();
-        ofstream *out = new ofstream;
+        pofstream *out = new pofstream;
         if (!filename.open_write(*out)) {
           nout << "Unable to open file " << filename << " for output.\n";
           delete out;

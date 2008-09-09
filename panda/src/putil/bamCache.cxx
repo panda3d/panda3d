@@ -216,7 +216,7 @@ store(BamCacheRecord *record) {
   temp_pathname.set_extension(extension);
   temp_pathname.set_binary();
 
-  ofstream temp_file;
+  pofstream temp_file;
   if (!temp_pathname.open_write(temp_file)) {
     util_cat.error()
       << "Could not open cache file: " << temp_pathname << "\n";
@@ -660,7 +660,7 @@ do_read_index(Filename &index_pathname) {
   }
 
   index_pathname.set_binary();
-  ifstream index_file;
+  pifstream index_file;
   if (!index_pathname.open_read(index_file)) {
     util_cat.error()
       << "Could not open index file: " << index_pathname << "\n";
@@ -725,7 +725,7 @@ do_read_index(Filename &index_pathname) {
 bool BamCache::
 do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
   index_pathname.set_binary();
-  ofstream index_file;
+  pofstream index_file;
   
   if (!index_pathname.open_write(index_file)) {
     util_cat.error()
@@ -851,7 +851,7 @@ read_record(const Filename &source_pathname,
 PT(BamCacheRecord) BamCache::
 do_read_record(Filename &cache_pathname, bool read_data) {
   cache_pathname.set_binary();
-  ifstream cache_file;
+  pifstream cache_file;
   if (!cache_pathname.open_read(cache_file)) {
     util_cat.debug()
       << "Could not open cache file: " << cache_pathname << "\n";

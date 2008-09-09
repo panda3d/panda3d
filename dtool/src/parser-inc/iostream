@@ -34,6 +34,8 @@ __published:
     cur = 1,
     end = 2,
   };
+  enum openmode {
+  };
 };
 class ios : public ios_base {
 __published:

@@ -13,16 +13,19 @@
     config_dtoolutil.h \
     executionEnvironment.I executionEnvironment.h filename.I  \
     filename.h load_dso.h dSearchPath.I dSearchPath.h \
+    pandaFileStream.h pandaFileStream.I \
+    pandaFileStreamBuf.h \
     pandaSystem.h pandaVersion.h \
-    pfstream.h  \
+    pfstream.h pfstream.I pfstreamBuf.h \
     vector_string.h gnu_getopt.c gnu_getopt.h gnu_getopt1.c  \
-    pfstreamBuf.h vector_src.h 
+    vector_src.h 
 
   #define INCLUDED_SOURCES \
     checkPandaVersion.cxx \
     config_dtoolutil.cxx \
     executionEnvironment.cxx filename.cxx load_dso.cxx  \
     dSearchPath.cxx \
+    pandaFileStream.cxx pandaFileStreamBuf.cxx \
     pandaSystem.cxx \
     pfstreamBuf.cxx pfstream.cxx \
     vector_string.cxx
@@ -32,9 +35,12 @@
     config_dtoolutil.h \
     executionEnvironment.I executionEnvironment.h filename.I    \
     filename.h load_dso.h dSearchPath.I dSearchPath.h   \
+    pandaFileStream.h pandaFileStream.I \
+    pandaFileStreamBuf.h \
     pandaSystem.h pandaVersion.h \
-    pfstream.h pfstream.I vector_string.h gnu_getopt.h \
-    pfstreamBuf.h vector_src.cxx vector_src.h
+    pfstream.h pfstream.I pfstreamBuf.h \
+    vector_string.h gnu_getopt.h \
+    vector_src.cxx vector_src.h
 #end lib_target
 
 #begin test_bin_target

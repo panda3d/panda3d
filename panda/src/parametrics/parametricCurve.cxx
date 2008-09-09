@@ -363,7 +363,7 @@ stitch(const ParametricCurve *, const ParametricCurve *) {
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 write_egg(Filename filename, CoordinateSystem cs) {
-  ofstream out;
+  pofstream out;
   filename.set_text();
 
   if (!filename.open_write(out)) {

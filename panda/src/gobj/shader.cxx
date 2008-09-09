@@ -16,8 +16,6 @@
 #include "shader.h"
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
-#include <iostream>
-#include <fstream>
 
 #ifdef HAVE_CG
 #include "Cg/cg.h"
@@ -1511,7 +1509,7 @@ make(const string &body) {
     fns << "genshader" << index;
     string fn = fns.str();
     gobj_cat.warning() << "Dumping shader: " << fn << "\n";
-    ofstream s;
+    pofstream s;
     s.open(fn.c_str());
     s << body;
     s.close();

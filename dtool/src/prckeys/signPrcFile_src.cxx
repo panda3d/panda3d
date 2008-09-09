@@ -155,7 +155,7 @@ void
 sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   filename.set_text();
 
-  ifstream in;
+  pifstream in;
   if (!filename.open_read(in)) {
     cerr << "Unable to read file " << filename << "\n";
     exit(1);
@@ -223,7 +223,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
 
   // Now open the file in write mode and rewrite it with the new
   // signature.
-  ofstream out;
+  pofstream out;
   if (!filename.open_write(out)) {
     cerr << "Unable to rewrite file " << filename << "\n";
     exit(1);

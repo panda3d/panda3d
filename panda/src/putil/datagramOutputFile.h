@@ -42,7 +42,7 @@ public:
 private:
   bool _wrote_first_datagram;
   bool _error;
-  ofstream _out_file;
+  pofstream _out_file;
   ostream *_out;
   bool _owns_out;
 };

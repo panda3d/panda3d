@@ -309,7 +309,7 @@ reload_implicit_pages() {
       // Read and decrypt the file.
       filename.set_binary();
       
-      ifstream in;
+      pifstream in;
       if (!filename.open_read(in)) {
         prc_cat.error()
           << "Unable to read " << filename << "\n";
@@ -326,7 +326,7 @@ reload_implicit_pages() {
       // Just read the file.
       filename.set_text();
       
-      ifstream in;
+      pifstream in;
       if (!filename.open_read(in)) {
         prc_cat.error()
           << "Unable to read " << filename << "\n";

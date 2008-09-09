@@ -103,7 +103,7 @@ open_read_file(const Filename &file) const {
 #endif  // WIN32
   Filename pathname(_physical_filename, file);
   pathname.set_binary();
-  ifstream *stream = new ifstream;
+  pifstream *stream = new pifstream;
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
     close_read_file(stream);

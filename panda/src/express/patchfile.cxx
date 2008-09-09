@@ -1397,7 +1397,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   patch_name.set_binary();
 
   // Open the original file for read
-  ifstream stream_orig;
+  pifstream stream_orig;
   file_orig.set_binary();
   if (!file_orig.open_read(stream_orig)) {
     express_cat.error()
@@ -1406,7 +1406,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   }
 
   // Open the new file for read
-  ifstream stream_new;
+  pifstream stream_new;
   file_new.set_binary();
   if (!file_new.open_read(stream_new)) {
     express_cat.error()
@@ -1415,7 +1415,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
   }
 
   // Open patch file for write
-  ofstream write_stream;
+  pofstream write_stream;
   if (!patch_name.open_write(write_stream)) {
     express_cat.error()
       << "Patchfile::build() - Failed to open file: " << patch_name << endl;

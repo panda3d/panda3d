@@ -16,6 +16,7 @@
 #define FILENAME_H
 
 #include "dtoolbase.h"
+#include "pandaFileStream.h"
 #include "typeHandle.h"
 #include "register_type.h"
 #include "vector_string.h"
@@ -178,6 +179,11 @@ PUBLISHED:
   bool open_write(ofstream &stream, bool truncate = true) const;
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
+
+  bool open_read(pifstream &stream) const;
+  bool open_write(pofstream &stream, bool truncate = true) const;
+  bool open_append(pofstream &stream) const;
+  bool open_read_write(pfstream &stream) const;
 
   bool chdir() const;
   bool touch() const;

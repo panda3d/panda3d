@@ -705,7 +705,7 @@ repack() {
   }
   Filename temp_filename = Filename::temporary(dirname, "mftemp");
   temp_filename.set_binary();
-  ofstream temp;
+  pofstream temp;
   if (!temp_filename.open_write(temp)) {
     express_cat.info()
       << "Unable to open temporary file " << temp_filename << "\n";
@@ -1028,7 +1028,7 @@ get_subfile_internal_length(int index) const {
 //  Description: Returns an istream that may be used to read the
 //               indicated subfile.  You may seek() within this
 //               istream to your heart's content; even though it will
-//               be a reference to the already-opened fstream of the
+//               be a reference to the already-opened pfstream of the
 //               Multifile itself, byte 0 appears to be the beginning
 //               of the subfile and EOF appears to be the end of the
 //               subfile.
@@ -1132,7 +1132,7 @@ extract_subfile(int index, const Filename &filename) {
   Filename fname = filename;
   fname.set_binary();
   fname.make_dir();
-  ofstream out;
+  pofstream out;
   if (!fname.open_write(out, true)) {
     express_cat.info()
       << "Unable to write to file " << filename << "\n";
@@ -1194,7 +1194,7 @@ compare_subfile(int index, const Filename &filename) {
     return false;
   }
 
-  ifstream in2;
+  pifstream in2;
   Filename bin_filename = Filename::binary_filename(filename);
   if (!bin_filename.open_read(in2)) {
     express_cat.info()
@@ -1752,7 +1752,7 @@ write_data(ostream &write, istream *read, streampos fpos,
   nassertr(write.tellp() == fpos, fpos);
 
   istream *source = _source;
-  ifstream source_file;
+  pifstream source_file;
   if (source == (istream *)NULL && !_source_filename.empty()) {
     // If we have a filename, open it up and read that.
     if (!_source_filename.open_read(source_file)) {
@@ -1871,7 +1871,7 @@ write_data(ostream &write, istream *read, streampos fpos,
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Subfile::rewrite_index_data_start
 //       Access: Public
-//  Description: Seeks within the indicate fstream back to the index
+//  Description: Seeks within the indicate pfstream back to the index
 //               record and rewrites just the _data_start and
 //               _data_length part of the index record.
 ////////////////////////////////////////////////////////////////////
@@ -1901,7 +1901,7 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Subfile::rewrite_index_flags
 //       Access: Public
-//  Description: Seeks within the indicate fstream back to the index
+//  Description: Seeks within the indicate pfstream back to the index
 //               record and rewrites just the _flags part of the
 //               index record.
 ////////////////////////////////////////////////////////////////////

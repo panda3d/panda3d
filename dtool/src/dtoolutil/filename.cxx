@@ -1914,6 +1914,173 @@ open_read_write(fstream &stream) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::open_read
+//       Access: Published
+//  Description: Opens the indicated pifstream for reading the file, if
+//               possible.  Returns true if successful, false
+//               otherwise.  This requires the setting of the
+//               set_text()/set_binary() flags to open the file
+//               appropriately as indicated; it is an error to call
+//               open_read() without first calling one of set_text()
+//               or set_binary().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+open_read(pifstream &stream) const {
+  assert(!get_pattern());
+  assert(is_text() || is_binary());
+
+  ios_openmode open_mode = ios::in;
+
+#ifdef HAVE_IOS_BINARY
+  // For some reason, some systems (like Irix) don't define
+  // ios::binary.
+  if (!is_text()) {
+    open_mode |= ios::binary;
+  }
+#endif
+
+  string os_specific = to_os_specific();
+  stream.clear();
+  stream.open(os_specific.c_str(), open_mode);
+  return (!stream.fail());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::open_write
+//       Access: Published
+//  Description: Opens the indicated pifstream for writing the file, if
+//               possible.  Returns true if successful, false
+//               otherwise.  This requires the setting of the
+//               set_text()/set_binary() flags to open the file
+//               appropriately as indicated; it is an error to call
+//               open_read() without first calling one of set_text()
+//               or set_binary().
+//
+//               If truncate is true, the file is truncated to zero
+//               length upon opening it, if it already exists.
+//               Otherwise, the file is kept at its original length.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+open_write(pofstream &stream, bool truncate) const {
+  assert(!get_pattern());
+  assert(is_text() || is_binary());
+
+  ios_openmode open_mode = ios::out;
+
+  if (truncate) {
+    open_mode |= ios::trunc;
+
+  } else {
+    // Some systems insist on having ios::in set to prevent the file
+    // from being truncated when we open it.  Makes ios::trunc kind of
+    // pointless, doesn't it?  On the other hand, setting ios::in also
+    // seems to imply ios::nocreate (!), so we should only set this if
+    // the file already exists.
+    if (exists()) {
+      open_mode |= ios::in;
+    }
+  }
+
+#ifdef HAVE_IOS_BINARY
+  // For some reason, some systems (like Irix) don't define
+  // ios::binary.
+  if (!is_text()) {
+    open_mode |= ios::binary;
+  }
+#endif
+
+  stream.clear();
+  string os_specific = to_os_specific();
+#ifdef HAVE_OPEN_MASK
+  stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
+#endif
+
+  return (!stream.fail());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::open_append
+//       Access: Published
+//  Description: Opens the indicated pifstream for writing the file, if
+//               possible.  Returns true if successful, false
+//               otherwise.  This requires the setting of the
+//               set_text()/set_binary() flags to open the file
+//               appropriately as indicated; it is an error to call
+//               open_read() without first calling one of set_text()
+//               or set_binary().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+open_append(pofstream &stream) const {
+  assert(!get_pattern());
+  assert(is_text() || is_binary());
+
+  ios_openmode open_mode = ios::app;
+
+#ifdef HAVE_IOS_BINARY
+  // For some reason, some systems (like Irix) don't define
+  // ios::binary.
+  if (!is_text()) {
+    open_mode |= ios::binary;
+  }
+#endif
+
+  stream.clear();
+  string os_specific = to_os_specific();
+#ifdef HAVE_OPEN_MASK
+  stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
+#endif
+
+  return (!stream.fail());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::open_read_write
+//       Access: Published
+//  Description: Opens the indicated pfstream for read/write access to
+//               the file, if possible.  Returns true if successful,
+//               false otherwise.  This requires the setting of the
+//               set_text()/set_binary() flags to open the file
+//               appropriately as indicated; it is an error to call
+//               open_read_write() without first calling one of
+//               set_text() or set_binary().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+open_read_write(pfstream &stream) const {
+  assert(!get_pattern());
+  assert(is_text() || is_binary());
+
+  ios_openmode open_mode = ios::out | ios::in;
+
+  // Since ios::in also seems to imply ios::nocreate (!), we must
+  // guarantee the file already exists before we try to open it.
+  if (!exists()) {
+    touch();
+  }
+
+#ifdef HAVE_IOS_BINARY
+  // For some reason, some systems (like Irix) don't define
+  // ios::binary.
+  if (!is_text()) {
+    open_mode |= ios::binary;
+  }
+#endif
+
+  stream.clear();
+  string os_specific = to_os_specific();
+#ifdef HAVE_OPEN_MASK
+  stream.open(os_specific.c_str(), open_mode, 0666);
+#else
+  stream.open(os_specific.c_str(), open_mode);
+#endif
+
+  return (!stream.fail());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::touch
 //       Access: Published
 //  Description: Updates the modification time of the file to the

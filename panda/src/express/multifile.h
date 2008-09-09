@@ -177,9 +177,9 @@ private:
   bool _encryption_flag;
   string _encryption_password;
 
-  ifstream _read_file;
-  ofstream _write_file;
-  fstream _read_write_file;
+  pifstream _read_file;
+  pofstream _write_file;
+  pfstream _read_write_file;
   Filename _multifile_name;
 
   int _file_major_ver;

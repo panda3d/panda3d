@@ -911,7 +911,7 @@ load_latest() {
 
       } else {
 
-        ifstream input;
+        pifstream input;
         pathname.set_text();
         if (!pathname.open_read(input)) {
           interrogatedb_cat->error() << "Unable to read " << pathname << ".\n";

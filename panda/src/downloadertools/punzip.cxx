@@ -110,7 +110,7 @@ main(int argc, char *argv[]) {
       }
 
       // Open source file
-      ifstream read_stream;
+      pifstream read_stream;
       source_file.set_binary();
       if (!source_file.open_read(read_stream)) {
         cerr << "Couldn't read: " << source_file << endl;
@@ -118,7 +118,7 @@ main(int argc, char *argv[]) {
 
       } else {
         // Open destination file
-        ofstream write_stream;
+        pofstream write_stream;
         dest_file.set_binary();
         if (!dest_file.open_write(write_stream, true)) {
           cerr << "Failed to open: " << dest_file << endl;

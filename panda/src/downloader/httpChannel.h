@@ -346,7 +346,7 @@ private:
   DownloadDest _download_dest;
   bool _subdocument_resumes;
   Filename _download_to_filename;
-  ofstream _download_to_file;
+  pofstream _download_to_file;
   Ramfile *_download_to_ramfile;
 
   int _read_index;

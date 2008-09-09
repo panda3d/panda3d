@@ -344,7 +344,7 @@ read_environment_variables() {
   // have a file called /proc/self/environ that may be read to
   // determine all of our environment variables.
 
-  ifstream proc("/proc/self/environ");
+  pifstream proc("/proc/self/environ");
   if (proc.fail()) {
     cerr << "Cannot read /proc/self/environ; environment variables unavailable.\n";
     return;
@@ -405,7 +405,7 @@ read_args() {
 #if defined(HAVE_PROC_SELF_MAPS)
   // This is how you tell whether or not libdtool.so is loaded,
   // and if so, where it was loaded from.
-  ifstream maps("/proc/self/maps");
+  pifstream maps("/proc/self/maps");
   while (!maps.fail() && !maps.eof()) {
     char buffer[PATH_MAX];
     buffer[0] = 0;
@@ -461,7 +461,7 @@ read_args() {
   // /proc/self/cmdline that may be read to determine all of our
   // command-line arguments.
 
-  ifstream proc("/proc/self/cmdline");
+  pifstream proc("/proc/self/cmdline");
   if (proc.fail()) {
     cerr << "Cannot read /proc/self/cmdline; command-line arguments unavailable to config.\n";
     return;

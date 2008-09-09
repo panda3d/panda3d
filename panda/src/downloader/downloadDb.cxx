@@ -362,7 +362,7 @@ read_db(Ramfile &file, bool want_server_info) {
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
 write_db(Filename &file, Db db, bool want_server_info) {
-  ofstream write_stream;
+  pofstream write_stream;
   file.set_binary();
   if (!file.open_write(write_stream)) {
     downloader_cat.error()
