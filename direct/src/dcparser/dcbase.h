@@ -115,6 +115,9 @@ typedef unsigned char PN_uint8;
 typedef unsigned short PN_uint16;
 typedef unsigned int PN_uint32;
 
+typedef ifstream pifstream;
+typedef ofstream pofstream;
+typedef fstream pfstream;
 
 #endif  // WITHIN_PANDA
 

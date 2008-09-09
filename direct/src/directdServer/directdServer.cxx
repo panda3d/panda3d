@@ -61,7 +61,7 @@ DirectDServer::handle_command(const string& cmd) {
 void
 DirectDServer::read_command(string& cmd) {
   try {
-    ifstream f;
+    pifstream f;
     f.open("directdCommand", ios::in | ios::binary);
     stringstream ss;
     const int buf_size=512;

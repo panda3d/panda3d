@@ -153,7 +153,7 @@ read(Filename filename) {
 
 #else  // WITHIN_PANDA
 
-  ifstream in;
+  pifstream in;
   in.open(filename.c_str());
 
   if (!in) {
@@ -204,7 +204,7 @@ read(istream &in, const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 write(Filename filename, bool brief) const {
-  ofstream out;
+  pofstream out;
 
 #ifdef WITHIN_PANDA
   filename.set_text();
