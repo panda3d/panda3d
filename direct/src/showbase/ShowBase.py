@@ -70,7 +70,8 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self):
-        if config.GetBool('want-variable-dump', 1):
+        __builtin__.__dev__ = config.GetBool('want-dev', 0)
+        if config.GetBool('want-variable-dump', not __dev__):
             ExceptionVarDump.install()
 
         # Locate the directory containing the main program
@@ -325,7 +326,6 @@ class ShowBase(DirectObject.DirectObject):
         __builtin__.cpMgr = ConfigPageManager.getGlobalPtr()
         __builtin__.cvMgr = ConfigVariableManager.getGlobalPtr()
         __builtin__.pandaSystem = PandaSystem.getGlobalPtr()
-        __builtin__.__dev__ = base.config.GetBool('want-dev', 0)
         __builtin__.wantUberdog = base.config.GetBool('want-uberdog', 1)
         if __debug__:
             __builtin__.deltaProfiler = DeltaProfiler.DeltaProfiler("ShowBase")
