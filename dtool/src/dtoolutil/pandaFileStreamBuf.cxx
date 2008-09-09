@@ -337,19 +337,31 @@ seekpos(streampos pos, ios_openmode which) {
 ////////////////////////////////////////////////////////////////////
 int PandaFileStreamBuf::
 overflow(int ch) {
+  bool okflag = true;
+
   size_t n = pptr() - pbase();
   if (n != 0) {
-    write_chars(pbase(), n);
-    pbump(-(int)n);
+    size_t wrote = write_chars(pbase(), n);
+    pbump(-(int)wrote);
+    if (wrote != n) {
+      okflag = false;
+    }
   }
 
-  if (ch != EOF) {
-    // Store the extra character back in the buffer.
-    assert(pptr() != epptr());
-    *(pptr()) = ch;
-    pbump(1);
+  if (okflag && ch != EOF) {
+    if (pptr() != epptr()) {
+      // Store the extra character back in the buffer.
+      *(pptr()) = ch;
+      pbump(1);
+    } else {
+      // No room to store ch.
+      okflag = false;
+    }
   }
 
+  if (!okflag) {
+    return EOF;
+  }
   return 0;
 }
 
@@ -363,9 +375,12 @@ int PandaFileStreamBuf::
 sync() {
   size_t n = pptr() - pbase();
 
-  write_chars(pbase(), n);
-  pbump(-(int)n);
+  size_t wrote = write_chars(pbase(), n);
+  pbump(-(int)wrote);
 
+  if (n != wrote) {
+    return EOF;
+  }
   return 0;
 }
 
@@ -485,11 +500,11 @@ read_chars(char *start, size_t length) {
 //  Description: Outputs the indicated stream of characters to the
 //               current file position.
 ////////////////////////////////////////////////////////////////////
-void PandaFileStreamBuf::
+size_t PandaFileStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length == 0) {
     // Trivial no-op.
-    return;
+    return 0;
   }
 
   // Make sure the read buffer is flushed.
@@ -518,7 +533,7 @@ write_chars(const char *start, size_t length) {
         << "Error writing " << length
         << " bytes to " << _filename << ", windows error code 0x" << hex
         << error << dec << ".  Disk full?\n";
-      return;
+      return bytes_written;
     }
     success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
   }
@@ -531,26 +546,29 @@ write_chars(const char *start, size_t length) {
     if (lseek(_fd, _ppos, SEEK_SET) == -1) {
       cerr
         << "Error seeking to position " << _ppos << " in " << _filename << "\n";
-      return;
+      return 0;
     }
   }
-  
-  while (length > 0) {
-    ssize_t result = ::write(_fd, start, length);
+
+  size_t remaining = length;
+  while (remaining > 0) {
+    ssize_t result = ::write(_fd, start, remaining);
     if (result < 0) {
       if (errno == EAGAIN) {
         thread_yield();
       } else {
         cerr
-          << "Error writing " << length << " bytes to " << _filename << "\n";
-        return;
+          << "Error writing " << remaining << " bytes to " << _filename << "\n";
+        return length - remaining;
       }
       continue;
     }
     
     start += result;
-    length -= result;
+    remaining -= result;
     _ppos += result;
   }
 #endif  // _WIN32
+
+  return length;
 }

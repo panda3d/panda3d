@@ -46,7 +46,7 @@ protected:
 
 private:
   size_t read_chars(char *start, size_t length);
-  void write_chars(const char *start, size_t length);
+  size_t write_chars(const char *start, size_t length);
 
 private:
   string _filename;
