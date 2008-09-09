@@ -518,7 +518,13 @@ write_chars(const char *start, size_t length) {
   char *buffer = (char *)alloca(buffer_length);
 
   size_t write_length = encode_newlines(buffer, buffer_length, start, length);
-  return write_chars_raw(buffer, write_length);
+  if (write_length == write_chars_raw(buffer, write_length)) {
+    // Success.  Return the number of original characters.
+    return length;
+  }
+
+  // Error.  Pretend we wrote nothing.
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
