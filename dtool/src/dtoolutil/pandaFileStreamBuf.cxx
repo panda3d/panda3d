@@ -618,6 +618,11 @@ write_chars_raw(const char *start, size_t length) {
   ppos.QuadPart = _ppos;
   overlapped.Offset = ppos.LowPart;
   overlapped.OffsetHigh = ppos.HighPart;
+
+  if (_open_mode & ios::app) {
+    overlapped.Offset = -1;
+    overlapped.OffsetHigh = -1;
+  }
   
   DWORD bytes_written = 0;
   BOOL success = WriteFile(_handle, start, length, &bytes_written, &overlapped);
