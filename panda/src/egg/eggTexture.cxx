@@ -151,7 +151,7 @@ write(ostream &out, int indent_level) const {
 
   if (get_texture_type() != TT_unspecified) {
     indent(out, indent_level + 2)
-      << "<Scalar> texture_type { " << get_texture_type() << " }\n";
+      << "<Scalar> type { " << get_texture_type() << " }\n";
   }
 
   if (get_format() != F_unspecified) {
