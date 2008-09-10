@@ -26,6 +26,11 @@ bool TextureReloadRequest::
 do_task() {
   // Don't reload the texture if it doesn't need it.
   if (_texture_context->was_image_modified()) {
+    double delay = async_load_delay;
+    if (delay != 0.0) {
+      Thread::sleep(delay);
+    }
+
     if (_allow_compressed) {
       _texture->get_ram_image();
     } else {
