@@ -1913,6 +1913,7 @@ open_read_write(fstream &stream) const {
   return (!stream.fail());
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read
 //       Access: Published
@@ -2079,6 +2080,7 @@ open_read_write(pfstream &stream) const {
 
   return (!stream.fail());
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::touch

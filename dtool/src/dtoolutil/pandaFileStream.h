@@ -86,8 +86,15 @@ private:
 
 #include "pandaFileStream.I"
 
+// Not ready for prime time yet.
+/*
 typedef IFileStream pifstream;
 typedef OFileStream pofstream;
 typedef FileStream pfstream;
+*/
+
+typedef ifstream pifstream;
+typedef ofstream pofstream;
+typedef fstream pfstream;
 
 #endif
