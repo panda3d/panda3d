@@ -19,8 +19,9 @@
 
 #include "asyncTask.h"
 #include "texture.h"
-#include "textureContext.h"
+#include "preparedGraphicsObjects.h"
 #include "pointerTo.h"
+#include "pmutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureReloadRequest
@@ -30,14 +31,16 @@
 //               used by GraphicsStateGuardian::async_reload_texture(),
 //               when get_incomplete_render() is true.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH TextureReloadRequest : public AsyncTask {
+class EXPCL_PANDA_GOBJ TextureReloadRequest : public AsyncTask {
 public:
   ALLOC_DELETED_CHAIN(TextureReloadRequest);
 
 PUBLISHED:
-  INLINE TextureReloadRequest(TextureContext *tc, bool allow_compressed);
+  INLINE TextureReloadRequest(PreparedGraphicsObjects *pgo, Texture *texture,
+                              bool allow_compressed);
   
-  INLINE TextureContext *get_texture_context() const;
+  INLINE PreparedGraphicsObjects *get_prepared_graphics_objects() const;
+  INLINE Texture *get_texture() const;
   INLINE bool get_allow_compressed() const;
   INLINE bool is_ready() const;
   
@@ -45,9 +48,9 @@ protected:
   virtual bool do_task();
   
 private:
-  TextureContext *_texture_context;
-  bool _allow_compressed;
+  PT(PreparedGraphicsObjects) _pgo;
   PT(Texture) _texture;
+  bool _allow_compressed;
   bool _is_ready;
   
 public:

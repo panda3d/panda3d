@@ -765,13 +765,13 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   case AlphaTestAttrib::M_less:
   case AlphaTestAttrib::M_less_equal:
     alpha_test_state = 1;    // aless
-    _c->zb->reference_alpha = (int)_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX;
+    _c->zb->reference_alpha = (int)(_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
     break;
 
   case AlphaTestAttrib::M_greater:
   case AlphaTestAttrib::M_greater_equal:
     alpha_test_state = 2;    // amore
-    _c->zb->reference_alpha = (int)_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX;
+    _c->zb->reference_alpha = (int)(_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
     break;
   }
 

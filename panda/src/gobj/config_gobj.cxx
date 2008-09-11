@@ -38,6 +38,7 @@
 #include "sliderTable.h"
 #include "texture.h"
 #include "texturePoolFilter.h"
+#include "textureReloadRequest.h"
 #include "textureStage.h"
 #include "textureContext.h"
 #include "shader.h"
@@ -397,6 +398,16 @@ ConfigVariableInt adaptive_lru_max_updates_per_frame
  PRC_DESC("The number of pages the AdaptiveLru class will update per "
           "frame.  Do not set this too high or it will degrade "
           "performance."));
+
+ConfigVariableDouble async_load_delay
+("async-load-delay", 0.0,
+PRC_DESC("If this is nonzero, it represents an artificial delay, "
+         "in seconds, that is imposed on every asynchronous load attempt "
+         "(within the thread).  Its purpose is to help debug errors that "
+         "may occur when an asynchronous load is delayed.  The "
+         "delay is per-model, and all aync loads will be queued "
+         "up behind the delay--it is as if the time it takes to read a "
+         "file is increased by this amount per read."));
  
 
 ConfigureFn(config_gobj) {
@@ -435,6 +446,7 @@ ConfigureFn(config_gobj) {
   Texture::init_type();
   TextureContext::init_type();
   TexturePoolFilter::init_type();
+  TextureReloadRequest::init_type();
   TextureStage::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();

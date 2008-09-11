@@ -53,7 +53,6 @@ extern ConfigVariableInt max_collect_indices;
 extern ConfigVariableBool premunge_data;
 extern ConfigVariableBool preserve_geom_nodes;
 extern ConfigVariableBool flatten_geoms;
-extern ConfigVariableDouble async_load_delay;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;

@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureReloadRequest.h"
-#include "loader.h"
+#include "textureContext.h"
 
 TypeHandle TextureReloadRequest::_type_handle;
 
@@ -25,16 +25,18 @@ TypeHandle TextureReloadRequest::_type_handle;
 bool TextureReloadRequest::
 do_task() {
   // Don't reload the texture if it doesn't need it.
-  if (_texture_context->was_image_modified()) {
+  if (_texture->was_image_modified(_pgo)) {
     double delay = async_load_delay;
     if (delay != 0.0) {
       Thread::sleep(delay);
     }
-
-    if (_allow_compressed) {
-      _texture->get_ram_image();
-    } else {
-      _texture->get_uncompressed_ram_image();
+    
+    if (_texture->was_image_modified(_pgo)) {
+      if (_allow_compressed) {
+        _texture->get_ram_image();
+      } else {
+        _texture->get_uncompressed_ram_image();
+      }
     }
   }
   _is_ready = true;

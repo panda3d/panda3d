@@ -78,15 +78,23 @@ typedef unsigned int PIXEL;
 #define PSZB 4
 #define PSZSH 5
 
-#define PIXEL_MULT(p1, p2) \
-  RGB_TO_PIXEL((PIXEL_R(p1) * PIXEL_R(p2)) >> 16, \
-               (PIXEL_G(p1) * PIXEL_G(p2)) >> 16, \
-               (PIXEL_B(p1) * PIXEL_B(p2)) >> 16)
+// Returns an unsigned product of c1 * c2
+#define PCOMPONENT_MULT(c1, c2) \
+  ((((unsigned int)(c1) * (unsigned int)(c2))) >> 16)
+
+// Returns a signed product of c1 * c2, where c1 is initially signed.
+// We leave 2 bits on the top to differentiate between c1 < 0 and c1 >
+// 0xffff; the result has the same sign.
+#define PALPHA_MULT(c1, c2) \
+  (((int)(((int)(c1) >> 2) * (unsigned int)(c2))) >> 14)
+
+#define PCOMPONENT_BLEND(c1, c2, a2) \
+  ((((unsigned int)(c1) * ((unsigned int)0xffff - (unsigned int)(a2)) + (unsigned int)(c2) * (unsigned int)(a2))) >> 16)
 
 #define PIXEL_BLEND(r1, g1, b1, r2, g2, b2, a2) \
-  RGBA_TO_PIXEL(((r1) * (0xffff - (a2)) + (r2) * (a2)) >> 16,   \
-                ((g1) * (0xffff - (a2)) + (g2) * (a2)) >> 16,   \
-                ((b1) * (0xffff - (a2)) + (b2) * (a2)) >> 16,   \
+  RGBA_TO_PIXEL(PCOMPONENT_BLEND(r1, r2, a2),   \
+                PCOMPONENT_BLEND(g1, g2, a2),   \
+                PCOMPONENT_BLEND(b1, b2, a2),   \
                 a2)
 #define PIXEL_BLEND_RGB(rgb, r, g, b, a) \
   PIXEL_BLEND(PIXEL_R(rgb), PIXEL_G(rgb), PIXEL_B(rgb), r, g, b, a)

@@ -182,16 +182,16 @@ static void FNAME(flat_textured) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
-      int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
+      int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,               \
-                                og0 * PIXEL_G(tmp) >> 16,               \
-                                ob0 * PIXEL_B(tmp) >> 16,               \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT(or0, PIXEL_R(tmp)),     \
+                                PCOMPONENT_MULT(og0, PIXEL_G(tmp)),     \
+                                PCOMPONENT_MULT(ob0, PIXEL_B(tmp)),     \
                                 a),                                     \
-                  or0 * PIXEL_R(tmp) >> 16,                             \
-                  og0 * PIXEL_G(tmp) >> 16,                             \
-                  ob0 * PIXEL_B(tmp) >> 16,                             \
+                  PCOMPONENT_MULT(or0, PIXEL_R(tmp)),                   \
+                  PCOMPONENT_MULT(og0, PIXEL_G(tmp)),                   \
+                  PCOMPONENT_MULT(ob0, PIXEL_B(tmp)),                   \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \
@@ -243,16 +243,16 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
+      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
-                                og1 * PIXEL_G(tmp) >> 16,               \
-                                ob1 * PIXEL_B(tmp) >> 16,               \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT(or1, PIXEL_R(tmp)),     \
+                                PCOMPONENT_MULT(og1, PIXEL_G(tmp)),     \
+                                PCOMPONENT_MULT(ob1, PIXEL_B(tmp)),     \
                                 a),                                     \
-                  or1 * PIXEL_R(tmp) >> 16,                             \
-                  og1 * PIXEL_G(tmp) >> 16,                             \
-                  ob1 * PIXEL_B(tmp) >> 16,                             \
+                  PCOMPONENT_MULT(or1, PIXEL_R(tmp)),                   \
+                  PCOMPONENT_MULT(og1, PIXEL_G(tmp)),                   \
+                  PCOMPONENT_MULT(ob1, PIXEL_B(tmp)),                   \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \
@@ -422,16 +422,16 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
-      int a = oa0 * PIXEL_A(tmp) >> 16;                                 \
+      int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or0 * PIXEL_R(tmp) >> 16,               \
-                                og0 * PIXEL_G(tmp) >> 16,               \
-                                ob0 * PIXEL_B(tmp) >> 16,               \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT(or0, PIXEL_R(tmp)),     \
+                                PCOMPONENT_MULT(og0, PIXEL_G(tmp)),     \
+                                PCOMPONENT_MULT(ob0, PIXEL_B(tmp)),     \
                                 a),                                     \
-                  or0 * PIXEL_R(tmp) >> 16,                             \
-                  og0 * PIXEL_G(tmp) >> 16,                             \
-                  ob0 * PIXEL_B(tmp) >> 16,                             \
+                  PCOMPONENT_MULT(or0, PIXEL_R(tmp)),                   \
+                  PCOMPONENT_MULT(og0, PIXEL_G(tmp)),                   \
+                  PCOMPONENT_MULT(ob0, PIXEL_B(tmp)),                   \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \
@@ -556,17 +556,17 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
-      int a = oa1 * PIXEL_A(tmp) >> 16;                                 \
+      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx); \
+      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(or1 * PIXEL_R(tmp) >> 16,               \
-                                og1 * PIXEL_G(tmp) >> 16,               \
-                                ob1 * PIXEL_B(tmp) >> 16,               \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT(or1, PIXEL_R(tmp)),     \
+                                PCOMPONENT_MULT(og1, PIXEL_G(tmp)),     \
+                                PCOMPONENT_MULT(ob1, PIXEL_B(tmp)),     \
                                 a),                                     \
-                  or1 * PIXEL_R(tmp) >> 16,                             \
-                  og1 * PIXEL_G(tmp) >> 16,                             \
-                  ob1 * PIXEL_B(tmp) >> 16,                             \
+                  PCOMPONENT_MULT(or1, PIXEL_R(tmp)),                   \
+                  PCOMPONENT_MULT(og1, PIXEL_G(tmp)),                   \
+                  PCOMPONENT_MULT(ob1, PIXEL_B(tmp)),                   \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \

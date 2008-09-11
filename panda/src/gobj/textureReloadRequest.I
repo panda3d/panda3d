@@ -20,24 +20,37 @@
 //               via load_async(), to begin an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 INLINE TextureReloadRequest::
-TextureReloadRequest(TextureContext *tc, bool allow_compressed) :
-  _texture_context(tc),
+TextureReloadRequest(PreparedGraphicsObjects *pgo, Texture *texture, 
+                     bool allow_compressed) :
+  _pgo(pgo),
+  _texture(texture),
   _allow_compressed(allow_compressed),
   _is_ready(false)
 {
-  nassertv(_texture_context != (TextureContext *)NULL);
-  _texture = _texture_context->get_texture();
+  nassertv(_pgo != (PreparedGraphicsObjects *)NULL);
+  nassertv(_texture != (Texture *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureReloadRequest::get_texture_context
+//     Function: TextureReloadRequest::get_prepared_graphics_objects
 //       Access: Published
-//  Description: Returns the TextureContext object associated with
+//  Description: Returns the PreparedGraphicsObjects object associated with
 //               this asynchronous TextureReloadRequest.
 ////////////////////////////////////////////////////////////////////
-INLINE TextureContext *TextureReloadRequest::
-get_texture_context() const {
-  return _texture_context;
+INLINE PreparedGraphicsObjects *TextureReloadRequest::
+get_prepared_graphics_objects() const {
+  return _pgo;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureReloadRequest::get_texture
+//       Access: Published
+//  Description: Returns the Texture object associated with
+//               this asynchronous TextureReloadRequest.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TextureReloadRequest::
+get_texture() const {
+  return _texture;
 }
 
 ////////////////////////////////////////////////////////////////////

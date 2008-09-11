@@ -2240,6 +2240,7 @@ async_reload_texture(TextureContext *tc) {
   nassertv(_loader != (Loader *)NULL);
 
   PT(AsyncTask) request = 
-    new TextureReloadRequest(tc, _supports_compressed_texture);
+    new TextureReloadRequest(_prepared_objects, tc->get_texture(),
+                             _supports_compressed_texture);
   _loader->load_async(request);
 }

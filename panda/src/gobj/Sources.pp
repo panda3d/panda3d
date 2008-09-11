@@ -59,6 +59,7 @@
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
     texturePoolFilter.I texturePoolFilter.h \
+    textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
@@ -123,6 +124,7 @@
     texturePeeker.cxx \
     texturePool.cxx \
     texturePoolFilter.cxx \
+    textureReloadRequest.cxx \
     textureStage.cxx \
     transformBlend.cxx \
     transformBlendTable.cxx \
@@ -190,6 +192,7 @@
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
     texturePoolFilter.I texturePoolFilter.h \
+    textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \

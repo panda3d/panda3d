@@ -94,7 +94,6 @@
 #include "texMatrixAttrib.h"
 #include "texProjectorEffect.h"
 #include "textureAttrib.h"
-#include "textureReloadRequest.h"
 #include "texGenAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
@@ -274,16 +273,6 @@ ConfigVariableBool flatten_geoms
           "only the NodePath interfaces; you may still make the lower-level "
           "SceneGraphReducer calls directly."));
 
-ConfigVariableDouble async_load_delay
-("async-load-delay", 0.0,
-PRC_DESC("If this is nonzero, it represents an artificial delay, "
-         "in seconds, that is imposed on every asynchronous load attempt "
-         "(within the thread).  Its purpose is to help debug errors that "
-         "may occur when an asynchronous load is delayed.  The "
-         "delay is per-model, and all aync loads will be queued "
-         "up behind the delay--it is as if the time it takes to read a "
-         "file is increased by this amount per read."));
-
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "
@@ -460,7 +449,6 @@ init_libpgraph() {
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();
   TextureAttrib::init_type();
-  TextureReloadRequest::init_type();
   TexGenAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();

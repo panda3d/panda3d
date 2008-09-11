@@ -17,6 +17,7 @@
 #include "texturePeeker.cxx"
 #include "texturePool.cxx"
 #include "texturePoolFilter.cxx"
+#include "textureReloadRequest.cxx"
 #include "textureStage.cxx"
 #include "transformBlend.cxx"
 #include "transformBlendTable.cxx"

@@ -71,6 +71,7 @@ PreparedGraphicsObjects::
     TextureContext *tc = (*tci);
     tc->set_owning_chain(NULL);
   }
+  // Is this a leak?  Should we delete these TextureContexts?
   _released_textures.clear();
 
   release_all_geoms();
@@ -213,7 +214,7 @@ void PreparedGraphicsObjects::
 release_texture(TextureContext *tc) {
   ReMutexHolder holder(_lock);
 
-  tc->get_texture()->clear_prepared(this);
+  tc->_texture->clear_prepared(this);
 
   // We have to set the Texture pointer to NULL at this point, since
   // the Texture itself might destruct at any time after it has been
@@ -256,7 +257,7 @@ release_all_textures() {
        tci != _prepared_textures.end();
        ++tci) {
     TextureContext *tc = (*tci);
-    tc->get_texture()->clear_prepared(this);
+    tc->_texture->clear_prepared(this);
     tc->_texture = (Texture *)NULL;
 
     _released_textures.insert(tc);

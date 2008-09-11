@@ -118,7 +118,6 @@
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
-    textureReloadRequest.I textureReloadRequest.h \
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
@@ -231,7 +230,6 @@
     textureAttrib.cxx \
     texGenAttrib.cxx \
     textureCollection.cxx \
-    textureReloadRequest.cxx \
     textureStageCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
@@ -342,7 +340,6 @@
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
-    textureReloadRequest.I textureReloadRequest.h \
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \

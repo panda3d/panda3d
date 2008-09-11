@@ -2011,6 +2011,26 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::was_image_modified
+//       Access: Published
+//  Description: Returns true if the texture needs to be re-loaded
+//               onto the indicated GSG, either because its image data
+//               is out-of-date, or because it's not fully prepared
+//               now.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+was_image_modified(PreparedGraphicsObjects *prepared_objects) const {
+  ReMutexHolder holder(_lock);
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    TextureContext *tc = (*ci).second;
+    return tc->was_image_modified();
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::release
 //       Access: Published
 //  Description: Frees the texture context only on the indicated object,
