@@ -38,12 +38,13 @@ protected:
 PUBLISHED:
   virtual ~FFMpegTexture();
 
-  virtual PT(Texture) make_copy();
-
 public:
   static PT(Texture) make_texture();
 
 protected:
+  virtual PT(Texture) do_make_copy();
+  void do_assign(const FFMpegTexture &copy);
+
   virtual void update_frame(int frame);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
@@ -56,8 +57,8 @@ private:
   class VideoStream;
 
   VideoPage &modify_page(int z);
-  bool reconsider_video_properties(const VideoStream &stream, 
-                                   int num_components, int z);
+  bool do_reconsider_video_properties(const VideoStream &stream, 
+                                      int num_components, int z);
   void do_update();
     
   class VideoStream {

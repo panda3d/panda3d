@@ -39,14 +39,15 @@ protected:
 PUBLISHED:
   virtual ~OpenCVTexture();
 
-  virtual PT(Texture) make_copy();
-
   bool from_camera(int camera_index = -1, int z = 0);
 
 public:
   static PT(Texture) make_texture();
 
 protected:
+  virtual PT(Texture) do_make_copy();
+  void do_assign(const FFMpegTexture &copy);
+
   virtual void update_frame(int frame);
 
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
@@ -60,8 +61,8 @@ private:
   class VideoStream;
 
   VideoPage &modify_page(int z);
-  bool reconsider_video_properties(const VideoStream &stream, 
-                                   int num_components, int z);
+  bool do_reconsider_video_properties(const VideoStream &stream, 
+                                      int num_components, int z);
   void do_update();
 
   class VideoStream {

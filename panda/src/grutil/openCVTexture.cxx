@@ -46,6 +46,7 @@ OpenCVTexture(const OpenCVTexture &copy) :
   VideoTexture(copy),
   _pages(copy._pages)
 {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,8 +59,8 @@ OpenCVTexture::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::make_copy
-//       Access: Published, Virtual
+//     Function: OpenCVTexture::do_make_copy
+//       Access: Protected, Virtual
 //  Description: Returns a new copy of the same Texture.  This copy,
 //               if applied to geometry, will be copied into texture
 //               as a separate texture from the original, so it will
@@ -71,8 +72,22 @@ OpenCVTexture::
 //               original.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) OpenCVTexture::
-make_copy() {
-  return new OpenCVTexture(*this);
+do_make_copy() {
+  PT(OpenCVTexture) tex = new OpenCVTexture(get_name());
+  tex->do_assign(*this);
+
+  return tex.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OpenCVTexture::do_assign
+//       Access: Protected
+//  Description: Implements make_copy().
+////////////////////////////////////////////////////////////////////
+void OpenCVTexture::
+do_assign(const OpenCVTexture &copy) {
+  VideoTexture::do_assign(copy);
+  _pages = copy._pages;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +100,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
 from_camera(int camera_index, int z) {
-  if (!reconsider_z_size(z)) {
+  if (!do_reconsider_z_size(z)) {
     return false;
   }
   nassertr(z >= 0 && z < get_z_size(), false);
@@ -96,7 +111,7 @@ from_camera(int camera_index, int z) {
     return false;
   }
 
-  if (!reconsider_video_properties(page._color, 3, z)) {
+  if (!do_reconsider_video_properties(page._color, 3, z)) {
     page._color.clear();
     return false;
   }
@@ -125,14 +140,14 @@ modify_page(int z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenCVTexture::reconsider_video_properties
+//     Function: OpenCVTexture::do_reconsider_video_properties
 //       Access: Private
 //  Description: Resets the internal Texture properties when a new
 //               video file is loaded.  Returns true if the new image
 //               is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-reconsider_video_properties(const OpenCVTexture::VideoStream &stream, 
+do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream, 
                             int num_components, int z) {
   double frame_rate = 0.0f;
   int num_frames = 0;
@@ -164,7 +179,7 @@ reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
       << y_size << " texels.\n";
   }
 
-  if (!reconsider_image_properties(x_size, y_size, num_components,
+  if (!do_reconsider_image_properties(x_size, y_size, num_components,
                                    T_unsigned_byte, z)) {
     return false;
   }
@@ -334,7 +349,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
   if (alpha_fullpath.empty()) {
     // Only one RGB movie.
-    if (!reconsider_video_properties(page._color, 3, z)) {
+    if (!do_reconsider_video_properties(page._color, 3, z)) {
       page._color.clear();
       return false;
     }
@@ -343,13 +358,13 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     // An RGB movie combined with an alpha movie.
     _alpha_file_channel = alpha_file_channel;
 
-    if (!reconsider_video_properties(page._color, 4, z)) {
+    if (!do_reconsider_video_properties(page._color, 4, z)) {
       page._color.clear();
       page._alpha.clear();
       return false;
     }
     
-    if (!reconsider_video_properties(page._alpha, 4, z)) {
+    if (!do_reconsider_video_properties(page._alpha, 4, z)) {
       page._color.clear();
       page._alpha.clear();
       return false;

@@ -421,6 +421,8 @@ do_make_copy() {
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
 do_assign(const MovieTexture &copy) {
+  Texture::do_assign(copy);
+
   // Since 'make_copy' can be a slow operation, 
   // I release the read lock before calling make_copy.
   

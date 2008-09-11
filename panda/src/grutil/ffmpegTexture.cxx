@@ -46,6 +46,7 @@ FFMpegTexture(const FFMpegTexture &copy) :
   VideoTexture(copy),
   _pages(copy._pages)
 {
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,8 +60,8 @@ FFMpegTexture::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFMpegTexture::make_copy
-//       Access: Published, Virtual
+//     Function: FFMpegTexture::do_make_copy
+//       Access: Protected, Virtual
 //  Description: Returns a new copy of the same Texture.  This copy,
 //               if applied to geometry, will be copied into texture
 //               as a separate texture from the original, so it will
@@ -72,10 +73,23 @@ FFMpegTexture::
 //               original.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) FFMpegTexture::
-make_copy() {
-  return new FFMpegTexture(*this);
+do_make_copy() {
+  PT(FFMpegTexture) tex = new FFMpegTexture(get_name());
+  tex->do_assign(*this);
+
+  return tex.p();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FFMpegTexture::do_assign
+//       Access: Protected
+//  Description: Implements make_copy().
+////////////////////////////////////////////////////////////////////
+void FFMpegTexture::
+do_assign(const FFMpegTexture &copy) {
+  VideoTexture::do_assign(copy);
+  _pages = copy._pages;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMPegTexture::modify_page
@@ -95,15 +109,15 @@ modify_page(int z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFmpegTexture::reconsider_video_properties
+//     Function: FFmpegTexture::do_reconsider_video_properties
 //       Access: Private
 //  Description: Resets the internal Texture properties when a new
 //               video file is loaded.  Returns true if the new image
 //               is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
-reconsider_video_properties(const FFMpegTexture::VideoStream &stream, 
-                            int num_components, int z) {
+do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream, 
+                               int num_components, int z) {
   double frame_rate = 0.0f;
   int num_frames = 0;
   if (!stream._codec_context) {
@@ -146,8 +160,8 @@ reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
       << y_size << " texels.\n";
   }
 
-  if (!reconsider_image_properties(x_size, y_size, num_components,
-                                   T_unsigned_byte, z)) {
+  if (!do_reconsider_image_properties(x_size, y_size, num_components,
+                                      T_unsigned_byte, z)) {
     return false;
   }
 
@@ -334,12 +348,12 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       set_name(fullpath.get_basename_wo_extension());
     }
     if (!has_filename()) {
-      set_filename(fullpath);
-      set_alpha_filename(alpha_fullpath);
+      _filename = fullpath;
+      _alpha_filename = alpha_fullpath;
     }
 
-    set_fullpath(fullpath);
-    set_alpha_fullpath(alpha_fullpath);
+    _fullpath = fullpath;
+    _alpha_fullpath = alpha_fullpath;
   }
   if (page._color._codec_context->pix_fmt==PIX_FMT_RGBA32) {
     // There had better not be an alpha interleave here. 
@@ -347,7 +361,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     
     _primary_file_num_channels = 4;
     _alpha_file_channel = 0;
-    if (!reconsider_video_properties(page._color, 4, z)) {
+    if (!do_reconsider_video_properties(page._color, 4, z)) {
       page._color.clear();
       return false;
     }
@@ -357,18 +371,18 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     _alpha_file_channel = alpha_file_channel;
 
     if (page._alpha.is_valid()) {
-      if (!reconsider_video_properties(page._color, 4, z)) {
+      if (!do_reconsider_video_properties(page._color, 4, z)) {
         page._color.clear();
         page._alpha.clear();
         return false;
       }
-      if (!reconsider_video_properties(page._alpha, 4, z)) {
+      if (!do_reconsider_video_properties(page._alpha, 4, z)) {
         page._color.clear();
         page._alpha.clear();
         return false;
       }
     } else {
-      if (!reconsider_video_properties(page._color, 3, z)) {
+      if (!do_reconsider_video_properties(page._color, 3, z)) {
         page._color.clear();
         page._alpha.clear();
         return false;
