@@ -400,7 +400,9 @@ operator = (const TextAssembler::TextCharacter &copy) {
 INLINE TextAssembler::TextRow::
 TextRow(int row_start) :
   _row_start(row_start),
-  _got_soft_hyphens(false)
+  _got_soft_hyphens(false),
+  _xpos(0.0f),
+  _ypos(0.0f)
 {
 }
 
