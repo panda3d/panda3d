@@ -24,7 +24,7 @@
 // Should we implement full thread protection for CopyOnWritePointer?
 // If we can be assured that no other thread will interrupt while a
 // write pointer is held, we don't need thread protection.
-#if defined(HAVE_THREADS) && !(defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_IMPLICIT_YIELD))
+#if defined(HAVE_THREADS) && !(defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_MUTEX))
   #define COW_THREADED 1
 #else
   #undef COW_THREADED

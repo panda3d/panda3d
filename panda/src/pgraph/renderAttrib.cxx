@@ -426,7 +426,34 @@ release_new() {
   nassertv(_attribs_lock->debug_is_locked());
 
   if (_saved_entry != _attribs->end()) {
-    nassertv(_attribs->find(this) == _saved_entry);
+
+#ifndef NDEBUG
+    nassertd(_attribs->find(this) == _saved_entry) {
+      cerr << "Tried to release " << *this << " (" << (void *)this << "), not found!\n";
+      Attribs::const_iterator si = _attribs->begin();
+      if (si == _attribs->end()) {
+        cerr << "  Attribs list is empty.\n";
+      } else {
+        cerr << "  Attribs list contains " << _attribs->size() << " entries.\n";
+        const RenderAttrib *attrib = (*si);
+        cerr << "    " << *attrib << " (" << (void *)attrib << ")\n";
+
+        Attribs::const_iterator sprev = si;
+        ++si;
+        while (si != _attribs->end()) {
+          const RenderAttrib *attrib = (*si);
+          cerr << "    " << *attrib << " (" << (void *)attrib << ")\n";
+          if (!((*sprev) < (*si))) {
+            cerr << "*** out of order!\n";
+          }
+          sprev = si;
+          ++si;
+        }
+        cerr << "  Done.\n";
+      }
+    }
+#endif  // NDEBUG
+
     _attribs->erase(_saved_entry);
     _saved_entry = _attribs->end();
   }

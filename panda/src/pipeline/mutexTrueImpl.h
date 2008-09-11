@@ -33,7 +33,7 @@
 // until we have defined the whole ThreadSimpleManager and related
 // infrastructure.
 
-#if defined(THREAD_SIMPLE_IMPL) && !defined(SIMPLE_THREADS_NO_IMPLICIT_YIELD)
+#if defined(THREAD_SIMPLE_IMPL) && !defined(SIMPLE_THREADS_NO_MUTEX)
 
 #include "mutexSimpleImpl.h"
 #include "reMutexSimpleImpl.h"
