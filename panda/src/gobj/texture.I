@@ -251,6 +251,8 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage) {
   MutexHolder holder(_lock);
   do_clear();
+  ++_properties_modified;
+  ++_image_modified;
   return do_load_one(pnmimage, get_name(), 0, 0);
 }
 
