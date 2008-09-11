@@ -16,6 +16,9 @@
 #define PANDAFILESTREAM_H
 
 #include "dtoolbase.h"
+
+#ifdef USE_PANDAFILESTREAM
+
 #include "pandaFileStreamBuf.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -86,15 +89,16 @@ private:
 
 #include "pandaFileStream.I"
 
-// Not ready for prime time yet.
-/*
 typedef IFileStream pifstream;
 typedef OFileStream pofstream;
 typedef FileStream pfstream;
-*/
+
+#else   // USE_PANDAFILESTREAM
 
 typedef ifstream pifstream;
 typedef ofstream pofstream;
 typedef fstream pfstream;
+
+#endif  // USE_PANDAFILESTREAM
 
 #endif

@@ -17,6 +17,8 @@
 
 #include "dtoolbase.h"
 
+#ifdef USE_PANDAFILESTREAM
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -36,6 +38,15 @@ public:
   bool is_open() const;
   void close();
 
+  enum NewlineMode {
+    NM_native,
+    NM_binary,
+    NM_msdos,
+    NM_unix,
+    NM_mac,
+  };
+  static NewlineMode _newline_mode;
+
 protected:
   virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
   virtual streampos seekpos(streampos pos, ios_openmode which);
@@ -53,8 +64,13 @@ private:
 
   size_t decode_newlines(char *dest, size_t dest_length,
                          const char *source, size_t source_length);
-  size_t encode_newlines(char *dest, size_t dest_length,
-                         const char *source, size_t source_length);
+
+  size_t encode_newlines_msdos(char *dest, size_t dest_length,
+                               const char *source, size_t source_length);
+  size_t encode_newlines_unix(char *dest, size_t dest_length,
+                              const char *source, size_t source_length);
+  size_t encode_newlines_mac(char *dest, size_t dest_length,
+                             const char *source, size_t source_length);
 
 private:
   string _filename;
@@ -73,5 +89,13 @@ private:
   streampos _ppos;
   streampos _gpos;
 };
+
+EXPCL_DTOOL ostream &
+operator << (ostream &out, PandaFileStreamBuf::NewlineMode newline_mode);
+
+EXPCL_DTOOL istream &
+operator >> (istream &in, PandaFileStreamBuf::NewlineMode &newline_mode);
+
+#endif  // USE_PANDAFILESTREAM
 
 #endif

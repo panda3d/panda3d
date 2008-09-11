@@ -348,6 +348,12 @@ reload_implicit_pages() {
 
   _currently_loading = false;
   invalidate_cache();
+
+#ifdef USE_PANDAFILESTREAM
+  // Update this very low-level config variable here, for lack of any
+  // better place.
+  PandaFileStreamBuf::_newline_mode = newline_mode;
+#endif  // USE_PANDAFILESTREAM
 }
 
 ////////////////////////////////////////////////////////////////////

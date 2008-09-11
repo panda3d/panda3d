@@ -15,12 +15,16 @@
 #include "pandaFileStreamBuf.h"
 #include "memoryHook.h"
 
+#ifdef USE_PANDAFILESTREAM
+
 #ifndef _WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #endif  // _WIN32
+
+PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
 
@@ -507,17 +511,43 @@ write_chars(const char *start, size_t length) {
   // The file is opened in text mode.  We have to encode newline
   // characters to the file.
 
+  NewlineMode this_newline_mode = _newline_mode;
+  if (this_newline_mode == NM_native) {
 #ifdef _WIN32
-  // Windows requires a larger buffer here, since we are writing two
-  // newline characters for every one.
-  size_t buffer_length = length * 2;
+    this_newline_mode = NM_msdos;
 #else
-  size_t buffer_length = length;
-#endif  // _WIN32
+    // Even the Mac uses Unix-style EOL characters these days.
+    this_newline_mode = NM_unix;
+#endif 
+  }
 
+  if (this_newline_mode == NM_binary) {
+    return write_chars_raw(start, length);
+  }
+
+  size_t buffer_length = length;
+  if (this_newline_mode == NM_msdos) {
+    // Windows requires a larger buffer here, since we are writing two
+    // newline characters for every one.
+    buffer_length *= 2;
+  }
   char *buffer = (char *)alloca(buffer_length);
 
-  size_t write_length = encode_newlines(buffer, buffer_length, start, length);
+  size_t write_length;
+  switch (this_newline_mode) {
+  case NM_msdos:
+    write_length = encode_newlines_msdos(buffer, buffer_length, start, length);
+    break;
+
+  case NM_mac:
+    write_length = encode_newlines_mac(buffer, buffer_length, start, length);
+    break;
+
+  default:
+    write_length = encode_newlines_unix(buffer, buffer_length, start, length);
+    break;
+  }
+
   if (write_length == write_chars_raw(buffer, write_length)) {
     // Success.  Return the number of original characters.
     return length;
@@ -770,10 +800,8 @@ decode_newlines(char *dest, size_t dest_length,
   return q - dest;
 }
 
-#ifdef _WIN32
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::encode_newlines
+//     Function: PandaFileStreamBuf::encode_newlines_msdos
 //       Access: Private
 //  Description: Windows case: Converts a buffer from \n to \n\r.
 //
@@ -783,8 +811,8 @@ decode_newlines(char *dest, size_t dest_length,
 //               Returns the number of characters placed in dest.
 ////////////////////////////////////////////////////////////////////
 size_t PandaFileStreamBuf::
-encode_newlines(char *dest, size_t dest_length,
-                const char *source, size_t source_length) {
+encode_newlines_msdos(char *dest, size_t dest_length,
+                      const char *source, size_t source_length) {
   const char *p = source;  // Read from p
   char *q = dest;          // Write to q
 
@@ -812,12 +840,10 @@ encode_newlines(char *dest, size_t dest_length,
   return q - dest;
 }
 
-#else  // _WIN32
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaFileStreamBuf::encode_newlines
+//     Function: PandaFileStreamBuf::encode_newlines_unix
 //       Access: Private
-//  Description: Posix case: Converts a buffer from \n to \n.
+//  Description: Unix case: Converts a buffer from \n to \n.
 //
 //               This is, of course, no conversion at all; but we do
 //               strip out \r characters if they appear in the buffer;
@@ -828,8 +854,8 @@ encode_newlines(char *dest, size_t dest_length,
 //               Returns the number of characters placed in dest.
 ////////////////////////////////////////////////////////////////////
 size_t PandaFileStreamBuf::
-encode_newlines(char *dest, size_t dest_length,
-                const char *source, size_t source_length) {
+encode_newlines_unix(char *dest, size_t dest_length,
+                     const char *source, size_t source_length) {
   const char *p = source;  // Read from p
   char *q = dest;          // Write to q
 
@@ -850,4 +876,86 @@ encode_newlines(char *dest, size_t dest_length,
   return q - dest;
 }
 
-#endif  // _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::encode_newlines_mac
+//       Access: Private
+//  Description: Classic Mac case: Converts a buffer from \n to \r.
+//
+//               Returns the number of characters placed in dest.
+////////////////////////////////////////////////////////////////////
+size_t PandaFileStreamBuf::
+encode_newlines_mac(char *dest, size_t dest_length,
+                    const char *source, size_t source_length) {
+  const char *p = source;  // Read from p
+  char *q = dest;          // Write to q
+
+  while (p < source + source_length) {
+    assert(q < dest + dest_length);
+    switch (*p) {
+    case '\n':
+      *q++ = '\r';
+      break;
+
+    case '\r':
+      break;
+
+    default:
+      *q++ = *p;
+      break;
+    }
+
+    ++p;
+  }
+
+  return q - dest;
+}
+
+ostream &
+operator << (ostream &out, PandaFileStreamBuf::NewlineMode newline_mode) {
+  switch (newline_mode) {
+  case PandaFileStreamBuf::NM_native:
+    return out << "native";
+
+  case PandaFileStreamBuf::NM_binary:
+    return out << "binary";
+
+  case PandaFileStreamBuf::NM_msdos:
+    return out << "msdos";
+
+  case PandaFileStreamBuf::NM_unix:
+    return out << "unix";
+
+  case PandaFileStreamBuf::NM_mac:
+    return out << "mac";
+  }
+
+  cerr
+    << "Invalid NewlineMode value: " << (int)newline_mode << "\n";
+  return out;
+}
+
+istream &
+operator >> (istream &in, PandaFileStreamBuf::NewlineMode &newline_mode) {
+  string word;
+  in >> word;
+
+  if (word == "native") {
+    newline_mode = PandaFileStreamBuf::NM_native;
+  } else if (word == "binary") {
+    newline_mode = PandaFileStreamBuf::NM_binary;
+  } else if (word == "msdos") {
+    newline_mode = PandaFileStreamBuf::NM_msdos;
+  } else if (word == "unix") {
+    newline_mode = PandaFileStreamBuf::NM_unix;
+  } else if (word == "mac") {
+    newline_mode = PandaFileStreamBuf::NM_mac;
+  } else {
+    cerr
+      << "Invalid NewlineMode value: " << word << "\n";
+    newline_mode = PandaFileStreamBuf::NM_native;
+  }
+
+  return in;
+}
+
+#endif  // USE_PANDAFILESTREAM

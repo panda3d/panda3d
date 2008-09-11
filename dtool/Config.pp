@@ -704,31 +704,32 @@
 // default is to use OS-provided threading constructs, which usually
 // allows for full multiprogramming support (i.e. the program can take
 // advantage of multiple CPU's).  On the other hand, compiling in this
-// full OS-provided support can impose some runtime overhead, making
-// the application run slower on a single-CPU machine.  To avoid this
-// overhead, but still gain some of the basic functionality of threads
-// (such as support for asynchronous model loads), define
-// SIMPLE_THREADS true in addition to HAVE_THREADS.  This will compile
-// in a homespun cooperative threading implementation that runs
-// strictly on one CPU, adding very little overhead over plain
-// single-threaded code.  
+// full OS-provided support can impose some substantial runtime
+// overhead, making the application run slower on a single-CPU
+// machine.  To avoid this overhead, but still gain some of the basic
+// functionality of threads (such as support for asynchronous model
+// loads), define SIMPLE_THREADS true in addition to HAVE_THREADS.
+// This will compile in a homespun cooperative threading
+// implementation that runs strictly on one CPU, adding very little
+// overhead over plain single-threaded code.
 
-// Enabling SIMPLE_THREADS is highly experimental at the present time.
 // Since SIMPLE_THREADS requires special support from the C runtime
 // library, it may not be available on all platforms and
-// architectures.
+// architectures.  (However, it is known to be available on the big
+// three: Linux, Win32, and OSX, with their most common
+// architectures.)
 #define SIMPLE_THREADS
 
-// If you are using SIMPLE_THREADS, the default is to consider an
-// implicit context switch at every attempt to lock a mutex.  This
-// makes it less necessary to pepper your code with explicit calls to
-// Thread::consider_yield().  However, you may want to restrict this
-// behavior, and only allow context switches at explicit calls to
-// Thread::yield(), consider_yield(), and sleep() (as well as calls to
-// ConditionVar::wait()).  This gives you absolute control over when
-// the context switch happens, and makes mutexes unnecessary (mutexes
-// will be compiled out).  Define this true to build that way.
-#define SIMPLE_THREADS_NO_IMPLICIT_YIELD
+// If you are using SIMPLE_THREADS, you might further wish to disable
+// mutexes altogether.  In this mode, mutexes are compiled out (they
+// become a no-op), and the only context switches happen at explicit
+// calls to Thread::force_yield(), consider_yield(), and sleep(), as
+// well as calls to ConditionVar::wait(), and certain I/O operations.
+// This gives you control over when the context switch happens, and
+// may make mutexes unnecessary, if you are somewhat careful in your
+// code design.  Disabling mutexes saves a tiny bit of runtime and
+// memory overhead.
+#define SIMPLE_THREADS_NO_MUTEX
 
 // Whether threading is defined or not, you might want to validate the
 // thread and synchronization operations.  With threading enabled,
@@ -745,6 +746,15 @@
 // a particular platform, and you are sure you won't have more threads
 // than CPU's.  Even then, OS-based locking is probably better.
 #define MUTEX_SPINLOCK
+
+// Define this to use the PandaFileStream interface for pifstream,
+// pofstream, and pfstream.  This is a customized file buffer that may
+// have slightly better newline handling, but its primary benefit is
+// that it supports SIMPLE_THREADS better by blocking just the active
+// "thread" when I/O is delayed, instead of blocking the entire
+// process.  Normally, there's no reason to turn this off, unless you
+// suspect a bug in Panda.
+#define USE_PANDAFILESTREAM
 
 // Do you want to build the PStats interface, for graphical run-time
 // performance statistics?  This requires NET to be available.  By

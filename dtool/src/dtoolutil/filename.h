@@ -180,12 +180,12 @@ PUBLISHED:
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 
-  /*
+#ifdef USE_PANDAFILESTREAM
   bool open_read(pifstream &stream) const;
   bool open_write(pofstream &stream, bool truncate = true) const;
   bool open_append(pofstream &stream) const;
   bool open_read_write(pfstream &stream) const;
-  */
+#endif  // USE_PANDAFILESTREAM
 
   bool chdir() const;
   bool touch() const;

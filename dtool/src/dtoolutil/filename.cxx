@@ -1913,7 +1913,7 @@ open_read_write(fstream &stream) const {
   return (!stream.fail());
 }
 
-/*
+#ifdef USE_PANDAFILESTREAM
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read
 //       Access: Published
@@ -1945,7 +1945,9 @@ open_read(pifstream &stream) const {
   stream.open(os_specific.c_str(), open_mode);
   return (!stream.fail());
 }
+#endif  // USE_PANDAFILESTREAM
 
+#ifdef USE_PANDAFILESTREAM
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_write
 //       Access: Published
@@ -2000,7 +2002,9 @@ open_write(pofstream &stream, bool truncate) const {
 
   return (!stream.fail());
 }
+#endif  // USE_PANDAFILESTREAM
 
+#ifdef USE_PANDAFILESTREAM
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_append
 //       Access: Published
@@ -2037,7 +2041,9 @@ open_append(pofstream &stream) const {
 
   return (!stream.fail());
 }
+#endif  // USE_PANDAFILESTREAM
 
+#ifdef USE_PANDAFILESTREAM
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read_write
 //       Access: Published
@@ -2080,7 +2086,7 @@ open_read_write(pfstream &stream) const {
 
   return (!stream.fail());
 }
-*/
+#endif  // USE_PANDAFILESTREAM
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::touch
