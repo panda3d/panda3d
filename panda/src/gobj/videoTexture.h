@@ -34,7 +34,6 @@ protected:
   VideoTexture(const VideoTexture &copy);
 
 PUBLISHED:
-  virtual bool has_ram_image() const;
   virtual bool get_keep_ram_image() const;
 
   INLINE int get_video_width() const;
@@ -48,8 +47,10 @@ public:
 protected:
   INLINE void set_video_size(int video_width, int video_height);
 
+  virtual bool do_has_ram_image() const;
+
   virtual void reconsider_dirty();
-  virtual void reload_ram_image();
+  virtual void do_reload_ram_image();
 
   INLINE void consider_update();
   INLINE void clear_current_frame();

@@ -32,12 +32,10 @@ class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
   MovieTexture(const string &name);
   MovieTexture(PT(MovieVideo) video);
-protected:
+private:
   MovieTexture(const MovieTexture &copy);
 PUBLISHED:
   virtual ~MovieTexture();
-
-  virtual PT(Texture) make_copy();
 
   INLINE int get_video_width() const;
   INLINE int get_video_height() const;
@@ -64,7 +62,10 @@ public:
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
  
 protected:
-  virtual void reload_ram_image();
+  virtual PT(Texture) do_make_copy();
+  void do_assign(const MovieTexture &copy);
+
+  virtual void do_reload_ram_image();
   virtual bool get_keep_ram_image() const;
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
@@ -108,7 +109,7 @@ protected:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   
-  void recalculate_image_properties(CDWriter &cdata);
+  void do_recalculate_image_properties(CDWriter &cdata);
 
 public:
   static void register_with_read_factory();

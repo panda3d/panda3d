@@ -19,6 +19,9 @@
 //     Function: TexturePeeker::Constructor
 //       Access: Private
 //  Description: Use Texture::peek() to construct a TexturePeeker.
+//
+//               This constructor is called only by Texture::peek(),
+//               and assumes the texture's lock is already held.
 ////////////////////////////////////////////////////////////////////
 TexturePeeker::
 TexturePeeker(Texture *tex) {
@@ -41,7 +44,7 @@ TexturePeeker(Texture *tex) {
     // Regular 1-d, 2-d, or 3-d texture.  The coordinates map
     // directly.  Simple ram images are possible if it is a 2-d
     // texture.
-    if (!(tex->has_ram_image() && tex->get_ram_image_compression() == Texture::CM_off) && tex->has_simple_ram_image()) {
+    if (!(tex->do_has_ram_image() && tex->_ram_image_compression == Texture::CM_off) && !tex->_simple_ram_image._image.empty()) {
       _image = tex->_simple_ram_image._image;
       _x_size = tex->_simple_x_size;
       _y_size = tex->_simple_y_size;
@@ -53,7 +56,7 @@ TexturePeeker(Texture *tex) {
       _component_type = Texture::T_unsigned_byte;
 
     } else {
-      _image = tex->get_uncompressed_ram_image();
+      _image = tex->do_get_uncompressed_ram_image();
     }
   }
 

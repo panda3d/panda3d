@@ -108,34 +108,7 @@ MovieTexture::
 MovieTexture(const MovieTexture &copy) : 
   Texture(copy)
 {
-  // Since 'make_copy' can be a slow operation, 
-  // I release the read lock before calling make_copy.
-  
-  pvector<MovieVideoCursor *> color;
-  pvector<MovieVideoCursor *> alpha;
-  {
-    CDReader copy_cdata(copy._cycler);
-    color.resize(copy_cdata->_pages.size());
-    alpha.resize(copy_cdata->_pages.size());
-    for (int i=0; i<(int)(color.size()); i++) {
-      color[i] = copy_cdata->_pages[i]._color;
-      alpha[i] = copy_cdata->_pages[i]._alpha;
-    }
-  }
-  
-  {
-    CDWriter cdata(_cycler);
-    cdata->_pages.resize(color.size());
-    for (int i=0; i<(int)(color.size()); i++) {
-      if (color[i]) {
-        cdata->_pages[i]._color = color[i]->get_source()->open();
-      }
-      if (alpha[i]) {
-        cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
-      }
-    }
-    recalculate_image_properties(cdata);
-  }
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,24 +119,6 @@ MovieTexture(const MovieTexture &copy) :
 MovieTexture::
 ~MovieTexture() {
   clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::make_copy
-//       Access: Published, Virtual
-//  Description: Returns a new copy of the same Texture.  This copy,
-//               if applied to geometry, will be copied into texture
-//               as a separate texture from the original, so it will
-//               be duplicated in texture memory (and may be
-//               independently modified if desired).
-//               
-//               If the Texture is an MovieTexture, the resulting
-//               duplicate may be animated independently of the
-//               original.
-////////////////////////////////////////////////////////////////////
-PT(Texture) MovieTexture::
-make_copy() {
-  return new MovieTexture(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -190,14 +145,16 @@ VideoPage() :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieTexture::recalculate_image_properties
+//     Function: MovieTexture::do_recalculate_image_properties
 //       Access: Protected
 //  Description: Resizes the texture, and adjusts the format,
 //               based on the source movies.  The resulting texture
 //               will be large enough to hold all the videos.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-recalculate_image_properties(CDWriter &cdata) {
+do_recalculate_image_properties(CDWriter &cdata) {
   int x_max = 1;
   int y_max = 1;
   bool alpha = false;
@@ -224,7 +181,7 @@ recalculate_image_properties(CDWriter &cdata) {
   cdata->_video_height = y_max;
   cdata->_video_length = len;
   
-  if (get_texture_type() == TT_cube_map) {
+  if (_texture_type == TT_cube_map) {
     // Texture must be square.
     if (x_max > y_max) y_max = x_max;
     if (y_max > x_max) x_max = y_max;
@@ -237,9 +194,9 @@ recalculate_image_properties(CDWriter &cdata) {
     y_max = up_to_power_2(y_max);
   }
   
-  reconsider_image_properties(x_max, y_max, alpha?4:3, 
-                              T_unsigned_byte, cdata->_pages.size());
-  set_pad_size(x_max - x_size, y_max - y_size);
+  do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
+                                 T_unsigned_byte, cdata->_pages.size());
+  do_set_pad_size(x_max - x_size, y_max - y_size, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,12 +237,12 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       set_name(fullpath.get_basename_wo_extension());
     }
     if (!has_filename()) {
-      set_filename(fullpath);
-      set_alpha_filename(alpha_fullpath);
+      _filename = fullpath;
+      _alpha_filename = alpha_fullpath;
     }
     
-    set_fullpath(fullpath);
-    set_alpha_fullpath(alpha_fullpath);
+    _fullpath = fullpath;
+    _alpha_fullpath = alpha_fullpath;
   }
 
   _primary_file_num_channels = primary_file_num_channels;
@@ -314,7 +271,7 @@ do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z) {
     cdata->_pages.resize(z+1);
     cdata->_pages[z]._color = color;
     cdata->_pages[z]._alpha = alpha;
-    recalculate_image_properties(cdata);
+    do_recalculate_image_properties(cdata);
   }
   
   return true;
@@ -437,6 +394,64 @@ get_keep_ram_image() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_make_copy
+//       Access: Protected, Virtual
+//  Description: Returns a new copy of the same Texture.  This copy,
+//               if applied to geometry, will be copied into texture
+//               as a separate texture from the original, so it will
+//               be duplicated in texture memory (and may be
+//               independently modified if desired).
+//               
+//               If the Texture is an MovieTexture, the resulting
+//               duplicate may be animated independently of the
+//               original.
+////////////////////////////////////////////////////////////////////
+PT(Texture) MovieTexture::
+do_make_copy() {
+  PT(MovieTexture) tex = new MovieTexture(get_name());
+  tex->do_assign(*this);
+
+  return tex.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_assign
+//       Access: Protected
+//  Description: Implements make_copy().
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+do_assign(const MovieTexture &copy) {
+  // Since 'make_copy' can be a slow operation, 
+  // I release the read lock before calling make_copy.
+  
+  pvector<MovieVideoCursor *> color;
+  pvector<MovieVideoCursor *> alpha;
+  {
+    CDReader copy_cdata(copy._cycler);
+    color.resize(copy_cdata->_pages.size());
+    alpha.resize(copy_cdata->_pages.size());
+    for (int i=0; i<(int)(color.size()); i++) {
+      color[i] = copy_cdata->_pages[i]._color;
+      alpha[i] = copy_cdata->_pages[i]._alpha;
+    }
+  }
+  
+  {
+    CDWriter cdata(_cycler);
+    cdata->_pages.resize(color.size());
+    for (int i=0; i<(int)(color.size()); i++) {
+      if (color[i]) {
+        cdata->_pages[i]._color = color[i]->get_source()->open();
+      }
+      if (alpha[i]) {
+        cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
+      }
+    }
+    do_recalculate_image_properties(cdata);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::reload_ram_image
 //       Access: Protected, Virtual
 //  Description: A MovieTexture must always keep its ram image, 
@@ -444,7 +459,7 @@ get_keep_ram_image() const {
 //               source MovieVideo.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-reload_ram_image() {
+do_reload_ram_image() {
   // A MovieTexture should never dump its RAM image.
   // Therefore, this is not needed.
 }

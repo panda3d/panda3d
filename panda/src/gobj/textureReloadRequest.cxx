@@ -37,6 +37,14 @@ do_task() {
       } else {
         _texture->get_uncompressed_ram_image();
       }
+
+      // Now that we've loaded the texture, we should ensure it
+      // actually gets prepared--even if it's no longer visible in the
+      // frame--or it may become a kind of a leak (if the texture is
+      // never rendered again on this GSG, we'll just end up carrying
+      // the texture memory in RAM forever, instead of dumping it as
+      // soon as it gets prepared).
+      _texture->prepare(_pgo);
     }
   }
   _is_ready = true;

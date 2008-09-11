@@ -26,8 +26,9 @@
 #include "pmap.h"
 #include "config_gobj.h"
 #include "pStatCollector.h"
-#include "reMutex.h"
-#include "reMutexHolder.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
+#include "conditionVarFull.h"
 #include "loaderOptions.h"
 #include "string_utils.h"
 
@@ -192,12 +193,12 @@ protected:
 PUBLISHED:
   virtual ~Texture();
 
-  virtual PT(Texture) make_copy();
-  virtual void clear();
+  INLINE PT(Texture) make_copy();
+  INLINE void clear();
 
-  void setup_texture(TextureType texture_type,
-                     int x_size, int y_size, int z_size,
-                     ComponentType component_type, Format format);
+  INLINE void setup_texture(TextureType texture_type,
+                            int x_size, int y_size, int z_size,
+                            ComponentType component_type, Format format);
 
   INLINE void setup_1d_texture();
   INLINE void setup_1d_texture(int x_size,
@@ -288,26 +289,26 @@ PUBLISHED:
   void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
 
-  int get_expected_num_mipmap_levels() const;
-  int get_expected_mipmap_x_size(int n) const;
-  int get_expected_mipmap_y_size(int n) const;
-  int get_expected_mipmap_z_size(int n) const;
+  INLINE int get_expected_num_mipmap_levels() const;
+  INLINE int get_expected_mipmap_x_size(int n) const;
+  INLINE int get_expected_mipmap_y_size(int n) const;
+  INLINE int get_expected_mipmap_z_size(int n) const;
 
-  virtual bool has_ram_image() const;
-  virtual bool has_uncompressed_ram_image() const;
+  INLINE bool has_ram_image() const;
+  INLINE bool has_uncompressed_ram_image() const;
   INLINE bool might_have_ram_image() const;
   INLINE size_t get_ram_image_size() const;
   INLINE size_t get_ram_page_size() const;
   INLINE size_t get_expected_ram_image_size() const;
   INLINE size_t get_expected_ram_page_size() const;
-  CPTA_uchar get_ram_image();
+  INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
-  CPTA_uchar get_uncompressed_ram_image();
+  INLINE CPTA_uchar get_uncompressed_ram_image();
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
   void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
                      size_t page_size = 0);
-  void clear_ram_image();
+  INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
 
@@ -321,10 +322,10 @@ PUBLISHED:
   INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
   CPTA_uchar get_ram_mipmap_image(int n);
   INLINE PTA_uchar modify_ram_mipmap_image(int n);
-  PTA_uchar make_ram_mipmap_image(int n);
+  INLINE PTA_uchar make_ram_mipmap_image(int n);
   void set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
-  void clear_ram_mipmap_images();
+  INLINE void clear_ram_mipmap_images();
   void generate_ram_mipmap_images();
 
   INLINE int get_simple_x_size() const;
@@ -332,11 +333,11 @@ PUBLISHED:
   INLINE bool has_simple_ram_image() const;
   INLINE size_t get_simple_ram_image_size() const;
   INLINE CPTA_uchar get_simple_ram_image() const;
-  void set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  INLINE void set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
   PTA_uchar modify_simple_ram_image();
   PTA_uchar new_simple_ram_image(int x_size, int y_size);
   void generate_simple_ram_image();
-  void clear_simple_ram_image();
+  INLINE void clear_simple_ram_image();
 
   PT(TexturePeeker) peek();
 
@@ -393,8 +394,8 @@ PUBLISHED:
 
   void set_orig_file_size(int x, int y, int z = 1);
   
-  void set_format(Format format);
-  void set_component_type(ComponentType component_type);
+  INLINE void set_format(Format format);
+  INLINE void set_component_type(ComponentType component_type);
   INLINE void set_loaded_from_image();
   INLINE bool get_loaded_from_image() const;
 
@@ -434,6 +435,16 @@ public:
   static bool adjust_size(int &x_size, int &y_size, const string &name);
 
 protected:
+  virtual void reconsider_dirty();
+
+  // All of the functions in this class that begin "do_" are protected
+  // methods.  Many of them are implementations of public-facing
+  // versions of the same methods.
+
+  // All of these assume the lock is already held; generally, they
+  // also avoid adjusting the _properties_modified and _image_modified
+  // semaphores.
+
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
                        int primary_file_num_channels, int alpha_file_channel,
                        int z, int n, bool read_pages, bool read_mipmaps,
@@ -441,24 +452,63 @@ protected:
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
                            bool header_only, BamCacheRecord *record);
+  virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
+                           int z, int n);
+  bool do_read_txo_file(const Filename &fullpath);
+  bool do_read_txo(istream &in, const string &filename);
+  bool do_read_dds_file(const Filename &fullpath, bool header_only);
+  bool do_read_dds(istream &in, const string &filename, bool header_only);
+
   bool do_write(const Filename &fullpath, int z, int n, 
                 bool write_pages, bool write_mipmaps) const;
   bool do_write_one(const Filename &fullpath, int z, int n) const;
-
-  virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
-                           int z, int n);
   bool do_store_one(PNMImage &pnmimage, int z, int n) const;
+  bool do_write_txo_file(const Filename &fullpath) const;
+  bool do_write_txo(ostream &out, const string &filename) const;
 
-  virtual void reconsider_dirty();
-  virtual void reload_ram_image(bool allow_compression);
+  void do_unlock_and_reload_ram_image(bool allow_compression);
+  virtual void do_reload_ram_image(bool allow_compression);
+  PTA_uchar do_modify_ram_image();
+  PTA_uchar do_make_ram_image();
+  PTA_uchar do_modify_ram_mipmap_image(int n);
+  PTA_uchar do_make_ram_mipmap_image(int n);
 
-  void do_modify_ram_image();
-  void do_make_ram_image();
-  void do_modify_ram_mipmap_image(int n);
+  bool do_reconsider_z_size(int z);
+  bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
+                                      ComponentType component_type, int z);
 
-  bool reconsider_z_size(int z);
-  bool reconsider_image_properties(int x_size, int y_size, int num_components,
-           ComponentType component_type, int z);
+  virtual PT(Texture) do_make_copy();
+  void do_assign(const Texture &copy);
+  virtual void do_clear();
+  void do_setup_texture(TextureType texture_type, int x_size, int y_size,
+                        int z_size, ComponentType component_type,
+                        Format format);
+  void do_set_format(Format format);
+  void do_set_component_type(ComponentType component_type);
+  void do_set_x_size(int x_size);
+  void do_set_y_size(int y_size);
+  void do_set_z_size(int z_size);
+
+  bool do_has_compression() const;
+  virtual bool do_has_ram_image() const;
+  virtual bool do_has_uncompressed_ram_image() const;
+  CPTA_uchar do_get_ram_image();
+  CPTA_uchar do_get_uncompressed_ram_image();
+  void do_set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  INLINE size_t do_get_ram_image_size() const;
+  INLINE bool do_has_ram_mipmap_image(int n) const;
+  int do_get_expected_num_mipmap_levels() const;
+  INLINE size_t do_get_expected_ram_image_size() const;
+  INLINE size_t do_get_expected_ram_page_size() const;
+  size_t do_get_ram_mipmap_page_size(int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_page_size(int n) const;
+  int do_get_expected_mipmap_x_size(int n) const;
+  int do_get_expected_mipmap_y_size(int n) const;
+  int do_get_expected_mipmap_z_size(int n) const;
+  INLINE void do_clear_ram_image();
+  void do_clear_simple_ram_image();
+  void do_clear_ram_mipmap_images();
+  void do_set_pad_size(int x, int y, int z);
 
   // This nested class declaration is used below.
   class RamImage {
@@ -498,8 +548,8 @@ private:
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  void consider_rescale(PNMImage &pnmimage, const string &name);
-  void consider_downgrade(PNMImage &pnmimage, int num_channels);
+  static void consider_rescale(PNMImage &pnmimage, const string &name);
+  static void consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name);
 
   static bool compare_images(const PNMImage &a, const PNMImage &b);
 
@@ -511,11 +561,7 @@ private:
   INLINE static double get_unsigned_short(const unsigned char *&p);
 
   INLINE static bool is_txo_filename(const Filename &fullpath);
-  bool read_txo_file(const Filename &fullpath);
-  bool write_txo_file(const Filename &fullpath) const;
-
   INLINE static bool is_dds_filename(const Filename &fullpath);
-  bool read_dds_file(const Filename &fullpath, bool header_only);
 
   void filter_2d_mipmap_pages(RamImage &to, const RamImage &from,
                               int x_size, int y_size);
@@ -550,7 +596,10 @@ private:
 
 protected:
   // Protects all of the members of this class.
-  ReMutex _lock;
+  Mutex _lock;
+  // Used to implement do_unlock_and_reload_ram_image()
+  ConditionVarFull _cvar;  // condition: _reloading is true.
+  bool _reloading;
 
   Filename _filename;
   Filename _alpha_filename;

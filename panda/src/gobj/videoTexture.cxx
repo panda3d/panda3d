@@ -56,22 +56,6 @@ VideoTexture(const VideoTexture &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::has_ram_image
-//       Access: Published, Virtual
-//  Description: Returns true if the Texture has its image contents
-//               available in main RAM, false if it exists only in
-//               texture memory or in the prepared GSG context.
-////////////////////////////////////////////////////////////////////
-bool VideoTexture::
-has_ram_image() const {
-  int this_frame = ClockObject::get_global_clock()->get_frame_count();
-  if (this_frame != _last_frame_update) {
-    return false;
-  }
-  return !_ram_images.empty() && !_ram_images[0]._image.empty();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::get_keep_ram_image
 //       Access: Published, Virtual
 //  Description: Returns the flag that indicates whether this Texture
@@ -124,6 +108,22 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::do_has_ram_image
+//       Access: Protected, Virtual
+//  Description: Returns true if the Texture has its image contents
+//               available in main RAM, false if it exists only in
+//               texture memory or in the prepared GSG context.
+////////////////////////////////////////////////////////////////////
+bool VideoTexture::
+do_has_ram_image() const {
+  int this_frame = ClockObject::get_global_clock()->get_frame_count();
+  if (this_frame != _last_frame_update) {
+    return false;
+  }
+  return !_ram_images.empty() && !_ram_images[0]._image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::reconsider_dirty
 //       Access: Protected, Virtual
 //  Description: Called by TextureContext to give the Texture a chance
@@ -135,7 +135,7 @@ reconsider_dirty() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VideoTexture::reload_ram_image
+//     Function: VideoTexture::do_reload_ram_image
 //       Access: Protected, Virtual
 //  Description: Called when the Texture image is required but the ram
 //               image is not available, this will reload it from disk
@@ -143,7 +143,7 @@ reconsider_dirty() {
 //               available, if possible.
 ////////////////////////////////////////////////////////////////////
 void VideoTexture::
-reload_ram_image() {
+do_reload_ram_image() {
   consider_update();
 }
 
