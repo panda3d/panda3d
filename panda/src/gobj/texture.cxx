@@ -5064,8 +5064,6 @@ make_from_bam(const FactoryParams &params) {
                                         manager->get_loader_options());
         break;
       }
-      cerr << "loaded tex " << me << "\n";
-      cerr << "loaded filename = " << me->get_filename() << "\n";
     }
   }
 
