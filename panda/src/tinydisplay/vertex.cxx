@@ -11,13 +11,13 @@ void gl_eval_viewport(GLContext * c) {
   float ymin = v->ymin + v->ysize * (1.0f - s->top);
   float zsize = (1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
 
-  v->trans.X = ((xsize - 0.5f) / 2.0f) + xmin;
-  v->trans.Y = ((ysize - 0.5f) / 2.0f) + ymin;
-  v->trans.Z = ((zsize - 0.5f) / 2.0f) + ((1 << ZB_POINT_Z_FRAC_BITS)) / 2;
+  v->trans.v[0] = ((xsize - 0.5f) / 2.0f) + xmin;
+  v->trans.v[1] = ((ysize - 0.5f) / 2.0f) + ymin;
+  v->trans.v[2] = ((zsize - 0.5f) / 2.0f) + ((1 << ZB_POINT_Z_FRAC_BITS)) / 2;
   
-  v->scale.X = (xsize - 0.5f) / 2.0f;
-  v->scale.Y = -(ysize - 0.5f) / 2.0f;
-  v->scale.Z = -((zsize - 0.5f) / 2.0f);
+  v->scale.v[0] = (xsize - 0.5f) / 2.0f;
+  v->scale.v[1] = -(ysize - 0.5f) / 2.0f;
+  v->scale.v[2] = -((zsize - 0.5f) / 2.0f);
 }
 
 /* coords, tranformation , clip code and projection */
@@ -31,32 +31,32 @@ void gl_vertex_transform(GLContext * c, GLVertex * v)
 	/* eye coordinates needed for lighting */
 
 	m = &c->matrix_model_view.m[0][0];
-	v->ec.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
-		   v->coord.Z * m[2] + m[3]);
-	v->ec.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
-		   v->coord.Z * m[6] + m[7]);
-	v->ec.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
-		   v->coord.Z * m[10] + m[11]);
-	v->ec.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
-		   v->coord.Z * m[14] + m[15]);
+	v->ec.v[0] = (v->coord.v[0] * m[0] + v->coord.v[1] * m[1] +
+		   v->coord.v[2] * m[2] + m[3]);
+	v->ec.v[1] = (v->coord.v[0] * m[4] + v->coord.v[1] * m[5] +
+		   v->coord.v[2] * m[6] + m[7]);
+	v->ec.v[2] = (v->coord.v[0] * m[8] + v->coord.v[1] * m[9] +
+		   v->coord.v[2] * m[10] + m[11]);
+	v->ec.v[3] = (v->coord.v[0] * m[12] + v->coord.v[1] * m[13] +
+		   v->coord.v[2] * m[14] + m[15]);
 
 	/* projection coordinates */
 	m = &c->matrix_projection.m[0][0];
-	v->pc.X = (v->ec.X * m[0] + v->ec.Y * m[1] +
-		   v->ec.Z * m[2] + v->ec.W * m[3]);
-	v->pc.Y = (v->ec.X * m[4] + v->ec.Y * m[5] +
-		   v->ec.Z * m[6] + v->ec.W * m[7]);
-	v->pc.Z = (v->ec.X * m[8] + v->ec.Y * m[9] +
-		   v->ec.Z * m[10] + v->ec.W * m[11]);
-	v->pc.W = (v->ec.X * m[12] + v->ec.Y * m[13] +
-		   v->ec.Z * m[14] + v->ec.W * m[15]);
+	v->pc.v[0] = (v->ec.v[0] * m[0] + v->ec.v[1] * m[1] +
+		   v->ec.v[2] * m[2] + v->ec.v[3] * m[3]);
+	v->pc.v[1] = (v->ec.v[0] * m[4] + v->ec.v[1] * m[5] +
+		   v->ec.v[2] * m[6] + v->ec.v[3] * m[7]);
+	v->pc.v[2] = (v->ec.v[0] * m[8] + v->ec.v[1] * m[9] +
+		   v->ec.v[2] * m[10] + v->ec.v[3] * m[11]);
+	v->pc.v[3] = (v->ec.v[0] * m[12] + v->ec.v[1] * m[13] +
+		   v->ec.v[2] * m[14] + v->ec.v[3] * m[15]);
 
 	m = &c->matrix_model_view_inv.m[0][0];
 	n = &c->current_normal;
 
-	v->normal.X = (n->X * m[0] + n->Y * m[1] + n->Z * m[2]) * c->normal_scale;
-	v->normal.Y = (n->X * m[4] + n->Y * m[5] + n->Z * m[6]) * c->normal_scale;
-	v->normal.Z = (n->X * m[8] + n->Y * m[9] + n->Z * m[10]) * c->normal_scale;
+	v->normal.v[0] = (n->v[0] * m[0] + n->v[1] * m[1] + n->v[2] * m[2]) * c->normal_scale;
+	v->normal.v[1] = (n->v[0] * m[4] + n->v[1] * m[5] + n->v[2] * m[6]) * c->normal_scale;
+	v->normal.v[2] = (n->v[0] * m[8] + n->v[1] * m[9] + n->v[2] * m[10]) * c->normal_scale;
 
 	if (c->normalize_enabled) {
 	    gl_V3_Norm(&v->normal);
@@ -66,19 +66,19 @@ void gl_vertex_transform(GLContext * c, GLVertex * v)
 	/* NOTE: W = 1 is assumed */
 	m = &c->matrix_model_projection.m[0][0];
 
-	v->pc.X = (v->coord.X * m[0] + v->coord.Y * m[1] +
-		   v->coord.Z * m[2] + m[3]);
-	v->pc.Y = (v->coord.X * m[4] + v->coord.Y * m[5] +
-		   v->coord.Z * m[6] + m[7]);
-	v->pc.Z = (v->coord.X * m[8] + v->coord.Y * m[9] +
-		   v->coord.Z * m[10] + m[11]);
+	v->pc.v[0] = (v->coord.v[0] * m[0] + v->coord.v[1] * m[1] +
+		   v->coord.v[2] * m[2] + m[3]);
+	v->pc.v[1] = (v->coord.v[0] * m[4] + v->coord.v[1] * m[5] +
+		   v->coord.v[2] * m[6] + m[7]);
+	v->pc.v[2] = (v->coord.v[0] * m[8] + v->coord.v[1] * m[9] +
+		   v->coord.v[2] * m[10] + m[11]);
 	if (c->matrix_model_projection_no_w_transform) {
-	    v->pc.W = m[15];
+	    v->pc.v[3] = m[15];
 	} else {
-	    v->pc.W = (v->coord.X * m[12] + v->coord.Y * m[13] +
-		       v->coord.Z * m[14] + m[15]);
+	    v->pc.v[3] = (v->coord.v[0] * m[12] + v->coord.v[1] * m[13] +
+		       v->coord.v[2] * m[14] + m[15]);
 	}
     }
 
-    v->clip_code = gl_clipcode(v->pc.X, v->pc.Y, v->pc.Z, v->pc.W);
+    v->clip_code = gl_clipcode(v->pc.v[0], v->pc.v[1], v->pc.v[2], v->pc.v[3]);
 }

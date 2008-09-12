@@ -606,10 +606,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!needs_color) {
     const Colorf &d = _scene_graph_color;
     const Colorf &s = _current_color_scale;
-    _c->current_color.X = d[0] * s[0];
-    _c->current_color.Y = d[1] * s[1];
-    _c->current_color.Z = d[2] * s[2];
-    _c->current_color.W = d[3] * s[3];
+    _c->current_color.v[0] = d[0] * s[0];
+    _c->current_color.v[1] = d[1] * s[1];
+    _c->current_color.v[2] = d[2] * s[2];
+    _c->current_color.v[3] = d[3] * s[3];
   }
 
   bool needs_normal = false;
@@ -651,31 +651,31 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GLVertex *v = &_vertices[i];
     const LVecBase4f &d = rvertex.get_data4f();
     
-    v->coord.X = d[0];
-    v->coord.Y = d[1];
-    v->coord.Z = d[2];
-    v->coord.W = d[3];
+    v->coord.v[0] = d[0];
+    v->coord.v[1] = d[1];
+    v->coord.v[2] = d[2];
+    v->coord.v[3] = d[3];
 
     if (needs_texmat) {
       // Transform texcoords as a four-component vector for most generality.
       LVecBase4f d = rtexcoord.get_data4f() * texmat;
-      v->tex_coord.X = d[0];
-      v->tex_coord.Y = d[1];
+      v->tex_coord.v[0] = d[0];
+      v->tex_coord.v[1] = d[1];
 
     } else if (needs_texcoord) {
       // No need to transform, so just extract as two-component.
       const LVecBase2f &d = rtexcoord.get_data2f();
-      v->tex_coord.X = d[0];
-      v->tex_coord.Y = d[1];
+      v->tex_coord.v[0] = d[0];
+      v->tex_coord.v[1] = d[1];
     }
 
     if (needs_color) {
       const Colorf &d = rcolor.get_data4f();
       const Colorf &s = _current_color_scale;
-      _c->current_color.X = d[0] * s[0];
-      _c->current_color.Y = d[1] * s[1];
-      _c->current_color.Z = d[2] * s[2];
-      _c->current_color.W = d[3] * s[3];
+      _c->current_color.v[0] = d[0] * s[0];
+      _c->current_color.v[1] = d[1] * s[1];
+      _c->current_color.v[2] = d[2] * s[2];
+      _c->current_color.v[3] = d[3] * s[3];
       
       if (_color_material_flags) {
         if (_color_material_flags & CMF_ambient) {
@@ -693,10 +693,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (lighting_enabled) {
       const LVecBase3f &d = rnormal.get_data3f();
-      _c->current_normal.X = d[0];
-      _c->current_normal.Y = d[1];
-      _c->current_normal.Z = d[2];
-      _c->current_normal.W = 0.0f;
+      _c->current_normal.v[0] = d[0];
+      _c->current_normal.v[1] = d[1];
+      _c->current_normal.v[2] = d[2];
+      _c->current_normal.v[3] = 0.0f;
 
       gl_vertex_transform(_c, v);
       gl_shade_vertex(_c, v);
@@ -794,10 +794,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (shade_model == ShadeModelAttrib::M_flat) {
     _c->smooth_shade_model = false;
     shade_model_state = 1;  // flat
-    if (_c->current_color.X == 1.0f &&
-        _c->current_color.Y == 1.0f &&
-        _c->current_color.Z == 1.0f &&
-        _c->current_color.W == 1.0f) {
+    if (_c->current_color.v[0] == 1.0f &&
+        _c->current_color.v[1] == 1.0f &&
+        _c->current_color.v[2] == 1.0f &&
+        _c->current_color.v[3] == 1.0f) {
       shade_model_state = 0;  // white
     }
   }
@@ -1604,10 +1604,10 @@ do_issue_light() {
         _c->first_light = gl_light;
 
         const Colorf &diffuse = light_obj->get_color();
-        gl_light->diffuse.X = diffuse[0];
-        gl_light->diffuse.Y = diffuse[1];
-        gl_light->diffuse.Z = diffuse[2];
-        gl_light->diffuse.W = diffuse[3];
+        gl_light->diffuse.v[0] = diffuse[0];
+        gl_light->diffuse.v[1] = diffuse[1];
+        gl_light->diffuse.v[2] = diffuse[2];
+        gl_light->diffuse.v[3] = diffuse[3];
 
         light_obj->bind(this, light, num_enabled);
         num_enabled++;
@@ -1615,10 +1615,10 @@ do_issue_light() {
     }
   }
 
-  _c->ambient_light_model.X = cur_ambient_light[0];
-  _c->ambient_light_model.Y = cur_ambient_light[1];
-  _c->ambient_light_model.Z = cur_ambient_light[2];
-  _c->ambient_light_model.W = cur_ambient_light[3];
+  _c->ambient_light_model.v[0] = cur_ambient_light[0];
+  _c->ambient_light_model.v[1] = cur_ambient_light[1];
+  _c->ambient_light_model.v[2] = cur_ambient_light[2];
+  _c->ambient_light_model.v[3] = cur_ambient_light[3];
 
   // Changing the lighting state means we need to reapply the
   // transform in begin_draw_primitives().
@@ -1639,10 +1639,10 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   nassertv(gl_light != (GLLight *)NULL);
 
   const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.X = specular[0];
-  gl_light->specular.Y = specular[1];
-  gl_light->specular.Z = specular[2];
-  gl_light->specular.W = specular[3];
+  gl_light->specular.v[0] = specular[0];
+  gl_light->specular.v[1] = specular[1];
+  gl_light->specular.v[2] = specular[2];
+  gl_light->specular.v[3] = specular[3];
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
@@ -1653,10 +1653,10 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   CPT(TransformState) net_transform = render_transform->compose(transform);
 
   LPoint3f pos = light_obj->get_point() * net_transform->get_mat();
-  gl_light->position.X = pos[0];
-  gl_light->position.Y = pos[1];
-  gl_light->position.Z = pos[2];
-  gl_light->position.W = 1.0f;
+  gl_light->position.v[0] = pos[0];
+  gl_light->position.v[1] = pos[1];
+  gl_light->position.v[2] = pos[2];
+  gl_light->position.v[3] = 1.0f;
 
   // Exponent == 0 implies uniform light distribution
   gl_light->spot_exponent = 0.0f;
@@ -1684,10 +1684,10 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   nassertv(gl_light != (GLLight *)NULL);
 
   const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.X = specular[0];
-  gl_light->specular.Y = specular[1];
-  gl_light->specular.Z = specular[2];
-  gl_light->specular.W = specular[3];
+  gl_light->specular.v[0] = specular[0];
+  gl_light->specular.v[1] = specular[1];
+  gl_light->specular.v[2] = specular[2];
+  gl_light->specular.v[3] = specular[3];
 
   // Position needs to specify x, y, z, and w
   // w == 0 implies light is at infinity
@@ -1699,14 +1699,14 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
   LVector3f dir = light_obj->get_direction() * net_transform->get_mat();
   dir.normalize();
-  gl_light->position.X = -dir[0];
-  gl_light->position.Y = -dir[1];
-  gl_light->position.Z = -dir[2];
-  gl_light->position.W = 0.0f;
+  gl_light->position.v[0] = -dir[0];
+  gl_light->position.v[1] = -dir[1];
+  gl_light->position.v[2] = -dir[2];
+  gl_light->position.v[3] = 0.0f;
 
-  gl_light->norm_position.X = -dir[0];
-  gl_light->norm_position.Y = -dir[1];
-  gl_light->norm_position.Z = -dir[2];
+  gl_light->norm_position.v[0] = -dir[0];
+  gl_light->norm_position.v[1] = -dir[1];
+  gl_light->norm_position.v[2] = -dir[2];
   gl_V3_Norm(&gl_light->norm_position);
 
   // Exponent == 0 implies uniform light distribution
@@ -1736,10 +1736,10 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   nassertv(gl_light != (GLLight *)NULL);
 
   const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.X = specular[0];
-  gl_light->specular.Y = specular[1];
-  gl_light->specular.Z = specular[2];
-  gl_light->specular.W = specular[3];
+  gl_light->specular.v[0] = specular[0];
+  gl_light->specular.v[1] = specular[1];
+  gl_light->specular.v[2] = specular[2];
+  gl_light->specular.v[3] = specular[3];
   
   Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
@@ -1757,18 +1757,18 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   LVector3f dir = lens->get_view_vector() * light_mat;
   dir.normalize();
 
-  gl_light->position.X = pos[0];
-  gl_light->position.Y = pos[1];
-  gl_light->position.Z = pos[2];
-  gl_light->position.W = 1.0f;
+  gl_light->position.v[0] = pos[0];
+  gl_light->position.v[1] = pos[1];
+  gl_light->position.v[2] = pos[2];
+  gl_light->position.v[3] = 1.0f;
 
-  gl_light->spot_direction.X = dir[0];
-  gl_light->spot_direction.Y = dir[1];
-  gl_light->spot_direction.Z = dir[2];
+  gl_light->spot_direction.v[0] = dir[0];
+  gl_light->spot_direction.v[1] = dir[1];
+  gl_light->spot_direction.v[2] = dir[2];
 
-  gl_light->norm_spot_direction.X = dir[0];
-  gl_light->norm_spot_direction.Y = dir[1];
-  gl_light->norm_spot_direction.Z = dir[2];
+  gl_light->norm_spot_direction.v[0] = dir[0];
+  gl_light->norm_spot_direction.v[1] = dir[1];
+  gl_light->norm_spot_direction.v[2] = dir[2];
   gl_V3_Norm(&gl_light->norm_spot_direction);
 
   gl_light->spot_exponent = light_obj->get_exponent();
@@ -2596,16 +2596,16 @@ copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int lev
 void TinyGraphicsStateGuardian::
 setup_material(GLMaterial *gl_material, const Material *material) {
   const Colorf &specular = material->get_specular();
-  gl_material->specular.X = specular[0];
-  gl_material->specular.Y = specular[1];
-  gl_material->specular.Z = specular[2];
-  gl_material->specular.W = specular[3];
+  gl_material->specular.v[0] = specular[0];
+  gl_material->specular.v[1] = specular[1];
+  gl_material->specular.v[2] = specular[2];
+  gl_material->specular.v[3] = specular[3];
 
   const Colorf &emission = material->get_emission();
-  gl_material->emission.X = emission[0];
-  gl_material->emission.Y = emission[1];
-  gl_material->emission.Z = emission[2];
-  gl_material->emission.W = emission[3];
+  gl_material->emission.v[0] = emission[0];
+  gl_material->emission.v[1] = emission[1];
+  gl_material->emission.v[2] = emission[2];
+  gl_material->emission.v[3] = emission[3];
 
   gl_material->shininess = material->get_shininess();
   gl_material->shininess_i = (int)((material->get_shininess() / 128.0f) * SPECULAR_BUFFER_RESOLUTION);
@@ -2614,20 +2614,20 @@ setup_material(GLMaterial *gl_material, const Material *material) {
 
   if (material->has_ambient()) {
     const Colorf &ambient = material->get_ambient();
-    gl_material->ambient.X = ambient[0];
-    gl_material->ambient.Y = ambient[1];
-    gl_material->ambient.Z = ambient[2];
-    gl_material->ambient.W = ambient[3];
+    gl_material->ambient.v[0] = ambient[0];
+    gl_material->ambient.v[1] = ambient[1];
+    gl_material->ambient.v[2] = ambient[2];
+    gl_material->ambient.v[3] = ambient[3];
 
     _color_material_flags &= ~CMF_ambient;
   }
 
   if (material->has_diffuse()) {
     const Colorf &diffuse = material->get_diffuse();
-    gl_material->diffuse.X = diffuse[0];
-    gl_material->diffuse.Y = diffuse[1];
-    gl_material->diffuse.Z = diffuse[2];
-    gl_material->diffuse.W = diffuse[3];
+    gl_material->diffuse.v[0] = diffuse[0];
+    gl_material->diffuse.v[1] = diffuse[1];
+    gl_material->diffuse.v[2] = diffuse[2];
+    gl_material->diffuse.v[3] = diffuse[3];
 
     _color_material_flags &= ~CMF_diffuse;
   }

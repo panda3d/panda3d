@@ -37,20 +37,20 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   }
 
   /* default state */
-  c->current_color.X=1.0f;
-  c->current_color.Y=1.0f;
-  c->current_color.Z=1.0f;
-  c->current_color.W=1.0f;
+  c->current_color.v[0]=1.0f;
+  c->current_color.v[1]=1.0f;
+  c->current_color.v[2]=1.0f;
+  c->current_color.v[3]=1.0f;
 
-  c->current_normal.X=1.0f;
-  c->current_normal.Y=0.0f;
-  c->current_normal.Z=0.0f;
-  c->current_normal.W=0.0f;
+  c->current_normal.v[0]=1.0f;
+  c->current_normal.v[1]=0.0f;
+  c->current_normal.v[2]=0.0f;
+  c->current_normal.v[3]=0.0f;
 
-  c->current_tex_coord.X=0.0f;
-  c->current_tex_coord.Y=0.0f;
-  c->current_tex_coord.Z=0.0f;
-  c->current_tex_coord.W=1.0f;
+  c->current_tex_coord.v[0]=0.0f;
+  c->current_tex_coord.v[1]=0.0f;
+  c->current_tex_coord.v[2]=0.0f;
+  c->current_tex_coord.v[3]=1.0f;
 
   c->cull_face_enabled=0;
   

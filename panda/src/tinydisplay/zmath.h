@@ -15,12 +15,6 @@ typedef struct {
 	 float m[3][4];
 } M34;
 
-
-#define X v[0]
-#define Y v[1]
-#define Z v[2]
-#define W v[3]
-
 typedef struct {
 	 float v[3];
 } V3;

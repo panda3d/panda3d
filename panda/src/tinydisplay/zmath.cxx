@@ -73,24 +73,24 @@ void gl_MoveV3(V3 *a,V3 *b)
 
 void gl_MulM4V3(V3 *a,M4 *b,V3 *c)
 {
-	 a->X=b->m[0][0]*c->X+b->m[0][1]*c->Y+b->m[0][2]*c->Z+b->m[0][3];
-	 a->Y=b->m[1][0]*c->X+b->m[1][1]*c->Y+b->m[1][2]*c->Z+b->m[1][3];
-	 a->Z=b->m[2][0]*c->X+b->m[2][1]*c->Y+b->m[2][2]*c->Z+b->m[2][3];
+	 a->v[0]=b->m[0][0]*c->v[0]+b->m[0][1]*c->v[1]+b->m[0][2]*c->v[2]+b->m[0][3];
+	 a->v[1]=b->m[1][0]*c->v[0]+b->m[1][1]*c->v[1]+b->m[1][2]*c->v[2]+b->m[1][3];
+	 a->v[2]=b->m[2][0]*c->v[0]+b->m[2][1]*c->v[1]+b->m[2][2]*c->v[2]+b->m[2][3];
 }
 
 void gl_MulM3V3(V3 *a,M4 *b,V3 *c)
 {
-	 a->X=b->m[0][0]*c->X+b->m[0][1]*c->Y+b->m[0][2]*c->Z;
-	 a->Y=b->m[1][0]*c->X+b->m[1][1]*c->Y+b->m[1][2]*c->Z;
-	 a->Z=b->m[2][0]*c->X+b->m[2][1]*c->Y+b->m[2][2]*c->Z;
+	 a->v[0]=b->m[0][0]*c->v[0]+b->m[0][1]*c->v[1]+b->m[0][2]*c->v[2];
+	 a->v[1]=b->m[1][0]*c->v[0]+b->m[1][1]*c->v[1]+b->m[1][2]*c->v[2];
+	 a->v[2]=b->m[2][0]*c->v[0]+b->m[2][1]*c->v[1]+b->m[2][2]*c->v[2];
 }
 
 void gl_M4_MulV4(V4 *a,M4 *b,V4 *c)
 {
-	 a->X=b->m[0][0]*c->X+b->m[0][1]*c->Y+b->m[0][2]*c->Z+b->m[0][3]*c->W;
-	 a->Y=b->m[1][0]*c->X+b->m[1][1]*c->Y+b->m[1][2]*c->Z+b->m[1][3]*c->W;
-	 a->Z=b->m[2][0]*c->X+b->m[2][1]*c->Y+b->m[2][2]*c->Z+b->m[2][3]*c->W;
-	 a->W=b->m[3][0]*c->X+b->m[3][1]*c->Y+b->m[3][2]*c->Z+b->m[3][3]*c->W;
+	 a->v[0]=b->m[0][0]*c->v[0]+b->m[0][1]*c->v[1]+b->m[0][2]*c->v[2]+b->m[0][3]*c->v[3];
+	 a->v[1]=b->m[1][0]*c->v[0]+b->m[1][1]*c->v[1]+b->m[1][2]*c->v[2]+b->m[1][3]*c->v[3];
+	 a->v[2]=b->m[2][0]*c->v[0]+b->m[2][1]*c->v[1]+b->m[2][2]*c->v[2]+b->m[2][3]*c->v[3];
+	 a->v[3]=b->m[3][0]*c->v[0]+b->m[3][1]*c->v[1]+b->m[3][2]*c->v[2]+b->m[3][3]*c->v[3];
 }
 	
 /* transposition of a 4x4 matrix */
@@ -245,30 +245,30 @@ void gl_M3_Inv(M3 *a,M3 *m)
 int gl_V3_Norm(V3 *a)
 {
 	float n;
-	n=sqrt(a->X*a->X+a->Y*a->Y+a->Z*a->Z);
+	n=sqrt(a->v[0]*a->v[0]+a->v[1]*a->v[1]+a->v[2]*a->v[2]);
 	if (n==0) return 1;
-	a->X/=n;
-	a->Y/=n;
-	a->Z/=n;
+	a->v[0]/=n;
+	a->v[1]/=n;
+	a->v[2]/=n;
 	return 0;
 }
 
 V3 gl_V3_New(float x,float y,float z)
 {
 	 V3 a;
-	 a.X=x;
-	 a.Y=y;
-	 a.Z=z;
+	 a.v[0]=x;
+	 a.v[1]=y;
+	 a.v[2]=z;
 	 return a;
 }
 
 V4 gl_V4_New(float x,float y,float z,float w)
 {
   V4 a;
-  a.X=x;
-  a.Y=y;
-  a.Z=z;
-  a.W=w;
+  a.v[0]=x;
+  a.v[1]=y;
+  a.v[2]=z;
+  a.v[3]=w;
   return a;
 }
 

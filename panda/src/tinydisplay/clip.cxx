@@ -15,13 +15,13 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   float winv;
 
   /* coordinates */
-  winv = 1.0f / v->pc.W;
-  v->zp.x= (int) ( v->pc.X * winv * c->viewport.scale.X 
-                   + c->viewport.trans.X );
-  v->zp.y= (int) ( v->pc.Y * winv * c->viewport.scale.Y 
-                   + c->viewport.trans.Y );
-  v->zp.z= (int) ( v->pc.Z * winv * c->viewport.scale.Z 
-                   + c->viewport.trans.Z );
+  winv = 1.0f / v->pc.v[3];
+  v->zp.x= (int) ( v->pc.v[0] * winv * c->viewport.scale.v[0] 
+                   + c->viewport.trans.v[0] );
+  v->zp.y= (int) ( v->pc.v[1] * winv * c->viewport.scale.v[1] 
+                   + c->viewport.trans.v[1] );
+  v->zp.z= (int) ( v->pc.v[2] * winv * c->viewport.scale.v[2] 
+                   + c->viewport.trans.v[2] );
   /* color */
   v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
                 + ZB_POINT_RED_MIN);
@@ -34,8 +34,8 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   
   /* texture */
   if (c->texture_2d_enabled) {
-    v->zp.s = (int)(v->tex_coord.X * c->current_texture->s_max); 
-    v->zp.t = (int)(v->tex_coord.Y * c->current_texture->t_max);
+    v->zp.s = (int)(v->tex_coord.v[0] * c->current_texture->s_max); 
+    v->zp.t = (int)(v->tex_coord.v[1] * c->current_texture->t_max);
   }
 }
 
@@ -53,10 +53,10 @@ void gl_draw_point(GLContext *c,GLVertex *p0)
 
 static inline void interpolate(GLVertex *q,GLVertex *p0,GLVertex *p1,float t)
 {
-  q->pc.X=p0->pc.X+(p1->pc.X-p0->pc.X)*t;
-  q->pc.Y=p0->pc.Y+(p1->pc.Y-p0->pc.Y)*t;
-  q->pc.Z=p0->pc.Z+(p1->pc.Z-p0->pc.Z)*t;
-  q->pc.W=p0->pc.W+(p1->pc.W-p0->pc.W)*t;
+  q->pc.v[0]=p0->pc.v[0]+(p1->pc.v[0]-p0->pc.v[0])*t;
+  q->pc.v[1]=p0->pc.v[1]+(p1->pc.v[1]-p0->pc.v[1])*t;
+  q->pc.v[2]=p0->pc.v[2]+(p1->pc.v[2]-p0->pc.v[2])*t;
+  q->pc.v[3]=p0->pc.v[3]+(p1->pc.v[3]-p0->pc.v[3])*t;
 
   q->color.v[0]=p0->color.v[0] + (p1->color.v[0]-p0->color.v[0])*t;
   q->color.v[1]=p0->color.v[1] + (p1->color.v[1]-p0->color.v[1])*t;
@@ -104,14 +104,14 @@ void gl_draw_line(GLContext *c,GLVertex *p1,GLVertex *p2)
   } else if ( (cc1&cc2) != 0 ) {
     return;
   } else {
-    dx=p2->pc.X-p1->pc.X;
-    dy=p2->pc.Y-p1->pc.Y;
-    dz=p2->pc.Z-p1->pc.Z;
-    dw=p2->pc.W-p1->pc.W;
-    x1=p1->pc.X;
-    y1=p1->pc.Y;
-    z1=p1->pc.Z;
-    w1=p1->pc.W;
+    dx=p2->pc.v[0]-p1->pc.v[0];
+    dy=p2->pc.v[1]-p1->pc.v[1];
+    dz=p2->pc.v[2]-p1->pc.v[2];
+    dw=p2->pc.v[3]-p1->pc.v[3];
+    x1=p1->pc.v[0];
+    y1=p1->pc.v[1];
+    z1=p1->pc.v[2];
+    w1=p1->pc.v[3];
     
     tmin=0;
     tmax=1;
@@ -147,36 +147,37 @@ void gl_draw_line(GLContext *c,GLVertex *p1,GLVertex *p2)
  * of the intersection if x=a+t(b-a). 
  */
 	 
-#define clip_func(name,sign,dir,dir1,dir2) \
-static float name(V4 *c,V4 *a,V4 *b) \
+#define clip_func(name, sign, dir, dir1, dir2) \
+static float name(V4 *c, V4 *a, V4 *b) \
 {\
-  float t,dX,dY,dZ,dW,den;\
-  dX = (b->X - a->X);\
-  dY = (b->Y - a->Y);\
-  dZ = (b->Z - a->Z);\
-  dW = (b->W - a->W);\
-  den = -(sign d ## dir) + dW;\
+  float t,den;\
+  float d[4];\
+  d[0] = (b->v[0] - a->v[0]);\
+  d[1] = (b->v[1] - a->v[1]);\
+  d[2] = (b->v[2] - a->v[2]);\
+  d[3] = (b->v[3] - a->v[3]);\
+  den = -(sign d[dir]) + d[3];\
   if (den == 0) t=0;\
-  else t = ( sign a->dir - a->W) / den;\
-  c->dir1 = a->dir1 + t * d ## dir1;\
-  c->dir2 = a->dir2 + t * d ## dir2;\
-  c->W = a->W + t * dW;\
-  c->dir = sign c->W;\
+  else t = ( sign a->v[dir] - a->v[3]) / den;\
+  c->v[dir1] = a->v[dir1] + t * d[dir1];\
+  c->v[dir2] = a->v[dir2] + t * d[dir2];\
+  c->v[3] = a->v[3] + t * d[3];\
+  c->v[dir] = sign c->v[3];\
   return t;\
 }
 
 
-clip_func(clip_xmin,-,X,Y,Z)
+clip_func(clip_xmin, -, 0, 1, 2)
 
-clip_func(clip_xmax,+,X,Y,Z)
+clip_func(clip_xmax, +, 0, 1, 2)
 
-clip_func(clip_ymin,-,Y,X,Z)
+clip_func(clip_ymin, -, 1, 0, 2)
 
-clip_func(clip_ymax,+,Y,X,Z)
+clip_func(clip_ymax, +, 1, 0, 2)
 
-clip_func(clip_zmin,-,Z,X,Y)
+clip_func(clip_zmin, -, 2, 0, 1)
 
-clip_func(clip_zmax,+,Z,X,Y)
+clip_func(clip_zmax, +, 2, 0, 1)
 
 
 float (*clip_proc[6])(V4 *,V4 *,V4 *)=  {
@@ -201,11 +202,11 @@ static inline void updateTmp(GLContext *c,
   }
 
   if (c->texture_2d_enabled) {
-    q->tex_coord.X=p0->tex_coord.X + (p1->tex_coord.X-p0->tex_coord.X)*t;
-    q->tex_coord.Y=p0->tex_coord.Y + (p1->tex_coord.Y-p0->tex_coord.Y)*t;
+    q->tex_coord.v[0]=p0->tex_coord.v[0] + (p1->tex_coord.v[0]-p0->tex_coord.v[0])*t;
+    q->tex_coord.v[1]=p0->tex_coord.v[1] + (p1->tex_coord.v[1]-p0->tex_coord.v[1])*t;
   }
 
-  q->clip_code=gl_clipcode(q->pc.X,q->pc.Y,q->pc.Z,q->pc.W);
+  q->clip_code=gl_clipcode(q->pc.v[0],q->pc.v[1],q->pc.v[2],q->pc.v[3]);
   if (q->clip_code==0)
     gl_transform_to_viewport(c,q);
 }
@@ -289,9 +290,9 @@ static void gl_draw_triangle_clip(GLContext *c,
     if (clip_bit == 6) {
 #if 0
       printf("Error:\n");
-      printf("%f %f %f %f\n",p0->pc.X,p0->pc.Y,p0->pc.Z,p0->pc.W);
-      printf("%f %f %f %f\n",p1->pc.X,p1->pc.Y,p1->pc.Z,p1->pc.W);
-      printf("%f %f %f %f\n",p2->pc.X,p2->pc.Y,p2->pc.Z,p2->pc.W);
+      printf("%f %f %f %f\n",p0->pc.v[0],p0->pc.v[1],p0->pc.v[2],p0->pc.v[3]);
+      printf("%f %f %f %f\n",p1->pc.v[0],p1->pc.v[1],p1->pc.v[2],p1->pc.v[3]);
+      printf("%f %f %f %f\n",p2->pc.v[0],p2->pc.v[1],p2->pc.v[2],p2->pc.v[3]);
 #endif
       return;
     }
