@@ -3452,6 +3452,54 @@ def formatTimeCompact(seconds):
     result += '%ss' % seconds
     return result
 
+class AlphabetCounter:
+    # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
+    def __init__(self):
+        self._curCounter = ['A']
+    def next(self):
+        result = ''.join([c for c in self._curCounter])
+        index = -1
+        while True:
+            curChar = self._curCounter[index]
+            if curChar is 'Z':
+                nextChar = 'A'
+                carry = True
+            else:
+                nextChar = chr(ord(self._curCounter[index])+1)
+                carry = False
+            self._curCounter[index] = nextChar
+            if carry:
+                if (-index) == len(self._curCounter):
+                    self._curCounter = ['A',] + self._curCounter
+                    break
+                else:
+                    index -= 1
+                carry = False
+            else:
+                break
+        return result
+
+if __debug__:
+    def testAlphabetCounter():
+        tempList = []
+        ac = AlphabetCounter()
+        for i in xrange(26*3):
+            tempList.append(ac.next())
+        assert tempList == [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                            'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
+                            'BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU','BV','BW','BX','BY','BZ',]
+        ac = AlphabetCounter()
+        num  = 26 # A-Z
+        num += (26*26) # AA-ZZ
+        num += 26 # AAZ
+        num += 1 # ABA
+        num += 2 # ABC
+        for i in xrange(num):
+            x = ac.next()
+        assert x == 'ABC'
+    testAlphabetCounter()
+    del testAlphabetCounter
+
 globalPdb = None
 
 traceCalled = False

@@ -4,6 +4,7 @@ __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
+from direct.showbase.PythonUtil import AlphabetCounter
 from direct.showbase.Job import Job
 import gc
 import types
@@ -152,10 +153,11 @@ class GarbageReport(Job):
 
                     # if cycle starts off with an instance dict, start with the instance instead
                     startIndex = 0
-                    endIndex = numObjs
-                    if type(objs[-1]) is types.InstanceType:
-                        startIndex = -1
-                        endIndex = numObjs - 1
+                    # + 1 to include a reference back to the first object
+                    endIndex = numObjs + 1
+                    if type(objs[-1]) is types.InstanceType and type(objs[0]) is types.DictType:
+                        startIndex -= 1
+                        endIndex -= 1
 
                     for index in xrange(startIndex, endIndex):
                         if numToSkip:
@@ -207,7 +209,7 @@ class GarbageReport(Job):
                             cycleBySyntax += '%s%s' % (index, brackets[1])
                             objAlreadyRepresented = True
                         else:
-                            cycleBySyntax += '%s->' % itype(obj)
+                            cycleBySyntax += '%s --> ' % itype(obj)
                             objAlreadyRepresented = False
                     newCyclesBySyntax.append(cycleBySyntax)
                     yield None
@@ -276,15 +278,17 @@ class GarbageReport(Job):
 
             if self._args.findCycles:
                 s.append('===== Garbage Cycles By Index =====')
+                ac = AlphabetCounter()
                 for i in xrange(len(self.cycles)):
                     yield None
-                    s.append('%s' % self.cycles[i])
+                    s.append('%s:%s' % (ac.next(), self.cycles[i]))
 
             if self._args.findCycles:
                 s.append('===== Garbage Cycles By Python Syntax =====')
+                ac = AlphabetCounter()
                 for i in xrange(len(self.cyclesBySyntax)):
                     yield None
-                    s.append('%s' % self.cyclesBySyntax[i])
+                    s.append('%s:%s' % (ac.next(), self.cyclesBySyntax[i]))
 
             if self._args.fullReport:
                 format = '%0' + '%s' % digits + 'i:%s'
