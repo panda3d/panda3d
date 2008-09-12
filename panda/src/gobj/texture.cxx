@@ -5064,6 +5064,8 @@ make_from_bam(const FactoryParams &params) {
                                         manager->get_loader_options());
         break;
       }
+      cerr << "loaded tex " << me << "\n";
+      cerr << "loaded filename = " << me->get_filename() << "\n";
     }
   }
 
@@ -5226,7 +5228,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // disk.
   BamTextureMode file_texture_mode = manager->get_file_texture_mode();
   bool has_rawdata =
-    (file_texture_mode == BTM_rawdata || (do_has_ram_image() && _fullpath.empty()));
+    (file_texture_mode == BTM_rawdata || (do_has_ram_image() && _filename.empty()));
   if (has_rawdata && !do_has_ram_image()) {
     do_get_ram_image();
     if (!do_has_ram_image()) {
@@ -5237,8 +5239,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
   bool has_bam_dir = !manager->get_filename().empty();
   Filename bam_dir = manager->get_filename().get_dirname();
-  Filename filename;
-  Filename alpha_filename;
+  Filename filename = _filename;
+  Filename alpha_filename = _alpha_filename;
 
   switch (file_texture_mode) {
   case BTM_unchanged:
@@ -5286,7 +5288,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
       << "Unsupported bam-texture-mode: " << (int)file_texture_mode << "\n";
   }
 
-  if (filename.empty()) {
+  if (filename.empty() && do_has_ram_image()) {
     // If we don't have a filename, we have to store rawdata anyway.
     has_rawdata = true;
   }
