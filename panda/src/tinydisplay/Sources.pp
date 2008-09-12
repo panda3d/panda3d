@@ -13,32 +13,58 @@
     gsgmisc gsgbase gobj display \
     putil linmath mathutil pnmimage windisplay
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+
   #define SOURCES \
-    config_tinydisplay.cxx config_tinydisplay.h \
-    tinyGeomMunger.I tinyGeomMunger.cxx tinyGeomMunger.h \
-    tinySDLGraphicsPipe.I tinySDLGraphicsPipe.cxx tinySDLGraphicsPipe.h \
-    tinySDLGraphicsWindow.h tinySDLGraphicsWindow.I tinySDLGraphicsWindow.cxx \
-    tinyGraphicsBuffer.h tinyGraphicsBuffer.I tinyGraphicsBuffer.cxx \
+    config_tinydisplay.h \
+    tinyGeomMunger.I tinyGeomMunger.h \
+    tinySDLGraphicsPipe.I tinySDLGraphicsPipe.h \
+    tinySDLGraphicsWindow.h tinySDLGraphicsWindow.I \
+    tinyGraphicsBuffer.h tinyGraphicsBuffer.I \
     tinyGraphicsStateGuardian.h tinyGraphicsStateGuardian.I \
-    tinyGraphicsStateGuardian.cxx \
-    tinyTextureContext.I tinyTextureContext.cxx tinyTextureContext.h \
-    tinyWinGraphicsPipe.I tinyWinGraphicsPipe.cxx tinyWinGraphicsPipe.h \
-    tinyWinGraphicsWindow.h tinyWinGraphicsWindow.I tinyWinGraphicsWindow.cxx \
-    tinyXGraphicsPipe.I tinyXGraphicsPipe.cxx tinyXGraphicsPipe.h \
-    tinyXGraphicsWindow.h tinyXGraphicsWindow.I tinyXGraphicsWindow.cxx \
-    tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.cxx tinyOsxGraphicsPipe.h \
+    tinyTextureContext.I tinyTextureContext.h \
+    tinyWinGraphicsPipe.I tinyWinGraphicsPipe.h \
+    tinyWinGraphicsWindow.h tinyWinGraphicsWindow.I \
+    tinyXGraphicsPipe.I tinyXGraphicsPipe.h \
+    tinyXGraphicsWindow.h tinyXGraphicsWindow.I \
+    tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.h \
     tinyOsxGraphicsWindow.h tinyOsxGraphicsWindow.I \
     $[if $[IS_OSX],tinyOsxGraphicsWindow.mm,] \
-    clip.cxx error.cxx \
-    image_util.cxx init.cxx light.cxx \
-    memory.cxx msghandling.cxx msghandling.h \
-    specbuf.cxx \
-    texture.cxx vertex.cxx \
-    zbuffer.cxx zbuffer.h zdither.cxx zfeatures.h zgl.h zline.cxx \
-    zline.h zmath.cxx zmath.h \
+    msghandling.h \
+    zbuffer.h zfeatures.h zgl.h \
+    zline.h zmath.h \
     ztriangle.cxx ztriangle.h ztriangle_two.h \
     ztriangle_code.h ztriangle_table.h \
-    store_pixel.cxx store_pixel.h store_pixel_code.h store_pixel_table.h
+    store_pixel.h store_pixel_code.h store_pixel_table.h
+
+  #define INCLUDED_SOURCES \
+    clip.cxx \
+    config_tinydisplay.cxx \
+    error.cxx \
+    image_util.cxx \
+    init.cxx \
+    td_light.cxx \
+    memory.cxx \
+    msghandling.cxx \
+    specbuf.cxx \
+    store_pixel.cxx \
+    td_texture.cxx \
+    tinyGeomMunger.cxx \
+    tinyGraphicsBuffer.cxx \
+    tinyGraphicsStateGuardian.cxx \
+    tinyOsxGraphicsPipe.cxx \
+    tinySDLGraphicsPipe.cxx \
+    tinySDLGraphicsWindow.cxx \
+    tinyTextureContext.cxx \
+    tinyWinGraphicsPipe.cxx \
+    tinyWinGraphicsWindow.cxx \
+    tinyXGraphicsPipe.cxx \
+    tinyXGraphicsWindow.cxx \
+    vertex.cxx \
+    zbuffer.cxx \
+    zdither.cxx \
+    zline.cxx \
+    zmath.cxx
 
 #end lib_target
 
