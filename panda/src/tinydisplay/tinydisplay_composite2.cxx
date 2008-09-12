@@ -1,3 +1,8 @@
+// We have to include this early, before anyone includes
+// netinet/tcp.h, which will define TCP_NODELAY and other symbols and
+// confuse the Apple system headers.
+#include "tinyOsxGraphicsPipe.h"
+
 #include "tinyGraphicsStateGuardian.cxx"
 #include "tinyOsxGraphicsPipe.cxx"
 #include "tinySDLGraphicsPipe.cxx"

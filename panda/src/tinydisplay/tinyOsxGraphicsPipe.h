@@ -21,7 +21,7 @@
 
 // We have to include this early, before anyone includes
 // netinet/tcp.h, which will define TCP_NODELAY and other symbols and
-// confuse the Apply system headers.
+// confuse the Apple system headers.
 #include <Carbon/Carbon.h>
 
 #include "graphicsPipe.h"
