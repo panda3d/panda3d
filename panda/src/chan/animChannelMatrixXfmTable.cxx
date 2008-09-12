@@ -415,9 +415,11 @@ write_datagram(BamWriter *manager, Datagram &me) {
       float r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3f(h, p, r));
     }
+    const LVecBase3f *hprs_array = NULL;
     if (hprs_length != 0) {
-      compressor.write_hprs(me, &hprs[0], hprs_length);
+      hprs_array = &hprs[0];
     }
+    compressor.write_hprs(me, hprs_array, hprs_length);
 
     // And now the translations.
     for(i = 9; i < num_matrix_components; i++) {
@@ -508,12 +510,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     int i;
     // First, read in the scales and shears.
-    for (i = 0; i < 3; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
-      compressor.read_reals(scan, ind_table.v());
-      _tables[i] = ind_table;
-    }
-    for (i = 3; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
       PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
