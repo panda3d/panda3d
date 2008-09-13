@@ -1580,6 +1580,8 @@ class Actor(DirectObject, NodePath):
                 if not anim.animControl:
                     self.__bindAnimToPart(animName, partName, lodName,
                                           allowAsyncBind = allowAsyncBind)
+                elif not allowAsyncBind:
+                    anim.animControl.waitPending()
                 return anim.animControl
 
         return None
@@ -1701,6 +1703,11 @@ class Actor(DirectObject, NodePath):
                                 animControl = self.__bindAnimToPart(
                                     animName, thisPart, lodName,
                                     allowAsyncBind = allowAsyncBind)
+                            elif not allowAsyncBind:
+                                # Force the animation to load if it's
+                                # not already loaded.
+                                animControl.waitPending()
+                                
                             if animControl:
                                 controls.append(animControl)
 
