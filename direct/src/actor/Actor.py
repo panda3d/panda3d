@@ -529,6 +529,27 @@ class Actor(DirectObject, NodePath):
     def getPartBundleDict(self):
         return self.__partBundleDict
 
+    def getPartBundles(self, partName = None):
+        """ Returns a list of PartBundle objects for the entire Actor,
+        or for the indicated part only. """
+        
+        bundles = []
+        
+        for lodName, partBundleDict in self.__partBundleDict.items():
+            if partName == None:
+                for partDef in partBundleDict.values():
+                    bundles.append(partDef.getBundle())
+
+            else:
+                subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
+                partDef = partBundleDict.get(subpartDef.truePartName)
+                if partDef != None:
+                    bundles.append(partDef.getBundle())
+                else:
+                    Actor.notify.warning("Couldn't find part: %s" % (partName))
+
+        return bundles
+
     def __updateSortedLODNames(self):
         # Cache the sorted LOD names so we dont have to grab them
         # and sort them every time somebody asks for the list
@@ -1458,22 +1479,7 @@ class Actor(DirectObject, NodePath):
         default blendType is controlled by the anim-blend-type
         Config.prc variable.
         """
-        bundles = []
-        
-        for lodName, partBundleDict in self.__partBundleDict.items():
-            if partName == None:
-                for partDef in partBundleDict.values():
-                    bundles.append(partDef.getBundle())
-
-            else:
-                subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
-                partDef = partBundleDict.get(subpartDef.truePartName)
-                if partDef != None:
-                    bundles.append(partDef.getBundle())
-                else:
-                    Actor.notify.warning("Couldn't find part: %s" % (partName))
-
-        for bundle in bundles:
+        for bundle in self.getPartBundles(partName = partName):
             if blendType != None:
                 bundle.setBlendType(blendType)
             if animBlend != None:
@@ -2075,6 +2081,18 @@ class Actor(DirectObject, NodePath):
         """Loads and binds all animations that have been defined for
         the Actor. """
         self.getAnimControls(animName = True, allowAsyncBind = allowAsyncBind)
+
+    def waitPending(self, partName = None):
+        """Blocks until all asynchronously pending animations (that
+        are currently playing) have been loaded and bound the the
+        Actor.  Call this after calling play() if you are using
+        asynchronous binds, but you need this particular animation
+        to be loaded immediately. """
+
+        for bundle in self.getPartBundles(partName = partName):
+            # Temporary hasattr for old Pandas.
+            if hasattr(bundle, 'waitPending'):
+                bundle.waitPending()
 
     def __bindAnimToPart(self, animName, partName, lodName,
                          allowAsyncBind = True):
