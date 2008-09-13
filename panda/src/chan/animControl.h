@@ -25,6 +25,7 @@
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "pmutex.h"
+#include "conditionVarFull.h"
 
 class PartBundle;
 class AnimChannelBase;
@@ -49,6 +50,7 @@ PUBLISHED:
   virtual ~AnimControl();
 
   INLINE bool is_pending() const;
+  bool wait_pending();
   INLINE bool has_anim() const;
   void set_pending_done_event(const string &done_event);
   string get_pending_done_event() const;
@@ -81,6 +83,7 @@ private:
   bool _pending;
   string _pending_done_event;
   Mutex _pending_lock;  // protects the above two.
+  ConditionVarFull _pending_cvar; // signals when _pending goes true.
 
   PT(PartGroup) _part;
   PT(AnimBundle) _anim;

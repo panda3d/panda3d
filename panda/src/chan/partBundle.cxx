@@ -300,7 +300,9 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags,
 //               eventually becomes available.
 //
 //               You can test AnimControl::is_pending() to see if the
-//               animation has been loaded yet.  You can also set an
+//               animation has been loaded yet, or wait for it to
+//               finish with AnimControl::wait_pending() or even
+//               PartBundle::wait_pending().  You can also set an
 //               event to be triggered when the animation finishes
 //               loading with AnimControl::set_pending_done_event().
 ////////////////////////////////////////////////////////////////////
@@ -358,6 +360,28 @@ load_bind_anim(Loader *loader, const Filename &filename,
   loader->load_async(request);
 
   return control;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::wait_pending
+//       Access: Published
+//  Description: Blocks the current thread until all currently-pending
+//               AnimControls, with a nonzero control effect, have
+//               been loaded and are properly bound.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+wait_pending() {
+  CDReader cdata(_cycler);
+  ChannelBlend::const_iterator cbi;
+  for (cbi = cdata->_blend.begin(); 
+       cbi != cdata->_blend.end(); 
+       ++cbi) {
+    AnimControl *control = (*cbi).first;
+    float effect = (*cbi).second;
+    if (effect != 0.0f) {
+      control->wait_pending();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

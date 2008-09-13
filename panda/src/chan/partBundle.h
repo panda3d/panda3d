@@ -133,6 +133,7 @@ PUBLISHED:
                                  int hierarchy_match_flags,
                                  const PartSubset &subset,
                                  bool allow_async);
+  bool wait_pending();
 
   bool freeze_joint(const string &joint_name, const TransformState *transform);
   bool control_joint(const string &joint_name, PandaNode *node);

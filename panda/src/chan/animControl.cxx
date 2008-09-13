@@ -35,6 +35,8 @@ AnimControl::
 AnimControl(const string &name, PartBundle *part, 
             double frame_rate, int num_frames) :
   Namable(name),
+  _pending_lock(name),
+  _pending_cvar(_pending_lock),
   _bound_joints(BitArray::all_on())
 {
 #ifdef DO_MEMORY_USAGE
@@ -73,6 +75,7 @@ setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
   // Now the AnimControl is fully set up.
   _marked_frame = -1;
   _pending = false;
+  _pending_cvar.signal_all();
   if (!_pending_done_event.empty()) {
     throw_event(_pending_done_event);
   }
@@ -90,6 +93,7 @@ fail_anim(PartBundle *part) {
   MutexHolder holder(_pending_lock);
   nassertv(_pending && part == _part);
   _pending = false;
+  _pending_cvar.signal_all();
   if (!_pending_done_event.empty()) {
     throw_event(_pending_done_event);
   }
@@ -103,6 +107,20 @@ fail_anim(PartBundle *part) {
 AnimControl::
 ~AnimControl() {
   get_part()->set_control_effect(this, 0.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::wait_pending
+//       Access: Published
+//  Description: Blocks the current thread until the AnimControl has
+//               finished loading and is fully bound.
+////////////////////////////////////////////////////////////////////
+bool AnimControl::
+wait_pending() {
+  MutexHolder holder(_pending_lock);
+  while (_pending) {
+    _pending_cvar.wait();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
