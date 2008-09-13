@@ -553,6 +553,33 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::find_bound_joints
+//       Access: Protected, Virtual
+//  Description: Similar to bind_hierarchy, but does not actually
+//               perform any binding.  All it does is compute the
+//               BitArray bount_joints according to the specified
+//               subset.  This is useful in preparation for
+//               asynchronous binding--in this case, we may need to
+//               know bound_joints immediately, without having to wait
+//               for the animation itself to load and bind.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
+                  const PartSubset &subset) {
+  if (subset.matches_include(get_name())) {
+    is_included = true;
+  } else if (subset.matches_exclude(get_name())) {
+    is_included = false;
+  }
+
+  int part_num_children = get_num_children();
+  for (int i = 0; i < part_num_children; ++i) {
+    PartGroup *pc = get_child(i);
+    pc->find_bound_joints(joint_index, is_included, bound_joints, subset);
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in

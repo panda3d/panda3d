@@ -82,6 +82,18 @@ setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimControl::set_bound_joints
+//       Access: Public
+//  Description: Called to initialize the AnimControl with its array
+//               of bound_joints, before setup_anim() has completed.
+////////////////////////////////////////////////////////////////////
+void AnimControl::
+set_bound_joints(const BitArray &bound_joints) {
+  MutexHolder holder(_pending_lock);
+  _bound_joints = bound_joints;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::fail_anim
 //       Access: Public
 //  Description: This can only be called once for a given AnimControl.
@@ -118,8 +130,16 @@ AnimControl::
 void AnimControl::
 wait_pending() {
   MutexHolder holder(_pending_lock);
-  while (_pending) {
-    _pending_cvar.wait();
+  if (_pending) {
+    // TODO: we should elevate the priority of the associated
+    // BindAnimRequest while we're waiting for it, so it will jump to
+    // the front of the queue.
+    chan_cat.info()
+      << "Blocking " << *Thread::get_current_thread() 
+      << " until " << get_name() << " is bound\n";
+    while (_pending) {
+      _pending_cvar.wait();
+    }
   }
 }
 

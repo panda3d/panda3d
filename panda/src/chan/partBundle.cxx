@@ -354,6 +354,14 @@ load_bind_anim(Loader *loader, const Filename &filename,
   PT(AnimControl) control = 
     new AnimControl(basename, this, frame_rate, num_frames);
 
+  if (!subset.is_include_empty()) {
+    // Figure out the actual subset of joints to be bound. 
+    int joint_index = 0;
+    BitArray bound_joints;
+    find_bound_joints(joint_index, false, bound_joints, subset);
+    control->set_bound_joints(bound_joints);
+  }
+
   PT(BindAnimRequest) request = 
     new BindAnimRequest(filename, anim_options, control, 
                         hierarchy_match_flags, subset);

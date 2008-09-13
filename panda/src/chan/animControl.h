@@ -44,6 +44,7 @@ public:
               double frame_rate, int num_frames);
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);
+  void set_bound_joints(const BitArray &bound_joints);
   void fail_anim(PartBundle *part);
 
 PUBLISHED:

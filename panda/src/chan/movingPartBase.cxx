@@ -289,3 +289,29 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
   PartGroup::bind_hierarchy(anim, channel_index, joint_index, 
                             is_included, bound_joints, subset);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::find_bound_joints
+//       Access: Protected, Virtual
+//  Description: Similar to bind_hierarchy, but does not actually
+//               perform any binding.  All it does is compute the
+//               BitArray bount_joints according to the specified
+//               subset.  This is useful in preparation for
+//               asynchronous binding--in this case, we may need to
+//               know bound_joints immediately, without having to wait
+//               for the animation itself to load and bind.
+////////////////////////////////////////////////////////////////////
+void MovingPartBase::
+find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
+                  const PartSubset &subset) {
+  if (subset.matches_include(get_name())) {
+    is_included = true;
+  } else if (subset.matches_exclude(get_name())) {
+    is_included = false;
+  }
+
+  bound_joints.set_bit_to(joint_index, is_included);
+  ++joint_index;
+
+  PartGroup::find_bound_joints(joint_index, is_included, bound_joints, subset);
+}

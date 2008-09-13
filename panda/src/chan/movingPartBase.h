@@ -72,6 +72,9 @@ protected:
                               int &joint_index, bool is_included, 
                               BitArray &bound_joints,
                               const PartSubset &subset);
+  virtual void find_bound_joints(int &joint_index, bool is_included, 
+                                 BitArray &bound_joints,
+                                 const PartSubset &subset);
 
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
