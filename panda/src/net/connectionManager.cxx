@@ -19,6 +19,7 @@
 #include "netAddress.h"
 #include "config_net.h"
 #include "mutexHolder.h"
+#include "trueClock.h"
 
 #ifdef WIN32_VC
 #include <winsock2.h>  // For gethostname()
@@ -145,7 +146,37 @@ open_TCP_server_rendezvous(int port, int backlog) {
 PT(Connection) ConnectionManager::
 open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   Socket_TCP *socket = new Socket_TCP;
-  bool okflag = socket->ActiveOpen(address.get_addr(),true);
+
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+  // In the simple-threads case, use a non-blocking connect.
+  bool okflag = socket->ActiveOpenNonBlocking(address.get_addr());
+  if (okflag && socket->GetLastError() == LOCAL_CONNECT_BLOCKING) {
+    // Now wait for the socket to connect.
+    TrueClock *clock = TrueClock::get_global_ptr();
+    double start = clock->get_short_time();
+    Thread::force_yield();
+    Socket_fdset fset;
+    fset.setForSocket(*socket);
+    int ready = fset.WaitForWrite(true, 0);
+    while (ready == 0) {
+      double elapsed = clock->get_short_time() - start;
+      if (elapsed * 1000.0 > timeout_ms) {
+        // Timeout.
+        okflag = false;
+        break;
+      }
+      Thread::force_yield();
+      fset.setForSocket(*socket);
+      ready = fset.WaitForWrite(true, 0);
+    }
+  }
+
+#else
+  // In the normal case, we can just do a blocking connect.
+  bool okflag = socket->ActiveOpen(address.get_addr(), false);
+
+#endif  // SIMPLE_THREADS
+
   if (!okflag) {
     net_cat.error()
       << "Unable to open TCP connection to server "

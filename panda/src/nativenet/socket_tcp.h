@@ -158,14 +158,15 @@ bool Socket_TCP::ActiveOpenNonBlocking(const Socket_Address & theaddress)
     SetNonBlocking();
     SetReuseAddress();
     
-    if (DO_CONNECT(_socket, &theaddress.GetAddressInfo()) != 0)
+    if (DO_CONNECT(_socket, &theaddress.GetAddressInfo()) != 0) {
         if (GETERROR() != LOCAL_CONNECT_BLOCKING)
         {
             printf(" None Blockign Connect Error %d",GETERROR());
             return ErrorClose();
         }
+    }
         
-        return true;
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////

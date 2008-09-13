@@ -18,7 +18,7 @@
 
 class Socket_fdset
 {
-public:
+PUBLISHED:
     
     inline Socket_fdset();
     inline void setForSocket(const Socket_IP &incon);

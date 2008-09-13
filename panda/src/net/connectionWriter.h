@@ -40,12 +40,18 @@ PUBLISHED:
   ConnectionWriter(ConnectionManager *manager, int num_threads);
   ~ConnectionWriter();
 
-  bool send(const Datagram &datagram,
-            const PT(Connection) &connection);
+  void set_max_queue_size(int max_size);
+  int get_max_queue_size() const;
+  int get_current_queue_size() const;
 
   bool send(const Datagram &datagram,
             const PT(Connection) &connection,
-            const NetAddress &address);
+            bool block = false);
+
+  bool send(const Datagram &datagram,
+            const PT(Connection) &connection,
+            const NetAddress &address,
+            bool block = false);
 
   bool is_valid_for_udp(const Datagram &datagram) const;
 

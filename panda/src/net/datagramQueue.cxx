@@ -68,16 +68,27 @@ shutdown() {
 //               threads are waiting on the queue, this will wake one
 //               of them up.  Returns true if successful, false if the
 //               queue was full.
+//
+//               If block is true, this will not return until
+//               successful, waiting until the queue has space
+//               available if necessary.
 ////////////////////////////////////////////////////////////////////
 bool DatagramQueue::
-insert(const NetDatagram &data) {
+insert(const NetDatagram &data, bool block) {
   MutexHolder holder(_cvlock);
 
   bool enqueue_ok = ((int)_queue.size() < _max_queue_size);
+  if (block) {
+    while (!enqueue_ok && !_shutdown) {
+      _cv.wait();
+      enqueue_ok = ((int)_queue.size() < _max_queue_size);
+    }
+  }
+
   if (enqueue_ok) {
     _queue.push_back(data);
   }
-  _cv.signal();
+  _cv.signal();  // Only need to wake up one thread.
 
   return enqueue_ok;
 }
@@ -120,6 +131,9 @@ extract(NetDatagram &result) {
   nassertr(!_queue.empty(), false);
   result = _queue.front();
   _queue.pop_front();
+
+  // Wake up any threads waiting to stuff things into the queue.
+  _cv.signal_all();
 
   return true;
 }

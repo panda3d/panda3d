@@ -39,6 +39,15 @@ ConfigVariableBool pstats_threaded_write
           "wouldn't want this set true, unless you suspect something is "
           "broken with the threaded network interfaces."));
 
+ConfigVariableInt pstats_max_queue_size
+("pstats-max-queue-size", 1,
+ PRC_DESC("If pstats-threaded-write is true, this specifies the maximum "
+          "number of packets (generally, frames of data) that may be queued "
+          "up for the thread to process.  If this is large, the writer "
+          "thread may fall behind and the output of PStats will lag.  Keep "
+          "this small to drop missed packets on the floor instead, and "
+          "ensure that the frame data does not grow stale."));
+
 ConfigVariableDouble pstats_tcp_ratio
 ("pstats-tcp-ratio", 0.01,
  PRC_DESC("This specifies the ratio of frame update messages that are eligible "

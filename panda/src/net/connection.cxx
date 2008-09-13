@@ -367,8 +367,13 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
     data += header.get_header();
     data += datagram.get_message();
     
+    if (net_cat.is_debug()) {
+      header.verify_datagram(datagram);
+    }
+    
     int bytes_to_send = data.length();
     Socket_Address addr = datagram.get_address().get_addr();
+
     bool okflag = udp->SendTo(data, addr);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
     while (!okflag && udp->GetLastError() == LOCAL_BLOCKING_ERROR) {
@@ -376,14 +381,10 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
       okflag = udp->SendTo(data, addr);
     }
 #endif  // SIMPLE_THREADS
-    
-    if (net_cat.is_debug()) {
-      header.verify_datagram(datagram);
-    }
-    
+      
     if (net_cat.is_spam()) {
       net_cat.spam()
-        << "Sending UDP datagram with " 
+        << "Sent UDP datagram with " 
         << bytes_to_send << " bytes to " << (void *)this 
         << ", ok = " << okflag << "\n";
     }
@@ -449,7 +450,7 @@ send_raw_datagram(const NetDatagram &datagram) {
     
     if (net_cat.is_spam()) {
       net_cat.spam()
-        << "Sending UDP datagram with " 
+        << "Sent UDP datagram with " 
         << data.size() << " bytes to " << (void *)this 
         << ", ok = " << okflag << "\n";
     }

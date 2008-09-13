@@ -98,10 +98,7 @@ ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
-  if (!Thread::is_true_threads()) {
-    // There is no point in using threads for this kind of I/O unless
-    // we actually have real threads available (i.e. HAVE_THREADS is
-    // defined, and SIMPLE_THREADS is not).
+  if (!Thread::is_threading_supported()) {
 #ifndef NDEBUG
     if (num_threads != 0) {
       if (net_cat.is_debug()) {

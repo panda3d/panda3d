@@ -34,7 +34,7 @@ public:
   ~DatagramQueue();
   void shutdown();
 
-  bool insert(const NetDatagram &data);
+  bool insert(const NetDatagram &data, bool block = false);
   bool extract(NetDatagram &result);
 
   void set_max_queue_size(int max_size);
@@ -43,7 +43,7 @@ public:
 
 private:
   Mutex _cvlock;
-  ConditionVarFull _cv;
+  ConditionVarFull _cv;  // signaled when queue contents change.
 
   typedef pdeque<NetDatagram> QueueType;
   QueueType _queue;

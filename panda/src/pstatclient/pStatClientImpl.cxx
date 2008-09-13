@@ -47,6 +47,7 @@ PStatClientImpl(PStatClient *client) :
   _reader(this, 0),
   _writer(this, pstats_threaded_write ? 1 : 0)
 {
+  _writer.set_max_queue_size(pstats_max_queue_size); 
   _reader.set_tcp_header_size(4);
   _writer.set_tcp_header_size(4);
   _is_connected = false;
@@ -289,8 +290,10 @@ transmit_frame_data(int thread_index) {
       thread->_next_packet = now + packet_delay;
 
       if (!sent) {
-        pstats_cat.debug()
-          << "Couldn't send packet.\n";
+        if (pstats_cat.is_debug()) {
+          pstats_cat.debug()
+            << "Couldn't send packet.\n";
+        }
       }
     }
   }
@@ -363,7 +366,7 @@ send_hello() {
 
   Datagram datagram;
   message.encode(datagram);
-  _writer.send(datagram, _tcp_connection);
+  _writer.send(datagram, _tcp_connection, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -393,7 +396,7 @@ report_new_collectors() {
     
     Datagram datagram;
     message.encode(datagram);
-    _writer.send(datagram, _tcp_connection);
+    _writer.send(datagram, _tcp_connection, true);
   }
 }
 
@@ -418,7 +421,7 @@ report_new_threads() {
 
     Datagram datagram;
     message.encode(datagram);
-    _writer.send(datagram, _tcp_connection);
+    _writer.send(datagram, _tcp_connection, true);
   }
 }
 

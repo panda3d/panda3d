@@ -32,6 +32,7 @@ NotifyCategoryDecl(pstats, EXPCL_PANDA_PSTATCLIENT, EXPTP_PANDA_PSTATCLIENT);
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_name;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_max_rate;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableBool pstats_threaded_write;
+extern EXPCL_PANDA_PSTATCLIENT ConfigVariableInt pstats_max_queue_size;
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableDouble pstats_tcp_ratio;
 
 extern EXPCL_PANDA_PSTATCLIENT ConfigVariableString pstats_host;

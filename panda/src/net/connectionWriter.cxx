@@ -57,10 +57,7 @@ ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _manager(manager)
 {
-  if (!Thread::is_true_threads()) {
-    // There is no point in using threads for this kind of I/O unless
-    // we actually have real threads available (i.e. HAVE_THREADS is
-    // defined, and SIMPLE_THREADS is not).
+  if (!Thread::is_threading_supported()) {
 #ifndef NDEBUG
     if (num_threads != 0) {
       if (net_cat.is_debug()) {
@@ -109,6 +106,38 @@ ConnectionWriter::
     (*ti)->join();
   }
 }
+//     Function: ConnectionWriter::set_max_queue_size
+//       Access: Public
+//  Description: Limits the number of packets that may be pending on
+//               the outbound queue.  This only has an effect when
+//               using threads; if num_threads is 0, then all packets
+//               are sent immediately.
+////////////////////////////////////////////////////////////////////
+void ConnectionWriter::
+set_max_queue_size(int max_size) {
+  _queue.set_max_queue_size(max_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::get_max_queue_size
+//       Access: Public
+//  Description: Returns the maximum size the queue is allowed to grow
+//               to.  See set_max_queue_size().
+////////////////////////////////////////////////////////////////////
+int ConnectionWriter::
+get_max_queue_size() const {
+  return _queue.get_max_queue_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::get_current_queue_size
+//       Access: Public
+//  Description: Returns the current number of things in the queue.
+////////////////////////////////////////////////////////////////////
+int ConnectionWriter::
+get_current_queue_size() const {
+  return _queue.get_current_queue_size();
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -125,9 +154,13 @@ ConnectionWriter::
 //               only returns false if the send queue is filled; it's
 //               impossible to detect a transmission error at this
 //               point.
+//
+//               If block is true, this will not return false if the
+//               send queue is filled; instead, it will wait until
+//               this is space available.
 ////////////////////////////////////////////////////////////////////
 bool ConnectionWriter::
-send(const Datagram &datagram, const PT(Connection) &connection) {
+send(const Datagram &datagram, const PT(Connection) &connection, bool block) {
   nassertr(connection != (Connection *)NULL, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_TCP::get_class_type()), false);
 
@@ -141,7 +174,7 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
       return connection->send_datagram(copy, _tcp_header_size);
     }
   } else {
-    return _queue.insert(copy);
+    return _queue.insert(copy, block);
   }
 }
 
@@ -160,10 +193,14 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
 //               only returns false if the send queue is filled; it's
 //               impossible to detect a transmission error at this
 //               point.
+//
+//               If block is true, this will not return false if the
+//               send queue is filled; instead, it will wait until
+//               this is space available.
 ////////////////////////////////////////////////////////////////////
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection,
-     const NetAddress &address) {
+     const NetAddress &address, bool block) {
   nassertr(connection != (Connection *)NULL, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_UDP::get_class_type()), false);
 
@@ -186,7 +223,7 @@ send(const Datagram &datagram, const PT(Connection) &connection,
       return connection->send_datagram(copy, _tcp_header_size);
     }
   } else {
-    return _queue.insert(copy);
+    return _queue.insert(copy, block);
   }
 }
 
