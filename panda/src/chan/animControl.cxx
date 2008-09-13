@@ -115,7 +115,7 @@ AnimControl::
 //  Description: Blocks the current thread until the AnimControl has
 //               finished loading and is fully bound.
 ////////////////////////////////////////////////////////////////////
-bool AnimControl::
+void AnimControl::
 wait_pending() {
   MutexHolder holder(_pending_lock);
   while (_pending) {

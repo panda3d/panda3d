@@ -369,7 +369,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
 //               AnimControls, with a nonzero control effect, have
 //               been loaded and are properly bound.
 ////////////////////////////////////////////////////////////////////
-bool PartBundle::
+void PartBundle::
 wait_pending() {
   CDReader cdata(_cycler);
   ChannelBlend::const_iterator cbi;

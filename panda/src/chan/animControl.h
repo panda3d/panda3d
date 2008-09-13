@@ -50,7 +50,7 @@ PUBLISHED:
   virtual ~AnimControl();
 
   INLINE bool is_pending() const;
-  bool wait_pending();
+  void wait_pending();
   INLINE bool has_anim() const;
   void set_pending_done_event(const string &done_event);
   string get_pending_done_event() const;
