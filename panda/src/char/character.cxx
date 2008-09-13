@@ -15,7 +15,7 @@
 #include "character.h"
 #include "characterJoint.h"
 #include "config_char.h"
-
+#include "nodePath.h"
 #include "geomNode.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -392,7 +392,9 @@ update() {
 
     PStatTimer timer(_joints_pcollector);
     if (char_cat.is_spam()) {
-      char_cat.spam() << "Animating " << *this << " at time " << now << "\n";
+      char_cat.spam() 
+        << "Animating " << NodePath::any_path(this)
+        << " at time " << now << "\n";
     }
     
     do_update();
