@@ -239,14 +239,26 @@ press(const MouseWatcherParameter &param, bool background) {
         } else if (button == KeyboardButton::left()) {
           if (_cursor_keys_active) {
             // Left arrow.  Move the cursor position to the left.
-            _cursor_position = max(_cursor_position - 1, 0);
+            --_cursor_position;
+            if (_cursor_position < 0) {
+              _cursor_position = 0;
+              overflow(param);
+            } else {
+              type(param);    
+            }
             _cursor_stale = true;
           }
           
         } else if (button == KeyboardButton::right()) {
           if (_cursor_keys_active) {
             // Right arrow.  Move the cursor position to the right.
-            _cursor_position = min(_cursor_position + 1, _text.get_num_characters());
+            ++_cursor_position;
+            if (_cursor_position > _text.get_num_characters()) {
+              _cursor_position = _text.get_num_characters();
+              overflow(param);
+            } else {
+              type(param);
+            }
             _cursor_stale = true;
           }
           
@@ -255,6 +267,7 @@ press(const MouseWatcherParameter &param, bool background) {
             // Home.  Move the cursor position to the beginning.
             _cursor_position = 0;
             _cursor_stale = true;
+            type(param);
           }
           
         } else if (button == KeyboardButton::end()) {
@@ -262,6 +275,7 @@ press(const MouseWatcherParameter &param, bool background) {
             // End.  Move the cursor position to the end.
             _cursor_position = _text.get_num_characters();
             _cursor_stale = true;
+            type(param);
           }
         }          
       }

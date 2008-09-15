@@ -20,12 +20,16 @@
 //               entry.  This uses the Unicode encoding currently
 //               specified for the "focus" TextNode; therefore, the
 //               TextNode must exist before calling set_text().
+//
+//               The return value is true if all the text is accepted,
+//               or false if some was truncated (see set_max_width(),
+//               etc.).
 ////////////////////////////////////////////////////////////////////
-INLINE void PGEntry:: 
+INLINE bool PGEntry:: 
 set_text(const string &text) {
   TextNode *text_node = get_text_def(S_focus);
-  nassertv(text_node != (TextNode *)NULL);
-  set_wtext(text_node->decode_text(text));
+  nassertr(text_node != (TextNode *)NULL, false);
+  return set_wtext(text_node->decode_text(text));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,15 +523,20 @@ get_erase_event() const {
 //       Access: Published
 //  Description: Changes the text currently displayed within the
 //               entry.
+//
+//               The return value is true if all the text is accepted,
+//               or false if some was truncated (see set_max_width(),
+//               etc.).
 ////////////////////////////////////////////////////////////////////
-INLINE void PGEntry:: 
+INLINE bool PGEntry:: 
 set_wtext(const wstring &wtext) {
-  _text.set_wtext(wtext);
+  bool ret = _text.set_wtext(wtext);
   if (_obscure_mode) {
-    _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
+    ret = _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
   }
   _text_geom_stale = true;
   set_cursor_position(min(_cursor_position, _text.get_num_characters()));
+  return ret;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -72,7 +72,7 @@ PUBLISHED:
   void setup(float width, int num_lines);
   void setup_minimal(float width, int num_lines);
 
-  INLINE void set_text(const string &text);
+  INLINE bool set_text(const string &text);
   INLINE string get_plain_text() const;
   INLINE string get_text() const;
 
@@ -127,7 +127,7 @@ PUBLISHED:
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
 
-  INLINE void set_wtext(const wstring &wtext);
+  INLINE bool set_wtext(const wstring &wtext);
   INLINE wstring get_plain_wtext() const;
   INLINE wstring get_wtext() const;
   INLINE void set_accept_enabled(bool enabled);
