@@ -41,11 +41,6 @@
 #else
 #print - Did not find fftw
 #endif
-#if $[HAVE_BDB]
-#print + Berkeley DB
-#else
-#print - Did not find Berkeley DB
-#endif
 #if $[HAVE_CG]
 #print + Nvidia Cg High Level Shading Language
 #else
@@ -121,11 +116,11 @@
 #else
 #print - Not building Tinydisplay
 #endif
-#if $[HAVE_SDL]
-#print + SDL
-#else
-#print - Did not find SDL
-#endif
+//#if $[HAVE_SDL]
+//#print + SDL
+//#else
+//#print - Did not find SDL
+//#endif
 #if $[HAVE_MESA]
 #print + Mesa
 #else
@@ -281,9 +276,6 @@ $[cdefine MESA_MGL]
 # define MIN_MESA_VERSION_MINOR $[word 2,$[MIN_MESA_VERSION]]
 #endif
 
-/* Define if we want to build with SGI OpenGL extensions.  */
-$[cdefine HAVE_SGIGL]
-
 /* Define if we have GLX installed and want to build for GLX.  */
 $[cdefine HAVE_GLX]
 
@@ -301,9 +293,6 @@ $[cdefine HAVE_TINYDISPLAY]
 
 /* Define if we have the SDL library. */
 $[cdefine HAVE_SDL]
-
-/* Define if we have Chromium installed and want to use it.  */
-$[cdefine HAVE_CHROMIUM]
 
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]

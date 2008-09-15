@@ -609,26 +609,21 @@
 // Similar to MIN_GL_VERSION, above.
 #define MIN_MESA_VERSION 1 1
 
-// Do you want to build tinydisplay, a cheesy software renderer built
-// into Panda, based on TinyGL?  On some platforms, this presently
-// requires SDL for window management.
-#define HAVE_TINYDISPLAY
+// Do you want to build tinydisplay, a light and fast software
+// renderer built into Panda, based on TinyGL?  This isn't as
+// full-featured as Mesa, but it is many times faster, and in fact
+// competes favorably with hardware-accelerated integrated graphics
+// cards for raw speed (though the hardware-accelerated output looks
+// better).
+#define HAVE_TINYDISPLAY 1
 
-// The SDL library is at the moment required only for support of
-// tinydisplay.  It may not even be required for that, as we are in
-// the process of porting tinydisplay to direct OS-native window
-// creation.
+// The SDL library is useful only for tinydisplay, and is not even
+// required for that, as tinydisplay is also supported natively on
+// each supported platform.
 #define SDL_IPATH
 #define SDL_LPATH
 #define SDL_LIBS
 #defer HAVE_SDL $[libtest $[SDL_LPATH],$[SDL_LIBS]]
-
-// Is the Chromium remote-rendering library installed, and where?
-// This should include libcr_opengl32.
-#defer CHROMIUM_IPATH
-#defer CHROMIUM_LPATH
-#defer CHROMIUM_LIBS
-#defer HAVE_CHROMIUM $[libtest $[CHROMIUM_LPATH],$[CHROMIUM_LIBS]]
 
 // How about GLX?
 #define GLX_IPATH
@@ -648,9 +643,6 @@
 
 // Should we try to build the WGL interface?
 #defer HAVE_WGL $[and $[HAVE_GL],$[WINDOWS_PLATFORM]]
-
-// Should we try to build the SGI-specific glxdisplay?
-#define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
 // Is DirectX8 available, and should we try to build with it?
 #define DX8_IPATH
@@ -712,12 +704,6 @@
 // This will compile in a homespun cooperative threading
 // implementation that runs strictly on one CPU, adding very little
 // overhead over plain single-threaded code.
-
-// Since SIMPLE_THREADS requires special support from the C runtime
-// library, it may not be available on all platforms and
-// architectures.  (However, it is known to be available on the big
-// three: Linux, Win32, and OSX, with their most common
-// architectures.)
 #define SIMPLE_THREADS
 
 // If you are using SIMPLE_THREADS, you might further wish to disable
@@ -754,7 +740,7 @@
 // "thread" when I/O is delayed, instead of blocking the entire
 // process.  Normally, there's no reason to turn this off, unless you
 // suspect a bug in Panda.
-#define USE_PANDAFILESTREAM
+#define USE_PANDAFILESTREAM 1
 
 // Do you want to build the PStats interface, for graphical run-time
 // performance statistics?  This requires NET to be available.  By

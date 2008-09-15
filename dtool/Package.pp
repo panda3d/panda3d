@@ -203,18 +203,11 @@
 #set MESA_MGL $[MESA_MGL]
 #set HAVE_MESA $[HAVE_MESA]
 
-#set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
-#set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
-#set CHROMIUM_LIBS $[CHROMIUM_LIBS]
-#set HAVE_CHROMIUM $[HAVE_CHROMIUM]
-
 #set GLX_IPATH $[unixfilename $[GLX_IPATH]]
 #set GLX_LPATH $[unixfilename $[GLX_LPATH]]
 #set HAVE_GLX $[HAVE_GLX]
 
 #set HAVE_WGL $[HAVE_WGL]
-
-#set HAVE_SGIGL $[HAVE_SGIGL]
 
 #set DX8_IPATH $[unixfilename $[DX8_IPATH]]
 #set DX8_LPATH $[unixfilename $[DX8_LPATH]]
