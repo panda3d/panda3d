@@ -74,6 +74,10 @@ PGEntry(const string &name) :
 
   set_active(true);
   update_state();
+
+  // Some default parameters so it doesn't crash hard if no one calls
+  // setup().
+  setup_minimal(10, 1);
 }
 
 ////////////////////////////////////////////////////////////////////
