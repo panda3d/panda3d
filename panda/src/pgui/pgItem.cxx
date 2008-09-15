@@ -503,6 +503,11 @@ activate_region(const LMatrix4f &transform, int sort,
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 enter_region(const MouseWatcherParameter &param) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::enter_region(" << param << ")\n";
+  }
+
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_enter_event();
   play_sound(event);
@@ -511,8 +516,6 @@ enter_region(const MouseWatcherParameter &param) {
   if (has_notify()) {
     get_notify()->item_enter(this, param);
   }
-
-  //pgui_cat.info() << get_name() << "::enter()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -526,6 +529,11 @@ enter_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 exit_region(const MouseWatcherParameter &param) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::exit_region(" << param << ")\n";
+  }
+
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_exit_event();
   play_sound(event);
@@ -550,6 +558,11 @@ exit_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 within_region(const MouseWatcherParameter &param) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::within_region(" << param << ")\n";
+  }
+
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_within_event();
   play_sound(event);
@@ -558,8 +571,6 @@ within_region(const MouseWatcherParameter &param) {
   if (has_notify()) {
     get_notify()->item_within(this, param);
   }
-
-  //pgui_cat.info() << get_name() << "::within()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -571,6 +582,11 @@ within_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 without_region(const MouseWatcherParameter &param) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::without_region(" << param << ")\n";
+  }
+
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_without_event();
   play_sound(event);
@@ -579,8 +595,6 @@ without_region(const MouseWatcherParameter &param) {
   if (has_notify()) {
     get_notify()->item_without(this, param);
   }
-
-  //pgui_cat.info() << get_name() << "::without()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -591,6 +605,11 @@ without_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_in() {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::focus_in()\n";
+  }
+
   string event = get_focus_in_event();
   play_sound(event);
   throw_event(event);
@@ -598,8 +617,6 @@ focus_in() {
   if (has_notify()) {
     get_notify()->item_focus_in(this);
   }
-
-  //pgui_cat.info() << get_name() << "::focus_in()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -610,6 +627,11 @@ focus_in() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_out() {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::focus_out()\n";
+  }
+
   string event = get_focus_out_event();
   play_sound(event);
   throw_event(event);
@@ -617,8 +639,6 @@ focus_out() {
   if (has_notify()) {
     get_notify()->item_focus_out(this);
   }
-
-  //pgui_cat.info() << get_name() << "::focus_out()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -630,6 +650,11 @@ focus_out() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 press(const MouseWatcherParameter &param, bool background) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::press(" << param << ", " << background << ")\n";
+  }
+
   if (!background) {
     PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
     string event;
@@ -645,8 +670,6 @@ press(const MouseWatcherParameter &param, bool background) {
   if (has_notify()) {
     get_notify()->item_press(this, param);
   }
-
-  //pgui_cat.info() << get_name() << "::press()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -658,6 +681,11 @@ press(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 release(const MouseWatcherParameter &param, bool background) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::release(" << param << ", " << background << ")\n";
+  }
+
   if (!background) {
     PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
     string event = get_release_event(param.get_button());
@@ -668,8 +696,6 @@ release(const MouseWatcherParameter &param, bool background) {
   if (has_notify()) {
     get_notify()->item_release(this, param);
   }
-
-  //pgui_cat.info() << get_name() << "::release()" << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,6 +706,11 @@ release(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 keystroke(const MouseWatcherParameter &param, bool background) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::keystroke(" << param << ", " << background << ")\n";
+  }
+
   if (!background) {
     PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
     string event = get_keystroke_event();
@@ -700,6 +731,11 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 candidate(const MouseWatcherParameter &param, bool background) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::candidate(" << param << ", " << background << ")\n";
+  }
+
   // We don't throw sound events for candidate selections for now.
   if (!background) {
     if (has_notify()) {
@@ -716,6 +752,11 @@ candidate(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 move(const MouseWatcherParameter &param) {
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::move(" << param << ")\n";
+  }
+
   if (has_notify()) {
     get_notify()->item_move(this, param);
   }
