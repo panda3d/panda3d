@@ -30,7 +30,8 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
-'deeptype',]
+'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
+'Averager',]
 
 import types
 import string
@@ -794,12 +795,47 @@ def binaryRepr(number, max_length = 32):
     digits = digits [digits.index (1):]
     return string.join (map (repr, digits), '')
 
+class StdoutCapture:
+    # redirects stdout to a string
+    def __init__(self):
+        self._oldStdout = sys.stdout
+        sys.stdout = self
+        self._string = ''
+    def destroy(self):
+        sys.stdout = self._oldStdout
+        del self._oldStdout
+
+    def getString(self):
+        return self._string
+
+    # internal
+    def write(self, string):
+        self._string = ''.join([self._string, string])
+
+class StdoutPassthrough(StdoutCapture):
+    # like StdoutCapture but also allows output to go through to the OS as normal
+
+    # internal
+    def write(self, string):
+        self._string = ''.join([self._string, string])
+        self._oldStdout.write(string)
+
 # constant profile defaults
 PyUtilProfileDefaultFilename = 'profiledata'
 PyUtilProfileDefaultLines = 80
 PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
-def profile(callback, name, terse):
+_ProfileResultStr = ''
+
+def getProfileResultString():
+    # if you called profile with 'log' not set to True,
+    # you can call this function to get the results as
+    # a string
+    global _ProfileResultStr
+    return _ProfileResultStr
+
+def profile(callback, name, terse, log=True):
+    global _ProfileResultStr
     import __builtin__
     if 'globalProfileFunc' in __builtin__.__dict__:
         # rats. Python profiler is not re-entrant...
@@ -811,10 +847,20 @@ def profile(callback, name, terse):
             ))
         return
     __builtin__.globalProfileFunc = callback
-    print '***** START PROFILE: %s *****' % name
-    startProfile(cmd='globalProfileFunc()', callInfo=(not terse))
-    print '***** END PROFILE: %s *****' % name
+    __builtin__.globalProfileResult = [None]
+    prefix = '***** START PROFILE: %s *****' % name
+    if log:
+        print prefix
+    startProfile(cmd='globalProfileResult[0]=globalProfileFunc()', callInfo=(not terse), silent=not log)
+    suffix = '***** END PROFILE: %s *****' % name
+    if log:
+        print suffix
+    else:
+        _ProfileResultStr = '%s\n%s\n%s' % (prefix, _ProfileResultStr, suffix)
+    result = globalProfileResult[0]
     del __builtin__.__dict__['globalProfileFunc']
+    del __builtin__.__dict__['globalProfileResult']
+    return result
 
 def profiled(category=None, terse=False):
     """ decorator for profiling functions
@@ -883,12 +929,14 @@ def startProfile(filename=PyUtilProfileDefaultFilename,
     filename = '%s.%s' % (filename, randUint31())
     import profile
     profile.run(cmd, filename)
-    if not silent:
+    if silent:
+        extractProfile(filename, lines, sorts, callInfo)
+    else:
         printProfile(filename, lines, sorts, callInfo)
     import os
     os.remove(filename)
 
-# call this to see the results again
+# call these to see the results again, as a string or in the log
 def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
@@ -902,6 +950,18 @@ def printProfile(filename=PyUtilProfileDefaultFilename,
         if callInfo:
             s.print_callees(lines)
             s.print_callers(lines)
+
+# same args as printProfile
+def extractProfile(*args, **kArgs):
+    global _ProfileResultStr
+    # capture print output
+    sc = StdoutCapture()
+    # print the profile output, redirected to the result string
+    printProfile(*args, **kArgs)
+    # make a copy of the print output
+    _ProfileResultStr = sc.getString()
+    # restore stdout to what it was before
+    sc.destroy()
 
 def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
@@ -927,8 +987,14 @@ class Functor:
         self._function = function
         self._args = args
         self._kargs = kargs
-        self.__name__ = self._function.__name__
-        self.__doc__ = self._function.__doc__
+        if hasattr(self._function, '__name__'):
+            self.__name__ = self._function.__name__
+        else:
+            self.__name__ = str(itype(self._function))
+        if hasattr(self._function, '__doc__'):
+            self.__doc__ = self._function.__doc__
+        else:
+            self.__doc__ = self.__name__
 
     def destroy(self):
         del self._function
@@ -1713,6 +1779,19 @@ def average(*args):
     for arg in args:
         val += arg
     return val / len(args)
+
+class Averager:
+    def __init__(self, name):
+        self._name = name
+        self._total = 0.
+        self._count = 0
+    def addValue(self, value):
+        self._total += value
+        self._count += 1
+    def getAverage(self):
+        return self._total / self._count
+    def getCount(self):
+        return self._count
 
 def addListsByValue(a, b):
     """
