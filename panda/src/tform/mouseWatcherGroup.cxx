@@ -28,6 +28,7 @@ MouseWatcherGroup::
 MouseWatcherGroup() :
   _lock("MouseWatcherGroup")
 {
+  _sorted = true;
 #ifndef NDEBUG
   _show_regions = false;
   _color.set(0.4f, 0.6f, 1.0f, 1.0f);
@@ -59,12 +60,14 @@ add_region(MouseWatcherRegion *region) {
   // We will only bother to check for duplicates in the region list if
   // we are building a development Panda.  The overhead for doing this
   // may be too high if we have many regions.
-#ifndef NDEBUG
+#ifdef _DEBUG
   // See if the region is in the set/vector already
   Regions::const_iterator ri = 
     find(_regions.begin(), _regions.end(), pt);
   nassertv(ri == _regions.end());
+#endif  // _DEBUG
 
+#ifndef NDEBUG
   // Also add it to the vizzes if we have them.
   if (_show_regions) {
     nassertv(_vizzes.size() == _regions.size());
@@ -73,6 +76,7 @@ add_region(MouseWatcherRegion *region) {
 #endif  // NDEBUG
 
   _regions.push_back(pt);
+  _sorted = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,16 +89,17 @@ bool MouseWatcherGroup::
 has_region(MouseWatcherRegion *region) const {
   MutexHolder holder(_lock);
 
-  // See if the region is in the vector.
-  PT(MouseWatcherRegion) pt = region;
-  Regions::const_iterator ri = 
-    find(_regions.begin(), _regions.end(), pt);
-  if (ri != _regions.end()) {
-    // Found it
-    return true;
+  PT(MouseWatcherRegion) ptr = region;
+
+  if (_sorted) {
+    // If the vector is already sorted, we can do this the quick way.
+    Regions::const_iterator ri = lower_bound(_regions.begin(), _regions.end(), ptr);
+    return (ri != _regions.end() && (*ri) == ptr);
   }
-  // Did not find the region 
-  return false;
+
+  // If the vector isn't sorted, do a linear scan.
+  Regions::const_iterator ri = find(_regions.begin(), _regions.end(), ptr);
+  return (ri != _regions.end());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,6 +147,7 @@ clear_regions() {
   MutexHolder holder(_lock);
 
   _regions.clear();
+  _sorted = true;
 
 #ifndef NDEBUG
   if (_show_regions) {
@@ -149,6 +155,31 @@ clear_regions() {
     _vizzes.clear();
   }
 #endif  // NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::sort_regions
+//       Access: Published
+//  Description: Sorts all the regions in this group into pointer
+//               order.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherGroup::
+sort_regions() {
+  MutexHolder holder(_lock);
+  do_sort_regions();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::is_sorted
+//       Access: Published
+//  Description: Returns true if the group has already been sorted,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MouseWatcherGroup::
+is_sorted() const {
+  MutexHolder holder(_lock);
+
+  return _sorted;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,6 +300,20 @@ update_regions() {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherGroup::do_sort_regions
+//       Access: Protected
+//  Description: Sorts all the regions in this group into pointer
+//               order.  Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherGroup::
+do_sort_regions() {
+  if (!_sorted) {
+    sort(_regions.begin(), _regions.end());
+    _sorted = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherGroup::do_remove_region
 //       Access: Protected
 //  Description: The internal implementation of remove_region();
@@ -277,10 +322,18 @@ update_regions() {
 bool MouseWatcherGroup::
 do_remove_region(MouseWatcherRegion *region) {
   // See if the region is in the vector.
-  PT(MouseWatcherRegion) pt = region;
-  Regions::iterator ri = 
-    find(_regions.begin(), _regions.end(), pt);
-  if (ri != _regions.end()) {
+  PT(MouseWatcherRegion) ptr = region;
+  Regions::iterator ri;
+
+  if (_sorted) {
+    // Faster, binary search
+    ri = lower_bound(_regions.begin(), _regions.end(), ptr);
+  } else {
+    // Unsorted, so use slower linear scan
+    ri = find(_regions.begin(), _regions.end(), ptr);
+  }
+
+  if (ri != _regions.end() && (*ri) == ptr) {
     // Found it, now erase it
 #ifndef NDEBUG
     // Also remove it from the vizzes.

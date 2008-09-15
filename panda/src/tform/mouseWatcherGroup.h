@@ -41,6 +41,9 @@ PUBLISHED:
   MouseWatcherRegion *find_region(const string &name) const;
   void clear_regions();
 
+  void sort_regions();
+  bool is_sorted() const;
+
   int get_num_regions() const;
   MouseWatcherRegion *get_region(int n) const;
 
@@ -57,6 +60,7 @@ PUBLISHED:
 #endif  // NDEBUG
 
 protected:
+  void do_sort_regions();
   bool do_remove_region(MouseWatcherRegion *region);
 
 #ifndef NDEBUG
@@ -69,6 +73,7 @@ protected:
 protected:
   typedef pvector< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
+  bool _sorted;
 
   // This mutex protects the above list of regions, as well as the
   // below list of vizzes.  It is also referenced directly by

@@ -199,6 +199,8 @@ remove_group(MouseWatcherGroup *group) {
   MutexHolder holder(_lock);
   MutexHolder holder2(group->_lock);
 
+  group->do_sort_regions();
+
   Regions only_a, only_b, both;
   intersect_regions(only_a, only_b, both,
                     _current_regions, group->_regions);
@@ -257,6 +259,9 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
 
   MutexHolder holder2(old_group->_lock);
   MutexHolder holder3(new_group->_lock);
+
+  old_group->do_sort_regions();
+  new_group->do_sort_regions();
 
 #ifndef NDEBUG
   if (!_show_regions_render2d.is_empty()) {
