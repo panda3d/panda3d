@@ -346,7 +346,6 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   // for the most common case.
   int orig_verts = _munged_data->get_num_rows();
   int new_verts = 4 * orig_verts;        // each vertex becomes four.
-  int new_prim_verts = 6 * orig_verts;  // two triangles per point.
 
   PT(GeomVertexData) new_data = new GeomVertexData
     (_munged_data->get_name(), new_format, Geom::UH_stream);
@@ -549,15 +548,17 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
         // double the vertices to stitch all the little triangle strips
         // together).
         PT(GeomPrimitive) new_primitive = new GeomTriangles(Geom::UH_stream);
+        int new_prim_verts = 6 * num_vertices;  // two triangles per point.
 
         PT(GeomVertexArrayData) new_index 
           = new GeomVertexArrayData(new_prim_format, GeomEnums::UH_stream);
         new_index->unclean_set_num_rows(new_prim_verts);
 
         GeomVertexWriter index(new_index, 0);
+        nassertr(index.has_column(), false);
         for (unsigned int *vi = vertices; vi != vertices_end; ++vi) {
           int new_vi = (*vi) * 4;
-          nassertr(new_vi + 3 < new_prim_verts, false);
+          nassertr(index.get_write_row() + 6 <= new_prim_verts, false);
           index.set_data1i(new_vi);
           index.set_data1i(new_vi + 1);
           index.set_data1i(new_vi + 2);
@@ -565,7 +566,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
           index.set_data1i(new_vi + 1);
           index.set_data1i(new_vi + 3);
         }
-        new_primitive->set_vertices(new_index, num_vertices * 6);
+        new_primitive->set_vertices(new_index, new_prim_verts);
 
         int min_vi = primitive->get_min_vertex();
         int max_vi = primitive->get_max_vertex();
