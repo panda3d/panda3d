@@ -83,7 +83,7 @@ wait() {
     return;
   }
 
-  if (thread_cat.is_spam()) {
+  if (thread_cat->is_spam()) {
     thread_cat.spam()
       << *Thread::get_current_thread() << " waiting on " << *this << "\n";
   }
@@ -129,7 +129,7 @@ signal() {
     return;
   }
 
-  if (thread_cat.is_spam()) {
+  if (thread_cat->is_spam()) {
     thread_cat.spam()
       << *Thread::get_current_thread() << " signalling " << *this << "\n";
   }

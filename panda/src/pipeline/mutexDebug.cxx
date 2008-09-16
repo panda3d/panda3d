@@ -128,7 +128,7 @@ do_lock() {
 
     // Go to sleep on the condition variable until it's unlocked.
 
-    if (thread_cat.is_debug()) {
+    if (thread_cat->is_debug()) {
       thread_cat.debug()
         << *this_thread << " blocking on " << *this << " (held by "
         << *_locking_thread << ")\n";
@@ -202,7 +202,7 @@ do_debug_is_locked() const {
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
 report_deadlock(Thread *this_thread) {
-  thread_cat.error()
+  thread_cat->error()
     << "\n\n"
     << "****************************************************************\n"
     << "*****                 Deadlock detected!                   *****\n"

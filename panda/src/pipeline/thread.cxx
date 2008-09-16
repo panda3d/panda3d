@@ -151,7 +151,7 @@ start(ThreadPriority priority, bool joinable) {
   nassertr(!_started, false);
 
   if (!support_threads) {
-    thread_cat.warning()
+    thread_cat->warning()
       << *this << " could not be started: support-threads is false.\n";
     return false;
   }
@@ -159,7 +159,7 @@ start(ThreadPriority priority, bool joinable) {
   _started = _impl.start(priority, joinable);
 
   if (!_started) {
-    thread_cat.warning()
+    thread_cat->warning()
       << *this << " could not be started!\n";
   }
 

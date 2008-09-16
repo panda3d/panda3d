@@ -31,7 +31,7 @@ bool ThreadWin32Impl::_got_pt_ptr_index = false;
 ////////////////////////////////////////////////////////////////////
 ThreadWin32Impl::
 ~ThreadWin32Impl() {
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
@@ -58,7 +58,7 @@ setup_main_thread() {
 bool ThreadWin32Impl::
 start(ThreadPriority priority, bool joinable) {
   _mutex.lock();
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
@@ -175,7 +175,7 @@ root_func(LPVOID data) {
     
     self->_parent_obj->thread_main();
     
-    if (thread_cat.is_debug()) {
+    if (thread_cat->is_debug()) {
       thread_cat.debug()
         << "Terminating thread " << self->_parent_obj->get_name() 
         << ", count = " << self->_parent_obj->get_ref_count() << "\n";
@@ -213,7 +213,7 @@ init_pt_ptr_index() {
 
   _pt_ptr_index = TlsAlloc();
   if (_pt_ptr_index == TLS_OUT_OF_INDEXES) {
-    thread_cat.error()
+    thread_cat->error()
       << "Unable to associate Thread pointers with threads.\n";
     return;
   }

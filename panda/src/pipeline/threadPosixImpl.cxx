@@ -32,7 +32,7 @@ bool ThreadPosixImpl::_got_pt_ptr_index = false;
 ////////////////////////////////////////////////////////////////////
 ThreadPosixImpl::
 ~ThreadPosixImpl() {
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() 
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
@@ -67,7 +67,7 @@ setup_main_thread() {
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool joinable) {
   _mutex.lock();
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
@@ -94,7 +94,7 @@ start(ThreadPriority priority, bool joinable) {
 
   int result = pthread_attr_setstacksize(&attr, thread_stack_size);
   if (result != 0) {
-    thread_cat.warning()
+    thread_cat->warning()
       << "Unable to set stack size.\n";
   }
 
@@ -102,7 +102,7 @@ start(ThreadPriority priority, bool joinable) {
   // run in parallel with other threads.
   result = pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
   if (result != 0) {
-    thread_cat.warning()
+    thread_cat->warning()
       << "Unable to set system scope.\n";
   }
 
@@ -110,7 +110,7 @@ start(ThreadPriority priority, bool joinable) {
   int current_policy = SCHED_OTHER;
   result = pthread_attr_setschedpolicy(&attr, current_policy);
   if (result != 0) {
-    thread_cat.warning()
+    thread_cat->warning()
       << "Unable to set scheduling policy.\n";
 
   }
@@ -134,7 +134,7 @@ start(ThreadPriority priority, bool joinable) {
   }
   
   if (result != 0) {
-    thread_cat.warning()
+    thread_cat->warning()
       << "Unable to specify thread priority.\n";
   }
 
@@ -220,7 +220,7 @@ root_func(void *data) {
     
     self->_parent_obj->thread_main();
     
-    if (thread_cat.is_debug()) {
+    if (thread_cat->is_debug()) {
       thread_cat.debug()
         << "Terminating thread " << self->_parent_obj->get_name() 
         << ", count = " << self->_parent_obj->get_ref_count() << "\n";
@@ -257,7 +257,7 @@ init_pt_ptr_index() {
 
   int result = pthread_key_create(&_pt_ptr_index, NULL);
   if (result != 0) {
-    thread_cat.error()
+    thread_cat->error()
       << "Unable to associate Thread pointers with threads.\n";
     return;
   }

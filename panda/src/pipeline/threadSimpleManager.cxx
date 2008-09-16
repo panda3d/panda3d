@@ -77,7 +77,7 @@ enqueue_ready(ThreadSimpleImpl *thread) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 enqueue_sleep(ThreadSimpleImpl *thread, double seconds) {
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug()
       << *_current_thread->_parent_obj << " sleeping for " 
       << seconds << " seconds\n";
@@ -434,7 +434,7 @@ choose_next_context() {
       // All threads are sleeping.
       double wait = _sleeping.front()->_start_time - now;
       if (wait > 0.0) {
-        if (thread_cat.is_debug()) {
+        if (thread_cat->is_debug()) {
           thread_cat.debug()
             << "Sleeping all threads " << wait << " seconds\n";
         }
@@ -446,7 +446,7 @@ choose_next_context() {
     } else {
       // No threads are ready!
       if (!_blocked.empty()) {
-        thread_cat.error()
+        thread_cat->error()
           << "Deadlock!  All threads blocked.\n";
         report_deadlock();
         abort();
@@ -464,7 +464,7 @@ choose_next_context() {
       // No threads are queued anywhere.  This is some kind of
       // internal error, since normally the main thread, at least,
       // should be queued somewhere.
-      thread_cat.error()
+      thread_cat->error()
         << "All threads disappeared!\n";
       exit(0);
     }
@@ -475,7 +475,7 @@ choose_next_context() {
   _current_thread->_start_time = now;
 
   // All right, the thread is ready to roll.  Begin.
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     size_t blocked_count = 0;
     Blocked::const_iterator bi;
     for (bi = _blocked.begin(); bi != _blocked.end(); ++bi) {
@@ -550,7 +550,7 @@ kill_non_joinable(ThreadSimpleManager::FifoThreads &threads) {
     if (thread->_joinable) {
       new_threads.push_back(thread);
     } else {
-      if (thread_cat.is_debug()) {
+      if (thread_cat->is_debug()) {
         thread_cat.debug()
           << "Killing " << *thread->_parent_obj << "\n";
       }
@@ -577,7 +577,7 @@ kill_non_joinable(ThreadSimpleManager::Sleeping &threads) {
     if (thread->_joinable) {
       new_threads.push_back(thread);
     } else {
-      if (thread_cat.is_debug()) {
+      if (thread_cat->is_debug()) {
         thread_cat.debug()
           << "Killing " << *thread->_parent_obj << "\n";
       }

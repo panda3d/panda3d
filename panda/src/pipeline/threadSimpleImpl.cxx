@@ -55,7 +55,7 @@ ThreadSimpleImpl(Thread *parent_obj) :
 ////////////////////////////////////////////////////////////////////
 ThreadSimpleImpl::
 ~ThreadSimpleImpl() {
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() 
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
@@ -88,7 +88,7 @@ setup_main_thread() {
 ////////////////////////////////////////////////////////////////////
 bool ThreadSimpleImpl::
 start(ThreadPriority priority, bool joinable) {
-  if (thread_cat.is_debug()) {
+  if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
