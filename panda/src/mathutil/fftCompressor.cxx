@@ -405,9 +405,15 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       r.push_back(array[i][2]);
     }
 
-    write_reals(datagram, &h[0], length);
-    write_reals(datagram, &p[0], length);
-    write_reals(datagram, &r[0], length);
+    if (length == 0) {
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+    } else {
+      write_reals(datagram, &h[0], length);
+      write_reals(datagram, &p[0], length);
+      write_reals(datagram, &r[0], length);
+    }
     return;
   }
   if (_quality >= 103) {
@@ -432,15 +438,27 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
       m22.push_back(mat(2, 2));
     }
 
-    write_reals(datagram, &m00[0], length);
-    write_reals(datagram, &m01[0], length);
-    write_reals(datagram, &m02[0], length);
-    write_reals(datagram, &m10[0], length);
-    write_reals(datagram, &m11[0], length);
-    write_reals(datagram, &m12[0], length);
-    write_reals(datagram, &m20[0], length);
-    write_reals(datagram, &m21[0], length);
-    write_reals(datagram, &m22[0], length);
+    if (length == 0) {
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+      write_reals(datagram, NULL, length);
+    } else {
+      write_reals(datagram, &m00[0], length);
+      write_reals(datagram, &m01[0], length);
+      write_reals(datagram, &m02[0], length);
+      write_reals(datagram, &m10[0], length);
+      write_reals(datagram, &m11[0], length);
+      write_reals(datagram, &m12[0], length);
+      write_reals(datagram, &m20[0], length);
+      write_reals(datagram, &m21[0], length);
+      write_reals(datagram, &m22[0], length);
+    }
     return;
   }
 #endif
@@ -515,12 +533,22 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   // instead of just the three.  This is just for debugging.
 #ifndef NDEBUG
   if (_quality >= 102) {
-    write_reals(datagram, &qr[0], length);
+    if (length == 0) {
+      write_reals(datagram, NULL, length);
+    } else {
+      write_reals(datagram, &qr[0], length);
+    }
   }
 #endif
-  write_reals(datagram, &qi[0], length);
-  write_reals(datagram, &qj[0], length);
-  write_reals(datagram, &qk[0], length);
+  if (length == 0) {
+    write_reals(datagram, NULL, length);
+    write_reals(datagram, NULL, length);
+    write_reals(datagram, NULL, length);
+  } else {
+    write_reals(datagram, &qi[0], length);
+    write_reals(datagram, &qj[0], length);
+    write_reals(datagram, &qk[0], length);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
