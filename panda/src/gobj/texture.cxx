@@ -724,7 +724,7 @@ load_related(const InternalName *suffix) const {
   if (ti != _related_textures.end()) {
     return (*ti).second;
   }
-  if (!has_fullpath()) {
+  if (_fullpath.empty()) {
     return (Texture*)NULL;
   }
   Filename main = _fullpath;
