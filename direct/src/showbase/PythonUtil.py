@@ -834,9 +834,20 @@ def getProfileResultString():
     global _ProfileResultStr
     return _ProfileResultStr
 
+class PModules:
+    # holder for modules used by profiling code, avoids import every time code is called
+    builtin = None
+    profile = None
+    os = None
+    pstats = None
+
 def profile(callback, name, terse, log=True):
     global _ProfileResultStr
-    import __builtin__
+    if PModules.builtin is None:
+        import __builtin__
+        PModules.builtin = __builtin__
+    else:
+        __builtin__ = PModules.builtin
     if 'globalProfileFunc' in __builtin__.__dict__:
         # rats. Python profiler is not re-entrant...
         base.notify.warning(
@@ -926,14 +937,22 @@ def startProfile(filename=PyUtilProfileDefaultFilename,
                  callInfo=1,
                  cmd='run()'):
     # uniquify the filename to allow multiple processes to profile simultaneously
-    filename = '%s.%s' % (filename, randUint31())
-    import profile
+    filename = '%s.%s.%s' % (filename, randUint31(), randUint31())
+    if PModules.profile is None:
+        import profile
+        PModules.profile = profile
+    else:
+        profile = PModules.profile
     profile.run(cmd, filename)
     if silent:
         extractProfile(filename, lines, sorts, callInfo)
     else:
         printProfile(filename, lines, sorts, callInfo)
-    import os
+    if PModules.os is None:
+        import os
+        PModules.os = os
+    else:
+        os = PModules.os
     os.remove(filename)
 
 # call these to see the results again, as a string or in the log
@@ -941,7 +960,11 @@ def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
                  callInfo=1):
-    import pstats
+    if PModules.pstats is None:
+        import pstats
+        PModules.pstats = pstats
+    else:
+        pstats = PModules.pstats
     s = pstats.Stats(filename)
     s.strip_dirs()
     for sort in sorts:
