@@ -27,6 +27,7 @@ except:
     Dtool_PreloadDLL("libheapq")
     from libheapq import heappush, heappop, heapify
 import types
+import gc
 
 if __debug__:
     # For pstats
@@ -346,6 +347,10 @@ class TaskPriorityList(list):
             self[self.__emptyIndex-1] = None
             self.__emptyIndex -= 1
 
+class GCTrigger:
+    # used to trigger garbage collection
+    pass
+
 class TaskManager:
 
     # These class vars are generally overwritten by Config variables which
@@ -419,7 +424,13 @@ class TaskManager:
         # A default task.
         self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
 
+        # start this when config is available
+        self._gcTask = None
+        self._wantGcTask = None
+
     def destroy(self):
+        if self._gcTask:
+            self._gcTask.remove()
         if self._taskProfiler:
             self._taskProfiler.destroy()
         del self.nameDict
@@ -532,6 +543,15 @@ class TaskManager:
         if ((task.frame % self.doLaterCleanupCounter) == 0):
             numRemoved = self.__doLaterFilter()
             # TaskManager.notify.debug("filtered %s removed doLaters" % numRemoved)
+        return cont
+
+    def _garbageCollect(self, task=None):
+        # enable automatic garbage collection
+        gc.enable()
+        # creating an object with gc enabled causes garbage collection to trigger if appropriate
+        gct = GCTrigger()
+        # disable the automatic garbage collect during the rest of the frame
+        gc.disable()
         return cont
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
@@ -1057,6 +1077,13 @@ class TaskManager:
         if (not TaskManager._DidTests) and __debug__:
             TaskManager._DidTests = True
             self._runTests()
+
+        if not self._gcTask:
+            if self._wantGcTask is None:
+                self._wantGcTask = config.GetBool('want-garbage-collect-task', 1)
+            if self._wantGcTask:
+                # manual garbage-collect task
+                self._gcTask = self.add(self._garbageCollect, "doGarbageCollect", 200)
 
         if not self._profileTasks:
             from direct.fsm.StatePush import StateVar
