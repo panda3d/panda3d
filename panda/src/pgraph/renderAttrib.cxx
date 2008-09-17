@@ -443,8 +443,8 @@ release_new() {
         while (si != _attribs->end()) {
           const RenderAttrib *attrib = (*si);
           cerr << "    " << *attrib << " (" << (void *)attrib << ")\n";
-          if (!((*sprev) < (*si))) {
-            cerr << "*** out of order!\n";
+          if (((*sprev)->compare_to(*attrib)) > 0) {
+            cerr << "*** above out of order!\n";
           }
           sprev = si;
           ++si;
