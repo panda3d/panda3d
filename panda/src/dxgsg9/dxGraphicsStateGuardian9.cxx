@@ -254,14 +254,23 @@ apply_texture(int i, TextureContext *tc) {
     set_sampler_state(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
   }
 
+  int supports_anisotropic_mag_filter;
   D3DTEXTUREFILTERTYPE new_mag_filter;
-  if (aniso_degree <= 1) {
+  
+  supports_anisotropic_mag_filter = (_screen -> _d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
+  if (aniso_degree <= 1 || supports_anisotropic_mag_filter == 0) {
     new_mag_filter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
   } else {
     new_mag_filter = D3DTEXF_ANISOTROPIC;
   }
 
-  set_sampler_state(i, D3DSAMP_MAGFILTER, new_mag_filter);
+  HRESULT hr;
+  hr = set_sampler_state(i, D3DSAMP_MAGFILTER, new_mag_filter);
+  if (hr != D3D_OK) {
+    dxgsg9_cat.error()
+      << "ERROR: set_sampler_state (D3DSAMP_MAGFILTER, " 
+      << new_mag_filter << ") failed for texture:" << tex -> get_name() << endl;    
+  }
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
   D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter(),
@@ -343,6 +352,8 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
     return false;
   }
 
+  dtc->delete_texture();
+  
   if (_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
@@ -454,8 +465,6 @@ apply_vertex_buffer(VertexBufferContext *vbc,
                     bool force,
                     string name) {
   DXVertexBufferContext9 *dvbc = DCAST(DXVertexBufferContext9, vbc);
-
-  DBG_SH3 dxgsg9_cat.debug ( ) << "apply_vertex_buffer\n"; DBG_E
 
   bool set_stream_source;
   HRESULT hr;
@@ -592,6 +601,21 @@ apply_vertex_buffer(VertexBufferContext *vbc,
             dxgsg9_cat.error()
               << "CreateVertexDeclaration failed"
               << D3DERRORSTRING(hr);
+
+            if (0) {
+              // DEBUG
+              printf ("TOTAL ELEMENTS: %d \n",  vertex_element_array -> total_elements);
+              for (index = 0; index < vertex_element_array -> total_elements; index++) 
+              {
+                DIRECT_3D_VERTEX_ELEMENT *vertex_element;
+                VERTEX_ELEMENT_TYPE *vertex_element_type;
+
+                vertex_element = &vertex_element_array -> vertex_element_array [index];
+                vertex_element_type = &vertex_element_array -> vertex_element_type_array [index];
+
+                printf ("  index %d Stream %d  Offset %d Type %d Method %d Usage %d UsageIndex %d \n", index, vertex_element -> Stream, vertex_element -> Offset, vertex_element -> Type, vertex_element -> Method, vertex_element -> Usage, vertex_element -> UsageIndex);
+              }
+            }
           }
 
           dvbc -> _shader_context = shader_context;
@@ -614,9 +638,6 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     }
 
     if (dvbc -> _direct_3d_vertex_declaration) {
-
-      DBG_SH5  dxgsg9_cat.debug() << "SetVertexDeclaration ( ) \n"; DBG_E
-
       hr = _d3d_device -> SetVertexDeclaration (dvbc -> _direct_3d_vertex_declaration);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
@@ -830,8 +851,6 @@ clear(DrawableRegion *clearable) {
   float depth_clear_value = clearable->get_clear_depth();
   DWORD stencil_clear_value = (DWORD)(clearable->get_clear_stencil());
 
-  DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::do_clear\n"; DBG_E
-
   //set appropriate flags
   if (clearable->get_clear_color_active()) {
     main_flags |=  D3DCLEAR_TARGET;
@@ -847,19 +866,10 @@ clear(DrawableRegion *clearable) {
     if (_screen->_presentation_params.EnableAutoDepthStencil &&
       IS_STENCIL_FORMAT(_screen->_presentation_params.AutoDepthStencilFormat)) {
       aux_flags |=  D3DCLEAR_STENCIL;
-
-      // DEBUG
-      if (false) {
-        dxgsg9_cat.debug ( ) << "STENCIL CLEAR " << stencil_clear_value << "\n";
-      }
     }
   }
 
   if ((main_flags | aux_flags) != 0) {
-
-  DBG_S dxgsg9_cat.debug ( ) << "ccccc DXGraphicsStateGuardian9::really do_clear\n"; DBG_E
-  DBG_S dxgsg9_cat.debug ( ) << "clear flags: main " << main_flags << " aux :" << aux_flags << "\n"; DBG_E
-
     HRESULT hr = _d3d_device->Clear(0, NULL, main_flags | aux_flags, color_clear_value,
                                     depth_clear_value, stencil_clear_value);
     if (FAILED(hr) && main_flags == D3DCLEAR_TARGET && aux_flags != 0) {
@@ -874,7 +884,7 @@ clear(DrawableRegion *clearable) {
           aux_flags |=  D3DCLEAR_ZBUFFER;
           HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_ZBUFFER, color_clear_value,
                                            depth_clear_value, stencil_clear_value);
-          if (FAILED(hr2)) {
+          if (FAILED(hr2)) {          
             dxgsg9_cat.error()
               << "Unable to clear depth buffer; removing.\n";
             // This is really hacky code.
@@ -914,14 +924,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
   nassertv(dr != (DisplayRegionPipelineReader *)NULL);
   GraphicsStateGuardian::prepare_display_region(dr, stereo_channel);
 
-// DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::PRE prepare_display_region\n"; DBG_E
-
-// DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::prepare_display_region\n"; DBG_E
-
   int l, u, w, h;
   dr->get_region_pixels_i(l, u, w, h);
-
-  DBG_S dxgsg9_cat.debug ( ) << "display_region " << l << " " << u << " "  << w << " "  << h << "\n"; DBG_E;
 
   // Create the viewport
   D3DVIEWPORT9 vp = { l, u, w, h, 0.0f, 1.0f };
@@ -1034,8 +1038,6 @@ prepare_lens() {
 bool DXGraphicsStateGuardian9::
 begin_frame(Thread *current_thread) {
 
-  DBG_S dxgsg9_cat.debug ( ) << "^^^^^^^^^^^ begin_frame \n"; DBG_E
-
   GraphicsStateGuardian::begin_frame(current_thread);
 
   if (_d3d_device == NULL) {
@@ -1087,8 +1089,6 @@ begin_scene() {
   if (!GraphicsStateGuardian::begin_scene()) {
     return false;
   }
-
-DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::begin_scene\n"; DBG_E
 
 /*
   HRESULT hr = _d3d_device->BeginScene();
@@ -1144,8 +1144,6 @@ end_scene() {
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
 
-DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
-
 /*
   HRESULT hr = _d3d_device->EndScene();
 
@@ -1177,8 +1175,6 @@ DBG_S dxgsg9_cat.debug ( ) << "DXGraphicsStateGuardian9::end_scene\n"; DBG_E
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 end_frame(Thread *current_thread) {
-
-DBG_S dxgsg9_cat.debug ( ) << "@@@@@@@@@@ end_frame \n"; DBG_E
 
   HRESULT hr = _d3d_device->EndScene();
 
@@ -1235,8 +1231,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     return false;
   }
   nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
-
-  DBG_SH5 dxgsg9_cat.debug ( ) << "begin_draw_primitives\n"; DBG_E
 
   string name;
   const Geom *geom;
@@ -1303,14 +1297,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
           const GeomVertexArrayFormat *array_format = data->get_array_format();
           int number_of_columns = array_format->get_num_columns();
-
-          DBG_VEA
-            dxgsg9_cat.debug ( )
-              << " data index " << index
-              << " number_of_columns " << number_of_columns
-              << " vertex_element_array -> total_elements " << vertex_element_array -> total_elements
-              << "\n";
-          DBG_E
 
           if (number_of_columns >= vertex_element_array -> total_elements) {
             if (first_index >= 0) {
@@ -1483,8 +1469,6 @@ bool DXGraphicsStateGuardian9::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
 
-//  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_triangles 1\n"; DBG_E
-
   _vertices_tri_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
   if (reader->is_indexed()) {
@@ -1499,8 +1483,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
         return false;
       }
 
-//DBG_SH2 dxgsg9_cat.debug ( ) << "DrawIndexedPrimitive \n"; DBG_E
-
       _d3d_device->DrawIndexedPrimitive
         (D3DPT_TRIANGLELIST, 0,
          min_vertex, max_vertex - min_vertex + 1,
@@ -1508,8 +1490,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     } else {
       // Indexed, client arrays.
-
-//DBG_SH2 dxgsg9_cat.debug ( ) << "draw_indexed_primitive_up \n"; DBG_E
 
       const unsigned char *index_pointer = reader->get_read_pointer(force);
       if (index_pointer == NULL) {
@@ -1532,8 +1512,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     if (_active_vbuffer != NULL) {
       // Nonindexed, vbuffers.
 
-//DBG_SH2 dxgsg9_cat.debug ( ) << "DrawPrimitive D3DPT_TRIANGLELIST \n"; DBG_E
-
       _d3d_device->DrawPrimitive
         (D3DPT_TRIANGLELIST,
          reader->get_first_vertex(),
@@ -1542,7 +1520,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     } else {
       // Nonindexed, client arrays.
 
-//DBG_SH2 dxgsg9_cat.debug ( ) << "draw_primitive_up \n"; DBG_E
       const unsigned char *vertex_pointer = _data_reader->get_array_reader(0)->get_read_pointer(force);
       if (vertex_pointer == NULL) {
         return false;
@@ -1555,7 +1532,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     }
   }
 
-//  DBG_SH5 dxgsg9_cat.debug ( ) << "end draw_triangles 1\n"; DBG_E
   return true;
 }
 
@@ -1567,8 +1543,6 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 bool DXGraphicsStateGuardian9::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
-
-  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_tristrips\n"; DBG_E
 
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
@@ -1754,8 +1728,6 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 bool DXGraphicsStateGuardian9::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
   PStatTimer timer(_draw_primitive_pcollector);
-
-  DBG_SH5 dxgsg9_cat.debug ( ) << "draw_trifans\n"; DBG_E
 
   CPTA_int ends = reader->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
@@ -2269,9 +2241,7 @@ do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     }
 
     // Now we must copy from the backbuffer to our temporary surface.
-
     hr = _d3d_device -> GetRenderTargetData (backbuffer, temp_surface);
-
     if (FAILED(hr)) {
       dxgsg9_cat.error() << "GetRenderTargetData failed" << D3DERRORSTRING(hr);
       temp_surface->Release();
@@ -2316,7 +2286,6 @@ do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
     UINT swap_chain;
 
-    /* ***** DX9 swap chain ??? */
     swap_chain = 0;
     hr = _d3d_device->GetFrontBufferData(swap_chain,temp_surface);
 
@@ -2504,7 +2473,7 @@ reset() {
   _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
   _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
 
-  _maximum_simultaneuous_render_targets = d3d_caps.NumSimultaneousRTs;
+  _maximum_simultaneous_render_targets = d3d_caps.NumSimultaneousRTs;
 
   _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
 
@@ -2928,8 +2897,6 @@ do_issue_alpha_test() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_shader() {
-
-  DBG_SH3  dxgsg9_cat.debug ( ) << "SHADER: do_issue_shader\n"; DBG_E
 
   CLP(ShaderContext) *context = 0;
   Shader *shader = 0;
@@ -4156,7 +4123,9 @@ set_read_buffer(const RenderBuffer &rb) {
   if (rb._buffer_type & RenderBuffer::T_front) {
     _cur_read_pixel_buffer = RenderBuffer::T_front;
   } else  if (rb._buffer_type & RenderBuffer::T_back) {
-    _cur_read_pixel_buffer = RenderBuffer::T_back;
+    _cur_read_pixel_buffer = RenderBuffer::T_back;      
+  } else  if (rb._buffer_type & RenderBuffer::T_aux_rgba_ALL) {
+    _cur_read_pixel_buffer = RenderBuffer::T_back;      
   } else {
     dxgsg9_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
   }
@@ -4784,17 +4753,6 @@ show_frame() {
   if (_d3d_device == NULL) {
     return;
   }
-
-DBG_S dxgsg9_cat.debug ( ) << "- - - - - DXGraphicsStateGuardian9::show_frame\n"; DBG_E
-
-  // DEBUG
-  /*
-    EXPCL_DTOOL void reset_memory_stats (void);
-    EXPCL_DTOOL void print_memory_stats (void);
-
-    print_memory_stats ( );
-    reset_memory_stats ( );
-  */
 
   HRESULT hr;
 
