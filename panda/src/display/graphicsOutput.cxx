@@ -732,10 +732,15 @@ get_texture_card() {
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsOutput::
 make_texture_buffer(const string &name, int x_size, int y_size,
-                    Texture *tex, bool to_ram) {
+                    Texture *tex, bool to_ram, FrameBufferProperties *fbp) {
+
   FrameBufferProperties props;
   props.set_rgb_color(1);
   props.set_depth_bits(1);
+
+  if (fbp == NULL) {
+    fbp = &props;
+  }
 
   int flags = GraphicsPipe::BF_refuse_window;
   if (textures_power_2 != ATS_none) {
@@ -749,7 +754,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   GraphicsOutput *buffer = get_gsg()->get_engine()->
     make_output(get_gsg()->get_pipe(),
                 name, get_child_sort(),
-                props, WindowProperties::size(x_size, y_size),
+                *fbp, WindowProperties::size(x_size, y_size),
                 flags, get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {
@@ -784,7 +789,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsOutput::
 make_cube_map(const string &name, int size, NodePath &camera_rig,
-              DrawMask camera_mask, bool to_ram) {
+              DrawMask camera_mask, bool to_ram, FrameBufferProperties *fbp) {
   if (!to_ram) {
     // Check the limits imposed by the GSG.  (However, if we're
     // rendering the texture to RAM only, these limits may be
@@ -815,7 +820,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   tex->set_wrap_v(Texture::WM_clamp);
   GraphicsOutput *buffer;
 
-  buffer = make_texture_buffer(name, size, size, tex, to_ram);
+  buffer = make_texture_buffer(name, size, size, tex, to_ram, fbp);
 
   // We don't need to clear the overall buffer; instead, we'll clear
   // each display region.
