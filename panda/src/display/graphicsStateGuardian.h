@@ -138,7 +138,7 @@ PUBLISHED:
   INLINE bool get_supports_basic_shaders() const;
   INLINE bool get_supports_two_sided_stencil() const;
 
-  INLINE int get_maximum_simultaneuous_render_targets() const;
+  INLINE int get_maximum_simultaneous_render_targets() const;
 
   INLINE int get_shader_model() const;
   INLINE void set_shader_model(int shader_model);
@@ -412,7 +412,7 @@ protected:
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;
 
-  int _maximum_simultaneuous_render_targets;
+  int _maximum_simultaneous_render_targets;
 
   int  _supported_geom_rendering;
   bool _color_scale_via_lighting;
