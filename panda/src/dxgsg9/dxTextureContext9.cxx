@@ -85,6 +85,7 @@ evict_lru() {
 
   dequeue_lru();
   delete_texture();
+
   update_data_size_bytes(0);
   mark_unloaded();
 }
@@ -101,16 +102,21 @@ evict_lru() {
 ////////////////////////////////////////////////////////////////////
 bool DXTextureContext9::
 create_texture(DXScreenData &scrn) {
+
+  // check if the texture has already been created
+  if (_d3d_2d_texture || _d3d_cube_texture || _d3d_volume_texture) {
+    // texture already created, no need to create
+    return true;
+  }
+
   HRESULT hr;
   int num_alpha_bits;     //  number of alpha bits in texture pixfmt
   D3DFORMAT target_pixel_format = D3DFMT_UNKNOWN;
   bool needs_luminance = false;
   bool compress_texture = false;
-  
+
   Texture *tex = get_texture();
   nassertr(IS_VALID_PTR(tex), false);
-
-  delete_texture();
 
   // bpp indicates requested fmt, not texture fmt
   DWORD target_bpp = get_bits_per_pixel(tex->get_format(), &num_alpha_bits);
@@ -1167,7 +1173,7 @@ extract_texture_data() {
     hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
-        << "Texture::LockRect() failed!" << D3DERRORSTRING(hr);
+        << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
       return false;
     }
     
@@ -1664,6 +1670,18 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
             IDirect3DSurface9 *current_render_target;
 
             if (device -> GetRenderTarget (0, &current_render_target) == D3D_OK) {
+              IDirect3DSurface9 *depth_stencil_surface;
+
+              // turn off depth stencil when clearing texture if it exists
+              if (device -> GetDepthStencilSurface (&depth_stencil_surface) == D3D_OK) {
+                if (device -> SetDepthStencilSurface (NULL) == D3D_OK) {
+      
+                }
+              }
+              else {
+                depth_stencil_surface = 0;
+              }
+
               if (device -> SetRenderTarget (0, surface)  == D3D_OK) {
                 DWORD flags;
                 D3DCOLOR color;
@@ -1674,6 +1692,12 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
                 }
               }
 
+              // restore depth stencil 
+              if (depth_stencil_surface) {
+                depth_stencil_surface -> Release();
+              }
+
+              // restore render target
               device -> SetRenderTarget (0, current_render_target);
               current_render_target -> Release();
             }
@@ -2041,4 +2065,3 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   }
   return 8;
 }
-
