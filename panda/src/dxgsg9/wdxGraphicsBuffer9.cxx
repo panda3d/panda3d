@@ -220,11 +220,20 @@ restore_bitplanes() {
     dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
   }
 
+  // clear all render targets, except for the main render target
+  for (int i = 1; i<count_textures(); i++) {
+    hr = _dxgsg -> _d3d_device -> SetRenderTarget (i, NULL);
+    if (!SUCCEEDED (hr)) {
+      dxgsg9_cat.error ( ) << "SetRenderTarget " << i << " " << D3DERRORSTRING(hr) FL;
+    }
+  }
+
   _saved_color_buffer->Release();
   _saved_depth_buffer->Release();
   _saved_color_buffer = NULL;
   _saved_depth_buffer = NULL;
 }
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -276,15 +285,32 @@ rebuild_bitplanes() {
   int depth_tex_index = -1;
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
-      if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
-          (color_tex_index < 0)) {
-        color_tex_index = i;
-      } else {
-        _textures[i]._rtm_mode = RTM_copy_texture;
-      }
+      RenderTexturePlane plane = get_texture_plane(i);
+
+      switch (plane) {
+        case RTP_color:
+          color_tex_index = i;
+          break;
+        case RTP_aux_rgba_0:
+        case RTP_aux_rgba_1:
+        case RTP_aux_rgba_2:
+        case RTP_aux_rgba_3:
+        case RTP_aux_hrgba_0:
+        case RTP_aux_hrgba_1:
+        case RTP_aux_hrgba_2:
+        case RTP_aux_hrgba_3:
+        case RTP_aux_float_0:
+        case RTP_aux_float_1:
+        case RTP_aux_float_2:
+        case RTP_aux_float_3:
+          _textures[i]._rtm_mode = RTM_none;
+          break;
+        default:
+          _textures[i]._rtm_mode = RTM_copy_texture;
+          break;
+      }                
     }
   }
-
 
   if (color_tex_index < 0) {
     // Maintain the backing color surface.
@@ -328,7 +354,8 @@ rebuild_bitplanes() {
         if (!SUCCEEDED(hr)) {
           dxgsg9_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
         }
-      } else {
+      }
+      if (color_tex->get_texture_type() == Texture::TT_cube_map) {
         color_cube = color_ctx->_d3d_cube_texture;
         nassertr(color_cube != 0, false);
 
@@ -405,7 +432,8 @@ rebuild_bitplanes() {
         if (!SUCCEEDED(hr)) {
           dxgsg9_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
         }
-      } else {
+      }
+      if (depth_tex->get_texture_type() == Texture::TT_cube_map) {
         depth_cube = depth_ctx->_d3d_cube_texture;
         nassertr(depth_cube != 0, false);
         hr = depth_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &depth_surf);
@@ -432,6 +460,71 @@ rebuild_bitplanes() {
     if (!SUCCEEDED (hr)) {
       dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
     }
+  }
+
+  render_target_index = 1;
+  for (int i=0; i<count_textures(); i++) {
+
+    Texture *tex = get_texture(i);
+    RenderTexturePlane plane = get_texture_plane(i);
+
+    if (_debug) {
+      printf ("i = %d, RenderTexturePlane = %d \n", i, plane);
+    }
+
+    switch (plane) {
+      case RTP_color:
+        break;
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
+      case RTP_aux_hrgba_0:
+      case RTP_aux_hrgba_1:
+      case RTP_aux_hrgba_2:
+      case RTP_aux_hrgba_3:
+      case RTP_aux_float_0:
+      case RTP_aux_float_1:
+      case RTP_aux_float_2:
+      case RTP_aux_float_3:
+        {
+          DXTextureContext9 *color_ctx = 0;
+          IDirect3DTexture9 *color_d3d_tex = 0;
+          IDirect3DSurface9 *color_surf = 0;
+          IDirect3DCubeTexture9 *color_cube = 0;
+
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+          if (color_ctx) {
+            if (!color_ctx->create_texture(*_dxgsg->_screen)) {
+              dxgsg9_cat.error()
+                << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+              return false;
+            }
+            if (tex->get_texture_type() == Texture::TT_2d_texture) {
+              color_d3d_tex = color_ctx->_d3d_2d_texture;
+              nassertr(color_d3d_tex != 0, false);
+
+              hr = color_d3d_tex -> GetSurfaceLevel(0, &color_surf);
+              if (!SUCCEEDED(hr)) {
+                dxgsg9_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
+              }
+              if (color_surf) {
+                hr = _dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, color_surf);
+                if (SUCCEEDED (hr)) {
+                  render_target_index++;
+                } else {
+                  dxgsg9_cat.error ( ) << "SetRenderTarget " << render_target_index << " " << D3DERRORSTRING(hr) FL;
+                }
+                color_surf->Release();
+              }
+            }
+          }
+        }
+        break;
+
+      default:
+        break;
+    }    
   }
 
   // Decrement the reference counts on these surfaces. The refcounts
@@ -462,6 +555,10 @@ rebuild_bitplanes() {
 void wdxGraphicsBuffer9::
 select_cube_map(int cube_map_index) {
 
+  DWORD render_target_index;
+  
+  render_target_index = 0;
+
   _cube_map_index = cube_map_index;
 
   HRESULT hr;
@@ -487,21 +584,14 @@ select_cube_map(int cube_map_index) {
     color_ctx =
       DCAST(DXTextureContext9,
             color_tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
-    if (!color_ctx->create_texture(*_dxgsg->_screen)) {
-      dxgsg9_cat.error()
-        << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
-      return;
-    }
-
     color_cube = color_ctx->_d3d_cube_texture;
-
     if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
       hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
       if (!SUCCEEDED(hr)) {
         dxgsg9_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
       }
 
-      hr = _dxgsg -> _d3d_device -> SetRenderTarget (0, color_surf);
+      hr = _dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, color_surf);
       if (!SUCCEEDED (hr)) {
         dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
       }
@@ -509,6 +599,66 @@ select_cube_map(int cube_map_index) {
         color_surf->Release();
       }
     }
+  }
+
+  render_target_index = 1;
+  for (int i=0; i<count_textures(); i++) {
+
+    Texture *tex = get_texture(i);
+    RenderTexturePlane plane = get_texture_plane(i);
+
+    switch (plane) {
+      case RTP_color:
+        break;
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
+      case RTP_aux_hrgba_0:
+      case RTP_aux_hrgba_1:
+      case RTP_aux_hrgba_2:
+      case RTP_aux_hrgba_3:
+      case RTP_aux_float_0:
+      case RTP_aux_float_1:
+      case RTP_aux_float_2:
+      case RTP_aux_float_3:
+        {
+          DXTextureContext9 *color_ctx = 0;
+          IDirect3DSurface9 *color_surf = 0;
+          IDirect3DCubeTexture9 *color_cube = 0;
+
+          color_ctx = DCAST(DXTextureContext9, tex->prepare_now(_gsg->get_prepared_objects(), _gsg));
+          if (color_ctx) {
+            if (tex->get_texture_type() == Texture::TT_cube_map) {
+
+              if (_debug) {
+                printf ("CUBEMAP i = %d, RenderTexturePlane = %d, _cube_map_index %d \n", i, plane, _cube_map_index);
+              }
+
+              color_cube = color_ctx->_d3d_cube_texture;
+              if (color_cube && _cube_map_index >= 0 && _cube_map_index < 6) {
+                hr = color_cube -> GetCubeMapSurface ((D3DCUBEMAP_FACES) _cube_map_index, 0, &color_surf);
+                if (!SUCCEEDED(hr)) {
+                  dxgsg9_cat.error ( ) << "GetCubeMapSurface " << D3DERRORSTRING(hr) FL;
+                }
+                if (color_surf) {
+                  hr = _dxgsg -> _d3d_device -> SetRenderTarget (render_target_index, color_surf);
+                  if (SUCCEEDED (hr)) {
+                    render_target_index++;
+                  } else {
+                    dxgsg9_cat.error ( ) << "cube map SetRenderTarget " << render_target_index << " " << D3DERRORSTRING(hr) FL;
+                  }
+                  color_surf->Release();
+                }
+              }
+            }
+          }
+        }
+        break;
+
+      default:
+        break;
+    }    
   }
 }
 
