@@ -138,16 +138,14 @@ make_output(const string &name,
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
-      if ((fb_prop.get_aux_rgba() > 0)||
-          (fb_prop.get_aux_rgba() > 0)||
-          (fb_prop.get_aux_float() > 0)||
-          (fb_prop.get_indexed_color() > 0)||
+      if ((fb_prop.get_indexed_color() > 0)||
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
           (fb_prop.get_multisamples() > 0)) {
         return NULL;
       }
     }
+
     // Early success - if we are sure that this buffer WILL
     // meet specs, we can precertify it.
     // This looks rather overly optimistic -- ie, buggy.
