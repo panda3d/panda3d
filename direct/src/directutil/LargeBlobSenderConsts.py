@@ -7,4 +7,6 @@ ChunkSize = 100
 FilePattern = 'largeBlob.%s'
 
 def getLargeBlobPath():
-    return config.GetString('large-blob-path', 'i:\\beta\\largeblob')
+    # this folder needs to be accessible by everyone that is going to level edit
+    # an area as a group
+    return config.GetString('large-blob-path', 'i:\\toontown_in_game_editor_temp')
