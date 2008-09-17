@@ -368,6 +368,8 @@ class TaskManager:
 
     OsdPrefix = 'task.'
 
+    GarbageCollectTaskName = "allowGarbageCollect"
+
     # multiple of average frame duration
     DefTaskDurationWarningThreshold = 40.
 
@@ -1092,7 +1094,7 @@ class TaskManager:
                 self._wantGcTask = config.GetBool('want-garbage-collect-task', 1)
             if self._wantGcTask:
                 # manual garbage-collect task
-                self._gcTask = self.add(self._garbageCollect, "doGarbageCollect", 200)
+                self._gcTask = self.add(self._garbageCollect, TaskManager.GarbageCollectTaskName, 200)
 
         if not self._profileTasks:
             from direct.fsm.StatePush import StateVar
