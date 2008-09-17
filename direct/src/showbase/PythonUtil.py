@@ -937,7 +937,7 @@ def startProfile(filename=PyUtilProfileDefaultFilename,
                  callInfo=1,
                  cmd='run()'):
     # uniquify the filename to allow multiple processes to profile simultaneously
-    filename = '%s.%s.%s' % (filename, randUint31(), randUint31())
+    filename = '%s.%s%s' % (filename, randUint31(), randUint31())
     if PModules.profile is None:
         import profile
         PModules.profile = profile
