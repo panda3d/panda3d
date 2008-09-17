@@ -41,18 +41,6 @@ typedef LPDIRECT3DPIXELSHADER9 DIRECT_3D_PIXEL_SHADER;
 #include "dxShaderContext9.h"
 
 
-#define DEBUG_ENABLE false
-#define DBG_SH1 if (false && DEBUG_ENABLE) {
-#define DBG_SH2 if (false && DEBUG_ENABLE) {
-#define DBG_SH3 if (false && DEBUG_ENABLE) {
-#define DBG_SH4 if (false && DEBUG_ENABLE) {
-#define DBG_SH5 if (false && DEBUG_ENABLE) {
-#define DBG_HLSL if (false && DEBUG_ENABLE) {
-#define DBG_VEA if (false && DEBUG_ENABLE) {
-#define DBG_S if (false && DEBUG_ENABLE) {
-#define DBG_E }
-
-
 enum GsgPageType
 {
   GPT_Texture,
