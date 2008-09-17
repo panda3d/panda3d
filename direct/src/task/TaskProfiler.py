@@ -46,7 +46,7 @@ class TaskProfiler:
         # number of samples required before spikes start getting identified
         self._minSamples = config.GetInt('profile-task-spike-min-samples', 30)
         # defines spike as longer than this multiple of avg task duration
-        self._spikeThreshold = config.GetFloat('profile-task-spike-threshold', 5.)
+        self._spikeThreshold = config.GetFloat('profile-task-spike-threshold', 10.)
         # assign getProfileResultString to the taskMgr here, since Task.py can't import PythonUtil
         taskMgr._getProfileResultString = getProfileResultString
 
