@@ -388,9 +388,11 @@ class TaskManager:
         # this will be set when it's safe to import StateVar
         self._profileTasks = None
         self._taskProfiler = None
-        self._profileTaskId = None
-        self._profileDt = None
-        self._lastProfileResultString = None
+        self._profileInfo = ScratchPad(
+            taskId = None,
+            dt = None,
+            lastProfileResultString = None,
+            )
 
         # We copy this value in from __builtins__ when it gets set.
         # But since the TaskManager might have to run before it gets
@@ -760,9 +762,12 @@ class TaskManager:
 
     def __executeTask(self, task):
         task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
-
-        doProfile = (task.id == self._profileTaskId)
-            
+        
+        # cache reference to profile info here, self._profileInfo might get swapped out
+        # by the task when it runs
+        profileInfo = self._profileInfo
+        doProfile = (task.id == profileInfo.taskId)
+        
         if not self.taskTimerVerbose:
             startTime = self.trueClock.getShortTime()
             
@@ -779,7 +784,7 @@ class TaskManager:
             if doProfile:
                 # if we profiled, record the measured duration but don't pollute the task's
                 # normal duration
-                self._profileDt = dt
+                profileInfo.dt = dt
                 dt = task.avgDt
             task.dt = dt
 
@@ -802,7 +807,7 @@ class TaskManager:
             if doProfile:
                 # if we profiled, record the measured duration but don't pollute the task's
                 # normal duration
-                self._profileDt = dt
+                profileInfo.dt = dt
                 dt = task.avgDt
             task.dt = dt
 
@@ -818,7 +823,7 @@ class TaskManager:
                 task.avgDt = 0
 
         if doProfile:
-            self._lastProfileResultString = self._getProfileResultString()
+            profileInfo.lastProfileResultString = self._getProfileResultString()
 
         # warn if the task took too long
         if self.warnTaskDuration and self.globalClock:
@@ -965,15 +970,17 @@ class TaskManager:
             self._taskProfiler = TaskProfiler()
 
     def _setProfileTask(self, task):
-        self._profileTaskId = task.id
-        self._profileDt = None
-        self._lastProfileResultString = None
+        self._profileInfo = ScratchPad(
+            taskId = task.id,
+            dt = None,
+            lastProfileResultString = None,
+            )
 
     def _getTaskProfileDt(self):
-        return self._profileDt
+        return self._profileInfo.dt
 
     def _getLastProfileResultString(self):
-        return self._lastProfileResultString
+        return self._profileInfo.lastProfileResultString
 
     def _getRandomTask(self):
         numTasks = 0
