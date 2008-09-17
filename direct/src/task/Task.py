@@ -424,7 +424,7 @@ class TaskManager:
         self.nameDict = {}
 
         # A default task.
-        self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
+        self._doLaterTask = self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
 
         # start this when config is available
         self._gcTask = None
@@ -433,6 +433,8 @@ class TaskManager:
     def destroy(self):
         if self._gcTask:
             self._gcTask.remove()
+        if self._doLaterTask:
+            self._doLaterTask.remove()
         if self._taskProfiler:
             self._taskProfiler.destroy()
         del self.nameDict
