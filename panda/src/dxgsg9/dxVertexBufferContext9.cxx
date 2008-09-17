@@ -131,27 +131,12 @@ DXVertexBufferContext9(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data, 
       vertex_element_type -> index = vertex_element_type_counter_array [vertex_element_type -> vs_input_type];
       vertex_element_type_counter_array [vertex_element_type -> vs_input_type]++;
 
-  // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
+      // SHADER ISSUE: STREAM INDEX ALWAYS 0 FOR VERTEX BUFFER ???
       vertex_element_type -> stream = 0;
       vertex_element_type -> offset = array_format -> get_column(index) -> get_start ( );
 
-      DBG_VEA  dxgsg9_cat.debug()
-        << "INFO VertexElementArray " << index
-        << " " << name -> get_name ( )
-        << " VS INPUT TYPE " << vertex_element_type -> vs_input_type
-        << " index " << vertex_element_type -> index
-        << " offset " << vertex_element_type -> offset
-        << "\n";
-      DBG_E
-
       vertex_element_type++;
     }
-
-    DBG_VEA  dxgsg9_cat.debug()
-      << "INFO stride " << array_format -> get_stride ( )
-      << " total bytes " << array_format-> get_total_bytes ( )
-      << "\n";
-    DBG_E
   }
 
   _vertex_element_type_array = vertex_element_type_array;

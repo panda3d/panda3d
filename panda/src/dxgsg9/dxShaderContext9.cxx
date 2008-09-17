@@ -199,8 +199,6 @@ bind(GSG *gsg) {
   bind_state = false;
 #ifdef HAVE_CG
   if (_cg_context) {
-    DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: bind \n";  DBG_E
-                                                           
     // clear the last cached FVF to make sure the next SetFVF call goes through
                                                            
     gsg -> _last_fvf = 0;
@@ -250,9 +248,6 @@ unbind(GSG *gsg) {
 
 #ifdef HAVE_CG
   if (_cg_context) {
-
-    DBG_SH5  dxgsg9_cat.debug ( ) << "SHADER: unbind \n"; DBG_E
-
     HRESULT hr;
 
     hr = gsg -> _d3d_device -> SetVertexShader (NULL);
@@ -330,15 +325,6 @@ issue_parameters(GSG *gsg, int altered)
             data = temp_matrix.get_data();
 
             hr = cgD3D9SetUniform (p, data);
-
-            DBG_SH2
-              dxgsg9_cat.debug ( ) << "Shader::SMP_whole MATRIX \n" <<
-                data[ 0] << " " << data[ 1] << " " << data[ 2] << " " << data[ 3] << "\n" <<
-                data[ 4] << " " << data[ 5] << " " << data[ 6] << " " << data[ 7] << "\n" <<
-                data[ 8] << " " << data[ 9] << " " << data[10] << " " << data[11] << "\n" <<
-                data[12] << " " << data[13] << " " << data[14] << " " << data[15] << "\n";
-            DBG_E
-
             break;
 
           case Shader::SMP_transpose:
@@ -606,16 +592,6 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
               dxgsg9_cat.error ( ) << "VE ERROR: unsupported vertex element " << name -> get_name ( ) << "\n";
             }
 
-            DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: update_shader_vertex_arrays " << i <<  "\n"; DBG_E
-            DBG_SH2  dxgsg9_cat.debug ( )
-              << "\n  name " << name -> get_name ( )
-              << "  num_values " << num_values
-              << "  numeric_type " << numeric_type
-              << "  start " << start
-              << "  stride " << stride
-              << "\n";
-            DBG_E
-
           } else {
             dxgsg9_cat.error ( )
               << "get_array_info ( ) failed for shader "
@@ -642,11 +618,6 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
                 dxgsg9_cat.debug() << "|||||cgD3D9ValidateVertexDeclaration succeeded\n";
               }
               else {
-                DBG_SH2
-                  dxgsg9_cat.error() << "********************************************\n";
-                  dxgsg9_cat.error() << "***cgD3D9ValidateVertexDeclaration failed***\n";
-                  dxgsg9_cat.error() << "********************************************\n";
-                DBG_E
               }
             }
             else {
@@ -654,9 +625,6 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
             }
 
             _vertex_size = vertex_element_array -> offset;
-
-            DBG_SH2  dxgsg9_cat.debug ( ) << "SHADER: vertex size " << _vertex_size <<  "\n"; DBG_E
-
             _vertex_element_array = vertex_element_array;
           }
           else {
