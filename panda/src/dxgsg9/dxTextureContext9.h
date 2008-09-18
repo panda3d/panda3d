@@ -35,7 +35,7 @@ public:
   bool create_texture(DXScreenData &scrn);
   bool create_simple_texture(DXScreenData &scrn);
   void delete_texture();
-  bool extract_texture_data();
+  bool extract_texture_data(DXScreenData &scrn);
 
   INLINE bool has_mipmaps() const;
   INLINE IDirect3DBaseTexture9 *get_d3d_texture() const;
@@ -54,6 +54,7 @@ private:
   HRESULT fill_d3d_volume_texture_pixels(DXScreenData &scrn);
   static int down_to_power_2(int value);
   unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
+  float d3d_format_to_bytes_per_pixel (D3DFORMAT format);
 
 private:
   D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
@@ -66,7 +67,8 @@ private:
 
 private:
   bool _has_mipmaps;
-
+  bool _is_render_target;
+  
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -47,6 +47,7 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex) :
   _d3d_volume_texture = NULL;
   _d3d_cube_texture = NULL;
   _has_mipmaps = false;
+  _is_render_target = false;
   _managed = -1;
 }
 
@@ -752,6 +753,8 @@ create_texture(DXScreenData &scrn) {
   if (tex->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
+    _is_render_target = true;
+    
     pool = D3DPOOL_DEFAULT;
     usage = D3DUSAGE_RENDERTARGET;
     if (target_bpp <= 32 ) {
@@ -797,75 +800,10 @@ create_texture(DXScreenData &scrn) {
 
   float bytes_per_texel;
 
-  bytes_per_texel = 1.0f;
-  switch (target_pixel_format)
-  {
-    case D3DFMT_R3G3B2:
-    case D3DFMT_A8:
-    case D3DFMT_A8P8:
-    case D3DFMT_P8:
-    case D3DFMT_L8:
-    case D3DFMT_A4L4:
-      bytes_per_texel = 1.0f;
-      break;
-
-    case D3DFMT_R16F:
-    case D3DFMT_CxV8U8:
-    case D3DFMT_V8U8:
-    case D3DFMT_R5G6B5:
-    case D3DFMT_X1R5G5B5:
-    case D3DFMT_A1R5G5B5:
-    case D3DFMT_A4R4G4B4:
-    case D3DFMT_L16:
-    case D3DFMT_A8L8:
-    case D3DFMT_A8R3G3B2:
-    case D3DFMT_X4R4G4B4:
-      bytes_per_texel = 2.0f;
-      break;
-
-    case D3DFMT_R8G8B8:
-      bytes_per_texel = 3.0f;
-      break;
-
-    case D3DFMT_G16R16F:
-    case D3DFMT_Q8W8V8U8:
-    case D3DFMT_V16U16:
-    case D3DFMT_R32F:
-    case D3DFMT_A8R8G8B8:
-    case D3DFMT_X8R8G8B8:
-    case D3DFMT_A2B10G10R10:
-    case D3DFMT_A8B8G8R8:
-    case D3DFMT_X8B8G8R8:
-    case D3DFMT_G16R16:
-    case D3DFMT_A2R10G10B10:
-      bytes_per_texel = 4.0f;
-      break;
-
-    case D3DFMT_G32R32F:
-    case D3DFMT_A16B16G16R16F:
-    case D3DFMT_Q16W16V16U16:
-    case D3DFMT_A16B16G16R16:
-      bytes_per_texel = 8.0f;
-      break;
-
-    case D3DFMT_A32B32G32R32F:
-      bytes_per_texel = 16.0f;
-      break;
-
-    case D3DFMT_DXT1:
-      bytes_per_texel = 0.5f;
-      break;
-    case D3DFMT_DXT2:
-    case D3DFMT_DXT3:
-    case D3DFMT_DXT4:
-    case D3DFMT_DXT5:
-      bytes_per_texel = 1.0f;
-      break;
-      
-    default:
-      dxgsg9_cat.error()
-        << "D3D create_texture ( ) unknown texture format\n";
-      break;
+  bytes_per_texel = this -> d3d_format_to_bytes_per_pixel (target_pixel_format);
+  if (bytes_per_texel == 0.0f) {
+    dxgsg9_cat.error()
+      << "D3D create_texture ( ) unknown texture format\n";
   }
 
   int data_size;
@@ -944,7 +882,7 @@ create_texture(DXScreenData &scrn) {
   if (tex->get_post_load_store_cache()) {
     tex->set_post_load_store_cache(false);
     // OK, get the RAM image, and save it in a BamCache record.
-    if (extract_texture_data()) {
+    if (extract_texture_data(scrn)) {
       if (tex->has_ram_image()) {
         BamCache *cache = BamCache::get_global_ptr();
         PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
@@ -1090,15 +1028,17 @@ delete_texture() {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DXTextureContext9::
-extract_texture_data() {
+extract_texture_data(DXScreenData &screen) {
+  bool state;
   HRESULT hr;
-
+  
+  state = false;
   Texture *tex = get_texture();
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
     dxgsg9_cat.error()
       << "Not supported: extract_texture_data for " << tex->get_texture_type()
       << "\n";
-    return false;
+    return state;
   }
   nassertr(IS_VALID_PTR(_d3d_2d_texture), false);
 
@@ -1107,7 +1047,7 @@ extract_texture_data() {
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "Texture::GetLevelDesc() failed!" << D3DERRORSTRING(hr);
-    return false;
+    return state;
   }
 
   int div = 1;
@@ -1156,7 +1096,7 @@ extract_texture_data() {
     dxgsg9_cat.error()
       << "Cannot extract texture data: unhandled surface format " 
       << desc.Format << "\n";
-    return false;
+    return state;
   }
 
   int num_levels = _d3d_2d_texture->GetLevelCount();
@@ -1168,30 +1108,112 @@ extract_texture_data() {
   tex->set_format(format);
   tex->clear_ram_image();
 
-  for (int n = 0; n < num_levels; ++n) {
-    D3DLOCKED_RECT rect;
-    hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
-    if (FAILED(hr)) {
-      dxgsg9_cat.error()
-        << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
-      return false;
-    }
+  if (_is_render_target) {
+    IDirect3DSurface9* source_surface;
+    IDirect3DSurface9* destination_surface;
+  
+    source_surface = 0;
+    destination_surface = 0;
     
-    int y_size = tex->get_expected_mipmap_y_size(n);
-    int size = rect.Pitch * (y_size / div);
-    size = min(size, (int)tex->get_expected_ram_mipmap_image_size(n));
-    PTA_uchar image = PTA_uchar::empty_array(size);
-    memcpy(image.p(), rect.pBits, size);
-    
-    _d3d_2d_texture->UnlockRect(n);
-    if (n == 0) {
-      tex->set_ram_image(image, compression);
-    } else {
-      tex->set_ram_mipmap_image(n, image);
+    hr = _d3d_2d_texture -> GetSurfaceLevel (0, &source_surface);
+    if (hr == D3D_OK) {    
+       
+      D3DPOOL pool;
+      D3DSURFACE_DESC surface_description;
+
+      pool = D3DPOOL_SYSTEMMEM;
+      source_surface -> GetDesc (&surface_description);
+
+      hr = screen._d3d_device->CreateOffscreenPlainSurface (
+        surface_description.Width,
+        surface_description.Height,
+        surface_description.Format,
+        pool,
+        &destination_surface,
+        NULL);
+      if (hr == D3D_OK) {
+        if (source_surface && destination_surface) {
+          hr = screen._d3d_device -> GetRenderTargetData (source_surface, destination_surface);          
+          if (hr == D3D_OK) {
+
+            D3DLOCKED_RECT rect;
+
+            hr = destination_surface -> LockRect (&rect, NULL, D3DLOCK_READONLY);
+            if (hr == D3D_OK) {
+
+              unsigned int y;
+              int size;
+              int bytes_per_line;
+
+              int surface_bytes_per_line;
+              unsigned char *surface_pointer;
+              
+              bytes_per_line = surface_description.Width * this -> d3d_format_to_bytes_per_pixel (surface_description.Format);
+              size = bytes_per_line * surface_description.Height;
+
+              surface_bytes_per_line = rect.Pitch;
+              surface_pointer = (unsigned char *) rect.pBits;
+              
+              PTA_uchar image = PTA_uchar::empty_array(size);
+
+              int offset;
+
+              offset = 0;
+              for (y = 0; y < surface_description.Height; y++)
+              {
+                memcpy (&image [offset], surface_pointer, bytes_per_line);
+
+                offset += bytes_per_line;
+                surface_pointer += surface_bytes_per_line;  
+              }
+
+              tex->set_ram_image(image, Texture::CM_off);
+
+              state = true;
+              
+              destination_surface -> UnlockRect();
+            }
+          }
+        }    
+        
+        destination_surface -> Release ( );
+      }
+      else {
+        dxgsg9_cat.error()
+          << "CreateImageSurface failed in extract_texture_data()"
+          << D3DERRORSTRING(hr);      
+      }      
+      source_surface -> Release ( );
     }
   }
+  else {  
+    for (int n = 0; n < num_levels; ++n) {
+      D3DLOCKED_RECT rect;
+      hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error()
+          << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
+        return state;
+      }
+
+      int y_size = tex->get_expected_mipmap_y_size(n);
+      int size = rect.Pitch * (y_size / div);
+      size = min(size, (int)tex->get_expected_ram_mipmap_image_size(n));
+      PTA_uchar image = PTA_uchar::empty_array(size);
+      memcpy(image.p(), rect.pBits, size);
+
+      _d3d_2d_texture->UnlockRect(n);
+      if (n == 0) {
+        tex->set_ram_image(image, compression);
+      } else {
+        tex->set_ram_mipmap_image(n, image);
+      }
+    }
     
-  return true;
+    state = true;
+  }
+  
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2064,4 +2086,83 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
     return 128;
   }
   return 8;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXTextureContext9::d3d_format_to_bytes_per_pixel
+//       Access: Private
+//  Description: Determines bytes per pixel from D3DFORMAT.
+////////////////////////////////////////////////////////////////////
+float DXTextureContext9::
+d3d_format_to_bytes_per_pixel (D3DFORMAT format)
+{
+  int bytes_per_pixel;
+  
+  bytes_per_pixel = 0.0f;
+  switch (format)
+  {
+    case D3DFMT_R3G3B2:
+    case D3DFMT_A8:
+    case D3DFMT_A8P8:
+    case D3DFMT_P8:
+    case D3DFMT_L8:
+    case D3DFMT_A4L4:
+      bytes_per_pixel = 1.0f;
+      break;
+
+    case D3DFMT_R16F:
+    case D3DFMT_CxV8U8:
+    case D3DFMT_V8U8:
+    case D3DFMT_R5G6B5:
+    case D3DFMT_X1R5G5B5:
+    case D3DFMT_A1R5G5B5:
+    case D3DFMT_A4R4G4B4:
+    case D3DFMT_L16:
+    case D3DFMT_A8L8:
+    case D3DFMT_A8R3G3B2:
+    case D3DFMT_X4R4G4B4:
+      bytes_per_pixel = 2.0f;
+      break;
+
+    case D3DFMT_R8G8B8:
+      bytes_per_pixel = 3.0f;
+      break;
+
+    case D3DFMT_G16R16F:
+    case D3DFMT_Q8W8V8U8:
+    case D3DFMT_V16U16:
+    case D3DFMT_R32F:
+    case D3DFMT_A8R8G8B8:
+    case D3DFMT_X8R8G8B8:
+    case D3DFMT_A2B10G10R10:
+    case D3DFMT_A8B8G8R8:
+    case D3DFMT_X8B8G8R8:
+    case D3DFMT_G16R16:
+    case D3DFMT_A2R10G10B10:
+      bytes_per_pixel = 4.0f;
+      break;
+
+    case D3DFMT_G32R32F:
+    case D3DFMT_A16B16G16R16F:
+    case D3DFMT_Q16W16V16U16:
+    case D3DFMT_A16B16G16R16:
+      bytes_per_pixel = 8.0f;
+      break;
+
+    case D3DFMT_A32B32G32R32F:
+      bytes_per_pixel = 16.0f;
+      break;
+
+    case D3DFMT_DXT1:
+      bytes_per_pixel = 0.5f;
+      break;
+    case D3DFMT_DXT2:
+    case D3DFMT_DXT3:
+    case D3DFMT_DXT4:
+    case D3DFMT_DXT5:
+      bytes_per_pixel = 1.0f;
+      break;
+  }
+  
+  return bytes_per_pixel;
 }
