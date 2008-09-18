@@ -417,7 +417,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
         }
       }
     } else {
-      tex->set_format(Texture::F_rgba);
+//      tex->set_format(Texture::F_rgba);
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -490,7 +490,10 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
                                           GL_RENDERBUFFER_EXT, rb);
       }
     } else {
-      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA8_EXT,
+      GLenum internal_format;
+
+      internal_format = glgsg -> get_internal_image_format(tex);      
+      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, internal_format,
                                     _rb_size_x, _rb_size_y);
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
