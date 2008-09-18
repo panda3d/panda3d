@@ -186,10 +186,17 @@ save_bitplanes() {
     dxgsg9_cat.error ( ) << "GetRenderTarget " << D3DERRORSTRING(hr) FL;
     return false;
   }
+  
+  _saved_depth_buffer = 0;
   hr = _dxgsg -> _d3d_device -> GetDepthStencilSurface (&_saved_depth_buffer);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
-    return false;
+  if (hr == D3DERR_NOTFOUND) {
+    // this case is actually ok
+  }
+  else {
+    if (!SUCCEEDED (hr)) {
+      dxgsg9_cat.error ( ) << "GetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+      return false;
+    }
   }
   return true;
 }
@@ -215,11 +222,13 @@ restore_bitplanes() {
   if (!SUCCEEDED (hr)) {
     dxgsg9_cat.error ( ) << "SetRenderTarget " << D3DERRORSTRING(hr) FL;
   }
-  hr = _dxgsg -> _d3d_device -> SetDepthStencilSurface (_saved_depth_buffer);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+  if (_saved_depth_buffer) {
+    hr = _dxgsg -> _d3d_device -> SetDepthStencilSurface (_saved_depth_buffer);
+    if (!SUCCEEDED (hr)) {
+      dxgsg9_cat.error ( ) << "SetDepthStencilSurface " << D3DERRORSTRING(hr) FL;
+    }
   }
-
+  
   // clear all render targets, except for the main render target
   for (int i = 1; i<count_textures(); i++) {
     hr = _dxgsg -> _d3d_device -> SetRenderTarget (i, NULL);
@@ -229,7 +238,9 @@ restore_bitplanes() {
   }
 
   _saved_color_buffer->Release();
-  _saved_depth_buffer->Release();
+  if (_saved_depth_buffer) {
+    _saved_depth_buffer->Release();
+  }
   _saved_color_buffer = NULL;
   _saved_depth_buffer = NULL;
 }
