@@ -244,8 +244,11 @@ class ClockDelta(DirectObject.DirectObject):
         if now == None:
             now = self.globalClock.getRealTime()
 
-        # Are we in non-real-time mode (i.e. filming a movie)?  Just return now
-        if self.globalClock.getMode() == ClockObject.MNonRealTime:
+        # Are we in non-real-time mode (i.e. filming a movie)?  If you
+        # set movie-network-time 1, then we'll circumvent this logic
+        # and always return now.
+        if self.globalClock.getMode() == ClockObject.MNonRealTime and \
+           base.config.GetBool('movie-network-time', False):
             return now
 
         # First, determine what network time we have for 'now'.
