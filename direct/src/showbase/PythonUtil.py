@@ -1881,6 +1881,8 @@ def average(*args):
 class Averager:
     def __init__(self, name):
         self._name = name
+        self.reset()
+    def reset(self):
         self._total = 0.
         self._count = 0
     def addValue(self, value):

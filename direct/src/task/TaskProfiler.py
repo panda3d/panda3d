@@ -8,23 +8,40 @@ class TaskTracker:
         self._durationAverager = Averager('%s-durationAverager' % namePattern)
         self._avgData = None
         self._avgDataDur = None
+        self._maxNonSpikeData = None
+        self._maxNonSpikeDataDur = None
     def destroy(self):
         del self._namePattern
         del self._durationAverager
+    def flush(self):
+        self._durationAverager.reset()
+        self._avgData = None
+        self._avgDataDur = None
+        self._maxNonSpikeData = None
+        self._maxNonSpikeDataDur = None
     def getNamePattern(self, namePattern):
         return self._namePattern
-    def addDuration(self, duration, data):
+    def addDuration(self, duration, data, isSpike):
         self._durationAverager.addValue(duration)
         storeAvgData = True
+        storeMaxNSData = True
         if self._avgDataDur is not None:
             avgDur = self.getAvgDuration()
             if abs(self._avgDataDur - avgDur) < abs(duration - avgDur):
                 # current avg data is more average than this new sample, keep the data we've
                 # already got stored
                 storeAvgData = False
+        if isSpike:
+            storeMaxNSData = False
+        else:
+            if self._maxNonSpikeDataDur is not None and self._maxNonSpikeDataDur > duration:
+                storeMaxNSData = False
         if storeAvgData:
             self._avgData = data
             self._avgDataDur = duration
+        if storeMaxNSData:
+            self._maxNonSpikeData = data
+            self._maxNonSpikeDataDur = duration
     def getAvgDuration(self):
         return self._durationAverager.getAverage()
     def getNumDurationSamples(self):
@@ -32,6 +49,9 @@ class TaskTracker:
     def getAvgData(self):
         # returns duration, data for closest-to-average sample
         return self._avgDataDur, self._avgData
+    def getMaxNonSpikeData(self):
+        # returns duration, data for closest-to-average sample
+        return self._maxNonSpikeDataDur, self._maxNonSpikeData
 
 class TaskProfiler:
     # this does intermittent profiling of tasks running on the system
@@ -59,6 +79,11 @@ class TaskProfiler:
         del self._namePattern2tracker
         del self._task
 
+    def flush(self):
+        # flush stored task profiles
+        for tracker in self._namePattern2tracker.itervalues():
+            tracker.flush()
+
     def _setEnabled(self, enabled):
         if enabled:
             self._taskName = 'profile-tasks-%s' % id(self)
@@ -78,16 +103,23 @@ class TaskProfiler:
                 if namePattern not in self._namePattern2tracker:
                     self._namePattern2tracker[namePattern] = TaskTracker(namePattern)
                 tracker = self._namePattern2tracker[namePattern]
+                isSpike = False
                 # do we have enough samples?
                 if tracker.getNumDurationSamples() > self._minSamples:
                     # was this a spike?
                     if profileDt > (tracker.getAvgDuration() * self._spikeThreshold):
+                        isSpike = True
                         avgDur, avgResult = tracker.getAvgData()
+                        maxNSDur, maxNSResult = tracker.getMaxNonSpikeData()
                         self.notify.info('task CPU spike profile (%s):\n'
-                                         'AVERAGE PROFILE (%s wall-clock seconds)\n%s\n'
-                                         'SPIKE PROFILE (%s wall-clock seconds)\n%s' % (
-                            namePattern, avgDur, avgResult, profileDt, lastProfileResult))
-                tracker.addDuration(profileDt, lastProfileResult)
+                                         '== AVERAGE (%s wall-clock seconds)\n%s\n'
+                                         '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s\n'
+                                         '== SPIKE (%s wall-clock seconds)\n%s' % (
+                            namePattern,
+                            avgDur, avgResult,
+                            maxNSDur, maxNSResult,
+                            profileDt, lastProfileResult))
+                tracker.addDuration(profileDt, lastProfileResult, isSpike)
 
         # set up the next task
         self._task = taskMgr._getRandomTask()
