@@ -8,7 +8,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'sameElements', 'makeList', 'makeTuple', 'list2dict', 'invertDict',
 'invertDictLossless', 'uniqueElements', 'disjoint', 'contains',
 'replace', 'reduceAngle', 'fitSrcAngle2Dest', 'fitDestAngle2Src',
-'closestDestAngle2', 'closestDestAngle', 'binaryRepr', 'profile',
+'closestDestAngle2', 'closestDestAngle', 'binaryRepr', 'profileFunc',
 'profiled', 'startProfile', 'printProfile', 'getSetterName',
 'getSetter', 'Functor', 'Stack', 'Queue', 'ParamObj', 
 'POD', 'bound', 'lerp', 'average', 'addListsByValue',
@@ -47,6 +47,11 @@ import new
 import gc
 #if __debug__:
 import traceback
+import __builtin__
+import profile
+import pstats
+from StringIO import StringIO
+import marshal
 
 from direct.directutil import Verify
 # Don't import libpandaexpressModules, which doesn't get built until
@@ -73,6 +78,128 @@ if not hasattr(__builtin__, 'enumerate'):
     __builtin__.enumerate = enumerate
 else:
     enumerate = __builtin__.enumerate
+
+"""
+# with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
+def Functor(function, *args, **kArgs):
+    argsCopy = args[:]
+    def functor(*cArgs, **ckArgs):
+        kArgs.update(ckArgs)
+        return function(*(argsCopy + cArgs), **kArgs)
+    return functor
+"""
+
+class Functor:
+    def __init__(self, function, *args, **kargs):
+        assert callable(function), "function should be a callable obj"
+        self._function = function
+        self._args = args
+        self._kargs = kargs
+        if hasattr(self._function, '__name__'):
+            self.__name__ = self._function.__name__
+        else:
+            self.__name__ = str(itype(self._function))
+        if hasattr(self._function, '__doc__'):
+            self.__doc__ = self._function.__doc__
+        else:
+            self.__doc__ = self.__name__
+
+    def destroy(self):
+        del self._function
+        del self._args
+        del self._kargs
+        del self.__name__
+        del self.__doc__
+    
+    def _do__call__(self, *args, **kargs):
+        _kargs = self._kargs.copy()
+        _kargs.update(kargs)
+        return self._function(*(self._args + args), **_kargs)
+
+    # this method is used in place of __call__ if we are recording creation stacks
+    def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
+        try:
+            return self._do__call__(*args, **kargs)
+        except Exception, e:
+            print '-->Functor creation stack (%s): %s' % (
+                self.__name__, self.getCreationStackTraceCompactStr())
+            raise
+
+    __call__ = _do__call__
+
+    def __repr__(self):
+        s = 'Functor(%s' % self._function.__name__
+        for arg in self._args:
+            try:
+                argStr = repr(arg)
+            except:
+                argStr = 'bad repr: %s' % arg.__class__
+            s += ', %s' % argStr
+        for karg, value in self._kargs.items():
+            s += ', %s=%s' % (karg, repr(value))
+        s += ')'
+        return s
+
+class Stack:
+    def __init__(self):
+        self.__list = []
+    def push(self, item):
+        self.__list.append(item)
+    def top(self):
+        # return the item on the top of the stack without popping it off
+        return self.__list[-1]
+    def pop(self):
+        return self.__list.pop()
+    def clear(self):
+        self.__list = []
+    def isEmpty(self):
+        return len(self.__list) == 0
+    def __len__(self):
+        return len(self.__list)
+
+class Queue:
+    # FIFO queue
+    # interface is intentionally identical to Stack (LIFO)
+    def __init__(self):
+        self.__list = []
+    def push(self, item):
+        self.__list.append(item)
+    def top(self):
+        # return the next item at the front of the queue without popping it off
+        return self.__list[0]
+    def front(self):
+        return self.__list[0]
+    def back(self):
+        return self.__list[-1]
+    def pop(self):
+        return self.__list.pop(0)
+    def clear(self):
+        self.__list = []
+    def isEmpty(self):
+        return len(self.__list) == 0
+    def __len__(self):
+        return len(self.__list)
+
+if __debug__:
+    q = Queue()
+    assert q.isEmpty()
+    q.clear()
+    assert q.isEmpty()
+    q.push(10)
+    assert not q.isEmpty()
+    q.push(20)
+    assert not q.isEmpty()
+    assert len(q) == 2
+    assert q.front() == 10
+    assert q.back() == 20
+    assert q.top() == 10
+    assert q.top() == 10
+    assert q.pop() == 10
+    assert len(q) == 1
+    assert not q.isEmpty()
+    assert q.pop() == 20
+    assert len(q) == 0
+    assert q.isEmpty()
 
 def unique(L1, L2):
     """Return a list containing all items in 'L1' that are not in 'L2'"""
@@ -834,20 +961,8 @@ def getProfileResultString():
     global _ProfileResultStr
     return _ProfileResultStr
 
-class PModules:
-    # holder for modules used by profiling code, avoids import every time code is called
-    builtin = None
-    profile = None
-    os = None
-    pstats = None
-
-def profile(callback, name, terse, log=True):
+def profileFunc(callback, name, terse, log=True):
     global _ProfileResultStr
-    if PModules.builtin is None:
-        import __builtin__
-        PModules.builtin = __builtin__
-    else:
-        __builtin__ = PModules.builtin
     if 'globalProfileFunc' in __builtin__.__dict__:
         # rats. Python profiler is not re-entrant...
         base.notify.warning(
@@ -909,12 +1024,79 @@ def profiled(category=None, terse=False):
             # showbase might not be loaded yet, so don't use
             # base.config.  Instead, query the ConfigVariableBool.
             if (category is None) or ConfigVariableBool('want-profile-%s' % category, 0).getValue():
-                return profile(Functor(f, *args, **kArgs), name, terse)
+                return profileFunc(Functor(f, *args, **kArgs), name, terse)
             else:
                 return f(*args, **kArgs)
         _profiled.__doc__ = f.__doc__
         return _profiled
     return profileDecorator
+
+# intercept profile-related file operations to avoid disk access
+movedOpenFuncs = []
+movedDumpFuncs = []
+movedLoadFuncs = []
+profileFilenames = set()
+profileFilenameList = Stack()
+profileFilename2file = {}
+profileFilename2marshalData = {}
+
+def _profileOpen(filename, *args, **kArgs):
+    # this is a replacement for the file open() builtin function
+    # for use during profiling, to intercept the file open
+    # operation used by the Python profiler and profile stats
+    # systems
+    if filename in profileFilenames:
+        # if this is a file related to profiling, create an
+        # in-RAM file object
+        if filename not in profileFilename2file:
+            file = StringIO()
+            file._profFilename = filename
+            profileFilename2file[filename] = file
+        else:
+            file = profileFilename2file[filename]
+    else:
+        file = movedOpenFuncs[-1](filename, *args, **kArgs)
+    return file
+
+def _profileMarshalDump(data, file):
+    # marshal.dump doesn't work with StringIO objects
+    # simulate it
+    if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
+        if file._profFilename in profileFilenames:
+            profileFilename2marshalData[file._profFilename] = data
+            return None
+    return movedDumpFuncs[-1](data, file)
+
+def _profileMarshalLoad(file):
+    # marshal.load doesn't work with StringIO objects
+    # simulate it
+    if isinstance(file, StringIO) and hasattr(file, '_profFilename'):
+        if file._profFilename in profileFilenames:
+            return profileFilename2marshalData[file._profFilename]
+    return movedLoadFuncs[-1](file)
+
+def _installProfileCustomFuncs(filename):
+    assert filename not in profileFilenames
+    profileFilenames.add(filename)
+    profileFilenameList.push(filename)
+    movedOpenFuncs.append(__builtin__.open)
+    __builtin__.open = _profileOpen
+    movedDumpFuncs.append(marshal.dump)
+    marshal.dump = _profileMarshalDump
+    movedLoadFuncs.append(marshal.load)
+    marshal.load = _profileMarshalLoad
+
+def _removeProfileCustomFuncs(filename):
+    assert profileFilenameList.top() == filename
+    marshal.load = movedLoadFuncs.pop()
+    marshal.dump = movedDumpFuncs.pop()
+    __builtin__.open = movedOpenFuncs.pop()
+    profileFilenames.remove(filename)
+    profileFilenameList.pop()
+    profileFilename2file.pop(filename, None)
+    # don't let marshalled data pile up
+    profileFilename2marshalData.pop(filename, None)
+
 
 # call this from the prompt, and break back out to the prompt
 # to stop profiling
@@ -930,41 +1112,56 @@ def profiled(category=None, terse=False):
 #        PythonUtil.startProfile(cmd='func()', filename='profileData')
 #        del __builtin__.func
 #
+def _profileWithoutGarbageLeak(cmd, filename):
+    # this is necessary because the profile module creates a memory leak
+    Profile = profile.Profile
+    statement = cmd
+    sort = -1
+    retVal = None
+    #### COPIED FROM profile.run ####
+    prof = Profile()
+    try:
+        prof = prof.run(statement)
+    except SystemExit:
+        pass
+    if filename is not None:
+        prof.dump_stats(filename)
+    else:
+        #return prof.print_stats(sort)  #DCR
+        retVal = prof.print_stats(sort) #DCR
+    #################################
+    # eliminate the garbage leak
+    del prof.dispatcher
+    return retVal
+    
 def startProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
                  silent=0,
                  callInfo=1,
+                 useDisk=False,
                  cmd='run()'):
     # uniquify the filename to allow multiple processes to profile simultaneously
     filename = '%s.%s%s' % (filename, randUint31(), randUint31())
-    if PModules.profile is None:
-        import profile
-        PModules.profile = profile
-    else:
-        profile = PModules.profile
-    profile.run(cmd, filename)
+    if not useDisk:
+        # use a RAM file
+        _installProfileCustomFuncs(filename)
+    _profileWithoutGarbageLeak(cmd, filename)
     if silent:
         extractProfile(filename, lines, sorts, callInfo)
     else:
         printProfile(filename, lines, sorts, callInfo)
-    if PModules.os is None:
-        import os
-        PModules.os = os
+    if not useDisk:
+        # discard the RAM file
+        _removeProfileCustomFuncs(filename)
     else:
-        os = PModules.os
-    os.remove(filename)
+        os.remove(filename)
 
 # call these to see the results again, as a string or in the log
 def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
                  callInfo=1):
-    if PModules.pstats is None:
-        import pstats
-        PModules.pstats = pstats
-    else:
-        pstats = PModules.pstats
     s = pstats.Stats(filename)
     s.strip_dirs()
     for sort in sorts:
@@ -993,128 +1190,6 @@ def getSetterName(valueName, prefix='set'):
 def getSetter(targetObj, valueName, prefix='set'):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
-
-"""
-# with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
-def Functor(function, *args, **kArgs):
-    argsCopy = args[:]
-    def functor(*cArgs, **ckArgs):
-        kArgs.update(ckArgs)
-        return function(*(argsCopy + cArgs), **kArgs)
-    return functor
-"""
-
-class Functor:
-    def __init__(self, function, *args, **kargs):
-        assert callable(function), "function should be a callable obj"
-        self._function = function
-        self._args = args
-        self._kargs = kargs
-        if hasattr(self._function, '__name__'):
-            self.__name__ = self._function.__name__
-        else:
-            self.__name__ = str(itype(self._function))
-        if hasattr(self._function, '__doc__'):
-            self.__doc__ = self._function.__doc__
-        else:
-            self.__doc__ = self.__name__
-
-    def destroy(self):
-        del self._function
-        del self._args
-        del self._kargs
-        del self.__name__
-        del self.__doc__
-    
-    def _do__call__(self, *args, **kargs):
-        _kargs = self._kargs.copy()
-        _kargs.update(kargs)
-        return self._function(*(self._args + args), **_kargs)
-
-    # this method is used in place of __call__ if we are recording creation stacks
-    def _exceptionLoggedCreationStack__call__(self, *args, **kargs):
-        try:
-            return self._do__call__(*args, **kargs)
-        except Exception, e:
-            print '-->Functor creation stack (%s): %s' % (
-                self.__name__, self.getCreationStackTraceCompactStr())
-            raise
-
-    __call__ = _do__call__
-
-    def __repr__(self):
-        s = 'Functor(%s' % self._function.__name__
-        for arg in self._args:
-            try:
-                argStr = repr(arg)
-            except:
-                argStr = 'bad repr: %s' % arg.__class__
-            s += ', %s' % argStr
-        for karg, value in self._kargs.items():
-            s += ', %s=%s' % (karg, repr(value))
-        s += ')'
-        return s
-
-class Stack:
-    def __init__(self):
-        self.__list = []
-    def push(self, item):
-        self.__list.append(item)
-    def top(self):
-        # return the item on the top of the stack without popping it off
-        return self.__list[-1]
-    def pop(self):
-        return self.__list.pop()
-    def clear(self):
-        self.__list = []
-    def isEmpty(self):
-        return len(self.__list) == 0
-    def __len__(self):
-        return len(self.__list)
-
-class Queue:
-    # FIFO queue
-    # interface is intentionally identical to Stack (LIFO)
-    def __init__(self):
-        self.__list = []
-    def push(self, item):
-        self.__list.append(item)
-    def top(self):
-        # return the next item at the front of the queue without popping it off
-        return self.__list[0]
-    def front(self):
-        return self.__list[0]
-    def back(self):
-        return self.__list[-1]
-    def pop(self):
-        return self.__list.pop(0)
-    def clear(self):
-        self.__list = []
-    def isEmpty(self):
-        return len(self.__list) == 0
-    def __len__(self):
-        return len(self.__list)
-
-if __debug__:
-    q = Queue()
-    assert q.isEmpty()
-    q.clear()
-    assert q.isEmpty()
-    q.push(10)
-    assert not q.isEmpty()
-    q.push(20)
-    assert not q.isEmpty()
-    assert len(q) == 2
-    assert q.front() == 10
-    assert q.back() == 20
-    assert q.top() == 10
-    assert q.top() == 10
-    assert q.pop() == 10
-    assert len(q) == 1
-    assert not q.isEmpty()
-    assert q.pop() == 20
-    assert len(q) == 0
-    assert q.isEmpty()
 
 def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes

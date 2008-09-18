@@ -777,8 +777,8 @@ class TaskManager:
             
             # don't record timing info
             if doProfile:
-                ret = profile(Functor(task, *task.extraArgs),
-                              'TASK_PROFILE:%s' % task.name, True, log=False)
+                ret = profileFunc(Functor(task, *task.extraArgs),
+                                  'TASK_PROFILE:%s' % task.name, True, log=False)
             else:
                 ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
@@ -798,8 +798,8 @@ class TaskManager:
                 task.pstats.start()
             startTime = self.trueClock.getShortTime()
             if doProfile:
-                ret = profile(Functor(task, *task.extraArgs),
-                              'profiled-task-%s' % task.name, True, log=False)
+                ret = profileFunc(Functor(task, *task.extraArgs),
+                                  'profiled-task-%s' % task.name, True, log=False)
             else:
                 ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
