@@ -100,7 +100,7 @@ class DistributedSmoothNodeBase:
         # startPosHprBroadcast; we should at least make an effort to keep
         # this task accurately aligned with its period and starting time.
         self.d_broadcastPosHpr()
-        task.delayTime = self.__broadcastPeriod
+        task.setDelay(self.__broadcastPeriod)
         return Task.again
 
     def sendCurrentPosition(self):

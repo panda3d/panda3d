@@ -100,7 +100,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
             av = self.gridObjects[avId]
             # handle a missing object after it is already gone?
             if (av.isEmpty()):
-                task.delayTime = 1.0
+                task.setDelay(1.0)
                 del self.gridObjects[avId]
                 continue
             pos = av.getPos()
@@ -110,7 +110,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
                 self.handleAvatarZoneChange(av)
         # Do this every second, not every frame
         if (task):
-            task.delayTime = 1.0
+            task.setDelay(1.0)
         return Task.again
 
     def handleAvatarZoneChange(self, av, useZoneId=-1):

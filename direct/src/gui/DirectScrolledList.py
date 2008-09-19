@@ -304,7 +304,7 @@ class DirectScrolledList(DirectFrame):
     def __incButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
-        task.delayTime = (1.0 / self.scrollSpeed)
+        task.setDelay(1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = 1
         taskName = self.taskName("scroll")
@@ -316,7 +316,7 @@ class DirectScrolledList(DirectFrame):
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
         task = Task(self.__scrollByTask)
-        task.delayTime = (1.0 / self.scrollSpeed)
+        task.setDelay(1.0 / self.scrollSpeed)
         task.prevTime = 0.0
         task.delta = -1
         taskName = self.taskName("scroll")
