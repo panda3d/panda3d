@@ -4,7 +4,10 @@ from ClockDelta import *
 from direct.task import Task
 from direct.showbase.PythonUtil import randFloat, Enum
 
-DummyTask = ScratchPad()
+class DummyTask:
+    def setDelay(self, blah):
+        pass
+
     
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
@@ -95,10 +98,12 @@ class DistributedSmoothNodeBase:
             taskMgr.doMethodLater(self.__broadcastPeriod + delay,
                                   self._posHprBroadcast, taskName)
 
-    def _posHprBroadcast(self, task=DummyTask):
+    def _posHprBroadcast(self, task=None):
         # TODO: we explicitly stagger the initial task timing in
         # startPosHprBroadcast; we should at least make an effort to keep
         # this task accurately aligned with its period and starting time.
+        if task is None:
+            task = DummyTask()
         self.d_broadcastPosHpr()
         task.setDelay(self.__broadcastPeriod)
         return Task.again
