@@ -48,9 +48,10 @@ protected:
   virtual void update_frame(int frame);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
-                           int z, int n);
+                           int z, int n, const LoaderOptions &options);
 
 private:    
   class VideoPage;
@@ -58,7 +59,8 @@ private:
 
   VideoPage &modify_page(int z);
   bool do_reconsider_video_properties(const VideoStream &stream, 
-                                      int num_components, int z);
+                                      int num_components, int z, 
+                                      const LoaderOptions &options);
   void do_update();
     
   class VideoStream {

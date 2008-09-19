@@ -117,7 +117,8 @@ modify_page(int z) {
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
 do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream, 
-                               int num_components, int z) {
+                               int num_components, int z, 
+                               const LoaderOptions &options) {
   double frame_rate = 0.0f;
   int num_frames = 0;
   if (!stream._codec_context) {
@@ -161,7 +162,7 @@ do_reconsider_video_properties(const FFMpegTexture::VideoStream &stream,
   }
 
   if (!do_reconsider_image_properties(x_size, y_size, num_components,
-                                      T_unsigned_byte, z)) {
+                                      T_unsigned_byte, z, options)) {
     return false;
   }
 
@@ -318,6 +319,7 @@ update_frame(int frame) {
 bool FFMpegTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
@@ -361,7 +363,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     
     _primary_file_num_channels = 4;
     _alpha_file_channel = 0;
-    if (!do_reconsider_video_properties(page._color, 4, z)) {
+    if (!do_reconsider_video_properties(page._color, 4, z, options)) {
       page._color.clear();
       return false;
     }
@@ -371,18 +373,18 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     _alpha_file_channel = alpha_file_channel;
 
     if (page._alpha.is_valid()) {
-      if (!do_reconsider_video_properties(page._color, 4, z)) {
+      if (!do_reconsider_video_properties(page._color, 4, z, options)) {
         page._color.clear();
         page._alpha.clear();
         return false;
       }
-      if (!do_reconsider_video_properties(page._alpha, 4, z)) {
+      if (!do_reconsider_video_properties(page._alpha, 4, z, options)) {
         page._color.clear();
         page._alpha.clear();
         return false;
       }
     } else {
-      if (!do_reconsider_video_properties(page._color, 3, z)) {
+      if (!do_reconsider_video_properties(page._color, 3, z, options)) {
         page._color.clear();
         page._alpha.clear();
         return false;
@@ -405,13 +407,14 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               texture) to the indicated static image.
 ////////////////////////////////////////////////////////////////////
 bool FFMpegTexture::
-do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
+            const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = modify_page(z);
     page._color.clear();
   }
 
-  return Texture::do_load_one(pnmimage, name, z, n);
+  return Texture::do_load_one(pnmimage, name, z, n, options);
 }
 
 
