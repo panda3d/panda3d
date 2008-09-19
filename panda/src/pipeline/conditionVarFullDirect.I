@@ -105,6 +105,23 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarFullDirect::wait
+//       Access: Published
+//  Description: Waits on the condition, with a timeout.  The function
+//               will return when the condition variable is signaled,
+//               or the timeout occurs.  There is no way to directly
+//               tell which happened, and it is possible that neither
+//               in fact happened (spurious wakeups are possible).
+//
+//               See wait() with no parameters for more.
+////////////////////////////////////////////////////////////////////
+void ConditionVarFullDirect::
+wait(double timeout) {
+  TAU_PROFILE("ConditionVarFullDirect::wait(double)", " ", TAU_USER);
+  _impl.wait(timeout);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullDirect::signal
 //       Access: Published
 //  Description: Informs one of the other threads who are currently

@@ -37,6 +37,27 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarSimpleImpl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConditionVarSimpleImpl::
+wait(double timeout) {
+  _mutex.release();
+
+  // TODO.  For now this will release every frame, since we don't have
+  // an interface yet on ThreadSimpleManager to do a timed wait.
+  // Maybe that's good enough forever (it does satisfy the condition
+  // variable semantics, after all).
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  ThreadSimpleImpl *thread = manager->get_current_thread();
+  manager->enqueue_ready(thread);
+  manager->next_context();
+
+  _mutex.lock();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarSimpleImpl::do_signal
 //       Access: Private
 //  Description: 

@@ -45,6 +45,39 @@ has_glob_characters() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::get_const_prefix
+//       Access: Public
+//  Description: Returns the initial part of the pattern before the
+//               first glob character.  Since many glob patterns begin
+//               with a sequence of static characters and end with one
+//               or more glob characters, this can be used to
+//               optimized searches through sorted indices.
+////////////////////////////////////////////////////////////////////
+string GlobPattern::
+get_const_prefix() const {
+  string prefix;
+
+  size_t p = 0;  // current point
+  size_t q = 0;  // starting point
+  while (p < _pattern.size()) {
+    switch (_pattern[p]) {
+    case '*':
+    case '?':
+    case '[':
+      return prefix + _pattern.substr(q, p - q);
+
+    case '\\':
+      // Skip over the backslash.
+      prefix += _pattern.substr(q, p - q);
+      ++p;
+      q = p;
+    }
+    ++p;
+  }
+  return prefix += _pattern.substr(q, p - q);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::match_files
 //       Access: Public
 //  Description: Treats the GlobPattern as a filename pattern, and

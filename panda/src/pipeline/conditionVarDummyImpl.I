@@ -32,12 +32,22 @@ INLINE ConditionVarDummyImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarDummyImpl::lock
+//     Function: ConditionVarDummyImpl::wait
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarDummyImpl::
 wait() {
+  Thread::force_yield();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarDummyImpl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarDummyImpl::
+wait(double) {
   Thread::force_yield();
 }
 

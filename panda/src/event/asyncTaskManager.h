@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "asyncTask.h"
+#include "asyncTaskCollection.h"
 #include "typedReferenceCount.h"
 #include "thread.h"
 #include "pmutex.h"
@@ -25,6 +26,7 @@
 #include "pvector.h"
 #include "pdeque.h"
 #include "pStatCollector.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncTaskManager
@@ -37,30 +39,53 @@
 //               are no threads, you must call poll() from time to
 //               time to serve the tasks in the main thread.
 //
-//               Each task, once added to the FIFO queue, will
-//               eventually be executed by one of the threads; if the
-//               task then indicates it has more work to do, it will
-//               be replaced at the end of the queue to go around
-//               again.
+//               Each task will run exactly once each epoch.  Beyond
+//               that, the tasks' sort and priority values control the
+//               order in which they are run: tasks are run in
+//               increasing order by sort value, and within the same
+//               sort value, they are run roughly in decreasing order
+//               by priority value, with some exceptions for
+//               parallelism.  Tasks with different sort values are
+//               never run in parallel together, but tasks with
+//               different priority values might be (if there is more
+//               than one thread).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  AsyncTaskManager(const string &name, int num_threads);
+  AsyncTaskManager(const string &name, int num_threads = 0);
   BLOCKING virtual ~AsyncTaskManager();
 
+  INLINE void set_clock(ClockObject *clock);
+  INLINE ClockObject *get_clock();
+
+  INLINE void set_tick_clock(bool tick_clock);
+  INLINE bool get_tick_clock() const;
+
+  BLOCKING void set_num_threads(int num_threads);
   INLINE int get_num_threads() const;
+  INLINE int get_num_running_threads() const;
+
   BLOCKING void stop_threads();
   void start_threads();
   INLINE bool is_started() const;
 
   void add(AsyncTask *task);
-  bool add_and_do(AsyncTask *task);
-  bool remove(AsyncTask *task);
   bool has_task(AsyncTask *task) const;
+
+  AsyncTask *find_task(const string &name) const;
+  AsyncTaskCollection find_tasks(const string &name) const;
+  AsyncTaskCollection find_tasks_matching(const GlobPattern &pattern) const;
+
+  bool remove(AsyncTask *task);
+  int remove(const AsyncTaskCollection &tasks);
 
   BLOCKING void wait_for_tasks();
 
   INLINE int get_num_tasks() const;
+
+  AsyncTaskCollection get_tasks();
+  AsyncTaskCollection get_active_tasks();
+  AsyncTaskCollection get_sleeping_tasks();
 
   void poll();
 
@@ -69,10 +94,18 @@ PUBLISHED:
 
 protected:
   class AsyncTaskManagerThread;
+  typedef pvector< PT(AsyncTask) > TaskHeap;
 
-  int find_task(AsyncTask *task) const;
+  bool do_has_task(AsyncTask *task) const;
+  int find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const;
+
+  INLINE void add_task_by_name(AsyncTask *task);
+  void remove_task_by_name(AsyncTask *task);
+
   void service_one_task(AsyncTaskManagerThread *thread);
-  void task_done(AsyncTask *task);
+  void cleanup_task(AsyncTask *task, bool clean_exit);
+  bool finish_sort_group();
+  void do_stop_threads();
   void do_start_threads();
   void do_poll();
 
@@ -86,24 +119,56 @@ protected:
     AsyncTask *_servicing;
   };
 
+  class AsyncTaskSortWakeTime {
+  public:
+    bool operator () (AsyncTask *a, AsyncTask *b) const {
+      return a->get_wake_time() > b->get_wake_time();
+    }
+  };
+  
+  class AsyncTaskSortPriority {
+  public:
+    bool operator () (AsyncTask *a, AsyncTask *b) const {
+      if (a->get_sort() != b->get_sort()) {
+        return a->get_sort() > b->get_sort();
+      }
+      return a->get_priority() < b->get_priority();
+    }
+  };
+  
+  class AsyncTaskSortName {
+  public:
+    bool operator () (AsyncTask *a, AsyncTask *b) const {
+      return a->get_name() < b->get_name();
+    }
+  };
+
   typedef pvector< PT(AsyncTaskManagerThread) > Threads;
-  typedef pdeque< PT(AsyncTask) > Tasks;
+  typedef pmultiset<AsyncTask *, AsyncTaskSortName> TasksByName;
 
   int _num_threads;
 
   Mutex _lock;  // Protects all the following members.
-  ConditionVarFull _cvar;  // singaled when _active or _state changes, or a task finishes.
+  ConditionVarFull _cvar;  // signaled when _active, _next_active, _sleeping, _state, or _current_sort changes, or a task finishes.
 
   enum State {
     S_initial,  // no threads yet
     S_started,  // threads have been started
-    S_shutdown  // waiting for thread shutdown
+    S_aborting, // task returned DS_abort, shutdown requested from sub-thread.
+    S_shutdown  // waiting for thread shutdown, requested from main thread
   };
 
   Threads _threads;
-  Tasks _active;
   int _num_tasks;
+  int _num_busy_threads;
+  TaskHeap _active;
+  TaskHeap _next_active;
+  TaskHeap _sleeping;
+  TasksByName _tasks_by_name;
   State _state;
+  int _current_sort;
+  PT(ClockObject) _clock;
+  bool _tick_clock;
   
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
@@ -126,6 +191,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class AsyncTaskManagerThread;
+  friend class AsyncTask;
 };
 
 #include "asyncTaskManager.I"

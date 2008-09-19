@@ -1,5 +1,5 @@
-// Filename: pythonThread.h
-// Created by:  drose (13Apr07)
+// Filename: pythonTask.h
+// Created by:  drose (16Sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,44 +12,52 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PYTHONTHREAD_H
-#define PYTHONTHREAD_H
+#ifndef PYTHONTASK_H
+#define PYTHONTASK_H
 
 #include "pandabase.h"
 
-#include "thread.h"
+#include "asyncTask.h"
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//       Class : PythonThread
-// Description : This class is exposed to Python to allow creation of
-//               a Panda thread from the Python level.  It will spawn
-//               a thread that executes an arbitrary Python functor.
+//       Class : PythonTask
+// Description : This class exists to allow association of a Python
+//               function with the AsyncTaskManager.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PIPELINE PythonThread : public Thread {
+class EXPCL_PANDA_PIPELINE PythonTask : public AsyncTask {
 PUBLISHED:
-  PythonThread(PyObject *function, PyObject *args,
-               const string &name, const string &sync_name);
-  virtual ~PythonThread();
+  PythonTask(PyObject *function, const string &name = string());
+  virtual ~PythonTask();
+  ALLOC_DELETED_CHAIN(PythonTask);
 
-  BLOCKING PyObject *join();
+  void set_function(PyObject *function);
+  PyObject *get_function();
+
+  void set_args(PyObject *args, bool append_task);
+  PyObject *get_args();
+
+  int __setattr__(const string &attr_name, PyObject *v);
+  int __setattr__(const string &attr_name);
+  PyObject *__getattr__(const string &attr_name) const;
 
 protected:
-  virtual void thread_main();
+  virtual DoneStatus do_task();
 
 private:
   PyObject *_function;
   PyObject *_args;
-  PyObject *_result;
+  bool _append_task;
+  PyObject *_dict;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    Thread::init_type();
-    register_type(_type_handle, "PythonThread",
-                  Thread::get_class_type());
+    AsyncTask::init_type();
+    register_type(_type_handle, "PythonTask",
+                  AsyncTask::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -59,6 +67,9 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "pythonTask.I"
+
 #endif  // HAVE_PYTHON
 
 #endif

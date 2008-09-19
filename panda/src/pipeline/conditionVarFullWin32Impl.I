@@ -73,6 +73,38 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarFullWin32Impl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarFullWin32Impl::
+wait(double timeout) {
+  AtomicAdjust::inc(_waiters_count);
+
+  // It's ok to release the external_mutex here since Win32
+  // manual-reset events maintain state when used with SetEvent().
+  // This avoids the "lost wakeup" bug...
+  LeaveCriticalSection(_external_mutex);
+
+  // Wait for either event to become signaled due to signal() being
+  // called or signal_all() being called.
+  int result = WaitForMultipleObjects(2, &_event_signal, FALSE, (DWORD)(timeout * 1000.0));
+
+  bool nonzero = AtomicAdjust::dec(_waiters_count);
+  bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
+
+  // Some thread called signal_all().
+  if (last_waiter) {
+    // We're the last waiter to be notified or to stop waiting, so
+    // reset the manual event. 
+    ResetEvent(_event_broadcast); 
+  }
+
+  // Reacquire the <external_mutex>.
+  EnterCriticalSection(_external_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarFullWin32Impl::signal
 //       Access: Public
 //  Description: 

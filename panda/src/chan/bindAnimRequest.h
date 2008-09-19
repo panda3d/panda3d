@@ -40,7 +40,7 @@ PUBLISHED:
                          const PartSubset &subset);
   
 protected:
-  virtual bool do_task();
+  virtual DoneStatus do_task();
   
 private:
   PT(AnimControl) _control;

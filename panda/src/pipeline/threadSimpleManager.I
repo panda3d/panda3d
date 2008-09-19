@@ -75,5 +75,5 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ThreadSimpleManager::CompareStartTime::
 operator ()(ThreadSimpleImpl *a, ThreadSimpleImpl *b) const {
-  return a->get_start_time() < b->get_start_time();
+  return a->get_start_time() > b->get_start_time();
 }

@@ -25,7 +25,7 @@ TypeHandle BindAnimRequest::_type_handle;
 //  Description: Performs the task: that is, loads and binds the
 //               animation.
 ////////////////////////////////////////////////////////////////////
-bool BindAnimRequest::
+AsyncTask::DoneStatus BindAnimRequest::
 do_task() {
   ModelLoadRequest::do_task();
 
@@ -35,14 +35,14 @@ do_task() {
     // We're holding the only remaining reference to this AnimControl.
     // Therefore, forget the bind attempt; no one cares anyway.
     _control->fail_anim(part);
-    return false;
+    return DS_done;
   }
 
   PT(PandaNode) model = get_model();
   if (model == (PandaNode *)NULL) {
     // Couldn't load the file.
     _control->fail_anim(part);
-    return false;
+    return DS_done;
   }
   _control->set_anim_model(model);
 
@@ -50,14 +50,14 @@ do_task() {
   if (anim == (AnimBundle *)NULL) {
     // No anim bundle.
     _control->fail_anim(part);
-    return false;
+    return DS_done;
   }
 
   if (!part->do_bind_anim(_control, anim, _hierarchy_match_flags, _subset)) {
     // Couldn't bind.
     _control->fail_anim(part);
-    return false;
+    return DS_done;
   }
 
-  return false;
+  return DS_done;
 }

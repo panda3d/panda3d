@@ -45,6 +45,7 @@ PUBLISHED:
   INLINE MutexDebug &get_mutex() const;
 
   void wait();
+  void wait(double timeout);
   void signal();
   void signal_all();
   virtual void output(ostream &out) const;

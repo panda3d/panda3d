@@ -25,6 +25,8 @@
 #include "cycleDataStageReader.h"
 #include "pipelineCycler.h"
 #include "thread.h"
+#include "referenceCount.h"
+#include "pointerTo.h"
 
 class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:
@@ -60,7 +62,7 @@ PUBLISHED:
 //               up to tick every frame so that its get_frame_time()
 //               will return the time for the current frame.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL ClockObject {
+class EXPCL_PANDA_PUTIL ClockObject : public ReferenceCount {
 PUBLISHED:
   enum Mode {
     M_normal,
@@ -162,7 +164,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
 
-  static ClockObject *_global_clock;
+  static PT(ClockObject) _global_clock;
 
 public:
   static TypeHandle get_class_type() {

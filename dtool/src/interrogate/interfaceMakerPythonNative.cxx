@@ -58,48 +58,51 @@ struct FlagSet
 
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet methodRenameDictionary[] = {
-    { "operator=="  , "eq",                   0 },
-    { "operator!="  , "ne",                   0 },
-    { "operator<<"  , "__lshift__",           0 },
-    { "operator>>"  , "__rshift__",           0 },
-    { "operator<"   , "lessThan",             0 },
-    { "operator>"   , "greaterThan",          0 },
-    { "operator<="  , "lessThanOrEqual",      0 },
-    { "operator>="  , "greaterThanOrEqual",   0 },
-    { "operator="   , "assign",               0 },
-    { "operator()"  , "__call__",             0 },
-    { "operator[]"  , "__getitem__",          0 },
-    { "operator++unary"  , "increment",            0 },
-    { "operator++"  , "increment",            0 },
-    { "operator--unary"  , "decrement",            0 },
-    { "operator--"  , "decrement",            0 },
-    { "operator^"   , "__xor__",              0 },
-    { "operator%"   , "__mod__",              0 },
-    { "operator!"   , "logicalNot",           0 },
-    { "operator~unary"   , "__invert__",           0 },
-    { "operator&"   , "__and__",              0 },
-    { "operator&&"  , "logicalAnd",           0 },
-    { "operator|"   , "__or__",               0 },
-    { "operator||"  , "logicalOr",            0 },
-    { "operator+"   , "__add__",              0 },
-    { "operator-"   , "__sub__",              0 },
-    { "operator-unary", "__neg__",            0 },
-    { "operator*"   , "__mul__",              0 },
-    { "operator/"   , "__div__",              0 },
-    { "operator+="  , "__iadd__",             1 },
-    { "operator-="  , "__isub__",             1 },
-    { "operator*="  , "__imul__",             1 },
-    { "operator/="  , "__idiv__",             1 },
-    { "operator,"   , "concatenate",          0 },
-    { "operator|="  , "__ior__",              1 },
-    { "operator&="  , "__iand__",             1 },
-    { "operator^="  , "__ixor__",             1 },
-    { "operator~="  , "bitwiseNotEqual",      0 },
-    { "operator->"  , "dereference",          0 },
-    { "operator<<=" , "__ilshift__",          1 },
-    { "operator>>=" , "__irshift__",          1 },
+    { "operator =="  , "eq",                   0 },
+    { "operator !="  , "ne",                   0 },
+    { "operator <<"  , "__lshift__",           0 },
+    { "operator >>"  , "__rshift__",           0 },
+    { "operator <"   , "lessThan",             0 },
+    { "operator >"   , "greaterThan",          0 },
+    { "operator <="  , "lessThanOrEqual",      0 },
+    { "operator >="  , "greaterThanOrEqual",   0 },
+    { "operator ="   , "assign",               0 },
+    { "operator ()"  , "__call__",             0 },
+    { "operator []"  , "__getitem__",          0 },
+    { "operator ++unary"  , "increment",            0 },
+    { "operator ++"  , "increment",            0 },
+    { "operator --unary"  , "decrement",            0 },
+    { "operator --"  , "decrement",            0 },
+    { "operator ^"   , "__xor__",              0 },
+    { "operator %"   , "__mod__",              0 },
+    { "operator !"   , "logicalNot",           0 },
+    { "operator ~unary"   , "__invert__",           0 },
+    { "operator &"   , "__and__",              0 },
+    { "operator &&"  , "logicalAnd",           0 },
+    { "operator |"   , "__or__",               0 },
+    { "operator ||"  , "logicalOr",            0 },
+    { "operator +"   , "__add__",              0 },
+    { "operator -"   , "__sub__",              0 },
+    { "operator -unary", "__neg__",            0 },
+    { "operator *"   , "__mul__",              0 },
+    { "operator /"   , "__div__",              0 },
+    { "operator +="  , "__iadd__",             1 },
+    { "operator -="  , "__isub__",             1 },
+    { "operator *="  , "__imul__",             1 },
+    { "operator /="  , "__idiv__",             1 },
+    { "operator ,"   , "concatenate",          0 },
+    { "operator |="  , "__ior__",              1 },
+    { "operator &="  , "__iand__",             1 },
+    { "operator ^="  , "__ixor__",             1 },
+    { "operator ~="  , "bitwiseNotEqual",      0 },
+    { "operator ->"  , "dereference",          0 },
+    { "operator <<=" , "__ilshift__",          1 },
+    { "operator >>=" , "__irshift__",          1 },
+    { "__getitem__"  , "__getitem__",          0 },
+    { "__getattr__"  , "__getattr__",          0 },
+    { "__setattr__"  , "__setattr__",          0 },
     { "print"       , "Cprint",               0 },
-    { "CInterval.setT" , "_priv__cSetT",      0 },
+    { "CInterval.set_t" , "_priv__cSetT",      0 },
     { NULL, NULL, -1 }
     };
 
@@ -121,7 +124,7 @@ char *  InPlaceSet[] = {
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet classRenameDictionary[] = {
     { "Loader"                    , "PandaLoader",0 },
-    { "String"                    , "CString",0 },
+    { "string"                    , "CString",0 },
     { "LMatrix4f"                 , "Mat4",0 },
     { "LMatrix3f"                 , "Mat3",0 },
     { "LVecBase4f"                , "VBase4",0 },
@@ -231,7 +234,7 @@ std::string  classNameFromCppName(const std::string &cppName)
     }
     for(int x = 0; classRenameDictionary[x]._from != NULL; x++)
     {
-        if(className == classRenameDictionary[x]._from)
+        if(cppName == classRenameDictionary[x]._from)
             className = classRenameDictionary[x]._to;
     }
 
@@ -299,10 +302,9 @@ std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::st
         }
     }
 
-    std::string LookUpName = methodName;
-    for(int x = 0; classRenameDictionary[x]._from != NULL; x++)
+    for(int x = 0; methodRenameDictionary[x]._from != NULL; x++)
     {
-        if(methodName == methodRenameDictionary[x]._from  || (cppName == methodRenameDictionary[x]._from && methodRenameDictionary[x].function_type != 0) )
+        if(cppName == methodRenameDictionary[x]._from)
         {
             methodName = methodRenameDictionary[x]._to;
         }
@@ -310,10 +312,10 @@ std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::st
 
     if(className.size() > 0)
     {
-        LookUpName = className + '.' + methodName;
+        string LookUpName = className + '.' + cppName;
         for(int x = 0; classRenameDictionary[x]._from != NULL; x++)
         {
-            if(methodName == methodRenameDictionary[x]._from)
+            if(LookUpName == methodRenameDictionary[x]._from)
                 methodName = methodRenameDictionary[x]._to;
         }
     }
@@ -1113,6 +1115,20 @@ bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_l
             //wraper_type = 1;
             return true;
         }
+
+        if(thimputstring == "__getattr__")
+        {
+            answer_location = "tp_getattro";
+            wraper_type = 5;
+            return true;
+        }
+
+        if(thimputstring == "__setattr__")
+        {
+            answer_location = "tp_setattro";
+            wraper_type = 4;
+            return true;
+        }
     }
     return false;
 };
@@ -1277,6 +1293,53 @@ write_module_class(ostream &out,  Object *obj) {
             out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * args)\n";
             out << "{\n";
             out << "    return "<< func->_name <<"(self,args,Py_None);\n";
+            out << "}\n\n";
+          }
+
+        if(rfi->second.second == 4)
+          {
+            // __setattr__.  int func(PyObject *self, PyObject *one, PyObject *two = NULL)
+            Function *func = rfi->first;
+            out << "//////////////////\n";
+            out << "//  Required TO Convert the calling Conventions.. \n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+            out << "//////////////////\n";
+            out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
+            out << "{\n";
+            out << "    PyObject *args;\n";
+            out << "    if (two == NULL) {\n";
+            out << "        args = PyTuple_Pack(1, one);\n";
+            out << "    } else {\n";
+            out << "        args = PyTuple_Pack(2, one, two);\n";
+            out << "    }\n";
+            out << "    PyObject *py_result = " << func->_name <<"(self, args, NULL);\n";
+            out << "    Py_DECREF(args);\n";
+            out << "    if (py_result == NULL) return -1;\n";
+            out << "    int result = PyInt_AsLong(py_result);\n";
+            out << "    Py_DECREF(py_result);\n";
+            out << "    return result;\n";
+            out << "}\n\n";
+          }
+
+        if(rfi->second.second == 5)
+          {
+            // Specifically to implement __getattr__.
+            // PyObject *func(PyObject *self, PyObject *one)
+            // With special handling to pass up to
+            // PyObject_GenericGetAttr() if it returns NULL.
+            Function *func = rfi->first;
+            out << "//////////////////\n";
+            out << "//  Required TO Convert the calling Conventions.. \n";
+            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+            out << "//////////////////\n";
+            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one)\n";
+            out << "{\n";
+            out << "    PyObject *result = " << func->_name <<"(self, one, NULL);\n";
+            out << "    if (result == NULL) {\n";
+            out << "        PyErr_Clear();\n";
+            out << "        return PyObject_GenericGetAttr(self, one);\n";
+            out << "    }\n";
+            out << "    return result;\n";
             out << "}\n\n";
           }
 

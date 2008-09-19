@@ -22,11 +22,11 @@ TypeHandle AudioLoadRequest::_type_handle;
 //       Access: Protected, Virtual
 //  Description: Performs the task: that is, loads the one sound file.
 ////////////////////////////////////////////////////////////////////
-bool AudioLoadRequest::
+AsyncTask::DoneStatus AudioLoadRequest::
 do_task() {
   _sound = _audio_manager->get_sound(_filename, _positional);
   _is_ready = true;
 
   // Don't continue the task; we're done.
-  return false;
+  return DS_done;
 }

@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "asyncTask.h"
+#include "asyncTaskManager.h"
 
 TypeHandle AsyncTask::_type_handle;
 
@@ -23,7 +24,144 @@ TypeHandle AsyncTask::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AsyncTask::
 ~AsyncTask() {
-  nassertv(_state != S_active && _manager == NULL);
+  nassertv(_state == S_inactive && _manager == NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::remove
+//       Access: Published
+//  Description: Removes the task from its active manager, if any, and
+//               makes the state S_inactive (or possible
+//               S_servicing_removed).  This is a no-op if the state
+//               is already S_inactive.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+remove() {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    _manager->remove(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_elapsed_time
+//       Access: Published
+//  Description: Returns the amount of time that has elapsed since
+//               task was started, according to the task manager's
+//               clock.
+//
+//               It is only valid to call this if the task's status is
+//               not S_inactive.
+////////////////////////////////////////////////////////////////////
+double AsyncTask::
+get_elapsed_time() const {
+  nassertr(_state != S_inactive, 0.0);
+  nassertr(_manager != (AsyncTaskManager *)NULL, 0.0);
+  return _manager->_clock->get_frame_time() - _start_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::set_name
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+set_name(const string &name) {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    if (Namable::get_name() != name) {
+      // Changing an active task's name requires moving it around on
+      // its name index.
+
+      _manager->remove_task_by_name(this);
+      Namable::set_name(name);
+      _manager->add_task_by_name(this);
+    }
+  } else {
+    // If it hasn't been started anywhere, we can just change the
+    // name.
+    Namable::set_name(name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::set_sort
+//       Access: Published
+//  Description: Specifies a sort value for this task.  Within a given
+//               AsyncTaskManager, all of the tasks with a given sort
+//               value are guaranteed to be completed before any tasks
+//               with a higher sort value are begun.
+//
+//               To put it another way, two tasks might execute in
+//               parallel with each other only if they both have the
+//               same sort value.  Tasks with a lower sort value are
+//               executed first.
+//
+//               This is different from the priority, which makes no
+//               such exclusion guarantees.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+set_sort(int sort) {
+  if (sort != _sort) {
+    if (_manager != (AsyncTaskManager *)NULL) {
+      MutexHolder holder(_manager->_lock);
+      if (_state == S_active && _sort >= _manager->_current_sort) {
+        // Changing sort on an "active" (i.e. enqueued) task means
+        // removing it and re-inserting it into the queue.
+        PT(AsyncTask) hold_task = this;
+        _manager->remove(this);
+        _sort = sort;
+        _manager->add(this);
+
+      } else {
+        // If it's sleeping, currently being serviced, or something
+        // else, we can just change the sort value directly.
+        _sort = sort;
+      }
+    } else {
+      // If it hasn't been started anywhere, we can just change the
+      // sort value.
+      _sort = sort;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::set_priority
+//       Access: Published
+//  Description: Specifies a priority value for this task.  In
+//               general, tasks with a higher priority value are
+//               executed before tasks with a lower priority value
+//               (but only for tasks with the same sort value).
+//
+//               Unlike the sort value, tasks with different
+//               priorities may execute at the same time, if the
+//               AsyncTaskManager has more than one thread servicing
+//               tasks.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+set_priority(int priority) {
+  if (priority != _priority) {
+    if (_manager != (AsyncTaskManager *)NULL) {
+      MutexHolder holder(_manager->_lock);
+      if (_state == S_active && _sort >= _manager->_current_sort) {
+        // Changing priority on an "active" (i.e. enqueued) task means
+        // removing it and re-inserting it into the queue.
+        PT(AsyncTask) hold_task = this;
+        _manager->remove(this);
+        _priority = priority;
+        _manager->add(this);
+
+      } else {
+        // If it's sleeping, currently being serviced, or something
+        // else, we can just change the priority value directly.
+        _priority = priority;
+      }
+    } else {
+      // If it hasn't been started anywhere, we can just change the
+      // priority value.
+      _priority = priority;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -34,4 +172,30 @@ AsyncTask::
 void AsyncTask::
 output(ostream &out) const {
   out << get_type();
+  if (has_name()) {
+    out << " " << get_name();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::do_task
+//       Access: Protected, Virtual
+//  Description: Override this function to do something useful for the
+//               task.  The return value should be one of:
+//
+//               DS_done: the task is finished, remove from active and
+//               throw the done event.
+//
+//               DS_cont: the task has more work to do, keep it active
+//               and call this function again in the next epoch.
+//
+//               DS_again: put the task to sleep for get_delay()
+//               seconds, then put it back on the active queue.
+//
+//               DS_abort: abort the task, and interrupt the whole
+//               AsyncTaskManager.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus AsyncTask::
+do_task() {
+  return DS_done;
 }

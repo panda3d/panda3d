@@ -52,6 +52,21 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarWin32Impl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ConditionVarWin32Impl::
+wait(double timeout) {
+  LeaveCriticalSection(_external_mutex);
+
+  DWORD result = WaitForSingleObject(_event_signal, (DWORD)(timeout * 1000.0));
+  nassertv(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT);
+
+  EnterCriticalSection(_external_mutex);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarWin32Impl::signal
 //       Access: Public
 //  Description: 

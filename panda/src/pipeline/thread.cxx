@@ -166,6 +166,176 @@ start(ThreadPriority priority, bool joinable) {
   return _started;
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::call_python_func
+//       Access: Public
+//  Description: Internal function to safely call a Python function
+//               within a sub-thread, that might execute in parallel
+//               with existing Python code.  The return value is the
+//               return value of the Python function, or NULL if there
+//               was an exception.
+////////////////////////////////////////////////////////////////////
+PyObject *Thread::
+call_python_func(PyObject *function, PyObject *args) {
+  nassertr(this == get_current_thread(), NULL);
+
+  // Create a new Python thread state data structure, so Python can
+  // properly lock itself.  
+  PyObject *result;
+
+  if (this == get_main_thread()) {
+    // In the main thread, just call the function.
+    result = PyObject_Call(function, args, NULL);
+
+  } else {
+#ifdef SIMPLE_THREADS
+    // We can't use the PyGILState interface, which assumes we are using
+    // true OS-level threading (and we might be just using
+    // SIMPLE_THREADS).  PyGILState enforces policies like only one
+    // thread state per OS-level thread, which is not true in the case
+    // of SIMPLE_THREADS.
+    
+    PyThreadState *orig_thread_state = PyThreadState_Get();
+    PyInterpreterState *istate = orig_thread_state->interp;
+    PyThreadState *new_thread_state = PyThreadState_New(istate);
+    PyThreadState_Swap(new_thread_state);
+    
+    // Call the user's function.
+    result = PyObject_Call(function, args, NULL);
+    if (result == (PyObject *)NULL && PyErr_Occurred()) {
+      // We got an exception.  Move the exception from the current
+      // thread into the main thread, so it can be handled there.
+      PyObject *exc, *val, *tb;
+      PyErr_Fetch(&exc, &val, &tb);
+
+      thread_cat.error()
+        << "Exception occurred within " << *this << "\n";
+
+      // Temporarily restore the exception state so we can print a
+      // callback on-the-spot.
+      Py_XINCREF(exc);
+      Py_XINCREF(val);
+      Py_XINCREF(tb);
+      PyErr_Restore(exc, val, tb);
+      PyErr_Print();
+
+      PyThreadState_Swap(orig_thread_state);
+      PyThreadState_Clear(new_thread_state);
+      PyThreadState_Delete(new_thread_state);
+
+      PyErr_Restore(exc, val, tb);
+
+      // Now attempt to force the main thread to the head of the ready
+      // queue, so it can respond to the exception immediately.  This
+      // only works if the main thread is not blocked, of course.
+      Thread::get_main_thread()->preempt();
+
+    } else {
+      // No exception.  Restore the thread state normally.
+      PyThreadState_Swap(orig_thread_state);
+      PyThreadState_Clear(new_thread_state);
+      PyThreadState_Delete(new_thread_state);
+    }
+    
+#else  // SIMPLE_THREADS
+    // With true threading enabled, we're better off using PyGILSTate.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+    
+    // Call the user's function.
+    result = PyObject_Call(function, args, NULL);
+    if (result == (PyObject *)NULL && PyErr_Occurred()) {
+      // We got an exception.  Move the exception from the current
+      // thread into the main thread, so it can be handled there.
+      PyObject *exc, *val, *tb;
+      PyErr_Fetch(&exc, &val, &tb);
+
+      thread_cat.error()
+        << "Exception occurred within " << *this << "\n";
+
+      // Temporarily restore the exception state so we can print a
+      // callback on-the-spot.
+      Py_XINCREF(exc);
+      Py_XINCREF(val);
+      Py_XINCREF(tb);
+      PyErr_Restore(exc, val, tb);
+      PyErr_Print();
+
+      PyGILState_Release(gstate);
+
+      PyErr_Restore(exc, val, tb);
+    } else {
+      // No exception.  Restore the thread state normally.
+      PyGILState_Release(gstate);
+    }
+    
+
+#endif  // SIMPLE_THREADS
+  }
+
+  return result;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::handle_python_exception
+//       Access: Public
+//  Description: Called when a Python exception is raised during
+//               processing of a thread.  Gets the error string and
+//               passes it back to the calling Python process in a
+//               sensible way.
+////////////////////////////////////////////////////////////////////
+void Thread::
+handle_python_exception() {
+  /*
+  PyObject *exc, *val, *tb;
+  PyErr_Fetch(&exc, &val, &tb);
+
+  ostringstream strm;
+  strm << "\n";
+
+  if (PyObject_HasAttrString(exc, "__name__")) {
+    PyObject *exc_name = PyObject_GetAttrString(exc, "__name__");
+    PyObject *exc_str = PyObject_Str(exc_name);
+    strm << PyString_AsString(exc_str);
+    Py_DECREF(exc_str);
+    Py_DECREF(exc_name);
+  } else {
+    PyObject *exc_str = PyObject_Str(exc);
+    strm << PyString_AsString(exc_str);
+    Py_DECREF(exc_str);
+  }
+  Py_DECREF(exc);
+
+  if (val != (PyObject *)NULL) {
+    PyObject *val_str = PyObject_Str(val);
+    strm << ": " << PyString_AsString(val_str);
+    Py_DECREF(val_str);
+    Py_DECREF(val);
+  }
+  if (tb != (PyObject *)NULL) {
+    Py_DECREF(tb);
+  }
+
+  strm << "\nException occurred within thread " << get_name();
+  string message = strm.str();
+  nout << message << "\n";
+
+  nassert_raise(message);
+  */
+
+  thread_cat.error()
+    << "Exception occurred within " << *this << "\n";
+
+  // Now attempt to force the main thread to the head of the ready
+  // queue, so it will be the one to receive the above assertion.
+  // This mainly only has an effect if SIMPLE_THREADS is in use.
+  Thread::get_main_thread()->preempt();
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Thread::init_main_thread
 //       Access: Private, Static

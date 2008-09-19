@@ -22,7 +22,7 @@ TypeHandle TextureReloadRequest::_type_handle;
 //       Access: Protected, Virtual
 //  Description: Performs the task: that is, loads the one model.
 ////////////////////////////////////////////////////////////////////
-bool TextureReloadRequest::
+AsyncTask::DoneStatus TextureReloadRequest::
 do_task() {
   // Don't reload the texture if it doesn't need it.
   if (_texture->was_image_modified(_pgo)) {
@@ -50,5 +50,5 @@ do_task() {
   _is_ready = true;
 
   // Don't continue the task; we're done.
-  return false;
+  return DS_done;
 }

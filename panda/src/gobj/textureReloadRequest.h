@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE bool is_ready() const;
   
 protected:
-  virtual bool do_task();
+  virtual DoneStatus do_task();
   
 private:
   PT(PreparedGraphicsObjects) _pgo;

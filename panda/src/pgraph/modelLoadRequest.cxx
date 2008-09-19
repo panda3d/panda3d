@@ -23,7 +23,7 @@ TypeHandle ModelLoadRequest::_type_handle;
 //       Access: Protected, Virtual
 //  Description: Performs the task: that is, loads the one model.
 ////////////////////////////////////////////////////////////////////
-bool ModelLoadRequest::
+AsyncTask::DoneStatus ModelLoadRequest::
 do_task() {
   double delay = async_load_delay;
   if (delay != 0.0) {
@@ -31,11 +31,11 @@ do_task() {
   }
 
   Loader *loader;
-  DCAST_INTO_R(loader, _manager, false);
+  DCAST_INTO_R(loader, _manager, DS_done);
 
   _model = loader->load_sync(_filename, _options);
   _is_ready = true;
 
   // Don't continue the task; we're done.
-  return false;
+  return DS_done;
 }

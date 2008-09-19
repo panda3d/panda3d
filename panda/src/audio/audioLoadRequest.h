@@ -47,7 +47,7 @@ PUBLISHED:
   INLINE AudioSound *get_sound() const;
 
 protected:
-  virtual bool do_task();
+  virtual DoneStatus do_task();
 
 private:
   PT(AudioManager) _audio_manager;

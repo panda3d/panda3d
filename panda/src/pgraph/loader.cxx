@@ -39,9 +39,9 @@ TypeHandle Loader::_type_handle;
 ////////////////////////////////////////////////////////////////////
 Loader::
 Loader(const string &name, int num_threads) :
-  AsyncTaskManager(name, num_threads)
+  AsyncTaskManager(name)
 {
-  if (_num_threads < 0) {
+  if (num_threads < 0) {
     // -1 means the default number of threads.
 
     ConfigVariableInt loader_num_threads
@@ -55,7 +55,9 @@ Loader(const string &name, int num_threads) :
                 "you have many CPU's available, to allow loading multiple models "
                 "simultaneously."));
 
-    _num_threads = loader_num_threads;
+    set_num_threads(loader_num_threads);
+  } else {
+    set_num_threads(num_threads);
   }
 }
 

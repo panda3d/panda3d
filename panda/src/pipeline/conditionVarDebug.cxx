@@ -101,6 +101,48 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarDebug::wait
+//       Access: Published
+//  Description: Waits on the condition, with a timeout.  The function
+//               will return when the condition variable is signaled,
+//               or the timeout occurs.  There is no way to directly
+//               tell which happened, and it is possible that neither
+//               in fact happened (spurious wakeups are possible).
+//
+//               See wait() with no parameters for more.
+////////////////////////////////////////////////////////////////////
+void ConditionVarDebug::
+wait(double timeout) {
+  _mutex._global_lock->lock();
+
+  if (!_mutex.do_debug_is_locked()) {
+    ostringstream ostr;
+    ostr << *Thread::get_current_thread() << " attempted to wait on "
+         << *this << " without holding " << _mutex;
+    nassert_raise(ostr.str());
+    _mutex._global_lock->release();
+    return;
+  }
+
+  if (thread_cat.is_spam()) {
+    thread_cat.spam()
+      << *Thread::get_current_thread() << " waiting on " << *this 
+      << ", with timeout " << timeout << "\n";
+  }
+  
+  _mutex.do_release();
+  _impl.wait(timeout);
+  _mutex.do_lock();
+
+  if (thread_cat.is_spam()) {
+    thread_cat.spam()
+      << *Thread::get_current_thread() << " awake on " << *this << "\n";
+  }
+
+  _mutex._global_lock->release();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConditionVarDebug::signal
 //       Access: Published
 //  Description: Informs one of the other threads who are currently

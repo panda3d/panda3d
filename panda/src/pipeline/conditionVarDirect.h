@@ -45,6 +45,7 @@ PUBLISHED:
   INLINE MutexDirect &get_mutex() const;
 
   BLOCKING INLINE void wait();
+  BLOCKING INLINE void wait(double timeout);
   INLINE void signal();
   void output(ostream &out) const;
 

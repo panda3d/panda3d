@@ -17,5 +17,31 @@
 #ifdef HAVE_POSIX_THREADS
 
 #include "conditionVarPosixImpl.h"
+#include <sys/time.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConditionVarPosixImpl::wait
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConditionVarPosixImpl::
+wait(double timeout) {
+  TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  // Convert from timeval to timespec
+  struct timespec ts;
+  ts.tv_sec  = now.tv_sec;
+  ts.tv_nsec = now.tv_usec * 1000;
+
+  int seconds = (int)floor(timeout);
+  ts.tv_sec += seconds;
+  ts.tv_nsec += (timeout - seconds) * 1000000.0;
+
+  int result = pthread_cond_timedwait(&_cvar, &_mutex._lock, &ts);
+  nassertv(result == 0);
+}
 
 #endif  // HAVE_POSIX_THREADS

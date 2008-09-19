@@ -1,3 +1,4 @@
+#include "config_event.cxx"
 #include "event.cxx"
 #include "eventHandler.cxx"
 #include "eventParameter.cxx"

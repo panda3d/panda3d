@@ -23,7 +23,7 @@ TypeHandle ModelFlattenRequest::_type_handle;
 //  Description: Performs the task: that is, copies and flattens the
 //               model.
 ////////////////////////////////////////////////////////////////////
-bool ModelFlattenRequest::
+AsyncTask::DoneStatus ModelFlattenRequest::
 do_task() {
   // We make another instance of the original node, so we can safely
   // flatten that without affecting the original copy.
@@ -34,5 +34,5 @@ do_task() {
   _is_ready = true;
 
   // Don't continue the task; we're done.
-  return false;
+  return DS_done;
 }

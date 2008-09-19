@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
 
   bool has_glob_characters() const;
+  string get_const_prefix() const;
   int match_files(vector_string &results, const Filename &cwd = Filename());
 
 private:

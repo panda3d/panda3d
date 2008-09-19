@@ -39,20 +39,50 @@ class AsyncTaskManager;
 //               class, and override do_task(), to define the
 //               functionality you wish to have the task perform.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount {
+class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount, public Namable {
 public:
-  INLINE AsyncTask();
+  INLINE AsyncTask(const string &name = string());
   virtual ~AsyncTask();
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
+  enum DoneStatus {
+    DS_done,   // normal task completion
+    DS_cont,   // run task again next epoch
+    DS_again,  // run task again after get_delay() seconds
+    DS_abort,  // abort the task and interrupt the whole task manager
+  };
+
   enum State {
     S_inactive,
     S_active,
     S_servicing,
+    S_servicing_removed,  // Still servicing, but wants removal from manager.
+    S_sleeping,
   };
 
   INLINE State get_state() const;
+  INLINE AsyncTaskManager *get_manager() const;
+
+  void remove();
+
+  INLINE void set_delay(double delay);
+  INLINE void clear_delay();
+  INLINE bool has_delay() const;
+  INLINE double get_delay() const;
+  INLINE double get_wake_time() const;
+  
+  INLINE double get_start_time() const;
+  double get_elapsed_time() const;
+
+  void set_name(const string &name);
+  INLINE void clear_name();
+
+  void set_sort(int sort);
+  INLINE int get_sort() const;
+
+  void set_priority(int priority);
+  INLINE int get_priority() const;
 
   INLINE void set_done_event(const string &done_event);
   INLINE const string &get_done_event() const;
@@ -65,11 +95,18 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 protected:
-  virtual bool do_task()=0;
+  virtual DoneStatus do_task();
 
 protected:
+  double _delay;
+  bool _has_delay;
+  double _wake_time;
+  double _start_time;
+  int _sort;
+  int _priority;
   string _done_event;
   State _state;
+  Thread *_servicing_thread;
   AsyncTaskManager *_manager;
 
 private:

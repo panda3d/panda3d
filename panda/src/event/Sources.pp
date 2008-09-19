@@ -9,12 +9,14 @@
   
   #define SOURCES \
     asyncTask.h asyncTask.I \
+    asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
     config_event.h \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
+    pythonTask.h pythonTask.I \
     event.I event.h eventHandler.h eventHandler.I \
     eventParameter.I eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
@@ -22,22 +24,26 @@
     
   #define INCLUDED_SOURCES \
     asyncTask.cxx \
+    asyncTaskCollection.cxx \
     asyncTaskManager.cxx \
     buttonEvent.cxx \
     buttonEventList.cxx \
     pointerEvent.cxx \
     pointerEventList.cxx \
+    pythonTask.cxx \
     config_event.cxx event.cxx eventHandler.cxx \ 
     eventParameter.cxx eventQueue.cxx eventReceiver.cxx \
     pt_Event.cxx
 
   #define INSTALL_HEADERS \
     asyncTask.h asyncTask.I \
+    asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
+    pythonTask.h pythonTask.I \
     event.I event.h eventHandler.h eventHandler.I \
     eventParameter.I eventParameter.h \
     eventQueue.I eventQueue.h eventReceiver.h \
@@ -46,3 +52,15 @@
   #define IGATESCAN all
 
 #end lib_target
+
+#begin test_bin_target
+  #define TARGET test_task
+  #define LOCAL_LIBS $[LOCAL_LIBS] mathutil
+  #define OTHER_LIBS \
+   interrogatedb:c dconfig:c dtoolbase:c prc:c \
+   dtoolutil:c dtool:m dtoolconfig:m pystub
+
+  #define SOURCES \
+    test_task.cxx
+
+#end test_bin_target

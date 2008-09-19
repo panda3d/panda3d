@@ -151,5 +151,6 @@ load_sync(const Filename &filename, const LoaderOptions &options) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Loader::
 load_async(AsyncTask *request) {
-  add_and_do(request);
+  add(request);
+  poll();
 }

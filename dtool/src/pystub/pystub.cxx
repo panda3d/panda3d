@@ -21,7 +21,9 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyCFunction_New(...);
   EXPCL_DTOOLCONFIG int PyCFunction_NewEx(...);
   EXPCL_DTOOLCONFIG int PyCallable_Check(...);
+  EXPCL_DTOOLCONFIG int PyDict_DelItemString(...);
   EXPCL_DTOOLCONFIG int PyDict_GetItem(...);
+  EXPCL_DTOOLCONFIG int PyDict_GetItemString(...);
   EXPCL_DTOOLCONFIG int PyDict_New(...);
   EXPCL_DTOOLCONFIG int PyDict_SetItem(...);
   EXPCL_DTOOLCONFIG int PyDict_SetItemString(...);
@@ -31,6 +33,8 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyErr_Fetch(...);
   EXPCL_DTOOLCONFIG int PyErr_Format(...);
   EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
+  EXPCL_DTOOLCONFIG int PyErr_Print(...);
+  EXPCL_DTOOLCONFIG int PyErr_Restore(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
   EXPCL_DTOOLCONFIG int PyEval_InitThreads(...);
   EXPCL_DTOOLCONFIG int PyEval_RestoreThread(...);
@@ -56,6 +60,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLong(...);
   EXPCL_DTOOLCONFIG int PyLong_FromUnsignedLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_Type(...);
+  EXPCL_DTOOLCONFIG int PyMapping_GetItemString(...);
   EXPCL_DTOOLCONFIG int PyModule_AddIntConstant(...);
   EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
@@ -70,6 +75,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyObject_HasAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_IsInstance(...);
   EXPCL_DTOOLCONFIG int PyObject_IsTrue(...);
+  EXPCL_DTOOLCONFIG int PyObject_Repr(...);
   EXPCL_DTOOLCONFIG int PyObject_SetAttrString(...);
   EXPCL_DTOOLCONFIG int PyObject_Str(...);
   EXPCL_DTOOLCONFIG int PySequence_Check(...);
@@ -122,7 +128,9 @@ int PyArg_ParseTupleAndKeywords(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
+int PyDict_DelItemString(...) { return 0; }
 int PyDict_GetItem(...) { return 0; }
+int PyDict_GetItemString(...) { return 0; }
 int PyDict_New(...) { return 0; };
 int PyDict_SetItem(...) { return 0; };
 int PyDict_SetItemString(...) { return 0; };
@@ -132,6 +140,8 @@ int PyErr_Clear(...) { return 0; };
 int PyErr_Fetch(...) { return 0; }
 int PyErr_Format(...) { return 0; };
 int PyErr_Occurred(...) { return 0; }
+int PyErr_Print(...) { return 0; }
+int PyErr_Restore(...) { return 0; }
 int PyErr_SetString(...) { return 0; }
 int PyEval_InitThreads(...) { return 0; }
 int PyEval_RestoreThread(...) { return 0; }
@@ -157,6 +167,7 @@ int PyLong_FromLongLong(...) { return 0; }
 int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
+int PyMapping_GetItemString(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyNumber_Long(...) { return 0; }
@@ -171,6 +182,7 @@ int PyObject_GetAttrString(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
 int PyObject_IsTrue(...) { return 0; }
+int PyObject_Repr(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
 int PySequence_Check(...) { return 0; }

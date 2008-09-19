@@ -34,6 +34,7 @@ public:
   INLINE ~ConditionVarSimpleImpl();
 
   void wait();
+  void wait(double timeout);
   INLINE void signal();
   INLINE void signal_all();
 

@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE PandaNode *get_model() const;
   
 protected:
-  virtual bool do_task();
+  virtual DoneStatus do_task();
   
 private:
   Filename _filename;

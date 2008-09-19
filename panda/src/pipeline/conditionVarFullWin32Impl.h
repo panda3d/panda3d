@@ -51,6 +51,7 @@ public:
   INLINE ~ConditionVarFullWin32Impl();
 
   INLINE void wait();
+  INLINE void wait(double timeout);
   INLINE void signal();
   INLINE void signal_all();
 

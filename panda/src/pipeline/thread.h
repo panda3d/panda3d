@@ -23,6 +23,11 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef HAVE_PYTHON
+#undef _POSIX_C_SOURCE
+#include <Python.h>
+#endif  // HAVE_PYTHON
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
@@ -101,6 +106,12 @@ public:
   INLINE void set_pstats_index(int pstats_index);
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
+
+#ifdef HAVE_PYTHON
+  // Integration with Python.
+  PyObject *call_python_func(PyObject *function, PyObject *args);
+  void handle_python_exception();
+#endif  // HAVE_PYTHON
 
 private:
   static void init_main_thread();
