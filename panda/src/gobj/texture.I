@@ -248,12 +248,12 @@ write(const Filename &fullpath, int z, int n,
 //  Description: Replaces the texture with the indicated image.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
-load(const PNMImage &pnmimage) {
+load(const PNMImage &pnmimage, const LoaderOptions &options) {
   MutexHolder holder(_lock);
   do_clear();
   ++_properties_modified;
   ++_image_modified;
-  return do_load_one(pnmimage, get_name(), 0, 0);
+  return do_load_one(pnmimage, get_name(), 0, 0, options);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -263,11 +263,11 @@ load(const PNMImage &pnmimage) {
 //               mipmap level.  See read().
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
-load(const PNMImage &pnmimage, int z, int n) {
+load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   MutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
-  return do_load_one(pnmimage, get_name(), z, n);
+  return do_load_one(pnmimage, get_name(), z, n, options);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -42,6 +42,7 @@ PUBLISHED:
   enum TextureFlags {
     TF_preload           = 0x0004,  // Texture will have RAM image
     TF_preload_simple    = 0x0008,  // Texture will have simple RAM image
+    TF_allow_1d          = 0x0010,  // If texture is Nx1, make a 1-d texture
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);

@@ -938,6 +938,9 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:
   case EggTexture::TT_1d_texture:
+    options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
+    // Fall through.
+
   case EggTexture::TT_2d_texture:
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
       tex = TexturePool::load_texture(egg_tex->get_fullpath(),

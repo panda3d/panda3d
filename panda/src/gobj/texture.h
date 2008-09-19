@@ -237,8 +237,8 @@ PUBLISHED:
   bool write_txo(ostream &out, const string &filename = "stream") const;
   bool read_dds(istream &in, const string &filename = "stream", bool header_only = false);
 
-  INLINE bool load(const PNMImage &pnmimage);
-  INLINE bool load(const PNMImage &pnmimage, int z, int n);
+  INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
+  INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
   INLINE bool store(PNMImage &pnmimage) const;
   INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
@@ -448,12 +448,13 @@ protected:
   virtual bool do_read(const Filename &fullpath, const Filename &alpha_fullpath,
                        int primary_file_num_channels, int alpha_file_channel,
                        int z, int n, bool read_pages, bool read_mipmaps,
-                       bool header_only, BamCacheRecord *record);
+                       const LoaderOptions &options, BamCacheRecord *record);
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
-                           int z, int n);
+                           int z, int n, const LoaderOptions &options);
   bool do_read_txo_file(const Filename &fullpath);
   bool do_read_txo(istream &in, const string &filename);
   bool do_read_dds_file(const Filename &fullpath, bool header_only);
@@ -475,7 +476,8 @@ protected:
 
   bool do_reconsider_z_size(int z);
   bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
-                                      ComponentType component_type, int z);
+                                      ComponentType component_type, int z,
+                                      const LoaderOptions &options);
 
   virtual PT(Texture) do_make_copy();
   void do_assign(const Texture &copy);

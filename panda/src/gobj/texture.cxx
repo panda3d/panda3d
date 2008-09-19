@@ -249,6 +249,9 @@ generate_normalization_cube_map(int size) {
   PTA_uchar image = do_make_ram_image();
   _keep_ram_image = true;
 
+  ++_image_modified;
+  ++_properties_modified;
+
   float half_size = (float)size * 0.5f;
   float center = half_size - 0.5f;
 
@@ -353,6 +356,7 @@ generate_alpha_scale_map() {
   _magfilter = FT_nearest;
   _compression = CM_off;
 
+  ++_image_modified;
   ++_properties_modified;
 
   PTA_uchar image = do_make_ram_image();
@@ -375,9 +379,8 @@ read(const Filename &fullpath, const LoaderOptions &options) {
   do_clear();
   ++_properties_modified;
   ++_image_modified;
-  bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   return do_read(fullpath, Filename(), 0, 0, 0, 0, false, false, 
-                 header_only, NULL);
+                 options, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,11 +402,9 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   do_clear();
   ++_properties_modified;
   ++_image_modified;
-  bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, 0, 0, false, false, 
-                 header_only, 
-                 NULL);
+                 options, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,9 +424,8 @@ read(const Filename &fullpath, int z, int n,
   MutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
-  bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   return do_read(fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
-                 header_only, NULL);
+                 options, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -506,10 +506,9 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   MutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
-  bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
 		 alpha_file_channel, z, n, read_pages, read_mipmaps,
-                 header_only, record);
+                 options, record);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2061,9 +2060,10 @@ bool Texture::
 do_read(const Filename &fullpath, const Filename &alpha_fullpath,
         int primary_file_num_channels, int alpha_file_channel,
         int z, int n, bool read_pages, bool read_mipmaps,
-        bool header_only, BamCacheRecord *record) {
+        const LoaderOptions &options, BamCacheRecord *record) {
   PStatTimer timer(_texture_read_pcollector);
 
+  bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   if (record != (BamCacheRecord *)NULL) {
     header_only = false;
   }
@@ -2156,7 +2156,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
       while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
              (z_size != 0 && z < z_size)) {
         if (!do_read_one(file, alpha_file, z, n, primary_file_num_channels,
-                         alpha_file_channel, header_only, record)) {
+                         alpha_file_channel, options, header_only, record)) {
           return false;
         }
         ++z;
@@ -2193,7 +2193,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     while ((z_size == 0 && (vfs->exists(file) || z == 0)) ||
            (z_size != 0 && z < z_size)) {
       if (!do_read_one(file, alpha_file, z, 0, primary_file_num_channels,
-                       alpha_file_channel, header_only, record)) {
+                       alpha_file_channel, options, header_only, record)) {
         return false;
       }
       ++z;
@@ -2221,7 +2221,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
            (n_size != 0 && n < n_size)) {
       if (!do_read_one(file, alpha_file, z, n, 
                        primary_file_num_channels, alpha_file_channel,
-                       header_only, record)) {
+                       options, header_only, record)) {
         return false;
       }
       ++n;
@@ -2240,7 +2240,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     // Just an ordinary read of one file.
     if (!do_read_one(fullpath, alpha_fullpath, z, n, 
                      primary_file_num_channels, alpha_file_channel,
-                     header_only, record)) {
+                     options, header_only, record)) {
       return false;
     }
   }    
@@ -2269,7 +2269,7 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
 bool Texture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
-            bool header_only, BamCacheRecord *record) {
+            const LoaderOptions &options, bool header_only, BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
     nassertr(!header_only, false);
     record->add_dependent_file(fullpath);
@@ -2469,7 +2469,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     }
   }
 
-  return do_load_one(image, fullpath.get_basename(), z, n);
+  return do_load_one(image, fullpath.get_basename(), z, n, options);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2479,7 +2479,8 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               level.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
+            const LoaderOptions &options) {
   if (_ram_images.size() <= 1 && n == 0) {
     // A special case for mipmap level 0.  When we load mipmap level
     // 0, unless we already have mipmap levels, it determines the
@@ -2498,7 +2499,7 @@ do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
       
       if (!do_reconsider_image_properties(pnmimage.get_x_size(), pnmimage.get_y_size(),
                                           pnmimage.get_num_channels(), component_type,
-                                          z)) {
+                                          z, options)) {
         return false;
       }
     }
@@ -3159,10 +3160,10 @@ do_reload_ram_image(bool allow_compression) {
           // instance, we don't want to change the filter type or the
           // border color or anything--we just want to get the image and
           // necessary associated parameters.
-          _loaded_from_image = false;
           do_reconsider_image_properties(tex->get_x_size(), tex->get_y_size(),
                                          tex->get_num_components(), 
-                                         tex->get_component_type(), 0);
+                                         tex->get_component_type(), 0,
+                                         LoaderOptions());
           _compression = tex->get_compression();
           _ram_image_compression = tex->_ram_image_compression;
           _ram_images = tex->_ram_images;
@@ -3185,11 +3186,12 @@ do_reload_ram_image(bool allow_compression) {
   if (_has_read_mipmaps) {
     n = _num_mipmap_levels_read;
   }
-  _loaded_from_image = false;
 
+  LoaderOptions options;
+  options.set_texture_flags(LoaderOptions::TF_preload);
   do_read(_fullpath, _alpha_fullpath,
           _primary_file_num_channels, _alpha_file_channel,
-          z, n, _has_read_pages, _has_read_mipmaps, false, NULL);
+          z, n, _has_read_pages, _has_read_mipmaps, options, NULL);
 
   if (do_has_ram_image() && record != (BamCacheRecord *)NULL) {
     if (cache->get_cache_textures() || (_ram_image_compression != CM_off && cache->get_cache_compressed_textures())) {
@@ -3313,7 +3315,8 @@ do_reconsider_z_size(int z) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_reconsider_image_properties(int x_size, int y_size, int num_components,
-                               Texture::ComponentType component_type, int z) {
+                               Texture::ComponentType component_type, int z,
+                               const LoaderOptions &options) {
   if (!_loaded_from_image || num_components != _num_components) {
     // Come up with a default format based on the number of channels.
     // But only do this the first time the file is loaded, or if the
@@ -3344,6 +3347,12 @@ do_reconsider_image_properties(int x_size, int y_size, int num_components,
   }
 
   if (!_loaded_from_image) {
+    if ((options.get_texture_flags() & LoaderOptions::TF_allow_1d) &&
+        _texture_type == TT_2d_texture && x_size != 1 && y_size == 1) {
+      // If we're loading an Nx1 size texture, infer a 1-d texture type.
+      _texture_type = TT_1d_texture;
+    }
+
 #ifndef NDEBUG
     if (_texture_type == TT_1d_texture) {
       nassertr(y_size == 1, false);

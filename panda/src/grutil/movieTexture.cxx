@@ -195,7 +195,8 @@ do_recalculate_image_properties(CDWriter &cdata) {
   }
   
   do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
-                                 T_unsigned_byte, cdata->_pages.size());
+                                 T_unsigned_byte, cdata->_pages.size(),
+                                 LoaderOptions());
   do_set_pad_size(x_max - x_size, y_max - y_size, 0);
 }
 

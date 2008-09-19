@@ -1453,12 +1453,20 @@ set_state_and_transform(const RenderState *target,
 ////////////////////////////////////////////////////////////////////
 TextureContext *TinyGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
-  if (tex->get_texture_type() != Texture::TT_2d_texture) {
+  switch (tex->get_texture_type()) {
+  case Texture::TT_1d_texture:
+  case Texture::TT_2d_texture:
+    // These are supported.
+    break;
+
+  default:
+    // Anything else is not supported.
     tinydisplay_cat.info()
       << "not loading texture " << tex->get_name() << ": "
       << tex->get_texture_type() << "\n";
     return NULL;
   }
+
   if (tex->get_ram_image_compression() != Texture::CM_off) {
     tinydisplay_cat.info()
       << "not loading texture " << tex->get_name() << ": "
