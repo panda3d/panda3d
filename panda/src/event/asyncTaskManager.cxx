@@ -606,7 +606,7 @@ remove_task_by_name(AsyncTask *task) {
   if (!task->get_name().empty()) {
     // We have to scan linearly through all of the tasks with the same
     // name.
-    TasksByName::const_iterator tbni = _tasks_by_name.lower_bound(task);
+    TasksByName::iterator tbni = _tasks_by_name.lower_bound(task);
     while (tbni != _tasks_by_name.end()) {
       if ((*tbni) == task) {
         _tasks_by_name.erase(tbni);
