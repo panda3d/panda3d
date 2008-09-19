@@ -405,7 +405,7 @@ extract_texture_data(Texture *tex) {
   nassertr(tc != (TextureContext *)NULL, false);
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
 
-  return dtc->extract_texture_data();
+  return dtc->extract_texture_data(*_screen);
 }
 
 ////////////////////////////////////////////////////////////////////
