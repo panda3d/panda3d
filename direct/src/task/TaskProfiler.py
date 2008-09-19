@@ -3,6 +3,8 @@ from direct.fsm.StatePush import FunctionCall
 from direct.showbase.PythonUtil import getProfileResultString, Averager
 
 class TaskTracker:
+    # call it TaskProfiler to avoid confusion for the user
+    notify = directNotify.newCategory("TaskProfiler")
     def __init__(self, namePattern):
         self._namePattern = namePattern
         self._durationAverager = Averager('%s-durationAverager' % namePattern)
@@ -52,6 +54,14 @@ class TaskTracker:
     def getMaxNonSpikeData(self):
         # returns duration, data for closest-to-average sample
         return self._maxNonSpikeDataDur, self._maxNonSpikeData
+    def log(self):
+        self.notify.info('task CPU profile (%s):\n'
+                         '== AVERAGE (%s wall-clock seconds)\n%s\n'
+                         '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s' % (
+            self._namePattern,
+            self._avgDataDur, self._avgData,
+            self._maxNonSpikeDataDur, self._maxNonSpikeData,
+            ))
 
 class TaskProfiler:
     # this does intermittent profiling of tasks running on the system
@@ -79,9 +89,21 @@ class TaskProfiler:
         del self._namePattern2tracker
         del self._task
 
-    def flush(self):
+    def logProfiles(self, name=None):
+        if name:
+            name = name.lower()
+        for namePattern, tracker in self._namePattern2tracker.iteritems():
+            if (name and (name not in namePattern.lower())):
+                continue
+            tracker.log()
+
+    def flush(self, name):
+        if name:
+            name = name.lower()
         # flush stored task profiles
-        for tracker in self._namePattern2tracker.itervalues():
+        for namePattern, tracker in self._namePattern2tracker.iteritems():
+            if (name and (name not in namePattern.lower())):
+                continue
             tracker.flush()
 
     def _setEnabled(self, enabled):

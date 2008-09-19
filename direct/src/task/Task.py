@@ -973,9 +973,13 @@ class TaskManager:
             from direct.task.TaskProfiler import TaskProfiler
             self._taskProfiler = TaskProfiler()
 
-    def flushTaskProfiles(self):
+    def logTaskProfiles(self, name=None):
         if self._taskProfiler:
-            self._taskProfiler.flush()
+            self._taskProfiler.logProfiles(name)
+
+    def flushTaskProfiles(self, name=None):
+        if self._taskProfiler:
+            self._taskProfiler.flush(name)
 
     def _setProfileTask(self, task):
         self._profileInfo = ScratchPad(
