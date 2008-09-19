@@ -20,7 +20,7 @@
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
 
-static Loader model_loader;
+static Loader *model_loader = NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::write
@@ -73,7 +73,10 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
   new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
                         ~(LoaderOptions::LF_search | LoaderOptions::LF_report_errors));
 
-  PT(PandaNode) panda_node = model_loader.load_sync(filename, new_options);
+  if (model_loader == (Loader *)NULL) {
+    model_loader = new Loader("ModelPool", 0);
+  }
+  PT(PandaNode) panda_node = model_loader->load_sync(filename, new_options);
   PT(ModelRoot) node;
 
   if (panda_node.is_null()) {
