@@ -94,6 +94,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyThreadState_Swap(...);
   EXPCL_DTOOLCONFIG int PyTuple_GetItem(...);
   EXPCL_DTOOLCONFIG int PyTuple_New(...);
+  EXPCL_DTOOLCONFIG int PyTuple_Pack(...);
   EXPCL_DTOOLCONFIG int PyTuple_Size(...);
   EXPCL_DTOOLCONFIG int PyTuple_Type(...);
   EXPCL_DTOOLCONFIG int PyType_GenericAlloc(...);
@@ -201,6 +202,7 @@ int PyThreadState_New(...) { return 0; }
 int PyThreadState_Swap(...) { return 0; }
 int PyTuple_GetItem(...) { return 0; }
 int PyTuple_New(...) { return 0; }
+int PyTuple_Pack(...) { return 0; }
 int PyTuple_Size(...) { return 0; };
 int PyTuple_Type(...) { return 0; };
 int PyType_GenericAlloc(...) { return 0; };
