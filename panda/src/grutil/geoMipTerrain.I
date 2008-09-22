@@ -305,10 +305,10 @@ set_factor(float factor) {
 //  Description: Sets the near and far LOD distances in one call.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
-set_near_far(double near, double far) {
+set_near_far(double input_near, double input_far) {
   _use_near_far = true;
-  _near = near;
-  _far = far;
+  _near = input_near;
+  _far = input_far;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,9 +319,9 @@ set_near_far(double near, double far) {
 //               This distance is in the terrain's coordinate space!
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
-set_near(double near) {
+set_near(double input_near) {
   _use_near_far = true;
-  _near = near;
+  _near = input_near;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -332,9 +332,9 @@ set_near(double near) {
 //               This distance is in the terrain's coordinate space!
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
-set_far(double far) {
+set_far(double input_far) {
   _use_near_far = true;
-  _far = far;
+  _far = input_far;
 }
 
 ////////////////////////////////////////////////////////////////////
