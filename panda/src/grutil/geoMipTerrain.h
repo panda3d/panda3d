@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.h
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (03mar08)
+// Last updated by: pro-rsoft (20sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -62,7 +62,7 @@ PUBLISHED:
                                                           int x,int y);
   INLINE void set_bruteforce(bool bf);
   INLINE bool get_bruteforce();
-
+  
   // The flatten mode specifies whether the terrain nodes are flattened
   // together after each terrain update.
   enum AutoFlattenMode {
@@ -75,9 +75,9 @@ PUBLISHED:
     // FM_strong: the terrain is flattened using flatten_strong.
     AFM_strong  = 3,
   };
-
+  
   INLINE void set_auto_flatten(int mode);
-
+  
   // The focal point is the point at which the terrain will have the
   // lowest level of detail (highest quality). Parts farther away
   // from the focal point will hae a higher level of detail. The
@@ -90,14 +90,17 @@ PUBLISHED:
   INLINE void set_focal_point(NodePath fnp);
   INLINE NodePath get_focal_point() const;
   INLINE NodePath get_root() const;
-
+  
+  INLINE void set_block_size(unsigned short newbs);
+  INLINE unsigned short get_block_size();
+  INLINE unsigned short get_max_level();
   INLINE void set_min_level(unsigned short minlevel);
   INLINE unsigned short get_min_level();
-  INLINE unsigned short get_block_size();
-  INLINE void set_block_size(unsigned short newbs);
   INLINE bool is_dirty();
-  INLINE float get_factor();
-  INLINE void  set_factor(float factor);
+  INLINE void set_factor(float factor);
+  INLINE void set_near_far(double near, double far);
+  INLINE void set_near(double near);
+  INLINE void set_far(double far);
   INLINE const NodePath get_block_node_path(unsigned short mx,
                                             unsigned short my);
   INLINE LVecBase2f get_block_from_pos(double x, double y);
@@ -106,8 +109,7 @@ PUBLISHED:
   bool update();
   
 private:
-
-
+  
   NodePath generate_block(unsigned short mx, unsigned short my, unsigned short level);
   bool update_block(unsigned short mx, unsigned short my,
                     signed short level = -1, bool forced = false);
@@ -124,7 +126,7 @@ private:
   INLINE double get_pixel_value(int x, int y);
   INLINE double get_pixel_value(unsigned short mx, unsigned short my, int x, int y);
   INLINE unsigned short lod_decide(unsigned short mx, unsigned short my);
-
+  
   NodePath _root;
   int _auto_flatten;
   bool _root_flattened;
@@ -135,7 +137,11 @@ private:
   unsigned int _xsize;
   unsigned int _ysize;
   float _factor;
+  double _near;
+  double _far;
+  bool _use_near_far; // False to use the _factor, True to use the _near and _far values.
   unsigned short _block_size;
+  unsigned short _max_level; // Highest level possible for this block size
   bool _bruteforce;
   NodePath _focal_point;
   bool _focal_is_temporary;

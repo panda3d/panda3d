@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.cxx
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (08mar08)
+// Last updated by: pro-rsoft (20sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -67,7 +67,7 @@ generate_block(unsigned short mx,
 
   // Create vertex data and writers
   PT(GeomVertexData) vdata = new GeomVertexData(_root.get_name(),
-                   GeomVertexFormat::register_format(format), Geom::UH_static);
+                   GeomVertexFormat::register_format(format), Geom::UH_stream);
   GeomVertexWriter cwriter;
   if (_has_color_map) {
     cwriter=GeomVertexWriter(vdata, "color"  );
@@ -75,7 +75,7 @@ generate_block(unsigned short mx,
   GeomVertexWriter vwriter (vdata, "vertex"  );
   GeomVertexWriter twriter (vdata, "texcoord");
   GeomVertexWriter nwriter (vdata, "normal"  );
-  PT(GeomTriangles) prim = new GeomTriangles(Geom::UH_static);
+  PT(GeomTriangles) prim = new GeomTriangles(Geom::UH_stream);
 
   if (_bruteforce) {
     // LOD Level when rendering bruteforce is always 0 (no lod)
@@ -83,8 +83,7 @@ generate_block(unsigned short mx,
   }
 
   // Do some calculations with the level
-  level = min(short(max(_min_level, level)), short(log(float(_block_size))
-                                                                  / log(2.0)));
+  level = min(short(max(_min_level, level)), short(_max_level));
   unsigned short reallevel = level;
   level = int(pow(2.0, int(level)));
   
@@ -505,7 +504,7 @@ calc_levels() {
         tvector.push_back(0);
       } else {
         tvector.push_back(min(short(max(_min_level, lod_decide(mx, my))),
-                              short(log(float(_block_size)) / log(2.0))));
+                              short(_max_level)));
       }
     }
     _levels.push_back(tvector); //push the new row of levels into the 2d vector

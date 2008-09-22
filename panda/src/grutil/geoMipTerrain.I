@@ -13,6 +13,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_grutil.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::Constructor
 //       Access: Published
@@ -24,9 +26,13 @@ GeoMipTerrain(const string &name) {
   _root_flattened = false;
   _xsize = 0;
   _ysize = 0;
-  _min_level = 0;
   _block_size = 16;
+  _max_level = 4; // Always log(_block_size) / log(2.0)
+  _min_level = 0;
   _factor = 100.0;
+  _near = 16.0;
+  _far = 128.0;
+  _use_near_far = false;
   _has_color_map = false;
   PT(PandaNode) tmpnode = new PandaNode("tmp_focal");
   _auto_flatten = AFM_off;
@@ -58,6 +64,7 @@ INLINE PNMImage &GeoMipTerrain::
 heightfield() {
   return _heightfield;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::color_map
 //       Access: Published
@@ -69,6 +76,7 @@ INLINE PNMImage &GeoMipTerrain::
 color_map() {
   return _color_map;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_bruteforce
 //       Access: Published
@@ -85,6 +93,7 @@ set_bruteforce(bool bf) {
   }
   _bruteforce = bf;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_bruteforce
 //       Access: Published
@@ -96,6 +105,7 @@ INLINE bool GeoMipTerrain::
 get_bruteforce() {
   return _bruteforce;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_auto_flatten
 //       Access: Private
@@ -103,12 +113,12 @@ get_bruteforce() {
 //               flatten_light, flatten_medium, or flatten_strong)
 //               after each update.  This only affects future
 //               updates, it doesn't flatten the current terrain.
-//                
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
 set_auto_flatten(int mode) {
   _auto_flatten = mode;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_focal_point
 //       Access: Published
@@ -153,6 +163,7 @@ set_focal_point(NodePath fp) {
   _focal_point = fp;
   _focal_is_temporary = false;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_focal_point
 //       Access: Published
@@ -193,6 +204,7 @@ INLINE void GeoMipTerrain::
 set_min_level(unsigned short minlevel) {
   _min_level = minlevel;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_min_level
 //       Access: Published
@@ -205,6 +217,19 @@ INLINE unsigned short GeoMipTerrain::
 get_min_level() {
   return _min_level;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::get_max_level
+//       Access: Published
+//  Description: Returns the highest level possible for this block
+//               size. When a block is at this level, it will be
+//               the worst quality possible.
+////////////////////////////////////////////////////////////////////
+INLINE unsigned short GeoMipTerrain::
+get_max_level() {
+  return _max_level;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_block_size
 //       Access: Published
@@ -214,6 +239,7 @@ INLINE unsigned short GeoMipTerrain::
 get_block_size() {
   return _block_size;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_block_size
 //       Access: Published
@@ -236,8 +262,10 @@ set_block_size(unsigned short newbs) {
       }
     }
   }
+  _max_level = (unsigned short) (log(float(_block_size)) / log(2.0));
   _is_dirty = true;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::is_dirty
 //       Access: Published
@@ -252,10 +280,12 @@ INLINE bool GeoMipTerrain::
 is_dirty() {
   return _is_dirty;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_factor
 //       Access: Published
-//  Description: Sets the quality factor at which blocks must be
+//  Description: DEPRECATED method. Use set_near/far instead.
+//               Sets the quality factor at which blocks must be
 //               generated. The higher this level, the better
 //               quality the terrain will be, but more expensive
 //               to render. A value of 0 makes the terrain the
@@ -264,22 +294,49 @@ is_dirty() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
 set_factor(float factor) {
+  grutil_cat.debug() << "Using deprecated method set_factor, use set_near and set_far instead!\n";
+  _use_near_far = false;
   _factor = factor;
 }
+
 ////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::get_factor
+//     Function: GeoMipTerrain::set_near_far
 //       Access: Published
-//  Description: Gets the quality factor at which blocks must be
-//               generated. The higher this level, the better
-//               quality the terrain will be, but more expensive
-//               to render. A value of 0 makes the terrain the
-//               lowest quality possible, depending on blocksize.
-//               The default value is 100.
+//  Description: Sets the near and far LOD distances in one call.
 ////////////////////////////////////////////////////////////////////
-INLINE float GeoMipTerrain::
-get_factor() {
-  return _factor;
+INLINE void GeoMipTerrain::
+set_near_far(double near, double far) {
+  _use_near_far = true;
+  _near = near;
+  _far = far;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::set_near
+//       Access: Published
+//  Description: Sets the near LOD distance, at which the terrain
+//               will be rendered at highest quality.
+//               This distance is in the terrain's coordinate space!
+////////////////////////////////////////////////////////////////////
+INLINE void GeoMipTerrain::
+set_near(double near) {
+  _use_near_far = true;
+  _near = near;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::set_far
+//       Access: Published
+//  Description: Sets the far LOD distance, at which the terrain
+//               will be rendered at lowest quality.
+//               This distance is in the terrain's coordinate space!
+////////////////////////////////////////////////////////////////////
+INLINE void GeoMipTerrain::
+set_far(double far) {
+  _use_near_far = true;
+  _far = far;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_block_node_path
 //       Access: Published
@@ -333,13 +390,25 @@ lod_decide(unsigned short mx, unsigned short my) {
   cx = (cx * _block_size + _block_size / 2) * _root.get_sx();
   cy = (cy * _block_size + _block_size / 2) * _root.get_sy();
   float d;
-  if (_factor > 0.0) {
+  if (_use_near_far) {
     d = sqrt(pow(_focal_point.get_x(_root) - cx, 2) +
-             pow(_focal_point.get_y(_root) - cy, 2)) / _factor;
+            pow(_focal_point.get_y(_root) - cy, 2));
+    if (d < _near) {
+      return 0;
+    } else if (d > _far) {
+      return _max_level;
+    } else {
+      return (d - _near) / (_far - _near) * _max_level * (1.0 - (_min_level / _max_level)) + _min_level;
+    }
   } else {
-    d = log(float(_block_size)) / log(2.0);
+    if (_factor > 0.0) {
+      d = sqrt(pow(_focal_point.get_x(_root) - cx, 2) +
+               pow(_focal_point.get_y(_root) - cy, 2)) / _factor;
+    } else {
+      d = _max_level;
+    }
+    return short(floor(d));
   }
-  return short(floor(d));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -414,6 +483,7 @@ set_heightfield(const Texture *tex) {
   _ysize = _heightfield.get_y_size();
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::set_color_map
 //       Access: Published
@@ -445,6 +515,7 @@ set_color_map(const Texture *tex) {
   _is_dirty = true;
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::has_color_map
 //       Access: Published
@@ -454,6 +525,7 @@ INLINE bool GeoMipTerrain::
 has_color_map() {
   return _has_color_map;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::clear_color_map
 //       Access: Published
@@ -466,6 +538,7 @@ clear_color_map() {
     _has_color_map = false;
   }
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_pixel_value
 //       Access: Private
@@ -547,6 +620,7 @@ INLINE bool GeoMipTerrain::
 is_power_of_two(unsigned int i) {
   return !((i - 1) & i);
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::f_part
 //       Access: Private
@@ -561,6 +635,7 @@ INLINE double GeoMipTerrain::
 f_part(double i) {
   return i - floor(i);
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::sfav
 //       Access: Private
