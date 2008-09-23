@@ -634,6 +634,18 @@ class CodeDatabase:
         else:
             return pathToModule(type.file)
 
+    def getClassConstructors(self, cn):
+        # Only detects C++ constructors, not Python constructors, since
+        # those are treated as ordinary methods.
+        type = self.types.get(cn)
+        result = []
+        if (isinstance(type, InterrogateType)):
+            for constructor in type.constructors:
+                func = type.db.functions[constructor]
+                if (func.classindex == type.index):
+                    result.append(type.scopedname+"."+func.pyname)
+        return result
+
     def getClassMethods(self, cn):
         type = self.types.get(cn)
         result = []
@@ -811,8 +823,12 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
         for sclass in inheritance:
             methods = code.getClassMethods(sclass)[:]
             methods.sort(None, str.lower)
-            if (len(methods) > 0):
+            constructors = code.getClassConstructors(sclass)
+            if (len(methods) > 0 or len(constructors) > 0):
                 body = body + "<h2>Methods of "+sclass+":</h2>\n<ul>\n"
+                if len(constructors) > 0:
+                    fn = code.getFunctionName(constructors[0])
+                    body = body + '<a href="#' + fn + '">' + fn + " (Constructor)</a><br>\n"
                 for method in methods:
                     fn = code.getFunctionName(method)
                     body = body + '<a href="#' + fn + '">' + fn + "</a><br>\n"
@@ -825,6 +841,9 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
                     body = body + "<tr><td>" + value + "</td><td>" + comment + "</td></tr>\n"
                 body = body + "</table></ul>"
         for sclass in inheritance:
+            constructors = code.getClassConstructors(sclass)
+            for constructor in constructors:
+                body = body + generateFunctionDocs(code, constructor)
             methods = code.getClassMethods(sclass)[:]
             methods.sort(None, str.lower)
             for method in methods:
