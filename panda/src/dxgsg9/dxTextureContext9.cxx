@@ -2096,7 +2096,7 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
 float DXTextureContext9::
 d3d_format_to_bytes_per_pixel (D3DFORMAT format)
 {
-  int bytes_per_pixel;
+  float bytes_per_pixel;
   
   bytes_per_pixel = 0.0f;
   switch (format)
