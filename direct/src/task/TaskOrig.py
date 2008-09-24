@@ -1111,7 +1111,7 @@ class TaskManager:
                 self._gcTask = self.add(self._garbageCollect, TaskManager.GarbageCollectTaskName, 200)
 
         if not self._profileTasks:
-            if 'base' in __builtins__ \
+            if 'base' in __builtins__ or \
                'simbase' in __builtins__:
 		print __builtins__
                 from direct.fsm.StatePush import StateVar
