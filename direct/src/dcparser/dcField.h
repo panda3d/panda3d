@@ -88,6 +88,8 @@ PUBLISHED:
   Datagram client_format_update(DOID_TYPE do_id, PyObject *args) const;
   Datagram ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
                             PyObject *args) const;
+  Datagram ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
+                            int msg_type, PyObject *args) const;
 #endif 
 
 public:

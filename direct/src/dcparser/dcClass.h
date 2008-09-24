@@ -112,6 +112,8 @@ PUBLISHED:
                                 DOID_TYPE do_id, PyObject *args) const;
   Datagram ai_format_update(const string &field_name, DOID_TYPE do_id, 
                             CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
+  Datagram ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id, 
+                            CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
   Datagram ai_format_generate(PyObject *distobj, DOID_TYPE do_id, ZONEID_TYPE parent_id, ZONEID_TYPE zone_id,
                               CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id,
                               PyObject *optional_fields) const;

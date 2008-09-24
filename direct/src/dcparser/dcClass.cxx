@@ -917,6 +917,31 @@ ai_format_update(const string &field_name, DOID_TYPE do_id,
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::ai_format_update_msg_type
+//       Access: Published
+//  Description: Generates a datagram containing the message necessary
+//               to send an update, using the indicated msg type
+//               for the indicated distributed
+//               object from the AI.
+////////////////////////////////////////////////////////////////////
+Datagram DCClass::
+ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id, 
+                 CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const {
+  DCField *field = get_field_by_name(field_name);
+  if (field == (DCField *)NULL) {
+    ostringstream strm;
+    strm << "No field named " << field_name << " in class " << get_name()
+         << "\n";
+    nassert_raise(strm.str());
+    return Datagram();
+  }
+
+  return field->ai_format_update_msg_type(do_id, to_id, from_id, msg_type, args);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::client_format_generate
 //       Access: Published
 //  Description: Generates a datagram containing the message necessary

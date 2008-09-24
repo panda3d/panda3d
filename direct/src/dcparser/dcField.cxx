@@ -480,6 +480,36 @@ ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyOb
 }
 #endif  // HAVE_PYTHON
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::ai_format_update_msg_type
+//       Access: Published
+//  Description: Generates a datagram containing the message necessary
+//               to send an update, with the msg type,
+//               for the indicated distributed
+//               object from the AI.
+////////////////////////////////////////////////////////////////////
+Datagram DCField::
+ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const {
+  DCPacker packer;
+
+  packer.raw_pack_uint8(1);
+  packer.RAW_PACK_CHANNEL(to_id);
+  packer.RAW_PACK_CHANNEL(from_id);
+  packer.raw_pack_uint16(msg_type);
+  packer.raw_pack_uint32(do_id);
+  packer.raw_pack_uint16(_number);
+
+  packer.begin_pack(this);
+  pack_args(packer, args);
+  if (!packer.end_pack()) {
+    return Datagram();
+  }
+
+  return Datagram(packer.get_data(), packer.get_length());
+}
+#endif  // HAVE_PYTHON
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::generate_hash
