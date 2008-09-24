@@ -1111,9 +1111,11 @@ class TaskManager:
                 self._gcTask = self.add(self._garbageCollect, TaskManager.GarbageCollectTaskName, 200)
 
         if not self._profileTasks:
-            from direct.fsm.StatePush import StateVar
-            self._profileTasks = StateVar(False)
-            self.setProfileTasks(getBase().config.GetBool('profile-task-spikes', 0))
+            if 'base' in __builtins__.__dict__ or \
+               'simbase' in __builtins__.__dict__:
+                from direct.fsm.StatePush import StateVar
+                self._profileTasks = StateVar(False)
+                self.setProfileTasks(getBase().config.GetBool('profile-task-spikes', 0))
 
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
