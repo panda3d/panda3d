@@ -14,6 +14,7 @@
 
 #include "asyncTask.h"
 #include "asyncTaskManager.h"
+#include "config_event.h"
 
 TypeHandle AsyncTask::_type_handle;
 
@@ -24,7 +25,7 @@ TypeHandle AsyncTask::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AsyncTask::
 ~AsyncTask() {
-  nassertv(_state == S_inactive && _manager == NULL);
+  nassertv(_state == S_inactive && _manager == NULL && _chain == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +62,7 @@ get_elapsed_time() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::set_name
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
@@ -80,6 +81,52 @@ set_name(const string &name) {
     // If it hasn't been started anywhere, we can just change the
     // name.
     Namable::set_name(name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::set_task_chain
+//       Access: Published
+//  Description: Specifies the AsyncTaskChain on which this task will
+//               be running.  Each task chain runs tasks independently
+//               of the others.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+set_task_chain(const string &chain_name) {
+  if (chain_name != _chain_name) {
+    if (_manager != (AsyncTaskManager *)NULL) {
+      MutexHolder holder(_manager->_lock);
+      if (_state == S_active) {
+        // Changing chains on an "active" (i.e. enqueued) task means
+        // removing it and re-inserting it into the queue.
+        PT(AsyncTask) hold_task = this;
+        PT(AsyncTaskManager) manager = _manager;
+
+        AsyncTaskChain *chain_a = manager->do_find_task_chain(_chain_name);
+        nassertv(chain_a != (AsyncTaskChain *)NULL);
+        chain_a->do_remove(this);
+        _chain_name = chain_name;
+
+        AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
+        if (chain_b == (AsyncTaskChain *)NULL) {
+          event_cat.warning()
+            << "Creating implicit AsyncTaskChain " << _chain_name
+            << " for " << manager->get_type() << " "
+            << manager->get_name() << "\n";
+          chain_b = manager->do_make_task_chain(_chain_name);
+        }
+        chain_b->do_add(this);
+
+      } else {
+        // If it's sleeping, currently being serviced, or something
+        // else, we can just change the chain_name value directly.
+        _chain_name = chain_name;
+      }
+    } else {
+      // If it hasn't been started anywhere, we can just change the
+      // chain_name value.
+      _chain_name = chain_name;
+    }
   }
 }
 
@@ -104,7 +151,7 @@ set_sort(int sort) {
   if (sort != _sort) {
     if (_manager != (AsyncTaskManager *)NULL) {
       MutexHolder holder(_manager->_lock);
-      if (_state == S_active && _sort >= _manager->_current_sort) {
+      if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing sort on an "active" (i.e. enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
@@ -143,7 +190,7 @@ set_priority(int priority) {
   if (priority != _priority) {
     if (_manager != (AsyncTaskManager *)NULL) {
       MutexHolder holder(_manager->_lock);
-      if (_state == S_active && _sort >= _manager->_current_sort) {
+      if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing priority on an "active" (i.e. enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;

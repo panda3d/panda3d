@@ -9,6 +9,7 @@
   
   #define SOURCES \
     asyncTask.h asyncTask.I \
+    asyncTaskChain.h asyncTaskChain.I \
     asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
     config_event.h \
@@ -24,6 +25,7 @@
     
   #define INCLUDED_SOURCES \
     asyncTask.cxx \
+    asyncTaskChain.cxx \
     asyncTaskCollection.cxx \
     asyncTaskManager.cxx \
     buttonEvent.cxx \
@@ -37,6 +39,7 @@
 
   #define INSTALL_HEADERS \
     asyncTask.h asyncTask.I \
+    asyncTaskChain.h asyncTaskChain.I \
     asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
     buttonEvent.I buttonEvent.h \

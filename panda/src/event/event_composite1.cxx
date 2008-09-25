@@ -1,4 +1,5 @@
 #include "asyncTask.cxx"
+#include "asyncTaskChain.cxx"
 #include "asyncTaskCollection.cxx"
 #include "asyncTaskManager.cxx"
 #include "buttonEvent.cxx"

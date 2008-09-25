@@ -14,6 +14,7 @@
 
 #include "config_event.h"
 #include "asyncTask.h"
+#include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
 #include "buttonEventList.h"
 #include "event.h"
@@ -29,6 +30,7 @@ NotifyCategoryDef(event, "");
 
 ConfigureFn(config_event) {
   AsyncTask::init_type();
+  AsyncTaskChain::init_type();
   AsyncTaskManager::init_type();
   ButtonEventList::init_type();
   PointerEventList::init_type();

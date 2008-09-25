@@ -1,0 +1,190 @@
+// Filename: asyncTaskChain.h
+// Created by:  drose (23Aug06)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef ASYNCTASKCHAIN_H
+#define ASYNCTASKCHAIN_H
+
+#include "pandabase.h"
+
+#include "asyncTask.h"
+#include "asyncTaskCollection.h"
+#include "typedReferenceCount.h"
+#include "thread.h"
+#include "pmutex.h"
+#include "conditionVarFull.h"
+#include "pvector.h"
+#include "pdeque.h"
+#include "pStatCollector.h"
+#include "clockObject.h"
+
+class AsyncTaskManager;
+
+////////////////////////////////////////////////////////////////////
+//       Class : AsyncTaskChain
+// Description : The AsyncTaskChain is a subset of the
+//               AsyncTaskManager.  Each chain maintains a separate
+//               list of tasks, and will execute them with its own set
+//               of threads.  Each chain may thereby operate
+//               independently of the other chains.
+//
+//               The AsyncTaskChain will spawn a specified number of
+//               threads (possibly 0) to serve the tasks.  If there
+//               are no threads, you must call poll() from time to
+//               time to serve the tasks in the main thread.  Normally
+//               this is done by calling AsyncTaskManager::poll().
+//
+//               Each task will run exactly once each epoch.  Beyond
+//               that, the tasks' sort and priority values control the
+//               order in which they are run: tasks are run in
+//               increasing order by sort value, and within the same
+//               sort value, they are run roughly in decreasing order
+//               by priority value, with some exceptions for
+//               parallelism.  Tasks with different sort values are
+//               never run in parallel together, but tasks with
+//               different priority values might be (if there is more
+//               than one thread).
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA_EVENT AsyncTaskChain : public TypedReferenceCount, public Namable {
+public:
+  AsyncTaskChain(AsyncTaskManager *manager, const string &name);
+  ~AsyncTaskChain();
+
+PUBLISHED:
+  INLINE void set_tick_clock(bool tick_clock);
+  INLINE bool get_tick_clock() const;
+
+  BLOCKING void set_num_threads(int num_threads);
+  int get_num_threads() const;
+  int get_num_running_threads() const;
+
+  BLOCKING void stop_threads();
+  void start_threads();
+  INLINE bool is_started() const;
+
+  bool has_task(AsyncTask *task) const;
+
+  BLOCKING void wait_for_tasks();
+
+  int get_num_tasks() const;
+  AsyncTaskCollection get_tasks() const;
+  AsyncTaskCollection get_active_tasks() const;
+  AsyncTaskCollection get_sleeping_tasks() const;
+
+  void poll();
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level = 0) const;
+
+protected:
+  class AsyncTaskChainThread;
+  typedef pvector< PT(AsyncTask) > TaskHeap;
+
+  void do_add(AsyncTask *task);
+  bool do_remove(AsyncTask *task);
+  void do_wait_for_tasks();
+  void do_cleanup();
+
+  bool do_has_task(AsyncTask *task) const;
+  int find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const;
+
+  void service_one_task(AsyncTaskChainThread *thread);
+  void cleanup_task(AsyncTask *task, bool clean_exit);
+  bool finish_sort_group();
+  void do_stop_threads();
+  void do_start_threads();
+  AsyncTaskCollection do_get_active_tasks() const;
+  AsyncTaskCollection do_get_sleeping_tasks() const;
+  void do_poll();
+  void do_write(ostream &out, int indent_level) const;
+
+protected:
+  class AsyncTaskChainThread : public Thread {
+  public:
+    AsyncTaskChainThread(const string &name, AsyncTaskChain *chain);
+    virtual void thread_main();
+
+    AsyncTaskChain *_chain;
+    AsyncTask *_servicing;
+  };
+
+  class AsyncTaskSortWakeTime {
+  public:
+    bool operator () (AsyncTask *a, AsyncTask *b) const {
+      return a->get_wake_time() > b->get_wake_time();
+    }
+  };
+  
+  class AsyncTaskSortPriority {
+  public:
+    bool operator () (AsyncTask *a, AsyncTask *b) const {
+      if (a->get_sort() != b->get_sort()) {
+        return a->get_sort() > b->get_sort();
+      }
+      return a->get_priority() < b->get_priority();
+    }
+  };
+
+  typedef pvector< PT(AsyncTaskChainThread) > Threads;
+
+  AsyncTaskManager *_manager;
+
+  ConditionVarFull _cvar;  // signaled when _active, _next_active, _sleeping, _state, or _current_sort changes, or a task finishes.
+
+  enum State {
+    S_initial,  // no threads yet
+    S_started,  // threads have been started
+    S_aborting, // task returned DS_abort, shutdown requested from sub-thread.
+    S_shutdown  // waiting for thread shutdown, requested from main thread
+  };
+
+  bool _tick_clock;
+  int _num_threads;
+  Threads _threads;
+  int _num_busy_threads;
+  int _num_tasks;
+  TaskHeap _active;
+  TaskHeap _next_active;
+  TaskHeap _sleeping;
+  State _state;
+  int _current_sort;
+  bool _needs_cleanup;
+  
+  static PStatCollector _task_pcollector;
+  static PStatCollector _wait_pcollector;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "AsyncTaskChain",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+
+  friend class AsyncTaskChainThread;
+  friend class AsyncTask;
+  friend class AsyncTaskManager;
+};
+
+#include "asyncTaskChain.I"
+
+#endif

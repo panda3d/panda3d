@@ -28,7 +28,8 @@ AsyncTask(const string &name) :
   _priority(0),
   _state(S_inactive),
   _servicing_thread(NULL),
-  _manager(NULL)
+  _manager(NULL),
+  _chain(NULL)
 {
 #ifdef HAVE_PYTHON
   _python_object = NULL;
@@ -159,6 +160,19 @@ INLINE void AsyncTask::
 clear_name() {
   set_name(string());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_task_chain
+//       Access: Published
+//  Description: Returns the AsyncTaskChain on which this task will
+//               be running.  Each task chain runs tasks independently
+//               of the others.
+////////////////////////////////////////////////////////////////////
+INLINE const string &AsyncTask::
+get_task_chain() const {
+  return _chain_name;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_sort

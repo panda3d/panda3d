@@ -31,6 +31,7 @@
 #endif  // HAVE_PYTHON
 
 class AsyncTaskManager;
+class AsyncTaskChain;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncTask
@@ -78,6 +79,9 @@ PUBLISHED:
   void set_name(const string &name);
   INLINE void clear_name();
 
+  void set_task_chain(const string &chain_name);
+  INLINE const string &get_task_chain() const;
+
   void set_sort(int sort);
   INLINE int get_sort() const;
 
@@ -98,6 +102,7 @@ protected:
   virtual DoneStatus do_task();
 
 protected:
+  string _chain_name;
   double _delay;
   bool _has_delay;
   double _wake_time;
@@ -108,6 +113,7 @@ protected:
   State _state;
   Thread *_servicing_thread;
   AsyncTaskManager *_manager;
+  AsyncTaskChain *_chain;
 
 private:
 #ifdef HAVE_PYTHON
@@ -132,6 +138,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class AsyncTaskManager;
+  friend class AsyncTaskChain;
 };
 
 INLINE ostream &operator << (ostream &out, const AsyncTask &task) {
