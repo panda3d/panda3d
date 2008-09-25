@@ -16,6 +16,7 @@
 #include "asyncTaskManager.h"
 #include "config_event.h"
 
+PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
 TypeHandle AsyncTask::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -25,7 +26,6 @@ TypeHandle AsyncTask::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AsyncTask::
 AsyncTask(const string &name) : 
-  Namable(name),
   _delay(0.0),
   _has_delay(false),
   _wake_time(0.0),
@@ -43,6 +43,7 @@ AsyncTask(const string &name) :
 #ifdef HAVE_PYTHON
   _python_object = NULL;
 #endif  // HAVE_PYTHON
+  set_name(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +110,30 @@ set_name(const string &name) {
     // name.
     Namable::set_name(name);
   }
+
+#ifdef DO_PSTATS
+  // Update the PStatCollector with the new name.  If the name ends
+  // with a hyphen followed by a string of digits, we strip all that
+  // off, for the parent collector, to group related tasks together in
+  // the pstats graph.  We still create a child collector that
+  // contains the full name, however.
+  size_t end = name.size();
+  size_t p = end;
+  while (true) {
+    while (p > 0 && isdigit(name[p - 1])) {
+      --p;
+    }
+    if (p > 0 && (name[p - 1] == '-' || name[p - 1] == '_')) {
+      --p;
+      end = p;
+    } else {
+      p = end;
+      break;
+    }
+  }
+  PStatCollector parent(_show_code_pcollector, name.substr(0, end));
+  _task_pcollector = PStatCollector(parent, name);
+#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,7 +292,9 @@ unlock_and_do_task() {
   _manager->_lock.release();
   
   double start = clock->get_real_time();
+  _task_pcollector.start();
   DoneStatus status = do_task();
+  _task_pcollector.stop();
   double end = clock->get_real_time();
 
   // Now reacquire the lock (so we can return with the lock held).

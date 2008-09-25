@@ -21,6 +21,7 @@
 #include "namable.h"
 #include "pmutex.h"
 #include "conditionVar.h"
+#include "pStatCollector.h"
 
 #ifdef HAVE_PYTHON
 
@@ -124,6 +125,9 @@ protected:
   double _max_dt;
   double _total_dt;
   int _num_frames;
+
+  static PStatCollector _show_code_pcollector;
+  PStatCollector _task_pcollector;
 
 private:
 #ifdef HAVE_PYTHON
