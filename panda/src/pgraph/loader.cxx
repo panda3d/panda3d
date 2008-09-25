@@ -41,6 +41,7 @@ Loader::
 Loader(const string &name, int num_threads) :
   AsyncTaskManager(name)
 {
+  PT(AsyncTaskChain) chain = make_task_chain("");
   if (num_threads < 0) {
     // -1 means the default number of threads.
 
@@ -55,9 +56,9 @@ Loader(const string &name, int num_threads) :
                 "you have many CPU's available, to allow loading multiple models "
                 "simultaneously."));
 
-    set_num_threads(loader_num_threads);
+    chain->set_num_threads(loader_num_threads);
   } else {
-    set_num_threads(num_threads);
+    chain->set_num_threads(num_threads);
   }
 }
 
@@ -86,8 +87,9 @@ void Loader::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
 
-  if (!_threads.empty()) {
-    out << " (" << get_num_tasks() << " models pending)";
+  int num_tasks = get_num_tasks();
+  if (num_tasks != 0) {
+    out << " (" << num_tasks << " models pending)";
   }
 }
 
