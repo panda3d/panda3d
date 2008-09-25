@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.cxx
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (20sep08)
+// Last updated by: pro-rsoft (25sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -29,6 +29,8 @@
 #include "sceneGraphReducer.h"
 
 #include "collideMask.h"
+
+TypeHandle GeoMipTerrain::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::generate_block

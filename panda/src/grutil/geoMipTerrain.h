@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.h
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (20sep08)
+// Last updated by: pro-rsoft (25sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -37,9 +37,8 @@
 //               information about the GeoMipMapping algoritm, see
 //               this paper, written by Willem H. de Boer:
 //               http://flipcode.com/articles/article_geomipmaps.pdf
-//               
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL GeoMipTerrain {
+class EXPCL_PANDA_GRUTIL GeoMipTerrain : public TypedObject {
 PUBLISHED:
   INLINE GeoMipTerrain(const string &name);
   INLINE ~GeoMipTerrain();
@@ -48,12 +47,13 @@ PUBLISHED:
   INLINE bool set_heightfield(const Filename &filename,
                                     PNMFileType *type = NULL);
   INLINE bool set_heightfield(const PNMImage &image);
-  INLINE bool set_heightfield(const Texture *image);
+  INLINE bool set_heightfield(const string &path);
   INLINE PNMImage &color_map();
   INLINE bool set_color_map(const Filename &filename,
                                   PNMFileType *type = NULL);
   INLINE bool set_color_map(const PNMImage &image);
   INLINE bool set_color_map(const Texture *image);
+  INLINE bool set_color_map(const string &path);
   INLINE bool has_color_map();
   INLINE void clear_color_map();
   double get_elevation(double x, double y);
@@ -98,9 +98,9 @@ PUBLISHED:
   INLINE unsigned short get_min_level();
   INLINE bool is_dirty();
   INLINE void set_factor(float factor);
-  INLINE void set_near_far(double near, double far);
-  INLINE void set_near(double near);
-  INLINE void set_far(double far);
+  INLINE void set_near_far(double input_near, double input_far);
+  INLINE void set_near(double input_near);
+  INLINE void set_far(double input_far);
   INLINE const NodePath get_block_node_path(unsigned short mx,
                                             unsigned short my);
   INLINE LVecBase2f get_block_from_pos(double x, double y);
@@ -150,6 +150,23 @@ private:
   pvector<pvector<unsigned short> > _levels;
   pvector<pvector<unsigned short> > _old_levels;
   
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    register_type(_type_handle, "GeoMipTerrain",
+                  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
+
 };
 
 #include "geoMipTerrain.I"

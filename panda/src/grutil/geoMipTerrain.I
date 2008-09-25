@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.I
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (03mar08)
+// Last updated by: pro-rsoft (24sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -463,25 +463,8 @@ set_heightfield(const PNMImage &image) {
   return true;
 }
 INLINE bool GeoMipTerrain::
-set_heightfield(const Texture *tex) {
-  _heightfield = PNMImage(
-            max(3, (int) pow(2.0, ceil(log(float(max(2, tex->get_x_size() - 1)))
-                                                           / log(2.0))) + 1),
-            max(3, (int) pow(2.0, ceil(log(float(max(2, tex->get_y_size() - 1)))
-                                                           / log(2.0))) + 1));
-  PNMImage image;
-  tex->store(image);
-  // Make sure not to apply gaussian when it's already the right size
-  if (_heightfield.get_x_size() == image.get_x_size() &&
-      _heightfield.get_y_size() == image.get_y_size()) {
-    _heightfield.copy_from(image);
-  } else {
-    _heightfield.gaussian_filter_from(1.0, image);
-  }
-  _is_dirty = true;
-  _xsize = _heightfield.get_x_size();
-  _ysize = _heightfield.get_y_size();
-  return true;
+set_heightfield(const string &path) {
+  set_heightfield(Filename(path));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -514,6 +497,10 @@ set_color_map(const Texture *tex) {
   tex->store(_color_map);
   _is_dirty = true;
   return true;
+}
+INLINE bool GeoMipTerrain::
+set_color_map(const string &path) {
+  set_heightfield(Filename(path));
 }
 
 ////////////////////////////////////////////////////////////////////
