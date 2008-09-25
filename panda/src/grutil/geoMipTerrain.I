@@ -464,7 +464,7 @@ set_heightfield(const PNMImage &image) {
 }
 INLINE bool GeoMipTerrain::
 set_heightfield(const string &path) {
-  set_heightfield(Filename(path));
+  return set_heightfield(Filename(path));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ set_color_map(const Texture *tex) {
 }
 INLINE bool GeoMipTerrain::
 set_color_map(const string &path) {
-  set_heightfield(Filename(path));
+  return set_heightfield(Filename(path));
 }
 
 ////////////////////////////////////////////////////////////////////
