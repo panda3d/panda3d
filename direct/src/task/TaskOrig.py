@@ -1113,7 +1113,6 @@ class TaskManager:
         if not self._profileTasks:
             if 'base' in __builtins__ or \
                'simbase' in __builtins__:
-		print __builtins__
                 from direct.fsm.StatePush import StateVar
                 self._profileTasks = StateVar(False)
                 self.setProfileTasks(getBase().config.GetBool('profile-task-spikes', 0))
