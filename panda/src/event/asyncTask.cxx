@@ -19,6 +19,33 @@
 TypeHandle AsyncTask::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+AsyncTask::
+AsyncTask(const string &name) : 
+  Namable(name),
+  _delay(0.0),
+  _has_delay(false),
+  _wake_time(0.0),
+  _sort(0),
+  _priority(0),
+  _state(S_inactive),
+  _servicing_thread(NULL),
+  _manager(NULL),
+  _chain(NULL),
+  _dt(0.0),
+  _max_dt(0.0),
+  _total_dt(0.0),
+  _num_frames(0)
+{
+#ifdef HAVE_PYTHON
+  _python_object = NULL;
+#endif  // HAVE_PYTHON
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -47,7 +74,7 @@ remove() {
 //     Function: AsyncTask::get_elapsed_time
 //       Access: Published
 //  Description: Returns the amount of time that has elapsed since
-//               task was started, according to the task manager's
+//               the task was started, according to the task manager's
 //               clock.
 //
 //               It is only valid to call this if the task's status is
@@ -225,6 +252,36 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::unlock_and_do_task
+//       Access: Protected
+//  Description: Called by the AsyncTaskManager to actually run the
+//               task.  Assumes the lock is held.  See do_task().
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus AsyncTask::
+unlock_and_do_task() {
+  nassertr(_manager != (AsyncTaskManager *)NULL, DS_done);
+  PT(ClockObject) clock = _manager->get_clock();
+
+  // It's important to release the lock while the task is being
+  // serviced.
+  _manager->_lock.release();
+  
+  double start = clock->get_real_time();
+  DoneStatus status = do_task();
+  double end = clock->get_real_time();
+
+  // Now reacquire the lock (so we can return with the lock held).
+  _manager->_lock.lock();
+
+  _dt = end - start;
+  _max_dt = max(_dt, _max_dt);
+  _total_dt += _dt;
+  ++_num_frames;
+
+  return status;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::do_task
 //       Access: Protected, Virtual
 //  Description: Override this function to do something useful for the
@@ -241,6 +298,8 @@ output(ostream &out) const {
 //
 //               DS_abort: abort the task, and interrupt the whole
 //               AsyncTaskManager.
+//
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus AsyncTask::
 do_task() {

@@ -37,6 +37,8 @@ AsyncTaskManager(const string &name) :
   Namable(name),
   _clock(ClockObject::get_global_clock())
 {
+  // Make a default task chain.
+  do_make_task_chain("");
 }
 
 ////////////////////////////////////////////////////////////////////

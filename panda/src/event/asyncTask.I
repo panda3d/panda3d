@@ -14,29 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AsyncTask::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE AsyncTask::
-AsyncTask(const string &name) : 
-  Namable(name),
-  _delay(0.0),
-  _has_delay(false),
-  _wake_time(0.0),
-  _sort(0),
-  _priority(0),
-  _state(S_inactive),
-  _servicing_thread(NULL),
-  _manager(NULL),
-  _chain(NULL)
-{
-#ifdef HAVE_PYTHON
-  _python_object = NULL;
-#endif  // HAVE_PYTHON
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_state
 //       Access: Published
 //  Description: Returns the current state of the task.
@@ -256,3 +233,39 @@ get_python_object() const {
 }
 #endif  // HAVE_PYTHON
 
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_dt
+//       Access: Published
+//  Description: Returns the amount of time elapsed during the task's
+//               previous run cycle, in seconds.
+////////////////////////////////////////////////////////////////////
+INLINE double AsyncTask::
+get_dt() const {
+  return _dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_max_dt
+//       Access: Published
+//  Description: Returns the maximum amount of time elapsed during any
+//               one of the task's previous run cycles, in seconds.
+////////////////////////////////////////////////////////////////////
+INLINE double AsyncTask::
+get_max_dt() const {
+  return _max_dt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_average_dt
+//       Access: Published
+//  Description: Returns the average amount of time elapsed during
+//               each of the task's previous run cycles, in seconds.
+////////////////////////////////////////////////////////////////////
+INLINE double AsyncTask::
+get_average_dt() const {
+  if (_num_frames == 0) {
+    return 0.0;
+  } else {
+    return _total_dt / _num_frames;
+  }
+}

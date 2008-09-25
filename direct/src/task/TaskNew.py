@@ -235,3 +235,6 @@ class TaskManager:
     def stop(self):
         # Set a flag so we will stop before beginning next frame
         self.running = False
+
+    def __repr__(self):
+        return str(self.mgr)

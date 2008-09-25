@@ -108,6 +108,8 @@ protected:
   void do_poll();
   void do_write(ostream &out, int indent_level) const;
 
+  void write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) const;
+
 protected:
   class AsyncTaskChainThread : public Thread {
   public:

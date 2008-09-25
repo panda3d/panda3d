@@ -42,7 +42,7 @@ class AsyncTaskChain;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount, public Namable {
 public:
-  INLINE AsyncTask(const string &name = string());
+  AsyncTask(const string &name = string());
   virtual ~AsyncTask();
   ALLOC_DELETED_CHAIN(AsyncTask);
 
@@ -96,9 +96,14 @@ PUBLISHED:
   INLINE PyObject *get_python_object() const;
 #endif  // HAVE_PYTHON
 
+  INLINE double get_dt() const;
+  INLINE double get_max_dt() const;
+  INLINE double get_average_dt() const;
+
   virtual void output(ostream &out) const;
 
 protected:
+  DoneStatus unlock_and_do_task();
   virtual DoneStatus do_task();
 
 protected:
@@ -114,6 +119,11 @@ protected:
   Thread *_servicing_thread;
   AsyncTaskManager *_manager;
   AsyncTaskChain *_chain;
+
+  double _dt;
+  double _max_dt;
+  double _total_dt;
+  int _num_frames;
 
 private:
 #ifdef HAVE_PYTHON
