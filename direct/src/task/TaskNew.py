@@ -77,6 +77,10 @@ class TaskManager:
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
 
+    def destroy(self):
+        self.mgr.stopThreads()
+        self.removeTasksMatching('*')
+
     def keyboardInterruptHandler(self, signalNumber, stackFrame):
         self.fKeyboardInterrupt = 1
         self.interruptCount += 1
@@ -87,6 +91,50 @@ class TaskManager:
             # The user must really want to interrupt this process
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
+
+    def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
+                       threadPriority = None, frameBudget = None):
+        """Defines a new task chain.  Each task chain executes tasks
+        potentially in parallel with all of the other task chains (if
+        numThreads is more than zero).  When a new task is created, it
+        may be associated with any of the task chains, by name (or you
+        can move a task to another task chain with
+        task.setTaskChain()).  You can have any number of task chains,
+        but each must have a unique name.
+
+        numThreads is the number of threads to allocate for this task
+        chain.  If it is 1 or more, then the tasks on this task chain
+        will execute in parallel with the tasks on other task chains.
+        If it is greater than 1, then the tasks on this task chain may
+        execute in parallel with themselves (within tasks of the same
+        sort value).
+
+        If tickClock is True, then this task chain will be responsible
+        for ticking the global clock each frame (and thereby
+        incrementing the frame counter).  There should be just one
+        task chain responsible for ticking the clock, and usually it
+        is the default, unnamed task chain.
+
+        threadPriority specifies the priority level to assign to
+        threads on this task chain.  It may be one of TPLow, TPNormal,
+        TPHigh, or TPUrgent.  This is passed to the underlying
+        threading system to control the way the threads are scheduled.
+
+        frameBudget is the maximum amount of time (in seconds) to
+        allow this task chain to run per frame.  Set it to -1 to mean
+        no limit (the default).  It's not directly related to
+        threadPriority.
+        """
+        
+        chain = self.mgr.makeTaskChain(chainName)
+        if numThreads is not None:
+            chain.setNumThreads(numThreads)
+        if tickClock is not None:
+            chain.setTickClock(tickClock)
+        if threadPriority is not None:
+            chain.setThreadPriority(threadPriority)
+        if frameBudget is not None:
+            chain.setFrameBudget(frameBudget)
 
     def hasTaskNamed(self, taskName):
         return bool(self.mgr.findTask(taskName))
@@ -100,28 +148,29 @@ class TaskManager:
             l.append(taskCollection.getTask(i))
         return l
 
-    def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
-                      priority=0, appendTask=False, owner = None):
+    def doMethodLater(self, delayTime, funcOrTask, name, priority = None,
+                      sort = None, extraArgs = None, taskChain = None,
+                      appendTask = False):
         if delayTime < 0:
             assert self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
 
-        task = self.__setupTask(funcOrTask, name, priority, extraArgs, appendTask)
+        task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask)
         task.setDelay(delayTime)
         self.mgr.add(task)
         return task
 
-    def add(self, funcOrTask, name, priority=0, extraArgs=None, 
-            appendTask = False):
+    def add(self, funcOrTask, name, priority = None, sort = None,
+            extraArgs = None, taskChain = None, appendTask = False):
         
         """
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
         """
-        task = self.__setupTask(funcOrTask, name, priority, extraArgs, appendTask)
+        task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask)
         self.mgr.add(task)
         return task
 
-    def __setupTask(self, funcOrTask, name, priority, extraArgs, appendTask):
+    def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask):
         if isinstance(funcOrTask, PythonTask):
             task = funcOrTask
         elif callable(funcOrTask):
@@ -131,9 +180,21 @@ class TaskManager:
                 'add: Tried to add a task that was not a Task or a func')
         assert isinstance(name, types.StringTypes), 'Name must be a string type'
         task.setName(name)
-        task.setSort(priority)
 
-        if extraArgs == None:
+        # For historical reasons, if priority is specified but not
+        # sort, it really means sort.
+        if priority is not None and sort is None:
+            task.setSort(priority)
+        else:
+            if priority is not None:
+                task.setPriority(priority)
+            if sort is not None:
+                task.setSort(sort)
+
+        if taskChain is not None:
+            task.setTaskChain(taskChain)
+
+        if extraArgs is None:
             extraArgs = []
             appendTask = True
         task.setArgs(extraArgs, appendTask)

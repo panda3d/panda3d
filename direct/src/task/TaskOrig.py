@@ -1,6 +1,6 @@
 """Undocumented Module"""
 
-__all__ = ['Task', 'TaskPriorityList', 'TaskManager',
+__all__ = ['Task', 'TaskSortList', 'TaskManager',
            'exit', 'cont', 'done', 'again',
            'sequence', 'loop', 'pause']
 
@@ -79,7 +79,7 @@ class Task:
     again = 2
 
     count = 0
-    def __init__(self, callback, priority = 0):
+    def __init__(self, callback, sort = 0):
         try:
             config
         except:
@@ -95,7 +95,7 @@ class Task:
         self.owner = None
 
         self.__call__ = callback
-        self._priority = priority
+        self._sort = sort
         self._removed = 0
         self.dt = 0.0
         if TaskManager.taskTimerVerbose:
@@ -149,11 +149,18 @@ class Task:
     def isRemoved(self):
         return self._removed
 
+    def getSort(self):
+        return self._sort
+
+    def setSort(self, pri):
+        self._sort = pri
+
     def getPriority(self):
-        return self._priority
+        return 0
 
     def setPriority(self, pri):
-        self._priority = pri
+        TaskManager.notify.error("deprecated task.setPriority() called; use setSort() instead")
+        pass
 
     def getDelay(self):
         return self.delayTime
@@ -329,12 +336,12 @@ def make_loop(taskList):
     return task
 
 
-class TaskPriorityList(list):
-    def __init__(self, priority):
-        self._priority = priority
+class TaskSortList(list):
+    def __init__(self, sort):
+        self._sort = sort
         self.__emptyIndex = 0
-    def getPriority(self):
-        return self._priority
+    def getSort(self):
+        return self._sort
     def add(self, task):
         if (self.__emptyIndex >= len(self)):
             self.append(task)
@@ -386,7 +393,7 @@ class TaskManager:
         self.running = 0
         self.stepping = 0
         self.taskList = []
-        # Dictionary of priority to newTaskLists
+        # Dictionary of sort to newTaskLists
         self.pendingTaskDict = {}
         # List of tasks scheduled to execute in the future
         self.__doLaterList = []
@@ -484,6 +491,12 @@ class TaskManager:
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
+    def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
+                       threadPriority = None, frameBudget = None):
+        # This is a no-op in the original task implementation; task
+        # chains are not supported here.
+        pass
+
     def hasTaskNamed(self, taskName):
         # TODO: check pending task list
         # Get the tasks with this name
@@ -568,17 +581,24 @@ class TaskManager:
         return cont
 
     def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
-                      priority=0, uponDeath=None, appendTask=False, owner = None):
+                      sort=None, priority=None, taskChain = None,
+                      uponDeath=None, appendTask=False, owner = None):
         if delayTime < 0:
             assert self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
             task = funcOrTask
         elif callable(funcOrTask):
-            task = Task(funcOrTask, priority)
+            task = Task(funcOrTask, sort)
         else:
             self.notify.error('doMethodLater: Tried to add a task that was not a Task or a func')
         assert isinstance(name, str), 'Name must be a string type'
-        task.setPriority(priority)
+
+        # For historical reasons, if priority is specified but not
+        # sort, it really means sort.
+        if priority is not None and sort is None:
+            sort = priority
+
+        task.setSort(sort or 0)
         task.name = name
         task.owner = owner
         if extraArgs == None:
@@ -613,23 +633,29 @@ class TaskManager:
                            sentArgs = [task, task.name, task.id])
         return task
 
-    def add(self, funcOrTask, name, priority=0, extraArgs=None, uponDeath=None,
-            appendTask = False, owner = None):
+    def add(self, funcOrTask, name, priority=None, sort=None, extraArgs=None, uponDeath=None,
+            appendTask = False, taskChain = None, owner = None):
         
         """
         Add a new task to the taskMgr.
         You can add a Task object or a method that takes one argument.
         """
+
+        # For historical reasons, if priority is specified but not
+        # sort, it really means sort.
+        if priority is not None and sort is None:
+            sort = priority
+
         # TaskManager.notify.debug('add: %s' % (name))
         if isinstance(funcOrTask, Task):
             task = funcOrTask
         elif callable(funcOrTask):
-            task = Task(funcOrTask, priority)
+            task = Task(funcOrTask, sort)
         else:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')
         assert isinstance(name, str), 'Name must be a string type'
-        task.setPriority(priority)
+        task.setSort(sort or 0)
         task.name = name
         task.owner = owner
         if extraArgs == None:
@@ -657,37 +683,37 @@ class TaskManager:
 
     def __addPendingTask(self, task):
         # TaskManager.notify.debug('__addPendingTask: %s' % (task.name))
-        pri = task._priority
+        pri = task._sort
         taskPriList = self.pendingTaskDict.get(pri)
         if not taskPriList:
-            taskPriList = TaskPriorityList(pri)
+            taskPriList = TaskSortList(pri)
             self.pendingTaskDict[pri] = taskPriList
         taskPriList.add(task)
 
     def __addNewTask(self, task):
-        # The taskList is really an ordered list of TaskPriorityLists
+        # The taskList is really an ordered list of TaskSortLists
         # search back from the end of the list until we find a
-        # taskList with a lower priority, or we hit the start of the list
-        taskPriority = task._priority
+        # taskList with a lower sort, or we hit the start of the list
+        taskSort = task._sort
         index = len(self.taskList) - 1
         while (1):
             if (index < 0):
-                newList = TaskPriorityList(taskPriority)
+                newList = TaskSortList(taskSort)
                 newList.add(task)
                 # Add the new list to the beginning of the taskList
                 self.taskList.insert(0, newList)
                 break
-            taskListPriority = self.taskList[index]._priority
-            if (taskListPriority == taskPriority):
+            taskListSort = self.taskList[index]._sort
+            if (taskListSort == taskSort):
                 self.taskList[index].add(task)
                 break
-            elif (taskListPriority > taskPriority):
+            elif (taskListSort > taskSort):
                 index = index - 1
-            elif (taskListPriority < taskPriority):
+            elif (taskListSort < taskSort):
                 # Time to insert
-                newList = TaskPriorityList(taskPriority)
+                newList = TaskSortList(taskSort)
                 newList.add(task)
-                # Insert this new priority level
+                # Insert this new sort level
                 # If we are already at the end, just append it
                 if (index == len(self.taskList)-1):
                     self.taskList.append(newList)
@@ -926,7 +952,7 @@ class TaskManager:
 
     def __addPendingTasksToTaskList(self):
         # Now that we are all done, add any left over pendingTasks
-        # generated in priority levels lower or higher than where
+        # generated in sort levels lower or higher than where
         # we were when we iterated
         for taskList in self.pendingTaskDict.values():
             for task in taskList:
@@ -1050,11 +1076,11 @@ class TaskManager:
         self.interruptCount = 0
         signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
 
-        # Traverse the task list in order because it is in priority order
+        # Traverse the task list in order because it is in sort order
         priIndex = 0
         while priIndex < len(self.taskList):
             taskPriList = self.taskList[priIndex]
-            pri = taskPriList._priority
+            pri = taskPriList._sort
             # assert TaskManager.notify.debug(
             #    'step: running through taskList at pri: %s, priIndex: %s' %
             #    (pri, priIndex))
@@ -1078,10 +1104,10 @@ class TaskManager:
 
             # Any new tasks that were made pending should be converted
             # to real tasks now in case they need to run this frame at a
-            # later priority level
+            # later sort level
             self.__addPendingTasksToTaskList()
 
-            # Go to the next priority level
+            # Go to the next sort level
             priIndex += 1
 
         # Add new pending tasks
@@ -1228,7 +1254,7 @@ class TaskManager:
     def __repr__(self):
         taskNameWidth = 32
         dtWidth = 10
-        priorityWidth = 10
+        sortWidth = 10
         totalDt = 0
         totalAvgDt = 0
         str = "The taskMgr is handling:\n"
@@ -1236,12 +1262,12 @@ class TaskManager:
                + 'dt(ms)'.rjust(dtWidth)
                + 'avg'.rjust(dtWidth)
                + 'max'.rjust(dtWidth)
-               + 'priority'.rjust(priorityWidth)
+               + 'sort'.rjust(sortWidth)
                + '\n')
         str += '-------------------------------------------------------------------------\n'
         dtfmt = '%%%d.2f' % (dtWidth)
         for taskPriList in self.taskList:
-            priority = `taskPriList._priority`
+            sort = `taskPriList._sort`
             for task in taskPriList:
                 if task is None:
                     break
@@ -1256,14 +1282,14 @@ class TaskManager:
                             + dtfmt % (task.dt*1000)
                             + dtfmt % (task.avgDt*1000)
                             + dtfmt % (task.maxDt*1000)
-                            + priority.rjust(priorityWidth)
+                            + sort.rjust(sortWidth)
                             + '\n')
                 else:
                     str += (task.name.ljust(taskNameWidth)
                             + '----'.rjust(dtWidth)
                             + '----'.rjust(dtWidth)
                             + '----'.rjust(dtWidth)
-                            + priority.rjust(priorityWidth)
+                            + sort.rjust(sortWidth)
                             + '\n')
         str += '-------------------------------------------------------------------------\n'
         str += 'pendingTasks\n'
@@ -1299,7 +1325,7 @@ class TaskManager:
                + '\n')
         str += '-------------------------------------------------------------------------\n'
         # When we print, show the doLaterList in actual sorted order.
-        # The priority heap is not actually in order - it is a tree
+        # The sort heap is not actually in order - it is a tree
         # Make a shallow copy so we can sort it
         sortedDoLaterList = self.__doLaterList[:]
         sortedDoLaterList.sort(lambda a, b: cmp(a.wakeTime, b.wakeTime))
@@ -1385,7 +1411,7 @@ class TaskManager:
             self.step()
             mu = self._memUsage
             # the task list looks like it grows and never shrinks, replacing finished
-            # tasks with 'None' in the TaskPriorityLists.
+            # tasks with 'None' in the TaskSortLists.
             # TODO: look at reducing memory usage here--clear out excess at the end of every frame?
             #assert mu.lenTaskList == len(self.taskList)
             assert mu.lenPendingTaskDict == len(self.pendingTaskDict)
@@ -1408,7 +1434,7 @@ class TaskManager:
         onScreenDebug.removeAllWithPrefix(prefix)
         taskNameWidth = 32
         dtWidth = 10
-        priorityWidth = 10
+        sortWidth = 10
         totalDt = 0
         totalAvgDt = 0
         i = 0
@@ -1418,10 +1444,10 @@ class TaskManager:
             'dt(ms)'.rjust(dtWidth),
             'avg'.rjust(dtWidth),
             'max'.rjust(dtWidth),
-            'priority'.rjust(priorityWidth),))
+            'sort'.rjust(sortWidth),))
         i += 1
         for taskPriList in self.taskList:
-            priority = `taskPriList._priority`
+            sort = `taskPriList._sort`
             for task in taskPriList:
                 if task is None:
                     break
@@ -1437,7 +1463,7 @@ class TaskManager:
                     dtfmt % (task.dt*1000),
                     dtfmt % (task.avgDt*1000),
                     dtfmt % (task.maxDt*1000),
-                    priority.rjust(priorityWidth)))
+                    sort.rjust(sortWidth)))
                 i += 1
         onScreenDebug.add(('%s%02i.total' % (prefix, i)).ljust(taskNameWidth),
                           '%s %s' % (
@@ -1530,7 +1556,7 @@ class TaskManager:
             _testHasTaskNamed = None
             tm._checkMemLeaks()
 
-            # task priority
+            # task sort
             l = []
             def _testPri1(task, l = l):
                 l.append(1)
@@ -1538,8 +1564,8 @@ class TaskManager:
             def _testPri2(task, l = l):
                 l.append(2)
                 return task.cont
-            tm.add(_testPri1, 'testPri1', priority = 1)
-            tm.add(_testPri2, 'testPri2', priority = 2)
+            tm.add(_testPri1, 'testPri1', sort = 1)
+            tm.add(_testPri2, 'testPri2', sort = 2)
             tm.step()
             assert len(l) == 2
             assert l == [1, 2,]
@@ -1626,14 +1652,14 @@ class TaskManager:
             tm.doMethodLater(.02, _testDoLater2, 'testDoLater2')
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLater, 'monitorDoLater', priority=10)
+            tm.add(_monitorDoLater, 'monitorDoLater', sort=10)
             _testDoLater1 = None
             _testDoLater2 = None
             _monitorDoLater = None
             # don't check until all the doLaters are finished
             #tm._checkMemLeaks()
 
-            # doLater priority
+            # doLater sort
             l = []
             def _testDoLaterPri1(task, l=l):
                 l.append(1)
@@ -1645,11 +1671,11 @@ class TaskManager:
                     doLaterTests[0] -= 1
                     return task.done
                 return task.cont
-            tm.doMethodLater(.01, _testDoLaterPri1, 'testDoLaterPri1', priority=1)
-            tm.doMethodLater(.01, _testDoLaterPri2, 'testDoLaterPri2', priority=2)
+            tm.doMethodLater(.01, _testDoLaterPri1, 'testDoLaterPri1', sort=1)
+            tm.doMethodLater(.01, _testDoLaterPri2, 'testDoLaterPri2', sort=2)
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLaterPri, 'monitorDoLaterPri', priority=10)
+            tm.add(_monitorDoLaterPri, 'monitorDoLaterPri', sort=10)
             _testDoLaterPri1 = None
             _testDoLaterPri2 = None
             _monitorDoLaterPri = None
@@ -1669,7 +1695,7 @@ class TaskManager:
             tm.doMethodLater(.01, _testDoLaterExtraArgs, 'testDoLaterExtraArgs', extraArgs=[3,])
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLaterExtraArgs, 'monitorDoLaterExtraArgs', priority=10)
+            tm.add(_monitorDoLaterExtraArgs, 'monitorDoLaterExtraArgs', sort=10)
             _testDoLaterExtraArgs = None
             _monitorDoLaterExtraArgs = None
             # don't check until all the doLaters are finished
@@ -1690,7 +1716,7 @@ class TaskManager:
                              extraArgs=[4,], appendTask=True)
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLaterAppendTask, 'monitorDoLaterAppendTask', priority=10)
+            tm.add(_monitorDoLaterAppendTask, 'monitorDoLaterAppendTask', sort=10)
             _testDoLaterAppendTask = None
             _monitorDoLaterAppendTask = None
             # don't check until all the doLaters are finished
@@ -1713,7 +1739,7 @@ class TaskManager:
                              uponDeath=_testUponDeathFunc)
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLaterUponDeath, 'monitorDoLaterUponDeath', priority=10)
+            tm.add(_monitorDoLaterUponDeath, 'monitorDoLaterUponDeath', sort=10)
             _testUponDeathFunc = None
             _testDoLaterUponDeath = None
             _monitorDoLaterUponDeath = None
@@ -1740,7 +1766,7 @@ class TaskManager:
                              owner=doLaterOwner)
             doLaterTests[0] += 1
             # make sure we run this task after the doLaters if they all occur on the same frame
-            tm.add(_monitorDoLaterOwner, 'monitorDoLaterOwner', priority=10)
+            tm.add(_monitorDoLaterOwner, 'monitorDoLaterOwner', sort=10)
             _testDoLaterOwner = None
             _monitorDoLaterOwner = None
             del doLaterOwner
@@ -1896,25 +1922,25 @@ class TaskManager:
 
             """
             # this test fails, and it's not clear what the correct behavior should be.
-            # priority passed to Task.__init__ is always overridden by taskMgr.add()
-            # even if no priority is specified, and calling Task.setPriority() has no
+            # sort passed to Task.__init__ is always overridden by taskMgr.add()
+            # even if no sort is specified, and calling Task.setSort() has no
             # effect on the taskMgr's behavior.
-            # set/get Task priority
+            # set/get Task sort
             l = []
-            def _testTaskObjPriority(arg, task, l=l):
+            def _testTaskObjSort(arg, task, l=l):
                 l.append(arg)
                 return task.cont
-            t1 = Task(_testTaskObjPriority, priority=1)
-            t2 = Task(_testTaskObjPriority, priority=2)
-            tm.add(t1, 'testTaskObjPriority1', extraArgs=['a',], appendTask=True)
-            tm.add(t2, 'testTaskObjPriority2', extraArgs=['b',], appendTask=True)
+            t1 = Task(_testTaskObjSort, sort=1)
+            t2 = Task(_testTaskObjSort, sort=2)
+            tm.add(t1, 'testTaskObjSort1', extraArgs=['a',], appendTask=True)
+            tm.add(t2, 'testTaskObjSort2', extraArgs=['b',], appendTask=True)
             tm.step()
             assert len(l) == 2
             assert l == ['a', 'b']
-            assert t1.getPriority() == 1
-            assert t2.getPriority() == 2
-            t1.setPriority(3)
-            assert t1.getPriority() == 3
+            assert t1.getSort() == 1
+            assert t2.getSort() == 2
+            t1.setSort(3)
+            assert t1.getSort() == 3
             tm.step()
             assert len(l) == 4
             assert l == ['a', 'b', 'b', 'a',]
@@ -1924,7 +1950,7 @@ class TaskManager:
             assert len(l) == 4
             del t1
             del t2
-            _testTaskObjPriority = None
+            _testTaskObjSort = None
             tm._checkMemLeaks()
             """
 

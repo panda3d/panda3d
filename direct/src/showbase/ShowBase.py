@@ -423,6 +423,8 @@ class ShowBase(DirectObject.DirectObject):
 
         This function is designed to be safe to call multiple times."""
 
+        taskMgr.destroy()
+
         if getattr(self, 'musicManager', None):
             self.musicManager.shutdown()
             self.musicManager = None
@@ -431,7 +433,7 @@ class ShowBase(DirectObject.DirectObject):
             self.loader.destroy()
             self.loader = None
         if getattr(self, 'graphicsEngine', None):
-            self.graphicsEngine.removeAllWindows()        
+            self.graphicsEngine.removeAllWindows()
 
         try:
             self.direct.panel.destroy()
