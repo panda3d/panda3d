@@ -430,6 +430,7 @@ release_new() {
 #ifndef NDEBUG
     nassertd(_attribs->find(this) == _saved_entry) {
       cerr << "Tried to release " << *this << " (" << (void *)this << "), not found!\n";
+      validate_attribs();
       Attribs::const_iterator si = _attribs->begin();
       if (si == _attribs->end()) {
         cerr << "  Attribs list is empty.\n";
