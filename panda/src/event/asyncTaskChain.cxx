@@ -308,6 +308,8 @@ do_add(AsyncTask *task) {
   double now = _manager->_clock->get_frame_time();
   task->_start_time = now;
 
+  _manager->add_task_by_name(task);
+
   if (task->has_delay()) {
     // This is a deferred task.  Add it to the sleeping queue.
     task->_wake_time = now + task->get_delay();
@@ -796,7 +798,13 @@ void AsyncTaskChain::
 do_write(ostream &out, int indent_level) const {
   if (has_name()) {
     indent(out, indent_level)
-      << get_name() << "\n";
+      << get_name();
+    if (_num_threads > 0) {
+      out << ", " << _num_threads << " threads";
+    }
+    out << "\n";
+  } else if (_num_threads > 0) {
+    out << "Default task chain, " << _num_threads << " threads\n";
   }
 
   static const size_t buffer_size = 1024;

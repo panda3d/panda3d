@@ -168,8 +168,6 @@ add(AsyncTask *task) {
            task->_state == AsyncTask::S_inactive);
   nassertv(!do_has_task(task));
 
-  add_task_by_name(task);
-
   AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
   if (chain == (AsyncTaskChain *)NULL) {
     event_cat.warning()
@@ -501,6 +499,7 @@ write(ostream &out, int indent_level) const {
        tci != _task_chains.end();
        ++tci) {
     AsyncTaskChain *chain = (*tci);
+    out << "\n";
     chain->do_write(out, indent_level + 2);
   }
 }

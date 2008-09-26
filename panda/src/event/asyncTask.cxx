@@ -207,9 +207,11 @@ set_sort(int sort) {
         // Changing sort on an "active" (i.e. enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
-        _manager->remove(this);
+        AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
+        nassertv(chain != (AsyncTaskChain *)NULL);
+        chain->do_remove(this);
         _sort = sort;
-        _manager->add(this);
+        chain->do_add(this);
 
       } else {
         // If it's sleeping, currently being serviced, or something
@@ -246,9 +248,11 @@ set_priority(int priority) {
         // Changing priority on an "active" (i.e. enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
-        _manager->remove(this);
+        AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
+        nassertv(chain != (AsyncTaskChain *)NULL);
+        chain->do_remove(this);
         _priority = priority;
-        _manager->add(this);
+        chain->do_add(this);
 
       } else {
         // If it's sleeping, currently being serviced, or something
