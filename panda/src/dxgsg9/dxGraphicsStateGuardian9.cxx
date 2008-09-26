@@ -353,6 +353,8 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
   }
 
   dtc->delete_texture();
+  dtc->update_data_size_bytes(0);
+  dtc->mark_unloaded();
   
   if (_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
@@ -5136,6 +5138,8 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
           size_t current_size = _prepared_objects->_graphics_memory_lru.get_total_size();
           size_t target_size = max(current_size - allocation_size * attempts, 0);
           _prepared_objects->_graphics_memory_lru.evict_to(target_size);
+          dxgsg9_cat.info()
+            << "Evicted " << current_size - _prepared_objects->_graphics_memory_lru.get_total_size() << " bytes of texture memory to make room for more.\n";
           if (_prepared_objects->_graphics_memory_lru.get_total_size() < current_size) {
             retry = true;
           }

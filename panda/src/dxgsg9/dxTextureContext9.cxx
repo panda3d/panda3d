@@ -22,7 +22,7 @@
 #include <time.h>
 
 #define DEBUG_SURFACES false
-#define DEBUG_TEXTURES false
+#define DEBUG_TEXTURES true
 
 TypeHandle DXTextureContext9::_type_handle;
 
@@ -82,6 +82,10 @@ evict_lru() {
     // Don't evict the result of render-to-texture.
     mark_used_lru();
     return;
+  }
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "Evicting " << *get_texture() << "\n";
   }
 
   dequeue_lru();
@@ -820,6 +824,13 @@ create_texture(DXScreenData &scrn) {
   
   int attempts;
 
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug()
+      << "Creating " << *tex << ", " << data_size << " bytes, "
+      << scrn._d3d_device->GetAvailableTextureMem()
+      << " reported available.\n";
+  }
+
   attempts = 0;
   do
   {
@@ -850,8 +861,8 @@ create_texture(DXScreenData &scrn) {
     }
 
     attempts++;
-  }
-  while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
+  } while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
+
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "D3D create_texture failed!" << D3DERRORSTRING(hr);
