@@ -760,179 +760,6 @@ load_related(const InternalName *suffix) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_wrap_u
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_wrap_u(Texture::WrapMode wrap) {
-  MutexHolder holder(_lock);
-  if (_wrap_u != wrap) {
-    ++_properties_modified;
-    _wrap_u = wrap;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_wrap_v
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_wrap_v(Texture::WrapMode wrap) {
-  MutexHolder holder(_lock);
-  if (_wrap_v != wrap) {
-    ++_properties_modified;
-    _wrap_v = wrap;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_wrap_w
-//       Access: Published
-//  Description: The W wrap direction is only used for 3-d textures.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_wrap_w(Texture::WrapMode wrap) {
-  MutexHolder holder(_lock);
-  if (_wrap_w != wrap) {
-    ++_properties_modified;
-    _wrap_w = wrap;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_minfilter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_minfilter(Texture::FilterType filter) {
-  MutexHolder holder(_lock);
-  if (_minfilter != filter) {
-    ++_properties_modified;
-    _minfilter = filter;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_magfilter
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_magfilter(Texture::FilterType filter) {
-  MutexHolder holder(_lock);
-  if (_magfilter != filter) {
-    ++_properties_modified;
-    _magfilter = filter;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_anisotropic_degree
-//       Access: Published
-//  Description: Specifies the level of anisotropic filtering to apply
-//               to the texture.  Normally, this is 1, to indicate
-//               anisotropic filtering is disabled.  This may be set
-//               to a number higher than one to enable anisotropic
-//               filtering, if the rendering backend supports this.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_anisotropic_degree(int anisotropic_degree) {
-  MutexHolder holder(_lock);
-  if (_anisotropic_degree != anisotropic_degree) {
-    ++_properties_modified;
-    _anisotropic_degree = anisotropic_degree;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_border_color
-//       Access: Published
-//  Description: Specifies the solid color of the texture's border.
-//               Some OpenGL implementations use a border for tiling
-//               textures; in Panda, it is only used for specifying
-//               the clamp color.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_border_color(const Colorf &color) {
-  MutexHolder holder(_lock);
-  if (_border_color != color) {
-    ++_properties_modified;
-    _border_color = color;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_compression
-//       Access: Published
-//  Description: Requests that this particular Texture be compressed
-//               when it is loaded into texture memory.  
-//
-//               This refers to the internal compression of the
-//               texture image within texture memory; it is not
-//               related to jpeg or png compression, which are disk
-//               file compression formats.  The actual disk file that
-//               generated this texture may be stored in a compressed
-//               or uncompressed format supported by Panda; it will be
-//               decompressed on load, and then recompressed by the
-//               graphics API if this parameter is not CM_off.
-//
-//               If the GSG does not support this texture compression
-//               mode, the texture will silently be loaded
-//               uncompressed.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_compression(Texture::CompressionMode compression) {
-  MutexHolder holder(_lock);
-  if (_compression != compression) {
-    ++_properties_modified;
-    _compression = compression;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_render_to_texture
-//       Access: Published
-//  Description: Sets a flag on the texture that indicates whether the
-//               texture is intended to be used as a direct-render
-//               target, by binding a framebuffer to a texture and
-//               rendering directly into the texture.
-//
-//               This controls some low-level choices made about the
-//               texture object itself.  For instance, compressed
-//               textures are disallowed when this flag is set true.
-//
-//               Normally, a user should not need to set this flag
-//               directly; it is set automatically by the low-level
-//               display code when a texture is bound to a
-//               framebuffer.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_render_to_texture(bool render_to_texture) {
-  _render_to_texture = render_to_texture;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_quality_level
-//       Access: Public
-//  Description: Sets a hint to the renderer about the desired
-//               performance / quality tradeoff for this particular
-//               texture.  This is most useful for the tinydisplay
-//               software renderer; for normal, hardware-accelerated
-//               renderers, this may have little or no effect.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_quality_level(Texture::QualityLevel quality_level) {
-  MutexHolder holder(_lock);
-  if (_quality_level != quality_level) {
-    ++_properties_modified;
-    _quality_level = quality_level;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_ram_image
 //       Access: Published
 //  Description: Replaces the current system-RAM image with the new
@@ -3506,7 +3333,11 @@ do_setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
 ////////////////////////////////////////////////////////////////////
 void Texture::
 do_set_format(Texture::Format format) {
+  if (format == _format) {
+    return;
+  }
   _format = format;
+  ++_properties_modified;
 
   switch (_format) {
   case F_color_index:
@@ -3617,6 +3448,123 @@ do_set_z_size(int z_size) {
     ++_image_modified;
     do_clear_ram_image();
     do_set_pad_size(0, 0, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_wrap_u
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_wrap_u(Texture::WrapMode wrap) {
+  if (_wrap_u != wrap) {
+    ++_properties_modified;
+    _wrap_u = wrap;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_wrap_v
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_wrap_v(Texture::WrapMode wrap) {
+  if (_wrap_v != wrap) {
+    ++_properties_modified;
+    _wrap_v = wrap;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_wrap_w
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_wrap_w(Texture::WrapMode wrap) {
+  if (_wrap_w != wrap) {
+    ++_properties_modified;
+    _wrap_w = wrap;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_minfilter
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_minfilter(Texture::FilterType filter) {
+  if (_minfilter != filter) {
+    ++_properties_modified;
+    _minfilter = filter;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_magfilter
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_magfilter(Texture::FilterType filter) {
+  if (_magfilter != filter) {
+    ++_properties_modified;
+    _magfilter = filter;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_anisotropic_degree
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_anisotropic_degree(int anisotropic_degree) {
+  if (_anisotropic_degree != anisotropic_degree) {
+    ++_properties_modified;
+    _anisotropic_degree = anisotropic_degree;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_border_color
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_border_color(const Colorf &color) {
+  if (_border_color != color) {
+    ++_properties_modified;
+    _border_color = color;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_compression
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_compression(Texture::CompressionMode compression) {
+  if (_compression != compression) {
+    ++_properties_modified;
+    _compression = compression;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_quality_level
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_quality_level(Texture::QualityLevel quality_level) {
+  if (_quality_level != quality_level) {
+    ++_properties_modified;
+    _quality_level = quality_level;
   }
 }
 
@@ -5102,21 +5050,29 @@ void Texture::
 fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   // We have already read in the filenames; don't read them again.
 
-  _wrap_u = (WrapMode)scan.get_uint8();
-  _wrap_v = (WrapMode)scan.get_uint8();
-  _wrap_w = (WrapMode)scan.get_uint8();
-  _minfilter = (FilterType)scan.get_uint8();
-  _magfilter = (FilterType)scan.get_uint8();
-  _anisotropic_degree = scan.get_int16();
-  _border_color.read_datagram(scan);
+  // Use the setters instead of setting these directly, so we can
+  // correctly avoid incrementing _properties_modified if none of
+  // these actually change.  (Otherwise, we'd have to reload the
+  // texture to the GSG every time we loaded a new bam file that
+  // reference the texture, since each bam file reference passes
+  // through this function.)
+
+  do_set_wrap_u((WrapMode)scan.get_uint8());
+  do_set_wrap_v((WrapMode)scan.get_uint8());
+  do_set_wrap_w((WrapMode)scan.get_uint8());
+  do_set_minfilter((FilterType)scan.get_uint8());
+  do_set_magfilter((FilterType)scan.get_uint8());
+  do_set_anisotropic_degree(scan.get_int16());
+  Colorf color;
+  color.read_datagram(scan);
+  do_set_border_color(color);
 
   if (manager->get_file_minor_ver() >= 1) {
-    _compression = (CompressionMode)scan.get_uint8();
+    do_set_compression((CompressionMode)scan.get_uint8());
   }
   if (manager->get_file_minor_ver() >= 16) {
-    _quality_level = (QualityLevel)scan.get_uint8();
+    do_set_quality_level((QualityLevel)scan.get_uint8());
   }
-  ++_properties_modified;
 
   Format format = (Format)scan.get_uint8();
   int num_components = scan.get_uint8();

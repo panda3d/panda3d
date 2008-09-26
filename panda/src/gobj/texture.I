@@ -580,6 +580,137 @@ get_component_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_wrap_u
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_wrap_u(Texture::WrapMode wrap) {
+  MutexHolder holder(_lock);
+  do_set_wrap_u(wrap);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_wrap_v
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_wrap_v(Texture::WrapMode wrap) {
+  MutexHolder holder(_lock);
+  do_set_wrap_v(wrap);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_wrap_w
+//       Access: Published
+//  Description: The W wrap direction is only used for 3-d textures.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_wrap_w(Texture::WrapMode wrap) {
+  MutexHolder holder(_lock);
+  do_set_wrap_w(wrap);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_minfilter
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_minfilter(Texture::FilterType filter) {
+  MutexHolder holder(_lock);
+  do_set_minfilter(filter);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_magfilter
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_magfilter(Texture::FilterType filter) {
+  MutexHolder holder(_lock);
+  do_set_magfilter(filter);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_anisotropic_degree
+//       Access: Published
+//  Description: Specifies the level of anisotropic filtering to apply
+//               to the texture.  Normally, this is 1, to indicate
+//               anisotropic filtering is disabled.  This may be set
+//               to a number higher than one to enable anisotropic
+//               filtering, if the rendering backend supports this.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_anisotropic_degree(int anisotropic_degree) {
+  MutexHolder holder(_lock);
+  do_set_anisotropic_degree(anisotropic_degree);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_border_color
+//       Access: Published
+//  Description: Specifies the solid color of the texture's border.
+//               Some OpenGL implementations use a border for tiling
+//               textures; in Panda, it is only used for specifying
+//               the clamp color.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_border_color(const Colorf &color) {
+  MutexHolder holder(_lock);
+  do_set_border_color(color);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_compression
+//       Access: Published
+//  Description: Requests that this particular Texture be compressed
+//               when it is loaded into texture memory.  
+//
+//               This refers to the internal compression of the
+//               texture image within texture memory; it is not
+//               related to jpeg or png compression, which are disk
+//               file compression formats.  The actual disk file that
+//               generated this texture may be stored in a compressed
+//               or uncompressed format supported by Panda; it will be
+//               decompressed on load, and then recompressed by the
+//               graphics API if this parameter is not CM_off.
+//
+//               If the GSG does not support this texture compression
+//               mode, the texture will silently be loaded
+//               uncompressed.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_compression(Texture::CompressionMode compression) {
+  MutexHolder holder(_lock);
+  do_set_compression(compression);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_render_to_texture
+//       Access: Published
+//  Description: Sets a flag on the texture that indicates whether the
+//               texture is intended to be used as a direct-render
+//               target, by binding a framebuffer to a texture and
+//               rendering directly into the texture.
+//
+//               This controls some low-level choices made about the
+//               texture object itself.  For instance, compressed
+//               textures are disallowed when this flag is set true.
+//
+//               Normally, a user should not need to set this flag
+//               directly; it is set automatically by the low-level
+//               display code when a texture is bound to a
+//               framebuffer.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_render_to_texture(bool render_to_texture) {
+  _render_to_texture = render_to_texture;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_wrap_u
 //       Access: Published
 //  Description: Returns the wrap mode of the texture in the U
@@ -732,6 +863,21 @@ get_render_to_texture() const {
 INLINE bool Texture::
 uses_mipmaps() const {
   return is_mipmap(get_minfilter());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_quality_level
+//       Access: Public
+//  Description: Sets a hint to the renderer about the desired
+//               performance / quality tradeoff for this particular
+//               texture.  This is most useful for the tinydisplay
+//               software renderer; for normal, hardware-accelerated
+//               renderers, this may have little or no effect.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_quality_level(Texture::QualityLevel quality_level) {
+  MutexHolder holder(_lock);
+  do_set_quality_level(quality_level);
 }
 
 ////////////////////////////////////////////////////////////////////

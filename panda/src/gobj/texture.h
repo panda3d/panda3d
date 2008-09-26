@@ -264,15 +264,15 @@ PUBLISHED:
   INLINE Format get_format() const;
   INLINE ComponentType get_component_type() const;
 
-  void set_wrap_u(WrapMode wrap);
-  void set_wrap_v(WrapMode wrap);
-  void set_wrap_w(WrapMode wrap);
-  void set_minfilter(FilterType filter);
-  void set_magfilter(FilterType filter);
-  void set_anisotropic_degree(int anisotropic_degree);
-  void set_border_color(const Colorf &color);
-  void set_compression(CompressionMode compression);
-  void set_render_to_texture(bool render_to_texture);
+  INLINE void set_wrap_u(WrapMode wrap);
+  INLINE void set_wrap_v(WrapMode wrap);
+  INLINE void set_wrap_w(WrapMode wrap);
+  INLINE void set_minfilter(FilterType filter);
+  INLINE void set_magfilter(FilterType filter);
+  INLINE void set_anisotropic_degree(int anisotropic_degree);
+  INLINE void set_border_color(const Colorf &color);
+  INLINE void set_compression(CompressionMode compression);
+  INLINE void set_render_to_texture(bool render_to_texture);
 
   INLINE WrapMode get_wrap_u() const;
   INLINE WrapMode get_wrap_v() const;
@@ -286,7 +286,7 @@ PUBLISHED:
   INLINE bool get_render_to_texture() const;
   INLINE bool uses_mipmaps() const;
 
-  void set_quality_level(QualityLevel quality_level);
+  INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
 
   INLINE int get_expected_num_mipmap_levels() const;
@@ -490,6 +490,16 @@ protected:
   void do_set_x_size(int x_size);
   void do_set_y_size(int y_size);
   void do_set_z_size(int z_size);
+
+  void do_set_wrap_u(WrapMode wrap);
+  void do_set_wrap_v(WrapMode wrap);
+  void do_set_wrap_w(WrapMode wrap);
+  void do_set_minfilter(FilterType filter);
+  void do_set_magfilter(FilterType filter);
+  void do_set_anisotropic_degree(int anisotropic_degree);
+  void do_set_border_color(const Colorf &color);
+  void do_set_compression(CompressionMode compression);
+  void do_set_quality_level(QualityLevel quality_level);
 
   bool do_has_compression() const;
   virtual bool do_has_ram_image() const;
