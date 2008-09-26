@@ -106,6 +106,8 @@ ConnectionWriter::
     (*ti)->join();
   }
 }
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::set_max_queue_size
 //       Access: Public
 //  Description: Limits the number of packets that may be pending on

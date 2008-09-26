@@ -110,10 +110,6 @@ PStatClient() :
 PStatClient::
 ~PStatClient() {
   disconnect();
-
-  if (has_impl()) {
-    delete _impl;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -425,6 +421,8 @@ client_disconnect() {
   ReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_disconnect();
+    delete _impl;
+    _impl = NULL;
   }
 
   ThreadPointer *threads = (ThreadPointer *)_threads;
