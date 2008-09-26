@@ -91,19 +91,21 @@ init() {
 
   // If the major version is different, or the minor version is
   // *newer*, we can't safely load the file.
-  if (_file_major != _bam_major_ver || _file_minor > _bam_minor_ver) {
+  if (_file_major != _bam_major_ver || 
+      _file_minor < _bam_first_minor_ver ||
+      _file_minor > _bam_minor_ver) {
     bam_cat.error()
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
 
-    if (_bam_minor_ver == 0) {
+    if (_bam_minor_ver == _bam_first_minor_ver) {
       bam_cat.error()
         << "This program can only load version "
-        << _bam_major_ver << ".0 bams.\n";
+        << _bam_major_ver << "." << _bam_first_minor_ver << " bams.\n";
     } else {
       bam_cat.error()
         << "This program can only load version "
-        << _bam_major_ver << ".0 through "
+        << _bam_major_ver << "." << _bam_first_minor_ver << " through "
         << _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
     }
 
