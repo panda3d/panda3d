@@ -35,7 +35,8 @@ TypeHandle AsyncTaskManager::_type_handle;
 AsyncTaskManager::
 AsyncTaskManager(const string &name) :
   Namable(name),
-  _clock(ClockObject::get_global_clock())
+  _clock(ClockObject::get_global_clock()),
+  _frame_cvar(_lock)
 {
   // Make a default task chain.
   do_make_task_chain("");
@@ -468,6 +469,10 @@ poll() {
     AsyncTaskChain *chain = (*tci);
     chain->do_poll();
   }
+
+  // Just in case the clock was ticked explicitly by one of our
+  // polling chains.
+  _frame_cvar.signal_all();
 }
 
 ////////////////////////////////////////////////////////////////////

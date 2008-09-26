@@ -121,6 +121,8 @@ protected:
   int _num_tasks;
   TasksByName _tasks_by_name;
   PT(ClockObject) _clock;
+  
+  ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
 
 public:
   static TypeHandle get_class_type() {

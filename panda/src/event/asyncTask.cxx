@@ -309,6 +309,8 @@ unlock_and_do_task() {
   _total_dt += _dt;
   ++_num_frames;
 
+  _chain->_time_in_frame += _dt;
+
   return status;
 }
 

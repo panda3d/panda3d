@@ -61,12 +61,18 @@ public:
   ~AsyncTaskChain();
 
 PUBLISHED:
-  INLINE void set_tick_clock(bool tick_clock);
-  INLINE bool get_tick_clock() const;
+  void set_tick_clock(bool tick_clock);
+  bool get_tick_clock() const;
 
   BLOCKING void set_num_threads(int num_threads);
   int get_num_threads() const;
   int get_num_running_threads() const;
+
+  BLOCKING void set_thread_priority(ThreadPriority priority);
+  ThreadPriority get_thread_priority() const;
+
+  void set_frame_budget(double frame_budget);
+  double get_frame_budget() const;
 
   BLOCKING void stop_threads();
   void start_threads();
@@ -152,7 +158,9 @@ protected:
 
   bool _tick_clock;
   int _num_threads;
+  ThreadPriority _thread_priority;
   Threads _threads;
+  double _frame_budget;
   int _num_busy_threads;
   int _num_tasks;
   TaskHeap _active;
@@ -161,6 +169,9 @@ protected:
   State _state;
   int _current_sort;
   bool _needs_cleanup;
+
+  int _current_frame;
+  double _time_in_frame;
   
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;

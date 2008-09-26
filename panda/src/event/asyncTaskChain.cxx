@@ -40,14 +40,18 @@ AsyncTaskChain::
 AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   Namable(name),
   _manager(manager),
+  _cvar(manager->_lock),
   _tick_clock(false),
   _num_threads(0),
-  _cvar(manager->_lock),
-  _num_tasks(0),
+  _thread_priority(TP_normal),
+  _frame_budget(-1.0),
   _num_busy_threads(0),
+  _num_tasks(0),
   _state(S_initial),
   _current_sort(INT_MAX),
-  _needs_cleanup(false)
+  _needs_cleanup(false),
+  _current_frame(0),
+  _time_in_frame(0.0)
 {
 }
 
@@ -64,6 +68,38 @@ AsyncTaskChain::
   if (_needs_cleanup) {
     MutexHolder holder(_manager->_lock);
     do_cleanup();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::set_tick_clock
+//       Access: Published
+//  Description: Sets the tick_clock flag.  When this is true,
+//               get_clock()->tick() will be called automatically at
+//               each task epoch.  This is false by default.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+set_tick_clock(bool tick_clock) {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    _tick_clock = tick_clock;
+  } else {
+    _tick_clock = tick_clock;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_tick_clock
+//       Access: Published
+//  Description: Returns the tick_clock flag.  See set_tick_clock().
+////////////////////////////////////////////////////////////////////
+bool AsyncTaskChain::
+get_tick_clock() const {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    return _tick_clock;
+  } else {
+    return _tick_clock;
   }
 }
 
@@ -118,6 +154,77 @@ int AsyncTaskChain::
 get_num_running_threads() const {
   MutexHolder holder(_manager->_lock);
   return _threads.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::set_thread_priority
+//       Access: Published
+//  Description: Changes the priority associated with threads that
+//               serve this task chain.  This may require stopping the
+//               threads if they are already running.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+set_thread_priority(ThreadPriority priority) {
+  MutexHolder holder(_manager->_lock);
+  if (_thread_priority != priority) {
+    do_stop_threads();
+    _thread_priority = priority;
+
+    if (_num_tasks != 0) {
+      do_start_threads();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_thread_priority
+//       Access: Published
+//  Description: Returns the priority associated with threads that
+//               serve this task chain.
+////////////////////////////////////////////////////////////////////
+ThreadPriority AsyncTaskChain::
+get_thread_priority() const {
+  MutexHolder holder(_manager->_lock);
+  return _thread_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::set_frame_budget
+//       Access: Published
+//  Description: Sets the maximum amount of time per frame the tasks
+//               on this chain are granted for execution.  If this is
+//               less than zero, there is no limit; if it is >= 0, it
+//               represents a maximum amount of time (in seconds) that
+//               will be used to execute tasks.  If this time is
+//               exceeded in any one frame, the task chain will stop
+//               executing tasks until the next frame, as defined by
+//               the TaskManager's clock.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+set_frame_budget(double frame_budget) {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    _frame_budget = frame_budget;
+  } else {
+    _frame_budget = frame_budget;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_frame_budget
+//       Access: Published
+//  Description: Returns the maximum amount of time per frame the
+//               tasks on this chain are granted for execution.  See
+//               set_frame_budget().
+////////////////////////////////////////////////////////////////////
+double AsyncTaskChain::
+get_frame_budget() const {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    return _frame_budget;
+  } else {
+    return _frame_budget;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -618,6 +725,7 @@ finish_sort_group() {
   // There are no more tasks in this epoch; advance to the next epoch.
   if (_tick_clock) {
     _manager->_clock->tick();
+    _manager->_frame_cvar.signal_all();
   }
   if (!_threads.empty()) {
     PStatClient::thread_tick(get_name());
@@ -705,7 +813,7 @@ do_start_threads() {
         }
         strm << "_" << i;
         PT(AsyncTaskChainThread) thread = new AsyncTaskChainThread(strm.str(), this);
-        if (thread->start(TP_low, true)) {
+        if (thread->start(_thread_priority, true)) {
           _threads.push_back(thread);
         }
       }
@@ -778,14 +886,24 @@ do_poll() {
     return;
   }
   
-  while (!_active.empty() && _state != S_shutdown && _state != S_aborting) {
+  while (!_active.empty()) {
+    if (_state == S_shutdown || _state == S_aborting) {
+      return;
+    }
+    int frame = _manager->_clock->get_frame_count();
+    if (_current_frame != frame) {
+      _current_frame = frame;
+      _time_in_frame = 0.0;
+    }
+    if (_frame_budget >= 0.0 && _time_in_frame > _frame_budget) {
+      return;
+    }
+
     _current_sort = _active.front()->get_sort();
     service_one_task(NULL);
   }
 
-  if (_state != S_shutdown && _state != S_aborting) {
-    finish_sort_group();
-  }
+  finish_sort_group();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -935,6 +1053,24 @@ thread_main() {
   while (_chain->_state != S_shutdown && _chain->_state != S_aborting) {
     if (!_chain->_active.empty() &&
         _chain->_active.front()->get_sort() == _chain->_current_sort) {
+
+      int frame = _chain->_manager->_clock->get_frame_count();
+      if (_chain->_current_frame != frame) {
+        _chain->_current_frame = frame;
+        _chain->_time_in_frame = 0.0;
+      }
+
+      // If we've exceeded our frame budget, sleep until the next
+      // frame.
+      while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame > _chain->_frame_budget) {
+        _chain->_manager->_frame_cvar.wait();
+        frame = _chain->_manager->_clock->get_frame_count();
+        if (_chain->_current_frame != frame) {
+          _chain->_current_frame = frame;
+          _chain->_time_in_frame = 0.0;
+        }
+      }
+
       PStatTimer timer(_task_pcollector);
       _chain->_num_busy_threads++;
       _chain->service_one_task(this);
