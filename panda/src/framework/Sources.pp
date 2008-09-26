@@ -8,10 +8,13 @@
     recorder pgui pgraph putil collide chan text \
     pnmimage pnmimagetypes event
 
-  #define SOURCES \
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+
+  #define INCLUDED_SOURCES \
     config_framework.cxx config_framework.h \
     pandaFramework.cxx pandaFramework.I pandaFramework.h \
-    windowFramework.cxx windowFramework.I windowFramework.h
+    windowFramework.cxx windowFramework.I windowFramework.h \
+    shuttle_controls.bam.c
 
   #define INSTALL_HEADERS \
     pandaFramework.I pandaFramework.h \
