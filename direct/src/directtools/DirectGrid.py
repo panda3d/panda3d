@@ -13,7 +13,7 @@ class DirectGrid(NodePath, DirectObject):
 
         # Load up grid parts to initialize grid object
         # Polygon used to mark grid plane
-        self.gridBack = loader.loadModel('models/misc/gridBack.bam')
+        self.gridBack = loader.loadModel('models/misc/gridBack')
         self.gridBack.reparentTo(self)
         self.gridBack.setColor(*planeColor)
 
@@ -35,7 +35,7 @@ class DirectGrid(NodePath, DirectObject):
         self.centerLines.setThickness(3)
 
         # Small marker to hilight snap-to-grid point
-        self.snapMarker = loader.loadModel('models/misc/sphere.bam')
+        self.snapMarker = loader.loadModel('models/misc/sphere')
         self.snapMarker.node().setName('gridSnapMarker')
         self.snapMarker.reparentTo(self)
         self.snapMarker.setColor(1, 0, 0, 1)
