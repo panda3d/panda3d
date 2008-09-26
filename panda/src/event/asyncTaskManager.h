@@ -58,6 +58,8 @@ PUBLISHED:
   AsyncTaskManager(const string &name);
   BLOCKING virtual ~AsyncTaskManager();
 
+  BLOCKING void cleanup();
+
   INLINE void set_clock(ClockObject *clock);
   INLINE ClockObject *get_clock();
 
@@ -88,6 +90,7 @@ PUBLISHED:
   AsyncTaskCollection get_sleeping_tasks() const;
 
   void poll();
+  double get_next_wake_time() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -100,6 +103,8 @@ protected:
   void remove_task_by_name(AsyncTask *task);
 
   bool do_has_task(AsyncTask *task) const;
+
+  virtual void do_output(ostream &out) const;
 
 protected:
   class AsyncTaskSortName {
@@ -144,6 +149,11 @@ private:
   friend class AsyncTaskChain;
   friend class AsyncTaskChain::AsyncTaskChainThread;
   friend class AsyncTask;
+};
+
+INLINE ostream &operator << (ostream &out, const AsyncTaskManager &manager) {
+  manager.output(out);
+  return out;
 };
 
 #include "asyncTaskManager.I"

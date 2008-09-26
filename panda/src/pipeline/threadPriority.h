@@ -30,5 +30,8 @@ enum ThreadPriority {
 };
 END_PUBLISH
 
+EXPCL_PANDA_PIPELINE ostream &
+operator << (ostream &out, ThreadPriority pri);
+
 
 #endif

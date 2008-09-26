@@ -37,17 +37,30 @@ PUBLISHED:
   void set_args(PyObject *args, bool append_task);
   PyObject *get_args();
 
+  void set_upon_death(PyObject *upon_death);
+  PyObject *get_upon_death();
+
+  void set_owner(PyObject *owner);
+  PyObject *get_owner();
+
   int __setattr__(const string &attr_name, PyObject *v);
   int __setattr__(const string &attr_name);
   PyObject *__getattr__(const string &attr_name) const;
 
 protected:
   virtual DoneStatus do_task();
+  virtual void upon_birth();
+  virtual void upon_death(bool clean_exit);
+
+  void call_owner_method(const char *method_name);
+  void call_function(PyObject *function);
 
 private:
   PyObject *_function;
   PyObject *_args;
   bool _append_task;
+  PyObject *_upon_death;
+  PyObject *_owner;
   PyObject *_dict;
 
 public:

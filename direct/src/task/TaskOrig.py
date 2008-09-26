@@ -631,6 +631,9 @@ class TaskManager:
             # Alert the world, a new task is born!
             messenger.send('TaskManager-spawnDoLater',
                            sentArgs = [task, task.name, task.id])
+
+        if task.owner:
+            task.owner._addTask(task)
         return task
 
     def add(self, funcOrTask, name, priority=None, sort=None, extraArgs=None, uponDeath=None,
@@ -679,6 +682,8 @@ class TaskManager:
             self.nameDict[name] = [task]
         # Put it on the list for the end of this frame
         self.__addPendingTask(task)
+        if task.owner:
+            task.owner._addTask(task)
         return task
 
     def __addPendingTask(self, task):
@@ -1618,6 +1623,8 @@ class TaskManager:
 
             # task owner
             class _TaskOwner:
+                def _addTask(self, task):
+                    self.addedTaskName = task.name
                 def _clearTask(self, task):
                     self.clearedTaskName = task.name
             to = _TaskOwner()
@@ -1626,8 +1633,8 @@ class TaskManager:
                 return done
             tm.add(_testOwner, 'testOwner', owner=to)
             tm.step()
-            assert hasattr(to, 'clearedTaskName')
-            assert to.clearedTaskName == 'testOwner'
+            assert getattr(to, 'addedTaskName', None) == 'testOwner'
+            assert getattr(to, 'clearedTaskName', None) == 'testOwner'
             _testOwner = None
             del to
             _TaskOwner = None
@@ -1748,6 +1755,8 @@ class TaskManager:
 
             # doLater owner
             class _DoLaterOwner:
+                def _addTask(self, task):
+                    self.addedTaskName = task.name
                 def _clearTask(self, task):
                     self.clearedTaskName = task.name
             doLaterOwner = _DoLaterOwner()
@@ -1757,8 +1766,8 @@ class TaskManager:
             def _monitorDoLaterOwner(task, tm=tm, l=l, doLaterOwner=doLaterOwner,
                                      doLaterTests=doLaterTests):
                 if task.time > .02:
-                    assert hasattr(doLaterOwner, 'clearedTaskName')
-                    assert doLaterOwner.clearedTaskName == 'testDoLaterOwner'
+                    assert getattr(doLaterOwner, 'addedTaskName', None) == 'testDoLaterOwner'
+                    assert getattr(doLaterOwner, 'clearedTaskName', None) == 'testDoLaterOwner'
                     doLaterTests[0] -= 1
                     return task.done
                 return task.cont

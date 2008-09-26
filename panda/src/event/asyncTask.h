@@ -80,6 +80,8 @@ PUBLISHED:
   void set_name(const string &name);
   INLINE void clear_name();
 
+  INLINE AtomicAdjust::Integer get_task_id() const;
+
   void set_task_chain(const string &chain_name);
   INLINE const string &get_task_chain() const;
 
@@ -106,8 +108,11 @@ PUBLISHED:
 protected:
   DoneStatus unlock_and_do_task();
   virtual DoneStatus do_task();
+  virtual void upon_birth();
+  virtual void upon_death(bool clean_exit);
 
 protected:
+  AtomicAdjust::Integer _task_id;
   string _chain_name;
   double _delay;
   bool _has_delay;
@@ -125,6 +130,8 @@ protected:
   double _max_dt;
   double _total_dt;
   int _num_frames;
+
+  static AtomicAdjust::Integer _next_task_id;
 
   static PStatCollector _show_code_pcollector;
   PStatCollector _task_pcollector;

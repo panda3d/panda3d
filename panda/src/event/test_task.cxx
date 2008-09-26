@@ -50,7 +50,7 @@ static const int num_threads = 10;
 int
 main(int argc, char *argv[]) {
   PT(AsyncTaskManager) task_mgr = new AsyncTaskManager("task_mgr");
-  PT(AsyncTaskChain) chain = task_mgr->make_task_chain("");
+  PT(AsyncTaskChain) chain = task_mgr->make_task_chain("default");
   chain->set_tick_clock(true);
   chain->set_num_threads(num_threads);
 

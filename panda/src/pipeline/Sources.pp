@@ -107,7 +107,8 @@
     threadPosixImpl.cxx \
     threadSimpleImpl.cxx \
     threadSimpleManager.cxx \
-    threadWin32Impl.cxx
+    threadWin32Impl.cxx \
+    threadPriority.cxx
 
   #define INSTALL_HEADERS  \
     contextSwitch.h \

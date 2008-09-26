@@ -50,7 +50,6 @@ class DirectObject:
             self._taskList = {}
         kwargs['owner']=self
         task = taskMgr.add(*args, **kwargs)
-        self._taskList[task.id] = task
         return task
     
     def doMethodLater(self, *args, **kwargs):
@@ -58,7 +57,6 @@ class DirectObject:
             self._taskList ={}
         kwargs['owner']=self            
         task = taskMgr.doMethodLater(*args, **kwargs)
-        self._taskList[task.id] = task
         return task
     
     def removeTask(self, taskOrName):
@@ -76,6 +74,9 @@ class DirectObject:
         if hasattr(self,'_taskList'):
             for task in self._taskList.values():
                 task.remove()
+
+    def _addTask(self, task):
+        self._taskList[task.id] = task
 
     def _clearTask(self, task):
         del self._taskList[task.id]        

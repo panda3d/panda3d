@@ -39,7 +39,7 @@ AsyncTaskManager(const string &name) :
   _frame_cvar(_lock)
 {
   // Make a default task chain.
-  do_make_task_chain("");
+  do_make_task_chain("default");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +49,17 @@ AsyncTaskManager(const string &name) :
 ////////////////////////////////////////////////////////////////////
 AsyncTaskManager::
 ~AsyncTaskManager() {
+  cleanup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::cleanup
+//       Access: Published
+//  Description: Stops all threads and messily empties the task list.
+//               This is intended to be called on destruction only.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+cleanup() {
   MutexHolder holder(_lock);
 
   TaskChains::iterator tci;
@@ -58,6 +69,9 @@ AsyncTaskManager::
     AsyncTaskChain *chain = (*tci);
     chain->do_cleanup();
   }
+
+  _task_chains.clear();
+  nassertv(_num_tasks == 0 && _tasks_by_name.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +148,7 @@ remove_task_chain(const string &name) {
 
   while (chain->_num_tasks != 0) {
     // Still has tasks.
-    event_cat.info()
+    task_cat.info()
       << "Waiting for tasks on chain " << name << " to finish.\n";
     chain->do_wait_for_tasks();
   }
@@ -156,6 +170,11 @@ void AsyncTaskManager::
 add(AsyncTask *task) {
   MutexHolder holder(_lock);
 
+  if (task_cat.is_debug()) {
+    task_cat.debug()
+      << "Adding " << *task << "\n";
+  }
+  
   if (task->_state == AsyncTask::S_servicing_removed) {
     if (task->_manager == this) {
       // Re-adding a self-removed task; this just means clearing the
@@ -171,7 +190,7 @@ add(AsyncTask *task) {
 
   AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
   if (chain == (AsyncTaskChain *)NULL) {
-    event_cat.warning()
+    task_cat.warning()
       << "Creating implicit AsyncTaskChain " << task->_chain_name
       << " for " << get_type() << " " << get_name() << "\n";
     chain = do_make_task_chain(task->_chain_name);
@@ -309,8 +328,17 @@ remove(const AsyncTaskCollection &tasks) {
       nassertr(!do_has_task(task), num_removed);
     } else {
       nassertr(task->_chain->_manager == this, num_removed);
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "Removing " << *task << "\n";
+      }
       if (task->_chain->do_remove(task)) {
         ++num_removed;
+      } else {
+        if (task_cat.is_debug()) {
+          task_cat.debug()
+            << "  (unable to remove " << *task << ")\n";
+        }
       }
     }
   }
@@ -476,6 +504,39 @@ poll() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::get_next_wake_time
+//       Access: Published
+//  Description: Returns the scheduled time (on the manager's clock)
+//               of the next sleeping task, on any task chain, to
+//               awaken.  Returns -1 if there are no sleeping tasks.
+////////////////////////////////////////////////////////////////////
+double AsyncTaskManager::
+get_next_wake_time() const {
+  MutexHolder holder(_lock);
+
+  bool got_any = false;
+  double next_wake_time = -1.0;
+
+  TaskChains::const_iterator tci;
+  for (tci = _task_chains.begin();
+       tci != _task_chains.end();
+       ++tci) {
+    AsyncTaskChain *chain = (*tci);
+    double time = chain->do_get_next_wake_time();
+    if (time >= 0.0) {
+      if (!got_any) {
+        got_any = true;
+        next_wake_time = time;
+      } else {
+        next_wake_time = min(time, next_wake_time);
+      }
+    }
+  }
+
+  return next_wake_time;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskManager::output
 //       Access: Published, Virtual
 //  Description: 
@@ -483,9 +544,7 @@ poll() {
 void AsyncTaskManager::
 output(ostream &out) const {
   MutexHolder holder(_lock);
-
-  out << get_type() << " " << get_name()
-      << "; " << _num_tasks << " tasks";
+  do_output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -507,29 +566,6 @@ write(ostream &out, int indent_level) const {
     out << "\n";
     chain->do_write(out, indent_level + 2);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskManager::do_has_task
-//       Access: Protected
-//  Description: Returns true if the task is on one of the task lists,
-//               false if it is not (false may mean that the task is
-//               currently being serviced).  Assumes the lock is
-//               currently held.
-////////////////////////////////////////////////////////////////////
-bool AsyncTaskManager::
-do_has_task(AsyncTask *task) const {
-  TaskChains::const_iterator tci;
-  for (tci = _task_chains.begin();
-       tci != _task_chains.end();
-       ++tci) {
-    AsyncTaskChain *chain = (*tci);
-    if (chain->do_has_task(task)) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,4 +634,38 @@ remove_task_by_name(AsyncTask *task) {
     // For some reason, the task wasn't on the index.
     nassertv(false);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::do_has_task
+//       Access: Protected
+//  Description: Returns true if the task is on one of the task lists,
+//               false if it is not (false may mean that the task is
+//               currently being serviced).  Assumes the lock is
+//               currently held.
+////////////////////////////////////////////////////////////////////
+bool AsyncTaskManager::
+do_has_task(AsyncTask *task) const {
+  TaskChains::const_iterator tci;
+  for (tci = _task_chains.begin();
+       tci != _task_chains.end();
+       ++tci) {
+    AsyncTaskChain *chain = (*tci);
+    if (chain->do_has_task(task)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::do_output
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+do_output(ostream &out) const {
+  out << get_type() << " " << get_name()
+      << "; " << _num_tasks << " tasks";
 }

@@ -27,6 +27,7 @@
 
 Configure(config_event);
 NotifyCategoryDef(event, "");
+NotifyCategoryDef(task, "");
 
 ConfigureFn(config_event) {
   AsyncTask::init_type();

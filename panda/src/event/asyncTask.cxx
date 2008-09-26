@@ -15,7 +15,11 @@
 #include "asyncTask.h"
 #include "asyncTaskManager.h"
 #include "config_event.h"
+#include "pt_Event.h"
+#include "throw_event.h"
+#include "eventParameter.h"
 
+AtomicAdjust::Integer AsyncTask::_next_task_id;
 PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
 TypeHandle AsyncTask::_type_handle;
 
@@ -26,6 +30,7 @@ TypeHandle AsyncTask::_type_handle;
 ////////////////////////////////////////////////////////////////////
 AsyncTask::
 AsyncTask(const string &name) : 
+  _chain_name("default"),
   _delay(0.0),
   _has_delay(false),
   _wake_time(0.0),
@@ -44,6 +49,15 @@ AsyncTask(const string &name) :
   _python_object = NULL;
 #endif  // HAVE_PYTHON
   set_name(name);
+
+  // Carefully copy _next_task_id and increment it so that we get a
+  // unique ID.
+  AtomicAdjust::Integer current_id = _next_task_id;
+  while (AtomicAdjust::compare_and_exchange(_next_task_id, current_id, current_id + 1) != current_id) {
+    current_id = _next_task_id;
+  }
+
+  _task_id = current_id;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,7 +175,7 @@ set_task_chain(const string &chain_name) {
 
         AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
         if (chain_b == (AsyncTaskChain *)NULL) {
-          event_cat.warning()
+          task_cat.warning()
             << "Creating implicit AsyncTaskChain " << _chain_name
             << " for " << manager->get_type() << " "
             << manager->get_name() << "\n";
@@ -337,4 +351,44 @@ unlock_and_do_task() {
 AsyncTask::DoneStatus AsyncTask::
 do_task() {
   return DS_done;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::upon_birth
+//       Access: Protected, Virtual
+//  Description: Override this function to do something useful when the
+//               task has been added to the active queue.
+//
+//               This function is called with the lock held.  You may
+//               temporarily release if it necessary, but be sure to
+//               return with it held.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+upon_birth() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::upon_death
+//       Access: Protected, Virtual
+//  Description: Override this function to do something useful when the
+//               task has been removed from the active queue.  The
+//               parameter clean_exit is true if the task has been
+//               removed because it exited normally (returning
+//               DS_done), or false if it was removed for some other
+//               reason (e.g. AsyncTaskManager::remove()).
+//
+//               The normal behavior is to throw the done_event only
+//               if clean_exit is true.
+//
+//               This function is called with the lock held.  You may
+//               temporarily release if it necessary, but be sure to
+//               return with it held.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+upon_death(bool clean_exit) {
+  if (clean_exit && !_done_event.empty()) {
+    PT_Event event = new Event(_done_event);
+    event->add_parameter(EventParameter(this));
+    throw_event(event);
+  }
 }

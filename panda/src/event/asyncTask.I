@@ -139,6 +139,17 @@ clear_name() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_task_id
+//       Access: Public
+//  Description: Returns a number guaranteed to be unique for each
+//               different AsyncTask object in the universe.
+////////////////////////////////////////////////////////////////////
+INLINE AtomicAdjust::Integer AsyncTask::
+get_task_id() const {
+  return _task_id;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_task_chain
 //       Access: Published
 //  Description: Returns the AsyncTaskChain on which this task will

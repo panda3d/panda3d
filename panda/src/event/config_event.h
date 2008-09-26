@@ -20,5 +20,6 @@
 #include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(event, EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT);
+NotifyCategoryDecl(task, EXPCL_PANDA_EVENT, EXPTP_PANDA_EVENT);
 
 #endif

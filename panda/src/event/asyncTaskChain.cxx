@@ -15,9 +15,6 @@
 #include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
 #include "event.h"
-#include "pt_Event.h"
-#include "throw_event.h"
-#include "eventParameter.h"
 #include "mutexHolder.h"
 #include "indent.h"
 #include "pStatClient.h"
@@ -48,7 +45,7 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _num_busy_threads(0),
   _num_tasks(0),
   _state(S_initial),
-  _current_sort(INT_MAX),
+  _current_sort(-INT_MAX),
   _needs_cleanup(false),
   _current_frame(0),
   _time_in_frame(0.0)
@@ -366,6 +363,19 @@ poll() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_next_wake_time
+//       Access: Published
+//  Description: Returns the scheduled time (on the manager's clock)
+//               of the next sleeping task, on any task chain, to
+//               awaken.  Returns -1 if there are no sleeping tasks.
+////////////////////////////////////////////////////////////////////
+double AsyncTaskChain::
+get_next_wake_time() const {
+  MutexHolder holder(_manager->_lock);
+  return do_get_next_wake_time();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskChain::output
 //       Access: Published, Virtual
 //  Description: 
@@ -373,9 +383,7 @@ poll() {
 void AsyncTaskChain::
 output(ostream &out) const {
   MutexHolder holder(_manager->_lock);
-
-  out << get_type() << " " << get_name()
-      << "; " << _num_tasks << " tasks";
+  do_output(out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -420,6 +428,7 @@ do_add(AsyncTask *task) {
   if (task->has_delay()) {
     // This is a deferred task.  Add it to the sleeping queue.
     task->_wake_time = now + task->get_delay();
+    task->_start_time = task->_wake_time;
     task->_state = AsyncTask::S_sleeping;
     _sleeping.push_back(task);
     push_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
@@ -427,7 +436,13 @@ do_add(AsyncTask *task) {
   } else {
     // This is an active task.  Add it to the active set.
     task->_state = AsyncTask::S_active;
-    if (task->get_sort() > _current_sort) {
+    if (task_cat.is_spam()) {
+      task_cat.spam()
+        << "Adding " << *task << " with sort " << task->get_sort()
+        << " to chain " << get_name() << " with current_sort "
+        << _current_sort << "\n";
+    }
+    if (task->get_sort() >= _current_sort) {
       // It will run this frame.
       _active.push_back(task);
       push_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
@@ -439,6 +454,8 @@ do_add(AsyncTask *task) {
   ++_num_tasks;
   ++(_manager->_num_tasks);
   _needs_cleanup = true;
+
+  task->upon_birth();
   _cvar.signal_all();
 }
 
@@ -541,21 +558,30 @@ void AsyncTaskChain::
 do_cleanup() {
   do_stop_threads();
 
-  TaskHeap::const_iterator ti;
-  for (ti = _active.begin(); ti != _active.end(); ++ti) {
-    AsyncTask *task = (*ti);
-    cleanup_task(task, false);
-  }
-  for (ti = _next_active.begin(); ti != _next_active.end(); ++ti) {
-    AsyncTask *task = (*ti);
-    cleanup_task(task, false);
-  }
-  for (ti = _sleeping.begin(); ti != _sleeping.end(); ++ti) {
-    AsyncTask *task = (*ti);
-    cleanup_task(task, false);
-  }
+  // Move aside the task lists first.  We must do this before we start
+  // iterating, because cleanup_task() might release the lock,
+  // allowing the iterators to become invalid.
+
+  TaskHeap active, next_active, sleeping;
+  active.swap(_active);
+  next_active.swap(_next_active);
+  sleeping.swap(_sleeping);
 
   _needs_cleanup = false;
+
+  TaskHeap::const_iterator ti;
+  for (ti = active.begin(); ti != active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    cleanup_task(task, false);
+  }
+  for (ti = next_active.begin(); ti != next_active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    cleanup_task(task, false);
+  }
+  for (ti = sleeping.begin(); ti != sleeping.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    cleanup_task(task, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -600,6 +626,9 @@ find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const {
 //               and restores it to the end of the queue.  This is
 //               called internally only within one of the task
 //               threads.  Assumes the lock is already held.
+//
+//               Note that the lock may be temporarily released by
+//               this method.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
@@ -610,6 +639,12 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
     if (thread != (AsyncTaskChain::AsyncTaskChainThread *)NULL) {
       thread->_servicing = task;
+    }
+
+    if (task_cat.is_spam()) {
+      task_cat.spam()
+        << "Servicing " << *task << " in " << *Thread::get_current_thread()
+        << "\n";
     }
 
     nassertv(task->get_sort() == _current_sort);
@@ -650,6 +685,11 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
             task->_state = AsyncTask::S_sleeping;
             _sleeping.push_back(task);
             push_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
+            if (task_cat.is_spam()) {
+              task_cat.spam()
+                << "Sleeping " << *task << ", wake time at " 
+                << task->get_wake_time() - now << "\n";
+            }
             _cvar.signal_all();
           }
           break;
@@ -678,10 +718,14 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 //  Description: Called internally when a task has completed (or been
 //               interrupted) and is about to be removed from the
 //               active queue.  Assumes the lock is held.
+//
+//               Note that the lock may be temporarily released by
+//               this method.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 cleanup_task(AsyncTask *task, bool clean_exit) {
   nassertv(task->_chain == this);
+  PT(AsyncTask) hold_task = task;
 
   task->_state = AsyncTask::S_inactive;
   task->_chain = NULL;
@@ -690,12 +734,7 @@ cleanup_task(AsyncTask *task, bool clean_exit) {
   --(_manager->_num_tasks);
 
   _manager->remove_task_by_name(task);
-
-  if (clean_exit && !task->_done_event.empty()) {
-    PT_Event event = new Event(task->_done_event);
-    event->add_parameter(EventParameter(task));
-    throw_event(event);
-  }
+  task->upon_death(clean_exit);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -723,7 +762,18 @@ finish_sort_group() {
   }
 
   // There are no more tasks in this epoch; advance to the next epoch.
+  if (task_cat.is_spam()) {
+    do_output(task_cat.spam());
+    task_cat.spam(false)
+      << ": next epoch\n";
+  }
+
   if (_tick_clock) {
+    if (task_cat.is_spam()) {
+      do_output(task_cat.spam());
+      task_cat.spam(false)
+        << ": tick clock\n";
+    }
     _manager->_clock->tick();
     _manager->_frame_cvar.signal_all();
   }
@@ -737,24 +787,40 @@ finish_sort_group() {
   double now = _manager->_clock->get_frame_time();
   while (!_sleeping.empty() && _sleeping.front()->get_wake_time() <= now) {
     PT(AsyncTask) task = _sleeping.front();
+    if (task_cat.is_spam()) {
+      task_cat.spam()
+        << "Waking " << *task << ", wake time at " 
+        << task->get_wake_time() - now << "\n";
+    }
     pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
     _sleeping.pop_back();
     task->_state = AsyncTask::S_active;
     _active.push_back(task);
   }
 
+  if (task_cat.is_spam()) {
+    if (_sleeping.empty()) {
+      task_cat.spam()
+        << "No more tasks on sleeping queue.\n";
+    } else {
+      task_cat.spam()
+        << "Next sleeper: " << *_sleeping.front() << ", wake time at " 
+        << _sleeping.front()->get_wake_time() - now << "\n";
+    }
+  }
+
   make_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
   nassertr(_num_tasks == _active.size() + _sleeping.size(), true);
 
+  _current_sort = -INT_MAX;
+
   if (!_active.empty()) {
-    // Get the first task on the queue.
-    _current_sort = _active.front()->get_sort();
+    // Signal the threads to start executing the first task again.
     _cvar.signal_all();
     return true;
   }
 
   // There are no tasks to be had anywhere.  Chill.
-  _current_sort = INT_MAX;
   return false;
 }
 
@@ -807,11 +873,7 @@ do_start_threads() {
       _threads.reserve(_num_threads);
       for (int i = 0; i < _num_threads; ++i) {
         ostringstream strm;
-        strm << _manager->get_name();
-        if (has_name()) {
-          strm << "_" << get_name();
-        }
-        strm << "_" << i;
+        strm << _manager->get_name() << "_" << get_name() << "_" << i;
         PT(AsyncTaskChainThread) thread = new AsyncTaskChainThread(strm.str(), this);
         if (thread->start(_thread_priority, true)) {
           _threads.push_back(thread);
@@ -907,6 +969,37 @@ do_poll() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::do_get_next_wake_time
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+double AsyncTaskChain::
+do_get_next_wake_time() const {
+  if (!_sleeping.empty()) {
+    PT(AsyncTask) task = _sleeping.front();
+    return task->_wake_time;
+  }
+  return -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::do_output
+//       Access: Protected
+//  Description: The private implementation of output(), this assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+do_output(ostream &out) const {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    out << _manager->get_type() << " " << _manager->get_name();
+  } else {
+    out << "(no manager)";
+  }
+  out << " task chain " << get_name()
+      << "; " << _num_tasks << " tasks";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskChain::do_write
 //       Access: Protected
 //  Description: The private implementation of write(), this assumes
@@ -914,15 +1007,19 @@ do_poll() {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 do_write(ostream &out, int indent_level) const {
-  if (has_name()) {
-    indent(out, indent_level)
-      << get_name();
-    if (_num_threads > 0) {
-      out << ", " << _num_threads << " threads";
-    }
-    out << "\n";
-  } else if (_num_threads > 0) {
-    out << "Default task chain, " << _num_threads << " threads\n";
+  indent(out, indent_level)
+    << "Task chain \"" << get_name() << "\"\n";
+  if (_num_threads > 0) {
+    indent(out, indent_level + 2) 
+      << _num_threads << " threads, priority " << _thread_priority << "\n";
+  }
+  if (_frame_budget >= 0.0) {
+    indent(out, indent_level + 2) 
+      << "frame budget " << _frame_budget << " s\n";
+  }
+  if (_tick_clock) {
+    indent(out, indent_level + 2) 
+      << "tick clock\n";
   }
 
   static const size_t buffer_size = 1024;

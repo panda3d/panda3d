@@ -88,6 +88,7 @@ PUBLISHED:
   AsyncTaskCollection get_sleeping_tasks() const;
 
   void poll();
+  double get_next_wake_time() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -112,6 +113,8 @@ protected:
   AsyncTaskCollection do_get_active_tasks() const;
   AsyncTaskCollection do_get_sleeping_tasks() const;
   void do_poll();
+  double do_get_next_wake_time() const;
+  void do_output(ostream &out) const;
   void do_write(ostream &out, int indent_level) const;
 
   void write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) const;
@@ -139,7 +142,10 @@ protected:
       if (a->get_sort() != b->get_sort()) {
         return a->get_sort() > b->get_sort();
       }
-      return a->get_priority() < b->get_priority();
+      if (a->get_priority() != b->get_priority()) {
+        return a->get_priority() < b->get_priority();
+      }
+      return a->get_start_time() > b->get_start_time();
     }
   };
 
@@ -196,6 +202,11 @@ private:
   friend class AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskManager;
+};
+
+INLINE ostream &operator << (ostream &out, const AsyncTaskChain &chain) {
+  chain.output(out);
+  return out;
 };
 
 #include "asyncTaskChain.I"

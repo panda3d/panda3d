@@ -1,0 +1,37 @@
+// Filename: threadPriority.cxx
+// Created by:  drose (26Sep08)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#include "threadPriority.h"
+
+ostream &
+operator << (ostream &out, ThreadPriority pri) {
+  switch (pri) {
+  case TP_low:
+    return out << "low";
+
+  case TP_normal:
+    return out << "normal";
+
+  case TP_high:
+    return out << "high";
+
+  case TP_urgent:
+    return out << "urgent";
+  }
+
+  pipeline_cat->error()
+    << "Invalid ThreadPriority value: " << (int)pri << "\n";
+  nassertr(false, out);
+  return out;
+}

@@ -21,3 +21,4 @@
 #include "threadSimpleImpl.cxx"
 #include "threadSimpleManager.cxx"
 #include "threadWin32Impl.cxx"
+#include "threadPriority.cxx"
