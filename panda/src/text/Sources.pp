@@ -43,7 +43,8 @@
     textGraphic.cxx \
     textNode.cxx \
     textProperties.cxx \
-    textPropertiesManager.cxx
+    textPropertiesManager.cxx \
+    cmss12.bam.c cmss12.bam.pz.c uhvr8ac.pfb.c
 
   #define INSTALL_HEADERS \
     config_text.h \
