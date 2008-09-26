@@ -2864,9 +2864,15 @@ do_write_txo(ostream &out, const string &filename) const {
 
   writer.set_file_texture_mode(BTM_rawdata);
 
+  // We have to temporarily release the lock to allow it to write
+  // (since the BamWriter will call write_datagram, which in turn
+  // will need to grab the lock).
+  _lock.release();
   if (!writer.write_object(this)) {
+    _lock.lock();
     return false;
   }
+  _lock.lock();
 
   if (!do_has_ram_image()) {
     gobj_cat.error()
@@ -5177,9 +5183,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 write_datagram(BamWriter *manager, Datagram &me) {
-  // BUG: we don't grab the lock!  Yikes!  How should we handle
-  // locking the texture when it is written out in general, vs. when
-  // it is written out during write_txo()?
+  MutexHolder holder(_lock);
 
   // Write out the texture's raw pixel data if (a) the current Bam
   // Texture Mode requires that, or (b) there's no filename, so the
