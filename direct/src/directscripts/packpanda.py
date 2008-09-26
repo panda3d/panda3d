@@ -2,7 +2,7 @@
 #
 # packpanda - this is a tool that packages up a panda game into a
 # convenient, easily-downloaded windows executable.  Packpanda relies on
-# NSIS, the netscape scriptable install system, to do the hard work.
+# NSIS, the nullsoft scriptable install system, to do the hard work.
 #
 # This is intentionally a very simplistic game-packer with very
 # limited options.  The goal is simplicity, not feature richness.
