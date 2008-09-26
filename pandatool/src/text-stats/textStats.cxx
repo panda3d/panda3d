@@ -53,6 +53,12 @@ TextStats() {
      "time per collector.",
      &TextStats::dispatch_none, &_show_raw_data, NULL);
 
+  add_option
+    ("o", "filename", 0,
+     "Filename where to print. If not given then stderr is being used.",
+     &TextStats::dispatch_string, &_got_outputFileName, &_outputFileName);
+     
+  _outFile = NULL;
   _port = pstats_port;
 }
 
@@ -64,7 +70,8 @@ TextStats() {
 ////////////////////////////////////////////////////////////////////
 PStatMonitor *TextStats::
 make_monitor() {
-  return new TextMonitor(this);
+  
+  return new TextMonitor(this, _outFile, _show_raw_data);
 }
 
 
@@ -86,6 +93,12 @@ run() {
 
   nout << "Listening for connections.\n";
 
+  if (_got_outputFileName) {
+    _outFile = new ofstream(_outputFileName.c_str(), ios::out);
+  } else {
+    _outFile = &(nout);
+  }
+  
   main_loop(&user_interrupted);
   nout << "Exiting.\n";
 }

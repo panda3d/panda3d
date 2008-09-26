@@ -20,6 +20,9 @@
 #include "programBase.h"
 #include "pStatServer.h"
 
+#include <iostream>
+#include <fstream>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TextStats
 // Description : A simple, scrolling-text stats server.  Guaranteed to
@@ -33,8 +36,14 @@ public:
 
   void run();
 
+private:  
   int _port;
   bool _show_raw_data;
+  
+  //[PECI]
+  bool _got_outputFileName;
+  string _outputFileName;
+  ostream *_outFile;
 };
 
 #endif
