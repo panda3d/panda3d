@@ -2,6 +2,9 @@
 AsyncTaskManager interface.  It replaces the old full-Python
 implementation of the Task system. """
 
+__all__ = ['Task', 'TaskManager',
+           'exit', 'cont', 'done', 'again', 'restart']
+
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
 import signal
@@ -46,22 +49,25 @@ def print_exc_plus():
             except:
                 print "<ERROR WHILE PRINTING VALUE>"
 
-# These constants are moved to the top level of the module,
-# to make it easier for legacy code.  In general though, putting
-# constants at the top level of a module is deprecated.
-
+# For historical purposes, we remap the C++-defined enumeration to
+# these Python names, and define them both at the module level, here,
+# and at the class level (below).  The preferred access is via the
+# class level.
 done = AsyncTask.DSDone
 cont = AsyncTask.DSCont
 again = AsyncTask.DSAgain
+restart = AsyncTask.DSRestart
 
-class Task(PythonTask):
+# Alias PythonTask to Task for historical purposes.
+Task = PythonTask
 
-    done = AsyncTask.DSDone
-    cont = AsyncTask.DSCont
-    again = AsyncTask.DSAgain
-
-    def __init__(self, function, name = ''):
-        PythonTask.__init__(self, function, name)
+# Copy the module-level enums above into the class level.  This funny
+# syntax is necessary because it's a C++-wrapped extension type, not a
+# true Python class.
+Task.DtoolClassDict['done'] = done
+Task.DtoolClassDict['cont'] = cont
+Task.DtoolClassDict['again'] = again
+Task.DtoolClassDict['restart'] = restart
 
 class TaskManager:
     notify = directNotify.newCategory("TaskManager")
