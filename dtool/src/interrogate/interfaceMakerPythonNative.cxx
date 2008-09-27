@@ -2986,6 +2986,7 @@ void InterfaceMakerPythonNative::do_assert_init(ostream &out, int indent_level, 
         indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
     indent(out, indent_level)
       << "}\n";
+    out << "#endif\n";
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
     if(constructor)
@@ -2994,7 +2995,6 @@ void InterfaceMakerPythonNative::do_assert_init(ostream &out, int indent_level, 
         indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
     indent(out, indent_level)
       << "}\n";
-    out << "#endif\n";
   }
 }
 ////////////////////////////////////////////////////////
