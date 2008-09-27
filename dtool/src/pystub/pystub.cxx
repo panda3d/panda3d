@@ -40,6 +40,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyEval_RestoreThread(...);
   EXPCL_DTOOLCONFIG int PyEval_SaveThread(...);
   EXPCL_DTOOLCONFIG int PyExc_TypeError(...);
+  EXPCL_DTOOLCONFIG int PyExc_ValueError(...);
   EXPCL_DTOOLCONFIG int PyFloat_AsDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_FromDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_Type(...);
@@ -148,6 +149,7 @@ int PyEval_InitThreads(...) { return 0; }
 int PyEval_RestoreThread(...) { return 0; }
 int PyEval_SaveThread(...) { return 0; }
 int PyExc_TypeError(...) { return 0; }
+int PyExc_ValueError(...) { return 0; }
 int PyFloat_AsDouble(...) { return 0; }
 int PyFloat_FromDouble(...) { return 0; }
 int PyFloat_Type(...) { return 0; }
