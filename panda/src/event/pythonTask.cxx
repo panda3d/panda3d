@@ -37,6 +37,7 @@ PythonTask(PyObject *function, const string &name) :
   _args = NULL;
   _upon_death = NULL;
   _owner = NULL;
+  _generator = NULL;
 
   set_function(function);
   set_args(Py_None, true);
@@ -62,6 +63,7 @@ PythonTask::
   Py_DECREF(_function);
   Py_DECREF(_args);
   Py_DECREF(_dict);
+  Py_XDECREF(_generator);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,12 +297,6 @@ PyObject *PythonTask::
 __getattr__(const string &attr_name) const {
   if (attr_name == "time") {
     return PyFloat_FromDouble(get_elapsed_time());
-  } else if (attr_name == "done") {
-    return PyInt_FromLong(DS_done);
-  } else if (attr_name == "cont") {
-    return PyInt_FromLong(DS_cont);
-  } else if (attr_name == "again") {
-    return PyInt_FromLong(DS_again);
   } else if (attr_name == "name") {
     return PyString_FromString(get_name().c_str());
   } else if (attr_name == "id") {
@@ -317,10 +313,48 @@ __getattr__(const string &attr_name) const {
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus PythonTask::
 do_task() {
-  PyObject *args = get_args();
-  PyObject *result = 
-    Thread::get_current_thread()->call_python_func(_function, args);
-  Py_DECREF(args);
+  PyObject *result = NULL;
+
+  if (_generator == (PyObject *)NULL) {
+    // We are calling the function directly.
+    PyObject *args = get_args();
+    result = 
+      Thread::get_current_thread()->call_python_func(_function, args);
+    Py_DECREF(args);
+
+    if (result != (PyObject *)NULL && PyGen_Check(result)) {
+      // The function has yielded a generator.  We will call into that
+      // henceforth, instead of calling the function from the top
+      // again.
+      if (task_cat.is_debug()) {
+        PyObject *str = PyObject_Repr(_function);
+        task_cat.debug() 
+          << PyString_AsString(str) << " in " << *this
+          << " yielded a generator.\n";
+        Py_DECREF(str);
+      }
+      _generator = result;
+      result = NULL;
+    }
+  }
+
+  if (_generator != (PyObject *)NULL) {
+    // We are calling a generator.
+    PyObject *func = PyObject_GetAttrString(_generator, "next");
+    nassertr(func != (PyObject *)NULL, DS_abort);
+
+    result = PyObject_CallObject(func, NULL);
+    Py_DECREF(func);
+
+    if (result == (PyObject *)NULL && PyErr_Occurred() &&
+        PyErr_ExceptionMatches(PyExc_StopIteration)) {
+      // "Catch" StopIteration and treat it like DS_done.
+      PyErr_Clear();
+      Py_DECREF(_generator);
+      _generator = NULL;
+      return DS_done;
+    }
+  }
 
   if (result == (PyObject *)NULL) {
     task_cat.error()
@@ -336,6 +370,11 @@ do_task() {
   if (PyInt_Check(result)) {
     int retval = PyInt_AS_LONG(result);
     switch (retval) {
+    case DS_restart:
+      Py_XDECREF(_generator);
+      _generator = NULL;
+      // Fall through.
+
     case DS_done:
     case DS_cont:
     case DS_again:

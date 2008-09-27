@@ -346,6 +346,14 @@ unlock_and_do_task() {
 //               DS_abort: abort the task, and interrupt the whole
 //               AsyncTaskManager.
 //
+//               DS_restart: like DS_cont, but next time call the
+//               function from the beginning.  This only has meaning
+//               to a PythonTask that has already used the yield
+//               expression to return a generator, in which case it
+//               provides a way to abort the generator and create a
+//               new one by calling the function again.  In other
+//               contexts, this behaves exactly the same as DS_cont.
+//
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus AsyncTask::

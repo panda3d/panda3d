@@ -670,6 +670,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
       } else {
         switch (ds) {
         case AsyncTask::DS_cont:
+        case AsyncTask::DS_restart:
           // The task is still alive; put it on the next frame's active
           // queue.
           task->_state = AsyncTask::S_active;

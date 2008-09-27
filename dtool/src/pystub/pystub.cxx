@@ -30,6 +30,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyDict_Size(...);
   EXPCL_DTOOLCONFIG int PyDict_Type(...);
   EXPCL_DTOOLCONFIG int PyErr_Clear(...);
+  EXPCL_DTOOLCONFIG int PyErr_ExceptionMatches(...);
   EXPCL_DTOOLCONFIG int PyErr_Fetch(...);
   EXPCL_DTOOLCONFIG int PyErr_Format(...);
   EXPCL_DTOOLCONFIG int PyErr_Occurred(...);
@@ -39,11 +40,11 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyEval_InitThreads(...);
   EXPCL_DTOOLCONFIG int PyEval_RestoreThread(...);
   EXPCL_DTOOLCONFIG int PyEval_SaveThread(...);
-  EXPCL_DTOOLCONFIG int PyExc_TypeError(...);
-  EXPCL_DTOOLCONFIG int PyExc_ValueError(...);
   EXPCL_DTOOLCONFIG int PyFloat_AsDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_FromDouble(...);
   EXPCL_DTOOLCONFIG int PyFloat_Type(...);
+  EXPCL_DTOOLCONFIG int PyGen_Check(...);
+  EXPCL_DTOOLCONFIG int PyGen_Type(...);
   EXPCL_DTOOLCONFIG int PyGILState_Ensure(...);
   EXPCL_DTOOLCONFIG int PyGILState_Release(...);
   EXPCL_DTOOLCONFIG int PyInt_AsLong(...);
@@ -119,6 +120,9 @@ extern "C" {
   EXPCL_DTOOLCONFIG int _Py_RefTotal(...);
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
+  EXPCL_DTOOLCONFIG extern void *PyExc_StopIteration;
+  EXPCL_DTOOLCONFIG extern void *PyExc_TypeError;
+  EXPCL_DTOOLCONFIG extern void *PyExc_ValueError;
   EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
   EXPCL_DTOOLCONFIG extern void *_Py_NotImplementedStruct;
 };
@@ -139,6 +143,7 @@ int PyDict_SetItemString(...) { return 0; };
 int PyDict_Size(...){ return 0; }
 int PyDict_Type(...) { return 0; };
 int PyErr_Clear(...) { return 0; };
+int PyErr_ExceptionMatches(...) { return 0; };
 int PyErr_Fetch(...) { return 0; }
 int PyErr_Format(...) { return 0; };
 int PyErr_Occurred(...) { return 0; }
@@ -148,11 +153,11 @@ int PyErr_SetString(...) { return 0; }
 int PyEval_InitThreads(...) { return 0; }
 int PyEval_RestoreThread(...) { return 0; }
 int PyEval_SaveThread(...) { return 0; }
-int PyExc_TypeError(...) { return 0; }
-int PyExc_ValueError(...) { return 0; }
 int PyFloat_AsDouble(...) { return 0; }
 int PyFloat_FromDouble(...) { return 0; }
 int PyFloat_Type(...) { return 0; }
+int PyGen_Check(...) { return 0; }
+int PyGen_Type(...) { return 0; }
 int PyGILState_Ensure(...) { return 0; }
 int PyGILState_Release(...) { return 0; }
 int PyInt_AsLong(...) { return 0; }
@@ -228,8 +233,10 @@ int _Py_NegativeRefcount(...) { return 0; };
 int _Py_RefTotal(...) { return 0; };
 
 
-
 void *PyExc_AssertionError = (void *)NULL;
+void *PyExc_StopIteration = (void *)NULL;
+void *PyExc_TypeError = (void *)NULL;
+void *PyExc_ValueError = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
 void *_Py_NotImplementedStruct = (void *)NULL;
 

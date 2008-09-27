@@ -63,6 +63,8 @@ private:
   PyObject *_owner;
   PyObject *_dict;
 
+  PyObject *_generator;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

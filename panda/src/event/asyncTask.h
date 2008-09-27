@@ -53,6 +53,7 @@ PUBLISHED:
     DS_cont,   // run task again next epoch
     DS_again,  // run task again after get_delay() seconds
     DS_abort,  // abort the task and interrupt the whole task manager
+    DS_restart, // like cont, but next time start the task from the beginning.  Only meaningful for a PythonTask which has yielded a generator.
   };
 
   enum State {
