@@ -49,11 +49,12 @@ public:
 
 PUBLISHED:
   enum DoneStatus {
-    DS_done,   // normal task completion
-    DS_cont,   // run task again next epoch
-    DS_again,  // run task again after get_delay() seconds
-    DS_abort,  // abort the task and interrupt the whole task manager
-    DS_restart, // like cont, but next time start the task from the beginning.  Only meaningful for a PythonTask which has yielded a generator.
+    DS_done,    // normal task completion
+    DS_cont,    // run task again next epoch
+    DS_again,   // run task again after at least get_delay() seconds
+    DS_pickup,  // run task again this frame, if frame budget allows
+    DS_restart, // start the task over from the beginning
+    DS_abort,   // abort the task and interrupt the whole task manager
   };
 
   enum State {
@@ -108,6 +109,7 @@ PUBLISHED:
 
 protected:
   DoneStatus unlock_and_do_task();
+
   virtual DoneStatus do_task();
   virtual void upon_birth();
   virtual void upon_death(bool clean_exit);

@@ -378,6 +378,7 @@ do_task() {
     case DS_done:
     case DS_cont:
     case DS_again:
+    case DS_pickup:
       // Legitimate value.
       Py_DECREF(result);
       return (DoneStatus)retval;

@@ -3,7 +3,7 @@ AsyncTaskManager interface.  It replaces the old full-Python
 implementation of the Task system. """
 
 __all__ = ['Task', 'TaskManager',
-           'exit', 'cont', 'done', 'again', 'restart']
+           'cont', 'done', 'again', 'pickup', 'restart']
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
@@ -56,6 +56,7 @@ def print_exc_plus():
 done = AsyncTask.DSDone
 cont = AsyncTask.DSCont
 again = AsyncTask.DSAgain
+pickup = AsyncTask.DSPickup
 restart = AsyncTask.DSRestart
 
 # Alias PythonTask to Task for historical purposes.
@@ -67,6 +68,7 @@ Task = PythonTask
 Task.DtoolClassDict['done'] = done
 Task.DtoolClassDict['cont'] = cont
 Task.DtoolClassDict['again'] = again
+Task.DtoolClassDict['pickup'] = pickup
 Task.DtoolClassDict['restart'] = restart
 
 class TaskManager:
@@ -104,7 +106,8 @@ class TaskManager:
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
-                       threadPriority = None, frameBudget = None):
+                       threadPriority = None, frameBudget = None,
+                       timeslicePriority = None):
         """Defines a new task chain.  Each task chain executes tasks
         potentially in parallel with all of the other task chains (if
         numThreads is more than zero).  When a new task is created, it
@@ -135,6 +138,13 @@ class TaskManager:
         allow this task chain to run per frame.  Set it to -1 to mean
         no limit (the default).  It's not directly related to
         threadPriority.
+
+        timeslicePriority is False in the default mode, in which each
+        task runs exactly once each frame, round-robin style,
+        regardless of the task's priority value; or True to change the
+        meaning of priority so that certain tasks are run less often,
+        in proportion to their time used and to their priority value.
+        See AsyncTaskManager.setTimeslicePriority() for more.
         """
         
         chain = self.mgr.makeTaskChain(chainName)
@@ -146,6 +156,8 @@ class TaskManager:
             chain.setThreadPriority(threadPriority)
         if frameBudget is not None:
             chain.setFrameBudget(frameBudget)
+        if timeslicePriority is not None:
+            chain.setTimeslicePriority(timeslicePriority)
 
     def hasTaskNamed(self, taskName):
         """Returns true if there is at least one task, active or

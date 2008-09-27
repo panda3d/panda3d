@@ -74,6 +74,9 @@ PUBLISHED:
   void set_frame_budget(double frame_budget);
   double get_frame_budget() const;
 
+  void set_timeslice_priority(bool timeslice_priority);
+  bool get_timeslice_priority() const;
+
   BLOCKING void stop_threads();
   void start_threads();
   INLINE bool is_started() const;
@@ -108,11 +111,13 @@ protected:
   void service_one_task(AsyncTaskChainThread *thread);
   void cleanup_task(AsyncTask *task, bool clean_exit);
   bool finish_sort_group();
+  void filter_timeslice_priority();
   void do_stop_threads();
   void do_start_threads();
   AsyncTaskCollection do_get_active_tasks() const;
   AsyncTaskCollection do_get_sleeping_tasks() const;
   void do_poll();
+  void cleanup_pickup_mode();
   double do_get_next_wake_time() const;
   void do_output(ostream &out) const;
   void do_write(ostream &out, int indent_level) const;
@@ -153,7 +158,7 @@ protected:
 
   AsyncTaskManager *_manager;
 
-  ConditionVarFull _cvar;  // signaled when _active, _next_active, _sleeping, _state, or _current_sort changes, or a task finishes.
+  ConditionVarFull _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
 
   enum State {
     S_initial,  // no threads yet
@@ -163,6 +168,7 @@ protected:
   };
 
   bool _tick_clock;
+  bool _timeslice_priority;
   int _num_threads;
   ThreadPriority _thread_priority;
   Threads _threads;
@@ -170,10 +176,12 @@ protected:
   int _num_busy_threads;
   int _num_tasks;
   TaskHeap _active;
+  TaskHeap _this_active;
   TaskHeap _next_active;
   TaskHeap _sleeping;
   State _state;
   int _current_sort;
+  bool _pickup_mode;
   bool _needs_cleanup;
 
   int _current_frame;

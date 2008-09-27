@@ -252,6 +252,17 @@ set_sort(int sort) {
 //               priorities may execute at the same time, if the
 //               AsyncTaskManager has more than one thread servicing
 //               tasks.
+//
+//               Also see AsyncTaskChain::set_timeslice_priority(),
+//               which changes the meaning of this value.  In the
+//               default mode, when the timeslice_priority flag is
+//               false, all tasks always run once per epoch,
+//               regardless of their priority values (that is, the
+//               priority controls the order of the task execution
+//               only, not the number of times it runs).  On the other
+//               hand, if you set the timeslice_priority flag to true,
+//               then changing a task's priority has an effect on the
+//               number of times it runs.
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
 set_priority(int priority) {
@@ -321,7 +332,6 @@ unlock_and_do_task() {
   _dt = end - start;
   _max_dt = max(_dt, _max_dt);
   _total_dt += _dt;
-  ++_num_frames;
 
   _chain->_time_in_frame += _dt;
 
@@ -343,16 +353,20 @@ unlock_and_do_task() {
 //               DS_again: put the task to sleep for get_delay()
 //               seconds, then put it back on the active queue.
 //
-//               DS_abort: abort the task, and interrupt the whole
-//               AsyncTaskManager.
+//               DS_pickup: like DS_cont, but if the task chain has a
+//               frame budget and that budget has not yet been met,
+//               re-run the task again without waiting for the next
+//               frame.  Otherwise, run it next epoch as usual.
 //
 //               DS_restart: like DS_cont, but next time call the
-//               function from the beginning.  This only has meaning
-//               to a PythonTask that has already used the yield
-//               expression to return a generator, in which case it
-//               provides a way to abort the generator and create a
-//               new one by calling the function again.  In other
-//               contexts, this behaves exactly the same as DS_cont.
+//               function from the beginning, almost as if it were
+//               freshly added to the task manager.  The task's
+//               get_start_time() will be reset to now, and its
+//               get_elapsed_time() will be reset to 0.  Timing
+//               accounting, however, is not reset.
+//
+//               DS_abort: abort the task, and interrupt the whole
+//               AsyncTaskManager.
 //
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////

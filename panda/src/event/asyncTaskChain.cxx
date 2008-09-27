@@ -39,6 +39,7 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _manager(manager),
   _cvar(manager->_lock),
   _tick_clock(false),
+  _timeslice_priority(false),
   _num_threads(0),
   _thread_priority(TP_normal),
   _frame_budget(-1.0),
@@ -46,6 +47,7 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _num_tasks(0),
   _state(S_initial),
   _current_sort(-INT_MAX),
+  _pickup_mode(false),
   _needs_cleanup(false),
   _current_frame(0),
   _time_in_frame(0.0)
@@ -77,12 +79,8 @@ AsyncTaskChain::
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 set_tick_clock(bool tick_clock) {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    MutexHolder holder(_manager->_lock);
-    _tick_clock = tick_clock;
-  } else {
-    _tick_clock = tick_clock;
-  }
+  MutexHolder holder(_manager->_lock);
+  _tick_clock = tick_clock;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,12 +90,8 @@ set_tick_clock(bool tick_clock) {
 ////////////////////////////////////////////////////////////////////
 bool AsyncTaskChain::
 get_tick_clock() const {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    MutexHolder holder(_manager->_lock);
-    return _tick_clock;
-  } else {
-    return _tick_clock;
-  }
+  MutexHolder holder(_manager->_lock);
+  return _tick_clock;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,12 +193,8 @@ get_thread_priority() const {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 set_frame_budget(double frame_budget) {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    MutexHolder holder(_manager->_lock);
-    _frame_budget = frame_budget;
-  } else {
-    _frame_budget = frame_budget;
-  }
+  MutexHolder holder(_manager->_lock);
+  _frame_budget = frame_budget;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,12 +206,52 @@ set_frame_budget(double frame_budget) {
 ////////////////////////////////////////////////////////////////////
 double AsyncTaskChain::
 get_frame_budget() const {
-  if (_manager != (AsyncTaskManager *)NULL) {
-    MutexHolder holder(_manager->_lock);
-    return _frame_budget;
-  } else {
-    return _frame_budget;
-  }
+  MutexHolder holder(_manager->_lock);
+  return _frame_budget;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::set_timeslice_priority
+//       Access: Published
+//  Description: Sets the timeslice_priority flag.  This changes
+//               the interpretation of priority, and the number of
+//               times per epoch each task will run.  
+//
+//               When this flag is true, some tasks might not run in
+//               any given epoch.  Instead, tasks with priority higher
+//               than 1 will be given precedence, in proportion to the
+//               amount of time they have already used.  This gives
+//               higher-priority tasks more runtime than
+//               lower-priority tasks.  Each task gets the amount of
+//               time proportional to its priority value, so a task
+//               with priority 100 will get five times as much
+//               processing time as a task with priority 20.  For
+//               these purposes, priority values less than 1 are
+//               deemed to be equal to 1.
+//
+//               When this flag is false (the default), all tasks are
+//               run exactly once each epoch, round-robin style.
+//               Priority is only used to determine which task runs
+//               first within tasks of the same sort value.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+set_timeslice_priority(bool timeslice_priority) {
+  MutexHolder holder(_manager->_lock);
+  _timeslice_priority = timeslice_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_timeslice_priority
+//       Access: Published
+//  Description: Returns the timeslice_priority flag.  This changes
+//               the interpretation of priority, and the number of
+//               times per epoch each task will run.  See
+//               set_timeslice_priority().
+////////////////////////////////////////////////////////////////////
+bool AsyncTaskChain::
+get_timeslice_priority() const {
+  MutexHolder holder(_manager->_lock);
+  return _timeslice_priority;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,8 +534,12 @@ do_remove(AsyncTask *task) {
         make_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
       } else {
         index = find_task_on_heap(_next_active, task);
-        nassertr(index != -1, false);
-        _next_active.erase(_next_active.begin() + index);
+        if (index != -1) {
+          _next_active.erase(_next_active.begin() + index);
+        } else {
+          index = find_task_on_heap(_this_active, task);
+          nassertr(index != -1, false);
+        }
       }
       removed = true;
       cleanup_task(task, false);
@@ -562,8 +596,9 @@ do_cleanup() {
   // iterating, because cleanup_task() might release the lock,
   // allowing the iterators to become invalid.
 
-  TaskHeap active, next_active, sleeping;
+  TaskHeap active, this_active, next_active, sleeping;
   active.swap(_active);
+  this_active.swap(_this_active);
   next_active.swap(_next_active);
   sleeping.swap(_sleeping);
 
@@ -571,6 +606,10 @@ do_cleanup() {
 
   TaskHeap::const_iterator ti;
   for (ti = active.begin(); ti != active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    cleanup_task(task, false);
+  }
+  for (ti = this_active.begin(); ti != this_active.end(); ++ti) {
     AsyncTask *task = (*ti);
     cleanup_task(task, false);
   }
@@ -596,7 +635,8 @@ bool AsyncTaskChain::
 do_has_task(AsyncTask *task) const {
   return (find_task_on_heap(_active, task) != -1 ||
           find_task_on_heap(_next_active, task) != -1 ||
-          find_task_on_heap(_sleeping, task) != -1);
+          find_task_on_heap(_sleeping, task) != -1 ||
+          find_task_on_heap(_this_active, task) != -1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -669,8 +709,11 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
       } else {
         switch (ds) {
-        case AsyncTask::DS_cont:
         case AsyncTask::DS_restart:
+          task->_start_time = _manager->_clock->get_frame_time();
+          // Fall through.
+
+        case AsyncTask::DS_cont:
           // The task is still alive; put it on the next frame's active
           // queue.
           task->_state = AsyncTask::S_active;
@@ -693,6 +736,13 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
             }
             _cvar.signal_all();
           }
+          break;
+
+        case AsyncTask::DS_pickup:
+          // The task wants to run again this frame if possible.
+          task->_state = AsyncTask::S_active;
+          _this_active.push_back(task);
+          _cvar.signal_all();
           break;
 
         case AsyncTask::DS_abort:
@@ -763,55 +813,98 @@ finish_sort_group() {
   }
 
   // There are no more tasks in this epoch; advance to the next epoch.
-  if (task_cat.is_spam()) {
-    do_output(task_cat.spam());
-    task_cat.spam(false)
-      << ": next epoch\n";
-  }
 
-  if (_tick_clock) {
+  if (!_this_active.empty() && _frame_budget >= 0.0) {
+    // Enter pickup mode.  This is a special mode at the end of the
+    // epoch in which we are just re-running the tasks that think they
+    // can still run within the frame, in an attempt to use up our
+    // frame budget.
+
     if (task_cat.is_spam()) {
       do_output(task_cat.spam());
       task_cat.spam(false)
-        << ": tick clock\n";
+        << ": next epoch (pickup mode)\n";
     }
-    _manager->_clock->tick();
-    _manager->_frame_cvar.signal_all();
-  }
-  if (!_threads.empty()) {
-    PStatClient::thread_tick(get_name());
-  }
-    
-  _active.swap(_next_active);
 
-  // Check for any sleeping tasks that need to be woken.
-  double now = _manager->_clock->get_frame_time();
-  while (!_sleeping.empty() && _sleeping.front()->get_wake_time() <= now) {
-    PT(AsyncTask) task = _sleeping.front();
+    _pickup_mode = true;
+    _active.swap(_this_active);
+
+  } else {
+    // Not in pickup mode.
+
     if (task_cat.is_spam()) {
-      task_cat.spam()
-        << "Waking " << *task << ", wake time at " 
-        << task->get_wake_time() - now << "\n";
+      do_output(task_cat.spam());
+      task_cat.spam(false)
+        << ": next epoch\n";
     }
-    pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
-    _sleeping.pop_back();
-    task->_state = AsyncTask::S_active;
-    _active.push_back(task);
+
+    _pickup_mode = false;
+
+    // Here, there's no difference between _this_active and
+    // _next_active.  Combine them.
+    _next_active.insert(_next_active.end(), _this_active.begin(), _this_active.end());
+    _this_active.clear();
+
+    _active.swap(_next_active);
+
+    // We only tick the clock and wake sleepers in normal mode, the
+    // first time through the task list; not in pickup mode when we
+    // are re-running the stragglers just to use up our frame budget.
+
+    if (_tick_clock) {
+      if (task_cat.is_spam()) {
+        do_output(task_cat.spam());
+        task_cat.spam(false)
+          << ": tick clock\n";
+      }
+      _manager->_clock->tick();
+      _manager->_frame_cvar.signal_all();
+    }
+    if (!_threads.empty()) {
+      PStatClient::thread_tick(get_name());
+    }
+    
+    // Check for any sleeping tasks that need to be woken.
+    double now = _manager->_clock->get_frame_time();
+    while (!_sleeping.empty() && _sleeping.front()->get_wake_time() <= now) {
+      PT(AsyncTask) task = _sleeping.front();
+      if (task_cat.is_spam()) {
+        task_cat.spam()
+          << "Waking " << *task << ", wake time at " 
+          << task->get_wake_time() - now << "\n";
+      }
+      pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
+      _sleeping.pop_back();
+      task->_state = AsyncTask::S_active;
+      _active.push_back(task);
+    }
+
+    if (task_cat.is_spam()) {
+      if (_sleeping.empty()) {
+        task_cat.spam()
+          << "No more tasks on sleeping queue.\n";
+      } else {
+        task_cat.spam()
+          << "Next sleeper: " << *_sleeping.front() << ", wake time at " 
+          << _sleeping.front()->get_wake_time() - now << "\n";
+      }
+    }
+
+    // Any tasks that are on the active queue at the beginning of the
+    // epoch are deemed to have run one frame (or to be about to).
+    TaskHeap::const_iterator ti;
+    for (ti = _active.begin(); ti != _active.end(); ++ti) {
+      AsyncTask *task = (*ti);
+      ++task->_num_frames;
+    }
   }
 
-  if (task_cat.is_spam()) {
-    if (_sleeping.empty()) {
-      task_cat.spam()
-        << "No more tasks on sleeping queue.\n";
-    } else {
-      task_cat.spam()
-        << "Next sleeper: " << *_sleeping.front() << ", wake time at " 
-        << _sleeping.front()->get_wake_time() - now << "\n";
-    }
+  if (_timeslice_priority) {
+    filter_timeslice_priority();
   }
 
+  nassertr(_num_tasks == _active.size() + _this_active.size() + _next_active.size() + _sleeping.size(), true);
   make_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
-  nassertr(_num_tasks == _active.size() + _sleeping.size(), true);
 
   _current_sort = -INT_MAX;
 
@@ -822,7 +915,88 @@ finish_sort_group() {
   }
 
   // There are no tasks to be had anywhere.  Chill.
+  _pickup_mode = false;
+  nassertr(_this_active.empty(), false);
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::filter_timeslice_priority
+//       Access: Protected
+//  Description: Called to filter the _active tasks list when we are
+//               in the special timeslice_priority mode.  In this
+//               mode, go through and postpone any tasks that have
+//               already exceeded their priority budget for this
+//               epoch.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+filter_timeslice_priority() {
+  if (_active.empty()) {
+    return;
+  }
+  nassertv(_timeslice_priority);
+
+  // We must first sum up the average per-epoch runtime of each task.
+  double net_runtime = 0.0;
+  int net_priority = 0;
+  
+  TaskHeap::iterator ti;
+  for (ti = _active.begin(); ti != _active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    double runtime = max(task->get_average_dt(), 0.0);
+    int priority = max(task->_priority, 1);
+    net_runtime += runtime;
+    net_priority += priority;
+  }
+  
+  // That gives us a timeslice budget per priority value.
+  double average_budget = net_runtime / (double)net_priority;
+  
+  TaskHeap keep, postpone;
+  for (ti = _active.begin(); ti != _active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    double runtime = max(task->get_average_dt(), 0.0);
+    int priority = max(task->_priority, 1);
+    double consumed = runtime / (double)priority;
+    //    cerr << *task << " consumed " << consumed << " vs. " << average_budget << "\n";
+    if (consumed > average_budget) {
+      // Postpone.  Run this task next epoch.
+      postpone.push_back(task);
+    } else {
+      // Keep, and run this task this epoch.
+      keep.push_back(task);
+    }
+  }
+
+  if (keep.empty()) {
+    // Hmm, nothing to keep.  Grab the postponed task with the highest
+    // priority and keep that instead.
+    nassertv(!postpone.empty());
+    ti = postpone.begin();
+    TaskHeap::iterator max_ti = ti;
+    ++ti;
+    while (ti != postpone.end()) {
+      if ((*ti)->_priority > (*max_ti)->_priority) {
+        max_ti = ti;
+      }
+    }
+
+    //    cerr << "Nothing to keep, keeping " << *(*max_ti) << " instead\n";
+
+    keep.push_back(*max_ti);
+    postpone.erase(max_ti);
+  }
+   
+  _active.swap(keep);
+  if (_pickup_mode) {
+    _this_active.insert(_this_active.end(), postpone.begin(), postpone.end());
+  } else {
+    _next_active.insert(_next_active.end(), postpone.begin(), postpone.end());
+  }
+
+  nassertv(!_active.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -907,6 +1081,10 @@ do_get_active_tasks() const {
     AsyncTask *task = (*ti);
     result.add_task(task);
   }
+  for (ti = _this_active.begin(); ti != _this_active.end(); ++ti) {
+    AsyncTask *task = (*ti);
+    result.add_task(task);
+  }
   for (ti = _next_active.begin(); ti != _next_active.end(); ++ti) {
     AsyncTask *task = (*ti);
     result.add_task(task);
@@ -948,25 +1126,56 @@ do_poll() {
   if (!_threads.empty()) {
     return;
   }
-  
-  while (!_active.empty()) {
-    if (_state == S_shutdown || _state == S_aborting) {
-      return;
-    }
-    int frame = _manager->_clock->get_frame_count();
-    if (_current_frame != frame) {
-      _current_frame = frame;
-      _time_in_frame = 0.0;
-    }
-    if (_frame_budget >= 0.0 && _time_in_frame > _frame_budget) {
-      return;
-    }
 
-    _current_sort = _active.front()->get_sort();
-    service_one_task(NULL);
+  nassertv(!_pickup_mode);
+
+  do {
+    while (!_active.empty()) {
+      if (_state == S_shutdown || _state == S_aborting) {
+        return;
+      }
+      int frame = _manager->_clock->get_frame_count();
+      if (_current_frame != frame) {
+        _current_frame = frame;
+        _time_in_frame = 0.0;
+      }
+      if (_frame_budget >= 0.0 && _time_in_frame >= _frame_budget) {
+        // If we've exceeded our budget, stop here.  We'll resume from
+        // this point at the next call to poll().
+        cleanup_pickup_mode();
+        return;
+      }
+      
+      _current_sort = _active.front()->get_sort();
+      service_one_task(NULL);
+    }
+    
+    finish_sort_group();
+  } while (_pickup_mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::cleanup_pickup_mode
+//       Access: Protected
+//  Description: Clean up the damage from setting pickup mode.  This
+//               means we restore the _active and _next_active lists
+//               as they should have been without pickup mode, for
+//               next frame.  Assumes the lock is held.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskChain::
+cleanup_pickup_mode() {
+  if (_pickup_mode) {
+    _pickup_mode = false;
+
+    // Move everything to the _next_active queue.
+    _next_active.insert(_next_active.end(), _this_active.begin(), _this_active.end());
+    _this_active.clear();
+    _next_active.insert(_next_active.end(), _active.begin(), _active.end());
+    _active.clear();
+
+    // Now finish the epoch properly.
+    finish_sort_group();
   }
-
-  finish_sort_group();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1017,6 +1226,10 @@ do_write(ostream &out, int indent_level) const {
   if (_frame_budget >= 0.0) {
     indent(out, indent_level + 2) 
       << "frame budget " << _frame_budget << " s\n";
+  }
+  if (_timeslice_priority) {
+    indent(out, indent_level + 2) 
+      << "timeslice priority\n";
   }
   if (_tick_clock) {
     indent(out, indent_level + 2) 
@@ -1160,7 +1373,8 @@ thread_main() {
 
       // If we've exceeded our frame budget, sleep until the next
       // frame.
-      while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame > _chain->_frame_budget) {
+      while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
+        _chain->cleanup_pickup_mode();
         _chain->_manager->_frame_cvar.wait();
         frame = _chain->_manager->_clock->get_frame_count();
         if (_chain->_current_frame != frame) {
