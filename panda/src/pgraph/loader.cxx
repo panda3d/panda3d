@@ -41,7 +41,7 @@ Loader::
 Loader(const string &name, int num_threads) :
   AsyncTaskManager(name)
 {
-  PT(AsyncTaskChain) chain = make_task_chain("");
+  PT(AsyncTaskChain) chain = make_task_chain("default");
   if (num_threads < 0) {
     // -1 means the default number of threads.
 

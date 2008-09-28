@@ -267,6 +267,10 @@ class TaskManager:
         return self.mgr.remove(tasks)
 
     def step(self):
+        self.__doStep()
+        self.mgr.stopThreads()
+
+    def __doStep(self):
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
@@ -299,12 +303,12 @@ class TaskManager:
             self.resumeFunc()
 
         if self.stepping:
-            self.step()
+            self.__doStep()
         else:
             self.running = True
             while self.running:
                 try:
-                    self.step()
+                    self.__doStep()
                 except KeyboardInterrupt:
                     self.stop()
                 except IOError, ioError:
@@ -334,6 +338,8 @@ class TaskManager:
                         print_exc_plus()
                     else:
                         raise
+
+        self.mgr.stopThreads()
 
     def _unpackIOError(self, ioError):
         # IOError unpack from http://www.python.org/doc/essays/stdexceptions/

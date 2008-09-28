@@ -444,17 +444,21 @@ void PythonTask::
 upon_birth() {
   AsyncTask::upon_birth();
 
+  if (_owner != Py_None) {
+    _manager->_lock.release();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-  // Use PyGILState to protect this asynchronous call.
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
+    // Use PyGILState to protect this asynchronous call.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
 #endif
-
-  call_owner_method("_addTask");
-
+    
+    call_owner_method("_addTask");
+    
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-  PyGILState_Release(gstate);
+    PyGILState_Release(gstate);
 #endif
+    _manager->_lock.lock();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -478,18 +482,22 @@ void PythonTask::
 upon_death(bool clean_exit) {
   AsyncTask::upon_death(clean_exit);
 
+  if (_owner != Py_None && _upon_death != Py_None) {
+    _manager->_lock.release();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-  // Use PyGILState to protect this asynchronous call.
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
+    // Use PyGILState to protect this asynchronous call.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
 #endif
-
-  call_owner_method("_clearTask");
-  call_function(_upon_death);
-
+    
+    call_owner_method("_clearTask");
+    call_function(_upon_death);
+    
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
-  PyGILState_Release(gstate);
+    PyGILState_Release(gstate);
 #endif
+    _manager->_lock.lock();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

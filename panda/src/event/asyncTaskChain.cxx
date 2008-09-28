@@ -485,7 +485,6 @@ do_add(AsyncTask *task) {
   ++(_manager->_num_tasks);
   _needs_cleanup = true;
 
-  task->upon_birth();
   _cvar.signal_all();
 }
 
@@ -521,7 +520,7 @@ do_remove(AsyncTask *task) {
       _sleeping.erase(_sleeping.begin() + index);
       make_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
       removed = true;
-      cleanup_task(task, false);
+      cleanup_task(task);
     }
     break;
     
@@ -542,7 +541,7 @@ do_remove(AsyncTask *task) {
         }
       }
       removed = true;
-      cleanup_task(task, false);
+      cleanup_task(task);
     }
   }
 
@@ -607,19 +606,23 @@ do_cleanup() {
   TaskHeap::const_iterator ti;
   for (ti = active.begin(); ti != active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task, false);
+    cleanup_task(task);
+    task->upon_death(false);
   }
   for (ti = this_active.begin(); ti != this_active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task, false);
+    cleanup_task(task);
+    task->upon_death(false);
   }
   for (ti = next_active.begin(); ti != next_active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task, false);
+    cleanup_task(task);
+    task->upon_death(false);
   }
   for (ti = sleeping.begin(); ti != sleeping.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task, false);
+    cleanup_task(task);
+    task->upon_death(false);
   }
 }
 
@@ -700,12 +703,16 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
     task->_servicing_thread = NULL;
 
     if (task->_chain == this) {
-      // TODO: check task->_chain_name to see if the task wants to
-      // jump chains.
-
       if (task->_state == AsyncTask::S_servicing_removed) {
         // This task wants to kill itself.
-        cleanup_task(task, false);
+        cleanup_task(task);
+        task->upon_death(false);
+
+      } else if (task->_chain_name != get_name()) {
+        // The task wants to jump to a different chain.
+        PT(AsyncTask) hold_task = task;
+        cleanup_task(task);
+        task->jump_to_task_chain(_manager);
 
       } else {
         switch (ds) {
@@ -747,7 +754,8 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
         case AsyncTask::DS_abort:
           // The task had an exception and wants to raise a big flag.
-          cleanup_task(task, false);
+          cleanup_task(task);
+          task->upon_death(false);
           if (_state == S_started) {
             _state = S_aborting;
             _cvar.signal_all();
@@ -756,7 +764,8 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           
         default:
           // The task has finished.
-          cleanup_task(task, true);
+          cleanup_task(task);
+          task->upon_death(true);
         }
       }
     }
@@ -774,7 +783,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 //               this method.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
-cleanup_task(AsyncTask *task, bool clean_exit) {
+cleanup_task(AsyncTask *task) {
   nassertv(task->_chain == this);
   PT(AsyncTask) hold_task = task;
 
@@ -785,7 +794,6 @@ cleanup_task(AsyncTask *task, bool clean_exit) {
   --(_manager->_num_tasks);
 
   _manager->remove_task_by_name(task);
-  task->upon_death(clean_exit);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1008,8 +1016,16 @@ filter_timeslice_priority() {
 void AsyncTaskChain::
 do_stop_threads() {
   if (_state == S_started || _state == S_aborting) {
+    if (task_cat.is_debug() && !_threads.empty()) {
+      task_cat.debug()
+        << "Stopping " << _threads.size() 
+        << " threads for " << _manager->get_name()
+        << " chain " << get_name() << "\n";
+    }
+
     _state = S_shutdown;
     _cvar.signal_all();
+    _manager->_frame_cvar.signal_all();
     
     Threads wait_threads;
     wait_threads.swap(_threads);
@@ -1019,12 +1035,18 @@ do_stop_threads() {
     _manager->_lock.release();
     Threads::iterator ti;
     for (ti = wait_threads.begin(); ti != wait_threads.end(); ++ti) {
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "Waiting for " << *(*ti) << " in " 
+          << *Thread::get_current_thread() << "\n";
+      }
       (*ti)->join();
     }
     _manager->_lock.lock();
     
     _state = S_initial;
     nassertv(_num_busy_threads == 0);
+    cleanup_pickup_mode();
   }
 }
 
@@ -1043,7 +1065,12 @@ do_start_threads() {
   if (_state == S_initial) {
     _state = S_started;
     _num_busy_threads = 0;
-    if (Thread::is_threading_supported()) {
+    if (Thread::is_threading_supported() && _num_threads > 0) {
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "Starting " << _num_threads << " threads for "
+          << _manager->get_name() << " chain " << get_name() << "\n";
+      }
       _needs_cleanup = true;
       _threads.reserve(_num_threads);
       for (int i = 0; i < _num_threads; ++i) {
@@ -1257,13 +1284,13 @@ do_write(ostream &out, int indent_level) const {
   // Collect a list of all active tasks, then sort them into order for
   // output.
   TaskHeap tasks = _active;
+  tasks.insert(tasks.end(), _this_active.begin(), _this_active.end());
   tasks.insert(tasks.end(), _next_active.begin(), _next_active.end());
 
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
-    if (task != (AsyncTask *)NULL && 
-        task->_state != AsyncTask::S_servicing_removed) {
+    if (task != (AsyncTask *)NULL) {
       tasks.push_back(task);
     }
   }
@@ -1374,7 +1401,8 @@ thread_main() {
       // If we've exceeded our frame budget, sleep until the next
       // frame.
       if (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
-        while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
+        while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget &&
+               _chain->_state != S_shutdown && _chain->_state != S_aborting) {
           _chain->cleanup_pickup_mode();
           _chain->_manager->_frame_cvar.wait();
           frame = _chain->_manager->_clock->get_frame_count();

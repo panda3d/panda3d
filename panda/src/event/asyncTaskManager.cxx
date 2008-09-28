@@ -62,15 +62,14 @@ void AsyncTaskManager::
 cleanup() {
   MutexHolder holder(_lock);
 
-  TaskChains::iterator tci;
-  for (tci = _task_chains.begin();
-       tci != _task_chains.end();
-       ++tci) {
-    AsyncTaskChain *chain = (*tci);
+  // Iterate carefully in case the tasks adjust the chain list within
+  // cleanup().
+  while (!_task_chains.empty()) {
+    PT(AsyncTaskChain) chain = _task_chains[_task_chains.size() - 1];
+    _task_chains.pop_back();
     chain->do_cleanup();
   }
 
-  _task_chains.clear();
   nassertv(_num_tasks == 0 && _tasks_by_name.empty());
 }
 
@@ -196,6 +195,7 @@ add(AsyncTask *task) {
     chain = do_make_task_chain(task->_chain_name);
   }
   chain->do_add(task);
+  task->upon_birth();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,6 +333,7 @@ remove(const AsyncTaskCollection &tasks) {
           << "Removing " << *task << "\n";
       }
       if (task->_chain->do_remove(task)) {
+        task->upon_death(false);
         ++num_removed;
       } else {
         if (task_cat.is_debug()) {
@@ -357,11 +358,11 @@ wait_for_tasks() {
 
   // Wait for each of our task chains to finish.
   while (_num_tasks > 0) {
-    TaskChains::iterator tci;
-    for (tci = _task_chains.begin();
-         tci != _task_chains.end();
-         ++tci) {
-      AsyncTaskChain *chain = (*tci);
+    // We iterate through with an index, rather than with an iterator,
+    // because it's possible for a task to adjust the task_chain list
+    // during its execution.
+    for (unsigned int i = 0; i < _task_chains.size(); ++i) {
+      AsyncTaskChain *chain = _task_chains[i];
       chain->do_wait_for_tasks();
     }
   }
@@ -379,11 +380,11 @@ void AsyncTaskManager::
 stop_threads() {
   MutexHolder holder(_lock);
 
-  TaskChains::iterator tci;
-  for (tci = _task_chains.begin();
-       tci != _task_chains.end();
-       ++tci) {
-    AsyncTaskChain *chain = (*tci);
+  // We iterate through with an index, rather than with an iterator,
+  // because it's possible for a task to adjust the task_chain list
+  // during its execution.
+  for (unsigned int i = 0; i < _task_chains.size(); ++i) {
+    AsyncTaskChain *chain = _task_chains[i];
     chain->do_stop_threads();
   }
 }
@@ -399,11 +400,12 @@ void AsyncTaskManager::
 start_threads() {
   MutexHolder holder(_lock);
 
-  TaskChains::iterator tci;
-  for (tci = _task_chains.begin();
-       tci != _task_chains.end();
-       ++tci) {
-    AsyncTaskChain *chain = (*tci);
+  // We iterate through with an index, rather than with an iterator,
+  // because it's possible for a task to adjust the task_chain list
+  // during its execution.
+  for (unsigned int i = 0; i < _task_chains.size(); ++i) {
+    AsyncTaskChain *chain = _task_chains[i];
+
     chain->do_start_threads();
   }
 }
@@ -490,11 +492,11 @@ void AsyncTaskManager::
 poll() {
   MutexHolder holder(_lock);
 
-  TaskChains::iterator tci;
-  for (tci = _task_chains.begin();
-       tci != _task_chains.end();
-       ++tci) {
-    AsyncTaskChain *chain = (*tci);
+  // We iterate through with an index, rather than with an iterator,
+  // because it's possible for a task to adjust the task_chain list
+  // during its execution.
+  for (unsigned int i = 0; i < _task_chains.size(); ++i) {
+    AsyncTaskChain *chain = _task_chains[i];
     chain->do_poll();
   }
 

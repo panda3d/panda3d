@@ -149,6 +149,7 @@ private:
   friend class AsyncTaskChain;
   friend class AsyncTaskChain::AsyncTaskChainThread;
   friend class AsyncTask;
+  friend class PythonTask;
 };
 
 INLINE ostream &operator << (ostream &out, const AsyncTaskManager &manager) {

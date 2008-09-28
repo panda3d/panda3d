@@ -108,6 +108,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
 
 protected:
+  void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
 
   virtual DoneStatus do_task();

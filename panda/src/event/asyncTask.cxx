@@ -173,15 +173,7 @@ set_task_chain(const string &chain_name) {
         chain_a->do_remove(this);
         _chain_name = chain_name;
 
-        AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
-        if (chain_b == (AsyncTaskChain *)NULL) {
-          task_cat.warning()
-            << "Creating implicit AsyncTaskChain " << _chain_name
-            << " for " << manager->get_type() << " "
-            << manager->get_name() << "\n";
-          chain_b = manager->do_make_task_chain(_chain_name);
-        }
-        chain_b->do_add(this);
+        jump_to_task_chain(manager);
 
       } else {
         // If it's sleeping, currently being serviced, or something
@@ -303,6 +295,25 @@ output(ostream &out) const {
   if (has_name()) {
     out << " " << get_name();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::jump_to_task_chain
+//       Access: Protected
+//  Description: Switches the AsyncTask to its new task chain, named
+//               by _chain_name.  Called internally only.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+jump_to_task_chain(AsyncTaskManager *manager) {
+  AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
+  if (chain_b == (AsyncTaskChain *)NULL) {
+    task_cat.warning()
+      << "Creating implicit AsyncTaskChain " << _chain_name
+      << " for " << manager->get_type() << " "
+      << manager->get_name() << "\n";
+    chain_b = manager->do_make_task_chain(_chain_name);
+  }
+  chain_b->do_add(this);
 }
 
 ////////////////////////////////////////////////////////////////////
