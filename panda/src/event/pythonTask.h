@@ -49,6 +49,7 @@ PUBLISHED:
 
 protected:
   virtual DoneStatus do_task();
+  DoneStatus do_python_task();
   virtual void upon_birth();
   virtual void upon_death(bool clean_exit);
 

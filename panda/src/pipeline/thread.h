@@ -46,7 +46,7 @@ class MutexDebug;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount {
 protected:
-  INLINE Thread(const string &name, const string &sync_name);
+  Thread(const string &name, const string &sync_name);
 
 PUBLISHED:
   virtual ~Thread();

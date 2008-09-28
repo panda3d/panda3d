@@ -313,6 +313,30 @@ __getattr__(const string &attr_name) const {
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus PythonTask::
 do_task() {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  // Use PyGILState to protect this asynchronous call.
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
+  DoneStatus result = do_python_task();
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::do_python_task
+//       Access: Protected
+//  Description: The Python calls that implement do_task().  This
+//               function is separate so we can acquire the Python
+//               interpretor lock while it runs.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PythonTask::
+do_python_task() {
   PyObject *result = NULL;
 
   if (_generator == (PyObject *)NULL) {
@@ -419,7 +443,18 @@ do_task() {
 void PythonTask::
 upon_birth() {
   AsyncTask::upon_birth();
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  // Use PyGILState to protect this asynchronous call.
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   call_owner_method("_addTask");
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -442,8 +477,19 @@ upon_birth() {
 void PythonTask::
 upon_death(bool clean_exit) {
   AsyncTask::upon_death(clean_exit);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  // Use PyGILState to protect this asynchronous call.
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   call_owner_method("_clearTask");
   call_function(_upon_death);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1373,14 +1373,18 @@ thread_main() {
 
       // If we've exceeded our frame budget, sleep until the next
       // frame.
-      while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
-        _chain->cleanup_pickup_mode();
-        _chain->_manager->_frame_cvar.wait();
-        frame = _chain->_manager->_clock->get_frame_count();
-        if (_chain->_current_frame != frame) {
-          _chain->_current_frame = frame;
-          _chain->_time_in_frame = 0.0;
+      if (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
+        while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
+          _chain->cleanup_pickup_mode();
+          _chain->_manager->_frame_cvar.wait();
+          frame = _chain->_manager->_clock->get_frame_count();
+          if (_chain->_current_frame != frame) {
+            _chain->_current_frame = frame;
+            _chain->_time_in_frame = 0.0;
+          }
         }
+        // Now that it's the next frame, go back to the top of the loop.
+        continue;
       }
 
       PStatTimer timer(_task_pcollector);

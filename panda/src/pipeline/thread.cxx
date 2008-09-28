@@ -22,6 +22,46 @@ Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Thread::Constructor
+//       Access: Protected
+//  Description: Creates a new Thread object, but does not
+//               immediately start executing it.  This gives the
+//               caller a chance to store it in a PT(Thread) object,
+//               if desired, before the thread gets a chance to
+//               terminate and destruct itself.
+//
+//               Call start() to begin thread execution.
+//
+//               The name should be unique for each thread (though
+//               this is not enforced, and not strictly required).
+//               The sync_name can be shared between multiple
+//               different threads; threads that run synchronously
+//               with each other should be given the same sync_name,
+//               for the benefit of PStats.
+////////////////////////////////////////////////////////////////////
+Thread::
+Thread(const string &name, const string &sync_name) : 
+  _name(name), 
+  _sync_name(sync_name), 
+  _impl(this) 
+{
+  _started = false;
+  _pstats_index = -1;
+  _pstats_callback = NULL;
+  _pipeline_stage = 0;
+
+#ifdef DEBUG_THREADS
+  _blocked_on_mutex = NULL;
+#endif
+
+#if defined(HAVE_PYTHON) && !defined(SIMPLE_THREADS)
+  // Ensure that the Python threading system is initialized and ready
+  // to go.
+  PyEval_InitThreads();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Thread::Destructor
 //       Access: Published, Virtual
 //  Description:
@@ -239,7 +279,7 @@ call_python_func(PyObject *function, PyObject *args) {
     }
     
 #else  // SIMPLE_THREADS
-    // With true threading enabled, we're better off using PyGILSTate.
+    // With true threading enabled, we're better off using PyGILState.
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
     

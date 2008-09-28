@@ -50,12 +50,6 @@ PythonThread(PyObject *function, PyObject *args,
       nassert_raise("Invalid args passed to PythonThread constructor");
     }
   }
-
-#ifndef SIMPLE_THREADS
-  // Ensure that the Python threading system is initialized and ready
-  // to go.
-  PyEval_InitThreads();
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

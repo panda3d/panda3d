@@ -38,7 +38,7 @@ wait(double timeout) {
 
   int seconds = (int)floor(timeout);
   ts.tv_sec += seconds;
-  ts.tv_nsec += (timeout - seconds) * 1000000.0;
+  ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
 
   int result = pthread_cond_timedwait(&_cvar, &_mutex._lock, &ts);
   nassertv(result == 0);
