@@ -95,6 +95,8 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+  INLINE static AsyncTaskManager *get_global_ptr();
+
 protected:
   AsyncTaskChain *do_make_task_chain(const string &name);
   AsyncTaskChain *do_find_task_chain(const string &name);
@@ -105,6 +107,9 @@ protected:
   bool do_has_task(AsyncTask *task) const;
 
   virtual void do_output(ostream &out) const;
+
+private:
+  static void make_global_ptr();
 
 protected:
   class AsyncTaskSortName {
@@ -128,6 +133,8 @@ protected:
   PT(ClockObject) _clock;
   
   ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
+
+  static PT(AsyncTaskManager) _global_ptr;
 
 public:
   static TypeHandle get_class_type() {

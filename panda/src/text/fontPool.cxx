@@ -24,8 +24,6 @@
 
 FontPool *FontPool::_global_ptr = (FontPool *)NULL;
 
-static Loader *model_loader = NULL;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: FontPool::write
 //       Access: Published, Static
@@ -94,9 +92,7 @@ ns_load_font(const string &str) {
 
   string extension = filename.get_extension();
   if (extension.empty() || extension == "egg" || extension == "bam") {
-    if (model_loader == (Loader *)NULL) {
-      model_loader = new Loader("FontPool", 0);
-    }
+    Loader *model_loader = Loader::get_global_ptr();
     PT(PandaNode) node = model_loader->load_sync(filename);
     if (node != (PandaNode *)NULL) {
       // It is a model.  Elevate all the priorities by 1, and make a

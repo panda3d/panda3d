@@ -109,6 +109,76 @@ add_file(const Filename &file, LoaderFileType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Loader::set_task_manager
+//       Access: Published
+//  Description: Specifies the task manager that is used for
+//               asynchronous loads.  The default is the global task
+//               manager.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::
+set_task_manager(AsyncTaskManager *task_manager) {
+  _task_manager = task_manager;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::get_task_manager
+//       Access: Published
+//  Description: Returns the task manager that is used for
+//               asynchronous loads.
+////////////////////////////////////////////////////////////////////
+INLINE AsyncTaskManager *Loader::
+get_task_manager() const {
+  return _task_manager;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::set_task_chain
+//       Access: Published
+//  Description: Specifies the task chain that is used for
+//               asynchronous loads.  The default is the initial name
+//               of the Loader object.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::
+set_task_chain(const string &task_chain) {
+  _task_chain = task_chain;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::get_task_chain
+//       Access: Published
+//  Description: Returns the task chain that is used for
+//               asynchronous loads.
+////////////////////////////////////////////////////////////////////
+INLINE const string &Loader::
+get_task_chain() const {
+  return _task_chain;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::stop_threads
+//       Access: Published
+//  Description: Stop any threads used for asynchronous loads.
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::
+stop_threads() {
+  PT(AsyncTaskChain) chain = _task_manager->find_task_chain(_task_chain);
+  if (chain != (AsyncTaskChain *)NULL) {
+    chain->stop_threads();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::remove
+//       Access: Published
+//  Description: Removes a pending asynchronous load request.  Returns
+//               true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Loader::
+remove(AsyncTask *task) {
+  return _task_manager->remove(task);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Loader::load_sync
 //       Access: Published
 //  Description: Loads the file immediately, waiting for it to
@@ -141,16 +211,23 @@ load_sync(const Filename &filename, const LoaderOptions &options) const {
 //               or set the done_event on the request object and
 //               listen for that event.  When the model is ready, you
 //               may retrieve it via request->get_model().
-//
-//               If threading support is not enabled, or the Loader
-//               was created with 0 threads (that is,
-//               get_num_threads() returns 0), then this will be the
-//               same as a load_sync() call: the model will be loaded
-//               within the current thread, and this method will not
-//               return until the model has fully loaded.
 ////////////////////////////////////////////////////////////////////
 INLINE void Loader::
 load_async(AsyncTask *request) {
-  add(request);
-  poll();
+  request->set_task_chain(_task_chain);
+  _task_manager->add(request);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::get_global_ptr
+//       Access: Published
+//  Description: Returns a pointer to the global Loader.  This is the
+//               Loader that most code should use for loading models.
+////////////////////////////////////////////////////////////////////
+INLINE Loader *Loader::
+get_global_ptr() {
+  if (_global_ptr == (Loader *)NULL) {
+    make_global_ptr();
+  }
+  return _global_ptr;
 }

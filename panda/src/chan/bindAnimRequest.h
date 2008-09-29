@@ -35,6 +35,7 @@ public:
 PUBLISHED:
   INLINE BindAnimRequest(const Filename &filename, 
                          const LoaderOptions &options,
+                         Loader *loader,
                          AnimControl *control,
                          int hierarchy_match_flags,
                          const PartSubset &subset);

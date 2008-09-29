@@ -1345,26 +1345,35 @@ write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) con
     // For sleeping tasks, include the wake time, as an elapsed time
     // in seconds.
     string name = task->get_name().substr(0, 32);
-    sprintf(buffer, "%c%-32s %8.1f %8.1f %8.1f %8.1f %6d",
+    sprintf(buffer, "%c%-32s %8.1f",
             servicing_flag, name.c_str(),
-            task->_wake_time - now,
-            task->_dt * 1000.0, task->get_average_dt() * 1000.0,
-            task->_max_dt * 1000.0, 
-            task->_sort);
+            task->_wake_time - now);
   } else {
     // For active tasks, don't include a wake time.  This means we
     // have more space for the name.
     string name = task->get_name().substr(0, 41);
-    sprintf(buffer, "%c%-41s %8.1f %8.1f %8.1f %6d",
-            servicing_flag, name.c_str(),
-            task->_dt * 1000.0, task->get_average_dt() * 1000.0,
-            task->_max_dt * 1000.0, 
-            task->_sort);
+    sprintf(buffer, "%c%-41s",
+            servicing_flag, name.c_str());
   }
   nassertv(strlen(buffer) < buffer_size);
 
   indent(out, indent_level) 
-    << buffer << "\n";
+    << buffer;
+
+  if (task->_num_frames > 0) {
+    sprintf(buffer, " %8.1f %8.1f %8.1f %6d",
+            task->_dt * 1000.0, task->get_average_dt() * 1000.0,
+            task->_max_dt * 1000.0, 
+            task->_sort);
+  } else {
+    // No statistics for a task that hasn't run yet.
+    sprintf(buffer, " %8s %8s %8s %6d",
+            "", "", "",
+            task->_sort);
+  }
+
+  nassertv(strlen(buffer) < buffer_size);
+  out << buffer << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

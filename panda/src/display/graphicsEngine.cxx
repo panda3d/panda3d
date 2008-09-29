@@ -503,6 +503,8 @@ remove_all_windows() {
   // And, hey, let's stop the vertex paging threads, if any.
   VertexDataPage::stop_threads();
 
+  AsyncTaskManager::get_global_ptr()->stop_threads();
+
 #ifdef DO_PSTATS
   PStatClient::get_global_pstats()->disconnect();
 #endif

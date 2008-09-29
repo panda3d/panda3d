@@ -22,6 +22,7 @@
 #include "loaderOptions.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
+#include "loader.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ModelLoadRequest
@@ -36,10 +37,12 @@ public:
 
 PUBLISHED:
   INLINE ModelLoadRequest(const Filename &filename, 
-                          const LoaderOptions &options);
+                          const LoaderOptions &options,
+                          Loader *loader);
   
   INLINE const Filename &get_filename() const;
   INLINE const LoaderOptions &get_options() const;
+  INLINE Loader *get_loader() const;
   
   INLINE bool is_ready() const;
   INLINE PandaNode *get_model() const;
@@ -50,6 +53,7 @@ protected:
 private:
   Filename _filename;
   LoaderOptions _options;
+  PT(Loader) _loader;
   bool _is_ready;
   PT(PandaNode) _model;
   

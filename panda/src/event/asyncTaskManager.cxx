@@ -25,6 +25,8 @@
 #include "config_event.h"
 #include <algorithm>
 
+PT(AsyncTaskManager) AsyncTaskManager::_global_ptr;
+
 TypeHandle AsyncTaskManager::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -672,4 +674,17 @@ void AsyncTaskManager::
 do_output(ostream &out) const {
   out << get_type() << " " << get_name()
       << "; " << _num_tasks << " tasks";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::make_global_ptr
+//       Access: Private, Static
+//  Description: Called once per application to create the global
+//               task manager object.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskManager::
+make_global_ptr() {
+  nassertv(_global_ptr == (AsyncTaskManager *)NULL);
+
+  _global_ptr = new AsyncTaskManager("taskMgr");
 }

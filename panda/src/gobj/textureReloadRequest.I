@@ -22,6 +22,7 @@
 INLINE TextureReloadRequest::
 TextureReloadRequest(PreparedGraphicsObjects *pgo, Texture *texture, 
                      bool allow_compressed) :
+  AsyncTask(texture->get_name()),
   _pgo(pgo),
   _texture(texture),
   _allow_compressed(allow_compressed),

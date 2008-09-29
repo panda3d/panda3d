@@ -20,9 +20,12 @@
 //               via load_async(), to begin an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 INLINE ModelLoadRequest::
-ModelLoadRequest(const Filename &filename, const LoaderOptions &options) :
+ModelLoadRequest(const Filename &filename, const LoaderOptions &options,
+                 Loader *loader) :
+  AsyncTask(filename.get_basename()),
   _filename(filename),
   _options(options),
+  _loader(loader),
   _is_ready(false)
 {
 }
@@ -47,6 +50,17 @@ get_filename() const {
 INLINE const LoaderOptions &ModelLoadRequest::
 get_options() const {
   return _options;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelLoadRequest::get_loader
+//       Access: Published
+//  Description: Returns the Loader object associated with this
+//               asynchronous ModelLoadRequest.
+////////////////////////////////////////////////////////////////////
+INLINE Loader *ModelLoadRequest::
+get_loader() const {
+  return _loader;
 }
 
 ////////////////////////////////////////////////////////////////////

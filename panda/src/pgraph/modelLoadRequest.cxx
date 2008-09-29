@@ -30,10 +30,7 @@ do_task() {
     Thread::sleep(delay);
   }
 
-  Loader *loader;
-  DCAST_INTO_R(loader, _manager, DS_done);
-
-  _model = loader->load_sync(_filename, _options);
+  _model = _loader->load_sync(_filename, _options);
   _is_ready = true;
 
   // Don't continue the task; we're done.

@@ -30,6 +30,7 @@
 #include "bamFile.h"
 
 bool Loader::_file_types_loaded = false;
+PT(Loader) Loader::_global_ptr;
 TypeHandle Loader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -38,12 +39,14 @@ TypeHandle Loader::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Loader::
-Loader(const string &name, int num_threads) :
-  AsyncTaskManager(name)
+Loader(const string &name) :
+  Namable(name)
 {
-  PT(AsyncTaskChain) chain = make_task_chain("default");
-  if (num_threads < 0) {
-    // -1 means the default number of threads.
+  _task_manager = AsyncTaskManager::get_global_ptr();
+  _task_chain = name;
+
+  if (_task_manager->find_task_chain(_task_chain) == NULL) {
+    PT(AsyncTaskChain) chain = _task_manager->make_task_chain(_task_chain);
 
     ConfigVariableInt loader_num_threads
       ("loader-num-threads", 1,
@@ -55,10 +58,8 @@ Loader(const string &name, int num_threads) :
                 "asychronous thread.  You can set this higher, particularly if "
                 "you have many CPU's available, to allow loading multiple models "
                 "simultaneously."));
-
+    
     chain->set_num_threads(loader_num_threads);
-  } else {
-    chain->set_num_threads(num_threads);
   }
 }
 
@@ -87,7 +88,7 @@ void Loader::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
 
-  int num_tasks = get_num_tasks();
+  int num_tasks = _task_manager->make_task_chain(_task_chain)->get_num_tasks();
   if (num_tasks != 0) {
     out << " (" << num_tasks << " models pending)";
   }
@@ -354,5 +355,18 @@ load_file_types() {
 
     _file_types_loaded = true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::make_global_ptr
+//       Access: Private, Static
+//  Description: Called once per application to create the global
+//               loader object.
+////////////////////////////////////////////////////////////////////
+void Loader::
+make_global_ptr() {
+  nassertv(_global_ptr == (Loader *)NULL);
+
+  _global_ptr = new Loader("taskMgr");
 }
 

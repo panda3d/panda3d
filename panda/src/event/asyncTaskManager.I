@@ -53,6 +53,21 @@ get_num_tasks() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskManager::get_global_ptr
+//       Access: Published
+//  Description: Returns a pointer to the global AsyncTaskManager.
+//               This is the AsyncTaskManager that most code should
+//               use for queueing tasks and suchlike.
+////////////////////////////////////////////////////////////////////
+INLINE AsyncTaskManager *AsyncTaskManager::
+get_global_ptr() {
+  if (_global_ptr == (AsyncTaskManager *)NULL) {
+    make_global_ptr();
+  }
+  return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskManager::add_task_by_name
 //       Access: Protected
 //  Description: Adds the task to the _tasks_by_name index, if it has

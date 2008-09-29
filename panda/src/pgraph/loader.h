@@ -44,7 +44,7 @@ class LoaderFileType;
 //               loading interface may be used, but it loads
 //               synchronously.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH Loader : public AsyncTaskManager {
+class EXPCL_PANDA_PGRAPH Loader : public TypedReferenceCount, public Namable {
 private:
   class ConsiderFile {
   public:
@@ -73,7 +73,15 @@ PUBLISHED:
     Files _files;
   };
 
-  Loader(const string &name = "loader", int num_threads = -1);
+  Loader(const string &name = "loader");
+
+  INLINE void set_task_manager(AsyncTaskManager *task_manager);
+  INLINE AsyncTaskManager *get_task_manager() const;
+  INLINE void set_task_chain(const string &task_chain);
+  INLINE const string &get_task_chain() const;
+
+  BLOCKING INLINE void stop_threads();
+  INLINE bool remove(AsyncTask *task);
 
   BLOCKING INLINE PT(PandaNode) load_sync(const Filename &filename, 
                                           const LoaderOptions &options = LoaderOptions()) const;
@@ -84,21 +92,33 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
 
+  INLINE static Loader *get_global_ptr();
+
 private:
   PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
   PT(PandaNode) try_load_file(const Filename &pathname, const LoaderOptions &options,
                               LoaderFileType *requested_type) const;
+
+  static void make_global_ptr();
+
+  PT(AsyncTaskManager) _task_manager;
+  string _task_chain;
+
   static void load_file_types();
   static bool _file_types_loaded;
+
+  static PT(Loader) _global_ptr;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    AsyncTaskManager::init_type();
+    TypedReferenceCount::init_type();
+    Namable::init_type();
     register_type(_type_handle, "Loader",
-                  AsyncTaskManager::get_class_type());
+                  TypedReferenceCount::get_class_type(),
+                  Namable::get_class_type());
     }
   virtual TypeHandle get_type() const {
     return get_class_type();
