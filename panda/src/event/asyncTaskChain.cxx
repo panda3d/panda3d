@@ -809,6 +809,10 @@ bool AsyncTaskChain::
 finish_sort_group() {
   nassertr(_num_busy_threads == 0, true);
 
+  if (!_threads.empty()) {
+    PStatClient::thread_tick(get_name());
+  }
+  
   if (!_active.empty()) {
     // There are more tasks; just set the next sort value.
     nassertr(_current_sort < _active.front()->get_sort(), true);
@@ -864,9 +868,6 @@ finish_sort_group() {
       }
       _manager->_clock->tick();
       _manager->_frame_cvar.signal_all();
-    }
-    if (!_threads.empty()) {
-      PStatClient::thread_tick(get_name());
     }
     
     // Check for any sleeping tasks that need to be woken.
@@ -1145,6 +1146,10 @@ do_get_sleeping_tasks() const {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 do_poll() {
+  if (_num_tasks == 0) {
+    return;
+  }
+
   do_start_threads();
 
   if (!_threads.empty()) {

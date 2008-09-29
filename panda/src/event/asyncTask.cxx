@@ -126,27 +126,35 @@ set_name(const string &name) {
   }
 
 #ifdef DO_PSTATS
-  // Update the PStatCollector with the new name.  If the name ends
-  // with a hyphen followed by a string of digits, we strip all that
-  // off, for the parent collector, to group related tasks together in
-  // the pstats graph.  We still create a child collector that
-  // contains the full name, however.
+  // Update the PStatCollector with the new name.  If the name
+  // includes a colon, we stop the collector name there, and don't go
+  // further.
   size_t end = name.size();
-  size_t p = end;
+  size_t colon = name.find(':');
+  if (colon != string::npos) {
+    end = min(end, colon);
+  }
+
+  // If the name ends with a hyphen followed by a string of digits, we
+  // strip all that off, for the parent collector, to group related
+  // tasks together in the pstats graph.  We still create a child
+  // collector that contains the full name, however.
+  size_t trimmed = end;
+  size_t p = trimmed;
   while (true) {
     while (p > 0 && isdigit(name[p - 1])) {
       --p;
     }
     if (p > 0 && (name[p - 1] == '-' || name[p - 1] == '_')) {
       --p;
-      end = p;
+      trimmed = p;
     } else {
-      p = end;
+      p = trimmed;
       break;
     }
   }
-  PStatCollector parent(_show_code_pcollector, name.substr(0, end));
-  _task_pcollector = PStatCollector(parent, name);
+  PStatCollector parent(_show_code_pcollector, name.substr(0, trimmed));
+  _task_pcollector = PStatCollector(parent, name.substr(0, end));
 #endif  // DO_PSTATS
 }
 

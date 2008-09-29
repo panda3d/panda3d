@@ -72,7 +72,21 @@ cleanup() {
     chain->do_cleanup();
   }
 
-  nassertv(_num_tasks == 0 && _tasks_by_name.empty());
+  // There might be one remaining task, the current task.  Especially
+  // if it wasn't running on a thread.
+  if (_num_tasks == 1) {
+    nassertv(_tasks_by_name.size() == 1);
+    TasksByName::const_iterator tbni = _tasks_by_name.begin();
+    AsyncTask *task = (*tbni);
+    nassertv(task->_state == AsyncTask::S_servicing || 
+             task->_state == AsyncTask::S_servicing_removed);
+    task->_state = AsyncTask::S_servicing_removed;
+
+  } else {
+    // If there isn't exactly one remaining task, there should be
+    // none.
+    nassertv(_num_tasks == 0 && _tasks_by_name.empty());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
