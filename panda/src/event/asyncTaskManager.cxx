@@ -37,6 +37,7 @@ TypeHandle AsyncTaskManager::_type_handle;
 AsyncTaskManager::
 AsyncTaskManager(const string &name) :
   Namable(name),
+  _num_tasks(0),
   _clock(ClockObject::get_global_clock()),
   _frame_cvar(_lock)
 {
@@ -85,7 +86,19 @@ cleanup() {
   } else {
     // If there isn't exactly one remaining task, there should be
     // none.
-    nassertv(_num_tasks == 0 && _tasks_by_name.empty());
+#ifndef NDEBUG
+    nassertd(_num_tasks == 0 && _tasks_by_name.empty()) {
+      task_cat.error()
+        << "_num_tasks = " << _num_tasks << " _tasks_by_name = " << _tasks_by_name.size() << "\n";
+      TasksByName::const_iterator tbni;
+      for (tbni = _tasks_by_name.begin();
+           tbni != _tasks_by_name.end();
+           ++tbni) {
+        task_cat.error()
+          << "  " << *(*tbni) << "\n";
+      }
+    }
+#endif  // NDEBUG
   }
 }
 
