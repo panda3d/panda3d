@@ -184,9 +184,22 @@ class TaskManager:
             l.append(taskCollection.getTask(i))
         return l
 
-    def doMethodLater(self, delayTime, funcOrTask, name, priority = None,
-                      sort = None, extraArgs = None, taskChain = None,
-                      appendTask = False, owner = None, uponDeath = None):
+    def doMethodLater(self, delayTime, funcOrTask, name, extraArgs = None,
+                      sort = None, priority = None, taskChain = None,
+                      uponDeath = None, appendTask = False, owner = None):
+
+        """Adds a task to be performed at some time in the future.
+        This is identical to add(), except that the specified
+        delayTime is applied to the Task object first, which means
+        that the task will not begin executing until at least the
+        indicated delayTime (in seconds) has elapsed.
+
+        After delayTime has elapsed, the task will become active, and
+        will run in the soonest possible frame thereafter.  If you
+        wish to specify a task that will run in the next frame, use a
+        delayTime of 0.
+        """
+        
         if delayTime < 0:
             assert self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
 
@@ -195,14 +208,58 @@ class TaskManager:
         self.mgr.add(task)
         return task
 
-    def add(self, funcOrTask, name, priority = None, sort = None,
-            extraArgs = None, taskChain = None, appendTask = False,
-            owner = None, uponDeath = None):
+    def add(self, funcOrTask, name, sort = None, extraArgs = None,
+            priority = None, uponDeath = None, appendTask = False,
+            taskChain = None, owner = None):
         
         """
-        Add a new task to the taskMgr.
-        You can add a Task object or a method that takes one argument.
+        Add a new task to the taskMgr.  The task will begin executing
+        immediately, or next frame if its sort value has already
+        passed this frame.
+
+        The parameters are:
+
+        funcOrTask - either an existing Task object (not already added
+        to the task manager), or a callable function object.  If this
+        is a function, a new Task object will be created and returned.
+
+        name - the name to assign to the Task.
+
+        sort - the sort value to assign the task.  The default sort is
+        0.  Within a particular task chain, it is guaranteed that the
+        tasks with a lower sort value will all run before tasks with a
+        higher sort value run.
+
+        extraArgs - the list of arguments to pass to the task
+        function.  If this is omitted, the list is just the task
+        object itself.
+
+        priority - the priority at which to run the task.  The default
+        priority is 0.  For historical purposes, if you specify a
+        priority without also specifying a sort, the priority value is
+        understood to actually be a sort value.  (Previously, there
+        was no priority value, only a sort value, and it was called
+        "priority".)
+
+        uponDeath - a function to call when the task terminates,
+        either because it has run to completion, or because
+
+        appendTask - a boolean flag.  If this is true, then the task
+        object itself will be appended to the extraArgs list before
+        calling the function.
+
+        taskChain - the name of the task chain to assign the task to.
+
+        owner - an option Python object that is declared as the
+        "owner" of this task for maintenance purposes.  The owner must
+        have two methods: owner._addTask(self, task), which is called
+        when the task begins, and owner._clearTask(self, task), which
+        is called when the task terminates.
+
+        The return value is the new Task object that has been added.
+
         """
+        
         task = self.__setupTask(funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath)
         self.mgr.add(task)
         return task
@@ -250,6 +307,12 @@ class TaskManager:
         return task
         
     def remove(self, taskOrName):
+        """Removes a task from the task manager.  The task is
+        immediately stopped, almost as if it had returned task.done.
+        You may specify either an explicit Task object, or the name of
+        a task.  If you specify a name, all tasks with the indicated
+        name are removed.  Returns the number of tasks removed. """
+        
         if isinstance(taskOrName, types.StringTypes):
             tasks = self.mgr.findTasks(taskOrName)
             return self.mgr.remove(tasks)
@@ -259,14 +322,21 @@ class TaskManager:
             self.notify.error('remove takes a string or a Task')
 
     def removeTasksMatching(self, taskPattern):
-        """removeTasksMatching(self, string taskPattern)
-        Removes tasks whose names match the pattern, which can include
-        standard shell globbing characters like *, ?, and [].
+        """Removes all tasks whose names match the pattern, which can
+        include standard shell globbing characters like *, ?, and [].
+        See also remove().
+
+        Returns the number of tasks removed.
         """
         tasks = self.mgr.findTasksMatching(GlobPattern(taskPattern))
         return self.mgr.remove(tasks)
 
     def step(self):
+        """Invokes the task manager for one frame, and then returns.
+        Normally, this executes each task exactly once, though task
+        chains that are in sub-threads or that have frame budgets
+        might execute their tasks differently. """
+        
         self.__doStep()
         self.mgr.stopThreads()
 
@@ -292,6 +362,9 @@ class TaskManager:
             raise KeyboardInterrupt
 
     def run(self):
+        """Starts the task manager running.  Does not return until an
+        exception is encountered (including KeyboardInterrupt). """
+        
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
         t = self.globalClock.getFrameTime()
@@ -362,8 +435,9 @@ class TaskManager:
     # In the event we want to do frame time managment, this is the
     # function to replace or overload.
     def doYield(self, frameStartTime, nextScheduledTaskTime):
-          None
-          
+        pass
+
+    """
     def doYieldExample(self, frameStartTime, nextScheduledTaskTime):
         minFinTime = frameStartTime + self.MaxEpochSpeed
         if nextScheduledTaskTime > 0 and nextScheduledTaskTime < minFinTime:
@@ -374,6 +448,7 @@ class TaskManager:
             print ' sleep %s'% (delta)
             time.sleep(delta)           
             delta = minFinTime - self.globalClock.getRealTime()
+    """
     
     if __debug__:
         # to catch memory leaks during the tests at the bottom of the file

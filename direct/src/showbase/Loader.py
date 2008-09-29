@@ -151,7 +151,7 @@ class Loader(DirectObject):
             cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
             i=0
             for modelPath in modelList:
-                request = ModelLoadRequest(Filename(modelPath), loaderOptions)
+                request = ModelLoadRequest(Filename(modelPath), loaderOptions, self.loader)
                 request.setDoneEvent(self.hook)
                 request.setPythonObject((cb, i))
                 i+=1
