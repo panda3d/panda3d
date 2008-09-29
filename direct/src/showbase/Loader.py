@@ -151,7 +151,11 @@ class Loader(DirectObject):
             cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
             i=0
             for modelPath in modelList:
-                request = ModelLoadRequest(Filename(modelPath), loaderOptions, self.loader)
+                # Temporary hasattr for old Pandas.
+                if hasattr(self.loader, 'makeAsyncRequest'):
+                    request = self.loader.makeAsyncRequest(Filename(modelPath), loaderOptions)
+                else:
+                    request = ModelLoadRequest(Filename(modelPath), loaderOptions)
                 request.setDoneEvent(self.hook)
                 request.setPythonObject((cb, i))
                 i+=1
