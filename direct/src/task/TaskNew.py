@@ -76,7 +76,7 @@ class TaskManager:
     MaxEpochSpeed = 1.0/30.0
 
     def __init__(self):
-        self.mgr = AsyncTaskManager('TaskManager')
+        self.mgr = AsyncTaskManager.getGlobalPtr()
 
         self.resumeFunc = None
         self.globalClock = self.mgr.getClock()
@@ -167,6 +167,11 @@ class TaskManager:
         """Returns a list of all tasks, active or sleeping, with the
         indicated name. """
         return self.__makeTaskList(self.mgr.findTasks(taskName))
+
+    def getAllTasks(self):
+        """Returns list of all tasks, active and sleeping, in
+        arbitrary order. """
+        return self.__makeTaskList(self.mgr.getTasks())
 
     def getTasks(self):
         """Returns list of all active tasks in arbitrary order. """
@@ -426,6 +431,31 @@ class TaskManager:
     def stop(self):
         # Set a flag so we will stop before beginning next frame
         self.running = False
+
+    def __tryReplaceTaskMethod(self, task, oldMethod, newFunction):
+        if not isinstance(task, PythonTask):
+            return
+        
+        method = task.getFunction()
+        if (type(method) == types.MethodType):
+            function = method.im_func
+        else:
+            function = method
+        if (function == oldMethod):
+            import new
+            newMethod = new.instancemethod(newFunction,
+                                           method.im_self,
+                                           method.im_class)
+            task.setFunction(newMethod)
+            # Found a match
+            return 1
+        return 0
+
+    def replaceMethod(self, oldMethod, newFunction):
+        numFound = 0
+        for task in self.getAllTasks():
+            numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
+        return numFound
 
     def __repr__(self):
         return str(self.mgr)
