@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherParameter::
 MouseWatcherParameter() {
+  _keycode = 0;
   _flags = 0;
 }
 
