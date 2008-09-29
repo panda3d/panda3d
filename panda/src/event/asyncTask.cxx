@@ -350,6 +350,21 @@ unlock_and_do_task() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::is_runnable
+//       Access: Protected, Virtual
+//  Description: Override this function to return true if the task can
+//               be successfully executed, false if it cannot.  Mainly
+//               intended as a sanity check when attempting to add the
+//               task to a task manager.
+//
+//               This function is called with the lock held.
+////////////////////////////////////////////////////////////////////
+bool AsyncTask::
+is_runnable() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::do_task
 //       Access: Protected, Virtual
 //  Description: Override this function to do something useful for the

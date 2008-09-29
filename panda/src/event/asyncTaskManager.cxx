@@ -167,6 +167,8 @@ remove_task_chain(const string &name) {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskManager::
 add(AsyncTask *task) {
+  nassertv(task->is_runnable());
+
   MutexHolder holder(_lock);
 
   if (task_cat.is_debug()) {

@@ -111,6 +111,7 @@ protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
 
+  virtual bool is_runnable();
   virtual DoneStatus do_task();
   virtual void upon_birth();
   virtual void upon_death(bool clean_exit);

@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PIPELINE PythonTask : public AsyncTask {
 PUBLISHED:
-  PythonTask(PyObject *function, const string &name = string());
+  PythonTask(PyObject *function = Py_None, const string &name = string());
   virtual ~PythonTask();
   ALLOC_DELETED_CHAIN(PythonTask);
 
@@ -48,6 +48,7 @@ PUBLISHED:
   PyObject *__getattr__(const string &attr_name) const;
 
 protected:
+  virtual bool is_runnable();
   virtual DoneStatus do_task();
   DoneStatus do_python_task();
   virtual void upon_birth();

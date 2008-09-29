@@ -79,7 +79,7 @@ set_function(PyObject *function) {
 
   _function = function;
   Py_INCREF(_function);
-  if (!PyCallable_Check(_function)) {
+  if (_function != Py_None && !PyCallable_Check(_function)) {
     nassert_raise("Invalid function passed to PythonTask");
   }
 }
@@ -304,6 +304,21 @@ __getattr__(const string &attr_name) const {
   } else {
     return PyMapping_GetItemString(_dict, (char *)attr_name.c_str());
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::is_runnable
+//       Access: Protected, Virtual
+//  Description: Override this function to return true if the task can
+//               be successfully executed, false if it cannot.  Mainly
+//               intended as a sanity check when attempting to add the
+//               task to a task manager.
+//
+//               This function is called with the lock held.
+////////////////////////////////////////////////////////////////////
+bool PythonTask::
+is_runnable() {
+  return _function != Py_None;
 }
 
 ////////////////////////////////////////////////////////////////////
