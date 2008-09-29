@@ -537,11 +537,13 @@ INLINE double GeoMipTerrain::
 get_pixel_value(int x, int y) {
   x = max(min(x,int(_xsize-1)),0);
   y = max(min(y,int(_ysize-1)),0);
-  return double(_heightfield.get_bright(int(x),int(y)));
-/*  return double(_heightfield.get_red_val(int(x),int(y))
-              + _heightfield.get_green_val(int(x),int(y)) * 256
-              + _heightfield.get_blue_val(int(x),int(y)) * 65536) / 16777215.0;
-*/
+  if (_heightfield.is_grayscale()) {
+    return double(_heightfield.get_bright(x, y));
+  } else {
+    return double(_heightfield.get_red(x, y));
+         + double(_heightfield.get_green(x, y)) / 256.0;
+         + double(_heightfield.get_blue(x, y)) / 65536.0;
+  }
 }
 INLINE double GeoMipTerrain::
 get_pixel_value(unsigned short mx, unsigned short my, int x, int y) {
