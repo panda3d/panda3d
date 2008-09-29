@@ -491,8 +491,7 @@ class TaskManager:
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
-    def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
-                       threadPriority = None, frameBudget = None):
+    def setupTaskChain(self, *args, **kw):
         # This is a no-op in the original task implementation; task
         # chains are not supported here.
         pass
@@ -580,9 +579,9 @@ class TaskManager:
         gc.disable()
         return cont
 
-    def doMethodLater(self, delayTime, funcOrTask, name, extraArgs=None,
-                      sort=None, priority=None, taskChain = None,
-                      uponDeath=None, appendTask=False, owner = None):
+    def doMethodLater(self, delayTime, funcOrTask, name, extraArgs = None,
+                      sort = None, priority = None, taskChain = None,
+                      uponDeath = None, appendTask = False, owner = None):
         if delayTime < 0:
             assert self.notify.warning('doMethodLater: added task: %s with negative delay: %s' % (name, delayTime))
         if isinstance(funcOrTask, Task):
@@ -636,8 +635,9 @@ class TaskManager:
             task.owner._addTask(task)
         return task
 
-    def add(self, funcOrTask, name, priority=None, sort=None, extraArgs=None, uponDeath=None,
-            appendTask = False, taskChain = None, owner = None):
+    def add(self, funcOrTask, name, sort = None, extraArgs = None,
+            priority = None, uponDeath = None, appendTask = False,
+            taskChain = None, owner = None):
         
         """
         Add a new task to the taskMgr.
