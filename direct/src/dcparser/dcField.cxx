@@ -271,6 +271,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
 
   if (!Notify::ptr()->has_assert_failed()) {
     ostringstream strm;
+    PyObject *exc_type = PyExc_StandardError;
 
     if (as_parameter() != (DCParameter *)NULL) {
       // If it's a parameter-type field, the value may or may not be a
@@ -281,9 +282,11 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
       if (packer.had_pack_error()) {
         strm << "Incorrect arguments to field: " << get_name()
              << " = " << PyString_AsString(str);
+        exc_type = PyExc_TypeError;
       } else {
         strm << "Value out of range on field: " << get_name()
              << " = " << PyString_AsString(str);
+        exc_type = PyExc_ValueError;
       }
       Py_DECREF(str);
 
@@ -297,6 +300,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
 
         strm << "Value for " << get_name() << " not a sequence: " \
              << PyString_AsString(str);
+        exc_type = PyExc_TypeError;
         Py_DECREF(str);
 
       } else {
@@ -305,9 +309,11 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
         if (packer.had_pack_error()) {
           strm << "Incorrect arguments to field: " << get_name()
                << PyString_AsString(str);
+          exc_type = PyExc_TypeError;
         } else {
           strm << "Value out of range on field: " << get_name()
                << PyString_AsString(str);
+          exc_type = PyExc_ValueError;
         }
         
         Py_DECREF(str);
@@ -315,7 +321,8 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
       }
     }
 
-    nassert_raise(strm.str());
+    string message = strm.str();
+    PyErr_SetString(exc_type, message.c_str());
   }
   return false;
 }
