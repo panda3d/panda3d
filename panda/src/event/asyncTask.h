@@ -51,9 +51,8 @@ PUBLISHED:
   enum DoneStatus {
     DS_done,    // normal task completion
     DS_cont,    // run task again next epoch
-    DS_again,   // run task again after at least get_delay() seconds
+    DS_again,   // start the task over from the beginning
     DS_pickup,  // run task again this frame, if frame budget allows
-    DS_restart, // start the task over from the beginning
     DS_abort,   // abort the task and interrupt the whole task manager
   };
 

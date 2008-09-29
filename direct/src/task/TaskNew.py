@@ -3,7 +3,7 @@ AsyncTaskManager interface.  It replaces the old full-Python
 implementation of the Task system. """
 
 __all__ = ['Task', 'TaskManager',
-           'cont', 'done', 'again', 'pickup', 'restart']
+           'cont', 'done', 'again', 'pickup']
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
@@ -57,7 +57,6 @@ done = AsyncTask.DSDone
 cont = AsyncTask.DSCont
 again = AsyncTask.DSAgain
 pickup = AsyncTask.DSPickup
-restart = AsyncTask.DSRestart
 
 # Alias PythonTask to Task for historical purposes.
 Task = PythonTask
@@ -69,7 +68,6 @@ Task.DtoolClassDict['done'] = done
 Task.DtoolClassDict['cont'] = cont
 Task.DtoolClassDict['again'] = again
 Task.DtoolClassDict['pickup'] = pickup
-Task.DtoolClassDict['restart'] = restart
 
 class TaskManager:
     notify = directNotify.newCategory("TaskManager")

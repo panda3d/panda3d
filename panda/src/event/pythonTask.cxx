@@ -409,14 +409,13 @@ do_python_task() {
   if (PyInt_Check(result)) {
     int retval = PyInt_AS_LONG(result);
     switch (retval) {
-    case DS_restart:
+    case DS_again:
       Py_XDECREF(_generator);
       _generator = NULL;
       // Fall through.
 
     case DS_done:
     case DS_cont:
-    case DS_again:
     case DS_pickup:
       // Legitimate value.
       Py_DECREF(result);

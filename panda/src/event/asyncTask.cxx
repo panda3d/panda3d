@@ -376,20 +376,19 @@ is_runnable() {
 //               DS_cont: the task has more work to do, keep it active
 //               and call this function again in the next epoch.
 //
-//               DS_again: put the task to sleep for get_delay()
-//               seconds, then put it back on the active queue.
+//               DS_again: like DS_cont, but next time call the
+//               function from the beginning, almost as if it were
+//               freshly added to the task manager.  The task's
+//               get_start_time() will be reset to now, and its
+//               get_elapsed_time() will be reset to 0.  If the task
+//               has a set_delay(), it will wait again for that amount
+//               of time to elapse before restarting.  Timing
+//               accounting, however, is not reset.
 //
 //               DS_pickup: like DS_cont, but if the task chain has a
 //               frame budget and that budget has not yet been met,
 //               re-run the task again without waiting for the next
 //               frame.  Otherwise, run it next epoch as usual.
-//
-//               DS_restart: like DS_cont, but next time call the
-//               function from the beginning, almost as if it were
-//               freshly added to the task manager.  The task's
-//               get_start_time() will be reset to now, and its
-//               get_elapsed_time() will be reset to 0.  Timing
-//               accounting, however, is not reset.
 //
 //               DS_abort: abort the task, and interrupt the whole
 //               AsyncTaskManager.

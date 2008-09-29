@@ -716,10 +716,6 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
       } else {
         switch (ds) {
-        case AsyncTask::DS_restart:
-          task->_start_time = _manager->_clock->get_frame_time();
-          // Fall through.
-
         case AsyncTask::DS_cont:
           // The task is still alive; put it on the next frame's active
           // queue.
@@ -733,6 +729,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           {
             double now = _manager->_clock->get_frame_time();
             task->_wake_time = now + task->get_delay();
+            task->_start_time = task->_wake_time;
             task->_state = AsyncTask::S_sleeping;
             _sleeping.push_back(task);
             push_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
