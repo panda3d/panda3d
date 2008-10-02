@@ -1706,13 +1706,11 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
               IDirect3DSurface9 *depth_stencil_surface;
 
               // turn off depth stencil when clearing texture if it exists
+              depth_stencil_surface = 0;
               if (device -> GetDepthStencilSurface (&depth_stencil_surface) == D3D_OK) {
                 if (device -> SetDepthStencilSurface (NULL) == D3D_OK) {
       
                 }
-              }
-              else {
-                depth_stencil_surface = 0;
               }
 
               if (device -> SetRenderTarget (0, surface)  == D3D_OK) {
@@ -1727,6 +1725,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
 
               // restore depth stencil 
               if (depth_stencil_surface) {
+                device -> SetDepthStencilSurface (depth_stencil_surface);
                 depth_stencil_surface -> Release();
               }
 
