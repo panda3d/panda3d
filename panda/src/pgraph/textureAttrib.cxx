@@ -504,10 +504,10 @@ compare_to_impl(const RenderAttrib *other) const {
   check_sorted();
   ta->check_sorted();
 
-  OnStages::const_iterator si = _on_stages.begin();
-  OnStages::const_iterator osi = ta->_on_stages.begin();
+  OnStages::const_iterator si = _on_ptr_stages.begin();
+  OnStages::const_iterator osi = ta->_on_ptr_stages.begin();
 
-  while (si != _on_stages.end() && osi != ta->_on_stages.end()) {
+  while (si != _on_ptr_stages.end() && osi != ta->_on_ptr_stages.end()) {
     TextureStage *stage = (*si)._stage;
     TextureStage *other_stage = (*osi)._stage;
 
@@ -525,10 +525,10 @@ compare_to_impl(const RenderAttrib *other) const {
     ++osi;
   }
 
-  if (si != _on_stages.end()) {
+  if (si != _on_ptr_stages.end()) {
     return 1;
   }
-  if (osi != ta->_on_stages.end()) {
+  if (osi != ta->_on_ptr_stages.end()) {
     return -1;
   }
 
@@ -941,7 +941,8 @@ sort_on_stages() {
   // It's important that this assignment not be based on the whims of
   // render order--it mustn't change arbitrarily--so we must first
   // sort the on_stages list into pointer order for this purpose.
-  sort(_on_stages.begin(), _on_stages.end(), CompareTextureStagePointer());
+  _on_ptr_stages = _on_stages;
+  sort(_on_ptr_stages.begin(), _on_ptr_stages.end(), CompareTextureStagePointer());
 
   typedef pmap<const InternalName *, int> UsedTexcoordIndex;
   UsedTexcoordIndex used_texcoord_index;
@@ -950,7 +951,7 @@ sort_on_stages() {
   TexcoordMap tc_map;
 
   OnStages::const_iterator si;
-  for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
+  for (si = _on_ptr_stages.begin(); si != _on_ptr_stages.end(); ++si) {
     TextureStage *stage = (*si)._stage;
     if (stage->is_fixed_function()) {
       const InternalName *name = stage->get_texcoord_name();
@@ -966,7 +967,7 @@ sort_on_stages() {
     }
   }
 
-  // Now we can sort the on_stages map into render order.
+  // Now we can sort the on_stages list into render order.
   sort(_on_stages.begin(), _on_stages.end(), CompareTextureStageSort());
 
   _sort_seq = TextureStage::get_sort_seq();

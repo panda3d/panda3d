@@ -118,8 +118,9 @@ private:
   };
 
   typedef pvector<OnStageNode> OnStages;
-  OnStages _on_stages;
-  OnStages _on_ff_stages;
+  OnStages _on_stages;      // list of all "on" stages, sorted in render order.
+  OnStages _on_ptr_stages;  // above, sorted in pointer order.
+  OnStages _on_ff_stages;   // fixed-function stages only, in render order.
   vector_int _ff_tc_index;
   unsigned int _next_implicit_sort;
   
