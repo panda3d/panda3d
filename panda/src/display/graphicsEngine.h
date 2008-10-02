@@ -31,6 +31,7 @@
 #include "ordered_vector.h"
 #include "indirectLess.h"
 #include "loader.h"
+#include "referenceCount.h"
 
 class Pipeline;
 class DisplayRegion;
@@ -53,7 +54,7 @@ class Texture;
 //               simply calls engine->render_frame() and considers it
 //               done.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_DISPLAY GraphicsEngine {
+class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
   ~GraphicsEngine();
@@ -100,6 +101,8 @@ PUBLISHED:
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
 
+  static GraphicsEngine *get_global_ptr();
+
 public:
   enum ThreadState {
     TS_wait,
@@ -123,7 +126,6 @@ public:
                     CallbackFunction *func, void *data);
   bool remove_callback(const string &thread_name, CallbackTime callback_time,
                        CallbackFunction *func, void *data);
-
   
 private:
   class Callback {
@@ -140,6 +142,9 @@ private:
   typedef ov_set< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
   typedef pset< Callback > Callbacks;
+
+  static bool scene_root_func(const PandaNode *node);
+  bool is_scene_root(const PandaNode *node);
 
   void set_window_sort(GraphicsOutput *window, int sort);
 
@@ -339,6 +344,8 @@ private:
   bool _singular_warning_this_frame;
 
   ReMutex _lock;
+
+  static PT(GraphicsEngine) _global_ptr;
 
   static PStatCollector _wait_pcollector;
   static PStatCollector _cycle_pcollector;

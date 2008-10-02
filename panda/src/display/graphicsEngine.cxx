@@ -53,6 +53,8 @@
   #include <sys/time.h>
 #endif
 
+PT(GraphicsEngine) GraphicsEngine::_global_ptr;
+
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
 PStatCollector GraphicsEngine::_cycle_pcollector("App:Cycle");
 PStatCollector GraphicsEngine::_app_pcollector("App:Show code:General");
@@ -958,6 +960,20 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
 }
  
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_global_ptr
+//       Access: Published, Static
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GraphicsEngine *GraphicsEngine::
+get_global_ptr() {
+  if (_global_ptr == NULL) {
+    _global_ptr = new GraphicsEngine;
+    PandaNode::set_scene_root_func(&scene_root_func);
+  }
+  return _global_ptr;
+}
+ 
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::add_callback
 //       Access: Public
 //  Description: Adds the indicated C/C++ function and an arbitrary
@@ -1002,6 +1018,67 @@ remove_callback(const string &thread_name,
   ReMutexHolder holder(_lock);
   WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->remove_callback(callback_time, Callback(func, data));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::scene_root_func
+//       Access: Private, Static
+//  Description: This function is added to PandaNode::scene_root_func
+//               to implement PandaNode::is_scene_root().
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+scene_root_func(const PandaNode *node) {
+  return _global_ptr->is_scene_root(node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::is_scene_root
+//       Access: Private
+//  Description: Returns true if the indicated node is known to be
+//               the render root of some active DisplayRegion
+//               associated with this GraphicsEngine, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::
+is_scene_root(const PandaNode *node) {
+  Thread *current_thread = Thread::get_current_thread();
+
+  Windows::const_iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    GraphicsOutput *win = (*wi);
+    if (win->is_active() && win->get_gsg()->is_active()) {
+      int num_display_regions = win->get_num_active_display_regions();
+      for (int i = 0; i < num_display_regions; i++) {
+        DisplayRegion *dr = win->get_active_display_region(i);
+        if (dr != (DisplayRegion *)NULL) {
+          NodePath camera = dr->get_camera();
+          if (camera.is_empty()) {
+            continue;
+          }
+
+          Camera *camera_node;
+          DCAST_INTO_R(camera_node, camera.node(), NULL);
+          if (!camera_node->is_active()) {
+            continue;
+            return NULL;
+          }
+
+          NodePath scene_root = camera_node->get_scene();
+          if (scene_root.is_empty()) {
+            // If there's no explicit scene specified, use whatever scene the
+            // camera is parented within.  This is the normal and preferred
+            // case; the use of an explicit scene is now deprecated.
+            scene_root = camera.get_top(current_thread);
+          }
+
+          if (scene_root.node() == node) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

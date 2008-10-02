@@ -242,6 +242,9 @@ PUBLISHED:
 
   void prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state);
 
+  bool is_scene_root() const;
+  bool is_under_scene_root() const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
@@ -670,6 +673,12 @@ public:
   INLINE Children get_children(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE Stashed get_stashed(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE Parents get_parents(Thread *current_thread = Thread::get_current_thread()) const;
+
+  typedef bool SceneRootFunc(const PandaNode *);
+  static void set_scene_root_func(SceneRootFunc *func);
+
+private:
+  static SceneRootFunc *_scene_root_func;
 
 public:
   static void register_with_read_factory();

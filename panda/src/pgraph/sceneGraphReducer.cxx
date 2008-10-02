@@ -97,6 +97,8 @@ clear_gsg() {
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 flatten(PandaNode *root, int combine_siblings_bits) {
+  nassertr(check_live_flatten(root), 0);
+
   PStatTimer timer(_flatten_collector);
   int num_total_nodes = 0;
   int num_pass_nodes;
@@ -141,6 +143,8 @@ flatten(PandaNode *root, int combine_siblings_bits) {
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 remove_column(PandaNode *root, const InternalName *column) {
+  nassertr(check_live_flatten(root), 0);
+
   PStatTimer timer(_remove_column_collector);
   int count = r_remove_column(root, column, _transformer);
   _transformer.finish_apply();
@@ -158,10 +162,36 @@ remove_column(PandaNode *root, const InternalName *column) {
 ////////////////////////////////////////////////////////////////////
 int SceneGraphReducer::
 make_compatible_state(PandaNode *root) {
+  nassertr(check_live_flatten(root), 0);
+
   PStatTimer timer(_compatible_state_collector);
   int count = r_make_compatible_state(root, _transformer);
   _transformer.finish_apply();
   return count;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::decompose
+//       Access: Published
+//  Description: Calls decompose() on every GeomNode at this level and
+//               below.
+//
+//               There is usually no reason to call this explicitly,
+//               since unify() will do this anyway if it needs to be
+//               done.  However, calling it ahead of time can make
+//               that future call to unify() run a little bit faster.
+//
+//               This operation has no effect if the config variable
+//               preserve-triangle-strips has been set true.
+////////////////////////////////////////////////////////////////////
+void SceneGraphReducer::
+decompose(PandaNode *root) {
+  nassertv(check_live_flatten(root));
+
+  if (!preserve_triangle_strips) {
+    PStatTimer timer(_unify_collector);
+    r_decompose(root);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,6 +205,7 @@ make_compatible_state(PandaNode *root) {
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
 unify(PandaNode *root, bool preserve_order) {
+  nassertv(check_live_flatten(root));
   PStatTimer timer(_unify_collector);
 
   int max_indices = max_collect_indices;
@@ -196,6 +227,7 @@ unify(PandaNode *root, bool preserve_order) {
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::
 remove_unused_vertices(PandaNode *root) {
+  nassertv(check_live_flatten(root));
   PStatTimer timer(_remove_unused_collector);
 
   r_register_vertices(root, _transformer);
@@ -204,25 +236,30 @@ remove_unused_vertices(PandaNode *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer::decompose
+//     Function: SceneGraphReducer::check_live_flatten
 //       Access: Published
-//  Description: Calls decompose() on every GeomNode at this level and
-//               below.
+//  Description: In a non-release build, returns false if the node is
+//               correctly not in a live scene graph.  (Calling
+//               flatten on a node that is part of a live scene graph,
+//               for instance, a node somewhere under render, can
+//               cause problems in a multithreaded environment.)
 //
-//               There is usually no reason to call this explicitly,
-//               since unify() will do this anyway if it needs to be
-//               done.  However, calling it ahead of time can make
-//               that future call to unify() run a little bit faster.
-//
-//               This operation has no effect if the config variable
-//               preserve-triangle-strips has been set true.
+//               If allow_live_flatten is true, or in a release build,
+//               this always returns true.
 ////////////////////////////////////////////////////////////////////
-void SceneGraphReducer::
-decompose(PandaNode *root) {
-  if (!preserve_triangle_strips) {
-    PStatTimer timer(_unify_collector);
-    r_decompose(root);
+bool SceneGraphReducer::
+check_live_flatten(PandaNode *node) {
+#ifndef NDEBUG
+  if (allow_live_flatten) {
+    return true;
   }
+
+  if (node->is_under_scene_root()) {
+    return false;
+  }
+
+#endif  // NDEBUG
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

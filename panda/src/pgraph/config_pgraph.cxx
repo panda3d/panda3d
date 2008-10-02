@@ -353,6 +353,15 @@ ConfigVariableEnum<LODNodeType> default_lod_type
  PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
           "LODNode that is created by LODNode::make_default_lod()."));
 
+ConfigVariableBool allow_live_flatten
+("allow-live-flatten", true,
+ PRC_DESC("Set this true to allow the use of flatten_strong() or any "
+          "variant on a node that is attached to a live scene graph node, "
+          "or false to disallow this.  Flattening a live scene graph node "
+          "can cause problems when threading is enabled.  This variable "
+          "only has an effect when Panda is not compiled for a release "
+          "build."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
 //  Description: Initializes the library.  This must be called at

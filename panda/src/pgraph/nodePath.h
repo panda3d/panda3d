@@ -220,6 +220,8 @@ PUBLISHED:
   // will be arranged in the order they were added.
   void reparent_to(const NodePath &other, int sort = 0,
                    Thread *current_thread = Thread::get_current_thread());
+  void stash_to(const NodePath &other, int sort = 0,
+                Thread *current_thread = Thread::get_current_thread());
   void wrt_reparent_to(const NodePath &other, int sort = 0,
                        Thread *current_thread = Thread::get_current_thread());
   NodePath instance_to(const NodePath &other, int sort = 0,

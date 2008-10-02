@@ -146,6 +146,7 @@ PUBLISHED:
   void remove_unused_vertices(PandaNode *root);
 
   INLINE void premunge(PandaNode *root, const RenderState *initial_state);
+  bool check_live_flatten(PandaNode *node);
 
 protected:
   void r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,

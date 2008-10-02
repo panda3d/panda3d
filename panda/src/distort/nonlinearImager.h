@@ -26,6 +26,7 @@
 #include "nodePath.h"
 #include "pointerTo.h"
 #include "pvector.h"
+#include "graphicsEngine.h"
 
 class GraphicsEngine;
 class GraphicsStateGuardian;
@@ -168,7 +169,7 @@ private:
   Viewers _viewers;
   Screens _screens;
 
-  GraphicsEngine *_engine;
+  PT(GraphicsEngine) _engine;
   NodePath _dark_room;
 
   bool _stale;

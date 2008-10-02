@@ -345,6 +345,30 @@ reparent_to(const NodePath &other, int sort, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::stash_to
+//       Access: Published
+//  Description: Similar to reparent_to(), but the node is added to
+//               its new parent's stashed list, so that the result is
+//               equivalent to calling reparent_to() immediately
+//               followed by stash().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+stash_to(const NodePath &other, int sort, Thread *current_thread) {
+  nassertv(verify_complete());
+  nassertv(other.verify_complete());
+  nassertv_always(!is_empty());
+  nassertv(other._error_type == ET_ok);
+
+  // Reparenting implicitly resets the delta vector.
+  node()->reset_prev_transform();
+
+  int pipeline_stage = current_thread->get_pipeline_stage();
+  bool reparented = PandaNode::reparent(other._head, _head, sort, true,
+					pipeline_stage, current_thread);
+  nassertv(reparented);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::wrt_reparent_to
 //       Access: Published
 //  Description: This functions identically to reparent_to(), except

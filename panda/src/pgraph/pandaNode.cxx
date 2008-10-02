@@ -33,6 +33,8 @@
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDef(drawmask, "");
 
+PandaNode::SceneRootFunc *PandaNode::_scene_root_func;
+
 PandaNodeChain PandaNode::_dirty_prev_transforms;
 DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 
@@ -2131,6 +2133,53 @@ prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_scene_root
+//       Access: Published
+//  Description: Returns true if this particular node is known to be
+//               the render root of some active DisplayRegion
+//               associated with the global GraphicsEngine, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_scene_root() const {
+  // This function pointer has to be filled in when the global
+  // GraphicsEngine is created, because we can't link with the
+  // GraphicsEngine functions directly.
+  if (_scene_root_func != (SceneRootFunc *)NULL) {
+    return (*_scene_root_func)(this);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_under_scene_root
+//       Access: Published
+//  Description: Returns true if this particular node is in a live
+//               scene graph: that is, it is a child or descendent of
+//               a node that is itself a scene root.  If this is true,
+//               this node may potentially be traversed by the render
+//               traverser.  Stashed nodes don't count for this
+//               purpose, but hidden nodes do.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_under_scene_root() const {
+  if (is_scene_root()) {
+    return true;
+  }
+
+  Parents parents = get_parents();
+  for (int i = 0; i < parents.get_num_parents(); ++i) {
+    PandaNode *parent = parents.get_parent(i);
+    if (parent->find_stashed((PandaNode *)this) == -1) {
+      if (parent->is_under_scene_root()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::output
 //       Access: Published, Virtual
 //  Description: 
@@ -3830,6 +3879,21 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     }
 
   } while (true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_scene_root_func
+//       Access: Public, Static
+//  Description: This is used by the GraphicsEngine to hook in a
+//               pointer to the scene_root_func(), the function to
+//               determine whether the node is an active scene root.
+//               This back-pointer is necessary because we can't make
+//               calls directly into GraphicsEngine, which is in the
+//               display module.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_scene_root_func(SceneRootFunc *func) {
+  _scene_root_func = func;
 }
 
 ////////////////////////////////////////////////////////////////////

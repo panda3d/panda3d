@@ -72,6 +72,7 @@ extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
 
 extern ConfigVariableEnum<LODNodeType> default_lod_type;
+extern ConfigVariableBool allow_live_flatten;
 
 extern EXPCL_PANDA_PGRAPH void init_libpgraph();
 
