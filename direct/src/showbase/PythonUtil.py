@@ -1086,6 +1086,21 @@ def _installProfileCustomFuncs(filename):
     movedLoadFuncs.append(marshal.load)
     marshal.load = _profileMarshalLoad
 
+def _getProfileResultFileInfo(filename):
+    return (profileFilename2file.get(filename, None),
+            profileFilename2marshalData.get(filename, None))
+
+def _setProfileResultsFileInfo(filename, info):
+    f, m = info
+    if f:
+        profileFilename2file[filename] = f
+    if m:
+        profileFilename2marshalData[filename] = m
+
+def _clearProfileResultFileInfo(filename):
+    profileFilename2file.pop(filename, None)
+    profileFilename2marshalData.pop(filename, None)
+
 def _removeProfileCustomFuncs(filename):
     assert profileFilenameList.top() == filename
     marshal.load = movedLoadFuncs.pop()

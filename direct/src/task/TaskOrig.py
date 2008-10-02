@@ -16,6 +16,7 @@ from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import *
 from direct.showbase import ExceptionVarDump
+from direct.showbase.ProfileSession import ProfileSession
 import time
 import fnmatch
 import string
@@ -406,8 +407,8 @@ class TaskManager:
         self._taskProfiler = None
         self._profileInfo = ScratchPad(
             taskId = None,
-            dt = None,
-            lastProfileResultString = None,
+            profiled = False,
+            session = None,
             )
 
         # We copy this value in from __builtins__ when it gets set.
@@ -809,14 +810,20 @@ class TaskManager:
         # by the task when it runs
         profileInfo = self._profileInfo
         doProfile = (task.id == profileInfo.taskId)
+        # don't profile the same task twice in a row
+        doProfile = doProfile and (not profileInfo.profiled)
         
         if not self.taskTimerVerbose:
             startTime = self.trueClock.getShortTime()
             
             # don't record timing info
             if doProfile:
-                ret = profileFunc(Functor(task, *task.extraArgs),
-                                  'TASK_PROFILE:%s' % task.name, True, log=False)
+                profileSession = ProfileSession(Functor(task, *task.extraArgs),
+                                                'TASK_PROFILE:%s' % task.name)
+                ret = profileSession.run()
+                # set these values *after* profiling in case we're profiling the TaskProfiler
+                profileInfo.session = profileSession
+                profileInfo.profiled = True
             else:
                 ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
@@ -824,9 +831,7 @@ class TaskManager:
             # Record the dt
             dt = endTime - startTime
             if doProfile:
-                # if we profiled, record the measured duration but don't pollute the task's
-                # normal duration
-                profileInfo.dt = dt
+                # if we profiled, don't pollute the task's recorded duration
                 dt = task.avgDt
             task.dt = dt
 
@@ -836,8 +841,12 @@ class TaskManager:
                 task.pstats.start()
             startTime = self.trueClock.getShortTime()
             if doProfile:
-                ret = profileFunc(Functor(task, *task.extraArgs),
-                                  'profiled-task-%s' % task.name, True, log=False)
+                profileSession = ProfileSession(Functor(task, *task.extraArgs),
+                                                'profiled-task-%s' % task.name)
+                ret = profileSession.run()
+                # set these values *after* profiling in case we're profiling the TaskProfiler
+                profileInfo.session = profileSession
+                profileInfo.profiled = True
             else:
                 ret = task(*task.extraArgs)
             endTime = self.trueClock.getShortTime()
@@ -847,9 +856,7 @@ class TaskManager:
             # Record the dt
             dt = endTime - startTime
             if doProfile:
-                # if we profiled, record the measured duration but don't pollute the task's
-                # normal duration
-                profileInfo.dt = dt
+                # if we profiled, don't pollute the task's recorded duration
                 dt = task.avgDt
             task.dt = dt
 
@@ -863,9 +870,6 @@ class TaskManager:
                 task.avgDt = (task.runningTotal / task.frame)
             else:
                 task.avgDt = 0
-
-        if doProfile:
-            profileInfo.lastProfileResultString = self._getProfileResultString()
 
         # warn if the task took too long
         if self.warnTaskDuration and self.globalClock:
@@ -1020,17 +1024,21 @@ class TaskManager:
             self._taskProfiler.flush(name)
 
     def _setProfileTask(self, task):
+        if self._profileInfo.session:
+            self._profileInfo.session.release()
+            self._profileInfo.session = None
         self._profileInfo = ScratchPad(
             taskId = task.id,
-            dt = None,
-            lastProfileResultString = None,
+            profiled = False,
+            session = None,
             )
 
-    def _getTaskProfileDt(self):
-        return self._profileInfo.dt
+    def _hasProfiledDesignatedTask(self):
+        # have we run a profile of the designated task yet?
+        return self._profileInfo.profiled
 
-    def _getLastProfileResultString(self):
-        return self._profileInfo.lastProfileResultString
+    def _getLastProfileSession(self):
+        return self._profileInfo.session
 
     def _getRandomTask(self):
         numTasks = 0
